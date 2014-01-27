@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/open_file_system_mode.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -44,7 +44,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   // Callback for InitializeFileSystem.
   typedef base::Callback<void(const GURL& root_url,
                               const std::string& name,
-                              base::PlatformFileError error)>
+                              base::File::Error error)>
       OpenFileSystemCallback;
   virtual ~FileSystemBackend() {}
 
@@ -76,7 +76,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   // and |type|.  If |error_code| is PLATFORM_FILE_OK and the result is NULL,
   // then no validator is required.
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
-      FileSystemType type, base::PlatformFileError* error_code) = 0;
+      FileSystemType type, base::File::Error* error_code) = 0;
 
   // Returns a new instance of the specialized FileSystemOperation for this
   // backend based on the given triplet of |origin_url|, |file_system_type|
@@ -87,7 +87,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context,
-      base::PlatformFileError* error_code) const = 0;
+      base::File::Error* error_code) const = 0;
 
   // Creates a new file stream reader for a given filesystem URL |url| with an
   // offset |offset|. |expected_modification_time| specifies the expected last

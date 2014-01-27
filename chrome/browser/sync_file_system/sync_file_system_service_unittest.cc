@@ -69,9 +69,9 @@ void AssignValueAndQuit(base::RunLoop* run_loop,
 
 // This is called on IO thread.
 void VerifyFileError(base::RunLoop* run_loop,
-                     base::PlatformFileError error) {
+                     base::File::Error error) {
   DCHECK(run_loop);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(base::File::FILE_OK, error);
   run_loop->Quit();
 }
 
@@ -179,7 +179,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     run_loop.Run();
 
     EXPECT_EQ(SYNC_STATUS_OK, status);
-    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->OpenFileSystem());
+    EXPECT_EQ(base::File::FILE_OK, file_system_->OpenFileSystem());
   }
 
   // Calls InitializeForApp after setting up the mock remote service to
@@ -344,7 +344,7 @@ TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
               ApplyLocalChange(change, _, _, kFile, _))
       .WillOnce(MockStatusCallback(SYNC_STATUS_OK));
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kFile));
+  EXPECT_EQ(base::File::FILE_OK, file_system_->CreateFile(kFile));
 
   run_loop.Run();
 
@@ -472,7 +472,7 @@ TEST_F(SyncFileSystemServiceTest, MAYBE_GetFileSyncStatus) {
 
   // 3. The file has pending local changes.
   {
-    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->CreateFile(kFile));
+    EXPECT_EQ(base::File::FILE_OK, file_system_->CreateFile(kFile));
 
     base::RunLoop run_loop;
     EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))
@@ -493,7 +493,7 @@ TEST_F(SyncFileSystemServiceTest, MAYBE_GetFileSyncStatus) {
   // 4. The file has a conflict and pending local changes. In this case
   // we return SYNC_FILE_STATUS_CONFLICTING.
   {
-    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_->TruncateFile(kFile, 1U));
+    EXPECT_EQ(base::File::FILE_OK, file_system_->TruncateFile(kFile, 1U));
 
     base::RunLoop run_loop;
     EXPECT_CALL(*mock_remote_service(), IsConflicting(kFile))

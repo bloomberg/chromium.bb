@@ -23,8 +23,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TransientFileUtil
   virtual webkit_blob::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      base::PlatformFileError* error,
-      base::PlatformFileInfo* file_info,
+      base::File::Error* error,
+      base::File::Info* file_info,
       base::FilePath* platform_path) OVERRIDE;
 
  private:

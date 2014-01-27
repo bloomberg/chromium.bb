@@ -349,8 +349,8 @@ TEST(ResourceEntryConversionTest, ToPlatformFileInfo) {
   entry.mutable_file_info()->set_last_modified(123456789);
   entry.mutable_file_info()->set_last_accessed(987654321);
 
-  base::PlatformFileInfo file_info;
-  ConvertResourceEntryToPlatformFileInfo(entry, &file_info);
+  base::File::Info file_info;
+  ConvertResourceEntryToFileInfo(entry, &file_info);
   EXPECT_EQ(entry.file_info().size(), file_info.size);
   EXPECT_EQ(entry.file_info().is_directory(), file_info.is_directory);
   EXPECT_EQ(entry.file_info().is_symbolic_link(), file_info.is_symbolic_link);
@@ -363,7 +363,7 @@ TEST(ResourceEntryConversionTest, ToPlatformFileInfo) {
 }
 
 TEST(ResourceEntryConversionTest, FromPlatformFileInfo) {
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   file_info.size = 12345;
   file_info.is_directory = true;
   file_info.is_symbolic_link = true;

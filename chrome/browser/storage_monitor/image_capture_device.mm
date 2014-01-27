@@ -9,17 +9,17 @@
 
 namespace {
 
-base::PlatformFileError RenameFile(const base::FilePath& downloaded_filename,
-                                   const base::FilePath& desired_filename) {
+base::File::Error RenameFile(const base::FilePath& downloaded_filename,
+                             const base::FilePath& desired_filename) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   bool success = base::ReplaceFile(downloaded_filename, desired_filename, NULL);
-  return success ? base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  return success ? base::File::FILE_OK : base::File::FILE_ERROR_NOT_FOUND;
 }
 
 void ReturnRenameResultToListener(
     base::WeakPtr<ImageCaptureDeviceListener> listener,
     const std::string& name,
-    const base::PlatformFileError& result) {
+    const base::File::Error& result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (listener)
     listener->DownloadedFile(name, result);
@@ -127,11 +127,11 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   }
 
   if (listener_)
-    listener_->DownloadedFile(name, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    listener_->DownloadedFile(name, base::File::FILE_ERROR_NOT_FOUND);
 }
 
 - (void)cameraDevice:(ICCameraDevice*)camera didAddItem:(ICCameraItem*)item {
-  base::PlatformFileInfo info;
+  base::File::Info info;
   if ([[item UTI] isEqualToString:base::mac::CFToNSCast(kUTTypeFolder)])
     info.is_directory = true;
   else
@@ -186,10 +186,10 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   std::string name = PathForCameraItem(file).value();
 
   if (error) {
-    DLOG(INFO) << "error..."
-               << base::SysNSStringToUTF8([error localizedDescription]);
+    DVLOG(1) << "error..."
+             << base::SysNSStringToUTF8([error localizedDescription]);
     if (listener_)
-      listener_->DownloadedFile(name, base::PLATFORM_FILE_ERROR_FAILED);
+      listener_->DownloadedFile(name, base::File::FILE_ERROR_FAILED);
     return;
   }
 
@@ -199,7 +199,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
       base::SysNSStringToUTF8([options objectForKey:ICSaveAsFilename]);
   if (savedFilename == saveAsFilename) {
     if (listener_)
-      listener_->DownloadedFile(name, base::PLATFORM_FILE_OK);
+      listener_->DownloadedFile(name, base::File::FILE_OK);
     return;
   }
 

@@ -8,10 +8,10 @@
 #include <queue>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
@@ -72,12 +72,12 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   // Used to represent pending task details.
   struct PendingTaskInfo {
     PendingTaskInfo(const tracked_objects::Location& location,
-                    const base::Callback<base::PlatformFileError(void)>& task,
-                    const base::Callback<void(base::PlatformFileError)>& reply);
+                    const base::Callback<base::File::Error(void)>& task,
+                    const base::Callback<void(base::File::Error)>& reply);
 
     const tracked_objects::Location location;
-    const base::Callback<base::PlatformFileError(void)> task;
-    const base::Callback<void(base::PlatformFileError)> reply;
+    const base::Callback<base::File::Error(void)> task;
+    const base::Callback<void(base::File::Error)> reply;
   };
 
   // Defers the device initializations until the first file operation request.
@@ -146,8 +146,8 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   // invoked to notify the caller about the platform file |error|.
   void OnGetFileInfo(const GetFileInfoSuccessCallback& success_callback,
                      const ErrorCallback& error_callback,
-                     base::PlatformFileInfo* file_info,
-                     base::PlatformFileError error);
+                     base::File::Info* file_info,
+                     base::File::Error error);
 
   // Called when ReadDirectory() completes. |file_list| contains the directory
   // file entries information. |error| specifies the platform file error code.
@@ -160,7 +160,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   void OnDidReadDirectory(const ReadDirectorySuccessCallback& success_callback,
                           const ErrorCallback& error_callback,
                           fileapi::AsyncFileUtil::EntryList* file_list,
-                          base::PlatformFileError error);
+                          base::File::Error error);
 
   // Called when the get file stream request completes.
   // |file_details.request_info| contains the CreateSnapshot request param
@@ -172,7 +172,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   //
   // If the get file stream request fails, |error| is set accordingly.
   void OnGetFileStream(scoped_ptr<SnapshotFileDetails> file_details,
-                       base::PlatformFileError error);
+                       base::File::Error error);
 
   // Called when WriteDataChunkIntoSnapshotFile() completes.
   // |bytes_written| specifies the number of bytes written into the

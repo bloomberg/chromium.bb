@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 
 namespace base {
@@ -57,7 +57,7 @@ class WebkitFileStreamWriterImpl : public fileapi::FileStreamWriter {
   void WriteAfterCreateWritableSnapshotFile(
       net::IOBuffer* buf,
       int buf_len,
-      base::PlatformFileError open_result,
+      base::File::Error open_result,
       const base::FilePath& local_path,
       const base::Closure& close_callback_on_ui_thread);
 

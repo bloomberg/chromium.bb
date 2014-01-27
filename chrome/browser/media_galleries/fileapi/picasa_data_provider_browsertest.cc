@@ -66,11 +66,11 @@ void VerifyTestAlbumTable(PicasaDataProvider* data_provider,
 void VerifyTestAlbumsImagesIndex(PicasaDataProvider* data_provider,
                                  base::FilePath test_folder_1_path,
                                  base::FilePath test_folder_2_path) {
-  base::PlatformFileError error;
+  base::File::Error error;
   scoped_ptr<AlbumImages> album_1_images =
       data_provider->FindAlbumImages("uid3", &error);
   ASSERT_TRUE(album_1_images);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(base::File::FILE_OK, error);
   EXPECT_EQ(2u, album_1_images->size());
   EXPECT_NE(album_1_images->end(), album_1_images->find("InBoth.jpg"));
   EXPECT_EQ(test_folder_1_path.AppendASCII("InBoth.jpg"),
@@ -83,7 +83,7 @@ void VerifyTestAlbumsImagesIndex(PicasaDataProvider* data_provider,
   scoped_ptr<AlbumImages> album_2_images =
       data_provider->FindAlbumImages("uid5", &error);
   ASSERT_TRUE(album_2_images);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(base::File::FILE_OK, error);
   EXPECT_EQ(2u, album_2_images->size());
   EXPECT_NE(album_2_images->end(), album_2_images->find("InBoth.jpg"));
   EXPECT_EQ(test_folder_1_path.AppendASCII("InBoth.jpg"),

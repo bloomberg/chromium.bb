@@ -97,7 +97,7 @@ scoped_ptr<AlbumMap> PicasaDataProvider::GetAlbums() {
 
 scoped_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
     const std::string& key,
-    base::PlatformFileError* error) {
+    base::File::Error* error) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(state_ == ALBUMS_IMAGES_FRESH_STATE);
   DCHECK(error);
@@ -105,11 +105,11 @@ scoped_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
   AlbumImagesMap::const_iterator it = albums_images_.find(key);
 
   if (it == albums_images_.end()) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = base::File::FILE_ERROR_NOT_FOUND;
     return scoped_ptr<AlbumImages>();
   }
 
-  *error = base::PLATFORM_FILE_OK;
+  *error = base::File::FILE_OK;
   return make_scoped_ptr(new AlbumImages(it->second));
 }
 

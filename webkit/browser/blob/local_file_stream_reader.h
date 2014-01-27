@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -60,8 +60,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamReader
                       int open_result);
 
   void DidGetFileInfoForGetLength(const net::Int64CompletionCallback& callback,
-                                  base::PlatformFileError error,
-                                  const base::PlatformFileInfo& file_info);
+                                  base::File::Error error,
+                                  const base::File::Info& file_info);
 
   scoped_refptr<base::TaskRunner> task_runner_;
   scoped_ptr<net::FileStream> stream_impl_;

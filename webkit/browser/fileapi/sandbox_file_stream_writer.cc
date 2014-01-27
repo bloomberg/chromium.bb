@@ -112,16 +112,16 @@ int SandboxFileStreamWriter::WriteInternal(
 
 void SandboxFileStreamWriter::DidCreateSnapshotFile(
     const net::CompletionCallback& callback,
-    base::PlatformFileError file_error,
-    const base::PlatformFileInfo& file_info,
+    base::File::Error file_error,
+    const base::File::Info& file_info,
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DCHECK(!file_ref.get());
 
   if (CancelIfRequested())
     return;
-  if (file_error != base::PLATFORM_FILE_OK) {
-    callback.Run(net::PlatformFileErrorToNetError(file_error));
+  if (file_error != base::File::FILE_OK) {
+    callback.Run(net::FileErrorToNetError(file_error));
     return;
   }
   if (file_info.is_directory) {

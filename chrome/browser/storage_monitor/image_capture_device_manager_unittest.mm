@@ -214,11 +214,11 @@ class TestCameraListener
   TestCameraListener()
       : completed_(false),
         removed_(false),
-        last_error_(base::PLATFORM_FILE_ERROR_INVALID_URL) {}
+        last_error_(base::File::FILE_ERROR_INVALID_URL) {}
   virtual ~TestCameraListener() {}
 
   virtual void ItemAdded(const std::string& name,
-                         const base::PlatformFileInfo& info) OVERRIDE {
+                         const base::File::Info& info) OVERRIDE {
     items_.push_back(name);
   }
 
@@ -227,7 +227,7 @@ class TestCameraListener
   }
 
   virtual void DownloadedFile(const std::string& name,
-                              base::PlatformFileError error) OVERRIDE {
+                              base::File::Error error) OVERRIDE {
     EXPECT_TRUE(content::BrowserThread::CurrentlyOn(
         content::BrowserThread::UI));
     downloads_.push_back(name);
@@ -242,14 +242,14 @@ class TestCameraListener
   std::vector<std::string> downloads() const { return downloads_; }
   bool completed() const { return completed_; }
   bool removed() const { return removed_; }
-  base::PlatformFileError last_error() const { return last_error_; }
+  base::File::Error last_error() const { return last_error_; }
 
  private:
   std::vector<std::string> items_;
   std::vector<std::string> downloads_;
   bool completed_;
   bool removed_;
-  base::PlatformFileError last_error_;
+  base::File::Error last_error_;
 };
 
 class ImageCaptureDeviceManagerTest : public testing::Test {
@@ -377,7 +377,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1U, listener_.downloads().size());
   EXPECT_EQ("nonexistent", listener_.downloads()[0]);
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, listener_.last_error());
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, listener_.last_error());
 
   // Test that an existing file we ask to be downloaded will end up in
   // the location we specify. The mock system will copy testing file
@@ -389,7 +389,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
 
   ASSERT_EQ(2U, listener_.downloads().size());
   EXPECT_EQ(kTestFileName, listener_.downloads()[1]);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, listener_.last_error());
+  ASSERT_EQ(base::File::FILE_OK, listener_.last_error());
   char file_contents[5];
   ASSERT_EQ(4, base::ReadFile(temp_file, file_contents,
                               strlen(kTestFileContents)));

@@ -32,12 +32,12 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
     return false;
   }
   // TODO(rvargas): convert this code to use base::File::Info.
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   if (!base::GetFileInfo(base::FilePath::FromUTF16Unsafe(path),
                          reinterpret_cast<base::File::Info*>(&file_info)))
     return false;
 
-  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  webkit_glue::FileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = path;
   return true;
 }

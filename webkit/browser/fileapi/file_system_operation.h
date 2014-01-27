@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/process/process.h"
@@ -66,19 +67,19 @@ class FileSystemOperation {
   virtual ~FileSystemOperation() {}
 
   // Used for CreateFile(), etc. |result| is the return code of the operation.
-  typedef base::Callback<void(base::PlatformFileError result)> StatusCallback;
+  typedef base::Callback<void(base::File::Error result)> StatusCallback;
 
   // Used for GetMetadata(). |result| is the return code of the operation,
   // |file_info| is the obtained file info.
   typedef base::Callback<
-      void(base::PlatformFileError result,
-           const base::PlatformFileInfo& file_info)> GetMetadataCallback;
+      void(base::File::Error result,
+           const base::File::Info& file_info)> GetMetadataCallback;
 
   // Used for OpenFile(). |result| is the return code of the operation.
   // |on_close_callback| will be called after the file is closed in the child
   // process. It can be null, if no operation is needed on closing a file.
   typedef base::Callback<
-      void(base::PlatformFileError result,
+      void(base::File::Error result,
            base::PlatformFile file,
            const base::Closure& on_close_callback)> OpenFileCallback;
 
@@ -89,7 +90,7 @@ class FileSystemOperation {
   // |file_list| is the list of files read, and |has_more| is true if some files
   // are yet to be read.
   typedef base::Callback<
-      void(base::PlatformFileError result,
+      void(base::File::Error result,
            const FileEntryList& file_list,
            bool has_more)> ReadDirectoryCallback;
 
@@ -115,8 +116,8 @@ class FileSystemOperation {
   // Please see the comment for ShareableFileReference for details.
   //
   typedef base::Callback<
-      void(base::PlatformFileError result,
-           const base::PlatformFileInfo& file_info,
+      void(base::File::Error result,
+           const base::File::Info& file_info,
            const base::FilePath& platform_path,
            const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
           SnapshotFileCallback;
@@ -221,7 +222,7 @@ class FileSystemOperation {
   };
 
   // Used for Write().
-  typedef base::Callback<void(base::PlatformFileError result,
+  typedef base::Callback<void(base::File::Error result,
                               int64 bytes,
                               bool complete)> WriteCallback;
 
@@ -452,7 +453,7 @@ class FileSystemOperation {
   // temporary nor persistent.
   // In such a case, base::PLATFORM_FILE_ERROR_INVALID_OPERATION will be
   // returned.
-  virtual base::PlatformFileError SyncGetPlatformPath(
+  virtual base::File::Error SyncGetPlatformPath(
       const FileSystemURL& url,
       base::FilePath* platform_path) = 0;
 

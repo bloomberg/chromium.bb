@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_
 #define WEBKIT_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
@@ -38,36 +39,36 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
   static CopyOrMoveMode CopyOrMoveModeForDestination(
       const FileSystemURL& dest_url, bool copy);
 
-  static base::PlatformFileError CreateOrOpen(
+  static base::File::Error CreateOrOpen(
       const base::FilePath& path,
       int file_flags,
       base::PlatformFile* file_handle,
       bool* created);
-  static base::PlatformFileError Close(base::PlatformFile file);
-  static base::PlatformFileError EnsureFileExists(const base::FilePath& path,
-                                                  bool* created);
-  static base::PlatformFileError CreateDirectory(const base::FilePath& path,
-                                                 bool exclusive,
-                                                 bool recursive);
-  static base::PlatformFileError GetFileInfo(const base::FilePath& path,
-                                             base::PlatformFileInfo* file_info);
+  static base::File::Error Close(base::PlatformFile file);
+  static base::File::Error EnsureFileExists(const base::FilePath& path,
+                                            bool* created);
+  static base::File::Error CreateDirectory(const base::FilePath& path,
+                                           bool exclusive,
+                                           bool recursive);
+  static base::File::Error GetFileInfo(const base::FilePath& path,
+                                       base::File::Info* file_info);
   static scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
       CreateFileEnumerator(const base::FilePath& root_path,
                            bool recursive);
-  static base::PlatformFileError Touch(const base::FilePath& path,
-                                       const base::Time& last_access_time,
-                                       const base::Time& last_modified_time);
-  static base::PlatformFileError Truncate(const base::FilePath& path,
+  static base::File::Error Touch(const base::FilePath& path,
+                                 const base::Time& last_access_time,
+                                 const base::Time& last_modified_time);
+  static base::File::Error Truncate(const base::FilePath& path,
                                           int64 length);
   static bool PathExists(const base::FilePath& path);
   static bool DirectoryExists(const base::FilePath& path);
-  static base::PlatformFileError CopyOrMoveFile(
+  static base::File::Error CopyOrMoveFile(
       const base::FilePath& src_path,
       const base::FilePath& dest_path,
       FileSystemOperation::CopyOrMoveOption option,
       CopyOrMoveMode mode);
-  static base::PlatformFileError DeleteFile(const base::FilePath& path);
-  static base::PlatformFileError DeleteDirectory(const base::FilePath& path);
+  static base::File::Error DeleteFile(const base::FilePath& path);
+  static base::File::Error DeleteDirectory(const base::FilePath& path);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(NativeFileUtil);

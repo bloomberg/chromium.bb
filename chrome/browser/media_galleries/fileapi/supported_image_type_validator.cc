@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/files/scoped_platform_file_closer.h"
+#include "base/files/file.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,22 +27,20 @@ scoped_ptr<std::string> ReadOnFileThread(const base::FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_ptr<std::string> result;
 
-  base::PlatformFile file = base::CreatePlatformFile(
-      path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL, NULL);
-  if (file == base::kInvalidPlatformFileValue)
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
     return result.Pass();
-  base::ScopedPlatformFileCloser file_closer(&file);
 
-  base::PlatformFileInfo file_info;
-  if (!base::GetPlatformFileInfo(file, &file_info) ||
+  base::File::Info file_info;
+  if (!file.GetInfo(&file_info) ||
       file_info.size > kMaxImageFileSize) {
     return result.Pass();
   }
 
   result.reset(new std::string);
   result->resize(file_info.size);
-  if (base::ReadPlatformFile(file, 0, string_as_array(result.get()),
-                             file_info.size) != file_info.size) {
+  if (file.Read(0, string_as_array(result.get()), file_info.size) !=
+      file_info.size) {
     result.reset();
   }
 
@@ -66,12 +64,12 @@ class ImageDecoderDelegateAdapter : public ImageDecoder::Delegate {
   // ImageDecoder::Delegate methods.
   virtual void OnImageDecoded(const ImageDecoder* /*decoder*/,
                               const SkBitmap& /*decoded_image*/) OVERRIDE {
-    callback_.Run(base::PLATFORM_FILE_OK);
+    callback_.Run(base::File::FILE_OK);
     delete this;
   }
 
   virtual void OnDecodeImageFailed(const ImageDecoder* /*decoder*/) OVERRIDE {
-    callback_.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    callback_.Run(base::File::FILE_ERROR_SECURITY);
     delete this;
   }
 
@@ -123,7 +121,7 @@ SupportedImageTypeValidator::SupportedImageTypeValidator(
 void SupportedImageTypeValidator::OnFileOpen(scoped_ptr<std::string> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!data.get()) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    callback_.Run(base::File::FILE_ERROR_SECURITY);
     return;
   }
 

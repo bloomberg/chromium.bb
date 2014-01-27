@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
@@ -28,7 +29,7 @@ class PepperFileSystemBrowserHost;
 class PepperFileIOHost : public ppapi::host::ResourceHost,
                          public base::SupportsWeakPtr<PepperFileIOHost> {
  public:
-  typedef base::Callback<void (base::PlatformFileError)>
+  typedef base::Callback<void (base::File::Error)>
       NotifyCloseFileCallback;
 
   PepperFileIOHost(BrowserPpapiHostImpl* host,
@@ -66,16 +67,16 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       ppapi::host::ReplyMessageContext reply_context,
       bool plugin_allowed);
 
-  // Callback handlers. These mostly convert the PlatformFileError to the
+  // Callback handlers. These mostly convert the File::Error to the
   // PP_Error code and send back the reply. Note that the argument
   // ReplyMessageContext is copied so that we have a closure containing all
   // necessary information to reply.
   void ExecutePlatformGeneralCallback(
       ppapi::host::ReplyMessageContext reply_context,
-      base::PlatformFileError error_code);
+      base::File::Error error_code);
   void ExecutePlatformOpenFileCallback(
       ppapi::host::ReplyMessageContext reply_context,
-      base::PlatformFileError error_code,
+      base::File::Error error_code,
       base::PassPlatformFile file,
       bool unused_created);
 
@@ -85,7 +86,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       UIThreadStuff ui_thread_stuff);
   void DidOpenInternalFile(
       ppapi::host::ReplyMessageContext reply_context,
-      base::PlatformFileError result,
+      base::File::Error result,
       base::PlatformFile file,
       const base::Closure& on_close_callback);
   void GotResolvedRenderProcessId(
@@ -100,7 +101,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   bool CallSetLength(ppapi::host::ReplyMessageContext reply_context,
                      int64_t length);
 
-  void DidCloseFile(base::PlatformFileError error);
+  void DidCloseFile(base::File::Error error);
 
   void SendOpenErrorReply(ppapi::host::ReplyMessageContext reply_context);
 

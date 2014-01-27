@@ -29,11 +29,11 @@ class RemoveOperationDelegate : public RecursiveOperationDelegate {
                                     const StatusCallback& callback) OVERRIDE;
 
  private:
-  void DidTryRemoveFile(base::PlatformFileError error);
-  void DidTryRemoveDirectory(base::PlatformFileError remove_file_error,
-                             base::PlatformFileError remove_directory_error);
+  void DidTryRemoveFile(base::File::Error error);
+  void DidTryRemoveDirectory(base::File::Error remove_file_error,
+                             base::File::Error remove_directory_error);
   void DidRemoveFile(const StatusCallback& callback,
-                     base::PlatformFileError error);
+                     base::File::Error error);
 
   FileSystemURL url_;
   StatusCallback callback_;

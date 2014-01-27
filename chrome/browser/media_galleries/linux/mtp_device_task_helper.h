@@ -85,7 +85,7 @@ class MTPDeviceTaskHelper {
   // |snapshot_file_info| specifies the metadata of the snapshot file.
   void WriteDataIntoSnapshotFile(
       const SnapshotRequestInfo& request_info,
-      const base::PlatformFileInfo& snapshot_file_info);
+      const base::File::Info& snapshot_file_info);
 
   // Dispatches the read bytes request to the MediaTransferProtocolManager.
   //
@@ -156,7 +156,7 @@ class MTPDeviceTaskHelper {
   // Runs |error_callback| on the IO thread to notify the caller about the
   // device |error|.
   void HandleDeviceError(const ErrorCallback& error_callback,
-                         base::PlatformFileError error) const;
+                         base::File::Error error) const;
 
   // Handle to communicate with the MTP device.
   std::string device_handle_;

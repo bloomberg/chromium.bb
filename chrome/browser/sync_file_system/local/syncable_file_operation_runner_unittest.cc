@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -27,7 +28,7 @@ using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;
 using webkit_blob::MockBlobURLRequestContext;
 using webkit_blob::ScopedTextBlob;
-using base::PlatformFileError;
+using base::File;
 
 namespace sync_file_system {
 
@@ -51,7 +52,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
                      base::MessageLoopProxy::current().get(),
                      base::MessageLoopProxy::current().get()),
         callback_count_(0),
-        write_status_(base::PLATFORM_FILE_ERROR_FAILED),
+        write_status_(File::FILE_ERROR_FAILED),
         write_bytes_(0),
         write_complete_(false),
         url_request_context_(file_system_.file_system_context()),
@@ -68,8 +69,8 @@ class SyncableFileOperationRunnerTest : public testing::Test {
         SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));
 
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(File::FILE_OK, file_system_.OpenFileSystem());
+    ASSERT_EQ(File::FILE_OK,
               file_system_.CreateDirectory(URL(kParent)));
   }
 
@@ -91,14 +92,14 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   void ResetCallbackStatus() {
-    write_status_ = base::PLATFORM_FILE_ERROR_FAILED;
+    write_status_ = File::FILE_ERROR_FAILED;
     write_bytes_ = 0;
     write_complete_ = false;
     callback_count_ = 0;
   }
 
   StatusCallback ExpectStatus(const tracked_objects::Location& location,
-                              PlatformFileError expect) {
+                              File::Error expect) {
     return base::Bind(&SyncableFileOperationRunnerTest::DidFinish,
                       weak_factory_.GetWeakPtr(), location, expect);
   }
@@ -110,7 +111,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   void DidWrite(const tracked_objects::Location& location,
-                PlatformFileError status, int64 bytes, bool complete) {
+                File::Error status, int64 bytes, bool complete) {
     SCOPED_TRACE(testing::Message() << location.ToString());
     write_status_ = status;
     write_bytes_ += bytes;
@@ -119,7 +120,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   void DidFinish(const tracked_objects::Location& location,
-                 PlatformFileError expect, PlatformFileError status) {
+                 File::Error expect, File::Error status) {
     SCOPED_TRACE(testing::Message() << location.ToString());
     EXPECT_EQ(expect, status);
     ++callback_count_;
@@ -137,7 +138,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
   int callback_count_;
-  PlatformFileError write_status_;
+  File::Error write_status_;
   size_t write_bytes_;
   bool write_complete_;
 
@@ -157,16 +158,16 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
   ResetCallbackStatus();
   file_system_.operation_runner()->CreateFile(
       URL(kFile), false /* exclusive */,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Truncate(
       URL(kFile), 1,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
   file_system_.operation_runner()->FileExists(
-      URL(kFile), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+      URL(kFile), ExpectStatus(FROM_HERE, File::FILE_ERROR_NOT_FOUND));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
@@ -181,15 +182,15 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
   // Now the file must have been created and updated.
   ResetCallbackStatus();
   file_system_.operation_runner()->FileExists(
-      URL(kFile), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      URL(kFile), ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 }
 
 TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   // First create the kDir directory and kChild in the dir.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.CreateDirectory(URL(kDir)));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.CreateFile(URL(kChild)));
+  EXPECT_EQ(File::FILE_OK, file_system_.CreateDirectory(URL(kDir)));
+  EXPECT_EQ(File::FILE_OK, file_system_.CreateFile(URL(kChild)));
 
   // Start syncing the kDir directory.
   sync_status()->StartSyncing(URL(kDir));
@@ -198,16 +199,16 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   // Writes to kParent and kChild should be all queued up.
   ResetCallbackStatus();
   file_system_.operation_runner()->Truncate(
-      URL(kChild), 1, ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      URL(kChild), 1, ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Remove(
       URL(kParent), true /* recursive */,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
   file_system_.operation_runner()->DirectoryExists(
-      URL(kDir), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      URL(kDir), ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
@@ -215,7 +216,7 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
   ResetCallbackStatus();
   file_system_.operation_runner()->CreateDirectory(
       URL(kOther), false /* exclusive */, false /* recursive */,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
@@ -230,8 +231,8 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
 
 TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   // First create the kDir directory and kChild in the dir.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.CreateDirectory(URL(kDir)));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.CreateFile(URL(kChild)));
+  EXPECT_EQ(File::FILE_OK, file_system_.CreateDirectory(URL(kDir)));
+  EXPECT_EQ(File::FILE_OK, file_system_.CreateFile(URL(kChild)));
 
   // Start syncing the kParent directory.
   sync_status()->StartSyncing(URL(kParent));
@@ -243,18 +244,18 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
       URL(kDir), URL("dest-copy"),
       fileapi::FileSystemOperation::OPTION_NONE,
       fileapi::FileSystemOperationRunner::CopyProgressCallback(),
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Move(
       URL(kDir), URL("dest-move"),
       fileapi::FileSystemOperation::OPTION_NONE,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Only "dest-copy1" should exist.
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(File::FILE_OK,
             file_system_.DirectoryExists(URL("dest-copy")));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(File::FILE_ERROR_NOT_FOUND,
             file_system_.DirectoryExists(URL("dest-move")));
 
   // Start syncing the "dest-copy2" directory.
@@ -266,7 +267,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
       URL(kDir), URL("dest-copy2"),
       fileapi::FileSystemOperation::OPTION_NONE,
       fileapi::FileSystemOperationRunner::CopyProgressCallback(),
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
@@ -277,7 +278,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   EXPECT_EQ(1, callback_count_);
 
   // Now we should have "dest-copy2".
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(File::FILE_OK,
             file_system_.DirectoryExists(URL("dest-copy2")));
 
   // Finish syncing the kParent to unlock Move.
@@ -287,12 +288,12 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   EXPECT_EQ(1, callback_count_);
 
   // Now we should have "dest-move".
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(File::FILE_OK,
             file_system_.DirectoryExists(URL("dest-move")));
 }
 
 TEST_F(SyncableFileOperationRunnerTest, Write) {
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.CreateFile(URL(kFile)));
+  EXPECT_EQ(File::FILE_OK, file_system_.CreateFile(URL(kFile)));
   const std::string kData("Lorem ipsum.");
   ScopedTextBlob blob(url_request_context_, "blob:foo", kData);
 
@@ -311,7 +312,7 @@ TEST_F(SyncableFileOperationRunnerTest, Write) {
   while (!write_complete_)
     base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, write_status_);
+  EXPECT_EQ(File::FILE_OK, write_status_);
   EXPECT_EQ(kData.size(), write_bytes_);
   EXPECT_TRUE(write_complete_);
 }
@@ -323,10 +324,10 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   ResetCallbackStatus();
   file_system_.operation_runner()->CreateFile(
       URL(kFile), false /* exclusive */,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
+      ExpectStatus(FROM_HERE, File::FILE_ERROR_ABORT));
   file_system_.operation_runner()->Truncate(
       URL(kFile), 1,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
+      ExpectStatus(FROM_HERE, File::FILE_ERROR_ABORT));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
@@ -356,7 +357,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   ResetCallbackStatus();
   file_system_.operation_runner()->CopyInForeignFile(
       temp_path, URL(kFile),
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
@@ -372,7 +373,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
   ResetCallbackStatus();
   file_system_.DoVerifyFile(
       URL(kFile), kTestData,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 }
@@ -381,7 +382,7 @@ TEST_F(SyncableFileOperationRunnerTest, Cancel) {
   // Prepare a file.
   file_system_.operation_runner()->CreateFile(
       URL(kFile), false /* exclusive */,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+      ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
@@ -390,9 +391,9 @@ TEST_F(SyncableFileOperationRunnerTest, Cancel) {
   fileapi::FileSystemOperationRunner::OperationID id =
       file_system_.operation_runner()->Truncate(
           URL(kFile), 10,
-          ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+          ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Cancel(
-      id, ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+      id, ExpectStatus(FROM_HERE, File::FILE_ERROR_INVALID_OPERATION));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }

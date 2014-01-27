@@ -19,14 +19,14 @@ class InvalidFileValidator : public fileapi::CopyOrMoveFileValidator {
   virtual void StartPreWriteValidation(
       const fileapi::CopyOrMoveFileValidator::ResultCallback&
           result_callback) OVERRIDE {
-    result_callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    result_callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 
   virtual void StartPostWriteValidation(
       const base::FilePath& dest_platform_path,
       const fileapi::CopyOrMoveFileValidator::ResultCallback&
           result_callback) OVERRIDE {
-    result_callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    result_callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 
  private:

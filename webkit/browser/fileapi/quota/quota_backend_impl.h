@@ -80,7 +80,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackendImpl
 
   void ReserveQuotaInternal(
       const QuotaReservationInfo& info);
-  base::PlatformFileError GetUsageCachePath(
+  base::File::Error GetUsageCachePath(
       const GURL& origin,
       FileSystemType type,
       base::FilePath* usage_file_path);

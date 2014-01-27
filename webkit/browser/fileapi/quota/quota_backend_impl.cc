@@ -39,7 +39,7 @@ void QuotaBackendImpl::ReserveQuota(const GURL& origin,
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
   if (!delta) {
-    callback.Run(base::PLATFORM_FILE_OK);
+    callback.Run(base::File::FILE_OK);
     return;
   }
   DCHECK(quota_manager_proxy_);
@@ -70,7 +70,7 @@ void QuotaBackendImpl::CommitQuotaUsage(const GURL& origin,
     return;
   ReserveQuotaInternal(QuotaReservationInfo(origin, type, delta));
   base::FilePath path;
-  if (GetUsageCachePath(origin, type, &path) != base::PLATFORM_FILE_OK)
+  if (GetUsageCachePath(origin, type, &path) != base::File::FILE_OK)
     return;
   bool result = file_system_usage_cache_->AtomicUpdateUsageByDelta(path, delta);
   DCHECK(result);
@@ -81,7 +81,7 @@ void QuotaBackendImpl::IncrementDirtyCount(const GURL& origin,
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
   base::FilePath path;
-  if (GetUsageCachePath(origin, type, &path) != base::PLATFORM_FILE_OK)
+  if (GetUsageCachePath(origin, type, &path) != base::File::FILE_OK)
     return;
   DCHECK(file_system_usage_cache_);
   file_system_usage_cache_->IncrementDirty(path);
@@ -92,7 +92,7 @@ void QuotaBackendImpl::DecrementDirtyCount(const GURL& origin,
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
   base::FilePath path;
-  if (GetUsageCachePath(origin, type, &path) != base::PLATFORM_FILE_OK)
+  if (GetUsageCachePath(origin, type, &path) != base::File::FILE_OK)
     return;
   DCHECK(file_system_usage_cache_);
   file_system_usage_cache_->DecrementDirty(path);
@@ -105,17 +105,17 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(info.origin.is_valid());
   if (status != quota::kQuotaStatusOk) {
-    callback.Run(base::PLATFORM_FILE_ERROR_FAILED);
+    callback.Run(base::File::FILE_ERROR_FAILED);
     return;
   }
 
   if (quota < usage + info.delta) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NO_SPACE);
+    callback.Run(base::File::FILE_ERROR_NO_SPACE);
     return;
   }
 
   ReserveQuotaInternal(info);
-  if (callback.Run(base::PLATFORM_FILE_OK))
+  if (callback.Run(base::File::FILE_OK))
     return;
   // The requester could not accept the reserved quota. Revert it.
   ReserveQuotaInternal(
@@ -131,14 +131,14 @@ void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {
       FileSystemTypeToQuotaStorageType(info.type), info.delta);
 }
 
-base::PlatformFileError QuotaBackendImpl::GetUsageCachePath(
+base::File::Error QuotaBackendImpl::GetUsageCachePath(
     const GURL& origin,
     FileSystemType type,
     base::FilePath* usage_file_path) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin.is_valid());
   DCHECK(usage_file_path);
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   *usage_file_path =
       SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
           obfuscated_file_util_, origin, type, &error);

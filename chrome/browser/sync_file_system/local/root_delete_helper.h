@@ -7,9 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
 class GURL;
@@ -30,7 +30,7 @@ class LocalFileSyncStatus;
 // Expected to be called on and will callback on IO thread.
 class RootDeleteHelper {
  public:
-  typedef base::Callback<void(base::PlatformFileError)> FileStatusCallback;
+  typedef base::Callback<void(base::File::Error)> FileStatusCallback;
 
   RootDeleteHelper(fileapi::FileSystemContext* file_system_context,
                    LocalFileSyncStatus* sync_status,
@@ -41,11 +41,11 @@ class RootDeleteHelper {
   void Run();
 
  private:
-  void DidDeleteFileSystem(base::PlatformFileError error);
+  void DidDeleteFileSystem(base::File::Error error);
   void DidResetFileChangeTracker();
   void DidOpenFileSystem(const GURL& root,
                          const std::string& name,
-                         base::PlatformFileError error);
+                         base::File::Error error);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   const fileapi::FileSystemURL url_;

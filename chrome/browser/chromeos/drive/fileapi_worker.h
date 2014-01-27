@@ -45,27 +45,27 @@ namespace fileapi_internal {
 typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
 
 typedef base::Callback<
-    void(base::PlatformFileError result)> StatusCallback;
+    void(base::File::Error result)> StatusCallback;
 typedef base::Callback<
-    void(base::PlatformFileError result,
-         const base::PlatformFileInfo& file_info)> GetFileInfoCallback;
+    void(base::File::Error result,
+         const base::File::Info& file_info)> GetFileInfoCallback;
 typedef base::Callback<
-    void(base::PlatformFileError result,
+    void(base::File::Error result,
          const std::vector<fileapi::DirectoryEntry>& file_list,
          bool has_more)> ReadDirectoryCallback;
 typedef base::Callback<
-    void(base::PlatformFileError result,
-         const base::PlatformFileInfo& file_info,
+    void(base::File::Error result,
+         const base::File::Info& file_info,
          const base::FilePath& snapshot_file_path,
          webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy)>
     CreateSnapshotFileCallback;
 typedef base::Callback<
-    void(base::PlatformFileError result,
+    void(base::File::Error result,
          const base::FilePath& snapshot_file_path,
          const base::Closure& close_callback)>
     CreateWritableSnapshotFileCallback;
 typedef base::Callback<
-    void(base::PlatformFileError result,
+    void(base::File::Error result,
          base::PlatformFile platform_file,
          const base::Closure& close_callback)> OpenFileCallback;
 

@@ -100,11 +100,11 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
   virtual fileapi::CopyOrMoveFileValidatorFactory*
       GetCopyOrMoveFileValidatorFactory(
           fileapi::FileSystemType type,
-          base::PlatformFileError* error_code) OVERRIDE;
+          base::File::Error* error_code) OVERRIDE;
   virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* context,
-      base::PlatformFileError* error_code) const OVERRIDE;
+      base::File::Error* error_code) const OVERRIDE;
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const fileapi::FileSystemURL& path,
       int64 offset,

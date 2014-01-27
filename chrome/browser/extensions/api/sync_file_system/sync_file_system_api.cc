@@ -90,7 +90,7 @@ bool SyncFileSystemDeleteFileSystemFunction::RunImpl() {
 }
 
 void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
-    base::PlatformFileError error) {
+    base::File::Error error) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -103,9 +103,8 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (error != base::PLATFORM_FILE_OK) {
-    error_ = ErrorToString(
-        sync_file_system::PlatformFileErrorToSyncStatusCode(error));
+  if (error != base::File::FILE_OK) {
+    error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
     SetResult(new base::FundamentalValue(false));
     SendResponse(false);
     return;
@@ -145,7 +144,7 @@ SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
 void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
     const GURL& root_url,
     const std::string& file_system_name,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -157,9 +156,8 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
   }
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (error != base::PLATFORM_FILE_OK) {
-    error_ = ErrorToString(
-        sync_file_system::PlatformFileErrorToSyncStatusCode(error));
+  if (error != base::File::FILE_OK) {
+    error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
     SendResponse(false);
     return;
   }

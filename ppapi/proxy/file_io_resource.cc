@@ -57,8 +57,11 @@ FileIOResource::QueryOp::~QueryOp() {
 }
 
 int32_t FileIOResource::QueryOp::DoWork() {
-  return base::GetPlatformFileInfo(file_handle_->raw_handle(), &file_info_) ?
-      PP_OK : PP_ERROR_FAILED;
+  // TODO(rvargas): Convert this code to use base::File.
+  base::File file(file_handle_->raw_handle());
+  bool success = file.GetInfo(&file_info_);
+  file.TakePlatformFile();
+  return success ? PP_OK : PP_ERROR_FAILED;
 }
 
 FileIOResource::ReadOp::ReadOp(scoped_refptr<FileHandleHolder> file_handle,
@@ -188,21 +191,25 @@ int32_t FileIOResource::Query(PP_FileInfo* info,
   // If the callback is blocking, perform the task on the calling thread.
   if (callback->is_blocking()) {
     int32_t result = PP_ERROR_FAILED;
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
     // The plugin could release its reference to this instance when we release
     // the proxy lock below.
     scoped_refptr<FileIOResource> protect(this);
     {
       // Release the proxy lock while making a potentially slow file call.
       ProxyAutoUnlock unlock;
-      if (base::GetPlatformFileInfo(file_handle_->raw_handle(), &file_info))
+      // TODO(rvargas): Convert this code to base::File.
+      base::File file(file_handle_->raw_handle());
+      bool success = file.GetInfo(&file_info);
+      file.TakePlatformFile();
+      if (success)
         result = PP_OK;
     }
     if (result == PP_OK) {
       // This writes the file info into the plugin's PP_FileInfo struct.
-      ppapi::PlatformFileInfoToPepperFileInfo(file_info,
-                                              file_system_type_,
-                                              info);
+      ppapi::FileInfoToPepperFileInfo(file_info,
+                                      file_system_type_,
+                                      info);
     }
     state_manager_.SetOperationFinished();
     return result;
@@ -547,9 +554,9 @@ int32_t FileIOResource::OnQueryComplete(scoped_refptr<QueryOp> query_op,
 
   if (result == PP_OK) {
     // This writes the file info into the plugin's PP_FileInfo struct.
-    ppapi::PlatformFileInfoToPepperFileInfo(query_op->file_info(),
-                                            file_system_type_,
-                                            info);
+    ppapi::FileInfoToPepperFileInfo(query_op->file_info(),
+                                    file_system_type_,
+                                    info);
   }
   state_manager_.SetOperationFinished();
   return result;

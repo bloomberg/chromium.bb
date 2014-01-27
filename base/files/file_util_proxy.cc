@@ -20,7 +20,7 @@ namespace {
 void CallWithTranslatedParameter(const FileUtilProxy::StatusCallback& callback,
                                  bool value) {
   DCHECK(!callback.is_null());
-  callback.Run(value ? PLATFORM_FILE_OK : PLATFORM_FILE_ERROR_FAILED);
+  callback.Run(value ? File::FILE_OK : File::FILE_ERROR_FAILED);
 }
 
 // Helper classes or routines for individual methods.
@@ -32,7 +32,7 @@ class CreateOrOpenHelper {
         close_task_(close_task),
         file_handle_(kInvalidPlatformFileValue),
         created_(false),
-        error_(PLATFORM_FILE_OK) {}
+        error_(File::FILE_OK) {}
 
   ~CreateOrOpenHelper() {
     if (file_handle_ != kInvalidPlatformFileValue) {
@@ -56,7 +56,7 @@ class CreateOrOpenHelper {
   FileUtilProxy::CloseTask close_task_;
   PlatformFile file_handle_;
   bool created_;
-  PlatformFileError error_;
+  File::Error error_;
   DISALLOW_COPY_AND_ASSIGN(CreateOrOpenHelper);
 };
 
@@ -65,7 +65,7 @@ class CreateTemporaryHelper {
   explicit CreateTemporaryHelper(TaskRunner* task_runner)
       : task_runner_(task_runner),
         file_handle_(kInvalidPlatformFileValue),
-        error_(PLATFORM_FILE_OK) {}
+        error_(File::FILE_OK) {}
 
   ~CreateTemporaryHelper() {
     if (file_handle_ != kInvalidPlatformFileValue) {
@@ -85,8 +85,11 @@ class CreateTemporaryHelper {
         PLATFORM_FILE_CREATE_ALWAYS |
         additional_file_flags;
 
-    error_ = PLATFORM_FILE_OK;
-    file_handle_ = CreatePlatformFile(file_path_, file_flags, NULL, &error_);
+    error_ = File::FILE_OK;
+    // TODO(rvargas): Convert this code to use File.
+    file_handle_ =
+        CreatePlatformFile(file_path_, file_flags, NULL,
+                           reinterpret_cast<PlatformFileError*>(&error_));
   }
 
   void Reply(const FileUtilProxy::CreateTemporaryCallback& callback) {
@@ -98,28 +101,30 @@ class CreateTemporaryHelper {
   scoped_refptr<TaskRunner> task_runner_;
   PlatformFile file_handle_;
   FilePath file_path_;
-  PlatformFileError error_;
+  File::Error error_;
   DISALLOW_COPY_AND_ASSIGN(CreateTemporaryHelper);
 };
 
 class GetFileInfoHelper {
  public:
   GetFileInfoHelper()
-      : error_(PLATFORM_FILE_OK) {}
+      : error_(File::FILE_OK) {}
 
   void RunWorkForFilePath(const FilePath& file_path) {
     if (!PathExists(file_path)) {
-      error_ = PLATFORM_FILE_ERROR_NOT_FOUND;
+      error_ = File::FILE_ERROR_NOT_FOUND;
       return;
     }
     // TODO(rvargas): switch this file to base::File.
     if (!GetFileInfo(file_path, reinterpret_cast<File::Info*>(&file_info_)))
-      error_ = PLATFORM_FILE_ERROR_FAILED;
+      error_ = File::FILE_ERROR_FAILED;
   }
 
   void RunWorkForPlatformFile(PlatformFile file) {
-    if (!GetPlatformFileInfo(file, &file_info_))
-      error_ = PLATFORM_FILE_ERROR_FAILED;
+    if (!GetPlatformFileInfo(
+            file, reinterpret_cast<PlatformFileInfo*>(&file_info_))) {
+      error_ = File::FILE_ERROR_FAILED;
+    }
   }
 
   void Reply(const FileUtilProxy::GetFileInfoCallback& callback) {
@@ -129,8 +134,8 @@ class GetFileInfoHelper {
   }
 
  private:
-  PlatformFileError error_;
-  PlatformFileInfo file_info_;
+  File::Error error_;
+  File::Info file_info_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 
@@ -147,8 +152,8 @@ class ReadHelper {
 
   void Reply(const FileUtilProxy::ReadCallback& callback) {
     if (!callback.is_null()) {
-      PlatformFileError error =
-          (bytes_read_ < 0) ? PLATFORM_FILE_ERROR_FAILED : PLATFORM_FILE_OK;
+      File::Error error =
+          (bytes_read_ < 0) ? File::FILE_ERROR_FAILED : File::FILE_OK;
       callback.Run(error, buffer_.get(), bytes_read_);
     }
   }
@@ -176,8 +181,8 @@ class WriteHelper {
 
   void Reply(const FileUtilProxy::WriteCallback& callback) {
     if (!callback.is_null()) {
-      PlatformFileError error =
-          (bytes_written_ < 0) ? PLATFORM_FILE_ERROR_FAILED : PLATFORM_FILE_OK;
+      File::Error error =
+          (bytes_written_ < 0) ? File::FILE_ERROR_FAILED : File::FILE_OK;
       callback.Run(error, bytes_written_);
     }
   }
@@ -189,38 +194,40 @@ class WriteHelper {
   DISALLOW_COPY_AND_ASSIGN(WriteHelper);
 };
 
-PlatformFileError CreateOrOpenAdapter(
+File::Error CreateOrOpenAdapter(
     const FilePath& file_path, int file_flags,
     PlatformFile* file_handle, bool* created) {
   DCHECK(file_handle);
   DCHECK(created);
   if (!DirectoryExists(file_path.DirName())) {
     // If its parent does not exist, should return NOT_FOUND error.
-    return PLATFORM_FILE_ERROR_NOT_FOUND;
+    return File::FILE_ERROR_NOT_FOUND;
   }
-  PlatformFileError error = PLATFORM_FILE_OK;
-  *file_handle = CreatePlatformFile(file_path, file_flags, created, &error);
+  File::Error error = File::FILE_OK;
+  *file_handle =
+      CreatePlatformFile(file_path, file_flags, created,
+                         reinterpret_cast<PlatformFileError*>(&error));
   return error;
 }
 
-PlatformFileError CloseAdapter(PlatformFile file_handle) {
+File::Error CloseAdapter(PlatformFile file_handle) {
   if (!ClosePlatformFile(file_handle)) {
-    return PLATFORM_FILE_ERROR_FAILED;
+    return File::FILE_ERROR_FAILED;
   }
-  return PLATFORM_FILE_OK;
+  return File::FILE_OK;
 }
 
-PlatformFileError DeleteAdapter(const FilePath& file_path, bool recursive) {
+File::Error DeleteAdapter(const FilePath& file_path, bool recursive) {
   if (!PathExists(file_path)) {
-    return PLATFORM_FILE_ERROR_NOT_FOUND;
+    return File::FILE_ERROR_NOT_FOUND;
   }
   if (!base::DeleteFile(file_path, recursive)) {
     if (!recursive && !base::IsDirectoryEmpty(file_path)) {
-      return PLATFORM_FILE_ERROR_NOT_EMPTY;
+      return File::FILE_ERROR_NOT_EMPTY;
     }
-    return PLATFORM_FILE_ERROR_FAILED;
+    return File::FILE_ERROR_FAILED;
   }
-  return PLATFORM_FILE_OK;
+  return File::FILE_OK;
 }
 
 }  // namespace

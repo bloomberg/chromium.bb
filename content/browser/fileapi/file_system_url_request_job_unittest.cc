@@ -92,8 +92,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   void OnOpenFileSystem(const GURL& root_url,
                         const std::string& name,
-                        base::PlatformFileError result) {
-    ASSERT_EQ(base::PLATFORM_FILE_OK, result);
+                        base::File::Error result) {
+    ASSERT_EQ(base::File::FILE_OK, result);
   }
 
   void TestRequestHelper(const GURL& url,
@@ -142,7 +142,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         GURL("http://remote"),
         fileapi::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(dir_name));
-    ASSERT_EQ(base::PLATFORM_FILE_OK, AsyncFileTestHelper::CreateDirectory(
+    ASSERT_EQ(base::File::FILE_OK, AsyncFileTestHelper::CreateDirectory(
         file_system_context_, url));
   }
 
@@ -152,7 +152,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         GURL("http://remote"),
         fileapi::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::CreateFileWithData(
                   file_system_context_, url, buf, buf_size));
   }

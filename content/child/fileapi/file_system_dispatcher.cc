@@ -77,20 +77,20 @@ class FileSystemDispatcher::CallbackDispatcher {
   ~CallbackDispatcher() {}
 
   void DidSucceed() {
-    status_callback_.Run(base::PLATFORM_FILE_OK);
+    status_callback_.Run(base::File::FILE_OK);
   }
 
-  void DidFail(base::PlatformFileError error_code) {
+  void DidFail(base::File::Error error_code) {
     error_callback_.Run(error_code);
   }
 
   void DidReadMetadata(
-      const base::PlatformFileInfo& file_info) {
+      const base::File::Info& file_info) {
     metadata_callback_.Run(file_info);
   }
 
   void DidCreateSnapshotFile(
-      const base::PlatformFileInfo& file_info,
+      const base::File::Info& file_info,
       const base::FilePath& platform_path,
       int request_id) {
     snapshot_callback_.Run(file_info, platform_path, request_id);
@@ -150,7 +150,7 @@ FileSystemDispatcher::~FileSystemDispatcher() {
     int request_id = iter.GetCurrentKey();
     CallbackDispatcher* dispatcher = iter.GetCurrentValue();
     DCHECK(dispatcher);
-    dispatcher->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
+    dispatcher->DidFail(base::File::FILE_ERROR_ABORT);
     dispatchers_.Remove(request_id);
   }
 }
@@ -367,7 +367,7 @@ void FileSystemDispatcher::OnDidSucceed(int request_id) {
 }
 
 void FileSystemDispatcher::OnDidReadMetadata(
-    int request_id, const base::PlatformFileInfo& file_info) {
+    int request_id, const base::File::Info& file_info) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
   dispatcher->DidReadMetadata(file_info);
@@ -375,7 +375,7 @@ void FileSystemDispatcher::OnDidReadMetadata(
 }
 
 void FileSystemDispatcher::OnDidCreateSnapshotFile(
-    int request_id, const base::PlatformFileInfo& file_info,
+    int request_id, const base::File::Info& file_info,
     const base::FilePath& platform_path) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
@@ -394,7 +394,7 @@ void FileSystemDispatcher::OnDidReadDirectory(
 }
 
 void FileSystemDispatcher::OnDidFail(
-    int request_id, base::PlatformFileError error_code) {
+    int request_id, base::File::Error error_code) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
   dispatcher->DidFail(error_code);

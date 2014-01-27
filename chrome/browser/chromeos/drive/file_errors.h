@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_ERRORS_H_
 
 #include "base/callback_forward.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
 namespace drive {
@@ -39,8 +39,8 @@ typedef base::Callback<void(FileError error)> FileOperationCallback;
 // Returns a string representation of FileError.
 std::string FileErrorToString(FileError error);
 
-// Returns a PlatformFileError that corresponds to the FileError provided.
-base::PlatformFileError FileErrorToPlatformError(FileError error);
+// Returns a base::File::Error that corresponds to the FileError provided.
+base::File::Error FileErrorToBaseFileError(FileError error);
 
 // Converts GData error code into Drive file error code.
 FileError GDataToFileError(google_apis::GDataErrorCode status);

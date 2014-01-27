@@ -137,9 +137,9 @@ fileapi::AsyncFileUtil* SyncFileSystemBackend::GetAsyncFileUtil(
 fileapi::CopyOrMoveFileValidatorFactory*
 SyncFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     fileapi::FileSystemType type,
-    base::PlatformFileError* error_code) {
+    base::File::Error* error_code) {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   return NULL;
 }
 
@@ -147,7 +147,7 @@ fileapi::FileSystemOperation*
 SyncFileSystemBackend::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   DCHECK(CanHandleType(url.type()));
   DCHECK(context);
   DCHECK(error_code);
@@ -277,13 +277,13 @@ void SyncFileSystemBackend::DidInitializeSyncFileSystemService(
 
   if (status != sync_file_system::SYNC_STATUS_OK) {
     callback.Run(GURL(), std::string(),
-                 SyncStatusCodeToPlatformFileError(status));
+                 SyncStatusCodeToFileError(status));
     return;
   }
 
   callback.Run(GetSyncableFileSystemRootURI(origin_url),
                GetFileSystemName(origin_url, type),
-               base::PLATFORM_FILE_OK);
+               base::File::FILE_OK);
 }
 
 }  // namespace sync_file_system

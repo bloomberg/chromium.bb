@@ -50,7 +50,7 @@ void FileSystemOperationImpl::CreateFile(const FileSystemURL& url,
       url,
       base::Bind(&FileSystemOperationImpl::DoCreateFile,
                  weak_factory_.GetWeakPtr(), url, callback, exclusive),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void FileSystemOperationImpl::CreateDirectory(const FileSystemURL& url,
@@ -63,7 +63,7 @@ void FileSystemOperationImpl::CreateDirectory(const FileSystemURL& url,
       base::Bind(&FileSystemOperationImpl::DoCreateDirectory,
                  weak_factory_.GetWeakPtr(), url, callback,
                  exclusive, recursive),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void FileSystemOperationImpl::Copy(
@@ -182,7 +182,7 @@ void FileSystemOperationImpl::Truncate(const FileSystemURL& url, int64 length,
       url,
       base::Bind(&FileSystemOperationImpl::DoTruncate,
                  weak_factory_.GetWeakPtr(), url, callback, length),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void FileSystemOperationImpl::TouchFile(const FileSystemURL& url,
@@ -204,7 +204,7 @@ void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
 
   if (file_flags &
       (base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN)) {
-    callback.Run(base::PLATFORM_FILE_ERROR_FAILED,
+    callback.Run(base::File::FILE_ERROR_FAILED,
                  base::kInvalidPlatformFileValue,
                  base::Closure());
     return;
@@ -214,7 +214,7 @@ void FileSystemOperationImpl::OpenFile(const FileSystemURL& url,
       base::Bind(&FileSystemOperationImpl::DoOpenFile,
                  weak_factory_.GetWeakPtr(),
                  url, callback, file_flags),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED,
+      base::Bind(callback, base::File::FILE_ERROR_FAILED,
                  base::kInvalidPlatformFileValue,
                  base::Closure()));
 }
@@ -257,7 +257,7 @@ void FileSystemOperationImpl::CopyInForeignFile(
       base::Bind(&FileSystemOperationImpl::DoCopyInForeignFile,
                  weak_factory_.GetWeakPtr(), src_local_disk_file_path, dest_url,
                  callback),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void FileSystemOperationImpl::RemoveFile(
@@ -294,7 +294,7 @@ void FileSystemOperationImpl::CopyFileLocal(
       base::Bind(&FileSystemOperationImpl::DoCopyFileLocal,
                  weak_factory_.GetWeakPtr(), src_url, dest_url, option,
                  progress_callback, callback),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void FileSystemOperationImpl::MoveFileLocal(
@@ -309,19 +309,19 @@ void FileSystemOperationImpl::MoveFileLocal(
       base::Bind(&FileSystemOperationImpl::DoMoveFileLocal,
                  weak_factory_.GetWeakPtr(),
                  src_url, dest_url, option, callback),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
-base::PlatformFileError FileSystemOperationImpl::SyncGetPlatformPath(
+base::File::Error FileSystemOperationImpl::SyncGetPlatformPath(
     const FileSystemURL& url,
     base::FilePath* platform_path) {
   DCHECK(SetPendingOperationType(kOperationGetLocalPath));
   if (!file_system_context()->IsSandboxFileSystem(url.type()))
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    return base::File::FILE_ERROR_INVALID_OPERATION;
   FileSystemFileUtil* file_util =
       file_system_context()->sandbox_delegate()->sync_file_util();
   file_util->GetLocalFilePath(operation_context_.get(), url, platform_path);
-  return base::PLATFORM_FILE_OK;
+  return base::File::FILE_OK;
 }
 
 FileSystemOperationImpl::FileSystemOperationImpl(
@@ -456,9 +456,9 @@ void FileSystemOperationImpl::DoOpenFile(const FileSystemURL& url,
 
 void FileSystemOperationImpl::DidEnsureFileExistsExclusive(
     const StatusCallback& callback,
-    base::PlatformFileError rv, bool created) {
-  if (rv == base::PLATFORM_FILE_OK && !created) {
-    callback.Run(base::PLATFORM_FILE_ERROR_EXISTS);
+    base::File::Error rv, bool created) {
+  if (rv == base::File::FILE_OK && !created) {
+    callback.Run(base::File::FILE_ERROR_EXISTS);
   } else {
     DidFinishOperation(callback, rv);
   }
@@ -466,21 +466,21 @@ void FileSystemOperationImpl::DidEnsureFileExistsExclusive(
 
 void FileSystemOperationImpl::DidEnsureFileExistsNonExclusive(
     const StatusCallback& callback,
-    base::PlatformFileError rv, bool /* created */) {
+    base::File::Error rv, bool /* created */) {
   DidFinishOperation(callback, rv);
 }
 
 void FileSystemOperationImpl::DidFinishOperation(
     const StatusCallback& callback,
-    base::PlatformFileError rv) {
+    base::File::Error rv) {
   if (!cancel_callback_.is_null()) {
     StatusCallback cancel_callback = cancel_callback_;
     callback.Run(rv);
 
     // Return OK only if we succeeded to stop the operation.
-    cancel_callback.Run(rv == base::PLATFORM_FILE_ERROR_ABORT ?
-                        base::PLATFORM_FILE_OK :
-                        base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    cancel_callback.Run(rv == base::File::FILE_ERROR_ABORT ?
+                        base::File::FILE_OK :
+                        base::File::FILE_ERROR_INVALID_OPERATION);
   } else {
     callback.Run(rv);
   }
@@ -488,27 +488,27 @@ void FileSystemOperationImpl::DidFinishOperation(
 
 void FileSystemOperationImpl::DidDirectoryExists(
     const StatusCallback& callback,
-    base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info) {
-  if (rv == base::PLATFORM_FILE_OK && !file_info.is_directory)
-    rv = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    base::File::Error rv,
+    const base::File::Info& file_info) {
+  if (rv == base::File::FILE_OK && !file_info.is_directory)
+    rv = base::File::FILE_ERROR_NOT_A_DIRECTORY;
   callback.Run(rv);
 }
 
 void FileSystemOperationImpl::DidFileExists(
     const StatusCallback& callback,
-    base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info) {
-  if (rv == base::PLATFORM_FILE_OK && file_info.is_directory)
-    rv = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+    base::File::Error rv,
+    const base::File::Info& file_info) {
+  if (rv == base::File::FILE_OK && file_info.is_directory)
+    rv = base::File::FILE_ERROR_NOT_A_FILE;
   callback.Run(rv);
 }
 
 void FileSystemOperationImpl::DidDeleteRecursively(
     const FileSystemURL& url,
     const StatusCallback& callback,
-    base::PlatformFileError rv) {
-  if (rv == base::PLATFORM_FILE_ERROR_INVALID_OPERATION) {
+    base::File::Error rv) {
+  if (rv == base::File::FILE_ERROR_INVALID_OPERATION) {
     // Recursive removal is not supported on this platform.
     DCHECK(!recursive_operation_delegate_);
     recursive_operation_delegate_.reset(
@@ -526,7 +526,7 @@ void FileSystemOperationImpl::DidDeleteRecursively(
 void FileSystemOperationImpl::DidWrite(
     const FileSystemURL& url,
     const WriteCallback& write_callback,
-    base::PlatformFileError rv,
+    base::File::Error rv,
     int64 bytes,
     FileWriterDelegate::WriteProgressStatus write_status) {
   const bool complete = (
@@ -540,12 +540,12 @@ void FileSystemOperationImpl::DidWrite(
   StatusCallback cancel_callback = cancel_callback_;
   write_callback.Run(rv, bytes, complete);
   if (!cancel_callback.is_null())
-    cancel_callback.Run(base::PLATFORM_FILE_OK);
+    cancel_callback.Run(base::File::FILE_OK);
 }
 
 void FileSystemOperationImpl::DidOpenFile(
     const OpenFileCallback& callback,
-    base::PlatformFileError rv,
+    base::File::Error rv,
     base::PassPlatformFile file,
     const base::Closure& on_close_callback) {
   callback.Run(rv, file.ReleaseValue(), on_close_callback);

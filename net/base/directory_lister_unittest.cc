@@ -109,13 +109,9 @@ class DirectoryListerTest : public PlatformTest {
       for (int i = 0; i < kFilesPerDirectory; i++) {
         std::string file_name = base::StringPrintf("file_id_%d", i);
         base::FilePath file_path = dir_data.first.AppendASCII(file_name);
-        base::PlatformFile file = base::CreatePlatformFile(
-            file_path,
-            base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-            NULL,
-            NULL);
-        ASSERT_NE(base::kInvalidPlatformFileValue, file);
-        ASSERT_TRUE(base::ClosePlatformFile(file));
+        base::File file(file_path,
+                        base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+        ASSERT_TRUE(file.IsValid());
       }
       if (dir_data.second < kMaxDepth - 1) {
         for (int i = 0; i < kBranchingFactor; i++) {

@@ -117,16 +117,16 @@ int FileSystemFileStreamReader::CreateSnapshot(
 void FileSystemFileStreamReader::DidCreateSnapshot(
     const base::Closure& callback,
     const net::CompletionCallback& error_callback,
-    base::PlatformFileError file_error,
-    const base::PlatformFileInfo& file_info,
+    base::File::Error file_error,
+    const base::File::Info& file_info,
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DCHECK(has_pending_create_snapshot_);
   DCHECK(!local_file_reader_.get());
   has_pending_create_snapshot_ = false;
 
-  if (file_error != base::PLATFORM_FILE_OK) {
-    error_callback.Run(net::PlatformFileErrorToNetError(file_error));
+  if (file_error != base::File::FILE_OK) {
+    error_callback.Run(net::FileErrorToNetError(file_error));
     return;
   }
 

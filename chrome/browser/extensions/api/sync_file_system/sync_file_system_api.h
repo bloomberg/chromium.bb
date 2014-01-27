@@ -35,7 +35,7 @@ class SyncFileSystemDeleteFileSystemFunction
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void DidDeleteFileSystem(base::PlatformFileError error);
+  void DidDeleteFileSystem(base::File::Error error);
 };
 
 class SyncFileSystemGetFileStatusFunction
@@ -115,7 +115,7 @@ class SyncFileSystemRequestFileSystemFunction
 
   void DidOpenFileSystem(const GURL& root_url,
                          const std::string& file_system_name,
-                         base::PlatformFileError error);
+                         base::File::Error error);
 };
 
 class SyncFileSystemSetConflictResolutionPolicyFunction

@@ -92,9 +92,9 @@ bool QuotaReservationBuffer::DecrementDirtyCount(
     base::WeakPtr<QuotaReservationManager> reservation_manager,
     const GURL& origin,
     FileSystemType type,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(origin.is_valid());
-  if (error == base::PLATFORM_FILE_OK && reservation_manager) {
+  if (error == base::File::FILE_OK && reservation_manager) {
     reservation_manager->DecrementDirtyCount(origin, type);
     return true;
   }

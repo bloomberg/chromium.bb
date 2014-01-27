@@ -220,7 +220,7 @@ void PepperFileSystemBrowserHost::OpenFileSystem(
     scoped_refptr<fileapi::FileSystemContext> file_system_context) {
   if (!file_system_context.get()) {
     OpenFileSystemComplete(
-        reply_context, GURL(), std::string(), base::PLATFORM_FILE_ERROR_FAILED);
+        reply_context, GURL(), std::string(), base::File::FILE_ERROR_FAILED);
     return;
   }
 
@@ -239,8 +239,8 @@ void PepperFileSystemBrowserHost::OpenFileSystemComplete(
     ppapi::host::ReplyMessageContext reply_context,
     const GURL& root,
     const std::string& /* unused */,
-    base::PlatformFileError error) {
-  int32 pp_error = ppapi::PlatformFileErrorToPepperError(error);
+    base::File::Error error) {
+  int32 pp_error = ppapi::FileErrorToPepperError(error);
   if (pp_error == PP_OK) {
     opened_ = true;
     root_url_ = root;
@@ -319,8 +319,8 @@ void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystem(
 void PepperFileSystemBrowserHost::OpenPluginPrivateFileSystemComplete(
     ppapi::host::ReplyMessageContext reply_context,
     const std::string& fsid,
-    base::PlatformFileError error) {
-  int32 pp_error = ppapi::PlatformFileErrorToPepperError(error);
+    base::File::Error error) {
+  int32 pp_error = ppapi::FileErrorToPepperError(error);
   if (pp_error == PP_OK)
     opened_ = true;
   SendReplyForIsolatedFileSystem(reply_context, fsid, pp_error);

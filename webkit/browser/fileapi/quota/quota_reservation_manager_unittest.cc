@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -31,15 +32,9 @@ int64 GetFileSize(const base::FilePath& path) {
 }
 
 void SetFileSize(const base::FilePath& path, int64 size) {
-  bool created = false;
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFile file = CreatePlatformFile(
-      path,
-      base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE,
-      &created, &error);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-  ASSERT_TRUE(base::TruncatePlatformFile(file, size));
-  ASSERT_TRUE(base::ClosePlatformFile(file));
+  base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_TRUE(file.SetLength(size));
 }
 
 class FakeBackend : public QuotaReservationManager::QuotaBackend {
@@ -58,7 +53,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
     on_memory_usage_ += delta;
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(callback), base::PLATFORM_FILE_OK));
+        base::Bind(base::IgnoreResult(callback), base::File::FILE_OK));
   }
 
   virtual void ReleaseReservedQuota(const GURL& origin,
@@ -160,10 +155,10 @@ class FakeWriter {
   bool dirty_;
 };
 
-void ExpectSuccess(bool* done, base::PlatformFileError error) {
+void ExpectSuccess(bool* done, base::File::Error error) {
   EXPECT_FALSE(*done);
   *done = true;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(base::File::FILE_OK, error);
 }
 
 void RefreshReservation(QuotaReservation* reservation, int64 size) {

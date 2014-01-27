@@ -34,7 +34,7 @@ void SafeAudioVideoChecker::Start() {
 
   DCHECK(file_closer_);
   if (*file_closer_.get() == base::kInvalidPlatformFileValue) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    callback_.Run(base::File::FILE_ERROR_SECURITY);
     state_ = FINISHED_STATE;
     return;
   }
@@ -69,8 +69,8 @@ void SafeAudioVideoChecker::OnCheckingFinished(bool valid) {
     return;
   state_ = FINISHED_STATE;
 
-  callback_.Run(valid ? base::PLATFORM_FILE_OK
-                      : base::PLATFORM_FILE_ERROR_SECURITY);
+  callback_.Run(valid ? base::File::FILE_OK :
+                        base::File::FILE_ERROR_SECURITY);
 }
 
 void SafeAudioVideoChecker::OnProcessCrashed(int exit_code) {

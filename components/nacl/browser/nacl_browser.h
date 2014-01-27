@@ -137,7 +137,7 @@ class NaClBrowser {
 
   void OpenIrtLibraryFile();
 
-  void OnIrtOpened(base::PlatformFileError error_code,
+  void OnIrtOpened(base::File::Error error_code,
                    base::PassPlatformFile file, bool created);
 
   void InitValidationCacheFilePath();

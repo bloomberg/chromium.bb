@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_FILE_STREAM_READER_H_
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/blob/file_stream_reader.h"
@@ -14,7 +15,6 @@
 
 namespace base {
 class FilePath;
-struct PlatformFileInfo;
 }
 
 namespace fileapi {
@@ -40,13 +40,13 @@ class MTPFileStreamReader
  private:
   void OnFileInfoForRead(net::IOBuffer* buf, int buf_len,
                          const net::CompletionCallback& callback,
-                         const base::PlatformFileInfo& file_info);
+                         const base::File::Info& file_info);
 
   void FinishRead(const net::CompletionCallback& callback,
                   int bytes_read);
 
   void FinishGetLength(const net::Int64CompletionCallback& callback,
-                       const base::PlatformFileInfo& file_info);
+                       const base::File::Info& file_info);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   fileapi::FileSystemURL url_;

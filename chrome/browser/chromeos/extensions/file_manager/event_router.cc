@@ -412,11 +412,11 @@ void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
 void EventRouter::OnCopyCompleted(int copy_id,
                                   const GURL& source_url,
                                   const GURL& destination_url,
-                                  base::PlatformFileError error) {
+                                  base::File::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_browser_private::CopyProgressStatus status;
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == base::File::FILE_OK) {
     // Send success event.
     status.type = file_browser_private::COPY_PROGRESS_STATUS_TYPE_SUCCESS;
     status.source_url.reset(new std::string(source_url.spec()));
@@ -425,7 +425,7 @@ void EventRouter::OnCopyCompleted(int copy_id,
     // Send error event.
     status.type = file_browser_private::COPY_PROGRESS_STATUS_TYPE_ERROR;
     status.error.reset(
-        new int(fileapi::PlatformFileErrorToWebFileError(error)));
+        new int(fileapi::FileErrorToWebFileError(error)));
   }
 
   BroadcastEvent(

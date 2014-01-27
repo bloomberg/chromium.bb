@@ -96,7 +96,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // fileapi::FileSystemContext::OpenFileSystem.
   void OpenFileSystemCallback(const GURL& root,
                               const std::string& name,
-                              base::PlatformFileError error) {
+                              base::File::Error error) {
     open_file_system_result_ = error;
     Notify();
   }
@@ -111,7 +111,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
                 &BrowsingDataFileSystemHelperTest::OpenFileSystemCallback,
                 base::Unretained(this)));
     BlockUntilNotified();
-    return open_file_system_result_ == base::PLATFORM_FILE_OK;
+    return open_file_system_result_ == base::File::FILE_OK;
   }
 
   // Calls fileapi::FileSystemContext::OpenFileSystem with
@@ -176,7 +176,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
                                        fileapi::FileSystemType type) {
     OpenFileSystem(origin, type,
                    fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
-    EXPECT_EQ(base::PLATFORM_FILE_OK, open_file_system_result_);
+    EXPECT_EQ(base::File::FILE_OK, open_file_system_result_);
   }
 
   // Returns a list of the FileSystemInfo objects gathered in the most recent
@@ -190,7 +190,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
 
   // Temporary storage to pass information back from callbacks.
-  base::PlatformFileError open_file_system_result_;
+  base::File::Error open_file_system_result_;
   ScopedFileSystemInfoList file_system_info_list_;
 
   scoped_refptr<BrowsingDataFileSystemHelper> helper_;

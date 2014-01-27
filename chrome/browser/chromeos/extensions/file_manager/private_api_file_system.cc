@@ -153,7 +153,7 @@ void NotifyCopyCompletion(
     fileapi::FileSystemOperationRunner::OperationID operation_id,
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_manager::EventRouter* event_router =
@@ -171,7 +171,7 @@ void OnCopyCompleted(
     fileapi::FileSystemOperationRunner::OperationID* operation_id,
     const FileSystemURL& source_url,
     const FileSystemURL& destination_url,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserThread::PostTask(
@@ -205,12 +205,12 @@ fileapi::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
   return *operation_id;
 }
 
-void OnCopyCancelled(base::PlatformFileError error) {
+void OnCopyCancelled(base::File::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // We just ignore the status if the copy is actually cancelled or not,
   // because failing cancellation means the operation is not running now.
-  DLOG_IF(WARNING, error != base::PLATFORM_FILE_OK)
+  DLOG_IF(WARNING, error != base::File::FILE_OK)
       << "Failed to cancel copy: " << error;
 }
 
@@ -227,7 +227,7 @@ void CancelCopyOnIOThread(
 }  // namespace
 
 void FileBrowserPrivateRequestFileSystemFunction::DidFail(
-    base::PlatformFileError error_code) {
+    base::File::Error error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   error_ = base::StringPrintf("File error %d", static_cast<int>(error_code));
@@ -293,7 +293,7 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   if (!SetupFileSystemAccessPermissions(file_system_context,
                                         child_id,
                                         GetExtension())) {
-    DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+    DidFail(base::File::FILE_ERROR_SECURITY);
     return false;
   }
 

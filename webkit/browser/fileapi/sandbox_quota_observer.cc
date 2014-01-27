@@ -105,11 +105,11 @@ void SandboxQuotaObserver::SetUsageCacheEnabled(
 base::FilePath SandboxQuotaObserver::GetUsageCachePath(
     const FileSystemURL& url) {
   DCHECK(sandbox_file_util_);
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   base::FilePath path =
       SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
           sandbox_file_util_, url.origin(), url.type(), &error);
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     LOG(WARNING) << "Could not get usage cache path for: "
                  << url.DebugString();
     return base::FilePath();

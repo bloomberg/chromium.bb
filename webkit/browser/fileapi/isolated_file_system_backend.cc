@@ -68,7 +68,7 @@ void IsolatedFileSystemBackend::OpenFileSystem(
       base::Bind(callback,
                  GetFileSystemRootURI(origin_url, type),
                  GetFileSystemName(origin_url, type),
-                 base::PLATFORM_FILE_ERROR_SECURITY));
+                 base::File::FILE_ERROR_SECURITY));
 }
 
 AsyncFileUtil* IsolatedFileSystemBackend::GetAsyncFileUtil(
@@ -88,16 +88,16 @@ AsyncFileUtil* IsolatedFileSystemBackend::GetAsyncFileUtil(
 
 CopyOrMoveFileValidatorFactory*
 IsolatedFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    FileSystemType type, base::PlatformFileError* error_code) {
+    FileSystemType type, base::File::Error* error_code) {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   return NULL;
 }
 
 FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   return FileSystemOperation::Create(
       url, context, make_scoped_ptr(new FileSystemOperationContext(context)));
 }

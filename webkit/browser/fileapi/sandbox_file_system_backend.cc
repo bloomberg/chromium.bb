@@ -71,7 +71,7 @@ void SandboxFileSystemBackend::OpenFileSystem(
       !(type == kFileSystemTypeTemporary &&
         enable_temporary_file_system_in_incognito_)) {
     // TODO(kinuko): return an isolated temporary directory.
-    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
+    callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
     return;
   }
 
@@ -89,16 +89,16 @@ AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
 CopyOrMoveFileValidatorFactory*
 SandboxFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type,
-    base::PlatformFileError* error_code) {
+    base::File::Error* error_code) {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   return NULL;
 }
 
 FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   DCHECK(CanHandleType(url.type()));
   DCHECK(error_code);
 

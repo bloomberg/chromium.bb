@@ -95,7 +95,7 @@ bool QuotaReservation::AdaptDidUpdateReservedQuota(
     const base::WeakPtr<QuotaReservation>& reservation,
     int64 new_reserved_size,
     const StatusCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   if (!reservation)
     return false;
 
@@ -106,17 +106,17 @@ bool QuotaReservation::AdaptDidUpdateReservedQuota(
 bool QuotaReservation::DidUpdateReservedQuota(
     int64 new_reserved_size,
     const StatusCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(running_refresh_request_);
   running_refresh_request_ = false;
 
   if (client_crashed_) {
-    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    callback.Run(base::File::FILE_ERROR_ABORT);
     return false;
   }
 
-  if (error == base::PLATFORM_FILE_OK)
+  if (error == base::File::FILE_OK)
     remaining_quota_ = new_reserved_size;
   callback.Run(error);
   return true;

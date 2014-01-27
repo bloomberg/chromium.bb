@@ -1054,11 +1054,11 @@ void DeveloperPrivateLoadDirectoryFunction::ReadSyncFileSystemDirectory(
 void DeveloperPrivateLoadDirectoryFunction::ReadSyncFileSystemDirectoryCb(
     const base::FilePath& project_path,
     const base::FilePath& destination_path,
-    base::PlatformFileError status,
+    base::File::Error status,
     const fileapi::FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
 
-  if (status != base::PLATFORM_FILE_OK) {
+  if (status != base::File::FILE_OK) {
     DLOG(ERROR) << "Error in copying files from sync filesystem.";
     return;
   }
@@ -1108,11 +1108,11 @@ void DeveloperPrivateLoadDirectoryFunction::ReadSyncFileSystemDirectoryCb(
 
 void DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback(
     const base::FilePath& target_path,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& file_info,
+    base::File::Error result,
+    const base::File::Info& file_info,
     const base::FilePath& src_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
-  if (result != base::PLATFORM_FILE_OK) {
+  if (result != base::File::FILE_OK) {
     SetError("Error in copying files from sync filesystem.");
     success_ = false;
     return;

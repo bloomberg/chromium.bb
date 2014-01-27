@@ -101,7 +101,7 @@ void FileSystemBackend::OpenFileSystem(
   // TODO(nhiroki): Deprecate OpenFileSystem for non-sandboxed filesystem.
   // (http://crbug.com/297412)
   NOTREACHED();
-  callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
 }
 
 fileapi::FileSystemQuotaUtil* FileSystemBackend::GetQuotaUtil() {
@@ -213,20 +213,20 @@ fileapi::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
 
 fileapi::CopyOrMoveFileValidatorFactory*
 FileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    fileapi::FileSystemType type, base::PlatformFileError* error_code) {
+    fileapi::FileSystemType type, base::File::Error* error_code) {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   return NULL;
 }
 
 fileapi::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   DCHECK(url.is_valid());
 
   if (!IsAccessAllowed(url)) {
-    *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+    *error_code = base::File::FILE_ERROR_SECURITY;
     return NULL;
   }
 

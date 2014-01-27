@@ -27,14 +27,14 @@ MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(
 
 void CallCompletionCallbackWithPlatformFileError(
     const net::CompletionCallback& callback,
-    base::PlatformFileError platform_file_error) {
-  callback.Run(net::PlatformFileErrorToNetError(platform_file_error));
+    base::File::Error file_error) {
+  callback.Run(net::FileErrorToNetError(file_error));
 }
 
 void CallInt64CompletionCallbackWithPlatformFileError(
     const net::Int64CompletionCallback& callback,
-    base::PlatformFileError platform_file_error) {
-  callback.Run(net::PlatformFileErrorToNetError(platform_file_error));
+    base::File::Error file_error) {
+  callback.Run(net::FileErrorToNetError(file_error));
 }
 
 }  // namespace
@@ -94,7 +94,7 @@ void MTPFileStreamReader::OnFileInfoForRead(
     net::IOBuffer* buf,
     int buf_len,
     const net::CompletionCallback& callback,
-    const base::PlatformFileInfo& file_info) {
+    const base::File::Info& file_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (!VerifySnapshotTime(expected_modification_time_, file_info)) {
@@ -134,7 +134,7 @@ void MTPFileStreamReader::FinishRead(const net::CompletionCallback& callback,
 
 void MTPFileStreamReader::FinishGetLength(
     const net::Int64CompletionCallback& callback,
-    const base::PlatformFileInfo& file_info) {
+    const base::File::Info& file_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (!VerifySnapshotTime(expected_modification_time_, file_info)) {

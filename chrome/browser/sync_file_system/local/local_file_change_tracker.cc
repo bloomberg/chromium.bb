@@ -336,7 +336,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
   scoped_ptr<FileSystemOperationContext> context(
       new FileSystemOperationContext(file_system_context));
 
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   base::FilePath platform_path;
 
   while (!dirty_files.empty()) {

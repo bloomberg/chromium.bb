@@ -128,14 +128,14 @@ class SnapshotCopyOrMoveImpl
  private:
   void RunAfterCreateSnapshot(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info,
+      base::File::Error error,
+      const base::File::Info& file_info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
@@ -147,7 +147,7 @@ class SnapshotCopyOrMoveImpl
     if (!validator_factory_) {
       // No validation is needed.
       RunAfterPreWriteValidation(platform_path, file_info, file_ref, callback,
-                                 base::PLATFORM_FILE_OK);
+                                 base::File::FILE_OK);
       return;
     }
 
@@ -161,14 +161,14 @@ class SnapshotCopyOrMoveImpl
 
   void RunAfterPreWriteValidation(
       const base::FilePath& platform_path,
-      const base::PlatformFileInfo& file_info,
+      const base::File::Info& file_info,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
@@ -182,14 +182,14 @@ class SnapshotCopyOrMoveImpl
   }
 
   void RunAfterCopyInForeignFile(
-      const base::PlatformFileInfo& file_info,
+      const base::File::Info& file_info,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
@@ -197,7 +197,7 @@ class SnapshotCopyOrMoveImpl
     file_progress_callback_.Run(file_info.size);
 
     if (option_ == FileSystemOperation::OPTION_NONE) {
-      RunAfterTouchFile(callback, base::PLATFORM_FILE_OK);
+      RunAfterTouchFile(callback, base::File::FILE_OK);
       return;
     }
 
@@ -210,11 +210,11 @@ class SnapshotCopyOrMoveImpl
 
   void RunAfterTouchFile(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     // Even if TouchFile is failed, just ignore it.
 
     if (cancel_requested_) {
-      callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+      callback.Run(base::File::FILE_ERROR_ABORT);
       return;
     }
 
@@ -222,7 +222,7 @@ class SnapshotCopyOrMoveImpl
     // validation.
     if (!validator_) {
       // No validation is needed.
-      RunAfterPostWriteValidation(callback, base::PLATFORM_FILE_OK);
+      RunAfterPostWriteValidation(callback, base::File::FILE_OK);
       return;
     }
 
@@ -233,13 +233,13 @@ class SnapshotCopyOrMoveImpl
 
   void RunAfterPostWriteValidation(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     if (cancel_requested_) {
-      callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+      callback.Run(base::File::FILE_ERROR_ABORT);
       return;
     }
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       // Failed to validate. Remove the destination file.
       operation_runner_->Remove(
           dest_url_, true /* recursive */,
@@ -249,7 +249,7 @@ class SnapshotCopyOrMoveImpl
     }
 
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_COPY) {
-      callback.Run(base::PLATFORM_FILE_OK);
+      callback.Run(base::File::FILE_OK);
       return;
     }
 
@@ -264,20 +264,20 @@ class SnapshotCopyOrMoveImpl
 
   void RunAfterRemoveSourceForMove(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
-      error = base::PLATFORM_FILE_OK;
+    if (error == base::File::FILE_ERROR_NOT_FOUND)
+      error = base::File::FILE_OK;
     callback.Run(error);
   }
 
   void DidRemoveDestForError(
-      base::PlatformFileError prior_error,
+      base::File::Error prior_error,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
-    if (error != base::PLATFORM_FILE_OK) {
+      base::File::Error error) {
+    if (error != base::File::FILE_OK) {
       VLOG(1) << "Error removing destination file after validation error: "
               << error;
     }
@@ -307,14 +307,14 @@ class SnapshotCopyOrMoveImpl
 
   void PostWriteValidationAfterCreateSnapshotFile(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info,
+      base::File::Error error,
+      const base::File::Info& file_info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
@@ -333,7 +333,7 @@ class SnapshotCopyOrMoveImpl
   void DidPostWriteValidation(
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     callback.Run(error);
   }
 
@@ -406,19 +406,19 @@ class StreamCopyOrMoveImpl
  private:
   void RunAfterGetMetadataForSource(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info) {
+      base::File::Error error,
+      const base::File::Info& file_info) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
 
     if (file_info.is_directory) {
       // If not a directory, failed with appropriate error code.
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_A_FILE);
+      callback.Run(base::File::FILE_ERROR_NOT_A_FILE);
       return;
     }
 
@@ -433,11 +433,11 @@ class StreamCopyOrMoveImpl
   void RunAfterCreateFileForDestination(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       const base::Time& last_modified,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
@@ -462,17 +462,17 @@ class StreamCopyOrMoveImpl
   void RunAfterStreamCopy(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       const base::Time& last_modified,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
+      error = base::File::FILE_ERROR_ABORT;
 
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
 
     if (option_ == FileSystemOperation::OPTION_NONE) {
-      RunAfterTouchFile(callback, base::PLATFORM_FILE_OK);
+      RunAfterTouchFile(callback, base::File::FILE_OK);
       return;
     }
 
@@ -484,15 +484,15 @@ class StreamCopyOrMoveImpl
 
   void RunAfterTouchFile(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     // Even if TouchFile is failed, just ignore it.
     if (cancel_requested_) {
-      callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+      callback.Run(base::File::FILE_ERROR_ABORT);
       return;
     }
 
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_COPY) {
-      callback.Run(base::PLATFORM_FILE_OK);
+      callback.Run(base::File::FILE_OK);
       return;
     }
 
@@ -507,11 +507,11 @@ class StreamCopyOrMoveImpl
 
   void RunAfterRemoveForMove(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
-      base::PlatformFileError error) {
+      base::File::Error error) {
     if (cancel_requested_)
-      error = base::PLATFORM_FILE_ERROR_ABORT;
-    if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
-      error = base::PLATFORM_FILE_OK;
+      error = base::File::FILE_ERROR_ABORT;
+    if (error == base::File::FILE_ERROR_NOT_FOUND)
+      error = base::File::FILE_OK;
     callback.Run(error);
   }
 
@@ -579,12 +579,12 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::Read(
 void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(
     const StatusCallback& callback, int result) {
   if (cancel_requested_) {
-    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    callback.Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   if (result < 0) {
-    callback.Run(NetErrorToPlatformFileError(result));
+    callback.Run(NetErrorToFileError(result));
     return;
   }
 
@@ -593,7 +593,7 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidRead(
     if (need_flush_)
       Flush(callback, true /* is_eof */);
     else
-      callback.Run(base::PLATFORM_FILE_OK);
+      callback.Run(base::File::FILE_OK);
     return;
   }
 
@@ -618,12 +618,12 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::DidWrite(
     scoped_refptr<net::DrainableIOBuffer> buffer,
     int result) {
   if (cancel_requested_) {
-    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    callback.Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   if (result < 0) {
-    callback.Run(NetErrorToPlatformFileError(result));
+    callback.Run(NetErrorToFileError(result));
     return;
   }
 
@@ -663,13 +663,13 @@ void CopyOrMoveOperationDelegate::StreamCopyHelper::Flush(
 void CopyOrMoveOperationDelegate::StreamCopyHelper::DidFlush(
     const StatusCallback& callback, bool is_eof, int result) {
   if (cancel_requested_) {
-    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    callback.Run(base::File::FILE_ERROR_ABORT);
     return;
   }
 
   previous_flush_offset_ = num_copied_bytes_;
   if (is_eof)
-    callback.Run(NetErrorToPlatformFileError(result));
+    callback.Run(NetErrorToFileError(result));
   else
     Read(callback);
 }
@@ -707,7 +707,7 @@ void CopyOrMoveOperationDelegate::RunRecursively() {
 
   // It is an error to try to copy/move an entry into its child.
   if (same_file_system_ && src_root_.path().IsParent(dest_root_.path())) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    callback_.Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -715,7 +715,7 @@ void CopyOrMoveOperationDelegate::RunRecursively() {
     // In JS API this should return error, but we return success because Pepper
     // wants to return success and we have a code path that returns error in
     // Blink for JS (http://crbug.com/329517).
-    callback_.Run(base::PLATFORM_FILE_OK);
+    callback_.Run(base::File::FILE_OK);
     return;
   }
 
@@ -743,11 +743,11 @@ void CopyOrMoveOperationDelegate::ProcessFile(
                    weak_factory_.GetWeakPtr(), src_url));
   } else {
     // Cross filesystem case.
-    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+    base::File::Error error = base::File::FILE_ERROR_FAILED;
     CopyOrMoveFileValidatorFactory* validator_factory =
         file_system_context()->GetCopyOrMoveFileValidatorFactory(
             dest_root_.type(), &error);
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       callback.Run(error);
       return;
     }
@@ -812,7 +812,7 @@ void CopyOrMoveOperationDelegate::PostProcessDirectory(
     const StatusCallback& callback) {
   if (option_ == FileSystemOperation::OPTION_NONE) {
     PostProcessDirectoryAfterTouchFile(
-        src_url, callback, base::PLATFORM_FILE_OK);
+        src_url, callback, base::File::FILE_OK);
     return;
   }
 
@@ -835,11 +835,11 @@ void CopyOrMoveOperationDelegate::DidCopyOrMoveFile(
     const FileSystemURL& dest_url,
     const StatusCallback& callback,
     CopyOrMoveImpl* impl,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   running_copy_set_.erase(impl);
   delete impl;
 
-  if (!progress_callback_.is_null() && error == base::PLATFORM_FILE_OK) {
+  if (!progress_callback_.is_null() && error == base::File::FILE_OK) {
     progress_callback_.Run(
         FileSystemOperation::END_COPY_ENTRY, src_url, dest_url, 0);
   }
@@ -849,13 +849,13 @@ void CopyOrMoveOperationDelegate::DidCopyOrMoveFile(
 
 void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
     const StatusCallback& callback,
-    base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    base::File::Error error) {
+  if (error == base::File::FILE_ERROR_NOT_A_DIRECTORY) {
+    callback_.Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
-  if (error != base::PLATFORM_FILE_OK &&
-      error != base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+  if (error != base::File::FILE_OK &&
+      error != base::File::FILE_ERROR_NOT_FOUND) {
     callback_.Run(error);
     return;
   }
@@ -881,8 +881,8 @@ void CopyOrMoveOperationDelegate::DidCreateDirectory(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback,
-    base::PlatformFileError error) {
-  if (!progress_callback_.is_null() && error == base::PLATFORM_FILE_OK) {
+    base::File::Error error) {
+  if (!progress_callback_.is_null() && error == base::File::FILE_OK) {
     progress_callback_.Run(
         FileSystemOperation::END_COPY_ENTRY, src_url, dest_url, 0);
   }
@@ -893,12 +893,12 @@ void CopyOrMoveOperationDelegate::DidCreateDirectory(
 void CopyOrMoveOperationDelegate::PostProcessDirectoryAfterGetMetadata(
     const FileSystemURL& src_url,
     const StatusCallback& callback,
-    base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info) {
-  if (error != base::PLATFORM_FILE_OK) {
+    base::File::Error error,
+    const base::File::Info& file_info) {
+  if (error != base::File::FILE_OK) {
     // Ignore the error, and run post process which should run after TouchFile.
     PostProcessDirectoryAfterTouchFile(
-        src_url, callback, base::PLATFORM_FILE_OK);
+        src_url, callback, base::File::FILE_OK);
     return;
   }
 
@@ -913,11 +913,11 @@ void CopyOrMoveOperationDelegate::PostProcessDirectoryAfterGetMetadata(
 void CopyOrMoveOperationDelegate::PostProcessDirectoryAfterTouchFile(
     const FileSystemURL& src_url,
     const StatusCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   // Even if the TouchFile is failed, just ignore it.
 
   if (operation_type_ == OPERATION_COPY) {
-    callback.Run(base::PLATFORM_FILE_OK);
+    callback.Run(base::File::FILE_OK);
     return;
   }
 
@@ -933,9 +933,9 @@ void CopyOrMoveOperationDelegate::PostProcessDirectoryAfterTouchFile(
 
 void CopyOrMoveOperationDelegate::DidRemoveSourceForMove(
     const StatusCallback& callback,
-    base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
-    error = base::PLATFORM_FILE_OK;
+    base::File::Error error) {
+  if (error == base::File::FILE_ERROR_NOT_FOUND)
+    error = base::File::FILE_OK;
   callback.Run(error);
 }
 

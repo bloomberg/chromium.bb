@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/platform_file.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "webkit/browser/blob/blob_data_handle.h"
@@ -57,9 +57,9 @@ class CannedSyncableFileSystem
  public:
   typedef base::Callback<void(const GURL& root,
                               const std::string& name,
-                              base::PlatformFileError result)>
+                              base::File::Error result)>
       OpenFileSystemCallback;
-  typedef base::Callback<void(base::PlatformFileError)> StatusCallback;
+  typedef base::Callback<void(base::File::Error)> StatusCallback;
   typedef base::Callback<void(int64)> WriteCallback;
   typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
@@ -83,7 +83,7 @@ class CannedSyncableFileSystem
       LocalFileSyncContext* sync_context);
 
   // Opens a new syncable file system.
-  base::PlatformFileError OpenFileSystem();
+  base::File::Error OpenFileSystem();
 
   // Register sync status observers. Unlike original
   // LocalFileSyncStatus::Observer implementation the observer methods
@@ -106,29 +106,28 @@ class CannedSyncableFileSystem
   // OpenFileSystem() must have been called before calling any of them.
   // They create an operation and run it on IO task runner, and the operation
   // posts a task on file runner.
-  base::PlatformFileError CreateDirectory(const fileapi::FileSystemURL& url);
-  base::PlatformFileError CreateFile(const fileapi::FileSystemURL& url);
-  base::PlatformFileError Copy(const fileapi::FileSystemURL& src_url,
-                               const fileapi::FileSystemURL& dest_url);
-  base::PlatformFileError Move(const fileapi::FileSystemURL& src_url,
-                               const fileapi::FileSystemURL& dest_url);
-  base::PlatformFileError TruncateFile(const fileapi::FileSystemURL& url,
-                                       int64 size);
-  base::PlatformFileError TouchFile(const fileapi::FileSystemURL& url,
-                                    const base::Time& last_access_time,
-                                    const base::Time& last_modified_time);
-  base::PlatformFileError Remove(const fileapi::FileSystemURL& url,
-                                 bool recursive);
-  base::PlatformFileError FileExists(const fileapi::FileSystemURL& url);
-  base::PlatformFileError DirectoryExists(const fileapi::FileSystemURL& url);
-  base::PlatformFileError VerifyFile(const fileapi::FileSystemURL& url,
-                                     const std::string& expected_data);
-  base::PlatformFileError GetMetadataAndPlatformPath(
+  base::File::Error CreateDirectory(const fileapi::FileSystemURL& url);
+  base::File::Error CreateFile(const fileapi::FileSystemURL& url);
+  base::File::Error Copy(const fileapi::FileSystemURL& src_url,
+                         const fileapi::FileSystemURL& dest_url);
+  base::File::Error Move(const fileapi::FileSystemURL& src_url,
+                         const fileapi::FileSystemURL& dest_url);
+  base::File::Error TruncateFile(const fileapi::FileSystemURL& url,
+                                 int64 size);
+  base::File::Error TouchFile(const fileapi::FileSystemURL& url,
+                              const base::Time& last_access_time,
+                              const base::Time& last_modified_time);
+  base::File::Error Remove(const fileapi::FileSystemURL& url, bool recursive);
+  base::File::Error FileExists(const fileapi::FileSystemURL& url);
+  base::File::Error DirectoryExists(const fileapi::FileSystemURL& url);
+  base::File::Error VerifyFile(const fileapi::FileSystemURL& url,
+                               const std::string& expected_data);
+  base::File::Error GetMetadataAndPlatformPath(
       const fileapi::FileSystemURL& url,
-      base::PlatformFileInfo* info,
+      base::File::Info* info,
       base::FilePath* platform_path);
-  base::PlatformFileError ReadDirectory(const fileapi::FileSystemURL& url,
-                                        FileEntryList* entries);
+  base::File::Error ReadDirectory(const fileapi::FileSystemURL& url,
+                                  FileEntryList* entries);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
@@ -137,7 +136,7 @@ class CannedSyncableFileSystem
   int64 WriteString(const fileapi::FileSystemURL& url, const std::string& data);
 
   // Purges the file system local storage.
-  base::PlatformFileError DeleteFileSystem();
+  base::File::Error DeleteFileSystem();
 
   // Retrieves the quota and usage.
   quota::QuotaStatusCode GetUsageAndQuota(int64* usage, int64* quota);
@@ -186,7 +185,7 @@ class CannedSyncableFileSystem
                     const std::string& expected_data,
                     const StatusCallback& callback);
   void DoGetMetadataAndPlatformPath(const fileapi::FileSystemURL& url,
-                                    base::PlatformFileInfo* info,
+                                    base::File::Info* info,
                                     base::FilePath* platform_path,
                                     const StatusCallback& callback);
   void DoReadDirectory(const fileapi::FileSystemURL& url,
@@ -210,7 +209,7 @@ class CannedSyncableFileSystem
   void DidOpenFileSystem(base::SingleThreadTaskRunner* original_task_runner,
                          const GURL& root,
                          const std::string& name,
-                         base::PlatformFileError result);
+                         base::File::Error result);
   void DidInitializeFileSystemContext(sync_file_system::SyncStatusCode status);
 
   void InitializeSyncStatusObserver();
@@ -223,7 +222,7 @@ class CannedSyncableFileSystem
   const GURL origin_;
   const fileapi::FileSystemType type_;
   GURL root_url_;
-  base::PlatformFileError result_;
+  base::File::Error result_;
   sync_file_system::SyncStatusCode sync_status_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

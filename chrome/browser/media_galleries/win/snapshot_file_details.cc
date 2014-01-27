@@ -37,8 +37,7 @@ SnapshotFileDetails::~SnapshotFileDetails() {
   file_stream_.Release();
 }
 
-void SnapshotFileDetails::set_file_info(
-    const base::PlatformFileInfo& file_info) {
+void SnapshotFileDetails::set_file_info(const base::File::Info& file_info) {
   file_info_ = file_info;
 }
 

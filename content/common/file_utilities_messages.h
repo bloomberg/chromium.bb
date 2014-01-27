@@ -15,5 +15,5 @@
 
 IPC_SYNC_MESSAGE_CONTROL1_2(FileUtilitiesMsg_GetFileInfo,
                             base::FilePath /* path */,
-                            base::PlatformFileInfo /* result */,
-                            base::PlatformFileError /* status */)
+                            base::File::Info /* result */,
+                            base::File::Error /* status */)

@@ -5,30 +5,31 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/shared_impl/time_conversion.h"
 
 namespace ppapi {
 
-int PlatformFileErrorToPepperError(base::PlatformFileError error_code) {
+int FileErrorToPepperError(base::File::Error error_code) {
   switch (error_code) {
-    case base::PLATFORM_FILE_OK:
+    case base::File::FILE_OK:
       return PP_OK;
-    case base::PLATFORM_FILE_ERROR_EXISTS:
+    case base::File::FILE_ERROR_EXISTS:
       return PP_ERROR_FILEEXISTS;
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
+    case base::File::FILE_ERROR_NOT_FOUND:
       return PP_ERROR_FILENOTFOUND;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-    case base::PLATFORM_FILE_ERROR_SECURITY:
+    case base::File::FILE_ERROR_ACCESS_DENIED:
+    case base::File::FILE_ERROR_SECURITY:
       return PP_ERROR_NOACCESS;
-    case base::PLATFORM_FILE_ERROR_NO_MEMORY:
+    case base::File::FILE_ERROR_NO_MEMORY:
       return PP_ERROR_NOMEMORY;
-    case base::PLATFORM_FILE_ERROR_NO_SPACE:
+    case base::File::FILE_ERROR_NO_SPACE:
       return PP_ERROR_NOSPACE;
-    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
+    case base::File::FILE_ERROR_NOT_A_DIRECTORY:
       return PP_ERROR_FAILED;
-    case base::PLATFORM_FILE_ERROR_NOT_A_FILE:
+    case base::File::FILE_ERROR_NOT_A_FILE:
       return PP_ERROR_NOTAFILE;
     default:
       return PP_ERROR_FAILED;
@@ -80,9 +81,9 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
   return true;
 }
 
-void PlatformFileInfoToPepperFileInfo(const base::PlatformFileInfo& info,
-                                      PP_FileSystemType fs_type,
-                                      PP_FileInfo* info_out) {
+void FileInfoToPepperFileInfo(const base::File::Info& info,
+                              PP_FileSystemType fs_type,
+                              PP_FileInfo* info_out) {
   DCHECK(info_out);
   info_out->size = info.size;
   info_out->creation_time = TimeToPPTime(info.creation_time);

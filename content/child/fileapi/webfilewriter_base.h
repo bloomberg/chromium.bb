@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_FILEAPI_WEBFILEWRITER_BASE_H_
 #define CONTENT_CHILD_FILEAPI_WEBFILEWRITER_BASE_H_
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebFileWriter.h"
 #include "url/gurl.h"
@@ -30,11 +30,11 @@ class CONTENT_EXPORT WebFileWriterBase
 
  protected:
   // This calls DidSucceed() or DidFail() based on the value of |error_code|.
-  void DidFinish(base::PlatformFileError error_code);
+  void DidFinish(base::File::Error error_code);
 
   void DidWrite(int64 bytes, bool complete);
   void DidSucceed();
-  void DidFail(base::PlatformFileError error_code);
+  void DidFail(base::File::Error error_code);
 
   // Derived classes must provide these methods to asynchronously perform
   // the requested operation, and they must call the appropiate DidSomething

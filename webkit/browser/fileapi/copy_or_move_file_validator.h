@@ -6,7 +6,7 @@
 #define WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_FILE_VALIDATOR_H_
 
 #include "base/callback.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
@@ -21,7 +21,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT CopyOrMoveFileValidator {
  public:
   // Callback that is invoked when validation completes. A result of
   // base::PLATFORM_FILE_OK means the file validated.
-  typedef base::Callback<void(base::PlatformFileError result)> ResultCallback;
+  typedef base::Callback<void(base::File::Error result)> ResultCallback;
 
   virtual ~CopyOrMoveFileValidator() {}
 

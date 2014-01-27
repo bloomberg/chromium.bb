@@ -79,8 +79,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
 
   void OnOpenFileSystem(const GURL& root_url,
                         const std::string& name,
-                        base::PlatformFileError result) {
-    ASSERT_EQ(base::PLATFORM_FILE_OK, result);
+                        base::File::Error result) {
+    ASSERT_EQ(base::File::FILE_OK, result);
   }
 
   void TestRequestHelper(const GURL& url, bool run_to_completion,
@@ -128,7 +128,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   void CreateDirectory(const base::StringPiece& dir_name) {
     base::FilePath path = base::FilePath().AppendASCII(dir_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->CreateDirectory(
+    ASSERT_EQ(base::File::FILE_OK, file_util()->CreateDirectory(
         context.get(),
         CreateURL(path),
         false /* exclusive */,
@@ -138,20 +138,20 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   void EnsureFileExists(const base::StringPiece file_name) {
     base::FilePath path = base::FilePath().AppendASCII(file_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->EnsureFileExists(
+    ASSERT_EQ(base::File::FILE_OK, file_util()->EnsureFileExists(
         context.get(), CreateURL(path), NULL));
   }
 
   void TruncateFile(const base::StringPiece file_name, int64 length) {
     base::FilePath path = base::FilePath().AppendASCII(file_name);
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_util()->Truncate(
+    ASSERT_EQ(base::File::FILE_OK, file_util()->Truncate(
         context.get(), CreateURL(path), length));
   }
 
-  base::PlatformFileError GetFileInfo(const base::FilePath& path,
-                                      base::PlatformFileInfo* file_info,
-                                      base::FilePath* platform_file_path) {
+  base::File::Error GetFileInfo(const base::FilePath& path,
+                                base::File::Info* file_info,
+                                base::FilePath* platform_file_path) {
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     return file_util()->GetFileInfo(context.get(),
                                     CreateURL(path),

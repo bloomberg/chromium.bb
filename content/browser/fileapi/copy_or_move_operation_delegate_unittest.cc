@@ -46,8 +46,8 @@ namespace {
 
 void ExpectOk(const GURL& origin_url,
               const std::string& name,
-              base::PlatformFileError error) {
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+              base::File::Error error) {
+  ASSERT_EQ(base::File::FILE_OK, error);
 }
 
 class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
@@ -69,10 +69,10 @@ class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
     explicit TestValidator(bool pre_copy_valid,
                            bool post_copy_valid,
                            const std::string& reject_string)
-        : result_(pre_copy_valid ? base::PLATFORM_FILE_OK
-                                 : base::PLATFORM_FILE_ERROR_SECURITY),
-          write_result_(post_copy_valid ? base::PLATFORM_FILE_OK
-                                        : base::PLATFORM_FILE_ERROR_SECURITY),
+        : result_(pre_copy_valid ? base::File::FILE_OK :
+                                   base::File::FILE_ERROR_SECURITY),
+          write_result_(post_copy_valid ? base::File::FILE_OK :
+                                          base::File::FILE_ERROR_SECURITY),
           reject_string_(reject_string) {
     }
     virtual ~TestValidator() {}
@@ -87,10 +87,10 @@ class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
     virtual void StartPostWriteValidation(
         const base::FilePath& dest_platform_path,
         const ResultCallback& result_callback) OVERRIDE {
-      base::PlatformFileError result = write_result_;
+      base::File::Error result = write_result_;
       std::string unsafe = dest_platform_path.BaseName().AsUTF8Unsafe();
       if (unsafe.find(reject_string_) != std::string::npos) {
-        result = base::PLATFORM_FILE_ERROR_SECURITY;
+        result = base::File::FILE_ERROR_SECURITY;
       }
       // Post the result since a real validator must do work asynchronously.
       base::MessageLoop::current()->PostTask(
@@ -98,8 +98,8 @@ class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
     }
 
    private:
-    base::PlatformFileError result_;
-    base::PlatformFileError write_result_;
+    base::File::Error result_;
+    base::File::Error write_result_;
     std::string reject_string_;
 
     DISALLOW_COPY_AND_ASSIGN(TestValidator);
@@ -133,8 +133,8 @@ void RecordFileProgressCallback(std::vector<int64>* records,
 }
 
 void AssignAndQuit(base::RunLoop* run_loop,
-                   base::PlatformFileError* result_out,
-                   base::PlatformFileError result) {
+                   base::File::Error* result_out,
+                   base::File::Error result) {
   *result_out = result;
   run_loop->Quit();
 }
@@ -260,12 +260,12 @@ class CopyOrMoveOperationTestHelper {
         origin_, dest_type_, base::FilePath::FromUTF8Unsafe(path));
   }
 
-  base::PlatformFileError Copy(const FileSystemURL& src,
-                               const FileSystemURL& dest) {
+  base::File::Error Copy(const FileSystemURL& src,
+                         const FileSystemURL& dest) {
     return AsyncFileTestHelper::Copy(file_system_context_.get(), src, dest);
   }
 
-  base::PlatformFileError CopyWithProgress(
+  base::File::Error CopyWithProgress(
       const FileSystemURL& src,
       const FileSystemURL& dest,
       const AsyncFileTestHelper::CopyProgressCallback& progress_callback) {
@@ -273,16 +273,16 @@ class CopyOrMoveOperationTestHelper {
         file_system_context_.get(), src, dest, progress_callback);
   }
 
-  base::PlatformFileError Move(const FileSystemURL& src,
-                               const FileSystemURL& dest) {
+  base::File::Error Move(const FileSystemURL& src,
+                         const FileSystemURL& dest) {
     return AsyncFileTestHelper::Move(file_system_context_.get(), src, dest);
   }
 
-  base::PlatformFileError SetUpTestCaseFiles(
+  base::File::Error SetUpTestCaseFiles(
       const FileSystemURL& root,
       const TestCaseRecord* const test_cases,
       size_t test_case_size) {
-    base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+    base::File::Error result = base::File::FILE_ERROR_FAILED;
     for (size_t i = 0; i < test_case_size; ++i) {
       const TestCaseRecord& test_case = test_cases[i];
       FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
@@ -293,8 +293,8 @@ class CopyOrMoveOperationTestHelper {
         result = CreateDirectory(url);
       else
         result = CreateFile(url, test_case.data_file_size);
-      EXPECT_EQ(base::PLATFORM_FILE_OK, result) << url.DebugString();
-      if (result != base::PLATFORM_FILE_OK)
+      EXPECT_EQ(base::File::FILE_OK, result) << url.DebugString();
+      if (result != base::File::FILE_OK)
         return result;
     }
     return result;
@@ -317,7 +317,7 @@ class CopyOrMoveOperationTestHelper {
     while (!directories.empty()) {
       FileSystemURL dir = directories.front();
       directories.pop();
-      ASSERT_EQ(base::PLATFORM_FILE_OK, ReadDirectory(dir, &entries));
+      ASSERT_EQ(base::File::FILE_OK, ReadDirectory(dir, &entries));
       for (size_t i = 0; i < entries.size(); ++i) {
         FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
             dir.origin(),
@@ -344,21 +344,21 @@ class CopyOrMoveOperationTestHelper {
     }
   }
 
-  base::PlatformFileError ReadDirectory(const FileSystemURL& url,
-                                        FileEntryList* entries) {
+  base::File::Error ReadDirectory(const FileSystemURL& url,
+                                  FileEntryList* entries) {
     return AsyncFileTestHelper::ReadDirectory(
         file_system_context_.get(), url, entries);
   }
 
-  base::PlatformFileError CreateDirectory(const FileSystemURL& url) {
+  base::File::Error CreateDirectory(const FileSystemURL& url) {
     return AsyncFileTestHelper::CreateDirectory(file_system_context_.get(),
                                                 url);
   }
 
-  base::PlatformFileError CreateFile(const FileSystemURL& url, size_t size) {
-    base::PlatformFileError result =
+  base::File::Error CreateFile(const FileSystemURL& url, size_t size) {
+    base::File::Error result =
         AsyncFileTestHelper::CreateFile(file_system_context_.get(), url);
-    if (result != base::PLATFORM_FILE_OK)
+    if (result != base::File::FILE_OK)
       return result;
     return AsyncFileTestHelper::TruncateFile(
         file_system_context_.get(), url, size);
@@ -408,11 +408,11 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
   int64 dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source file.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateFile(src, 10));
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateFile(src, 10));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.Copy(src, dest));
+  ASSERT_EQ(base::File::FILE_OK, helper.Copy(src, dest));
 
   // Verify.
   ASSERT_TRUE(helper.FileExists(src, 10));
@@ -437,11 +437,11 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
   int64 dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source file.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateFile(src, 10));
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateFile(src, 10));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.Move(src, dest));
+  ASSERT_EQ(base::File::FILE_OK, helper.Move(src, dest));
 
   // Verify.
   ASSERT_FALSE(helper.FileExists(src, AsyncFileTestHelper::kDontCheckSize));
@@ -466,11 +466,11 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
   int64 dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.Copy(src, dest));
+  ASSERT_EQ(base::File::FILE_OK, helper.Copy(src, dest));
 
   // Verify.
   ASSERT_TRUE(helper.DirectoryExists(src));
@@ -495,11 +495,11 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
   int64 dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.Move(src, dest));
+  ASSERT_EQ(base::File::FILE_OK, helper.Move(src, dest));
 
   // Verify.
   ASSERT_FALSE(helper.DirectoryExists(src));
@@ -524,15 +524,15 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
   int64 dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
+  ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
                                       fileapi::test::kRegularTestCases,
                                       fileapi::test::kRegularTestCaseSize));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             helper.CopyWithProgress(
                 src, dest,
                 AsyncFileTestHelper::CopyProgressCallback()));
@@ -564,15 +564,15 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
   int64 dest_initial_usage = helper.GetDestUsage();
 
   // Set up a source directory.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
+  ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
                                       fileapi::test::kRegularTestCases,
                                       fileapi::test::kRegularTestCaseSize));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.Move(src, dest));
+  ASSERT_EQ(base::File::FILE_OK, helper.Move(src, dest));
 
   // Verify.
   ASSERT_FALSE(helper.DirectoryExists(src));
@@ -600,8 +600,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
   FileSystemURL dest = helper.DestURL("b");
 
   // Set up a source directory.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
+  ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
                                       fileapi::test::kRegularTestCases,
                                       fileapi::test::kRegularTestCaseSize));
@@ -633,12 +633,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
   FileSystemURL dest = helper.DestURL("b");
 
   // Set up a source file.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateFile(src, 10));
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateFile(src, 10));
 
   // The copy attempt should fail with a security error -- getting
   // the factory returns a security error, and the copy operation must
   // respect that.
-  ASSERT_EQ(base::PLATFORM_FILE_ERROR_SECURITY, helper.Copy(src, dest));
+  ASSERT_EQ(base::File::FILE_ERROR_SECURITY, helper.Copy(src, dest));
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
@@ -651,14 +651,14 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
   FileSystemURL dest = helper.DestURL("b");
 
   // Set up a source directory.
-  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK, helper.CreateDirectory(src));
+  ASSERT_EQ(base::File::FILE_OK,
             helper.SetUpTestCaseFiles(src,
                                       fileapi::test::kRegularTestCases,
                                       fileapi::test::kRegularTestCaseSize));
 
   std::vector<ProgressRecord> records;
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             helper.CopyWithProgress(src, dest,
                                     base::Bind(&RecordProgressCallback,
                                                base::Unretained(&records))));
@@ -748,12 +748,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
       base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
       base::TimeDelta());  // For testing, we need all the progress.
 
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
   run_loop.Run();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(base::File::FILE_OK, error);
   ASSERT_EQ(5U, progress.size());
   EXPECT_EQ(0, progress[0]);
   EXPECT_EQ(10, progress[1]);
@@ -806,12 +806,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
       base::Bind(&RecordFileProgressCallback, base::Unretained(&progress)),
       base::TimeDelta());  // For testing, we need all the progress.
 
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
   run_loop.Run();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(base::File::FILE_OK, error);
   ASSERT_EQ(5U, progress.size());
   EXPECT_EQ(0, progress[0]);
   EXPECT_EQ(10, progress[1]);
@@ -866,12 +866,12 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
       base::Bind(&CopyOrMoveOperationDelegate::StreamCopyHelper::Cancel,
                  base::Unretained(&helper)));
 
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   helper.Run(base::Bind(&AssignAndQuit, &run_loop, &error));
   run_loop.Run();
 
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_ABORT, error);
+  EXPECT_EQ(base::File::FILE_ERROR_ABORT, error);
 }
 
 }  // namespace content

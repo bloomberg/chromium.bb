@@ -126,9 +126,9 @@ class FileSystemQuotaClientTest : public testing::Test {
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 
-    base::PlatformFileError result =
+    base::File::Error result =
         AsyncFileTestHelper::CreateDirectory(file_system_context_, url);
-    return result == base::PLATFORM_FILE_OK;
+    return result == base::File::FILE_OK;
   }
 
   bool CreateFileSystemFile(const base::FilePath& file_path,
@@ -143,14 +143,14 @@ class FileSystemQuotaClientTest : public testing::Test {
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 
-    base::PlatformFileError result =
+    base::File::Error result =
         AsyncFileTestHelper::CreateFile(file_system_context_, url);
-    if (result != base::PLATFORM_FILE_OK)
+    if (result != base::File::FILE_OK)
       return false;
 
     result = AsyncFileTestHelper::TruncateFile(
         file_system_context_, url, file_size);
-    return result == base::PLATFORM_FILE_OK;
+    return result == base::File::FILE_OK;
   }
 
   void InitializeOriginFiles(FileSystemQuotaClient* quota_client,

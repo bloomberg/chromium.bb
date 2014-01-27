@@ -70,10 +70,10 @@ quota::QuotaStatusCode DeleteOriginOnFileTaskRunner(
   FileSystemBackend* provider = context->GetFileSystemBackend(type);
   if (!provider || !provider->GetQuotaUtil())
     return quota::kQuotaErrorNotSupported;
-  base::PlatformFileError result =
+  base::File::Error result =
       provider->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
           context, context->quota_manager_proxy(), origin, type);
-  if (result == base::PLATFORM_FILE_OK)
+  if (result == base::File::FILE_OK)
     return quota::kQuotaStatusOk;
   return quota::kQuotaErrorInvalidModification;
 }

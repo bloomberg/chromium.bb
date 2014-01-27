@@ -44,10 +44,10 @@ OpenMode GetOpenMode(int file_flag) {
   return OPEN_OR_CREATE_FILE;
 }
 
-// Runs |callback| with the PlatformFileError converted from |error|.
+// Runs |callback| with the File::Error converted from |error|.
 void RunStatusCallbackByFileError(const StatusCallback& callback,
                                   FileError error) {
-  callback.Run(FileErrorToPlatformError(error));
+  callback.Run(FileErrorToBaseFileError(error));
 }
 
 // Runs |callback| with arguments converted from |error| and |entry|.
@@ -55,14 +55,14 @@ void RunGetFileInfoCallback(const GetFileInfoCallback& callback,
                             FileError error,
                             scoped_ptr<ResourceEntry> entry) {
   if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToPlatformError(error), base::PlatformFileInfo());
+    callback.Run(FileErrorToBaseFileError(error), base::File::Info());
     return;
   }
 
   DCHECK(entry);
-  base::PlatformFileInfo file_info;
-  ConvertResourceEntryToPlatformFileInfo(*entry, &file_info);
-  callback.Run(base::PLATFORM_FILE_OK, file_info);
+  base::File::Info file_info;
+  ConvertResourceEntryToFileInfo(*entry, &file_info);
+  callback.Run(base::File::FILE_OK, file_info);
 }
 
 // Runs |callback| with arguments converted from |error| and |resource_entries|.
@@ -71,7 +71,7 @@ void RunReadDirectoryCallback(
     FileError error,
     scoped_ptr<ResourceEntryVector> resource_entries) {
   if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToPlatformError(error),
+    callback.Run(FileErrorToBaseFileError(error),
                  std::vector<fileapi::DirectoryEntry>(), false);
     return;
   }
@@ -94,7 +94,7 @@ void RunReadDirectoryCallback(
     entries.push_back(entry);
   }
 
-  callback.Run(base::PLATFORM_FILE_OK, entries, false);
+  callback.Run(base::File::FILE_OK, entries, false);
 }
 
 // Runs |callback| with arguments based on |error|, |local_path| and |entry|.
@@ -104,8 +104,8 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
                                    scoped_ptr<ResourceEntry> entry) {
   if (error != FILE_ERROR_OK) {
     callback.Run(
-        FileErrorToPlatformError(error),
-        base::PlatformFileInfo(), base::FilePath(),
+        FileErrorToBaseFileError(error),
+        base::File::Info(), base::FilePath(),
         webkit_blob::ScopedFile::ScopeOutPolicy());
     return;
   }
@@ -118,8 +118,8 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
   // drive server vs. last modification time of the local, downloaded file), so
   // we have to opt out from this check. We do this by unsetting last_modified
   // value in the file info passed to the CreateSnapshot caller.
-  base::PlatformFileInfo file_info;
-  ConvertResourceEntryToPlatformFileInfo(*entry, &file_info);
+  base::File::Info file_info;
+  ConvertResourceEntryToFileInfo(*entry, &file_info);
   file_info.last_modified = base::Time();
 
   // If the file is a hosted document, a temporary JSON file is created to
@@ -130,7 +130,7 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
       webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT :
       webkit_blob::ScopedFile::DONT_DELETE_ON_SCOPE_OUT;
 
-  callback.Run(base::PLATFORM_FILE_OK, file_info, local_path, scope_out_policy);
+  callback.Run(base::File::FILE_OK, file_info, local_path, scope_out_policy);
 }
 
 // Runs |callback| with arguments converted from |error| and |local_path|.
@@ -140,13 +140,13 @@ void RunCreateWritableSnapshotFileCallback(
     const base::FilePath& local_path,
     const base::Closure& close_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(FileErrorToPlatformError(error), local_path, close_callback);
+  callback.Run(FileErrorToBaseFileError(error), local_path, close_callback);
 }
 
 // Runs |callback| with |error| and |platform_file|.
 void RunOpenFileCallback(const OpenFileCallback& callback,
                          const base::Closure& close_callback,
-                         base::PlatformFileError* error,
+                         base::File::Error* error,
                          base::PlatformFile platform_file) {
   callback.Run(*error, platform_file, close_callback);
 }
@@ -160,7 +160,7 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToPlatformError(error),
+    callback.Run(FileErrorToBaseFileError(error),
                  base::kInvalidPlatformFileValue,
                  base::Closure());
     return;
@@ -182,12 +182,14 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
   }
 
   // Cache file prepared for modification is available. Open it locally.
-  base::PlatformFileError* result =
-      new base::PlatformFileError(base::PLATFORM_FILE_ERROR_FAILED);
+  // TODO(rvargas): Convert this to base::File.
+  base::File::Error* result =
+      new base::File::Error(base::File::FILE_ERROR_FAILED);
   bool posted = base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(), FROM_HERE,
       base::Bind(&base::CreatePlatformFile,
-                 local_path, file_flags, static_cast<bool*>(NULL), result),
+                 local_path, file_flags, static_cast<bool*>(NULL),
+                 reinterpret_cast<base::PlatformFileError*>(result)),
       base::Bind(&RunOpenFileCallback,
                  callback, close_callback, base::Owned(result)));
   DCHECK(posted);
@@ -337,7 +339,7 @@ void OpenFile(const base::FilePath& file_path,
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
-                   base::PLATFORM_FILE_ERROR_FAILED,
+                   base::File::FILE_ERROR_FAILED,
                    base::kInvalidPlatformFileValue,
                    base::Closure()));
     return;

@@ -73,7 +73,6 @@ bool CopyFileAndSync(const base::FilePath& from, const base::FilePath& to) {
 }  // namespace
 
 using base::PlatformFile;
-using base::PlatformFileError;
 
 class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
@@ -123,69 +122,74 @@ NativeFileUtil::CopyOrMoveMode NativeFileUtil::CopyOrMoveModeForDestination(
   return MOVE;
 }
 
-PlatformFileError NativeFileUtil::CreateOrOpen(
+base::File::Error NativeFileUtil::CreateOrOpen(
     const base::FilePath& path, int file_flags,
     PlatformFile* file_handle, bool* created) {
   if (!base::DirectoryExists(path.DirName())) {
     // If its parent does not exist, should return NOT_FOUND error.
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
   }
   if (base::DirectoryExists(path))
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  PlatformFileError error_code = base::PLATFORM_FILE_OK;
+    return base::File::FILE_ERROR_NOT_A_FILE;
+
+  // TODO(rvargas): convert this code to use base::File.
+  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
   *file_handle = base::CreatePlatformFile(path, file_flags,
                                           created, &error_code);
-  return error_code;
+  return static_cast<base::File::Error>(error_code);
 }
 
-PlatformFileError NativeFileUtil::Close(PlatformFile file_handle) {
+base::File::Error NativeFileUtil::Close(PlatformFile file_handle) {
   if (!base::ClosePlatformFile(file_handle))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return base::PLATFORM_FILE_OK;
+    return base::File::FILE_ERROR_FAILED;
+  return base::File::FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::EnsureFileExists(
+base::File::Error NativeFileUtil::EnsureFileExists(
     const base::FilePath& path,
     bool* created) {
   if (!base::DirectoryExists(path.DirName()))
     // If its parent does not exist, should return NOT_FOUND error.
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  PlatformFileError error_code = base::PLATFORM_FILE_OK;
+    return base::File::FILE_ERROR_NOT_FOUND;
+
   // Tries to create the |path| exclusively.  This should fail
-  // with base::PLATFORM_FILE_ERROR_EXISTS if the path already exists.
-  PlatformFile handle = base::CreatePlatformFile(
-      path,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ,
-      created, &error_code);
-  if (error_code == base::PLATFORM_FILE_ERROR_EXISTS) {
+  // with base::File::FILE_ERROR_EXISTS if the path already exists.
+  base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_READ);
+
+  if (file.IsValid()) {
+    if (created)
+      *created = file.created();
+    return base::File::FILE_OK;
+  }
+
+  base::File::Error error_code = file.error_details();
+  if (error_code == base::File::FILE_ERROR_EXISTS) {
     // Make sure created_ is false.
     if (created)
       *created = false;
-    error_code = base::PLATFORM_FILE_OK;
+    error_code = base::File::FILE_OK;
   }
-  if (handle != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(handle);
   return error_code;
 }
 
-PlatformFileError NativeFileUtil::CreateDirectory(
+base::File::Error NativeFileUtil::CreateDirectory(
     const base::FilePath& path,
     bool exclusive,
     bool recursive) {
   // If parent dir of file doesn't exist.
   if (!recursive && !base::PathExists(path.DirName()))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
 
   bool path_exists = base::PathExists(path);
   if (exclusive && path_exists)
-    return base::PLATFORM_FILE_ERROR_EXISTS;
+    return base::File::FILE_ERROR_EXISTS;
 
   // If file exists at the path.
   if (path_exists && !base::DirectoryExists(path))
-    return base::PLATFORM_FILE_ERROR_EXISTS;
+    return base::File::FILE_ERROR_EXISTS;
 
   if (!base::CreateDirectory(path))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_ERROR_FAILED;
 
   if (!SetPlatformSpecificDirectoryPermissions(path)) {
     // Since some file systems don't support permission setting, we do not treat
@@ -194,19 +198,18 @@ PlatformFileError NativeFileUtil::CreateDirectory(
         << path.AsUTF8Unsafe();
   }
 
-  return base::PLATFORM_FILE_OK;
+  return base::File::FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::GetFileInfo(
+base::File::Error NativeFileUtil::GetFileInfo(
     const base::FilePath& path,
-    base::PlatformFileInfo* file_info) {
+    base::File::Info* file_info) {
   if (!base::PathExists(path))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
 
-  // TODO(rvargas): convert this code to use base::File.
-  if (!base::GetFileInfo(path, reinterpret_cast<base::File::Info*>(file_info)))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return base::PLATFORM_FILE_OK;
+  if (!base::GetFileInfo(path, file_info))
+    return base::File::FILE_ERROR_FAILED;
+  return base::File::FILE_OK;
 }
 
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
@@ -218,32 +221,25 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 
-PlatformFileError NativeFileUtil::Touch(
+base::File::Error NativeFileUtil::Touch(
     const base::FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   if (!base::TouchFile(path, last_access_time, last_modified_time))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return base::PLATFORM_FILE_OK;
+    return base::File::FILE_ERROR_FAILED;
+  return base::File::FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::Truncate(
-    const base::FilePath& path, int64 length) {
-  PlatformFileError error_code(base::PLATFORM_FILE_ERROR_FAILED);
-  PlatformFile file =
-      base::CreatePlatformFile(
-          path,
-          base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
-          NULL,
-          &error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
-    return error_code;
-  }
-  DCHECK_NE(base::kInvalidPlatformFileValue, file);
-  if (!base::TruncatePlatformFile(file, length))
-    error_code = base::PLATFORM_FILE_ERROR_FAILED;
-  base::ClosePlatformFile(file);
-  return error_code;
+base::File::Error NativeFileUtil::Truncate(const base::FilePath& path,
+                                           int64 length) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+  if (!file.IsValid())
+    return file.error_details();
+
+  if (!file.SetLength(length))
+    return base::File::FILE_ERROR_FAILED;
+
+  return base::File::FILE_OK;
 }
 
 bool NativeFileUtil::PathExists(const base::FilePath& path) {
@@ -254,45 +250,45 @@ bool NativeFileUtil::DirectoryExists(const base::FilePath& path) {
   return base::DirectoryExists(path);
 }
 
-PlatformFileError NativeFileUtil::CopyOrMoveFile(
+base::File::Error NativeFileUtil::CopyOrMoveFile(
     const base::FilePath& src_path,
     const base::FilePath& dest_path,
     FileSystemOperation::CopyOrMoveOption option,
     CopyOrMoveMode mode) {
-  base::PlatformFileInfo info;
-  base::PlatformFileError error = NativeFileUtil::GetFileInfo(src_path, &info);
-  if (error != base::PLATFORM_FILE_OK)
+  base::File::Info info;
+  base::File::Error error = NativeFileUtil::GetFileInfo(src_path, &info);
+  if (error != base::File::FILE_OK)
     return error;
   if (info.is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+    return base::File::FILE_ERROR_NOT_A_FILE;
   base::Time last_modified = info.last_modified;
 
   error = NativeFileUtil::GetFileInfo(dest_path, &info);
-  if (error != base::PLATFORM_FILE_OK &&
-      error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
+  if (error != base::File::FILE_OK &&
+      error != base::File::FILE_ERROR_NOT_FOUND)
     return error;
   if (info.is_directory)
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    return base::File::FILE_ERROR_INVALID_OPERATION;
+  if (error == base::File::FILE_ERROR_NOT_FOUND) {
     error = NativeFileUtil::GetFileInfo(dest_path.DirName(), &info);
-    if (error != base::PLATFORM_FILE_OK)
+    if (error != base::File::FILE_OK)
       return error;
     if (!info.is_directory)
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      return base::File::FILE_ERROR_NOT_FOUND;
   }
 
   switch (mode) {
     case COPY_NOSYNC:
       if (!base::CopyFile(src_path, dest_path))
-        return base::PLATFORM_FILE_ERROR_FAILED;
+        return base::File::FILE_ERROR_FAILED;
       break;
     case COPY_SYNC:
       if (!CopyFileAndSync(src_path, dest_path))
-        return base::PLATFORM_FILE_ERROR_FAILED;
+        return base::File::FILE_ERROR_FAILED;
       break;
     case MOVE:
       if (!base::Move(src_path, dest_path))
-        return base::PLATFORM_FILE_ERROR_FAILED;
+        return base::File::FILE_ERROR_FAILED;
       break;
   }
 
@@ -301,29 +297,29 @@ PlatformFileError NativeFileUtil::CopyOrMoveFile(
   if (option == FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED)
     base::TouchFile(dest_path, last_modified, last_modified);
 
-  return base::PLATFORM_FILE_OK;
+  return base::File::FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::DeleteFile(const base::FilePath& path) {
+base::File::Error NativeFileUtil::DeleteFile(const base::FilePath& path) {
   if (!base::PathExists(path))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
   if (base::DirectoryExists(path))
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+    return base::File::FILE_ERROR_NOT_A_FILE;
   if (!base::DeleteFile(path, false))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return base::PLATFORM_FILE_OK;
+    return base::File::FILE_ERROR_FAILED;
+  return base::File::FILE_OK;
 }
 
-PlatformFileError NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
+base::File::Error NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
   if (!base::PathExists(path))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
   if (!base::DirectoryExists(path))
-    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    return base::File::FILE_ERROR_NOT_A_DIRECTORY;
   if (!base::IsDirectoryEmpty(path))
-    return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
+    return base::File::FILE_ERROR_NOT_EMPTY;
   if (!base::DeleteFile(path, false))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  return base::PLATFORM_FILE_OK;
+    return base::File::FILE_ERROR_FAILED;
+  return base::File::FILE_OK;
 }
 
 }  // namespace fileapi

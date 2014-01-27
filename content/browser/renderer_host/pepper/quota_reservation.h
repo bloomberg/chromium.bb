@@ -80,7 +80,7 @@ class CONTENT_EXPORT QuotaReservation
   ~QuotaReservation();
 
   void GotReservedQuota(const ReserveQuotaCallback& callback,
-                        base::PlatformFileError error);
+                        base::File::Error error);
 
   void DeleteOnCorrectThread() const;
 

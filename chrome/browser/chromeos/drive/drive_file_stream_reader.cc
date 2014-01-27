@@ -26,7 +26,7 @@ namespace {
 
 // Converts FileError code to net::Error code.
 int FileErrorToNetError(FileError error) {
-  return net::PlatformFileErrorToNetError(FileErrorToPlatformError(error));
+  return net::FileErrorToNetError(FileErrorToBaseFileError(error));
 }
 
 // Runs task on UI thread.

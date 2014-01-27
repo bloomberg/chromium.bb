@@ -266,13 +266,13 @@ void NaClBrowser::EnsureIrtAvailable() {
   }
 }
 
-void NaClBrowser::OnIrtOpened(base::PlatformFileError error_code,
+void NaClBrowser::OnIrtOpened(base::File::Error error_code,
                               base::PassPlatformFile file,
                               bool created) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK_EQ(irt_state_, NaClResourceRequested);
   DCHECK(!created);
-  if (error_code == base::PLATFORM_FILE_OK) {
+  if (error_code == base::File::FILE_OK) {
     irt_platform_file_ = file.ReleaseValue();
   } else {
     LOG(ERROR) << "Failed to open NaCl IRT file \""

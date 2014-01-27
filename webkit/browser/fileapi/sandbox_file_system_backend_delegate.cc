@@ -112,13 +112,13 @@ void OpenFileSystemOnFileTaskRunner(
     const GURL& origin_url,
     FileSystemType type,
     OpenFileSystemMode mode,
-    base::PlatformFileError* error_ptr) {
+    base::File::Error* error_ptr) {
   DCHECK(error_ptr);
   const bool create = (mode == OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
   file_util->GetDirectoryForOriginAndType(
       origin_url, SandboxFileSystemBackendDelegate::GetTypeString(type),
       create, error_ptr);
-  if (*error_ptr != base::PLATFORM_FILE_OK) {
+  if (*error_ptr != base::File::FILE_OK) {
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kCreateDirectoryError,
                               kFileSystemErrorMax);
@@ -132,8 +132,8 @@ void OpenFileSystemOnFileTaskRunner(
 
 void DidOpenFileSystem(
     base::WeakPtr<SandboxFileSystemBackendDelegate> delegate,
-    const base::Callback<void(base::PlatformFileError error)>& callback,
-    base::PlatformFileError* error) {
+    const base::Callback<void(base::File::Error error)>& callback,
+    base::File::Error* error) {
   if (delegate.get())
     delegate.get()->CollectOpenFileSystemMetrics(*error);
   callback.Run(*error);
@@ -236,10 +236,10 @@ SandboxFileSystemBackendDelegate::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url,
     FileSystemType type,
     bool create) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
       origin_url, GetTypeString(type), create, &error);
-  if (error != base::PLATFORM_FILE_OK)
+  if (error != base::File::FILE_OK)
     return base::FilePath();
   return path;
 }
@@ -251,13 +251,13 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
     const OpenFileSystemCallback& callback,
     const GURL& root_url) {
   if (!IsAllowedScheme(origin_url)) {
-    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
+    callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
     return;
   }
 
   std::string name = GetFileSystemName(origin_url, type);
 
-  base::PlatformFileError* error_ptr = new base::PlatformFileError;
+  base::File::Error* error_ptr = new base::File::Error;
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&OpenFileSystemOnFileTaskRunner,
@@ -276,9 +276,9 @@ scoped_ptr<FileSystemOperationContext>
 SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
     const FileSystemURL& url,
     FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   if (!IsAccessValid(url)) {
-    *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+    *error_code = base::File::FILE_ERROR_SECURITY;
     return scoped_ptr<FileSystemOperationContext>();
   }
 
@@ -322,7 +322,7 @@ SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
       new SandboxFileStreamWriter(context, url, offset, *observers));
 }
 
-base::PlatformFileError
+base::File::Error
 SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* file_system_context,
     quota::QuotaManagerProxy* proxy,
@@ -343,8 +343,8 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
   }
 
   if (result)
-    return base::PLATFORM_FILE_OK;
-  return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_OK;
+  return base::File::FILE_ERROR_FAILED;
 }
 
 void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
@@ -494,10 +494,10 @@ void SandboxFileSystemBackendDelegate::RegisterQuotaUpdateObserver(
 void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
     const GURL& origin,
     FileSystemType type) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
       obfuscated_file_util(), origin, type, &error);
-  if (error != base::PLATFORM_FILE_OK)
+  if (error != base::File::FILE_OK)
     return;
   usage_cache()->IncrementDirty(usage_file_path);
 }
@@ -568,10 +568,10 @@ base::FilePath
 SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
     const GURL& origin_url,
     FileSystemType type) {
-  base::PlatformFileError error;
+  base::File::Error error;
   base::FilePath path = GetUsageCachePathForOriginAndType(
       obfuscated_file_util(), origin_url, type, &error);
-  if (error != base::PLATFORM_FILE_OK)
+  if (error != base::File::FILE_OK)
     return base::FilePath();
   return path;
 }
@@ -582,12 +582,12 @@ SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
     ObfuscatedFileUtil* sandbox_file_util,
     const GURL& origin_url,
     FileSystemType type,
-    base::PlatformFileError* error_out) {
+    base::File::Error* error_out) {
   DCHECK(error_out);
-  *error_out = base::PLATFORM_FILE_OK;
+  *error_out = base::File::FILE_OK;
   base::FilePath base_path = sandbox_file_util->GetDirectoryForOriginAndType(
       origin_url, GetTypeString(type), false /* create */, error_out);
-  if (*error_out != base::PLATFORM_FILE_OK)
+  if (*error_out != base::File::FILE_OK)
     return base::FilePath();
   return base_path.Append(FileSystemUsageCache::kUsageFileName);
 }
@@ -615,7 +615,7 @@ int64 SandboxFileSystemBackendDelegate::RecalculateUsage(
 }
 
 void SandboxFileSystemBackendDelegate::CollectOpenFileSystemMetrics(
-    base::PlatformFileError error_code) {
+    base::File::Error error_code) {
   base::Time now = base::Time::Now();
   bool throttled = now < next_release_time_for_open_filesystem_stat_;
   if (!throttled) {
@@ -634,16 +634,16 @@ void SandboxFileSystemBackendDelegate::CollectOpenFileSystemMetrics(
   }
 
   switch (error_code) {
-    case base::PLATFORM_FILE_OK:
+    case base::File::FILE_OK:
       REPORT(kOK);
       break;
-    case base::PLATFORM_FILE_ERROR_INVALID_URL:
+    case base::File::FILE_ERROR_INVALID_URL:
       REPORT(kInvalidSchemeError);
       break;
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
+    case base::File::FILE_ERROR_NOT_FOUND:
       REPORT(kNotFound);
       break;
-    case base::PLATFORM_FILE_ERROR_FAILED:
+    case base::File::FILE_ERROR_FAILED:
     default:
       REPORT(kUnknownError);
       break;

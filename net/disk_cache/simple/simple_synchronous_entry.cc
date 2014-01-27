@@ -768,16 +768,16 @@ bool SimpleSynchronousEntry::OpenFiles(
           cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR, had_index);
       SIMPLE_CACHE_UMA(ENUMERATION,
                        "SyncOpenPlatformFileError", cache_type_,
-                       -error, -base::PLATFORM_FILE_ERROR_MAX);
+                       -error, -base::File::FILE_ERROR_MAX);
       if (had_index) {
         SIMPLE_CACHE_UMA(ENUMERATION,
                          "SyncOpenPlatformFileError_WithIndex", cache_type_,
-                         -error, -base::PLATFORM_FILE_ERROR_MAX);
+                         -error, -base::File::FILE_ERROR_MAX);
       } else {
         SIMPLE_CACHE_UMA(ENUMERATION,
                          "SyncOpenPlatformFileError_WithoutIndex",
                          cache_type_,
-                         -error, -base::PLATFORM_FILE_ERROR_MAX);
+                         -error, -base::File::FILE_ERROR_MAX);
       }
       while (--i >= 0)
         CloseFile(i);
@@ -847,16 +847,16 @@ bool SimpleSynchronousEntry::CreateFiles(
       RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index);
       SIMPLE_CACHE_UMA(ENUMERATION,
                        "SyncCreatePlatformFileError", cache_type_,
-                       -error, -base::PLATFORM_FILE_ERROR_MAX);
+                       -error, -base::File::FILE_ERROR_MAX);
       if (had_index) {
         SIMPLE_CACHE_UMA(ENUMERATION,
                          "SyncCreatePlatformFileError_WithIndex", cache_type_,
-                         -error, -base::PLATFORM_FILE_ERROR_MAX);
+                         -error, -base::File::FILE_ERROR_MAX);
       } else {
         SIMPLE_CACHE_UMA(ENUMERATION,
                          "SyncCreatePlatformFileError_WithoutIndex",
                          cache_type_,
-                         -error, -base::PLATFORM_FILE_ERROR_MAX);
+                         -error, -base::File::FILE_ERROR_MAX);
       }
       while (--i >= 0)
         CloseFile(i);

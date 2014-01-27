@@ -220,7 +220,7 @@ void FileAPIMessageFilter::OnResolveURL(
     return;
   if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -250,7 +250,7 @@ void FileAPIMessageFilter::OnMove(
       !security_policy_->CanDeleteFileSystemFile(process_id_, src_url) ||
       !security_policy_->CanCreateFileSystemFile(process_id_, dest_url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -272,7 +272,7 @@ void FileAPIMessageFilter::OnCopy(
   if (!security_policy_->CanReadFileSystemFile(process_id_, src_url) ||
       !security_policy_->CanCopyIntoFileSystemFile(process_id_, dest_url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -291,7 +291,7 @@ void FileAPIMessageFilter::OnRemove(
     return;
   if (!security_policy_->CanDeleteFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -308,7 +308,7 @@ void FileAPIMessageFilter::OnReadMetadata(
     return;
   if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -325,7 +325,7 @@ void FileAPIMessageFilter::OnCreate(
     return;
   if (!security_policy_->CanCreateFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -348,7 +348,7 @@ void FileAPIMessageFilter::OnExists(
     return;
   if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -371,7 +371,7 @@ void FileAPIMessageFilter::OnReadDirectory(
     return;
   if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -397,7 +397,7 @@ void FileAPIMessageFilter::OnWrite(
     return;
   if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -418,7 +418,7 @@ void FileAPIMessageFilter::OnTruncate(
     return;
   if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -438,7 +438,7 @@ void FileAPIMessageFilter::OnTouchFile(
     return;
   if (!security_policy_->CanCreateFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -462,7 +462,7 @@ void FileAPIMessageFilter::OnCancel(
   } else {
     // The write already finished; report that we failed to stop it.
     Send(new FileSystemMsg_DidFail(
-        request_id, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+        request_id, base::File::FILE_ERROR_INVALID_OPERATION));
   }
 }
 
@@ -483,7 +483,7 @@ void FileAPIMessageFilter::OnCreateSnapshotFile(
     return;
   if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return;
   }
 
@@ -676,8 +676,8 @@ void FileAPIMessageFilter::OnRemoveStream(const GURL& url) {
 }
 
 void FileAPIMessageFilter::DidFinish(int request_id,
-                                     base::PlatformFileError result) {
-  if (result == base::PLATFORM_FILE_OK)
+                                     base::File::Error result) {
+  if (result == base::File::FILE_OK)
     Send(new FileSystemMsg_DidSucceed(request_id));
   else
     Send(new FileSystemMsg_DidFail(request_id, result));
@@ -686,9 +686,9 @@ void FileAPIMessageFilter::DidFinish(int request_id,
 
 void FileAPIMessageFilter::DidGetMetadata(
     int request_id,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& info) {
-  if (result == base::PLATFORM_FILE_OK)
+    base::File::Error result,
+    const base::File::Info& info) {
+  if (result == base::File::FILE_OK)
     Send(new FileSystemMsg_DidReadMetadata(request_id, info));
   else
     Send(new FileSystemMsg_DidFail(request_id, result));
@@ -697,10 +697,10 @@ void FileAPIMessageFilter::DidGetMetadata(
 
 void FileAPIMessageFilter::DidReadDirectory(
     int request_id,
-    base::PlatformFileError result,
+    base::File::Error result,
     const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
-  if (result == base::PLATFORM_FILE_OK)
+  if (result == base::File::FILE_OK)
     Send(new FileSystemMsg_DidReadDirectory(request_id, entries, has_more));
   else
     Send(new FileSystemMsg_DidFail(request_id, result));
@@ -708,10 +708,10 @@ void FileAPIMessageFilter::DidReadDirectory(
 }
 
 void FileAPIMessageFilter::DidWrite(int request_id,
-                                    base::PlatformFileError result,
+                                    base::File::Error result,
                                     int64 bytes,
                                     bool complete) {
-  if (result == base::PLATFORM_FILE_OK) {
+  if (result == base::File::FILE_OK) {
     Send(new FileSystemMsg_DidWrite(request_id, bytes, complete));
     if (complete)
       operations_.erase(request_id);
@@ -724,9 +724,9 @@ void FileAPIMessageFilter::DidWrite(int request_id,
 void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
                                              const GURL& root,
                                              const std::string& filesystem_name,
-                                             base::PlatformFileError result) {
+                                             base::File::Error result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (result == base::PLATFORM_FILE_OK) {
+  if (result == base::File::FILE_OK) {
     DCHECK(root.is_valid());
     Send(new FileSystemMsg_DidOpenFileSystem(
         request_id, filesystem_name, root));
@@ -737,12 +737,12 @@ void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
 }
 
 void FileAPIMessageFilter::DidResolveURL(int request_id,
-                                         base::PlatformFileError result,
+                                         base::File::Error result,
                                          const fileapi::FileSystemInfo& info,
                                          const base::FilePath& file_path,
                                          bool is_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (result == base::PLATFORM_FILE_OK) {
+  if (result == base::File::FILE_OK) {
     DCHECK(info.root_url.is_valid());
     Send(new FileSystemMsg_DidResolveURL(
         request_id, info, file_path, is_directory));
@@ -754,8 +754,8 @@ void FileAPIMessageFilter::DidResolveURL(int request_id,
 
 void FileAPIMessageFilter::DidDeleteFileSystem(
     int request_id,
-    base::PlatformFileError result) {
-  if (result == base::PLATFORM_FILE_OK)
+    base::File::Error result) {
+  if (result == base::File::FILE_OK)
     Send(new FileSystemMsg_DidSucceed(request_id));
   else
     Send(new FileSystemMsg_DidFail(request_id, result));
@@ -766,14 +766,14 @@ void FileAPIMessageFilter::DidDeleteFileSystem(
 void FileAPIMessageFilter::DidCreateSnapshot(
     int request_id,
     const fileapi::FileSystemURL& url,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& info,
+    base::File::Error result,
+    const base::File::Info& info,
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& /* unused */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   operations_.erase(request_id);
 
-  if (result != base::PLATFORM_FILE_OK) {
+  if (result != base::File::FILE_OK) {
     Send(new FileSystemMsg_DidFail(request_id, result));
     return;
   }
@@ -826,7 +826,7 @@ bool FileAPIMessageFilter::ValidateFileSystemURL(
     int request_id, const fileapi::FileSystemURL& url) {
   if (!FileSystemURLIsValid(context_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_INVALID_URL));
+                                   base::File::FILE_ERROR_INVALID_URL));
     return false;
   }
 
@@ -835,7 +835,7 @@ bool FileAPIMessageFilter::ValidateFileSystemURL(
   // validation.
   if (url.type() == fileapi::kFileSystemTypePluginPrivate) {
     Send(new FileSystemMsg_DidFail(request_id,
-                                   base::PLATFORM_FILE_ERROR_SECURITY));
+                                   base::File::FILE_ERROR_SECURITY));
     return false;
   }
 

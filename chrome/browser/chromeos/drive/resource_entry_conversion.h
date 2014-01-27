@@ -7,9 +7,7 @@
 
 #include <string>
 
-namespace base {
-struct PlatformFileInfo;
-}
+#include "base/files/file.h"
 
 namespace google_apis {
 class ResourceEntry;
@@ -38,12 +36,12 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
                             std::string* out_parent_resource_id);
 
 // Converts the resource entry to the platform file info.
-void ConvertResourceEntryToPlatformFileInfo(const ResourceEntry& entry,
-                                            base::PlatformFileInfo* file_info);
+void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,
+                                    base::File::Info* file_info);
 
 // Converts the platform file info and sets it to the .file_info field of
 // the resource entry.
-void SetPlatformFileInfoToResourceEntry(const base::PlatformFileInfo& file_info,
+void SetPlatformFileInfoToResourceEntry(const base::File::Info& file_info,
                                         ResourceEntry* entry);
 
 }  // namespace drive

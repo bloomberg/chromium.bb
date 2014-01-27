@@ -43,8 +43,8 @@ namespace {
 const GURL kOrigin("http://example.com");
 const fileapi::FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
 
-void AssertStatusEq(base::PlatformFileError expected,
-                    base::PlatformFileError actual) {
+void AssertStatusEq(base::File::Error expected,
+                    base::File::Error actual) {
   ASSERT_EQ(expected, actual);
 }
 
@@ -54,8 +54,8 @@ class FileSystemOperationImplWriteTest
     : public testing::Test {
  public:
   FileSystemOperationImplWriteTest()
-      : status_(base::PLATFORM_FILE_OK),
-        cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
+      : status_(base::File::FILE_OK),
+        cancel_status_(base::File::FILE_ERROR_FAILED),
         bytes_written_(0),
         complete_(false),
         weak_factory_(this) {
@@ -81,7 +81,7 @@ class FileSystemOperationImplWriteTest
 
     file_system_context_->operation_runner()->CreateFile(
         URLForPath(virtual_path_), true /* exclusive */,
-        base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
+        base::Bind(&AssertStatusEq, base::File::FILE_OK));
 
     static_cast<TestFileSystemBackend*>(
         file_system_context_->GetFileSystemBackend(kFileSystemType))
@@ -94,8 +94,8 @@ class FileSystemOperationImplWriteTest
     base::RunLoop().RunUntilIdle();
   }
 
-  base::PlatformFileError status() const { return status_; }
-  base::PlatformFileError cancel_status() const { return cancel_status_; }
+  base::File::Error status() const { return status_; }
+  base::File::Error cancel_status() const { return cancel_status_; }
   void add_bytes_written(int64 bytes, bool complete) {
     bytes_written_ += bytes;
     EXPECT_FALSE(complete_);
@@ -129,14 +129,14 @@ class FileSystemOperationImplWriteTest
                       weak_factory_.GetWeakPtr());
   }
 
-  void DidWrite(base::PlatformFileError status, int64 bytes, bool complete) {
-    if (status == base::PLATFORM_FILE_OK) {
+  void DidWrite(base::File::Error status, int64 bytes, bool complete) {
+    if (status == base::File::FILE_OK) {
       add_bytes_written(bytes, complete);
       if (complete)
         base::MessageLoop::current()->Quit();
     } else {
       EXPECT_FALSE(complete_);
-      EXPECT_EQ(status_, base::PLATFORM_FILE_OK);
+      EXPECT_EQ(status_, base::File::FILE_OK);
       complete_ = true;
       status_ = status;
       if (base::MessageLoop::current()->is_running())
@@ -144,7 +144,7 @@ class FileSystemOperationImplWriteTest
     }
   }
 
-  void DidCancel(base::PlatformFileError status) {
+  void DidCancel(base::File::Error status) {
     cancel_status_ = status;
   }
 
@@ -161,8 +161,8 @@ class FileSystemOperationImplWriteTest
   base::FilePath virtual_path_;
 
   // For post-operation status.
-  base::PlatformFileError status_;
-  base::PlatformFileError cancel_status_;
+  base::File::Error status_;
+  base::File::Error cancel_status_;
   int64 bytes_written_;
   bool complete_;
 
@@ -187,7 +187,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(14, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+  EXPECT_EQ(base::File::FILE_OK, status());
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -201,7 +201,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+  EXPECT_EQ(base::File::FILE_OK, status());
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -216,7 +216,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlobUrl) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_FAILED, status());
+  EXPECT_EQ(base::File::FILE_ERROR_FAILED, status());
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());
@@ -232,7 +232,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidFile) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, status());
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -243,7 +243,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
   file_system_context_->operation_runner()->CreateDirectory(
       URLForPath(virtual_dir_path),
       true /* exclusive */, false /* recursive */,
-      base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
+      base::Bind(&AssertStatusEq, base::File::FILE_OK));
 
   ScopedTextBlob blob(url_request_context(), "blob:writedir",
                       "It\'ll not be written, too.");
@@ -254,10 +254,10 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
 
   EXPECT_EQ(0, bytes_written());
   // TODO(kinuko): This error code is platform- or fileutil- dependent
-  // right now.  Make it return PLATFORM_FILE_ERROR_NOT_A_FILE in every case.
-  EXPECT_TRUE(status() == base::PLATFORM_FILE_ERROR_NOT_A_FILE ||
-              status() == base::PLATFORM_FILE_ERROR_ACCESS_DENIED ||
-              status() == base::PLATFORM_FILE_ERROR_FAILED);
+  // right now.  Make it return File::FILE_ERROR_NOT_A_FILE in every case.
+  EXPECT_TRUE(status() == base::File::FILE_ERROR_NOT_A_FILE ||
+              status() == base::File::FILE_ERROR_ACCESS_DENIED ||
+              status() == base::File::FILE_ERROR_FAILED);
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -274,7 +274,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(10, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
+  EXPECT_EQ(base::File::FILE_ERROR_NO_SPACE, status());
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -296,8 +296,8 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelSuccessfulWrite) {
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_ABORT, status());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, cancel_status());
+  EXPECT_EQ(base::File::FILE_ERROR_ABORT, status());
+  EXPECT_EQ(base::File::FILE_OK, cancel_status());
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());
@@ -320,8 +320,8 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelFailingWrite) {
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_ABORT, status());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, cancel_status());
+  EXPECT_EQ(base::File::FILE_ERROR_ABORT, status());
+  EXPECT_EQ(base::File::FILE_OK, cancel_status());
   EXPECT_TRUE(complete());
 
   EXPECT_EQ(0, change_observer()->get_and_reset_modify_file_count());

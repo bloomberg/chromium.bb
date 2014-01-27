@@ -109,12 +109,12 @@ class FileSystemFileStreamReaderTest : public testing::Test {
                  base::Time* modification_time) {
     FileSystemURL url = GetFileSystemURL(file_name);
 
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               fileapi::AsyncFileTestHelper::CreateFileWithData(
                   file_system_context_, url, buf, buf_size));
 
-    base::PlatformFileInfo file_info;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    base::File::Info file_info;
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::GetMetadata(
                   file_system_context_, url, &file_info));
     if (modification_time)
@@ -124,8 +124,8 @@ class FileSystemFileStreamReaderTest : public testing::Test {
  private:
   static void OnOpenFileSystem(const GURL& root_url,
                                const std::string& name,
-                               base::PlatformFileError result) {
-    ASSERT_EQ(base::PLATFORM_FILE_OK, result);
+                               base::File::Error result) {
+    ASSERT_EQ(base::File::FILE_OK, result);
   }
 
   FileSystemURL GetFileSystemURL(const std::string& file_name) {

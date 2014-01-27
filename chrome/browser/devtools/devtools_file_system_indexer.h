@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 
@@ -51,16 +52,16 @@ class DevToolsFileSystemIndexer
     void StopOnFileThread();
     void CollectFilesToIndex();
     void IndexFiles();
-    void StartFileIndexing(base::PlatformFileError error,
+    void StartFileIndexing(base::File::Error error,
                            base::PassPlatformFile pass_file,
                            bool);
     void ReadFromFile();
-    void OnRead(base::PlatformFileError error,
+    void OnRead(base::File::Error error,
                 const char* data,
                 int bytes_read);
     void FinishFileIndexing(bool success);
     void CloseFile();
-    void CloseCallback(base::PlatformFileError error);
+    void CloseCallback(base::File::Error error);
     void ReportWorked();
 
     base::FilePath file_system_path_;

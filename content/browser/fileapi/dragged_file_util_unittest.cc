@@ -56,7 +56,7 @@ base::FilePath GetTopLevelPath(const base::FilePath& path) {
 
 bool IsDirectoryEmpty(FileSystemContext* context, const FileSystemURL& url) {
   FileEntryList entries;
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::ReadDirectory(context, url, &entries));
   return entries.empty();
 }
@@ -162,22 +162,22 @@ class DraggedFileUtilTest : public testing::Test {
   void VerifyFilesHaveSameContent(const FileSystemURL& url1,
                                   const FileSystemURL& url2) {
     // Get the file info and the platform path for url1.
-    base::PlatformFileInfo info1;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    base::File::Info info1;
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::GetMetadata(
                   file_system_context(), url1, &info1));
     base::FilePath platform_path1;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::GetPlatformPath(
                   file_system_context(), url1, &platform_path1));
 
     // Get the file info and the platform path  for url2.
-    base::PlatformFileInfo info2;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    base::File::Info info2;
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::GetMetadata(
                   file_system_context(), url2, &info2));
     base::FilePath platform_path2;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::GetPlatformPath(
                   file_system_context(), url2, &platform_path2));
 
@@ -207,7 +207,7 @@ class DraggedFileUtilTest : public testing::Test {
       FileSystemURL dir = directories.front();
       directories.pop();
 
-      ASSERT_EQ(base::PLATFORM_FILE_OK,
+      ASSERT_EQ(base::File::FILE_OK,
                 AsyncFileTestHelper::ReadDirectory(
                     file_system_context(), dir, &entries));
       for (size_t i = 0; i < entries.size(); ++i) {
@@ -226,7 +226,7 @@ class DraggedFileUtilTest : public testing::Test {
       FileSystemURL dir = directories.front();
       directories.pop();
 
-      ASSERT_EQ(base::PLATFORM_FILE_OK,
+      ASSERT_EQ(base::File::FILE_OK,
                 AsyncFileTestHelper::ReadDirectory(
                     file_system_context(), dir, &entries));
       for (size_t i = 0; i < entries.size(); ++i) {
@@ -301,10 +301,10 @@ TEST_F(DraggedFileUtilTest, BasicTest) {
     // See if we can query the file info via the isolated FileUtil.
     // (This should succeed since we have registered all the top-level
     // entries of the test cases in SetUp())
-    base::PlatformFileInfo info;
+    base::File::Info info;
     base::FilePath platform_path;
     FileSystemOperationContext context(file_system_context());
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               file_util()->GetFileInfo(&context, url, &info, &platform_path));
 
     // See if the obtained file info is correct.
@@ -393,7 +393,7 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
     // Perform ReadDirectory in the isolated filesystem.
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
     FileEntryList entries;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::ReadDirectory(
                   file_system_context(), url, &entries));
 
@@ -420,7 +420,7 @@ TEST_F(DraggedFileUtilTest, GetLocalFilePathTest) {
     FileSystemOperationContext context(file_system_context());
 
     base::FilePath local_file_path;
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_util()->GetLocalFilePath(&context, url, &local_file_path));
     EXPECT_EQ(GetTestCasePlatformPath(test_case.path).value(),
               local_file_path.value());
@@ -435,14 +435,14 @@ TEST_F(DraggedFileUtilTest, CopyOutFileTest) {
   std::queue<FileSystemURL> directories;
   directories.push(src_root);
 
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateDirectory(file_system_context(),
                                                  dest_root));
 
   while (!directories.empty()) {
     FileSystemURL dir = directories.front();
     directories.pop();
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::ReadDirectory(file_system_context(),
                                                  dir, &entries));
     for (size_t i = 0; i < entries.size(); ++i) {
@@ -452,7 +452,7 @@ TEST_F(DraggedFileUtilTest, CopyOutFileTest) {
                                            src_root, dest_root, src_url);
 
       if (entries[i].is_directory) {
-        ASSERT_EQ(base::PLATFORM_FILE_OK,
+        ASSERT_EQ(base::File::FILE_OK,
                   AsyncFileTestHelper::CreateDirectory(file_system_context(),
                                                        dest_url));
         directories.push(src_url);
@@ -460,7 +460,7 @@ TEST_F(DraggedFileUtilTest, CopyOutFileTest) {
       }
       SCOPED_TRACE(testing::Message() << "Testing file copy "
                    << src_url.path().value());
-      ASSERT_EQ(base::PLATFORM_FILE_OK,
+      ASSERT_EQ(base::File::FILE_OK,
                 AsyncFileTestHelper::Copy(file_system_context(),
                                           src_url, dest_url));
       VerifyFilesHaveSameContent(src_url, dest_url);
@@ -472,12 +472,12 @@ TEST_F(DraggedFileUtilTest, CopyOutDirectoryTest) {
   FileSystemURL src_root = GetFileSystemURL(base::FilePath());
   FileSystemURL dest_root = GetOtherFileSystemURL(base::FilePath());
 
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateDirectory(file_system_context(),
                                                  dest_root));
 
   FileEntryList entries;
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::ReadDirectory(file_system_context(),
                                                src_root, &entries));
   for (size_t i = 0; i < entries.size(); ++i) {
@@ -489,7 +489,7 @@ TEST_F(DraggedFileUtilTest, CopyOutDirectoryTest) {
                                          src_root, dest_root, src_url);
     SCOPED_TRACE(testing::Message() << "Testing file copy "
                  << src_url.path().value());
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::Copy(file_system_context(),
                                         src_url, dest_url));
     VerifyDirectoriesHaveSameContent(src_url, dest_url);
@@ -508,15 +508,15 @@ TEST_F(DraggedFileUtilTest, TouchTest) {
     base::Time last_access_time = base::Time::FromTimeT(1000);
     base::Time last_modified_time = base::Time::FromTimeT(2000);
 
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_util()->Touch(GetOperationContext().get(), url,
                                  last_access_time,
                                  last_modified_time));
 
     // Verification.
-    base::PlatformFileInfo info;
+    base::File::Info info;
     base::FilePath platform_path;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               file_util()->GetFileInfo(GetOperationContext().get(), url,
                                        &info, &platform_path));
     EXPECT_EQ(last_access_time.ToTimeT(), info.last_accessed.ToTimeT());
@@ -535,19 +535,19 @@ TEST_F(DraggedFileUtilTest, TruncateTest) {
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     // Truncate to 0.
-    base::PlatformFileInfo info;
+    base::File::Info info;
     base::FilePath platform_path;
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_util()->Truncate(GetOperationContext().get(), url, 0));
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               file_util()->GetFileInfo(GetOperationContext().get(), url,
                                        &info, &platform_path));
     EXPECT_EQ(0, info.size);
 
     // Truncate (extend) to 999.
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_util()->Truncate(GetOperationContext().get(), url, 999));
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               file_util()->GetFileInfo(GetOperationContext().get(), url,
                                        &info, &platform_path));
     EXPECT_EQ(999, info.size);

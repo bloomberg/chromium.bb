@@ -66,7 +66,7 @@ void RootDeleteHelper::Run() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void RootDeleteHelper::DidDeleteFileSystem(base::PlatformFileError error) {
+void RootDeleteHelper::DidDeleteFileSystem(base::File::Error error) {
   // Ignore errors, no idea how to deal with it.
 
   DCHECK(!sync_status_->IsWritable(url_));
@@ -97,7 +97,7 @@ void RootDeleteHelper::DidResetFileChangeTracker() {
 
 void RootDeleteHelper::DidOpenFileSystem(const GURL& /* root */,
                                          const std::string& /* name */,
-                                         base::PlatformFileError error) {
+                                         base::File::Error error) {
   FileStatusCallback callback = callback_;
   callback.Run(error);
 }

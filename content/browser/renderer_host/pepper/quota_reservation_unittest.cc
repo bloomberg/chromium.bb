@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -42,7 +43,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
       const QuotaReservationManager::ReserveQuotaCallback& callback) OVERRIDE {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(callback), base::PLATFORM_FILE_OK));
+        base::Bind(base::IgnoreResult(callback), base::File::FILE_OK));
   }
 
   virtual void ReleaseReservedQuota(const GURL& origin,
@@ -103,15 +104,10 @@ class QuotaReservationTest : public testing::Test {
   }
 
   void SetFileSize(const base::FilePath::StringType& file_name, int64 size) {
-    bool created = false;
-    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-    base::PlatformFile file = CreatePlatformFile(
-        MakeFilePath(file_name),
-        base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE,
-        &created, &error);
-    ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-    ASSERT_TRUE(base::TruncatePlatformFile(file, size));
-    ASSERT_TRUE(base::ClosePlatformFile(file));
+    base::File file(MakeFilePath(file_name),
+                    base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE);
+    ASSERT_TRUE(file.IsValid());
+    ASSERT_TRUE(file.SetLength(size));
   }
 
   QuotaReservationManager* reservation_manager() {

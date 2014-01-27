@@ -53,10 +53,10 @@ int64_t QuotaReservation::OpenFile(int32_t id,
                                    const fileapi::FileSystemURL& url) {
   base::FilePath platform_file_path;
   if (file_system_context_) {
-    base::PlatformFileError error =
+    base::File::Error error =
         file_system_context_->operation_runner()->SyncGetPlatformPath(
             url, &platform_file_path);
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       NOTREACHED();
       return 0;
     }
@@ -120,7 +120,7 @@ void QuotaReservation::OnClientCrash() {
 
 void QuotaReservation::GotReservedQuota(
     const ReserveQuotaCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   ppapi::FileSizeMap max_written_offsets;
   for (FileMap::iterator it = files_.begin(); it != files_.end(); ++ it) {
     max_written_offsets.insert(

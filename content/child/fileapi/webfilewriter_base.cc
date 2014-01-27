@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::PlatformFileErrorToWebFileError;
+using fileapi::FileErrorToWebFileError;
 
 namespace content {
 
@@ -63,8 +63,8 @@ void WebFileWriterBase::cancel() {
   DoCancel();
 }
 
-void WebFileWriterBase::DidFinish(base::PlatformFileError error_code) {
-  if (error_code == base::PLATFORM_FILE_OK)
+void WebFileWriterBase::DidFinish(base::File::Error error_code) {
+  if (error_code == base::File::FILE_OK)
     DidSucceed();
   else
     DidFail(error_code);
@@ -117,13 +117,13 @@ void WebFileWriterBase::DidSucceed() {
   }
 }
 
-void WebFileWriterBase::DidFail(base::PlatformFileError error_code) {
+void WebFileWriterBase::DidFail(base::File::Error error_code) {
   DCHECK(kOperationNone != operation_);
   switch (cancel_state_) {
     case kCancelNotInProgress:
       // A write or truncate failed.
       operation_ = kOperationNone;
-      client_->didFail(PlatformFileErrorToWebFileError(error_code));
+      client_->didFail(FileErrorToWebFileError(error_code));
       break;
     case kCancelSent:
       // This is the failure of a write or truncate; the next message should be

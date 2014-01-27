@@ -6,13 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_FILE_UTILITIES_MESSAGE_FILTER_H_
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "ipc/ipc_platform_file.h"
-
-namespace base {
-struct PlatformFileInfo;
-}
 
 namespace IPC {
 class Message;
@@ -34,11 +30,11 @@ class FileUtilitiesMessageFilter : public BrowserMessageFilter {
   virtual ~FileUtilitiesMessageFilter();
 
   typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
-                                    const base::PlatformFileInfo& file_info);
+                                    const base::File::Info& file_info);
 
   void OnGetFileInfo(const base::FilePath& path,
-                     base::PlatformFileInfo* result,
-                     base::PlatformFileError* status);
+                     base::File::Info* result,
+                     base::File::Error* status);
 
   // The ID of this process.
   int process_id_;

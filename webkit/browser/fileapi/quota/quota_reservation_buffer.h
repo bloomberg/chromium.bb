@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -60,7 +60,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
       base::WeakPtr<QuotaReservationManager> reservation_manager,
       const GURL& origin,
       FileSystemType type,
-      base::PlatformFileError error);
+      base::File::Error error);
 
   typedef std::map<base::FilePath, OpenFileHandleContext*>
       OpenFileHandleContextByPath;

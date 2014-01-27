@@ -93,7 +93,7 @@ class WebFileWriterImpl::WriterBridge
     PostTaskToWorker(base::Bind(write_callback_, written_bytes_, complete));
   }
 
-  void DidFinish(base::PlatformFileError status) {
+  void DidFinish(base::File::Error status) {
     PostTaskToWorker(base::Bind(status_callback_, status));
   }
 

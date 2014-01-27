@@ -234,8 +234,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // This is called only by pepper plugin as of writing to synchronously get
   // the underlying platform path to upload a file in the sandboxed filesystem
   // (e.g. TEMPORARY or PERSISTENT).
-  base::PlatformFileError SyncGetPlatformPath(const FileSystemURL& url,
-                                              base::FilePath* platform_path);
+  base::File::Error SyncGetPlatformPath(const FileSystemURL& url,
+                                        base::FilePath* platform_path);
 
  private:
   class BeginOperationScoper;
@@ -253,32 +253,32 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
 
   void DidFinish(const OperationHandle& handle,
                  const StatusCallback& callback,
-                 base::PlatformFileError rv);
+                 base::File::Error rv);
   void DidGetMetadata(const OperationHandle& handle,
                       const GetMetadataCallback& callback,
-                      base::PlatformFileError rv,
-                      const base::PlatformFileInfo& file_info);
+                      base::File::Error rv,
+                      const base::File::Info& file_info);
   void DidReadDirectory(const OperationHandle& handle,
                         const ReadDirectoryCallback& callback,
-                        base::PlatformFileError rv,
+                        base::File::Error rv,
                         const std::vector<DirectoryEntry>& entries,
                         bool has_more);
   void DidWrite(const OperationHandle& handle,
                 const WriteCallback& callback,
-                base::PlatformFileError rv,
+                base::File::Error rv,
                 int64 bytes,
                 bool complete);
   void DidOpenFile(
       const OperationHandle& handle,
       const OpenFileCallback& callback,
-      base::PlatformFileError rv,
+      base::File::Error rv,
       base::PlatformFile file,
       const base::Closure& on_close_callback);
   void DidCreateSnapshot(
       const OperationHandle& handle,
       const SnapshotFileCallback& callback,
-      base::PlatformFileError rv,
-      const base::PlatformFileInfo& file_info,
+      base::File::Error rv,
+      const base::File::Info& file_info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 

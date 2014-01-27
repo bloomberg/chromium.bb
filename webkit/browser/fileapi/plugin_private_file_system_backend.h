@@ -35,7 +35,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
       public FileSystemQuotaUtil {
  public:
   class FileSystemIDToPluginMap;
-  typedef base::Callback<void(base::PlatformFileError result)> StatusCallback;
+  typedef base::Callback<void(base::File::Error result)> StatusCallback;
 
   PluginPrivateFileSystemBackend(
       base::SequencedTaskRunner* file_task_runner,
@@ -69,11 +69,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
-      base::PlatformFileError* error_code) OVERRIDE;
+      base::File::Error* error_code) OVERRIDE;
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context,
-      base::PlatformFileError* error_code) const OVERRIDE;
+      base::File::Error* error_code) const OVERRIDE;
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
@@ -86,7 +86,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
   // FileSystemQuotaUtil overrides.
-  virtual base::PlatformFileError DeleteOriginDataOnFileTaskRunner(
+  virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,

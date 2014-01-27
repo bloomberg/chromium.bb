@@ -70,11 +70,11 @@ void VerifyWrite(
     int64 expected_size,
     const base::FilePath& expected_written_path,
     const std::string& write_data,
-    base::PlatformFileError result,
+    base::File::Error result,
     base::PlatformFile platform_file,
     const base::Closure& close_callback) {
   // Check that the file is properly opened.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result);
+  EXPECT_EQ(base::File::FILE_OK, result);
   EXPECT_NE(base::kInvalidPlatformFileValue, platform_file);
   EXPECT_FALSE(close_callback.is_null());
 
@@ -104,11 +104,11 @@ void VerifyWrite(
 // Helper function of testing OpenFile() for read access. It checks that the
 // file is readable and contains |expected_data|.
 void VerifyRead(const std::string& expected_data,
-                base::PlatformFileError result,
+                base::File::Error result,
                 base::PlatformFile platform_file,
                 const base::Closure& close_callback) {
   // Check that the file is properly opened.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result);
+  EXPECT_EQ(base::File::FILE_OK, result);
   EXPECT_NE(base::kInvalidPlatformFileValue, platform_file);
   EXPECT_FALSE(close_callback.is_null());
 

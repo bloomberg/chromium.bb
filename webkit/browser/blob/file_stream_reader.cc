@@ -4,7 +4,6 @@
 
 #include "webkit/browser/blob/file_stream_reader.h"
 
-#include "base/platform_file.h"
 #include "base/time/time.h"
 
 namespace webkit_blob {
@@ -12,7 +11,7 @@ namespace webkit_blob {
 // Verify if the underlying file has not been modified.
 bool FileStreamReader::VerifySnapshotTime(
     const base::Time& expected_modification_time,
-    const base::PlatformFileInfo& file_info) {
+    const base::File::Info& file_info) {
   return expected_modification_time.is_null() ||
          expected_modification_time.ToTimeT() ==
              file_info.last_modified.ToTimeT();

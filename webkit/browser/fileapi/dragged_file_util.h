@@ -23,10 +23,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DraggedFileUtil
   virtual ~DraggedFileUtil() {}
 
   // FileSystemFileUtil overrides.
-  virtual base::PlatformFileError GetFileInfo(
+  virtual base::File::Error GetFileInfo(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      base::PlatformFileInfo* file_info,
+      base::File::Info* file_info,
       base::FilePath* platform_path) OVERRIDE;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,

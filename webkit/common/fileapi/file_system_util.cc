@@ -284,29 +284,29 @@ base::FilePath StringToFilePath(const std::string& file_path_string) {
 #endif
 }
 
-blink::WebFileError PlatformFileErrorToWebFileError(
-    base::PlatformFileError error_code) {
+blink::WebFileError FileErrorToWebFileError(
+    base::File::Error error_code) {
   switch (error_code) {
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
+    case base::File::FILE_ERROR_NOT_FOUND:
       return blink::WebFileErrorNotFound;
-    case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
-    case base::PLATFORM_FILE_ERROR_EXISTS:
-    case base::PLATFORM_FILE_ERROR_NOT_EMPTY:
+    case base::File::FILE_ERROR_INVALID_OPERATION:
+    case base::File::FILE_ERROR_EXISTS:
+    case base::File::FILE_ERROR_NOT_EMPTY:
       return blink::WebFileErrorInvalidModification;
-    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
-    case base::PLATFORM_FILE_ERROR_NOT_A_FILE:
+    case base::File::FILE_ERROR_NOT_A_DIRECTORY:
+    case base::File::FILE_ERROR_NOT_A_FILE:
       return blink::WebFileErrorTypeMismatch;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
+    case base::File::FILE_ERROR_ACCESS_DENIED:
       return blink::WebFileErrorNoModificationAllowed;
-    case base::PLATFORM_FILE_ERROR_FAILED:
+    case base::File::FILE_ERROR_FAILED:
       return blink::WebFileErrorInvalidState;
-    case base::PLATFORM_FILE_ERROR_ABORT:
+    case base::File::FILE_ERROR_ABORT:
       return blink::WebFileErrorAbort;
-    case base::PLATFORM_FILE_ERROR_SECURITY:
+    case base::File::FILE_ERROR_SECURITY:
       return blink::WebFileErrorSecurity;
-    case base::PLATFORM_FILE_ERROR_NO_SPACE:
+    case base::File::FILE_ERROR_NO_SPACE:
       return blink::WebFileErrorQuotaExceeded;
-    case base::PLATFORM_FILE_ERROR_INVALID_URL:
+    case base::File::FILE_ERROR_INVALID_URL:
       return blink::WebFileErrorEncoding;
     default:
       return blink::WebFileErrorInvalidModification;
@@ -413,35 +413,35 @@ std::string GetExternalFileSystemRootURIString(
   return root;
 }
 
-base::PlatformFileError NetErrorToPlatformFileError(int error) {
+base::File::Error NetErrorToFileError(int error) {
   switch (error) {
     case net::OK:
-      return base::PLATFORM_FILE_OK;
+      return base::File::FILE_OK;
     case net::ERR_ADDRESS_IN_USE:
-      return base::PLATFORM_FILE_ERROR_IN_USE;
+      return base::File::FILE_ERROR_IN_USE;
     case net::ERR_FILE_EXISTS:
-      return base::PLATFORM_FILE_ERROR_EXISTS;
+      return base::File::FILE_ERROR_EXISTS;
     case net::ERR_FILE_NOT_FOUND:
-      return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      return base::File::FILE_ERROR_NOT_FOUND;
     case net::ERR_ACCESS_DENIED:
-      return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+      return base::File::FILE_ERROR_ACCESS_DENIED;
     case net::ERR_TOO_MANY_SOCKET_STREAMS:
-      return base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED;
+      return base::File::FILE_ERROR_TOO_MANY_OPENED;
     case net::ERR_OUT_OF_MEMORY:
-      return base::PLATFORM_FILE_ERROR_NO_MEMORY;
+      return base::File::FILE_ERROR_NO_MEMORY;
     case net::ERR_FILE_NO_SPACE:
-      return base::PLATFORM_FILE_ERROR_NO_SPACE;
+      return base::File::FILE_ERROR_NO_SPACE;
     case net::ERR_INVALID_ARGUMENT:
     case net::ERR_INVALID_HANDLE:
-      return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+      return base::File::FILE_ERROR_INVALID_OPERATION;
     case net::ERR_ABORTED:
     case net::ERR_CONNECTION_ABORTED:
-      return base::PLATFORM_FILE_ERROR_ABORT;
+      return base::File::FILE_ERROR_ABORT;
     case net::ERR_ADDRESS_INVALID:
     case net::ERR_INVALID_URL:
-      return base::PLATFORM_FILE_ERROR_INVALID_URL;
+      return base::File::FILE_ERROR_INVALID_URL;
     default:
-      return base::PLATFORM_FILE_ERROR_FAILED;
+      return base::File::FILE_ERROR_FAILED;
   }
 }
 

@@ -40,22 +40,22 @@ class PicasaFileUtil : public NativeMediaFileUtil {
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual base::PlatformFileError GetFileInfoSync(
+  virtual base::File::Error GetFileInfoSync(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
-      base::PlatformFileInfo* file_info,
+      base::File::Info* file_info,
       base::FilePath* platform_path) OVERRIDE;
-  virtual base::PlatformFileError ReadDirectorySync(
+  virtual base::File::Error ReadDirectorySync(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       EntryList* file_list) OVERRIDE;
-  virtual base::PlatformFileError DeleteDirectorySync(
+  virtual base::File::Error DeleteDirectorySync(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual base::PlatformFileError DeleteFileSync(
+  virtual base::File::Error DeleteFileSync(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual base::PlatformFileError GetLocalFilePath(
+  virtual base::File::Error GetLocalFilePath(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       base::FilePath* local_file_path) OVERRIDE;

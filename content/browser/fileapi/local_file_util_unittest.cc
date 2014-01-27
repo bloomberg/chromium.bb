@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -97,9 +98,9 @@ class LocalFileUtilTest : public testing::Test {
     return info.size;
   }
 
-  base::PlatformFileError CreateFile(const char* file_name,
-                                     base::PlatformFile* file_handle,
-                                     bool* created) {
+  base::File::Error CreateFile(const char* file_name,
+                               base::PlatformFile* file_handle,
+                               bool* created) {
     int file_flags = base::PLATFORM_FILE_CREATE |
         base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC;
 
@@ -110,7 +111,7 @@ class LocalFileUtilTest : public testing::Test {
         file_flags, file_handle, created);
   }
 
-  base::PlatformFileError EnsureFileExists(const char* file_name,
+  base::File::Error EnsureFileExists(const char* file_name,
       bool* created) {
     scoped_ptr<FileSystemOperationContext> context(NewContext());
     return file_util()->EnsureFileExists(
@@ -134,7 +135,7 @@ TEST_F(LocalFileUtilTest, CreateAndClose) {
   const char *file_name = "test_file";
   base::PlatformFile file_handle;
   bool created;
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             CreateFile(file_name, &file_handle, &created));
   ASSERT_TRUE(created);
 
@@ -142,8 +143,8 @@ TEST_F(LocalFileUtilTest, CreateAndClose) {
   EXPECT_EQ(0, GetSize(file_name));
 
   scoped_ptr<FileSystemOperationContext> context(NewContext());
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->Close(context.get(), file_handle));
+  EXPECT_EQ(base::File::FILE_OK,
+            file_util()->Close(context.get(), file_handle));
 }
 
 // base::CreateSymbolicLink is only supported on POSIX.
@@ -153,7 +154,7 @@ TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   const char *target_name = "symlink_target";
   base::PlatformFile target_handle;
   bool symlink_target_created = false;
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             CreateFile(target_name, &target_handle, &symlink_target_created));
   ASSERT_TRUE(symlink_target_created);
   base::FilePath target_path = LocalPath(target_name);
@@ -170,8 +171,9 @@ TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   int file_flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   base::PlatformFile file_handle;
   bool created = false;
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, file_util()->CreateOrOpen(
-      context.get(), url, file_flags, &file_handle, &created));
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
+            file_util()->CreateOrOpen(context.get(), url, file_flags,
+                                      &file_handle, &created));
   EXPECT_FALSE(created);
 }
 #endif
@@ -179,13 +181,13 @@ TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
 TEST_F(LocalFileUtilTest, EnsureFileExists) {
   const char *file_name = "foobar";
   bool created;
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(file_name, &created));
+  ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(file_name, &created));
   ASSERT_TRUE(created);
 
   EXPECT_TRUE(FileExists(file_name));
   EXPECT_EQ(0, GetSize(file_name));
 
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(file_name, &created));
+  ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(file_name, &created));
   EXPECT_FALSE(created);
 }
 
@@ -193,7 +195,7 @@ TEST_F(LocalFileUtilTest, TouchFile) {
   const char *file_name = "test_file";
   base::PlatformFile file_handle;
   bool created;
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             CreateFile(file_name, &file_handle, &created));
   ASSERT_TRUE(created);
 
@@ -206,7 +208,7 @@ TEST_F(LocalFileUtilTest, TouchFile) {
   const base::Time new_modified =
       info.last_modified + base::TimeDelta::FromHours(5);
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             file_util()->Touch(context.get(), CreateURL(file_name),
                               new_accessed, new_modified));
 
@@ -214,14 +216,14 @@ TEST_F(LocalFileUtilTest, TouchFile) {
   EXPECT_EQ(new_accessed, info.last_accessed);
   EXPECT_EQ(new_modified, info.last_modified);
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             file_util()->Close(context.get(), file_handle));
 }
 
 TEST_F(LocalFileUtilTest, TouchDirectory) {
   const char *dir_name = "test_dir";
   scoped_ptr<FileSystemOperationContext> context(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             file_util()->CreateDirectory(context.get(),
                                         CreateURL(dir_name),
                                         false /* exclusive */,
@@ -234,7 +236,7 @@ TEST_F(LocalFileUtilTest, TouchDirectory) {
   const base::Time new_modified =
       info.last_modified + base::TimeDelta::FromHours(5);
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             file_util()->Touch(context.get(), CreateURL(dir_name),
                               new_accessed, new_modified));
 
@@ -246,14 +248,14 @@ TEST_F(LocalFileUtilTest, TouchDirectory) {
 TEST_F(LocalFileUtilTest, Truncate) {
   const char *file_name = "truncated";
   bool created;
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(file_name, &created));
+  ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(file_name, &created));
   ASSERT_TRUE(created);
 
   scoped_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->Truncate(context.get(), CreateURL(file_name), 1020));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->Truncate(context.get(), CreateURL(file_name), 1020));
 
   EXPECT_TRUE(FileExists(file_name));
   EXPECT_EQ(1020, GetSize(file_name));
@@ -264,24 +266,24 @@ TEST_F(LocalFileUtilTest, CopyFile) {
   const char *to_file1 = "tofile1";
   const char *to_file2 = "tofile2";
   bool created;
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
+  ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
 
   scoped_ptr<FileSystemOperationContext> context;
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
 
   EXPECT_TRUE(FileExists(from_file));
   EXPECT_EQ(1020, GetSize(from_file));
 
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::Copy(file_system_context(),
                                       CreateURL(from_file),
                                       CreateURL(to_file1)));
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::Copy(file_system_context(),
                                       CreateURL(from_file),
                                       CreateURL(to_file2)));
@@ -303,15 +305,15 @@ TEST_F(LocalFileUtilTest, CopyDirectory) {
   scoped_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->CreateDirectory(context.get(), CreateURL(from_dir),
-                                   false, false));
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->CreateDirectory(context.get(), CreateURL(from_dir),
+                                         false, false));
+  ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
 
   EXPECT_TRUE(DirectoryExists(from_dir));
   EXPECT_TRUE(FileExists(from_file));
@@ -319,7 +321,7 @@ TEST_F(LocalFileUtilTest, CopyDirectory) {
   EXPECT_FALSE(DirectoryExists(to_dir));
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::Copy(file_system_context(),
                                       CreateURL(from_dir), CreateURL(to_dir)));
 
@@ -335,19 +337,19 @@ TEST_F(LocalFileUtilTest, MoveFile) {
   const char *from_file = "fromfile";
   const char *to_file = "tofile";
   bool created;
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
+  ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
   scoped_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
 
   EXPECT_TRUE(FileExists(from_file));
   EXPECT_EQ(1020, GetSize(from_file));
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::Move(file_system_context(),
                                       CreateURL(from_file),
                                       CreateURL(to_file)));
@@ -366,15 +368,15 @@ TEST_F(LocalFileUtilTest, MoveDirectory) {
   scoped_ptr<FileSystemOperationContext> context;
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->CreateDirectory(context.get(), CreateURL(from_dir),
-                                   false, false));
-  ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(from_file, &created));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->CreateDirectory(context.get(), CreateURL(from_dir),
+                                         false, false));
+  ASSERT_EQ(base::File::FILE_OK, EnsureFileExists(from_file, &created));
   ASSERT_TRUE(created);
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
-      file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
+  ASSERT_EQ(base::File::FILE_OK,
+            file_util()->Truncate(context.get(), CreateURL(from_file), 1020));
 
   EXPECT_TRUE(DirectoryExists(from_dir));
   EXPECT_TRUE(FileExists(from_file));
@@ -382,7 +384,7 @@ TEST_F(LocalFileUtilTest, MoveDirectory) {
   EXPECT_FALSE(DirectoryExists(to_dir));
 
   context.reset(NewContext());
-  ASSERT_EQ(base::PLATFORM_FILE_OK,
+  ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::Move(file_system_context(),
                                       CreateURL(from_dir),
                                       CreateURL(to_dir)));

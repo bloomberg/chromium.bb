@@ -119,26 +119,26 @@ class CopyOrMoveOperationDelegate
                          const FileSystemURL& dest_url,
                          const StatusCallback& callback,
                          CopyOrMoveImpl* impl,
-                         base::PlatformFileError error);
+                         base::File::Error error);
   void DidTryRemoveDestRoot(const StatusCallback& callback,
-                            base::PlatformFileError error);
+                            base::File::Error error);
   void ProcessDirectoryInternal(const FileSystemURL& src_url,
                                 const FileSystemURL& dest_url,
                                 const StatusCallback& callback);
   void DidCreateDirectory(const FileSystemURL& src_url,
                           const FileSystemURL& dest_url,
                           const StatusCallback& callback,
-                          base::PlatformFileError error);
+                          base::File::Error error);
   void PostProcessDirectoryAfterGetMetadata(
       const FileSystemURL& src_url,
       const StatusCallback& callback,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info);
+      base::File::Error error,
+      const base::File::Info& file_info);
   void PostProcessDirectoryAfterTouchFile(const FileSystemURL& src_url,
                                           const StatusCallback& callback,
-                                          base::PlatformFileError error);
+                                          base::File::Error error);
   void DidRemoveSourceForMove(const StatusCallback& callback,
-                              base::PlatformFileError error);
+                              base::File::Error error);
 
   void OnCopyFileProgress(const FileSystemURL& src_url, int64 size);
   FileSystemURL CreateDestURL(const FileSystemURL& src_url) const;

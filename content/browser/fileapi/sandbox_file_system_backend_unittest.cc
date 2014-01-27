@@ -69,10 +69,10 @@ const struct RootPathFileURITest {
     "000" PS "p", NULL },
 };
 
-void DidOpenFileSystem(base::PlatformFileError* error_out,
+void DidOpenFileSystem(base::File::Error* error_out,
                        const GURL& origin_url,
                        const std::string& name,
-                       base::PlatformFileError error) {
+                       base::File::Error error) {
   *error_out = error;
 }
 
@@ -116,12 +116,12 @@ class SandboxFileSystemBackendTest : public testing::Test {
                    fileapi::FileSystemType type,
                    fileapi::OpenFileSystemMode mode,
                    base::FilePath* root_path) {
-    base::PlatformFileError error = base::PLATFORM_FILE_OK;
+    base::File::Error error = base::File::FILE_OK;
     backend_->OpenFileSystem(
         origin_url, type, mode,
         base::Bind(&DidOpenFileSystem, &error));
     base::RunLoop().RunUntilIdle();
-    if (error != base::PLATFORM_FILE_OK)
+    if (error != base::File::FILE_OK)
       return false;
     base::FilePath returned_root_path =
         delegate_->GetBaseDirectoryForOriginAndType(

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/hash.h"
 #include "base/logging.h"
@@ -269,19 +270,16 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   const base::FilePath cache_path = cache_dir.path();
 
   // Write an old fake index file.
-  base::PlatformFileError error;
-  base::PlatformFile file = base::CreatePlatformFile(
-      cache_path.AppendASCII("index"),
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-      NULL,
-      &error);
+  base::File file(cache_path.AppendASCII("index"),
+                  base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
   disk_cache::FakeIndexData file_contents;
   file_contents.initial_magic_number = disk_cache::kSimpleInitialMagicNumber;
   file_contents.version = 5;
-  int bytes_written = base::WritePlatformFile(
-      file, 0, reinterpret_cast<char*>(&file_contents), sizeof(file_contents));
-  ASSERT_TRUE(base::ClosePlatformFile(file));
+  int bytes_written = file.Write(0, reinterpret_cast<char*>(&file_contents),
+                                 sizeof(file_contents));
   ASSERT_EQ((int)sizeof(file_contents), bytes_written);
+  file.Close();
 
   // Write the index file. The format is incorrect, but for transitioning from
   // v5 it does not matter.

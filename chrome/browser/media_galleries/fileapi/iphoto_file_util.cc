@@ -29,12 +29,11 @@ namespace iphoto {
 
 namespace {
 
-base::PlatformFileError MakeDirectoryFileInfo(
-    base::PlatformFileInfo* file_info) {
-  base::PlatformFileInfo result;
+base::File::Error MakeDirectoryFileInfo(base::File::Info* file_info) {
+  base::File::Info result;
   result.is_directory = true;
   *file_info = result;
-  return base::PLATFORM_FILE_OK;
+  return base::File::FILE_OK;
 }
 
 template <typename T>
@@ -102,8 +101,7 @@ void IPhotoFileUtil::GetFileInfoWithFreshDataProvider(
       content::BrowserThread::PostTask(
           content::BrowserThread::IO,
           FROM_HERE,
-          base::Bind(callback, base::PLATFORM_FILE_ERROR_IO,
-                     base::PlatformFileInfo()));
+          base::Bind(callback, base::File::FILE_ERROR_IO, base::File::Info()));
     }
     return;
   }
@@ -121,8 +119,7 @@ void IPhotoFileUtil::ReadDirectoryWithFreshDataProvider(
       content::BrowserThread::PostTask(
           content::BrowserThread::IO,
           FROM_HERE,
-          base::Bind(callback, base::PLATFORM_FILE_ERROR_IO, EntryList(),
-                     false));
+          base::Bind(callback, base::File::FILE_ERROR_IO, EntryList(), false));
     }
     return;
   }
@@ -137,13 +134,13 @@ void IPhotoFileUtil::CreateSnapshotFileWithFreshDataProvider(
     bool valid_parse) {
   if (!valid_parse) {
     if (!callback.is_null()) {
-      base::PlatformFileInfo file_info;
+      base::File::Info file_info;
       base::FilePath platform_path;
       scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
       content::BrowserThread::PostTask(
           content::BrowserThread::IO,
           FROM_HERE,
-          base::Bind(callback, base::PLATFORM_FILE_ERROR_IO, file_info,
+          base::Bind(callback, base::File::FILE_ERROR_IO, file_info,
                      platform_path, file_ref));
     }
     return;
@@ -154,10 +151,10 @@ void IPhotoFileUtil::CreateSnapshotFileWithFreshDataProvider(
 
 // Begin actual implementation.
 
-base::PlatformFileError IPhotoFileUtil::GetFileInfoSync(
+base::File::Error IPhotoFileUtil::GetFileInfoSync(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
-    base::PlatformFileInfo* file_info,
+    base::File::Info* file_info,
     base::FilePath* platform_path) {
   std::vector<std::string> components;
   fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
@@ -180,7 +177,7 @@ base::PlatformFileError IPhotoFileUtil::GetFileInfoSync(
         if (GetDataProvider()->HasOriginals(components[1]))
           return MakeDirectoryFileInfo(file_info);
         else
-          return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+          return base::File::FILE_ERROR_NOT_FOUND;
       }
 
       base::FilePath location = GetDataProvider()->GetPhotoLocationInAlbum(
@@ -201,10 +198,10 @@ base::PlatformFileError IPhotoFileUtil::GetFileInfoSync(
     }
   }
 
-  return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  return base::File::FILE_ERROR_NOT_FOUND;
 }
 
-base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
+base::File::Error IPhotoFileUtil::ReadDirectorySync(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
     EntryList* file_list) {
@@ -217,7 +214,7 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
     file_list->push_back(DirectoryEntry(kIPhotoAlbumsDir,
                                         DirectoryEntry::DIRECTORY,
                                         0, base::Time()));
-    return base::PLATFORM_FILE_OK;
+    return base::File::FILE_OK;
   }
 
   if (components[0] == kIPhotoAlbumsDir) {
@@ -230,12 +227,12 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
         file_list->push_back(DirectoryEntry(*it, DirectoryEntry::DIRECTORY,
                                             0, base::Time()));
       }
-      return base::PLATFORM_FILE_OK;
+      return base::File::FILE_OK;
     } else if (components.size() == 2) {
       std::vector<std::string> albums =
           GetDataProvider()->GetAlbumNames();
       if (!ContainsElement(albums, components[1]))
-        return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+        return base::File::FILE_ERROR_NOT_FOUND;
 
       // Album dirs contain all photos in them.
       if (GetDataProvider()->HasOriginals(components[1])) {
@@ -250,11 +247,11 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
            it != locations.end(); it++) {
         base::File::Info info;
         if (!base::GetFileInfo(it->second, &info))
-          return base::PLATFORM_FILE_ERROR_IO;
+          return base::File::FILE_ERROR_IO;
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
                                             info.size, info.last_modified));
       }
-      return base::PLATFORM_FILE_OK;
+      return base::File::FILE_OK;
     } else if (components.size() == 3 &&
                components[2] == kIPhotoOriginalsDir &&
                GetDataProvider()->HasOriginals(components[1])) {
@@ -265,31 +262,31 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
            it != originals.end(); it++) {
         base::File::Info info;
         if (!base::GetFileInfo(it->second, &info))
-          return base::PLATFORM_FILE_ERROR_IO;
+          return base::File::FILE_ERROR_IO;
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
                                             info.size, info.last_modified));
       }
-      return base::PLATFORM_FILE_OK;
+      return base::File::FILE_OK;
     }
   }
 
-  return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  return base::File::FILE_ERROR_NOT_FOUND;
 }
 
-base::PlatformFileError IPhotoFileUtil::DeleteDirectorySync(
+base::File::Error IPhotoFileUtil::DeleteDirectorySync(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+  return base::File::FILE_ERROR_SECURITY;
 }
 
-base::PlatformFileError IPhotoFileUtil::DeleteFileSync(
+base::File::Error IPhotoFileUtil::DeleteFileSync(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+  return base::File::FILE_ERROR_SECURITY;
 }
 
 
-base::PlatformFileError IPhotoFileUtil::GetLocalFilePath(
+base::File::Error IPhotoFileUtil::GetLocalFilePath(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
     base::FilePath* local_file_path) {
@@ -301,7 +298,7 @@ base::PlatformFileError IPhotoFileUtil::GetLocalFilePath(
         components[1], components[2]);
     if (!location.empty()) {
       *local_file_path = location;
-      return base::PLATFORM_FILE_OK;
+      return base::File::FILE_OK;
     }
   }
 
@@ -312,11 +309,11 @@ base::PlatformFileError IPhotoFileUtil::GetLocalFilePath(
         components[1], components[3]);
     if (!location.empty()) {
       *local_file_path = location;
-      return base::PLATFORM_FILE_OK;
+      return base::File::FILE_OK;
     }
   }
 
-  return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  return base::File::FILE_ERROR_NOT_FOUND;
 }
 
 IPhotoDataProvider* IPhotoFileUtil::GetDataProvider() {

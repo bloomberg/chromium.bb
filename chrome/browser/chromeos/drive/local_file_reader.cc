@@ -41,7 +41,7 @@ int OpenAndSeekOnBlockingPool(const base::FilePath& file_path,
       base::CreatePlatformFile(file_path, open_flags, NULL, &error);
   if (file == base::kInvalidPlatformFileValue) {
     DCHECK_NE(base::PLATFORM_FILE_OK, error);
-    return net::PlatformFileErrorToNetError(error);
+    return net::FileErrorToNetError(static_cast<base::File::Error>(error));
   }
 
   // If succeeded, seek to the |offset| from begin.

@@ -731,9 +731,9 @@ class HTML5FileWriter {
  private:
   static void CopyInCompletion(bool* result,
                                base::WaitableEvent* done_event,
-                               base::PlatformFileError error) {
+                               base::File::Error error) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    *result = error == base::PLATFORM_FILE_OK;
+    *result = error == base::File::FILE_OK;
     done_event->Signal();
   }
 

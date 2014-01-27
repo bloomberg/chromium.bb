@@ -87,7 +87,7 @@ SupportedAudioVideoChecker::SupportedAudioVideoChecker(
 void SupportedAudioVideoChecker::OnFileOpen(const base::PlatformFile& file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (file == base::kInvalidPlatformFileValue) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    callback_.Run(base::File::FILE_ERROR_SECURITY);
     return;
   }
 

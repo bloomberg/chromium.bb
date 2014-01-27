@@ -119,7 +119,7 @@ void MediaFileSystemBackend::OpenFileSystem(
       base::Bind(callback,
                  GetFileSystemRootURI(origin_url, type),
                  GetFileSystemName(origin_url, type),
-                 base::PLATFORM_FILE_ERROR_SECURITY));
+                 base::File::FILE_ERROR_SECURITY));
 }
 
 fileapi::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
@@ -147,16 +147,16 @@ fileapi::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
 
 fileapi::CopyOrMoveFileValidatorFactory*
 MediaFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    fileapi::FileSystemType type, base::PlatformFileError* error_code) {
+    fileapi::FileSystemType type, base::File::Error* error_code) {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   switch (type) {
     case fileapi::kFileSystemTypeNativeMedia:
     case fileapi::kFileSystemTypeDeviceMedia:
     case fileapi::kFileSystemTypeIphoto:
     case fileapi::kFileSystemTypeItunes:
       if (!media_copy_or_move_file_validator_factory_) {
-        *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+        *error_code = base::File::FILE_ERROR_SECURITY;
         return NULL;
       }
       return media_copy_or_move_file_validator_factory_.get();
@@ -170,7 +170,7 @@ fileapi::FileSystemOperation*
 MediaFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
       new fileapi::FileSystemOperationContext(
           context, media_task_runner_.get()));

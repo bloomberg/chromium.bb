@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
@@ -47,34 +48,33 @@ class FileSystemURL;
 //
 class AsyncFileUtil {
  public:
-  typedef base::Callback<
-      void(base::PlatformFileError result)> StatusCallback;
+  typedef base::Callback<void(base::File::Error result)> StatusCallback;
 
   // |on_close_callback| will be called after the |file| is closed in the
   // child process. |on_close_callback|.is_null() can be true, if no operation
   // is needed on closing the file.
   typedef base::Callback<
-      void(base::PlatformFileError result,
+      void(base::File::Error result,
            base::PassPlatformFile file,
            const base::Closure& on_close_callback)> CreateOrOpenCallback;
 
   typedef base::Callback<
-      void(base::PlatformFileError result,
+      void(base::File::Error result,
            bool created)> EnsureFileExistsCallback;
 
   typedef base::Callback<
-      void(base::PlatformFileError result,
-           const base::PlatformFileInfo& file_info)> GetFileInfoCallback;
+      void(base::File::Error result,
+           const base::File::Info& file_info)> GetFileInfoCallback;
 
   typedef std::vector<DirectoryEntry> EntryList;
   typedef base::Callback<
-      void(base::PlatformFileError result,
+      void(base::File::Error result,
            const EntryList& file_list,
            bool has_more)> ReadDirectoryCallback;
 
   typedef base::Callback<
-      void(base::PlatformFileError result,
-           const base::PlatformFileInfo& file_info,
+      void(base::File::Error result,
+           const base::File::Info& file_info,
            const base::FilePath& platform_path,
            const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
       CreateSnapshotFileCallback;

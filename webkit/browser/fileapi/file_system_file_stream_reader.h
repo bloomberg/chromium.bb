@@ -6,8 +6,8 @@
 #define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_FILE_STREAM_READER_H_
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -57,8 +57,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemFileStreamReader
   void DidCreateSnapshot(
       const base::Closure& callback,
       const net::CompletionCallback& error_callback,
-      base::PlatformFileError file_error,
-      const base::PlatformFileInfo& file_info,
+      base::File::Error file_error,
+      const base::File::Info& file_info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "third_party/WebKit/public/platform/WebFileError.h"
@@ -129,7 +130,7 @@ WEBKIT_STORAGE_COMMON_EXPORT base::FilePath StringToFilePath(
 
 // File error conversion
 WEBKIT_STORAGE_COMMON_EXPORT blink::WebFileError
-PlatformFileErrorToWebFileError(base::PlatformFileError error_code);
+FileErrorToWebFileError(base::File::Error error_code);
 
 // Generate a file system name for the given arguments. Should only be used by
 // platform apps.
@@ -163,9 +164,9 @@ WEBKIT_STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& mount_name);
 
-// Translates the net::Error to base::PlatformFileError.
-WEBKIT_STORAGE_COMMON_EXPORT base::PlatformFileError
-NetErrorToPlatformFileError(int error);
+// Translates the net::Error to base::File::Error.
+WEBKIT_STORAGE_COMMON_EXPORT base::File::Error
+NetErrorToFileError(int error);
 
 #if defined(OS_CHROMEOS)
 // Returns the filesystem info that can be specified by |origin_url|.

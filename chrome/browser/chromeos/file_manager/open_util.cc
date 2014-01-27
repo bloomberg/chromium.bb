@@ -174,10 +174,10 @@ bool OpenFile(Profile* profile, const base::FilePath& file_path) {
 // Used to implement OpenItem().
 void ContinueOpenItem(Profile* profile,
                       const base::FilePath& file_path,
-                      base::PlatformFileError error) {
+                      base::File::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == base::PLATFORM_FILE_OK) {
+  if (error == base::File::FILE_OK) {
     // A directory exists at |file_path|. Open it with the file manager.
     OpenFileManagerWithInternalActionId(profile, file_path, "open");
   } else {

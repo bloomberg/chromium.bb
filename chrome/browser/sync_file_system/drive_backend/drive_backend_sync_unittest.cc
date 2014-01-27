@@ -144,7 +144,7 @@ class DriveBackendSyncTest : public testing::Test {
       file_system->backend()->sync_context()->
           set_mock_notify_changes_duration_in_sec(0);
 
-      EXPECT_EQ(base::PLATFORM_FILE_OK, file_system->OpenFileSystem());
+      EXPECT_EQ(base::File::FILE_OK, file_system->OpenFileSystem());
       file_systems_[app_id] = file_system;
     }
 
@@ -157,7 +157,7 @@ class DriveBackendSyncTest : public testing::Test {
   void AddLocalFolder(const std::string& app_id,
                       const base::FilePath::StringType& path) {
     ASSERT_TRUE(ContainsKey(file_systems_, app_id));
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->CreateDirectory(
                   CreateURL(app_id, path)));
   }
@@ -167,7 +167,7 @@ class DriveBackendSyncTest : public testing::Test {
                             const std::string& content) {
     fileapi::FileSystemURL url(CreateURL(app_id, path));
     ASSERT_TRUE(ContainsKey(file_systems_, app_id));
-    EXPECT_EQ(base::PLATFORM_FILE_OK, file_systems_[app_id]->CreateFile(url));
+    EXPECT_EQ(base::File::FILE_OK, file_systems_[app_id]->CreateFile(url));
     int64 bytes_written = file_systems_[app_id]->WriteString(url, content);
     EXPECT_EQ(static_cast<int64>(content.size()), bytes_written);
     base::RunLoop().RunUntilIdle();
@@ -186,7 +186,7 @@ class DriveBackendSyncTest : public testing::Test {
   void RemoveLocal(const std::string& app_id,
                    const base::FilePath::StringType& path) {
     ASSERT_TRUE(ContainsKey(file_systems_, app_id));
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_systems_[app_id]->Remove(
                   CreateURL(app_id, path),
                   true /* recursive */));
@@ -305,7 +305,7 @@ class DriveBackendSyncTest : public testing::Test {
 
     fileapi::FileSystemURL url(CreateURL(app_id, path));
     CannedSyncableFileSystem::FileEntryList local_entries;
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_system->ReadDirectory(url, &local_entries));
     for (CannedSyncableFileSystem::FileEntryList::iterator itr =
              local_entries.begin();
@@ -343,7 +343,7 @@ class DriveBackendSyncTest : public testing::Test {
     std::string file_content;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_service_helper_->ReadFile(file_id, &file_content));
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_system->VerifyFile(url, file_content));
   }
 

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
@@ -52,13 +53,13 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
   // Generic reply callback.
   void DidFinish(ppapi::host::ReplyMessageContext reply_context,
                  const IPC::Message& msg,
-                 base::PlatformFileError error);
+                 base::File::Error error);
 
   // Operation specific callbacks.
   void GetMetadataComplete(
     ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info);
+    base::File::Error error,
+    const base::File::Info& file_info);
 
   ppapi::host::PpapiHost* host_;
   base::FilePath path_;

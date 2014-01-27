@@ -36,8 +36,8 @@ const FileSystemType kWithValidatorType = fileapi::kFileSystemTypeTest;
 
 void ExpectOk(const GURL& origin_url,
               const std::string& name,
-              base::PlatformFileError error) {
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+              base::File::Error error) {
+  ASSERT_EQ(base::File::FILE_OK, error);
 }
 
 class CopyOrMoveFileValidatorTestHelper {
@@ -75,19 +75,19 @@ class CopyOrMoveFileValidatorTestHelper {
         fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(SourceURL("")));
+    ASSERT_EQ(base::File::FILE_OK, CreateDirectory(SourceURL("")));
 
     // Sets up dest.
     DCHECK_EQ(kWithValidatorType, dest_type_);
-    ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(DestURL("")));
+    ASSERT_EQ(base::File::FILE_OK, CreateDirectory(DestURL("")));
 
     copy_src_ = SourceURL("copy_src.jpg");
     move_src_ = SourceURL("move_src.jpg");
     copy_dest_ = DestURL("copy_dest.jpg");
     move_dest_ = DestURL("move_dest.jpg");
 
-    ASSERT_EQ(base::PLATFORM_FILE_OK, CreateFile(copy_src_, 10));
-    ASSERT_EQ(base::PLATFORM_FILE_OK, CreateFile(move_src_, 10));
+    ASSERT_EQ(base::File::FILE_OK, CreateFile(copy_src_, 10));
+    ASSERT_EQ(base::File::FILE_OK, CreateFile(move_src_, 10));
 
     ASSERT_TRUE(FileExists(copy_src_, 10));
     ASSERT_TRUE(FileExists(move_src_, 10));
@@ -102,7 +102,7 @@ class CopyOrMoveFileValidatorTestHelper {
     backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
   }
 
-  void CopyTest(base::PlatformFileError expected) {
+  void CopyTest(base::File::Error expected) {
     ASSERT_TRUE(FileExists(copy_src_, 10));
     ASSERT_FALSE(FileExists(copy_dest_, 10));
 
@@ -111,13 +111,13 @@ class CopyOrMoveFileValidatorTestHelper {
                   file_system_context_.get(), copy_src_, copy_dest_));
 
     EXPECT_TRUE(FileExists(copy_src_, 10));
-    if (expected == base::PLATFORM_FILE_OK)
+    if (expected == base::File::FILE_OK)
       EXPECT_TRUE(FileExists(copy_dest_, 10));
     else
       EXPECT_FALSE(FileExists(copy_dest_, 10));
   };
 
-  void MoveTest(base::PlatformFileError expected) {
+  void MoveTest(base::File::Error expected) {
     ASSERT_TRUE(FileExists(move_src_, 10));
     ASSERT_FALSE(FileExists(move_dest_, 10));
 
@@ -125,7 +125,7 @@ class CopyOrMoveFileValidatorTestHelper {
               AsyncFileTestHelper::Move(
                   file_system_context_.get(), move_src_, move_dest_));
 
-    if (expected == base::PLATFORM_FILE_OK) {
+    if (expected == base::File::FILE_OK) {
       EXPECT_FALSE(FileExists(move_src_, 10));
       EXPECT_TRUE(FileExists(move_dest_, 10));
     } else {
@@ -147,16 +147,16 @@ class CopyOrMoveFileValidatorTestHelper {
         base::FilePath().AppendASCII("dest").AppendASCII(path));
   }
 
-  base::PlatformFileError CreateFile(const FileSystemURL& url, size_t size) {
-    base::PlatformFileError result =
+  base::File::Error CreateFile(const FileSystemURL& url, size_t size) {
+    base::File::Error result =
         AsyncFileTestHelper::CreateFile(file_system_context_.get(), url);
-    if (result != base::PLATFORM_FILE_OK)
+    if (result != base::File::FILE_OK)
       return result;
     return AsyncFileTestHelper::TruncateFile(
         file_system_context_.get(), url, size);
   }
 
-  base::PlatformFileError CreateDirectory(const FileSystemURL& url) {
+  base::File::Error CreateDirectory(const FileSystemURL& url) {
     return AsyncFileTestHelper::CreateDirectory(file_system_context_.get(),
                                                 url);
   }
@@ -212,12 +212,12 @@ class TestCopyOrMoveFileValidatorFactory
   class TestCopyOrMoveFileValidator : public CopyOrMoveFileValidator {
    public:
     explicit TestCopyOrMoveFileValidator(Validity validity)
-        : result_(validity == VALID || validity == POST_WRITE_INVALID
-                  ? base::PLATFORM_FILE_OK
-                  : base::PLATFORM_FILE_ERROR_SECURITY),
-          write_result_(validity == VALID || validity == PRE_WRITE_INVALID
-                        ? base::PLATFORM_FILE_OK
-                        : base::PLATFORM_FILE_ERROR_SECURITY) {
+        : result_(validity == VALID || validity == POST_WRITE_INVALID ?
+                  base::File::FILE_OK :
+                  base::File::FILE_ERROR_SECURITY),
+          write_result_(validity == VALID || validity == PRE_WRITE_INVALID ?
+                        base::File::FILE_OK :
+                        base::File::FILE_ERROR_SECURITY) {
     }
     virtual ~TestCopyOrMoveFileValidator() {}
 
@@ -237,8 +237,8 @@ class TestCopyOrMoveFileValidatorFactory
     }
 
    private:
-    base::PlatformFileError result_;
-    base::PlatformFileError write_result_;
+    base::File::Error result_;
+    base::File::Error write_result_;
 
     DISALLOW_COPY_AND_ASSIGN(TestCopyOrMoveFileValidator);
   };
@@ -257,8 +257,8 @@ TEST(CopyOrMoveFileValidatorTest, NoValidatorWithinSameFSType) {
                                            kWithValidatorType,
                                            kWithValidatorType);
   helper.SetUp();
-  helper.CopyTest(base::PLATFORM_FILE_OK);
-  helper.MoveTest(base::PLATFORM_FILE_OK);
+  helper.CopyTest(base::File::FILE_OK);
+  helper.MoveTest(base::File::FILE_OK);
 }
 
 TEST(CopyOrMoveFileValidatorTest, MissingValidator) {
@@ -268,8 +268,8 @@ TEST(CopyOrMoveFileValidatorTest, MissingValidator) {
                                            kNoValidatorType,
                                            kWithValidatorType);
   helper.SetUp();
-  helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
-  helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);
+  helper.CopyTest(base::File::FILE_ERROR_SECURITY);
+  helper.MoveTest(base::File::FILE_ERROR_SECURITY);
 }
 
 TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
@@ -281,8 +281,8 @@ TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
       new TestCopyOrMoveFileValidatorFactory(VALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
-  helper.CopyTest(base::PLATFORM_FILE_OK);
-  helper.MoveTest(base::PLATFORM_FILE_OK);
+  helper.CopyTest(base::File::FILE_OK);
+  helper.MoveTest(base::File::FILE_OK);
 }
 
 TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
@@ -294,8 +294,8 @@ TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
       new TestCopyOrMoveFileValidatorFactory(PRE_WRITE_INVALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
-  helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
-  helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);
+  helper.CopyTest(base::File::FILE_ERROR_SECURITY);
+  helper.MoveTest(base::File::FILE_ERROR_SECURITY);
 }
 
 TEST(CopyOrMoveFileValidatorTest, OverrideValidator) {
@@ -312,8 +312,8 @@ TEST(CopyOrMoveFileValidatorTest, OverrideValidator) {
       new TestCopyOrMoveFileValidatorFactory(VALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(accept_factory.Pass());
 
-  helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
-  helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);
+  helper.CopyTest(base::File::FILE_ERROR_SECURITY);
+  helper.MoveTest(base::File::FILE_ERROR_SECURITY);
 }
 
 TEST(CopyOrMoveFileValidatorTest, RejectPostWrite) {
@@ -325,8 +325,8 @@ TEST(CopyOrMoveFileValidatorTest, RejectPostWrite) {
       new TestCopyOrMoveFileValidatorFactory(POST_WRITE_INVALID));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
-  helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
-  helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);
+  helper.CopyTest(base::File::FILE_ERROR_SECURITY);
+  helper.MoveTest(base::File::FILE_ERROR_SECURITY);
 }
 
 }  // namespace content

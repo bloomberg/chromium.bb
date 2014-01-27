@@ -54,7 +54,7 @@ void FileWriterDelegate::Cancel() {
   // Return true to finish immediately if we have no pending writes.
   // Otherwise we'll do the final cleanup in the Cancel callback.
   if (status != net::ERR_IO_PENDING) {
-    write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0,
+    write_callback_.Run(base::File::FILE_ERROR_ABORT, 0,
                         GetCompletionStatusOnError());
   }
 }
@@ -63,33 +63,33 @@ void FileWriterDelegate::OnReceivedRedirect(net::URLRequest* request,
                                             const GURL& new_url,
                                             bool* defer_redirect) {
   NOTREACHED();
-  OnError(base::PLATFORM_FILE_ERROR_SECURITY);
+  OnError(base::File::FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnAuthRequired(net::URLRequest* request,
                                         net::AuthChallengeInfo* auth_info) {
   NOTREACHED();
-  OnError(base::PLATFORM_FILE_ERROR_SECURITY);
+  OnError(base::File::FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnCertificateRequested(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info) {
   NOTREACHED();
-  OnError(base::PLATFORM_FILE_ERROR_SECURITY);
+  OnError(base::File::FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnSSLCertificateError(net::URLRequest* request,
                                                const net::SSLInfo& ssl_info,
                                                bool fatal) {
   NOTREACHED();
-  OnError(base::PLATFORM_FILE_ERROR_SECURITY);
+  OnError(base::File::FILE_ERROR_SECURITY);
 }
 
 void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request_.get(), request);
   if (!request->status().is_success() || request->GetResponseCode() != 200) {
-    OnError(base::PLATFORM_FILE_ERROR_FAILED);
+    OnError(base::File::FILE_ERROR_FAILED);
     return;
   }
   Read();
@@ -99,7 +99,7 @@ void FileWriterDelegate::OnReadCompleted(net::URLRequest* request,
                                          int bytes_read) {
   DCHECK_EQ(request_.get(), request);
   if (!request->status().is_success()) {
-    OnError(base::PLATFORM_FILE_ERROR_FAILED);
+    OnError(base::File::FILE_ERROR_FAILED);
     return;
   }
   OnDataReceived(bytes_read);
@@ -114,7 +114,7 @@ void FileWriterDelegate::Read() {
         base::Bind(&FileWriterDelegate::OnDataReceived,
                    weak_factory_.GetWeakPtr(), bytes_read_));
   } else if (!request_->status().is_io_pending()) {
-    OnError(base::PLATFORM_FILE_ERROR_FAILED);
+    OnError(base::File::FILE_ERROR_FAILED);
   }
 }
 
@@ -145,7 +145,7 @@ void FileWriterDelegate::Write() {
         base::Bind(&FileWriterDelegate::OnDataWritten,
                    weak_factory_.GetWeakPtr(), write_response));
   } else if (net::ERR_IO_PENDING != write_response) {
-    OnError(NetErrorToPlatformFileError(write_response));
+    OnError(NetErrorToFileError(write_response));
   }
 }
 
@@ -159,7 +159,7 @@ void FileWriterDelegate::OnDataWritten(int write_response) {
     else
       Write();
   } else {
-    OnError(NetErrorToPlatformFileError(write_response));
+    OnError(NetErrorToFileError(write_response));
   }
 }
 
@@ -168,7 +168,7 @@ FileWriterDelegate::GetCompletionStatusOnError() const {
   return writing_started_ ? ERROR_WRITE_STARTED : ERROR_WRITE_NOT_STARTED;
 }
 
-void FileWriterDelegate::OnError(base::PlatformFileError error) {
+void FileWriterDelegate::OnError(base::File::Error error) {
   if (request_) {
     request_->set_delegate(NULL);
     request_->Cancel();
@@ -192,10 +192,10 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
     bytes_written_backlog_ = 0;
 
     if (done) {
-      FlushForCompletion(base::PLATFORM_FILE_OK, bytes_written,
+      FlushForCompletion(base::File::FILE_OK, bytes_written,
                          SUCCESS_COMPLETED);
     } else {
-      write_callback_.Run(base::PLATFORM_FILE_OK, bytes_written,
+      write_callback_.Run(base::File::FILE_OK, bytes_written,
                           SUCCESS_IO_PENDING);
     }
     return;
@@ -204,12 +204,12 @@ void FileWriterDelegate::OnProgress(int bytes_written, bool done) {
 }
 
 void FileWriterDelegate::OnWriteCancelled(int status) {
-  write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0,
+  write_callback_.Run(base::File::FILE_ERROR_ABORT, 0,
                       GetCompletionStatusOnError());
 }
 
 void FileWriterDelegate::FlushForCompletion(
-    base::PlatformFileError error,
+    base::File::Error error,
     int bytes_written,
     WriteProgressStatus progress_status) {
   int flush_error = file_stream_writer_->Flush(
@@ -219,14 +219,14 @@ void FileWriterDelegate::FlushForCompletion(
     OnFlushed(error, bytes_written, progress_status, flush_error);
 }
 
-void FileWriterDelegate::OnFlushed(base::PlatformFileError error,
+void FileWriterDelegate::OnFlushed(base::File::Error error,
                                    int bytes_written,
                                    WriteProgressStatus progress_status,
                                    int flush_error) {
-  if (error == base::PLATFORM_FILE_OK && flush_error != net::OK) {
+  if (error == base::File::FILE_OK && flush_error != net::OK) {
     // If the Flush introduced an error, overwrite the status.
     // Otherwise, keep the original error status.
-    error = NetErrorToPlatformFileError(flush_error);
+    error = NetErrorToFileError(flush_error);
     progress_status = GetCompletionStatusOnError();
   }
   write_callback_.Run(error, bytes_written, progress_status);

@@ -316,16 +316,16 @@ base::win::ScopedComPtr<IPortableDevice> OpenDevice(
   return base::win::ScopedComPtr<IPortableDevice>();
 }
 
-base::PlatformFileError GetFileEntryInfo(
+base::File::Error GetFileEntryInfo(
     IPortableDevice* device,
     const base::string16& object_id,
-    base::PlatformFileInfo* file_entry_info) {
+    base::File::Info* file_entry_info) {
   DCHECK(device);
   DCHECK(!object_id.empty());
   DCHECK(file_entry_info);
   MTPDeviceObjectEntry entry;
   if (!GetMTPDeviceObjectEntry(device, object_id, &entry))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
 
   file_entry_info->size = entry.size;
   file_entry_info->is_directory = entry.is_directory;
@@ -333,7 +333,7 @@ base::PlatformFileError GetFileEntryInfo(
   file_entry_info->last_modified = entry.last_modified_time;
   file_entry_info->last_accessed = entry.last_modified_time;
   file_entry_info->creation_time = base::Time();
-  return base::PLATFORM_FILE_OK;
+  return base::File::FILE_OK;
 }
 
 bool GetDirectoryEntries(IPortableDevice* device,

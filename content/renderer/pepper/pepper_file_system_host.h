@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
@@ -54,7 +55,7 @@ class PepperFileSystemHost
  private:
   // Callback for OpenFileSystem.
   void DidOpenFileSystem(const std::string& name_unused, const GURL& root);
-  void DidFailOpenFileSystem(base::PlatformFileError error);
+  void DidFailOpenFileSystem(base::File::Error error);
 
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         int64_t expected_size);

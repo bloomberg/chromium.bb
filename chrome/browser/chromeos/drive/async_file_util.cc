@@ -49,7 +49,7 @@ void RunCreateOrOpenFileCallback(
     const AsyncFileUtil::FileSystemGetter& file_system_getter,
     const base::FilePath& file_path,
     const AsyncFileUtil::CreateOrOpenCallback& callback,
-    base::PlatformFileError error,
+    base::File::Error error,
     base::PlatformFile file,
     const base::Closure& close_callback_on_ui_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -67,7 +67,7 @@ void RunCreateOrOpenFileCallback(
 // Runs CreateOrOpenFile when the error happens.
 void RunCreateOrOpenFileCallbackOnError(
     const AsyncFileUtil::CreateOrOpenCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   // Because the |callback| takes PassPlatformFile as its argument, and
   // it is necessary to guarantee the pointer passed to PassPlatformFile is
   // alive during the |callback| invocation, here we prepare a thin adapter
@@ -79,15 +79,15 @@ void RunCreateOrOpenFileCallbackOnError(
 // Runs EnsureFileExistsCallback based on the given |error|.
 void RunEnsureFileExistsCallback(
     const AsyncFileUtil::EnsureFileExistsCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Remember if the file is actually created or not.
-  bool created = (error == base::PLATFORM_FILE_OK);
+  bool created = (error == base::File::FILE_OK);
 
-  // PLATFORM_FILE_ERROR_EXISTS is not an actual error here.
-  if (error == base::PLATFORM_FILE_ERROR_EXISTS)
-    error = base::PLATFORM_FILE_OK;
+  // File::FILE_ERROR_EXISTS is not an actual error here.
+  if (error == base::File::FILE_ERROR_EXISTS)
+    error = base::File::FILE_OK;
 
   callback.Run(error, created);
 }
@@ -95,8 +95,8 @@ void RunEnsureFileExistsCallback(
 // Runs |callback| with the arguments based on the given arguments.
 void RunCreateSnapshotFileCallback(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info,
+    base::File::Error error,
+    const base::File::Info& file_info,
     const base::FilePath& local_path,
     webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy) {
   // ShareableFileReference is thread *unsafe* class. So it is necessary to
@@ -131,7 +131,7 @@ void AsyncFileUtil::CreateOrOpen(
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
     base::PlatformFile platform_file = base::kInvalidPlatformFileValue;
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND,
                  base::PassPlatformFile(&platform_file),
                  base::Closure());
     return;
@@ -145,7 +145,7 @@ void AsyncFileUtil::CreateOrOpen(
                      base::Bind(&RunCreateOrOpenFileCallback,
                                 file_system_getter_, file_path, callback))),
       base::Bind(&RunCreateOrOpenFileCallbackOnError,
-                 callback, base::PLATFORM_FILE_ERROR_FAILED));
+                 callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::EnsureFileExists(
@@ -156,7 +156,7 @@ void AsyncFileUtil::EnsureFileExists(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, false);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND, false);
     return;
   }
 
@@ -166,7 +166,7 @@ void AsyncFileUtil::EnsureFileExists(
                  file_path, true /* is_exlusive */,
                  google_apis::CreateRelayCallback(
                      base::Bind(&RunEnsureFileExistsCallback, callback))),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED, false));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED, false));
 }
 
 void AsyncFileUtil::CreateDirectory(
@@ -179,7 +179,7 @@ void AsyncFileUtil::CreateDirectory(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -188,7 +188,7 @@ void AsyncFileUtil::CreateDirectory(
       base::Bind(&fileapi_internal::CreateDirectory,
                  file_path, exclusive, recursive,
                  google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::GetFileInfo(
@@ -199,7 +199,7 @@ void AsyncFileUtil::GetFileInfo(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, base::PlatformFileInfo());
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
     return;
   }
 
@@ -207,8 +207,8 @@ void AsyncFileUtil::GetFileInfo(
       file_system_getter_,
       base::Bind(&fileapi_internal::GetFileInfo,
                  file_path, google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED,
-                 base::PlatformFileInfo()));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED,
+                 base::File::Info()));
 }
 
 void AsyncFileUtil::ReadDirectory(
@@ -219,7 +219,7 @@ void AsyncFileUtil::ReadDirectory(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, EntryList(), false);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(), false);
     return;
   }
 
@@ -227,7 +227,7 @@ void AsyncFileUtil::ReadDirectory(
       file_system_getter_,
       base::Bind(&fileapi_internal::ReadDirectory,
                  file_path, google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED,
+      base::Bind(callback, base::File::FILE_ERROR_FAILED,
                  EntryList(), false));
 }
 
@@ -241,7 +241,7 @@ void AsyncFileUtil::Touch(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -250,7 +250,7 @@ void AsyncFileUtil::Touch(
       base::Bind(&fileapi_internal::TouchFile,
                  file_path, last_access_time, last_modified_time,
                  google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::Truncate(
@@ -262,7 +262,7 @@ void AsyncFileUtil::Truncate(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -270,7 +270,7 @@ void AsyncFileUtil::Truncate(
       file_system_getter_,
       base::Bind(&fileapi_internal::Truncate,
                  file_path, length, google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::CopyFileLocal(
@@ -285,7 +285,7 @@ void AsyncFileUtil::CopyFileLocal(
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
   if (src_path.empty() || dest_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -296,7 +296,7 @@ void AsyncFileUtil::CopyFileLocal(
           src_path, dest_path,
           option == fileapi::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
           google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::MoveFileLocal(
@@ -310,7 +310,7 @@ void AsyncFileUtil::MoveFileLocal(
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
   if (src_path.empty() || dest_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -321,7 +321,7 @@ void AsyncFileUtil::MoveFileLocal(
           src_path, dest_path,
           option == fileapi::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
           google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::CopyInForeignFile(
@@ -333,7 +333,7 @@ void AsyncFileUtil::CopyInForeignFile(
 
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
   if (dest_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -342,7 +342,7 @@ void AsyncFileUtil::CopyInForeignFile(
       base::Bind(&fileapi_internal::CopyInForeignFile,
                  src_file_path, dest_path,
                  google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::DeleteFile(
@@ -353,7 +353,7 @@ void AsyncFileUtil::DeleteFile(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -362,7 +362,7 @@ void AsyncFileUtil::DeleteFile(
       base::Bind(&fileapi_internal::Remove,
                  file_path, false /* not recursive */,
                  google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::DeleteDirectory(
@@ -373,7 +373,7 @@ void AsyncFileUtil::DeleteDirectory(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -382,7 +382,7 @@ void AsyncFileUtil::DeleteDirectory(
       base::Bind(&fileapi_internal::Remove,
                  file_path, false /* not recursive */,
                  google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::DeleteRecursively(
@@ -393,7 +393,7 @@ void AsyncFileUtil::DeleteRecursively(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -402,7 +402,7 @@ void AsyncFileUtil::DeleteRecursively(
       base::Bind(&fileapi_internal::Remove,
                  file_path, true /* recursive */,
                  google_apis::CreateRelayCallback(callback)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+      base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::CreateSnapshotFile(
@@ -413,8 +413,8 @@ void AsyncFileUtil::CreateSnapshotFile(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                 base::PlatformFileInfo(),
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND,
+                 base::File::Info(),
                  base::FilePath(),
                  scoped_refptr<webkit_blob::ShareableFileReference>());
     return;
@@ -427,8 +427,8 @@ void AsyncFileUtil::CreateSnapshotFile(
                  google_apis::CreateRelayCallback(
                      base::Bind(&RunCreateSnapshotFileCallback, callback))),
       base::Bind(callback,
-                 base::PLATFORM_FILE_ERROR_FAILED,
-                 base::PlatformFileInfo(),
+                 base::File::FILE_ERROR_FAILED,
+                 base::File::Info(),
                  base::FilePath(),
                  scoped_refptr<webkit_blob::ShareableFileReference>()));
 }

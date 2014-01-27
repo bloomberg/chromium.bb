@@ -5,9 +5,9 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
 #define WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -52,8 +52,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxFileStreamWriter
   // WriteInternal.
   void DidCreateSnapshotFile(
       const net::CompletionCallback& callback,
-      base::PlatformFileError file_error,
-      const base::PlatformFileInfo& file_info,
+      base::File::Error file_error,
+      const base::File::Info& file_info,
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   void DidGetUsageAndQuota(const net::CompletionCallback& callback,

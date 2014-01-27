@@ -28,61 +28,61 @@ class AsyncFileTestHelper {
   static const int64 kDontCheckSize;
 
   // Performs Copy from |src| to |dest| and returns the status code.
-  static base::PlatformFileError Copy(FileSystemContext* context,
-                                      const FileSystemURL& src,
-                                      const FileSystemURL& dest);
+  static base::File::Error Copy(FileSystemContext* context,
+                                const FileSystemURL& src,
+                                const FileSystemURL& dest);
 
   // Same as Copy, but this supports |progress_callback|.
-  static base::PlatformFileError CopyWithProgress(
+  static base::File::Error CopyWithProgress(
       FileSystemContext* context,
       const FileSystemURL& src,
       const FileSystemURL& dest,
       const CopyProgressCallback& progress_callback);
 
   // Performs Move from |src| to |dest| and returns the status code.
-  static base::PlatformFileError Move(FileSystemContext* context,
-                                      const FileSystemURL& src,
-                                      const FileSystemURL& dest);
+  static base::File::Error Move(FileSystemContext* context,
+                                const FileSystemURL& src,
+                                const FileSystemURL& dest);
 
   // Removes the given |url|.
-  static base::PlatformFileError Remove(FileSystemContext* context,
-                                        const FileSystemURL& url,
+  static base::File::Error Remove(FileSystemContext* context,
+                                  const FileSystemURL& url,
                                         bool recursive);
 
   // Performs ReadDirectory on |url|.
-  static base::PlatformFileError ReadDirectory(FileSystemContext* context,
-                                               const FileSystemURL& url,
-                                               FileEntryList* entries);
+  static base::File::Error ReadDirectory(FileSystemContext* context,
+                                         const FileSystemURL& url,
+                                         FileEntryList* entries);
 
   // Creates a directory at |url|.
-  static base::PlatformFileError CreateDirectory(FileSystemContext* context,
-                                                 const FileSystemURL& url);
+  static base::File::Error CreateDirectory(FileSystemContext* context,
+                                           const FileSystemURL& url);
 
   // Creates a file at |url|.
-  static base::PlatformFileError CreateFile(FileSystemContext* context,
-                                            const FileSystemURL& url);
+  static base::File::Error CreateFile(FileSystemContext* context,
+                                      const FileSystemURL& url);
 
   // Creates a file at |url| and fills with |buf|.
-  static base::PlatformFileError CreateFileWithData(
+  static base::File::Error CreateFileWithData(
       FileSystemContext* context,
       const FileSystemURL& url,
       const char* buf,
       int buf_size);
 
   // Truncates the file |url| to |size|.
-  static base::PlatformFileError TruncateFile(FileSystemContext* context,
-                                              const FileSystemURL& url,
-                                              size_t size);
+  static base::File::Error TruncateFile(FileSystemContext* context,
+                                        const FileSystemURL& url,
+                                        size_t size);
 
-  // Retrieves PlatformFileInfo for |url| and populates |file_info|.
-  static base::PlatformFileError GetMetadata(FileSystemContext* context,
-                                             const FileSystemURL& url,
-                                             base::PlatformFileInfo* file_info);
+  // Retrieves File::Info for |url| and populates |file_info|.
+  static base::File::Error GetMetadata(FileSystemContext* context,
+                                       const FileSystemURL& url,
+                                       base::File::Info* file_info);
 
   // Retrieves FilePath for |url| and populates |platform_path|.
-  static base::PlatformFileError GetPlatformPath(FileSystemContext* context,
-                                                 const FileSystemURL& url,
-                                                 base::FilePath* platform_path);
+  static base::File::Error GetPlatformPath(FileSystemContext* context,
+                                           const FileSystemURL& url,
+                                           base::FilePath* platform_path);
 
   // Returns true if a file exists at |url| with |size|. If |size| is
   // kDontCheckSize it doesn't check the file size (but just check its

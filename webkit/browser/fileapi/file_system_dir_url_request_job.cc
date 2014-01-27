@@ -85,7 +85,7 @@ void FileSystemDirURLRequestJob::StartAsync() {
     // In incognito mode the API is not usable and there should be no data.
     if (url_.is_valid() && VirtualPath::IsRootPath(url_.virtual_path())) {
       // Return an empty directory if the filesystem root is queried.
-      DidReadDirectory(base::PLATFORM_FILE_OK,
+      DidReadDirectory(base::File::FILE_OK,
                        std::vector<DirectoryEntry>(),
                        false);
       return;
@@ -100,12 +100,12 @@ void FileSystemDirURLRequestJob::StartAsync() {
 }
 
 void FileSystemDirURLRequestJob::DidReadDirectory(
-    base::PlatformFileError result,
+    base::File::Error result,
     const std::vector<DirectoryEntry>& entries,
     bool has_more) {
-  if (result != base::PLATFORM_FILE_OK) {
+  if (result != base::File::FILE_OK) {
     int rv = net::ERR_FILE_NOT_FOUND;
-    if (result == base::PLATFORM_FILE_ERROR_INVALID_URL)
+    if (result == base::File::FILE_ERROR_INVALID_URL)
       rv = net::ERR_INVALID_URL;
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
     return;

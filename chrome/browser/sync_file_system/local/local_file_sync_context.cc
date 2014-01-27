@@ -334,7 +334,7 @@ void LocalFileSyncContext::HandleRemoteAddOrUpdate(
       file_system_context, url);
 
   if (fileapi::VirtualPath::IsRootPath(url.path())) {
-    DidApplyRemoteChange(url, callback, base::PLATFORM_FILE_OK);
+    DidApplyRemoteChange(url, callback, base::File::FILE_OK);
     return;
   }
 
@@ -356,7 +356,7 @@ void LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate(
     const base::FilePath& local_path,
     const FileSystemURL& url,
     const SyncStatusCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   // Remove() may fail if the target entry does not exist (which is ok),
   // so we ignore |error| here.
 
@@ -622,13 +622,13 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
     FileSystemContext* file_system_context,
     const GURL& /* root */,
     const std::string& /* name */,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   if (shutdown_on_io_)
-    error = base::PLATFORM_FILE_ERROR_ABORT;
-  if (error != base::PLATFORM_FILE_OK) {
+    error = base::File::FILE_ERROR_ABORT;
+  if (error != base::File::FILE_OK) {
     DidInitialize(source_url, file_system_context,
-                  PlatformFileErrorToSyncStatusCode(error));
+                  FileErrorToSyncStatusCode(error));
     return;
   }
   DCHECK(file_system_context);
@@ -725,7 +725,7 @@ void LocalFileSyncContext::DidInitializeChangeTrackerOnIOThread(
 
   InitializeFileSystemContextOnIOThread(source_url, file_system_context,
                                         GURL(), std::string(),
-                                        base::PLATFORM_FILE_OK);
+                                        base::File::FILE_OK);
 }
 
 void LocalFileSyncContext::DidInitialize(
@@ -853,12 +853,12 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   backend->change_tracker()->GetChangesForURL(url, &changes);
 
   base::FilePath platform_path;
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   FileSystemFileUtil* file_util =
       file_system_context->sandbox_delegate()->sync_file_util();
   DCHECK(file_util);
 
-  base::PlatformFileError file_error = file_util->GetFileInfo(
+  base::File::Error file_error = file_util->GetFileInfo(
       make_scoped_ptr(
           new FileSystemOperationContext(file_system_context)).get(),
       url,
@@ -866,7 +866,7 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
       &platform_path);
 
   webkit_blob::ScopedFile snapshot;
-  if (file_error == base::PLATFORM_FILE_OK && sync_mode == SYNC_SNAPSHOT) {
+  if (file_error == base::File::FILE_OK && sync_mode == SYNC_SNAPSHOT) {
     base::FilePath snapshot_path;
     base::CreateTemporaryFileInDir(local_base_path_.Append(kSnapshotDir),
                                    &snapshot_path);
@@ -880,14 +880,15 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   }
 
   if (status == SYNC_STATUS_OK &&
-      file_error != base::PLATFORM_FILE_OK &&
-      file_error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
-    status = PlatformFileErrorToSyncStatusCode(file_error);
+      file_error != base::File::FILE_OK &&
+      file_error != base::File::FILE_ERROR_NOT_FOUND) {
+    status = FileErrorToSyncStatusCode(file_error);
+}
 
   DCHECK(!file_info.is_symbolic_link);
 
   SyncFileType file_type = SYNC_FILE_TYPE_FILE;
-  if (file_error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
+  if (file_error == base::File::FILE_ERROR_NOT_FOUND)
     file_type = SYNC_FILE_TYPE_UNKNOWN;
   else if (file_info.is_directory)
     file_type = SYNC_FILE_TYPE_DIRECTORY;
@@ -954,22 +955,21 @@ void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
 void LocalFileSyncContext::DidApplyRemoteChange(
     const FileSystemURL& url,
     const SyncStatusCallback& callback_on_ui,
-    base::PlatformFileError file_error) {
+    base::File::Error file_error) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   root_delete_helper_.reset();
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(callback_on_ui,
-                 PlatformFileErrorToSyncStatusCode(file_error)));
+      base::Bind(callback_on_ui, FileErrorToSyncStatusCode(file_error)));
 }
 
 void LocalFileSyncContext::DidGetFileMetadata(
     const SyncFileMetadataCallback& callback,
-    base::PlatformFileError file_error,
-    const base::PlatformFileInfo& file_info) {
+    base::File::Error file_error,
+    const base::File::Info& file_info) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   SyncFileMetadata metadata;
-  if (file_error == base::PLATFORM_FILE_OK) {
+  if (file_error == base::File::FILE_OK) {
     metadata.file_type = file_info.is_directory ?
         SYNC_FILE_TYPE_DIRECTORY : SYNC_FILE_TYPE_FILE;
     metadata.size = file_info.size;
@@ -977,9 +977,7 @@ void LocalFileSyncContext::DidGetFileMetadata(
   }
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(callback,
-                 PlatformFileErrorToSyncStatusCode(file_error),
-                 metadata));
+      base::Bind(callback, FileErrorToSyncStatusCode(file_error), metadata));
 }
 
 base::TimeDelta LocalFileSyncContext::NotifyChangesDuration() {
@@ -993,8 +991,8 @@ void LocalFileSyncContext::DidCreateDirectoryForCopyIn(
     const base::FilePath& local_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback,
-    base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_OK) {
+    base::File::Error error) {
+  if (error != base::File::FILE_OK) {
     callback.Run(error);
     return;
   }

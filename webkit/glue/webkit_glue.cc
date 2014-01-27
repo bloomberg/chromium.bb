@@ -14,8 +14,8 @@ void SetJavaScriptFlags(const std::string& str) {
   v8::V8::SetFlagsFromString(str.data(), static_cast<int>(str.size()));
 }
 
-void PlatformFileInfoToWebFileInfo(
-    const base::PlatformFileInfo& file_info,
+void FileInfoToWebFileInfo(
+    const base::File::Info& file_info,
     blink::WebFileInfo* web_file_info) {
   DCHECK(web_file_info);
   // WebKit now expects NaN as uninitialized/null Date.

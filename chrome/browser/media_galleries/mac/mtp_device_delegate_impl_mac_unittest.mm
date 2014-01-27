@@ -6,6 +6,7 @@
 #import <ImageCaptureCore/ImageCaptureCore.h>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/foundation_util.h"
@@ -194,20 +195,20 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     io_thread_->Stop();
   }
 
-  void OnError(base::WaitableEvent* event, base::PlatformFileError error) {
+  void OnError(base::WaitableEvent* event, base::File::Error error) {
     error_ = error;
     event->Signal();
   }
 
   void OverlappedOnError(base::WaitableEvent* event,
-                         base::PlatformFileError error) {
+                         base::File::Error error) {
     overlapped_error_ = error;
     event->Signal();
   }
 
   void OnFileInfo(base::WaitableEvent* event,
-                  const base::PlatformFileInfo& info) {
-    error_ = base::PLATFORM_FILE_OK;
+                  const base::File::Info& info) {
+    error_ = base::File::FILE_OK;
     info_ = info;
     event->Signal();
   }
@@ -215,7 +216,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   void OnReadDir(base::WaitableEvent* event,
                  const fileapi::AsyncFileUtil::EntryList& files,
                  bool has_more) {
-    error_ = base::PLATFORM_FILE_OK;
+    error_ = base::File::FILE_OK;
     ASSERT_FALSE(has_more);
     file_list_ = files;
     event->Signal();
@@ -224,21 +225,21 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   void OverlappedOnReadDir(base::WaitableEvent* event,
                            const fileapi::AsyncFileUtil::EntryList& files,
                            bool has_more) {
-    overlapped_error_ = base::PLATFORM_FILE_OK;
+    overlapped_error_ = base::File::FILE_OK;
     ASSERT_FALSE(has_more);
     overlapped_file_list_ = files;
     event->Signal();
   }
 
   void OnDownload(base::WaitableEvent* event,
-                  const base::PlatformFileInfo& file_info,
+                  const base::File::Info& file_info,
                   const base::FilePath& local_path) {
-    error_ = base::PLATFORM_FILE_OK;
+    error_ = base::File::FILE_OK;
     event->Signal();
   }
 
-  base::PlatformFileError GetFileInfo(const base::FilePath& path,
-                                      base::PlatformFileInfo* info) {
+  base::File::Error GetFileInfo(const base::FilePath& path,
+                                base::File::Info* info) {
     base::WaitableEvent wait(true, false);
     delegate_->GetFileInfo(
       path,
@@ -255,7 +256,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     return error_;
   }
 
-  base::PlatformFileError ReadDir(const base::FilePath& path) {
+  base::File::Error ReadDir(const base::FilePath& path) {
     base::WaitableEvent wait(true, false);
     delegate_->ReadDirectory(
         path,
@@ -271,7 +272,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     return error_;
   }
 
-  base::PlatformFileError DownloadFile(
+  base::File::Error DownloadFile(
       const base::FilePath& path,
       const base::FilePath& local_path) {
     base::WaitableEvent wait(true, false);
@@ -302,11 +303,11 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   // This object needs special deletion inside the above |task_runner_|.
   MTPDeviceDelegateImplMac* delegate_;
 
-  base::PlatformFileError error_;
-  base::PlatformFileInfo info_;
+  base::File::Error error_;
+  base::File::Info info_;
   fileapi::AsyncFileUtil::EntryList file_list_;
 
-  base::PlatformFileError overlapped_error_;
+  base::File::Error overlapped_error_;
   fileapi::AsyncFileUtil::EntryList overlapped_file_list_;
 
  private:
@@ -314,25 +315,25 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
 };
 
 TEST_F(MTPDeviceDelegateImplMacTest, TestGetRootFileInfo) {
-  base::PlatformFileInfo info;
+  base::File::Info info;
   // Making a fresh delegate should have a single file entry for the synthetic
   // root directory, with the name equal to the device id string.
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             GetFileInfo(base::FilePath(kDevicePath), &info));
   EXPECT_TRUE(info.is_directory);
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             GetFileInfo(base::FilePath("/nonexistent"), &info));
 
   // Signal the delegate that no files are coming.
   delegate_->NoMoreItems();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
+  EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
   EXPECT_EQ(0U, file_list_.size());
 }
 
 TEST_F(MTPDeviceDelegateImplMacTest, TestOverlappedReadDir) {
   base::Time time1 = base::Time::Now();
-  base::PlatformFileInfo info1;
+  base::File::Info info1;
   info1.size = 1;
   info1.is_directory = false;
   info1.is_symbolic_link = false;
@@ -369,15 +370,15 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestOverlappedReadDir) {
   loop.RunUntilIdle();
   wait.Wait();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_);
+  EXPECT_EQ(base::File::FILE_OK, error_);
   EXPECT_EQ(1U, file_list_.size());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, overlapped_error_);
+  EXPECT_EQ(base::File::FILE_OK, overlapped_error_);
   EXPECT_EQ(1U, overlapped_file_list_.size());
 }
 
 TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
   base::Time time1 = base::Time::Now();
-  base::PlatformFileInfo info1;
+  base::File::Info info1;
   info1.size = 1;
   info1.is_directory = false;
   info1.is_symbolic_link = false;
@@ -386,8 +387,8 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
   info1.creation_time = time1;
   delegate_->ItemAdded("name1", info1);
 
-  base::PlatformFileInfo info;
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  base::File::Info info;
+  EXPECT_EQ(base::File::FILE_OK,
             GetFileInfo(base::FilePath("/ic:id/name1"), &info));
   EXPECT_EQ(info1.size, info.size);
   EXPECT_EQ(info1.is_directory, info.is_directory);
@@ -399,11 +400,11 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
   delegate_->ItemAdded("name2", info1);
   delegate_->NoMoreItems();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             GetFileInfo(base::FilePath("/ic:id/name2"), &info));
   EXPECT_EQ(info1.size, info.size);
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
+  EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
 
   ASSERT_EQ(2U, file_list_.size());
   EXPECT_EQ(time1, file_list_[0].last_modified_time);
@@ -417,7 +418,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
 
 TEST_F(MTPDeviceDelegateImplMacTest, TestDirectoriesAndSorting) {
   base::Time time1 = base::Time::Now();
-  base::PlatformFileInfo info1;
+  base::File::Info info1;
   info1.size = 1;
   info1.is_directory = false;
   info1.is_symbolic_link = false;
@@ -434,7 +435,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDirectoriesAndSorting) {
   delegate_->ItemAdded("name1", info1);
   delegate_->NoMoreItems();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
+  EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
 
   ASSERT_EQ(4U, file_list_.size());
   EXPECT_EQ("dir1", file_list_[0].name);
@@ -450,7 +451,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDirectoriesAndSorting) {
 
 TEST_F(MTPDeviceDelegateImplMacTest, SubDirectories) {
   base::Time time1 = base::Time::Now();
-  base::PlatformFileInfo info1;
+  base::File::Info info1;
   info1.size = 0;
   info1.is_directory = true;
   info1.is_symbolic_link = false;
@@ -486,7 +487,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, SubDirectories) {
 
   delegate_->NoMoreItems();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
+  EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
   ASSERT_EQ(3U, file_list_.size());
   EXPECT_TRUE(file_list_[0].is_directory);
   EXPECT_EQ("dir1", file_list_[0].name);
@@ -495,13 +496,13 @@ TEST_F(MTPDeviceDelegateImplMacTest, SubDirectories) {
   EXPECT_FALSE(file_list_[2].is_directory);
   EXPECT_EQ("name4", file_list_[2].name);
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             ReadDir(base::FilePath(kDevicePath).Append("dir1")));
   ASSERT_EQ(1U, file_list_.size());
   EXPECT_FALSE(file_list_[0].is_directory);
   EXPECT_EQ("name1", file_list_[0].name);
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             ReadDir(base::FilePath(kDevicePath).Append("dir2")));
   ASSERT_EQ(2U, file_list_.size());
   EXPECT_FALSE(file_list_[0].is_directory);
@@ -509,27 +510,27 @@ TEST_F(MTPDeviceDelegateImplMacTest, SubDirectories) {
   EXPECT_TRUE(file_list_[1].is_directory);
   EXPECT_EQ("subdir", file_list_[1].name);
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
+  EXPECT_EQ(base::File::FILE_OK,
             ReadDir(base::FilePath(kDevicePath)
                     .Append("dir2").Append("subdir")));
   ASSERT_EQ(1U, file_list_.size());
   EXPECT_FALSE(file_list_[0].is_directory);
   EXPECT_EQ("name3", file_list_[0].name);
 
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             ReadDir(base::FilePath(kDevicePath)
                     .Append("dir2").Append("subdir").Append("subdir")));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             ReadDir(base::FilePath(kDevicePath)
                     .Append("dir3").Append("subdir")));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             ReadDir(base::FilePath(kDevicePath).Append("dir3")));
 }
 
 TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::Time t1 = base::Time::Now();
-  base::PlatformFileInfo info;
+  base::File::Info info;
   info.size = 4;
   info.is_directory = false;
   info.is_symbolic_link = false;
@@ -544,17 +545,17 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
   delegate_->ItemAdded(kTestFileName, info);
   delegate_->NoMoreItems();
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, ReadDir(base::FilePath(kDevicePath)));
+  EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
   ASSERT_EQ(1U, file_list_.size());
   ASSERT_EQ("filename", file_list_[0].name);
 
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             DownloadFile(base::FilePath("/ic:id/nonexist"),
                          temp_dir_.path().Append("target")));
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-             DownloadFile(base::FilePath("/ic:id/filename"),
-                          temp_dir_.path().Append("target")));
+  EXPECT_EQ(base::File::FILE_OK,
+            DownloadFile(base::FilePath("/ic:id/filename"),
+                         temp_dir_.path().Append("target")));
   std::string contents;
   EXPECT_TRUE(base::ReadFileToString(temp_dir_.path().Append("target"),
                                      &contents));

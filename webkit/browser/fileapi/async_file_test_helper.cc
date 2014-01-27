@@ -22,23 +22,23 @@ namespace {
 typedef FileSystemOperation::FileEntryList FileEntryList;
 
 void AssignAndQuit(base::RunLoop* run_loop,
-                   base::PlatformFileError* result_out,
-                   base::PlatformFileError result) {
+                   base::File::Error* result_out,
+                   base::File::Error result) {
   *result_out = result;
   run_loop->Quit();
 }
 
-base::Callback<void(base::PlatformFileError)>
+base::Callback<void(base::File::Error)>
 AssignAndQuitCallback(base::RunLoop* run_loop,
-                      base::PlatformFileError* result) {
+                      base::File::Error* result) {
   return base::Bind(&AssignAndQuit, run_loop, base::Unretained(result));
 }
 
 void GetMetadataCallback(base::RunLoop* run_loop,
-                         base::PlatformFileError* result_out,
-                         base::PlatformFileInfo* file_info_out,
-                         base::PlatformFileError result,
-                         const base::PlatformFileInfo& file_info) {
+                         base::File::Error* result_out,
+                         base::File::Info* file_info_out,
+                         base::File::Error result,
+                         const base::File::Info& file_info) {
   *result_out = result;
   if (file_info_out)
     *file_info_out = file_info;
@@ -47,10 +47,10 @@ void GetMetadataCallback(base::RunLoop* run_loop,
 
 void CreateSnapshotFileCallback(
     base::RunLoop* run_loop,
-    base::PlatformFileError* result_out,
+    base::File::Error* result_out,
     base::FilePath* platform_path_out,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& file_info,
+    base::File::Error result,
+    const base::File::Info& file_info,
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DCHECK(!file_ref.get());
@@ -61,14 +61,14 @@ void CreateSnapshotFileCallback(
 }
 
 void ReadDirectoryCallback(base::RunLoop* run_loop,
-                           base::PlatformFileError* result_out,
+                           base::File::Error* result_out,
                            FileEntryList* entries_out,
-                           base::PlatformFileError result,
+                           base::File::Error result,
                            const FileEntryList& entries,
                            bool has_more) {
   *result_out = result;
   *entries_out = entries;
-  if (result != base::PLATFORM_FILE_OK || !has_more)
+  if (result != base::File::FILE_OK || !has_more)
     run_loop->Quit();
 }
 
@@ -90,19 +90,19 @@ void DidGetUsageAndQuota(quota::QuotaStatusCode* status_out,
 
 const int64 AsyncFileTestHelper::kDontCheckSize = -1;
 
-base::PlatformFileError AsyncFileTestHelper::Copy(
+base::File::Error AsyncFileTestHelper::Copy(
     FileSystemContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest) {
   return CopyWithProgress(context, src, dest, CopyProgressCallback());
 }
 
-base::PlatformFileError AsyncFileTestHelper::CopyWithProgress(
+base::File::Error AsyncFileTestHelper::CopyWithProgress(
     FileSystemContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest,
     const CopyProgressCallback& progress_callback) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->Copy(
       src, dest, FileSystemOperation::OPTION_NONE, progress_callback,
@@ -111,11 +111,11 @@ base::PlatformFileError AsyncFileTestHelper::CopyWithProgress(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::Move(
+base::File::Error AsyncFileTestHelper::Move(
     FileSystemContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->Move(
       src, dest, FileSystemOperation::OPTION_NONE,
@@ -124,11 +124,11 @@ base::PlatformFileError AsyncFileTestHelper::Move(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::Remove(
+base::File::Error AsyncFileTestHelper::Remove(
     FileSystemContext* context,
     const FileSystemURL& url,
     bool recursive) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->Remove(
       url, recursive, AssignAndQuitCallback(&run_loop, &result));
@@ -136,11 +136,11 @@ base::PlatformFileError AsyncFileTestHelper::Remove(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::ReadDirectory(
+base::File::Error AsyncFileTestHelper::ReadDirectory(
     FileSystemContext* context,
     const FileSystemURL& url,
     FileEntryList* entries) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   DCHECK(entries);
   entries->clear();
   base::RunLoop run_loop;
@@ -150,10 +150,10 @@ base::PlatformFileError AsyncFileTestHelper::ReadDirectory(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::CreateDirectory(
+base::File::Error AsyncFileTestHelper::CreateDirectory(
     FileSystemContext* context,
     const FileSystemURL& url) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CreateDirectory(
       url,
@@ -164,10 +164,10 @@ base::PlatformFileError AsyncFileTestHelper::CreateDirectory(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::CreateFile(
+base::File::Error AsyncFileTestHelper::CreateFile(
     FileSystemContext* context,
     const FileSystemURL& url) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CreateFile(
       url, false /* exclusive */,
@@ -176,18 +176,18 @@ base::PlatformFileError AsyncFileTestHelper::CreateFile(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::CreateFileWithData(
+base::File::Error AsyncFileTestHelper::CreateFileWithData(
     FileSystemContext* context,
     const FileSystemURL& url,
     const char* buf,
     int buf_size) {
   base::ScopedTempDir dir;
   if (!dir.CreateUniqueTempDir())
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_ERROR_FAILED;
   base::FilePath local_path = dir.path().AppendASCII("tmp");
   if (buf_size != file_util::WriteFile(local_path, buf, buf_size))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CopyInForeignFile(
       local_path, url, AssignAndQuitCallback(&run_loop, &result));
@@ -195,23 +195,23 @@ base::PlatformFileError AsyncFileTestHelper::CreateFileWithData(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::TruncateFile(
+base::File::Error AsyncFileTestHelper::TruncateFile(
     FileSystemContext* context,
     const FileSystemURL& url,
     size_t size) {
   base::RunLoop run_loop;
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   context->operation_runner()->Truncate(
       url, size, AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::GetMetadata(
+base::File::Error AsyncFileTestHelper::GetMetadata(
     FileSystemContext* context,
     const FileSystemURL& url,
-    base::PlatformFileInfo* file_info) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+    base::File::Info* file_info) {
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->GetMetadata(
       url, base::Bind(&GetMetadataCallback, &run_loop, &result,
@@ -220,11 +220,11 @@ base::PlatformFileError AsyncFileTestHelper::GetMetadata(
   return result;
 }
 
-base::PlatformFileError AsyncFileTestHelper::GetPlatformPath(
+base::File::Error AsyncFileTestHelper::GetPlatformPath(
     FileSystemContext* context,
     const FileSystemURL& url,
     base::FilePath* platform_path) {
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CreateSnapshotFile(
       url, base::Bind(&CreateSnapshotFileCallback, &run_loop, &result,
@@ -237,9 +237,9 @@ bool AsyncFileTestHelper::FileExists(
     FileSystemContext* context,
     const FileSystemURL& url,
     int64 expected_size) {
-  base::PlatformFileInfo file_info;
-  base::PlatformFileError result = GetMetadata(context, url, &file_info);
-  if (result != base::PLATFORM_FILE_OK || file_info.is_directory)
+  base::File::Info file_info;
+  base::File::Error result = GetMetadata(context, url, &file_info);
+  if (result != base::File::FILE_OK || file_info.is_directory)
     return false;
   return expected_size == kDontCheckSize || file_info.size == expected_size;
 }
@@ -247,9 +247,9 @@ bool AsyncFileTestHelper::FileExists(
 bool AsyncFileTestHelper::DirectoryExists(
     FileSystemContext* context,
     const FileSystemURL& url) {
-  base::PlatformFileInfo file_info;
-  base::PlatformFileError result = GetMetadata(context, url, &file_info);
-  return (result == base::PLATFORM_FILE_OK) && file_info.is_directory;
+  base::File::Info file_info;
+  base::File::Error result = GetMetadata(context, url, &file_info);
+  return (result == base::File::FILE_OK) && file_info.is_directory;
 }
 
 quota::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(

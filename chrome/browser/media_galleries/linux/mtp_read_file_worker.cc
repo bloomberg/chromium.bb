@@ -47,7 +47,7 @@ MTPReadFileWorker::~MTPReadFileWorker() {
 
 void MTPReadFileWorker::WriteDataIntoSnapshotFile(
     const SnapshotRequestInfo& request_info,
-    const base::PlatformFileInfo& snapshot_file_info) {
+    const base::File::Info& snapshot_file_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ReadDataChunkFromDeviceFile(
       make_scoped_ptr(new SnapshotFileDetails(request_info,
@@ -128,7 +128,7 @@ void MTPReadFileWorker::OnDidWriteIntoSnapshotFile(
         content::BrowserThread::IO,
         FROM_HERE,
         base::Bind(snapshot_file_details->error_callback(),
-                   base::PLATFORM_FILE_ERROR_FAILED));
+                   base::File::FILE_ERROR_FAILED));
     return;
   }
   content::BrowserThread::PostTask(

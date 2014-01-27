@@ -15,7 +15,7 @@
 
 #include <string>
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
@@ -32,10 +32,10 @@ base::win::ScopedComPtr<IPortableDevice> OpenDevice(
 // |device|. On success, returns no error (base::PLATFORM_FILE_OK) and fills in
 // |file_entry_info|. On failure, returns the corresponding platform file error
 // and |file_entry_info| is not set.
-base::PlatformFileError GetFileEntryInfo(
+base::File::Error GetFileEntryInfo(
     IPortableDevice* device,
     const base::string16& object_id,
-    base::PlatformFileInfo* file_entry_info);
+    base::File::Info* file_entry_info);
 
 // Gets the entries of the directory specified by |directory_object_id| from
 // the given MTP |device|. On success, returns true and fills in

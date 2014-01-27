@@ -19,7 +19,6 @@
 using base::Bind;
 using base::Callback;
 using base::Owned;
-using base::PlatformFileError;
 using base::Unretained;
 using webkit_blob::ShareableFileReference;
 
@@ -29,7 +28,7 @@ namespace {
 
 class EnsureFileExistsHelper {
  public:
-  EnsureFileExistsHelper() : error_(base::PLATFORM_FILE_OK), created_(false) {}
+  EnsureFileExistsHelper() : error_(base::File::FILE_OK), created_(false) {}
 
   void RunWork(FileSystemFileUtil* file_util,
                FileSystemOperationContext* context,
@@ -42,7 +41,7 @@ class EnsureFileExistsHelper {
   }
 
  private:
-  base::PlatformFileError error_;
+  base::File::Error error_;
   bool created_;
   DISALLOW_COPY_AND_ASSIGN(EnsureFileExistsHelper);
 };
@@ -50,7 +49,7 @@ class EnsureFileExistsHelper {
 class GetFileInfoHelper {
  public:
   GetFileInfoHelper()
-      : error_(base::PLATFORM_FILE_OK) {}
+      : error_(base::File::FILE_OK) {}
 
   void GetFileInfo(FileSystemFileUtil* file_util,
                    FileSystemOperationContext* context,
@@ -76,8 +75,8 @@ class GetFileInfoHelper {
   }
 
  private:
-  base::PlatformFileError error_;
-  base::PlatformFileInfo file_info_;
+  base::File::Error error_;
+  base::File::Info file_info_;
   base::FilePath platform_path_;
   webkit_blob::ScopedFile scoped_file_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
@@ -85,21 +84,21 @@ class GetFileInfoHelper {
 
 class ReadDirectoryHelper {
  public:
-  ReadDirectoryHelper() : error_(base::PLATFORM_FILE_OK) {}
+  ReadDirectoryHelper() : error_(base::File::FILE_OK) {}
 
   void RunWork(FileSystemFileUtil* file_util,
                FileSystemOperationContext* context,
                const FileSystemURL& url) {
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
     base::FilePath platform_path;
-    PlatformFileError error = file_util->GetFileInfo(
+    base::File::Error error = file_util->GetFileInfo(
         context, url, &file_info, &platform_path);
-    if (error != base::PLATFORM_FILE_OK) {
+    if (error != base::File::FILE_OK) {
       error_ = error;
       return;
     }
     if (!file_info.is_directory) {
-      error_ = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+      error_ = base::File::FILE_ERROR_NOT_A_DIRECTORY;
       return;
     }
 
@@ -115,7 +114,7 @@ class ReadDirectoryHelper {
       entry.last_modified_time = file_enum->LastModifiedTime();
       entries_.push_back(entry);
     }
-    error_ = base::PLATFORM_FILE_OK;
+    error_ = base::File::FILE_OK;
   }
 
   void Reply(const AsyncFileUtil::ReadDirectoryCallback& callback) {
@@ -123,14 +122,14 @@ class ReadDirectoryHelper {
   }
 
  private:
-  base::PlatformFileError error_;
+  base::File::Error error_;
   std::vector<DirectoryEntry> entries_;
   DISALLOW_COPY_AND_ASSIGN(ReadDirectoryHelper);
 };
 
 void RunCreateOrOpenCallback(
     const AsyncFileUtil::CreateOrOpenCallback& callback,
-    base::PlatformFileError result,
+    base::File::Error result,
     base::PassPlatformFile file,
     bool created) {
   callback.Run(result, file, base::Closure());
@@ -332,7 +331,7 @@ void AsyncFileUtilAdapter::DeleteRecursively(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void AsyncFileUtilAdapter::CreateSnapshotFile(

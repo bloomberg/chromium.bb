@@ -47,9 +47,9 @@ void DidGetMetadataForResolveURL(
     const base::FilePath& path,
     const FileSystemContext::ResolveURLCallback& callback,
     const FileSystemInfo& info,
-    base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info) {
-  if (error != base::PLATFORM_FILE_OK) {
+    base::File::Error error,
+    const base::File::Info& file_info) {
+  if (error != base::File::FILE_OK) {
     callback.Run(error, FileSystemInfo(), base::FilePath(), false);
     return;
   }
@@ -184,7 +184,7 @@ bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
       continue;
     if (backend->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
             this, quota_manager_proxy(), origin_url, iter->first)
-            != base::PLATFORM_FILE_OK) {
+            != base::File::FILE_OK) {
       // Continue the loop, but record the failure.
       success = false;
     }
@@ -233,9 +233,9 @@ AsyncFileUtil* FileSystemContext::GetAsyncFileUtil(
 
 CopyOrMoveFileValidatorFactory*
 FileSystemContext::GetCopyOrMoveFileValidatorFactory(
-    FileSystemType type, base::PlatformFileError* error_code) const {
+    FileSystemType type, base::File::Error* error_code) const {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend)
     return NULL;
@@ -297,13 +297,13 @@ void FileSystemContext::OpenFileSystem(
 
   if (!FileSystemContext::IsSandboxFileSystem(type)) {
     // Disallow opening a non-sandboxed filesystem.
-    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
+    callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
     return;
   }
 
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend) {
-    callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
+    callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
     return;
   }
 
@@ -324,17 +324,17 @@ void FileSystemContext::ResolveURL(
     // more generally. http://crbug.com/304062.
     FileSystemInfo info = GetFileSystemInfoForChromeOS(url.origin());
     DidOpenFileSystemForResolveURL(
-        url, callback, info.root_url, info.name, base::PLATFORM_FILE_OK);
+        url, callback, info.root_url, info.name, base::File::FILE_OK);
     return;
 #endif
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
+    callback.Run(base::File::FILE_ERROR_SECURITY,
                  FileSystemInfo(), base::FilePath(), false);
     return;
   }
 
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend) {
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
+    callback.Run(base::File::FILE_ERROR_SECURITY,
                  FileSystemInfo(), base::FilePath(), false);
     return;
   }
@@ -356,11 +356,11 @@ void FileSystemContext::DeleteFileSystem(
 
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend) {
-    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+    callback.Run(base::File::FILE_ERROR_SECURITY);
     return;
   }
   if (!backend->GetQuotaUtil()) {
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -461,21 +461,21 @@ void FileSystemContext::DeleteOnCorrectThread() const {
 }
 
 FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
-    const FileSystemURL& url, base::PlatformFileError* error_code) {
+    const FileSystemURL& url, base::File::Error* error_code) {
   if (!url.is_valid()) {
     if (error_code)
-      *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
+      *error_code = base::File::FILE_ERROR_INVALID_URL;
     return NULL;
   }
 
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend) {
     if (error_code)
-      *error_code = base::PLATFORM_FILE_ERROR_FAILED;
+      *error_code = base::File::FILE_ERROR_FAILED;
     return NULL;
   }
 
-  base::PlatformFileError fs_error = base::PLATFORM_FILE_OK;
+  base::File::Error fs_error = base::File::FILE_OK;
   FileSystemOperation* operation =
       backend->CreateFileSystemOperation(url, this, &fs_error);
 
@@ -543,10 +543,10 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
     const FileSystemContext::ResolveURLCallback& callback,
     const GURL& filesystem_root,
     const std::string& filesystem_name,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     callback.Run(error, FileSystemInfo(), base::FilePath(), false);
     return;
   }

@@ -27,7 +27,6 @@ using base::TimeDelta;
 using base::TimeTicks;
 using base::PassPlatformFile;
 using base::PlatformFile;
-using base::PlatformFileError;
 using content::BrowserThread;
 using std::map;
 using std::set;
@@ -346,10 +345,10 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::IndexFiles() {
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::StartFileIndexing(
-    PlatformFileError error,
+    base::File::Error error,
     PassPlatformFile pass_file,
     bool) {
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     current_file_ = base::kInvalidPlatformFileValue;
     FinishFileIndexing(false);
     return;
@@ -375,10 +374,10 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::ReadFromFile() {
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::OnRead(
-    PlatformFileError error,
+    base::File::Error error,
     const char* data,
     int bytes_read) {
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     FinishFileIndexing(false);
     return;
   }
@@ -435,7 +434,7 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::CloseFile() {
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::CloseCallback(
-    PlatformFileError error) {}
+    base::File::Error error) {}
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::ReportWorked() {
   TimeTicks current_time = TimeTicks::Now();

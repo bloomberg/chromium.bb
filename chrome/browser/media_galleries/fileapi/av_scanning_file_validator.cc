@@ -26,8 +26,7 @@ using content::BrowserThread;
 namespace {
 
 #if defined(OS_WIN)
-base::PlatformFileError ScanFile(
-    const base::FilePath& dest_platform_path) {
+base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
@@ -36,20 +35,20 @@ base::PlatformFileError ScanFile(
   if (FAILED(hr)) {
     // The thread must have COM initialized.
     DCHECK_NE(CO_E_NOTINITIALIZED, hr);
-    return base::PLATFORM_FILE_ERROR_SECURITY;
+    return base::File::FILE_ERROR_SECURITY;
   }
 
   hr = attachment_services->SetLocalPath(dest_platform_path.value().c_str());
   if (FAILED(hr))
-    return base::PLATFORM_FILE_ERROR_SECURITY;
+    return base::File::FILE_ERROR_SECURITY;
 
   // A failure in the Save() call below could result in the downloaded file
   // being deleted.
   HRESULT scan_result = attachment_services->Save();
   if (scan_result == S_OK)
-    return base::PLATFORM_FILE_OK;
+    return base::File::FILE_OK;
 
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+  return base::File::FILE_ERROR_SECURITY;
 }
 #endif
 
@@ -69,7 +68,7 @@ void AVScanningFileValidator::StartPostWriteValidation(
       base::Bind(&ScanFile, dest_platform_path),
       result_callback);
 #else
-  result_callback.Run(base::PLATFORM_FILE_OK);
+  result_callback.Run(base::File::FILE_OK);
 #endif
 }
 

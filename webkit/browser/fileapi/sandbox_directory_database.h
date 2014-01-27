@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
@@ -69,7 +69,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
   // exist.
   bool ListChildren(FileId parent_id, std::vector<FileId>* children);
   bool GetFileInfo(FileId file_id, FileInfo* info);
-  base::PlatformFileError AddFileInfo(const FileInfo& info, FileId* file_id);
+  base::File::Error AddFileInfo(const FileInfo& info, FileId* file_id);
   bool RemoveFileInfo(FileId file_id);
   // This does a full update of the FileInfo, and is what you'd use for moves
   // and renames.  If you just want to update the modification_time, use

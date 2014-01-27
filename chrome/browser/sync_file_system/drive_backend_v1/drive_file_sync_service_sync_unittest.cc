@@ -135,7 +135,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
       file_system->backend()->sync_context()->
           set_mock_notify_changes_duration_in_sec(0);
 
-      EXPECT_EQ(base::PLATFORM_FILE_OK, file_system->OpenFileSystem());
+      EXPECT_EQ(base::File::FILE_OK, file_system->OpenFileSystem());
       file_systems_[origin] = file_system;
     }
 
@@ -151,7 +151,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
                             const std::string& content) {
     fileapi::FileSystemURL url(CreateSyncableFileSystemURL(origin, path));
     ASSERT_TRUE(ContainsKey(file_systems_, origin));
-    EXPECT_EQ(base::PLATFORM_FILE_OK, file_systems_[origin]->CreateFile(url));
+    EXPECT_EQ(base::File::FILE_OK, file_systems_[origin]->CreateFile(url));
     int64 bytes_written = file_systems_[origin]->WriteString(url, content);
     EXPECT_EQ(static_cast<int64>(content.size()), bytes_written);
     FlushMessageLoop();
@@ -169,7 +169,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   void RemoveLocal(const GURL& origin, const base::FilePath& path) {
     ASSERT_TRUE(ContainsKey(file_systems_, origin));
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_systems_[origin]->Remove(
                   CreateSyncableFileSystemURL(origin, path),
                   true /* recursive */));
@@ -300,7 +300,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
     fileapi::FileSystemURL url(CreateSyncableFileSystemURL(origin, path));
     CannedSyncableFileSystem::FileEntryList local_entries;
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_system->ReadDirectory(url, &local_entries));
     for (CannedSyncableFileSystem::FileEntryList::iterator itr =
              local_entries.begin();
@@ -337,7 +337,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     std::string file_content;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->ReadFile(file_id, &file_content));
-    EXPECT_EQ(base::PLATFORM_FILE_OK,
+    EXPECT_EQ(base::File::FILE_OK,
               file_system->VerifyFile(url, file_content));
   }
 

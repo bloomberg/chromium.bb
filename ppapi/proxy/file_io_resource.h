@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/private/pp_file_handle.h"
@@ -111,14 +112,14 @@ class PPAPI_PROXY_EXPORT FileIOResource
     // thread (blocking). This should not be called when we hold the proxy lock.
     int32_t DoWork();
 
-    const base::PlatformFileInfo& file_info() const { return file_info_; }
+    const base::File::Info& file_info() const { return file_info_; }
 
    private:
     friend class base::RefCountedThreadSafe<QueryOp>;
     ~QueryOp();
 
     scoped_refptr<FileHandleHolder> file_handle_;
-    base::PlatformFileInfo file_info_;
+    base::File::Info file_info_;
   };
 
   // Class to perform file read operations across multiple threads.

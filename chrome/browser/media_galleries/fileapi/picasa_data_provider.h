@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
@@ -47,7 +48,7 @@ class PicasaDataProvider {
   scoped_ptr<AlbumMap> GetFolders();
   // |error| must be non-NULL.
   scoped_ptr<AlbumImages> FindAlbumImages(const std::string& key,
-                                          base::PlatformFileError* error);
+                                          base::File::Error* error);
 
  protected:
   // Notifies data provider that any currently cached data is stale.

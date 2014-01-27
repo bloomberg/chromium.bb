@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
@@ -129,14 +129,14 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // GetFileInfo request.
   void OnDidGetFileInfo(
       const AsyncFileUtil::GetFileInfoCallback& callback,
-      const base::PlatformFileInfo& file_info);
+      const base::File::Info& file_info);
 
   // Called when GetFileInfo method call failed to get the details of file
   // specified by the requested url. |callback| is invoked to notify the
   // caller about the platform file |error|.
   void OnGetFileInfoError(
       const AsyncFileUtil::GetFileInfoCallback& callback,
-      base::PlatformFileError error);
+      base::File::Error error);
 
   // Called when ReadDirectory method call succeeds. |callback| is invoked to
   // complete the ReadDirectory request.
@@ -159,7 +159,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // that occured while reading the directory objects.
   void OnReadDirectoryError(
       const AsyncFileUtil::ReadDirectoryCallback& callback,
-      base::PlatformFileError error);
+      base::File::Error error);
 
   // Called when the snapshot file specified by the |platform_path| is
   // successfully created. |file_info| contains the device media file details
@@ -167,16 +167,16 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   void OnDidCreateSnapshotFile(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
       base::SequencedTaskRunner* media_task_runner,
-      const base::PlatformFileInfo& file_info,
+      const base::File::Info& file_info,
       const base::FilePath& platform_path);
 
   // Called after OnDidCreateSnapshotFile finishes media check.
   // |callback| is invoked to complete the CreateSnapshotFile request.
   void OnDidCheckMedia(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      const base::PlatformFileInfo& file_info,
+      const base::File::Info& file_info,
       scoped_refptr<webkit_blob::ShareableFileReference> platform_file,
-      base::PlatformFileError error);
+      base::File::Error error);
 
   // The following three functions are called in sequence when we have a
   // streaming MTP implementation and don't need a local snapshot file to be
@@ -185,13 +185,13 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
       const fileapi::FileSystemURL& url,
       base::SequencedTaskRunner* media_task_runner,
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info);
+      base::File::Error error,
+      const base::File::Info& file_info);
   void FinishStreamingSnapshotFile(
       const fileapi::FileSystemURL& url,
       base::SequencedTaskRunner* media_task_runner,
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      const base::PlatformFileInfo& file_info,
+      const base::File::Info& file_info,
       net::IOBuffer* buffer,
       int buffer_size);
 
@@ -199,7 +199,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // notify the caller about the |error|.
   void OnCreateSnapshotFileError(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      base::PlatformFileError error);
+      base::File::Error error);
 
   // Called when the snapshot file specified by the |snapshot_file_path| is
   // created to hold the contents of the url.path(). If the snapshot

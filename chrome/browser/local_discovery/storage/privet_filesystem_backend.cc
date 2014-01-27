@@ -42,7 +42,7 @@ void PrivetFileSystemBackend::OpenFileSystem(
   // Copied from src/chrome/browser/chromeos/fileapi/file_system_backend.cc
   // This is deprecated for non-sandboxed filesystems.
   NOTREACHED();
-  callback.Run(GURL(), std::string(), base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
 }
 
 fileapi::FileSystemQuotaUtil* PrivetFileSystemBackend::GetQuotaUtil() {
@@ -57,9 +57,9 @@ fileapi::AsyncFileUtil* PrivetFileSystemBackend::GetAsyncFileUtil(
 
 fileapi::CopyOrMoveFileValidatorFactory*
 PrivetFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    fileapi::FileSystemType type, base::PlatformFileError* error_code) {
+    fileapi::FileSystemType type, base::File::Error* error_code) {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   return NULL;
 }
 
@@ -67,7 +67,7 @@ fileapi::FileSystemOperation*
 PrivetFileSystemBackend::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
     fileapi::FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   return fileapi::FileSystemOperation::Create(
       url, context,
       make_scoped_ptr(new fileapi::FileSystemOperationContext(context)));

@@ -90,7 +90,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       ppapi::host::ReplyMessageContext reply_context,
       const GURL& root,
       const std::string& name,
-      base::PlatformFileError error);
+      base::File::Error error);
   void OpenIsolatedFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
@@ -103,7 +103,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   void OpenPluginPrivateFileSystemComplete(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
-      base::PlatformFileError error);
+      base::File::Error error);
 
   int32_t OnHostMsgOpen(
       ppapi::host::HostMessageContext* context,

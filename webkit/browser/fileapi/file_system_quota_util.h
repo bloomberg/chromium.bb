@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -38,7 +38,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.
-  virtual base::PlatformFileError DeleteOriginDataOnFileTaskRunner(
+  virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,

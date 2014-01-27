@@ -40,12 +40,12 @@ class TestFileUtil : public fileapi::LocalFileUtil {
   virtual ~TestFileUtil() {}
 
   // LocalFileUtil overrides.
-  virtual base::PlatformFileError GetLocalFilePath(
+  virtual base::File::Error GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
       base::FilePath* local_file_path) OVERRIDE {
     *local_file_path = base_path_.Append(file_system_url.path());
-    return base::PLATFORM_FILE_OK;
+    return base::File::FILE_OK;
   }
 
  private:
@@ -67,13 +67,13 @@ class TestFileSystemBackend::QuotaUtil
   virtual ~QuotaUtil() {}
 
   // FileSystemQuotaUtil overrides.
-  virtual base::PlatformFileError DeleteOriginDataOnFileTaskRunner(
+  virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE {
     NOTREACHED();
-    return base::PLATFORM_FILE_OK;
+    return base::File::FILE_OK;
   }
 
   virtual scoped_refptr<fileapi::QuotaReservation>
@@ -186,7 +186,7 @@ void TestFileSystemBackend::OpenFileSystem(
     const OpenFileSystemCallback& callback) {
   callback.Run(GetFileSystemRootURI(origin_url, type),
                GetFileSystemName(origin_url, type),
-               base::PLATFORM_FILE_OK);
+               base::File::FILE_OK);
 }
 
 fileapi::AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(
@@ -196,12 +196,12 @@ fileapi::AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(
 
 fileapi::CopyOrMoveFileValidatorFactory*
 TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    FileSystemType type, base::PlatformFileError* error_code) {
+    FileSystemType type, base::File::Error* error_code) {
   DCHECK(error_code);
-  *error_code = base::PLATFORM_FILE_OK;
+  *error_code = base::File::FILE_OK;
   if (require_copy_or_move_validator_) {
     if (!copy_or_move_file_validator_factory_)
-      *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+      *error_code = base::File::FILE_ERROR_SECURITY;
     return copy_or_move_file_validator_factory_.get();
   }
   return NULL;
@@ -216,7 +216,7 @@ void TestFileSystemBackend::InitializeCopyOrMoveFileValidatorFactory(
 FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
-    base::PlatformFileError* error_code) const {
+    base::File::Error* error_code) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
   operation_context->set_update_observers(*GetUpdateObservers(url.type()));

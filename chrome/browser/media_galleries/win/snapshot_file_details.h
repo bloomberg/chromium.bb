@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_WIN_SNAPSHOT_FILE_DETAILS_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_SNAPSHOT_FILE_DETAILS_H_
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
@@ -39,7 +39,7 @@ class SnapshotFileDetails {
   explicit SnapshotFileDetails(const SnapshotRequestInfo& request_info);
   ~SnapshotFileDetails();
 
-  void set_file_info(const base::PlatformFileInfo& file_info);
+  void set_file_info(const base::File::Info& file_info);
   void set_device_file_stream(IStream* file_stream);
   void set_optimal_transfer_size(DWORD optimal_transfer_size);
 
@@ -47,7 +47,7 @@ class SnapshotFileDetails {
     return request_info_;
   }
 
-  base::PlatformFileInfo file_info() const {
+  base::File::Info file_info() const {
     return file_info_;
   }
 
@@ -77,7 +77,7 @@ class SnapshotFileDetails {
   SnapshotRequestInfo request_info_;
 
   // Metadata of the created snapshot file.
-  base::PlatformFileInfo file_info_;
+  base::File::Info file_info_;
 
   // Used to read the device file contents.
   base::win::ScopedComPtr<IStream> file_stream_;

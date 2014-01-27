@@ -49,10 +49,10 @@ IPC_MESSAGE_CONTROL1(FileSystemMsg_DidSucceed,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL2(FileSystemMsg_DidReadMetadata,
                      int /* request_id */,
-                     base::PlatformFileInfo)
+                     base::File::Info)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidCreateSnapshotFile,
                      int /* request_id */,
-                     base::PlatformFileInfo,
+                     base::File::Info,
                      base::FilePath /* true platform path */)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadDirectory,
                      int /* request_id */,
@@ -69,7 +69,7 @@ IPC_MESSAGE_CONTROL4(FileSystemMsg_DidOpenFile,
                      quota::QuotaLimitType /* quota_policy */)
 IPC_MESSAGE_CONTROL2(FileSystemMsg_DidFail,
                      int /* request_id */,
-                     base::PlatformFileError /* error_code */)
+                     base::File::Error /* error_code */)
 
 // File system messages sent from the child process to the browser.
 

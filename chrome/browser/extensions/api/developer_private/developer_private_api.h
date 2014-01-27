@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_DEVELOPER_PRIVATE_API_H_
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -388,14 +388,14 @@ class DeveloperPrivateLoadDirectoryFunction
    void ReadSyncFileSystemDirectoryCb(
        const base::FilePath& project_path,
        const base::FilePath& destination_path,
-       base::PlatformFileError result,
+       base::File::Error result,
        const fileapi::FileSystemOperation::FileEntryList& file_list,
        bool has_more);
 
    void SnapshotFileCallback(
        const base::FilePath& target_path,
-       base::PlatformFileError result,
-       const base::PlatformFileInfo& file_info,
+       base::File::Error result,
+       const base::File::Info& file_info,
        const base::FilePath& platform_path,
        const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 

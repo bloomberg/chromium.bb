@@ -5,7 +5,7 @@
 #ifndef PPAPI_SHARED_IMPL_FILE_TYPE_CONVERSION_H_
 #define PPAPI_SHARED_IMPL_FILE_TYPE_CONVERSION_H_
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_file_system.h"
@@ -13,8 +13,7 @@
 
 namespace ppapi {
 
-PPAPI_SHARED_EXPORT int PlatformFileErrorToPepperError(
-    base::PlatformFileError error_code);
+PPAPI_SHARED_EXPORT int FileErrorToPepperError(base::File::Error error_code);
 
 // Converts a PP_FileOpenFlags_Dev flag combination into a corresponding
 // PlatformFileFlags flag combination.
@@ -23,8 +22,8 @@ PPAPI_SHARED_EXPORT bool PepperFileOpenFlagsToPlatformFileFlags(
     int32_t pp_open_flags,
     int* flags_out);
 
-PPAPI_SHARED_EXPORT void PlatformFileInfoToPepperFileInfo(
-    const base::PlatformFileInfo& info,
+PPAPI_SHARED_EXPORT void FileInfoToPepperFileInfo(
+    const base::File::Info& info,
     PP_FileSystemType fs_type,
     PP_FileInfo* info_out);
 

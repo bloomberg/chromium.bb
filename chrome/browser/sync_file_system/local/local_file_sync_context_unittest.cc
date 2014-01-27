@@ -55,7 +55,7 @@ class LocalFileSyncContextTest : public testing::Test {
             content::TestBrowserThreadBundle::REAL_FILE_THREAD |
             content::TestBrowserThreadBundle::REAL_IO_THREAD),
         status_(SYNC_FILE_ERROR_FAILED),
-        file_error_(base::PLATFORM_FILE_ERROR_FAILED),
+        file_error_(base::File::FILE_ERROR_FAILED),
         async_modify_finished_(false),
         has_inflight_prepare_for_sync_(false) {}
 
@@ -183,19 +183,19 @@ class LocalFileSyncContextTest : public testing::Test {
       return;
     }
     ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
-    file_error_ = base::PLATFORM_FILE_ERROR_FAILED;
+    file_error_ = base::File::FILE_ERROR_FAILED;
     file_system->operation_runner()->Truncate(
         url, 1, base::Bind(&LocalFileSyncContextTest::DidModifyFile,
                            base::Unretained(this)));
   }
 
-  base::PlatformFileError WaitUntilModifyFileIsDone() {
+  base::File::Error WaitUntilModifyFileIsDone() {
     while (!async_modify_finished_)
       base::MessageLoop::current()->RunUntilIdle();
     return file_error_;
   }
 
-  void DidModifyFile(base::PlatformFileError error) {
+  void DidModifyFile(base::File::Error error) {
     if (!ui_task_runner_->RunsTasksOnCurrentThread()) {
       ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
       ui_task_runner_->PostTask(
@@ -236,10 +236,10 @@ class LocalFileSyncContextTest : public testing::Test {
     ASSERT_EQ(SYNC_STATUS_OK,
               file_system.MaybeInitializeFileSystemContext(
                   sync_context_.get()));
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+    ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
     const FileSystemURL kFile(file_system.URL("file"));
-    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile));
+    EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kFile));
 
     SyncFileMetadata metadata;
     FileChangeList changes;
@@ -286,10 +286,10 @@ class LocalFileSyncContextTest : public testing::Test {
     ASSERT_EQ(SYNC_STATUS_OK,
               file_system.MaybeInitializeFileSystemContext(
                   sync_context_.get()));
-    ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+    ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
     const FileSystemURL kFile(file_system.URL("file"));
-    EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile));
+    EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kFile));
 
     SyncFileMetadata metadata;
     FileChangeList changes;
@@ -314,7 +314,7 @@ class LocalFileSyncContextTest : public testing::Test {
 
     if (sync_mode == LocalFileSyncContext::SYNC_SNAPSHOT) {
       // Write should succeed.
-      EXPECT_EQ(base::PLATFORM_FILE_OK, WaitUntilModifyFileIsDone());
+      EXPECT_EQ(base::File::FILE_OK, WaitUntilModifyFileIsDone());
     } else {
       base::MessageLoop::current()->RunUntilIdle();
       EXPECT_FALSE(async_modify_finished_);
@@ -323,7 +323,7 @@ class LocalFileSyncContextTest : public testing::Test {
     SimulateFinishSync(file_system.file_system_context(), kFile,
                        SYNC_STATUS_OK, sync_mode);
 
-    EXPECT_EQ(base::PLATFORM_FILE_OK, WaitUntilModifyFileIsDone());
+    EXPECT_EQ(base::File::FILE_OK, WaitUntilModifyFileIsDone());
 
     // Sync succeeded, but the other change that was made during or
     // after sync is recorded.
@@ -352,7 +352,7 @@ class LocalFileSyncContextTest : public testing::Test {
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
   SyncStatusCode status_;
-  base::PlatformFileError file_error_;
+  base::File::Error file_error_;
   bool async_modify_finished_;
   bool has_inflight_prepare_for_sync_;
 };
@@ -390,10 +390,10 @@ TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
 
   // Opens the file_system, perform some operation and see if the change tracker
   // correctly captures the change.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+  EXPECT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   const FileSystemURL kURL(file_system.URL("foo"));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kURL));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kURL));
 
   FileSystemURLSet urls;
   file_system.GetChangedURLsInTracker(&urls);
@@ -424,14 +424,14 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   EXPECT_EQ(SYNC_STATUS_OK,
             file_system2.MaybeInitializeFileSystemContext(sync_context_.get()));
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system1.OpenFileSystem());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system2.OpenFileSystem());
+  EXPECT_EQ(base::File::FILE_OK, file_system1.OpenFileSystem());
+  EXPECT_EQ(base::File::FILE_OK, file_system2.OpenFileSystem());
 
   const FileSystemURL kURL1(file_system1.URL("foo"));
   const FileSystemURL kURL2(file_system2.URL("bar"));
 
   // Creates a file in file_system1.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system1.CreateFile(kURL1));
+  EXPECT_EQ(base::File::FILE_OK, file_system1.CreateFile(kURL1));
 
   // file_system1's tracker must have recorded the change.
   FileSystemURLSet urls;
@@ -445,7 +445,7 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   ASSERT_TRUE(urls.empty());
 
   // Creates a directory in file_system2.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system2.CreateDirectory(kURL2));
+  EXPECT_EQ(base::File::FILE_OK, file_system2.CreateDirectory(kURL2));
 
   // file_system1's tracker must have the change for kURL1 as before.
   urls.clear();
@@ -531,12 +531,12 @@ TEST_F(LocalFileSyncContextTest, DISABLED_PrepareSyncWhileWriting) {
   EXPECT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+  EXPECT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   const FileSystemURL kURL1(file_system.URL("foo"));
 
   // Creates a file in file_system.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kURL1));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kURL1));
 
   // Kick file write on IO thread.
   StartModifyFileOnIOThread(&file_system, kURL1);
@@ -562,7 +562,7 @@ TEST_F(LocalFileSyncContextTest, DISABLED_PrepareSyncWhileWriting) {
                                       &metadata, &changes, NULL));
 
   // Wait for the completion.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, WaitUntilModifyFileIsDone());
+  EXPECT_EQ(base::File::FILE_OK, WaitUntilModifyFileIsDone());
 
   // The PrepareForSync must have been started; wait until DidPrepareForSync
   // is done.
@@ -592,7 +592,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
       dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
-  ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+  ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   // Record the initial usage (likely 0).
   int64 initial_usage = -1;
@@ -605,9 +605,9 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   const FileSystemURL kDir(file_system.URL("dir"));
   const FileSystemURL kChild(file_system.URL("dir/child"));
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateDirectory(kDir));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kChild));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kFile));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateDirectory(kDir));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kChild));
 
   // file_system's change tracker must have recorded the creation.
   FileSystemURLSet urls;
@@ -645,11 +645,11 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
                               SYNC_FILE_TYPE_DIRECTORY));
 
   // Check the directory/files are deleted successfully.
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.FileExists(kFile));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.DirectoryExists(kDir));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.FileExists(kChild));
 
   // The changes applied by ApplyRemoteChange should not be recorded in
@@ -678,7 +678,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
       dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
-  ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+  ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   // Record the initial usage (likely 0).
   int64 initial_usage = -1;
@@ -691,9 +691,9 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
   const FileSystemURL kDir(file_system.URL("dir"));
   const FileSystemURL kChild(file_system.URL("dir/child"));
 
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateDirectory(kDir));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kChild));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kFile));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateDirectory(kDir));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kChild));
 
   // At this point the usage must be greater than the initial usage.
   int64 new_usage = -1;
@@ -711,11 +711,11 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
                               SYNC_FILE_TYPE_DIRECTORY));
 
   // Check the directory/files are deleted successfully.
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.FileExists(kFile));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.DirectoryExists(kDir));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.FileExists(kChild));
 
   // All changes made for the previous creation must have been also reset.
@@ -746,7 +746,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
       dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
-  ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+  ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   const FileSystemURL kFile1(file_system.URL("file1"));
   const FileSystemURL kFile2(file_system.URL("file2"));
@@ -757,14 +757,14 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   const char kTestFileData2[] = "This is sample test data.";
 
   // Create kFile1 and populate it with kTestFileData0.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile1));
+  EXPECT_EQ(base::File::FILE_OK, file_system.CreateFile(kFile1));
   EXPECT_EQ(static_cast<int64>(arraysize(kTestFileData0) - 1),
             file_system.WriteString(kFile1, kTestFileData0));
 
   // kFile2 and kDir are not there yet.
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.FileExists(kFile2));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_system.DirectoryExists(kDir));
 
   // file_system's change tracker must have recorded the creation.
@@ -848,7 +848,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
                               kFilePath1,
                               kDir,
                               SYNC_FILE_TYPE_DIRECTORY));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kDir));
+  EXPECT_EQ(base::File::FILE_OK, file_system.FileExists(kDir));
 
   change = FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                       SYNC_FILE_TYPE_DIRECTORY);
@@ -874,9 +874,9 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   EXPECT_TRUE(urls.empty());
 
   // Make sure all three files/directory exist.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kFile1));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kFile2));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.DirectoryExists(kDir));
+  EXPECT_EQ(base::File::FILE_OK, file_system.FileExists(kFile1));
+  EXPECT_EQ(base::File::FILE_OK, file_system.FileExists(kFile2));
+  EXPECT_EQ(base::File::FILE_OK, file_system.DirectoryExists(kDir));
 
   sync_context_->ShutdownOnUIThread();
   file_system.TearDown();
@@ -895,15 +895,15 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate_NoParent) {
       dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
-  ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+  ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
 
   const char kTestFileData[] = "Lorem ipsum!";
   const FileSystemURL kDir(file_system.URL("dir"));
   const FileSystemURL kFile(file_system.URL("dir/file"));
 
   // Either kDir or kFile not exist yet.
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, file_system.FileExists(kDir));
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, file_system.FileExists(kFile));
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, file_system.FileExists(kDir));
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, file_system.FileExists(kFile));
 
   // Prepare a temporary file which represents remote file data.
   const base::FilePath kFilePath(temp_dir.path().Append(FPL("file")));
@@ -928,8 +928,8 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate_NoParent) {
   EXPECT_TRUE(urls.empty());
 
   // Make sure kDir and kFile are created by ApplyRemoteChange.
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kFile));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.DirectoryExists(kDir));
+  EXPECT_EQ(base::File::FILE_OK, file_system.FileExists(kFile));
+  EXPECT_EQ(base::File::FILE_OK, file_system.DirectoryExists(kDir));
 
   sync_context_->ShutdownOnUIThread();
   file_system.TearDown();

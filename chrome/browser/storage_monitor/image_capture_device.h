@@ -8,13 +8,13 @@
 #import <Foundation/Foundation.h>
 #import <ImageCaptureCore/ImageCaptureCore.h>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/mac/cocoa_protocols.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -34,7 +34,7 @@ class ImageCaptureDeviceListener {
   // be passed as "dir/subdir/filename". These same relative filenames should
   // be used as keys to download files.
   virtual void ItemAdded(const std::string& name,
-                         const base::PlatformFileInfo& info) = 0;
+                         const base::File::Info& info) = 0;
 
   // Called when there are no more items to retrieve.
   virtual void NoMoreItems() = 0;
@@ -43,7 +43,7 @@ class ImageCaptureDeviceListener {
   // Note: in NOT_FOUND error case, may be called inline with the download
   // request.
   virtual void DownloadedFile(const std::string& name,
-                              base::PlatformFileError error) = 0;
+                              base::File::Error error) = 0;
 
   // Called to let the client know the device is removed. The client should
   // set the ImageCaptureDevice listener to null upon receiving this call.

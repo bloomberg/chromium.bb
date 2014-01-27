@@ -56,16 +56,16 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
   // Generic reply callback.
   void DidFinish(ppapi::host::ReplyMessageContext reply_context,
                  const IPC::Message& msg,
-                 base::PlatformFileError error);
+                 base::File::Error error);
 
   // Operation specific callbacks.
   void GetMetadataComplete(
     ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info);
+    base::File::Error error,
+    const base::File::Info& file_info);
   void ReadDirectoryComplete(
       ppapi::host::ReplyMessageContext context,
-      base::PlatformFileError error,
+      base::File::Error error,
       const fileapi::FileSystemOperation::FileEntryList& file_list,
       bool has_more);
 

@@ -15,9 +15,6 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using base::PlatformFileError;
-using base::PlatformFileInfo;
-
 namespace fileapi {
 
 typedef IsolatedContext::MountPointInfo FileInfo;
@@ -51,7 +48,7 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  private:
   std::vector<FileInfo> files_;
   std::vector<FileInfo>::const_iterator file_iter_;
-  base::PlatformFileInfo file_info_;
+  base::File::Info file_info_;
 };
 
 }  // namespace
@@ -60,10 +57,10 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 
 DraggedFileUtil::DraggedFileUtil() {}
 
-PlatformFileError DraggedFileUtil::GetFileInfo(
+base::File::Error DraggedFileUtil::GetFileInfo(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
-    PlatformFileInfo* file_info,
+    base::File::Info* file_info,
     base::FilePath* platform_path) {
   DCHECK(file_info);
   std::string filesystem_id;
@@ -77,15 +74,15 @@ PlatformFileError DraggedFileUtil::GetFileInfo(
     file_info->is_directory = true;
     file_info->is_symbolic_link = false;
     file_info->size = 0;
-    return base::PLATFORM_FILE_OK;
+    return base::File::FILE_OK;
   }
-  base::PlatformFileError error =
+  base::File::Error error =
       NativeFileUtil::GetFileInfo(url.path(), file_info);
   if (base::IsLink(url.path()) && !base::FilePath().IsParent(url.path())) {
     // Don't follow symlinks unless it's the one that are selected by the user.
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
   }
-  if (error == base::PLATFORM_FILE_OK)
+  if (error == base::File::FILE_OK)
     *platform_path = url.path();
   return error;
 }

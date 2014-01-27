@@ -81,9 +81,8 @@ void PepperFileSystemHost::DidOpenFileSystem(
   reply_context_ = ppapi::host::ReplyMessageContext();
 }
 
-void PepperFileSystemHost::DidFailOpenFileSystem(
-    base::PlatformFileError error) {
-  int32 pp_error = ppapi::PlatformFileErrorToPepperError(error);
+void PepperFileSystemHost::DidFailOpenFileSystem(base::File::Error error) {
+  int32 pp_error = ppapi::FileErrorToPepperError(error);
   opened_ = (pp_error == PP_OK);
   reply_context_.params.set_result(pp_error);
   host()->SendReply(reply_context_, PpapiPluginMsg_FileSystem_OpenReply());

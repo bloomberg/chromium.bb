@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
 // Used to represent snapshot file request params.
@@ -43,7 +43,7 @@ struct SnapshotRequestInfo {
 class SnapshotFileDetails {
  public:
   SnapshotFileDetails(const SnapshotRequestInfo& request_info,
-                      const base::PlatformFileInfo& file_info);
+                      const base::File::Info& file_info);
 
   ~SnapshotFileDetails();
 
@@ -59,7 +59,7 @@ class SnapshotFileDetails {
     return bytes_written_;
   }
 
-  const base::PlatformFileInfo file_info() const {
+  const base::File::Info file_info() const {
     return file_info_;
   }
 
@@ -98,7 +98,7 @@ class SnapshotFileDetails {
   const SnapshotRequestInfo request_info_;
 
   // Metadata of the snapshot file (such as name, size, type, etc).
-  const base::PlatformFileInfo file_info_;
+  const base::File::Info file_info_;
 
   // Number of bytes written into the snapshot file.
   uint32 bytes_written_;

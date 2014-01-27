@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -474,15 +474,15 @@ struct IPC_EXPORT ParamTraits<base::NullableString16> {
 };
 
 template <>
-struct IPC_EXPORT ParamTraits<base::PlatformFileInfo> {
-  typedef base::PlatformFileInfo param_type;
+struct IPC_EXPORT ParamTraits<base::File::Info> {
+  typedef base::File::Info param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct SimilarTypeTraits<base::PlatformFileError> {
+struct SimilarTypeTraits<base::File::Error> {
   typedef int Type;
 };
 

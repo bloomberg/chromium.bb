@@ -54,13 +54,13 @@ void RecursiveOperationDelegate::OnCancel() {
 
 void RecursiveOperationDelegate::DidTryProcessFile(
     const FileSystemURL& root,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(pending_directory_stack_.empty());
   DCHECK(pending_files_.empty());
   DCHECK_EQ(1, inflight_operations_);
 
   --inflight_operations_;
-  if (canceled_ || error != base::PLATFORM_FILE_ERROR_NOT_A_FILE) {
+  if (canceled_ || error != base::File::FILE_ERROR_NOT_A_FILE) {
     Done(error);
     return;
   }
@@ -86,14 +86,14 @@ void RecursiveOperationDelegate::ProcessNextDirectory() {
 }
 
 void RecursiveOperationDelegate::DidProcessDirectory(
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
   DCHECK(!pending_directory_stack_.top().empty());
   DCHECK_EQ(1, inflight_operations_);
 
   --inflight_operations_;
-  if (canceled_ || error != base::PLATFORM_FILE_OK) {
+  if (canceled_ || error != base::File::FILE_OK) {
     Done(error);
     return;
   }
@@ -108,14 +108,14 @@ void RecursiveOperationDelegate::DidProcessDirectory(
 
 void RecursiveOperationDelegate::DidReadDirectory(
     const FileSystemURL& parent,
-    base::PlatformFileError error,
+    base::File::Error error,
     const FileEntryList& entries,
     bool has_more) {
   DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
   DCHECK_EQ(0, inflight_operations_);
 
-  if (canceled_ || error != base::PLATFORM_FILE_OK) {
+  if (canceled_ || error != base::File::FILE_OK) {
     Done(error);
     return;
   }
@@ -167,9 +167,9 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
 }
 
 void RecursiveOperationDelegate::DidProcessFile(
-    base::PlatformFileError error) {
+    base::File::Error error) {
   --inflight_operations_;
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     // If an error occurs, invoke Done immediately (even if there remain
     // running operations). It is because in the callback, this instance is
     // deleted.
@@ -186,7 +186,7 @@ void RecursiveOperationDelegate::ProcessSubDirectory() {
   DCHECK_EQ(0, inflight_operations_);
 
   if (canceled_) {
-    Done(base::PLATFORM_FILE_ERROR_ABORT);
+    Done(base::File::FILE_ERROR_ABORT);
     return;
   }
 
@@ -200,7 +200,7 @@ void RecursiveOperationDelegate::ProcessSubDirectory() {
   pending_directory_stack_.pop();
   if (pending_directory_stack_.empty()) {
     // All files/directories are processed.
-    Done(base::PLATFORM_FILE_OK);
+    Done(base::File::FILE_OK);
     return;
   }
 
@@ -213,7 +213,7 @@ void RecursiveOperationDelegate::ProcessSubDirectory() {
 }
 
 void RecursiveOperationDelegate::DidPostProcessDirectory(
-    base::PlatformFileError error) {
+    base::File::Error error) {
   DCHECK(pending_files_.empty());
   DCHECK(!pending_directory_stack_.empty());
   DCHECK(!pending_directory_stack_.top().empty());
@@ -221,7 +221,7 @@ void RecursiveOperationDelegate::DidPostProcessDirectory(
 
   --inflight_operations_;
   pending_directory_stack_.top().pop();
-  if (canceled_ || error != base::PLATFORM_FILE_OK) {
+  if (canceled_ || error != base::File::FILE_OK) {
     Done(error);
     return;
   }
@@ -229,9 +229,9 @@ void RecursiveOperationDelegate::DidPostProcessDirectory(
   ProcessSubDirectory();
 }
 
-void RecursiveOperationDelegate::Done(base::PlatformFileError error) {
-  if (canceled_ && error == base::PLATFORM_FILE_OK) {
-    callback_.Run(base::PLATFORM_FILE_ERROR_ABORT);
+void RecursiveOperationDelegate::Done(base::File::Error error) {
+  if (canceled_ && error == base::File::FILE_OK) {
+    callback_.Run(base::File::FILE_ERROR_ABORT);
   } else {
     callback_.Run(error);
   }

@@ -36,7 +36,7 @@ void CreateWritableSnapshotFile(
           base::Bind(&fileapi_internal::CreateWritableSnapshotFile,
                      drive_path, google_apis::CreateRelayCallback(callback)),
           google_apis::CreateRelayCallback(base::Bind(
-              callback, base::PLATFORM_FILE_ERROR_FAILED, base::FilePath(),
+              callback, base::File::FILE_ERROR_FAILED, base::FilePath(),
               base::Closure()))));
 }
 
@@ -132,7 +132,7 @@ int WebkitFileStreamWriterImpl::Flush(const net::CompletionCallback& callback) {
 void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
     net::IOBuffer* buf,
     int buf_len,
-    base::PlatformFileError open_result,
+    base::File::Error open_result,
     const base::FilePath& local_path,
     const base::Closure& close_callback_on_ui_thread) {
   DCHECK(!local_file_writer_);
@@ -141,7 +141,7 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
     DCHECK(pending_write_callback_.is_null());
     // Cancel() is called during the creation of the snapshot file.
     // Don't write to the file.
-    if (open_result == base::PLATFORM_FILE_OK) {
+    if (open_result == base::File::FILE_OK) {
       // Here the file is internally created. To revert the operation, close
       // the file.
       DCHECK(!close_callback_on_ui_thread.is_null());
@@ -158,9 +158,10 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
 
   const net::CompletionCallback callback =
       base::ResetAndReturn(&pending_write_callback_);
-  if (open_result != base::PLATFORM_FILE_OK) {
+  if (open_result != base::File::FILE_OK) {
     DCHECK(close_callback_on_ui_thread.is_null());
-    callback.Run(net::PlatformFileErrorToNetError(open_result));
+    callback.Run(
+        net::FileErrorToNetError(open_result));
     return;
   }
 

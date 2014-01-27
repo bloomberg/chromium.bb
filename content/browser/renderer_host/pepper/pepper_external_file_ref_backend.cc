@@ -133,21 +133,21 @@ int32_t PepperExternalFileRefBackend::CanReadWrite() const {
 void PepperExternalFileRefBackend::DidFinish(
     ppapi::host::ReplyMessageContext reply_context,
     const IPC::Message& msg,
-    base::PlatformFileError error) {
-  reply_context.params.set_result(ppapi::PlatformFileErrorToPepperError(error));
+    base::File::Error error) {
+  reply_context.params.set_result(ppapi::FileErrorToPepperError(error));
   host_->SendReply(reply_context, msg);
 }
 
 void PepperExternalFileRefBackend::GetMetadataComplete(
     ppapi::host::ReplyMessageContext reply_context,
-    const base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info) {
-  reply_context.params.set_result(ppapi::PlatformFileErrorToPepperError(error));
+    const base::File::Error error,
+    const base::File::Info& file_info) {
+  reply_context.params.set_result(ppapi::FileErrorToPepperError(error));
 
   PP_FileInfo pp_file_info;
-  if (error == base::PLATFORM_FILE_OK) {
-    ppapi::PlatformFileInfoToPepperFileInfo(
-        file_info, PP_FILESYSTEMTYPE_EXTERNAL, &pp_file_info);
+  if (error == base::File::FILE_OK) {
+    ppapi::FileInfoToPepperFileInfo(file_info, PP_FILESYSTEMTYPE_EXTERNAL,
+                                    &pp_file_info);
   } else {
     memset(&pp_file_info, 0, sizeof(pp_file_info));
   }

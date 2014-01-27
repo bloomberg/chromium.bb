@@ -31,7 +31,7 @@ SnapshotRequestInfo::~SnapshotRequestInfo() {
 
 SnapshotFileDetails::SnapshotFileDetails(
     const SnapshotRequestInfo& request_info,
-    const base::PlatformFileInfo& file_info)
+    const base::File::Info& file_info)
     : request_info_(request_info),
       file_info_(file_info),
       bytes_written_(0),

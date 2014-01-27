@@ -47,10 +47,10 @@ class MTPDeviceDelegateImplMac::DeviceListener
 
   // ImageCaptureDeviceListener
   virtual void ItemAdded(const std::string& name,
-                         const base::PlatformFileInfo& info) OVERRIDE;
+                         const base::File::Info& info) OVERRIDE;
   virtual void NoMoreItems() OVERRIDE;
   virtual void DownloadedFile(const std::string& name,
-                              base::PlatformFileError error) OVERRIDE;
+                              base::File::Error error) OVERRIDE;
   virtual void DeviceRemoved() OVERRIDE;
 
   // Used during delegate destruction to ensure there are no more calls
@@ -89,7 +89,7 @@ void MTPDeviceDelegateImplMac::DeviceListener::DownloadFile(
 
 void MTPDeviceDelegateImplMac::DeviceListener::ItemAdded(
     const std::string& name,
-    const base::PlatformFileInfo& info) {
+    const base::File::Info& info) {
   if (delegate_)
     delegate_->ItemAdded(name, info);
 }
@@ -101,7 +101,7 @@ void MTPDeviceDelegateImplMac::DeviceListener::NoMoreItems() {
 
 void MTPDeviceDelegateImplMac::DeviceListener::DownloadedFile(
     const std::string& name,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   if (delegate_)
     delegate_->DownloadedFile(name, error);
 }
@@ -126,7 +126,7 @@ MTPDeviceDelegateImplMac::MTPDeviceDelegateImplMac(
       weak_factory_(this) {
 
   // Make a synthetic entry for the root of the filesystem.
-  base::PlatformFileInfo info;
+  base::File::Info info;
   info.is_directory = true;
   file_paths_.push_back(root_path_);
   file_info_[root_path_.value()] = info;
@@ -144,11 +144,11 @@ MTPDeviceDelegateImplMac::~MTPDeviceDelegateImplMac() {
 namespace {
 
 void ForwardGetFileInfo(
-    base::PlatformFileInfo* info,
-    base::PlatformFileError* error,
+    base::File::Info* info,
+    base::File::Error* error,
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  if (*error == base::PLATFORM_FILE_OK)
+  if (*error == base::File::FILE_OK)
     success_callback.Run(*info);
   else
     error_callback.Run(*error);
@@ -160,8 +160,8 @@ void MTPDeviceDelegateImplMac::GetFileInfo(
     const base::FilePath& file_path,
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  base::PlatformFileInfo* info = new base::PlatformFileInfo;
-  base::PlatformFileError* error = new base::PlatformFileError;
+  base::File::Info* info = new base::File::Info;
+  base::File::Error* error = new base::File::Error;
   // Note: ownership of these objects passed into the reply callback.
   content::BrowserThread::PostTaskAndReply(content::BrowserThread::UI,
       FROM_HERE,
@@ -214,18 +214,18 @@ void MTPDeviceDelegateImplMac::CancelPendingTasksAndDeleteDelegate() {
 
 void MTPDeviceDelegateImplMac::GetFileInfoImpl(
     const base::FilePath& file_path,
-    base::PlatformFileInfo* file_info,
-    base::PlatformFileError* error) {
+    base::File::Info* file_info,
+    base::File::Error* error) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::hash_map<base::FilePath::StringType,
-                 base::PlatformFileInfo>::const_iterator i =
+                 base::File::Info>::const_iterator i =
       file_info_.find(file_path.value());
   if (i == file_info_.end()) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    *error = base::File::FILE_ERROR_NOT_FOUND;
     return;
   }
   *file_info = i->second;
-  *error = base::PLATFORM_FILE_OK;
+  *error = base::File::FILE_OK;
 }
 
 void MTPDeviceDelegateImplMac::ReadDirectoryImpl(
@@ -261,7 +261,7 @@ void MTPDeviceDelegateImplMac::ReadDirectoryTimeout(
       iter++;
       continue;
     }
-    iter->error_callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    iter->error_callback.Run(base::File::FILE_ERROR_ABORT);
     iter = read_dir_transactions_.erase(iter);
   }
 }
@@ -273,10 +273,10 @@ void MTPDeviceDelegateImplMac::DownloadFile(
       const ErrorCallback& error_callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  base::PlatformFileError error;
-  base::PlatformFileInfo info;
+  base::File::Error error;
+  base::File::Info info;
   GetFileInfoImpl(device_file_path, &info, &error);
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                      base::Bind(error_callback,
                                                 error));
@@ -317,21 +317,21 @@ void MTPDeviceDelegateImplMac::CancelDownloads() {
        iter != read_file_transactions_.end(); ++iter) {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
         base::Bind(iter->error_callback,
-                   base::PLATFORM_FILE_ERROR_ABORT));
+                   base::File::FILE_ERROR_ABORT));
   }
   read_file_transactions_.clear();
 
   for (ReadDirTransactionList::iterator iter = read_dir_transactions_.begin();
        iter != read_dir_transactions_.end(); ++iter) {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-        base::Bind(iter->error_callback, base::PLATFORM_FILE_ERROR_ABORT));
+        base::Bind(iter->error_callback, base::File::FILE_ERROR_ABORT));
   }
   read_dir_transactions_.clear();
 }
 
 // Called on the UI thread by the listener
 void MTPDeviceDelegateImplMac::ItemAdded(
-    const std::string& name, const base::PlatformFileInfo& info) {
+    const std::string& name, const base::File::Info& info) {
   if (received_all_files_)
     return;
 
@@ -386,7 +386,7 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
 
       base::FilePath relative_path;
       read_path.AppendRelativePath(file_paths_[i], &relative_path);
-      base::PlatformFileInfo info = file_info_[file_paths_[i].value()];
+      base::File::Info info = file_info_[file_paths_[i].value()];
       fileapi::DirectoryEntry entry;
       entry.name = relative_path.value();
       entry.is_directory = info.is_directory;
@@ -403,7 +403,7 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
       content::BrowserThread::PostTask(content::BrowserThread::IO,
           FROM_HERE,
           base::Bind(iter->error_callback,
-                     base::PLATFORM_FILE_ERROR_NOT_FOUND));
+                     base::File::FILE_ERROR_NOT_FOUND));
     }
   }
 
@@ -412,7 +412,7 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
 
 // Invoked on UI thread from the listener.
 void MTPDeviceDelegateImplMac::DownloadedFile(
-    const std::string& name, base::PlatformFileError error) {
+    const std::string& name, base::File::Error error) {
   // If we're cancelled and deleting, we may have deleted the camera.
   if (!camera_interface_.get())
     return;
@@ -428,7 +428,7 @@ void MTPDeviceDelegateImplMac::DownloadedFile(
   if (!found)
     return;
 
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
         base::Bind(iter->error_callback, error));
     read_file_transactions_.erase(iter);
@@ -445,7 +445,7 @@ void MTPDeviceDelegateImplMac::DownloadedFile(
     item_filename = item_filename.Append(*i);
   }
 
-  base::PlatformFileInfo info = file_info_[item_filename.value()];
+  base::File::Info info = file_info_[item_filename.value()];
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
       base::Bind(iter->success_callback, info, iter->snapshot_file));
   read_file_transactions_.erase(iter);

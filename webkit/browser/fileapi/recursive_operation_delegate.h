@@ -121,20 +121,20 @@ class WEBKIT_STORAGE_BROWSER_EXPORT RecursiveOperationDelegate
 
  private:
   void DidTryProcessFile(const FileSystemURL& root,
-                         base::PlatformFileError error);
+                         base::File::Error error);
   void ProcessNextDirectory();
-  void DidProcessDirectory(base::PlatformFileError error);
+  void DidProcessDirectory(base::File::Error error);
   void DidReadDirectory(const FileSystemURL& parent,
-                        base::PlatformFileError error,
+                        base::File::Error error,
                         const FileEntryList& entries,
                         bool has_more);
   void ProcessPendingFiles();
-  void DidProcessFile(base::PlatformFileError error);
+  void DidProcessFile(base::File::Error error);
   void ProcessSubDirectory();
-  void DidPostProcessDirectory(base::PlatformFileError error);
+  void DidPostProcessDirectory(base::File::Error error);
 
   // Called when all recursive operation is done (or an error occurs).
-  void Done(base::PlatformFileError error);
+  void Done(base::File::Error error);
 
   FileSystemContext* file_system_context_;
   StatusCallback callback_;

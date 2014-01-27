@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -49,7 +49,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemDirURLRequestJob
   virtual ~FileSystemDirURLRequestJob();
 
   void StartAsync();
-  void DidReadDirectory(base::PlatformFileError result,
+  void DidReadDirectory(base::File::Error result,
                         const std::vector<DirectoryEntry>& entries,
                         bool has_more);
 

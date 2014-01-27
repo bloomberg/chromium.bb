@@ -133,11 +133,11 @@ class TestFolder {
 void ReadDirectoryTestHelperCallback(
     base::RunLoop* run_loop,
     FileSystemOperation::FileEntryList* contents,
-    bool* completed, base::PlatformFileError error,
+    bool* completed, base::File::Error error,
     const FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
   DCHECK(!*completed);
-  *completed = !has_more && error == base::PLATFORM_FILE_OK;
+  *completed = !has_more && error == base::File::FILE_OK;
   *contents = file_list;
   run_loop->Quit();
 }
@@ -166,10 +166,10 @@ void SynchronouslyRunOnMediaTaskRunner(const base::Closure& closure) {
 
 void CreateSnapshotFileTestHelperCallback(
     base::RunLoop* run_loop,
-    base::PlatformFileError* error,
+    base::File::Error* error,
     base::FilePath* platform_path_result,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& file_info,
+    base::File::Error result,
+    const base::File::Info& file_info,
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DCHECK(run_loop);
@@ -577,7 +577,7 @@ TEST_F(PicasaFileUtilTest, AlbumContents) {
 
   // Create a snapshot file to verify the file path.
   base::RunLoop loop;
-  base::PlatformFileError error;
+  base::File::Error error;
   base::FilePath platform_path_result;
   fileapi::FileSystemOperationRunner::SnapshotFileCallback snapshot_callback =
       base::Bind(&CreateSnapshotFileTestHelperCallback,
@@ -589,7 +589,7 @@ TEST_F(PicasaFileUtilTest, AlbumContents) {
                 "/albumname 2013-04-16/mapped_name.jpg"),
       snapshot_callback);
   loop.Run();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+  EXPECT_EQ(base::File::FILE_OK, error);
   EXPECT_EQ(image_path, platform_path_result);
 }
 

@@ -16,7 +16,7 @@ void PrivetFileSystemAsyncUtil::CreateOrOpen(
     int file_flags,
     const CreateOrOpenCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION,
                base::PassPlatformFile(NULL),
                base::Closure());
 }
@@ -26,8 +26,7 @@ void PrivetFileSystemAsyncUtil::EnsureFileExists(
     const fileapi::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
     NOTIMPLEMENTED();
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
-                 false);
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION, false);
 }
 
 void PrivetFileSystemAsyncUtil::CreateDirectory(
@@ -37,14 +36,14 @@ void PrivetFileSystemAsyncUtil::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
     NOTIMPLEMENTED();
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::GetFileInfo(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
 
   if (url.path() == base::FilePath(FILE_PATH_LITERAL("/privet"))) {
     file_info.size = 20;
@@ -55,8 +54,7 @@ void PrivetFileSystemAsyncUtil::GetFileInfo(
     file_info.is_directory = false;
     file_info.is_symbolic_link = false;
   }
-  callback.Run(base::PLATFORM_FILE_OK,
-               file_info);
+  callback.Run(base::File::FILE_OK, file_info);
 }
 
 void PrivetFileSystemAsyncUtil::ReadDirectory(
@@ -71,7 +69,7 @@ void PrivetFileSystemAsyncUtil::ReadDirectory(
                                 base::Time());
   entry_list.push_back(entry);
 
-  callback.Run(base::PLATFORM_FILE_OK, entry_list, false);
+  callback.Run(base::File::FILE_OK, entry_list, false);
 }
 
 void PrivetFileSystemAsyncUtil::Touch(
@@ -81,7 +79,7 @@ void PrivetFileSystemAsyncUtil::Touch(
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::Truncate(
@@ -90,7 +88,7 @@ void PrivetFileSystemAsyncUtil::Truncate(
     int64 length,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::CopyFileLocal(
@@ -101,7 +99,7 @@ void PrivetFileSystemAsyncUtil::CopyFileLocal(
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::MoveFileLocal(
@@ -111,7 +109,7 @@ void PrivetFileSystemAsyncUtil::MoveFileLocal(
     CopyOrMoveOption option,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::CopyInForeignFile(
@@ -120,7 +118,7 @@ void PrivetFileSystemAsyncUtil::CopyInForeignFile(
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::DeleteFile(
@@ -128,7 +126,7 @@ void PrivetFileSystemAsyncUtil::DeleteFile(
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::DeleteDirectory(
@@ -136,7 +134,7 @@ void PrivetFileSystemAsyncUtil::DeleteDirectory(
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::DeleteRecursively(
@@ -144,7 +142,7 @@ void PrivetFileSystemAsyncUtil::DeleteRecursively(
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::CreateSnapshotFile(
@@ -152,8 +150,8 @@ void PrivetFileSystemAsyncUtil::CreateSnapshotFile(
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
-               base::PlatformFileInfo(),
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION,
+               base::File::Info(),
                base::FilePath(),
                scoped_refptr<webkit_blob::ShareableFileReference>());
 }

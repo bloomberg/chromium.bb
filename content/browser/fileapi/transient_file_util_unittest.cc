@@ -83,8 +83,8 @@ TEST_F(TransientFileUtilTest, TransientFile) {
 
   CreateAndRegisterTemporaryFile(&temp_url, &temp_path);
 
-  base::PlatformFileError error;
-  base::PlatformFileInfo file_info;
+  base::File::Error error;
+  base::File::Info file_info;
   base::FilePath path;
 
   // Make sure the file is there.
@@ -100,13 +100,13 @@ TEST_F(TransientFileUtilTest, TransientFile) {
                                         &error,
                                         &file_info,
                                         &path);
-    ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+    ASSERT_EQ(base::File::FILE_OK, error);
     ASSERT_EQ(temp_path, path);
     ASSERT_FALSE(file_info.is_directory);
 
     // The file should be still there.
     ASSERT_TRUE(base::PathExists(temp_path));
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               file_util()->GetFileInfo(NewOperationContext().get(),
                                        temp_url, &file_info, &path));
     ASSERT_EQ(temp_path, path);
@@ -118,7 +118,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
 
   // Now the temporary file and the transient filesystem must be gone too.
   ASSERT_FALSE(base::PathExists(temp_path));
-  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             file_util()->GetFileInfo(NewOperationContext().get(),
                                      temp_url, &file_info, &path));
 }

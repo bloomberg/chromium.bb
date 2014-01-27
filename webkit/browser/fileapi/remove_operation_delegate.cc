@@ -41,7 +41,7 @@ void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,
 
 void RemoveOperationDelegate::ProcessDirectory(const FileSystemURL& url,
                                                const StatusCallback& callback) {
-  callback.Run(base::PLATFORM_FILE_OK);
+  callback.Run(base::File::FILE_OK);
 }
 
 void RemoveOperationDelegate::PostProcessDirectory(
@@ -49,10 +49,9 @@ void RemoveOperationDelegate::PostProcessDirectory(
   operation_runner()->RemoveDirectory(url, callback);
 }
 
-void RemoveOperationDelegate::DidTryRemoveFile(
-    base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_ERROR_NOT_A_FILE &&
-      error != base::PLATFORM_FILE_ERROR_SECURITY) {
+void RemoveOperationDelegate::DidTryRemoveFile(base::File::Error error) {
+  if (error != base::File::FILE_ERROR_NOT_A_FILE &&
+      error != base::File::FILE_ERROR_SECURITY) {
     callback_.Run(error);
     return;
   }
@@ -63,18 +62,18 @@ void RemoveOperationDelegate::DidTryRemoveFile(
 }
 
 void RemoveOperationDelegate::DidTryRemoveDirectory(
-    base::PlatformFileError remove_file_error,
-    base::PlatformFileError remove_directory_error) {
+    base::File::Error remove_file_error,
+    base::File::Error remove_directory_error) {
   callback_.Run(
-      remove_directory_error == base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY ?
+      remove_directory_error == base::File::FILE_ERROR_NOT_A_DIRECTORY ?
       remove_file_error :
       remove_directory_error);
 }
 
 void RemoveOperationDelegate::DidRemoveFile(const StatusCallback& callback,
-                                            base::PlatformFileError error) {
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
-    callback.Run(base::PLATFORM_FILE_OK);
+                                            base::File::Error error) {
+  if (error == base::File::FILE_ERROR_NOT_FOUND) {
+    callback.Run(base::File::FILE_OK);
     return;
   }
   callback.Run(error);

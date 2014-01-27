@@ -62,7 +62,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   if (entry->file_specific_info().is_hosted_document()) {
     base::FilePath gdoc_file_path;
     // TODO(rvargas): Convert this code to use base::File::Info.
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
     if (!base::CreateTemporaryFileInDir(temporary_file_directory,
                                         &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
@@ -99,7 +99,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // drive::FileSystem::CheckLocalModificationAndRun. We should merge them once
   // the drive::FS side is also converted to run fully on blocking pool.
   if (cache_entry.is_dirty()) {
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
     if (base::GetFileInfo(*cache_file_path,
                           reinterpret_cast<base::File::Info*>(&file_info)))
       SetPlatformFileInfoToResourceEntry(file_info, entry);

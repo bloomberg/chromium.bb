@@ -225,10 +225,10 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
 
 void PepperFileIOHost::DidOpenInternalFile(
     ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFileError result,
+    base::File::Error result,
     base::PlatformFile file,
     const base::Closure& on_close_callback) {
-  if (result == base::PLATFORM_FILE_OK) {
+  if (result == base::File::FILE_OK) {
     on_close_callback_ = on_close_callback;
 
     if (FileOpenForWrite(open_flags_) && file_system_host_->ChecksQuota()) {
@@ -360,11 +360,11 @@ void PepperFileIOHost::DidOpenQuotaFile(
   max_written_offset_ = max_written_offset;
 
   ExecutePlatformOpenFileCallback(
-      reply_context, base::PLATFORM_FILE_OK, base::PassPlatformFile(&file),
+      reply_context, base::File::FILE_OK, base::PassPlatformFile(&file),
       true);
 }
 
-void PepperFileIOHost::DidCloseFile(base::PlatformFileError error) {
+void PepperFileIOHost::DidCloseFile(base::File::Error error) {
   // Silently ignore if we fail to close the file.
   if (!on_close_callback_.is_null()) {
     on_close_callback_.Run();
@@ -409,19 +409,19 @@ void PepperFileIOHost::GotPluginAllowedToCallRequestOSFileHandle(
 
 void PepperFileIOHost::ExecutePlatformGeneralCallback(
     ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFileError error_code) {
+    base::File::Error error_code) {
   reply_context.params.set_result(
-      ppapi::PlatformFileErrorToPepperError(error_code));
+      ppapi::FileErrorToPepperError(error_code));
   host()->SendReply(reply_context, PpapiPluginMsg_FileIO_GeneralReply());
   state_manager_.SetOperationFinished();
 }
 
 void PepperFileIOHost::ExecutePlatformOpenFileCallback(
     ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFileError error_code,
+    base::File::Error error_code,
     base::PassPlatformFile file,
     bool unused_created) {
-  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
+  int32_t pp_error = ppapi::FileErrorToPepperError(error_code);
   DCHECK(file_ == base::kInvalidPlatformFileValue);
   file_ = file.ReleaseValue();
 

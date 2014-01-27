@@ -5,10 +5,10 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_FILE_WRITER_DELEGATE_H_
 #define WEBKIT_BROWSER_FILEAPI_FILE_WRITER_DELEGATE_H_
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -29,7 +29,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
     ERROR_WRITE_NOT_STARTED,
   };
 
-  typedef base::Callback<void(base::PlatformFileError result,
+  typedef base::Callback<void(base::File::Error result,
                               int64 bytes,
                               WriteProgressStatus write_status)>
       DelegateWriteCallback;
@@ -63,19 +63,19 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
  private:
   void OnGetFileInfoAndStartRequest(
       scoped_ptr<net::URLRequest> request,
-      base::PlatformFileError error,
-      const base::PlatformFileInfo& file_info);
+      base::File::Error error,
+      const base::File::Info& file_info);
   void Read();
   void OnDataReceived(int bytes_read);
   void Write();
   void OnDataWritten(int write_response);
-  void OnError(base::PlatformFileError error);
+  void OnError(base::File::Error error);
   void OnProgress(int bytes_read, bool done);
   void OnWriteCancelled(int status);
-  void FlushForCompletion(base::PlatformFileError error,
+  void FlushForCompletion(base::File::Error error,
                           int bytes_written,
                           WriteProgressStatus progress_status);
-  void OnFlushed(base::PlatformFileError error,
+  void OnFlushed(base::File::Error error,
                  int bytes_written,
                  WriteProgressStatus progress_status,
                  int flush_error);

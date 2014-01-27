@@ -28,14 +28,14 @@ void RevokeFileSystem(const std::string& filesystem_id,
 ScopedFile TransientFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
-    base::PlatformFileError* error,
-    base::PlatformFileInfo* file_info,
+    base::File::Error* error,
+    base::File::Info* file_info,
     base::FilePath* platform_path) {
   DCHECK(file_info);
   *error = GetFileInfo(context, url, file_info, platform_path);
-  if (*error == base::PLATFORM_FILE_OK && file_info->is_directory)
-    *error = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  if (*error != base::PLATFORM_FILE_OK)
+  if (*error == base::File::FILE_OK && file_info->is_directory)
+    *error = base::File::FILE_ERROR_NOT_A_FILE;
+  if (*error != base::File::FILE_OK)
     return ScopedFile();
 
   // Sets-up a transient filesystem.

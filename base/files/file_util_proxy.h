@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
@@ -26,25 +27,25 @@ class BASE_EXPORT FileUtilProxy {
   // This callback is used by methods that report only an error code.  It is
   // valid to pass a null callback to any function that takes a StatusCallback,
   // in which case the operation will complete silently.
-  typedef Callback<void(PlatformFileError)> StatusCallback;
+  typedef Callback<void(File::Error)> StatusCallback;
 
-  typedef Callback<void(PlatformFileError,
+  typedef Callback<void(File::Error,
                         PassPlatformFile,
                         bool /* created */)> CreateOrOpenCallback;
-  typedef Callback<void(PlatformFileError,
+  typedef Callback<void(File::Error,
                         PassPlatformFile,
                         const FilePath&)> CreateTemporaryCallback;
-  typedef Callback<void(PlatformFileError,
-                        const PlatformFileInfo&)> GetFileInfoCallback;
-  typedef Callback<void(PlatformFileError,
+  typedef Callback<void(File::Error,
+                        const File::Info&)> GetFileInfoCallback;
+  typedef Callback<void(File::Error,
                         const char* /* data */,
                         int /* bytes read */)> ReadCallback;
-  typedef Callback<void(PlatformFileError,
+  typedef Callback<void(File::Error,
                         int /* bytes written */)> WriteCallback;
 
-  typedef Callback<PlatformFileError(PlatformFile*, bool*)> CreateOrOpenTask;
-  typedef Callback<PlatformFileError(PlatformFile)> CloseTask;
-  typedef Callback<PlatformFileError(void)> FileTask;
+  typedef Callback<File::Error(PlatformFile*, bool*)> CreateOrOpenTask;
+  typedef Callback<File::Error(PlatformFile)> CloseTask;
+  typedef Callback<File::Error(void)> FileTask;
 
   // Creates or opens a file with the given flags. It is invalid to pass a null
   // callback. If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to

@@ -79,7 +79,7 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
   base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY,
+  callback.Run(base::File::FILE_ERROR_SECURITY,
                base::PassPlatformFile(&invalid_file),
                base::Closure());
 }
@@ -90,7 +90,7 @@ void DeviceMediaAsyncFileUtil::EnsureFileExists(
     const EnsureFileExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, false);
+  callback.Run(base::File::FILE_ERROR_SECURITY, false);
 }
 
 void DeviceMediaAsyncFileUtil::CreateDirectory(
@@ -101,7 +101,7 @@ void DeviceMediaAsyncFileUtil::CreateDirectory(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::GetFileInfo(
@@ -111,7 +111,7 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
-    OnGetFileInfoError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    OnGetFileInfoError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
   delegate->GetFileInfo(
@@ -131,7 +131,7 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
-    OnReadDirectoryError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    OnReadDirectoryError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
   delegate->ReadDirectory(
@@ -152,7 +152,7 @@ void DeviceMediaAsyncFileUtil::Touch(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::Truncate(
@@ -162,7 +162,7 @@ void DeviceMediaAsyncFileUtil::Truncate(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::CopyFileLocal(
@@ -174,7 +174,7 @@ void DeviceMediaAsyncFileUtil::CopyFileLocal(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::MoveFileLocal(
@@ -185,7 +185,7 @@ void DeviceMediaAsyncFileUtil::MoveFileLocal(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::CopyInForeignFile(
@@ -195,7 +195,7 @@ void DeviceMediaAsyncFileUtil::CopyInForeignFile(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::DeleteFile(
@@ -204,7 +204,7 @@ void DeviceMediaAsyncFileUtil::DeleteFile(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::DeleteDirectory(
@@ -213,7 +213,7 @@ void DeviceMediaAsyncFileUtil::DeleteDirectory(
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   NOTIMPLEMENTED();
-  callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void DeviceMediaAsyncFileUtil::DeleteRecursively(
@@ -221,7 +221,7 @@ void DeviceMediaAsyncFileUtil::DeleteRecursively(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
@@ -231,7 +231,7 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
-    OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -285,33 +285,33 @@ DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
 
 void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(
     const AsyncFileUtil::GetFileInfoCallback& callback,
-    const base::PlatformFileInfo& file_info) {
-  callback.Run(base::PLATFORM_FILE_OK, file_info);
+    const base::File::Info& file_info) {
+  callback.Run(base::File::FILE_OK, file_info);
 }
 
 void DeviceMediaAsyncFileUtil::OnGetFileInfoError(
     const AsyncFileUtil::GetFileInfoCallback& callback,
-    base::PlatformFileError error) {
-  callback.Run(error, base::PlatformFileInfo());
+    base::File::Error error) {
+  callback.Run(error, base::File::Info());
 }
 
 void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
     const AsyncFileUtil::ReadDirectoryCallback& callback,
     const AsyncFileUtil::EntryList& file_list,
     bool has_more) {
-  callback.Run(base::PLATFORM_FILE_OK, file_list, has_more);
+  callback.Run(base::File::FILE_OK, file_list, has_more);
 }
 
 void DeviceMediaAsyncFileUtil::OnReadDirectoryError(
     const AsyncFileUtil::ReadDirectoryCallback& callback,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   callback.Run(error, AsyncFileUtil::EntryList(), false /*no more*/);
 }
 
 void DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
     base::SequencedTaskRunner* media_task_runner,
-    const base::PlatformFileInfo& file_info,
+    const base::File::Info& file_info,
     const base::FilePath& platform_path) {
   base::PostTaskAndReplyWithResult(
       media_task_runner,
@@ -329,11 +329,11 @@ void DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile(
 
 void DeviceMediaAsyncFileUtil::OnDidCheckMedia(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    const base::PlatformFileInfo& file_info,
+    const base::File::Info& file_info,
     scoped_refptr<webkit_blob::ShareableFileReference> platform_file,
-    base::PlatformFileError error) {
+    base::File::Error error) {
   base::FilePath platform_path(platform_file.get()->path());
-  if (error != base::PLATFORM_FILE_OK)
+  if (error != base::File::FILE_OK)
     platform_file = NULL;
   callback.Run(error, file_info, platform_path, platform_file);
 }
@@ -342,11 +342,11 @@ void DeviceMediaAsyncFileUtil::GetHeaderBytesForMIMESniffing(
     const fileapi::FileSystemURL& url,
     base::SequencedTaskRunner* media_task_runner,
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    base::PlatformFileError error,
-    const base::PlatformFileInfo& file_info) {
+    base::File::Error error,
+    const base::File::Info& file_info) {
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
-    OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -368,23 +368,23 @@ void DeviceMediaAsyncFileUtil::FinishStreamingSnapshotFile(
     const fileapi::FileSystemURL& url,
     base::SequencedTaskRunner* media_task_runner,
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    const base::PlatformFileInfo& file_info,
+    const base::File::Info& file_info,
     net::IOBuffer* buffer,
     int buffer_size) {
-  base::PlatformFileError error =
+  base::File::Error error =
       NativeMediaFileUtil::BufferIsMediaHeader(buffer, buffer_size);
-  if (error != base::PLATFORM_FILE_OK) {
+  if (error != base::File::FILE_OK) {
     OnCreateSnapshotFileError(callback, error);
     return;
   }
-  callback.Run(base::PLATFORM_FILE_OK, file_info, base::FilePath(),
+  callback.Run(base::File::FILE_OK, file_info, base::FilePath(),
                scoped_refptr<ShareableFileReference>());
 }
 
 void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    base::PlatformFileError error) {
-  callback.Run(error, base::PlatformFileInfo(), base::FilePath(),
+    base::File::Error error) {
+  callback.Run(error, base::File::Info(), base::FilePath(),
                scoped_refptr<ShareableFileReference>());
 }
 
@@ -395,12 +395,12 @@ void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
     base::FilePath* snapshot_file_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (!snapshot_file_path || snapshot_file_path->empty()) {
-    OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_FAILED);
+    OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_FAILED);
     return;
   }
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate) {
-    OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
   delegate->CreateSnapshotFile(

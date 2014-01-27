@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 
 namespace leveldb {
 class Status;
@@ -23,7 +23,7 @@ enum SyncStatusCode {
   // submodule error code (yet).
   SYNC_STATUS_FAILED = -1001,
 
-  // Basic ones that could be directly mapped to PlatformFileError.
+  // Basic ones that could be directly mapped to File::Error.
   SYNC_FILE_ERROR_FAILED = -1,
   SYNC_FILE_ERROR_IN_USE = -2,
   SYNC_FILE_ERROR_EXISTS = -3,
@@ -67,11 +67,9 @@ const char* SyncStatusCodeToString(SyncStatusCode status);
 
 SyncStatusCode LevelDBStatusToSyncStatusCode(const leveldb::Status& status);
 
-SyncStatusCode PlatformFileErrorToSyncStatusCode(
-    base::PlatformFileError file_error);
+SyncStatusCode FileErrorToSyncStatusCode(base::File::Error file_error);
 
-base::PlatformFileError SyncStatusCodeToPlatformFileError(
-    SyncStatusCode status);
+base::File::Error SyncStatusCodeToFileError(SyncStatusCode status);
 
 }  // namespace sync_file_system
 

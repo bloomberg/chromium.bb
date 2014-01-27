@@ -73,14 +73,14 @@ class TestableFileWriter : public WebFileWriterBase {
     if (offset == kBasicFileTruncate_Offset) {
       DidSucceed();
     } else if (offset == kErrorFileTruncate_Offset) {
-      DidFail(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      DidFail(base::File::FILE_ERROR_NOT_FOUND);
     } else if (offset == kCancelFileTruncate_Offset) {
       cancel();
       DidSucceed();  // truncate completion
       DidSucceed();  // cancel completion
     } else if (offset == kCancelFailedTruncate_Offset) {
       cancel();
-      DidFail(base::PLATFORM_FILE_ERROR_NOT_FOUND);  // truncate completion
+      DidFail(base::File::FILE_ERROR_NOT_FOUND);  // truncate completion
       DidSucceed();  // cancel completion
     } else {
       FAIL();
@@ -98,7 +98,7 @@ class TestableFileWriter : public WebFileWriterBase {
     if (offset == kBasicFileWrite_Offset) {
       DidWrite(1, true);
     } else if (offset == kErrorFileWrite_Offset) {
-      DidFail(base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      DidFail(base::File::FILE_ERROR_NOT_FOUND);
     } else if (offset == kMultiFileWrite_Offset) {
       DidWrite(1, false);
       DidWrite(1, false);
@@ -108,7 +108,7 @@ class TestableFileWriter : public WebFileWriterBase {
       cancel();
       DidWrite(1, false);
       DidWrite(1, false);
-      DidFail(base::PLATFORM_FILE_ERROR_FAILED);  // write completion
+      DidFail(base::File::FILE_ERROR_FAILED);  // write completion
       DidSucceed();  // cancel completion
     } else if (offset == kCancelFileWriteAfterCompletion_Offset) {
       DidWrite(1, false);
@@ -116,7 +116,7 @@ class TestableFileWriter : public WebFileWriterBase {
       DidWrite(1, false);
       DidWrite(1, false);
       DidWrite(1, true);  // write completion
-      DidFail(base::PLATFORM_FILE_ERROR_FAILED);  // cancel completion
+      DidFail(base::File::FILE_ERROR_FAILED);  // cancel completion
     } else {
       FAIL();
     }

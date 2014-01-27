@@ -30,65 +30,65 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileUtil
   LocalFileUtil();
   virtual ~LocalFileUtil();
 
-  virtual base::PlatformFileError CreateOrOpen(
+  virtual base::File::Error CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int file_flags,
       base::PlatformFile* file_handle,
       bool* created) OVERRIDE;
-  virtual base::PlatformFileError Close(
+  virtual base::File::Error Close(
       FileSystemOperationContext* context,
       base::PlatformFile file) OVERRIDE;
-  virtual base::PlatformFileError EnsureFileExists(
+  virtual base::File::Error EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemURL& url, bool* created) OVERRIDE;
-  virtual base::PlatformFileError CreateDirectory(
+  virtual base::File::Error CreateDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       bool exclusive,
       bool recursive) OVERRIDE;
-  virtual base::PlatformFileError GetFileInfo(
+  virtual base::File::Error GetFileInfo(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      base::PlatformFileInfo* file_info,
+      base::File::Info* file_info,
       base::FilePath* platform_file) OVERRIDE;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url) OVERRIDE;
-  virtual base::PlatformFileError GetLocalFilePath(
+  virtual base::File::Error GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
       base::FilePath* local_file_path) OVERRIDE;
-  virtual base::PlatformFileError Touch(
+  virtual base::File::Error Touch(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time) OVERRIDE;
-  virtual base::PlatformFileError Truncate(
+  virtual base::File::Error Truncate(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int64 length) OVERRIDE;
-  virtual base::PlatformFileError CopyOrMoveFile(
+  virtual base::File::Error CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       CopyOrMoveOption option,
       bool copy) OVERRIDE;
-  virtual base::PlatformFileError CopyInForeignFile(
+  virtual base::File::Error CopyInForeignFile(
       FileSystemOperationContext* context,
       const base::FilePath& src_file_path,
       const FileSystemURL& dest_url) OVERRIDE;
-  virtual base::PlatformFileError DeleteFile(
+  virtual base::File::Error DeleteFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual base::PlatformFileError DeleteDirectory(
+  virtual base::File::Error DeleteDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
   virtual webkit_blob::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      base::PlatformFileError* error,
-      base::PlatformFileInfo* file_info,
+      base::File::Error* error,
+      base::File::Info* file_info,
       base::FilePath* platform_path) OVERRIDE;
 
  private:

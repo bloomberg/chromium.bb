@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
 namespace base {
@@ -27,7 +27,7 @@ class MTPDeviceAsyncDelegate {
  public:
   // A callback to be called when GetFileInfo method call succeeds.
   typedef base::Callback<
-      void(const base::PlatformFileInfo& file_info)> GetFileInfoSuccessCallback;
+      void(const base::File::Info& file_info)> GetFileInfoSuccessCallback;
 
   // A callback to be called when ReadDirectory method call succeeds.
   typedef base::Callback<
@@ -36,12 +36,11 @@ class MTPDeviceAsyncDelegate {
 
   // A callback to be called when GetFileInfo/ReadDirectory/CreateSnapshot
   // method call fails.
-  typedef base::Callback<
-      void(base::PlatformFileError error)> ErrorCallback;
+  typedef base::Callback<void(base::File::Error error)> ErrorCallback;
 
   // A callback to be called when CreateSnapshotFile method call succeeds.
   typedef base::Callback<
-      void(const base::PlatformFileInfo& file_info,
+      void(const base::File::Info& file_info,
            const base::FilePath& local_path)> CreateSnapshotFileSuccessCallback;
 
   // A callback to be called when ReadBytes method call succeeds.

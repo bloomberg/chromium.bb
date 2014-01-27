@@ -518,10 +518,10 @@ bool SandboxDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
   return false;
 }
 
-base::PlatformFileError SandboxDirectoryDatabase::AddFileInfo(
+base::File::Error SandboxDirectoryDatabase::AddFileInfo(
     const FileInfo& info, FileId* file_id) {
   if (!Init(REPAIR_ON_CORRUPTION))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_ERROR_FAILED;
   DCHECK(file_id);
   std::string child_key = GetChildLookupKey(info.parent_id, info.name);
   std::string child_id_string;
@@ -529,16 +529,16 @@ base::PlatformFileError SandboxDirectoryDatabase::AddFileInfo(
       db_->Get(leveldb::ReadOptions(), child_key, &child_id_string);
   if (status.ok()) {
     LOG(ERROR) << "File exists already!";
-    return base::PLATFORM_FILE_ERROR_EXISTS;
+    return base::File::FILE_ERROR_EXISTS;
   }
   if (!status.IsNotFound()) {
     HandleError(FROM_HERE, status);
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return base::File::FILE_ERROR_NOT_FOUND;
   }
 
   if (!IsDirectory(info.parent_id)) {
     LOG(ERROR) << "New parent directory is a file!";
-    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    return base::File::FILE_ERROR_NOT_A_DIRECTORY;
   }
 
   // This would be a fine place to limit the number of files in a directory, if
@@ -546,21 +546,21 @@ base::PlatformFileError SandboxDirectoryDatabase::AddFileInfo(
 
   FileId temp_id;
   if (!GetLastFileId(&temp_id))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_ERROR_FAILED;
   ++temp_id;
 
   leveldb::WriteBatch batch;
   if (!AddFileInfoHelper(info, temp_id, &batch))
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_ERROR_FAILED;
 
   batch.Put(LastFileIdKey(), base::Int64ToString(temp_id));
   status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
     HandleError(FROM_HERE, status);
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::File::FILE_ERROR_FAILED;
   }
   *file_id = temp_id;
-  return base::PLATFORM_FILE_OK;
+  return base::File::FILE_OK;
 }
 
 bool SandboxDirectoryDatabase::RemoveFileInfo(FileId file_id) {

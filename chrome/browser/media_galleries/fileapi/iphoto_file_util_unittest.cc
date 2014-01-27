@@ -41,11 +41,11 @@ void ReadDirectoryTestHelperCallback(
     base::RunLoop* run_loop,
     FileSystemOperation::FileEntryList* contents,
     bool* completed,
-    base::PlatformFileError error,
+    base::File::Error error,
     const FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
   DCHECK(!*completed);
-  *completed = !has_more && error == base::PLATFORM_FILE_OK;
+  *completed = !has_more && error == base::File::FILE_OK;
   *contents = file_list;
   run_loop->Quit();
 }

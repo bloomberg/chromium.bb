@@ -210,12 +210,12 @@ class BlobURLRequestJobTest : public testing::Test {
             kFileSystemType,
             base::FilePath().AppendASCII(filename));
 
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    ASSERT_EQ(base::File::FILE_OK,
               fileapi::AsyncFileTestHelper::CreateFileWithData(
                   file_system_context_, url, buf, buf_size));
 
-    base::PlatformFileInfo file_info;
-    ASSERT_EQ(base::PLATFORM_FILE_OK,
+    base::File::Info file_info;
+    ASSERT_EQ(base::File::FILE_OK,
               fileapi::AsyncFileTestHelper::GetMetadata(
                   file_system_context_, url, &file_info));
     if (modification_time)
@@ -224,8 +224,8 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void OnValidateFileSystem(const GURL& root,
                             const std::string& name,
-                            base::PlatformFileError result) {
-    ASSERT_EQ(base::PLATFORM_FILE_OK, result);
+                            base::File::Error result) {
+    ASSERT_EQ(base::File::FILE_OK, result);
     ASSERT_TRUE(root.is_valid());
     file_system_root_url_ = root;
   }

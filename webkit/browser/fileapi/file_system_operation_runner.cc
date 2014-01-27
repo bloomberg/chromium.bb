@@ -43,7 +43,7 @@ OperationID FileSystemOperationRunner::CreateFile(
     const FileSystemURL& url,
     bool exclusive,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
 
@@ -66,7 +66,7 @@ OperationID FileSystemOperationRunner::CreateDirectory(
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -89,7 +89,7 @@ OperationID FileSystemOperationRunner::Copy(
     CopyOrMoveOption option,
     const CopyProgressCallback& progress_callback,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(dest_url, &error);
   BeginOperationScoper scope;
@@ -116,7 +116,7 @@ OperationID FileSystemOperationRunner::Move(
     const FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(dest_url, &error);
   BeginOperationScoper scope;
@@ -137,7 +137,7 @@ OperationID FileSystemOperationRunner::Move(
 OperationID FileSystemOperationRunner::DirectoryExists(
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -157,7 +157,7 @@ OperationID FileSystemOperationRunner::DirectoryExists(
 OperationID FileSystemOperationRunner::FileExists(
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -177,13 +177,13 @@ OperationID FileSystemOperationRunner::FileExists(
 OperationID FileSystemOperationRunner::GetMetadata(
     const FileSystemURL& url,
     const GetMetadataCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
   OperationHandle handle = BeginOperation(operation, scope.AsWeakPtr());
   if (!operation) {
-    DidGetMetadata(handle, callback, error, base::PlatformFileInfo());
+    DidGetMetadata(handle, callback, error, base::File::Info());
     return handle.id;
   }
   PrepareForRead(handle.id, url);
@@ -197,7 +197,7 @@ OperationID FileSystemOperationRunner::GetMetadata(
 OperationID FileSystemOperationRunner::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -218,7 +218,7 @@ OperationID FileSystemOperationRunner::ReadDirectory(
 OperationID FileSystemOperationRunner::Remove(
     const FileSystemURL& url, bool recursive,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -241,7 +241,7 @@ OperationID FileSystemOperationRunner::Write(
     scoped_ptr<webkit_blob::BlobDataHandle> blob,
     int64 offset,
     const WriteCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
 
@@ -256,7 +256,7 @@ OperationID FileSystemOperationRunner::Write(
       file_system_context_->CreateFileStreamWriter(url, offset));
   if (!writer) {
     // Write is not supported.
-    DidWrite(handle, callback, base::PLATFORM_FILE_ERROR_SECURITY, 0, true);
+    DidWrite(handle, callback, base::File::FILE_ERROR_SECURITY, 0, true);
     return handle.id;
   }
 
@@ -280,7 +280,7 @@ OperationID FileSystemOperationRunner::Write(
 OperationID FileSystemOperationRunner::Truncate(
     const FileSystemURL& url, int64 length,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -308,7 +308,7 @@ void FileSystemOperationRunner::Cancel(
   FileSystemOperation* operation = operations_.Lookup(id);
   if (!operation) {
     // There is no operation with |id|.
-    callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
   operation->Cancel(callback);
@@ -319,7 +319,7 @@ OperationID FileSystemOperationRunner::TouchFile(
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -340,7 +340,7 @@ OperationID FileSystemOperationRunner::OpenFile(
     const FileSystemURL& url,
     int file_flags,
     const OpenFileCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -370,13 +370,13 @@ OperationID FileSystemOperationRunner::OpenFile(
 OperationID FileSystemOperationRunner::CreateSnapshotFile(
     const FileSystemURL& url,
     const SnapshotFileCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
   OperationHandle handle = BeginOperation(operation, scope.AsWeakPtr());
   if (!operation) {
-    DidCreateSnapshot(handle, callback, error, base::PlatformFileInfo(),
+    DidCreateSnapshot(handle, callback, error, base::File::Info(),
                       base::FilePath(), NULL);
     return handle.id;
   }
@@ -392,7 +392,7 @@ OperationID FileSystemOperationRunner::CopyInForeignFile(
     const base::FilePath& src_local_disk_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(dest_url, &error);
   BeginOperationScoper scope;
@@ -411,7 +411,7 @@ OperationID FileSystemOperationRunner::CopyInForeignFile(
 OperationID FileSystemOperationRunner::RemoveFile(
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -430,7 +430,7 @@ OperationID FileSystemOperationRunner::RemoveFile(
 OperationID FileSystemOperationRunner::RemoveDirectory(
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   BeginOperationScoper scope;
@@ -452,7 +452,7 @@ OperationID FileSystemOperationRunner::CopyFileLocal(
     CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(src_url, &error);
   BeginOperationScoper scope;
@@ -473,7 +473,7 @@ OperationID FileSystemOperationRunner::MoveFileLocal(
     const FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const StatusCallback& callback) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(src_url, &error);
   BeginOperationScoper scope;
@@ -489,10 +489,10 @@ OperationID FileSystemOperationRunner::MoveFileLocal(
   return handle.id;
 }
 
-base::PlatformFileError FileSystemOperationRunner::SyncGetPlatformPath(
+base::File::Error FileSystemOperationRunner::SyncGetPlatformPath(
     const FileSystemURL& url,
     base::FilePath* platform_path) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   scoped_ptr<FileSystemOperation> operation(
       file_system_context_->CreateFileSystemOperation(url, &error));
   if (!operation.get())
@@ -507,7 +507,7 @@ FileSystemOperationRunner::FileSystemOperationRunner(
 void FileSystemOperationRunner::DidFinish(
     const OperationHandle& handle,
     const StatusCallback& callback,
-    base::PlatformFileError rv) {
+    base::File::Error rv) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::MessageLoopProxy::current()->PostTask(
@@ -522,8 +522,8 @@ void FileSystemOperationRunner::DidFinish(
 void FileSystemOperationRunner::DidGetMetadata(
     const OperationHandle& handle,
     const GetMetadataCallback& callback,
-    base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info) {
+    base::File::Error rv,
+    const base::File::Info& file_info) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::MessageLoopProxy::current()->PostTask(
@@ -538,7 +538,7 @@ void FileSystemOperationRunner::DidGetMetadata(
 void FileSystemOperationRunner::DidReadDirectory(
     const OperationHandle& handle,
     const ReadDirectoryCallback& callback,
-    base::PlatformFileError rv,
+    base::File::Error rv,
     const std::vector<DirectoryEntry>& entries,
     bool has_more) {
   if (handle.scope) {
@@ -550,14 +550,14 @@ void FileSystemOperationRunner::DidReadDirectory(
     return;
   }
   callback.Run(rv, entries, has_more);
-  if (rv != base::PLATFORM_FILE_OK || !has_more)
+  if (rv != base::File::FILE_OK || !has_more)
     FinishOperation(handle.id);
 }
 
 void FileSystemOperationRunner::DidWrite(
     const OperationHandle& handle,
     const WriteCallback& callback,
-    base::PlatformFileError rv,
+    base::File::Error rv,
     int64 bytes,
     bool complete) {
   if (handle.scope) {
@@ -568,14 +568,14 @@ void FileSystemOperationRunner::DidWrite(
     return;
   }
   callback.Run(rv, bytes, complete);
-  if (rv != base::PLATFORM_FILE_OK || complete)
+  if (rv != base::File::FILE_OK || complete)
     FinishOperation(handle.id);
 }
 
 void FileSystemOperationRunner::DidOpenFile(
     const OperationHandle& handle,
     const OpenFileCallback& callback,
-    base::PlatformFileError rv,
+    base::File::Error rv,
     base::PlatformFile file,
     const base::Closure& on_close_callback) {
   if (handle.scope) {
@@ -593,8 +593,8 @@ void FileSystemOperationRunner::DidOpenFile(
 void FileSystemOperationRunner::DidCreateSnapshot(
     const OperationHandle& handle,
     const SnapshotFileCallback& callback,
-    base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info,
+    base::File::Error rv,
+    const base::File::Info& file_info,
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   if (handle.scope) {
@@ -679,7 +679,7 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
   if (found_cancel != stray_cancel_callbacks_.end()) {
     // This cancel has been requested after the operation has finished,
     // so report that we failed to stop it.
-    found_cancel->second.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
+    found_cancel->second.Run(base::File::FILE_ERROR_INVALID_OPERATION);
     stray_cancel_callbacks_.erase(found_cancel);
   }
 }

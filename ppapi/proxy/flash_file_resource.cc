@@ -206,7 +206,7 @@ int32_t FlashFileResource::QueryFileHelper(const std::string& path,
   if (path.empty() || !info)
     return PP_ERROR_BADARGUMENT;
 
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   PepperFilePath pepper_path(domain_type, base::FilePath::FromUTF8Unsafe(path));
 
   int32_t error = SyncCall<PpapiPluginMsg_FlashFile_QueryFileReply>(BROWSER,

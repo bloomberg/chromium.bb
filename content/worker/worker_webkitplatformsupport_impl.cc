@@ -61,15 +61,15 @@ class WorkerWebKitPlatformSupportImpl::FileUtilities
 bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
     const WebString& path,
     WebFileInfo& web_file_info) {
-  base::PlatformFileInfo file_info;
-  base::PlatformFileError status;
+  base::File::Info file_info;
+  base::File::Error status;
   if (!thread_safe_sender_.get() ||
       !thread_safe_sender_->Send(new FileUtilitiesMsg_GetFileInfo(
            base::FilePath::FromUTF16Unsafe(path), &file_info, &status)) ||
-      status != base::PLATFORM_FILE_OK) {
+      status != base::File::FILE_OK) {
     return false;
   }
-  webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
+  webkit_glue::FileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = path;
   return true;
 }

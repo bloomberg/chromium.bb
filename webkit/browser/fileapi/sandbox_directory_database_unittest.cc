@@ -8,9 +8,9 @@
 #include <limits>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +51,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
     db_.reset();
   }
 
-  base::PlatformFileError AddFileInfo(
+  base::File::Error AddFileInfo(
       FileId parent_id, const base::FilePath::StringType& name) {
     FileId file_id;
     FileInfo info;
@@ -66,7 +66,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
     FileInfo info;
     info.parent_id = parent_id;
     info.name = name;
-    ASSERT_EQ(base::PLATFORM_FILE_OK, db_->AddFileInfo(info, file_id_out));
+    ASSERT_EQ(base::File::FILE_OK, db_->AddFileInfo(info, file_id_out));
   }
 
   void CreateFile(FileId parent_id,
@@ -79,21 +79,16 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
     info.parent_id = parent_id;
     info.name = name;
     info.data_path = base::FilePath(data_path).NormalizePathSeparators();
-    ASSERT_EQ(base::PLATFORM_FILE_OK, db_->AddFileInfo(info, &file_id));
+    ASSERT_EQ(base::File::FILE_OK, db_->AddFileInfo(info, &file_id));
 
     base::FilePath local_path = path().Append(data_path);
     if (!base::DirectoryExists(local_path.DirName()))
       ASSERT_TRUE(base::CreateDirectory(local_path.DirName()));
 
-    bool created = false;
-    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-    base::PlatformFile file = base::CreatePlatformFile(
-        local_path,
-        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-        &created, &error);
-    ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-    ASSERT_TRUE(created);
-    ASSERT_TRUE(base::ClosePlatformFile(file));
+    base::File file(local_path,
+                    base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(file.IsValid());
+    ASSERT_TRUE(file.created());
 
     if (file_id_out)
       *file_id_out = file_id;
@@ -162,7 +157,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestGetRootFileInfoBeforeCreate) {
 
 TEST_F(SandboxDirectoryDatabaseTest, TestMissingParentAddFileInfo) {
   FileId parent_id = 7;
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_A_DIRECTORY,
             AddFileInfo(parent_id, FILE_PATH_LITERAL("foo")));
 }
 
@@ -171,21 +166,21 @@ TEST_F(SandboxDirectoryDatabaseTest, TestAddNameClash) {
   FileId file_id;
   info.parent_id = 0;
   info.name = FILE_PATH_LITERAL("dir 0");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id));
 
   // Check for name clash in the root directory.
   base::FilePath::StringType name = info.name;
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, AddFileInfo(0, name));
+  EXPECT_EQ(base::File::FILE_ERROR_EXISTS, AddFileInfo(0, name));
   name = FILE_PATH_LITERAL("dir 1");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, AddFileInfo(0, name));
+  EXPECT_EQ(base::File::FILE_OK, AddFileInfo(0, name));
 
   name = FILE_PATH_LITERAL("subdir 0");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, AddFileInfo(file_id, name));
+  EXPECT_EQ(base::File::FILE_OK, AddFileInfo(file_id, name));
 
   // Check for name clash in a subdirectory.
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, AddFileInfo(file_id, name));
+  EXPECT_EQ(base::File::FILE_ERROR_EXISTS, AddFileInfo(file_id, name));
   name = FILE_PATH_LITERAL("subdir 1");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, AddFileInfo(file_id, name));
+  EXPECT_EQ(base::File::FILE_OK, AddFileInfo(file_id, name));
 }
 
 TEST_F(SandboxDirectoryDatabaseTest, TestRenameNoMoveNameClash) {
@@ -196,8 +191,8 @@ TEST_F(SandboxDirectoryDatabaseTest, TestRenameNoMoveNameClash) {
   base::FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
   info.parent_id = 0;
   info.name = name0;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id0));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, AddFileInfo(0, name1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, AddFileInfo(0, name1));
   info.name = name1;
   EXPECT_FALSE(db()->UpdateFileInfo(file_id0, info));
   info.name = name2;
@@ -212,9 +207,9 @@ TEST_F(SandboxDirectoryDatabaseTest, TestMoveSameNameNameClash) {
   base::FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
   info.parent_id = 0;
   info.name = name0;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id0));
   info.parent_id = file_id0;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id1));
   info.parent_id = 0;
   EXPECT_FALSE(db()->UpdateFileInfo(file_id1, info));
   info.name = name1;
@@ -230,10 +225,10 @@ TEST_F(SandboxDirectoryDatabaseTest, TestMoveRenameNameClash) {
   base::FilePath::StringType name2 = FILE_PATH_LITERAL("bas");
   info.parent_id = 0;
   info.name = name0;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id0));
   info.parent_id = file_id0;
   info.name = name1;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id1));
   info.parent_id = 0;
   info.name = name0;
   EXPECT_FALSE(db()->UpdateFileInfo(file_id1, info));
@@ -251,9 +246,9 @@ TEST_F(SandboxDirectoryDatabaseTest, TestRemoveWithChildren) {
   FileId file_id1;
   info.parent_id = 0;
   info.name = FILE_PATH_LITERAL("foo");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id0));
   info.parent_id = file_id0;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id1));
   EXPECT_FALSE(db()->RemoveFileInfo(file_id0));
   EXPECT_TRUE(db()->RemoveFileInfo(file_id1));
   EXPECT_TRUE(db()->RemoveFileInfo(file_id0));
@@ -267,10 +262,10 @@ TEST_F(SandboxDirectoryDatabaseTest, TestGetChildWithName) {
   base::FilePath::StringType name1 = FILE_PATH_LITERAL("bar");
   info.parent_id = 0;
   info.name = name0;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id0));
   info.parent_id = file_id0;
   info.name = name1;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id1));
   EXPECT_NE(file_id0, file_id1);
 
   FileId check_file_id;
@@ -293,14 +288,14 @@ TEST_F(SandboxDirectoryDatabaseTest, TestGetFileWithPath) {
 
   info.parent_id = 0;
   info.name = name0;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id0));
   info.parent_id = file_id0;
   info.name = name1;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id1));
   EXPECT_NE(file_id0, file_id1);
   info.parent_id = file_id1;
   info.name = name2;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id2));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id2));
   EXPECT_NE(file_id0, file_id2);
   EXPECT_NE(file_id1, file_id2);
 
@@ -329,7 +324,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestListChildren) {
   FileInfo info;
   info.parent_id = 0;
   info.name = FILE_PATH_LITERAL("foo");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id0));
   EXPECT_TRUE(db()->ListChildren(0, &children));
   EXPECT_EQ(children.size(), 1UL);
   EXPECT_EQ(children[0], file_id0);
@@ -337,7 +332,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestListChildren) {
   // Two children in the root.
   FileId file_id1;
   info.name = FILE_PATH_LITERAL("bar");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id1));
   EXPECT_TRUE(db()->ListChildren(0, &children));
   EXPECT_EQ(2UL, children.size());
   if (children[0] == file_id0) {
@@ -356,14 +351,14 @@ TEST_F(SandboxDirectoryDatabaseTest, TestListChildren) {
   info.name = FILE_PATH_LITERAL("foo");
   FileId file_id2;
   FileId file_id3;
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id2));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id2));
   EXPECT_TRUE(db()->ListChildren(file_id0, &children));
   EXPECT_EQ(1UL, children.size());
   EXPECT_EQ(children[0], file_id2);
 
   // Two children in a subdirectory.
   info.name = FILE_PATH_LITERAL("bar");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info, &file_id3));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info, &file_id3));
   EXPECT_TRUE(db()->ListChildren(file_id0, &children));
   EXPECT_EQ(2UL, children.size());
   if (children[0] == file_id2) {
@@ -381,7 +376,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestUpdateModificationTime) {
   info0.name = FILE_PATH_LITERAL("name");
   info0.data_path = base::FilePath(FILE_PATH_LITERAL("fake path"));
   info0.modification_time = base::Time::Now();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info0, &file_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info0, &file_id));
   FileInfo info1;
   EXPECT_TRUE(db()->GetFileInfo(file_id, &info1));
   EXPECT_EQ(info0.name, info1.name);
@@ -412,7 +407,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestSimpleFileOperations) {
   info0.data_path = base::FilePath(FILE_PATH_LITERAL("foo"));
   info0.name = FILE_PATH_LITERAL("file name");
   info0.modification_time = base::Time::Now();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info0, &file_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info0, &file_id));
   FileInfo info1;
   EXPECT_TRUE(db()->GetFileInfo(file_id, &info1));
   EXPECT_EQ(info0.parent_id, info1.parent_id);
@@ -429,7 +424,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {
   info0.parent_id = 0;
   info0.name = FILE_PATH_LITERAL("directory");
   info0.modification_time = base::Time::Now();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info0, &directory_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info0, &directory_id));
 
   FileId file_id;
   FileInfo info1;
@@ -437,7 +432,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileSrcDirectory) {
   info1.data_path = base::FilePath(FILE_PATH_LITERAL("bar"));
   info1.name = FILE_PATH_LITERAL("file");
   info1.modification_time = base::Time::UnixEpoch();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info1, &file_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info1, &file_id));
 
   EXPECT_FALSE(db()->OverwritingMoveFile(directory_id, file_id));
 }
@@ -449,14 +444,14 @@ TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileDestDirectory) {
   info0.name = FILE_PATH_LITERAL("file");
   info0.data_path = base::FilePath(FILE_PATH_LITERAL("bar"));
   info0.modification_time = base::Time::Now();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info0, &file_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info0, &file_id));
 
   FileId directory_id;
   FileInfo info1;
   info1.parent_id = 0;
   info1.name = FILE_PATH_LITERAL("directory");
   info1.modification_time = base::Time::UnixEpoch();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info1, &directory_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info1, &directory_id));
 
   EXPECT_FALSE(db()->OverwritingMoveFile(file_id, directory_id));
 }
@@ -468,13 +463,13 @@ TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
   info0.data_path = base::FilePath(FILE_PATH_LITERAL("foo"));
   info0.name = FILE_PATH_LITERAL("file name 0");
   info0.modification_time = base::Time::Now();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info0, &file_id0));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info0, &file_id0));
 
   FileInfo dir_info;
   FileId dir_id;
   dir_info.parent_id = 0;
   dir_info.name = FILE_PATH_LITERAL("directory name");
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(dir_info, &dir_id));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(dir_info, &dir_id));
 
   FileId file_id1;
   FileInfo info1;
@@ -482,7 +477,7 @@ TEST_F(SandboxDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
   info1.data_path = base::FilePath(FILE_PATH_LITERAL("bar"));
   info1.name = FILE_PATH_LITERAL("file name 1");
   info1.modification_time = base::Time::UnixEpoch();
-  EXPECT_EQ(base::PLATFORM_FILE_OK, db()->AddFileInfo(info1, &file_id1));
+  EXPECT_EQ(base::File::FILE_OK, db()->AddFileInfo(info1, &file_id1));
 
   EXPECT_TRUE(db()->OverwritingMoveFile(file_id0, file_id1));
 
@@ -557,15 +552,11 @@ TEST_F(SandboxDirectoryDatabaseTest, TestConsistencyCheck_OrphanFile) {
 
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 
-  bool created = false;
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFile file = base::CreatePlatformFile(
-      path().Append(FPL("Orphan File")),
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-      &created, &error);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-  ASSERT_TRUE(created);
-  ASSERT_TRUE(base::ClosePlatformFile(file));
+  base::File file(path().Append(FPL("Orphan File")),
+                  base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_TRUE(file.created());
+  file.Close();
 
   EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
