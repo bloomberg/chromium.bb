@@ -87,7 +87,10 @@ class AddressSanitizerTool(BaseTool):
   """AddressSanitizer tool."""
 
   WRAPPER_NAME = '/system/bin/asanwrapper'
-  EXTRA_OPTIONS = 'allocator_may_return_null=1,strict_memcmp=0'
+  # Disable memcmp overlap check.There are blobs (gl drivers)
+  # on some android devices that use memcmp on overlapping regions,
+  # nothing we can do about that.
+  EXTRA_OPTIONS = 'strict_memcmp=0'
 
   def __init__(self, adb):
     self._adb = adb
