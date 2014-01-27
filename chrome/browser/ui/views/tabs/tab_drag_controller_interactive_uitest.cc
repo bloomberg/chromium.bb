@@ -804,9 +804,16 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(GetIsDragged(browser()));
 }
 
+#if defined(OS_CHROMEOS)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_DeleteTabWhileAttached DISABLED_DeleteTabWhileAttached
+#else
+#define MAYBE_DeleteTabWhileAttached DeleteTabWhileAttached
+#endif
 // Deletes a tab being dragged while still attached.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       DeleteTabWhileAttached) {
+                       MAYBE_DeleteTabWhileAttached) {
   // TODO(sky,sad): Disabled as it fails due to resize locks with a real
   // compositor. crbug.com/331924
   if (input_source() == INPUT_SOURCE_MOUSE) {
@@ -849,10 +856,17 @@ void DeleteWhileDetachedStep2(WebContents* tab) {
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_DeleteTabWhileDetached DISABLED_DeleteTabWhileDetached
+#else
+#define MAYBE_DeleteTabWhileDetached DeleteTabWhileDetached
+#endif
 // Deletes a tab being dragged after dragging a tab so that a new window is
 // created.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       DeleteTabWhileDetached) {
+                       MAYBE_DeleteTabWhileDetached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -901,7 +915,7 @@ void DeleteSourceDetachedStep2(WebContents* tab,
 // Detaches a tab and while detached deletes a tab from the source so that the
 // source window closes then presses escape to cancel the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       DeleteSourceDetached) {
+                       MAYBE_DeleteSourceDetached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -1466,9 +1480,18 @@ void DragSingleTabToSeparateWindowInSecondDisplayStep2(
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_DragSingleTabToSeparateWindowInSecondDisplay \
+  DISABLED_DragSingleTabToSeparateWindowInSecondDisplay
+#else
+#define MAYBE_DragSingleTabToSeparateWindow \
+  DragSingleTabToSeparateWindowInSecondDisplay
+#endif
 // Drags from browser to a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DragSingleTabToSeparateWindowInSecondDisplay) {
+                       MAYBE_DragSingleTabToSeparateWindowInSecondDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -1745,10 +1768,14 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
 // Immersive fullscreen is ChromeOS only.
 #if defined(OS_CHROMEOS)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_DragTabToImmersiveBrowserOnSeparateDisplay \
+  DISABLED_DragTabToImmersiveBrowserOnSeparateDisplay
 // Drags from a restored browser to an immersive fullscreen browser on a
 // second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DragTabToImmersiveBrowserOnSeparateDisplay) {
+                       MAYBE_DragTabToImmersiveBrowserOnSeparateDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -2239,9 +2266,18 @@ void DetachToDockedWindowNextStep(
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_DetachToDockedWindowFromMaximizedWindow \
+  DISABLED_DetachToDockedWindowFromMaximizedWindow
+#else
+#define MAYBE_DetachToDockedWindowFromMaximizedWindow \
+  DetachToDockedWindowFromMaximizedWindow
+#endif
 // Drags from browser to separate window, docks that window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToDockedTabDragControllerTest,
-                       DetachToDockedWindowFromMaximizedWindow) {
+                       MAYBE_DetachToDockedWindowFromMaximizedWindow) {
   // TODO(sky,sad): Disabled as it fails due to resize locks with a real
   // compositor. crbug.com/331924
   if (docked_windows_enabled()) {
