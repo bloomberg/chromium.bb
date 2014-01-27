@@ -262,3 +262,17 @@ rt/tst-aio8
 nptl/tst-cond16
 nptl/tst-cond17
 nptl/tst-cond18
+
+###########################################################################
+# Tests that fail due to ftruncate not being implemented but present in the
+# irt dev interfaces (previously excluded due to automatic exclusion based
+# on link warnings).
+###########################################################################
+libio/tst-fopenloc2
+libio/tst-mmap2-eofsync
+nptl/tst-cond12
+nptl/tst-cond13
+nptl/tst-robust8
+nptl/tst-robustpi8
+stdio-common/test-vfprintf
+stdio-common/tst-perror
