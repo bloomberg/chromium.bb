@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -76,7 +77,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
-  RenderViewImpl* render_view() { return render_view_; }
+  RenderViewImpl* render_view() { return render_view_.get(); }
 
   RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
@@ -331,7 +332,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Stores the WebFrame we are associated with.
   blink::WebFrame* frame_;
 
-  RenderViewImpl* render_view_;
+  base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
   bool is_swapped_out_;
   bool is_detaching_;

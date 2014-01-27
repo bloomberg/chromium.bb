@@ -139,7 +139,7 @@ void RenderFrameImpl::InstallCreateHook(
 // RenderFrameImpl ----------------------------------------------------------
 RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : frame_(NULL),
-      render_view_(render_view),
+      render_view_(render_view->AsWeakPtr()),
       routing_id_(routing_id),
       is_swapped_out_(false),
       is_detaching_(false),
@@ -180,7 +180,7 @@ void RenderFrameImpl::SetWebFrame(blink::WebFrame* web_frame) {
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
-  return render_view_;
+  return render_view_.get();
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -480,7 +480,7 @@ void RenderFrameImpl::DidCommitCompositorFrame() {
 }
 
 RenderView* RenderFrameImpl::GetRenderView() {
-  return render_view_;
+  return render_view_.get();
 }
 
 int RenderFrameImpl::GetRoutingID() {
@@ -523,8 +523,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   return NULL;
 #else
   // TODO(jam): change to take RenderFrame.
-  return new WebPluginImpl(frame, params, info.path, render_view_->AsWeakPtr(),
-                           this);
+  return new WebPluginImpl(frame, params, info.path, render_view_, this);
 #endif
 #else
   return NULL;
@@ -551,7 +550,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   if (UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
-        render_view_, frame);
+        render_view_.get(), frame);
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -643,8 +642,8 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     return NULL;
   }
 
-  RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(render_view_,
-                                                                routing_id);
+  RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
+      render_view_.get(), routing_id);
   // TODO(nasko): Over-conservative check for debugging.
   CHECK(child_render_frame);
   blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
@@ -912,7 +911,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
   params.is_main_frame = !frame->parent();
   params.error_code = error.reason;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
-      render_view_,
+      render_view_.get(),
       frame,
       failed_request,
       error,

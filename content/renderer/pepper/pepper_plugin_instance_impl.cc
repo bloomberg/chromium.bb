@@ -581,7 +581,7 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     lock_mouse_callback_->Abort();
 
-  if (render_frame_)
+  if (render_frame_ && render_frame_->render_view())
     render_frame_->render_view()->PepperInstanceDeleted(this);
 
   if (!module_->IsProxied() && render_frame_) {
