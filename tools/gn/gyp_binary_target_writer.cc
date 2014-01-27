@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "tools/gn/builder_record.h"
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
@@ -64,6 +65,32 @@ std::string GetVCOptimization(std::vector<std::string>* cflags) {
     }
   }
   return "'2'";  // Default value.
+}
+
+// Returns the value from the already-filled in cflags for the processor
+// architecture to set in the GYP file. Additionally, this removes the flag
+// from the given vector so we don't get duplicates.
+std::string GetMacArch(std::vector<std::string>* cflags) {
+  // Searches for the "-arch" option and returns the corresponding GYP value.
+  for (size_t i = 0; i < cflags->size(); i++) {
+    const std::string& cur = (*cflags)[i];
+    if (cur == "-arch") {
+      // This is the first part of a list with ["-arch", "i386"], return the
+      // following item, and delete both of them.
+      if (i < cflags->size() - 1) {
+        std::string ret = (*cflags)[i + 1];
+        cflags->erase(cflags->begin() + i, cflags->begin() + i + 2);
+        return ret;
+      }
+    } else if (StartsWithASCII(cur, "-arch ", true)) {
+      // The arch was passed as one GN string value, e.g. "-arch i386". Return
+      // the stuff following the space and delete the item.
+      std::string ret = cur.substr(6);
+      cflags->erase(cflags->begin() + i);
+      return ret;
+    }
+  }
+  return std::string();
 }
 
 // Finds all values from the given getter from all configs in the given list,
@@ -349,6 +376,15 @@ void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
   }
 
   Indent(indent) << "'xcode_settings': {\n";
+
+  // Architecture. GYP uses this to write the -arch flag passed to the
+  // compiler, it doesn't look at our -arch flag. So we need to specify it in
+  // this special var and not in the cflags to avoid duplicates or conflicts.
+  std::string arch = GetMacArch(&flags.cflags);
+  if (arch == "i386")
+    Indent(indent + kExtraIndent) << "'ARCHS': [ 'i386' ],\n";
+  else if (arch == "x86_64")
+    Indent(indent + kExtraIndent) << "'ARCHS': [ 'x86_64' ],\n";
 
   // C/C++ flags.
   if (!flags.cflags.empty() || !flags.cflags_c.empty() ||

@@ -1,0 +1,10 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(brettw) support "iphoneos" in addition to the simulator. May also need
+# support for common.gypi's "ios_sdk" variable (seems to be a version number)
+# and ios_sdk_path (argument that overrides the one returned below).
+ios_sdk_result =
+  exec_script("ios_sdk.py", [ "iphonesimulator" ], "list lines")
+ios_sdk_path = ios_sdk_result[0]

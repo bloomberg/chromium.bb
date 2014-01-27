@@ -71,7 +71,10 @@ static_library("re2") {
 
   if (is_win) {
     include_dirs = [ "mswin" ]
-    # TODO(brettw) 'msvs_disabled_warnings': [ 4018, 4722, 4267 ],
+    cflags = [
+      "/wd4267",  # Conversion from size_t.
+      "/wd4722",  # Destructor never terminates.
+    ]
   } else {
     sources -= [ "mswin/stdint.h" ]
   }

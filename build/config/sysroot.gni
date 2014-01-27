@@ -43,6 +43,9 @@ if (is_android) {
   import("//build/config/mac/mac_sdk.gni")
 
   sysroot = mac_sdk_path
+} else if (is_ios) {
+  import("//build/config/ios/ios_sdk.gni")
+  sysroot = ios_sdk_path
 } else {
   sysroot = ""
 }

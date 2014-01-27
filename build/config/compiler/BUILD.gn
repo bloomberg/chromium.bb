@@ -61,12 +61,14 @@ config("compiler") {
 
   # Mac-specific compiler flags setup.
   # ----------------------------------
-  if (is_mac) {
+  if (is_mac || is_ios) {
     # These flags are shared between the C compiler and linker.
-    common_mac_flags = [
-      "-isysroot", sysroot,
-      "-mmacosx-version-min=10.6",
-    ]
+    common_mac_flags = [ "-isysroot", sysroot ]
+    if (is_mac) {
+      common_mac_flags += [ "-mmacosx-version-min=10.6" ]
+    } else {
+      cflags += [ "-mios-simulator-version-min=6.0" ]
+    }
 
     # CPU architecture.
     if (cpu_arch == "x64") {
