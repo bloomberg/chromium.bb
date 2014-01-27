@@ -111,7 +111,7 @@ public:
 
     CheckedRadioButtons& checkedRadioButtons() { return m_checkedRadioButtons; }
 
-    const Vector<FormAssociatedElement*>& associatedElements() const { return m_associatedElements; }
+    const Vector<FormAssociatedElement*>& associatedElements() const;
     const Vector<HTMLImageElement*>& imageElements();
 
     void getTextFieldValues(StringPairVector& fieldNamesAndValues) const;
@@ -139,8 +139,7 @@ private:
 
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
 
-    unsigned formElementIndexWithFormAttribute(Element*, unsigned rangeStart, unsigned rangeEnd);
-    unsigned formElementIndex(FormAssociatedElement&);
+    void collectAssociatedElements(Node* root, Vector<FormAssociatedElement*>&) const;
     void collectImageElements(Node* root, Vector<HTMLImageElement*>&);
 
     // Returns true if the submission should proceed.
@@ -162,12 +161,12 @@ private:
 
     CheckedRadioButtons m_checkedRadioButtons;
 
-    unsigned m_associatedElementsBeforeIndex;
-    unsigned m_associatedElementsAfterIndex;
+    // Do not access m_associatedElements directly. Use associatedElements() instead.
     Vector<FormAssociatedElement*> m_associatedElements;
-    // Do not read m_imageElements directly. Use imageElements() instead.
+    // Do not access m_imageElements directly. Use imageElements() instead.
     Vector<HTMLImageElement*> m_imageElements;
     WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
+    bool m_associatedElementsAreDirty;
     bool m_imageElementsAreDirty;
     bool m_hasElementsAssociatedByParser;
     bool m_didFinishParsingChildren;
