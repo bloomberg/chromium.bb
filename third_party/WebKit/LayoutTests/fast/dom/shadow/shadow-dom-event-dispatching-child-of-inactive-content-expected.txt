@@ -1,8 +1,3 @@
-Tests to ensure that event dispatching behaves as the Shadow DOM spec describes.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
 
 
 Composed Shadow Tree will be:

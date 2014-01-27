@@ -1,8 +1,4 @@
-Tests to ensure that event dispatching behaves as the Shadow DOM spec describes.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
+Text Node
 
 
 Composed Shadow Tree will be:
@@ -15,6 +11,8 @@ DIV	 id=sandbox
 Moving mouse from a distributed text node to top
 
   mouseout
+     @content (target: content) (related: top)
+     @shadow-root (target: content) (related: top)
      @shadow-host (target: shadow-host) (related: top)
      @top (target: shadow-host) (related: top)
 
@@ -35,5 +33,4 @@ Moving mouse from a distributed text node to top
 PASS successfullyParsed is true
 
 TEST COMPLETE
-Text Node
 

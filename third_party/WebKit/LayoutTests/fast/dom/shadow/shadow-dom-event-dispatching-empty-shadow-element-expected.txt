@@ -1,8 +1,3 @@
-Tests to ensure that event dispatching behaves as the Shadow DOM spec describes.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
 
 
 Composed Shadow Tree will be:
@@ -32,14 +27,31 @@ Moving mouse from B to A
 Moving mouse from A/D to A//F
 
   mouseout
+     @D (target: D) (related: A)
+     @older-shadow-root (target: D) (related: A)
+     @E (target: E) (related: F)
+     @younger-shadow-root (target: E) (related: F)
 
   mouseover
+     @F (target: F) (related: E)
+     @younger-shadow-root (target: F) (related: E)
 
 Moving mouse from B to A//F
 
   mouseout
+     @B (target: B) (related: A)
+     @C (target: B) (related: A)
+     @older-shadow-root (target: B) (related: A)
+     @E (target: B) (related: F)
+     @younger-shadow-root (target: B) (related: F)
+     @A (target: B) (related: A)
+     @top (target: B) (related: A)
 
   mouseover
+     @F (target: F) (related: B)
+     @younger-shadow-root (target: F) (related: B)
+     @A (target: A) (related: B)
+     @top (target: A) (related: B)
 
 Click A/D
 

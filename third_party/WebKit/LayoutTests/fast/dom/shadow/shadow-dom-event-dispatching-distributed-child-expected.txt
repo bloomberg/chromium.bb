@@ -1,8 +1,3 @@
-Tests to ensure that event dispatching behaves as the Shadow DOM spec describes.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
 
 
 Composed Shadow Tree will be:
@@ -32,28 +27,58 @@ Moving mouse from shadow-host/shadow-root-child to shadow-host
 Moving mouse from shadow-host to distributed-light-child
 
   mouseout
-     @shadow-host (target: shadow-host)
-     @top (target: shadow-host)
+     @shadow-host (target: shadow-host) (related: distributed-light-child)
+     @top (target: shadow-host) (related: distributed-light-child)
 
   mouseover
+     @distributed-light-child (target: distributed-light-child) (related: shadow-host)
+     @content (target: distributed-light-child) (related: shadow-host)
+     @shadow-root (target: distributed-light-child) (related: shadow-host)
+     @shadow-host (target: distributed-light-child) (related: shadow-host)
+     @top (target: distributed-light-child) (related: shadow-host)
 
 Moving mouse from distributed-light-child to shadow-host
 
   mouseout
+     @distributed-light-child (target: distributed-light-child) (related: shadow-host)
+     @content (target: distributed-light-child) (related: shadow-host)
+     @shadow-root (target: distributed-light-child) (related: shadow-host)
+     @shadow-host (target: distributed-light-child) (related: shadow-host)
+     @top (target: distributed-light-child) (related: shadow-host)
 
   mouseover
+     @shadow-host (target: shadow-host) (related: distributed-light-child)
+     @top (target: shadow-host) (related: distributed-light-child)
 
 Moving mouse from shadow-host/shadow-root-child to distributed-light-child
 
   mouseout
+     @shadow-root-child (target: shadow-root-child) (related: distributed-light-child)
+     @shadow-root (target: shadow-root-child) (related: distributed-light-child)
+     @shadow-host (target: shadow-host) (related: distributed-light-child)
+     @top (target: shadow-host) (related: distributed-light-child)
 
   mouseover
+     @distributed-light-child (target: distributed-light-child) (related: shadow-host)
+     @content (target: distributed-light-child) (related: shadow-root-child)
+     @shadow-root (target: distributed-light-child) (related: shadow-root-child)
+     @shadow-host (target: distributed-light-child) (related: shadow-host)
+     @top (target: distributed-light-child) (related: shadow-host)
 
 Moving mouse from distributed-light-child to shadow-host/shadow-root-child
 
   mouseout
+     @distributed-light-child (target: distributed-light-child) (related: shadow-host)
+     @content (target: distributed-light-child) (related: shadow-root-child)
+     @shadow-root (target: distributed-light-child) (related: shadow-root-child)
+     @shadow-host (target: distributed-light-child) (related: shadow-host)
+     @top (target: distributed-light-child) (related: shadow-host)
 
   mouseover
+     @shadow-root-child (target: shadow-root-child) (related: distributed-light-child)
+     @shadow-root (target: shadow-root-child) (related: distributed-light-child)
+     @shadow-host (target: shadow-host) (related: distributed-light-child)
+     @top (target: shadow-host) (related: distributed-light-child)
 PASS successfullyParsed is true
 
 TEST COMPLETE

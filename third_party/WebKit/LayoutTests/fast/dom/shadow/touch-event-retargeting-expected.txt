@@ -1,8 +1,6 @@
-Tests to ensure that event dispatching behaves as the Shadow DOM spec describes.
+Touch event retargeting.
 
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
+foo
 
   touchstart
      @div1 (target: div1) (touches: div1, div2, div3) (targetTouches: div1) (changedTouches: div1, div2, div3)
@@ -13,7 +11,4 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE
-Touch event retargeting.
-
-foo
 

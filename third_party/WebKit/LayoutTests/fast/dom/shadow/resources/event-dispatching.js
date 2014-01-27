@@ -1,5 +1,3 @@
-description("Tests to ensure that event dispatching behaves as the Shadow DOM spec describes.");
-
 var defaultPaddingSize = 40;
 
 function moveMouseOver(element)
