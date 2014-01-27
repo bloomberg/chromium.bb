@@ -765,7 +765,7 @@ class SuperClass;
 class PointsBack : public RefCountedWillBeGarbageCollectedFinalized<PointsBack> {
     DECLARE_GC_INFO;
 public:
-    static PassRefPtrWillBePtr<PointsBack> create()
+    static PassRefPtrWillBeRawPtr<PointsBack> create()
     {
         return adoptRefWillBeNoop(new PointsBack());
     }
@@ -796,7 +796,7 @@ private:
         ++s_aliveCount;
     }
 
-    PtrWillBeWeakMember<SuperClass> m_backPointer;
+    RawPtrWillBeWeakMember<SuperClass> m_backPointer;
 };
 
 int PointsBack::s_aliveCount = 0;
@@ -804,7 +804,7 @@ int PointsBack::s_aliveCount = 0;
 class SuperClass : public RefCountedWillBeGarbageCollectedFinalized<SuperClass> {
     DECLARE_GC_INFO;
 public:
-    static PassRefPtrWillBePtr<SuperClass> create(PassRefPtrWillBePtr<PointsBack> pointsBack)
+    static PassRefPtrWillBeRawPtr<SuperClass> create(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
     {
         return adoptRefWillBeNoop(new SuperClass(pointsBack));
     }
@@ -817,9 +817,9 @@ public:
         --s_aliveCount;
     }
 
-    void doStuff(PassRefPtrWillBePtr<SuperClass> targetPass, PointsBack* pointsBack, int superClassCount)
+    void doStuff(PassRefPtrWillBeRawPtr<SuperClass> targetPass, PointsBack* pointsBack, int superClassCount)
     {
-        RefPtrWillBePtr<SuperClass> target = targetPass;
+        RefPtrWillBeRawPtr<SuperClass> target = targetPass;
         Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         EXPECT_EQ(pointsBack, target->pointsBack());
         EXPECT_EQ(superClassCount, SuperClass::s_aliveCount);
@@ -836,7 +836,7 @@ public:
 
     static int s_aliveCount;
 protected:
-    explicit SuperClass(PassRefPtrWillBePtr<PointsBack> pointsBack)
+    explicit SuperClass(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
         : m_pointsBack(pointsBack)
     {
         m_pointsBack->setBackPointer(this);
@@ -863,7 +863,7 @@ int SubData::s_aliveCount = 0;
 
 class SubClass : public SuperClass {
 public:
-    static PassRefPtrWillBePtr<SubClass> create(PassRefPtrWillBePtr<PointsBack> pointsBack)
+    static PassRefPtrWillBeRawPtr<SubClass> create(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
     {
         return adoptRefWillBeNoop(new SubClass(pointsBack));
     }
@@ -883,7 +883,7 @@ public:
 
     static int s_aliveCount;
 private:
-    explicit SubClass(PassRefPtrWillBePtr<PointsBack> pointsBack)
+    explicit SubClass(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
         : SuperClass(pointsBack)
         , m_data(adoptPtrWillBeNoop(new SubData()))
     {

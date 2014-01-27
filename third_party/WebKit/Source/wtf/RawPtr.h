@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_Ptr_h
-#define WTF_Ptr_h
+#ifndef WTF_RawPtr_h
+#define WTF_RawPtr_h
 
 // Ptr is a simple wrapper for a raw pointer that provides the
 // interface (get, clear) of other pointer types such as RefPtr,
@@ -41,13 +41,13 @@
 namespace WTF {
 
 template<typename T>
-class Ptr {
+class RawPtr {
 public:
-    Ptr(T* ptr) : m_ptr(ptr) { }
-    Ptr(std::nullptr_t) : m_ptr(0) { }
+    RawPtr(T* ptr) : m_ptr(ptr) { }
+    RawPtr(std::nullptr_t) : m_ptr(0) { }
 
     template<typename U>
-    Ptr(const Ptr<U>& other)
+    RawPtr(const RawPtr<U>& other)
         : m_ptr(other.get())
     {
     }
@@ -55,13 +55,13 @@ public:
     T* get() const { return m_ptr; }
     void clear() { m_ptr = 0; }
 
-    Ptr& operator=(T* ptr)
+    RawPtr& operator=(T* ptr)
     {
         m_ptr = ptr;
         return *this;
     }
 
-    Ptr& operator=(std::nullptr_t)
+    RawPtr& operator=(std::nullptr_t)
     {
         m_ptr = 0;
         return *this;
@@ -74,7 +74,7 @@ public:
 
     // This conversion operator allows implicit conversion to bool but
     // not to other integer types.
-    typedef T* Ptr::*UnspecifiedBoolType;
+    typedef T* RawPtr::*UnspecifiedBoolType;
     operator UnspecifiedBoolType() const { return m_ptr ? &m_ptr : 0; }
 
 private:
@@ -83,6 +83,6 @@ private:
 
 } // namespace WTF
 
-using WTF::Ptr;
+using WTF::RawPtr;
 
 #endif

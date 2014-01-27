@@ -35,7 +35,7 @@
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
 
-#include "wtf/Ptr.h"
+#include "wtf/RawPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -177,7 +177,7 @@ public:
     Persistent(const Member<U>& other) : m_raw(other) { }
 
     template<typename U>
-    Persistent(const Ptr<U>& other) : m_raw(other.get()) { }
+    Persistent(const RawPtr<U>& other) : m_raw(other.get()) { }
 
     template<typename U>
     Persistent& operator=(U* other)
@@ -211,7 +211,7 @@ public:
     bool operator!() const { return !m_raw; }
 
     operator T*() const { return m_raw; }
-    operator Ptr<T>() const { return m_raw; }
+    operator RawPtr<T>() const { return m_raw; }
 
     T* operator->() const { return *this; }
 
@@ -421,35 +421,37 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #if ENABLE(OILPAN)
 
 #if COMPILER(CLANG)
-template<typename T> using PassRefPtrWillBePtr = Ptr<T>;
+template<typename T> using PassRefPtrWillBeRawPtr = RawPtr<T>;
 template<typename T> using RefCountedWillBeGarbageCollected = GarbageCollected<T>;
 template<typename T> using RefCountedWillBeGarbageCollectedFinalized = GarbageCollectedFinalized<T>;
+template<typename T> using RefCountedWillBeRefCountedGarbageCollected = RefCountedGarbageCollected<T>;
 template<typename T> using RefPtrWillBePersistent = Persistent<T>;
-template<typename T> using RefPtrWillBePtr = Ptr<T>;
+template<typename T> using RefPtrWillBeRawPtr = RawPtr<T>;
 template<typename T> using RefPtrWillBeMember = Member<T>;
-template<typename T> using PtrWillBeMember = Member<T>;
-template<typename T> using PtrWillBeWeakMember = WeakMember<T>;
+template<typename T> using RawPtrWillBeMember = Member<T>;
+template<typename T> using RawPtrWillBeWeakMember = WeakMember<T>;
 template<typename T> using OwnPtrWillBeMember = Member<T>;
-template<typename T> using PassOwnPtrWillBePtr = Ptr<T>;
+template<typename T> using PassOwnPtrWillBeRawPtr = RawPtr<T>;
 template<typename T> using NoBaseWillBeGarbageCollected = GarbageCollected<T>;
 template<typename T> using NoBaseWillBeGarbageCollectedFinalized = GarbageCollectedFinalized<T>;
 #else // !COMPILER(CLANG)
-#define PassRefPtrWillBePtr Ptr
+#define PassRefPtrWillBeRawPtr RawPtr
 #define RefCountedWillBeGarbageCollected GarbageCollected
 #define RefCountedWillBeGarbageCollectedFinalized GarbageCollectedFinalized
+#define RefCountedWillBeRefCountedGarbageCollected RefCountedGarbageCollected
 #define RefPtrWillBePersistent Persistent
-#define RefPtrWillBePtr Ptr
+#define RefPtrWillBeRawPtr RawPtr
 #define RefPtrWillBeMember Member
-#define PtrWillBeMember Member
-#define PtrWillBeWeakMember WeakMember
+#define RawPtrWillBeMember Member
+#define RawPtrWillBeWeakMember WeakMember
 #define OwnPtrWillBeMember Member
-#define PassOwnPtrWillBePtr Ptr
+#define PassOwnPtrWillBeRawPtr RawPtr
 #define NoBaseWillBeGarbageCollected GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized GarbageCollectedFinalized
 #endif // COMPILER(CLANG)
 
-template<typename T> PassRefPtrWillBePtr<T> adoptRefWillBeNoop(T* ptr) { return PassRefPtrWillBePtr<T>(ptr); }
-template<typename T> PassOwnPtrWillBePtr<T> adoptPtrWillBeNoop(T* ptr) { return PassOwnPtrWillBePtr<T>(ptr); }
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return PassRefPtrWillBeRawPtr<T>(ptr); }
+template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return PassOwnPtrWillBeRawPtr<T>(ptr); }
 
 #else // !ENABLE(OILPAN)
 
@@ -461,35 +463,37 @@ public:
 };
 
 #if COMPILER(CLANG)
-template<typename T> using PassRefPtrWillBePtr = PassRefPtr<T>;
+template<typename T> using PassRefPtrWillBeRawPtr = PassRefPtr<T>;
 template<typename T> using RefCountedWillBeGarbageCollected = RefCounted<T>;
 template<typename T> using RefCountedWillBeGarbageCollectedFinalized = RefCounted<T>;
+template<typename T> using RefCountedWillBeRefCountedGarbageCollected = RefCounted<T>;
 template<typename T> using RefPtrWillBePersistent = RefPtr<T>;
-template<typename T> using RefPtrWillBePtr = RefPtr<T>;
+template<typename T> using RefPtrWillBeRawPtr = RefPtr<T>;
 template<typename T> using RefPtrWillBeMember = RefPtr<T>;
-template<typename T> using PtrWillBeMember = Ptr<T>;
-template<typename T> using PtrWillBeWeakMember = Ptr<T>;
+template<typename T> using RawPtrWillBeMember = RawPtr<T>;
+template<typename T> using RawPtrWillBeWeakMember = RawPtr<T>;
 template<typename T> using OwnPtrWillBeMember = OwnPtr<T>;
-template<typename T> using PassOwnPtrWillBePtr = PassOwnPtr<T>;
+template<typename T> using PassOwnPtrWillBeRawPtr = PassOwnPtr<T>;
 template<typename T> using NoBaseWillBeGarbageCollected = DummyBase<T>;
 template<typename T> using NoBaseWillBeGarbageCollectedFinalized = DummyBase<T>;
 #else // !COMPILER(CLANG)
-#define PassRefPtrWillBePtr PassRefPtr
+#define PassRefPtrWillBeRawPtr PassRefPtr
 #define RefCountedWillBeGarbageCollected RefCounted
 #define RefCountedWillBeGarbageCollectedFinalized RefCounted
+#define RefCountedWillBeRefCountedGarbageCollected RefCounted
 #define RefPtrWillBePersistent RefPtr
-#define RefPtrWillBePtr RefPtr
+#define RefPtrWillBeRawPtr RefPtr
 #define RefPtrWillBeMember RefPtr
-#define PtrWillBeMember Ptr
-#define PtrWillBeWeakMember Ptr
+#define RawPtrWillBeMember RawPtr
+#define RawPtrWillBeWeakMember RawPtr
 #define OwnPtrWillBeMember OwnPtr
-#define PassOwnPtrWillBePtr PassOwnPtr
+#define PassOwnPtrWillBeRawPtr PassOwnPtr
 #define NoBaseWillBeGarbageCollected DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized DummyBase
 #endif // COMPILER(CLANG)
 
-template<typename T> PassRefPtrWillBePtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
-template<typename T> PassOwnPtrWillBePtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
+template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
 
 #endif // ENABLE(OILPAN)
 
