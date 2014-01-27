@@ -32,6 +32,7 @@
       ],
       'include_dirs': [
         '../third_party/skia/include/core',
+        '../third_party/skia/include/effects',
         '../third_party/skia/src/core',
         '../third_party/skia/src/opts',
       ],
@@ -150,6 +151,7 @@
       ],
       'include_dirs': [
         '../third_party/skia/include/core',
+        '../third_party/skia/include/effects',
         '../third_party/skia/src/core',
       ],
       'conditions': [
@@ -188,6 +190,7 @@
       ],
       'include_dirs': [
         '../third_party/skia/include/core',
+        '../third_party/skia/include/effects',
         '../third_party/skia/src/core',
       ],
       'sources': [
@@ -216,6 +219,7 @@
           ],
           'include_dirs': [
             '../third_party/skia/include/core',
+            '../third_party/skia/include/effects',
             '../third_party/skia/src/core',
             '../third_party/skia/src/opts',
           ],
