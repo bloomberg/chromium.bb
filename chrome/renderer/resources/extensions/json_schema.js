@@ -207,7 +207,8 @@ JSONSchemaValidator.prototype.isValidSchemaType = function(type, schema) {
 
   var schemaTypes = this.getAllTypesForSchema(schema);
   for (var i = 0; i < schemaTypes.length; i++) {
-    if (schemaTypes[i] == "any" || type == schemaTypes[i])
+    if (schemaTypes[i] == "any" || type == schemaTypes[i] ||
+        (type == "integer" && schemaTypes[i] == "number"))
       return true;
   }
 
