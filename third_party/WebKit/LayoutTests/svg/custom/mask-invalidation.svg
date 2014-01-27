@@ -26,11 +26,11 @@ function repaintTest() {
         testRunner.waitUntilDone();
 
     draw(150, 50);
-    setTimeout(function() {
+    requestAnimationFrame(function() {
         draw(50, 50);
         if (window.testRunner)
             testRunner.notifyDone();
-    }, 0);
+    });
 }
 
 </script>
