@@ -74,46 +74,68 @@ void InspectorFrontendClientImpl::windowObjectCleared()
     v8::Handle<v8::Object> global = frameContext->Global();
 
     global->Set(v8::String::NewFromUtf8(isolate, "InspectorFrontendHost"), frontendHostObj);
-
     ScriptController* scriptController = m_frontendPage->mainFrame() ? &m_frontendPage->mainFrame()->script() : 0;
     if (scriptController) {
-        String installLegacyOverrides =
-            "" // Support for legacy front-ends (<M31). Do not add items here.
+        String installAdditionalAPI =
+            "" // Wrap messages that go to embedder.
             "(function(host, methodNames) {"
-            "    var callId = 0;"
+            "    host._lastCallId = 0;"
+            "    host._callbacks = [];"
+            "    host.embedderMessageAck = function(id, error)"
+            "    {"
+            "        var callback = host._callbacks[id];"
+            "        delete host._callbacks[id];"
+            "        if (callback)"
+            "            callback(error);"
+            "    };"
             "    function dispatch(methodName)"
             "    {"
+            "        var callId = ++host._lastCallId;"
             "        var argsArray = Array.prototype.slice.call(arguments, 1);"
-            "        var message = {\"method\": methodName, \"id\": ++callId};"
+            "        var callback = argsArray[argsArray.length - 1];"
+            "        if (typeof callback === \"function\") {"
+            "            argsArray.pop();"
+            "            host._callbacks[callId] = callback;"
+            "        }"
+            "        var message = { \"id\": callId, \"method\": methodName };"
             "        if (argsArray.length)"
             "            message.params = argsArray;"
-            "        this.sendMessageToEmbedder(JSON.stringify(message));"
+            "        host.sendMessageToEmbedder(JSON.stringify(message));"
             "    };"
-            "    methodNames.forEach(function(methodName) { host[methodName] = dispatch.bind(host, methodName); });"
+            "    methodNames.forEach(function(methodName) { host[methodName] = dispatch.bind(null, methodName); });"
             "})(InspectorFrontendHost,"
             "    ['addFileSystem',"
             "     'append',"
             "     'bringToFront',"
+            "     'closeWindow',"
             "     'indexPath',"
             "     'moveWindowBy',"
             "     'openInNewTab',"
             "     'removeFileSystem',"
             "     'requestFileSystems',"
-            "     'requestSetDockSide',"
             "     'save',"
             "     'searchInPath',"
+            "     'setContentsInsets',"
+            "     'setIsDocked',"
             "     'stopIndexing']);"
+            "" // FIXME: we should check for |InspectorFrontendHost.isStub| instead of this.
+            "InspectorFrontendHost.supportsFileSystems = function() { return true; };"
+            ""
+            "" // Support for legacy front-ends (<M34). Do not add items here.
+            "InspectorFrontendHost.requestSetDockSide = function(dockSide)"
+            "{"
+            "    InspectorFrontendHost.setIsDocked(dockSide !== \"undocked\");"
+            "};"
             ""
             "" // Support for legacy front-ends (<M28). Do not add items here.
             "InspectorFrontendHost.canInspectWorkers = function() { return true; };"
             "InspectorFrontendHost.canSaveAs = function() { return true; };"
             "InspectorFrontendHost.canSave = function() { return true; };"
-            "InspectorFrontendHost.supportsFileSystems = function() { return true; };"
             "InspectorFrontendHost.loaded = function() {};"
             "InspectorFrontendHost.hiddenPanels = function() { return ""; };"
             "InspectorFrontendHost.localizedStringsURL = function() { return ""; };"
             "InspectorFrontendHost.close = function(url) { };";
-        scriptController->executeScriptInMainWorld(installLegacyOverrides, ScriptController::ExecuteScriptWhenScriptsDisabled);
+        scriptController->executeScriptInMainWorld(installAdditionalAPI, ScriptController::ExecuteScriptWhenScriptsDisabled);
     }
 }
 
