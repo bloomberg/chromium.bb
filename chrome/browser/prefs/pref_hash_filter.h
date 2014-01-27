@@ -15,6 +15,8 @@
 #include "base/prefs/pref_filter.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
 
+class PrefStore;
+
 namespace base {
 class DictionaryValue;
 class Value;
@@ -59,6 +61,10 @@ class PrefHashFilter : public PrefFilter {
                  EnforcementLevel enforcement_level);
 
   virtual ~PrefHashFilter();
+
+  // Initializes the PrefHashStore with hashes of the tracked preferences
+  // in |pref_store|.
+  void Initialize(PrefStore* pref_store);
 
   // PrefFilter implementation.
   virtual void FilterOnLoad(base::DictionaryValue* pref_store_contents)

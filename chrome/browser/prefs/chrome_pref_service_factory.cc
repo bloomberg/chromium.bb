@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -12,9 +13,11 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/json_pref_store.h"
+#include "base/prefs/pref_filter.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_service.h"
+#include "base/prefs/pref_store.h"
 #include "base/prefs/pref_value_store.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
@@ -148,6 +151,15 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
   }
 }
 
+scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
+    scoped_ptr<PrefHashStore> pref_hash_store) {
+  return make_scoped_ptr(new PrefHashFilter(pref_hash_store.Pass(),
+                                            kTrackedPrefs,
+                                            arraysize(kTrackedPrefs),
+                                            kTrackedPrefsReportingIDsCount,
+                                            GetSettingsEnforcementLevel()));
+}
+
 void PrepareBuilder(
     PrefServiceSyncableFactory* factory,
     const base::FilePath& pref_filename,
@@ -198,18 +210,50 @@ void PrepareBuilder(
           new CommandLinePrefStore(CommandLine::ForCurrentProcess())));
   factory->set_read_error_callback(base::Bind(&HandleReadError));
   scoped_ptr<PrefFilter> pref_filter;
-  if (pref_hash_store) {
-    pref_filter.reset(new PrefHashFilter(pref_hash_store.Pass(),
-                                         kTrackedPrefs,
-                                         arraysize(kTrackedPrefs),
-                                         kTrackedPrefsReportingIDsCount,
-                                         GetSettingsEnforcementLevel()));
-  }
+  if (pref_hash_store)
+    pref_filter = CreatePrefHashFilter(pref_hash_store.Pass());
   factory->set_user_prefs(
       new JsonPrefStore(
           pref_filename,
           pref_io_task_runner,
           pref_filter.Pass()));
+}
+
+// Waits for a PrefStore to be initialized and then initializes the
+// corresponding PrefHashStore.
+// The observer deletes itself when its work is completed.
+class InitializeHashStoreObserver : public PrefStore::Observer {
+ public:
+  // Creates an observer that will initialize |pref_hash_store| with the
+  // contents of |pref_store| when the latter is fully loaded.
+  InitializeHashStoreObserver(const scoped_refptr<PrefStore>& pref_store,
+                              scoped_ptr<PrefHashStore> pref_hash_store)
+      : pref_store_(pref_store), pref_hash_store_(pref_hash_store.Pass()) {}
+
+  virtual ~InitializeHashStoreObserver();
+
+  // PrefStore::Observer implementation.
+  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
+  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+
+ private:
+  scoped_refptr<PrefStore> pref_store_;
+  scoped_ptr<PrefHashStore> pref_hash_store_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitializeHashStoreObserver);
+};
+
+InitializeHashStoreObserver::~InitializeHashStoreObserver() {}
+
+void InitializeHashStoreObserver::OnPrefValueChanged(const std::string& key) {}
+
+void InitializeHashStoreObserver::OnInitializationCompleted(bool succeeded) {
+  // If we successfully loaded the preferences _and_ the PrefHashStore hasn't
+  // been initialized by someone else in the meantime initialize it now.
+  if (succeeded & !pref_hash_store_->IsInitialized())
+    CreatePrefHashFilter(pref_hash_store_.Pass())->Initialize(pref_store_);
+  pref_store_->RemoveObserver(this);
+  delete this;
 }
 
 }  // namespace
@@ -254,6 +298,19 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
                  extension_prefs,
                  async);
   return factory.CreateSyncable(pref_registry.get());
+}
+
+void InitializeHashStoreForPrefFile(
+    const base::FilePath& pref_filename,
+    base::SequencedTaskRunner* pref_io_task_runner,
+    scoped_ptr<PrefHashStore> pref_hash_store) {
+  scoped_refptr<JsonPrefStore> pref_store(
+      new JsonPrefStore(pref_filename,
+                        pref_io_task_runner,
+                        scoped_ptr<PrefFilter>()));
+  pref_store->AddObserver(
+      new InitializeHashStoreObserver(pref_store, pref_hash_store.Pass()));
+  pref_store->ReadPrefsAsync(NULL);
 }
 
 }  // namespace chrome_prefs
