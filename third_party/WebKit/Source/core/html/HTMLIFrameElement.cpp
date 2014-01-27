@@ -39,7 +39,6 @@ inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     , m_didLoadNonEmptyDocument(false)
 {
     ScriptWrappable::init(this);
-    setHasCustomStyleCallbacks();
 }
 
 PassRefPtr<HTMLIFrameElement> HTMLIFrameElement::create(Document& document)
@@ -115,11 +114,6 @@ void HTMLIFrameElement::removedFrom(ContainerNode* insertionPoint)
     HTMLFrameElementBase::removedFrom(insertionPoint);
     if (insertionPoint->inDocument() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
         toHTMLDocument(document()).removeExtraNamedItem(m_name);
-}
-
-void HTMLIFrameElement::didRecalcStyle(StyleRecalcChange styleChange)
-{
-    // FIXME: Can we remove this function?
 }
 
 bool HTMLIFrameElement::isInteractiveContent() const

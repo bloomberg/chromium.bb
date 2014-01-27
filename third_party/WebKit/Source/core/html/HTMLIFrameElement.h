@@ -45,8 +45,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
-    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
-
     virtual bool loadedNonEmptyDocument() const OVERRIDE { return m_didLoadNonEmptyDocument; }
     virtual void didLoadNonEmptyDocument() OVERRIDE { m_didLoadNonEmptyDocument = true; }
     virtual bool isInteractiveContent() const OVERRIDE;
