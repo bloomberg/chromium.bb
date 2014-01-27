@@ -172,6 +172,28 @@ GDataErrorCode FakeDriveServiceHelper::RenameResource(
   return error;
 }
 
+GDataErrorCode FakeDriveServiceHelper::AddResourceToDirectory(
+    const std::string& parent_folder_id,
+    const std::string& file_id) {
+  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->AddResourceToDirectory(
+      parent_folder_id, file_id,
+      CreateResultReceiver(&error));
+  base::RunLoop().RunUntilIdle();
+  return error;
+}
+
+GDataErrorCode FakeDriveServiceHelper::RemoveResourceFromDirectory(
+    const std::string& parent_folder_id,
+    const std::string& file_id) {
+  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->RemoveResourceFromDirectory(
+      parent_folder_id, file_id,
+      CreateResultReceiver(&error));
+  base::RunLoop().RunUntilIdle();
+  return error;
+}
+
 GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
     std::string* sync_root_folder_id) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;

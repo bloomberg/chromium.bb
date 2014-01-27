@@ -48,6 +48,12 @@ class FakeDriveServiceHelper {
   google_apis::GDataErrorCode RenameResource(
       const std::string& file_id,
       const std::string& new_title);
+  google_apis::GDataErrorCode AddResourceToDirectory(
+      const std::string& parent_folder_id,
+      const std::string& file_id);
+  google_apis::GDataErrorCode RemoveResourceFromDirectory(
+      const std::string& parent_folder_id,
+      const std::string& file_id);
   google_apis::GDataErrorCode GetSyncRootFolderID(
       std::string* sync_root_folder_id);
   google_apis::GDataErrorCode ListFilesInFolder(
