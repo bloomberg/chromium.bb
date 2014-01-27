@@ -115,6 +115,8 @@ class _JSCModel(object):
       'domEvents': self._GenerateDomEvents(self._namespace.events),
       'properties': self._GenerateProperties(self._namespace.properties),
     }
+    if self._namespace.deprecated:
+      as_dict['deprecated'] = self._namespace.deprecated
     # Rendering the intro list is really expensive and there's no point doing it
     # unless we're rending the page - and disable_refs=True implies we're not.
     if not self._disable_refs:

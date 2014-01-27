@@ -81,6 +81,7 @@ class Namespace(object):
   Properties:
   - |name| the name of the namespace
   - |description| the description of the namespace
+  - |deprecated| a reason and possible alternative for a deprecated api
   - |unix_name| the unix_name of the namespace
   - |source_file| the file that contained the namespace definition
   - |source_file_dir| the directory component of |source_file|
@@ -102,6 +103,7 @@ class Namespace(object):
                        'on the API summary page.' % self.name)
       json['description'] = ''
     self.description = json['description']
+    self.deprecated = json.get('deprecated', None)
     self.unix_name = UnixName(self.name)
     self.source_file = source_file
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)

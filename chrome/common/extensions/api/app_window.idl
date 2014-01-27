@@ -29,33 +29,29 @@ namespace app.window {
     // creating a new window.
     DOMString? id;
 
-    // Default width of the window. (Deprecated; regular bounds act like this
-    // now.)
-    [nodoc] long? defaultWidth;
+    // Default width of the window.
+    [deprecated="Use $ref:Bounds."] long? defaultWidth;
 
-    // Default height of the window. (Deprecated; regular bounds act like this
-    // now.)
-    [nodoc] long? defaultHeight;
+    // Default height of the window.
+    [deprecated="Use $ref:Bounds."] long? defaultHeight;
 
-    // Default X coordinate of the window. (Deprecated; regular bounds act like
-    // this now.)
-    [nodoc] long? defaultLeft;
+    // Default X coordinate of the window.
+    [deprecated="Use $ref:Bounds."] long? defaultLeft;
 
-    // Default Y coordinate of the window. (Deprecated; regular bounds act like
-    // this now.)
-    [nodoc] long? defaultTop;
+    // Default Y coordinate of the window.
+    [deprecated="Use $ref:Bounds."] long? defaultTop;
 
-    // Width of the window. (Deprecated; use 'bounds'.)
-    [nodoc] long? width;
+    // Width of the window.
+    [deprecated="Use $ref:Bounds."] long? width;
 
-    // Height of the window. (Deprecated; use 'bounds'.)
-    [nodoc] long? height;
+    // Height of the window.
+    [deprecated="Use $ref:Bounds."] long? height;
 
-    // X coordinate of the window. (Deprecated; use 'bounds'.)
-    [nodoc] long? left;
+    // X coordinate of the window.
+    [deprecated="Use $ref:Bounds."] long? left;
 
-    // Y coordinate of the window. (Deprecated; use 'bounds'.)
-    [nodoc] long? top;
+    // Y coordinate of the window.
+    [deprecated="Use $ref:Bounds."] long? top;
 
     // Minimum width of the window.
     long? minWidth;
@@ -105,8 +101,7 @@ namespace app.window {
     // window with the same id already exists that window is activated instead.
     // If you do want to create multiple windows with the same id, you can
     // set this property to false.
-    // (Deprecated; multiple windows with the same id is no longer supported.)
-    [nodoc] boolean? singleton;
+    [deprecated="Multiple windows with the same id is no longer supported."] boolean? singleton;
 
     // If true, the window will stay above most other windows. If there are
     // multiple windows of this kind, the currently focused window will be in

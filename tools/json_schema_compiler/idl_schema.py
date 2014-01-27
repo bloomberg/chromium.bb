@@ -166,6 +166,8 @@ class Member(object):
   def process(self, callbacks):
     properties = OrderedDict()
     name = self.node.GetName()
+    if self.node.GetProperty('deprecated'):
+      properties['deprecated'] = self.node.GetProperty('deprecated')
     for property_name in ('OPTIONAL', 'nodoc', 'nocompile', 'nodart'):
       if self.node.GetProperty(property_name):
         properties[property_name.lower()] = True
@@ -310,6 +312,8 @@ class Enum(object):
     for property_name in ('inline_doc', 'noinline_doc', 'nodoc'):
       if self.node.GetProperty(property_name):
         result[property_name] = True
+    if self.node.GetProperty('deprecated'):
+        result[deprecated] = self.node.GetProperty('deprecated')
     return result
 
 
@@ -325,7 +329,8 @@ class Namespace(object):
                nodoc=False,
                internal=False,
                platforms=None,
-               compiler_options=None):
+               compiler_options=None,
+               deprecated=None):
     self.namespace = namespace_node
     self.nodoc = nodoc
     self.internal = internal
@@ -336,6 +341,7 @@ class Namespace(object):
     self.types = []
     self.callbacks = OrderedDict()
     self.description = description
+    self.deprecated = deprecated
 
   def process(self):
     for node in self.namespace.GetChildren():
@@ -364,7 +370,8 @@ class Namespace(object):
             'internal': self.internal,
             'events': self.events,
             'platforms': self.platforms,
-            'compiler_options': compiler_options}
+            'compiler_options': compiler_options,
+            'deprecated': self.deprecated}
 
   def process_interface(self, node):
     members = []
@@ -391,6 +398,7 @@ class IDLSchema(object):
     description = None
     platforms = None
     compiler_options = None
+    deprecated = None
     for node in self.idl:
       if node.cls == 'Namespace':
         if not description:
@@ -400,7 +408,8 @@ class IDLSchema(object):
           description = ''
         namespace = Namespace(node, description, nodoc, internal,
                               platforms=platforms,
-                              compiler_options=compiler_options)
+                              compiler_options=compiler_options,
+                              deprecated=deprecated)
         namespaces.append(namespace.process())
         nodoc = False
         internal = False
@@ -419,6 +428,8 @@ class IDLSchema(object):
           platforms = list(node.value)
         elif node.name == 'implemented_in':
           compiler_options = {'implemented_in': node.value}
+        elif node.name == 'deprecated':
+          deprecated = str(node.value)
         else:
           continue
       else:

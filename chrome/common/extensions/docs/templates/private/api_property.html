@@ -6,6 +6,7 @@
   </div>
   <div>
     <dt><span class="property">{{name}}</span> {{+partials.type_name link:link type:property/}}</dt>
+    {{?deprecated +partials.warning_deprecated item:property /}}
     {{?description}}<dd>
       {{{description}}}
     </dd>{{/description}}

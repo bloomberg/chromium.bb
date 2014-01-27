@@ -14,6 +14,7 @@
 {{?api.channelWarning.dev   +partials.warning_dev/}}
 {{?api.channelWarning.beta  +partials.warning_beta/}}
 <h1>{{api.title}}</h1>
+{{?api.deprecated +partials.warning_deprecated item:api/}}
 $(table_of_contents)
 {{+partials.intro_table api:api /}}
 {{?intro}}
