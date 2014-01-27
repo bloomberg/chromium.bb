@@ -103,12 +103,10 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Called by the Destroyer to destroy an instance of this object.
   void Destroy();
 
- private:
-  typedef base::Callback<void(scoped_ptr<media::DemuxerData> data)>
-      ReadFromDemuxerAckCB;
-  typedef base::Callback<void(scoped_ptr<media::DemuxerConfigs> configs)>
-      DemuxerReadyCB;
+  // Called on the main thread to check whether the video stream is encrypted.
+  bool IsVideoEncrypted();
 
+ private:
   // This is private to enforce use of the Destroyer.
   virtual ~MediaSourceDelegate();
 
@@ -174,8 +172,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Helper function for calculating duration.
   int GetDurationMs();
 
-  bool HasEncryptedStream();
-
   bool IsSeeking() const;
 
   // Returns |seek_time| if it is still buffered or if there is no currently
@@ -228,6 +224,10 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Lock used to serialize access for |seeking_|.
   mutable base::Lock seeking_lock_;
   bool seeking_;
+
+  // Lock used to serialize access for |is_video_encrypted_|.
+  mutable base::Lock is_video_encrypted_lock_;
+  bool is_video_encrypted_;
 
   // Track if we are currently performing a browser seek, and track whether or
   // not a regular seek is expected soon. If a regular seek is expected soon,

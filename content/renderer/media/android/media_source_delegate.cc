@@ -62,6 +62,7 @@ MediaSourceDelegate::MediaSourceDelegate(
       audio_stream_(NULL),
       video_stream_(NULL),
       seeking_(false),
+      is_video_encrypted_(false),
       doing_browser_seek_(false),
       browser_seek_time_(media::kNoTimestamp()),
       expecting_regular_seek_(false),
@@ -105,6 +106,12 @@ void MediaSourceDelegate::Destroy() {
   media_loop_->PostTask(FROM_HERE,
                         base::Bind(&MediaSourceDelegate::StopDemuxer,
                         base::Unretained(this)));
+}
+
+bool MediaSourceDelegate::IsVideoEncrypted() {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  base::AutoLock auto_lock(is_video_encrypted_lock_);
+  return is_video_encrypted_;
 }
 
 void MediaSourceDelegate::StopDemuxer() {
@@ -681,6 +688,9 @@ void MediaSourceDelegate::NotifyDemuxerReady() {
 
   if (demuxer_client_)
     demuxer_client_->DemuxerReady(demuxer_client_id_, *configs);
+
+  base::AutoLock auto_lock(is_video_encrypted_lock_);
+  is_video_encrypted_ = configs->is_video_encrypted;
 }
 
 int MediaSourceDelegate::GetDurationMs() {
@@ -713,14 +723,6 @@ void MediaSourceDelegate::OnNeedKey(const std::string& type,
     return;
 
   need_key_cb_.Run(type, init_data);
-}
-
-bool MediaSourceDelegate::HasEncryptedStream() {
-  DCHECK(media_loop_->BelongsToCurrentThread());
-  return (audio_stream_ &&
-          audio_stream_->audio_decoder_config().is_encrypted()) ||
-         (video_stream_ &&
-          video_stream_->video_decoder_config().is_encrypted());
 }
 
 bool MediaSourceDelegate::IsSeeking() const {

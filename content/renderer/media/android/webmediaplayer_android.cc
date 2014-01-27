@@ -645,9 +645,9 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     return;
 
 #if defined(VIDEO_HOLE)
-  // Use H/W surface for MSE as the content might be protected.
+  // Use H/W surface for encrypted video.
   // TODO(qinmin): Change this so that only EME needs the H/W surface
-  if (media_source_delegate_) {
+  if (media_source_delegate_ && media_source_delegate_->IsVideoEncrypted()) {
     needs_external_surface_ = true;
     if (!paused() && !manager_->IsInFullscreen(frame_))
       manager_->RequestExternalSurface(player_id_, last_computed_rect_);

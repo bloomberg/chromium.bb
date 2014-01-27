@@ -237,7 +237,6 @@ class WebMediaPlayerAndroid
   void TryCreateStreamTextureProxyIfNeeded();
   void DoCreateStreamTexture();
 
-
   // Helper method to reestablish the surface texture peer for android
   // media player.
   void EstablishSurfaceTexturePeer();
