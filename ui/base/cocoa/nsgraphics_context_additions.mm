@@ -8,11 +8,14 @@
 
 - (void)cr_setPatternPhase:(NSPoint)phase
                    forView:(NSView*)view {
-  if ([view layer]) {
+  NSView* ancestorWithLayer = view;
+  while (ancestorWithLayer && ![ancestorWithLayer layer])
+    ancestorWithLayer = [ancestorWithLayer superview];
+  if (ancestorWithLayer) {
     NSPoint bottomLeft = NSZeroPoint;
-    if ([view isFlipped])
-      bottomLeft.y = NSMaxY([view bounds]);
-    NSPoint offset = [view convertPoint:bottomLeft toView:nil];
+    if ([ancestorWithLayer isFlipped])
+      bottomLeft.y = NSMaxY([ancestorWithLayer bounds]);
+    NSPoint offset = [ancestorWithLayer convertPoint:bottomLeft toView:nil];
     phase.x -= offset.x;
     phase.y -= offset.y;
   }
