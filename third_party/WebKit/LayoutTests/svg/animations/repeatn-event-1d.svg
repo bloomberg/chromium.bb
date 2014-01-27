@@ -13,7 +13,7 @@
       document.documentElement.setCurrentTime(6);
 
       if (window.testRunner)
-        setTimeout(function(){testRunner.notifyDone();}, 10);
+        setTimeout(function(){testRunner.notifyDone();}, 30);
     }
   </script>
 </svg>

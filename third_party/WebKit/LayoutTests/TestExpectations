@@ -845,8 +845,6 @@ crbug.com/337732 fast/css/fontfaceset-download-error.html [ Pass Timeout ]
 crbug.com/337735 [ Linux ] compositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/337735 [ Linux ] virtual/gpu/compositedscrolling/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/337735 [ Linux ] virtual/softwarecompositing/overflow/iframe-scroll-children.html [ Pass Crash ]
-crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
-crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 
 crbug.com/334225 virtual/legacy-animations-engine/animations/compositor-start-event-timing.html [ Pass Failure ]
 
