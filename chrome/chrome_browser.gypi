@@ -2815,6 +2815,8 @@
               # Explicitly add the browser/policy files that should be included
               # on iOS builds.
               'sources/': [
+                ['include', '^browser/net/proxy_policy_handler.cc'],
+                ['include', '^browser/net/proxy_policy_handler.h'],
                 ['include', '^browser/policy/cloud/cloud_policy_invalidator.cc'],
                 ['include', '^browser/policy/cloud/cloud_policy_invalidator.h'],
                 ['include', '^browser/policy/cloud/policy_header_service_factory.cc'],
@@ -2843,6 +2845,10 @@
                 ['include', '^browser/policy/schema_registry_service.h'],
                 ['include', '^browser/policy/schema_registry_service_factory.cc'],
                 ['include', '^browser/policy/schema_registry_service_factory.h'],
+                ['include', '^browser/profiles/incognito_mode_policy_handler.cc'],
+                ['include', '^browser/profiles/incognito_mode_policy_handler.h'],
+                ['include', '^browser/search_engines/default_search_policy_handler.cc'],
+                ['include', '^browser/search_engines/default_search_policy_handler.h'],
               ],
             }],
           ],

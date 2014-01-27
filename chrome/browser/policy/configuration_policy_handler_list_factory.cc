@@ -7,9 +7,14 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/net/proxy_policy_handler.h"
+#include "chrome/browser/profiles/incognito_mode_policy_handler.h"
+#include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
+#include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -20,15 +25,10 @@
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
-#include "chrome/browser/net/proxy_policy_handler.h"
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/browser/policy/javascript_policy_handler.h"
-#include "chrome/browser/profiles/incognito_mode_policy_handler.h"
-#include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/browser/sync/sync_policy_handler.h"
-#include "components/policy/core/browser/autofill_policy_handler.h"
-#include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/manifest.h"
 #endif
@@ -477,25 +477,26 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
                                 kSimplePolicyMap[i].value_type)));
   }
 
-#if !defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new AutofillPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new DefaultSearchPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new FileSelectionDialogsPolicyHandler()));
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new IncognitoModePolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new JavascriptPolicyHandler()));
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new ProxyPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new URLBlacklistPolicyHandler()));
+
+#if !defined(OS_IOS)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new FileSelectionDialogsPolicyHandler()));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new JavascriptPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new RestoreOnStartupPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new browser_sync::SyncPolicyHandler()));
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new URLBlacklistPolicyHandler()));
 
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::ExtensionListPolicyHandler(
