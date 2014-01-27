@@ -123,12 +123,13 @@ class AuraDemo : public ShellClient {
     screen_.reset(DemoScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
-    mojo::ScopedMessagePipeHandle client_handle, native_viewport_handle;
+    ScopedMessagePipeHandle client_handle, native_viewport_handle;
     CreateMessagePipe(&client_handle, &native_viewport_handle);
     root_window_host_.reset(new WindowTreeHostMojo(
         native_viewport_handle.Pass(),
+        gfx::Rect(800, 600),
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
-    mojo::AllocationScope scope;
+    AllocationScope scope;
     shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
   }
 
@@ -182,7 +183,7 @@ class AuraDemo : public ShellClient {
   aura::Window* window2_;
   aura::Window* window21_;
 
-  mojo::RemotePtr<Shell> shell_;
+  RemotePtr<Shell> shell_;
   scoped_ptr<WindowTreeHostMojo> root_window_host_;
   scoped_ptr<aura::RootWindow> root_window_;
 };

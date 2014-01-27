@@ -18,8 +18,7 @@ class NativeViewportX11 : public NativeViewport,
                           public base::MessagePumpDispatcher {
  public:
   NativeViewportX11(NativeViewportDelegate* delegate)
-      : delegate_(delegate),
-        bounds_(10, 10, 800, 600) {
+      : delegate_(delegate) {
   }
 
   virtual ~NativeViewportX11() {
@@ -31,16 +30,12 @@ class NativeViewportX11 : public NativeViewport,
 
  private:
   // Overridden from NativeViewport:
-
-  virtual gfx::Size GetSize() OVERRIDE {
-    return bounds_.size();
-  }
-
-  virtual void Init() OVERRIDE {
+  virtual void Init(const gfx::Rect& bounds) OVERRIDE {
     XDisplay* display = gfx::GetXDisplay();
     XSetWindowAttributes swa;
     memset(&swa, 0, sizeof(swa));
     swa.override_redirect = False;
+    bounds_ = bounds;
     window_ = XCreateWindow(
         display,
         DefaultRootWindow(display),
@@ -54,15 +49,26 @@ class NativeViewportX11 : public NativeViewport,
     base::MessagePumpX11::Current()->AddDispatcherForWindow(this, window_);
     base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
 
+    delegate_->OnAcceleratedWidgetAvailable(window_);
+  }
+
+  virtual void Show() OVERRIDE {
+    XDisplay* display = gfx::GetXDisplay();
     XMapWindow(display, window_);
     XFlush(display);
-
-    delegate_->OnAcceleratedWidgetAvailable(window_);
   }
 
   virtual void Close() OVERRIDE {
     // TODO(beng): perform this in response to XWindow destruction.
     delegate_->OnDestroyed();
+  }
+
+  virtual gfx::Size GetSize() OVERRIDE {
+    return bounds_.size();
+  }
+
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
+    NOTIMPLEMENTED();
   }
 
   virtual void SetCapture() OVERRIDE {

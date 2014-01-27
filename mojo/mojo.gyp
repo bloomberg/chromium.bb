@@ -53,6 +53,7 @@
         ['use_aura==1', {
           'dependencies': [
             'mojo_aura_demo',
+            'mojo_launcher',
           ],
         }],
       ]

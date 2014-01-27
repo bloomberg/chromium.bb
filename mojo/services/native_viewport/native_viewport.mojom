@@ -9,21 +9,40 @@ struct Point {
   float y;
 };
 
+struct Size {
+  float width;
+  float height;
+};
+
+struct Rect {
+  Point position;
+  Size size;
+};
+
+struct KeyData {
+  int32 key_code;
+  bool is_char;
+};
+
 struct TouchData {
   int32 pointer_id;
 };
 
 struct Event {
   int32 action;
+  int32 flags;
   int64 time_stamp;
   Point location;
+  KeyData key_data;
   TouchData touch_data;
 };
 
 [Peer=NativeViewportClient]
 interface NativeViewport {
-  void Open();
+  void Create(Rect bounds);
+  void Show();
   void Close();
+  void SetBounds(Rect bounds);
   void CreateGLES2Context(handle<message_pipe> gles2_client);
   void AckEvent(Event event);
 };
@@ -31,6 +50,7 @@ interface NativeViewport {
 [Peer=NativeViewport]
 interface NativeViewportClient {
   void OnCreated();
+  void OnBoundsChanged(Rect bounds);
   void OnDestroyed();
   void OnEvent(Event event);
 };

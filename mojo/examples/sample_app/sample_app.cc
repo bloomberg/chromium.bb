@@ -48,7 +48,18 @@ class SampleApp : public ShellClient {
    public:
     explicit NativeViewportClientImpl(ScopedMessagePipeHandle viewport_handle)
         : viewport_(viewport_handle.Pass(), this) {
-      viewport_->Open();
+      AllocationScope scope;
+      Rect::Builder rect;
+      Point::Builder point;
+      point.set_x(10);
+      point.set_y(10);
+      rect.set_position(point.Finish());
+      Size::Builder size;
+      size.set_width(800);
+      size.set_height(600);
+      rect.set_size(size.Finish());
+      viewport_->Create(rect.Finish());
+      viewport_->Show();
 
       MessagePipe pipe;
       gles2_client_.reset(new GLES2ClientImpl(pipe.handle0.Pass()));
@@ -62,6 +73,9 @@ class SampleApp : public ShellClient {
 
     virtual void OnDestroyed() MOJO_OVERRIDE {
       RunLoop::current()->Quit();
+    }
+
+    virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
     }
 
     virtual void OnEvent(const Event& event) MOJO_OVERRIDE {

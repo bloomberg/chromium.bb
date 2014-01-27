@@ -62,6 +62,7 @@
         'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',
       ],
       'sources': [
+        'services/native_viewport/geometry_conversions.h',
         'services/native_viewport/native_viewport.h',
         'services/native_viewport/native_viewport_android.cc',
         'services/native_viewport/native_viewport_mac.mm',

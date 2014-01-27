@@ -9,6 +9,7 @@
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojom/native_viewport.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
 class ContextFactory;
@@ -23,6 +24,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public NativeViewportClient {
  public:
   WindowTreeHostMojo(ScopedMessagePipeHandle viewport_handle,
+                     const gfx::Rect& bounds,
                      const base::Callback<void()>& compositor_created_callback);
   virtual ~WindowTreeHostMojo();
 
@@ -55,6 +57,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   // Overridden from NativeViewportClient:
   virtual void OnCreated() OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
+  virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE;
   virtual void OnEvent(const Event& event) OVERRIDE;
 
   void DidCreateContext(gfx::Size size);
@@ -64,6 +67,8 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   scoped_ptr<GLES2ClientImpl> gles2_client_;
   RemotePtr<NativeViewport> native_viewport_;
   base::Callback<void()> compositor_created_callback_;
+
+  gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMojo);
 };

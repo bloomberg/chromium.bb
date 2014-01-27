@@ -18,8 +18,7 @@ class NativeViewportMac : public NativeViewport {
  public:
   NativeViewportMac(NativeViewportDelegate* delegate)
       : delegate_(delegate),
-        window_(nil),
-        rect_(10, 10, 500, 500) {
+        window_(nil) {
   }
 
   virtual ~NativeViewportMac() {
@@ -29,25 +28,33 @@ class NativeViewportMac : public NativeViewport {
 
  private:
   // Overridden from NativeViewport:
-  virtual gfx::Size GetSize() OVERRIDE {
-    return rect_.size();
-  }
-
-  virtual void Init() OVERRIDE {
+  virtual void Init(const gfx::Rect& bounds) OVERRIDE {
     [NSApplication sharedApplication];
 
+    rect_ = bounds;
     window_ = [[NSWindow alloc]
                   initWithContentRect:NSRectFromCGRect(rect_.ToCGRect())
                             styleMask:NSTitledWindowMask
                               backing:NSBackingStoreBuffered
                                 defer:NO];
-    [window_ orderFront:nil];
     delegate_->OnAcceleratedWidgetAvailable([window_ contentView]);
+  }
+
+  virtual void Show() OVERRIDE {
+    [window_ orderFront:nil];
   }
 
   virtual void Close() OVERRIDE {
     // TODO(beng): perform this in response to NSWindow destruction.
     delegate_->OnDestroyed();
+  }
+
+  virtual gfx::Size GetSize() OVERRIDE {
+    return rect_.size();
+  }
+
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
+    NOTIMPLEMENTED();
   }
 
   virtual void SetCapture() OVERRIDE {

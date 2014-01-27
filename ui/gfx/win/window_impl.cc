@@ -134,7 +134,7 @@ ClassRegistrar::ClassRegistrar() : registered_count_(0) {}
 // WindowImpl, public
 
 WindowImpl::WindowImpl()
-    : window_style_(0),
+    : window_style_(kWindowDefaultStyle),
       window_ex_style_(kWindowDefaultExStyle),
       class_style_(CS_DBLCLKS),
       hwnd_(NULL),

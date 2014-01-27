@@ -9,6 +9,20 @@
 
 namespace mojo {
 namespace services {
+namespace {
+
+gfx::Rect GetWindowBoundsForClientBounds(DWORD style, DWORD ex_style,
+                                         const gfx::Rect& bounds) {
+  RECT wr;
+  wr.left = bounds.x();
+  wr.top = bounds.y();
+  wr.right = bounds.x() + bounds.width();
+  wr.bottom = bounds.y() + bounds.height();
+  AdjustWindowRectEx(&wr, style, FALSE, ex_style);
+  return gfx::Rect(wr.left, wr.top, wr.right - wr.left, wr.bottom - wr.top);
+}
+
+}
 
 class NativeViewportWin : public gfx::WindowImpl,
                           public NativeViewport {
@@ -23,20 +37,35 @@ class NativeViewportWin : public gfx::WindowImpl,
 
  private:
   // Overridden from NativeViewport:
+  virtual void Init(const gfx::Rect& bounds) OVERRIDE {
+    gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
+        window_style(), window_ex_style(), bounds);
+    gfx::WindowImpl::Init(NULL, window_bounds);
+    SetWindowText(hwnd(), L"native_viewport::NativeViewportWin!");
+  }
+
+  virtual void Show() OVERRIDE {
+    ShowWindow(hwnd(), SW_SHOWNORMAL);
+  }
+
+  virtual void Close() OVERRIDE {
+    DestroyWindow(hwnd());
+  }
+
   virtual gfx::Size GetSize() OVERRIDE {
     RECT cr;
     GetClientRect(hwnd(), &cr);
     return gfx::Size(cr.right - cr.left, cr.bottom - cr.top);
   }
 
-  virtual void Init() OVERRIDE {
-    gfx::WindowImpl::Init(NULL, gfx::Rect(10, 10, 800, 600));
-    ShowWindow(hwnd(), SW_SHOWNORMAL);
-    SetWindowText(hwnd(), L"native_viewport::NativeViewportWin!");
-  }
-
-  virtual void Close() OVERRIDE {
-    DestroyWindow(hwnd());
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
+    gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
+        GetWindowLong(hwnd(), GWL_STYLE),
+        GetWindowLong(hwnd(), GWL_EXSTYLE),
+        bounds);
+    SetWindowPos(hwnd(), NULL, window_bounds.x(), window_bounds.y(),
+                 window_bounds.width(), window_bounds.height(),
+                 SWP_NOREPOSITION);
   }
 
   virtual void SetCapture() OVERRIDE {
@@ -52,23 +81,39 @@ class NativeViewportWin : public gfx::WindowImpl,
   BEGIN_MSG_MAP_EX(NativeViewportWin)
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
 
+    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
+
     MSG_WM_CREATE(OnCreate)
-    MSG_WM_PAINT(OnPaint)
-    MSG_WM_SIZE(OnSize)
     MSG_WM_DESTROY(OnDestroy)
+    MSG_WM_PAINT(OnPaint)
+    MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
   END_MSG_MAP()
 
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
     MSG msg = { hwnd(), message, w_param, l_param, 0,
                 { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
     ui::MouseEvent event(msg);
-    bool handled = delegate_->OnEvent(&event);
-    SetMsgHandled(handled);
+    SetMsgHandled(delegate_->OnEvent(&event));
+    return 0;
+  }
+  LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
+    MSG msg = { hwnd(), message, w_param, l_param };
+    ui::KeyEvent event(msg, message == WM_CHAR);
+    SetMsgHandled(delegate_->OnEvent(&event));
     return 0;
   }
   LRESULT OnCreate(CREATESTRUCT* create_struct) {
     delegate_->OnAcceleratedWidgetAvailable(hwnd());
     return 0;
+  }
+  void OnDestroy() {
+    delegate_->OnDestroyed();
   }
   void OnPaint(HDC) {
     RECT cr;
@@ -83,11 +128,12 @@ class NativeViewportWin : public gfx::WindowImpl,
     DeleteObject(red_brush);
     EndPaint(hwnd(), &ps);
   }
-  void OnSize(UINT param, const CSize& size) {
-    delegate_->OnResized(gfx::Size(size.cx, size.cy));
-  }
-  void OnDestroy() {
-    delegate_->OnDestroyed();
+  void OnWindowPosChanged(WINDOWPOS* window_pos) {
+    if (!(window_pos->flags & SWP_NOSIZE) ||
+        !(window_pos->flags & SWP_NOMOVE)) {
+      delegate_->OnBoundsChanged(gfx::Rect(window_pos->x, window_pos->y,
+                                           window_pos->cx, window_pos->cy));
+    }
   }
 
   NativeViewportDelegate* delegate_;

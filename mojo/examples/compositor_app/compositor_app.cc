@@ -12,8 +12,10 @@
 #include "mojo/public/gles2/gles2_cpp.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
+#include "mojo/services/native_viewport/geometry_conversions.h"
 #include "mojom/native_viewport.h"
 #include "mojom/shell.h"
+#include "ui/gfx/rect.h"
 
 #if defined(WIN32)
 #if !defined(CDECL)
@@ -32,11 +34,11 @@ class SampleApp : public ShellClient {
  public:
   explicit SampleApp(ScopedMessagePipeHandle shell_handle)
       : shell_(shell_handle.Pass(), this) {
-    mojo::ScopedMessagePipeHandle client_handle, native_viewport_handle;
+    ScopedMessagePipeHandle client_handle, native_viewport_handle;
     CreateMessagePipe(&client_handle, &native_viewport_handle);
     native_viewport_client_.reset(
         new NativeViewportClientImpl(native_viewport_handle.Pass()));
-    mojo::AllocationScope scope;
+    AllocationScope scope;
     shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
   }
 
@@ -45,11 +47,12 @@ class SampleApp : public ShellClient {
   }
 
  private:
-  class NativeViewportClientImpl : public mojo::NativeViewportClient {
+  class NativeViewportClientImpl : public NativeViewportClient {
    public:
     explicit NativeViewportClientImpl(ScopedMessagePipeHandle viewport_handle)
         : viewport_(viewport_handle.Pass(), this) {
-      viewport_->Open();
+      viewport_->Create(gfx::Rect(10, 10, 800, 600));
+      viewport_->Show();
       ScopedMessagePipeHandle gles2_handle;
       ScopedMessagePipeHandle gles2_client_handle;
       CreateMessagePipe(&gles2_handle, &gles2_client_handle);
@@ -75,6 +78,9 @@ class SampleApp : public ShellClient {
       base::MessageLoop::current()->Quit();
     }
 
+    virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
+    }
+
     virtual void OnEvent(const Event& event) MOJO_OVERRIDE {
       if (!event.location().is_null()) {
         viewport_->AckEvent(event);
@@ -86,7 +92,7 @@ class SampleApp : public ShellClient {
     RemotePtr<NativeViewport> viewport_;
     scoped_ptr<CompositorHost> host_;
   };
-  mojo::RemotePtr<Shell> shell_;
+  RemotePtr<Shell> shell_;
   scoped_ptr<NativeViewportClientImpl> native_viewport_client_;
 };
 

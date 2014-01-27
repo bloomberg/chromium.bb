@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "mojo/services/gles2/gles2_impl.h"
+#include "mojo/services/native_viewport/geometry_conversions.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "mojom/native_viewport.h"
 #include "ui/events/event.h"
@@ -33,21 +34,32 @@ class NativeViewportService::NativeViewportImpl
         widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false),
         pending_event_timestamp_(0),
+        created_context_(false),
         client_(client_handle.Pass(), this) {
   }
   virtual ~NativeViewportImpl() {}
 
-  virtual void Open() MOJO_OVERRIDE {
+  virtual void Create(const Rect& bounds) MOJO_OVERRIDE {
     native_viewport_ =
         services::NativeViewport::Create(service_->context_, this);
-    native_viewport_->Init();
+    native_viewport_->Init(bounds);
     client_->OnCreated();
+  }
+
+  virtual void Show() MOJO_OVERRIDE {
+    native_viewport_->Show();
   }
 
   virtual void Close() MOJO_OVERRIDE {
     gles2_.reset();
     DCHECK(native_viewport_);
     native_viewport_->Close();
+  }
+
+  virtual void SetBounds(const Rect& bounds) MOJO_OVERRIDE {
+    gfx::Rect gfx_bounds(bounds.position().x(), bounds.position().y(),
+                         bounds.size().width(), bounds.size().height());
+    native_viewport_->SetBounds(gfx_bounds);
   }
 
   virtual void CreateGLES2Context(ScopedMessagePipeHandle client_handle)
@@ -62,12 +74,15 @@ class NativeViewportService::NativeViewportImpl
   }
 
   void CreateGLES2ContextIfNeeded() {
+    if (created_context_)
+      return;
     if (widget_ == gfx::kNullAcceleratedWidget || !gles2_)
       return;
     gfx::Size size = native_viewport_->GetSize();
     if (size.width() == 0 || size.height() == 0)
       return;
     gles2_->CreateContext(widget_, size);
+    created_context_ = true;
   }
 
   virtual bool OnEvent(ui::Event* ui_event) MOJO_OVERRIDE {
@@ -93,6 +108,7 @@ class NativeViewportService::NativeViewportImpl
 
     Event::Builder event;
     event.set_action(ui_event->type());
+    event.set_flags(ui_event->flags());
     event.set_time_stamp(pending_event_timestamp_);
 
     if (ui_event->IsMouseEvent() || ui_event->IsTouchEvent()) {
@@ -109,6 +125,12 @@ class NativeViewportService::NativeViewportImpl
       TouchData::Builder touch_data;
       touch_data.set_pointer_id(touch_event->touch_id());
       event.set_touch_data(touch_data.Finish());
+    } else if (ui_event->IsKeyEvent()) {
+      ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(ui_event);
+      KeyData::Builder key_data;
+      key_data.set_key_code(key_event->key_code());
+      key_data.set_is_char(key_event->is_char());
+      event.set_key_data(key_data.Finish());
     }
 
     client_->OnEvent(event.Finish());
@@ -122,8 +144,9 @@ class NativeViewportService::NativeViewportImpl
     CreateGLES2ContextIfNeeded();
   }
 
-  virtual void OnResized(const gfx::Size& size) MOJO_OVERRIDE {
+  virtual void OnBoundsChanged(const gfx::Rect& bounds) MOJO_OVERRIDE {
     CreateGLES2ContextIfNeeded();
+    client_->OnBoundsChanged(bounds);
   }
 
   virtual void OnDestroyed() MOJO_OVERRIDE {
@@ -147,6 +170,7 @@ class NativeViewportService::NativeViewportImpl
   scoped_ptr<GLES2Impl> gles2_;
   bool waiting_for_event_ack_;
   int64 pending_event_timestamp_;
+  bool created_context_;
 
   RemotePtr<NativeViewportClient> client_;
 };

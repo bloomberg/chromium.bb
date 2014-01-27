@@ -9,6 +9,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 class Event;
 }
@@ -24,7 +28,7 @@ class NativeViewportDelegate {
  public:
   virtual ~NativeViewportDelegate() {}
 
-  virtual void OnResized(const gfx::Size& size) = 0;
+  virtual void OnBoundsChanged(const gfx::Rect& size) = 0;
   virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
   virtual bool OnEvent(ui::Event* ui_event) = 0;
   virtual void OnDestroyed() = 0;
@@ -37,9 +41,11 @@ class NativeViewport {
  public:
   virtual ~NativeViewport() {}
 
-  virtual void Init() = 0;
+  virtual void Init(const gfx::Rect& bounds) = 0;
+  virtual void Show() = 0;
   virtual void Close() = 0;
   virtual gfx::Size GetSize() = 0;
+  virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
   virtual void SetCapture() = 0;
   virtual void ReleaseCapture() = 0;
