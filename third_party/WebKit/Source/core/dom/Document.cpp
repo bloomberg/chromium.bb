@@ -1624,6 +1624,18 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
             rootDirection = bodyStyle->direction();
     }
 
+    // Resolved rem units are stored in the matched properties cache so we need to make sure to
+    // invalidate the cache if the documentElement needed to reattach or the font size changed
+    // and then trigger a full document recalc. We also need to clear it here since the
+    // call to styleForElement on the body above can cache bad values for rem units if the
+    // documentElement's style was dirty. We could keep track of which elements depend on
+    // rem units like we do for viewport styles, but we assume root font size changes are
+    // rare and just invalidate the cache for now.
+    if (styleEngine()->usesRemUnits() && (documentElement()->needsAttach() || documentElement()->computedStyle()->fontSize() != documentElementStyle->fontSize())) {
+        ensureStyleResolver().invalidateMatchedPropertiesCache();
+        documentElement()->setNeedsStyleRecalc();
+    }
+
     RefPtr<RenderStyle> documentStyle = renderView()->style();
     if (documentStyle->writingMode() != rootWritingMode || documentStyle->direction() != rootDirection) {
         RefPtr<RenderStyle> newStyle = RenderStyle::clone(documentStyle.get());
