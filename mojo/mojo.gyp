@@ -221,14 +221,6 @@
         'common/message_pump_mojo.h',
         'common/message_pump_mojo_handler.h',
       ],
-      'conditions': [
-        ['OS == "win"', {
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [
-            4267,
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'mojo_common_test_support',
@@ -266,14 +258,6 @@
         'common/handle_watcher_unittest.cc',
         'common/message_pump_mojo_unittest.cc',
         'common/test/multiprocess_test_base_unittest.cc',
-      ],
-      'conditions': [
-        ['OS == "win"', {
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [
-            4267,
-          ],
-        }],
       ],
     },
     {
@@ -352,14 +336,6 @@
         'shell/url_request_context_getter.cc',
         'shell/url_request_context_getter.h',
       ],
-      'conditions': [
-        ['OS == "win"', {
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [
-            4267,
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'mojo_shell_bindings',
@@ -388,14 +364,6 @@
       ],
       'sources': [
         'shell/desktop/mojo_main.cc',
-      ],
-      'conditions': [
-        ['OS == "win"', {
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [
-            4267,
-          ],
-        }],
       ],
     },
     {
