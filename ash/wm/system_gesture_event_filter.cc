@@ -14,7 +14,6 @@
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/gestures/overview_gesture_handler.h"
 #include "ash/wm/gestures/system_pinch_handler.h"
-#include "ash/wm/gestures/two_finger_drag_handler.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
@@ -44,8 +43,7 @@ namespace internal {
 SystemGestureEventFilter::SystemGestureEventFilter()
     : system_gestures_enabled_(CommandLine::ForCurrentProcess()->
           HasSwitch(ash::switches::kAshEnableAdvancedGestures)),
-      long_press_affordance_(new LongPressAffordanceHandler),
-      two_finger_drag_(new TwoFingerDragHandler) {
+      long_press_affordance_(new LongPressAffordanceHandler) {
   if (switches::UseOverviewMode())
     overview_gesture_handler_.reset(new OverviewGestureHandler);
 }
@@ -80,11 +78,6 @@ void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   ash::TouchUMA::GetInstance()->RecordGestureEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event);
-
-  if (two_finger_drag_->ProcessGestureEvent(target, *event)) {
-    event->StopPropagation();
-    return;
-  }
 
   if (overview_gesture_handler_ &&
       overview_gesture_handler_->ProcessGestureEvent(*event)) {

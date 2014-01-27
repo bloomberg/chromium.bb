@@ -2132,59 +2132,14 @@ IN_PROC_BROWSER_TEST_F(
 
 namespace {
 
-void DetachToOwnWindowTwoFingersDragStep5(
+void PressSecondFingerWhileDetachedStep2(
     DetachToBrowserTabDragControllerTest* test) {
+  ASSERT_TRUE(TabDragController::IsActive());
   ASSERT_EQ(2u, test->native_browser_list->size());
   Browser* new_browser = test->native_browser_list->get(1);
   ASSERT_TRUE(new_browser->window()->IsActive());
 
-  ASSERT_TRUE(test->ReleaseInput());
-  ASSERT_TRUE(test->ReleaseInput2());
-  ASSERT_TRUE(new_browser->window()->IsActive());
-}
-
-void DetachToOwnWindowTwoFingersDragStep4(
-    DetachToBrowserTabDragControllerTest* test,
-    const gfx::Point& target_point) {
-  ASSERT_EQ(2u, test->native_browser_list->size());
-  Browser* new_browser = test->native_browser_list->get(1);
-  ASSERT_TRUE(new_browser->window()->IsActive());
-
-  ASSERT_TRUE(test->DragInput2ToNotifyWhenDone(
-      target_point.x(), target_point.y(),
-      base::Bind(&DetachToOwnWindowTwoFingersDragStep5, test)));
-}
-
-void DetachToOwnWindowTwoFingersDragStep3(
-    DetachToBrowserTabDragControllerTest* test,
-    const gfx::Point& target_point) {
   ASSERT_TRUE(test->PressInput2());
-
-  ASSERT_EQ(2u, test->native_browser_list->size());
-  Browser* new_browser = test->native_browser_list->get(1);
-  ASSERT_TRUE(new_browser->window()->IsActive());
-
-  ASSERT_TRUE(test->DragInputToDelayedNotifyWhenDone(
-      target_point.x(), target_point.y(),
-      base::Bind(&DetachToOwnWindowTwoFingersDragStep4,
-                 test,
-                 target_point),
-      base::TimeDelta::FromMilliseconds(60)));
-}
-
-void DetachToOwnWindowTwoFingersDragStep2(
-    DetachToBrowserTabDragControllerTest* test,
-    const gfx::Point& target_point) {
-  ASSERT_EQ(2u, test->native_browser_list->size());
-  Browser* new_browser = test->native_browser_list->get(1);
-  ASSERT_TRUE(new_browser->window()->IsActive());
-
-  ASSERT_TRUE(test->DragInputToDelayedNotifyWhenDone(
-      target_point.x(), target_point.y(),
-      base::Bind(&DetachToOwnWindowTwoFingersDragStep3,
-                 test,
-                 target_point + gfx::Vector2d(-2, 1)),
-      base::TimeDelta::FromMilliseconds(60)));
 }
 
 }  // namespace
@@ -2192,42 +2147,37 @@ void DetachToOwnWindowTwoFingersDragStep2(
 #if defined(OS_CHROMEOS)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924
-#define MAYBE_DetachToOwnWindowTwoFingers DISABLED_DetachToOwnWindowTwoFingers
+#define MAYBE_PressSecondFingerWhileDetached DISABLED_PressSecondFingerWhileDetached
 #else
-#define MAYBE_DetachToOwnWindowTwoFingers DetachToOwnWindowTwoFingers
+#define MAYBE_PressSecondFingerWhileDetached PressSecondFingerWhileDetached
 #endif
-// Drags from browser to separate window starting with one finger and
-// then continuing with two fingers.
+// Detaches a tab and while detached presses a second finger.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
-                       MAYBE_DetachToOwnWindowTwoFingers) {
+                       MAYBE_PressSecondFingerWhileDetached) {
   gfx::Rect bounds(browser()->window()->GetBounds());
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(
       GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(PressInput(tab_0_center));
-  // Drags in this test are very short to avoid fling.
   ASSERT_TRUE(DragInputToDelayedNotifyWhenDone(
                   tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
-                  base::Bind(&DetachToOwnWindowTwoFingersDragStep2,
-                             this, gfx::Point(5 + tab_0_center.x(),
-                                              1 + tab_0_center.y()
-                                              + GetDetachY(tab_strip))),
+                  base::Bind(&PressSecondFingerWhileDetachedStep2, this),
                   base::TimeDelta::FromMilliseconds(60)));
-  // Continue dragging, first with one finger, then with two fingers.
   QuitWhenNotDragging();
 
-  // There should now be another browser.
-  ASSERT_EQ(2u, native_browser_list->size());
-  Browser* new_browser = native_browser_list->get(1);
-  ASSERT_TRUE(new_browser->window()->IsActive());
-  // The sequence of drags should successfully move the browser window.
-  bounds += gfx::Vector2d(5 - 2, 1 + 1 + GetDetachY(tab_strip));
-  EXPECT_EQ(bounds.ToString(),
-            new_browser->window()->GetNativeWindow()->bounds().ToString());
+  // The drag should have been reverted.
+  ASSERT_EQ(1u, native_browser_list->size());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+
+  ASSERT_TRUE(ReleaseInput());
+  ASSERT_TRUE(ReleaseInput2());
 }
 
 // Subclass of DetachToBrowserTabDragControllerTest that runs tests with

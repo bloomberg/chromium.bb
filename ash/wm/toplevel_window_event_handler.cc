@@ -36,11 +36,45 @@ namespace ash {
 
 namespace {
 
+// Returns whether |window| can be moved via a two finger drag given
+// the hittest results of the two fingers.
+bool CanStartTwoFingerMove(aura::Window* window,
+                           int window_component1,
+                           int window_component2) {
+  // We allow moving a window via two fingers when the hittest components are
+  // HTCLIENT. This is done so that a window can be dragged via two fingers when
+  // the tab strip is full and hitting the caption area is difficult. We check
+  // the window type and the show state so that we do not steal touches from the
+  // web contents.
+  if (!ash::wm::GetWindowState(window)->IsNormalShowState() ||
+      window->type() != ui::wm::WINDOW_TYPE_NORMAL) {
+    return false;
+  }
+  int component1_behavior =
+      WindowResizer::GetBoundsChangeForWindowComponent(window_component1);
+  int component2_behavior =
+      WindowResizer::GetBoundsChangeForWindowComponent(window_component2);
+  return (component1_behavior & WindowResizer::kBoundsChange_Resizes) == 0 &&
+      (component2_behavior & WindowResizer::kBoundsChange_Resizes) == 0;
+}
+
+// Returns whether |window| can be moved or resized via one finger given
+// |window_component|.
+bool CanStartOneFingerDrag(int window_component) {
+  return WindowResizer::GetBoundsChangeForWindowComponent(
+      window_component) != 0;
+}
+
 gfx::Point ConvertPointToParent(aura::Window* window,
                                 const gfx::Point& point) {
   gfx::Point result(point);
   aura::Window::ConvertPointToTarget(window, window->parent(), &result);
   return result;
+}
+
+// Returns the window component containing |event|'s location.
+int GetWindowComponent(aura::Window* window, const ui::LocatedEvent& event) {
+  return window->delegate()->GetNonClientComponent(event.location());
 }
 
 }  // namespace
@@ -57,6 +91,9 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   ScopedWindowResizer(ToplevelWindowEventHandler* handler,
                       WindowResizer* resizer);
   virtual ~ScopedWindowResizer();
+
+  // Returns true if the drag moves the window and does not resize.
+  bool IsMove() const;
 
   WindowResizer* resizer() { return resizer_.get(); }
 
@@ -90,6 +127,11 @@ ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   wm::GetWindowState(resizer_->GetTarget())->RemoveObserver(this);
 }
 
+bool ToplevelWindowEventHandler::ScopedWindowResizer::IsMove() const {
+  return resizer_->details().bounds_change ==
+      WindowResizer::kBoundsChange_Repositions;
+}
+
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
     const HierarchyChangeParams& params) {
   if (params.receiver != resizer_->GetTarget())
@@ -117,9 +159,10 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
 // ToplevelWindowEventHandler --------------------------------------------------
 
 ToplevelWindowEventHandler::ToplevelWindowEventHandler()
-    : in_move_loop_(false),
-      drag_reverted_(false),
+    : first_finger_hittest_(HTNOWHERE),
+      in_move_loop_(false),
       in_gesture_drag_(false),
+      drag_reverted_(false),
       destroyed_(NULL) {
   Shell::GetInstance()->display_controller()->AddObserver(this);
 }
@@ -182,10 +225,17 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
+  if (event->details().touch_points() > 2) {
+    if (window_resizer_.get()) {
+      CompleteDrag(DRAG_COMPLETE);
+      event->StopPropagation();
+    }
+    return;
+  }
+
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
-      int component =
-          target->delegate()->GetNonClientComponent(event->location());
+      int component = GetWindowComponent(target, *event);
       if (!(WindowResizer::GetBoundsChangeForWindowComponent(component) &
             WindowResizer::kBoundsChange_Resizes))
         return;
@@ -200,14 +250,51 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
           Shell::GetInstance()->resize_shadow_controller();
       if (controller)
         controller->HideShadow(target);
+
+      if (window_resizer_.get() &&
+          (event->details().touch_points() == 1 ||
+           !CanStartOneFingerDrag(first_finger_hittest_))) {
+        CompleteDrag(DRAG_COMPLETE);
+        event->StopPropagation();
+      }
+      return;
+    }
+    case ui::ET_GESTURE_BEGIN: {
+      if (event->details().touch_points() == 1) {
+        first_finger_hittest_ = GetWindowComponent(target, *event);
+      } else if (window_resizer_.get()) {
+        if (!window_resizer_->IsMove()) {
+          // The transition from resizing with one finger to resizing with two
+          // fingers causes unintended resizing because the location of
+          // ET_GESTURE_SCROLL_UPDATE jumps from the position of the first
+          // finger to the position in the middle of the two fingers. For this
+          // reason two finger resizing is not supported.
+          CompleteDrag(DRAG_COMPLETE);
+          event->StopPropagation();
+        }
+      } else {
+        int second_finger_hittest = GetWindowComponent(target, *event);
+        if (CanStartTwoFingerMove(
+                target, first_finger_hittest_, second_finger_hittest)) {
+          gfx::Point location_in_parent =
+              event->details().bounding_box().CenterPoint();
+          AttemptToStartDrag(target, location_in_parent, HTCAPTION,
+                             aura::client::WINDOW_MOVE_SOURCE_TOUCH);
+          event->StopPropagation();
+        }
+      }
       return;
     }
     case ui::ET_GESTURE_SCROLL_BEGIN: {
-      if (in_gesture_drag_)
+      // The one finger drag is not started in ET_GESTURE_BEGIN to avoid the
+      // window jumping upon initiating a two finger drag. When a one finger
+      // drag is converted to a two finger drag, a jump occurs because the
+      // location of the ET_GESTURE_SCROLL_UPDATE event switches from the single
+      // finger's position to the position in the middle of the two fingers.
+      if (window_resizer_.get())
         return;
-      int component =
-          target->delegate()->GetNonClientComponent(event->location());
-      if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0)
+      int component = GetWindowComponent(target, *event);
+      if (!CanStartOneFingerDrag(component))
         return;
       gfx::Point location_in_parent(
           ConvertPointToParent(target, event->location()));
@@ -220,30 +307,33 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       break;
   }
 
-  if (!in_gesture_drag_)
+  if (!window_resizer_.get())
     return;
 
   switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
+    case ui::ET_GESTURE_SCROLL_UPDATE:
       HandleDrag(target, event);
       event->StopPropagation();
       return;
-    }
     case ui::ET_GESTURE_SCROLL_END:
+      // We must complete the drag here instead of as a result of ET_GESTURE_END
+      // because otherwise the drag will be reverted when EndMoveLoop() is
+      // called.
+      // TODO(pkotwicz): Pass drag completion status to
+      // WindowMoveClient::EndMoveLoop().
       CompleteDrag(DRAG_COMPLETE);
       event->StopPropagation();
       return;
-    case ui::ET_SCROLL_FLING_START: {
+    case ui::ET_SCROLL_FLING_START:
       CompleteDrag(DRAG_COMPLETE);
 
-      int component =
-          target->delegate()->GetNonClientComponent(event->location());
-      if (component != HTCAPTION)
+      // TODO(pkotwicz): Fix tests which inadvertantly start flings and check
+      // window_resizer_->IsMove() instead of the hittest component at |event|'s
+      // location.
+      if (GetWindowComponent(target, *event) != HTCAPTION ||
+          !wm::GetWindowState(target)->IsNormalShowState()) {
         return;
-
-      wm::WindowState* window_state = wm::GetWindowState(target);
-      if (!window_state->IsNormalShowState())
-        return;
+      }
 
       if (event->details().velocity_y() > kMinVertVelocityForWindowMinimize) {
         SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_MINIMIZED);
@@ -259,7 +349,22 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       }
       event->StopPropagation();
       return;
-    }
+    case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+      if (!wm::GetWindowState(target)->IsNormalShowState())
+        return;
+
+      CompleteDrag(DRAG_COMPLETE);
+
+      if (event->details().swipe_down())
+        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_MINIMIZED);
+      else if (event->details().swipe_up())
+        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_MAXIMIZED);
+      else if (event->details().swipe_right())
+        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_RIGHT_SNAPPED);
+      else
+        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_LEFT_SNAPPED);
+      event->StopPropagation();
+      return;
     default:
       return;
   }
@@ -344,6 +449,7 @@ void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {
   }
   drag_reverted_ = (status == DRAG_REVERT);
 
+  first_finger_hittest_ = HTNOWHERE;
   in_gesture_drag_ = false;
   if (in_move_loop_)
     quit_closure_.Run();
@@ -358,8 +464,7 @@ void ToplevelWindowEventHandler::HandleMousePressed(
   // We also update the current window component here because for the
   // mouse-drag-release-press case, where the mouse is released and
   // pressed without mouse move event.
-  int component =
-      target->delegate()->GetNonClientComponent(event->location());
+  int component = GetWindowComponent(target, *event);
   if ((event->flags() &
         (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) == 0 &&
       WindowResizer::GetBoundsChangeForWindowComponent(component)) {
@@ -369,7 +474,7 @@ void ToplevelWindowEventHandler::HandleMousePressed(
                        aura::client::WINDOW_MOVE_SOURCE_MOUSE);
     event->StopPropagation();
   } else {
-    window_resizer_.reset();
+    CompleteDrag(DRAG_COMPLETE);
   }
 }
 

@@ -74,15 +74,12 @@ class ASH_EXPORT ToplevelWindowEventHandler
   void HandleMouseReleased(aura::Window* target, ui::MouseEvent* event);
 
   // Called during a drag to resize/position the window.
-  // The return value is returned by OnMouseEvent() above.
   void HandleDrag(aura::Window* target, ui::LocatedEvent* event);
 
   // Called during mouse moves to update window resize shadows.
-  // Return value is returned by OnMouseEvent() above.
   void HandleMouseMoved(aura::Window* target, ui::LocatedEvent* event);
 
   // Called for mouse exits to hide window resize shadows.
-  // Return value is returned by OnMouseEvent() above.
   void HandleMouseExited(aura::Window* target, ui::LocatedEvent* event);
 
   // Sets |window|'s show type to |new_show_type|. Called after the drag has
@@ -93,20 +90,23 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Invoked from ScopedWindowResizer if the window is destroyed.
   void ResizerWindowDestroyed();
 
+  // The hittest result for the first finger at the time that it initially
+  // touched the screen. |first_finger_hittest_| is one of ui/base/hit_test.h
+  int first_finger_hittest_;
+
+  // The window bounds when the drag was started. When a window is minimized,
+  // maximized or snapped via a swipe/fling gesture, the restore bounds should
+  // be set to the bounds of the window when the drag was started.
+  gfx::Rect pre_drag_window_bounds_;
+
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;
-
-  // Whether the drag was reverted. Set by CompleteDrag().
-  bool drag_reverted_;
 
   // Is a window move/resize in progress because of gesture events?
   bool in_gesture_drag_;
 
-  // The window bounds before it started the drag.
-  // When a window is moved using a touch gesture, and it is swiped up/down
-  // maximize/minimize, the restore bounds should be set to the bounds of the
-  // window when the drag started.
-  gfx::Rect pre_drag_window_bounds_;
+  // Whether the drag was reverted. Set by CompleteDrag().
+  bool drag_reverted_;
 
   scoped_ptr<ScopedWindowResizer> window_resizer_;
 
