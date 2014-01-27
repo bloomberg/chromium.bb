@@ -322,22 +322,4 @@ TEST_F(ProfileListChromeOSTest, DontShowAvatarMenu) {
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
 }
 
-TEST_F(ProfileListChromeOSTest, ShowAvatarMenuInM31) {
-  // In M-31 mode, the menu will get shown.
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  cl->AppendSwitch(ash::switches::kAshEnableFullMultiProfileMode);
-
-  base::string16 name1(ASCIIToUTF16("p1"));
-  base::string16 name2(ASCIIToUTF16("p2"));
-
-  AddProfile(name1, true);
-
-  // Should only show avatar menu with multiple users.
-  EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
-
-  AddProfile(name2, false);
-
-  EXPECT_TRUE(AvatarMenu::ShouldShowAvatarMenu());
-}
-
 }  // namespace chromeos

@@ -113,12 +113,6 @@ const char kAshEnableImmersiveFullscreenForAllWindows[] =
 const char kAshEnableImmersiveFullscreenForBrowserOnly[] =
     "ash-enable-immersive-browser-only";
 
-#if defined(OS_CHROMEOS)
-// Enables the "full multi profile mode" - as it was in M-31.
-const char kAshEnableFullMultiProfileMode[] =
-    "ash-enable-full-multi-profile-mode";
-#endif
-
 #if defined(OS_LINUX)
 // Enable memory monitoring.
 const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
@@ -238,16 +232,6 @@ bool UseImmersiveFullscreenForAllWindows() {
 bool ShowShelfAlignmentMenu() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(kHideShelfAlignmentMenu);
-}
-
-// Returns true if the full multi profile mode (M-31 version) is active.
-bool UseFullMultiProfileMode() {
-#if defined(OS_CHROMEOS)
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshEnableFullMultiProfileMode);
-#else
-  return false;
-#endif
 }
 
 bool UseMultiUserTray() {

@@ -45,9 +45,6 @@ ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForAllWindows[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForBrowserOnly[];
-#if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshEnableFullMultiProfileMode[];
-#endif
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif
@@ -93,9 +90,6 @@ ASH_EXPORT bool UseImmersiveFullscreenForAllWindows();
 
 // Returns true if side shelf alignment is enabled.
 ASH_EXPORT bool ShowShelfAlignmentMenu();
-
-// Returns true if the full MultiProfile mode (M-31 version) is used.
-ASH_EXPORT bool UseFullMultiProfileMode();
 
 // Returns true if multiple user icons are allowed in the tray.
 ASH_EXPORT bool UseMultiUserTray();

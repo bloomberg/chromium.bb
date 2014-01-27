@@ -1236,12 +1236,6 @@ const Experiment kExperiments[] = {
   },
 #endif
 #if defined(OS_CHROMEOS)
-  { "ash-enable-full-multi-profile-mode",
-      IDS_FLAGS_ENABLE_FULL_MULTI_PROFILE_MODE,
-      IDS_FLAGS_ENABLE_FULL_MULTI_PROFILE_MODE_DESCRIPTION,
-      kOsCrOS,
-      SINGLE_VALUE_TYPE(ash::switches::kAshEnableFullMultiProfileMode),
-  },
   { "ash-enable-multi-user-tray",
       IDS_FLAGS_ENABLE_MULTI_USER_TRAY,
       IDS_FLAGS_ENABLE_MULTI_USER_TRAY_DESCRIPTION,

@@ -1176,10 +1176,6 @@ gfx::Rect TrayUser::GetUserPanelBoundsInScreenForTest() const {
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   CHECK(layout_view_ == NULL);
-  // When the full multi profile mode is used, only the active user will be
-  // shown in the system tray, otherwise all users which are logged in.
-  if (GetTrayIndex() && switches::UseFullMultiProfileMode())
-    return NULL;
 
   layout_view_ = new views::View();
   layout_view_->SetLayoutManager(

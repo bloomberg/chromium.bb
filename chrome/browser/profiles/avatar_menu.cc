@@ -96,11 +96,8 @@ bool AvatarMenu::ShouldShowAvatarMenu() {
   // implementations.
   if (profiles::IsMultipleProfilesEnabled()) {
 #if defined(OS_CHROMEOS)
-    // On ChromeOS the menu will be shown in M-31 mode when it is possible to
-    // have two users logged in at the same time.
-    return ash::switches::UseFullMultiProfileMode() &&
-           ChromeShellDelegate::instance() &&
-           ChromeShellDelegate::instance()->IsMultiProfilesEnabled();
+    // On ChromeOS the menu will not be shown.
+    return false;
 #else
     return switches::IsNewProfileManagement() ||
            (g_browser_process->profile_manager() &&

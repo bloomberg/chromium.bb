@@ -40,8 +40,7 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   ash::MultiProfileUMA::SessionMode mode =
       ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
   if (!g_instance &&
-      ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
-      !ash::switches::UseFullMultiProfileMode()) {
+      ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
     g_instance = new MultiUserWindowManagerChromeOS(
         ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0));
     multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
