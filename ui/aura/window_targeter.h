@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_AURA_WINDOW_TARGETER_H_
+#define UI_AURA_WINDOW_TARGETER_H_
+
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_targeter.h"
 
@@ -42,3 +45,5 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
 };
 
 }  // namespace aura
+
+#endif  // UI_AURA_WINDOW_TARGETER_H_
