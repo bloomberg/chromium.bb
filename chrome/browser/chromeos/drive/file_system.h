@@ -156,8 +156,6 @@ class FileSystem : public FileSystemInterface,
   // file_system::OperationObserver overrides.
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& directory_path) OVERRIDE;
-  virtual void OnCacheFileUploadNeededByOperation(
-      const std::string& local_id) OVERRIDE;
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE;
   virtual void OnDriveSyncError(file_system::DriveSyncErrorType type,
                                 const std::string& local_id) OVERRIDE;

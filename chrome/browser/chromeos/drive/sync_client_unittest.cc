@@ -98,8 +98,6 @@ class DummyOperationObserver : public file_system::OperationObserver {
   // OperationObserver override:
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& path) OVERRIDE {}
-  virtual void OnCacheFileUploadNeededByOperation(
-      const std::string& local_id) OVERRIDE {}
 };
 
 }  // namespace
@@ -389,7 +387,7 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
 
   // Try fetch and upload.
   sync_client_->AddFetchTask(GetLocalId("foo"));
-  sync_client_->AddUploadTask(ClientContext(USER_INITIATED),
+  sync_client_->AddUpdateTask(ClientContext(USER_INITIATED),
                               GetLocalId("dirty"));
   base::RunLoop().RunUntilIdle();
 

@@ -215,13 +215,6 @@ void SyncClient::RemoveFetchTask(const std::string& local_id) {
   }
 }
 
-void SyncClient::AddUploadTask(const ClientContext& context,
-                               const std::string& local_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // TODO(hashimoto): Remove this method.
-  AddUpdateTask(context, local_id);
-}
-
 void SyncClient::AddUpdateTask(const ClientContext& context,
                                const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

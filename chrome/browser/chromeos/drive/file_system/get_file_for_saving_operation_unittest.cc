@@ -38,8 +38,7 @@ class TestObserver : public OperationObserver {
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& path) OVERRIDE {}
 
-  virtual void OnCacheFileUploadNeededByOperation(
-      const std::string& local_id) OVERRIDE {
+  virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE {
     observed_local_id_ = local_id;
     quit_closure_.Run();
   }

@@ -59,9 +59,6 @@ class SyncClient {
   // Removes a fetch task.
   void RemoveFetchTask(const std::string& local_id);
 
-  // Adds an upload task.
-  void AddUploadTask(const ClientContext& context, const std::string& local_id);
-
   // Adds a update task.
   void AddUpdateTask(const ClientContext& context, const std::string& local_id);
 

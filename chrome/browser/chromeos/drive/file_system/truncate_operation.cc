@@ -146,7 +146,7 @@ void TruncateOperation::TruncateAfterTruncateOnBlockingPool(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  observer_->OnCacheFileUploadNeededByOperation(local_id);
+  observer_->OnEntryUpdatedByOperation(local_id);
 
   callback.Run(error);
 }

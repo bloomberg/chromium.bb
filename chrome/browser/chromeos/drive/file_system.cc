@@ -771,11 +771,6 @@ void FileSystem::OnDirectoryChangedByOperation(
   OnDirectoryChanged(directory_path);
 }
 
-void FileSystem::OnCacheFileUploadNeededByOperation(
-    const std::string& local_id) {
-  sync_client_->AddUploadTask(ClientContext(USER_INITIATED), local_id);
-}
-
 void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
   sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id);
 }

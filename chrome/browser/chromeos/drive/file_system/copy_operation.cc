@@ -457,7 +457,7 @@ void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
   DCHECK(!callback.is_null());
 
   if (error == FILE_ERROR_OK)
-    observer_->OnCacheFileUploadNeededByOperation(*local_id);
+    observer_->OnEntryUpdatedByOperation(*local_id);
   callback.Run(error);
 }
 

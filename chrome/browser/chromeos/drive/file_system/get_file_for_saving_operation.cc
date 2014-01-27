@@ -165,7 +165,7 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
 void GetFileForSavingOperation::OnWriteEvent(
     const std::string& local_id,
     scoped_ptr<base::ScopedClosureRunner> file_closer) {
-  observer_->OnCacheFileUploadNeededByOperation(local_id);
+  observer_->OnEntryUpdatedByOperation(local_id);
 
   // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
   // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.

@@ -31,11 +31,6 @@ void OperationTestBase::LoggingObserver::OnDirectoryChangedByOperation(
   changed_paths_.insert(path);
 }
 
-void OperationTestBase::LoggingObserver::OnCacheFileUploadNeededByOperation(
-    const std::string& local_id) {
-  upload_needed_local_ids_.insert(local_id);
-}
-
 void OperationTestBase::LoggingObserver::OnEntryUpdatedByOperation(
     const std::string& local_id) {
   updated_local_ids_.insert(local_id);

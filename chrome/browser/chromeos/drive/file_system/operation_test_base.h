@@ -50,8 +50,6 @@ class OperationTestBase : public testing::Test {
     // OperationObserver overrides.
     virtual void OnDirectoryChangedByOperation(
         const base::FilePath& path) OVERRIDE;
-    virtual void OnCacheFileUploadNeededByOperation(
-        const std::string& local_id) OVERRIDE;
     virtual void OnEntryUpdatedByOperation(
         const std::string& local_id) OVERRIDE;
     virtual void OnDriveSyncError(DriveSyncErrorType type,
@@ -60,11 +58,6 @@ class OperationTestBase : public testing::Test {
     // Gets the set of changed paths.
     const std::set<base::FilePath>& get_changed_paths() {
       return changed_paths_;
-    }
-
-    // Gets the set of upload needed local IDs.
-    const std::set<std::string>& upload_needed_local_ids() const {
-      return upload_needed_local_ids_;
     }
 
     // Gets the set of updated local IDs.
@@ -79,7 +72,6 @@ class OperationTestBase : public testing::Test {
 
    private:
     std::set<base::FilePath> changed_paths_;
-    std::set<std::string> upload_needed_local_ids_;
     std::set<std::string> updated_local_ids_;
     std::vector<DriveSyncErrorType> drive_sync_errors_;
   };
