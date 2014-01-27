@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -90,10 +92,13 @@ AutoLoginRedirector::AutoLoginRedirector(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
   ubertoken_fetcher_.reset(new UbertokenFetcher(token_service,
                                                 this,
                                                 profile->GetRequestContext()));
-  ubertoken_fetcher_->StartFetchingToken(token_service->GetPrimaryAccountId());
+  ubertoken_fetcher_->StartFetchingToken(
+      signin_manager->GetAuthenticatedAccountId());
 }
 
 AutoLoginRedirector::~AutoLoginRedirector() {

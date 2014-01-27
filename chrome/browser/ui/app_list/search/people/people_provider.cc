@@ -16,6 +16,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/search/common/json_response_fetcher.h"
 #include "chrome/browser/ui/app_list/search/people/people_result.h"
 #include "chrome/browser/ui/app_list/search/people/person.h"
@@ -118,8 +120,10 @@ void PeopleProvider::RequestAccessToken() {
 
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile_);
   access_token_request_ = token_service->StartRequest(
-      token_service->GetPrimaryAccountId(), oauth2_scope_, this);
+      signin_manager->GetAuthenticatedAccountId(), oauth2_scope_, this);
 }
 
 GURL PeopleProvider::GetQueryUrl(const std::string& query) {

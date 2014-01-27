@@ -39,7 +39,7 @@ bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   if (!token_service || !token_service->RefreshTokenIsAvailable(
-          token_service->GetPrimaryAccountId())) {
+      signin_manager->GetAuthenticatedAccountId())) {
     return false;
   }
 

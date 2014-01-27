@@ -188,11 +188,14 @@ void LocalDiscoveryUIHandler::HandleRequestPrinterList(
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
 
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
+
   cloud_print_printer_list_.reset(new CloudPrintPrinterList(
       profile->GetRequestContext(),
       GetCloudPrintBaseUrl(),
       token_service,
-      token_service->GetPrimaryAccountId(),
+      signin_manager->GetAuthenticatedAccountId(),
       this));
   cloud_print_printer_list_->Start();
 }
@@ -274,10 +277,17 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     return;
   }
 
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile);
+  if (!signin_manager) {
+    SendRegisterError();
+    return;
+  }
+
   confirm_api_call_flow_.reset(new PrivetConfirmApiCallFlow(
       profile->GetRequestContext(),
       token_service,
-      token_service->GetPrimaryAccountId(),
+      signin_manager->GetAuthenticatedAccountId(),
       automated_claim_url,
       base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
                  base::Unretained(this))));

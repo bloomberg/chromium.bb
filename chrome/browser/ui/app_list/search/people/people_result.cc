@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
 #include "chrome/browser/ui/app_list/search/people/person.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -146,10 +148,10 @@ void PeopleResult::OpenChat() {
   request.type = extensions::api::hangouts_private::HANGOUT_TYPE_CHAT;
 
   // from: the user this chat request is originating from.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  DCHECK(token_service);
-  request.from = token_service->GetPrimaryAccountId();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetInstance()->GetForProfile(profile_);
+  DCHECK(signin_manager);
+  request.from = signin_manager->GetAuthenticatedAccountId();
 
   // to: list of users with whom to start this hangout is with.
   linked_ptr<User> target(new User());

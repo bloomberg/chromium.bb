@@ -397,7 +397,9 @@ class PrintPreviewHandler::AccessTokenService
       if (profile) {
         ProfileOAuth2TokenService* token_service =
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-        account_id = token_service->GetPrimaryAccountId();
+        SigninManagerBase* signin_manager =
+            SigninManagerFactory::GetInstance()->GetForProfile(profile);
+        account_id = signin_manager->GetAuthenticatedAccountId();
         service = token_service;
       }
     } else if (type == "device") {
