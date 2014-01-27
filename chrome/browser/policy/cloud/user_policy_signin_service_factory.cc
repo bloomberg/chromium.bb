@@ -19,6 +19,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
+#elif defined(OS_IOS)
+#include "chrome/browser/policy/cloud/user_policy_signin_service_ios.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #endif

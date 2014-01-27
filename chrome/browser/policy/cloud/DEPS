@@ -28,8 +28,9 @@ specific_include_rules = {
   r"user_policy_signin_service_base|"
   r"user_policy_signin_service|"
   r"user_policy_signin_service_factory|"
+  r"user_policy_signin_service_ios|"
   r"user_policy_signin_service_unittest)"
-  r"\.(cc|h)": [
+  r"\.(cc|h|mm)": [
     "+chrome",
     "+chromeos",
     "+content/public/browser",
