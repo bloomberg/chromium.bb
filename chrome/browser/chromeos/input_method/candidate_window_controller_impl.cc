@@ -26,14 +26,14 @@ namespace {
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
     : candidate_window_view_(NULL),
       infolist_window_(NULL) {
-  IBusBridge::Get()->SetCandidateWindowHandler(this);
+  IMEBridge::Get()->SetCandidateWindowHandler(this);
   // Create the mode indicator controller.
   mode_indicator_controller_.reset(
       new ModeIndicatorController(InputMethodManager::Get()));
 }
 
 CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
-  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+  IMEBridge::Get()->SetCandidateWindowHandler(NULL);
   if (candidate_window_view_) {
     candidate_window_view_->RemoveObserver(this);
     candidate_window_view_->GetWidget()->RemoveObserver(this);

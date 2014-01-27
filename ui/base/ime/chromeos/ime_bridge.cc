@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 
 #include <map>
 #include "base/logging.h"
@@ -10,43 +10,43 @@
 
 namespace chromeos {
 
-static IBusBridge* g_ibus_bridge = NULL;
+static IMEBridge* g_ime_bridge = NULL;
 
-// An implementation of IBusBridge.
-class IBusBridgeImpl : public IBusBridge {
+// An implementation of IMEBridge.
+class IMEBridgeImpl : public IMEBridge {
  public:
-  IBusBridgeImpl()
+  IMEBridgeImpl()
     : input_context_handler_(NULL),
       engine_handler_(NULL),
       candidate_window_handler_(NULL) {
   }
 
-  virtual ~IBusBridgeImpl() {
+  virtual ~IMEBridgeImpl() {
   }
 
-  // IBusBridge override.
+  // IMEBridge override.
   virtual IBusInputContextHandlerInterface*
       GetInputContextHandler() const OVERRIDE {
     return input_context_handler_;
   }
 
-  // IBusBridge override.
+  // IMEBridge override.
   virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) OVERRIDE {
     input_context_handler_ = handler;
   }
 
-  // IBusBridge override.
+  // IMEBridge override.
   virtual void SetEngineHandler(
       const std::string& engine_id,
-      IBusEngineHandlerInterface* handler) OVERRIDE {
+      IMEEngineHandlerInterface* handler) OVERRIDE {
     DCHECK(!engine_id.empty());
     DCHECK(handler);
     engine_handler_map_[engine_id] = handler;
   }
 
-  // IBusBridge override.
-  virtual IBusEngineHandlerInterface* GetEngineHandler(
+  // IMEBridge override.
+  virtual IMEEngineHandlerInterface* GetEngineHandler(
       const std::string& engine_id) OVERRIDE {
     if (engine_id.empty() ||
         engine_handler_map_.find(engine_id) == engine_handler_map_.end()) {
@@ -55,14 +55,14 @@ class IBusBridgeImpl : public IBusBridge {
     return engine_handler_map_[engine_id];
   }
 
-  // IBusBridge override.
+  // IMEBridge override.
   virtual void SetCurrentEngineHandler(
-      IBusEngineHandlerInterface* handler) OVERRIDE {
+      IMEEngineHandlerInterface* handler) OVERRIDE {
     engine_handler_ = handler;
   }
 
-  // IBusBridge override.
-  virtual IBusEngineHandlerInterface* SetCurrentEngineHandlerById(
+  // IMEBridge override.
+  virtual IMEEngineHandlerInterface* SetCurrentEngineHandlerById(
       const std::string& engine_id) OVERRIDE {
     if (engine_id.empty()) {
       engine_handler_ = NULL;
@@ -74,18 +74,18 @@ class IBusBridgeImpl : public IBusBridge {
     return engine_handler_;
   }
 
-  // IBusBridge override.
-  virtual IBusEngineHandlerInterface* GetCurrentEngineHandler() const OVERRIDE {
+  // IMEBridge override.
+  virtual IMEEngineHandlerInterface* GetCurrentEngineHandler() const OVERRIDE {
     return engine_handler_;
   }
 
-  // IBusBridge override.
+  // IMEBridge override.
   virtual IBusPanelCandidateWindowHandlerInterface*
   GetCandidateWindowHandler() const OVERRIDE {
     return candidate_window_handler_;
   }
 
-  // IBusBridge override.
+  // IMEBridge override.
   virtual void SetCandidateWindowHandler(
       IBusPanelCandidateWindowHandlerInterface* handler) OVERRIDE {
     candidate_window_handler_ = handler;
@@ -93,36 +93,36 @@ class IBusBridgeImpl : public IBusBridge {
 
  private:
   IBusInputContextHandlerInterface* input_context_handler_;
-  IBusEngineHandlerInterface* engine_handler_;
+  IMEEngineHandlerInterface* engine_handler_;
   IBusPanelCandidateWindowHandlerInterface* candidate_window_handler_;
-  std::map<std::string, IBusEngineHandlerInterface*> engine_handler_map_;
+  std::map<std::string, IMEEngineHandlerInterface*> engine_handler_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(IBusBridgeImpl);
+  DISALLOW_COPY_AND_ASSIGN(IMEBridgeImpl);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// IBusBridge
-IBusBridge::IBusBridge() {
+// IMEBridge
+IMEBridge::IMEBridge() {
 }
 
-IBusBridge::~IBusBridge() {
-}
-
-// static.
-void IBusBridge::Initialize() {
-  if (!g_ibus_bridge)
-    g_ibus_bridge = new IBusBridgeImpl();
+IMEBridge::~IMEBridge() {
 }
 
 // static.
-void IBusBridge::Shutdown() {
-  delete g_ibus_bridge;
-  g_ibus_bridge = NULL;
+void IMEBridge::Initialize() {
+  if (!g_ime_bridge)
+    g_ime_bridge = new IMEBridgeImpl();
 }
 
 // static.
-IBusBridge* IBusBridge::Get() {
-  return g_ibus_bridge;
+void IMEBridge::Shutdown() {
+  delete g_ime_bridge;
+  g_ime_bridge = NULL;
+}
+
+// static.
+IMEBridge* IMEBridge::Get() {
+  return g_ime_bridge;
 }
 
 }  // namespace chromeos

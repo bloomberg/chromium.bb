@@ -29,8 +29,8 @@
 #include "ui/gfx/rect.h"
 
 namespace {
-chromeos::IBusEngineHandlerInterface* GetEngine() {
-  return chromeos::IBusBridge::Get()->GetCurrentEngineHandler();
+chromeos::IMEEngineHandlerInterface* GetEngine() {
+  return chromeos::IMEBridge::Get()->GetCurrentEngineHandler();
 }
 }  // namespace
 
@@ -46,7 +46,7 @@ InputMethodChromeOS::InputMethodChromeOS(
       previous_textinput_type_(TEXT_INPUT_TYPE_NONE),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
-  chromeos::IBusBridge::Get()->SetInputContextHandler(this);
+  chromeos::IMEBridge::Get()->SetInputContextHandler(this);
 
   UpdateContextFocusState();
   OnInputMethodChanged();
@@ -59,7 +59,7 @@ InputMethodChromeOS::~InputMethodChromeOS() {
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
 
-  chromeos::IBusBridge::Get()->SetInputContextHandler(NULL);
+  chromeos::IMEBridge::Get()->SetInputContextHandler(NULL);
 }
 
 void InputMethodChromeOS::OnFocus() {
@@ -172,7 +172,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   }
 
   chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
+      chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   if (!candidate_window)
     return;
   candidate_window->SetCursorBounds(rect, composition_head);
@@ -306,7 +306,7 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   // Propagate the focus event to the candidate window handler which also
   // manages the input method mode indicator.
   chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
+      chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
     candidate_window->FocusStateChanged(context_focused_);
 
@@ -322,7 +322,7 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   if (old_context_focused && (!context_focused_ || input_type_change))
     GetEngine()->FocusOut();
   if (context_focused_ && (!old_context_focused || input_type_change)) {
-    chromeos::IBusEngineHandlerInterface::InputContext context(
+    chromeos::IMEEngineHandlerInterface::InputContext context(
         current_text_input_type, GetTextInputMode());
     GetEngine()->FocusIn(context);
     OnCaretBoundsChanged(GetTextInputClient());
@@ -493,7 +493,7 @@ void InputMethodChromeOS::UpdatePreeditText(const chromeos::IBusText& text,
 
   if (!CanComposeInline()) {
     chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
-        chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
+        chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
     if (candidate_window)
       candidate_window->UpdatePreeditText(text.text(), cursor_pos, visible);
   }

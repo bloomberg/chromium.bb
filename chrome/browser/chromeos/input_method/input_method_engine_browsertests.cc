@@ -12,7 +12,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/events/event.h"
@@ -158,11 +158,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
 
-  IBusBridge::Get()->SetInputContextHandler(mock_input_context.get());
-  IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+  IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
+  IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
-  IBusEngineHandlerInterface* engine_handler =
-      IBusBridge::Get()->GetCurrentEngineHandler();
+  IMEEngineHandlerInterface* engine_handler =
+      IMEBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   // onActivate event should be fired if Enable function is called.
@@ -173,8 +173,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
   // onFocus event should be fired if FocusIn function is called.
   ExtensionTestMessageListener focus_listener("onFocus:text", false);
-  IBusEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
-                                                   ui::TEXT_INPUT_MODE_DEFAULT);
+  IMEEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
+                                                  ui::TEXT_INPUT_MODE_DEFAULT);
   engine_handler->FocusIn(context);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
@@ -223,8 +223,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   ASSERT_TRUE(disabled_listener.WaitUntilSatisfied());
   ASSERT_TRUE(disabled_listener.was_satisfied());
 
-  IBusBridge::Get()->SetInputContextHandler(NULL);
-  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+  IMEBridge::Get()->SetInputContextHandler(NULL);
+  IMEBridge::Get()->SetCandidateWindowHandler(NULL);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
@@ -238,11 +238,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   scoped_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
       new MockIMECandidateWindowHandler());
 
-  IBusBridge::Get()->SetInputContextHandler(mock_input_context.get());
-  IBusBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+  IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
+  IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
-  IBusEngineHandlerInterface* engine_handler =
-      IBusBridge::Get()->GetCurrentEngineHandler();
+  IMEEngineHandlerInterface* engine_handler =
+      IMEBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
   extensions::ExtensionHost* host = FindHostWithPath(
@@ -251,8 +251,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
       1);
 
   engine_handler->Enable();
-  IBusEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
-                                                   ui::TEXT_INPUT_MODE_DEFAULT);
+  IMEEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
+                                                  ui::TEXT_INPUT_MODE_DEFAULT);
   engine_handler->FocusIn(context);
 
   {
@@ -830,7 +830,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
     {
       ExtensionTestMessageListener focus_listener("onFocus:text", false);
-      IBusEngineHandlerInterface::InputContext context(
+      IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
@@ -838,7 +838,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:search", false);
-      IBusEngineHandlerInterface::InputContext context(
+      IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_SEARCH, ui::TEXT_INPUT_MODE_DEFAULT);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
@@ -846,7 +846,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:tel", false);
-      IBusEngineHandlerInterface::InputContext context(
+      IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_TELEPHONE, ui::TEXT_INPUT_MODE_DEFAULT);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
@@ -854,7 +854,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:url", false);
-      IBusEngineHandlerInterface::InputContext context(
+      IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_URL, ui::TEXT_INPUT_MODE_DEFAULT);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
@@ -862,7 +862,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:email", false);
-      IBusEngineHandlerInterface::InputContext context(
+      IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_EMAIL, ui::TEXT_INPUT_MODE_DEFAULT);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
@@ -870,7 +870,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     }
     {
       ExtensionTestMessageListener focus_listener("onFocus:number", false);
-      IBusEngineHandlerInterface::InputContext context(
+      IMEEngineHandlerInterface::InputContext context(
           ui::TEXT_INPUT_TYPE_NUMBER, ui::TEXT_INPUT_MODE_DEFAULT);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
@@ -878,8 +878,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     }
   }
 
-  IBusBridge::Get()->SetInputContextHandler(NULL);
-  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+  IMEBridge::Get()->SetInputContextHandler(NULL);
+  IMEBridge::Get()->SetCandidateWindowHandler(NULL);
 }
 
 }  // namespace

@@ -121,7 +121,7 @@ void MockInputMethodEngine::HideInputView() {
 }
 
 void MockInputMethodEngine::FocusIn(
-    const IBusEngineHandlerInterface::InputContext& input_context) {
+    const IMEEngineHandlerInterface::InputContext& input_context) {
 }
 
 void MockInputMethodEngine::FocusOut() {

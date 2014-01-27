@@ -12,7 +12,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
   ASSERT_LT(1UL, imm->GetNumActiveInputMethods());
 
   chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
+      chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   candidate_window->FocusStateChanged(true);
 
   // Check if the size of the mode indicator is expected.
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, NumOfWidgets) {
   ASSERT_LT(1UL, imm->GetNumActiveInputMethods());
 
   chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
+      chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
   candidate_window->FocusStateChanged(true);
 
   {

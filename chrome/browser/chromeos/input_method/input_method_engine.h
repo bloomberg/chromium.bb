@@ -79,9 +79,9 @@ class InputMethodEngine : public InputMethodEngineInterface {
                                      size_t number_of_chars,
                                      std::string* error) OVERRIDE;
 
-  // IBusEngineHandlerInterface overrides.
+  // IMEEngineHandlerInterface overrides.
   virtual void FocusIn(
-      const IBusEngineHandlerInterface::InputContext& input_context) OVERRIDE;
+      const IMEEngineHandlerInterface::InputContext& input_context) OVERRIDE;
   virtual void FocusOut() OVERRIDE;
   virtual void Enable() OVERRIDE;
   virtual void Disable() OVERRIDE;

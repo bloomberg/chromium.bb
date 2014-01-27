@@ -46,7 +46,7 @@ void UpdatePreedit(const IBusText& ibus_text,
                    uint32 cursor_pos,
                    bool is_visible) {
   IBusInputContextHandlerInterface* input_context =
-      IBusBridge::Get()->GetInputContextHandler();
+      IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
     input_context->UpdatePreeditText(ibus_text, cursor_pos, is_visible);
 }
@@ -200,7 +200,7 @@ bool InputMethodEngine::CommitText(int context_id, const char* text,
     return false;
   }
 
-  IBusBridge::Get()->GetInputContextHandler()->CommitText(text);
+  IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
   return true;
 }
 
@@ -270,7 +270,7 @@ void InputMethodEngine::SetCandidateWindowProperty(
 
   if (active_) {
     IBusPanelCandidateWindowHandlerInterface* cw_handler =
-        IBusBridge::Get()->GetCandidateWindowHandler();
+        IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
       cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   }
@@ -285,7 +285,7 @@ bool InputMethodEngine::SetCandidateWindowVisible(bool visible,
 
   window_visible_ = visible;
   IBusPanelCandidateWindowHandlerInterface* cw_handler =
-    IBusBridge::Get()->GetCandidateWindowHandler();
+    IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
     cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
@@ -325,7 +325,7 @@ bool InputMethodEngine::SetCandidates(
   }
   if (active_) {
     IBusPanelCandidateWindowHandlerInterface* cw_handler =
-      IBusBridge::Get()->GetCandidateWindowHandler();
+      IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
       cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   }
@@ -352,7 +352,7 @@ bool InputMethodEngine::SetCursorPosition(int context_id, int candidate_id,
 
   candidate_window_->set_cursor_position(position->second);
   IBusPanelCandidateWindowHandlerInterface* cw_handler =
-    IBusBridge::Get()->GetCandidateWindowHandler();
+    IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
     cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
@@ -414,7 +414,7 @@ bool InputMethodEngine::DeleteSurroundingText(int context_id,
   // TODO(nona): Return false if there is ongoing composition.
 
   IBusInputContextHandlerInterface* input_context =
-      IBusBridge::Get()->GetInputContextHandler();
+      IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
     input_context->DeleteSurroundingText(offset, number_of_chars);
 
@@ -431,7 +431,7 @@ void InputMethodEngine::HideInputView() {
 }
 
 void InputMethodEngine::FocusIn(
-    const IBusEngineHandlerInterface::InputContext& input_context) {
+    const IMEEngineHandlerInterface::InputContext& input_context) {
   focused_ = true;
   if (!active_)
     return;
@@ -476,8 +476,8 @@ void InputMethodEngine::FocusOut() {
 void InputMethodEngine::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
-  IBusEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
-                                                   ui::TEXT_INPUT_MODE_DEFAULT);
+  IMEEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
+                                                  ui::TEXT_INPUT_MODE_DEFAULT);
   FocusIn(context);
 
   keyboard::KeyboardController* keyboard_controller =

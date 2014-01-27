@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/ime/chromeos/character_composer.h"
-#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_base.h"
 
@@ -112,7 +112,7 @@ class UI_BASE_EXPORT InputMethodChromeOS
   // Hides the composition text.
   void HidePreeditText();
 
-  // Callback function for IBusEngineHandlerInterface::ProcessKeyEvent.
+  // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
   void ProcessKeyEventDone(uint32 id, ui::KeyEvent* event, bool is_handled);
 
   // All pending key events. Note: we do not own these object, we just save

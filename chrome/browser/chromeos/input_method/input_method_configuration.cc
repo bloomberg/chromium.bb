@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_delegate_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
-#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 
 namespace chromeos {
 namespace input_method {
@@ -32,7 +32,7 @@ class InputMethodConfiguration {
 
   void Initialize(
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner) {
-    IBusBridge::Initialize();
+    IMEBridge::Initialize();
 
     InputMethodManagerImpl* impl = new InputMethodManagerImpl(
         scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
@@ -63,7 +63,7 @@ class InputMethodConfiguration {
 
     InputMethodManager::Shutdown();
 
-    IBusBridge::Shutdown();
+    IMEBridge::Shutdown();
 
     DVLOG(1) << "InputMethodManager shutdown";
   }

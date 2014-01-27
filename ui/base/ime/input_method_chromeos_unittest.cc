@@ -16,7 +16,7 @@
 #include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/ibus_text.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/base/ime/input_method_chromeos.h"
@@ -31,7 +31,7 @@ using base::UTF16ToUTF8;
 
 namespace ui {
 namespace {
-typedef chromeos::IBusEngineHandlerInterface::KeyEventDoneCallback
+typedef chromeos::IMEEngineHandlerInterface::KeyEventDoneCallback
     KeyEventCallback;
 
 uint32 GetOffsetInUTF16(const std::string& utf8_string, uint32 utf8_offset) {
@@ -205,16 +205,16 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    chromeos::IBusBridge::Initialize();
+    chromeos::IMEBridge::Initialize();
 
     mock_ime_engine_handler_.reset(
         new chromeos::MockIMEEngineHandler());
-    chromeos::IBusBridge::Get()->SetCurrentEngineHandler(
+    chromeos::IMEBridge::Get()->SetCurrentEngineHandler(
         mock_ime_engine_handler_.get());
 
     mock_ime_candidate_window_handler_.reset(
         new chromeos::MockIMECandidateWindowHandler());
-    chromeos::IBusBridge::Get()->SetCandidateWindowHandler(
+    chromeos::IMEBridge::Get()->SetCandidateWindowHandler(
         mock_ime_candidate_window_handler_.get());
 
     ime_.reset(new TestableInputMethodChromeOS(this));
@@ -225,11 +225,11 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     if (ime_.get())
       ime_->SetFocusedTextInputClient(NULL);
     ime_.reset();
-    chromeos::IBusBridge::Get()->SetCurrentEngineHandler(NULL);
-    chromeos::IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+    chromeos::IMEBridge::Get()->SetCurrentEngineHandler(NULL);
+    chromeos::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
     mock_ime_engine_handler_.reset();
     mock_ime_candidate_window_handler_.reset();
-    chromeos::IBusBridge::Shutdown();
+    chromeos::IMEBridge::Shutdown();
   }
 
   // ui::internal::InputMethodDelegate overrides:

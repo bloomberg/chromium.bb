@@ -1,10 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// TODO(nona): Rename this file to ime_bridge.h
 
-#ifndef UI_BASE_IME_CHROMEOS_IBUS_BRIDGE_H_
-#define UI_BASE_IME_CHROMEOS_IBUS_BRIDGE_H_
+#ifndef UI_BASE_IME_CHROMEOS_IME_BRIDGE_H_
+#define UI_BASE_IME_CHROMEOS_IME_BRIDGE_H_
 
 #include <string>
 #include "base/basictypes.h"
@@ -42,7 +41,7 @@ class UI_BASE_EXPORT IBusInputContextHandlerInterface {
 
 
 // A interface to handle the engine handler method call.
-class UI_BASE_EXPORT IBusEngineHandlerInterface {
+class UI_BASE_EXPORT IMEEngineHandlerInterface {
  public:
   typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
 
@@ -63,7 +62,7 @@ class UI_BASE_EXPORT IBusEngineHandlerInterface {
     ui::TextInputMode mode;
   };
 
-  virtual ~IBusEngineHandlerInterface() {}
+  virtual ~IMEEngineHandlerInterface() {}
 
   // Called when the Chrome input field get the focus.
   virtual void FocusIn(const InputContext& input_context) = 0;
@@ -100,7 +99,7 @@ class UI_BASE_EXPORT IBusEngineHandlerInterface {
                                   uint32 anchor_pos) = 0;
 
  protected:
-  IBusEngineHandlerInterface() {}
+  IMEEngineHandlerInterface() {}
 };
 
 // A interface to handle the candidate window related method call.
@@ -130,11 +129,11 @@ class UI_BASE_EXPORT IBusPanelCandidateWindowHandlerInterface {
 };
 
 
-// IBusBridge provides access of each IME related handler. This class
+// IMEBridge provides access of each IME related handler. This class
 // is used for IME implementation.
-class UI_BASE_EXPORT IBusBridge {
+class UI_BASE_EXPORT IMEBridge {
  public:
-  virtual ~IBusBridge();
+  virtual ~IMEBridge();
 
   // Allocates the global instance. Must be called before any calls to Get().
   static void Initialize();
@@ -142,8 +141,8 @@ class UI_BASE_EXPORT IBusBridge {
   // Releases the global instance.
   static void Shutdown();
 
-  // Returns IBusBridge global instance. Initialize() must be called first.
-  static IBusBridge* Get();
+  // Returns IMEBridge global instance. Initialize() must be called first.
+  static IMEBridge* Get();
 
   // Returns current InputContextHandler. This function returns NULL if input
   // context is not ready to use.
@@ -158,26 +157,26 @@ class UI_BASE_EXPORT IBusBridge {
   // |engine_id| must not be empty and |handler| must not be null.
   virtual void SetEngineHandler(
       const std::string& engine_id,
-      IBusEngineHandlerInterface* handler) = 0;
+      IMEEngineHandlerInterface* handler) = 0;
 
-  // Returns IBusEngineHandlerInterface* mapped by |engine_id|.  NULL is
+  // Returns IMEEngineHandlerInterface* mapped by |engine_id|.  NULL is
   // returned if |engine_id| is not mapped any engines.
-  virtual IBusEngineHandlerInterface* GetEngineHandler(
+  virtual IMEEngineHandlerInterface* GetEngineHandler(
       const std::string& engine_id) = 0;
 
   // Updates current EngineHandler. If there is no active engine service, pass
   // NULL for |handler|. Caller must release |handler|.
-  virtual void SetCurrentEngineHandler(IBusEngineHandlerInterface* handler) = 0;
+  virtual void SetCurrentEngineHandler(IMEEngineHandlerInterface* handler) = 0;
 
   // Updates current EngineHandler by Engine ID. If there is no active
   // engine service, pass an empty string for |engine_id|.  The set
-  // IBusEngineHandlerInterface is returned.
-  virtual IBusEngineHandlerInterface* SetCurrentEngineHandlerById(
+  // IMEEngineHandlerInterface is returned.
+  virtual IMEEngineHandlerInterface* SetCurrentEngineHandlerById(
       const std::string& engine_id) = 0;
 
   // Returns current EngineHandler. This function returns NULL if current engine
   // is not ready to use.
-  virtual IBusEngineHandlerInterface* GetCurrentEngineHandler() const = 0;
+  virtual IMEEngineHandlerInterface* GetCurrentEngineHandler() const = 0;
 
   // Returns current CandidateWindowHandler. This function returns NULL if
   // current candidate window is not ready to use.
@@ -190,12 +189,12 @@ class UI_BASE_EXPORT IBusBridge {
       IBusPanelCandidateWindowHandlerInterface* handler) = 0;
 
  protected:
-  IBusBridge();
+  IMEBridge();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IBusBridge);
+  DISALLOW_COPY_AND_ASSIGN(IMEBridge);
 };
 
 }  // namespace chromeos
 
-#endif  // UI_BASE_IME_CHROMEOS_IBUS_BRIDGE_H_
+#endif  // UI_BASE_IME_CHROMEOS_IME_BRIDGE_H_

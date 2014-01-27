@@ -5,13 +5,13 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_ENGINE_HANDLER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_ENGINE_HANDLER_H_
 
-#include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/events/event.h"
 
 namespace chromeos {
 
-class UI_BASE_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
+class UI_BASE_EXPORT MockIMEEngineHandler : public IMEEngineHandlerInterface {
  public:
   MockIMEEngineHandler();
   virtual ~MockIMEEngineHandler();
