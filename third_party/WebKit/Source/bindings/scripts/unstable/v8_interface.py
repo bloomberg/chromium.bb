@@ -113,6 +113,35 @@ def generate_interface(interface):
     for special_wrap_interface in special_wrap_for:
         v8_types.add_includes_for_type(special_wrap_interface)
 
+    template_contents = {
+        'conditional_string': conditional_string(interface),  # [Conditional]
+        'cpp_class': cpp_name(interface),
+        'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
+        'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
+        'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
+        'has_visit_dom_wrapper': (
+            # [Custom=Wrap], [SetWrapperReferenceFrom]
+            has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
+            reachable_node_function or set_wrapper_reference_to_list),
+        'header_includes': header_includes,
+        'interface_name': interface.name,
+        'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
+        'is_audio_buffer': is_audio_buffer,
+        'is_check_security': is_check_security,
+        'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
+        'is_document': is_document,
+        'is_event_target': inherits_interface(interface.name, 'EventTarget'),
+        'is_exception': interface.is_exception,
+        'is_node': inherits_interface(interface.name, 'Node'),
+        'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
+        'parent_interface': parent_interface,
+        'reachable_node_function': reachable_node_function,
+        'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
+        'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
+        'special_wrap_for': special_wrap_for,
+        'v8_class': v8_utilities.v8_class_name(interface),
+    }
+
     # Constructors
     constructors = [generate_constructor(interface, constructor)
                     for constructor in interface.constructors
@@ -144,52 +173,28 @@ def generate_interface(interface):
         named_constructor):
         includes.add('bindings/v8/V8ObjectConstructor.h')
 
-    template_contents = {
+    template_contents.update({
         'any_type_attributes': any_type_attributes,
-        'conditional_string': conditional_string(interface),  # [Conditional]
         'constructors': constructors,
-        'cpp_class': cpp_name(interface),
         'has_custom_constructor': bool(custom_constructors),
-        'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
-        'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
-        'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
         'has_event_constructor': has_event_constructor,
-        'has_visit_dom_wrapper': (
-            # [Custom=Wrap], [SetWrapperReferenceFrom]
-            has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
-            reachable_node_function or set_wrapper_reference_to_list),
-        'header_includes': header_includes,
         'interface_length':
             interface_length(interface, constructors + custom_constructors),
-        'interface_name': interface.name,
-        'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
-        'is_audio_buffer': is_audio_buffer,
-        'is_check_security': is_check_security,
         'is_constructor_call_with_document': has_extended_attribute_value(
             interface, 'ConstructorCallWith', 'Document'),  # [ConstructorCallWith=Document]
         'is_constructor_call_with_execution_context': has_extended_attribute_value(
             interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
-        'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
-        'is_document': is_document,
-        'is_event_target': inherits_interface(interface.name, 'EventTarget'),
-        'is_exception': interface.is_exception,
-        'is_node': inherits_interface(interface.name, 'Node'),
-        'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'named_constructor': named_constructor,
-        'parent_interface': parent_interface,
-        'reachable_node_function': reachable_node_function,
-        'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
-        'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
-        'special_wrap_for': special_wrap_for,
-        'v8_class': v8_utilities.v8_class_name(interface),
-    }
+    })
 
+    # Constants
     template_contents.update({
         'constants': [generate_constant(constant) for constant in interface.constants],
         'do_not_check_constants': 'DoNotCheckConstants' in extended_attributes,
     })
 
+    # Attributes
     attributes = [v8_attributes.generate_attribute(interface, attribute)
                   for attribute in interface.attributes]
     template_contents.update({
@@ -200,6 +205,7 @@ def generate_interface(interface):
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
     })
 
+    # Methods
     methods = [v8_methods.generate_method(interface, method)
                for method in interface.operations]
     generate_overloads(methods)
