@@ -130,6 +130,7 @@ protected:
 private:
     virtual void buildPendingResource() OVERRIDE;
     void clearResourceAndEventBaseReferences();
+    void clearConditions();
 
     virtual void startedActiveInterval() = 0;
     void endedActiveInterval();

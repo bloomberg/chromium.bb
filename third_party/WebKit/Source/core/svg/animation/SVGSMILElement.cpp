@@ -189,8 +189,7 @@ SVGSMILElement::~SVGSMILElement()
     smilBeginEventSender().cancelEvent(this);
     smilRepeatEventSender().cancelEvent(this);
     smilRepeatNEventSender().cancelEvent(this);
-    disconnectSyncBaseConditions();
-    disconnectEventBaseConditions();
+    clearConditions();
     if (m_timeContainer && m_targetElement && hasValidAttributeName())
         m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
 }
@@ -198,6 +197,13 @@ SVGSMILElement::~SVGSMILElement()
 void SVGSMILElement::clearResourceAndEventBaseReferences()
 {
     document().accessSVGExtensions()->removeAllTargetReferencesForElement(this);
+}
+
+void SVGSMILElement::clearConditions()
+{
+    disconnectSyncBaseConditions();
+    disconnectEventBaseConditions();
+    m_conditions.clear();
 }
 
 void SVGSMILElement::buildPendingResource()
@@ -322,8 +328,7 @@ void SVGSMILElement::removedFrom(ContainerNode* rootParent)
 {
     if (rootParent->inDocument()) {
         clearResourceAndEventBaseReferences();
-        disconnectSyncBaseConditions();
-        disconnectEventBaseConditions();
+        clearConditions();
         setTargetElement(0);
         setAttributeName(anyQName());
         animationAttributeChanged();
@@ -505,8 +510,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 {
     if (name == SVGNames::beginAttr) {
         if (!m_conditions.isEmpty()) {
-            disconnectSyncBaseConditions();
-            m_conditions.clear();
+            clearConditions();
             parseBeginOrEnd(fastGetAttribute(SVGNames::endAttr), End);
         }
         parseBeginOrEnd(value.string(), Begin);
@@ -514,8 +518,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             connectSyncBaseConditions();
     } else if (name == SVGNames::endAttr) {
         if (!m_conditions.isEmpty()) {
-            disconnectSyncBaseConditions();
-            m_conditions.clear();
+            clearConditions();
             parseBeginOrEnd(fastGetAttribute(SVGNames::beginAttr), Begin);
         }
         parseBeginOrEnd(value.string(), End);
