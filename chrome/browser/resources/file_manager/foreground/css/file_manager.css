@@ -148,10 +148,26 @@ body {
   line-height: 45px;
 }
 
+.dialog-navigation-list-header #profile-batch {
+  display: none;
+}
+
+.dialog-navigation-list-header #profile-batch[src] {
+  display: inline-block;
+  height: 30px;
+  margin: 8px;
+  vertical-align: top;
+  width: 30px;
+}
+
 .dialog-navigation-list-header #app-name {
   -webkit-margin-start: 15px;
   color: #303030;
   font-size: 130%;
+}
+
+.dialog-navigation-list-header #profile-batch[src] + #app-name {
+  -webkit-margin-start: 0;
 }
 
 .dialog-navigation-list-contents {

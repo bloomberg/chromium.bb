@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "google_apis/drive/auth_service.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -76,6 +78,16 @@ GetLoggedInProfileInfoList() {
     profile_info->display_name = UTF16ToUTF8(user->GetDisplayName());
     // TODO(hirono): Remove the property from the profile_info.
     profile_info->is_current_profile = true;
+
+    // Make an icon URL of the profile.
+    const int kImageSize = 30;
+    const gfx::Image& image = profiles::GetAvatarIconForTitleBar(
+        gfx::Image(user->image()), true, kImageSize, kImageSize);
+    const SkBitmap* const bitmap = image.ToSkBitmap();
+    if (bitmap) {
+      profile_info->image_uri.reset(new std::string(
+          webui::GetBitmapDataUrl(*bitmap)));
+    }
     result_profiles.push_back(profile_info);
   }
 

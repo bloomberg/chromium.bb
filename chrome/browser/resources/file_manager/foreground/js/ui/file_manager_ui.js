@@ -101,6 +101,7 @@ var FileManagerUI = function(element, dialogType) {
   Object.seal(this);
 
   // Initialize the header.
+  this.updateProfileBatch();
   this.element_.querySelector('#app-name').innerText =
       chrome.runtime.getManifest().name;
 
@@ -187,4 +188,31 @@ FileManagerUI.prototype.initDialogs = function() {
  */
 FileManagerUI.prototype.initAdditionalUI = function() {
   this.searchBox = new SearchBox(this.element_.querySelector('#search-box'));
+};
+
+/**
+ * Updates visibility and image of the profile batch.
+ */
+FileManagerUI.prototype.updateProfileBatch = function() {
+  if (this.dialogType_ !== DialogType.FULL_PAGE)
+    return;
+
+  chrome.fileBrowserPrivate.getProfiles(function(profiles,
+                                                 currentId,
+                                                 displayedId) {
+    var imageUri;
+    if (currentId !== displayedId) {
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].profileId !== currentId) {
+          imageUri = profiles[i].imageUri;
+          break;
+        }
+      }
+    }
+    var profileBatch = this.element_.querySelector('#profile-batch');
+    if (imageUri)
+      profileBatch.setAttribute('src', imageUri);
+    else
+      profileBatch.removeAttribute('src');
+  }.bind(this));
 };

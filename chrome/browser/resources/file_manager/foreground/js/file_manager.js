@@ -2267,8 +2267,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           this.gearButton_.blur();
           chrome.fileBrowserPrivate.visitDesktop(inProfile.profileId,
                                                  function() {
-            // TODO(hirono): Update the profile batch.
-          });
+            this.ui_.updateProfileBatch();
+          }.bind(this));
         }.bind(this, profile));
       }
     }.bind(this));
