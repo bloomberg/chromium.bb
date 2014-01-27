@@ -264,7 +264,12 @@
       'name': 'SearchSuggestEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': [
+        'chrome.*:8-',
+        'chrome_os:11-',
+        'android:30-',
+        'ios:99-',
+      ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -1736,7 +1741,12 @@
           'name': 'DefaultSearchProviderEnabled',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+          'supported_on': [
+            'chrome.*:8-',
+            'chrome_os:11-',
+            'android:30-',
+            'ios:99-',
+          ],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1760,7 +1770,12 @@
           'name': 'DefaultSearchProviderName',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+          'supported_on': [
+            'chrome.*:8-',
+            'chrome_os:11-',
+            'android:30-',
+            'ios:99-',
+          ],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1776,7 +1791,12 @@
           'name': 'DefaultSearchProviderKeyword',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+          'supported_on': [
+            'chrome.*:8-',
+            'chrome_os:11-',
+            'android:30-',
+            'ios:99-',
+          ],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -1794,7 +1814,12 @@
           'name': 'DefaultSearchProviderSearchURL',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+          'supported_on': [
+            'chrome.*:8-',
+            'chrome_os:11-',
+            'android:30-',
+            'ios:99-',
+          ],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2193,7 +2218,11 @@
               'caption': '''Do not allow any site to show popups''',
             },
           ],
-          'supported_on': ['chrome.*:10-', 'chrome_os:11-'],
+          'supported_on': [
+            'chrome.*:10-',
+            'chrome_os:11-',
+            'ios:99-',
+          ],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2508,7 +2537,11 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
+          'supported_on': [
+            'chrome.*:11-',
+            'chrome_os:11-',
+            'ios:99-',
+          ],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2527,7 +2560,11 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
+          'supported_on': [
+            'chrome.*:11-',
+            'chrome_os:11-',
+            'ios:99-',
+          ],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
@@ -2934,7 +2971,12 @@
       'name': 'TranslateEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:12-', 'chrome_os:12-', 'android:30-'],
+      'supported_on': [
+        'chrome.*:12-',
+        'chrome_os:12-',
+        'android:30-',
+        'ios:99-',
+      ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
