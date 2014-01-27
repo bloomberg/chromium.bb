@@ -110,8 +110,7 @@ void InspectorHeapProfilerAgent::clearFrontend()
 
 void InspectorHeapProfilerAgent::restore()
 {
-    if (m_state->getBoolean(HeapProfilerAgentState::heapProfilerEnabled))
-        resetFrontendProfiles();
+    resetFrontendProfiles();
 }
 
 void InspectorHeapProfilerAgent::collectGarbage(WebCore::ErrorString*)
