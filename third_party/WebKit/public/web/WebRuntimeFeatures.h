@@ -175,6 +175,8 @@ public:
 
     BLINK_EXPORT static void enableRepaintAfterLayout(bool);
 
+    BLINK_EXPORT static void enableExperimentalWebSocket(bool);
+
 private:
     WebRuntimeFeatures();
 };

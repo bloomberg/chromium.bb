@@ -485,4 +485,9 @@ void WebRuntimeFeatures::enableRepaintAfterLayout(bool enable)
     RuntimeEnabledFeatures::setRepaintAfterLayoutEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableExperimentalWebSocket(bool enable)
+{
+    RuntimeEnabledFeatures::setExperimentalWebSocketEnabled(enable);
+}
+
 } // namespace blink
