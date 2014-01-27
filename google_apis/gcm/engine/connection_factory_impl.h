@@ -66,6 +66,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual scoped_ptr<net::BackoffEntry> CreateBackoffEntry(
       const net::BackoffEntry::Policy* const policy);
 
+  // Returns the current time in Ticks.
+  // Virtual for testing.
+  virtual base::TimeTicks NowTicks();
+
   // Callback for Socket connection completion.
   void OnConnectDone(int result);
 

@@ -109,7 +109,7 @@ void ConnectionFactoryImpl::Connect() {
         FROM_HERE,
         base::Bind(&ConnectionFactoryImpl::Connect,
                    weak_ptr_factory_.GetWeakPtr()),
-        NextRetryAttempt() - base::TimeTicks::Now());
+        backoff_entry_->GetTimeUntilRelease());
     return;
   }
 
@@ -128,7 +128,7 @@ void ConnectionFactoryImpl::SignalConnectionReset() {
     return;  // Already attempting to reconnect.
 
   if (!backoff_reset_time_.is_null() &&
-      base::TimeTicks::Now() - backoff_reset_time_ <=
+      NowTicks() - backoff_reset_time_ <=
           base::TimeDelta::FromSeconds(kConnectionResetWindowSecs)) {
     backoff_entry_.swap(previous_backoff_);
     backoff_entry_->InformOfRequest(false);
@@ -206,6 +206,10 @@ scoped_ptr<net::BackoffEntry> ConnectionFactoryImpl::CreateBackoffEntry(
   return scoped_ptr<net::BackoffEntry>(new net::BackoffEntry(policy));
 }
 
+base::TimeTicks ConnectionFactoryImpl::NowTicks() {
+  return base::TimeTicks::Now();
+}
+
 void ConnectionFactoryImpl::OnConnectDone(int result) {
   if (result != net::OK) {
     LOG(ERROR) << "Failed to connect to MCS endpoint with error " << result;
@@ -223,7 +227,7 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   if (result == net::OK) {
     // Handshake succeeded, reset the backoff.
     connecting_ = false;
-    backoff_reset_time_ = base::TimeTicks::Now();
+    backoff_reset_time_ = NowTicks();
     previous_backoff_.swap(backoff_entry_);
     backoff_entry_->Reset();
     return;
