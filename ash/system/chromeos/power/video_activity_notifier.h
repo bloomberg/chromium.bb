@@ -14,7 +14,8 @@ namespace ash {
 namespace internal {
 
 // Notifies the power manager when a video is playing.
-class VideoActivityNotifier : public VideoDetectorObserver {
+class VideoActivityNotifier : public VideoDetectorObserver,
+                              public ShellObserver {
  public:
   explicit VideoActivityNotifier(VideoDetector* detector);
   virtual ~VideoActivityNotifier();
@@ -22,11 +23,17 @@ class VideoActivityNotifier : public VideoDetectorObserver {
   // VideoDetectorObserver implementation.
   virtual void OnVideoDetected(bool is_fullscreen) OVERRIDE;
 
+  // ShellObserver implementation.
+  virtual void OnLockStateChanged(bool locked) OVERRIDE;
+
  private:
   VideoDetector* detector_;  // not owned
 
   // Last time that the power manager was notified.
   base::TimeTicks last_notify_time_;
+
+  // True if the screen is currently locked.
+  bool screen_is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoActivityNotifier);
 };

@@ -19,15 +19,21 @@ const int kNotifyIntervalSec = 5;
 }  // namespace
 
 VideoActivityNotifier::VideoActivityNotifier(VideoDetector* detector)
-    : detector_(detector) {
+    : detector_(detector),
+      screen_is_locked_(false) {
   detector_->AddObserver(this);
+  ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
 VideoActivityNotifier::~VideoActivityNotifier() {
+  ash::Shell::GetInstance()->RemoveShellObserver(this);
   detector_->RemoveObserver(this);
 }
 
 void VideoActivityNotifier::OnVideoDetected(bool is_fullscreen) {
+  if (screen_is_locked_)
+    return;
+
   base::TimeTicks now = base::TimeTicks::Now();
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
@@ -35,6 +41,10 @@ void VideoActivityNotifier::OnVideoDetected(bool is_fullscreen) {
         NotifyVideoActivity(is_fullscreen);
     last_notify_time_ = now;
   }
+}
+
+void VideoActivityNotifier::OnLockStateChanged(bool locked) {
+  screen_is_locked_ = locked;
 }
 
 }  // namespace internal
