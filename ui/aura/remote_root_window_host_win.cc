@@ -176,10 +176,16 @@ RemoteWindowTreeHostWin::~RemoteWindowTreeHostWin() {
   g_instance = NULL;
 }
 
-void RemoteWindowTreeHostWin::Connected(IPC::Sender* host, HWND remote_window) {
-  CHECK(host_ == NULL);
-  host_ = host;
+void RemoteWindowTreeHostWin::SetRemoteWindowHandle(HWND remote_window) {
   remote_window_ = remote_window;
+  // Do not create compositor here, but in Connected() below.
+  // See http://crbug.com/330179 and http://crbug.com/334380.
+}
+
+void RemoteWindowTreeHostWin::Connected(IPC::Sender* host) {
+  CHECK(host_ == NULL);
+  DCHECK(remote_window_);
+  host_ = host;
   // Recreate the compositor for the target surface represented by the
   // remote_window HWND.
   CreateCompositor(remote_window_);
@@ -480,12 +486,16 @@ void RemoteWindowTreeHostWin::PrepareForShutdown() {
 }
 
 void RemoteWindowTreeHostWin::CancelComposition() {
+  if (!host_)
+    return;
   host_->Send(new MetroViewerHostMsg_ImeCancelComposition);
 }
 
 void RemoteWindowTreeHostWin::OnTextInputClientUpdated(
     const std::vector<int32>& input_scopes,
     const std::vector<gfx::Rect>& composition_character_bounds) {
+  if (!host_)
+    return;
   std::vector<metro_viewer::CharacterBounds> character_bounds;
   for (size_t i = 0; i < composition_character_bounds.size(); ++i) {
     const gfx::Rect& rect = composition_character_bounds[i];

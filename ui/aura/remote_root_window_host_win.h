@@ -109,10 +109,13 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   static RemoteWindowTreeHostWin* Instance();
   static RemoteWindowTreeHostWin* Create(const gfx::Rect& bounds);
 
-  // Called when the remote process has established its IPC connection.
-  // The |host| can be used when we need to send a message to it and
-  // |remote_window| is the actual window owned by the viewer process.
-  void Connected(IPC::Sender* host, HWND remote_window);
+  // Sets the handle to the remote window. The |remote_window| is the actual
+  // window owned by the viewer process. Call this before Connected() for some
+  // customers like input method initialization which needs the handle.
+  void SetRemoteWindowHandle(HWND remote_window);
+
+  // The |host| can be used when we need to send a message to it.
+  void Connected(IPC::Sender* host);
   // Called when the remote process has closed its IPC connection.
   void Disconnected();
 

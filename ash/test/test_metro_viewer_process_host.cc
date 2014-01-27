@@ -30,7 +30,8 @@ void TestMetroViewerProcessHost::OnSetTargetSurface(
     gfx::NativeViewId target_surface) {
   DLOG(INFO) << __FUNCTION__ << ", target_surface = " << target_surface;
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
-  aura::RemoteWindowTreeHostWin::Instance()->Connected(this, hwnd);
+  aura::RemoteWindowTreeHostWin::Instance()->SetRemoteWindowHandle(hwnd);
+  aura::RemoteWindowTreeHostWin::Instance()->Connected(this);
 
   backing_surface_.reset(new AcceleratedSurface(hwnd));
 }
