@@ -4,6 +4,7 @@ Http/MediaTest.*
 File/MediaTest.*
 WorkerTest.*
 MediaTest.*
+MediaSourceTest.ConfigChangeVideo
 WebGLConformanceTest.*
 MessagePortTest.Tests
 CrossPlatformAccessibilityBrowserTest.*
@@ -26,6 +27,7 @@ ChildProcessSecurityPolicyInProcessBrowserTest.NoLeak
 SecurityExploitBrowserTest.SetWebUIProperty
 
 # Plugins are not supported.
+BrowserPluginThreadedCompositorPixelTest.*
 BrowserPluginHostTest.*
 BrowserPluginTest.*
 PluginTest.*
@@ -137,3 +139,16 @@ WithoutInputHandlerProxy/TouchInputBrowserTest.MultiPointTouchPress/0
 WithoutInputHandlerProxy/TouchInputBrowserTest.TouchHandlerConsume/0
 WithoutInputHandlerProxy/TouchInputBrowserTest.TouchHandlerNoConsume/0
 WithoutInputHandlerProxy/TouchInputBrowserTest.TouchNoHandler/0
+
+# http://crbug.com/338408
+TracingControllerTest.EnableCaptureAndDisableMonitoring
+
+# http://crbug.com/338023
+SecurityExploitBrowserTest.AttemptDuplicateRenderViewHost
+SecurityExploitBrowserTest.AttemptDuplicateRenderWidgetHost
+
+# http://crbug.com/338411
+FrameTreeBrowserTest.NavigateWithLeftoverFrames
+
+# http://crbug.com/338421
+GinBrowserTest.GinAndGarbageCollection
