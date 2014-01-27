@@ -41,6 +41,10 @@ bool RenderSVGInline::isChildAllowed(RenderObject* child, RenderStyle* style) co
         if (child->node()->hasTagName(SVGNames::aTag))
             return false;
     }
+
+    if (!child->isSVGInline() && !child->isSVGInlineText())
+        return false;
+
     return RenderInline::isChildAllowed(child, style);
 }
 
