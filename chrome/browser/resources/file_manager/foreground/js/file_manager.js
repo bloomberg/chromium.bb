@@ -1222,6 +1222,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (kind === util.EntryChangedKind.CREATED && FileType.isImage(entry)) {
       // Preload a thumbnail if the new copied entry an image.
+      var locationInfo = this.volumeManager_.getLocationInfo(entry);
+      if (!locationInfo)
+        return;
       this.metadataCache_.get(entry, 'thumbnail|drive', function(metadata) {
         var thumbnailLoader_ = new ThumbnailLoader(
             entry,
@@ -1229,7 +1232,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             metadata,
             undefined,  // Media type.
             // TODO(mtomasz): Use Entry instead of paths.
-            PathUtil.isDriveBasedPath(entry.fullPath) ?
+            locationInfo.isDriveBased ?
                 ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
                 ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
             10);  // Very low priority.
@@ -1701,7 +1704,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
 
     var leadEntry = dm.getFileList().item(leadIndex);
-    if (this.renameInput_.currentEntry.fullPath != leadEntry.fullPath)
+    if (!util.isSameEntry(this.renameInput_.currentEntry, leadEntry))
       return;
 
     var leadListItem = this.findListItemForNode_(this.renameInput_);
@@ -2261,13 +2264,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.getCurrentDirectoryEntry() &&
         this.getCurrentDirectoryEntry().fullPath, '' /* opt_param */);
 
-    // If the current directory is moved from the device's volume, do not
-    // automatically close the window on device removal.
-    if (event.previousDirEntry &&
-        PathUtil.getRootPath(event.previousDirEntry.fullPath) !=
-            PathUtil.getRootPath(event.newDirEntry.fullPath))
-      this.closeOnUnmount_ = false;
-
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
 
@@ -2275,9 +2271,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateTitle_();
     var newCurrentVolumeInfo = this.volumeManager_.getVolumeInfo(
         event.newDirEntry);
+
     // If volume has changed, then update the gear menu.
-    if (this.currentVolumeInfo_ !== newCurrentVolumeInfo)
+    if (this.currentVolumeInfo_ !== newCurrentVolumeInfo) {
       this.updateGearMenu_();
+      // If the volume has changed, and it was previously set, then do not
+      // close on unmount anymore.
+      if (this.currentVolumeInfo_)
+        this.closeOnUnmount_ = false;
+    }
+
     var currentEntry = this.getCurrentDirectoryEntry();
     this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
         null : currentEntry;
