@@ -22,6 +22,7 @@
 class GURL;
 
 namespace base {
+class ScopedClosureRunner;
 class SequencedTaskRunner;
 class Time;
 }  // namespace base
@@ -102,6 +103,12 @@ class ChangeListLoader {
   // availlavle, just runs |callback| with the cached about resource. If not,
   // calls |UpdateAboutResource| passing |callback|.
   void GetAboutResource(const google_apis::AboutResourceCallback& callback);
+
+  // Increments the lock count and returns an object which decrements the count
+  // on its destruction.
+  // While the lock count is positive, ChangeListLoader does not add any entries
+  // to the local metadata.
+  scoped_ptr<base::ScopedClosureRunner> GetLock();
 
  private:
   // Part of LoadDirectoryIfNeeded().
@@ -191,6 +198,14 @@ class ChangeListLoader {
       const base::FilePath* directory_path,
       FileError error);
 
+  // ================= Implementation for lock mechanism ====================
+  // Runs the closure if the lock count is 0, otherwise it will be pending.
+  // All tasks which may add entries should be run via this method.
+  void ApplyChange(const base::Closure& closure);
+
+  // Decrements the lock count.
+  void Unlock();
+
   // ================= Implementation for other stuff =================
 
   // Gets the about resource from the server, and caches it if successful. This
@@ -216,6 +231,9 @@ class ChangeListLoader {
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;
   FileOperationCallback pending_update_check_callback_;
+
+  int lock_count_;
+  std::vector<base::Closure> pending_apply_closures_;
 
   // Running feed fetcher.
   scoped_ptr<FeedFetcher> change_feed_fetcher_;

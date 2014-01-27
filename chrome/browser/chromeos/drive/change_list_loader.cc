@@ -308,6 +308,7 @@ ChangeListLoader::ChangeListLoader(
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       drive_service_(drive_service),
+      lock_count_(0),
       loaded_(false),
       weak_ptr_factory_(this) {
 }
@@ -404,6 +405,14 @@ void ChangeListLoader::GetAboutResource(
   } else {
     UpdateAboutResource(callback);
   }
+}
+
+scoped_ptr<base::ScopedClosureRunner> ChangeListLoader::GetLock() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ++lock_count_;
+  return make_scoped_ptr(new base::ScopedClosureRunner(
+      base::Bind(&ChangeListLoader::Unlock,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 void ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry(
@@ -754,7 +763,9 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
   util::Log(logging::LOG_INFO,
             "Apply change lists (is delta: %d)",
             is_delta_update);
-  base::PostTaskAndReplyWithResult(
+  ApplyChange(base::Bind(
+      base::IgnoreResult(
+          &base::PostTaskAndReplyWithResult<FileError, FileError>),
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ChangeListProcessor::Apply,
@@ -766,7 +777,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(change_list_processor),
                  should_notify_changed_directories,
-                 base::Time::Now()));
+                 base::Time::Now())));
 }
 
 void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
@@ -862,7 +873,9 @@ void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
   }
 
   base::FilePath* directory_path = new base::FilePath;
-  base::PostTaskAndReplyWithResult(
+  ApplyChange(base::Bind(
+      base::IgnoreResult(
+          &base::PostTaskAndReplyWithResult<FileError, FileError>),
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ChangeListProcessor::RefreshDirectory,
@@ -874,7 +887,7 @@ void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  callback,
-                 base::Owned(directory_path)));
+                 base::Owned(directory_path))));
 }
 
 void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
@@ -892,6 +905,29 @@ void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                       OnDirectoryChanged(*directory_path));
   }
+}
+
+void ChangeListLoader::ApplyChange(const base::Closure& closure) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!closure.is_null());
+  if (lock_count_ > 0) {
+    pending_apply_closures_.push_back(closure);
+  } else {
+    closure.Run();
+  }
+}
+
+void ChangeListLoader::Unlock() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_LT(0, lock_count_);
+
+  if (--lock_count_ > 0)
+    return;
+
+  std::vector<base::Closure> callbacks;
+  callbacks.swap(pending_apply_closures_);
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i].Run();
 }
 
 void ChangeListLoader::UpdateAboutResource(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 
+#include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
@@ -425,6 +426,38 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetResourceEntryByPath(new_file_path, &entry));
+}
+
+TEST_F(ChangeListLoaderTest, Lock) {
+  FileError error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadForTesting(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Add a new file.
+  scoped_ptr<google_apis::ResourceEntry> file = AddNewFile("New File");
+  ASSERT_TRUE(file);
+
+  // Lock the loader.
+  scoped_ptr<base::ScopedClosureRunner> lock = change_list_loader_->GetLock();
+
+  // Start update.
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
+  FileError check_for_updates_error = FILE_ERROR_FAILED;
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(
+          &check_for_updates_error));
+  base::RunLoop().RunUntilIdle();
+
+  // Update is pending due to the lock.
+  EXPECT_TRUE(observer.changed_directories().empty());
+
+  // Unlock the loader, this should resume the pending udpate.
+  lock.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1U, observer.changed_directories().count(
+      util::GetDriveMyDriveRootPath()));
 }
 
 }  // namespace internal
