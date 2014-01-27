@@ -48,6 +48,7 @@ static FuncNameMapping g_function_map[] = {
   {"fread", HandleFread},
   {"fseek", HandleFseek},
   {"fclose", HandleFclose},
+  {"fflush", HandleFflush},
   {"stat", HandleStat},
   {"opendir", HandleOpendir},
   {"readdir", HandleReaddir},

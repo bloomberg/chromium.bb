@@ -388,6 +388,45 @@ int HandleFseek(int num_params, char** params, char** output) {
 }
 
 /**
+ * Handle a call to fflush() made by JavaScript.
+ *
+ * fflush expects 1 parameters:
+ *   0: The index of the file (which is mapped to a FILE*)
+ * on success, fflush returns a result in |output| separated by \1:
+ *   0: "fflush"
+ *   1: the file index
+ * on failure, fflush returns an error string in |output|.
+ *
+ * @param[in] num_params The number of params in |params|.
+ * @param[in] params An array of strings, parameters to this function.
+ * @param[out] output A string to write informational function output to.
+ * @return An errorcode; 0 means success, anything else is a failure.
+ */
+int HandleFflush(int num_params, char** params, char** output) {
+  FILE* file;
+  const char* file_index_string;
+
+  if (num_params != 1) {
+    *output = PrintfToNewString("fflush takes 3 parameters.");
+    return 1;
+  }
+
+  file_index_string = params[0];
+  file = GetFileFromIndexString(file_index_string, NULL);
+
+  if (!file) {
+    *output =
+        PrintfToNewString("Unknown file handle %s.", file_index_string);
+    return 2;
+  }
+
+  fflush(file);
+
+  *output = PrintfToNewString("fflush\1%s", file_index_string);
+  return 0;
+}
+
+/**
  * Handle a call to fclose() made by JavaScript.
  *
  * fclose expects 1 parameter:

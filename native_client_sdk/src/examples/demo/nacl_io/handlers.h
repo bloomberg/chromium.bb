@@ -14,6 +14,7 @@ int HandleFwrite(int num_params, char** params, char** output);
 int HandleFread(int num_params, char** params, char** output);
 int HandleFseek(int num_params, char** params, char** output);
 int HandleFclose(int num_params, char** params, char** output);
+int HandleFflush(int num_params, char** params, char** output);
 int HandleStat(int num_params, char** params, char** output);
 
 int HandleOpendir(int num_params, char** params, char** output);

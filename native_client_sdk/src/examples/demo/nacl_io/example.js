@@ -135,6 +135,16 @@ function fseekResult(filehandle, filepos) {
       '.');
 }
 
+function fflush(e) {
+  var filehandle = document.getElementById('fflushHandle').value;
+  nacl_module.postMessage(makeCall('fflush', filehandle));
+}
+
+function fflushResult(filehandle, filepos) {
+  var filename = filehandle_map[filehandle];
+  common.logMessage('flushed ' + filename + '.');
+}
+
 function stat(e) {
   var filename = document.getElementById('statFilename').value;
   nacl_module.postMessage(makeCall('stat', filename));

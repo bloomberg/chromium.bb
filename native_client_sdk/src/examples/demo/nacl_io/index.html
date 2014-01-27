@@ -51,6 +51,7 @@ found in the LICENSE file.
       <input type="radio" id="radiofread" name="group">fread
       <input type="radio" id="radiofwrite" name="group">fwrite
       <input type="radio" id="radiofseek" name="group">fseek
+      <input type="radio" id="radiofflush" name="group">fflush
       <input type="radio" id="radiostat" name="group">stat
     </span>
   </div>
@@ -103,6 +104,12 @@ found in the LICENSE file.
         <option value="2">SEEK_END</option>
       </select>
       <button>fseek</button>
+    </span>
+  </div>
+  <div class="function" id="fflush" hidden>
+    <span>
+      <select class="file-handle" id="fflushHandle"></select>
+      <button>fflush</button>
     </span>
   </div>
   <div class="function" id="stat" hidden>
