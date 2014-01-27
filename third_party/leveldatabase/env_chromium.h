@@ -11,10 +11,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
-#include "base/synchronization/condition_variable.h"
 #include "leveldb/env.h"
-#include "leveldb/slice.h"
-#include "leveldb/status.h"
 #include "port/port_chromium.h"
 #include "util/mutexlock.h"
 
@@ -101,51 +98,18 @@ class WriteTracker {
   virtual void DidSyncDir(const std::string& fname) = 0;
 };
 
-class ChromiumWritableFile : public leveldb::WritableFile {
- public:
-  ChromiumWritableFile(const std::string& fname,
-                       FILE* f,
-                       const UMALogger* uma_logger,
-                       WriteTracker* tracker,
-                       bool make_backup);
-  virtual ~ChromiumWritableFile();
-  virtual leveldb::Status Append(const leveldb::Slice& data);
-  virtual leveldb::Status Close();
-  virtual leveldb::Status Flush();
-  virtual leveldb::Status Sync();
-
- private:
-  enum Type {
-    kManifest,
-    kTable,
-    kOther
-  };
-  leveldb::Status SyncParent();
-
-  std::string filename_;
-  FILE* file_;
-  const UMALogger* uma_logger_;
-  WriteTracker* tracker_;
-  Type file_type_;
-  std::string parent_dir_;
-  bool make_backup_;
-};
-
 class ChromiumEnv : public leveldb::Env,
                     public UMALogger,
                     public RetrierProvider,
                     public WriteTracker {
  public:
-  ChromiumEnv();
+  static bool MakeBackup(const std::string& fname);
+  static base::FilePath CreateFilePath(const std::string& file_path);
+  static const char* PlatformFileErrorString(
+      const ::base::PlatformFileError& error);
+  static bool HasTableExtension(const base::FilePath& path);
   virtual ~ChromiumEnv();
 
-  virtual leveldb::Status NewSequentialFile(const std::string& fname,
-                                            leveldb::SequentialFile** result);
-  virtual leveldb::Status NewRandomAccessFile(
-      const std::string& fname,
-      leveldb::RandomAccessFile** result);
-  virtual leveldb::Status NewWritableFile(const std::string& fname,
-                                          leveldb::WritableFile** result);
   virtual bool FileExists(const std::string& fname);
   virtual leveldb::Status GetChildren(const std::string& dir,
                                       std::vector<std::string>* result);
@@ -161,15 +125,24 @@ class ChromiumEnv : public leveldb::Env,
   virtual void Schedule(void (*function)(void*), void* arg);
   virtual void StartThread(void (*function)(void* arg), void* arg);
   virtual leveldb::Status GetTestDirectory(std::string* path);
-  virtual leveldb::Status NewLogger(const std::string& fname,
-                                    leveldb::Logger** result);
   virtual uint64_t NowMicros();
   virtual void SleepForMicroseconds(int micros);
 
  protected:
+  ChromiumEnv();
+
   virtual void DidCreateNewFile(const std::string& fname);
   virtual bool DoesDirNeedSync(const std::string& fname);
   virtual void DidSyncDir(const std::string& fname);
+  virtual base::PlatformFileError GetDirectoryEntries(
+      const base::FilePath& dir_param,
+      std::vector<base::FilePath>* result) const = 0;
+  virtual void RecordErrorAt(MethodID method) const;
+  virtual void RecordOSError(MethodID method, int saved_errno) const;
+  virtual void RecordOSError(MethodID method,
+                             base::PlatformFileError error) const;
+  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
+  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
 
   std::string name_;
   bool make_backup_;
@@ -202,19 +175,12 @@ class ChromiumEnv : public leveldb::Env,
     reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
   }
 
-  virtual void RecordErrorAt(MethodID method) const;
-  virtual void RecordOSError(MethodID method, int saved_errno) const;
-  virtual void RecordOSError(MethodID method,
-                             base::PlatformFileError error) const;
   virtual void RecordBackupResult(bool result) const;
   void RestoreIfNecessary(const std::string& dir,
                           std::vector<std::string>* children);
   base::FilePath RestoreFromBackup(const base::FilePath& base_name);
-  void RecordOpenFilesLimit(const std::string& type);
   void RecordLockFileAncestors(int num_missing_ancestors) const;
-  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
   base::HistogramBase* GetMethodIOErrorHistogram() const;
-  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
   base::HistogramBase* GetLockFileAncestorHistogram() const;
 
   // RetrierProvider implementation.

@@ -12,7 +12,8 @@ FileSystem API implementation and others.
 
 Local Additions:
 * gyp file for building in chromium
-* port/port_chromium.{h,cc} and env_chromium.{h,cc} provide chromium
+* port/port_chromium.{h,cc}, env_chromium.{h,cc}, env_chromium_stdio.{h,cc}, and
+  env_chromium_win.{h,cc} provide (POSIX and Windows respectively) chromium
   implementations of primitives used by leveldb.  E.g. threading, file handling,
   etc. env_chromium.h allows re-use of some utility functions.
 * chromium_logger.h was copied from src/util/posix_logger.h and updated to use
