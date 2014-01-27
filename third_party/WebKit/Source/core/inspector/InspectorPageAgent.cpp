@@ -808,11 +808,8 @@ void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
     }
 }
 
-void InspectorPageAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
+void InspectorPageAgent::didClearWindowObjectInMainWorld(Frame* frame)
 {
-    if (world != mainThreadNormalWorld())
-        return;
-
     if (frame == m_page->mainFrame())
         m_injectedScriptManager->discardInjectedScripts();
 

@@ -1438,15 +1438,14 @@ void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
     if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
+    if (Page* page = m_frame->page())
+        page->inspectorController().didClearWindowObjectInMainWorld(m_frame);
+    InspectorInstrumentation::didClearWindowObjectInMainWorld(m_frame);
+
     Vector<RefPtr<DOMWrapperWorld> > worlds;
     DOMWrapperWorld::getAllWorlds(worlds);
-    for (size_t i = 0; i < worlds.size(); ++i) {
-        if (Page* page = m_frame->page())
-            page->inspectorController().didClearWindowObjectInWorld(m_frame, worlds[i].get());
+    for (size_t i = 0; i < worlds.size(); ++i)
         m_client->dispatchDidClearWindowObjectInWorld(worlds[i].get());
-
-        InspectorInstrumentation::didClearWindowObjectInWorld(m_frame, worlds[i].get());
-    }
 }
 
 void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)

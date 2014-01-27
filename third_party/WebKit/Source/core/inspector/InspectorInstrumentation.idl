@@ -65,7 +65,7 @@ interface InspectorInstrumentation {
 #include "core/dom/PseudoElement.h"
 
     [Page, Inspector, PageDebugger, PageRuntime]
-    void didClearWindowObjectInWorld([Keep] Frame*, DOMWrapperWorld*);
+    void didClearWindowObjectInMainWorld([Keep] Frame*);
 
     [DOMDebugger, Inline=FastReturn]
     void willInsertDOMNode([Keep] Node* parent);

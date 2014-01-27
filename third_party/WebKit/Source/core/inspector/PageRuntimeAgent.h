@@ -56,7 +56,7 @@ public:
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
 
-    void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
+    void didClearWindowObjectInMainWorld(Frame*);
     void didCreateIsolatedContext(Frame*, ScriptState*, SecurityOrigin*);
 
 private:

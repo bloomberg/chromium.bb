@@ -128,9 +128,9 @@ void PageDebuggerAgent::setOverlayMessage(ErrorString*, const String* message)
     m_overlay->setPausedInDebuggerMessage(message);
 }
 
-void PageDebuggerAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
+void PageDebuggerAgent::didClearWindowObjectInMainWorld(Frame* frame)
 {
-    if (world != mainThreadNormalWorld() || frame != m_pageAgent->mainFrame())
+    if (frame != m_pageAgent->mainFrame())
         return;
 
     reset();

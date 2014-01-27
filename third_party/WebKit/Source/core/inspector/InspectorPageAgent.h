@@ -126,7 +126,7 @@ public:
     float overrideFontScaleFactor(float);
 
     // InspectorInstrumentation API
-    void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
+    void didClearWindowObjectInMainWorld(Frame*);
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
     void didCommitLoad(Frame*, DocumentLoader*);

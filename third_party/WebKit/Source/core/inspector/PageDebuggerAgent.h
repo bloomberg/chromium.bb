@@ -53,7 +53,7 @@ public:
     static PassOwnPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~PageDebuggerAgent();
 
-    void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
+    void didClearWindowObjectInMainWorld(Frame*);
     String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
     PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
     void didCommitLoad(Frame*, DocumentLoader*);

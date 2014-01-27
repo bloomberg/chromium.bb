@@ -66,11 +66,8 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
     m_instrumentingAgents->setInspectorInspectorAgent(0);
 }
 
-void InspectorInspectorAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
+void InspectorInspectorAgent::didClearWindowObjectInMainWorld(Frame* frame)
 {
-    if (world != mainThreadNormalWorld())
-        return;
-
     if (m_injectedScriptForOrigin.isEmpty())
         return;
 
