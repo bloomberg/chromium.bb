@@ -591,7 +591,8 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
                                                     errorCallback) {
   var entry = this.getCurrentDirEntry();
   if (!entry) {
-    errorCallback(util.createFileError(FileError.INVALID_MODIFICATION_ERR));
+    errorCallback(util.createDOMError(
+        util.FileError.INVALID_MODIFICATION_ERR));
     return;
   }
 

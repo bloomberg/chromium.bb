@@ -86,7 +86,7 @@ FileOperationHandler.getMessage_ = function(event) {
         }
 
       case util.FileOperationErrorType.FILESYSTEM_ERROR:
-        var detail = util.getFileErrorString(event.error.data.code);
+        var detail = util.getFileErrorString(event.error.data.name);
         switch (event.status.operationType) {
           case 'COPY': return strf('COPY_FILESYSTEM_ERROR', detail);
           case 'MOVE': return strf('MOVE_FILESYSTEM_ERROR', detail);

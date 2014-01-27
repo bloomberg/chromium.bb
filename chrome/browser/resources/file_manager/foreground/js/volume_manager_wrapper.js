@@ -317,7 +317,7 @@ VolumeManagerWrapper.prototype.resolveAbsolutePath = function(
   // If the drive is disabled, any resolving the path under drive should be
   // failed.
   if (!this.driveEnabled_ && PathUtil.isDriveBasedPath(path)) {
-    errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
+    errorCallback(util.createDOMError(util.FileError.NOT_FOUND_ERR));
     return;
   }
 

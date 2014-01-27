@@ -30,7 +30,7 @@ fileOperationUtil.deduplicatePath = function(
               util.FileOperationErrorType.FILESYSTEM_ERROR, error));
         };
 
-        if (err.code == FileError.PATH_EXISTS_ERR) {
+        if (err.name == util.FileError.PATH_EXISTS_ERR) {
           // Failed to uniquify the file path. There should be an existing
           // entry, so return the error with it.
           util.resolvePath(
@@ -205,7 +205,7 @@ fileOperationUtil.copyTo = function(
         case 'error':
           chrome.fileBrowserPrivate.onCopyProgress.removeListener(
               onCopyProgress);
-          errorCallback(util.createFileError(status.error));
+          errorCallback(util.createDOMError(status.error.name));
           callback();
           break;
 
@@ -215,7 +215,8 @@ fileOperationUtil.copyTo = function(
           chrome.fileBrowserPrivate.onCopyProgress.removeListener(
               onCopyProgress);
           chrome.fileBrowserPrivate.cancelCopy(copyId);
-          errorCallback(util.createFileError(FileError.INVALID_STATE_ERR));
+          errorCallback(util.createDOMError(
+              util.FileError.INVALID_STATE_ERR));
           callback();
       }
     });
@@ -234,8 +235,7 @@ fileOperationUtil.copyTo = function(
           // Unsubscribe the progress listener.
           chrome.fileBrowserPrivate.onCopyProgress.removeListener(
               onCopyProgress);
-          errorCallback(util.createFileError(
-              Integer.parseInt(chrome.runtime.lastError, 10)));
+          errorCallback(util.createDOMError(chrome.runtime.lastError));
           return;
         }
 
@@ -281,7 +281,7 @@ fileOperationUtil.zipSelection = function(
         if (!success) {
           // Failed to create a zip archive.
           errorCallback(
-              util.createFileError(FileError.INVALID_MODIFICATION_ERR));
+              util.createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
           return;
         }
 
@@ -585,8 +585,7 @@ FileOperationManager.CopyTask.prototype.initialize = function(callback) {
           }.bind(this),
           function(error) {
             console.error(
-                'Failed to resolve for copy: %s',
-                util.getFileErrorMnemonic(error.code));
+                'Failed to resolve for copy: %s', error.name);
             callback();
           });
     }.bind(this, i));
@@ -656,7 +655,7 @@ FileOperationManager.CopyTask.prototype.run = function(
         if (this.cancelRequested_) {
           errorCallback(new FileOperationManager.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
-              util.createFileError(FileError.ABORT_ERR)));
+              util.createDOMError(util.FileError.ABORT_ERR)));
           return;
         }
         progressCallback();
@@ -728,7 +727,7 @@ FileOperationManager.CopyTask.prototype.processEntry_ = function(
         if (this.cancelRequested_) {
           errorCallback(new FileOperationManager.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
-              util.createFileError(FileError.ABORT_ERR)));
+              util.createDOMError(util.FileError.ABORT_ERR)));
           return;
         }
         this.cancelCallback_ = fileOperationUtil.copyTo(
@@ -821,7 +820,7 @@ FileOperationManager.MoveTask.prototype.run = function(
         if (this.cancelRequested_) {
           errorCallback(new FileOperationManager.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
-              util.createFileError(FileError.ABORT_ERR)));
+              util.createDOMError(util.FileError.ABORT_ERR)));
           return;
         }
         progressCallback();
@@ -1210,7 +1209,8 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
 
   var onTaskError = function(err) {
     var task = this.copyTasks_.shift();
-    var reason = err.data.code === FileError.ABORT_ERR ? 'CANCELED' : 'ERROR';
+    var reason = err.data.name === util.FileError.ABORT_ERR ?
+        'CANCELED' : 'ERROR';
     this.eventRouter_.sendProgressEvent(reason,
                                         task.getStatus(),
                                         task.taskId,

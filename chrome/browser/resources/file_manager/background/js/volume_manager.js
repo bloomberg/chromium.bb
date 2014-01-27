@@ -198,7 +198,7 @@ volumeManagerUtil.getRootEntry_ = function(
       function(fileSystem) {
         // TODO(hidehiko): chrome.runtime.lastError should have error reason.
         if (!fileSystem) {
-          errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
+          errorCallback(util.createDOMError(util.FileError.NOT_FOUND_ERR));
           return;
         }
 
@@ -227,8 +227,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
               function() { /* do nothing */ },
               function(error) {
                 console.error(
-                    'Triggering full feed fetch is failed: ' +
-                        util.getFileErrorMnemonic(error.code));
+                    'Triggering full feed fetch is failed: ' + error.name);
               });
         }
         callback(new VolumeInfo(
@@ -243,8 +242,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
       },
       function(fileError) {
         console.error('Root entry is not found: ' +
-            volumeMetadata.mountPath + ', ' +
-            util.getFileErrorMnemonic(fileError.code));
+            volumeMetadata.mountPath + ', ' + fileError.name);
         callback(new VolumeInfo(
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
@@ -644,7 +642,7 @@ VolumeManager.prototype.resolveAbsolutePath = function(
   // Make sure the path is in the mounted volume.
   var volumeInfo = this.getVolumeInfo(path);
   if (!volumeInfo || !volumeInfo.root) {
-    errorCallback(util.createFileError(FileError.NOT_FOUND_ERR));
+    errorCallback(util.createDOMError(util.FileError.NOT_FOUND_ERR));
     return;
   }
 

@@ -1193,7 +1193,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (event.reason == 'ERROR' &&
         event.error.code == util.FileOperationErrorType.FILESYSTEM_ERROR &&
         event.error.data.toDrive &&
-        event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
+        event.error.data.name == util.FileError.QUOTA_EXCEEDED_ERR) {
       this.alert.showHtml(
           strf('DRIVE_SERVER_OUT_OF_SPACE_HEADER'),
           strf('DRIVE_SERVER_OUT_OF_SPACE_MESSAGE',
@@ -2460,8 +2460,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
             // Show error dialog.
             var message;
-            if (error.code == FileError.PATH_EXISTS_ERR ||
-                error.code == FileError.TYPE_MISMATCH_ERR) {
+            if (error.name == util.FileError.PATH_EXISTS_ERR ||
+                error.name == util.FileError.TYPE_MISMACH_ERR) {
               // Check the existing entry is file or not.
               // 1) If the entry is a file:
               //   a) If we get PATH_EXISTS_ERR, a file exists.
@@ -2470,14 +2470,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
               //   a) If we get PATH_EXISTS_ERR, a directory exists.
               //   b) If we get TYPE_MISMATCH_ERR, a file exists.
               message = strf(
-                  (entry.isFile && error.code == FileError.PATH_EXISTS_ERR) ||
-                  (!entry.isFile && error.code == FileError.TYPE_MISMATCH_ERR) ?
+                  (entry.isFile && error.name ==
+                      util.FileError.PATH_EXISTS_ERR) ||
+                  (!entry.isFile && error.name ==
+                      util.FileError.TYPE_MISMACH_ERR) ?
                       'FILE_ALREADY_EXISTS' :
                       'DIRECTORY_ALREADY_EXISTS',
                   newName);
             } else {
               message = strf('ERROR_RENAMING', entry.name,
-                             util.getFileErrorString(error.code));
+                             util.getFileErrorString(error.name));
             }
 
             this.alert.show(message);
@@ -2764,7 +2766,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var onError = function(error) {
       self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
-                           util.getFileErrorString(error.code)));
+                           util.getFileErrorString(error.name)));
     };
 
     tryCreate();
@@ -3169,13 +3171,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                 selectFileAndClose);
             }.bind(this),
             function(error) {
-              if (error.code == FileError.NOT_FOUND_ERR) {
+              if (error.name == util.FileError.NOT_FOUND_ERR) {
                 // The file does not exist, so it should be ok to create a
                 // new file.
                 selectFileAndClose();
                 return;
               }
-              if (error.code == FileError.TYPE_MISMATCH_ERR) {
+              if (error.name == util.FileError.TYPE_MISMACH_ERR) {
                 // An directory is found.
                 // Do not allow to overwrite directory.
                 this.alert.show(strf('DIRECTORY_ALREADY_EXISTS', filename));

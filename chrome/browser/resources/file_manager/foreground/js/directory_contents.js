@@ -62,7 +62,8 @@ DirectoryContentScanner.prototype.scan = function(
       (util.isFakeEntry(this.entry_) &&
        this.entry_.rootType === RootType.DRIVE)) {
     // If entry is not specified or a fake, we cannot read it.
-    errorCallback(util.createFileError(FileError.INVALID_MODIFICATION_ERR));
+    errorCallback(util.createDOMError(
+        util.FileError.INVALID_MODIFICATION_ERR));
     return;
   }
 
@@ -72,7 +73,7 @@ DirectoryContentScanner.prototype.scan = function(
     reader.readEntries(
         function(entries) {
           if (this.cancelled_) {
-            errorCallback(util.createFileError(FileError.ABORT_ERR));
+            errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
             return;
           }
 
@@ -136,15 +137,15 @@ DriveSearchContentScanner.prototype.scan = function(
         {query: this.query_, nextFeed: nextFeed},
         function(entries, nextFeed) {
           if (this.cancelled_) {
-            errorCallback(util.createFileError(FileError.ABORT_ERR));
+            errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
             return;
           }
 
           // TODO(tbarzic): Improve error handling.
           if (!entries) {
             console.error('Drive search encountered an error.');
-            errorCallback(util.createFileError(
-                FileError.INVALID_MODIFICATION_ERR));
+            errorCallback(util.createDOMError(
+                util.FileError.INVALID_MODIFICATION_ERR));
             return;
           }
 
@@ -172,7 +173,7 @@ DriveSearchContentScanner.prototype.scan = function(
       function() {
         // Check cancelled state before read the entries.
         if (this.cancelled_) {
-          errorCallback(util.createFileError(FileError.ABORT_ERR));
+          errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
           return;
         }
         readEntries('');
@@ -210,7 +211,7 @@ LocalSearchContentScanner.prototype.scan = function(
   var maybeRunCallback = function() {
     if (numRunningTasks === 0) {
       if (this.cancelled_)
-        errorCallback(util.createFileError(FileError.ABORT_ERR));
+        errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
       else if (error)
         errorCallback(error);
       else
@@ -299,14 +300,14 @@ DriveMetadataSearchContentScanner.prototype.scan = function(
       {query: this.query_, types: this.searchType_, maxResults: 500},
       function(results) {
         if (this.cancelled_) {
-          errorCallback(util.createFileError(FileError.ABORT_ERR));
+          errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
           return;
         }
 
         if (!results) {
           console.error('Drive search encountered an error.');
-          errorCallback(util.createFileError(
-              FileError.INVALID_MODIFICATION_ERR));
+          errorCallback(util.createDOMError(
+              util.FileError.INVALID_MODIFICATION_ERR));
           return;
         }
 
@@ -668,7 +669,8 @@ DirectoryContents.prototype.createDirectory = function(
   // TODO(hidehiko): createDirectory should not be the part of
   // DirectoryContent.
   if (this.isSearch_ || !this.directoryEntry_) {
-    errorCallback(util.createFileError(FileError.INVALID_MODIFICATION_ERR));
+    errorCallback(util.createDOMError(
+        util.FileError.INVALID_MODIFICATION_ERR));
     return;
   }
 

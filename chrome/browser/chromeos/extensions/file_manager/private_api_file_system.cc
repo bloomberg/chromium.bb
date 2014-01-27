@@ -519,8 +519,8 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
 
   if (params->source_url.empty() || params->parent.empty() ||
       params->new_name.empty()) {
-    error_ = base::IntToString(fileapi::PlatformFileErrorToWebFileError(
-        base::PLATFORM_FILE_ERROR_INVALID_URL));
+    // Error code in format of DOMError.name.
+    error_ = "EncodingError";
     return false;
   }
 
@@ -534,8 +534,8 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
       GURL(params->parent + "/" + params->new_name)));
 
   if (!source_url.is_valid() || !destination_url.is_valid()) {
-    error_ = base::IntToString(fileapi::PlatformFileErrorToWebFileError(
-        base::PLATFORM_FILE_ERROR_INVALID_URL));
+    // Error code in format of DOMError.name.
+    error_ = "EncodingError";
     return false;
   }
 
