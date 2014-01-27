@@ -63,6 +63,10 @@ class GPU_EXPORT GpuControl {
   // Invokes the callback once the context has been flushed.
   virtual void Echo(const base::Closure& callback) = 0;
 
+  // Attaches an external stream to the texture given by |texture_id| and
+  // returns a stream identifier.
+  virtual uint32 CreateStreamTexture(uint32 texture_id) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);
 };

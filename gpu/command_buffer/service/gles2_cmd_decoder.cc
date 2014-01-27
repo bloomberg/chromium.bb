@@ -52,8 +52,6 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
-#include "gpu/command_buffer/service/stream_texture.h"
-#include "gpu/command_buffer/service/stream_texture_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
@@ -723,10 +721,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return group_->memory_tracker();
   }
 
-  StreamTextureManager* stream_texture_manager() const {
-    return group_->stream_texture_manager();
-  }
-
   bool EnsureGPUMemoryAvailable(size_t estimated_size) {
     MemoryTracker* tracker = memory_tracker();
     if (tracker) {
@@ -1388,10 +1382,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool SimulateAttrib0(
       const char* function_name, GLuint max_vertex_accessed, bool* simulated);
   void RestoreStateForAttrib(GLuint attrib);
-
-  // If texture is a stream texture, this will update the stream to the newest
-  // buffer and bind the texture implicitly.
-  void UpdateStreamTextureIfNeeded(Texture* texture, GLuint texture_unit_index);
 
   // If an image is bound to texture, this will call Will/DidUseTexImage
   // if needed.
@@ -3906,12 +3896,6 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
         "glBindTexture", "texture bound to more than 1 target.");
     return;
   }
-  if (texture->IsStreamTexture() && target != GL_TEXTURE_EXTERNAL_OES) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glBindTexture", "illegal target for stream texture.");
-    return;
-  }
   LogClientServiceForInfo(texture, client_id, "glBindTexture");
   if (texture->target() == 0) {
     texture_manager()->SetTarget(texture_ref, target);
@@ -5898,19 +5882,6 @@ void GLES2DecoderImpl::PerformanceWarning(
                      std::string("PERFORMANCE WARNING: ") + msg);
 }
 
-void GLES2DecoderImpl::UpdateStreamTextureIfNeeded(Texture* texture,
-                                                   GLuint texture_unit_index) {
-  if (texture && texture->IsStreamTexture()) {
-    DCHECK(stream_texture_manager());
-    StreamTexture* stream_tex =
-        stream_texture_manager()->LookupStreamTexture(texture->service_id());
-    if (stream_tex) {
-      glActiveTexture(GL_TEXTURE0 + texture_unit_index);
-      stream_tex->Update();
-    }
-  }
-}
-
 void GLES2DecoderImpl::DoWillUseTexImageIfNeeded(
     Texture* texture, GLenum textarget) {
   // This might be supported in the future.
@@ -5952,8 +5923,7 @@ void GLES2DecoderImpl::DoDidUseTexImageIfNeeded(
 bool GLES2DecoderImpl::PrepareTexturesForRender() {
   DCHECK(state_.current_program.get());
   if (!texture_manager()->HaveUnrenderableTextures() &&
-      !texture_manager()->HaveImages() &&
-      !features().oes_egl_image_external) {
+      !texture_manager()->HaveImages()) {
     return true;
   }
 
@@ -5987,19 +5957,15 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
         }
 
         Texture* texture = texture_ref->texture();
-        if (textarget == GL_TEXTURE_2D) {
-          gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
-          if (image && !texture->IsAttachedToFramebuffer()) {
-            ScopedGLErrorSuppressor suppressor(
-                "GLES2DecoderImpl::PrepareTexturesForRender", GetErrorState());
-            textures_set = true;
-            glActiveTexture(GL_TEXTURE0 + texture_unit_index);
-            image->WillUseTexImage();
-            continue;
-          }
+        gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
+        if (image && !texture->IsAttachedToFramebuffer()) {
+          ScopedGLErrorSuppressor suppressor(
+              "GLES2DecoderImpl::PrepareTexturesForRender", GetErrorState());
+          textures_set = true;
+          glActiveTexture(GL_TEXTURE0 + texture_unit_index);
+          image->WillUseTexImage();
+          continue;
         }
-
-        UpdateStreamTextureIfNeeded(texture, texture_unit_index);
       }
       // else: should this be an error?
     }
@@ -6033,16 +5999,14 @@ void GLES2DecoderImpl::RestoreStateForTextures() {
         }
 
         Texture* texture = texture_ref->texture();
-        if (texture_unit.bind_target == GL_TEXTURE_2D) {
-          gfx::GLImage* image = texture->GetLevelImage(
-              texture_unit.bind_target, 0);
-          if (image && !texture->IsAttachedToFramebuffer()) {
-            ScopedGLErrorSuppressor suppressor(
-                "GLES2DecoderImpl::RestoreStateForTextures", GetErrorState());
-            glActiveTexture(GL_TEXTURE0 + texture_unit_index);
-            image->DidUseTexImage();
-            continue;
-          }
+        gfx::GLImage* image =
+            texture->GetLevelImage(texture_unit.bind_target, 0);
+        if (image && !texture->IsAttachedToFramebuffer()) {
+          ScopedGLErrorSuppressor suppressor(
+              "GLES2DecoderImpl::RestoreStateForTextures", GetErrorState());
+          glActiveTexture(GL_TEXTURE0 + texture_unit_index);
+          image->DidUseTexImage();
+          continue;
         }
       }
     }
@@ -9567,86 +9531,6 @@ bool GLES2DecoderImpl::DoIsVertexArrayOES(GLuint client_id) {
   return vao && vao->IsValid() && !vao->IsDeleted();
 }
 
-error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(
-    uint32 immediate_data_size,
-    const cmds::CreateStreamTextureCHROMIUM& c) {
-  if (!features().chromium_stream_texture) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glOpenStreamTextureCHROMIUM", "not supported.");
-    return error::kNoError;
-  }
-
-  uint32 client_id = c.client_id;
-  typedef cmds::CreateStreamTextureCHROMIUM::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, sizeof(*result));
-
-  if (!result)
-    return error::kOutOfBounds;
-  *result = GL_ZERO;
-  TextureRef* texture_ref = texture_manager()->GetTexture(client_id);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glCreateStreamTextureCHROMIUM", "bad texture id.");
-    return error::kNoError;
-  }
-
-  Texture* texture = texture_ref->texture();
-  if (texture->IsStreamTexture()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCreateStreamTextureCHROMIUM", "is already a stream texture.");
-    return error::kNoError;
-  }
-
-  if (texture->target() && texture->target() != GL_TEXTURE_EXTERNAL_OES) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glCreateStreamTextureCHROMIUM",
-        "is already bound to incompatible target.");
-    return error::kNoError;
-  }
-
-  if (!stream_texture_manager())
-    return error::kInvalidArguments;
-
-  GLuint object_id = stream_texture_manager()->CreateStreamTexture(
-      texture->service_id(), client_id);
-
-  if (object_id) {
-    texture_manager()->SetStreamTexture(texture_ref, true);
-  } else {
-    LOCAL_SET_GL_ERROR(
-        GL_OUT_OF_MEMORY,
-        "glCreateStreamTextureCHROMIUM", "failed to create platform texture.");
-  }
-
-  *result = object_id;
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleDestroyStreamTextureCHROMIUM(
-    uint32 immediate_data_size,
-    const cmds::DestroyStreamTextureCHROMIUM& c) {
-  GLuint client_id = c.texture;
-  TextureRef* texture_ref = texture_manager()->GetTexture(client_id);
-  if (texture_ref && texture_manager()->IsStreamTextureOwner(texture_ref)) {
-    if (!stream_texture_manager())
-      return error::kInvalidArguments;
-
-    stream_texture_manager()->DestroyStreamTexture(texture_ref->service_id());
-    texture_manager()->SetStreamTexture(texture_ref, false);
-  } else {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE,
-        "glDestroyStreamTextureCHROMIUM", "bad texture id.");
-  }
-
-  return error::kNoError;
-}
-
 #if defined(OS_MACOSX)
 void GLES2DecoderImpl::ReleaseIOSurfaceForTexture(GLuint texture_id) {
   TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.find(
@@ -9829,26 +9713,22 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
   int source_width, source_height, dest_width, dest_height;
 
-  if (source_texture->IsStreamTexture()) {
-    DCHECK_EQ(source_texture->target(),
-              static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES));
-    DCHECK(stream_texture_manager());
-    StreamTexture* stream_tex =
-        stream_texture_manager()->LookupStreamTexture(
-            source_texture->service_id());
-    if (!stream_tex) {
+  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
+    gfx::GLImage* image =
+        source_texture->GetLevelImage(source_texture->target(), 0);
+    if (!image) {
       LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE,
-          "glCopyTextureChromium", "Stream texture lookup failed");
+          GL_INVALID_OPERATION,
+          "glCopyTextureChromium", "No external image");
       return;
     }
-    gfx::Size size = stream_tex->GetSize();
+    gfx::Size size = image->GetSize();
     source_width = size.width();
     source_height = size.height();
     if (source_width <= 0 || source_height <= 0) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE,
-          "glCopyTextureChromium", "invalid streamtexture size");
+          "glCopyTextureChromium", "invalid image size");
       return;
     }
   } else {

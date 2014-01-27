@@ -28,7 +28,6 @@ namespace gpu {
 
 class AsyncPixelTransferDelegate;
 class AsyncPixelTransferManager;
-class StreamTextureManager;
 struct Mailbox;
 
 namespace gles2 {

@@ -481,8 +481,6 @@ virtual void GetProgramInfoCHROMIUM(
 
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
 
-virtual void DestroyStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
-
 virtual GLuint CreateImageCHROMIUM(
     GLsizei width, GLsizei height, GLenum internalformat) OVERRIDE;
 

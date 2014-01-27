@@ -192,7 +192,6 @@ GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint texture);
-GL_APICALL void         GL_APIENTRY glDestroyStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL GLuint       GL_APIENTRY glCreateImageCHROMIUM (GLsizei width, GLsizei height, GLenum internalformat);
 GL_APICALL void         GL_APIENTRY glDestroyImageCHROMIUM (GLuint image_id);
 GL_APICALL void         GL_APIENTRY glGetImageParameterivCHROMIUM (GLuint image_id, GLenum pname, GLint* params);

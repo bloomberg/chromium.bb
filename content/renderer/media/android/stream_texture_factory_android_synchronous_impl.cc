@@ -174,7 +174,6 @@ void StreamTextureFactorySynchronousImpl::DestroyStreamTexture(
     unsigned texture_id) {
   DCHECK(context_provider_);
   GLES2Interface* gl = context_provider_->ContextGL();
-  gl->DestroyStreamTextureCHROMIUM(texture_id);
   gl->DeleteTextures(1, &texture_id);
   gl->Flush();
 }

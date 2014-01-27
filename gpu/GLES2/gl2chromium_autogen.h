@@ -204,8 +204,6 @@
 #define glGetProgramInfoCHROMIUM GLES2_GET_FUN(GetProgramInfoCHROMIUM)
 #define glCreateStreamTextureCHROMIUM GLES2_GET_FUN( \
     CreateStreamTextureCHROMIUM)
-#define glDestroyStreamTextureCHROMIUM GLES2_GET_FUN( \
-    DestroyStreamTextureCHROMIUM)
 #define glCreateImageCHROMIUM GLES2_GET_FUN(CreateImageCHROMIUM)
 #define glDestroyImageCHROMIUM GLES2_GET_FUN(DestroyImageCHROMIUM)
 #define glGetImageParameterivCHROMIUM GLES2_GET_FUN( \

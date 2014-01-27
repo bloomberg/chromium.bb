@@ -125,9 +125,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   // Only create stream texture manager if extension is requested.
   std::vector<std::string> list;
   base::SplitString(std::string(extensions), ' ', &list);
-  if (std::find(list.begin(), list.end(),
-                "GL_CHROMIUM_stream_texture") != list.end())
-      stream_texture_manager_.reset(new StrictMock<MockStreamTextureManager>);
   scoped_refptr<FeatureInfo> feature_info;
   if (command_line)
     feature_info = new FeatureInfo(*command_line);
@@ -135,7 +132,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       NULL,
       NULL,
       memory_tracker_,
-      stream_texture_manager_.get(),
       feature_info.get(),
       bind_generates_resource));
   // These two workarounds are always turned on.

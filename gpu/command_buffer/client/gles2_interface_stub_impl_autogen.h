@@ -580,8 +580,6 @@ void GLES2InterfaceStub::GetProgramInfoCHROMIUM(
 GLuint GLES2InterfaceStub::CreateStreamTextureCHROMIUM(GLuint /* texture */) {
   return 0;
 }
-void GLES2InterfaceStub::DestroyStreamTextureCHROMIUM(GLuint /* texture */) {
-}
 GLuint GLES2InterfaceStub::CreateImageCHROMIUM(
     GLsizei /* width */, GLsizei /* height */, GLenum /* internalformat */) {
   return 0;

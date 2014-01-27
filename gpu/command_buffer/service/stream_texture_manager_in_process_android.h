@@ -7,66 +7,41 @@
 
 #include <map>
 
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "gpu/command_buffer/service/stream_texture.h"
-#include "gpu/command_buffer/service/stream_texture_manager.h"
+#include "base/threading/non_thread_safe.h"
 
 namespace gfx {
-class Size;
 class SurfaceTexture;
 }
 
 namespace gpu {
 
-class StreamTextureManagerInProcess
-    : public gpu::StreamTextureManager,
-      public base::RefCountedThreadSafe<StreamTextureManagerInProcess> {
+namespace gles2 {
+class TextureManager;
+}
+
+class StreamTextureManagerInProcess : public base::NonThreadSafe {
  public:
   StreamTextureManagerInProcess();
+  ~StreamTextureManagerInProcess();
 
-  // implement gpu::StreamTextureManager:
-  virtual uint32 CreateStreamTexture(uint32 service_id,
-                                     uint32 client_id) OVERRIDE;
-  virtual void DestroyStreamTexture(uint32 service_id) OVERRIDE;
-  virtual gpu::StreamTexture* LookupStreamTexture(uint32 service_id) OVERRIDE;
+  uint32 CreateStreamTexture(uint32 client_texture_id,
+                             gles2::TextureManager* texture_manager);
 
+  // This method can be called from any thread.
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(uint32 stream_id);
 
  private:
-  class StreamTextureImpl : public gpu::StreamTexture {
-   public:
-    StreamTextureImpl(uint32 service_id, uint32 stream_id);
-    virtual ~StreamTextureImpl();
+  void OnReleaseStreamTexture(uint32 stream_id);
 
-    // implement gpu::StreamTexture
-    virtual void Update() OVERRIDE;
-    virtual gfx::Size GetSize() OVERRIDE;
-
-    void SetSize(gfx::Size size);
-
-    scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture();
-    uint32 stream_id() { return stream_id_; }
-
-   private:
-    scoped_refptr<gfx::SurfaceTexture> surface_texture_;
-    uint32 stream_id_;
-    gfx::Size size_;
-
-    DISALLOW_COPY_AND_ASSIGN(StreamTextureImpl);
-  };
-
-  friend class base::RefCountedThreadSafe<StreamTextureManagerInProcess>;
-  virtual ~StreamTextureManagerInProcess();
-
-  typedef std::map<uint32, linked_ptr<StreamTextureImpl> > TextureMap;
+  typedef std::map<uint32, scoped_refptr<gfx::SurfaceTexture> > TextureMap;
   TextureMap textures_;
-
+  base::Lock map_lock_;
   uint32 next_id_;
 
-  base::Lock map_lock_;
-
+  base::WeakPtrFactory<StreamTextureManagerInProcess> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(StreamTextureManagerInProcess);
 };
 

@@ -110,7 +110,6 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().oes_egl_image_external);
   EXPECT_FALSE(info_->feature_flags().oes_depth24);
   EXPECT_FALSE(info_->feature_flags().packed_depth24_stencil8);
-  EXPECT_FALSE(info_->feature_flags().chromium_stream_texture);
   EXPECT_FALSE(info_->feature_flags().angle_translated_shader_source);
   EXPECT_FALSE(info_->feature_flags().angle_pack_reverse_row_order);
   EXPECT_FALSE(info_->feature_flags().arb_texture_rectangle);
@@ -808,13 +807,6 @@ TEST_F(FeatureInfoTest, InitializeOES_compressed_ETC1_RGB8_texture) {
       GL_ETC1_RGB8_OES));
   EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
       GL_ETC1_RGB8_OES));
-}
-
-TEST_F(FeatureInfoTest, InitializeCHROMIUM_stream_texture) {
-  SetupInitExpectations("GL_CHROMIUM_stream_texture");
-  EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_CHROMIUM_stream_texture"));
-  EXPECT_TRUE(info_->feature_flags().chromium_stream_texture);
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_occlusion_query_boolean) {

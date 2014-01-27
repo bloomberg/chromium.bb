@@ -3207,29 +3207,8 @@ GLuint GLES2Implementation::CreateStreamTextureCHROMIUM(GLuint texture) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] CreateStreamTextureCHROMIUM("
       << texture << ")");
   TRACE_EVENT0("gpu", "GLES2::CreateStreamTextureCHROMIUM");
-  typedef cmds::CreateStreamTextureCHROMIUM::Result Result;
-  Result* result = GetResultAs<Result*>();
-  if (!result) {
-    return GL_ZERO;
-  }
-  *result = GL_ZERO;
-
-  helper_->CreateStreamTextureCHROMIUM(texture,
-                                       GetResultShmId(),
-                                       GetResultShmOffset());
-  WaitForCmd();
-  GLuint result_value = *result;
-  CheckGLError();
-  return result_value;
-}
-
-void GLES2Implementation::DestroyStreamTextureCHROMIUM(GLuint texture) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] DestroyStreamTextureCHROMIUM("
-      << texture << ")");
-  TRACE_EVENT0("gpu", "GLES2::DestroyStreamTextureCHROMIUM");
-  helper_->DestroyStreamTextureCHROMIUM(texture);
-  CheckGLError();
+  helper_->CommandBufferHelper::Flush();
+  return gpu_control_->CreateStreamTexture(texture);
 }
 
 void GLES2Implementation::PostSubBufferCHROMIUM(

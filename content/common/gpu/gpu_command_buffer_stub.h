@@ -197,6 +197,7 @@ class GpuCommandBufferStub
   void OnCommandProcessed();
   void OnParseError();
   void OnSetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
+  void OnCreateStreamTexture(uint32 texture_id, int32* stream_id);
 
   void ReportState();
 

@@ -1073,11 +1073,6 @@ GLuint GLES2TraceImplementation::CreateStreamTextureCHROMIUM(GLuint texture) {
   return gl_->CreateStreamTextureCHROMIUM(texture);
 }
 
-void GLES2TraceImplementation::DestroyStreamTextureCHROMIUM(GLuint texture) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DestroyStreamTextureCHROMIUM");  // NOLINT
-  gl_->DestroyStreamTextureCHROMIUM(texture);
-}
-
 GLuint GLES2TraceImplementation::CreateImageCHROMIUM(
     GLsizei width, GLsizei height, GLenum internalformat) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CreateImageCHROMIUM");

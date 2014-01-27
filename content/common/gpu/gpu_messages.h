@@ -669,6 +669,11 @@ IPC_MESSAGE_ROUTED5(GpuCommandBufferMsg_RegisterGpuMemoryBuffer,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyGpuMemoryBuffer,
                     int32 /* id */)
 
+// Attaches an external image stream to the client texture.
+IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateStreamTexture,
+                           uint32, /* client_texture_id */
+                           int32   /* stream_id */)
+
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages
 // These messages are sent from Renderer process to GPU process.

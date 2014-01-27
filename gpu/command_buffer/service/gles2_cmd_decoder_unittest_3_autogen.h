@@ -25,10 +25,6 @@
 
 // TODO(gman): GetProgramInfoCHROMIUM
 
-// TODO(gman): CreateStreamTextureCHROMIUM
-
-// TODO(gman): DestroyStreamTextureCHROMIUM
-
 // TODO(gman): GetTranslatedShaderSourceANGLE
 // TODO(gman): PostSubBufferCHROMIUM
 // TODO(gman): TexImageIOSurface2DCHROMIUM

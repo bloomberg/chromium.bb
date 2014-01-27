@@ -38,12 +38,6 @@ class ImageManager;
 }
 }
 
-#if defined(OS_ANDROID)
-namespace content {
-class StreamTextureManagerAndroid;
-}
-#endif
-
 namespace content {
 class DevToolsGpuAgent;
 class GpuChannelManager;
@@ -149,12 +143,6 @@ class GpuChannel : public IPC::Listener,
   void SetPreemptByFlag(
       scoped_refptr<gpu::PreemptionFlag> preemption_flag);
 
-#if defined(OS_ANDROID)
-  StreamTextureManagerAndroid* stream_texture_manager() {
-    return stream_texture_manager_.get();
-  }
-#endif
-
   void CacheShader(const std::string& key, const std::string& shader);
 
   void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
@@ -225,9 +213,6 @@ class GpuChannel : public IPC::Listener,
 
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gpu::gles2::ImageManager> image_manager_;
-#if defined(OS_ANDROID)
-  scoped_ptr<StreamTextureManagerAndroid> stream_texture_manager_;
-#endif
 
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;

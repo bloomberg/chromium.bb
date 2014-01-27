@@ -393,11 +393,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
       share_group = new gfx::GLShareGroup;
   }
 
-  StreamTextureManager* stream_texture_manager = NULL;
 #if defined(OS_ANDROID)
-  stream_texture_manager = stream_texture_manager_ =
-      context_group ? context_group->stream_texture_manager_.get()
-                    : new StreamTextureManagerInProcess;
+  stream_texture_manager_.reset(new StreamTextureManagerInProcess);
 #endif
 
   bool bind_generates_resource = false;
@@ -406,7 +403,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                     : new gles2::ContextGroup(NULL,
                                               NULL,
                                               NULL,
-                                              stream_texture_manager,
                                               NULL,
                                               bind_generates_resource)));
 
@@ -521,6 +517,9 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   }
   context_ = NULL;
   surface_ = NULL;
+#if defined(OS_ANDROID)
+  stream_texture_manager_.reset();
+#endif
 
   g_all_shared_contexts.Pointer()->erase(this);
   return true;
@@ -736,6 +735,29 @@ void InProcessCommandBuffer::SendManagedMemoryStats(
 
 void InProcessCommandBuffer::Echo(const base::Closure& callback) {
   QueueTask(WrapCallback(callback));
+}
+
+uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
+  base::WaitableEvent completion(true, false);
+  uint32 stream_id = 0;
+  base::Callback<uint32(void)> task =
+      base::Bind(&InProcessCommandBuffer::CreateStreamTextureOnGpuThread,
+                 base::Unretained(this),
+                 texture_id);
+  QueueTask(
+      base::Bind(&RunTaskWithResult<uint32>, task, &stream_id, &completion));
+  completion.Wait();
+  return 0;
+}
+
+uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(
+    uint32 client_texture_id) {
+#if defined(OS_ANDROID)
+  return stream_texture_manager_->CreateStreamTexture(
+      client_texture_id, decoder_->GetContextGroup()->texture_manager());
+#else
+  return 0;
+#endif
 }
 
 gpu::error::Error InProcessCommandBuffer::GetLastError() {

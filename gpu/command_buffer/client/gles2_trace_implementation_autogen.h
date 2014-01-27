@@ -306,7 +306,6 @@ virtual void GetMultipleIntegervCHROMIUM(
 virtual void GetProgramInfoCHROMIUM(
     GLuint program, GLsizei bufsize, GLsizei* size, void* info) OVERRIDE;
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
-virtual void DestroyStreamTextureCHROMIUM(GLuint texture) OVERRIDE;
 virtual GLuint CreateImageCHROMIUM(
     GLsizei width, GLsizei height, GLenum internalformat) OVERRIDE;
 virtual void DestroyImageCHROMIUM(GLuint image_id) OVERRIDE;

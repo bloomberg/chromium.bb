@@ -64,6 +64,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
       OVERRIDE;
   virtual void Echo(const base::Closure& callback) OVERRIDE;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
  private:
   bool Send(IPC::Message* msg);

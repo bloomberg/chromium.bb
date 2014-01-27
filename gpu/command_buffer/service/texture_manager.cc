@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/command_buffer/service/stream_texture_manager.h"
 
 namespace gpu {
 namespace gles2 {
@@ -117,7 +116,6 @@ Texture::Texture(GLuint service_id)
       npot_(false),
       has_been_bound_(false),
       framebuffer_attachment_count_(0),
-      stream_texture_(false),
       immutable_(false),
       has_images_(false),
       estimated_size_(0),
@@ -827,8 +825,7 @@ TextureRef::TextureRef(TextureManager* manager,
                        Texture* texture)
     : manager_(manager),
       texture_(texture),
-      client_id_(client_id),
-      is_stream_texture_owner_(false) {
+      client_id_(client_id) {
   DCHECK(manager_);
   DCHECK(texture_);
   texture_->AddTextureRef(this);
@@ -857,7 +854,6 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kUnmanaged)),
       feature_info_(feature_info),
       framebuffer_manager_(NULL),
-      stream_texture_manager_(NULL),
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_levels_(ComputeMipMapCount(GL_TEXTURE_2D,
@@ -1004,19 +1000,6 @@ void TextureManager::SetTarget(TextureRef* ref, GLenum target) {
   DCHECK(ref);
   ref->texture()
       ->SetTarget(feature_info_.get(), target, MaxLevelsForTarget(target));
-}
-
-void TextureManager::SetStreamTexture(TextureRef* ref, bool stream_texture) {
-  DCHECK(ref);
-  // Only the owner can mark as non-stream texture.
-  DCHECK_EQ(stream_texture, !ref->is_stream_texture_owner_);
-  ref->texture()->SetStreamTexture(stream_texture);
-  ref->set_is_stream_texture_owner(stream_texture);
-}
-
-bool TextureManager::IsStreamTextureOwner(TextureRef* ref) {
-  DCHECK(ref);
-  return ref->is_stream_texture_owner();
 }
 
 void TextureManager::SetLevelCleared(TextureRef* ref,
@@ -1167,10 +1150,6 @@ void TextureManager::StopTracking(TextureRef* ref) {
                     OnTextureRefDestroying(ref));
 
   Texture* texture = ref->texture();
-  if (ref->is_stream_texture_owner_ && stream_texture_manager_) {
-    DCHECK(texture->IsStreamTexture());
-    stream_texture_manager_->DestroyStreamTexture(texture->service_id());
-  }
 
   --texture_count_;
   if (texture->HasImages()) {

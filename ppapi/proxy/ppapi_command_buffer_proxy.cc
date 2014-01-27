@@ -143,6 +143,11 @@ void PpapiCommandBufferProxy::Echo(const base::Closure& callback) {
   NOTREACHED();
 }
 
+uint32 PpapiCommandBufferProxy::CreateStreamTexture(uint32 texture_id) {
+  NOTREACHED();
+  return 0;
+}
+
 gpu::Buffer PpapiCommandBufferProxy::GetTransferBuffer(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return gpu::Buffer();

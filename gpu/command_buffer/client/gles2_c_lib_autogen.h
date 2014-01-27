@@ -657,9 +657,6 @@ void GLES2GetProgramInfoCHROMIUM(
 GLuint GLES2CreateStreamTextureCHROMIUM(GLuint texture) {
   return gles2::GetGLContext()->CreateStreamTextureCHROMIUM(texture);
 }
-void GLES2DestroyStreamTextureCHROMIUM(GLuint texture) {
-  gles2::GetGLContext()->DestroyStreamTextureCHROMIUM(texture);
-}
 GLuint GLES2CreateImageCHROMIUM(
     GLsizei width, GLsizei height, GLenum internalformat) {
   return gles2::GetGLContext()->CreateImageCHROMIUM(
@@ -1070,8 +1067,6 @@ extern const NameToFunc g_gles2_function_table[] = {
       glGetProgramInfoCHROMIUM), },
   { "glCreateStreamTextureCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glCreateStreamTextureCHROMIUM), },
-  { "glDestroyStreamTextureCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
-      glDestroyStreamTextureCHROMIUM), },
   { "glCreateImageCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
       glCreateImageCHROMIUM), },
   { "glDestroyImageCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(

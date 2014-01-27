@@ -114,6 +114,7 @@ class CommandBufferProxyImpl
   virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
       OVERRIDE;
   virtual void Echo(const base::Closure& callback) OVERRIDE;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
   int GetRouteID() const;
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);

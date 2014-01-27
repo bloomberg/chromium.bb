@@ -124,9 +124,6 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(
 
 void StreamTextureFactoryImpl::DestroyStreamTexture(unsigned texture_id) {
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  // TODO(sievers): Make the DestroyStreamTexture implicit when the last
-  // texture referencing it is lost.
-  gl->DestroyStreamTextureCHROMIUM(texture_id);
   gl->DeleteTextures(1, &texture_id);
   gl->Flush();
 }

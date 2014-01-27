@@ -40,7 +40,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/common/gpu/stream_texture_manager_android.h"
+#include "content/common/gpu/stream_texture_android.h"
 #endif
 
 namespace content {
@@ -141,15 +141,10 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
-    gpu::StreamTextureManager* stream_texture_manager = NULL;
-#if defined(OS_ANDROID)
-    stream_texture_manager = channel_->stream_texture_manager();
-#endif
     context_group_ = new gpu::gles2::ContextGroup(
         mailbox_manager,
         image_manager,
         new GpuCommandBufferMemoryTracker(channel),
-        stream_texture_manager,
         NULL,
         true);
   }
@@ -228,6 +223,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterGpuMemoryBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyGpuMemoryBuffer,
                         OnDestroyGpuMemoryBuffer);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateStreamTexture,
+                        OnCreateStreamTexture)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -573,6 +570,15 @@ void GpuCommandBufferStub::OnSetLatencyInfo(
     return;
   if (!latency_info_callback_.is_null())
     latency_info_callback_.Run(latency_info);
+}
+
+void GpuCommandBufferStub::OnCreateStreamTexture(uint32 texture_id,
+                                                 int32* stream_id) {
+#if defined(OS_ANDROID)
+  *stream_id = StreamTexture::Create(this, texture_id);
+#else
+  *stream_id = 0;
+#endif
 }
 
 void GpuCommandBufferStub::SetLatencyInfoCallback(

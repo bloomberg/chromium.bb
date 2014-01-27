@@ -42,7 +42,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool npot_ok;
     bool enable_texture_float_linear;
     bool enable_texture_half_float_linear;
-    bool chromium_stream_texture;
     bool angle_translated_shader_source;
     bool angle_pack_reverse_row_order;
     bool arb_texture_rectangle;

@@ -105,6 +105,11 @@ void GpuControlService::Echo(const base::Closure& callback) {
   NOTREACHED();
 }
 
+uint32 GpuControlService::CreateStreamTexture(uint32 texture_id) {
+  NOTREACHED();
+  return 0;
+}
+
 bool GpuControlService::RegisterGpuMemoryBuffer(
     int32 id,
     gfx::GpuMemoryBufferHandle buffer,

@@ -126,6 +126,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
       OVERRIDE;
   virtual void Echo(const base::Closure& callback) OVERRIDE;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
   // The serializer interface to the GPU service (i.e. thread).
   class SchedulerClient {
@@ -171,6 +172,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   bool DestroyOnGpuThread();
   void FlushOnGpuThread(int32 put_offset);
+  uint32 CreateStreamTextureOnGpuThread(uint32 client_texture_id);
   bool MakeCurrent();
   bool IsContextLost();
   base::Closure WrapCallback(const base::Closure& callback);
@@ -212,7 +214,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_ptr<GpuControl> gpu_control_;
 
 #if defined(OS_ANDROID)
-  scoped_refptr<StreamTextureManagerInProcess> stream_texture_manager_;
+  scoped_ptr<StreamTextureManagerInProcess> stream_texture_manager_;
 #endif
 
   // Only used with explicit scheduling and the gpu thread is the same as

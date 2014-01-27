@@ -2444,34 +2444,6 @@ TEST_F(GLES2ImplementationStrictSharedTest, BindsNotCached) {
   }
 }
 
-TEST_F(GLES2ImplementationTest, CreateStreamTextureCHROMIUM) {
-  const GLuint kTextureId = 123;
-  const GLuint kResult = 456;
-
-  struct Cmds {
-    cmds::CreateStreamTextureCHROMIUM create_stream;
-  };
-
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(
-          sizeof(cmds::CreateStreamTextureCHROMIUM::Result));
-  ExpectedMemoryInfo result2 =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-
-  Cmds expected;
-  expected.create_stream.Init(kTextureId, result1.id, result1.offset);
-
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, kResult))
-      .WillOnce(SetMemory(result2.ptr, GLuint(GL_NO_ERROR)))
-      .RetiresOnSaturation();
-
-  GLuint handle = gl_->CreateStreamTextureCHROMIUM(kTextureId);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(handle, kResult);
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
-}
-
 TEST_F(GLES2ImplementationTest, GetString) {
   const uint32 kBucketId = GLES2Implementation::kResultBucketId;
   const Str7 kString = {"foobar"};

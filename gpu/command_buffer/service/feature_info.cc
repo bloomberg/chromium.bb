@@ -111,7 +111,6 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       npot_ok(false),
       enable_texture_float_linear(false),
       enable_texture_half_float_linear(false),
-      chromium_stream_texture(false),
       angle_translated_shader_source(false),
       angle_pack_reverse_row_order(false),
       arb_texture_rectangle(false),
@@ -244,11 +243,8 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_resize");
   AddExtensionString("GL_CHROMIUM_resource_safe");
   AddExtensionString("GL_CHROMIUM_strict_attribs");
-  AddExtensionString("GL_CHROMIUM_stream_texture");
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_EXT_debug_marker");
-
-  feature_flags_.chromium_stream_texture = true;
 
   // OES_vertex_array_object is emulated if not present natively,
   // so the extension string is always exposed.

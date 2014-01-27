@@ -277,7 +277,6 @@ virtual void GetMultipleIntegervCHROMIUM(
 virtual void GetProgramInfoCHROMIUM(
     GLuint program, GLsizei bufsize, GLsizei* size, void* info) = 0;
 virtual GLuint CreateStreamTextureCHROMIUM(GLuint texture) = 0;
-virtual void DestroyStreamTextureCHROMIUM(GLuint texture) = 0;
 virtual GLuint CreateImageCHROMIUM(
     GLsizei width, GLsizei height, GLenum internalformat) = 0;
 virtual void DestroyImageCHROMIUM(GLuint image_id) = 0;

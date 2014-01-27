@@ -39,10 +39,6 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "content/common/gpu/stream_texture_manager_android.h"
-#endif
-
 namespace content {
 namespace {
 
@@ -458,9 +454,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
   disallowed_features_.multisampling =
       command_line->HasSwitch(switches::kDisableGLMultisampling);
-#if defined(OS_ANDROID)
-  stream_texture_manager_.reset(new StreamTextureManagerAndroid(this));
-#endif
 }
 
 

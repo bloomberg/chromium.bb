@@ -448,6 +448,16 @@ void CommandBufferProxyImpl::Echo(const base::Closure& callback) {
   echo_tasks_.push(callback);
 }
 
+uint32 CommandBufferProxyImpl::CreateStreamTexture(uint32 texture_id) {
+  if (last_state_.error != gpu::error::kNoError)
+    return 0;
+
+  int32 stream_id = 0;
+  Send(new GpuCommandBufferMsg_CreateStreamTexture(
+      route_id_, texture_id, &stream_id));
+  return stream_id;
+}
+
 uint32 CommandBufferProxyImpl::InsertSyncPoint() {
   if (last_state_.error != gpu::error::kNoError)
     return 0;

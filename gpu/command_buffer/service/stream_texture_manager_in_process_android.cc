@@ -5,41 +5,63 @@
 #include "gpu/command_buffer/service/stream_texture_manager_in_process_android.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_image.h"
 
 namespace gpu {
 
-StreamTextureManagerInProcess::StreamTextureImpl::StreamTextureImpl(
-    uint32 service_id,
-    uint32 stream_id)
-    : surface_texture_(new gfx::SurfaceTexture(service_id)),
-      stream_id_(stream_id) {}
+namespace {
 
-StreamTextureManagerInProcess::StreamTextureImpl::~StreamTextureImpl() {}
+// Simply wraps a SurfaceTexture reference as a GLImage.
+class GLImageImpl : public gfx::GLImage {
+ public:
+  GLImageImpl(const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
+              const base::Closure& release_callback);
 
-void StreamTextureManagerInProcess::StreamTextureImpl::Update() {
-  GLint texture_id = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
+  // implement gfx::GLImage
+  virtual void Destroy() OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
+  virtual void WillUseTexImage() OVERRIDE;
+  virtual void DidUseTexImage() OVERRIDE {}
+
+ private:
+  virtual ~GLImageImpl();
+
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+  base::Closure release_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLImageImpl);
+};
+
+GLImageImpl::GLImageImpl(
+    const scoped_refptr<gfx::SurfaceTexture>& surface_texture,
+    const base::Closure& release_callback)
+    : surface_texture_(surface_texture), release_callback_(release_callback) {}
+
+GLImageImpl::~GLImageImpl() {
+  release_callback_.Run();
+}
+
+void GLImageImpl::Destroy() {
+  NOTREACHED();
+}
+
+void GLImageImpl::WillUseTexImage() {
   surface_texture_->UpdateTexImage();
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
 }
 
-gfx::Size StreamTextureManagerInProcess::StreamTextureImpl::GetSize() {
-  return size_;
+gfx::Size GLImageImpl::GetSize() {
+  return gfx::Size();
 }
 
-void StreamTextureManagerInProcess::StreamTextureImpl::SetSize(gfx::Size size) {
-  size_ = size;
-}
+}  // anonymous namespace
 
-scoped_refptr<gfx::SurfaceTexture>
-StreamTextureManagerInProcess::StreamTextureImpl::GetSurfaceTexture() {
-  return surface_texture_;
-}
-
-StreamTextureManagerInProcess::StreamTextureManagerInProcess() : next_id_(1) {}
+StreamTextureManagerInProcess::StreamTextureManagerInProcess()
+    : next_id_(1), weak_factory_(this) {}
 
 StreamTextureManagerInProcess::~StreamTextureManagerInProcess() {
   if (!textures_.empty()) {
@@ -48,13 +70,47 @@ StreamTextureManagerInProcess::~StreamTextureManagerInProcess() {
   }
 }
 
-GLuint StreamTextureManagerInProcess::CreateStreamTexture(uint32 service_id,
-                                                          uint32 client_id) {
-  base::AutoLock lock(map_lock_);
+GLuint StreamTextureManagerInProcess::CreateStreamTexture(
+    uint32 client_texture_id,
+    gles2::TextureManager* texture_manager) {
+  CalledOnValidThread();
+
+  gles2::TextureRef* texture = texture_manager->GetTexture(client_texture_id);
+
+  if (!texture || (texture->texture()->target() &&
+                   texture->texture()->target() != GL_TEXTURE_EXTERNAL_OES)) {
+    return 0;
+  }
+
+  scoped_refptr<gfx::SurfaceTexture> surface_texture(
+      new gfx::SurfaceTexture(texture->service_id()));
+
   uint32 stream_id = next_id_++;
-  linked_ptr<StreamTextureImpl> texture(
-      new StreamTextureImpl(service_id, stream_id));
-  textures_[service_id] = texture;
+  base::Closure release_callback =
+      base::Bind(&StreamTextureManagerInProcess::OnReleaseStreamTexture,
+                 weak_factory_.GetWeakPtr(), stream_id);
+  scoped_refptr<gfx::GLImage> gl_image(new GLImageImpl(surface_texture,
+                                       release_callback));
+
+  gfx::Size size = gl_image->GetSize();
+  texture_manager->SetTarget(texture, GL_TEXTURE_EXTERNAL_OES);
+  texture_manager->SetLevelInfo(texture,
+                                GL_TEXTURE_EXTERNAL_OES,
+                                0,
+                                GL_RGBA,
+                                size.width(),
+                                size.height(),
+                                1,
+                                0,
+                                GL_RGBA,
+                                GL_UNSIGNED_BYTE,
+                                true);
+  texture_manager->SetLevelImage(texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image);
+
+  {
+    base::AutoLock lock(map_lock_);
+    textures_[stream_id] = surface_texture;
+  }
 
   if (next_id_ == 0)
     next_id_++;
@@ -62,29 +118,19 @@ GLuint StreamTextureManagerInProcess::CreateStreamTexture(uint32 service_id,
   return stream_id;
 }
 
-void StreamTextureManagerInProcess::DestroyStreamTexture(uint32 service_id) {
+void StreamTextureManagerInProcess::OnReleaseStreamTexture(uint32 stream_id) {
+  CalledOnValidThread();
   base::AutoLock lock(map_lock_);
-  textures_.erase(service_id);
+  textures_.erase(stream_id);
 }
 
-gpu::StreamTexture* StreamTextureManagerInProcess::LookupStreamTexture(
-    uint32 service_id) {
-  base::AutoLock lock(map_lock_);
-  TextureMap::const_iterator it = textures_.find(service_id);
-  if (it != textures_.end())
-    return it->second.get();
-
-  return NULL;
-}
-
+// This can get called from any thread.
 scoped_refptr<gfx::SurfaceTexture>
 StreamTextureManagerInProcess::GetSurfaceTexture(uint32 stream_id) {
   base::AutoLock lock(map_lock_);
-  for (TextureMap::iterator it = textures_.begin(); it != textures_.end();
-       it++) {
-    if (it->second->stream_id() == stream_id)
-      return it->second->GetSurfaceTexture();
-  }
+  TextureMap::const_iterator it = textures_.find(stream_id);
+  if (it != textures_.end())
+    return it->second;
 
   return NULL;
 }

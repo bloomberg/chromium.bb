@@ -21,8 +21,6 @@ class GLSurface;
 }
 
 namespace gpu {
-class StreamTextureManager;
-
 namespace gles2 {
 
 class ContextGroup;

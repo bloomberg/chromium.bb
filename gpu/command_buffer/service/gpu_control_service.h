@@ -49,6 +49,7 @@ class GPU_EXPORT GpuControlService : public GpuControl {
   virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats)
       OVERRIDE;
   virtual void Echo(const base::Closure& callback) OVERRIDE;
+  virtual uint32 CreateStreamTexture(uint32 texture_id) OVERRIDE;
 
   // Register an existing gpu memory buffer and get an ID that can be used
   // to identify it in the command buffer.

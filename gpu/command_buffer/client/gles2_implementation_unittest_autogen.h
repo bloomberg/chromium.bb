@@ -1691,17 +1691,7 @@ TEST_F(GLES2ImplementationTest, ResizeCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 // TODO: Implement unit test for GetRequestableExtensionsCHROMIUM
-
-TEST_F(GLES2ImplementationTest, DestroyStreamTextureCHROMIUM) {
-  struct Cmds {
-    cmds::DestroyStreamTextureCHROMIUM cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(1);
-
-  gl_->DestroyStreamTextureCHROMIUM(1);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
+// TODO: Implement unit test for CreateStreamTextureCHROMIUM
 // TODO: Implement unit test for GetTranslatedShaderSourceANGLE
 
 TEST_F(GLES2ImplementationTest, TexImageIOSurface2DCHROMIUM) {

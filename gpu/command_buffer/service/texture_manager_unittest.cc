@@ -1805,7 +1805,8 @@ TEST_F(TextureTest, AddToSignature) {
   EXPECT_EQ(11u, string_set.size());
 }
 
-class ProduceConsumeTextureTest : public TextureTest {
+class ProduceConsumeTextureTest : public TextureTest,
+                                  public ::testing::WithParamInterface<GLenum> {
  public:
   virtual void SetUp() {
     TextureTest::SetUpBase(NULL, "GL_OES_EGL_image_external");
@@ -2020,24 +2021,42 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeExternal) {
             GetLevelInfo(restored_texture.get(), GL_TEXTURE_EXTERNAL_OES, 0));
 }
 
-TEST_F(ProduceConsumeTextureTest, ProduceConsumeStreamTexture) {
-  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES);
+TEST_P(ProduceConsumeTextureTest, ProduceConsumeTextureWithImage) {
+  GLenum target = GetParam();
+  manager_->SetTarget(texture_ref_.get(), target);
   Texture* texture = texture_ref_->texture();
-  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), texture->target());
-  manager_->SetStreamTexture(texture_ref_.get(), true);
+  EXPECT_EQ(static_cast<GLenum>(target), texture->target());
+  scoped_refptr<gfx::GLImage> image(gfx::GLImage::CreateGLImage(0));
+  manager_->SetLevelInfo(texture_ref_.get(),
+                         target,
+                         0,
+                         GL_RGBA,
+                         0,
+                         0,
+                         1,
+                         0,
+                         GL_RGBA,
+                         GL_UNSIGNED_BYTE,
+                         true);
+  manager_->SetLevelImage(texture_ref_.get(), target, 0, image);
   GLuint service_id = texture->service_id();
   Texture* produced_texture = Produce(texture_ref_.get());
-  EXPECT_TRUE(texture->IsStreamTexture());
 
   GLuint client_id = texture2_->client_id();
   manager_->RemoveTexture(client_id);
   Consume(client_id, produced_texture);
   scoped_refptr<TextureRef> restored_texture = manager_->GetTexture(client_id);
   EXPECT_EQ(produced_texture, restored_texture->texture());
-  EXPECT_TRUE(restored_texture->texture()->IsStreamTexture());
-  EXPECT_TRUE(restored_texture->texture()->IsImmutable());
   EXPECT_EQ(service_id, restored_texture->service_id());
+  EXPECT_EQ(image.get(), restored_texture->texture()->GetLevelImage(target, 0));
 }
+
+static const GLenum kTextureTargets[] = {GL_TEXTURE_2D, GL_TEXTURE_EXTERNAL_OES,
+                                         GL_TEXTURE_RECTANGLE_ARB, };
+
+INSTANTIATE_TEST_CASE_P(Target,
+                        ProduceConsumeTextureTest,
+                        ::testing::ValuesIn(kTextureTargets));
 
 TEST_F(ProduceConsumeTextureTest, ProduceConsumeCube) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_CUBE_MAP);

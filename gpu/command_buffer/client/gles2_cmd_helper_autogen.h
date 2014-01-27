@@ -1754,23 +1754,6 @@
     }
   }
 
-  void CreateStreamTextureCHROMIUM(
-      GLuint client_id, uint32 result_shm_id, uint32 result_shm_offset) {
-    gles2::cmds::CreateStreamTextureCHROMIUM* c =
-        GetCmdSpace<gles2::cmds::CreateStreamTextureCHROMIUM>();
-    if (c) {
-      c->Init(client_id, result_shm_id, result_shm_offset);
-    }
-  }
-
-  void DestroyStreamTextureCHROMIUM(GLuint texture) {
-    gles2::cmds::DestroyStreamTextureCHROMIUM* c =
-        GetCmdSpace<gles2::cmds::DestroyStreamTextureCHROMIUM>();
-    if (c) {
-      c->Init(texture);
-    }
-  }
-
   void GetTranslatedShaderSourceANGLE(GLuint shader, uint32 bucket_id) {
     gles2::cmds::GetTranslatedShaderSourceANGLE* c =
         GetCmdSpace<gles2::cmds::GetTranslatedShaderSourceANGLE>();
