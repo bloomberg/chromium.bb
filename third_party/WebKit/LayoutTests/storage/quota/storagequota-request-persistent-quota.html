@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+description("This tests navigator.storageQuota.requestPersistentQuota.");
+
+var usage;
+var grantedQuota;
+
+function onrejected(error) {
+    testFailed(error.name + ": " + error.message);
+    finishJSTest();
+}
+
+// Test body functions ----------------------------------------------------
+
+function runRequestQuotaTest() {
+    debug("* Requesting persistent quota.");
+    navigator.storageQuota.requestPersistentQuota(1024).then(function(storageInfo) {
+        usage = storageInfo.usage;
+        grantedQuota = storageInfo.quota;
+
+        shouldBe("usage", "0");
+        shouldBeNonZero("grantedQuota");
+
+        runNextTest();
+    }, onrejected);
+}
+
+function runRequestQuotaWithMisingArgumentTest() {
+    debug("* Requesting persistent quota with missing argument.");
+    shouldThrow("navigator.storageQuota.requestPersistentQuota()");
+    runNextTest();
+}
+
+// End of test body functions ---------------------------------------------
+
+var testsList = [
+    runRequestQuotaTest,
+    runRequestQuotaWithMisingArgumentTest,
+];
+var testCounter = 0;
+
+function runNextTest() {
+    if (testCounter == testsList.length) {
+        debug("Finished running tests.");
+        finishJSTest();
+    } else {
+        testsList[testCounter++]();
+    }
+}
+
+if (navigator.storageQuota) {
+    window.jsTestIsAsync = true;
+    runNextTest();
+} else {
+    debug("This test requires navigator.storageQuota.");
+}
+</script>
+</body
+</html>

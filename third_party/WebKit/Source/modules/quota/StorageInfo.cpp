@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorStorageQuota_h
-#define NavigatorStorageQuota_h
-
-#include "core/frame/DOMWindowProperty.h"
-#include "platform/Supplementable.h"
+#include "config.h"
+#include "modules/quota/StorageInfo.h"
 
 namespace WebCore {
 
-class DeprecatedStorageQuota;
-class Frame;
-class Navigator;
-class StorageQuota;
+StorageInfo::StorageInfo(unsigned long long usage, unsigned long long quota)
+    : m_usage(usage)
+    , m_quota(quota)
+{
+    ScriptWrappable::init(this);
+}
 
-class NavigatorStorageQuota FINAL : public Supplement<Navigator>, public DOMWindowProperty {
-public:
-    virtual ~NavigatorStorageQuota();
-    static NavigatorStorageQuota* from(Navigator*);
-
-    static StorageQuota* storageQuota(Navigator*);
-    static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator*);
-    static DeprecatedStorageQuota* webkitPersistentStorage(Navigator*);
-
-    StorageQuota* storageQuota() const;
-    DeprecatedStorageQuota* webkitTemporaryStorage() const;
-    DeprecatedStorageQuota* webkitPersistentStorage() const;
-
-private:
-    explicit NavigatorStorageQuota(Frame*);
-    static const char* supplementName();
-
-    mutable RefPtr<StorageQuota> m_storageQuota;
-    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
-};
+StorageInfo::~StorageInfo()
+{
+}
 
 } // namespace WebCore
-
-#endif // NavigatorStorageQuota_h

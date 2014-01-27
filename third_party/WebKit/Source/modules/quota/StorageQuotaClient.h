@@ -38,6 +38,7 @@
 namespace WebCore {
 
 class ExecutionContext;
+class ScriptPromise;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 
@@ -48,6 +49,7 @@ public:
     virtual ~StorageQuotaClient() { }
 
     virtual void requestQuota(ExecutionContext*, blink::WebStorageQuotaType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback>, PassOwnPtr<StorageErrorCallback>) = 0;
+    virtual ScriptPromise requestPersistentQuota(ExecutionContext*, unsigned long long newQuotaInBytes) = 0;
 
     static const char* supplementName();
     static StorageQuotaClient* from(ExecutionContext*);

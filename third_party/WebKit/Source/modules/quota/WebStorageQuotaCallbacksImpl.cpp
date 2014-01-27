@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorStorageQuota_h
-#define NavigatorStorageQuota_h
+#include "config.h"
+#include "modules/quota/WebStorageQuotaCallbacksImpl.h"
 
-#include "core/frame/DOMWindowProperty.h"
-#include "platform/Supplementable.h"
+#include "core/dom/DOMError.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/quota/StorageInfo.h"
 
 namespace WebCore {
 
-class DeprecatedStorageQuota;
-class Frame;
-class Navigator;
-class StorageQuota;
+WebStorageQuotaCallbacksImpl::WebStorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
+    : m_resolver(resolver)
+    , m_requestState(context)
+{
+}
 
-class NavigatorStorageQuota FINAL : public Supplement<Navigator>, public DOMWindowProperty {
-public:
-    virtual ~NavigatorStorageQuota();
-    static NavigatorStorageQuota* from(Navigator*);
+WebStorageQuotaCallbacksImpl::~WebStorageQuotaCallbacksImpl()
+{
+}
 
-    static StorageQuota* storageQuota(Navigator*);
-    static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator*);
-    static DeprecatedStorageQuota* webkitPersistentStorage(Navigator*);
+void WebStorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
+{
+    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
+    DOMRequestState::Scope scope(m_requestState);
+    m_resolver->resolve(StorageInfo::create(usageInBytes, quotaInBytes));
+}
 
-    StorageQuota* storageQuota() const;
-    DeprecatedStorageQuota* webkitTemporaryStorage() const;
-    DeprecatedStorageQuota* webkitPersistentStorage() const;
+void WebStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes)
+{
+    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
+    DOMRequestState::Scope scope(m_requestState);
+    m_resolver->resolve(StorageInfo::create(usageInBytes, grantedQuotaInBytes));
+}
 
-private:
-    explicit NavigatorStorageQuota(Frame*);
-    static const char* supplementName();
-
-    mutable RefPtr<StorageQuota> m_storageQuota;
-    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
-};
+void WebStorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
+{
+    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
+    DOMRequestState::Scope scope(m_requestState);
+    m_resolver->reject(DOMError::create(static_cast<ExceptionCode>(error)).get());
+}
 
 } // namespace WebCore
-
-#endif // NavigatorStorageQuota_h

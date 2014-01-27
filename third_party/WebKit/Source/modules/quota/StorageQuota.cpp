@@ -29,72 +29,87 @@
  */
 
 #include "config.h"
-#include "StorageQuotaClientImpl.h"
+#include "modules/quota/StorageQuota.h"
 
-#include "WebFrameClient.h"
-#include "WebFrameImpl.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMError.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/quota/DeprecatedWebStorageQuotaCallbacksImpl.h"
-#include "modules/quota/StorageErrorCallback.h"
-#include "modules/quota/StorageQuotaCallback.h"
-#include "modules/quota/StorageUsageCallback.h"
+#include "modules/quota/StorageQuotaClient.h"
 #include "modules/quota/WebStorageQuotaCallbacksImpl.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebStorageQuotaType.h"
-#include "wtf/Threading.h"
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace blink {
+namespace {
 
-PassOwnPtr<StorageQuotaClientImpl> StorageQuotaClientImpl::create()
+struct StorageTypeMapping {
+    blink::WebStorageQuotaType type;
+    const char* const name;
+};
+
+const StorageTypeMapping storageTypeMappings[] = {
+    { blink::WebStorageQuotaTypeTemporary, "temporary" },
+    { blink::WebStorageQuotaTypePersistent, "persistent" },
+};
+
+blink::WebStorageQuotaType stringToStorageQuotaType(const String& type)
 {
-    return adoptPtr(new StorageQuotaClientImpl());
-}
-
-StorageQuotaClientImpl::~StorageQuotaClientImpl()
-{
-}
-
-void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, WebStorageQuotaType storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
-{
-    ASSERT(executionContext);
-
-    if (executionContext->isDocument()) {
-        Document* document = toDocument(executionContext);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        webFrame->client()->requestStorageQuota(webFrame, storageType, newQuotaInBytes, DeprecatedWebStorageQuotaCallbacksImpl::createLeakedPtr(successCallback, errorCallback));
-    } else {
-        // Requesting quota in Worker is not supported.
-        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i) {
+        if (storageTypeMappings[i].name == type)
+            return storageTypeMappings[i].type;
     }
+    ASSERT_NOT_REACHED();
+    return blink::WebStorageQuotaTypeTemporary;
 }
 
-ScriptPromise StorageQuotaClientImpl::requestPersistentQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes)
+} // namespace
+
+StorageQuota::StorageQuota()
+{
+    ScriptWrappable::init(this);
+}
+
+Vector<String> StorageQuota::supportedTypes() const
+{
+    Vector<String> types;
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i)
+        types.append(storageTypeMappings[i].name);
+    return types;
+}
+
+ScriptPromise StorageQuota::queryInfo(ExecutionContext* executionContext, String type)
 {
     ASSERT(executionContext);
 
     ScriptPromise promise = ScriptPromise::createPending(executionContext);
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
 
-    if (executionContext->isDocument()) {
-        Document* document = toDocument(executionContext);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        webFrame->client()->requestStorageQuota(webFrame, WebStorageQuotaTypePersistent, newQuotaInBytes, WebStorageQuotaCallbacksImpl::createLeakedPtr(resolver, executionContext));
-    } else {
-        // Requesting quota in Worker is not supported.
+    SecurityOrigin* securityOrigin = executionContext->securityOrigin();
+    if (securityOrigin->isUnique()) {
         resolver->reject(DOMError::create(NotSupportedError));
+        return promise;
     }
 
+    KURL storagePartition = KURL(KURL(), securityOrigin->toString());
+    blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), WebStorageQuotaCallbacksImpl::createLeakedPtr(resolver, executionContext));
     return promise;
 }
 
-StorageQuotaClientImpl::StorageQuotaClientImpl()
+ScriptPromise StorageQuota::requestPersistentQuota(ExecutionContext* executionContext, unsigned long long newQuota)
+{
+    ASSERT(executionContext);
+
+    return StorageQuotaClient::from(executionContext)->requestPersistentQuota(executionContext, newQuota);
+}
+
+StorageQuota::~StorageQuota()
 {
 }
 
-} // namespace blink
+} // namespace WebCore

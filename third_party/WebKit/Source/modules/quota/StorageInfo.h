@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorStorageQuota_h
-#define NavigatorStorageQuota_h
+#ifndef StorageInfo_h
+#define StorageInfo_h
 
-#include "core/frame/DOMWindowProperty.h"
-#include "platform/Supplementable.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class DeprecatedStorageQuota;
-class Frame;
-class Navigator;
-class StorageQuota;
-
-class NavigatorStorageQuota FINAL : public Supplement<Navigator>, public DOMWindowProperty {
+class StorageInfo FINAL : public RefCounted<StorageInfo>, public ScriptWrappable {
 public:
-    virtual ~NavigatorStorageQuota();
-    static NavigatorStorageQuota* from(Navigator*);
+    static PassRefPtr<StorageInfo> create(unsigned long long usage, unsigned long long quota)
+    {
+        return adoptRef(new StorageInfo(usage, quota));
+    }
 
-    static StorageQuota* storageQuota(Navigator*);
-    static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator*);
-    static DeprecatedStorageQuota* webkitPersistentStorage(Navigator*);
+    unsigned long long usage() const { return m_usage; }
+    unsigned long long quota() const { return m_quota; }
 
-    StorageQuota* storageQuota() const;
-    DeprecatedStorageQuota* webkitTemporaryStorage() const;
-    DeprecatedStorageQuota* webkitPersistentStorage() const;
+    ~StorageInfo();
 
 private:
-    explicit NavigatorStorageQuota(Frame*);
-    static const char* supplementName();
+    StorageInfo(unsigned long long usage, unsigned long long quota);
 
-    mutable RefPtr<StorageQuota> m_storageQuota;
-    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
+    unsigned long long m_usage;
+    unsigned long long m_quota;
 };
 
 } // namespace WebCore
 
-#endif // NavigatorStorageQuota_h
+#endif // StorageInfo_h

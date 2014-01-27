@@ -91,6 +91,7 @@ PeerConnection depends_on=MediaStream, status=stable
 //   http://crbug.com/308649
 PointerEventsMaxTouchPoints status=experimental
 Quota status=stable
+QuotaPromise status=experimental
 OverlayScrollbars
 RegionBasedColumns status=experimental
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorStorageQuota_h
-#define NavigatorStorageQuota_h
+#ifndef WebStorageQuotaCallbacksImpl_h
+#define WebStorageQuotaCallbacksImpl_h
 
-#include "core/frame/DOMWindowProperty.h"
-#include "platform/Supplementable.h"
+#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
+#include "public/platform/WebStorageQuotaCallbacks.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class DeprecatedStorageQuota;
-class Frame;
-class Navigator;
-class StorageQuota;
-
-class NavigatorStorageQuota FINAL : public Supplement<Navigator>, public DOMWindowProperty {
+class WebStorageQuotaCallbacksImpl FINAL : public blink::WebStorageQuotaCallbacks {
 public:
-    virtual ~NavigatorStorageQuota();
-    static NavigatorStorageQuota* from(Navigator*);
+    // The class is self-destructed and thus we have leakedPtr constructors.
+    static WebStorageQuotaCallbacksImpl* createLeakedPtr(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
+    {
+        OwnPtr<WebStorageQuotaCallbacksImpl> callbacks = adoptPtr(new WebStorageQuotaCallbacksImpl(resolver, context));
+        return callbacks.leakPtr();
+    }
 
-    static StorageQuota* storageQuota(Navigator*);
-    static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator*);
-    static DeprecatedStorageQuota* webkitPersistentStorage(Navigator*);
+    virtual ~WebStorageQuotaCallbacksImpl();
 
-    StorageQuota* storageQuota() const;
-    DeprecatedStorageQuota* webkitTemporaryStorage() const;
-    DeprecatedStorageQuota* webkitPersistentStorage() const;
+    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) OVERRIDE;
+    virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) OVERRIDE;
+    virtual void didFail(blink::WebStorageQuotaError) OVERRIDE;
 
 private:
-    explicit NavigatorStorageQuota(Frame*);
-    static const char* supplementName();
+    WebStorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver>, ExecutionContext*);
 
-    mutable RefPtr<StorageQuota> m_storageQuota;
-    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
+    RefPtr<ScriptPromiseResolver> m_resolver;
+    DOMRequestState m_requestState;
+    WTF_MAKE_NONCOPYABLE(WebStorageQuotaCallbacksImpl);
 };
 
-} // namespace WebCore
+} // namespace
 
-#endif // NavigatorStorageQuota_h
+#endif // WebStorageQuotaCallbacksImpl_h

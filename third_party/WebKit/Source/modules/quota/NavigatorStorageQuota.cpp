@@ -33,6 +33,7 @@
 
 #include "core/frame/Navigator.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
+#include "modules/quota/StorageQuota.h"
 
 namespace WebCore {
 
@@ -60,6 +61,11 @@ NavigatorStorageQuota* NavigatorStorageQuota::from(Navigator* navigator)
     return supplement;
 }
 
+StorageQuota* NavigatorStorageQuota::storageQuota(Navigator* navigator)
+{
+    return NavigatorStorageQuota::from(navigator)->storageQuota();
+}
+
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(Navigator* navigator)
 {
     return NavigatorStorageQuota::from(navigator)->webkitTemporaryStorage();
@@ -68,6 +74,13 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(Navigator*
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage(Navigator* navigator)
 {
     return NavigatorStorageQuota::from(navigator)->webkitPersistentStorage();
+}
+
+StorageQuota* NavigatorStorageQuota::storageQuota() const
+{
+    if (!m_storageQuota && frame())
+        m_storageQuota = StorageQuota::create();
+    return m_storageQuota.get();
 }
 
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const
