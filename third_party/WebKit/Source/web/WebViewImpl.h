@@ -99,6 +99,7 @@ class WebDevToolsAgentPrivate;
 class WebDocument;
 class WebFrameImpl;
 class WebGestureEvent;
+class WebHelperPlugin;
 class WebHelperPluginImpl;
 class WebImage;
 class WebKeyboardEvent;
@@ -444,7 +445,7 @@ public:
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
 
     // Creates a Helper Plugin of |pluginType| for |hostDocument|.
-    PassOwnPtr<WebHelperPluginImpl> createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
+    PassOwnPtr<WebHelperPlugin> createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.

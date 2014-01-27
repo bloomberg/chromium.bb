@@ -52,7 +52,7 @@ class AudioSourceProviderClient;
 
 namespace blink {
 
-class WebHelperPluginImpl;
+class WebHelperPlugin;
 class WebAudioSourceProvider;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
@@ -161,7 +161,7 @@ private:
     WebCore::KURL m_url;
     bool m_delayingLoad;
     WebCore::MediaPlayer::Preload m_preload;
-    OwnPtr<WebHelperPluginImpl> m_helperPlugin;
+    OwnPtr<WebHelperPlugin> m_helperPlugin;
     bool m_needsWebLayerForVideo;
     double m_volume;
     bool m_muted;

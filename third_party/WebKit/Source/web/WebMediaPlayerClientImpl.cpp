@@ -8,7 +8,7 @@
 #include "WebDocument.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebHelperPluginImpl.h"
+#include "WebHelperPlugin.h"
 #include "WebViewImpl.h"
 #include "core/frame/Frame.h"
 #include "core/html/HTMLMediaElement.h"

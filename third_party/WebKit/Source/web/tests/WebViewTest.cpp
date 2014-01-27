@@ -42,7 +42,7 @@
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebHelperPluginImpl.h"
+#include "WebHelperPlugin.h"
 #include "WebHitTestResult.h"
 #include "WebInputEvent.h"
 #include "WebSettings.h"
@@ -1219,7 +1219,7 @@ TEST_F(WebViewTest, HelperPlugin)
     WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
     client.setWebFrameClient(frame->client());
 
-    OwnPtr<WebHelperPluginImpl> helperPlugin = webViewImpl->createHelperPlugin("dummy-plugin-type", frame->document());
+    OwnPtr<WebHelperPlugin> helperPlugin = webViewImpl->createHelperPlugin("dummy-plugin-type", frame->document());
     EXPECT_TRUE(helperPlugin);
     EXPECT_EQ(0, helperPlugin->getPlugin()); // Invalid plugin type means no plugin.
 

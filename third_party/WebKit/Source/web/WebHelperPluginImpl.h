@@ -54,21 +54,19 @@ class WebHelperPluginImpl FINAL : public WebHelperPlugin {
     WTF_MAKE_FAST_ALLOCATED;
 
 public:
-    bool initialize(const String& pluginType, const WebDocument& hostDocument, WebViewImpl*);
-    // Schedule a call to closeAndDelete() later.
-    void closeAndDeleteSoon();
-
     // WebHelperPlugin methods:
     virtual void initializeFrame(WebFrameClient*) OVERRIDE;
     virtual WebPlugin* getPlugin() OVERRIDE;
+    virtual void closeAndDeleteSoon() OVERRIDE;
+
+    bool initialize(const String& pluginType, const WebDocument& hostDocument, WebViewImpl*);
+    // Called asynchronously and only by WebViewImpl.
+    void closeAndDelete();
 
 private:
     explicit WebHelperPluginImpl(WebWidgetClient*);
     bool initializePage(const String& pluginType, const WebDocument& hostDocument);
     void destroyPage();
-
-    // Called asynchronously and only by WebViewImpl.
-    void closeAndDelete();
 
     // This object needs to be destroyed by calling closeAndDelete().
     virtual ~WebHelperPluginImpl();
@@ -88,7 +86,6 @@ private:
 
     friend class WebHelperPlugin;
     friend class HelperPluginChromeClient;
-    friend class WebViewImpl;
 };
 
 DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebWidget, widget, widget->isHelperPlugin(), widget.isHelperPlugin());
@@ -101,8 +98,7 @@ template<typename T> struct OwnedPtrDeleter;
 template<> struct OwnedPtrDeleter<blink::WebHelperPluginImpl> {
     static void deletePtr(blink::WebHelperPluginImpl* plugin)
     {
-        if (plugin)
-            plugin->closeAndDeleteSoon();
+        OwnedPtrDeleter<blink::WebHelperPlugin>::deletePtr(plugin);
     }
 };
 

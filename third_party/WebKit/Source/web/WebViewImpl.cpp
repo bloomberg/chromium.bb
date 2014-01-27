@@ -57,6 +57,7 @@
 #include "WebDevToolsAgentImpl.h"
 #include "WebDevToolsAgentPrivate.h"
 #include "WebFrameImpl.h"
+#include "WebHelperPlugin.h"
 #include "WebHelperPluginImpl.h"
 #include "WebHitTestResult.h"
 #include "WebInputElement.h"
@@ -1450,7 +1451,7 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup = 0;
 }
 
-PassOwnPtr<WebHelperPluginImpl> WebViewImpl::createHelperPlugin(const String& pluginType, const WebDocument& hostDocument)
+PassOwnPtr<WebHelperPlugin> WebViewImpl::createHelperPlugin(const String& pluginType, const WebDocument& hostDocument)
 {
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypeHelperPlugin);
     ASSERT(popupWidget);
