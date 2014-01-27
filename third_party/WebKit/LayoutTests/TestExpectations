@@ -808,9 +808,11 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-child.html
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-iframe.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
+crbug.com/337852 [ Mac ] virtual/fasttextautosizing/fast/text-autosizing/second-pass-no-wrap-container-autosizing.html [ ImageOnlyFailure ]
 
 # FIXME(crbug.com/329904): Remove these when hash-based autosizer is deemed fast enough, aka second pass optimization.
 crbug.com/329904 fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
+crbug.com/337852 [ Mac ] fast/text-autosizing/second-pass-no-wrap-container-autosizing.html [ ImageOnlyFailure ]
 
 # Started failing after r162755.
 crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-accelerated-background-color.html [ ImageOnlyFailure ]

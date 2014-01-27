@@ -105,7 +105,6 @@ private:
     static bool containerContainsOneOfTags(const RenderBlock* cluster, const Vector<QualifiedName>& tags);
     static bool containerIsRowOfLinks(const RenderObject* container);
     static bool contentHeightIsConstrained(const RenderBlock* container);
-    static bool clusterShouldBeAutosized(TextAutosizingClusterInfo&, float blockWidth);
     static bool compositeClusterShouldBeAutosized(Vector<TextAutosizingClusterInfo>&, float blockWidth);
     static void measureDescendantTextWidth(const RenderBlock* container, TextAutosizingClusterInfo&, float minTextWidth, float& textWidth);
     unsigned computeCompositeClusterHash(Vector<TextAutosizingClusterInfo>&);
@@ -127,7 +126,7 @@ private:
 
     void addNonAutosizedCluster(unsigned key, TextAutosizingClusterInfo& value);
     void secondPassProcessStaleNonAutosizedClusters();
-    void setMultiplierForCluster(float localMultiplier, RenderObject* cluster, TextAutosizingClusterInfo&);
+    void processStaleContainer(float multiplier, RenderBlock* cluster, TextAutosizingClusterInfo&);
 
     Document* m_document;
 
