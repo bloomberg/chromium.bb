@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/json_schema/json_schema_validator.h"
 #include "components/policy/core/common/schema_internal.h"
@@ -102,6 +103,32 @@ SchemaOnErrorStrategy StrategyForNextLevel(SchemaOnErrorStrategy strategy) {
     SCHEMA_ALLOW_INVALID,  // SCHEMA_ALLOW_INVALID
   };
   return next_level_strategy[(int)strategy];
+}
+
+void SchemaErrorFound(std::string* error_path,
+                     std::string* error,
+                     const std::string& msg) {
+  if (error_path)
+    *error_path = "";
+  *error = msg;
+}
+
+void AddListIndexPrefixToPath(int index, std::string* path) {
+  if (path) {
+    if (path->empty())
+      *path = base::StringPrintf("items[%d]", index);
+    else
+      *path = base::StringPrintf("items[%d].", index) + *path;
+  }
+}
+
+void AddDictKeyPrefixToPath(const std::string& key, std::string* path) {
+  if (path) {
+    if (path->empty())
+      *path = key;
+    else
+      *path = key + "." + *path;
+  }
 }
 
 }  // namespace
@@ -633,9 +660,10 @@ Schema Schema::Wrap(const SchemaData* data) {
 
 bool Schema::Validate(const base::Value& value,
                       SchemaOnErrorStrategy strategy,
+                      std::string* error_path,
                       std::string* error) const {
   if (!valid()) {
-    *error = "The schema is invalid.";
+    SchemaErrorFound(error_path, error, "The schema is invalid.");
     return false;
   }
 
@@ -647,7 +675,8 @@ bool Schema::Validate(const base::Value& value,
       return true;
     }
 
-    *error = "The value type doesn't match the schema type.";
+    SchemaErrorFound(
+        error_path, error, "The value type doesn't match the schema type.");
     return false;
   }
 
@@ -661,28 +690,29 @@ bool Schema::Validate(const base::Value& value,
       Schema subschema = GetProperty(it.key());
       if (!subschema.valid()) {
         // Unknown property was detected.
-        if (!StrategyAllowUnknownOnTopLevel(strategy)) {
-          *error = "Unknown property: " + it.key();
+        SchemaErrorFound(error_path, error, "Unknown property: " + it.key());
+        if (!StrategyAllowUnknownOnTopLevel(strategy))
           return false;
-        }
-      } else {
-        std::string sub_error;
-        if (!subschema.Validate(
-                 it.value(), StrategyForNextLevel(strategy), &sub_error)) {
-          // Invalid property was detected.
-          if (!StrategyAllowInvalidOnTopLevel(strategy)) {
-            *error = sub_error;
-            return false;
-          }
-        }
+      } else if (!subschema.Validate(it.value(),
+                                     StrategyForNextLevel(strategy),
+                                     error_path,
+                                     error)) {
+        // Invalid property was detected.
+        AddDictKeyPrefixToPath(it.key(), error_path);
+        if (!StrategyAllowInvalidOnTopLevel(strategy))
+          return false;
       }
     }
   } else if (value.GetAsList(&list)) {
     for (base::ListValue::const_iterator it = list->begin(); it != list->end();
          ++it) {
       if (!*it ||
-          !GetItems().Validate(**it, StrategyForNextLevel(strategy), error)) {
+          !GetItems().Validate(**it,
+                               StrategyForNextLevel(strategy),
+                               error_path,
+                               error)) {
         // Invalid list item was detected.
+        AddListIndexPrefixToPath(it - list->begin(), error_path);
         if (!StrategyAllowInvalidOnTopLevel(strategy))
           return false;
       }
@@ -690,13 +720,13 @@ bool Schema::Validate(const base::Value& value,
   } else if (value.GetAsInteger(&int_value)) {
     if (node_->extra != kInvalid &&
         !ValidateIntegerRestriction(node_->extra, int_value)) {
-      *error = "Invalid value for integer";
+      SchemaErrorFound(error_path, error, "Invalid value for integer");
       return false;
     }
   } else if (value.GetAsString(&str_value)) {
     if (node_->extra != kInvalid &&
         !ValidateStringRestriction(node_->extra, str_value.c_str())) {
-      *error = "Invalid value for string";
+      SchemaErrorFound(error_path, error, "Invalid value for string");
       return false;
     }
   }
@@ -706,9 +736,10 @@ bool Schema::Validate(const base::Value& value,
 
 bool Schema::Normalize(base::Value* value,
                        SchemaOnErrorStrategy strategy,
+                       std::string* error_path,
                        std::string* error) const {
   if (!valid()) {
-    *error = "The schema is invalid.";
+    SchemaErrorFound(error_path, error, "The schema is invalid.");
     return false;
   }
 
@@ -720,7 +751,8 @@ bool Schema::Normalize(base::Value* value,
       return true;
     }
 
-    *error = "The value type doesn't match the schema type.";
+    SchemaErrorFound(
+        error_path, error, "The value type doesn't match the schema type.");
     return false;
   }
 
@@ -733,25 +765,24 @@ bool Schema::Normalize(base::Value* value,
       Schema subschema = GetProperty(it.key());
       if (!subschema.valid()) {
         // Unknown property was detected.
-        if (StrategyAllowUnknownOnTopLevel(strategy)) {
+        SchemaErrorFound(error_path, error, "Unknown property: " + it.key());
+        if (StrategyAllowUnknownOnTopLevel(strategy))
           drop_list.push_back(it.key());
-        } else {
-          *error = "Unknown property: " + it.key();
+        else
           return false;
-        }
       } else {
         base::Value* sub_value = NULL;
         dict->GetWithoutPathExpansion(it.key(), &sub_value);
-        std::string sub_error;
-        if (!subschema.Normalize(
-                 sub_value, StrategyForNextLevel(strategy), &sub_error)) {
+        if (!subschema.Normalize(sub_value,
+                                 StrategyForNextLevel(strategy),
+                                 error_path,
+                                 error)) {
           // Invalid property was detected.
-          if (StrategyAllowInvalidOnTopLevel(strategy)) {
+          AddDictKeyPrefixToPath(it.key(), error_path);
+          if (StrategyAllowInvalidOnTopLevel(strategy))
             drop_list.push_back(it.key());
-          } else {
-            *error = sub_error;
+          else
             return false;
-          }
         }
       }
     }
@@ -765,18 +796,18 @@ bool Schema::Normalize(base::Value* value,
     std::vector<size_t> drop_list;  // Contains the indexes to drop.
     for (size_t index = 0; index < list->GetSize(); index++) {
       base::Value* sub_value = NULL;
-      std::string sub_error;
       list->Get(index, &sub_value);
       if (!sub_value ||
-          !GetItems().Normalize(
-               sub_value, StrategyForNextLevel(strategy), &sub_error)) {
+          !GetItems().Normalize(sub_value,
+                                StrategyForNextLevel(strategy),
+                                error_path,
+                                error)) {
         // Invalid list item was detected.
-        if (StrategyAllowInvalidOnTopLevel(strategy)) {
+        AddListIndexPrefixToPath(index, error_path);
+        if (StrategyAllowInvalidOnTopLevel(strategy))
           drop_list.push_back(index);
-        } else {
-          *error = sub_error;
+        else
           return false;
-        }
       }
     }
     for (std::vector<size_t>::reverse_iterator it = drop_list.rbegin();
@@ -786,7 +817,7 @@ bool Schema::Normalize(base::Value* value,
     return true;
   }
 
-  return Validate(*value, strategy, error);
+  return Validate(*value, strategy, error_path, error);
 }
 
 // static
@@ -891,7 +922,7 @@ bool Schema::ValidateIntegerRestriction(int index, int value) const {
   }
 }
 
-bool Schema::ValidateStringRestriction(int index, const char *str) const {
+bool Schema::ValidateStringRestriction(int index, const char* str) const {
   const RestrictionNode* rnode = storage_->restriction(index);
   for (int i = rnode->enumeration_restriction.offset_begin;
        i < rnode->enumeration_restriction.offset_end; i++) {

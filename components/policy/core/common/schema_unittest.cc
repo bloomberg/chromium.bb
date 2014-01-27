@@ -121,22 +121,35 @@ void TestSchemaValidation(Schema schema,
 
   // Test that Schema::Validate() works as expected.
   error = kNoErrorReturned;
-  bool returned = schema.Validate(value, strategy, &error);
+  bool returned = schema.Validate(value, strategy, NULL, &error);
   EXPECT_EQ(returned, expected_return_value) << error;
 
   // Test that Schema::Normalize() will return the same value as
   // Schema::Validate().
   error = kNoErrorReturned;
   scoped_ptr<base::Value> cloned_value(value.DeepCopy());
-  returned = schema.Normalize(cloned_value.get(), strategy, &error);
+  returned = schema.Normalize(cloned_value.get(), strategy, NULL, &error);
   EXPECT_EQ(returned, expected_return_value) << error;
 
   // Test that Schema::Normalize() have actually dropped invalid and unknown
   // properties.
   if (expected_return_value) {
-    EXPECT_TRUE(schema.Validate(*cloned_value.get(), SCHEMA_STRICT, &error));
-    EXPECT_TRUE(schema.Normalize(cloned_value.get(), SCHEMA_STRICT, &error));
+    EXPECT_TRUE(
+        schema.Validate(*cloned_value.get(), SCHEMA_STRICT, NULL, &error));
+    EXPECT_TRUE(
+        schema.Normalize(cloned_value.get(), SCHEMA_STRICT, NULL, &error));
   }
+}
+
+void TestSchemaValidationWithPath(Schema schema,
+                                  const base::Value& value,
+                                  const std::string& expected_failure_path) {
+  std::string error_path = "NOT_SET";
+  std::string error;
+
+  bool returned = schema.Validate(value, SCHEMA_STRICT, &error_path, &error);
+  ASSERT_FALSE(returned) << error_path;
+  EXPECT_EQ(error_path, expected_failure_path);
 }
 
 std::string SchemaObjectWrapper(const std::string& subschema) {
@@ -650,6 +663,7 @@ TEST(SchemaTest, Validate) {
   TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN, true);
+  TestSchemaValidationWithPath(schema, bundle, "");
   bundle.Remove("boom", NULL);
 
   // Invalid top level property.
@@ -657,6 +671,7 @@ TEST(SchemaTest, Validate) {
   TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
   TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_INVALID, true);
+  TestSchemaValidationWithPath(schema, bundle, "Boolean");
   bundle.SetBoolean("Boolean", true);
 
   // Tests on ObjectOfObject.
@@ -672,6 +687,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    TestSchemaValidationWithPath(subschema, root, "Object");
     root.Remove("Object.three", NULL);
 
     // Invalid property.
@@ -681,6 +697,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    TestSchemaValidationWithPath(subschema, root, "Object.one");
     root.Remove("Object.one", NULL);
   }
 
@@ -699,6 +716,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    TestSchemaValidationWithPath(subschema, root, "items[0]");
     root.Remove(root.GetSize() - 1, NULL);
 
     // Invalid property.
@@ -710,6 +728,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    TestSchemaValidationWithPath(subschema, root, "items[0].two");
     root.Remove(root.GetSize() - 1, NULL);
   }
 
@@ -722,7 +741,7 @@ TEST(SchemaTest, Validate) {
     base::ListValue* list_value = new base::ListValue();
     root.Set("List", list_value);  // Pass ownership to root.
 
-    // No errors.
+    // Test that there are not errors here.
     list_value->Append(new base::FundamentalValue(12345));
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
@@ -737,6 +756,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    TestSchemaValidationWithPath(subschema, root, "List.items[1]");
   }
 
   // Tests on ArrayOfObjectOfArray.
@@ -750,7 +770,7 @@ TEST(SchemaTest, Validate) {
     dict_value->Set("List", list_value);  // Pass ownership to dict_value.
     root.Append(dict_value);  // Pass ownership to root.
 
-    // No errors.
+    // Test that there are not errors here.
     list_value->Append(new base::StringValue("blabla"));
     TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
@@ -765,6 +785,7 @@ TEST(SchemaTest, Validate) {
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
     TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    TestSchemaValidationWithPath(subschema, root, "items[0].List.items[1]");
   }
 
   // Test that integer to double promotion is allowed.

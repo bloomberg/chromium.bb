@@ -79,18 +79,21 @@ class POLICY_EXPORT Schema {
 
   // Validate |value| against current schema, |strategy| is the strategy to
   // handle unknown properties or invalid values. Allowed errors will be
-  // ignored. If |value| don't conform the schema, false will be returned and
-  // |error| will contain the detailed reason.
+  // ignored. |error_path| and |error| will contain the last error location and
+  // detailed message if |value| doesn't strictly conform to the schema. If
+  // |value| doesn't conform to the schema even within the allowance of
+  // |strategy|, false will be returned and |error_path| and |error| will
+  // contain the corresponding error that caused the failure. |error_path| can
+  // be NULL and in that case no error path will be returned.
   bool Validate(const base::Value& value,
                 SchemaOnErrorStrategy strategy,
+                std::string* error_path,
                 std::string* error) const;
 
-  // Validate |value| against current schema, |strategy| is the strategy to
-  // handle unknown properties or invalid values. Allowed errors will be
-  // dropped in place. If |value| don't conform the schema, false will be
-  // returned and |error| will contain the detailed message.
+  // Same as Validate() but drop values with errors instead of ignoring them.
   bool Normalize(base::Value* value,
                  SchemaOnErrorStrategy strategy,
+                 std::string* error_path,
                  std::string* error) const;
 
   // Used to iterate over the known properties of TYPE_DICTIONARY schemas.
@@ -152,7 +155,7 @@ class POLICY_EXPORT Schema {
          const internal::SchemaNode* node);
 
   bool ValidateIntegerRestriction(int index, int value) const;
-  bool ValidateStringRestriction(int index, const char *str) const;
+  bool ValidateStringRestriction(int index, const char* str) const;
 
   scoped_refptr<const InternalStorage> storage_;
   const internal::SchemaNode* node_;

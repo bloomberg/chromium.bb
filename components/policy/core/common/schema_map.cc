@@ -64,12 +64,17 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
       const base::Value* policy_value = it_map->second.value;
       Schema policy_schema = schema->GetProperty(policy_name);
       ++it_map;
+      std::string error_path;
       std::string error;
       if (!policy_value ||
-          !policy_schema.Validate(*policy_value, SCHEMA_STRICT, &error)) {
+          !policy_schema.Validate(*policy_value,
+                                  SCHEMA_STRICT,
+                                  &error_path,
+                                  &error)) {
         LOG(ERROR) << "Dropping policy " << policy_name << " for "
                    << it->first.component_id
-                   << " because it's not valid: " << error;
+                   << " because it's not valid: " << error
+                   << " at " << error_path;
         map->Erase(policy_name);
       }
     }
