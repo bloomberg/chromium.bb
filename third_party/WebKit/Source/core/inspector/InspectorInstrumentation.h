@@ -59,7 +59,6 @@ class Document;
 class Element;
 class EventTarget;
 class ExecutionContext;
-class GeolocationPosition;
 class GraphicsContext;
 class GraphicsLayer;
 class InspectorTimelineAgent;
