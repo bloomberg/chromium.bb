@@ -82,8 +82,8 @@ public:
 
     CheckedRadioButtons& checkedRadioButtons() { return m_checkedRadioButtons; }
 
-    void registerFormElementWithState(HTMLFormControlElementWithState*);
-    void unregisterFormElementWithState(HTMLFormControlElementWithState*);
+    void registerStatefulFormControl(HTMLFormControlElementWithState&);
+    void unregisterStatefulFormControl(HTMLFormControlElementWithState&);
     // This should be callled only by Document::formElementsState().
     Vector<String> formElementsState() const;
     // This should be callled only by Document::setStateForNewFormElements().
@@ -104,7 +104,7 @@ private:
     static void formStatesFromStateVector(const Vector<String>&, SavedFormStateMap&);
 
     CheckedRadioButtons m_checkedRadioButtons;
-    FormElementListHashSet m_formElementsWithState;
+    FormElementListHashSet m_formControls;
     SavedFormStateMap m_savedFormStateMap;
     OwnPtr<FormKeyGenerator> m_formKeyGenerator;
 };

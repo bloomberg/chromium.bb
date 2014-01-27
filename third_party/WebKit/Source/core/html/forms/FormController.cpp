@@ -410,9 +410,9 @@ PassOwnPtr<FormController::SavedFormStateMap> FormController::createSavedFormSta
 
 Vector<String> FormController::formElementsState() const
 {
-    OwnPtr<SavedFormStateMap> stateMap = createSavedFormStateMap(m_formElementsWithState);
+    OwnPtr<SavedFormStateMap> stateMap = createSavedFormStateMap(m_formControls);
     Vector<String> stateVector;
-    stateVector.reserveInitialCapacity(m_formElementsWithState.size() * 4);
+    stateVector.reserveInitialCapacity(m_formControls.size() * 4);
     stateVector.append(formStateSignature());
     for (SavedFormStateMap::const_iterator it = stateMap->begin(); it != stateMap->end(); ++it) {
         stateVector.append(it->key);
@@ -512,16 +512,16 @@ Vector<String> FormController::getReferencedFilePaths(const Vector<String>& stat
     return toReturn;
 }
 
-void FormController::registerFormElementWithState(HTMLFormControlElementWithState* control)
+void FormController::registerStatefulFormControl(HTMLFormControlElementWithState& control)
 {
-    ASSERT(!m_formElementsWithState.contains(control));
-    m_formElementsWithState.add(control);
+    ASSERT(!m_formControls.contains(&control));
+    m_formControls.add(&control);
 }
 
-void FormController::unregisterFormElementWithState(HTMLFormControlElementWithState* control)
+void FormController::unregisterStatefulFormControl(HTMLFormControlElementWithState& control)
 {
-    RELEASE_ASSERT(m_formElementsWithState.contains(control));
-    m_formElementsWithState.remove(control);
+    RELEASE_ASSERT(m_formControls.contains(&control));
+    m_formControls.remove(&control);
 }
 
 } // namespace WebCore
