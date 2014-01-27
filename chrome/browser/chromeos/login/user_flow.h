@@ -19,6 +19,8 @@ class UserFlow {
  public:
   UserFlow();
   virtual ~UserFlow() = 0;
+  // Indicates if screen locking should be enabled or disabled for a flow.
+  virtual bool CanLockScreen() = 0;
   virtual bool ShouldShowSettings() = 0;
   virtual bool ShouldLaunchBrowser() = 0;
   virtual bool ShouldSkipPostLoginScreens() = 0;
@@ -44,6 +46,7 @@ class DefaultUserFlow : public UserFlow {
  public:
   virtual ~DefaultUserFlow();
 
+  virtual bool CanLockScreen() OVERRIDE;
   virtual bool ShouldShowSettings() OVERRIDE;
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;

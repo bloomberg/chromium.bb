@@ -22,6 +22,7 @@ class SupervisedUserLoginFlow : public ExtendedUserFlow {
   // Registers flow preferences.
   //  static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  virtual bool CanLockScreen() OVERRIDE;
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
   virtual bool HandleLoginFailure(const LoginFailure& failure) OVERRIDE;

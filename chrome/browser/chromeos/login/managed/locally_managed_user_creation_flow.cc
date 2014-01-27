@@ -32,6 +32,10 @@ LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
 
 LocallyManagedUserCreationFlow::~LocallyManagedUserCreationFlow() {}
 
+bool LocallyManagedUserCreationFlow::CanLockScreen() {
+  return false;
+}
+
 bool LocallyManagedUserCreationFlow::ShouldShowSettings() {
   return false;
 }

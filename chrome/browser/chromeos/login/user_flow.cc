@@ -24,6 +24,10 @@ UserFlow::~UserFlow() {}
 
 DefaultUserFlow::~DefaultUserFlow() {}
 
+bool DefaultUserFlow::CanLockScreen() {
+  return true;
+}
+
 bool DefaultUserFlow::ShouldShowSettings() {
   return true;
 }

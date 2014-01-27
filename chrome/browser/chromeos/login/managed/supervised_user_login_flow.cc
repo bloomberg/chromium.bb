@@ -50,6 +50,10 @@ SupervisedUserLoginFlow::SupervisedUserLoginFlow(
 
 SupervisedUserLoginFlow::~SupervisedUserLoginFlow() {}
 
+bool SupervisedUserLoginFlow::CanLockScreen() {
+  return true;
+}
+
 bool SupervisedUserLoginFlow::ShouldLaunchBrowser() {
   return data_loaded_;
 }

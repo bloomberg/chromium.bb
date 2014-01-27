@@ -952,7 +952,8 @@ bool UserManagerImpl::IsCurrentUserNonCryptohomeDataEphemeral() const {
 
 bool UserManagerImpl::CanCurrentUserLock() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return IsUserLoggedIn() && active_user_->can_lock();
+  return IsUserLoggedIn() && active_user_->can_lock() &&
+      GetCurrentUserFlow()->CanLockScreen();
 }
 
 bool UserManagerImpl::IsUserLoggedIn() const {
