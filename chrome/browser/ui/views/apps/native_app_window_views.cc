@@ -287,9 +287,6 @@ void NativeAppWindowViews::InitializeDefaultWindow(
 
   OnBeforeWidgetInit(&init_params, window_);
   window_->Init(init_params);
-  aura::Window* native_window = window_->GetNativeWindow();
-  native_window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
-      new ShapedAppWindowTargeter(native_window, this)));
 
   gfx::Rect adjusted_bounds = window_bounds;
   adjusted_bounds.Inset(-GetFrameInsets());
@@ -937,14 +934,21 @@ SkRegion* NativeAppWindowViews::GetDraggableRegion() {
 }
 
 void NativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
+  bool had_shape = shape_;
   shape_ = region.Pass();
 
-#if defined(USE_AURA)
-  if (shape_)
+  aura::Window* native_window = window_->GetNativeWindow();
+  if (shape_) {
     window_->SetShape(new SkRegion(*shape_));
-  else
+    if (!had_shape) {
+      native_window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+          new ShapedAppWindowTargeter(native_window, this)));
+    }
+  } else {
     window_->SetShape(NULL);
-#endif // defined(USE_AURA)
+    if (had_shape)
+      native_window->set_event_targeter(scoped_ptr<ui::EventTargeter>());
+  }
 }
 
 void NativeAppWindowViews::HandleKeyboardEvent(
