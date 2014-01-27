@@ -9,7 +9,6 @@ import unittest
 
 PERF_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(PERF_ROOT), 'telemetry'))
-from telemetry.unittest import DisabledTestOnCrOS
 from telemetry.unittest import system_stub
 
 sys.path.insert(0, PERF_ROOT)
@@ -122,12 +121,10 @@ class PresubmitTest(unittest.TestCase):
     self.assertResultCount(results, 1, 0)
     self.assertTrue('not found' in str(results[0]), msg=results[0])
 
-  @DisabledTestOnCrOS
   def testSkip(self):
     results = self._CheckUpload(['/path/to/skip.wpr.sha1'])
     self.assertResultCount(results, 0, 0)
 
-  @DisabledTestOnCrOS
   def testSuccess(self):
     results = self._CheckUpload(['/path/to/success.wpr.sha1'])
     self.assertResultCount(results, 0, 1)

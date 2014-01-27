@@ -10,7 +10,6 @@ import os
 import unittest
 
 from telemetry.core.timeline import model
-from telemetry.unittest import DisabledTestOnCrOS
 from metrics import speedindex
 
 # Sample timeline data in the json format provided by devtools.
@@ -97,7 +96,6 @@ class SpeedIndexImplTest(unittest.TestCase):
     self.assertEquals(time_area_dict[400], 200000)
     self.assertEquals(time_area_dict[800], 200000)
 
-  @DisabledTestOnCrOS
   def testVideoCompleteness(self):
     frames = [
       (0.0, FakeBitmap([100, 0, 0])),
