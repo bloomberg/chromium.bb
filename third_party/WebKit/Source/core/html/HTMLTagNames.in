@@ -87,7 +87,7 @@ meta
 meter interfaceName=HTMLMeterElement
 nav interfaceName=HTMLElement
 nobr interfaceName=HTMLElement
-noembed interfaceName=HTMLElement
+noembed interfaceName=HTMLNoEmbedElement, JSInterfaceName=HTMLElement
 noframes interfaceName=HTMLElement
 nolayer interfaceName=HTMLElement
 object constructorNeedsFormElement, constructorNeedsCreatedByParser
@@ -135,6 +135,6 @@ u interfaceName=HTMLElement
 ul interfaceName=HTMLUListElement
 var interfaceName=HTMLElement
 video runtimeEnabled=media, constructorNeedsCreatedByParser
-wbr interfaceName=HTMLElement
+wbr interfaceName=HTMLWBRElement, JSInterfaceName=HTMLElement
 xmp interfaceName=HTMLPreElement
-noscript interfaceName=HTMLElement
+noscript interfaceName=HTMLNoScriptElement, JSInterfaceName=HTMLElement

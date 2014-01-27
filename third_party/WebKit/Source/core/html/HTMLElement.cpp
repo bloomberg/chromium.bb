@@ -30,7 +30,6 @@
 #include "HTMLNames.h"
 #include "XMLNames.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSValuePool.h"
@@ -43,16 +42,14 @@
 #include "core/events/EventListener.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/FrameLoader.h"
-#include "core/frame/Frame.h"
-#include "core/frame/Settings.h"
-#include "core/rendering/RenderWordBreak.h"
+#include "core/rendering/RenderObject.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/TextRunIterator.h"
@@ -650,27 +647,6 @@ bool HTMLElement::translate() const
 void HTMLElement::setTranslate(bool enable)
 {
     setAttribute(translateAttr, enable ? "yes" : "no");
-}
-
-bool HTMLElement::rendererIsNeeded(const RenderStyle& style)
-{
-    if (hasLocalName(noscriptTag)) {
-        Frame* frame = document().frame();
-        if (frame && frame->script().canExecuteScripts(NotAboutToExecuteScript))
-            return false;
-    } else if (hasLocalName(noembedTag)) {
-        Frame* frame = document().frame();
-        if (frame && frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
-            return false;
-    }
-    return Element::rendererIsNeeded(style);
-}
-
-RenderObject* HTMLElement::createRenderer(RenderStyle* style)
-{
-    if (hasLocalName(wbrTag))
-        return new RenderWordBreak(this);
-    return RenderObject::createObject(this, style);
 }
 
 HTMLFormElement* HTMLElement::findFormAncestor() const
