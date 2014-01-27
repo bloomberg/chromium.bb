@@ -96,6 +96,8 @@ void RemoveMatchesFromList(const BinaryOpNode* op_node,
 
 // Assignment -----------------------------------------------------------------
 
+// We return a null value from this rather than the result of doing the append.
+// See ValuePlusEquals for rationale.
 Value ExecuteEquals(Scope* scope,
                     const BinaryOpNode* op_node,
                     const Token& left,
@@ -103,44 +105,27 @@ Value ExecuteEquals(Scope* scope,
                     Err* err) {
   const Value* old_value = scope->GetValue(left.value(), false);
   if (old_value) {
-    if (scope->IsSetButUnused(left.value())) {
-      // Throw an error for re-assigning without using the value first. The
-      // exception is that you can overwrite an empty list with another list
-      // since this is the way to get around the "can't overwrite a nonempty
-      // list with another nonempty list" restriction.
-      if (old_value->type() != Value::LIST ||
-          !old_value->list_value().empty()) {
-        *err = Err(op_node->left()->GetRange(), "Overwriting unused variable.",
-            "This overwrites a previous assignment to \"" +
-            left.value().as_string() + "\" that had no effect.");
-        err->AppendSubErr(Err(*scope->GetValue(left.value()),
-                              "Previously set here.",
-                              "Maybe you wanted \"+=\" to append instead?"));
-        return Value();
-      }
-    } else {
-      // Throw an error when overwriting a nonempty list with another nonempty
-      // list item. This is to detect the case where you write
-      //   defines = ["FOO"]
-      // and you overwrote inherited ones, when instead you mean to append:
-      //   defines += ["FOO"]
-      if (old_value->type() == Value::LIST &&
-          !old_value->list_value().empty() &&
-          right.type() == Value::LIST &&
-          !right.list_value().empty()) {
-        *err = Err(op_node->left()->GetRange(), "Replacing nonempty list.",
-            std::string("This overwrites a previously-defined nonempty list ") +
-            "(length " +
-            base::IntToString(static_cast<int>(old_value->list_value().size()))
-            + ").");
-        err->AppendSubErr(Err(*old_value, "for previous definition",
-            "with another one (length " +
-            base::IntToString(static_cast<int>(right.list_value().size())) +
-            "). Did you mean " +
-            "\"+=\" to append instead? If you\nreally want to do this, do\n  " +
-            left.value().as_string() + " = []\nbefore reassigning."));
-        return Value();
-      }
+    // Throw an error when overwriting a nonempty list with another nonempty
+    // list item. This is to detect the case where you write
+    //   defines = ["FOO"]
+    // and you overwrote inherited ones, when instead you mean to append:
+    //   defines += ["FOO"]
+    if (old_value->type() == Value::LIST &&
+        !old_value->list_value().empty() &&
+        right.type() == Value::LIST &&
+        !right.list_value().empty()) {
+      *err = Err(op_node->left()->GetRange(), "Replacing nonempty list.",
+          std::string("This overwrites a previously-defined nonempty list ") +
+          "(length " +
+          base::IntToString(static_cast<int>(old_value->list_value().size()))
+          + ").");
+      err->AppendSubErr(Err(*old_value, "for previous definition",
+          "with another one (length " +
+          base::IntToString(static_cast<int>(right.list_value().size())) +
+          "). Did you mean " +
+          "\"+=\" to append instead? If you\nreally want to do this, do\n  " +
+          left.value().as_string() + " = []\nbefore reassigning."));
+      return Value();
     }
   }
   if (err->has_error())
@@ -163,6 +148,14 @@ Value ExecuteEquals(Scope* scope,
 
 // allow_type_conversion indicates if we're allowed to change the type of the
 // left value. This is set to true when doing +, and false when doing +=.
+//
+// Note that we return Value() from here, which is different than C++. This
+// means you can't do clever things like foo = [ bar += baz ] to simultaneously
+// append to and use a value. This is basically never needed in out build
+// scripts and is just as likely an error as the intended behavior, and it also
+// involves a copy of the value when it's returned. Many times we're appending
+// to large lists, and copying the value to discard it for the next statement
+// is very wasteful.
 void ValuePlusEquals(const Scope* scope,
                      const BinaryOpNode* op_node,
                      const Token& left_token,
@@ -210,14 +203,6 @@ void ValuePlusEquals(const Scope* scope,
     // Left-hand-side list.
     case Value::LIST:
       switch (right.type()) {
-        case Value::INTEGER:  // list + integer -> list append.
-        case Value::STRING:  // list + string -> list append.
-          if (left_token.value() == kSourcesName)
-            AppendFilteredSourcesToValue(scope, right, left);
-          else
-            left->list_value().push_back(right);
-          return;
-
         case Value::LIST:  // list + list -> list concat.
           if (left_token.value() == kSourcesName) {
             // Filter additions through the assignment filter.
@@ -230,7 +215,9 @@ void ValuePlusEquals(const Scope* scope,
           return;
 
         default:
-          break;
+          *err = Err(op_node->op(), "Incompatible types to add.",
+              "To append a single item to a list do \"foo += [ bar ]\".");
+          return;
       }
 
     default:
@@ -262,6 +249,8 @@ Value ExecutePlusEquals(Scope* scope,
   return Value();
 }
 
+// We return a null value from this rather than the result of doing the append.
+// See ValuePlusEquals for rationale.
 void ValueMinusEquals(const BinaryOpNode* op_node,
                       Value* left,
                       const Value& right,
@@ -286,7 +275,12 @@ void ValueMinusEquals(const BinaryOpNode* op_node,
 
     // Left-hand-side list.
     case Value::LIST:
-      RemoveMatchesFromList(op_node, left, right, err);
+      if (right.type() != Value::LIST) {
+        *err = Err(op_node->op(), "Incompatible types to subtract.",
+            "To remove a single item from a list do \"foo -= [ bar ]\".");
+      } else {
+        RemoveMatchesFromList(op_node, left, right, err);
+      }
       return;
 
     default:
