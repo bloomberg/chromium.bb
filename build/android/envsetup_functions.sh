@@ -114,9 +114,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
       DEFINES+=" target_arch=arm"
       ;;
     "x86")
-    # TODO(tedbo): The ia32 build fails on ffmpeg, so we disable it here.
-      DEFINES+=" use_libffmpeg=0"
-
       host_arch=$(uname -m | sed -e \
         's/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/;s/i86pc/ia32/')
       DEFINES+=" host_arch=${host_arch}"
