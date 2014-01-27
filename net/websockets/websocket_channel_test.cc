@@ -2291,13 +2291,13 @@ TEST_F(WebSocketChannelStreamTest, PingRepliedWithPong) {
   CreateChannelAndConnectSuccessfully();
 }
 
-// A ping with a NULL payload should be responded to with a Pong with an empty
+// A ping with a NULL payload should be responded to with a Pong with a NULL
 // payload.
-TEST_F(WebSocketChannelStreamTest, NullPingRepliedWithEmptyPong) {
+TEST_F(WebSocketChannelStreamTest, NullPingRepliedWithNullPong) {
   static const InitFrame frames[] = {
       {FINAL_FRAME, WebSocketFrameHeader::kOpCodePing, NOT_MASKED, NULL}};
   static const InitFrame expected[] = {
-      {FINAL_FRAME, WebSocketFrameHeader::kOpCodePong, MASKED, ""}};
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodePong, MASKED, NULL}};
   EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
   EXPECT_CALL(*mock_stream_, ReadFrames(_, _))
       .WillOnce(ReturnFrames(&frames))

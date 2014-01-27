@@ -157,13 +157,15 @@ int WebSocketBasicStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
     dest += result;
     remaining_size -= result;
 
-    const char* const frame_data = frame->data->data();
     const int frame_size = frame->header.payload_length;
-    CHECK_GE(remaining_size, frame_size);
-    std::copy(frame_data, frame_data + frame_size, dest);
-    MaskWebSocketFramePayload(mask, 0, dest, frame_size);
-    dest += frame_size;
-    remaining_size -= frame_size;
+    if (frame_size > 0) {
+      CHECK_GE(remaining_size, frame_size);
+      const char* const frame_data = frame->data->data();
+      std::copy(frame_data, frame_data + frame_size, dest);
+      MaskWebSocketFramePayload(mask, 0, dest, frame_size);
+      dest += frame_size;
+      remaining_size -= frame_size;
+    }
   }
   DCHECK_EQ(0, remaining_size) << "Buffer size calculation was wrong; "
                                << remaining_size << " bytes left over.";

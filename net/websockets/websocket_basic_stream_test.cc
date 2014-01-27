@@ -57,6 +57,8 @@ WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(CloseFrame,
                                             "\x88\x09\x03\xe8occludo");
 WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(WriteFrame,
                                             "\x81\x85\x00\x00\x00\x00Write");
+WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(MaskedEmptyPong,
+                                            "\x8A\x80\x00\x00\x00\x00");
 const WebSocketMaskingKey kNulMaskingKey = {{'\0', '\0', '\0', '\0'}};
 const WebSocketMaskingKey kNonNulMaskingKey = {
     {'\x0d', '\x1b', '\x06', '\x17'}};
@@ -854,6 +856,23 @@ TEST_F(WebSocketBasicStreamSocketWriteTest, WriteInBits) {
 
   ASSERT_EQ(ERR_IO_PENDING, stream_->WriteFrames(&frames_, cb_.callback()));
   EXPECT_EQ(OK, cb_.WaitForResult());
+}
+
+// Check that writing a Pong frame with a NULL body works.
+TEST_F(WebSocketBasicStreamSocketWriteTest, WriteNullPong) {
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, kMaskedEmptyPong, kMaskedEmptyPongSize)};
+  CreateWriteOnly(writes);
+
+  scoped_ptr<WebSocketFrame> frame(
+      new WebSocketFrame(WebSocketFrameHeader::kOpCodePong));
+  WebSocketFrameHeader& header = frame->header;
+  header.final = true;
+  header.masked = true;
+  header.payload_length = 0;
+  ScopedVector<WebSocketFrame> frames;
+  frames.push_back(frame.release());
+  EXPECT_EQ(OK, stream_->WriteFrames(&frames, cb_.callback()));
 }
 
 // Check that writing with a non-NULL mask works correctly.
