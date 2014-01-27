@@ -194,70 +194,50 @@ void EventPath::calculateAdjustedEventPath()
     }
 }
 
-#ifndef NDEBUG
-static inline bool movedFromOlderToYounger(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
+TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarget, TreeScope* treeScope, TreeScopeEventContextMap& treeScopeEventContextMap)
 {
-    Node& rootNode = lastTreeScope.rootNode();
-    return rootNode.isShadowRoot() && toShadowRoot(rootNode).youngerShadowRoot() == currentTreeScope.rootNode();
-}
-
-static inline bool movedFromYoungerToOlder(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
-{
-    Node& rootNode = lastTreeScope.rootNode();
-    return rootNode.isShadowRoot() && toShadowRoot(rootNode).olderShadowRoot() == currentTreeScope.rootNode();
-}
-#endif
-
-static inline bool movedFromChildToParent(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
-{
-    return lastTreeScope.parentTreeScope() == &currentTreeScope;
-}
-
-static inline bool movedFromParentToChild(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
-{
-    return currentTreeScope.parentTreeScope() == &lastTreeScope;
+    if (!treeScope)
+        return 0;
+    TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(treeScope, TreeScopeEventContext::create(*treeScope));
+    TreeScopeEventContext* treeScopeEventContext = addResult.iterator->value.get();
+    if (addResult.isNewEntry) {
+        TreeScopeEventContext* parentTreeScopeEventContext = ensureTreeScopeEventContext(0, treeScope->olderShadowRootOrParentTreeScope(), treeScopeEventContextMap);
+        if (parentTreeScopeEventContext && parentTreeScopeEventContext->target()) {
+            treeScopeEventContext->setTarget(parentTreeScopeEventContext->target());
+        } else if (currentTarget) {
+            treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(currentTarget));
+        }
+    } else if (!treeScopeEventContext->target() && currentTarget) {
+        treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(currentTarget));
+    }
+    return treeScopeEventContext;
 }
 
 void EventPath::calculateAdjustedTargets()
 {
-    Vector<Node*, 32> targetStack;
     const TreeScope* lastTreeScope = 0;
     bool isSVGElement = at(0).node()->isSVGElement();
 
-    typedef HashMap<const TreeScope*, RefPtr<TreeScopeEventContext> > TreeScopeEventContextMap;
     TreeScopeEventContextMap treeScopeEventContextMap;
-    TreeScopeEventContext* lastSharedEventContext = 0;
+    TreeScopeEventContext* lastTreeScopeEventContext = 0;
 
     for (size_t i = 0; i < size(); ++i) {
-        Node* current = at(i).node();
-        TreeScope& currentTreeScope = current->treeScope();
-        if (targetStack.isEmpty()) {
-            targetStack.append(current);
-        } else if (lastTreeScope != &currentTreeScope && !isSVGElement) {
-            if (movedFromParentToChild(*lastTreeScope, currentTreeScope)) {
-                targetStack.append(targetStack.last());
-            } else if (movedFromChildToParent(*lastTreeScope, currentTreeScope)) {
-                ASSERT(!targetStack.isEmpty());
-                targetStack.removeLast();
-                if (targetStack.isEmpty())
-                    targetStack.append(current);
+        Node* currentNode = at(i).node();
+        TreeScope& currentTreeScope = currentNode->treeScope();
+        if (lastTreeScope != &currentTreeScope) {
+            if (!isSVGElement) {
+                lastTreeScopeEventContext = ensureTreeScopeEventContext(currentNode, &currentTreeScope, treeScopeEventContextMap);
             } else {
-                ASSERT(movedFromYoungerToOlder(*lastTreeScope, currentTreeScope) || movedFromOlderToYounger(*lastTreeScope, currentTreeScope));
-                ASSERT(!targetStack.isEmpty());
-                targetStack.removeLast();
-                if (targetStack.isEmpty())
-                    targetStack.append(current);
-                else
-                    targetStack.append(targetStack.last());
+                TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(&currentTreeScope, TreeScopeEventContext::create(currentTreeScope));
+                lastTreeScopeEventContext = addResult.iterator->value.get();
+                if (addResult.isNewEntry) {
+                    // Don't adjust an event target for SVG.
+                    lastTreeScopeEventContext->setTarget(eventTargetRespectingTargetRules(at(0).node()));
+                }
             }
         }
-        if (lastTreeScope != &currentTreeScope) {
-            TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(&currentTreeScope, TreeScopeEventContext::create(currentTreeScope));
-            lastSharedEventContext = addResult.iterator->value.get();
-            if (addResult.isNewEntry)
-                lastSharedEventContext->setTarget(eventTargetRespectingTargetRules(targetStack.last()));
-        }
-        at(i).setTreeScopeEventContext(lastSharedEventContext);
+        ASSERT(lastTreeScopeEventContext);
+        at(i).setTreeScopeEventContext(lastTreeScopeEventContext);
         lastTreeScope = &currentTreeScope;
     }
     m_treeScopeEventContexts.appendRange(treeScopeEventContextMap.values().begin(), treeScopeEventContextMap.values().end());
@@ -286,7 +266,7 @@ EventTarget* EventPath::findRelatedNode(TreeScope* scope, RelatedTargetMap& rela
             relatedNode = found->value;
             break;
         }
-        scope = scope->parentTreeScope();
+        scope = scope->olderShadowRootOrParentTreeScope();
     }
     for (Vector<TreeScope*, 32>::iterator iter = parentTreeScopes.begin(); iter < parentTreeScopes.end(); ++iter)
         relatedTargetMap.add(*iter, relatedNode);
@@ -380,7 +360,7 @@ void EventPath::adjustTouchList(const Node* node, const TouchList* touchList, Ve
 void EventPath::checkReachability(TreeScope& treeScope, TouchList& touchList)
 {
     for (size_t i = 0; i < touchList.length(); ++i)
-        ASSERT(touchList.item(i)->target()->toNode()->treeScope().isInclusiveAncestorOf(treeScope));
+        ASSERT(touchList.item(i)->target()->toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScope));
 }
 #endif
 

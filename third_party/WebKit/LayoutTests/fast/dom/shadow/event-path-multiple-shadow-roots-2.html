@@ -5,9 +5,7 @@
 <script src="resources/shadow-dom.js"></script>
 </head>
 <body>
-<p id="description"></p>
 <div id="sandbox"></div>
-<pre id="console"></pre>
 <script>
 var sandbox = document.getElementById('sandbox');
 
@@ -21,25 +19,28 @@ function click(path) {
 
 sandbox.appendChild(
     createDOM('div', {'id': 'A'},
-              createDOM('div', {'id': 'B'},
-                        createDOM('div', {'id': 'C'})),
-              createShadowRoot({'id': 'D'},
-                               createDOM('div', {'id': 'E'},
-                                         createDOM('content', {'id': 'F'}))),
-              createShadowRoot({'id': 'G'},
-                               createDOM('div', {'id': 'H'},
-                                         createDOM('shadow', {'id': 'I'})))));
+              createDOM('div', {'id': 'B'}),
+              createShadowRoot({'id': 'SR-OLDEST'},
+                               createDOM('div', {'id': 'E'})),
+              createShadowRoot({'id': 'SR-MIDDLE'},
+                               createDOM('content', {'id': 'H'}),
+                               createDOM('div', {'id': 'I'})),
+              createShadowRoot({'id': 'SR-YOUNGEST'},
+                               createDOM('shadow', {'id': 'F'}),
+                               createDOM('div', {'id': 'G'}))));
 
-['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A//', 'A//H', 'A//I'].forEach(function(path) {
+['A', 'B', 'A/', 'A/E', 'A//', 'A//H', 'A//I', 'A///', 'A///F', 'A///G'].forEach(function(path) {
     getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
         debug('\nevent.path on node ' + dumpNode(event.currentTarget) + ' (target: ' + dumpNode(event.target) + ')');
         debug(dumpNodeList(event.path));
     });
 });
 
-click('C');
+
+click('B');
 click('A/E');
-click('A//H');
+click('A//I');
+click('A///G');
 </script>
 </body>
 </html>

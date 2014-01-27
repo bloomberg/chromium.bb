@@ -29,12 +29,12 @@ Moving mouse from A/D to A//F
   mouseout
      @D (target: D) (related: A)
      @older-shadow-root (target: D) (related: A)
-     @E (target: E) (related: F)
-     @younger-shadow-root (target: E) (related: F)
+     @E (target: D) (related: F)
+     @younger-shadow-root (target: D) (related: F)
 
   mouseover
-     @F (target: F) (related: E)
-     @younger-shadow-root (target: F) (related: E)
+     @F (target: F) (related: D)
+     @younger-shadow-root (target: F) (related: D)
 
 Moving mouse from B to A//F
 
@@ -58,8 +58,8 @@ Click A/D
   click
      @D (target: D)
      @older-shadow-root (target: D)
-     @E (target: E)
-     @younger-shadow-root (target: E)
+     @E (target: D)
+     @younger-shadow-root (target: D)
      @A (target: A)
      @top (target: A)
 PASS successfullyParsed is true

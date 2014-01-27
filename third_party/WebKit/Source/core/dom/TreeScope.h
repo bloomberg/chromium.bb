@@ -52,6 +52,9 @@ class TreeScope {
 public:
     TreeScope* parentTreeScope() const { return m_parentTreeScope; }
 
+    TreeScope* olderShadowRootOrParentTreeScope() const;
+    bool isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(const TreeScope&) const;
+
     Element* adjustedFocusedElement() const;
     Element* getElementById(const AtomicString&) const;
     const Vector<Element*>& getAllElementsById(const AtomicString&) const;

@@ -82,6 +82,9 @@ private:
 
     void adjustTouchList(const Node*, const TouchList*, Vector<TouchList*> adjustedTouchList, const Vector<TreeScope*>& treeScopes);
 
+    typedef HashMap<TreeScope*, RefPtr<TreeScopeEventContext> > TreeScopeEventContextMap;
+    TreeScopeEventContext* ensureTreeScopeEventContext(Node* currentTarget, TreeScope*, TreeScopeEventContextMap&);
+
     typedef HashMap<TreeScope*, EventTarget*> RelatedTargetMap;
 
     static void buildRelatedNodeMap(const Node*, RelatedTargetMap&);

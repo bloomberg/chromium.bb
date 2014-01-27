@@ -1,30 +1,63 @@
 
-event.path on node #C
+click #C
+
+event.path on node #C (target: #C)
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
-event.path on node #B
+event.path on node #B (target: #C)
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
-event.path on node #F
+event.path on node #F (target: #C)
 #C, #B, #F, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path on node #E
+event.path on node #E (target: #C)
 #C, #B, #F, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path on node #D
+event.path on node #D (target: #C)
 #C, #B, #F, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path on node #I
+event.path on node #I (target: #C)
 #C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path on node #H
+event.path on node #H (target: #C)
 #C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path on node #G
+event.path on node #G (target: #C)
 #C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
-event.path on node #A
+event.path on node #A (target: #C)
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
+
+click #A/E
+
+event.path on node #E (target: #E)
+#E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
+
+event.path on node #D (target: #E)
+#E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
+
+event.path on node #I (target: #E)
+#I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 8
+
+event.path on node #H (target: #E)
+#I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 8
+
+event.path on node #G (target: #E)
+#I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 8
+
+event.path on node #A (target: #A)
+#A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
+
+click #A//H
+
+event.path on node #H (target: #H)
+#H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
+
+event.path on node #G (target: #H)
+#H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
+
+event.path on node #A (target: #A)
+#A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 5
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -91,6 +91,24 @@ TreeScope::~TreeScope()
         m_parentTreeScope->guardDeref();
 }
 
+TreeScope* TreeScope::olderShadowRootOrParentTreeScope() const
+{
+    if (rootNode().isShadowRoot()) {
+        if (ShadowRoot* olderShadowRoot = toShadowRoot(rootNode()).olderShadowRoot())
+            return olderShadowRoot;
+    }
+    return parentTreeScope();
+}
+
+bool TreeScope::isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(const TreeScope& scope) const
+{
+    for (const TreeScope* current = &scope; current; current = current->olderShadowRootOrParentTreeScope()) {
+        if (current == this)
+            return true;
+    }
+    return false;
+}
+
 bool TreeScope::rootNodeHasTreeSharedParent() const
 {
     return rootNode().hasTreeSharedParent();
