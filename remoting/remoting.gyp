@@ -22,26 +22,6 @@
 
     'remoting_localize_path': 'tools/build/remoting_localize.py',
 
-    # The |major|, |build| and |patch| versions are inherited from Chrome.
-    # Since Chrome's |minor| version is always '0', we replace it with a
-    # Chromoting-specific patch version.
-    # Note that we check both the |chrome_version_path| file and the
-    # |remoting_version_path| so that we can override the Chrome version
-    # numbers if needed.
-    'version_py_path': '../chrome/tools/build/version.py',
-    'remoting_version_path': '../remoting/VERSION',
-    'chrome_version_path': '../chrome/VERSION',
-    'version_major':
-      '<!(python <(version_py_path) -f <(chrome_version_path) -f <(remoting_version_path) -t "@MAJOR@")',
-    'version_minor':
-      '<!(python <(version_py_path) -f <(remoting_version_path) -t "@REMOTING_PATCH@")',
-    'version_short':
-      '<(version_major).<(version_minor).'
-      '<!(python <(version_py_path) -f <(chrome_version_path) -f <(remoting_version_path) -t "@BUILD@")',
-    'version_full':
-      '<(version_short).'
-      '<!(python <(version_py_path) -f <(chrome_version_path) -f <(remoting_version_path) -t "@PATCH@")',
-
     'branding_path': '../remoting/branding_<(branding)',
 
     'webapp_locale_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/webapp/_locales',
@@ -145,6 +125,7 @@
     '../chrome/js_unittest_vars.gypi',
     'remoting_android.gypi',
     'remoting_webapp.gypi',
+    'remoting_version.gypi',
   ],
 
   'target_defaults': {
