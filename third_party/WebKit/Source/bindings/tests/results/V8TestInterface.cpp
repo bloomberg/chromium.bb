@@ -638,7 +638,6 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (info.Holder()->HasRealNamedProperty(name))
         return;
 
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestInterface* collection = V8TestInterface::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     bool element0Enabled = false;

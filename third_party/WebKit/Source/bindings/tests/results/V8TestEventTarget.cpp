@@ -112,7 +112,6 @@ static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     RefPtr<Node> element = collection->item(index);
     if (!element)
@@ -171,7 +170,6 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (info.Holder()->HasRealNamedProperty(name))
         return;
 
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     RefPtr<Node> element = collection->namedItem(propertyName);

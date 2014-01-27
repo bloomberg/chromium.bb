@@ -3656,7 +3656,6 @@ sub GenerateImplementationIndexedPropertyGetter
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
     my $getterCode = "static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $getterCode .= "{\n";
-    $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
     $getterCode .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     if ($raisesExceptions) {
         $getterCode .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
@@ -4025,7 +4024,6 @@ sub GenerateImplementationNamedPropertyGetter
         $code .= "        return;\n";
     }
     $code .= "\n";
-    $code .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     if ($raisesExceptions) {

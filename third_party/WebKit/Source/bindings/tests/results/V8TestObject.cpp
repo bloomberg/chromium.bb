@@ -5516,7 +5516,6 @@ static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestObj* collection = V8TestObject::toNative(info.Holder());
     RefPtr<Node> element = collection->item(index);
     if (!element)
@@ -5540,7 +5539,6 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (info.Holder()->HasRealNamedProperty(name))
         return;
 
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestObj* collection = V8TestObject::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     String element = collection->namedItem(propertyName);
