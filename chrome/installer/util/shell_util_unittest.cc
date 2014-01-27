@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/shortcut.h"
@@ -588,6 +589,103 @@ TEST_F(ShellUtilShortcutTest, RetargetChromeShortcutsWithArgsIcon) {
   // Verify shortcut 3: no change, since target doesn't match.
   ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
                          expected_properties3);
+}
+
+TEST_F(ShellUtilShortcutTest, ClearShortcutArguments) {
+  // Shortcut 1: targets "chrome.exe"; no arguments.
+  test_properties_.set_shortcut_name(L"Chrome 1");
+  test_properties_.set_arguments(L"");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+                  ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
+                  ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut1_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut1_path));
+  ShellUtil::ShortcutProperties expected_properties1(test_properties_);
+
+  // Shortcut 2: targets "chrome.exe"; has 1 whitelisted argument.
+  test_properties_.set_shortcut_name(L"Chrome 2");
+  test_properties_.set_arguments(L"--profile-directory=\"Profile 2\"");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+                  ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
+                  ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut2_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut2_path));
+  ShellUtil::ShortcutProperties expected_properties2(test_properties_);
+
+  // Shortcut 3: targets "chrome.exe"; has an unknown argument.
+  test_properties_.set_shortcut_name(L"Chrome 3");
+  test_properties_.set_arguments(L"foo.com");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+                  ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
+                  ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut3_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut3_path));
+  ShellUtil::ShortcutProperties expected_properties3(test_properties_);
+
+  // Shortcut 4: targets "chrome.exe"; has both unknown and known arguments.
+  test_properties_.set_shortcut_name(L"Chrome 4");
+  test_properties_.set_arguments(L"foo.com --show-app-list");
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
+                  ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
+                  ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
+  base::FilePath shortcut4_path = GetExpectedShortcutPath(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_);
+  ASSERT_TRUE(base::PathExists(shortcut4_path));
+  ShellUtil::ShortcutProperties expected_properties4(test_properties_);
+
+  // List the shortcuts.
+  std::vector<std::pair<base::FilePath, base::string16> > shortcuts;
+  EXPECT_TRUE(ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+      dist_,
+      ShellUtil::CURRENT_USER,
+      chrome_exe_,
+      false,
+      NULL,
+      &shortcuts));
+  ASSERT_EQ(2u, shortcuts.size());
+  std::pair<base::FilePath, base::string16> shortcut3 =
+      shortcuts[0].first == shortcut3_path ? shortcuts[0] : shortcuts[1];
+  std::pair<base::FilePath, base::string16> shortcut4 =
+      shortcuts[0].first == shortcut4_path ? shortcuts[0] : shortcuts[1];
+  EXPECT_EQ(shortcut3_path, shortcut3.first);
+  EXPECT_EQ(L"foo.com", shortcut3.second);
+  EXPECT_EQ(shortcut4_path, shortcut4.first);
+  EXPECT_EQ(L"foo.com --show-app-list", shortcut4.second);
+
+  // Clear shortcuts.
+  shortcuts.clear();
+  EXPECT_TRUE(ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
+      ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+      dist_,
+      ShellUtil::CURRENT_USER,
+      chrome_exe_,
+      true,
+      NULL,
+      &shortcuts));
+  ASSERT_EQ(2u, shortcuts.size());
+  shortcut3 = shortcuts[0].first == shortcut3_path ? shortcuts[0] :
+                                                     shortcuts[1];
+  shortcut4 = shortcuts[0].first == shortcut4_path ? shortcuts[0] :
+                                                     shortcuts[1];
+  EXPECT_EQ(shortcut3_path, shortcut3.first);
+  EXPECT_EQ(L"foo.com", shortcut3.second);
+  EXPECT_EQ(shortcut4_path, shortcut4.first);
+  EXPECT_EQ(L"foo.com --show-app-list", shortcut4.second);
+
+  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
+                         expected_properties1);
+  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
+                         expected_properties2);
+  expected_properties3.set_arguments(base::string16());
+  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
+                         expected_properties3);
+  expected_properties4.set_arguments(L"--show-app-list");
+  ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
+                         expected_properties4);
 }
 
 TEST_F(ShellUtilShortcutTest, CreateMultipleStartMenuShortcutsAndRemoveFolder) {

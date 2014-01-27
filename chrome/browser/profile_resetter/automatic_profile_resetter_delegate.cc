@@ -330,8 +330,11 @@ void AutomaticProfileResetterDelegateImpl::RunProfileSettingsReset(
     bool send_feedback,
     const base::Closure& completion) {
   DCHECK(brandcoded_defaults_);
-  scoped_ptr<ResettableSettingsSnapshot> old_settings_snapshot(
-      send_feedback ? new ResettableSettingsSnapshot(profile_) : NULL);
+  scoped_ptr<ResettableSettingsSnapshot> old_settings_snapshot;
+  if (send_feedback) {
+    old_settings_snapshot.reset(new ResettableSettingsSnapshot(profile_));
+    old_settings_snapshot->RequestShortcuts(base::Closure());
+  }
   profile_resetter_->Reset(
       resettable_aspects_,
       brandcoded_defaults_.Pass(),

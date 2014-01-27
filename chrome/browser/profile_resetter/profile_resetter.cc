@@ -5,6 +5,7 @@
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -20,14 +21,48 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/management_policy.h"
+
+#if defined(OS_WIN)
+#include "base/base_paths.h"
+#include "base/path_service.h"
+#include "chrome/installer/util/shell_util.h"
+#include "content/public/browser/browser_thread.h"
+
+namespace {
+
+void ResetShortcutsOnFileThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  // Get full path of chrome.
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+    return;
+  BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BROWSER);
+  for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
+       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
+    ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
+        static_cast<ShellUtil::ShortcutLocation>(location),
+        dist,
+        ShellUtil::CURRENT_USER,
+        chrome_exe,
+        true,
+        NULL,
+        NULL);
+  }
+}
+
+}  // namespace
+#endif  // defined(OS_WIN)
 
 ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       pending_reset_flags_(0),
-      cookies_remover_(NULL) {
+      cookies_remover_(NULL),
+      weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(profile_);
 }
@@ -73,6 +108,7 @@ void ProfileResetter::Reset(
       { EXTENSIONS, &ProfileResetter::ResetExtensions },
       { STARTUP_PAGES, &ProfileResetter::ResetStartupPages },
       { PINNED_TABS, &ProfileResetter::ResetPinnedTabs },
+      { SHORTCUTS, &ProfileResetter::ResetShortcuts },
   };
 
   ResettableFlags reset_triggered_for_flags = 0;
@@ -141,7 +177,7 @@ void ProfileResetter::ResetDefaultSearchEngine() {
     template_url_service_sub_ =
         template_url_service_->RegisterOnLoadedCallback(
             base::Bind(&ProfileResetter::OnTemplateURLServiceLoaded,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
     template_url_service_->Load();
   }
 }
@@ -250,6 +286,20 @@ void ProfileResetter::ResetPinnedTabs() {
   MarkAsDone(PINNED_TABS);
 }
 
+void ProfileResetter::ResetShortcuts() {
+#if defined(OS_WIN)
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&ResetShortcutsOnFileThread),
+      base::Bind(&ProfileResetter::MarkAsDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 SHORTCUTS));
+#else
+  MarkAsDone(SHORTCUTS);
+#endif
+}
+
 void ProfileResetter::OnTemplateURLServiceLoaded() {
   // TemplateURLService has loaded. If we need to clean search engines, it's
   // time to go on.
@@ -262,4 +312,34 @@ void ProfileResetter::OnTemplateURLServiceLoaded() {
 void ProfileResetter::OnBrowsingDataRemoverDone() {
   cookies_remover_ = NULL;
   MarkAsDone(COOKIES_AND_SITE_DATA);
+}
+
+std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
+    const scoped_refptr<SharedCancellationFlag>& cancel) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+#if defined(OS_WIN)
+  // Get full path of chrome.
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+    return std::vector<ShortcutCommand>();
+  BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BROWSER);
+  std::vector<ShortcutCommand> shortcuts;
+  for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
+       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
+    if (cancel && cancel->data.IsSet())
+      break;
+    ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
+        static_cast<ShellUtil::ShortcutLocation>(location),
+        dist,
+        ShellUtil::CURRENT_USER,
+        chrome_exe,
+        false,
+        cancel,
+        &shortcuts);
+  }
+  return shortcuts;
+#else
+  return std::vector<ShortcutCommand>();
+#endif
 }

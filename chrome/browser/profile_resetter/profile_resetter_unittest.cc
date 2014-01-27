@@ -7,6 +7,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -33,7 +34,16 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-using base::ASCIIToUTF16;
+#if defined(OS_WIN)
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/process/process_handle.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/win/scoped_com_initializer.h"
+#include "base/win/shortcut.h"
+#endif
+
 
 namespace {
 
@@ -85,6 +95,10 @@ using extensions::Manifest;
 // ProfileResetterTest sets up the extension, WebData and TemplateURL services.
 class ProfileResetterTest : public ExtensionServiceTestBase,
                             public ProfileResetterTestBase {
+ public:
+  ProfileResetterTest();
+  virtual ~ProfileResetterTest();
+
  protected:
   virtual void SetUp() OVERRIDE;
 
@@ -92,7 +106,28 @@ class ProfileResetterTest : public ExtensionServiceTestBase,
 
   static BrowserContextKeyedService* CreateTemplateURLService(
       content::BrowserContext* context);
+
+ private:
+#if defined(OS_WIN)
+  base::ScopedPathOverride user_desktop_override_;
+  base::ScopedPathOverride app_dir_override_;
+  base::ScopedPathOverride start_menu_override_;
+  base::ScopedPathOverride taskbar_pins_override_;
+  base::win::ScopedCOMInitializer com_init_;
+#endif
 };
+
+ProfileResetterTest::ProfileResetterTest()
+#if defined(OS_WIN)
+    : user_desktop_override_(base::DIR_USER_DESKTOP),
+      app_dir_override_(base::DIR_APP_DATA),
+      start_menu_override_(base::DIR_START_MENU),
+      taskbar_pins_override_(base::DIR_TASKBAR_PINS)
+#endif
+{}
+
+ProfileResetterTest::~ProfileResetterTest() {
+}
 
 void ProfileResetterTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
@@ -229,6 +264,97 @@ scoped_ptr<net::FakeURLFetcher> ConfigParserTest::CreateFakeURLFetcher(
   return fetcher.Pass();
 }
 
+// A helper class to create/delete/check a Chrome desktop shortcut on Windows.
+class ShortcutHandler {
+ public:
+  ShortcutHandler();
+  ~ShortcutHandler();
+
+  static bool IsSupported();
+  ShortcutCommand CreateWithArguments(const base::string16& name,
+                                      const base::string16& args);
+  void CheckShortcutHasArguments(const base::string16& desired_args) const;
+  void Delete();
+
+ private:
+#if defined(OS_WIN)
+  base::FilePath shortcut_path_;
+#endif
+  DISALLOW_COPY_AND_ASSIGN(ShortcutHandler);
+};
+
+#if defined(OS_WIN)
+ShortcutHandler::ShortcutHandler() {
+}
+
+ShortcutHandler::~ShortcutHandler() {
+  if (!shortcut_path_.empty())
+    Delete();
+}
+
+// static
+bool ShortcutHandler::IsSupported() {
+  return true;
+}
+
+ShortcutCommand ShortcutHandler::CreateWithArguments(
+    const base::string16& name,
+    const base::string16& args) {
+  EXPECT_TRUE(shortcut_path_.empty());
+  base::FilePath path_to_create;
+  EXPECT_TRUE(PathService::Get(base::DIR_USER_DESKTOP, &path_to_create));
+  path_to_create = path_to_create.Append(name);
+  EXPECT_FALSE(base::PathExists(path_to_create)) << path_to_create.value();
+
+  base::FilePath path_exe;
+  EXPECT_TRUE(PathService::Get(base::FILE_EXE, &path_exe));
+  base::win::ShortcutProperties shortcut_properties;
+  shortcut_properties.set_target(path_exe);
+  shortcut_properties.set_arguments(args);
+  EXPECT_TRUE(base::win::CreateOrUpdateShortcutLink(
+      path_to_create, shortcut_properties,
+      base::win::SHORTCUT_CREATE_ALWAYS)) << path_to_create.value();
+  shortcut_path_ = path_to_create;
+  return ShortcutCommand(shortcut_path_, args);
+}
+
+void ShortcutHandler::CheckShortcutHasArguments(
+    const base::string16& desired_args) const {
+  EXPECT_FALSE(shortcut_path_.empty());
+  base::string16 args;
+  EXPECT_TRUE(base::win::ResolveShortcut(shortcut_path_, NULL, &args));
+  EXPECT_EQ(desired_args, args);
+}
+
+void ShortcutHandler::Delete() {
+  EXPECT_FALSE(shortcut_path_.empty());
+  EXPECT_TRUE(base::DeleteFile(shortcut_path_, false));
+  shortcut_path_.clear();
+}
+#else
+ShortcutHandler::ShortcutHandler() {}
+
+ShortcutHandler::~ShortcutHandler() {}
+
+// static
+bool ShortcutHandler::IsSupported() {
+  return false;
+}
+
+ShortcutCommand ShortcutHandler::CreateWithArguments(
+    const base::string16& name,
+    const base::string16& args) {
+  return ShortcutCommand();
+}
+
+void ShortcutHandler::CheckShortcutHasArguments(
+    const base::string16& desired_args) const {
+}
+
+void ShortcutHandler::Delete() {
+}
+#endif  // defined(OS_WIN)
+
 
 // helper functions -----------------------------------------------------------
 
@@ -298,8 +424,8 @@ TEST_F(ProfileResetterTest, ResetDefaultSearchEngineNonOrganic) {
       TemplateURLServiceFactory::GetForProfile(profile());
   TemplateURL* default_engine = model->GetDefaultSearchProvider();
   ASSERT_NE(static_cast<TemplateURL*>(NULL), default_engine);
-  EXPECT_EQ(ASCIIToUTF16("first"), default_engine->short_name());
-  EXPECT_EQ(ASCIIToUTF16("firstkey"), default_engine->keyword());
+  EXPECT_EQ(base::ASCIIToUTF16("first"), default_engine->short_name());
+  EXPECT_EQ(base::ASCIIToUTF16("firstkey"), default_engine->keyword());
   EXPECT_EQ("http://www.foo.com/s?q={searchTerms}", default_engine->url());
 
   EXPECT_EQ("", prefs->GetString(prefs::kLastPromptedGoogleURL));
@@ -456,7 +582,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   scoped_refptr<Extension> theme =
-      CreateExtension(ASCIIToUTF16("example1"),
+      CreateExtension(base::ASCIIToUTF16("example1"),
                       temp_dir.path(),
                       Manifest::INVALID_LOCATION,
                       extensions::Manifest::TYPE_THEME,
@@ -470,7 +596,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
 
   scoped_refptr<Extension> ext2 = CreateExtension(
-      ASCIIToUTF16("example2"),
+      base::ASCIIToUTF16("example2"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
       extensions::Manifest::TYPE_EXTENSION,
@@ -478,28 +604,28 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
   service_->AddExtension(ext2.get());
   // Component extensions and policy-managed extensions shouldn't be disabled.
   scoped_refptr<Extension> ext3 = CreateExtension(
-      ASCIIToUTF16("example3"),
+      base::ASCIIToUTF16("example3"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
       Manifest::COMPONENT,
       extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext3.get());
-  scoped_refptr<Extension> ext4 = CreateExtension(
-      ASCIIToUTF16("example4"),
-      base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
-      Manifest::EXTERNAL_POLICY_DOWNLOAD,
-      extensions::Manifest::TYPE_EXTENSION,
-      false);
+  scoped_refptr<Extension> ext4 =
+      CreateExtension(base::ASCIIToUTF16("example4"),
+                      base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
+                      Manifest::EXTERNAL_POLICY_DOWNLOAD,
+                      extensions::Manifest::TYPE_EXTENSION,
+                      false);
   service_->AddExtension(ext4.get());
   scoped_refptr<Extension> ext5 = CreateExtension(
-      ASCIIToUTF16("example5"),
+      base::ASCIIToUTF16("example5"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent4")),
       Manifest::EXTERNAL_COMPONENT,
       extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext5.get());
   scoped_refptr<Extension> ext6 = CreateExtension(
-      ASCIIToUTF16("example6"),
+      base::ASCIIToUTF16("example6"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent5")),
       Manifest::EXTERNAL_POLICY,
       extensions::Manifest::TYPE_EXTENSION,
@@ -520,7 +646,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
 
 TEST_F(ProfileResetterTest, ResetExtensionsByDisablingNonOrganic) {
   scoped_refptr<Extension> ext2 = CreateExtension(
-      ASCIIToUTF16("example2"),
+      base::ASCIIToUTF16("example2"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
       extensions::Manifest::TYPE_EXTENSION,
@@ -528,7 +654,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisablingNonOrganic) {
   service_->AddExtension(ext2.get());
   // Components and external policy extensions shouldn't be deleted.
   scoped_refptr<Extension> ext3 = CreateExtension(
-      ASCIIToUTF16("example3"),
+      base::ASCIIToUTF16("example3"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
       Manifest::INVALID_LOCATION,
       extensions::Manifest::TYPE_EXTENSION,
@@ -552,7 +678,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   scoped_refptr<Extension> ext1 =
-      CreateExtension(ASCIIToUTF16("example1"),
+      CreateExtension(base::ASCIIToUTF16("example1"),
                       temp_dir.path(),
                       Manifest::INVALID_LOCATION,
                       extensions::Manifest::TYPE_THEME,
@@ -566,7 +692,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
 
   scoped_refptr<Extension> ext2 =
-      CreateExtension(ASCIIToUTF16("example2"),
+      CreateExtension(base::ASCIIToUTF16("example2"),
                       base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
                       Manifest::INVALID_LOCATION,
                       extensions::Manifest::TYPE_EXTENSION,
@@ -574,7 +700,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsAndDefaultApps) {
   service_->AddExtension(ext2.get());
 
   scoped_refptr<Extension> ext3 =
-      CreateExtension(ASCIIToUTF16("example2"),
+      CreateExtension(base::ASCIIToUTF16("example2"),
                       base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
                       Manifest::INVALID_LOCATION,
                       extensions::Manifest::TYPE_HOSTED_APP,
@@ -625,7 +751,7 @@ TEST_F(ProfileResetterTest, ResetStartPagePartially) {
 
 TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
   scoped_refptr<Extension> extension_app = CreateExtension(
-      ASCIIToUTF16("hello!"),
+      base::ASCIIToUTF16("hello!"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
       extensions::Manifest::TYPE_HOSTED_APP,
@@ -659,6 +785,20 @@ TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
   EXPECT_EQ(contents3, tab_strip_model->GetWebContentsAt(2));
   EXPECT_EQ(contents4, tab_strip_model->GetWebContentsAt(3));
   EXPECT_EQ(1, tab_strip_model->IndexOfFirstNonMiniTab());
+}
+
+TEST_F(ProfileResetterTest, ResetShortcuts) {
+  ShortcutHandler shortcut;
+  ShortcutCommand command_line = shortcut.CreateWithArguments(
+      base::ASCIIToUTF16("chrome.lnk"),
+      base::ASCIIToUTF16("--profile-directory=Default foo.com"));
+  shortcut.CheckShortcutHasArguments(base::ASCIIToUTF16(
+      "--profile-directory=Default foo.com"));
+
+  ResetAndWait(ProfileResetter::SHORTCUTS);
+
+  shortcut.CheckShortcutHasArguments(base::ASCIIToUTF16(
+      "--profile-directory=Default"));
 }
 
 TEST_F(ProfileResetterTest, ResetFewFlags) {
@@ -722,7 +862,7 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   EXPECT_EQ(0, empty_snap.FindDifferentFields(empty_snap));
 
   scoped_refptr<Extension> ext = CreateExtension(
-      ASCIIToUTF16("example"),
+      base::ASCIIToUTF16("example"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
       extensions::Manifest::TYPE_EXTENSION,
@@ -739,9 +879,25 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
                ProfileResetter::HOMEPAGE |
                ProfileResetter::STARTUP_PAGES,
                master_prefs);
+  ShortcutHandler shortcut_hijacked;
+  ShortcutCommand command_line = shortcut_hijacked.CreateWithArguments(
+      base::ASCIIToUTF16("chrome1.lnk"),
+      base::ASCIIToUTF16("--profile-directory=Default foo.com"));
+  shortcut_hijacked.CheckShortcutHasArguments(
+      base::ASCIIToUTF16("--profile-directory=Default foo.com"));
+  ShortcutHandler shortcut_ok;
+  shortcut_ok.CreateWithArguments(
+      base::ASCIIToUTF16("chrome2.lnk"),
+      base::ASCIIToUTF16("--profile-directory=Default1"));
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
-  EXPECT_EQ(ResettableSettingsSnapshot::ALL_FIELDS,
+  nonorganic_snap.RequestShortcuts(base::Closure());
+  // Let it enumerate shortcuts on the FILE thread.
+  base::MessageLoop::current()->RunUntilIdle();
+  int diff_fields = ResettableSettingsSnapshot::ALL_FIELDS;
+  if (!ShortcutHandler::IsSupported())
+    diff_fields &= ~ResettableSettingsSnapshot::SHORTCUTS;
+  EXPECT_EQ(diff_fields,
             empty_snap.FindDifferentFields(nonorganic_snap));
   empty_snap.Subtract(nonorganic_snap);
   EXPECT_TRUE(empty_snap.startup_urls().empty());
@@ -752,16 +908,20 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   EXPECT_NE(std::string::npos, empty_snap.dse_url().find("{google:baseURL}"));
   EXPECT_EQ(ResettableSettingsSnapshot::ExtensionList(),
             empty_snap.enabled_extensions());
+  EXPECT_EQ(std::vector<ShortcutCommand>(), empty_snap.shortcuts());
 
   // Reset to organic defaults.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
                ProfileResetter::HOMEPAGE |
                ProfileResetter::STARTUP_PAGES |
-               ProfileResetter::EXTENSIONS);
+               ProfileResetter::EXTENSIONS |
+               ProfileResetter::SHORTCUTS);
 
   ResettableSettingsSnapshot organic_snap(profile());
-  EXPECT_EQ(ResettableSettingsSnapshot::ALL_FIELDS,
-            nonorganic_snap.FindDifferentFields(organic_snap));
+  organic_snap.RequestShortcuts(base::Closure());
+  // Let it enumerate shortcuts on the FILE thread.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(diff_fields, nonorganic_snap.FindDifferentFields(organic_snap));
   nonorganic_snap.Subtract(organic_snap);
   const GURL urls[] = {GURL("http://foo.de"), GURL("http://goo.gl")};
   EXPECT_EQ(std::vector<GURL>(urls, urls + arraysize(urls)),
@@ -773,9 +933,15 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   EXPECT_EQ(ResettableSettingsSnapshot::ExtensionList(
       1, std::make_pair(ext_id, "example")),
       nonorganic_snap.enabled_extensions());
+  if (ShortcutHandler::IsSupported()) {
+    std::vector<ShortcutCommand> shortcuts = nonorganic_snap.shortcuts();
+    ASSERT_EQ(1u, shortcuts.size());
+    EXPECT_EQ(command_line.first.value(), shortcuts[0].first.value());
+    EXPECT_EQ(command_line.second, shortcuts[0].second);
+  }
 }
 
-TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
+TEST_F(ProfileResetterTest, FeedbackSerializationTest) {
   // Reset to non organic defaults.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
                ProfileResetter::HOMEPAGE |
@@ -783,7 +949,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
                kDistributionConfig);
 
   scoped_refptr<Extension> ext = CreateExtension(
-      ASCIIToUTF16("example"),
+      base::ASCIIToUTF16("example"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
       extensions::Manifest::TYPE_EXTENSION,
@@ -791,9 +957,17 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
   ASSERT_TRUE(ext);
   service_->AddExtension(ext.get());
 
-  const ResettableSettingsSnapshot nonorganic_snap(profile());
+  ShortcutHandler shortcut;
+  ShortcutCommand command_line = shortcut.CreateWithArguments(
+      base::ASCIIToUTF16("chrome.lnk"),
+      base::ASCIIToUTF16("--profile-directory=Default foo.com"));
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 15,
+  ResettableSettingsSnapshot nonorganic_snap(profile());
+  nonorganic_snap.RequestShortcuts(base::Closure());
+  // Let it enumerate shortcuts on the FILE thread.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
                  expand_this_test);
   for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
        ++field_mask) {
@@ -812,7 +986,8 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
     std::string homepage;
     bool homepage_is_ntp = true;
     std::string default_search_engine;
-    base::ListValue* extensions;
+    base::ListValue* extensions = NULL;
+    base::ListValue* shortcuts = NULL;
 
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
               dict->GetList("startup_urls", &startup_urls));
@@ -826,8 +1001,26 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
               dict->GetString("default_search_engine", &default_search_engine));
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::EXTENSIONS),
               dict->GetList("enabled_extensions", &extensions));
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::SHORTCUTS),
+              dict->GetList("shortcuts", &shortcuts));
   }
 }
+
+struct FeedbackCapture {
+  void SetFeedback(Profile* profile,
+                   const ResettableSettingsSnapshot& snapshot) {
+    list_ = GetReadableFeedbackForSnapshot(profile, snapshot).Pass();
+    OnUpdatedList();
+  }
+
+  void Fail() {
+    ADD_FAILURE() << "This method shouldn't be called.";
+  }
+
+  MOCK_METHOD0(OnUpdatedList, void(void));
+
+  scoped_ptr<base::ListValue> list_;
+};
 
 // Make sure GetReadableFeedback handles non-ascii letters.
 TEST_F(ProfileResetterTest, GetReadableFeedback) {
@@ -852,10 +1045,27 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   startup_pref.urls.push_back(GURL(base::WideToUTF8(url)));
   SessionStartupPref::SetStartupPref(prefs, startup_pref);
 
+  ShortcutHandler shortcut;
+  ShortcutCommand command_line = shortcut.CreateWithArguments(
+      base::ASCIIToUTF16("chrome.lnk"),
+      base::ASCIIToUTF16("--profile-directory=Default foo.com"));
+
+  FeedbackCapture capture;
+  EXPECT_CALL(capture, OnUpdatedList());
+  ResettableSettingsSnapshot snapshot(profile());
+  snapshot.RequestShortcuts(base::Bind(&FeedbackCapture::SetFeedback,
+                                       base::Unretained(&capture),
+                                       profile(),
+                                       base::ConstRef(snapshot)));
+  // Let it enumerate shortcuts on the FILE thread.
+  base::MessageLoop::current()->RunUntilIdle();
+  ::testing::Mock::VerifyAndClearExpectations(&capture);
   // The homepage and the startup page are in punycode. They are unreadable.
   // Trying to find the extension name.
-  scoped_ptr<base::ListValue> list(GetReadableFeedback(profile()));
+  scoped_ptr<base::ListValue> list = capture.list_.Pass();
   ASSERT_TRUE(list);
+  bool checked_extensions = false;
+  bool checked_shortcuts = false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(list->GetDictionary(i, &dict));
@@ -865,8 +1075,29 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
       base::string16 extensions;
       EXPECT_TRUE(dict->GetString("value", &extensions));
       EXPECT_EQ(base::WideToUTF16(L"Tiësto"), extensions);
+      checked_extensions = true;
+    } else if (value == "Shortcut targets") {
+      base::string16 targets;
+      EXPECT_TRUE(dict->GetString("value", &targets));
+      EXPECT_NE(base::string16::npos,
+                targets.find(base::ASCIIToUTF16("foo.com"))) << targets;
+      checked_shortcuts = true;
     }
   }
+  EXPECT_TRUE(checked_extensions);
+  EXPECT_EQ(ShortcutHandler::IsSupported(), checked_shortcuts);
+}
+
+TEST_F(ProfileResetterTest, DestroySnapshotFast) {
+  FeedbackCapture capture;
+  scoped_ptr<ResettableSettingsSnapshot> deleted_snapshot(
+      new ResettableSettingsSnapshot(profile()));
+  deleted_snapshot->RequestShortcuts(base::Bind(&FeedbackCapture::Fail,
+                                                base::Unretained(&capture)));
+  deleted_snapshot.reset();
+  // Running remaining tasks shouldn't trigger the callback to be called as
+  // |deleted_snapshot| was deleted before it could run.
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace

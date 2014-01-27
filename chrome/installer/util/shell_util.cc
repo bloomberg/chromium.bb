@@ -30,7 +30,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
@@ -1292,15 +1294,50 @@ bool ShortcutOpRetarget(const base::FilePath& old_target,
   return result;
 }
 
+bool ShortcutOpListOrRemoveUnknownArgs(
+    bool do_removal,
+    std::vector<std::pair<base::FilePath, base::string16> >* shortcuts,
+    const base::FilePath& shortcut_path) {
+  base::string16 args;
+  if (!base::win::ResolveShortcut(shortcut_path, NULL, &args))
+    return false;
+
+  CommandLine current_args(CommandLine::FromString(base::StringPrintf(
+      L"unused_program %ls", args.c_str())));
+  const char* const kept_switches[] = {
+      switches::kApp,
+      switches::kAppId,
+      switches::kShowAppList,
+      switches::kProfileDirectory,
+  };
+  CommandLine desired_args(CommandLine::NO_PROGRAM);
+  desired_args.CopySwitchesFrom(current_args, kept_switches,
+                                arraysize(kept_switches));
+  if (desired_args.argv().size() == current_args.argv().size())
+    return true;
+  if (shortcuts)
+    shortcuts->push_back(std::make_pair(shortcut_path, args));
+  if (!do_removal)
+    return true;
+  base::win::ShortcutProperties updated_properties;
+  updated_properties.set_arguments(desired_args.GetArgumentsString());
+  return base::win::CreateOrUpdateShortcutLink(
+      shortcut_path, updated_properties, base::win::SHORTCUT_UPDATE_EXISTING);
+}
+
 // {|location|, |dist|, |level|} determine |shortcut_folder|.
 // For each shortcut in |shortcut_folder| that match |shortcut_filter|, apply
 // |shortcut_operation|. Returns true if all operations are successful.
 // All intended operations are attempted, even if failures occur.
-bool BatchShortcutAction(const ShortcutFilterCallback& shortcut_filter,
-                         const ShortcutOperationCallback& shortcut_operation,
-                         ShellUtil::ShortcutLocation location,
-                         BrowserDistribution* dist,
-                         ShellUtil::ShellChange level) {
+// This method will abort and return false if |cancel| is non-NULL and gets set
+// at any point during this call.
+bool BatchShortcutAction(
+    const ShortcutFilterCallback& shortcut_filter,
+    const ShortcutOperationCallback& shortcut_operation,
+    ShellUtil::ShortcutLocation location,
+    BrowserDistribution* dist,
+    ShellUtil::ShellChange level,
+    const scoped_refptr<ShellUtil::SharedCancellationFlag>& cancel) {
   DCHECK(!shortcut_operation.is_null());
   base::FilePath shortcut_folder;
   if (!ShellUtil::GetShortcutPath(location, dist, level, &shortcut_folder)) {
@@ -1317,6 +1354,8 @@ bool BatchShortcutAction(const ShortcutFilterCallback& shortcut_filter,
   for (base::FilePath shortcut_path = enumerator.Next();
        !shortcut_path.empty();
        shortcut_path = enumerator.Next()) {
+    if (cancel && cancel->data.IsSet())
+      return false;
     if (base::win::ResolveShortcut(shortcut_path, &target_path, &args)) {
       if (shortcut_filter.Run(target_path, args) &&
           !shortcut_operation.Run(shortcut_path)) {
@@ -2109,7 +2148,8 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
       location == SHORTCUT_LOCATION_TASKBAR_PINS ?
           base::Bind(&ShortcutOpUnpin) : base::Bind(&ShortcutOpDelete));
   bool success = BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
-                                     shortcut_operation, location, dist, level);
+                                     shortcut_operation, location, dist, level,
+                                     NULL);
   // Remove chrome-specific shortcut folders if they are now empty.
   if (success &&
       (location == SHORTCUT_LOCATION_START_MENU_CHROME_DIR ||
@@ -2134,7 +2174,26 @@ bool ShellUtil::RetargetShortcutsWithArgs(
   ShortcutOperationCallback shortcut_operation(
       base::Bind(&ShortcutOpRetarget, old_target_exe, new_target_exe));
   return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
-                             shortcut_operation, location, dist, level);
+                             shortcut_operation, location, dist, level, NULL);
+}
+
+// static
+bool ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
+    ShellUtil::ShortcutLocation location,
+    BrowserDistribution* dist,
+    ShellChange level,
+    const base::FilePath& chrome_exe,
+    bool do_removal,
+    const scoped_refptr<SharedCancellationFlag>& cancel,
+    std::vector<std::pair<base::FilePath, base::string16> >* shortcuts) {
+  if (!ShellUtil::ShortcutLocationIsSupported(location))
+    return false;
+  DCHECK(dist);
+  FilterTargetEq shortcut_filter(chrome_exe, true);
+  ShortcutOperationCallback shortcut_operation(
+      base::Bind(&ShortcutOpListOrRemoveUnknownArgs, do_removal, shortcuts));
+  return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
+                             shortcut_operation, location, dist, level, cancel);
 }
 
 bool ShellUtil::GetUserSpecificRegistrySuffix(base::string16* suffix) {

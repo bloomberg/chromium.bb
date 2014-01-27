@@ -12,15 +12,21 @@
 #include <windows.h>
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "chrome/installer/util/work_item_list.h"
 
 class BrowserDistribution;
+
+namespace base {
+class CancellationFlag;
+}
 
 // This is a utility class that provides common shell integration methods
 // that can be used by installer as well as Chrome.
@@ -543,6 +549,21 @@ class ShellUtil {
       ShellChange level,
       const base::FilePath& old_target_exe,
       const base::FilePath& new_target_exe);
+
+  typedef base::RefCountedData<base::CancellationFlag> SharedCancellationFlag;
+
+  // Appends Chrome shortcuts with non-whitelisted arguments to |shortcuts| if
+  // not NULL. If |do_removal|, also removes non-whitelisted arguments from
+  // those shortcuts. This method will abort and return false if |cancel| is
+  // non-NULL and gets set at any point during this call.
+  static bool ShortcutListMaybeRemoveUnknownArgs(
+      ShellUtil::ShortcutLocation location,
+      BrowserDistribution* dist,
+      ShellChange level,
+      const base::FilePath& chrome_exe,
+      bool do_removal,
+      const scoped_refptr<SharedCancellationFlag>& cancel,
+      std::vector<std::pair<base::FilePath, base::string16> >* shortcuts);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.
