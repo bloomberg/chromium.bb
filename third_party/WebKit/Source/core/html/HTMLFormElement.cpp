@@ -128,7 +128,6 @@ void notifyFormRemovedFromTree(const Vector<T*>& elements, Node* root)
     size_t size = elements.size();
     for (size_t i = 0; i < size; ++i)
         elements[i]->formRemovedFromTree(root);
-    ASSERT(size == elements.size());
 }
 
 void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
@@ -143,7 +142,8 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
 
     if (m_hasElementsAssociatedByParser) {
         if (!m_imageElementsAreDirty) {
-            notifyFormRemovedFromTree(imageElements(), root);
+            Vector<HTMLImageElement*> images(imageElements());
+            notifyFormRemovedFromTree(images, root);
         } else {
             Vector<HTMLImageElement*> images;
             collectImageElements(insertionPoint->highestAncestor(), images);
@@ -622,11 +622,13 @@ bool HTMLFormElement::isURLAttribute(const Attribute& attribute) const
 void HTMLFormElement::associate(HTMLImageElement& e)
 {
     m_imageElementsAreDirty = true;
+    m_imageElements.clear();
 }
 
 void HTMLFormElement::disassociate(HTMLImageElement& e)
 {
     m_imageElementsAreDirty = true;
+    m_imageElements.clear();
     removeFromPastNamesMap(e);
 }
 
