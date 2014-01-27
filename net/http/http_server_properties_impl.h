@@ -127,6 +127,12 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Returns all persistent SPDY settings.
   virtual const SpdySettingsMap& spdy_settings_map() const OVERRIDE;
 
+  virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
+                                     NetworkStats stats) OVERRIDE;
+
+  virtual const NetworkStats* GetServerNetworkStats(
+      const HostPortPair& host_port_pair) const OVERRIDE;
+
   virtual HttpPipelinedHostCapability GetPipelineCapability(
       const HostPortPair& origin) OVERRIDE;
 
@@ -144,11 +150,13 @@ class NET_EXPORT HttpServerPropertiesImpl
   // |spdy_servers_table_| has flattened representation of servers (host/port
   // pair) that either support or not support SPDY protocol.
   typedef base::hash_map<std::string, bool> SpdyServerHostPortTable;
+  typedef std::map<HostPortPair, NetworkStats> ServerNetworkStatsMap;
 
   SpdyServerHostPortTable spdy_servers_table_;
 
   AlternateProtocolMap alternate_protocol_map_;
   SpdySettingsMap spdy_settings_map_;
+  ServerNetworkStatsMap server_network_stats_map_;
   scoped_ptr<CachedPipelineCapabilityMap> pipeline_capability_map_;
 
   base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;

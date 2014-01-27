@@ -263,6 +263,23 @@ HttpServerPropertiesImpl::spdy_settings_map() const {
   return spdy_settings_map_;
 }
 
+void HttpServerPropertiesImpl::SetServerNetworkStats(
+    const HostPortPair& host_port_pair,
+    NetworkStats stats) {
+  server_network_stats_map_[host_port_pair] = stats;
+}
+
+const HttpServerProperties::NetworkStats*
+HttpServerPropertiesImpl::GetServerNetworkStats(
+    const HostPortPair& host_port_pair) const {
+  ServerNetworkStatsMap::const_iterator it =
+      server_network_stats_map_.find(host_port_pair);
+  if (it == server_network_stats_map_.end()) {
+    return NULL;
+  }
+  return &it->second;
+}
+
 HttpPipelinedHostCapability HttpServerPropertiesImpl::GetPipelineCapability(
     const HostPortPair& origin) {
   HttpPipelinedHostCapability capability = PIPELINE_UNKNOWN;

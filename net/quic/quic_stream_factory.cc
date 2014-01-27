@@ -421,12 +421,22 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
     DCHECK(active_sessions_.count(*it));
     DCHECK_EQ(session, active_sessions_[*it]);
     active_sessions_.erase(*it);
-    if (!session->IsCryptoHandshakeConfirmed() && http_server_properties_) {
+    if (!http_server_properties_)
+      continue;
+
+    if (!session->IsCryptoHandshakeConfirmed()) {
       // TODO(rch):  In the special case where the session has received no
       // packets from the peer, we should consider blacklisting this
       // differently so that we still race TCP but we don't consider the
       // session connected until the handshake has been confirmed.
       http_server_properties_->SetBrokenAlternateProtocol(it->first);
+    } else {
+      QuicConnectionStats stats = session->connection()->GetStats();
+      HttpServerProperties::NetworkStats network_stats;
+      network_stats.rtt = base::TimeDelta::FromMicroseconds(stats.rtt);
+      network_stats.bandwidth_estimate = stats.estimated_bandwidth;
+      http_server_properties_->SetServerNetworkStats(
+          it->first, network_stats);
     }
   }
   IPEndPoint peer_address = session->connection()->peer_address();
@@ -568,10 +578,21 @@ int QuicStreamFactory::CreateSession(
       GetOrCreateCryptoConfig(host_port_proxy_pair);
   DCHECK(crypto_config);
 
+  QuicConfig config = config_;
+  if (http_server_properties_) {
+    const HttpServerProperties::NetworkStats* stats =
+        http_server_properties_->GetServerNetworkStats(
+            host_port_proxy_pair.first);
+    if (stats != NULL) {
+      config.set_initial_round_trip_time_us(stats->rtt.InMicroseconds(),
+                                            stats->rtt.InMicroseconds());
+    }
+  }
+
   *session = new QuicClientSession(
       connection, socket.Pass(), writer.Pass(), this,
       quic_crypto_client_stream_factory_, host_port_proxy_pair.first.host(),
-      config_, crypto_config, net_log.net_log());
+      config, crypto_config, net_log.net_log());
   all_sessions_.insert(*session);  // owning pointer
   if (is_https) {
     crypto_config->SetProofVerifier(

@@ -141,6 +141,12 @@ class HttpServerPropertiesManager
   // Returns all SPDY persistent settings.
   virtual const net::SpdySettingsMap& spdy_settings_map() const OVERRIDE;
 
+  virtual void SetServerNetworkStats(const net::HostPortPair& host_port_pair,
+                                     NetworkStats stats) OVERRIDE;
+
+  virtual const NetworkStats* GetServerNetworkStats(
+      const net::HostPortPair& host_port_pair) const OVERRIDE;
+
   virtual net::HttpPipelinedHostCapability GetPipelineCapability(
       const net::HostPortPair& origin) OVERRIDE;
 

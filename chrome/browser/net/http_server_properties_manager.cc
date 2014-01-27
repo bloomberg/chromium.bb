@@ -222,6 +222,18 @@ HttpServerPropertiesManager::spdy_settings_map() const {
   return http_server_properties_impl_->spdy_settings_map();
 }
 
+void HttpServerPropertiesManager::SetServerNetworkStats(
+    const net::HostPortPair& host_port_pair,
+    NetworkStats stats) {
+  http_server_properties_impl_->SetServerNetworkStats(host_port_pair, stats);
+}
+
+const HttpServerPropertiesManager::NetworkStats*
+HttpServerPropertiesManager::GetServerNetworkStats(
+    const net::HostPortPair& host_port_pair) const {
+  return http_server_properties_impl_->GetServerNetworkStats(host_port_pair);
+}
+
 net::HttpPipelinedHostCapability
 HttpServerPropertiesManager::GetPipelineCapability(
     const net::HostPortPair& origin) {

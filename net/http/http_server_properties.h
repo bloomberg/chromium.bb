@@ -9,6 +9,7 @@
 #include <string>
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/http/http_pipelined_host_capability.h"
@@ -75,6 +76,11 @@ extern const char kAlternateProtocolHeader[];
 // * Spdy Settings (like CWND ID field)
 class NET_EXPORT HttpServerProperties {
  public:
+  struct NetworkStats {
+    base::TimeDelta rtt;
+    uint64 bandwidth_estimate;
+  };
+
   HttpServerProperties() {}
   virtual ~HttpServerProperties() {}
 
@@ -131,6 +137,12 @@ class NET_EXPORT HttpServerProperties {
 
   // Returns all persistent SPDY settings.
   virtual const SpdySettingsMap& spdy_settings_map() const = 0;
+
+  virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
+                                     NetworkStats stats) = 0;
+
+  virtual const NetworkStats* GetServerNetworkStats(
+      const HostPortPair& host_port_pair) const = 0;
 
   virtual HttpPipelinedHostCapability GetPipelineCapability(
       const HostPortPair& origin) = 0;
