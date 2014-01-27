@@ -27,8 +27,10 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/shell/common/webkit_test_helpers.h"
 #include "content/shell/renderer/gc_controller.h"
+#include "content/shell/renderer/leak_detector.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
@@ -56,6 +58,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLeakDetector.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -208,7 +211,9 @@ WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
       proxy_(NULL),
       focused_view_(NULL),
       is_main_window_(false),
-      focus_on_next_commit_(false) {
+      focus_on_next_commit_(false),
+      leak_detector_(new LeakDetector())
+{
   UseMockMediaStreams(render_view);
 }
 
@@ -562,6 +567,7 @@ bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(ShellViewMsg_NotifyDone, OnNotifyDone)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_TryLeakDetection, OnTryLeakDetection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -705,6 +711,22 @@ void WebKitTestRunner::OnReset() {
 void WebKitTestRunner::OnNotifyDone() {
   render_view()->GetWebView()->mainFrame()->executeScript(
       WebScriptSource(WebString::fromUTF8("testRunner.notifyDone();")));
+}
+
+void WebKitTestRunner::OnTryLeakDetection() {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebKitTestRunner::TryLeakDetection, base::Unretained(this)));
+}
+
+void WebKitTestRunner::TryLeakDetection() {
+  WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+  DCHECK_EQ(GURL(kAboutBlankURL), GURL(main_frame->document().url()));
+  DCHECK(!main_frame->isLoading());
+
+  LeakDetectionResult result = leak_detector_->TryLeakDetection(
+      render_view()->GetWebView()->mainFrame());
+  Send(new ShellViewHostMsg_LeakDetectionDone(routing_id(), result));
 }
 
 }  // namespace content

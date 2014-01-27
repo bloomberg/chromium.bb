@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -378,6 +379,7 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseRemainingWindows,
                         OnCloseRemainingWindows)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ResetDone, OnResetDone)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LeakDetectionDone, OnLeakDetectionDone)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -652,8 +654,37 @@ void WebKitTestController::OnCloseRemainingWindows() {
 }
 
 void WebKitTestController::OnResetDone() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLeakDetection)) {
+    if (main_window_ && main_window_->web_contents()) {
+      RenderViewHost* render_view_host =
+          main_window_->web_contents()->GetRenderViewHost();
+      render_view_host->Send(
+          new ShellViewMsg_TryLeakDetection(render_view_host->GetRoutingID()));
+    }
+    return;
+  }
+
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());
+}
+
+void WebKitTestController::OnLeakDetectionDone(
+    const LeakDetectionResult& result) {
+  if (!result.leaked) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    return;
+  }
+
+  printer_->AddErrorMessage("#LEAK");
+  printer_->AddErrorMessage(
+      base::StringPrintf("  Number of live documents: %d",
+                         result.number_of_live_documents));
+  printer_->AddErrorMessage(
+      base::StringPrintf("  Number of live nodes: %d",
+                         result.number_of_live_nodes));
+  DiscardMainWindow();
 }
 
 }  // namespace content

@@ -8,6 +8,7 @@
 
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_state.h"
+#include "content/shell/common/leak_detection_result.h"
 #include "content/shell/common/shell_test_configuration.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -49,6 +50,8 @@ IPC_MESSAGE_ROUTED3(
     std::vector<int> /* routing_ids */,
     std::vector<std::vector<content::PageState> > /* session_histories */,
     std::vector<unsigned> /* current_entry_indexes */)
+
+IPC_MESSAGE_ROUTED0(ShellViewMsg_TryLeakDetection)
 
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
@@ -99,3 +102,12 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDeviceScaleFactor,
                     float /* factor */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CaptureSessionHistory)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseRemainingWindows)
+
+IPC_STRUCT_TRAITS_BEGIN(content::LeakDetectionResult)
+IPC_STRUCT_TRAITS_MEMBER(leaked)
+IPC_STRUCT_TRAITS_MEMBER(number_of_live_documents)
+IPC_STRUCT_TRAITS_MEMBER(number_of_live_nodes)
+IPC_STRUCT_TRAITS_END()
+
+IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LeakDetectionDone,
+                    content::LeakDetectionResult /* result */)

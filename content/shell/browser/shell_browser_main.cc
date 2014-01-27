@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_switches.h"
@@ -106,6 +107,46 @@ bool GetNextTest(const CommandLine::StringVector& args,
   return true;
 }
 
+bool RunOneTest(const std::string& test_string,
+                bool* ran_at_least_once,
+                const scoped_ptr<content::BrowserMainRunner>& main_runner) {
+  if (test_string.empty())
+    return true;
+  if (test_string == "QUIT")
+    return false;
+
+  bool enable_pixel_dumps;
+  std::string pixel_hash;
+  base::FilePath cwd;
+  GURL test_url = GetURLForLayoutTest(
+      test_string, &cwd, &enable_pixel_dumps, &pixel_hash);
+  if (!content::WebKitTestController::Get()->PrepareForLayoutTest(
+          test_url, cwd, enable_pixel_dumps, pixel_hash)) {
+    return false;
+  }
+
+  *ran_at_least_once = true;
+#if defined(OS_ANDROID)
+  // The message loop on Android is provided by the system, and does not
+  // offer a blocking Run() method. For layout tests, use a nested loop
+  // together with a base::RunLoop so it can block until a QuitClosure.
+  base::RunLoop run_loop;
+  run_loop.Run();
+#else
+  main_runner->Run();
+#endif
+
+  if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
+    return false;
+
+#if defined(OS_ANDROID)
+  // There will be left-over tasks in the queue for Android because the
+  // main window is being destroyed. Run them before starting the next test.
+  base::MessageLoop::current()->RunUntilIdle();
+#endif
+  return true;
+}
+
 }  // namespace
 
 // Main routine for running as the Browser process.
@@ -163,41 +204,16 @@ int ShellBrowserMain(
     std::cout << "#READY\n";
     std::cout.flush();
 
+    // To detect leaks, the numbers of objects are counted at about:blank before
+    // loading a page and after loading a page. The first content should be
+    // about:blank when the leak detection is enabled.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableLeakDetection))
+      RunOneTest(content::kAboutBlankURL, &ran_at_least_once, main_runner);
+
     while (GetNextTest(args, &command_line_position, &test_string)) {
-      if (test_string.empty())
-        continue;
-      if (test_string == "QUIT")
+      if (!RunOneTest(test_string, &ran_at_least_once, main_runner))
         break;
-
-      bool enable_pixel_dumps;
-      std::string pixel_hash;
-      base::FilePath cwd;
-      GURL test_url = GetURLForLayoutTest(
-          test_string, &cwd, &enable_pixel_dumps, &pixel_hash);
-      if (!content::WebKitTestController::Get()->PrepareForLayoutTest(
-              test_url, cwd, enable_pixel_dumps, pixel_hash)) {
-        break;
-      }
-
-      ran_at_least_once = true;
-#if defined(OS_ANDROID)
-      // The message loop on Android is provided by the system, and does not
-      // offer a blocking Run() method. For layout tests, use a nested loop
-      // together with a base::RunLoop so it can block until a QuitClosure.
-      base::RunLoop run_loop;
-      run_loop.Run();
-#else
-      main_runner->Run();
-#endif
-
-      if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
-        break;
-
-#if defined(OS_ANDROID)
-      // There will be left-over tasks in the queue for Android because the
-      // main window is being destroyed. Run them before starting the next test.
-      base::MessageLoop::current()->RunUntilIdle();
-#endif
     }
     if (!ran_at_least_once) {
       base::MessageLoop::current()->PostTask(FROM_HERE,

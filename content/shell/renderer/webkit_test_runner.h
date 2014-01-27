@@ -31,6 +31,8 @@ class WebTestProxyBase;
 
 namespace content {
 
+class LeakDetector;
+
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
                          public RenderViewObserverTracker<WebKitTestRunner>,
@@ -119,10 +121,13 @@ class WebKitTestRunner : public RenderViewObserver,
       const std::vector<unsigned>& current_entry_indexes);
   void OnReset();
   void OnNotifyDone();
+  void OnTryLeakDetection();
 
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
   void CaptureDump();
+
+  void TryLeakDetection();
 
   ::WebTestRunner::WebTestProxyBase* proxy_;
 
@@ -139,6 +144,9 @@ class WebKitTestRunner : public RenderViewObserver,
   bool is_main_window_;
 
   bool focus_on_next_commit_;
+
+  scoped_ptr<LeakDetector> leak_detector_;
+  bool needs_leak_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

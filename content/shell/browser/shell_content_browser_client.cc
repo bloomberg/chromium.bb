@@ -212,6 +212,9 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
         CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir));
   }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLeakDetection))
+    command_line->AppendSwitch(switches::kEnableLeakDetection);
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(

@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/shell/common/leak_detection_result.h"
 #include "ui/gfx/size.h"
 #include "webkit/common/webpreferences.h"
 
@@ -173,6 +174,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnCaptureSessionHistory();
   void OnCloseRemainingWindows();
   void OnResetDone();
+  void OnLeakDetectionDone(const content::LeakDetectionResult& result);
 
   scoped_ptr<WebKitTestResultPrinter> printer_;
 
