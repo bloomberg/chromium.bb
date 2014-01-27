@@ -63,11 +63,11 @@
         '<(_sanitizer_type)-libdbus-1-3',
         '<(_sanitizer_type)-libdbus-glib-1-2',
         '<(_sanitizer_type)-nss',
+        '<(_sanitizer_type)-libfontconfig1',
       ],
       'conditions': [
         ['asan==1', {
           'dependencies': [
-            '<(_sanitizer_type)-libfontconfig1',
             '<(_sanitizer_type)-libpixman-1-0',
           ],
         }],
@@ -87,6 +87,13 @@
           ],
         },
       ],
+    },
+    {
+      'library_name': 'freetype',
+      'dependencies=': [],
+      'custom_configure_flags': '',
+      'run_before_build': 'freetype.sh',
+      'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
       'library_name': 'libcairo2',
@@ -120,8 +127,11 @@
     },
     {
       'library_name': 'libfontconfig1',
-      'dependencies=': [],
+      'dependencies=': [
+        '<(_sanitizer_type)-freetype',
+      ],
       'custom_configure_flags': '--disable-docs',
+      'run_before_build': 'libfontconfig.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
