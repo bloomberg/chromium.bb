@@ -67,20 +67,31 @@ void SimpleFontData::platformInit()
     SkTypeface* face = paint.getTypeface();
     ASSERT(face);
 
-    static const uint32_t vdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
-    int pixelSize = m_platformData.size() + 0.5;
-    int vdmxAscent, vdmxDescent;
+    int vdmxAscent = 0, vdmxDescent = 0;
     bool isVDMXValid = false;
 
-    size_t vdmxSize = face->getTableSize(vdmxTag);
-    if (vdmxSize && vdmxSize < maxVDMXTableSize) {
-        uint8_t* vdmxTable = (uint8_t*) fastMalloc(vdmxSize);
-        if (vdmxTable
-            && face->getTableData(vdmxTag, 0, vdmxSize, vdmxTable) == vdmxSize
-            && parseVDMX(&vdmxAscent, &vdmxDescent, vdmxTable, vdmxSize, pixelSize))
-            isVDMXValid = true;
-        fastFree(vdmxTable);
+#if OS(LINUX) || OS(ANDROID)
+    // Manually digging up VDMX metrics is only applicable when bytecode hinting using FreeType.
+    // With GDI, the metrics will already have taken this into account (as needed).
+    // With DirectWrite or CoreText, no bytecode hinting is ever done.
+    // This code should be pushed into FreeType (hinted font metrics).
+    static const uint32_t vdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
+    int pixelSize = m_platformData.size() + 0.5;
+    if (!paint.isAutohinted()
+        &&    (paint.getHinting() == SkPaint::kFull_Hinting
+            || paint.getHinting() == SkPaint::kNormal_Hinting))
+    {
+        size_t vdmxSize = face->getTableSize(vdmxTag);
+        if (vdmxSize && vdmxSize < maxVDMXTableSize) {
+            uint8_t* vdmxTable = (uint8_t*) fastMalloc(vdmxSize);
+            if (vdmxTable
+                && face->getTableData(vdmxTag, 0, vdmxSize, vdmxTable) == vdmxSize
+                && parseVDMX(&vdmxAscent, &vdmxDescent, vdmxTable, vdmxSize, pixelSize))
+                isVDMXValid = true;
+            fastFree(vdmxTable);
+        }
     }
+#endif
 
     float ascent;
     float descent;
