@@ -691,12 +691,12 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
   }
 }
 
-// Verifies that starting a drag via
-// aura::client::WindowMoveClient::RunMoveLoop() reverts the in progress drag
-// (if any).
-TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopRevertsInProgressDrag) {
+// Verifies that a drag cannot be started via
+// aura::client::WindowMoveClient::RunMoveLoop() while another drag is already
+// in progress.
+TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
   scoped_ptr<aura::Window> window1(CreateWindow(HTCAPTION));
-  gfx::Rect window1_initial_bounds = window1->bounds();
+  EXPECT_EQ("0,0 100x100", window1->bounds().ToString());
   scoped_ptr<aura::Window> window2(CreateWindow(HTCAPTION));
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -705,17 +705,16 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopRevertsInProgressDrag) {
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 11);
   RunAllPendingInMessageLoop();
-  EXPECT_NE(window1_initial_bounds.ToString(), window1->bounds().ToString());
 
   aura::client::WindowMoveClient* move_client =
       aura::client::GetWindowMoveClient(window2->GetRootWindow());
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&aura::client::WindowMoveClient::EndMoveLoop,
-                 base::Unretained(move_client)));
-  move_client->RunMoveLoop(window2.get(), gfx::Vector2d(),
-      aura::client::WINDOW_MOVE_SOURCE_MOUSE);
-  EXPECT_EQ(window1_initial_bounds.ToString(), window1->bounds().ToString());
+  EXPECT_EQ(aura::client::MOVE_CANCELED,
+            move_client->RunMoveLoop(window2.get(), gfx::Vector2d(),
+                aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+
+  generator.ReleaseLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
 }
 
 // Showing the resize shadows when the mouse is over the window edges is tested

@@ -394,7 +394,8 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
     cursor_client->SetCursor(ui::kCursorPointer);
-  AttemptToStartDrag(source, drag_location, HTCAPTION, move_source);
+  if (!AttemptToStartDrag(source, drag_location, HTCAPTION, move_source))
+    return aura::client::MOVE_CANCELED;
 
   in_move_loop_ = true;
   bool destroyed = false;
@@ -421,22 +422,23 @@ void ToplevelWindowEventHandler::OnDisplayConfigurationChanging() {
   CompleteDrag(DRAG_REVERT);
 }
 
-void ToplevelWindowEventHandler::AttemptToStartDrag(
+bool ToplevelWindowEventHandler::AttemptToStartDrag(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component,
     aura::client::WindowMoveSource source) {
   if (window_resizer_.get())
-    CompleteDrag(DRAG_REVERT);
+    return false;
   WindowResizer* resizer = CreateWindowResizer(window, point_in_parent,
       window_component, source).release();
   if (!resizer)
-    return;
+    return false;
 
   window_resizer_.reset(new ScopedWindowResizer(this, resizer));
 
   pre_drag_window_bounds_ = window->bounds();
   in_gesture_drag_ = (source == aura::client::WINDOW_MOVE_SOURCE_TOUCH);
+  return true;
 }
 
 void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {

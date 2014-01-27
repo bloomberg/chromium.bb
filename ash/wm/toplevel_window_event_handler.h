@@ -61,8 +61,9 @@ class ASH_EXPORT ToplevelWindowEventHandler
     DRAG_REVERT
   };
 
-  // Attempts to start a drag if one is not already in progress.
-  void AttemptToStartDrag(aura::Window* window,
+  // Attempts to start a drag if one is not already in progress. Returns true if
+  // successful.
+  bool AttemptToStartDrag(aura::Window* window,
                           const gfx::Point& point_in_parent,
                           int window_component,
                           aura::client::WindowMoveSource source);
