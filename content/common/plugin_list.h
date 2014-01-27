@@ -139,6 +139,13 @@ class CONTENT_EXPORT PluginList {
   void GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths,
                             bool include_npapi);
 
+  // Signals that plugin loading will start. This method should be called before
+  // loading plugins with a different instance of this class. Returns false if
+  // the plugin list is up to date.
+  // When loading has finished, SetPlugins() should be called with the list of
+  // plugins.
+  bool PrepareForPluginLoading();
+
   // Clears the internal list of Plugins and copies them from the vector.
   void SetPlugins(const std::vector<WebPluginInfo>& plugins);
 

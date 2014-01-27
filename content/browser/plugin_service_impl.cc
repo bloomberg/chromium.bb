@@ -115,6 +115,12 @@ void NotifyPluginDirChanged(const base::FilePath& path, bool error) {
 }
 #endif
 
+void ForwardCallback(base::MessageLoopProxy* target_loop,
+                     const PluginService::GetPluginsCallback& callback,
+                     const std::vector<WebPluginInfo>& plugins) {
+  target_loop->PostTask(FROM_HERE, base::Bind(callback, plugins));
+}
+
 }  // namespace
 
 // static
@@ -597,20 +603,9 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
     return;
   }
 #if defined(OS_POSIX)
-  std::vector<WebPluginInfo> cached_plugins;
-  if (PluginList::Singleton()->GetPluginsNoRefresh(&cached_plugins)) {
-    // Can't assume the caller is reentrant.
-    target_loop->PostTask(FROM_HERE,
-        base::Bind(callback, cached_plugins));
-  } else {
-    // If we switch back to loading plugins in process, then we need to make
-    // sure g_thread_init() gets called since plugins may call glib at load.
-    if (!plugin_loader_.get())
-      plugin_loader_ = new PluginLoaderPosix;
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&PluginLoaderPosix::LoadPlugins, plugin_loader_,
-                   target_loop, callback));
-  }
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&PluginServiceImpl::GetPluginsOnIOThread,
+                 base::Unretained(this), target_loop, callback));
 #else
   NOTREACHED();
 #endif
@@ -628,6 +623,23 @@ void PluginServiceImpl::GetPluginsInternal(
   target_loop->PostTask(FROM_HERE,
       base::Bind(callback, plugins));
 }
+
+#if defined(OS_POSIX)
+void PluginServiceImpl::GetPluginsOnIOThread(
+    base::MessageLoopProxy* target_loop,
+    const GetPluginsCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // If we switch back to loading plugins in process, then we need to make
+  // sure g_thread_init() gets called since plugins may call glib at load.
+
+  if (!plugin_loader_)
+    plugin_loader_ = new PluginLoaderPosix;
+
+  plugin_loader_->GetPlugins(
+      base::Bind(&ForwardCallback, make_scoped_refptr(target_loop), callback));
+}
+#endif
 
 void PluginServiceImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {

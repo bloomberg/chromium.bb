@@ -6,7 +6,6 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +14,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/webplugininfo.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -206,10 +205,9 @@ TEST_F(PluginPrefsTest, EnabledAndDisabledByPolicy) {
 #if !(defined(OS_LINUX) && defined(USE_AURA))
 
 TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
+  content::TestBrowserThreadBundle browser_threads;
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
 
-  base::MessageLoop message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   PluginService::GetInstance()->Init();
   PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
 

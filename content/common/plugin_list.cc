@@ -173,14 +173,18 @@ PluginList::PluginList()
       plugins_discovery_disabled_(false) {
 }
 
-void PluginList::LoadPlugins(bool include_npapi) {
-  {
-    base::AutoLock lock(lock_);
-    if (loading_state_ == LOADING_STATE_UP_TO_DATE)
-      return;
+bool PluginList::PrepareForPluginLoading() {
+  base::AutoLock lock(lock_);
+  if (loading_state_ == LOADING_STATE_UP_TO_DATE)
+    return false;
 
-    loading_state_ = LOADING_STATE_REFRESHING;
-  }
+  loading_state_ = LOADING_STATE_REFRESHING;
+  return true;
+}
+
+void PluginList::LoadPlugins(bool include_npapi) {
+  if (!PrepareForPluginLoading())
+    return;
 
   std::vector<WebPluginInfo> new_plugins;
   base::Closure will_load_callback;
@@ -201,13 +205,7 @@ void PluginList::LoadPlugins(bool include_npapi) {
     LoadPluginIntoPluginList(*it, &new_plugins, &plugin_info);
   }
 
-  base::AutoLock lock(lock_);
-  plugins_list_.swap(new_plugins);
-
-  // If we haven't been invalidated in the mean time, mark the plug-in list as
-  // up-to-date.
-  if (loading_state_ != LOADING_STATE_NEEDS_REFRESH)
-    loading_state_ = LOADING_STATE_UP_TO_DATE;
+  SetPlugins(new_plugins);
 }
 
 bool PluginList::LoadPluginIntoPluginList(
@@ -280,11 +278,12 @@ void PluginList::GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths,
 void PluginList::SetPlugins(const std::vector<WebPluginInfo>& plugins) {
   base::AutoLock lock(lock_);
 
-  DCHECK_NE(LOADING_STATE_REFRESHING, loading_state_);
-  loading_state_ = LOADING_STATE_UP_TO_DATE;
+  // If we haven't been invalidated in the mean time, mark the plug-in list as
+  // up-to-date.
+  if (loading_state_ != LOADING_STATE_NEEDS_REFRESH)
+    loading_state_ = LOADING_STATE_UP_TO_DATE;
 
-  plugins_list_.clear();
-  plugins_list_.insert(plugins_list_.end(), plugins.begin(), plugins.end());
+  plugins_list_ = plugins;
 }
 
 void PluginList::set_will_load_plugins_callback(const base::Closure& callback) {

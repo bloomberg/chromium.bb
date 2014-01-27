@@ -179,6 +179,12 @@ class CONTENT_EXPORT PluginServiceImpl
   void GetPluginsInternal(base::MessageLoopProxy* target_loop,
                           const GetPluginsCallback& callback);
 
+#if defined(OS_POSIX)
+  void GetPluginsOnIOThread(
+      base::MessageLoopProxy* target_loop,
+      const GetPluginsCallback& callback);
+#endif
+
   // Binding directly to GetAllowedPluginForOpenChannelToPlugin() isn't possible
   // because more arity is needed <http://crbug.com/98542>. This just forwards.
   void ForwardGetAllowedPluginForOpenChannelToPlugin(

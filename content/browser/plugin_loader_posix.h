@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_PLUGIN_LOADER_POSIX_H_
 #define CONTENT_BROWSER_PLUGIN_LOADER_POSIX_H_
 
-#include <deque>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -51,10 +50,9 @@ class CONTENT_EXPORT PluginLoaderPosix
  public:
   PluginLoaderPosix();
 
-  // Must be called from the IO thread.
-  void LoadPlugins(
-      scoped_refptr<base::MessageLoopProxy> target_loop,
-      const PluginService::GetPluginsCallback& callback);
+  // Must be called from the IO thread. The |callback| will be called on the IO
+  // thread too.
+  void GetPlugins(const PluginService::GetPluginsCallback& callback);
 
   // UtilityProcessHostClient:
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
@@ -64,15 +62,6 @@ class CONTENT_EXPORT PluginLoaderPosix
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:
-  struct PendingCallback {
-    PendingCallback(scoped_refptr<base::MessageLoopProxy> target_loop,
-                    const PluginService::GetPluginsCallback& callback);
-    ~PendingCallback();
-
-    scoped_refptr<base::MessageLoopProxy> target_loop;
-    PluginService::GetPluginsCallback callback;
-  };
-
   virtual ~PluginLoaderPosix();
 
   // Called on the FILE thread to get the list of plugin paths to probe.
@@ -80,6 +69,12 @@ class CONTENT_EXPORT PluginLoaderPosix
 
   // Must be called on the IO thread.
   virtual void LoadPluginsInternal();
+
+  // Called after plugin loading has finished, if we don't know whether the
+  // plugin list has been invalidated in the mean time.
+  void GetPluginsWrapper(
+      const PluginService::GetPluginsCallback& callback,
+      const std::vector<WebPluginInfo>& plugins_unused);
 
   // Message handlers.
   void OnPluginLoaded(uint32 index, const WebPluginInfo& plugin);
@@ -113,7 +108,7 @@ class CONTENT_EXPORT PluginLoaderPosix
 
   // The callback and message loop on which the callback will be run when the
   // plugin loading process has been completed.
-  std::deque<PendingCallback> callbacks_;
+  std::vector<PluginService::GetPluginsCallback> callbacks_;
 
   // The time at which plugin loading started.
   base::TimeTicks load_start_time_;

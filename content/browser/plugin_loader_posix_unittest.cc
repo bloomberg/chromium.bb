@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/common/plugin_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,7 +97,8 @@ class PluginLoaderPosixTest : public testing::Test {
   WebPluginInfo plugin3_;
 
  private:
-  base::ShadowingAtExitManager at_exit_manager_;  // Destroys PluginService.
+  // Destroys PluginService and PluginList.
+  base::ShadowingAtExitManager at_exit_manager_;
 
   base::MessageLoopForIO message_loop_;
   BrowserThreadImpl file_thread_;
@@ -110,14 +112,10 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
   PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
-  EXPECT_EQ(0u, plugin_loader()->number_of_pending_callbacks());
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
-  EXPECT_EQ(1u, plugin_loader()->number_of_pending_callbacks());
+  plugin_loader()->GetPlugins(callback);
+  plugin_loader()->GetPlugins(callback);
 
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
-  EXPECT_EQ(2u, plugin_loader()->number_of_pending_callbacks());
-
-  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(2);
+  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
   message_loop()->RunUntilIdle();
 
   EXPECT_EQ(0, did_callback);
@@ -127,8 +125,35 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   message_loop()->RunUntilIdle();
 
+  EXPECT_EQ(2, did_callback);
+}
+
+TEST_F(PluginLoaderPosixTest, QueueRequestsAndInvalidate) {
+  int did_callback = 0;
+  PluginService::GetPluginsCallback callback =
+      base::Bind(&VerifyCallback, base::Unretained(&did_callback));
+
+  plugin_loader()->GetPlugins(callback);
+
+  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
+  message_loop()->RunUntilIdle();
+
+  EXPECT_EQ(0, did_callback);
+  ::testing::Mock::VerifyAndClearExpectations(plugin_loader());
+
+  // Invalidate the plugin list, then queue up another request.
+  PluginList::Singleton()->RefreshPlugins();
+  plugin_loader()->GetPlugins(callback);
+
+  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
+
+  plugin_loader()->canonical_list()->clear();
+  plugin_loader()->canonical_list()->push_back(plugin1_.path);
+  plugin_loader()->TestOnPluginLoaded(0, plugin1_);
+  message_loop()->RunUntilIdle();
+
+  // Only the first request should have been fulfilled.
   EXPECT_EQ(1, did_callback);
-  EXPECT_EQ(1u, plugin_loader()->number_of_pending_callbacks());
 
   plugin_loader()->canonical_list()->clear();
   plugin_loader()->canonical_list()->push_back(plugin1_.path);
@@ -136,7 +161,6 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
   message_loop()->RunUntilIdle();
 
   EXPECT_EQ(2, did_callback);
-  EXPECT_EQ(0u, plugin_loader()->number_of_pending_callbacks());
 }
 
 TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
@@ -144,7 +168,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
+  plugin_loader()->GetPlugins(callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
   message_loop()->RunUntilIdle();
@@ -184,7 +208,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoadsThenCrash) {
   PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
+  plugin_loader()->GetPlugins(callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(2);
   message_loop()->RunUntilIdle();
@@ -226,7 +250,7 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
   PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
+  plugin_loader()->GetPlugins(callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
   message_loop()->RunUntilIdle();
@@ -264,7 +288,7 @@ TEST_F(PluginLoaderPosixTest, CrashedProcess) {
   PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
+  plugin_loader()->GetPlugins(callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
   message_loop()->RunUntilIdle();
@@ -296,7 +320,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
+  plugin_loader()->GetPlugins(callback);
 
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
   message_loop()->RunUntilIdle();
@@ -344,7 +368,7 @@ TEST_F(PluginLoaderPosixTest, AllCrashed) {
   PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
-  plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
+  plugin_loader()->GetPlugins(callback);
 
   // Spin the loop so that the canonical list of plugins can be set.
   EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
