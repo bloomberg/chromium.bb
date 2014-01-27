@@ -1126,16 +1126,14 @@ PrerenderManager::PendingSwap::PendingSwap(
       url_(url),
       should_replace_current_entry_(should_replace_current_entry),
       start_time_(base::TimeTicks::Now()),
+      seen_target_route_id_(false),
       swap_successful_(false),
       weak_factory_(this) {
-  RenderViewCreated(target_contents->GetRenderViewHost());
 }
 
 PrerenderManager::PendingSwap::~PendingSwap() {
-  for (size_t i = 0; i < main_rfh_ids_.size(); i++) {
-    manager_->prerender_tracker()->RemovePrerenderPendingSwap(
-        main_rfh_ids_[i], swap_successful_);
-  }
+  manager_->prerender_tracker()->RemovePrerenderPendingSwap(
+      target_route_id_, swap_successful_);
 }
 
 void PrerenderManager::PendingSwap::BeginSwap() {
@@ -1155,6 +1153,22 @@ void PrerenderManager::PendingSwap::BeginSwap() {
       base::TimeDelta::FromMilliseconds(
           kSessionStorageNamespaceMergeTimeoutMs),
       this, &PrerenderManager::PendingSwap::OnMergeTimeout);
+}
+
+void PrerenderManager::PendingSwap::AboutToNavigateRenderView(
+    RenderViewHost* render_view_host) {
+  if (seen_target_route_id_) {
+    // A second navigation began browser-side.
+    prerender_data_->ClearPendingSwap();
+    return;
+  }
+
+  seen_target_route_id_ = true;
+  target_route_id_ = PrerenderTracker::ChildRouteIdPair(
+      render_view_host->GetMainFrame()->GetProcess()->GetID(),
+      render_view_host->GetMainFrame()->GetRoutingID());
+  manager_->prerender_tracker()->AddPrerenderPendingSwap(
+      target_route_id_, url_);
 }
 
 void PrerenderManager::PendingSwap::ProvisionalChangeToMainFrameUrl(
@@ -1178,20 +1192,6 @@ void PrerenderManager::PendingSwap::DidCommitProvisionalLoadForFrame(
   if (!is_main_frame)
     return;
   prerender_data_->ClearPendingSwap();
-}
-
-void PrerenderManager::PendingSwap::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  // Record the RFH id in the tracker to install throttles on MAIN_FRAME
-  // requests from that route.
-  int render_process_id =
-      render_view_host->GetMainFrame()->GetProcess()->GetID();
-  int render_frame_id = render_view_host->GetMainFrame()->GetRoutingID();
-  PrerenderTracker::ChildRouteIdPair render_frame_route_id_pair(
-      render_process_id, render_frame_id);
-  main_rfh_ids_.push_back(render_frame_route_id_pair);
-  manager_->prerender_tracker()->AddPrerenderPendingSwap(
-      render_frame_route_id_pair, url_);
 }
 
 void PrerenderManager::PendingSwap::DidFailProvisionalLoad(

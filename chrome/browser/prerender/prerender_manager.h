@@ -452,6 +452,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     void BeginSwap();
 
     // content::WebContentsObserver implementation.
+    virtual void AboutToNavigateRenderView(
+        content::RenderViewHost* render_view_host) OVERRIDE;
     virtual void ProvisionalChangeToMainFrameUrl(
         const GURL& url,
         content::RenderFrameHost* render_frame_host) OVERRIDE;
@@ -461,8 +463,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
         bool is_main_frame,
         const GURL& validated_url,
         content::PageTransition transition_type,
-        content::RenderViewHost* render_view_host) OVERRIDE;
-    virtual void RenderViewCreated(
         content::RenderViewHost* render_view_host) OVERRIDE;
     virtual void DidFailProvisionalLoad(
         int64 frame_id,
@@ -489,7 +489,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     bool should_replace_current_entry_;
 
     base::TimeTicks start_time_;
-    std::vector<PrerenderTracker::ChildRouteIdPair> main_rfh_ids_;
+    PrerenderTracker::ChildRouteIdPair target_route_id_;
+    bool seen_target_route_id_;
     base::OneShotTimer<PendingSwap> merge_timeout_;
     bool swap_successful_;
 
