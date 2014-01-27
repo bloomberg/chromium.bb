@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// For now, immersive fullscreen is Chrome OS only.
-#if defined(OS_CHROMEOS)
-
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/ash_switches.h"
@@ -341,5 +338,3 @@ TEST_F(ImmersiveModeControllerAshTestHostedApp, Layout) {
   EXPECT_FALSE(toolbar->visible());
   EXPECT_EQ(header_height, GetBoundsInWidget(contents_web_view).y());
 }
-
-#endif  // defined(OS_CHROMEOS)

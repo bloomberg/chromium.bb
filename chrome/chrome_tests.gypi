@@ -1773,6 +1773,7 @@
             'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
             'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
             'browser/ui/views/select_file_dialog_extension_browsertest.cc',
+            'browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],

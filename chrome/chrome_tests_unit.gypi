@@ -2194,6 +2194,7 @@
         }],
         ['chromeos==0', {
           'sources!': [
+            'browser/ui/views/frame/immersive_mode_controller_ash_unittest.cc',
             'browser/ui/views/select_file_dialog_extension_unittest.cc',
           ],
         }],

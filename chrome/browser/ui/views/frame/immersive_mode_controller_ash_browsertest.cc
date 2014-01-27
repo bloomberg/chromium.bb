@@ -14,8 +14,6 @@
 
 // TODO(jamescook): If immersive mode becomes popular on CrOS, consider porting
 // it to other Aura platforms (win_aura, linux_aura).  http://crbug.com/163931
-#if defined(OS_CHROMEOS)
-
 class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
  public:
   ImmersiveModeControllerAshTest() : browser_view_(NULL), controller_(NULL) {}
@@ -73,5 +71,3 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   ASSERT_FALSE(controller()->IsEnabled());
   EXPECT_TRUE(window->hit_test_bounds_override_outer_touch().top() == 0);
 }
-
-#endif  // defined(OS_CHROMEOS)
