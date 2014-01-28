@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/extension_paths.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -38,9 +39,10 @@ using extensions::ShellExtensionSystem;
 namespace apps {
 namespace {
 
+// Register additional BrowserContextKeyedService factories here. See
+// ChromeBrowserMainExtraPartsProfiles for details.
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  // TODO(jamescook): Register additional BrowserContextKeyedService factories
-  // here. See ChromeBrowserMainExtraPartsProfiles for details.
+  extensions::RendererStartupHelperFactory::GetInstance();
 }
 
 }  // namespace

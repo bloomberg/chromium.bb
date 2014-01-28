@@ -58,6 +58,7 @@ class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
+class RendererStartupHelper;
 class SettingsFrontend;
 class UpdateObserver;
 }  // namespace extensions

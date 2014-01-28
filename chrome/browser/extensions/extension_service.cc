@@ -354,8 +354,6 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
@@ -2521,51 +2519,6 @@ void ExtensionService::Observe(int type,
               &ExtensionService::TrackTerminatedExtension,
               AsWeakPtr(),
               host->extension()));
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      // TODO(jamescook): Extract this block of code to src/extensions so it
-      // can be shared with app_shell.
-      content::RenderProcessHost* process =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      Profile* host_profile =
-          Profile::FromBrowserContext(process->GetBrowserContext());
-      if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
-          break;
-
-      // Extensions need to know the channel for API restrictions.
-      process->Send(new ExtensionMsg_SetChannel(
-          extensions::GetCurrentChannel()));
-
-      // Platform apps need to know the system font.
-      scoped_ptr<base::DictionaryValue> fonts(new base::DictionaryValue);
-      webui::SetFontAndTextDirection(fonts.get());
-      std::string font_family, font_size;
-      fonts->GetString("fontfamily", &font_family);
-      fonts->GetString("fontsize", &font_size);
-      process->Send(new ExtensionMsg_SetSystemFont(
-          font_family, font_size));
-
-      // Valid extension function names, used to setup bindings in renderer.
-      std::vector<std::string> function_names;
-      ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
-      process->Send(new ExtensionMsg_SetFunctionNames(function_names));
-
-      // Scripting whitelist. This is modified by tests and must be communicated
-      // to renderers.
-      process->Send(new ExtensionMsg_SetScriptingWhitelist(
-          extensions::ExtensionsClient::Get()->GetScriptingWhitelist()));
-
-      // Loaded extensions.
-      std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
-      const ExtensionSet& extensions = registry_->enabled_extensions();
-      for (ExtensionSet::const_iterator iter = extensions.begin();
-           iter != extensions.end(); ++iter) {
-        // Renderers don't need to know about themes.
-        if (!(*iter)->is_theme())
-          loaded_extensions.push_back(ExtensionMsg_Loaded_Params(iter->get()));
-      }
-      process->Send(new ExtensionMsg_Loaded(loaded_extensions));
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {

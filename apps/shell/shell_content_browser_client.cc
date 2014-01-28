@@ -18,6 +18,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
@@ -89,7 +90,10 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
   if (!extension)
     return;
 
-  // TODO(jamescook): Add to extension service process_map().
+  extensions::ProcessMap::Get(browser_main_parts_->browser_context())
+      ->Insert(extension->id(),
+               site_instance->GetProcess()->GetID(),
+               site_instance->GetId());
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -108,7 +112,10 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
   if (!extension)
     return;
 
-  // TODO(jamescook): Remove from extension service process_map().
+  extensions::ProcessMap::Get(browser_main_parts_->browser_context())
+      ->Remove(extension->id(),
+               site_instance->GetProcess()->GetID(),
+               site_instance->GetId());
 
   BrowserThread::PostTask(
       BrowserThread::IO,

@@ -14,7 +14,7 @@ namespace extensions {
 
 // static
 ExtensionRegistry* ExtensionRegistryFactory::GetForBrowserContext(
-      BrowserContext* context) {
+    BrowserContext* context) {
   return static_cast<ExtensionRegistry*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
@@ -34,12 +34,12 @@ ExtensionRegistryFactory::ExtensionRegistryFactory()
 ExtensionRegistryFactory::~ExtensionRegistryFactory() {}
 
 BrowserContextKeyedService* ExtensionRegistryFactory::BuildServiceInstanceFor(
-      content::BrowserContext* profile) const {
+    content::BrowserContext* context) const {
   return new ExtensionRegistry;
 }
 
 BrowserContext* ExtensionRegistryFactory::GetBrowserContextToUse(
-      BrowserContext* context) const {
+    BrowserContext* context) const {
   // Redirected in incognito.
   return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }

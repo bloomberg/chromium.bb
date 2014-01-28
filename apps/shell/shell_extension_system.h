@@ -5,9 +5,13 @@
 #ifndef APPS_SHELL_SHELL_EXTENSION_SYSTEM_H_
 #define APPS_SHELL_SHELL_EXTENSION_SYSTEM_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "extensions/common/one_shot_event.h"
+
+class BrowserContextKeyedServiceFactory;
 
 namespace base {
 class FilePath;
@@ -23,6 +27,7 @@ class EventRouter;
 class InfoMap;
 class LazyBackgroundTaskQueue;
 class ProcessManager;
+class RendererStartupHelper;
 
 // A simplified version of ExtensionSystem for app_shell. Allows
 // app_shell to skip initialization of services it doesn't need.
@@ -30,6 +35,9 @@ class ShellExtensionSystem : public ExtensionSystem {
  public:
   explicit ShellExtensionSystem(content::BrowserContext* browser_context);
   virtual ~ShellExtensionSystem();
+
+  // Returns the list of services on which |this| depends.
+  static std::vector<BrowserContextKeyedServiceFactory*> GetDependencies();
 
   // Loads an unpacked application from a directory and attempts to launch it.
   // Returns true on success.

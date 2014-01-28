@@ -223,6 +223,8 @@
         'browser/process_map_factory.h',
         'browser/quota_service.cc',
         'browser/quota_service.h',
+        'browser/renderer_startup_helper.cc',
+        'browser/renderer_startup_helper.h',
         'browser/runtime_data.cc',
         'browser/runtime_data.h',
         'browser/update_observer.h',

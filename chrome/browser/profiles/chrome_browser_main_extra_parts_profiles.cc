@@ -110,6 +110,7 @@
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -294,6 +295,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();
+  extensions::RendererStartupHelperFactory::GetInstance();
   extensions::RuntimeAPIFactory::GetInstance();
   extensions::SessionsAPI::GetFactoryInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();

@@ -22,6 +22,7 @@ include_rules = [
   "+chrome/browser/extensions/extension_util.h",
   "+chrome/browser/renderer_host/chrome_render_message_filter.h",
   "+chrome/common/extensions/extension_messages.h",
+  "+chrome/common/extensions/features/feature_channel.h",
   "+grit/generated_resources.h",
 ]
 
