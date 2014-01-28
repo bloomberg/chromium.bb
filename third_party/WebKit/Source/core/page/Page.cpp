@@ -377,32 +377,30 @@ void Page::setPagination(const Pagination& pagination)
     setNeedsRecalcStyleInAllFrames();
 }
 
-void Page::allVisitedStateChanged(PageGroup* group)
+void Page::allVisitedStateChanged()
 {
-    ASSERT(group);
     if (!allPages)
         return;
 
     HashSet<Page*>::iterator pagesEnd = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        if (page->m_group != group)
+        if (page->m_group != PageGroup::sharedGroup())
             continue;
         for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
             frame->document()->visitedLinkState().invalidateStyleForAllLinks();
     }
 }
 
-void Page::visitedStateChanged(PageGroup* group, LinkHash linkHash)
+void Page::visitedStateChanged(LinkHash linkHash)
 {
-    ASSERT(group);
     if (!allPages)
         return;
 
     HashSet<Page*>::iterator pagesEnd = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        if (page->m_group != group)
+        if (page->m_group != PageGroup::sharedGroup())
             continue;
         for (Frame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
             frame->document()->visitedLinkState().invalidateStyleForLink(linkHash);

@@ -191,8 +191,8 @@ public:
     const Pagination& pagination() const { return m_pagination; }
     void setPagination(const Pagination&);
 
-    static void allVisitedStateChanged(PageGroup*);
-    static void visitedStateChanged(PageGroup*, LinkHash visitedHash);
+    static void allVisitedStateChanged();
+    static void visitedStateChanged(LinkHash visitedHash);
 
     StorageNamespace* sessionStorage(bool optionalCreate = true);
 

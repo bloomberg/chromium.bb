@@ -263,12 +263,12 @@ void WebView::setUseExternalPopupMenus(bool useExternalPopupMenus)
 
 void WebView::updateVisitedLinkState(unsigned long long linkHash)
 {
-    Page::visitedStateChanged(PageGroup::sharedGroup(), linkHash);
+    Page::visitedStateChanged(linkHash);
 }
 
 void WebView::resetVisitedLinkState()
 {
-    Page::allVisitedStateChanged(PageGroup::sharedGroup());
+    Page::allVisitedStateChanged();
 }
 
 void WebView::willEnterModalLoop()
