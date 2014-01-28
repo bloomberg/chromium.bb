@@ -273,6 +273,9 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
         IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
   }
 
+  virtual void ActiveUserWasChanged() OVERRIDE {
+  }
+
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
     return ash::Shell::GetInstance()->system_tray_notifier();

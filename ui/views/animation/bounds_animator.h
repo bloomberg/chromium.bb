@@ -95,6 +95,9 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   // milliseconds.
   void SetAnimationDuration(int duration_ms);
 
+  // Gets the currently used animation duration.
+  int GetAnimationDuration() const { return animation_duration_ms_; }
+
   // Sets the tween type for new animations. Default is EASE_OUT.
   void set_tween_type(gfx::Tween::Type type) { tween_type_ = type; }
 

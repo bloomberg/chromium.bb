@@ -702,6 +702,9 @@ void WallpaperManager::SetUserWallpaperNow(const std::string& email) {
 void WallpaperManager::ScheduleSetUserWallpaper(const std::string& email,
                                                 bool delayed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Some unit tests come here without a UserManager.
+  if (!UserManager::IsInitialized())
+    return;
   // There is no visible background in  kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
     return;
@@ -1033,7 +1036,9 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
                                             WallpaperInfo* info){
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(email)) {
+  // Some unit tests come here with no browser local state attached.
+  if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(email) ||
+      !g_browser_process->local_state()) {
     // Default to the values cached in memory.
     *info = current_user_wallpaper_info_;
 
@@ -1193,10 +1198,12 @@ void WallpaperManager::OnWallpaperDecoded(
     return;
   }
 
-  // Only cache user wallpaper at login screen.
-  if (!UserManager::Get()->IsUserLoggedIn()) {
-    wallpaper_cache_.insert(std::make_pair(email, wallpaper.image()));
+  // Only cache the user wallpaper at login screen and for multi profile users.
+  if (!UserManager::Get()->IsUserLoggedIn() ||
+      (UserManager::Get()->GetLoggedInUsers().size() > 1)) {
+    wallpaper_cache_[email] = wallpaper.image();
   }
+
   if (update_wallpaper) {
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetCustomWallpaper(wallpaper.image(), layout);

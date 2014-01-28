@@ -19,6 +19,9 @@ class ASH_EXPORT DefaultUserWallpaperDelegate : public UserWallpaperDelegate {
 
   // UserWallpaperDelegate overrides:
   virtual int GetAnimationType() OVERRIDE;
+  virtual int GetAnimationDurationOverride() OVERRIDE;
+  virtual void SetAnimationDurationOverride(
+      int animation_duration_in_ms) OVERRIDE;
   virtual bool ShouldShowInitialAnimation() OVERRIDE;
   virtual void UpdateWallpaper() OVERRIDE;
   virtual void InitializeWallpaper() OVERRIDE;

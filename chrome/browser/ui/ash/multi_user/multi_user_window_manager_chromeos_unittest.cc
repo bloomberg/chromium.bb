@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,6 +40,17 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
  protected:
   // Set up the test environment for this many windows.
   void SetUpForThisManyWindows(int windows);
+
+  // Switch the user and wait until the animation is finished.
+  void SwitchUserAndWaitForAnimation(const std::string& user_id) {
+    multi_user_window_manager_->ActiveUserChanged(user_id);
+    base::TimeTicks now = base::TimeTicks::Now();
+    while (multi_user_window_manager_->IsAnimationRunningForTest()) {
+      // This should never take longer then a second.
+      ASSERT_GE(1000, (base::TimeTicks::Now() - now).InMilliseconds());
+      base::MessageLoop::current()->RunUntilIdle();
+    }
+  }
 
   // Return the window with the given index.
   aura::Window* window(size_t index) {
@@ -107,6 +119,7 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
     window_[i]->Show();
   }
   multi_user_window_manager_ = new chrome::MultiUserWindowManagerChromeOS("A");
+  multi_user_window_manager_->SetAnimationsForTest(true);
   chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_,
         chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
   EXPECT_TRUE(multi_user_window_manager_);
@@ -642,6 +655,39 @@ TEST_F(MultiUserWindowManagerChromeOSTest,
   // Showing the window should trigger a user switch.
   window(0)->Show();
   EXPECT_EQ("b", session_state_delegate()->get_activated_user());
+}
+
+// Test that using the full user switch animations are working as expected.
+TEST_F(MultiUserWindowManagerChromeOSTest, FullUserSwitchAnimationTests) {
+  SetUpForThisManyWindows(3);
+  // Turn the use of delays and animation on.
+  multi_user_window_manager()->SetAnimationsForTest(false);
+  // Set some owners and make sure we got what we asked for.
+  multi_user_window_manager()->SetWindowOwner(window(0), "A");
+  multi_user_window_manager()->SetWindowOwner(window(1), "B");
+  multi_user_window_manager()->SetWindowOwner(window(2), "C");
+  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
+  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+
+  // Switch the user fore and back and see that the results are correct.
+  SwitchUserAndWaitForAnimation("B");
+
+  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("B", GetOwnersOfVisibleWindowsAsString());
+
+  SwitchUserAndWaitForAnimation("A");
+
+  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
+
+  // Switch the user quickly to another user and before the animation is done
+  // switch back and see that this works.
+  multi_user_window_manager()->ActiveUserChanged("B");
+  // Check that at this time we have nothing visible (in the middle of the
+  // animation).
+  EXPECT_EQ("H[A], H[B], H[C]", GetStatus());
+  // Check that after switching to C, C is fully visible.
+  SwitchUserAndWaitForAnimation("C");
+  EXPECT_EQ("H[A], H[B], S[C]", GetStatus());
 }
 
 }  // namespace test

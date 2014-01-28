@@ -16,6 +16,7 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -87,7 +88,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_shell_window_launcher_controller.h"
@@ -243,7 +243,6 @@ class ChromeLauncherControllerUserSwitchObserverChromeOS
   }
 
   // chromeos::UserManager::UserSessionStateObserver overrides:
-  virtual void ActiveUserChanged(const chromeos::User* active_user) OVERRIDE;
   virtual void UserAddedToSession(const chromeos::User* added_user) OVERRIDE;
 
   // content::NotificationObserver overrides:
@@ -268,17 +267,6 @@ class ChromeLauncherControllerUserSwitchObserverChromeOS
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerUserSwitchObserverChromeOS);
 };
-
-void ChromeLauncherControllerUserSwitchObserverChromeOS::ActiveUserChanged(
-    const chromeos::User* active_user) {
-  const std::string& user_email = active_user->email();
-  // Forward the OS specific event to the ChromeLauncherController.
-  controller_->ActiveUserChanged(user_email);
-  // TODO(skuhne): At the moment the login screen does the wallpaper management
-  // and wallpapers are not synchronized across multiple desktops.
-  if (chromeos::WallpaperManager::Get())
-    chromeos::WallpaperManager::Get()->SetUserWallpaperDelayed(user_email);
-}
 
 void ChromeLauncherControllerUserSwitchObserverChromeOS::UserAddedToSession(
     const chromeos::User* active_user) {
@@ -1167,6 +1155,8 @@ void ChromeLauncherController::ActiveUserChanged(
   // Restore the order of running, but unpinned applications for the activated
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
+  // Inform the system tray of the change.
+  ash::Shell::GetInstance()->system_tray_delegate()->ActiveUserWasChanged();
 }
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
@@ -1690,8 +1680,8 @@ void ChromeLauncherController::SetShelfAutoHideBehaviorPrefs(
       break;
     case ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
       // This one should not be a valid preference option for now. We only want
-      // to completely hide it when we run app mode.
-      NOTREACHED();
+      // to completely hide it when we run in app mode - or while we temporarily
+      // hide the shelf as part of an animation (e.g. the multi user change).
       return;
   }
 

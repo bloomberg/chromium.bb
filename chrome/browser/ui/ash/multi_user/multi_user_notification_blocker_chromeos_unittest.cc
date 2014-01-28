@@ -37,6 +37,8 @@ class MultiUserNotificationBlockerChromeOSTest
     shell_delegate->set_multi_profiles_enabled(true);
     chrome::MultiUserWindowManager::CreateInstance();
 
+    // Disable any animations for the test.
+    GetMultiUserWindowManager()->SetAnimationsForTest(true);
     GetMultiUserWindowManager()->notification_blocker_->AddObserver(this);
   }
 

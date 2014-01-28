@@ -167,6 +167,10 @@ class ASH_EXPORT ShelfLayoutManager :
   void CompleteGestureDrag(const ui::GestureEvent& gesture);
   void CancelGestureDrag();
 
+  // Set an animation duration override for the show / hide animation of the
+  // shelf. Specifying 0 leads to use the default.
+  void SetAnimationDurationOverride(int duration_override_in_ms);
+
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
@@ -407,6 +411,9 @@ class ASH_EXPORT ShelfLayoutManager :
 
   // The bounds of the dock.
   gfx::Rect dock_bounds_;
+
+  // The show hide animation duration override or 0 for default.
+  int duration_override_in_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

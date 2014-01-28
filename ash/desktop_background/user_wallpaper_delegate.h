@@ -18,6 +18,13 @@ class ASH_EXPORT UserWallpaperDelegate {
   // wallpaper.
   virtual int GetAnimationType() = 0;
 
+  // Returns the wallpaper animation duration in ms. A value of 0 indicates
+  // that the default should be used.
+  virtual int GetAnimationDurationOverride() = 0;
+
+  // Sets wallpaper animation duration in ms. Pass 0 to use the default.
+  virtual void SetAnimationDurationOverride(int animation_duration_in_ms) = 0;
+
   // Should the slower initial animation be shown (as opposed to the faster
   // animation that's used e.g. when switching from one user's wallpaper to
   // another's on the login screen)?

@@ -903,6 +903,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
   }
 
+  virtual void ActiveUserWasChanged() OVERRIDE {
+    GetSystemTrayNotifier()->NotifyUserUpdate();
+  }
+
  private:
   ash::SystemTray* GetPrimarySystemTray() {
     return ash::Shell::GetInstance()->GetPrimarySystemTray();
@@ -1299,10 +1303,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // Overridden from ash::SessionStateObserver
-  virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyUserUpdate();
-  }
-
   virtual void UserAddedToSession(const std::string& user_id) OVERRIDE {
     GetSystemTrayNotifier()->NotifyUserAddedToSession();
   }

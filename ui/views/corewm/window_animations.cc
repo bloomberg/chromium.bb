@@ -84,10 +84,11 @@ const float kWindowAnimation_Bounce_Scale = 1.02f;
 const int kWindowAnimation_Bounce_DurationMS = 180;
 const int kWindowAnimation_Bounce_GrowShrinkDurationPercent = 40;
 
-base::TimeDelta GetWindowVisibilityAnimationDuration(aura::Window* window) {
+base::TimeDelta GetWindowVisibilityAnimationDuration(
+    const aura::Window& window) {
   int duration =
-      window->GetProperty(kWindowVisibilityAnimationDurationKey);
-  if (duration == 0 && window->type() == ui::wm::WINDOW_TYPE_MENU) {
+      window.GetProperty(kWindowVisibilityAnimationDurationKey);
+  if (duration == 0 && window.type() == ui::wm::WINDOW_TYPE_MENU) {
     return base::TimeDelta::FromMilliseconds(
         kDefaultAnimationDurationForMenuMS);
   }
@@ -255,7 +256,7 @@ void AnimateShowWindowCommon(aura::Window* window,
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    base::TimeDelta duration = GetWindowVisibilityAnimationDuration(window);
+    base::TimeDelta duration = GetWindowVisibilityAnimationDuration(*window);
     if (duration.ToInternalValue() > 0)
       settings.SetTransitionDuration(duration);
 
@@ -275,7 +276,7 @@ void AnimateHideWindowCommon(aura::Window* window,
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.AddObserver(new HidingWindowAnimationObserver(window));
 
-  base::TimeDelta duration = GetWindowVisibilityAnimationDuration(window);
+  base::TimeDelta duration = GetWindowVisibilityAnimationDuration(*window);
   if (duration.ToInternalValue() > 0)
     settings.SetTransitionDuration(duration);
 
@@ -526,6 +527,12 @@ void SetWindowVisibilityAnimationDuration(aura::Window* window,
                                           const TimeDelta& duration) {
   window->SetProperty(kWindowVisibilityAnimationDurationKey,
                       static_cast<int>(duration.ToInternalValue()));
+}
+
+base::TimeDelta GetWindowVisibilityAnimationDuration(
+    const aura::Window& window) {
+  return base::TimeDelta::FromInternalValue(
+      window.GetProperty(kWindowVisibilityAnimationDurationKey));
 }
 
 void SetWindowVisibilityAnimationVerticalPosition(aura::Window* window,

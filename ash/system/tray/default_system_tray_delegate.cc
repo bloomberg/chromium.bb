@@ -276,4 +276,7 @@ int DefaultSystemTrayDelegate::GetSystemTrayMenuWidth() {
   return 300;
 }
 
+void DefaultSystemTrayDelegate::ActiveUserWasChanged() {
+}
+
 }  // namespace ash

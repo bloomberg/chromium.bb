@@ -121,6 +121,28 @@ const float kDraggedImageOpacity = 0.5f;
 
 namespace {
 
+// A class to temporarily disable a given bounds animator.
+class BoundsAnimatorDisabler {
+ public:
+  BoundsAnimatorDisabler(views::BoundsAnimator* bounds_animator)
+      : old_duration_(bounds_animator->GetAnimationDuration()),
+        bounds_animator_(bounds_animator) {
+    bounds_animator_->SetAnimationDuration(1);
+  }
+
+  ~BoundsAnimatorDisabler() {
+    bounds_animator_->SetAnimationDuration(old_duration_);
+  }
+
+ private:
+  // The previous animation duration.
+  int old_duration_;
+  // The bounds animator which gets used.
+  views::BoundsAnimator* bounds_animator_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoundsAnimatorDisabler);
+};
+
 // The MenuModelAdapter gets slightly changed to adapt the menu appearance to
 // our requirements.
 class ShelfMenuModelAdapter : public views::MenuModelAdapter {
@@ -1490,6 +1512,12 @@ gfx::Size ShelfView::GetPreferredSize() {
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // This bounds change is produced by the shelf movement and all content has
+  // to follow. Using an animation at that time would produce a time lag since
+  // the animation of the BoundsAnimator has itself a delay before it arrives
+  // at the required location. As such we tell the animator to go there
+  // immediately.
+  BoundsAnimatorDisabler disabler(bounds_animator_.get());
   LayoutToIdealBounds();
   FOR_EACH_OBSERVER(ShelfIconObserver, observers_,
                     OnShelfIconPositionsChanged());

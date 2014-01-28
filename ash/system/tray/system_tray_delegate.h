@@ -314,6 +314,11 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Get the system tray menu size in pixels (dependent on the language).
   virtual int GetSystemTrayMenuWidth() = 0;
+
+  // The active user has been changed. This will be called when the UI is ready
+  // to be switched to the new user.
+  // Note: This will happen after SessionStateObserver::ActiveUserChanged fires.
+  virtual void ActiveUserWasChanged() = 0;
 };
 
 }  // namespace ash

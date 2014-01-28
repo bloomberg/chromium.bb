@@ -74,6 +74,9 @@ VIEWS_EXPORT void SetWindowVisibilityAnimationDuration(
     aura::Window* window,
     const base::TimeDelta& duration);
 
+VIEWS_EXPORT base::TimeDelta GetWindowVisibilityAnimationDuration(
+    const aura::Window& window);
+
 VIEWS_EXPORT void SetWindowVisibilityAnimationVerticalPosition(
     aura::Window* window,
     float position);

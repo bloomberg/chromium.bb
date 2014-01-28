@@ -207,6 +207,12 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
       Shell::GetInstance()->session_state_delegate()->NumberOfLoggedInUsers()) {
     views::corewm::SetWindowVisibilityAnimationTransition(
         desktop_widget->GetNativeView(), views::corewm::ANIMATE_SHOW);
+    int duration_override = wallpaper_delegate->GetAnimationDurationOverride();
+    if (duration_override) {
+      views::corewm::SetWindowVisibilityAnimationDuration(
+          desktop_widget->GetNativeView(),
+          base::TimeDelta::FromMilliseconds(duration_override));
+    }
   } else {
     // Disable animation if transition to login screen from an empty background.
     views::corewm::SetWindowVisibilityAnimationTransition(

@@ -207,7 +207,8 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
       gesture_drag_status_(GESTURE_DRAG_NONE),
       gesture_drag_amount_(0.f),
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
-      update_shelf_observer_(NULL) {
+      update_shelf_observer_(NULL),
+      duration_override_in_ms_(0) {
   Shell::GetInstance()->AddShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->AddObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
@@ -498,6 +499,11 @@ void ShelfLayoutManager::CancelGestureDrag() {
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
+void ShelfLayoutManager::SetAnimationDurationOverride(
+    int duration_override_in_ms) {
+  duration_override_in_ms_ = duration_override_in_ms;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, aura::LayoutManager implementation:
 
@@ -660,13 +666,15 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   ui::ScopedLayerAnimationSettings status_animation_setter(
       GetLayer(shelf_->status_area_widget())->GetAnimator());
   if (animate) {
+    int duration = duration_override_in_ms_ ? duration_override_in_ms_ :
+                                              kCrossFadeDurationMS;
     shelf_animation_setter.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
+        base::TimeDelta::FromMilliseconds(duration));
     shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     shelf_animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     status_animation_setter.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));
+        base::TimeDelta::FromMilliseconds(duration));
     status_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     status_animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);

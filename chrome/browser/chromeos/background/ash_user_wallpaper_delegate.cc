@@ -40,7 +40,9 @@ bool IsNormalWallpaperChange() {
 
 class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
  public:
-  UserWallpaperDelegate() : boot_animation_finished_(false) {
+  UserWallpaperDelegate()
+      : boot_animation_finished_(false),
+        animation_duration_override_in_ms_(0) {
   }
 
   virtual ~UserWallpaperDelegate() {
@@ -50,6 +52,15 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     return ShouldShowInitialAnimation() ?
         ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE :
         static_cast<int>(views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  }
+
+  virtual int GetAnimationDurationOverride() OVERRIDE {
+    return animation_duration_override_in_ms_;
+  }
+
+  virtual void SetAnimationDurationOverride(
+      int animation_duration_in_ms) OVERRIDE {
+    animation_duration_override_in_ms_ = animation_duration_in_ms;
   }
 
   virtual bool ShouldShowInitialAnimation() OVERRIDE {
@@ -102,6 +113,9 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
 
  private:
   bool boot_animation_finished_;
+
+  // The animation duration to show a new wallpaper if an animation is required.
+  int animation_duration_override_in_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(UserWallpaperDelegate);
 };

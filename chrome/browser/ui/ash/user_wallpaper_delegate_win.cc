@@ -34,6 +34,16 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     return true;
   }
 
+  virtual int GetAnimationDurationOverride() OVERRIDE {
+    // Return 0 to select the default.
+    return 0;
+  }
+
+  virtual void SetAnimationDurationOverride(
+      int animation_duration_in_ms) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
   virtual void UpdateWallpaper() OVERRIDE {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
