@@ -36,6 +36,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 
@@ -197,17 +198,28 @@ static int adjustForZoom(int value, Document* document)
     return static_cast<int>(value / zoomFactor);
 }
 
-// FIXME: There are cases where body.scrollLeft is allowed to return
-// non-zero values in both quirks and strict mode. It happens when
-// <body> has an overflow that is not the Frame overflow.
-// http://dev.w3.org/csswg/cssom-view/#dom-element-scrollleft
-// http://code.google.com/p/chromium/issues/detail?id=312435
+// Blink, Gecko and Presto's quirks mode implementations of overflow set to the
+// body element differ from IE's: the formers can create a scrollable area for the
+// body element that is not the same as the root elements's one. On IE's quirks mode
+// though, as body is the root element, body's and the root element's scrollable areas,
+// if any, are the same.
+// In order words, a <body> will only have an overflow clip (that differs from
+// documentElement's) if  both html and body nodes have its overflow set to either hidden,
+// auto or scroll.
+// That said, Blink's {set}scroll{Top,Left} behaviors match Gecko's: even if there is a non-overflown
+// scrollable area, scrolling should not get propagated to the viewport in neither strict
+// or quirks modes.
 int HTMLBodyElement::scrollLeft()
 {
     Document& document = this->document();
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        RenderBox* render = renderBox();
+        if (!render)
+            return 0;
+        if (render->hasOverflowClip())
+            return adjustForAbsoluteZoom(render->scrollLeft(), render);
         if (!document.inQuirksMode())
             return 0;
     }
@@ -222,6 +234,14 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        RenderBox* render = renderBox();
+        if (!render)
+            return;
+        if (render->hasOverflowClip()) {
+            // FIXME: Investigate how are other browsers casting to int (rounding, ceiling, ...).
+            render->setScrollLeft(static_cast<int>(scrollLeft * render->style()->effectiveZoom()));
+            return;
+        }
         if (!document.inQuirksMode())
             return;
     }
@@ -241,6 +261,11 @@ int HTMLBodyElement::scrollTop()
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        RenderBox* render = renderBox();
+        if (!render)
+            return 0;
+        if (render->hasOverflowClip())
+            return adjustForAbsoluteZoom(render->scrollTop(), render);
         if (!document.inQuirksMode())
             return 0;
     }
@@ -255,6 +280,14 @@ void HTMLBodyElement::setScrollTop(int scrollTop)
     document.updateLayoutIgnorePendingStylesheets();
 
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        RenderBox* render = renderBox();
+        if (!render)
+            return;
+        if (render->hasOverflowClip()) {
+            // FIXME: Investigate how are other browsers casting to int (rounding, ceiling, ...).
+            render->setScrollTop(static_cast<int>(scrollTop * render->style()->effectiveZoom()));
+            return;
+        }
         if (!document.inQuirksMode())
             return;
     }
