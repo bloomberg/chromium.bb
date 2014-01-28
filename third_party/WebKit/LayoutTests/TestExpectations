@@ -712,6 +712,7 @@ crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.h
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
 crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
+crbug.com/338544 [ Win7 Release ] fast/dom/Window/open-window-min-size.html [ Failure ]
 crbug.com/231880 [ Mac XP Release ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
