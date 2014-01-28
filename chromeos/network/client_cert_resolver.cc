@@ -27,6 +27,7 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
+#include "chromeos/tpm_token_loader.h"
 #include "components/onc/onc_constants.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
@@ -436,8 +437,8 @@ void ClientCertResolver::ConfigureCertificates(NetworkCertMatches* matches) {
     base::DictionaryValue shill_properties;
     client_cert::SetShillProperties(
         it->cert_config_type,
-        base::IntToString(cert_loader->tpm_token_slot_id()),
-        cert_loader->tpm_user_pin(),
+        base::IntToString(cert_loader->TPMTokenSlotID()),
+        TPMTokenLoader::Get()->tpm_user_pin(),
         &it->pkcs11_id,
         &shill_properties);
     DBusThreadManager::Get()->GetShillServiceClient()->

@@ -12,14 +12,14 @@
 #include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/tpm_token_loader.h"
 #include "crypto/nss_util.h"
+#include "crypto/nss_util_internal.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
-#include "net/cert/nss_cert_database.h"
+#include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,40 +38,39 @@ const char* kFakePEM = "pem";
 
 class NetworkCertMigratorTest : public testing::Test {
  public:
-  NetworkCertMigratorTest() {}
+  NetworkCertMigratorTest() : service_test_(NULL),
+                              user_("user_hash") {
+  }
   virtual ~NetworkCertMigratorTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(test_nssdb_.is_open());
-    slot_ = net::NSSCertDatabase::GetInstance()->GetPublicModule();
-    ASSERT_TRUE(slot_->os_module_handle());
-
-    LoginState::Initialize();
+    // Initialize NSS db for the user.
+    ASSERT_TRUE(user_.constructed_successfully());
+    user_.FinishInit();
+    test_nssdb_.reset(new net::NSSCertDatabaseChromeOS(
+        crypto::GetPublicSlotForChromeOSUser(user_.username_hash()),
+        crypto::GetPrivateSlotForChromeOSUser(
+            user_.username_hash(),
+            base::Callback<void(crypto::ScopedPK11Slot)>())));
 
     DBusThreadManager::InitializeWithStub();
     service_test_ =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     service_test_->ClearServices();
-    message_loop_.RunUntilIdle();
-
-    TPMTokenLoader::Initialize();
-    TPMTokenLoader* tpm_token_loader = TPMTokenLoader::Get();
-    tpm_token_loader->InitializeTPMForTest();
-    tpm_token_loader->SetCryptoTaskRunner(message_loop_.message_loop_proxy());
+    base::RunLoop().RunUntilIdle();
 
     CertLoader::Initialize();
-    CertLoader::Get()->SetSlowTaskRunnerForTest(
-        message_loop_.message_loop_proxy());
+    CertLoader* cert_loader_ = CertLoader::Get();
+    cert_loader_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
+    cert_loader_->StartWithNSSDB(test_nssdb_.get());
   }
 
   virtual void TearDown() OVERRIDE {
     network_cert_migrator_.reset();
     network_state_handler_.reset();
     CertLoader::Shutdown();
-    TPMTokenLoader::Shutdown();
     DBusThreadManager::Shutdown();
-    LoginState::Shutdown();
     CleanupTestCert();
   }
 
@@ -91,11 +90,10 @@ class NetworkCertMigratorTest : public testing::Test {
 
     test_ca_cert_ = net::X509Certificate::CreateFromBytesWithNickname(
         der_encoded.data(), der_encoded.size(), kNSSNickname);
-    net::NSSCertDatabase* cert_database = net::NSSCertDatabase::GetInstance();
     net::CertificateList cert_list;
     cert_list.push_back(test_ca_cert_);
     net::NSSCertDatabase::ImportCertFailureList failures;
-    EXPECT_TRUE(cert_database->ImportCACerts(
+    EXPECT_TRUE(test_nssdb_->ImportCACerts(
         cert_list, net::NSSCertDatabase::TRUST_DEFAULT, &failures));
     ASSERT_TRUE(failures.empty()) << net::ErrorToString(failures[0].net_error);
   }
@@ -181,14 +179,13 @@ class NetworkCertMigratorTest : public testing::Test {
 
  private:
   void CleanupTestCert() {
-    ASSERT_TRUE(net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(
-        test_ca_cert_.get()));
+    ASSERT_TRUE(test_nssdb_->DeleteCertAndKey(test_ca_cert_.get()));
   }
 
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkCertMigrator> network_cert_migrator_;
-  scoped_refptr<net::CryptoModule> slot_;
-  crypto::ScopedTestNSSDB test_nssdb_;
+  crypto::ScopedTestNSSChromeOSUser user_;
+  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkCertMigratorTest);
 };
@@ -199,7 +196,7 @@ TEST_F(NetworkCertMigratorTest, MigrateNssOnInitialization) {
   SetupTestCACert();
   SetupNetworkHandlers();
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   std::string nss_nickname, ca_pem;
   GetEapCACertProperties(&nss_nickname, &ca_pem);
   EXPECT_TRUE(nss_nickname.empty());
@@ -209,12 +206,12 @@ TEST_F(NetworkCertMigratorTest, MigrateNssOnInitialization) {
 TEST_F(NetworkCertMigratorTest, MigrateNssOnNetworkAppearance) {
   SetupTestCACert();
   SetupNetworkHandlers();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Add a new network for migration after the handlers are initialized.
   SetupWifiWithNss();
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   std::string nss_nickname, ca_pem;
   GetEapCACertProperties(&nss_nickname, &ca_pem);
   EXPECT_TRUE(nss_nickname.empty());
@@ -231,7 +228,7 @@ TEST_F(NetworkCertMigratorTest, DoNotMigrateNssIfPemSet) {
 
   SetupTestCACert();
   SetupNetworkHandlers();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   std::string nss_nickname, ca_pem;
   GetEapCACertProperties(&nss_nickname, &ca_pem);
@@ -246,7 +243,7 @@ TEST_F(NetworkCertMigratorTest, MigrateOpenVpn) {
   SetupTestCACert();
   SetupNetworkHandlers();
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   std::string nss_nickname, ca_pem;
   GetVpnCACertProperties(true /* OpenVPN */, &nss_nickname, &ca_pem);
   EXPECT_TRUE(nss_nickname.empty());
@@ -260,12 +257,11 @@ TEST_F(NetworkCertMigratorTest, MigrateIpsecVpn) {
   SetupTestCACert();
   SetupNetworkHandlers();
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   std::string nss_nickname, ca_pem;
   GetVpnCACertProperties(false /* not OpenVPN */, &nss_nickname, &ca_pem);
   EXPECT_TRUE(nss_nickname.empty());
   EXPECT_EQ(test_ca_cert_pem_, ca_pem);
 }
-
 
 }  // namespace chromeos

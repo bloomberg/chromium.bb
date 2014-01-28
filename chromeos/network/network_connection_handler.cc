@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -22,6 +23,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/shill_property_util.h"
+#include "chromeos/tpm_token_loader.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -161,14 +163,16 @@ void NetworkConnectionHandler::Init(
     LoginState::Get()->AddObserver(this);
     logged_in_ = LoginState::Get()->IsUserLoggedIn();
   }
+
   if (CertLoader::IsInitialized()) {
     cert_loader_ = CertLoader::Get();
     cert_loader_->AddObserver(this);
     certificates_loaded_ = cert_loader_->certificates_loaded();
   } else {
-    // TODO(stevenjb): Require a mock or stub cert_loader in tests.
+    // TODO(tbarzic): Require a mock or stub cert_loader in tests.
     certificates_loaded_ = true;
   }
+
   if (network_state_handler) {
     network_state_handler_ = network_state_handler;
     network_state_handler_->AddObserver(this, FROM_HERE);
@@ -451,8 +455,8 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
       // previously configured client cert.
       client_cert::SetShillProperties(
           client_cert_type,
-          base::IntToString(cert_loader_->tpm_token_slot_id()),
-          cert_loader_->tpm_user_pin(),
+          base::IntToString(cert_loader_->TPMTokenSlotID()),
+          TPMTokenLoader::Get()->tpm_user_pin(),
           pkcs11_id.empty() ? NULL : &pkcs11_id,
           &config_properties);
     }
@@ -632,7 +636,8 @@ std::string NetworkConnectionHandler::CertificateIsConfigured(
     return std::string();
   // Find the matching certificate.
   scoped_refptr<net::X509Certificate> matching_cert =
-      client_cert::GetCertificateMatch(ui_data->certificate_pattern());
+      client_cert::GetCertificateMatch(ui_data->certificate_pattern(),
+                                       cert_loader_->cert_list());
   if (!matching_cert.get())
     return std::string();
   return CertLoader::GetPkcs11IdForCert(*matching_cert.get());

@@ -6,14 +6,15 @@
 #define CHROMEOS_CERT_LOADER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/tpm_token_loader.h"
 #include "net/cert/cert_database.h"
 
 namespace base {
@@ -21,7 +22,9 @@ class TaskRunner;
 }
 
 namespace net {
+class NSSCertDatabase;
 class X509Certificate;
+typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace chromeos {
@@ -32,14 +35,7 @@ namespace chromeos {
 // When certificates have been loaded (after login completes and tpm token is
 // initialized), or the cert database changes, observers are called with
 // OnCertificatesLoaded().
-// TODO(tbarzic): Remove direct dependency on TPMTokenLoader. The reason
-//     TPMTokenLoader has to be observed is to make sure singleton NSS DB is
-//     initialized before certificate loading starts. CertLoader should use
-//     (primary) user specific NSS DB, whose loading already takes this into
-//     account (crypto::GetPrivateSlotForChromeOSUser waits until TPM token is
-//     ready).
-class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
-                                   public TPMTokenLoader::Observer {
+class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
  public:
   class Observer {
    public:
@@ -67,6 +63,10 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   static std::string GetPkcs11IdForCert(const net::X509Certificate& cert);
 
+  // Starts the CertLoader with the NSS cert database.
+  // The CertLoader will _not_ take the ownership of the database.
+  void StartWithNSSDB(net::NSSCertDatabase* database);
+
   // Sets the task runner that any slow calls will be made from, e.g. calls
   // to the NSS database. If not set, uses base::WorkerPool.
   void SetSlowTaskRunnerForTest(
@@ -75,8 +75,13 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
 
-  // Returns true if the TPM is available for hardware-backed certificates.
+  int TPMTokenSlotID() const;
   bool IsHardwareBacked() const;
+
+  // Whether the certificate is hardware backed. Returns false if the CertLoader
+  // was not yet started (both |CertificatesLoading()| and
+  // |certificates_loaded()| are false).
+  bool IsCertificateHardwareBacked(const net::X509Certificate* cert) const;
 
   // Returns true when the certificate list has been requested but not loaded.
   bool CertificatesLoading() const;
@@ -86,20 +91,16 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   // This will be empty until certificates_loaded() is true.
   const net::CertificateList& cert_list() const { return cert_list_; }
 
-  // Getters for cached TPM token info.
-  std::string tpm_user_pin() const { return tpm_user_pin_; }
-  std::string tpm_token_name() const { return tpm_token_name_; }
-  int tpm_token_slot_id() const { return tpm_token_slot_id_; }
+  void force_hardware_backed_for_test() {
+    force_hardware_backed_for_test_ = true;
+  }
 
  private:
   CertLoader();
   virtual ~CertLoader();
 
-  // Starts certificate loading.
-  void RequestCertificates();
-
   // Trigger a certificate load. If a certificate loading task is already in
-  // progress, will start a reload once the current task finished.
+  // progress, will start a reload once the current task is finished.
   void LoadCertificates();
 
   // Called if a certificate load task is finished.
@@ -112,30 +113,27 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   virtual void OnCertAdded(const net::X509Certificate* cert) OVERRIDE;
   virtual void OnCertRemoved(const net::X509Certificate* cert) OVERRIDE;
 
-  // chromeos::TPMTokenLoader::Observer
-  virtual void OnTPMTokenReady(const std::string& tpm_user_pin,
-                               const std::string& tpm_token_name,
-                               int tpm_token_slot_id) OVERRIDE;
-
   ObserverList<Observer> observers_;
 
   // Flags describing current CertLoader state.
-  bool certificates_requested_;
   bool certificates_loaded_;
   bool certificates_update_required_;
   bool certificates_update_running_;
 
-  // Cached TPM token info. Set when the |OnTPMTokenReady| gets called.
-  std::string tpm_user_pin_;
-  std::string tpm_token_name_;
-  int tpm_token_slot_id_;
+  // The user-specific NSS certificate database from which the certificates
+  // should be loaded.
+  net::NSSCertDatabase* database_;
 
-  // Cached Certificates.
+  // Set during tests if |IsHardwareBacked()| should always return true.
+  bool force_hardware_backed_for_test_;
+
+  // Cached Certificates loaded from the database.
   net::CertificateList cert_list_;
 
   base::ThreadChecker thread_checker_;
 
-  // TaskRunner for other slow tasks. May be set in tests.
+  // TaskRunner that, if set, replaces base::WorkerPool. Should only be set in
+  // tests.
   scoped_refptr<base::TaskRunner> slow_task_runner_for_test_;
 
   base::WeakPtrFactory<CertLoader> weak_factory_;

@@ -55,7 +55,13 @@ static TPMTokenLoader* g_tpm_token_loader = NULL;
 // static
 void TPMTokenLoader::Initialize() {
   CHECK(!g_tpm_token_loader);
-  g_tpm_token_loader = new TPMTokenLoader();
+  g_tpm_token_loader = new TPMTokenLoader(false /*for_test*/);
+}
+
+// static
+void TPMTokenLoader::InitializeForTest() {
+  CHECK(!g_tpm_token_loader);
+  g_tpm_token_loader = new TPMTokenLoader(true /*for_test*/);
 }
 
 // static
@@ -77,19 +83,20 @@ bool TPMTokenLoader::IsInitialized() {
   return g_tpm_token_loader;
 }
 
-TPMTokenLoader::TPMTokenLoader()
-    : initialize_tpm_for_test_(false),
+TPMTokenLoader::TPMTokenLoader(bool for_test)
+    : initialized_for_test_(for_test),
       tpm_token_state_(TPM_STATE_UNKNOWN),
       tpm_request_delay_(
           base::TimeDelta::FromMilliseconds(kInitialRequestDelayMs)),
       tpm_token_slot_id_(-1),
       weak_factory_(this) {
-  if (LoginState::IsInitialized())
+  if (!initialized_for_test_ && LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
-}
 
-void TPMTokenLoader::InitializeTPMForTest() {
-  initialize_tpm_for_test_ = true;
+  if (initialized_for_test_) {
+    tpm_token_state_ = TPM_TOKEN_INITIALIZED;
+    tpm_user_pin_ = "111111";
+  }
 }
 
 void TPMTokenLoader::SetCryptoTaskRunner(
@@ -99,7 +106,7 @@ void TPMTokenLoader::SetCryptoTaskRunner(
 }
 
 TPMTokenLoader::~TPMTokenLoader() {
-  if (LoginState::IsInitialized())
+  if (!initialized_for_test_ && LoginState::IsInitialized())
     LoginState::Get()->RemoveObserver(this);
 }
 
@@ -127,14 +134,14 @@ void TPMTokenLoader::MaybeStartTokenInitialization() {
   if (!LoginState::IsInitialized())
     return;
 
-  bool request_certificates = LoginState::Get()->IsUserLoggedIn() ||
+  bool start_initialization = LoginState::Get()->IsUserLoggedIn() ||
       LoginState::Get()->IsInSafeMode();
 
-  VLOG(1) << "RequestCertificates: " << request_certificates;
-  if (!request_certificates)
+  VLOG(1) << "StartTokenInitialization: " << start_initialization;
+  if (!start_initialization)
     return;
 
-  if (!initialize_tpm_for_test_ && !base::SysInfo::IsRunningOnChromeOS())
+  if (!base::SysInfo::IsRunningOnChromeOS())
     tpm_token_state_ = TPM_DISABLED;
 
   // Treat TPM as disabled for guest users since they do not store certs.
@@ -277,8 +284,7 @@ void TPMTokenLoader::OnTPMTokenInitialized(bool success) {
 }
 
 void TPMTokenLoader::NotifyTPMTokenReady() {
-  FOR_EACH_OBSERVER(Observer, observers_,
-      OnTPMTokenReady(tpm_user_pin_, tpm_token_name_, tpm_token_slot_id_));
+  FOR_EACH_OBSERVER(Observer, observers_, OnTPMTokenReady());
 }
 
 void TPMTokenLoader::LoggedInStateChanged() {

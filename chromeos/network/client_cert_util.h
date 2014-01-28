@@ -6,6 +6,7 @@
 #define CHROMEOS_NETWORK_CLIENT_CERT_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
@@ -17,6 +18,7 @@ class DictionaryValue;
 namespace net {
 struct CertPrincipal;
 class X509Certificate;
+typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace chromeos {
@@ -43,7 +45,8 @@ bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
 // Fetches the matching certificate that has the latest valid start date.
 // Returns a NULL refptr if there is no such match.
 CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> GetCertificateMatch(
-    const CertificatePattern& pattern);
+    const CertificatePattern& pattern,
+    const net::CertificateList& all_certs);
 
 // If not empty, sets the TPM properties in |properties|. If |pkcs11_id| is not
 // NULL, also sets the ClientCertID. |cert_config_type| determines which

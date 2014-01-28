@@ -11,6 +11,8 @@
 #include "base/compiler_specific.h"
 #include "crypto/scoped_nss_types.h"
 
+class Profile;
+
 namespace net {
 class NSSCertDatabase;
 }
@@ -43,5 +45,14 @@ net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(
     content::ResourceContext* context,
     const base::Callback<void(net::NSSCertDatabase*)>& callback)
     WARN_UNUSED_RESULT;
+
+// Gets a pointer to the NSSCertDatabase for the user associated with |context|.
+// It's a wrapper around |GetNSSCertDatabaseForResourceContext| which makes
+// sure it's called on IO thread (with |profile|'s resource context). The
+// callback will be called on the originating message loop.
+// It's accessing profile, so it should be called on the UI thread.
+void GetNSSCertDatabaseForProfile(
+    Profile* profile,
+    const base::Callback<void(net::NSSCertDatabase*)>& callback);
 
 #endif  // CHROME_BROWSER_NET_NSS_CONTEXT_H_

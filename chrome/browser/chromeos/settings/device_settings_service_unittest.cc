@@ -349,7 +349,7 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForNonOwner) {
             device_settings_service_.GetOwnershipStatus());
   EXPECT_FALSE(is_owner_set_);
 
-  device_settings_service_.OnTPMTokenReady("tpm_pin", "tpm_token", 0);
+  device_settings_service_.OnTPMTokenReady();
   FlushDeviceSettings();
 
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
@@ -392,7 +392,7 @@ TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForOwner) {
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
   device_settings_service_.SetUsername(device_policy_.policy_data().username());
-  device_settings_service_.OnTPMTokenReady("tpm_pin", "tpm_token_name", 0);
+  device_settings_service_.OnTPMTokenReady();
   FlushDeviceSettings();
 
   EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());
@@ -420,7 +420,7 @@ TEST_F(DeviceSettingsServiceTest, IsCurrentUserOwnerAsyncWithLoadedCerts) {
   device_settings_service_.SetUsername(device_policy_.policy_data().username());
   ReloadDeviceSettings();
 
-  device_settings_service_.OnTPMTokenReady("tpm_pin", "tpm_token_name", 0);
+  device_settings_service_.OnTPMTokenReady();
   FlushDeviceSettings();
 
   EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());

@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/nss_util.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {
@@ -54,25 +56,37 @@ bool CertLoader::IsInitialized() {
 }
 
 CertLoader::CertLoader()
-    : certificates_requested_(false),
-      certificates_loaded_(false),
+    : certificates_loaded_(false),
       certificates_update_required_(false),
       certificates_update_running_(false),
-      tpm_token_slot_id_(-1),
+      database_(NULL),
+      force_hardware_backed_for_test_(false),
       weak_factory_(this) {
-  if (TPMTokenLoader::IsInitialized())
-    TPMTokenLoader::Get()->AddObserver(this);
+}
+
+CertLoader::~CertLoader() {
+  net::CertDatabase::GetInstance()->RemoveObserver(this);
+}
+
+void CertLoader::StartWithNSSDB(net::NSSCertDatabase* database) {
+  CHECK(!database_);
+  database_ = database;
+
+  // Start observing cert database for changes.
+  // Observing net::CertDatabase is preferred over observing |database_|
+  // directly, as |database_| observers receive only events generated directly
+  // by |database_|, so they may miss a few relevant ones.
+  // TODO(tbarzic): Once singleton NSSCertDatabase is removed, investigate if
+  // it would be OK to observe |database_| directly; or change NSSCertDatabase
+  // to send notification on all relevant changes.
+  net::CertDatabase::GetInstance()->AddObserver(this);
+
+  LoadCertificates();
 }
 
 void CertLoader::SetSlowTaskRunnerForTest(
     const scoped_refptr<base::TaskRunner>& task_runner) {
   slow_task_runner_for_test_ = task_runner;
-}
-
-CertLoader::~CertLoader() {
-  net::CertDatabase::GetInstance()->RemoveObserver(this);
-  if (TPMTokenLoader::IsInitialized())
-    TPMTokenLoader::Get()->RemoveObserver(this);
 }
 
 void CertLoader::AddObserver(CertLoader::Observer* observer) {
@@ -83,12 +97,26 @@ void CertLoader::RemoveObserver(CertLoader::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+int CertLoader::TPMTokenSlotID() const {
+  if (!database_)
+    return -1;
+  return static_cast<int>(PK11_GetSlotID(database_->GetPrivateSlot().get()));
+}
+
 bool CertLoader::IsHardwareBacked() const {
-  return !tpm_token_name_.empty();
+  return force_hardware_backed_for_test_ ||
+      (database_ && PK11_IsHW(database_->GetPrivateSlot().get()));
+}
+
+bool CertLoader::IsCertificateHardwareBacked(
+    const net::X509Certificate* cert) const {
+  if (!database_)
+    return false;
+  return database_->IsHardwareBacked(cert);
 }
 
 bool CertLoader::CertificatesLoading() const {
-  return certificates_requested_ && !certificates_loaded_;
+  return database_ && !certificates_loaded_;
 }
 
 // This is copied from chrome/common/net/x509_certificate_model_nss.cc.
@@ -120,16 +148,6 @@ std::string CertLoader::GetPkcs11IdForCert(const net::X509Certificate& cert) {
   return pkcs11_id;
 }
 
-void CertLoader::RequestCertificates() {
-  if (certificates_requested_)
-    return;
-  certificates_requested_ = true;
-
-  DCHECK(!certificates_loaded_ && !certificates_update_running_);
-  net::CertDatabase::GetInstance()->AddObserver(this);
-  LoadCertificates();
-}
-
 void CertLoader::LoadCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "LoadCertificates: " << certificates_update_running_;
@@ -149,7 +167,14 @@ void CertLoader::LoadCertificates() {
   task_runner->PostTaskAndReply(
       FROM_HERE,
       base::Bind(LoadNSSCertificates,
-                 net::NSSCertDatabase::GetInstance(),
+                 // Create a copy of the database so it can be used on the
+                 // worker pool.
+                 // TODO(tbarzic): Make net::NSSCertDatabase::ListCerts async
+                 //     and change it to do the certificate listing on worker
+                 //     pool.
+                 base::Owned(new net::NSSCertDatabaseChromeOS(
+                     database_->GetPublicSlot(),
+                     database_->GetPrivateSlot())),
                  cert_list),
       base::Bind(&CertLoader::UpdateCertificates,
                  weak_factory_.GetWeakPtr(),
@@ -193,17 +218,6 @@ void CertLoader::OnCertAdded(const net::X509Certificate* cert) {
 void CertLoader::OnCertRemoved(const net::X509Certificate* cert) {
   VLOG(1) << "OnCertRemoved";
   LoadCertificates();
-}
-
-void CertLoader::OnTPMTokenReady(const std::string& tpm_user_pin,
-                                 const std::string& tpm_token_name,
-                                 int tpm_token_slot_id) {
-  tpm_user_pin_ = tpm_user_pin;
-  tpm_token_name_ = tpm_token_name;
-  tpm_token_slot_id_ = tpm_token_slot_id;
-
-  VLOG(1) << "TPM token ready.";
-  RequestCertificates();
 }
 
 }  // namespace chromeos

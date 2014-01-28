@@ -197,9 +197,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
   virtual void PropertyChangeComplete(bool success) OVERRIDE;
 
   // TPMTokenLoader::Observer:
-  virtual void OnTPMTokenReady(const std::string& tpm_user_pin,
-                               const std::string& tpm_token_name,
-                               int tpm_token_slot_id) OVERRIDE;
+  virtual void OnTPMTokenReady() OVERRIDE;
 
  private:
   // Enqueues a new operation. Takes ownership of |operation| and starts it

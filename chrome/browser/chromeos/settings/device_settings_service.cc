@@ -235,9 +235,7 @@ void DeviceSettingsService::PropertyChangeComplete(bool success) {
   EnsureReload(false);
 }
 
-void DeviceSettingsService::OnTPMTokenReady(const std::string& tpm_user_pin,
-                                            const std::string& tpm_token_name,
-                                            int tpm_token_slot_id) {
+void DeviceSettingsService::OnTPMTokenReady() {
   waiting_for_tpm_token_ = false;
 
   // TPMTokenLoader initializes the TPM and NSS database which is necessary to

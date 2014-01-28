@@ -138,18 +138,17 @@ bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
 }
 
 scoped_refptr<net::X509Certificate> GetCertificateMatch(
-    const CertificatePattern& pattern) {
+    const CertificatePattern& pattern,
+    const net::CertificateList& all_certs) {
   typedef std::list<scoped_refptr<net::X509Certificate> > CertificateStlList;
 
   // Start with all the certs, and narrow it down from there.
-  net::CertificateList all_certs;
   CertificateStlList matching_certs;
-  net::NSSCertDatabase::GetInstance()->ListCerts(&all_certs);
 
   if (all_certs.empty())
     return NULL;
 
-  for (net::CertificateList::iterator iter = all_certs.begin();
+  for (net::CertificateList::const_iterator iter = all_certs.begin();
        iter != all_certs.end(); ++iter) {
     matching_certs.push_back(*iter);
   }

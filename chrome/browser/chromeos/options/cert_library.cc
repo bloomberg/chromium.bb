@@ -36,7 +36,8 @@ namespace {
 // Root CA certificates that are built into Chrome use this token name.
 const char kRootCertificateTokenName[] = "Builtin Object Token";
 
-base::string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
+base::string16 GetDisplayString(net::X509Certificate* cert,
+                                bool hardware_backed) {
   std::string org;
   if (!cert->subject().organization_names.empty())
     org = cert->subject().organization_names[0];
@@ -170,13 +171,8 @@ std::string CertLibrary::GetCertPkcs11IdAt(CertType type, int index) const {
 }
 
 bool CertLibrary::IsCertHardwareBackedAt(CertType type, int index) const {
-  if (!CertLoader::Get()->IsHardwareBacked())
-    return false;
   net::X509Certificate* cert = GetCertificateAt(type, index);
-  std::string cert_token_name =
-      x509_certificate_model::GetTokenName(cert->os_cert_handle());
-  return cert_token_name ==
-      CertLoader::Get()->tpm_token_name();
+  return CertLoader::Get()->IsCertificateHardwareBacked(cert);
 }
 
 int CertLibrary::GetCertIndexByPEM(CertType type,

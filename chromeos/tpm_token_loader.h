@@ -33,12 +33,8 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   class Observer {
    public:
     // Called when the TPM token initialization is done or the case where TPM
-    // should stay disabled is detected (e.g. on guest login). If TPM is
-    // disabled, |tpm_user_pin|, |tpm_token_name| and |tpm_token_slot_id| will
-    // not be set.
-    virtual void OnTPMTokenReady(const std::string& tpm_user_pin,
-                                 const std::string& tpm_token_name,
-                                 int tpm_token_slot_id) = 0;
+    // should stay disabled is detected (e.g. on guest login).
+    virtual void OnTPMTokenReady() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -48,6 +44,9 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   // The global instance will immediately start observing |LoginState|.
   static void Initialize();
 
+  // Sets the global. stubbed out, instance. To be used in tests.
+  static void InitializeForTest();
+
   // Destroys the global instance.
   static void Shutdown();
 
@@ -56,11 +55,6 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
 
   // Returns true if the global instance has been initialized.
   static bool IsInitialized();
-
-  // By default, TPMTokenLoader tries to load the TPMToken only if running
-  // in a ChromeOS environment. Tests can call this function after Initialize()
-  // and before SetCryptoTaskRunner() to enable the TPM initialization.
-  void InitializeTPMForTest();
 
   // |crypto_task_runner| is the task runner that any synchronous crypto calls
   // should be made from, e.g. in Chrome this is the IO thread. Must be called
@@ -75,8 +69,10 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   // Checks if the TPM token in ready to be used.
   bool IsTPMTokenReady() const;
 
+  std::string tpm_user_pin() const { return tpm_user_pin_; }
+
  private:
-  TPMTokenLoader();
+  explicit TPMTokenLoader(bool for_test);
   virtual ~TPMTokenLoader();
 
   // Starts tpm token initialization if the user is logged in and the crypto
@@ -106,7 +102,7 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   // LoginState::Observer
   virtual void LoggedInStateChanged() OVERRIDE;
 
-  bool initialize_tpm_for_test_;
+  bool initialized_for_test_;
 
   ObserverList<Observer> observers_;
 

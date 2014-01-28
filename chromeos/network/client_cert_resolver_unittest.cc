@@ -16,17 +16,17 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/tpm_token_loader.h"
 #include "crypto/nss_util.h"
+#include "crypto/nss_util_internal.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
-#include "net/cert/nss_cert_database.h"
+#include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,33 +45,42 @@ const char* kUserHash = "user_hash";
 
 class ClientCertResolverTest : public testing::Test {
  public:
-  ClientCertResolverTest() {}
+  ClientCertResolverTest() : service_test_(NULL),
+                             profile_test_(NULL),
+                             user_(kUserHash) {
+  }
   virtual ~ClientCertResolverTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(test_nssdb_.is_open());
-    slot_ = net::NSSCertDatabase::GetInstance()->GetPublicModule();
-    ASSERT_TRUE(slot_->os_module_handle());
-
-    LoginState::Initialize();
+    // Initialize NSS db for the user.
+    ASSERT_TRUE(user_.constructed_successfully());
+    user_.FinishInit();
+    private_slot_ = crypto::GetPrivateSlotForChromeOSUser(
+        user_.username_hash(),
+        base::Callback<void(crypto::ScopedPK11Slot)>());
+    ASSERT_TRUE(private_slot_.get());
+    test_nssdb_.reset(new net::NSSCertDatabaseChromeOS(
+        crypto::GetPublicSlotForChromeOSUser(user_.username_hash()),
+        crypto::GetPrivateSlotForChromeOSUser(
+            user_.username_hash(),
+            base::Callback<void(crypto::ScopedPK11Slot)>())));
 
     DBusThreadManager::InitializeWithStub();
     service_test_ =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     profile_test_ =
         DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     service_test_->ClearServices();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
-    TPMTokenLoader::Initialize();
-    TPMTokenLoader* tpm_token_loader = TPMTokenLoader::Get();
-    tpm_token_loader->InitializeTPMForTest();
-    tpm_token_loader->SetCryptoTaskRunner(message_loop_.message_loop_proxy());
+    TPMTokenLoader::InitializeForTest();
 
     CertLoader::Initialize();
-    CertLoader::Get()->SetSlowTaskRunnerForTest(
-        message_loop_.message_loop_proxy());
+    CertLoader* cert_loader_ = CertLoader::Get();
+    cert_loader_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
+    cert_loader_->force_hardware_backed_for_test();
+    cert_loader_->StartWithNSSDB(test_nssdb_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -83,7 +92,6 @@ class ClientCertResolverTest : public testing::Test {
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     DBusThreadManager::Shutdown();
-    LoginState::Shutdown();
     CleanupSlotContents();
   }
 
@@ -93,14 +101,13 @@ class ClientCertResolverTest : public testing::Test {
   // |test_pkcs11_id_|.
   void SetupTestCerts() {
     // Import a CA cert.
-    net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
     net::CertificateList ca_cert_list =
         net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
                                            "websocket_cacert.pem",
                                            net::X509Certificate::FORMAT_AUTO);
     ASSERT_TRUE(!ca_cert_list.empty());
     net::NSSCertDatabase::ImportCertFailureList failures;
-    EXPECT_TRUE(cert_db->ImportCACerts(
+    EXPECT_TRUE(test_nssdb_->ImportCACerts(
         ca_cert_list, net::NSSCertDatabase::TRUST_DEFAULT, &failures));
     ASSERT_TRUE(failures.empty()) << net::ErrorToString(failures[0].net_error);
 
@@ -109,19 +116,18 @@ class ClientCertResolverTest : public testing::Test {
     ASSERT_TRUE(!test_ca_cert_pem_.empty());
 
     // Import a client cert signed by that CA.
-    scoped_refptr<net::CryptoModule> crypt_module = cert_db->GetPrivateModule();
     std::string pkcs12_data;
     ASSERT_TRUE(base::ReadFileToString(
         net::GetTestCertsDirectory().Append("websocket_client_cert.p12"),
         &pkcs12_data));
 
     net::CertificateList client_cert_list;
-    ASSERT_EQ(net::OK,
-              cert_db->ImportFromPKCS12(crypt_module.get(),
-                                        pkcs12_data,
-                                        base::string16(),
-                                        false,
-                                        &client_cert_list));
+    scoped_refptr<net::CryptoModule> module(
+        net::CryptoModule::CreateFromHandle(private_slot_.get()));
+    ASSERT_EQ(
+        net::OK,
+        test_nssdb_->ImportFromPKCS12(
+            module, pkcs12_data, base::string16(), false, &client_cert_list));
     ASSERT_TRUE(!client_cert_list.empty());
     test_pkcs11_id_ = CertLoader::GetPkcs11IdForCert(*client_cert_list[0]);
     ASSERT_TRUE(!test_pkcs11_id_.empty());
@@ -219,14 +225,14 @@ class ClientCertResolverTest : public testing::Test {
 
  private:
   void CleanupSlotContents() {
-    CERTCertList* cert_list = PK11_ListCertsInSlot(slot_->os_module_handle());
+    CERTCertList* cert_list = PK11_ListCertsInSlot(private_slot_.get());
     for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
          !CERT_LIST_END(node, cert_list);
          node = CERT_LIST_NEXT(node)) {
       scoped_refptr<net::X509Certificate> cert(
           net::X509Certificate::CreateFromHandle(
               node->cert, net::X509Certificate::OSCertHandles()));
-      net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(cert.get());
+      test_nssdb_->DeleteCertAndKey(cert.get());
     }
     CERT_DestroyCertList(cert_list);
   }
@@ -236,8 +242,9 @@ class ClientCertResolverTest : public testing::Test {
   scoped_ptr<NetworkConfigurationHandler> network_config_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandlerImpl> managed_config_handler_;
   scoped_ptr<ClientCertResolver> client_cert_resolver_;
-  scoped_refptr<net::CryptoModule> slot_;
-  crypto::ScopedTestNSSDB test_nssdb_;
+  crypto::ScopedTestNSSChromeOSUser user_;
+  scoped_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
+  crypto::ScopedPK11Slot private_slot_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertResolverTest);
 };
@@ -245,10 +252,10 @@ class ClientCertResolverTest : public testing::Test {
 TEST_F(ClientCertResolverTest, NoMatchingCertificates) {
   SetupNetworkHandlers();
   SetupPolicy();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   SetupWifi();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that no client certificate was configured.
   std::string pkcs11_id;
@@ -260,10 +267,10 @@ TEST_F(ClientCertResolverTest, ResolveOnInitialization) {
   SetupTestCerts();
   SetupNetworkHandlers();
   SetupPolicy();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   SetupWifi();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
@@ -275,11 +282,11 @@ TEST_F(ClientCertResolverTest, ResolveOnInitialization) {
 TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
   SetupTestCerts();
   SetupNetworkHandlers();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // The policy will trigger the creation of a new wifi service.
   SetupPolicy();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the resolver positively matched the pattern in the policy with
   // the test client cert and configured the network.
