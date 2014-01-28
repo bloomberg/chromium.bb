@@ -868,6 +868,7 @@ void GLES2Implementation::Finish() {
 
 void GLES2Implementation::ShallowFinishCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
+  TRACE_EVENT0("gpu", "GLES2::ShallowFinishCHROMIUM");
   // Flush our command buffer (tell the service to execute up to the flush cmd
   // and don't return until it completes).
   helper_->CommandBufferHelper::Finish();

@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/client/transfer_buffer.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
@@ -53,6 +54,7 @@ bool TransferBuffer::Initialize(
 
 void TransferBuffer::Free() {
   if (HaveBuffer()) {
+    TRACE_EVENT0("gpu", "TransferBuffer::Free");
     helper_->Finish();
     helper_->command_buffer()->DestroyTransferBuffer(buffer_id_);
     buffer_id_ = -1;
