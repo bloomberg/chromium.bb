@@ -585,7 +585,7 @@ void AutofillDialogViews::OverlayView::UpdateState() {
 
   message_view_->SetVisible(!state.string.text.empty());
   message_view_->SetText(state.string.text);
-  message_view_->SetFontList(gfx::FontList(state.string.font));
+  message_view_->SetFontList(state.string.font_list);
   message_view_->SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldReadOnlyColor));
 

@@ -93,7 +93,7 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 
 - (void)setMessage:(const autofill::DialogOverlayString&)message {
   // We probably want to look at other multi-line messages somewhere.
-  [label_ setFont:message.font.GetNativeFont()];
+  [label_ setFont:message.font_list.GetPrimaryFont().GetNativeFont()];
   [label_ setStringValue:base::SysUTF16ToNSString(message.text)];
   [label_ setTextColor:[NSColor darkGrayColor]];
 

@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/text_constants.h"
@@ -173,8 +173,8 @@ struct DialogOverlayString {
   // Text content of the message.
   base::string16 text;
 
-  // Font to render the message's text in.
-  gfx::Font font;
+  // Font list to render the message's text in.
+  gfx::FontList font_list;
 };
 
 // A struct to describe a dialog overlay. If |image| is empty, no overlay should
