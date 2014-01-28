@@ -69,6 +69,7 @@ private:
     struct Cluster {
         explicit Cluster(const RenderBlock* root, bool autosize, Cluster* parent)
             : m_root(root)
+            , m_deepestBlockContainingAllText(0)
             , m_parent(parent)
             , m_autosize(autosize)
             , m_multiplier(0)
@@ -77,6 +78,9 @@ private:
         }
 
         const RenderBlock* m_root;
+        // The deepest block containing all text is computed lazily (see:
+        // deepestBlockContainingAllText). A value of 0 indicates the value has not been computed yet.
+        const RenderBlock* m_deepestBlockContainingAllText;
         Cluster* m_parent;
         bool m_autosize;
         // The multiplier is computed lazily (see: clusterMultiplier) because it must be calculated
@@ -128,12 +132,16 @@ private:
     const RenderBlock* deepestCommonAncestor(BlockSet&);
     float clusterMultiplier(Cluster*);
     void applyMultiplier(RenderObject*, float);
+    bool mightBeWiderDescendant(const RenderBlock*);
+    bool isWiderDescendant(Cluster*);
 
     Cluster* currentCluster() const;
 
     RenderObject* nextChildSkippingChildrenOfBlocks(const RenderObject*, const RenderObject*);
-    const RenderBlock* findDeepestBlockContainingAllText(const RenderBlock*);
-    // Returns the first text leaf that is in the current cluster and not in a descendent cluster.
+
+    const RenderBlock* deepestBlockContainingAllText(Cluster*);
+    // Returns the first text leaf that is in the current cluster. We attempt to not include text
+    // from descendant clusters but because descendant clusters may not exist, this is only an approximation.
     // The TraversalDirection controls whether we return the first or the last text leaf.
     const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch);
 

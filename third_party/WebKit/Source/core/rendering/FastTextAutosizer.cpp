@@ -57,9 +57,8 @@ void FastTextAutosizer::record(const RenderBlock* block)
 {
     if (!enabled())
         return;
-#ifndef NDEBUG
+
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
-#endif
 
     if (!isFingerprintingCandidate(block))
         return;
@@ -73,9 +72,8 @@ void FastTextAutosizer::record(const RenderBlock* block)
 
 void FastTextAutosizer::destroy(const RenderBlock* block)
 {
-#ifndef NDEBUG
     ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
-#endif
+
     m_fingerprintMapper.remove(block);
 }
 
@@ -194,6 +192,10 @@ float FastTextAutosizer::textLength(Cluster* cluster)
     bool measureLocalText = TextAutosizer::containerShouldBeAutosized(root);
     RenderObject* descendant = root->nextInPreOrder(root);
     while (descendant) {
+        // FIXME: We should skip over text from descendant clusters (see:
+        //        clusters-sufficient-text-except-in-root.html). This currently includes text
+        //        from descendant clusters.
+
         if (descendant->isRenderBlock() && m_clusters.contains(toRenderBlock(descendant))) {
             length += textLength(m_clusters.get(toRenderBlock(descendant)));
             descendant = descendant->nextInPreOrderAfterChildren(root);
@@ -227,9 +229,10 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeGetOrCreateCluster(const Ren
     // Create clusters to suppress / unsuppress autosizing based on containerShouldBeAutosized.
     bool containerCanAutosize = TextAutosizer::containerShouldBeAutosized(block);
     bool parentClusterCanAutosize = parentCluster && parentCluster->m_autosize;
+    bool createClusterThatMightAutosize = mightBeWiderDescendant(block) || TextAutosizer::isIndependentDescendant(block);
 
     // If the container would not alter the m_autosize bit, it doesn't need to be a cluster.
-    if (!TextAutosizer::isIndependentDescendant(block) && containerCanAutosize == parentClusterCanAutosize)
+    if (!createClusterThatMightAutosize && containerCanAutosize == parentClusterCanAutosize)
         return 0;
 
     ClusterMap::AddResult addResult = m_clusters.add(block, PassOwnPtr<Cluster>());
@@ -279,19 +282,17 @@ const RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
 
 float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 {
-#ifndef NDEBUG
     ASSERT(m_renderViewInfoPrepared);
-#endif
     if (!cluster->m_multiplier) {
-        if (TextAutosizer::isIndependentDescendant(cluster->m_root)) {
+        if (TextAutosizer::isIndependentDescendant(cluster->m_root) || isWiderDescendant(cluster)) {
             if (clusterHasEnoughTextToAutosize(cluster)) {
-                const RenderBlock* deepestBlockContainingAllText = findDeepestBlockContainingAllText(cluster->m_root);
-#ifndef NDEBUG
-                // This ensures the deepest block containing all text has a valid contentLogicalWidth.
-                ASSERT(m_blocksThatHaveBegunLayout.contains(deepestBlockContainingAllText));
-#endif
+                const RenderBlock* deepestBlockWithAllText = deepestBlockContainingAllText(cluster);
+
+                // Ensure the deepest block containing all text has a valid contentLogicalWidth.
+                ASSERT(m_blocksThatHaveBegunLayout.contains(deepestBlockWithAllText));
+
                 // Block width, in CSS pixels.
-                float textBlockWidth = deepestBlockContainingAllText->contentLogicalWidth();
+                float textBlockWidth = deepestBlockWithAllText->contentLogicalWidth();
                 float multiplier = min(textBlockWidth, static_cast<float>(m_layoutWidth)) / m_frameWidth;
                 cluster->m_multiplier = max(m_baseMultiplier * multiplier, 1.0f);
             } else {
@@ -306,15 +307,18 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 
 // FIXME: Refactor this to look more like FastTextAutosizer::deepestCommonAncestor. This is copied
 //        from TextAutosizer::findDeepestBlockContainingAllText.
-const RenderBlock* FastTextAutosizer::findDeepestBlockContainingAllText(const RenderBlock* root)
+const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(Cluster* cluster)
 {
+    if (cluster->m_deepestBlockContainingAllText)
+        return cluster->m_deepestBlockContainingAllText;
+
     size_t firstDepth = 0;
-    const RenderObject* firstTextLeaf = findTextLeaf(root, firstDepth, First);
+    const RenderObject* firstTextLeaf = findTextLeaf(cluster->m_root, firstDepth, First);
     if (!firstTextLeaf)
-        return root;
+        return cluster->m_deepestBlockContainingAllText = cluster->m_root;
 
     size_t lastDepth = 0;
-    const RenderObject* lastTextLeaf = findTextLeaf(root, lastDepth, Last);
+    const RenderObject* lastTextLeaf = findTextLeaf(cluster->m_root, lastDepth, Last);
     ASSERT(lastTextLeaf);
 
     // Equalize the depths if necessary. Only one of the while loops below will get executed.
@@ -336,16 +340,16 @@ const RenderBlock* FastTextAutosizer::findDeepestBlockContainingAllText(const Re
     }
 
     if (firstNode->isRenderBlock())
-        return toRenderBlock(firstNode);
+        return cluster->m_deepestBlockContainingAllText = toRenderBlock(firstNode);
 
     // containingBlock() should never leave the cluster, since it only skips ancestors when finding
     // the container of position:absolute/fixed blocks, and those cannot exist between a cluster and
     // its text node's lowest common ancestor as isAutosizingCluster would have made them into their
     // own independent cluster.
     const RenderBlock* containingBlock = firstNode->containingBlock();
-    ASSERT(containingBlock->isDescendantOf(root));
+    ASSERT(containingBlock->isDescendantOf(cluster->m_root));
 
-    return containingBlock;
+    return cluster->m_deepestBlockContainingAllText = containingBlock;
 }
 
 const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, size_t& depth, TextLeafSearch firstOrLast)
@@ -356,7 +360,8 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
     ++depth;
     const RenderObject* child = (firstOrLast == First) ? parent->firstChild() : parent->lastChild();
     while (child) {
-        // At this point clusters may not have been created for these blocks so we cannot rely on m_clusters.
+        // Note: At this point clusters may not have been created for these blocks so we cannot rely
+        //       on m_clusters. Instead, we use a best-guess about whether the block will become a cluster.
         if (!TextAutosizer::isAutosizingContainer(child) || !TextAutosizer::isIndependentDescendant(toRenderBlock(child))) {
             const RenderObject* leaf = findTextLeaf(child, depth, firstOrLast);
             if (leaf)
@@ -380,6 +385,28 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     style->setTextAutosizingMultiplier(multiplier);
     style->setUnique();
     renderer->setStyleInternal(style.release());
+}
+
+bool FastTextAutosizer::mightBeWiderDescendant(const RenderBlock* block)
+{
+    // FIXME: This heuristic may need to be expanded to other ways a block can be wider
+    //        than its parent containing block.
+    return block->style() && block->style()->width().isSpecified();
+}
+
+bool FastTextAutosizer::isWiderDescendant(Cluster* cluster)
+{
+    if (!cluster->m_parent || !mightBeWiderDescendant(cluster->m_root))
+        return true;
+    const RenderBlock* parentDeepestBlockContainingAllText = deepestBlockContainingAllText(cluster->m_parent);
+    ASSERT(m_blocksThatHaveBegunLayout.contains(cluster->m_root));
+    ASSERT(m_blocksThatHaveBegunLayout.contains(parentDeepestBlockContainingAllText));
+
+    // Clusters with a root that is wider than the deepestBlockContainingAllText of their parent
+    // autosize independently of their parent. Otherwise, they fall back to their parent's multiplier.
+    float contentWidth = cluster->m_root->contentLogicalWidth();
+    float clusterTextWidth = parentDeepestBlockContainingAllText->contentLogicalWidth();
+    return contentWidth > clusterTextWidth;
 }
 
 FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const
