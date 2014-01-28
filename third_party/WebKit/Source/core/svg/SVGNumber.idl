@@ -22,6 +22,7 @@
 
 [
     ImplementedAs=SVGNumberTearOff,
+    SetWrapperReferenceTo(SVGElement contextElement),
     StrictTypeChecking,
 ] interface SVGNumber {
     [RaisesException=Setter] attribute float value;
