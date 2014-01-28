@@ -49,11 +49,6 @@ public class BrowserAccessibilityManager {
     private boolean mPendingScrollToMakeNodeVisible;
     private boolean mFrameInfoInitialized;
 
-    // If this is true, enables an experimental feature that focuses the web page after it
-    // finishes loading. Disabled for now because it can be confusing if the user was
-    // trying to do something when this happens.
-    private boolean mFocusPageOnLoad;
-
     /**
      * Create a BrowserAccessibilityManager object, which is owned by the C++
      * BrowserAccessibilityManagerAndroid instance, and connects to the content view.
@@ -334,12 +329,8 @@ public class BrowserAccessibilityManager {
     private void handlePageLoaded(int id) {
         if (mUserHasTouchExplored) return;
 
-        if (mFocusPageOnLoad) {
-            // Focus the natively focused node (usually document),
-            // if this feature is enabled.
-            mAccessibilityFocusId = id;
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
-        }
+        mAccessibilityFocusId = id;
+        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
     }
 
     @CalledByNative
