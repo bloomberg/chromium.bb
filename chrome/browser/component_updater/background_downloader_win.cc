@@ -211,7 +211,7 @@ HRESULT GetJobByteCount(IBackgroundCopyJob* job,
     return hr;
 
   if (job_progress.BytesTransferred <= kint64max)
-    *bytes_downloaded = job_progress.BytesTotal;
+    *bytes_downloaded = job_progress.BytesTransferred;
 
   if (job_progress.BytesTotal <= kint64max &&
       job_progress.BytesTotal != BG_SIZE_UNKNOWN)
