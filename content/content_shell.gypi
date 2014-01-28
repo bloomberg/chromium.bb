@@ -729,24 +729,24 @@
             'shell/app/shell_content_main.cc',
             'shell/app/shell_content_main.h',
           ],
-         'postbuilds': [
-           {
-             # Modify the Info.plist as needed.  The script explains why
-             # this is needed.  This is also done in the chrome target.
-             # The framework needs the Breakpad keys if this feature is
-             # enabled.  It does not need the Keystone keys; these always
-             # come from the outer application bundle.  The framework
-             # doesn't currently use the SCM keys for anything,
-             # but this seems like a really good place to store them.
-             'postbuild_name': 'Tweak Info.plist',
-             'action': ['../build/mac/tweak_info_plist.py',
-                        '--breakpad=1',
-                        '--keystone=0',
-                        '--scm=1',
-                        '--version=<(content_shell_version)',
-                        '--branding=<(content_shell_product_name)'],
-           },
-         ],
+          'postbuilds': [
+            {
+              # Modify the Info.plist as needed.  The script explains why
+              # this is needed.  This is also done in the chrome target.
+              # The framework needs the Breakpad keys if this feature is
+              # enabled.  It does not need the Keystone keys; these always
+              # come from the outer application bundle.  The framework
+              # doesn't currently use the SCM keys for anything,
+              # but this seems like a really good place to store them.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['../build/mac/tweak_info_plist.py',
+                         '--breakpad=1',
+                         '--keystone=0',
+                         '--scm=1',
+                         '--version=<(content_shell_version)',
+                         '--branding=<(content_shell_product_name)'],
+            },
+          ],
           'copies': [
             {
               # Copy FFmpeg binaries for audio/video support.
@@ -777,6 +777,11 @@
                     ],
                   }],
                 }],
+              ],
+            }],
+            ['icu_use_data_file_flag==1', {
+              'mac_bundle_resources': [
+                '<(PRODUCT_DIR)/icudtl.dat',
               ],
             }],
           ],

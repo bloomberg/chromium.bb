@@ -306,6 +306,17 @@
             4267,
           ],
         }],
+        ['icu_use_data_file_flag==1', {
+          'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_FILE'],
+        }, { # else icu_use_data_file_flag !=1
+          'conditions': [
+            ['OS=="win"', {
+              'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_SHARED'],
+            }, {
+              'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC'],
+            }],
+          ],
+        }],
       ],
       'export_dependent_settings': [
         'base',

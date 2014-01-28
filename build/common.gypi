@@ -1313,6 +1313,9 @@
           }],
         ],
       }],  # os_posix==1 and OS!="mac" and OS!="ios"
+      ['OS=="mac"', {
+        'icu_use_data_file_flag%': 1,
+      }],  # os=="mac"
       ['OS=="ios"', {
         'disable_nacl%': 1,
         'enable_background%': 0,
@@ -2213,17 +2216,6 @@
       }],
       ['use_udev==1', {
         'defines': ['USE_UDEV'],
-      }],
-      ['icu_use_data_file_flag==1', {
-        'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_FILE'],
-      }, { # else icu_use_data_file_flag !=1
-        'conditions': [
-          ['OS=="win"', {
-            'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_SHARED'],
-          }, {
-            'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC'],
-          }],
-        ],
       }],
       ['fastbuild!=0', {
         'xcode_settings': {
