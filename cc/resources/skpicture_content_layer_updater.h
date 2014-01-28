@@ -25,7 +25,7 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
   virtual ~SkPictureContentLayerUpdater();
 
   virtual void PrepareToUpdate(const gfx::Rect& content_rect,
-                               gfx::Size tile_size,
+                               const gfx::Size& tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
                                gfx::Rect* resulting_opaque_rect) OVERRIDE;

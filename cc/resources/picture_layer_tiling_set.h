@@ -15,7 +15,7 @@ namespace cc {
 class CC_EXPORT PictureLayerTilingSet {
  public:
   PictureLayerTilingSet(PictureLayerTilingClient* client,
-                        gfx::Size layer_bounds);
+                        const gfx::Size& layer_bounds);
   ~PictureLayerTilingSet();
 
   void SetClient(PictureLayerTilingClient* client);
@@ -27,7 +27,7 @@ class CC_EXPORT PictureLayerTilingSet {
   // tilings to |new_layer_bounds|.
   void SyncTilings(
      const PictureLayerTilingSet& other,
-     gfx::Size new_layer_bounds,
+     const gfx::Size& new_layer_bounds,
      const Region& layer_invalidation,
      float minimum_contents_scale);
 
@@ -56,11 +56,11 @@ class CC_EXPORT PictureLayerTilingSet {
 
   void UpdateTilePriorities(
       WhichTree tree,
-      gfx::Size device_viewport,
+      const gfx::Size& device_viewport,
       const gfx::Rect& viewport_in_content_space,
       const gfx::Rect& visible_content_rect,
-      gfx::Size last_layer_bounds,
-      gfx::Size current_layer_bounds,
+      const gfx::Size& last_layer_bounds,
+      const gfx::Size& current_layer_bounds,
       float last_layer_contents_scale,
       float current_layer_contents_scale,
       const gfx::Transform& last_screen_transform,

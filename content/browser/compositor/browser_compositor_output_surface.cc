@@ -80,7 +80,7 @@ bool BrowserCompositorOutputSurface::BindToClient(
   return true;
 }
 
-void BrowserCompositorOutputSurface::Reshape(gfx::Size size,
+void BrowserCompositorOutputSurface::Reshape(const gfx::Size& size,
                                              float scale_factor) {
   OutputSurface::Reshape(size, scale_factor);
   if (reflector_.get())

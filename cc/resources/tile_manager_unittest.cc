@@ -76,7 +76,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
   TileVector CreateTilesWithSize(int count,
                                  TilePriority active_priority,
                                  TilePriority pending_priority,
-                                 gfx::Size tile_size) {
+                                 const gfx::Size& tile_size) {
     TileVector tiles;
     for (int i = 0; i < count; ++i) {
       scoped_refptr<Tile> tile = tile_manager_->CreateTile(picture_pile_.get(),

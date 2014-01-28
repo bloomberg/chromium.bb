@@ -21,7 +21,7 @@ class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
   }
   virtual ~IOSurfaceLayerImpl();
 
-  void SetIOSurfaceProperties(unsigned io_surface_id, gfx::Size size);
+  void SetIOSurfaceProperties(unsigned io_surface_id, const gfx::Size& size);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;

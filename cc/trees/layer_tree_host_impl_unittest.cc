@@ -204,7 +204,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   LayerImpl* CreateScrollAndContentsLayers(LayerTreeImpl* layer_tree_impl,
-                                           gfx::Size content_size) {
+                                           const gfx::Size& content_size) {
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(layer_tree_impl, 1);
     root->SetBounds(content_size);
@@ -239,14 +239,14 @@ class LayerTreeHostImplTest : public testing::Test,
     return scroll_layer;
   }
 
-  LayerImpl* SetupScrollAndContentsLayers(gfx::Size content_size) {
+  LayerImpl* SetupScrollAndContentsLayers(const gfx::Size& content_size) {
     LayerImpl* scroll_layer = CreateScrollAndContentsLayers(
         host_impl_->active_tree(), content_size);
     host_impl_->active_tree()->DidBecomeActive();
     return scroll_layer;
   }
 
-  scoped_ptr<LayerImpl> CreateScrollableLayer(int id, gfx::Size size) {
+  scoped_ptr<LayerImpl> CreateScrollableLayer(int id, const gfx::Size& size) {
     scoped_ptr<LayerImpl> layer =
         LayerImpl::Create(host_impl_->active_tree(), id);
     layer->SetScrollable(true);
@@ -3169,7 +3169,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   void set_gutter_quad_material(DrawQuad::Material material) {
     gutter_quad_material_ = material;
   }
-  void set_gutter_texture_size(gfx::Size gutter_texture_size) {
+  void set_gutter_texture_size(const gfx::Size& gutter_texture_size) {
     gutter_texture_size_ = gutter_texture_size;
   }
 
@@ -3207,7 +3207,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     }
   }
 
-  gfx::Size DipSizeToPixelSize(gfx::Size size) {
+  gfx::Size DipSizeToPixelSize(const gfx::Size& size) {
     return gfx::ToRoundedSize(
         gfx::ScaleSize(size, host_impl_->device_scale_factor()));
   }

@@ -55,7 +55,7 @@ void CopyOutputRequest::SendBitmapResult(scoped_ptr<SkBitmap> bitmap) {
 }
 
 void CopyOutputRequest::SendTextureResult(
-    gfx::Size size,
+    const gfx::Size& size,
     const TextureMailbox& texture_mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback) {
   DCHECK(texture_mailbox.IsTexture());

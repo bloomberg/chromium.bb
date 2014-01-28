@@ -50,7 +50,7 @@ class CC_EXPORT RasterWorkerPoolTask
   // need to be initialized.
   virtual bool RunOnWorkerThread(unsigned thread_index,
                                  void* buffer,
-                                 gfx::Size size,
+                                 const gfx::Size& size,
                                  int stride) = 0;
   virtual void RunOnOriginThread(ResourceProvider* resource_provider,
                                  ContextProvider* context_provider) = 0;

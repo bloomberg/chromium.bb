@@ -44,7 +44,7 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::RasterWorkerPoolTask:
   virtual bool RunOnWorkerThread(unsigned thread_index,
                                  void* buffer,
-                                 gfx::Size size,
+                                 const gfx::Size& size,
                                  int stride) OVERRIDE {
     raster_thread_ = RASTER_THREAD_WORKER;
     return true;
@@ -85,7 +85,7 @@ class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
   // Overridden from internal::RasterWorkerPoolTask:
   virtual bool RunOnWorkerThread(unsigned thread_index,
                                  void* buffer,
-                                 gfx::Size size,
+                                 const gfx::Size& size,
                                  int stride) OVERRIDE {
     base::AutoLock lock(*lock_);
     return TestRasterWorkerPoolTaskImpl::RunOnWorkerThread(

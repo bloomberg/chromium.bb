@@ -15,7 +15,7 @@ Tile::Id Tile::s_next_id_ = 0;
 
 Tile::Tile(TileManager* tile_manager,
            PicturePileImpl* picture_pile,
-           gfx::Size tile_size,
+           const gfx::Size& tile_size,
            const gfx::Rect& content_rect,
            const gfx::Rect& opaque_rect,
            float contents_scale,

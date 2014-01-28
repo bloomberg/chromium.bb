@@ -49,12 +49,12 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
       pile_.get(), tile_size_, rect, gfx::Rect(), 1, 0, 0, Tile::USE_LCD_TEXT);
 }
 
-void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
+void FakePictureLayerTilingClient::SetTileSize(const gfx::Size& tile_size) {
   tile_size_ = tile_size;
 }
 
 gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
-    gfx::Size /* content_bounds */) const {
+    const gfx::Size& /* content_bounds */) const {
   return tile_size_;
 }
 

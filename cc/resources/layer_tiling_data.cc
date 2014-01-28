@@ -10,19 +10,20 @@
 
 namespace cc {
 
-scoped_ptr<LayerTilingData> LayerTilingData::Create(gfx::Size tile_size,
+scoped_ptr<LayerTilingData> LayerTilingData::Create(const gfx::Size& tile_size,
                                                     BorderTexelOption border) {
   return make_scoped_ptr(new LayerTilingData(tile_size, border));
 }
 
-LayerTilingData::LayerTilingData(gfx::Size tile_size, BorderTexelOption border)
+LayerTilingData::LayerTilingData(const gfx::Size& tile_size,
+                                 BorderTexelOption border)
     : tiling_data_(tile_size, gfx::Size(), border == HAS_BORDER_TEXELS) {
   SetTileSize(tile_size);
 }
 
 LayerTilingData::~LayerTilingData() {}
 
-void LayerTilingData::SetTileSize(gfx::Size size) {
+void LayerTilingData::SetTileSize(const gfx::Size& size) {
   if (tile_size() == size)
     return;
 
@@ -111,7 +112,7 @@ Region LayerTilingData::OpaqueRegionInContentRect(
   return opaque_region;
 }
 
-void LayerTilingData::SetBounds(gfx::Size size) {
+void LayerTilingData::SetBounds(const gfx::Size& size) {
   tiling_data_.SetTotalSize(size);
   if (size.IsEmpty()) {
     tiles_.clear();

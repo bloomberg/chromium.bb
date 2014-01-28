@@ -197,7 +197,7 @@ ResourceProvider::Resource::Resource()
 ResourceProvider::Resource::~Resource() {}
 
 ResourceProvider::Resource::Resource(GLuint texture_id,
-                                     gfx::Size size,
+                                     const gfx::Size& size,
                                      GLenum target,
                                      GLenum filter,
                                      GLenum texture_pool,
@@ -240,7 +240,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
 
 ResourceProvider::Resource::Resource(uint8_t* pixels,
                                      SharedBitmap* bitmap,
-                                     gfx::Size size,
+                                     const gfx::Size& size,
                                      GLenum filter,
                                      GLint wrap_mode)
     : child_id(0),
@@ -330,7 +330,7 @@ bool ResourceProvider::IsLost(ResourceId id) {
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateResource(
-    gfx::Size size,
+    const gfx::Size& size,
     GLint wrap_mode,
     TextureUsageHint hint,
     ResourceFormat format) {
@@ -355,7 +355,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResource(
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
-    gfx::Size size,
+    const gfx::Size& size,
     GLenum target,
     GLint wrap_mode,
     TextureUsageHint hint,
@@ -381,7 +381,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
-    gfx::Size size,
+    const gfx::Size& size,
     GLenum target,
     GLenum texture_pool,
     GLint wrap_mode,
@@ -400,7 +400,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateBitmap(
-    gfx::Size size, GLint wrap_mode) {
+    const gfx::Size& size, GLint wrap_mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<SharedBitmap> bitmap;

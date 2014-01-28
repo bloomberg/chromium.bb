@@ -86,7 +86,7 @@ void DelegatedRendererLayer::ProviderHasNewFrame() {
   SetNextCommitWaitsForActivation();
 }
 
-void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
+void DelegatedRendererLayer::SetDisplaySize(const gfx::Size& size) {
   if (display_size_ == size)
     return;
   display_size_ = size;

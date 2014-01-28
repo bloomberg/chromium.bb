@@ -32,7 +32,7 @@ class CC_EXPORT LayerTreeHostCommon {
   struct CalcDrawPropsInputs {
    public:
     CalcDrawPropsInputs(LayerType* root_layer,
-                        gfx::Size device_viewport_size,
+                        const gfx::Size& device_viewport_size,
                         const gfx::Transform& device_transform,
                         float device_scale_factor,
                         float page_scale_factor,
@@ -72,12 +72,12 @@ class CC_EXPORT LayerTreeHostCommon {
       : public CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType> {
     CalcDrawPropsInputsForTesting(
         LayerType* root_layer,
-        gfx::Size device_viewport_size,
+        const gfx::Size& device_viewport_size,
         const gfx::Transform& device_transform,
         RenderSurfaceLayerListType* render_surface_layer_list);
     CalcDrawPropsInputsForTesting(
         LayerType* root_layer,
-        gfx::Size device_viewport_size,
+        const gfx::Size& device_viewport_size,
         RenderSurfaceLayerListType* render_surface_layer_list);
 
    private:
@@ -126,7 +126,7 @@ class CC_EXPORT LayerTreeHostCommon {
   // given transform.
   template <typename LayerType>
   static void ApplySublayerTransformAboutAnchor(const LayerType& layer,
-                                                gfx::Size bounds,
+                                                const gfx::Size& bounds,
                                                 gfx::Transform* transform) {
     if (!layer.sublayer_transform().IsIdentity()) {
       transform->Translate(layer.anchor_point().x() * bounds.width(),
@@ -227,7 +227,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
                                                    RenderSurfaceLayerListType>::
     CalcDrawPropsInputsForTesting(
         LayerType* root_layer,
-        gfx::Size device_viewport_size,
+        const gfx::Size& device_viewport_size,
         const gfx::Transform& device_transform,
         RenderSurfaceLayerListType* render_surface_layer_list)
     : CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType>(
@@ -251,7 +251,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
                                                    RenderSurfaceLayerListType>::
     CalcDrawPropsInputsForTesting(
         LayerType* root_layer,
-        gfx::Size device_viewport_size,
+        const gfx::Size& device_viewport_size,
         RenderSurfaceLayerListType* render_surface_layer_list)
     : CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType>(
           root_layer,

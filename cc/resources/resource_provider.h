@@ -97,28 +97,28 @@ class CC_EXPORT ResourceProvider {
   ResourceType GetResourceType(ResourceId id);
 
   // Creates a resource of the default resource type.
-  ResourceId CreateResource(gfx::Size size,
+  ResourceId CreateResource(const gfx::Size& size,
                             GLint wrap_mode,
                             TextureUsageHint hint,
                             ResourceFormat format);
 
   // Creates a resource which is tagged as being managed for GPU memory
   // accounting purposes.
-  ResourceId CreateManagedResource(gfx::Size size,
+  ResourceId CreateManagedResource(const gfx::Size& size,
                                    GLenum target,
                                    GLint wrap_mode,
                                    TextureUsageHint hint,
                                    ResourceFormat format);
 
   // You can also explicitly create a specific resource type.
-  ResourceId CreateGLTexture(gfx::Size size,
+  ResourceId CreateGLTexture(const gfx::Size& size,
                              GLenum target,
                              GLenum texture_pool,
                              GLint wrap_mode,
                              TextureUsageHint hint,
                              ResourceFormat format);
 
-  ResourceId CreateBitmap(gfx::Size size, GLint wrap_mode);
+  ResourceId CreateBitmap(const gfx::Size& size, GLint wrap_mode);
   // Wraps an external texture into a GL resource.
   ResourceId CreateResourceFromExternalTexture(
       unsigned texture_target,
@@ -366,7 +366,7 @@ class CC_EXPORT ResourceProvider {
     Resource();
     ~Resource();
     Resource(unsigned texture_id,
-             gfx::Size size,
+             const gfx::Size& size,
              GLenum target,
              GLenum filter,
              GLenum texture_pool,
@@ -375,7 +375,7 @@ class CC_EXPORT ResourceProvider {
              ResourceFormat format);
     Resource(uint8_t* pixels,
              SharedBitmap* bitmap,
-             gfx::Size size,
+             const gfx::Size& size,
              GLenum filter,
              GLint wrap_mode);
 

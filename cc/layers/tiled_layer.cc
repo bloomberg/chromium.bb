@@ -158,7 +158,9 @@ void TiledLayer::UpdateBounds() {
     InvalidateContentRect(new_rects.rect());
 }
 
-void TiledLayer::SetTileSize(gfx::Size size) { tiler_->SetTileSize(size); }
+void TiledLayer::SetTileSize(const gfx::Size& size) {
+  tiler_->SetTileSize(size);
+}
 
 void TiledLayer::SetBorderTexelOption(
     LayerTilingData::BorderTexelOption border_texel_option) {

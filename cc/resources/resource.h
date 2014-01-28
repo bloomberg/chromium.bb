@@ -15,7 +15,7 @@ namespace cc {
 class CC_EXPORT Resource {
  public:
   Resource() : id_(0) {}
-  Resource(unsigned id, gfx::Size size, ResourceFormat format)
+  Resource(unsigned id, const gfx::Size& size, ResourceFormat format)
       : id_(id),
         size_(size),
         format_(format) {}
@@ -25,14 +25,15 @@ class CC_EXPORT Resource {
   ResourceFormat format() const { return format_; }
   size_t bytes() const;
 
-  inline static size_t MemorySizeBytes(gfx::Size size, ResourceFormat format) {
+  inline static size_t MemorySizeBytes(const gfx::Size& size,
+                                       ResourceFormat format) {
     DCHECK_EQ(0u, (BitsPerPixel(format) * size.width() * size.height()) % 8);
     return (BitsPerPixel(format) * size.width() * size.height()) / 8;
   }
 
  protected:
   void set_id(ResourceProvider::ResourceId id) { id_ = id; }
-  void set_dimensions(gfx::Size size, ResourceFormat format) {
+  void set_dimensions(const gfx::Size& size, ResourceFormat format) {
     size_ = size;
     format_ = format;
   }

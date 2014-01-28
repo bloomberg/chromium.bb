@@ -29,8 +29,8 @@ TilingData::TilingData()
 }
 
 TilingData::TilingData(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels)
     : max_texture_size_(max_texture_size),
       total_size_(total_size),
@@ -39,8 +39,8 @@ TilingData::TilingData(
 }
 
 TilingData::TilingData(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     int border_texels)
     : max_texture_size_(max_texture_size),
       total_size_(total_size),
@@ -48,12 +48,12 @@ TilingData::TilingData(
   RecomputeNumTiles();
 }
 
-void TilingData::SetTotalSize(gfx::Size total_size) {
+void TilingData::SetTotalSize(const gfx::Size& total_size) {
   total_size_ = total_size;
   RecomputeNumTiles();
 }
 
-void TilingData::SetMaxTextureSize(gfx::Size max_texture_size) {
+void TilingData::SetMaxTextureSize(const gfx::Size& max_texture_size) {
   max_texture_size_ = max_texture_size;
   RecomputeNumTiles();
 }

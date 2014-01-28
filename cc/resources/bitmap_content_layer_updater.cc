@@ -55,7 +55,7 @@ scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::CreateResource(
 
 void BitmapContentLayerUpdater::PrepareToUpdate(
     const gfx::Rect& content_rect,
-    gfx::Size tile_size,
+    const gfx::Size& tile_size,
     float contents_width_scale,
     float contents_height_scale,
     gfx::Rect* resulting_opaque_rect) {

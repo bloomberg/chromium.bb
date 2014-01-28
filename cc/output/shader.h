@@ -53,7 +53,7 @@ CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     gpu::gles2::GLES2Interface* context,
     int *highp_threshold_cache,
     int highp_threshold_min,
-    gfx::Size max_size);
+    const gfx::Size& max_size);
 
 class VertexShaderPosTex {
  public:

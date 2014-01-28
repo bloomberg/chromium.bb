@@ -201,7 +201,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   typename Types::ContentLayerType* CreateRoot(const gfx::Transform& transform,
                                                const gfx::PointF& position,
-                                               gfx::Size bounds) {
+                                               const gfx::Size& bounds) {
     typename Types::ContentLayerPtrType layer(
         Types::CreateContentLayer(GetHost()));
     typename Types::ContentLayerType* layer_ptr = layer.get();
@@ -218,7 +218,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   typename Types::LayerType* CreateLayer(typename Types::LayerType* parent,
                                          const gfx::Transform& transform,
                                          const gfx::PointF& position,
-                                         gfx::Size bounds) {
+                                         const gfx::Size& bounds) {
     typename Types::LayerPtrType layer(Types::CreateLayer(GetHost()));
     typename Types::LayerType* layer_ptr = layer.get();
     SetProperties(layer_ptr, transform, position, bounds);
@@ -229,7 +229,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   typename Types::LayerType* CreateSurface(typename Types::LayerType* parent,
                                            const gfx::Transform& transform,
                                            const gfx::PointF& position,
-                                           gfx::Size bounds) {
+                                           const gfx::Size& bounds) {
     typename Types::LayerType* layer =
         CreateLayer(parent, transform, position, bounds);
     layer->SetForceRenderSurface(true);
@@ -240,7 +240,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
       typename Types::LayerType* parent,
       const gfx::Transform& transform,
       const gfx::PointF& position,
-      gfx::Size bounds,
+      const gfx::Size& bounds,
       bool opaque) {
     typename Types::ContentLayerPtrType layer(
         Types::CreateContentLayer(GetHost()));
@@ -265,7 +265,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
       typename Types::LayerType* owning_layer,
       const gfx::Transform& transform,
       const gfx::PointF& position,
-      gfx::Size bounds) {
+      const gfx::Size& bounds) {
     typename Types::ContentLayerPtrType layer(
         Types::CreateContentLayer(GetHost()));
     typename Types::ContentLayerType* layer_ptr = layer.get();
@@ -276,7 +276,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   typename Types::LayerType* CreateMaskLayer(
       typename Types::LayerType* owning_layer,
-      gfx::Size bounds) {
+      const gfx::Size& bounds) {
     typename Types::ContentLayerPtrType layer(
         Types::CreateContentLayer(GetHost()));
     typename Types::ContentLayerType* layer_ptr = layer.get();
@@ -289,7 +289,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
       typename Types::LayerType* parent,
       const gfx::Transform& transform,
       const gfx::PointF& position,
-      gfx::Size bounds,
+      const gfx::Size& bounds,
       bool opaque) {
     typename Types::ContentLayerType* layer =
         CreateDrawingLayer(parent, transform, position, bounds, opaque);
@@ -414,7 +414,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   void SetBaseProperties(typename Types::LayerType* layer,
                          const gfx::Transform& transform,
                          const gfx::PointF& position,
-                         gfx::Size bounds) {
+                         const gfx::Size& bounds) {
     layer->SetTransform(transform);
     layer->SetSublayerTransform(gfx::Transform());
     layer->SetAnchorPoint(gfx::PointF());
@@ -425,14 +425,14 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   void SetProperties(Layer* layer,
                      const gfx::Transform& transform,
                      const gfx::PointF& position,
-                     gfx::Size bounds) {
+                     const gfx::Size& bounds) {
     SetBaseProperties(layer, transform, position, bounds);
   }
 
   void SetProperties(LayerImpl* layer,
                      const gfx::Transform& transform,
                      const gfx::PointF& position,
-                     gfx::Size bounds) {
+                     const gfx::Size& bounds) {
     SetBaseProperties(layer, transform, position, bounds);
 
     layer->SetContentBounds(layer->bounds());

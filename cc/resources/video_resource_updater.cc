@@ -89,7 +89,7 @@ bool VideoResourceUpdater::VerifyFrame(
 // each plane in the frame.
 static gfx::Size SoftwarePlaneDimension(
     media::VideoFrame::Format input_frame_format,
-    gfx::Size coded_size,
+    const gfx::Size& coded_size,
     ResourceFormat output_resource_format,
     int plane_index) {
   if (output_resource_format == kYUVResourceFormat) {

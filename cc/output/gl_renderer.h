@@ -208,7 +208,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       unsigned source_buffer,
       unsigned query,
       uint8_t* dest_pixels,
-      gfx::Size size);
+      const gfx::Size& size);
   void PassOnSkBitmap(scoped_ptr<SkBitmap> bitmap,
                       scoped_ptr<SkAutoLockPixels> lock,
                       scoped_ptr<CopyOutputRequest> request,

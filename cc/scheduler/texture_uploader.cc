@@ -133,7 +133,7 @@ void TextureUploader::Upload(const uint8* image,
                              const gfx::Rect& source_rect,
                              gfx::Vector2d dest_offset,
                              ResourceFormat format,
-                             gfx::Size size) {
+                             const gfx::Size& size) {
   CHECK(image_rect.Contains(source_rect));
 
   bool is_full_upload = dest_offset.IsZero() && source_rect.size() == size;
@@ -287,7 +287,7 @@ void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
 }
 
 void TextureUploader::UploadWithTexImageETC1(const uint8* image,
-                                             gfx::Size size) {
+                                             const gfx::Size& size) {
   TRACE_EVENT0("cc", "TextureUploader::UploadWithTexImageETC1");
   DCHECK_EQ(0, size.width() % 4);
   DCHECK_EQ(0, size.height() % 4);

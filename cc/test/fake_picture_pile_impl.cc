@@ -17,8 +17,8 @@ FakePicturePileImpl::FakePicturePileImpl() {}
 FakePicturePileImpl::~FakePicturePileImpl() {}
 
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
-    gfx::Size tile_size,
-    gfx::Size layer_bounds) {
+    const gfx::Size& tile_size,
+    const gfx::Size& layer_bounds) {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
   pile->tiling().SetTotalSize(layer_bounds);
   pile->tiling().SetMaxTextureSize(tile_size);
@@ -32,8 +32,8 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
 }
 
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
-    gfx::Size tile_size,
-    gfx::Size layer_bounds) {
+    const gfx::Size& tile_size,
+    const gfx::Size& layer_bounds) {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
   pile->tiling().SetTotalSize(layer_bounds);
   pile->tiling().SetMaxTextureSize(tile_size);
@@ -44,8 +44,8 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
 
 scoped_refptr<FakePicturePileImpl>
 FakePicturePileImpl::CreatePileWithRecordedRegion(
-    gfx::Size tile_size,
-    gfx::Size layer_bounds,
+    const gfx::Size& tile_size,
+    const gfx::Size& layer_bounds,
     const Region& recorded_region) {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
   pile->tiling().SetTotalSize(layer_bounds);

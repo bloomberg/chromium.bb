@@ -445,7 +445,7 @@ void PrioritizedResourceManager::ReturnBackingTexture(
 }
 
 PrioritizedResource::Backing* PrioritizedResourceManager::CreateBacking(
-    gfx::Size size,
+    const gfx::Size& size,
     ResourceFormat format,
     ResourceProvider* resource_provider) {
   DCHECK(proxy_->IsImplThread() && proxy_->IsMainThreadBlocked());

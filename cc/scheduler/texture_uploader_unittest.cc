@@ -145,7 +145,7 @@ class TextureUploadTestContext : public gpu::gles2::GLES2InterfaceStub {
 
 void UploadTexture(TextureUploader* uploader,
                    ResourceFormat format,
-                   gfx::Size size,
+                   const gfx::Size& size,
                    const uint8* data) {
   uploader->Upload(data,
                    gfx::Rect(size),

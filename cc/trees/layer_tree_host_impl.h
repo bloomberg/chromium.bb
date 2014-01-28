@@ -297,13 +297,13 @@ class CC_EXPORT LayerTreeHostImpl
   size_t memory_allocation_limit_bytes() const;
   int memory_allocation_priority_cutoff() const;
 
-  void SetViewportSize(gfx::Size device_viewport_size);
+  void SetViewportSize(const gfx::Size& device_viewport_size);
 
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
   float overdraw_bottom_height() const { return overdraw_bottom_height_; }
 
   void SetOverhangUIResource(UIResourceId overhang_ui_resource_id,
-                             gfx::Size overhang_ui_resource_size);
+                             const gfx::Size& overhang_ui_resource_size);
 
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }

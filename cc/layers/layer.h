@@ -116,7 +116,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // A layer's bounds are in logical, non-page-scaled pixels (however, the
   // root layer's bounds are in physical pixels).
-  void SetBounds(gfx::Size bounds);
+  void SetBounds(const gfx::Size& bounds);
   gfx::Size bounds() const { return bounds_; }
 
   void SetMasksToBounds(bool masks_to_bounds);

@@ -25,7 +25,7 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
   explicit SoftwareOutputDeviceWin(ui::Compositor* compositor);
   virtual ~SoftwareOutputDeviceWin();
 
-  virtual void Resize(gfx::Size viewport_size) OVERRIDE;
+  virtual void Resize(const gfx::Size& viewport_size) OVERRIDE;
   virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
   virtual void CopyToBitmap(const gfx::Rect& rect, SkBitmap* output) OVERRIDE;

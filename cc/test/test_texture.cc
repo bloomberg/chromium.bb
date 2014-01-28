@@ -9,7 +9,7 @@
 
 namespace cc {
 
-size_t TextureSizeBytes(gfx::Size size, ResourceFormat format) {
+size_t TextureSizeBytes(const gfx::Size& size, ResourceFormat format) {
   unsigned int components_per_pixel = 4;
   unsigned int bytes_per_component = 1;
   return size.width() * size.height() * components_per_pixel *
@@ -28,7 +28,7 @@ TestTexture::TestTexture() : format(RGBA_8888) {
 
 TestTexture::~TestTexture() {}
 
-void TestTexture::Reallocate(gfx::Size size, ResourceFormat format) {
+void TestTexture::Reallocate(const gfx::Size& size, ResourceFormat format) {
   this->size = size;
   this->format = format;
   this->data.reset(new uint8_t[TextureSizeBytes(size, format)]);

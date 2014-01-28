@@ -23,8 +23,8 @@ class TiledLayerImplTest : public testing::Test {
   TiledLayerImplTest() : host_impl_(&proxy_) {}
 
   scoped_ptr<TiledLayerImpl> CreateLayerNoTiles(
-      gfx::Size tile_size,
-      gfx::Size layer_size,
+      const gfx::Size& tile_size,
+      const gfx::Size& layer_size,
       LayerTilingData::BorderTexelOption border_texels) {
     scoped_ptr<TiledLayerImpl> layer =
         TiledLayerImpl::Create(host_impl_.active_tree(), 1);
@@ -46,8 +46,8 @@ class TiledLayerImplTest : public testing::Test {
   // Create a default tiled layer with textures for all tiles and a default
   // visibility of the entire layer size.
   scoped_ptr<TiledLayerImpl> CreateLayer(
-      gfx::Size tile_size,
-      gfx::Size layer_size,
+      const gfx::Size& tile_size,
+      const gfx::Size& layer_size,
       LayerTilingData::BorderTexelOption border_texels) {
     scoped_ptr<TiledLayerImpl> layer =
         CreateLayerNoTiles(tile_size, layer_size, border_texels);
@@ -69,8 +69,8 @@ class TiledLayerImplTest : public testing::Test {
 
   void GetQuads(QuadList* quads,
                 SharedQuadStateList* shared_states,
-                gfx::Size tile_size,
-                gfx::Size layer_size,
+                const gfx::Size& tile_size,
+                const gfx::Size& layer_size,
                 LayerTilingData::BorderTexelOption border_texel_option,
                 const gfx::Rect& visible_content_rect) {
     scoped_ptr<TiledLayerImpl> layer =

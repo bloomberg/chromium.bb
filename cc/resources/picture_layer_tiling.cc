@@ -19,7 +19,7 @@ namespace cc {
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
-    gfx::Size layer_bounds,
+    const gfx::Size& layer_bounds,
     PictureLayerTilingClient* client) {
   return make_scoped_ptr(new PictureLayerTiling(contents_scale,
                                                 layer_bounds,
@@ -27,7 +27,7 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
 }
 
 PictureLayerTiling::PictureLayerTiling(float contents_scale,
-                                       gfx::Size layer_bounds,
+                                       const gfx::Size& layer_bounds,
                                        PictureLayerTilingClient* client)
     : contents_scale_(contents_scale),
       layer_bounds_(layer_bounds),
@@ -125,7 +125,7 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   }
 }
 
-void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
+void PictureLayerTiling::SetLayerBounds(const gfx::Size& layer_bounds) {
   if (layer_bounds_ == layer_bounds)
     return;
 
@@ -341,11 +341,11 @@ void PictureLayerTiling::Reset() {
 
 void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
-    gfx::Size device_viewport,
+    const gfx::Size& device_viewport,
     const gfx::Rect& viewport_in_layer_space,
     const gfx::Rect& visible_layer_rect,
-    gfx::Size last_layer_bounds,
-    gfx::Size current_layer_bounds,
+    const gfx::Size& last_layer_bounds,
+    const gfx::Size& current_layer_bounds,
     float last_layer_contents_scale,
     float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
