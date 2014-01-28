@@ -3082,6 +3082,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroup) {
   NavigateToDestURL();
 }
 
+// Checks that the control group correctly hits WOULD_HAVE_BEEN_USED
+// renderer-initiated navigations. (This verifies that the ShouldFork logic
+// behaves correctly.)
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroupRendererInitiated) {
+  RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(
+      PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
+  DisableJavascriptCalls();
+  PrerenderTestURL("files/prerender/prerender_xhr_put.html",
+                   FINAL_STATUS_WOULD_HAVE_BEEN_USED, 0);
+  OpenDestURLViaClick();
+}
+
 // Make sure that the MatchComplete dummy works in the normal case.  Once
 // a prerender is cancelled because of a script, a dummy must be created to
 // account for the MatchComplete case, and it must have a final status of
