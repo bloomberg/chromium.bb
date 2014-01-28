@@ -55,6 +55,11 @@ public class AwContentsClientBridge {
             @Override
             public void onReceiveValue(Boolean value) {
                 proceedSslError(value.booleanValue(), id);
+                if (!value) {
+                    // For backward compatibility with the classic
+                    // webview, call onPageFinished after canceling ssl error.
+                    AwContentsClientBridge.this.mClient.onPageFinished(url);
+                }
             }
         };
         mClient.onReceivedSslError(callback, sslError);
