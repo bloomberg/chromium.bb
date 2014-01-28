@@ -103,7 +103,6 @@ interface TestObjectPython {
     attribute DocumentFragment documentFragmentAttribute;
     attribute DocumentType documentTypeAttribute;
     attribute Element elementAttribute;
-    attribute Entity entityAttribute;
     attribute Node nodeAttribute;
     attribute ShadowRoot shadowRootAttribute;
     // Typed arrays

@@ -114,8 +114,6 @@ PASS 'function DocumentType() { [native code] }' is 'function DocumentType() { [
 PASS 'function DocumentType() { [native code] }' is 'function DocumentType() { [native code] }'
 PASS 'function Element() { [native code] }' is 'function Element() { [native code] }'
 PASS 'function Element() { [native code] }' is 'function Element() { [native code] }'
-PASS 'function Entity() { [native code] }' is 'function Entity() { [native code] }'
-PASS 'function Entity() { [native code] }' is 'function Entity() { [native code] }'
 PASS 'function Event() { [native code] }' is 'function Event() { [native code] }'
 PASS 'function Event() { [native code] }' is 'function Event() { [native code] }'
 PASS 'function HTMLAnchorElement() { [native code] }' is 'function HTMLAnchorElement() { [native code] }'

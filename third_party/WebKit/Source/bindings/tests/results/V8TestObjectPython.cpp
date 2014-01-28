@@ -41,7 +41,6 @@
 #include "V8DocumentFragment.h"
 #include "V8DocumentType.h"
 #include "V8Element.h"
-#include "V8Entity.h"
 #include "V8EventTarget.h"
 #include "V8HTMLCollection.h"
 #include "V8HTMLElement.h"
@@ -991,33 +990,6 @@ static void elementAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjectPythonV8Internal::elementAttributeAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void entityAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->entityAttribute(), imp);
-}
-
-static void entityAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::entityAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void entityAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Entity*, cppValue, V8Entity::hasInstance(jsValue, info.GetIsolate()) ? V8Entity::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    imp->setEntityAttribute(WTF::getPtr(cppValue));
-}
-
-static void entityAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::entityAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -6684,7 +6656,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"documentFragmentAttribute", TestObjectPythonV8Internal::documentFragmentAttributeAttributeGetterCallback, TestObjectPythonV8Internal::documentFragmentAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"documentTypeAttribute", TestObjectPythonV8Internal::documentTypeAttributeAttributeGetterCallback, TestObjectPythonV8Internal::documentTypeAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"elementAttribute", TestObjectPythonV8Internal::elementAttributeAttributeGetterCallback, TestObjectPythonV8Internal::elementAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"entityAttribute", TestObjectPythonV8Internal::entityAttributeAttributeGetterCallback, TestObjectPythonV8Internal::entityAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"nodeAttribute", TestObjectPythonV8Internal::nodeAttributeAttributeGetterCallback, TestObjectPythonV8Internal::nodeAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"shadowRootAttribute", TestObjectPythonV8Internal::shadowRootAttributeAttributeGetterCallback, TestObjectPythonV8Internal::shadowRootAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"arrayBufferAttribute", TestObjectPythonV8Internal::arrayBufferAttributeAttributeGetterCallback, TestObjectPythonV8Internal::arrayBufferAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

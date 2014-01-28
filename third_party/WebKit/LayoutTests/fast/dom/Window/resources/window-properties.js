@@ -56,7 +56,6 @@ var propertyInfo = [
     ["DocumentFragment", "object"],
     ["DocumentType", "object"],
     ["Element", "object"],
-    ["Entity", "object"],
     ["Event", "object"],
     ["HTMLAnchorElement", "object"],
     ["HTMLAppletElement", "object"],

@@ -43,7 +43,6 @@ PASS: canGet('targetWindow.Document') should be 'false' and is.
 PASS: canGet('targetWindow.DocumentFragment') should be 'false' and is.
 PASS: canGet('targetWindow.DocumentType') should be 'false' and is.
 PASS: canGet('targetWindow.Element') should be 'false' and is.
-PASS: canGet('targetWindow.Entity') should be 'false' and is.
 PASS: canGet('targetWindow.EntityReference') should be 'false' and is.
 PASS: canGet('targetWindow.EvalError') should be 'false' and is.
 PASS: canGet('targetWindow.Event') should be 'false' and is.

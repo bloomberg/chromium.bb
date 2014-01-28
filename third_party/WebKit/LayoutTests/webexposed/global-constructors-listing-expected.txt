@@ -77,7 +77,6 @@ DocumentFragment
 DocumentType
 DynamicsCompressorNode
 Element
-Entity
 Error
 ErrorEvent
 EvalError

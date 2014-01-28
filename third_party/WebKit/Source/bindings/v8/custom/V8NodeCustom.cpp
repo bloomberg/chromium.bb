@@ -38,7 +38,6 @@
 #include "V8DocumentFragment.h"
 #include "V8DocumentType.h"
 #include "V8Element.h"
-#include "V8Entity.h"
 #include "V8HTMLElement.h"
 #include "V8Notation.h"
 #include "V8ProcessingInstruction.h"

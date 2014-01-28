@@ -13,7 +13,7 @@ ALERT: PASS: window.DOMException should be 'function DOMException() { [native co
 ALERT: PASS: window.DOMImplementation should be 'function DOMImplementation() { [native code] }' and is.
 ALERT: PASS: window.DOMParser should be 'function DOMParser() { [native code] }' and is.
 ALERT: PASS: window.Element should be 'function Element() { [native code] }' and is.
-ALERT: PASS: window.Entity should be 'function Entity() { [native code] }' and is.
+ALERT: PASS: window.Entity should be 'undefined' and is.
 ALERT: PASS: window.EntityReference should be 'undefined' and is.
 ALERT: PASS: window.EvalError should be 'function EvalError() { [native code] }' and is.
 ALERT: PASS: window.Event should be 'function Event() { [native code] }' and is.
@@ -206,7 +206,6 @@ PASS: Unable to set property DOMException: SecurityError: Blocked a frame with o
 PASS: Unable to set property DOMImplementation: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property DOMParser: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property Element: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property Entity: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property EvalError: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property Event: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property HTMLAnchorElement: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
