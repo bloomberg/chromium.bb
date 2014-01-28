@@ -16,6 +16,10 @@ namespace {
 // The duration of the crossfade animation when swapping the button's icon.
 const int kCrossfadeDurationMs = 200;
 
+// The duration of the fade out animation of the old icon during a crossfade
+// animation as a ratio of |kCrossfadeDurationMs|.
+const float kFadeOutRatio = 0.5f;
+
 }  // namespace
 
 // static
@@ -71,21 +75,26 @@ const char* FrameCaptionButton::GetClassName() const {
 
 void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
   last_paint_scale_ = canvas->image_scale();
-  int alpha = static_cast<int>(animation_->GetCurrentValue() * 255);
-  int crossfade_alpha = 255 - alpha;
+  double animation_value = animation_->GetCurrentValue();
+  int alpha = static_cast<int>(animation_value * 255);
+  int crossfade_alpha = 0;
+  if (animation_value < kFadeOutRatio) {
+     crossfade_alpha = static_cast<int>(
+         255 * (1 - animation_value / kFadeOutRatio));
+  }
   if (crossfade_alpha > 0 && !crossfade_image_.isNull()) {
     gfx::Canvas composed_canvas(size(), last_paint_scale_, false);
+    PaintWithAnimationEndState(&composed_canvas, alpha);
+
     SkPaint paint;
     paint.setAlpha(crossfade_alpha);
     paint.setXfermodeMode(SkXfermode::kPlus_Mode);
     composed_canvas.DrawImageInt(crossfade_image_, 0, 0, paint);
-    paint.setAlpha(alpha);
-    ImageButton::OnPaint(&composed_canvas);
 
     canvas->DrawImageInt(
         gfx::ImageSkia(composed_canvas.ExtractImageRep()), 0, 0);
   } else {
-    ImageButton::OnPaint(canvas);
+    PaintWithAnimationEndState(canvas, alpha);
   }
 }
 
@@ -115,6 +124,17 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
 void FrameCaptionButton::StateChanged() {
   if (state_ == STATE_HOVERED || state_ == STATE_PRESSED)
     animation_->Reset(1);
+}
+
+void FrameCaptionButton::PaintWithAnimationEndState(gfx::Canvas* canvas,
+                                                    int opacity) {
+  gfx::ImageSkia img = GetImageToPaint();
+  if (img.isNull())
+    return;
+
+  SkPaint paint;
+  paint.setAlpha(opacity);
+  canvas->DrawImageInt(img, 0, 0, paint);
 }
 
 void FrameCaptionButton::UpdateImages() {

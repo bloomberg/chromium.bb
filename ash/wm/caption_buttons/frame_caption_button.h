@@ -63,6 +63,10 @@ class ASH_EXPORT FrameCaptionButton : public views::ImageButton {
   virtual void StateChanged() OVERRIDE;
 
  private:
+  // Paints the button as it will look at the end of the animation but with
+  // |opacity|.
+  void PaintWithAnimationEndState(gfx::Canvas* canvas, int opacity);
+
   // Updates the button's images based on the current icon and style.
   void UpdateImages();
 
