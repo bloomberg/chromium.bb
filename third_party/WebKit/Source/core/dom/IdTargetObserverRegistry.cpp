@@ -82,12 +82,4 @@ void IdTargetObserverRegistry::notifyObserversInternal(const AtomicString& id)
     m_notifyingObserversInSet = 0;
 }
 
-bool IdTargetObserverRegistry::hasObservers(const AtomicString& id) const
-{
-    if (id.isEmpty() || m_registry.isEmpty())
-        return false;
-    ObserverSet* set = m_registry.get(id.impl());
-    return set && !set->isEmpty();
-}
-
 } // namespace WebCore
