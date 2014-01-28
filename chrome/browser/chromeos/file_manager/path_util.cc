@@ -25,6 +25,8 @@ namespace {
 const char kDownloadsFolderName[] = "Downloads";
 const base::FilePath::CharType kOldDownloadsFolderPath[] =
     FILE_PATH_LITERAL("/home/chronos/user/Downloads");
+const base::FilePath::CharType kOldDriveFolderPath[] =
+    FILE_PATH_LITERAL("/special/drive");
 
 }  // namespace
 
@@ -47,6 +49,7 @@ bool MigratePathFromOldFormat(Profile* profile,
                               base::FilePath* new_path) {
   // M34:
   // /home/chronos/user/Downloads/xxx => /home/chronos/u-hash/Downloads/xxx
+  // /special/drive => /special/drive-xxx
   //
   // Old path format comes either from stored old settings or from the initial
   // default value set in DownloadPrefs::RegisterProfilePrefs in profile-unaware
@@ -54,16 +57,21 @@ bool MigratePathFromOldFormat(Profile* profile,
   // and in the latter case it is DownloadPrefs::GetDefaultDownloadDirectory().
   // Those two paths coincides as long as $HOME=/home/chronos/user, but the
   // environment variable is phasing out (crbug.com/333031) so we care both.
-  const base::FilePath old_bases[] = {
-      base::FilePath(kOldDownloadsFolderPath),
-      DownloadPrefs::GetDefaultDownloadDirectory(),
+
+  const base::FilePath downloads = GetDownloadsFolderForProfile(profile);
+  const base::FilePath drive = drive::util::GetDriveMountPointPath(profile);
+  const base::FilePath bases[][2] = {
+    {base::FilePath(kOldDownloadsFolderPath),      downloads},
+    {DownloadPrefs::GetDefaultDownloadDirectory(), downloads},
+    {base::FilePath(kOldDriveFolderPath),          drive},
   };
-  for (size_t i = 0; i < arraysize(old_bases); ++i) {
-    const base::FilePath& old_base = old_bases[i];
+
+  for (size_t i = 0; i < arraysize(bases); ++i) {
+    const base::FilePath& old_base = bases[i][0];
+    const base::FilePath& new_base = bases[i][1];
     base::FilePath relative;
     if (old_path == old_base ||
         old_base.AppendRelativePath(old_path, &relative)) {
-      const base::FilePath new_base = GetDownloadsFolderForProfile(profile);
       *new_path = new_base.Append(relative);
       return old_path != *new_path;
     }

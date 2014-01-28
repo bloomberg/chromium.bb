@@ -59,8 +59,9 @@ const base::FilePath& GetDriveGrandRootPath();
 // Returns the path of the directory representing "My Drive".
 const base::FilePath& GetDriveMyDriveRootPath();
 
-// Returns the Drive mount point path, which looks like "/special/drive".
-const base::FilePath& GetDriveMountPointPath();
+// Returns the Drive mount point path, which looks like
+// "/special/drive-<unique-id-of-profile>".
+const base::FilePath& GetDriveMountPointPath(Profile* profile);
 
 // Returns the FileSystem for the |profile|. If not available (not mounted
 // or disabled), returns NULL.
@@ -98,7 +99,7 @@ bool IsUnderDriveMountPoint(const base::FilePath& path);
 
 // Extracts the Drive path from the given path located under the Drive mount
 // point. Returns an empty path if |path| is not under the Drive mount point.
-// Examples: ExtractDrivePath("/special/drive/foo.txt") => "drive/foo.txt"
+// Examples: ExtractDrivePath("/special/drive-xxx/foo.txt") => "drive/foo.txt"
 base::FilePath ExtractDrivePath(const base::FilePath& path);
 
 // Extracts the Drive path (e.g., "drive/foo.txt") from the filesystem URL.

@@ -347,7 +347,8 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
 bool DriveIntegrationService::IsMounted() const {
   // Look up the registered path, and just discard it.
   // GetRegisteredPath() returns true if the path is available.
-  const base::FilePath& drive_mount_point = util::GetDriveMountPointPath();
+  const base::FilePath& drive_mount_point =
+      util::GetDriveMountPointPath(profile_);
   base::FilePath unused;
   return BrowserContext::GetMountPoints(profile_)->GetRegisteredPath(
       drive_mount_point.BaseName().AsUTF8Unsafe(), &unused);
@@ -423,7 +424,8 @@ void DriveIntegrationService::AddDriveMountPoint() {
   DCHECK_EQ(INITIALIZED, state_);
   DCHECK(enabled_);
 
-  const base::FilePath drive_mount_point = util::GetDriveMountPointPath();
+  const base::FilePath& drive_mount_point =
+      util::GetDriveMountPointPath(profile_);
   fileapi::ExternalMountPoints* mount_points =
       BrowserContext::GetMountPoints(profile_);
   DCHECK(mount_points);
@@ -454,7 +456,7 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
   DCHECK(mount_points);
 
   mount_points->RevokeFileSystem(
-      util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe());
+      util::GetDriveMountPointPath(profile_).BaseName().AsUTF8Unsafe());
   util::Log(logging::LOG_INFO, "Drive mount point is removed");
 }
 

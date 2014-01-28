@@ -124,7 +124,8 @@ const base::FilePath& GetDriveMyDriveRootPath() {
   return drive_root_path;
 }
 
-const base::FilePath& GetDriveMountPointPath() {
+const base::FilePath& GetDriveMountPointPath(Profile* profile) {
+  // TODO(kinaba): assign different path for each different profile.
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mount_path,
       (kDriveMountPointPath));
   return drive_mount_path;
@@ -196,16 +197,24 @@ void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url) {
 }
 
 bool IsUnderDriveMountPoint(const base::FilePath& path) {
-  return GetDriveMountPointPath() == path ||
-         GetDriveMountPointPath().IsParent(path);
+  return !ExtractDrivePath(path).empty();
 }
 
 base::FilePath ExtractDrivePath(const base::FilePath& path) {
-  if (!IsUnderDriveMountPoint(path))
+  std::vector<base::FilePath::StringType> components;
+  path.GetComponents(&components);
+  if (components.size() < 3)
+    return base::FilePath();
+  if (components[0] != FILE_PATH_LITERAL("/"))
+    return base::FilePath();
+  if (components[1] != FILE_PATH_LITERAL("special"))
+    return base::FilePath();
+  if (!StartsWithASCII(components[2], "drive", true))
     return base::FilePath();
 
   base::FilePath drive_path = GetDriveGrandRootPath();
-  GetDriveMountPointPath().AppendRelativePath(path, &drive_path);
+  for (size_t i = 3; i < components.size(); ++i)
+    drive_path = drive_path.Append(components[i]);
   return drive_path;
 }
 

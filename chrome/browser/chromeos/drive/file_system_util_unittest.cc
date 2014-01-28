@@ -53,9 +53,7 @@ TEST(FileSystemUtilTest, IsUnderDriveMountPoint) {
   EXPECT_FALSE(IsUnderDriveMountPoint(
       base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
-  EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("special/drivex/foo.txt")));
+      base::FilePath::FromUTF8Unsafe("special/drive/foo.txt")));
 
   EXPECT_TRUE(IsUnderDriveMountPoint(
       base::FilePath::FromUTF8Unsafe("/special/drive")));
@@ -63,6 +61,8 @@ TEST(FileSystemUtilTest, IsUnderDriveMountPoint) {
       base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
   EXPECT_TRUE(IsUnderDriveMountPoint(
       base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
+  EXPECT_TRUE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
 }
 
 TEST(FileSystemUtilTest, ExtractDrivePath) {
@@ -72,9 +72,6 @@ TEST(FileSystemUtilTest, ExtractDrivePath) {
   EXPECT_EQ(base::FilePath(),
             ExtractDrivePath(
                 base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
-  EXPECT_EQ(base::FilePath(),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
 
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"),
             ExtractDrivePath(
@@ -85,9 +82,14 @@ TEST(FileSystemUtilTest, ExtractDrivePath) {
   EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
             ExtractDrivePath(base::FilePath::FromUTF8Unsafe(
                 "/special/drive/subdir/foo.txt")));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
+            ExtractDrivePath(
+                base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
 }
 
 TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
+  TestingProfile profile;
+
   // Set up file system context for testing.
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -108,14 +110,14 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
 
   // Type:"external" + virtual_path:"drive/foo/bar" resolves to "drive/foo/bar".
   const std::string& drive_mount_name =
-      GetDriveMountPointPath().BaseName().AsUTF8Unsafe();
+      GetDriveMountPointPath(&profile).BaseName().AsUTF8Unsafe();
   mount_points->RegisterFileSystem(
       drive_mount_name,
       fileapi::kFileSystemTypeDrive,
       fileapi::FileSystemMountOption(),
-      GetDriveMountPointPath());
+      GetDriveMountPointPath(&profile));
   EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),
+      base::FilePath::FromUTF8Unsafe("drive/foo/bar"),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
           "filesystem:chrome-extension://dummy-id/external/" +
           drive_mount_name + "/foo/bar"))));
@@ -126,9 +128,9 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
       "drive2",
       fileapi::kFileSystemTypeDrive,
       fileapi::FileSystemMountOption(),
-      GetDriveMountPointPath());
+      GetDriveMountPointPath(&profile));
   EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe(drive_mount_name + "/foo/bar"),
+      base::FilePath::FromUTF8Unsafe("drive/foo/bar"),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
           "filesystem:chrome-extension://dummy-id/external/drive2/foo/bar"))));
 
@@ -148,10 +150,10 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   std::string isolated_id =
       fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
           fileapi::kFileSystemTypeNativeForPlatformApp,
-          GetDriveMountPointPath().AppendASCII("bar/buz"),
+          GetDriveMountPointPath(&profile).AppendASCII("bar/buz"),
           &isolated_name);
   EXPECT_EQ(
-      base::FilePath::FromUTF8Unsafe(drive_mount_name + "/bar/buz"),
+      base::FilePath::FromUTF8Unsafe("drive/bar/buz"),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
           "filesystem:chrome-extension://dummy-id/isolated/" +
           isolated_id + "/" + isolated_name))));

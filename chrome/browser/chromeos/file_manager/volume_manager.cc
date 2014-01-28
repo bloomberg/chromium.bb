@@ -82,8 +82,9 @@ std::string GenerateVolumeId(const VolumeInfo& volume_info) {
 }
 
 // Returns the VolumeInfo for Drive file system.
-VolumeInfo CreateDriveVolumeInfo() {
-  const base::FilePath& drive_path = drive::util::GetDriveMountPointPath();
+VolumeInfo CreateDriveVolumeInfo(Profile* profile) {
+  const base::FilePath& drive_path =
+      drive::util::GetDriveMountPointPath(profile);
 
   VolumeInfo volume_info;
   volume_info.type = VOLUME_TYPE_GOOGLE_DRIVE;
@@ -243,7 +244,7 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
 
   // Adds "Drive" volume.
   if (drive_integration_service_ && drive_integration_service_->IsMounted())
-    result.push_back(CreateDriveVolumeInfo());
+    result.push_back(CreateDriveVolumeInfo(profile_));
 
   // Adds "Downloads".
   // Usually, the path of the directory is where we registered in Initialize(),
@@ -294,7 +295,7 @@ void VolumeManager::OnFileSystemMounted() {
   // Raise mount event.
   // We can pass chromeos::MOUNT_ERROR_NONE even when authentication is failed
   // or network is unreachable. These two errors will be handled later.
-  VolumeInfo volume_info = CreateDriveVolumeInfo();
+  VolumeInfo volume_info = CreateDriveVolumeInfo(profile_);
   FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
                     OnVolumeMounted(chromeos::MOUNT_ERROR_NONE,
                                     volume_info,
@@ -304,7 +305,7 @@ void VolumeManager::OnFileSystemMounted() {
 void VolumeManager::OnFileSystemBeingUnmounted() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  VolumeInfo volume_info = CreateDriveVolumeInfo();
+  VolumeInfo volume_info = CreateDriveVolumeInfo(profile_);
   FOR_EACH_OBSERVER(
       VolumeManagerObserver, observers_,
       OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE, volume_info));

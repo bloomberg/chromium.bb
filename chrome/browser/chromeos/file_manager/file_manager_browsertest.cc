@@ -570,7 +570,9 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
       const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
       res->SetString("downloads",
           "/" + util::GetDownloadsMountPointName(browser()->profile()));
-      res->SetString("drive", "/drive/root");
+      res->SetString("drive",
+          "/" + drive::util::GetDriveMountPointPath(browser()->profile()
+              ).BaseName().AsUTF8Unsafe() + "/root");
       std::string jsonString;
       base::JSONWriter::Write(res.get(), &jsonString);
       entry.function->Reply(jsonString);

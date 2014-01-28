@@ -41,6 +41,10 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile);
 //   a multi-profile session, the "user" path cannot be used to mean "its own"
 //   Download folder anymore. Thus we are switching to always use "u-<hash>"
 //   that consistently works whether or not multi-profile is enabled.
+//
+// M34: crbug.com/336123
+//   The "Google Drive" folder is changed from /special/drive to
+//   /special/drive-<profile-id> to support multi profiles.
 bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_path,
                               base::FilePath* new_path);

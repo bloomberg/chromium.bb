@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
 #include "base/files/file_path.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,6 +44,25 @@ TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   EXPECT_FALSE(MigratePathFromOldFormat(
       &profile,
       base::FilePath::FromUTF8Unsafe("/home/chronos/user/dl"),
+      &path));
+}
+
+TEST(FileManagerPathUtilTest, MultiProfileDriveFolderMigration) {
+  TestingProfile profile;
+
+  // This looks like "/special/drive-xxx" in the production
+  // environment.
+  const base::FilePath kDrive = drive::util::GetDriveMountPointPath(&profile);
+
+  base::FilePath path;
+
+  // TODO(kinaba): add test, once after drive::util::GetDriveMountPointPath is
+  // implemented in the way that takes profile into account
+
+  // Only the "/special/drive" path is converted.
+  EXPECT_FALSE(MigratePathFromOldFormat(
+      &profile,
+      base::FilePath::FromUTF8Unsafe("/special/notdrive"),
       &path));
 }
 

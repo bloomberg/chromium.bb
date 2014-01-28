@@ -63,7 +63,8 @@ void SetDriveMountPointPermissions(
   if (!backend)
     return;
 
-  const base::FilePath mount_point = drive::util::GetDriveMountPointPath();
+  const base::FilePath mount_point =
+      drive::util::GetDriveMountPointPath(profile);
   // Grant R/W permissions to drive 'folder'. File API layer still
   // expects this to be satisfied.
   ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
@@ -390,7 +391,7 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
   if (file_path.empty())
     return false;
 
-  if (file_path == drive::util::GetDriveMountPointPath()) {
+  if (drive::util::IsUnderDriveMountPoint(file_path)) {
     drive::FileSystemInterface* file_system =
         drive::util::GetFileSystemByProfile(GetProfile());
     if (!file_system) {

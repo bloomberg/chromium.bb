@@ -167,6 +167,7 @@ TEST(FileManagerFileTasksTest, ParseTaskID_UnknownTaskType) {
 }
 
 TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
+  TestingProfile profile;
   // For DriveAppRegistry, which checks CurrentlyOn(BrowserThread::UI).
   content::TestBrowserThreadBundle thread_bundle;
 
@@ -206,7 +207,7 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   PathAndMimeTypeSet path_mime_set;
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          drive::util::GetDriveMountPointPath(&profile).AppendASCII("foo.txt"),
           "text/plain"));
   std::vector<FullTaskDescriptor> tasks;
   FindDriveAppTasks(drive_app_registry,
@@ -227,11 +228,11 @@ TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
   path_mime_set.clear();
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          drive::util::GetDriveMountPointPath(&profile).AppendASCII("foo.txt"),
           "text/plain"));
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.html"),
+          drive::util::GetDriveMountPointPath(&profile).AppendASCII("foo.html"),
           "text/html"));
   tasks.clear();
   FindDriveAppTasks(drive_app_registry,
@@ -434,7 +435,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
   PathAndMimeTypeSet path_mime_set;
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          drive::util::GetDriveMountPointPath(&test_profile_).AppendASCII(
+              "foo.txt"),
           "text/plain"));
 
   std::vector<FullTaskDescriptor> tasks;
@@ -454,11 +456,13 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
   path_mime_set.clear();
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          drive::util::GetDriveMountPointPath(&test_profile_).AppendASCII(
+              "foo.txt"),
           "text/plain"));
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.html"),
+          drive::util::GetDriveMountPointPath(&test_profile_).AppendASCII(
+              "foo.html"),
           "text/html"));
   tasks.clear();
   FindFileHandlerTasks(&test_profile_, path_mime_set, &tasks);
@@ -627,7 +631,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks) {
   std::vector<GURL> file_urls;
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.txt"),
+          drive::util::GetDriveMountPointPath(&test_profile_).AppendASCII(
+              "foo.txt"),
           "text/plain"));
   file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.txt"));
 
@@ -718,7 +723,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindAllTypesOfTasks_GoogleDocument) {
   std::vector<GURL> file_urls;
   path_mime_set.insert(
       std::make_pair(
-          drive::util::GetDriveMountPointPath().AppendASCII("foo.gdoc"),
+          drive::util::GetDriveMountPointPath(&test_profile_).AppendASCII(
+              "foo.gdoc"),
           "application/vnd.google-apps.document"));
   file_urls.push_back(GURL("filesystem:chrome-extension://id/dir/foo.gdoc"));
 

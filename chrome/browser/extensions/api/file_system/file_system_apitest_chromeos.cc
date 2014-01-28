@@ -119,8 +119,8 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenExistingFileTest) {
-  base::FilePath test_file = drive::util::GetDriveMountPointPath().AppendASCII(
-      "root/open_existing.txt");
+  base::FilePath test_file = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/open_existing.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_existing"))
@@ -129,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
 
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenExistingFileWithWriteTest) {
-  base::FilePath test_file = drive::util::GetDriveMountPointPath().AppendASCII(
-      "root/open_existing.txt");
+  base::FilePath test_file = drive::util::GetDriveMountPointPath(
+      browser()->profile()).AppendASCII("root/open_existing.txt");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_file);
   ASSERT_TRUE(RunPlatformAppTest(
@@ -140,7 +140,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenDirectoryTest) {
   base::FilePath test_directory =
-      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+      drive::util::GetDriveMountPointPath(browser()->profile()).AppendASCII(
+          "root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
   ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
@@ -150,7 +151,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenDirectoryWithWriteTest) {
   base::FilePath test_directory =
-      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+      drive::util::GetDriveMountPointPath(browser()->profile()).AppendASCII(
+          "root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
   ASSERT_TRUE(
@@ -161,7 +163,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenDirectoryWithoutPermissionTest) {
   base::FilePath test_directory =
-      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+      drive::util::GetDriveMountPointPath(browser()->profile()).AppendASCII(
+          "root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
   ASSERT_TRUE(RunPlatformAppTest(
@@ -172,7 +175,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
 IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
                        FileSystemApiOpenDirectoryWithOnlyWritePermissionTest) {
   base::FilePath test_directory =
-      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+      drive::util::GetDriveMountPointPath(browser()->profile()).AppendASCII(
+          "root/subdir");
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
       &test_directory);
   ASSERT_TRUE(RunPlatformAppTest(

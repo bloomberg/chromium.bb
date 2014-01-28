@@ -51,9 +51,9 @@ var expectedDownloadsVolume = {
 };
 
 var expectedDriveVolume = {
-  volumeId: 'drive:drive',
-  mountPath: '/drive',
-  sourcePath: '/special/drive',
+  volumeId: /^drive:drive[^\/]*$/,
+  mountPath: /^\/drive[^\/]*$/,
+  sourcePath: /^\/special\/drive[^\/]*$/,
   volumeType: 'drive',
   isReadOnly: false,
   profile: {profileId: "", displayName: "", isCurrentProfile: true}

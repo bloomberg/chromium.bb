@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -66,6 +67,7 @@ class DownloadHandlerTest : public testing::Test {
  protected:
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
   scoped_ptr<content::MockDownloadManager> download_manager_;
   DownloadHandlerTestFileSystem test_file_system_;
   scoped_ptr<DownloadHandler> download_handler_;
@@ -91,7 +93,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathNonDrivePath) {
 
 TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPath) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().AppendASCII("test.dat");
+      util::GetDriveMountPointPath(&profile_).AppendASCII("test.dat");
 
   // Test the case that the download target directory already exists.
   test_file_system_.set_error(FILE_ERROR_OK);
@@ -112,7 +114,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPath) {
 
 TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().AppendASCII("test.dat");
+      util::GetDriveMountPointPath(&profile_).AppendASCII("test.dat");
 
   // Test the case that access to the download target directory failed for some
   // reason.
@@ -134,7 +136,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
 // DownloadItem.
 TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().AppendASCII("test.dat");
+      util::GetDriveMountPointPath(&profile_).AppendASCII("test.dat");
   test_file_system_.set_error(FILE_ERROR_OK);
 
   // Call SubstituteDriveDownloadPath()
@@ -161,7 +163,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
 
 TEST_F(DownloadHandlerTest, CheckForFileExistence) {
   const base::FilePath drive_path =
-      util::GetDriveMountPointPath().AppendASCII("test.dat");
+      util::GetDriveMountPointPath(&profile_).AppendASCII("test.dat");
 
   // Make |download_item_| a drive download.
   download_handler_->SetDownloadParams(drive_path, &download_item_);

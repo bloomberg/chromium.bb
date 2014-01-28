@@ -168,7 +168,7 @@ TEST_F(VolumeManagerTest, OnFileSystemMounted) {
   ASSERT_EQ(1U, observer.events().size());
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, event.type);
-  EXPECT_EQ(drive::util::GetDriveMountPointPath().AsUTF8Unsafe(),
+  EXPECT_EQ(drive::util::GetDriveMountPointPath(profile_.get()).AsUTF8Unsafe(),
             event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
   EXPECT_FALSE(event.is_remounting);
@@ -185,7 +185,7 @@ TEST_F(VolumeManagerTest, OnFileSystemBeingUnmounted) {
   ASSERT_EQ(1U, observer.events().size());
   const LoggingObserver::Event& event = observer.events()[0];
   EXPECT_EQ(LoggingObserver::Event::VOLUME_UNMOUNTED, event.type);
-  EXPECT_EQ(drive::util::GetDriveMountPointPath().AsUTF8Unsafe(),
+  EXPECT_EQ(drive::util::GetDriveMountPointPath(profile_.get()).AsUTF8Unsafe(),
             event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
 
