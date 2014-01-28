@@ -861,7 +861,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         }
     }
 
-    if (m_owningLayer->scrollableArea())
+    if (m_owningLayer->scrollableArea() && m_owningLayer->scrollableArea()->scrollsOverflow())
         m_owningLayer->scrollableArea()->positionOverflowControls();
 
     // We can't make this call in RenderLayerCompositor::allocateOrClearCompositedLayerMapping
