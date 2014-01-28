@@ -278,14 +278,4 @@ void ShowBrowserSignin(Browser* browser, signin::Source source) {
   }
 }
 
-void ShowGaiaSignin(Browser* browser,
-                    const std::string& service,
-                    const GURL& continue_url) {
-  GURL url(GaiaUrls::GetInstance()->service_login_url());
-  url = net::AppendQueryParameter(url, "service", service);
-  if (continue_url.is_valid())
-    url = net::AppendQueryParameter(url, "continue", continue_url.spec());
-  NavigateToSingletonTab(browser, url);
-}
-
 }  // namespace chrome

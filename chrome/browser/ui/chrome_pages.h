@@ -68,11 +68,6 @@ void ShowSearchEngineSettings(Browser* browser);
 // otherwise initiates signin.
 void ShowBrowserSignin(Browser* browser, signin::Source source);
 
-// Open a tab to sign into GAIA.
-void ShowGaiaSignin(Browser* browser,
-                    const std::string& service,
-                    const GURL& continue_url);
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_CHROME_PAGES_H_
