@@ -1114,6 +1114,17 @@ PassRefPtr<CSSValueList> BisonCSSParser::parseFontFaceValue(const AtomicString& 
     return toCSSValueList(dummyStyle->getPropertyCSSValue(CSSPropertyFontFamily).get());
 }
 
+PassRefPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunctionValue(const String& string)
+{
+    if (string.isEmpty())
+        return 0;
+    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    if (!parseValue(style.get(), CSSPropertyAnimationTimingFunction, string, false, HTMLStandardMode, 0))
+        return 0;
+
+    return style->getPropertyCSSValue(CSSPropertyAnimationTimingFunction);
+}
+
 bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const Document& document)
 {
     ASSERT(!string.isEmpty());

@@ -35,6 +35,7 @@
 #include "bindings/v8/ScriptValue.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "wtf/text/StringBuilder.h"
@@ -115,6 +116,15 @@ void ElementAnimation::populateTiming(Timing& timing, Dictionary timingInputDict
         timing.direction = Timing::PlaybackDirectionAlternate;
     } else if (direction == "alternate-reverse") {
         timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    }
+
+    String timingFunctionString;
+    timingInputDictionary.get("easing", timingFunctionString);
+    RefPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
+    if (timingFunctionValue) {
+        RefPtr<TimingFunction> timingFunction = CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false);
+        if (timingFunction)
+            timing.timingFunction = timingFunction;
     }
 
     timing.assertValid();

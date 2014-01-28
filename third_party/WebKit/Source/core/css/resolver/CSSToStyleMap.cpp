@@ -448,50 +448,58 @@ void CSSToStyleMap::mapAnimationProperty(CSSAnimationData* animation, CSSValue* 
     }
 }
 
-void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSValue* value) const
+PassRefPtr<TimingFunction> CSSToStyleMap::animationTimingFunction(CSSValue* value, bool allowInitial)
 {
-    if (value->isInitialValue()) {
-        animation->setTimingFunction(CSSAnimationData::initialAnimationTimingFunction());
-        return;
+    if (allowInitial && value->isInitialValue()) {
+        return CSSAnimationData::initialAnimationTimingFunction();
     }
 
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         switch (primitiveValue->getValueID()) {
         case CSSValueLinear:
-            animation->setTimingFunction(LinearTimingFunction::create());
+            return LinearTimingFunction::create();
             break;
         case CSSValueEase:
-            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease));
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
             break;
         case CSSValueEaseIn:
-            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
             break;
         case CSSValueEaseOut:
-            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut));
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut);
             break;
         case CSSValueEaseInOut:
-            animation->setTimingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut));
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut);
             break;
         case CSSValueStepStart:
-            animation->setTimingFunction(StepsTimingFunction::preset(StepsTimingFunction::Start));
+            return StepsTimingFunction::preset(StepsTimingFunction::Start);
             break;
         case CSSValueStepEnd:
-            animation->setTimingFunction(StepsTimingFunction::preset(StepsTimingFunction::End));
+            return StepsTimingFunction::preset(StepsTimingFunction::End);
             break;
         default:
             break;
         }
-        return;
+        return 0;
     }
 
     if (value->isCubicBezierTimingFunctionValue()) {
         CSSCubicBezierTimingFunctionValue* cubicTimingFunction = toCSSCubicBezierTimingFunctionValue(value);
-        animation->setTimingFunction(CubicBezierTimingFunction::create(cubicTimingFunction->x1(), cubicTimingFunction->y1(), cubicTimingFunction->x2(), cubicTimingFunction->y2()));
+        return CubicBezierTimingFunction::create(cubicTimingFunction->x1(), cubicTimingFunction->y1(), cubicTimingFunction->x2(), cubicTimingFunction->y2());
     } else if (value->isStepsTimingFunctionValue()) {
         CSSStepsTimingFunctionValue* stepsTimingFunction = toCSSStepsTimingFunctionValue(value);
-        animation->setTimingFunction(StepsTimingFunction::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart()));
+        return StepsTimingFunction::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart());
     }
+
+    return 0;
+}
+
+void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSValue* value) const
+{
+    RefPtr<TimingFunction> timingFunction = animationTimingFunction(value, true);
+    if (timingFunction)
+        animation->setTimingFunction(timingFunction);
 }
 
 void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID property, CSSValue* value, NinePieceImage& image)

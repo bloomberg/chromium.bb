@@ -40,6 +40,7 @@
 #include "core/animation/Timing.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "platform/animation/TimingFunctionTestHelper.h"
 
 #include <gtest/gtest.h>
 
@@ -524,6 +525,83 @@ TEST_F(AnimationElementAnimationTest, TimingInputDirection)
     timing.direction = defaultPlaybackDirection;
 }
 
+TEST_F(AnimationElementAnimationTest, TimingInputTimingFunction)
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Context::Scope contextScope(context);
+
+    Timing timing;
+    const RefPtr<TimingFunction> defaultTimingFunction = LinearTimingFunction::create();
+    EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
+
+    applyTimingInputString(timing, isolate, "easing", "ease");
+    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease)), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "ease-in");
+    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn)), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "ease-out");
+    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut)), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "ease-in-out");
+    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut)), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "linear");
+    EXPECT_EQ(*(LinearTimingFunction::create()), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "initial");
+    EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "step-start");
+    EXPECT_EQ(*(StepsTimingFunction::preset(StepsTimingFunction::Start)), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "step-end");
+    EXPECT_EQ(*(StepsTimingFunction::preset(StepsTimingFunction::End)), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
+    EXPECT_EQ(*(CubicBezierTimingFunction::create(1, 1, 0.3, 0.3).get()), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "steps(3, start)");
+    EXPECT_EQ(*(StepsTimingFunction::create(3, true).get()), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "steps(5, end)");
+    EXPECT_EQ(*(StepsTimingFunction::create(5, false).get()), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "steps(5.6, end)");
+    EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    // FIXME: Step-middle not yet implemented. Change this test when it is working.
+    applyTimingInputString(timing, isolate, "easing", "steps(5, middle)");
+    EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "cubic-bezier(2, 2, 0.3, 0.3)");
+    EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputString(timing, isolate, "easing", "rubbish");
+    EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+
+    applyTimingInputNumber(timing, isolate, "easing", 2);
+    EXPECT_EQ(*defaultTimingFunction.get(), *timing.timingFunction.get());
+    timing.timingFunction = defaultTimingFunction;
+}
+
 TEST_F(AnimationElementAnimationTest, TimingInputEmpty)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -546,6 +624,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputEmpty)
     EXPECT_EQ(controlTiming.hasIterationDuration, updatedTiming.hasIterationDuration);
     EXPECT_EQ(controlTiming.playbackRate, updatedTiming.playbackRate);
     EXPECT_EQ(controlTiming.direction, updatedTiming.direction);
+    EXPECT_EQ(*controlTiming.timingFunction.get(), *updatedTiming.timingFunction.get());
 }
 
 } // namespace WebCore
