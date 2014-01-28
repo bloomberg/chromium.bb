@@ -24,7 +24,6 @@ sandbox.appendChild(
               createShadowRoot({'id': 'J'},
                                createDOM('shadow', {'id': 'K'}))));
 
-// ['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A//', 'A//H', 'A//I', 'A//J'].forEach(function(path) {
 ['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A//', 'A//H', 'A//I', 'A///', 'A///K'].forEach(function(path) {
     getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
         debug('\nevent.path on node ' + dumpNode(event.currentTarget));

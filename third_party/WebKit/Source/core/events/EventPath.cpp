@@ -187,7 +187,7 @@ void EventPath::calculateAdjustedEventPath()
         Vector<RefPtr<Node> > nodes;
         nodes.reserveInitialCapacity(size());
         for (size_t i = 0; i < size(); ++i) {
-            if (at(i).node()->treeScope().isInclusiveAncestorOf(treeScopeEventContext->treeScope()))
+            if (at(i).node()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScopeEventContext->treeScope()))
                 nodes.append(at(i).node());
         }
         treeScopeEventContext->adoptEventPath(nodes);
