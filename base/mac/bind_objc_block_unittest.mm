@@ -4,6 +4,8 @@
 
 #import "base/mac/bind_objc_block.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -49,6 +51,17 @@ TEST(BindObjcBlockTest, TestArgument) {
   const int kArgument = 42;
   base::Callback<int(int)> c = base::BindBlock(^(int a){return a + 1;});
   EXPECT_EQ(kArgument + 1, c.Run(kArgument));
+}
+
+TEST(BindObjcBlockTest, TestTwoArguments) {
+  std::string result;
+  std::string* ptr = &result;
+  base::Callback<void(const std::string&, const std::string&)> c =
+      base::BindBlock(^(const std::string& a, const std::string& b) {
+          *ptr = a + b;
+      });
+  c.Run("forty", "two");
+  EXPECT_EQ(result, "fortytwo");
 }
 
 }  // namespace
