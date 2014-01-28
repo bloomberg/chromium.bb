@@ -5956,15 +5956,17 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
           continue;
         }
 
-        Texture* texture = texture_ref->texture();
-        gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
-        if (image && !texture->IsAttachedToFramebuffer()) {
-          ScopedGLErrorSuppressor suppressor(
-              "GLES2DecoderImpl::PrepareTexturesForRender", GetErrorState());
-          textures_set = true;
-          glActiveTexture(GL_TEXTURE0 + texture_unit_index);
-          image->WillUseTexImage();
-          continue;
+        if (textarget != GL_TEXTURE_CUBE_MAP) {
+          Texture* texture = texture_ref->texture();
+          gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
+          if (image && !texture->IsAttachedToFramebuffer()) {
+            ScopedGLErrorSuppressor suppressor(
+                "GLES2DecoderImpl::PrepareTexturesForRender", GetErrorState());
+            textures_set = true;
+            glActiveTexture(GL_TEXTURE0 + texture_unit_index);
+            image->WillUseTexImage();
+            continue;
+          }
         }
       }
       // else: should this be an error?
@@ -5998,15 +6000,17 @@ void GLES2DecoderImpl::RestoreStateForTextures() {
           continue;
         }
 
-        Texture* texture = texture_ref->texture();
-        gfx::GLImage* image =
-            texture->GetLevelImage(texture_unit.bind_target, 0);
-        if (image && !texture->IsAttachedToFramebuffer()) {
-          ScopedGLErrorSuppressor suppressor(
-              "GLES2DecoderImpl::RestoreStateForTextures", GetErrorState());
-          glActiveTexture(GL_TEXTURE0 + texture_unit_index);
-          image->DidUseTexImage();
-          continue;
+        if (texture_unit.bind_target != GL_TEXTURE_CUBE_MAP) {
+          Texture* texture = texture_ref->texture();
+          gfx::GLImage* image =
+              texture->GetLevelImage(texture_unit.bind_target, 0);
+          if (image && !texture->IsAttachedToFramebuffer()) {
+            ScopedGLErrorSuppressor suppressor(
+                "GLES2DecoderImpl::RestoreStateForTextures", GetErrorState());
+            glActiveTexture(GL_TEXTURE0 + texture_unit_index);
+            image->DidUseTexImage();
+            continue;
+          }
         }
       }
     }
