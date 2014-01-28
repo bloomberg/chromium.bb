@@ -43,9 +43,8 @@
   /* A hack used to prevent aliasing on High-DPI displays. */
   -webkit-transform: scale3d(1,1,1);
   background-clip: padding-box;
-  background-image: -webkit-linear-gradient(rgba(255,255,255,0.99),
-                                            rgba(255,255,255,0.97));
-  border-bottom: 1px solid rgba(238,238,238,0.97);
+  background-color: white;
+  border-bottom: 1px solid rgb(238,238,238);
   padding: 71px 20px 50px;
   text-align: center;
 }
@@ -60,14 +59,12 @@
 }
 
 .error-body {
-  background-image: -webkit-linear-gradient(rgba(249,249,249,0.97),
-                                            rgba(249,249,249,0.95));
+  background-color: rgb(249,249,249);
   padding: 20px 20px 20px;
 }
 
 .error-controls {
-  background-image: -webkit-linear-gradient(rgba(249,249,249,0.95),
-                                            rgba(249,249,249,0.93));
+  background-color: rgb(249,249,249);
   padding: 20px 20px 20px;
 }
 
