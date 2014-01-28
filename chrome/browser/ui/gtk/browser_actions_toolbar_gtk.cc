@@ -702,9 +702,7 @@ bool BrowserActionsToolbarGtk::ShouldDisplayBrowserAction(
     const Extension* extension) {
   // Only display incognito-enabled extensions while in incognito mode.
   return (!profile_->IsOffTheRecord() ||
-          extensions::util::IsIncognitoEnabled(
-              extension->id(),
-              extensions::ExtensionSystem::Get(profile_)->extension_service()));
+          extensions::util::IsIncognitoEnabled(extension->id(), profile_));
 }
 
 void BrowserActionsToolbarGtk::HidePopup() {

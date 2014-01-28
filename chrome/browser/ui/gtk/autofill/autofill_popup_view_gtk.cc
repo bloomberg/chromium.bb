@@ -16,11 +16,12 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/pango_util.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/text_utils.h"
 
 using blink::WebAutofillClient;
@@ -119,7 +120,7 @@ gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
   if (event->button != 1)
     return FALSE;
 
-  controller_->LineAcceptedAtPoint(event->x, event->y);
+  controller_->AcceptSelectionAtPoint(gfx::Point(event->x, event->y));
   return TRUE;
 }
 
@@ -129,10 +130,6 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
   gdk_cairo_rectangle(cr, &event->area);
   cairo_clip(cr);
 
-  // This assert is kinda ugly, but it would be more currently unneeded work
-  // to support painting a border that isn't 1 pixel thick.  There is no point
-  // in writing that code now, and explode if that day ever comes.
-  DCHECK_EQ(1, kBorderThickness);
   // Draw the 1px border around the entire window.
   gdk_cairo_set_source_color(cr, &kBorderColor);
   gdk_cairo_rectangle(cr, &widget->allocation);
@@ -167,7 +164,7 @@ gboolean AutofillPopupViewGtk::HandleLeave(GtkWidget* widget,
 
 gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,
                                             GdkEventMotion* event) {
-  controller_->LineSelectedAtPoint(event->x, event->y);
+  controller_->AcceptSelectionAtPoint(gfx::Point(event->x, event->y));
 
   return TRUE;
 }
