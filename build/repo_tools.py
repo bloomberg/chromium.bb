@@ -21,6 +21,15 @@ def GitCmd():
   else:
     return ['git']
 
+
+def CheckGitOutput(args):
+  """Run a git subcommand and capture its stdout a la subprocess.check_output.
+  Args:
+    args: list of arguments to 'git'
+  """
+  return log_tools.CheckOutput(GitCmd() + args)
+
+
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
                 pathspec=None):
   """Sync an individual git repo.

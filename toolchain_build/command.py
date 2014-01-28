@@ -133,10 +133,32 @@ class Runnable(object):
       raise Exception('Python Runnable objects must be implemented in one of' +
                       'the following files: ' + str(COMMAND_CODE_FILES))
 
+    # Like repr(datum), but do something stable for dictionaries.
+    # This only properly handles dictionaries that use simple types
+    # as keys.
+    def ReprForHash(datum):
+      if isinstance(datum, dict):
+        # The order of a dictionary's items is unpredictable.
+        # Manually make a string in dict syntax, but sorted on keys.
+        return ('{' +
+                ', '.join(repr(key) + ': ' + ReprForHash(value)
+                          for key, value in sorted(datum.iteritems(),
+                                                   key=lambda t: t[0])) +
+                '}')
+      elif isinstance(datum, list):
+        # A list is already ordered, but its items might be dictionaries.
+        return ('[' +
+                ', '.join(ReprForHash(value) for value in datum) +
+                ']')
+      else:
+        return repr(datum)
+
     for v in self._args:
-      values += [repr(v)]
-    for k, v in self._kwargs.iteritems():
-      values += [repr(k), repr(v)]
+      values += [ReprForHash(v)]
+    # The order of a dictionary's items is unpredictable.
+    # Sort by key for hashing purposes.
+    for k, v in sorted(self._kwargs.iteritems(), key=lambda t: t[0]):
+      values += [repr(k), ReprForHash(v)]
     values += [FILE_CONTENTS_HASH]
 
     return '\n'.join(values)
@@ -145,11 +167,12 @@ class Runnable(object):
     return self._func(subst, *self._args, **self._kwargs)
 
 
-def Command(command, **kwargs):
+def Command(command, stdout=None, **kwargs):
   """Return a Runnable which invokes 'command' with check_call.
 
   Args:
     command: List or string with a command suitable for check_call
+    stdout (optional): File name to redirect command's stdout to
     kwargs: Keyword arguments suitable for check_call (or 'cwd' or 'path_dirs')
 
   The command will be %-substituted and paths will be assumed to be relative to
@@ -158,7 +181,7 @@ def Command(command, **kwargs):
   'path_dirs', the directories therein will be added to the paths searched for
   the command. Any other kwargs will be passed to check_call.
   """
-  def runcmd(subst, command, **kwargs):
+  def runcmd(subst, command, stdout, **kwargs):
     check_call_kwargs = kwargs.copy()
     command = command[:]
 
@@ -181,9 +204,12 @@ def Command(command, **kwargs):
       paths = check_call_kwargs['env']['PATH'].split(os.pathsep)
       command[0] = file_tools.Which(command[0], paths=paths)
 
-    log_tools.CheckCall(command, **check_call_kwargs)
+    if stdout is not None:
+      stdout = subst.SubstituteAbsPaths(stdout)
 
-  return Runnable(runcmd, command, **kwargs)
+    log_tools.CheckCall(command, stdout=stdout, **check_call_kwargs)
+
+  return Runnable(runcmd, command, stdout, **kwargs)
 
 def SkipForIncrementalCommand(command, **kwargs):
   """Return a command which has the skip_for_incremental property set on it.
@@ -275,3 +301,73 @@ def CleanGitWorkingDir(directory, path):
     if os.path.exists(directory) and len(os.listdir(directory)) > 0:
       repo_tools.CleanGitWorkingDir(directory, path)
   return Runnable(clean, directory, path)
+
+
+def GenerateGitPatches(git_dir, info):
+  """Generate patches from a Git repository.
+
+  Args:
+    git_dir: bare git repository directory to examine (.../.git)
+    info: dictionary containing:
+      'rev': commit that we build
+      'upstream-name': basename of the upstream baseline release
+        (i.e. what the release tarball would be called before ".tar")
+      'upstream-base': commit corresponding to upstream-name
+      'upstream-branch': tracking branch used for upstream merges
+
+  This will produce between zero and two patch files (in %(output)s/):
+    <upstream-name>-g<commit-abbrev>.patch: From 'upstream-base' to the common
+      ancestor (merge base) of 'rev' and 'upstream-branch'.  Omitted if none.
+    <upstream-name>[-g<commit-abbrev>]-nacl.patch: From the result of that
+      (or from 'upstream-base' if none above) to 'rev'.
+  """
+  def generatePatches(subst, git_dir, info):
+    git_dir_flag = '--git-dir=' + subst.SubstituteAbsPaths(git_dir)
+    basename = info['upstream-name']
+
+    def generatePatch(src_rev, dst_rev, suffix):
+      src_prefix = '--src-prefix=' + basename + '/'
+      dst_prefix = '--dst-prefix=' + basename + suffix + '/'
+      patch_file = subst.SubstituteAbsPaths(
+          path.join('%(output)s', basename + suffix + '.patch'))
+      git_args = [git_dir_flag, 'diff',
+                  '--patch-with-stat', '--ignore-space-at-eol', '--full-index',
+                  '--no-ext-diff', '--no-color', '--no-renames',
+                  '--no-textconv', '--text', src_prefix, dst_prefix,
+                  src_rev, dst_rev]
+      log_tools.CheckCall(repo_tools.GitCmd() + git_args, stdout=patch_file)
+
+    def revParse(args):
+      output = repo_tools.CheckGitOutput([git_dir_flag] + args)
+      lines = output.splitlines()
+      if len(lines) != 1:
+        raise Exception('"git %s" did not yield a single commit' %
+                        ' '.join(args))
+      return lines[0]
+
+    rev = revParse(['rev-parse', info['rev']])
+    upstream_base = revParse(['rev-parse', info['upstream-base']])
+    upstream_branch = revParse(['rev-parse',
+                                'refs/remotes/origin/' +
+                                info['upstream-branch']])
+    upstream_snapshot = revParse(['merge-base', rev, upstream_branch])
+
+    if rev == upstream_base:
+      # We're building a stock upstream release.  Nothing to do!
+      return
+
+    if upstream_snapshot == upstream_base:
+      # We've forked directly from the upstream baseline release.
+      suffix = ''
+    else:
+      # We're using an upstream baseline snapshot past the baseline
+      # release, so generate a snapshot patch.  The leading seven
+      # hex digits of the commit ID is what Git usually produces
+      # for --abbrev-commit behavior, 'git describe', etc.
+      suffix = '-g' + upstream_snapshot[:7]
+      generatePatch(upstream_base, upstream_snapshot, suffix)
+
+    if rev != upstream_snapshot:
+      # We're using local changes, so generate a patch of those.
+      generatePatch(upstream_snapshot, rev, suffix + '-nacl')
+  return Runnable(generatePatches, git_dir, info)

@@ -47,7 +47,15 @@ def SetupLogging(verbose, file_handle=None):
     logging.getLogger().addHandler(file_handler)
     LOG_FH = file_handle
 
-def CheckCall(command, **kwargs):
+
+def WriteToLog(text):
+  if VERBOSE:
+    sys.stdout.write(text)
+  if LOG_FH:
+    LOG_FH.write(text)
+
+
+def CheckCall(command, stdout=None, **kwargs):
   """Modulate command output level based on logging level.
 
   If a logging file handle is set, always emit all output to it.
@@ -55,24 +63,71 @@ def CheckCall(command, **kwargs):
   Otherwise, only emit output on error.
   Args:
     command: Command to run.
+    stdout (optional): File name to redirect stdout to.
     **kwargs: Keyword args.
   """
   cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
   logging.info('Running: subprocess.check_call(%r, cwd=%r)' % (command, cwd))
-  p = subprocess.Popen(
-      command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
+
+  if stdout is None:
+    # Interleave stdout and stderr together and log that.
+    p = subprocess.Popen(command,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         **kwargs)
+    output = p.stdout
+  else:
+    p = subprocess.Popen(command,
+                         stdout=open(stdout, 'w'),
+                         stderr=subprocess.PIPE,
+                         **kwargs)
+    output = p.stderr
 
   # Capture the output as it comes and emit it immediately.
-  line = p.stdout.readline()
+  line = output.readline()
   while line:
-    if VERBOSE:
-      sys.stdout.write(line)
-    if LOG_FH:
-      LOG_FH.write(line)
-    line = p.stdout.readline()
+    WriteToLog(line)
+    line = output.readline()
+
   if p.wait() != 0:
     raise subprocess.CalledProcessError(cmd=command, returncode=p.returncode)
 
   # Flush stdout so it does not get interleaved with future log or buildbot
   # output which goes to stderr.
   sys.stdout.flush()
+
+
+def CheckOutput(command, **kwargs):
+  """Capture stdout from a command, while logging its stderr.
+
+  This is essentially subprocess.check_output, but stderr is
+  handled the same way as in log_tools.CheckCall.
+  Args:
+    command: Command to run.
+    **kwargs: Keyword args.
+  """
+  cwd = os.path.abspath(kwargs.get('cwd', os.getcwd()))
+  logging.info('Running: subprocess.check_output(%r, cwd=%r)' % (command, cwd))
+
+  p = subprocess.Popen(command,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE,
+                       **kwargs)
+
+  # Assume the output will not be huge or take a long time to come, so it
+  # is viable to just consume it all synchronously before logging anything.
+  # TODO(mcgrathr): Shovel stderr bits asynchronously if that ever seems
+  # worth the hair.
+  stdout_text, stderr_text = p.communicate()
+
+  WriteToLog(stderr_text)
+
+  if p.wait() != 0:
+    raise subprocess.CalledProcessError(cmd=command, returncode=p.returncode)
+
+  # Flush stdout so it does not get interleaved with future log or buildbot
+  # output which goes to stderr.
+  sys.stdout.flush()
+
+  logging.info('Result: %r' % stdout_text)
+  return stdout_text

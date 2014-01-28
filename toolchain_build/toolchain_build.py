@@ -17,14 +17,35 @@ import sys
 import command
 import gsd_storage
 import toolchain_main
+import repo_tools
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
+# See command.GenerateGitPatches for the schema of entries in this dict.
 GIT_REVISIONS = {
-    'binutils': '38dbda270a4248ab5b7facc012b9c8d8527f6fb2',
-    'gcc': '145a627d95b98f54915d037dddbcbb0f7b283494',
-    'newlib': 'cc9ce45891a45ecfbc671f4a6f1b06ba60a55ad9',
+    'binutils': {
+        'rev': '38dbda270a4248ab5b7facc012b9c8d8527f6fb2',
+        'upstream-branch': 'upstream/binutils-2_24-branch',
+        'upstream-name': 'binutils-2.24',
+        # This is tag binutils-2_24, but Gerrit won't let us push
+        # non-annotated tags, and the upstream tag is not annotated.
+        'upstream-base': '237df3fa4a1d939e6fd1af0c3e5029a25a137310',
+        },
+    'gcc': {
+        'rev': '145a627d95b98f54915d037dddbcbb0f7b283494',
+        'upstream-branch': 'upstream/gcc-4_8-branch',
+        'upstream-name': 'gcc-4.8.2',
+         # Upstream tag gcc-4_8_2-release:
+        'upstream-base': '9bcca88e24e64d4e23636aafa3404088b13bcb0e',
+        },
+    'newlib': {
+        'rev': 'cc9ce45891a45ecfbc671f4a6f1b06ba60a55ad9',
+        'upstream-branch': 'upstream/master',
+        'upstream-name': 'newlib-2.0.0',
+        # Upstream tag newlib_2_0_0:
+        'upstream-base': 'c3fc84e062cacc2b3e13c1f6b9151d0cc85392ba',
+        },
     }
 
 TAR_FILES = {
@@ -36,6 +57,10 @@ TAR_FILES = {
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
+
+
+def GitUrl(package):
+  return '%s/nacl-%s.git' % (GIT_BASE_URL, package)
 
 
 def CollectSources():
@@ -59,14 +84,23 @@ def CollectSources():
             ],
         }
 
-  for package in GIT_REVISIONS:
+  patch_packages = []
+  patch_commands = []
+  for package, info in GIT_REVISIONS.iteritems():
     sources[package] = {
         'type': 'source',
-        'commands': [
-            command.SyncGitRepo('%s/nacl-%s.git' % (GIT_BASE_URL, package),
-                                '%(output)s', GIT_REVISIONS[package])
-            ]
+        'commands': [command.SyncGitRepo(GitUrl(package), '%(output)s',
+                                         info['rev'])],
         }
+    patch_packages.append(package)
+    patch_commands.append(
+        command.GenerateGitPatches('%(' + package + ')s/.git', info))
+
+  sources['patches'] = {
+      'type': 'build',
+      'dependencies': patch_packages,
+      'commands': patch_commands,
+      }
 
   # The gcc_libs component gets the whole GCC source tree.
   sources['gcc_libs'] = sources['gcc']
