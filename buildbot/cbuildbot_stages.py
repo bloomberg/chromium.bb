@@ -3755,8 +3755,10 @@ class ReportStage(bs.BuilderStage):
         for board_config in self._archive_stages:
           if board_config.board == board and board_config.name == config.name:
             archive_stage = self._archive_stages[board_config]
-        assert archive_stage, \
-            'No archive stage for board/config: %s/%s' % (board, config.name)
+
+        # Without an Archive stage there is no archive information to prepare.
+        if not archive_stage:
+          continue
 
         # TODO(mtennant): Move this block to new self.UploadMetadata, and
         # move the logic from ArchiveStage.UploadMetadata there.
