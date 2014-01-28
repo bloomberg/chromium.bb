@@ -74,7 +74,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(Document* document, Resource
         if (outgoingReferrer.isEmpty())
             request.clearHTTPReferrer();
         else if (!request.httpReferrer())
-            request.setHTTPReferrer(AtomicString(outgoingReferrer));
+            request.setHTTPReferrer(Referrer(outgoingReferrer, document->referrerPolicy()));
 
         FrameLoader::addHTTPOriginIfNeeded(request, AtomicString(outgoingOrigin));
     }

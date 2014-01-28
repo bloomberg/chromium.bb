@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebHTTPBody.h"
+#include "WebReferrerPolicy.h"
 
 #if INSIDE_BLINK
 namespace WebCore { class ResourceRequest; }
@@ -136,6 +137,7 @@ public:
 
     BLINK_PLATFORM_EXPORT WebString httpHeaderField(const WebString& name) const;
     BLINK_PLATFORM_EXPORT void setHTTPHeaderField(const WebString& name, const WebString& value);
+    BLINK_PLATFORM_EXPORT void setHTTPReferrer(const WebString& referrer, WebReferrerPolicy);
     BLINK_PLATFORM_EXPORT void addHTTPHeaderField(const WebString& name, const WebString& value);
     BLINK_PLATFORM_EXPORT void clearHTTPHeaderField(const WebString& name);
     BLINK_PLATFORM_EXPORT void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
@@ -159,6 +161,8 @@ public:
 
     BLINK_PLATFORM_EXPORT TargetType targetType() const;
     BLINK_PLATFORM_EXPORT void setTargetType(TargetType);
+
+    BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
 
     // True if the request was user initiated.
     BLINK_PLATFORM_EXPORT bool hasUserGesture() const;

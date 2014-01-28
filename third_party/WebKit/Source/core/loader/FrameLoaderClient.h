@@ -34,6 +34,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/network/ResourceLoadPriority.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
@@ -161,7 +162,7 @@ class FetchRequest;
 
         virtual void transitionToCommittedForNewPage() = 0;
 
-        virtual PassRefPtr<Frame> createFrame(const KURL&, const AtomicString& name, const String& referrer, HTMLFrameOwnerElement*) = 0;
+        virtual PassRefPtr<Frame> createFrame(const KURL&, const AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) = 0;
         virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually) = 0;
 
         virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;

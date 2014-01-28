@@ -1661,7 +1661,7 @@ void DOMWindow::setLocation(const String& urlString, DOMWindow* activeWindow, DO
     // We want a new history item if we are processing a user gesture.
     m_frame->navigationScheduler().scheduleLocationChange(activeDocument,
         // FIXME: What if activeDocument()->frame() is 0?
-        completedURL, activeDocument->outgoingReferrer(),
+        completedURL, Referrer(activeDocument->outgoingReferrer(), activeDocument->referrerPolicy()),
         locking != LockHistoryBasedOnGestureState);
 }
 
@@ -1812,7 +1812,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
         targetFrame->navigationScheduler().scheduleLocationChange(
             activeDocument,
             completedURL,
-            firstFrame->document()->outgoingReferrer(),
+            Referrer(firstFrame->document()->outgoingReferrer(), firstFrame->document()->referrerPolicy()),
             false);
         return targetFrame->domWindow();
     }

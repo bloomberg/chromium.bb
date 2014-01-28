@@ -29,6 +29,7 @@
 
 #include "bindings/v8/SerializedScriptValue.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -60,7 +61,7 @@ public:
     KURL url() const;
     KURL originalURL() const;
 
-    const AtomicString& referrer() const;
+    const Referrer& referrer() const;
     const String& target() const;
 
     FormData* formData();
@@ -80,7 +81,7 @@ public:
     void setURL(const KURL&);
     void setURLString(const String&);
     void setOriginalURLString(const String&);
-    void setReferrer(const AtomicString&);
+    void setReferrer(const Referrer&);
     void setTarget(const String&);
 
     void setStateObject(PassRefPtr<SerializedScriptValue>);
@@ -111,7 +112,7 @@ private:
 
     String m_urlString;
     String m_originalURLString;
-    AtomicString m_referrer;
+    Referrer m_referrer;
     String m_target;
 
     IntPoint m_scrollPoint;

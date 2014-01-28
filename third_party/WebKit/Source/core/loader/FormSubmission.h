@@ -33,6 +33,7 @@
 
 #include "core/loader/FormState.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/Referrer.h"
 
 namespace WTF{
 class TextEncoding;
@@ -107,8 +108,8 @@ public:
     const String boundary() const { return m_boundary; }
     Event* event() const { return m_event.get(); }
 
-    const String& referrer() const { return m_referrer; }
-    void setReferrer(const String& referrer) { m_referrer = referrer; }
+    const Referrer& referrer() const { return m_referrer; }
+    void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
     const String& origin() const { return m_origin; }
     void setOrigin(const String& origin) { m_origin = origin; }
 
@@ -128,7 +129,7 @@ private:
     RefPtr<FormData> m_formData;
     String m_boundary;
     RefPtr<Event> m_event;
-    String m_referrer;
+    Referrer m_referrer;
     String m_origin;
     String m_result;
 };

@@ -52,6 +52,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setRequestorProcessID(data->m_requestorProcessID);
     request->setAppCacheHostID(data->m_appCacheHostID);
     request->setTargetType(data->m_targetType);
+    request->m_referrerPolicy = data->m_referrerPolicy;
     return request.release();
 }
 
@@ -76,6 +77,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_requestorProcessID = m_requestorProcessID;
     data->m_appCacheHostID = m_appCacheHostID;
     data->m_targetType = m_targetType;
+    data->m_referrerPolicy = m_referrerPolicy;
     return data.release();
 }
 
@@ -275,6 +277,9 @@ bool equalIgnoringHeaderFields(const ResourceRequest& a, const ResourceRequest& 
     if (a.priority() != b.priority())
         return false;
 
+    if (a.referrerPolicy() != b.referrerPolicy())
+        return false;
+
     FormData* formDataA = a.httpBody();
     FormData* formDataB = b.httpBody();
 
@@ -337,6 +342,7 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_requestorProcessID = 0;
     m_appCacheHostID = 0;
     m_targetType = TargetIsUnspecified;
+    m_referrerPolicy = ReferrerPolicyDefault;
 }
 
 // This is used by the loader to control the number of issued parallel load requests.

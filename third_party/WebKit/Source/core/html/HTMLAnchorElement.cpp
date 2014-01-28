@@ -424,7 +424,7 @@ void HTMLAnchorElement::handleClick(Event* event)
         if (!hasRel(RelationNoReferrer)) {
             String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, document().outgoingReferrer());
             if (!referrer.isEmpty())
-                request.setHTTPReferrer(AtomicString(referrer));
+                request.setHTTPReferrer(Referrer(referrer, document().referrerPolicy()));
         }
 
         frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));

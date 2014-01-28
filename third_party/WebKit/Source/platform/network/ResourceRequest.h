@@ -32,6 +32,7 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -90,7 +91,7 @@ public:
         initialize(url, UseProtocolCachePolicy);
     }
 
-    ResourceRequest(const KURL& url, const AtomicString& referrer, ResourceRequestCachePolicy cachePolicy = UseProtocolCachePolicy)
+    ResourceRequest(const KURL& url, const Referrer& referrer, ResourceRequestCachePolicy cachePolicy = UseProtocolCachePolicy)
     {
         initialize(url, cachePolicy);
         setHTTPReferrer(referrer);
@@ -137,7 +138,8 @@ public:
     void clearHTTPContentType();
 
     const AtomicString& httpReferrer() const { return httpHeaderField("Referer"); }
-    void setHTTPReferrer(const AtomicString& httpReferrer) { setHTTPHeaderField("Referer", httpReferrer); }
+    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
+    void setHTTPReferrer(const Referrer& httpReferrer) { setHTTPHeaderField("Referer", httpReferrer.referrer); m_referrerPolicy = httpReferrer.referrerPolicy; }
     void clearHTTPReferrer();
 
     const AtomicString& httpOrigin() const { return httpHeaderField("Origin"); }
@@ -234,6 +236,7 @@ private:
     int m_appCacheHostID;
     RefPtr<ExtraData> m_extraData;
     TargetType m_targetType;
+    ReferrerPolicy m_referrerPolicy;
 
     static double s_defaultTimeoutInterval;
 };
@@ -265,6 +268,7 @@ public:
     int m_requestorProcessID;
     int m_appCacheHostID;
     ResourceRequest::TargetType m_targetType;
+    ReferrerPolicy m_referrerPolicy;
 };
 
 unsigned initializeMaximumHTTPConnectionCountPerHost();

@@ -42,6 +42,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/weborigin/Referrer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/MainThread.h"
@@ -123,7 +124,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionC
     Document* document = toDocument(context);
 
     OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
-    request->setHTTPReferrer(AtomicString(outgoingReferrer));
+    request->setHTTPReferrer(Referrer(outgoingReferrer, ReferrerPolicyDefault));
     options.requestInitiatorContext = WorkerContext;
     thisPtr->m_mainThreadLoader = DocumentThreadableLoader::create(document, thisPtr, *request, options);
     if (!thisPtr->m_mainThreadLoader) {

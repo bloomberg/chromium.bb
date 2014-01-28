@@ -309,7 +309,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPoli
     m_currentItem->setTargetFrameID(m_frame->frameID());
     m_currentItem->setOriginalURLString(originalURL.string());
     m_currentItem->setStateObject(stateObject);
-    m_currentItem->setReferrer(m_documentLoader->request().httpReferrer());
+    m_currentItem->setReferrer(Referrer(m_documentLoader->request().httpReferrer(), m_frame->document()->referrerPolicy()));
     m_currentItem->setFormInfoFromRequest(isPushOrReplaceState ? ResourceRequest() : m_documentLoader->request());
 }
 
@@ -653,7 +653,7 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
         argsReferrer = originDocument->outgoingReferrer();
     String referrer = SecurityPolicy::generateReferrerHeader(originDocument->referrerPolicy(), request.url(), argsReferrer);
 
-    request.setHTTPReferrer(AtomicString(referrer));
+    request.setHTTPReferrer(Referrer(referrer, originDocument->referrerPolicy()));
     RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
     addHTTPOriginIfNeeded(request, referrerOrigin->toAtomicString());
 }
@@ -1421,7 +1421,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
         request.setHTTPMethod("POST");
         request.setHTTPBody(formData);
         request.setHTTPContentType(item->formContentType());
-        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer());
+        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer().referrer);
         addHTTPOriginIfNeeded(request, securityOrigin->toAtomicString());
     }
 

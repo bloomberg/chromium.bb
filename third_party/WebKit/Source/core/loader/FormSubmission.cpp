@@ -260,8 +260,8 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
     if (!m_target.isEmpty())
         frameRequest.setFrameName(m_target);
 
-    if (!m_referrer.isEmpty())
-        frameRequest.resourceRequest().setHTTPReferrer(AtomicString(m_referrer));
+    if (!m_referrer.referrer.isEmpty())
+        frameRequest.resourceRequest().setHTTPReferrer(m_referrer);
 
     if (m_method == FormSubmission::PostMethod) {
         frameRequest.resourceRequest().setHTTPMethod("POST");

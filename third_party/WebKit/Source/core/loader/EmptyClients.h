@@ -233,7 +233,7 @@ public:
     virtual void didDetectXSS(const KURL&, bool) OVERRIDE { }
     virtual void didDispatchPingLoader(const KURL&) OVERRIDE { }
     virtual void selectorMatchChanged(const Vector<String>&, const Vector<String>&) OVERRIDE { }
-    virtual PassRefPtr<Frame> createFrame(const KURL&, const AtomicString&, const String&, HTMLFrameOwnerElement*) OVERRIDE;
+    virtual PassRefPtr<Frame> createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*) OVERRIDE;
     virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool) OVERRIDE;
     virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) OVERRIDE;
 

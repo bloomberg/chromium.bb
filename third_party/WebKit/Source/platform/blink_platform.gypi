@@ -849,6 +849,7 @@
       'weborigin/KnownPorts.h',
       'weborigin/OriginAccessEntry.cpp',
       'weborigin/OriginAccessEntry.h',
+      'weborigin/Referrer.h',
       'weborigin/ReferrerPolicy.h',
       'weborigin/SchemeRegistry.cpp',
       'weborigin/SchemeRegistry.h',

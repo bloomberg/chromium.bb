@@ -33,6 +33,7 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
+#include "../platform/WebReferrerPolicy.h"
 
 namespace WebCore { class HistoryItem; }
 
@@ -73,7 +74,10 @@ public:
     BLINK_EXPORT void setOriginalURLString(const WebString&);
 
     BLINK_EXPORT WebString referrer() const;
-    BLINK_EXPORT void setReferrer(const WebString&);
+    BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
+    // FIXME: Remove.
+    BLINK_EXPORT void setReferrer(const WebString& referrer) { setReferrer(referrer, WebReferrerPolicyDefault); }
+    BLINK_EXPORT void setReferrer(const WebString&, WebReferrerPolicy);
 
     BLINK_EXPORT WebString target() const;
     BLINK_EXPORT void setTarget(const WebString&);

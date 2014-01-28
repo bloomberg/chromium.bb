@@ -32,6 +32,7 @@
 #define NavigationScheduler_h
 
 #include "platform/Timer.h"
+#include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -76,7 +77,7 @@ public:
     bool locationChangePending();
 
     void scheduleRedirect(double delay, const String& url);
-    void scheduleLocationChange(Document*, const String& url, const String& referrer, bool lockBackForwardList = true);
+    void scheduleLocationChange(Document*, const String& url, const Referrer& referrer, bool lockBackForwardList = true);
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
     void scheduleRefresh();
     void scheduleHistoryNavigation(int steps);

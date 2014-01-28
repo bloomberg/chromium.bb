@@ -125,7 +125,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 {
     RefPtr<Frame> parentFrame = document().frame();
     if (contentFrame()) {
-        contentFrame()->navigationScheduler().scheduleLocationChange(&document(), url.string(), document().outgoingReferrer(), lockBackForwardList);
+        contentFrame()->navigationScheduler().scheduleLocationChange(&document(), url.string(), Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
         return true;
     }
 
@@ -138,7 +138,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
         return false;
 
     String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, document().outgoingReferrer());
-    RefPtr<Frame> childFrame = parentFrame->loader().client()->createFrame(url, frameName, referrer, this);
+    RefPtr<Frame> childFrame = parentFrame->loader().client()->createFrame(url, frameName, Referrer(referrer, document().referrerPolicy()), this);
 
     if (!childFrame)  {
         parentFrame->loader().checkCompleted();

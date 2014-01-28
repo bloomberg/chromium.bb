@@ -110,7 +110,7 @@ KURL HistoryItem::originalURL() const
     return KURL(ParsedURLString, m_originalURLString);
 }
 
-const AtomicString& HistoryItem::referrer() const
+const Referrer& HistoryItem::referrer() const
 {
     return m_referrer;
 }
@@ -137,7 +137,7 @@ void HistoryItem::setOriginalURLString(const String& urlString)
     m_originalURLString = urlString;
 }
 
-void HistoryItem::setReferrer(const AtomicString& referrer)
+void HistoryItem::setReferrer(const Referrer& referrer)
 {
     m_referrer = referrer;
 }
