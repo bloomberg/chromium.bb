@@ -143,7 +143,7 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());

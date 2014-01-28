@@ -4119,7 +4119,7 @@ sub GenerateImplementationIndexedPropertyDeleter
 
     my $raisesExceptions = $indexedDeleterFunction->extendedAttributes->{"RaisesException"};
 
-    my $code = "static void indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
+    my $code = "static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     my $extraArguments = "";
