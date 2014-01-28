@@ -132,6 +132,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   ImageView* image_;
   Label* label_;
 
+  // The cached font lists in the normal and bold style.
+  gfx::FontList cached_normal_font_list_;
+  gfx::FontList cached_bold_font_list_;
+
   // The images and colors for each button state.
   gfx::ImageSkia button_state_images_[STATE_COUNT];
   SkColor button_state_colors_[STATE_COUNT];

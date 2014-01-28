@@ -51,6 +51,7 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
       style_(STYLE_TEXTBUTTON) {
   SetAnimationDuration(kHoverAnimationDurationMs);
   SetText(text);
+  SetFontList(gfx::FontList());
 
   AddChildView(image_);
   image_->set_interactive(false);
@@ -109,7 +110,14 @@ const gfx::FontList& LabelButton::GetFontList() const {
 }
 
 void LabelButton::SetFontList(const gfx::FontList& font_list) {
-  label_->SetFontList(font_list);
+  cached_normal_font_list_ = font_list;
+  cached_bold_font_list_ = font_list.DeriveFontListWithSizeDeltaAndStyle(
+      0, font_list.GetFontStyle() | gfx::Font::BOLD);
+
+  // STYLE_BUTTON uses bold text to indicate default buttons.
+  label_->SetFontList(
+      style_ == STYLE_BUTTON && is_default_ ?
+      cached_bold_font_list_ : cached_normal_font_list_);
 }
 
 void LabelButton::SetElideBehavior(Label::ElideBehavior elide_behavior) {
@@ -134,10 +142,8 @@ void LabelButton::SetIsDefault(bool is_default) {
 
   // STYLE_BUTTON uses bold text to indicate default buttons.
   if (style_ == STYLE_BUTTON) {
-    int style = label_->font_list().GetFontStyle();
-    style = is_default ? style | gfx::Font::BOLD : style & ~gfx::Font::BOLD;
     label_->SetFontList(
-        label_->font_list().DeriveFontListWithSizeDeltaAndStyle(0, style));
+        is_default ? cached_bold_font_list_ : cached_normal_font_list_);
   }
 }
 
@@ -171,18 +177,16 @@ void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
 
 gfx::Size LabelButton::GetPreferredSize() {
   // Use a temporary label copy for sizing to avoid calculation side-effects.
-  const gfx::FontList& font_list = GetFontList();
-  Label label(GetText(), font_list);
+  Label label(GetText(), cached_normal_font_list_);
   label.SetMultiLine(GetTextMultiLine());
 
   if (style() == STYLE_BUTTON) {
     // Some text appears wider when rendered normally than when rendered bold.
     // Accommodate the widest, as buttons may show bold and shouldn't resize.
     const int current_width = label.GetPreferredSize().width();
-    label.SetFontList(font_list.DeriveFontListWithSizeDeltaAndStyle(
-        0, font_list.GetFontStyle() ^ gfx::Font::BOLD));
+    label.SetFontList(cached_bold_font_list_);
     if (label.GetPreferredSize().width() < current_width)
-      label.SetFontList(font_list);
+      label.SetFontList(cached_normal_font_list_);
   }
 
   // Resize multi-line labels given the current limited available width.
