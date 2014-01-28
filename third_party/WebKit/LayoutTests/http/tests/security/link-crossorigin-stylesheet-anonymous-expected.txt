@@ -1,0 +1,7 @@
+Test that a linked stylesheet with a crossorigin=anonymous attribute loads a CORS enabled resource.
+
+PASS
+PASS
+PASS
+PASS
+

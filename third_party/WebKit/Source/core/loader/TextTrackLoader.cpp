@@ -104,15 +104,14 @@ void TextTrackLoader::notifyFinished(Resource* resource)
     cancelLoad();
 }
 
-bool TextTrackLoader::load(const KURL& url, const String& crossOriginMode)
+bool TextTrackLoader::load(const KURL& url, const AtomicString& crossOriginMode)
 {
     cancelLoad();
 
     FetchRequest cueRequest(ResourceRequest(m_document.completeURL(url)), FetchInitiatorTypeNames::texttrack);
 
     if (!crossOriginMode.isNull()) {
-        StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-        cueRequest.setCrossOriginAccessControl(m_document.securityOrigin(), allowCredentials);
+        cueRequest.setCrossOriginAccessControl(m_document.securityOrigin(), crossOriginMode);
     } else if (!m_document.securityOrigin()->canRequest(url)) {
         // Text track elements without 'crossorigin' set on the parent are "No CORS"; report error if not same-origin.
         corsPolicyPreventedLoad(m_document.securityOrigin(), url);

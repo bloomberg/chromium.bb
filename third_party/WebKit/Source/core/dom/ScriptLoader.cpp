@@ -260,11 +260,9 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
     if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
         FetchRequest request(ResourceRequest(elementDocument->completeURL(sourceUrl)), m_element->localName());
 
-        String crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
-        if (!crossOriginMode.isNull()) {
-            StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-            request.setCrossOriginAccessControl(elementDocument->securityOrigin(), allowCredentials);
-        }
+        AtomicString crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
+        if (!crossOriginMode.isNull())
+            request.setCrossOriginAccessControl(elementDocument->securityOrigin(), crossOriginMode);
         request.setCharset(scriptCharset());
 
         bool isValidScriptNonce = elementDocument->contentSecurityPolicy()->allowScriptNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));

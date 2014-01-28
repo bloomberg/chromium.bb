@@ -56,7 +56,7 @@ public:
     }
     virtual ~TextTrackLoader();
 
-    bool load(const KURL&, const String& crossOriginMode);
+    bool load(const KURL&, const AtomicString& crossOriginMode);
     void cancelLoad();
 
     enum State { Idle, Loading, Finished, Failed };

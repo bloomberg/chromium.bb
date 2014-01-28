@@ -178,6 +178,8 @@ private:
                 m_linkIsStyleSheet = relAttributeIsStyleSheet(attributeValue);
             else if (match(attributeName, mediaAttr))
                 m_mediaAttribute = attributeValue;
+            else if (match(attributeName, crossoriginAttr))
+                setCrossOriginAllowed(attributeValue);
         } else if (match(m_tagImpl, inputTag)) {
             if (match(attributeName, srcAttr))
                 setUrlToLoad(attributeValue, DisallowURLReplacement);

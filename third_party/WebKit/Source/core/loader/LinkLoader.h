@@ -62,7 +62,7 @@ public:
     virtual void didSendDOMContentLoadedForPrerender() OVERRIDE;
 
     void released();
-    bool loadLink(const LinkRelAttribute&, const String& type, const KURL&, Document&);
+    bool loadLink(const LinkRelAttribute&, const AtomicString& crossOriginMode, const String& type, const KURL&, Document&);
 
 private:
     void linkLoadTimerFired(Timer<LinkLoader>*);

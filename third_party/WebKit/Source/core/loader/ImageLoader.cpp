@@ -158,10 +158,8 @@ void ImageLoader::updateFromElement()
         FetchRequest request(ResourceRequest(document.completeURL(sourceURI(attr))), element()->localName());
 
         AtomicString crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
-        if (!crossOriginMode.isNull()) {
-            StoredCredentials allowCredentials = equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-            request.setCrossOriginAccessControl(document.securityOrigin(), allowCredentials);
-        }
+        if (!crossOriginMode.isNull())
+            request.setCrossOriginAccessControl(document.securityOrigin(), crossOriginMode);
 
         if (m_loadManually) {
             bool autoLoadOtherImages = document.fetcher()->autoLoadImages();

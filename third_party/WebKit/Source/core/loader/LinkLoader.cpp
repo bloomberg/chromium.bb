@@ -98,7 +98,7 @@ void LinkLoader::didSendDOMContentLoadedForPrerender()
     m_client->didSendDOMContentLoadedForLinkPrerender();
 }
 
-bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& type, const KURL& href, Document& document)
+bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicString& crossOriginMode, const String& type, const KURL& href, Document& document)
 {
     if (relAttribute.isDNSPrefetch()) {
         Settings* settings = document.settings();
@@ -114,6 +114,8 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
             return false;
         Resource::Type type = relAttribute.isLinkSubresource() ?  Resource::LinkSubresource : Resource::LinkPrefetch;
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
+        if (!crossOriginMode.isNull())
+            linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOriginMode);
         setResource(document.fetcher()->fetchLinkResource(type, linkRequest));
     }
 

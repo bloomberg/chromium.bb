@@ -84,7 +84,7 @@ public:
     CSSStyleSheet* sheet() const { return m_sheet.get(); }
 
 private:
-    // From ResourceClient
+    // From StyleSheetResourceClient
     virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) OVERRIDE;
 
     enum DisabledState {
@@ -156,7 +156,7 @@ public:
     virtual bool shouldLoadLink() OVERRIDE;
 
     // For LinkStyle
-    bool loadLink(const String& type, const KURL& url) { return m_linkLoader.loadLink(m_relAttribute, type, url, document()); }
+    bool loadLink(const String& type, const KURL&);
     bool isAlternate() const { return linkStyle()->isUnset() && m_relAttribute.isAlternate(); }
     bool shouldProcessStyle() { return linkResourceToProcess() && linkStyle(); }
     bool isCreatedByParser() const { return m_createdByParser; }
