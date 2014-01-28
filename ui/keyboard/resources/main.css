@@ -6,7 +6,7 @@
 
 body {
   -webkit-user-select: none;
-  background-color: #0b0b0b;
+  background-color: #151515;
   margin: 0;
   overflow: hidden;
   padding: 0;
@@ -14,7 +14,7 @@ body {
 
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
 kb-keyboard.alt-active kb-modifier-key[char=Alt] {
-  color: lightblue;
+  color: #d5d5d5;
 }
 
 /**
@@ -22,24 +22,28 @@ kb-keyboard.alt-active kb-modifier-key[char=Alt] {
 * Only highlights if we are in the upper keyset, but not capslocked.
 */
 kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
-  color: lightblue;
+  color: #d5d5d5;
 }
 
 *.dark {
-  background-color: #2a2a2c;
-  border-top: 2px solid #3a3a3c;
+  -webkit-box-shadow: inset 0px 1px #313131, inset 0px -1px #202020;
+  background-color: #222222;
+  border-bottom-color: #1c1c1c;
+  border-top-color: #4f4f4f;
   font-size: 70%;
 }
 
 
 .caps-locked kb-shift-key,
 .active {
-  background-color: #848490 !important;
-  border-top: 2px solid #A9A9AF !important;
-  /* Do not use box shadow until performance improves
-   * http://code.google.com/p/chromium/issues/detail?id=99045
-  box-shadow: 0px 0px 15px #fff;
-  */
+  -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f !important;
+  /**
+   * TODO(rsadam): Make active keys have a linear gradient once we figure out
+   * how to handle keys that already have background images.
+   */
+  background-color: #8b8b8b;
+  border-bottom-color: #5b5b5b !important;
+  border-top-color: #a4a4a4 !important;
 }
 
 /**
@@ -49,7 +53,7 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
 .microphone {
   background-image: url('images/microphone.svg');
   background-position: 4%;
-  background-size: 25% !important;
+  background-size: 25%;
 }
 
 .audio .microphone {

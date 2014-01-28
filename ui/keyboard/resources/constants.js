@@ -60,4 +60,5 @@ var DEFAULT_KEY_WEIGHT_Y = 60;
  */
 // TODO(rsadam): Remove this variable once figure out how to calculate this
 // number before the key is rendered.
-var KEY_PADDING_TOP = 2;
+var KEY_PADDING_TOP = 1;
+var KEY_PADDING_BOTTOM = 1;

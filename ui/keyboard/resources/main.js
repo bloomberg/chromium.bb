@@ -238,7 +238,7 @@
   function updateKey(key, width, height, left, top) {
     key.style.position = 'absolute';
     key.style.width = width + 'px';
-    key.style.height = (height - KEY_PADDING_TOP) + 'px';
+    key.style.height = (height - KEY_PADDING_TOP - KEY_PADDING_BOTTOM) + 'px';
     key.style.left = left + 'px';
     key.style.top = (top + KEY_PADDING_TOP) + 'px';
   }
