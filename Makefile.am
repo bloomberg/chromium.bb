@@ -12,7 +12,6 @@ SUBDIRS =					\
 	$(xwayland_subdir)			\
 	desktop-shell				\
 	clients					\
-	data					\
 	protocol				\
 	tests					\
 	$(wcap_subdir)				\
@@ -32,3 +31,16 @@ weston.ini : $(srcdir)/weston.ini.in
 all-local : weston.ini
 
 CLEANFILES = weston.ini
+
+
+westondatadir = $(datadir)/weston
+dist_westondata_DATA =				\
+	data/wayland.svg			\
+	data/wayland.png			\
+	data/pattern.png			\
+	data/terminal.png			\
+	data/border.png				\
+	data/icon_window.png			\
+	data/sign_close.png			\
+	data/sign_maximize.png			\
+	data/sign_minimize.png
