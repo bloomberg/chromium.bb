@@ -85,9 +85,17 @@ UserPolicySigninServiceFactory::BuildServiceInstanceFor(
 
 bool
 UserPolicySigninServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+#if defined(OS_IOS)
+  // This service isn't required at Profile creation time on iOS.
+  // Creating it at that time also leads to a crash, because the SigninManager
+  // trigger a token fetch too early (this isn't a problem on other platforms,
+  // because the refresh token isn't available that early).
+  return false;
+#else
   // Create this object when the profile is created so it can track any
   // user signin activity.
   return true;
+#endif
 }
 
 void UserPolicySigninServiceFactory::RegisterProfilePrefs(
