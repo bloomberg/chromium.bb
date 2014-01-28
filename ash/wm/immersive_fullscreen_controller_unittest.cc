@@ -15,9 +15,13 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_event_handler.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -75,6 +79,21 @@ class MockImmersiveFullscreenControllerDelegate
   DISALLOW_COPY_AND_ASSIGN(MockImmersiveFullscreenControllerDelegate);
 };
 
+class ConsumeEventHandler : public aura::test::TestEventHandler {
+ public:
+  ConsumeEventHandler() {}
+  virtual ~ConsumeEventHandler() {}
+
+ private:
+  virtual void OnEvent(ui::Event* event) OVERRIDE {
+    aura::test::TestEventHandler::OnEvent(event);
+    if (event->cancelable())
+      event->SetHandled();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ConsumeEventHandler);
+};
+
 }  // namespace
 
 /////////////////////////////////////////////////////////////////////////////
@@ -83,20 +102,29 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
  public:
   enum Modality {
     MODALITY_MOUSE,
-    MODALITY_TOUCH,
-    MODALITY_GESTURE
+    MODALITY_GESTURE_TAP,
+    MODALITY_GESTURE_SCROLL
   };
 
-  ImmersiveFullscreenControllerTest() : widget_(NULL), top_container_(NULL) {}
+  ImmersiveFullscreenControllerTest()
+      : widget_(NULL),
+        top_container_(NULL),
+        content_view_(NULL) {}
   virtual ~ImmersiveFullscreenControllerTest() {}
 
   ImmersiveFullscreenController* controller() {
     return controller_.get();
   }
 
+  views::NativeViewHost* content_view() {
+    return content_view_;
+  }
+
   views::View* top_container() {
     return top_container_;
   }
+
+  views::Widget* widget() { return widget_; }
 
   aura::Window* window() {
     return widget_->GetNativeWindow();
@@ -127,9 +155,14 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
     window()->SetProperty(aura::client::kShowStateKey,
                           ui::SHOW_STATE_FULLSCREEN);
 
+    gfx::Size window_size = widget_->GetWindowBoundsInScreen().size();
+    content_view_ = new views::NativeViewHost();
+    content_view_->SetBounds(0, 0, window_size.width(), window_size.height());
+    widget_->GetContentsView()->AddChildView(content_view_);
+
     top_container_ = new views::View();
     top_container_->SetBounds(
-        0, 0, widget_->GetWindowBoundsInScreen().width(), 100);
+        0, 0, window_size.width(), 100);
     top_container_->SetFocusable(true);
     widget_->GetContentsView()->AddChildView(top_container_);
 
@@ -152,7 +185,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
   // Attempt to reveal the top-of-window views via |modality|.
   // The top-of-window views can only be revealed via mouse hover or a gesture.
   void AttemptReveal(Modality modality) {
-    ASSERT_NE(modality, MODALITY_TOUCH);
+    ASSERT_NE(modality, MODALITY_GESTURE_TAP);
     AttemptRevealStateChange(true, modality);
   }
 
@@ -196,22 +229,25 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
         MoveMouse(event_position.x(), event_position.y());
         break;
       }
-      case MODALITY_TOUCH: {
+      case MODALITY_GESTURE_TAP: {
         gfx::Point screen_position = event_position;
         views::View::ConvertPointToScreen(top_container_, &screen_position);
-
         aura::test::EventGenerator& event_generator(GetEventGenerator());
         event_generator.MoveTouch(event_position);
         event_generator.PressTouch();
         event_generator.ReleaseTouch();
         break;
       }
-      case MODALITY_GESTURE: {
-        aura::client::GetCursorClient(CurrentContext())->DisableMouseEvents();
-        ImmersiveFullscreenController::SwipeType swipe_type = revealed ?
-            ImmersiveFullscreenController::SWIPE_OPEN :
-            ImmersiveFullscreenController::SWIPE_CLOSE;
-        controller_->UpdateRevealedLocksForSwipe(swipe_type);
+      case MODALITY_GESTURE_SCROLL: {
+        gfx::Point start(0, revealed ? 0 : top_container_->height() - 2);
+        gfx::Vector2d scroll_delta(0, 40);
+        gfx::Point end = revealed ? start + scroll_delta : start - scroll_delta;
+        views::View::ConvertPointToScreen(top_container_, &start);
+        views::View::ConvertPointToScreen(top_container_, &end);
+        aura::test::EventGenerator& event_generator(GetEventGenerator());
+        event_generator.GestureScrollSequence(
+            start, end,
+            base::TimeDelta::FromMilliseconds(30), 1);
         break;
       }
     }
@@ -220,7 +256,8 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
   scoped_ptr<ImmersiveFullscreenController> controller_;
   scoped_ptr<MockImmersiveFullscreenControllerDelegate> delegate_;
   views::Widget* widget_;  // Owned by the native widget.
-  views::View* top_container_;  // Owned by |root_view_|.
+  views::View* top_container_;  // Owned by |widget_|'s root-view.
+  views::NativeViewHost* content_view_;  // Owned by |widget_|'s root-view.
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveFullscreenControllerTest);
 };
@@ -615,7 +652,7 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
   EXPECT_FALSE(controller()->IsRevealed());
 
   // Initiate reveal via gesture, end reveal via mouse.
-  AttemptReveal(MODALITY_GESTURE);
+  AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_TRUE(controller()->IsRevealed());
   MoveMouse(1, 1);
   EXPECT_TRUE(controller()->IsRevealed());
@@ -623,21 +660,21 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
   EXPECT_FALSE(controller()->IsRevealed());
 
   // Initiate reveal via gesture, end reveal via touch.
-  AttemptReveal(MODALITY_GESTURE);
+  AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_TRUE(controller()->IsRevealed());
-  AttemptUnreveal(MODALITY_TOUCH);
+  AttemptUnreveal(MODALITY_GESTURE_TAP);
   EXPECT_FALSE(controller()->IsRevealed());
 
   // Initiate reveal via mouse, end reveal via gesture.
   AttemptReveal(MODALITY_MOUSE);
   EXPECT_TRUE(controller()->IsRevealed());
-  AttemptUnreveal(MODALITY_GESTURE);
+  AttemptUnreveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 
   // Initiate reveal via mouse, end reveal via touch.
   AttemptReveal(MODALITY_MOUSE);
   EXPECT_TRUE(controller()->IsRevealed());
-  AttemptUnreveal(MODALITY_TOUCH);
+  AttemptUnreveal(MODALITY_GESTURE_TAP);
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
@@ -652,7 +689,7 @@ TEST_F(ImmersiveFullscreenControllerTest, EndRevealViaGesture) {
   AttemptReveal(MODALITY_MOUSE);
   top_container()->RequestFocus();
   EXPECT_TRUE(controller()->IsRevealed());
-  AttemptUnreveal(MODALITY_GESTURE);
+  AttemptUnreveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 
   // The top-of-window views should no longer have focus. Clearing focus is
@@ -666,10 +703,74 @@ TEST_F(ImmersiveFullscreenControllerTest, EndRevealViaGesture) {
   scoped_ptr<ImmersiveRevealedLock> lock(controller()->GetRevealedLock(
       ImmersiveFullscreenController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(controller()->IsRevealed());
-  AttemptUnreveal(MODALITY_GESTURE);
+  AttemptUnreveal(MODALITY_GESTURE_SCROLL);
   EXPECT_TRUE(controller()->IsRevealed());
   lock.reset();
   EXPECT_FALSE(controller()->IsRevealed());
+}
+
+// Tests that touch-gesture can be used to reveal the top-of-window views when
+// the child window consumes all events.
+TEST_F(ImmersiveFullscreenControllerTest, RevealViaGestureChildConsumesEvents) {
+  // Enabling initially hides the top views.
+  SetEnabled(true);
+  EXPECT_TRUE(controller()->IsEnabled());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  aura::test::TestWindowDelegate child_delegate;
+  scoped_ptr<aura::Window> child(
+      CreateTestWindowInShellWithDelegateAndType(&child_delegate,
+                                                 ui::wm::WINDOW_TYPE_CONTROL,
+                                                 1234,
+                                                 gfx::Rect()));
+  content_view()->Attach(child.get());
+  child->Show();
+
+  ConsumeEventHandler handler;
+  child->AddPreTargetHandler(&handler);
+
+  // Reveal the top views using a touch-scroll gesture. The child window should
+  // not receive the touch events.
+  AttemptReveal(MODALITY_GESTURE_SCROLL);
+  EXPECT_TRUE(controller()->IsRevealed());
+  EXPECT_EQ(0, handler.num_touch_events());
+
+  AttemptUnreveal(MODALITY_GESTURE_TAP);
+  EXPECT_FALSE(controller()->IsRevealed());
+  EXPECT_GT(handler.num_touch_events(), 0);
+  child->RemovePreTargetHandler(&handler);
+}
+
+// Make sure touch events towards the top of the window do not leak through to
+// windows underneath.
+TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
+  gfx::Rect window_bounds = window()->GetBoundsInScreen();
+  aura::test::TestWindowDelegate child_delegate;
+  scoped_ptr<aura::Window> behind(CreateTestWindowInShellWithDelegate(
+      &child_delegate, 1234, window_bounds));
+  behind->Show();
+  behind->SetBounds(window_bounds);
+  widget()->StackAbove(behind.get());
+
+  // Make sure the windows are aligned on top.
+  EXPECT_EQ(behind->GetBoundsInScreen().y(), window()->GetBoundsInScreen().y());
+  int top = behind->GetBoundsInScreen().y();
+
+  ui::TouchEvent touch(ui::ET_TOUCH_MOVED, gfx::Point(10, top), 0,
+                       ui::EventTimeForNow());
+  ui::EventTarget* root = window()->GetRootWindow();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+  EXPECT_EQ(window(), targeter->FindTargetForEvent(root, &touch));
+
+  SetEnabled(true);
+  EXPECT_FALSE(controller()->IsRevealed());
+  // Make sure the windows are still aligned on top.
+  EXPECT_EQ(behind->GetBoundsInScreen().y(), window()->GetBoundsInScreen().y());
+  top = behind->GetBoundsInScreen().y();
+  ui::TouchEvent touch2(ui::ET_TOUCH_MOVED, gfx::Point(10, top), 0,
+                        ui::EventTimeForNow());
+  // The event should still be targeted to window().
+  EXPECT_EQ(window(), targeter->FindTargetForEvent(root, &touch2));
 }
 
 // Do not test under windows because focus testing is not reliable on

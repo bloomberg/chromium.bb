@@ -543,6 +543,8 @@
         'wm/partial_screenshot_view.h',
         'wm/power_button_controller.cc',
         'wm/power_button_controller.h',
+        'wm/resize_handle_window_targeter.cc',
+        'wm/resize_handle_window_targeter.h',
         'wm/resize_shadow.cc',
         'wm/resize_shadow.h',
         'wm/resize_shadow_controller.cc',

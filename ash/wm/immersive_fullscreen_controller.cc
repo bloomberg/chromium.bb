@@ -6,7 +6,9 @@
 
 #include <set>
 
+#include "ash/ash_constants.h"
 #include "ash/shell.h"
+#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram.h"
 #include "ui/aura/client/activation_client.h"
@@ -48,11 +50,6 @@ const int kMouseRevealDelayMs = 200;
 // considered "stopped". This allows the user to reveal the top-of-window views
 // without holding the cursor completely still.
 const int kMouseRevealXThresholdPixels = 3;
-
-// How many pixels a gesture can start away from |top_container_| when in
-// closed state and still be considered near it. This is needed to overcome
-// issues with poor location values near the edge of the display.
-const int kNearTopContainerDistance = 8;
 
 // Used to multiply x value of an update in check to determine if gesture is
 // vertical. This is used to make sure that gesture is close to vertical instead
@@ -258,6 +255,8 @@ void ImmersiveFullscreenController::Init(Delegate* delegate,
   top_container_ = top_container;
   widget_ = widget;
   native_window_ = widget_->GetNativeWindow();
+  native_window_->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+      new ResizeHandleWindowTargeter(native_window_, this)));
 }
 
 void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
@@ -901,7 +900,7 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
   // When the top-of-window views are not fully revealed, handle gestures which
   // start in the top few pixels of the screen.
   gfx::Rect hit_bounds_in_screen(GetDisplayBoundsInScreen(native_window_));
-  hit_bounds_in_screen.set_height(kNearTopContainerDistance);
+  hit_bounds_in_screen.set_height(kImmersiveFullscreenTopEdgeInset);
   if (hit_bounds_in_screen.Contains(location))
     return true;
 

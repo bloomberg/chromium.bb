@@ -394,7 +394,7 @@ CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
   if (!window_state->HasDelegate()) {
     window_state->SetDelegate(scoped_ptr<wm::WindowStateDelegate>(
         new CustomFrameViewAshWindowStateDelegate(
-            window_state, this)).Pass());
+            window_state, this)));
   }
 }
 

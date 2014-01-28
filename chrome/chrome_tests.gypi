@@ -1467,7 +1467,6 @@
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
-        'browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc',
         'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
         'browser/ui/views/new_avatar_menu_button_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
@@ -1774,7 +1773,6 @@
             'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
             'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
             'browser/ui/views/select_file_dialog_extension_browsertest.cc',
-            'browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
@@ -1885,7 +1883,6 @@
             'browser/ui/ash/shelf_browsertest.cc',
             'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
             'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
-            'browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc',
           ],
         }, { # else: OS != "win"
           'sources!': [

@@ -50,13 +50,6 @@ class ImmersiveModeControllerAsh
   // Updates the browser root view's layout including window caption controls.
   void LayoutBrowserRootView();
 
-  // Shrinks or expands the touch hit test by updating insets for the render
-  // window depending on if top_inset is positive or negative respectively.
-  // Used to ensure that touch events at the top of the screen go to the top
-  // container so a slide gesture can be generated when the content window is
-  // consuming all touch events sent to it.
-  void SetRenderWindowTopInsetsForTouch(int top_inset);
-
   // Updates whether the tab strip is painted in a short "light bar" style.
   // Returns true if the visibility of the tab indicators has changed.
   bool UpdateTabIndicators();

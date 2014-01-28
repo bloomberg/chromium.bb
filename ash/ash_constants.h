@@ -33,6 +33,10 @@ extern const SkColor kChromeOsBootColor;
 // The border color of keyboard focus for launcher items and system tray.
 extern const SkColor kFocusBorderColor;
 
+// How many pixels are reserved for touch-events towards the top of an
+// immersive-fullscreen window.
+extern const int kImmersiveFullscreenTopEdgeInset;
+
 } // namespace ash
 
 #endif  // ASH_ASH_CONSTANTS_H_
