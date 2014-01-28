@@ -850,6 +850,7 @@ internal = _config(
 # TODO(build/embedded): Decide on what brillo builders should look like and be
 # consistent. Currently sonic and other brillo builds differ too much.
 sonic = _config(
+  manifest='official.xml',
   boards=['sonic'],
   # Until these are configured and ready, disable them.
   images=['base', 'dev'],
