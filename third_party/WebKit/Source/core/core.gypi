@@ -3253,6 +3253,7 @@
             'css/CSSCalculationValueTest.cpp',
             'css/CSSValueTestHelper.h',
             'dom/DocumentMarkerControllerTest.cpp',
+            'dom/DocumentTest.cpp',
             'editing/TextIteratorTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',

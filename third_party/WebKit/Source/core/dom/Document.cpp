@@ -394,6 +394,39 @@ private:
     }
 };
 
+DocumentVisibilityObserver::DocumentVisibilityObserver(Document& document)
+    : m_document(0)
+{
+    registerObserver(document);
+}
+
+DocumentVisibilityObserver::~DocumentVisibilityObserver()
+{
+    unregisterObserver();
+}
+
+void DocumentVisibilityObserver::unregisterObserver()
+{
+    if (m_document) {
+        m_document->unregisterVisibilityObserver(this);
+        m_document = 0;
+    }
+}
+
+void DocumentVisibilityObserver::registerObserver(Document& document)
+{
+    ASSERT(!m_document);
+    m_document = &document;
+    if (m_document)
+        m_document->registerVisibilityObserver(this);
+}
+
+void DocumentVisibilityObserver::setObservedDocument(Document& document)
+{
+    unregisterObserver();
+    registerObserver(document);
+}
+
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(*this)
@@ -516,6 +549,7 @@ Document::~Document()
     ASSERT(m_ranges.isEmpty());
     ASSERT(!parentTreeScope());
     ASSERT(!hasGuardRefCount());
+    ASSERT(m_visibilityObservers.isEmpty());
 
     if (m_templateDocument)
         m_templateDocument->setTemplateDocumentHost(0); // balanced in templateDocument().
@@ -1405,11 +1439,28 @@ bool Document::hidden() const
     return pageVisibilityState() != PageVisibilityStateVisible;
 }
 
-void Document::dispatchVisibilityStateChangeEvent()
+void Document::didChangeVisibilityState()
 {
     dispatchEvent(Event::create(EventTypeNames::visibilitychange));
     // Also send out the deprecated version until it can be removed.
     dispatchEvent(Event::create(EventTypeNames::webkitvisibilitychange));
+
+    PageVisibilityState state = pageVisibilityState();
+    HashSet<DocumentVisibilityObserver*>::const_iterator observerEnd = m_visibilityObservers.end();
+    for (HashSet<DocumentVisibilityObserver*>::const_iterator it = m_visibilityObservers.begin(); it != observerEnd; ++it)
+        (*it)->didChangeVisibilityState(state);
+}
+
+void Document::registerVisibilityObserver(DocumentVisibilityObserver* observer)
+{
+    ASSERT(!m_visibilityObservers.contains(observer));
+    m_visibilityObservers.add(observer);
+}
+
+void Document::unregisterVisibilityObserver(DocumentVisibilityObserver* observer)
+{
+    ASSERT(m_visibilityObservers.contains(observer));
+    m_visibilityObservers.remove(observer);
 }
 
 String Document::nodeName() const

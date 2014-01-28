@@ -35,18 +35,19 @@ namespace WebCore {
 class PLATFORM_EXPORT Canvas2DLayerManager : public blink::WebThread::TaskObserver {
 public:
     static Canvas2DLayerManager& get();
+
     void init(size_t maxBytesAllocated, size_t targetBytesAllocated);
     virtual ~Canvas2DLayerManager();
 
-    void layerAllocatedStorageChanged(Canvas2DLayerBridge*, intptr_t deltaBytes);
+    void layerTransientResourceAllocationChanged(Canvas2DLayerBridge*, intptr_t deltaBytes = 0);
     void layerDidDraw(Canvas2DLayerBridge*);
-    void layerToBeDestroyed(Canvas2DLayerBridge*);
+
 private:
     Canvas2DLayerManager();
 
     // internal methods
     void freeMemoryIfNecessary();
-    bool isInList(Canvas2DLayerBridge*);
+    bool isInList(Canvas2DLayerBridge*) const;
     void addLayerToList(Canvas2DLayerBridge*);
     void removeLayerFromList(Canvas2DLayerBridge*);
     virtual void willProcessTask() OVERRIDE;

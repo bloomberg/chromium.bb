@@ -41,6 +41,7 @@ using testing::InSequence;
 using testing::Return;
 using testing::Test;
 
+namespace {
 
 class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
 public:
@@ -72,14 +73,14 @@ public:
         size_t bytesFreed = size < m_freeableBytes ? size : m_freeableBytes;
         m_freeableBytes -= bytesFreed;
         if (bytesFreed)
-            Canvas2DLayerManager::get().layerAllocatedStorageChanged(this, -((intptr_t)bytesFreed));
-        m_bytesAllocated -= bytesFreed;
+            storageAllocatedForRecordingChanged(m_bytesAllocated - bytesFreed);
         return bytesFreed;
     }
 
     virtual void flush() OVERRIDE
     {
         flushedDrawCommands();
+        m_freeableBytes = bytesAllocated();
         m_flushCount++;
     }
 
@@ -110,6 +111,8 @@ static PassOwnPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context)
 {
     return adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(1, 1)));
 }
+
+} // unnamed namespace
 
 class Canvas2DLayerManagerTest : public Test {
 protected:
@@ -162,6 +165,41 @@ protected:
         EXPECT_EQ((size_t)5, layer->bytesAllocated());
     }
 
+    void hiddenCanvasTest()
+    {
+        OwnPtr<blink::MockWebGraphicsContext3D> webContext = adoptPtr(new blink::MockWebGraphicsContext3D);
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createContextSupport(webContext.get());
+        Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
+        manager.init(20, 5);
+        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
+        FakeCanvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.release())));
+        layer->fakeFreeableBytes(5);
+        layer->storageAllocatedForRecordingChanged(10);
+        EXPECT_EQ(0, layer->m_freeMemoryIfPossibleCount);
+        EXPECT_EQ(0, layer->m_flushCount);
+        EXPECT_EQ((size_t)10, layer->bytesAllocated());
+        layer->setIsHidden(true);
+        EXPECT_EQ(1, layer->m_freeMemoryIfPossibleCount);
+        EXPECT_EQ((size_t)0, layer->m_freeableBytes);
+        EXPECT_EQ((size_t)0, layer->bytesAllocated());
+        EXPECT_EQ(1, layer->m_flushCount);
+    }
+
+    void addRemoveLayerTest()
+    {
+        OwnPtr<blink::MockWebGraphicsContext3D> webContext = adoptPtr(new blink::MockWebGraphicsContext3D);
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createContextSupport(webContext.get());
+        Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
+        manager.init(10, 5);
+        OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
+        FakeCanvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.release())));
+        EXPECT_FALSE(manager.isInList(layer.get()));
+        layer->storageAllocatedForRecordingChanged(5);
+        EXPECT_TRUE(manager.isInList(layer.get()));
+        layer->storageAllocatedForRecordingChanged(0);
+        EXPECT_FALSE(manager.isInList(layer.get()));
+    }
+
     void flushEvictionTest()
     {
         OwnPtr<blink::MockWebGraphicsContext3D> webContext = adoptPtr(new blink::MockWebGraphicsContext3D);
@@ -175,10 +213,10 @@ protected:
         EXPECT_EQ(0, layer->m_freeMemoryIfPossibleCount);
         layer->storageAllocatedForRecordingChanged(12); // over the max
         EXPECT_EQ(2, layer->m_freeMemoryIfPossibleCount); // Two tries, one before flush, one after flush
-        EXPECT_EQ((size_t)0, layer->m_freeableBytes);
+        EXPECT_EQ((size_t)5, layer->m_freeableBytes);
         EXPECT_EQ(1, layer->m_flushCount); // flush was attempted
-        EXPECT_EQ((size_t)11, layer->bytesAllocated()); // flush drops the layer from manager's tracking list
-        EXPECT_FALSE(manager.isInList(layer.get()));
+        EXPECT_EQ((size_t)5, layer->bytesAllocated());
+        EXPECT_TRUE(manager.isInList(layer.get()));
     }
 
     void doDeferredFrameTestTask(FakeCanvas2DLayerBridge* layer, bool skipCommands)
@@ -189,7 +227,6 @@ protected:
         EXPECT_TRUE(Canvas2DLayerManager::get().m_taskObserverActive);
         if (skipCommands) {
             layer->willUse();
-            layer->storageAllocatedForRecordingChanged(0);
             layer->skippedPendingDrawCommands();
         }
         blink::Platform::current()->currentThread()->exitRunLoop();
@@ -274,5 +311,15 @@ TEST_F(Canvas2DLayerManagerTest, testDeferredFrame)
     deferredFrameTest();
 }
 
-} // namespace
+TEST_F(Canvas2DLayerManagerTest, testHiddenCanvas)
+{
+    hiddenCanvasTest();
+}
+
+TEST_F(Canvas2DLayerManagerTest, testAddRemoveLayer)
+{
+    addRemoveLayerTest();
+}
+
+} // unnamed namespace
 

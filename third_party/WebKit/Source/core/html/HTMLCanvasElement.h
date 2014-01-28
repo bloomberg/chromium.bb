@@ -31,6 +31,7 @@
 #include "core/html/HTMLElement.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/Canvas2DLayerBridge.h"
 #include "wtf/Forward.h"
 
 #define DefaultInterpolationQuality InterpolationMedium
@@ -58,7 +59,7 @@ public:
     virtual void canvasDestroyed(HTMLCanvasElement*) = 0;
 };
 
-class HTMLCanvasElement FINAL : public HTMLElement {
+class HTMLCanvasElement FINAL : public HTMLElement, public DocumentVisibilityObserver {
 public:
     static PassRefPtr<HTMLCanvasElement> create(Document&);
     virtual ~HTMLCanvasElement();
@@ -126,6 +127,12 @@ public:
     bool shouldAccelerate(const IntSize&) const;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+
+    // DocumentVisibilityObserver implementation
+    virtual void didChangeVisibilityState(PageVisibilityState) OVERRIDE;
+
+protected:
+    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
 private:
     explicit HTMLCanvasElement(Document&);

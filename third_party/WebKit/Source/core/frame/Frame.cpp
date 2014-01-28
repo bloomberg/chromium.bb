@@ -338,17 +338,17 @@ RenderPart* Frame::ownerRenderer() const
     return toRenderPart(object);
 }
 
-void Frame::dispatchVisibilityStateChangeEvent()
+void Frame::didChangeVisibilityState()
 {
     if (document())
-        document()->dispatchVisibilityStateChangeEvent();
+        document()->didChangeVisibilityState();
 
     Vector<RefPtr<Frame> > childFrames;
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
         childFrames.append(child);
 
     for (size_t i = 0; i < childFrames.size(); ++i)
-        childFrames[i]->dispatchVisibilityStateChangeEvent();
+        childFrames[i]->didChangeVisibilityState();
 }
 
 void Frame::willDetachFrameHost()

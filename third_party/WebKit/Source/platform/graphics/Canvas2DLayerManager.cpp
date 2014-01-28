@@ -31,11 +31,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using blink::WebThread;
 
 namespace {
+
 enum {
     DefaultMaxBytesAllocated = 64*1024*1024,
     DefaultTargetBytesAllocated = 16*1024*1024,
 };
-}
+
+} // unnamed namespace
 
 namespace WebCore {
 
@@ -81,8 +83,14 @@ void Canvas2DLayerManager::didProcessTask()
     ASSERT(m_taskObserverActive);
     blink::Platform::current()->currentThread()->removeTaskObserver(this);
     m_taskObserverActive = false;
-    for (Canvas2DLayerBridge* layer = m_layerList.head(); layer; layer = layer->next())
-        layer->limitPendingFrames();
+    Canvas2DLayerBridge* layer = m_layerList.head();
+    while (layer) {
+        Canvas2DLayerBridge* currentLayer = layer;
+        // must increment iterator before calling limitPendingFrames, which
+        // may result in the layer being removed from the list.
+        layer = layer->next();
+        currentLayer->limitPendingFrames();
+    }
 }
 
 void Canvas2DLayerManager::layerDidDraw(Canvas2DLayerBridge* layer)
@@ -92,8 +100,7 @@ void Canvas2DLayerManager::layerDidDraw(Canvas2DLayerBridge* layer)
             m_layerList.remove(layer);
             m_layerList.push(layer); // Set as MRU
         }
-    } else
-        addLayerToList(layer);
+    }
 
     if (!m_taskObserverActive) {
         m_taskObserverActive = true;
@@ -102,48 +109,42 @@ void Canvas2DLayerManager::layerDidDraw(Canvas2DLayerBridge* layer)
     }
 }
 
-void Canvas2DLayerManager::addLayerToList(Canvas2DLayerBridge* layer)
+void Canvas2DLayerManager::layerTransientResourceAllocationChanged(Canvas2DLayerBridge* layer, intptr_t deltaBytes)
 {
-    ASSERT(!isInList(layer));
-    m_bytesAllocated += layer->bytesAllocated();
-    m_layerList.push(layer); // Set as MRU
-}
-
-void Canvas2DLayerManager::layerAllocatedStorageChanged(Canvas2DLayerBridge* layer, intptr_t deltaBytes)
-{
-    if (!isInList(layer))
-        addLayerToList(layer);
-    else {
-        ASSERT((intptr_t)m_bytesAllocated + deltaBytes >= 0);
-        m_bytesAllocated = (intptr_t)m_bytesAllocated + deltaBytes;
+    ASSERT((intptr_t)m_bytesAllocated + deltaBytes >= 0);
+    m_bytesAllocated = (intptr_t)m_bytesAllocated + deltaBytes;
+    if (!isInList(layer) && layer->hasTransientResources()) {
+        m_layerList.push(layer);
+    } else if (isInList(layer) && !layer->hasTransientResources()) {
+        m_layerList.remove(layer);
+        layer->setNext(0);
+        layer->setPrev(0);
     }
+
     if (deltaBytes > 0)
         freeMemoryIfNecessary();
 }
 
-void Canvas2DLayerManager::layerToBeDestroyed(Canvas2DLayerBridge* layer)
-{
-    if (isInList(layer))
-        removeLayerFromList(layer);
-}
-
 void Canvas2DLayerManager::freeMemoryIfNecessary()
 {
-    if (m_bytesAllocated > m_maxBytesAllocated) {
+    if (m_bytesAllocated >= m_maxBytesAllocated) {
         // Pass 1: Free memory from caches
         Canvas2DLayerBridge* layer = m_layerList.tail(); // LRU
-        while (m_bytesAllocated > m_targetBytesAllocated && layer) {
-            layer->freeMemoryIfPossible(m_bytesAllocated - m_targetBytesAllocated);
+        while (layer && m_bytesAllocated > m_targetBytesAllocated) {
+            Canvas2DLayerBridge* currentLayer = layer;
             layer = layer->prev();
+            currentLayer->freeMemoryIfPossible(m_bytesAllocated - m_targetBytesAllocated);
+            ASSERT(isInList(currentLayer) == currentLayer->hasTransientResources());
         }
 
         // Pass 2: Flush canvases
-        Canvas2DLayerBridge* leastRecentlyUsedLayer = m_layerList.tail();
-        while (m_bytesAllocated > m_targetBytesAllocated && leastRecentlyUsedLayer) {
-            leastRecentlyUsedLayer->flush();
-            leastRecentlyUsedLayer->freeMemoryIfPossible(~0);
-            removeLayerFromList(leastRecentlyUsedLayer);
-            leastRecentlyUsedLayer = m_layerList.tail();
+        layer = m_layerList.tail();
+        while (m_bytesAllocated > m_targetBytesAllocated && layer) {
+            Canvas2DLayerBridge* currentLayer = layer;
+            layer = layer->prev();
+            currentLayer->flush();
+            currentLayer->freeMemoryIfPossible(m_bytesAllocated - m_targetBytesAllocated);
+            ASSERT(isInList(currentLayer) == currentLayer->hasTransientResources());
         }
     }
 }
@@ -151,13 +152,11 @@ void Canvas2DLayerManager::freeMemoryIfNecessary()
 void Canvas2DLayerManager::removeLayerFromList(Canvas2DLayerBridge* layer)
 {
     ASSERT(isInList(layer));
-    m_bytesAllocated -= layer->bytesAllocated();
-    m_layerList.remove(layer);
-    layer->setNext(0);
-    layer->setPrev(0);
+    ASSERT(!layer->hasTransientResources());
+
 }
 
-bool Canvas2DLayerManager::isInList(Canvas2DLayerBridge* layer)
+bool Canvas2DLayerManager::isInList(Canvas2DLayerBridge* layer) const
 {
     return layer->prev() || m_layerList.head() == layer;
 }

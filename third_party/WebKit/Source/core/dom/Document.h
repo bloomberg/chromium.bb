@@ -211,6 +211,26 @@ enum DocumentClass {
 
 typedef unsigned char DocumentClassFlags;
 
+class Document;
+
+class DocumentVisibilityObserver {
+public:
+    DocumentVisibilityObserver(Document&);
+    virtual ~DocumentVisibilityObserver();
+
+    virtual void didChangeVisibilityState(PageVisibilityState) = 0;
+
+    // Classes that inherit Node and DocumentVisibilityObserver must have a
+    // virtual override of Node::didMoveToNewDocument that calls
+    // DocumentVisibilityObserver::setDocument
+    void setObservedDocument(Document&);
+
+private:
+    void registerObserver(Document&);
+    void unregisterObserver();
+    Document* m_document;
+};
+
 class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public ExecutionContextClient
     , public DocumentSupplementable, public LifecycleContext<Document> {
 public:
@@ -361,7 +381,7 @@ public:
 
     String visibilityState() const;
     bool hidden() const;
-    void dispatchVisibilityStateChangeEvent();
+    void didChangeVisibilityState();
 
     PassRefPtr<Node> adoptNode(PassRefPtr<Node> source, ExceptionState&);
 
@@ -1015,6 +1035,9 @@ public:
     bool hasViewportUnits() const { return m_hasViewportUnits; }
     void notifyResizeForViewportUnits();
 
+    void registerVisibilityObserver(DocumentVisibilityObserver*);
+    void unregisterVisibilityObserver(DocumentVisibilityObserver*);
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1307,6 +1330,8 @@ private:
     HashSet<SVGUseElement*> m_useElementsNeedingUpdate;
 
     bool m_hasViewportUnits;
+
+    HashSet<DocumentVisibilityObserver*> m_visibilityObservers;
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()

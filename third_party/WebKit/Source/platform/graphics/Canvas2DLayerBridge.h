@@ -52,6 +52,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public blink::WebExternalTextureLaye
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
     static PassRefPtr<Canvas2DLayerBridge> create(const IntSize&, OpacityMode, int msaaSampleCount);
+
     virtual ~Canvas2DLayerBridge();
 
     // blink::WebExternalTextureLayerClient implementation.
@@ -72,19 +73,26 @@ public:
     blink::WebLayer* layer() const;
     Platform3DObject getBackingTexture();
     bool isAccelerated() const { return true; }
+    void setIsHidden(bool);
 
     // Methods used by Canvas2DLayerManager
     virtual size_t freeMemoryIfPossible(size_t); // virtual for mocking
     virtual void flush(); // virtual for mocking
     virtual size_t storageAllocatedForRecording(); // virtual for faking
-    size_t bytesAllocated() const {return m_bytesAllocated;}
+    size_t bytesAllocated() const { return m_bytesAllocated; }
     void limitPendingFrames();
+    void freeReleasedMailbox();
+    bool hasReleasedMailbox() const { return m_releasedMailboxInfo; };
+    void freeTransientResources();
+    bool hasTransientResources() const;
+    bool isHidden() { return m_isHidden; }
 
     void beginDestruction();
 
 protected:
     Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D>, PassOwnPtr<SkDeferredCanvas>, int, OpacityMode);
     void setRateLimitingEnabled(bool);
+    bool releasedMailboxHasExpired();
 
     OwnPtr<SkDeferredCanvas> m_canvas;
     OwnPtr<blink::WebExternalTextureLayer> m_layer;
@@ -94,8 +102,10 @@ protected:
     bool m_didRecordDrawCommand;
     bool m_surfaceIsValid;
     int m_framesPending;
+    int m_framesSinceMailboxRelease;
     bool m_destructionInProgress;
     bool m_rateLimitingEnabled;
+    bool m_isHidden;
 
     friend class WTF::DoublyLinkedListNode<Canvas2DLayerBridge>;
     friend class ::Canvas2DLayerBridgeTest;
@@ -110,7 +120,7 @@ protected:
 
     struct MailboxInfo {
         blink::WebExternalTextureMailbox m_mailbox;
-        SkAutoTUnref<SkImage> m_image;
+        RefPtr<SkImage> m_image;
         MailboxStatus m_status;
         RefPtr<Canvas2DLayerBridge> m_parentLayerBridge;
 
@@ -121,6 +131,7 @@ protected:
 
     uint32_t m_lastImageId;
     Vector<MailboxInfo> m_mailboxes;
+    MailboxInfo* m_releasedMailboxInfo;
 };
 }
 #endif

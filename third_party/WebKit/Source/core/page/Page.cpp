@@ -459,7 +459,7 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         lifecycleNotifier().notifyPageVisibilityChanged();
 
     if (!isInitialState && m_mainFrame)
-        m_mainFrame->dispatchVisibilityStateChangeEvent();
+        m_mainFrame->didChangeVisibilityState();
 }
 
 PageVisibilityState Page::visibilityState() const

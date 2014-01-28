@@ -71,6 +71,7 @@ static const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
 
 HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(canvasTag, document)
+    , DocumentVisibilityObserver(document)
     , m_size(DefaultWidth, DefaultHeight)
     , m_rendererIsCanvas(false)
     , m_ignoreReset(false)
@@ -569,6 +570,28 @@ AffineTransform HTMLCanvasElement::baseTransform() const
 {
     ASSERT(hasImageBuffer() && !m_didFailToCreateImageBuffer);
     return m_imageBuffer->baseTransform();
+}
+
+void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
+{
+    if (hasImageBuffer()) {
+        bool hidden = visibility != PageVisibilityStateVisible;
+        if (hidden) {
+            clearCopiedImage();
+            if (is3D()) {
+                m_imageBuffer.clear();
+            }
+        }
+        if (hasImageBuffer()) {
+            m_imageBuffer->setIsHidden(hidden);
+        }
+    }
+}
+
+void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
+{
+    setObservedDocument(document());
+    HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
 }

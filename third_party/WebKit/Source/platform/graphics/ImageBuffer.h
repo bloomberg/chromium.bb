@@ -81,6 +81,8 @@ public:
     const IntSize& size() const { return m_surface->size(); }
     bool isAccelerated() const { return m_surface->isAccelerated(); }
 
+    void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
+
     GraphicsContext* context() const;
 
     const SkBitmap& bitmap() const;
