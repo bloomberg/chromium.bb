@@ -230,12 +230,12 @@ class BuilderStage(object):
     self._Print('\n@@@BUILD_STEP %s@@@\n' % self.name)
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
-        self.name, time.strftime('%H:%M:%S'), self.__doc__))
+        self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
 
   def _Finish(self):
     """Can be overridden.  Called after a stage has been performed."""
     self._PrintLoudly('Finished Stage %s - %s' %
-                      (self.name, time.strftime('%H:%M:%S')))
+                      (self.name, cros_build_lib.UserDateTimeFormat()))
 
   def PerformStage(self):
     """Subclassed stages must override this function to perform what they want
