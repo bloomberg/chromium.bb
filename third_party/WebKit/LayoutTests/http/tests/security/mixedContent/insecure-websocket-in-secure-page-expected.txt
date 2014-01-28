@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 14: Uncaught SecurityError: Failed to construct 'WebSocket': Block the connection to an insecure WebSocket server from a secure page.
+This test opens a HTTPS window that creates an insecure WebSocket connection. We should trigger a mixed content callback because the main frame in the window is HTTPS but is trying connecting to an insecure WebSocket server.
