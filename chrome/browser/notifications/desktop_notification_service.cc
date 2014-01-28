@@ -624,8 +624,8 @@ void DesktopNotificationService::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
   if (!chrome_now_welcome_notification_ &&
       message_center::IsRichNotificationEnabled()) {
-    chrome_now_welcome_notification_.reset(new ExtensionWelcomeNotification(
-        kChromeNowExtensionID, profile_, g_browser_process->message_center()));
+    chrome_now_welcome_notification_ =
+        ExtensionWelcomeNotification::Create(kChromeNowExtensionID, profile_);
   }
 
   if (chrome_now_welcome_notification_) {

@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,11 +26,17 @@
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 
+const unsigned int ExtensionWelcomeNotification::kRequestedShowTimeDays = 1;
+
 namespace {
-class WelcomeNotificationDelegate
+class NotificationCallbacks
     : public message_center::NotificationDelegate {
  public:
-  explicit WelcomeNotificationDelegate(Profile* profile) : profile_(profile) {}
+  NotificationCallbacks(
+      Profile* profile,
+      ExtensionWelcomeNotification::Delegate* delegate)
+      : profile_(profile),
+        delegate_(delegate) {}
 
   // Overridden from NotificationDelegate:
   virtual void Display() OVERRIDE {}
@@ -39,9 +46,9 @@ class WelcomeNotificationDelegate
     if (by_user) {
       // Setting the preference here may cause the notification erasing
       // to reenter. Posting a task avoids this issue.
-      base::MessageLoop::current()->PostTask(
+      delegate_->PostTask(
           FROM_HERE,
-          base::Bind(&WelcomeNotificationDelegate::MarkAsDismissed, this));
+          base::Bind(&NotificationCallbacks::MarkAsDismissed, this));
     }
   }
 
@@ -67,21 +74,47 @@ class WelcomeNotificationDelegate
     chrome::Navigate(&params);
   }
 
-  virtual ~WelcomeNotificationDelegate() {}
+  virtual ~NotificationCallbacks() {}
 
   Profile* const profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(WelcomeNotificationDelegate);
+  // Weak ref owned by ExtensionWelcomeNotification.
+  ExtensionWelcomeNotification::Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationCallbacks);
 };
+
+class DefaultDelegate : public ExtensionWelcomeNotification::Delegate {
+ public:
+  DefaultDelegate() {}
+
+  virtual message_center::MessageCenter* GetMessageCenter() OVERRIDE {
+    return g_browser_process->message_center();
+  }
+
+  virtual base::Time GetCurrentTime() OVERRIDE {
+    return base::Time::Now();
+  }
+
+  virtual void PostTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task) OVERRIDE {
+    base::MessageLoop::current()->PostTask(from_here, task);
+  }
+
+  private:
+   DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
+};
+
 }  // namespace
 
 ExtensionWelcomeNotification::ExtensionWelcomeNotification(
     const std::string& extension_id,
     Profile* profile,
-    message_center::MessageCenter* message_center)
+    ExtensionWelcomeNotification::Delegate* delegate)
     : notifier_id_(message_center::NotifierId::APPLICATION, extension_id),
       profile_(profile),
-      message_center_(message_center) {
+      delegate_(delegate) {
   welcome_notification_dismissed_pref_.Init(
       prefs::kWelcomeNotificationDismissed,
       profile_->GetPrefs(),
@@ -90,10 +123,28 @@ ExtensionWelcomeNotification::ExtensionWelcomeNotification(
           base::Unretained(this)));
 }
 
+// Static
+scoped_ptr<ExtensionWelcomeNotification> ExtensionWelcomeNotification::Create(
+  const std::string& extension_id,
+  Profile* profile) {
+  return Create(extension_id, profile, new DefaultDelegate()).Pass();
+}
+
+// Static
+scoped_ptr<ExtensionWelcomeNotification> ExtensionWelcomeNotification::Create(
+    const std::string& extension_id,
+    Profile* profile,
+    Delegate* delegate) {
+  return scoped_ptr<ExtensionWelcomeNotification>(
+      new ExtensionWelcomeNotification(extension_id, profile, delegate)).Pass();
+}
+
 ExtensionWelcomeNotification::~ExtensionWelcomeNotification() {
   if (delayed_notification_) {
     delayed_notification_.reset();
     PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
+  } else {
+    HideWelcomeNotification();
   }
 }
 
@@ -145,6 +196,14 @@ void ExtensionWelcomeNotification::RegisterProfilePrefs(
   prefs->RegisterBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp,
                              false,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp,
+                           0,
+                           user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+message_center::MessageCenter*
+    ExtensionWelcomeNotification::GetMessageCenter() {
+  return delegate_->GetMessageCenter();
 }
 
 void ExtensionWelcomeNotification::ShowWelcomeNotification(
@@ -174,19 +233,21 @@ void ExtensionWelcomeNotification::ShowWelcomeNotification(
             display_source,
             notifier_id_,
             rich_notification_data,
-            new WelcomeNotificationDelegate(profile_)));
+            new NotificationCallbacks(profile_, delegate_.get())));
 
     if (pop_up_request == POP_UP_HIDDEN)
       message_center_notification->set_shown_as_popup(true);
 
-    message_center_->AddNotification(message_center_notification.Pass());
+    GetMessageCenter()->AddNotification(message_center_notification.Pass());
+    StartExpirationTimer();
   }
 }
 
 void ExtensionWelcomeNotification::HideWelcomeNotification() {
   if (!welcome_notification_id_.empty() &&
-      message_center_->HasNotification(welcome_notification_id_)) {
-    message_center_->RemoveNotification(welcome_notification_id_, false);
+      GetMessageCenter()->HasNotification(welcome_notification_id_)) {
+    GetMessageCenter()->RemoveNotification(welcome_notification_id_, false);
+    StopExpirationTimer();
   }
 }
 
@@ -195,4 +256,58 @@ void ExtensionWelcomeNotification::OnWelcomeNotificationDismissedChanged() {
       profile_->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed);
   if (welcome_notification_dismissed)
     HideWelcomeNotification();
+}
+
+void ExtensionWelcomeNotification::StartExpirationTimer() {
+  if (!expiration_timer_ && !IsWelcomeNotificationExpired()) {
+    base::Time expiration_timestamp = GetExpirationTimestamp();
+    if (expiration_timestamp.is_null()) {
+      SetExpirationTimestampFromNow();
+      expiration_timestamp = GetExpirationTimestamp();
+      DCHECK(!expiration_timestamp.is_null());
+    }
+    expiration_timer_.reset(
+        new base::OneShotTimer<ExtensionWelcomeNotification>());
+    expiration_timer_->Start(
+        FROM_HERE,
+        expiration_timestamp - delegate_->GetCurrentTime(),
+        this,
+        &ExtensionWelcomeNotification::ExpireWelcomeNotification);
+  }
+}
+
+void ExtensionWelcomeNotification::StopExpirationTimer() {
+  if (expiration_timer_) {
+    expiration_timer_->Stop();
+    expiration_timer_.reset();
+  }
+}
+
+void ExtensionWelcomeNotification::ExpireWelcomeNotification() {
+  DCHECK(IsWelcomeNotificationExpired());
+  profile_->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissed, true);
+  HideWelcomeNotification();
+}
+
+base::Time ExtensionWelcomeNotification::GetExpirationTimestamp() {
+  PrefService* pref_service = profile_->GetPrefs();
+  int64 expiration_timestamp =
+      pref_service->GetInt64(prefs::kWelcomeNotificationExpirationTimestamp);
+  return (expiration_timestamp == 0) ?
+      base::Time() :
+      base::Time::FromInternalValue(expiration_timestamp);
+}
+
+void ExtensionWelcomeNotification::SetExpirationTimestampFromNow() {
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetInt64(
+      prefs::kWelcomeNotificationExpirationTimestamp,
+      (delegate_->GetCurrentTime() +
+          base::TimeDelta::FromDays(kRequestedShowTimeDays)).ToInternalValue());
+}
+
+bool ExtensionWelcomeNotification::IsWelcomeNotificationExpired() {
+  base::Time expiration_timestamp = GetExpirationTimestamp();
+  return !expiration_timestamp.is_null() &&
+      (expiration_timestamp <= delegate_->GetCurrentTime());
 }

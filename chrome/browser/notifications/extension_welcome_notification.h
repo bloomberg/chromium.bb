@@ -9,11 +9,20 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "ui/message_center/notifier_settings.h"
 
+namespace base {
+typedef Callback<void(void)> Closure;
+}
+
 namespace message_center {
 class MessageCenter;
+}
+
+namespace tracked_objects {
+class Location;
 }
 
 namespace user_prefs {
@@ -31,9 +40,33 @@ class Profile;
 // network connectivity.
 class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
  public:
-  ExtensionWelcomeNotification(const std::string& extension_id,
-                               Profile* profile,
-                               message_center::MessageCenter* message_center);
+  // Requested time from showing the welcome notification to expiration.
+  static const unsigned int kRequestedShowTimeDays;
+
+  // Allows for overriding global calls.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual message_center::MessageCenter* GetMessageCenter() = 0;
+    virtual base::Time GetCurrentTime() = 0;
+    virtual void PostTask(
+        const tracked_objects::Location& from_here,
+        const base::Closure& task) = 0;
+  };
+
+  // To workaround the lack of delegating constructors prior to C++11, we use
+  // static Create methods.
+  // Creates an ExtensionWelcomeNotification with the default delegate.
+  static scoped_ptr<ExtensionWelcomeNotification> Create(
+      const std::string& extension_id,
+      Profile* profile);
+
+  // Creates an ExtensionWelcomeNotification with the specified delegate.
+  static scoped_ptr<ExtensionWelcomeNotification> Create(
+      const std::string& extension_id,
+      Profile* profile,
+      Delegate* delegate);
+
   virtual ~ExtensionWelcomeNotification();
 
   // PrefServiceSyncableObserver
@@ -47,7 +80,15 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
  private:
+  ExtensionWelcomeNotification(
+      const std::string& extension_id,
+      Profile* profile,
+      ExtensionWelcomeNotification::Delegate* delegate);
+
   enum PopUpRequest { POP_UP_HIDDEN = 0, POP_UP_SHOWN = 1, };
+
+  // Gets the message center from the delegate.
+  message_center::MessageCenter* GetMessageCenter();
 
   // Unconditionally shows the welcome notification.
   void ShowWelcomeNotification(const base::string16& display_source,
@@ -58,6 +99,24 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
 
   // Called when the Welcome Notification Dismissed pref has been changed.
   void OnWelcomeNotificationDismissedChanged();
+
+  // Starts the welcome notification expiration timer.
+  void StartExpirationTimer();
+
+  // Stops the welcome notification expiration timer.
+  void StopExpirationTimer();
+
+  // Expires the welcome notification by hiding it and marking it dismissed.
+  void ExpireWelcomeNotification();
+
+  // Gets the expiration timestamp or a null time is there is none.
+  base::Time GetExpirationTimestamp();
+
+  // Sets the expiration timestamp from now.
+  void SetExpirationTimestampFromNow();
+
+  // True if the welcome notification has expired, false otherwise.
+  bool IsWelcomeNotificationExpired();
 
   // Prefs listener for welcome_notification_dismissed.
   BooleanPrefMember welcome_notification_dismissed_pref_;
@@ -78,7 +137,13 @@ class ExtensionWelcomeNotification : public PrefServiceSyncableObserver {
   // notifications that may also show a welcome notification.
   scoped_ptr<Notification> delayed_notification_;
 
-  message_center::MessageCenter* message_center_;  // Weak reference.
+  // If the welcome notification is shown, this timer tracks when to hide the
+  // welcome notification.
+  scoped_ptr<base::OneShotTimer<ExtensionWelcomeNotification> >
+      expiration_timer_;
+
+  // Delegate for global calls.
+  scoped_ptr<Delegate> delegate_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_EXTENSION_WELCOME_NOTIFICATION_H_

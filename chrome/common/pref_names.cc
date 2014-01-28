@@ -1269,6 +1269,10 @@ extern const char kWelcomeNotificationDismissed[] =
 extern const char kWelcomeNotificationPreviouslyPoppedUp[] =
     "message_center.welcome_notification_previously_popped_up";
 
+// Integer pref containing the expiration timestamp of the welcome notification.
+extern const char kWelcomeNotificationExpirationTimestamp[] =
+    "message_center.welcome_notification_expiration_timestamp";
+
 // Boolean pref that determines whether the user can enter fullscreen mode.
 // Disabling fullscreen mode also makes kiosk mode unavailable on desktop
 // platforms.
