@@ -2927,10 +2927,8 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	weston_view_destroy(shsurf->view);
 
 	wl_list_remove(&shsurf->children_link);
-	wl_list_for_each_safe(child, next, &shsurf->children_list, children_link) {
-		wl_list_remove(&child->children_link);
-		child->parent = NULL;
-	}
+	wl_list_for_each_safe(child, next, &shsurf->children_list, children_link)
+		shell_surface_set_parent(child, NULL);
 
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
