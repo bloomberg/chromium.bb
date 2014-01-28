@@ -53,7 +53,14 @@
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ]
         }],
-      ]
+        ['OS=="android" and gtest_target_type == "shared_library"', {
+          'type': 'shared_library',
+          'dependencies': [
+            '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
+            '<(DEPTH)/tools/android/forwarder2/forwarder.gyp:forwarder2',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'blink_heap_run_all_tests',
@@ -71,5 +78,22 @@
         'RunAllTests.cpp',
       ]
     },
+  ], # targets
+  'conditions': [
+    ['OS=="android" and android_webview_build==0 and gtest_target_type=="shared_library"', {
+      'targets': [{
+        'target_name': 'blink_heap_unittests_apk',
+        'type': 'none',
+        'dependencies': [
+          '<(DEPTH)/base/base.gyp:base_java',
+          '<(DEPTH)/net/net.gyp:net_java',
+          'blink_heap_unittests',
+        ],
+        'variables': {
+          'test_suite_name': 'blink_heap_unittests',
+        },
+        'includes': [ '../../../../build/apk_test.gypi' ],
+      }],
+    }],
   ],
 }
