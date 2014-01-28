@@ -396,7 +396,6 @@ protected:
     void executeScript(const WebString& code)
     {
         m_frame->executeScript(WebScriptSource(code));
-        m_frame->view()->layout();
         runPendingTasks();
     }
 
@@ -420,7 +419,6 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
     std::vector<WebString> selectors;
     selectors.push_back(WebString::fromUTF8("div.initial_on"));
     m_frame->document().watchCSSSelectors(WebVector<WebString>(selectors));
-    m_frame->view()->layout();
     runPendingTasks();
     EXPECT_EQ(1, updateCount());
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("div.initial_on"));
@@ -428,14 +426,12 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
     // Check that adding a watched selector calls back for already-present nodes.
     selectors.push_back(WebString::fromUTF8("div.initial_off"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
-    m_frame->view()->layout();
     runPendingTasks();
     EXPECT_EQ(2, updateCount());
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("div.initial_off", "div.initial_on"));
 
     // Check that we can turn off callbacks for certain selectors.
     doc().watchCSSSelectors(WebVector<WebString>());
-    m_frame->view()->layout();
     runPendingTasks();
     EXPECT_EQ(3, updateCount());
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre());
@@ -554,7 +550,6 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting)
     std::vector<WebString> selectors;
     selectors.push_back(WebString::fromUTF8("span"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
-    m_frame->view()->layout();
     runPendingTasks();
 
     EXPECT_EQ(1, updateCount());
@@ -578,9 +573,8 @@ TEST_F(WebFrameCSSCallbackTest, MultiSelector)
     selectors.push_back(WebString::fromUTF8("span"));
     selectors.push_back(WebString::fromUTF8("span,p"));
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
-    m_frame->view()->layout();
-    runPendingTasks();
 
+    runPendingTasks();
     EXPECT_EQ(1, updateCount());
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span", "span, p"));
 }
@@ -595,9 +589,8 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
     selectors.push_back(WebString::fromUTF8("[")); // Invalid.
     selectors.push_back(WebString::fromUTF8("p span")); // Not compound.
     doc().watchCSSSelectors(WebVector<WebString>(selectors));
-    m_frame->view()->layout();
-    runPendingTasks();
 
+    runPendingTasks();
     EXPECT_EQ(1, updateCount());
     EXPECT_THAT(matchedSelectors(), testing::ElementsAre("span"))
         << "An invalid selector shouldn't prevent other selectors from matching.";

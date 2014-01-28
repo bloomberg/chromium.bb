@@ -420,7 +420,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
     , m_bParsing(false)
-    , m_hasPendingStyleRecalc(false)
+    , m_styleRecalcTimer(this, &Document::styleRecalcTimerFired)
     , m_inStyleRecalc(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
@@ -1536,13 +1536,12 @@ void Document::scheduleStyleRecalc()
     if (!isActive())
         return;
 
-    if (m_hasPendingStyleRecalc || !shouldScheduleLayout())
+    if (m_styleRecalcTimer.isActive() || !shouldScheduleLayout())
         return;
 
     ASSERT(shouldCallRecalcStyleForDocument());
 
-    view()->scheduleAnimation();
-    m_hasPendingStyleRecalc = true;
+    m_styleRecalcTimer.startOneShot(0);
 
     InspectorInstrumentation::didScheduleStyleRecalculation(this);
 }
@@ -1550,12 +1549,17 @@ void Document::scheduleStyleRecalc()
 void Document::unscheduleStyleRecalc()
 {
     ASSERT(!isActive() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
-    m_hasPendingStyleRecalc = false;
+    m_styleRecalcTimer.stop();
 }
 
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return m_hasPendingStyleRecalc && !m_inStyleRecalc && styleChangeType() >= SubtreeStyleChange;
+    return m_styleRecalcTimer.isActive() && !m_inStyleRecalc && styleChangeType() >= SubtreeStyleChange;
+}
+
+void Document::styleRecalcTimerFired(Timer<Document>*)
+{
+    updateStyleIfNeeded();
 }
 
 void Document::updateDistributionIfNeeded()
