@@ -28,6 +28,10 @@ class DriveServiceInterface;
 class DriveNotificationManager;
 }
 
+namespace leveldb {
+class Env;
+}
+
 namespace sync_file_system {
 namespace drive_backend {
 
@@ -135,7 +139,8 @@ class SyncEngine : public RemoteFileSyncService,
              scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
              drive::DriveNotificationManager* notification_manager,
              ExtensionServiceInterface* extension_service,
-             ProfileOAuth2TokenService* auth_token_service);
+             ProfileOAuth2TokenService* auth_token_service,
+             leveldb::Env* env_override);
 
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
@@ -166,6 +171,7 @@ class SyncEngine : public RemoteFileSyncService,
   base::FilePath temporary_file_dir_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  leveldb::Env* env_override_;
 
   scoped_ptr<drive::DriveServiceInterface> drive_service_;
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;

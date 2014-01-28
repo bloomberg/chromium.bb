@@ -17,6 +17,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -36,6 +38,7 @@ class ListChangesTaskTest : public testing::Test,
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     fake_drive_service_.reset(new drive::FakeDriveService);
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
@@ -161,7 +164,8 @@ class ListChangesTaskTest : public testing::Test,
     SyncEngineInitializer initializer(this,
                                       base::MessageLoopProxy::current(),
                                       fake_drive_service_.get(),
-                                      database_dir_.path());
+                                      database_dir_.path(),
+                                      in_memory_env_.get());
     EXPECT_EQ(SYNC_STATUS_OK, RunTask(&initializer));
     metadata_database_ = initializer.PassMetadataDatabase();
   }
@@ -170,6 +174,8 @@ class ListChangesTaskTest : public testing::Test,
     RegisterAppTask register_app(this, app_id);
     EXPECT_EQ(SYNC_STATUS_OK, RunTask(&register_app));
   }
+
+  scoped_ptr<leveldb::Env> in_memory_env_;
 
   std::string sync_root_folder_id_;
   std::string app_root_folder_id_;

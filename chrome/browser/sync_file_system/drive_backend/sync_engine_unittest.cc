@@ -19,6 +19,8 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -105,6 +107,8 @@ class SyncEngineTest
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
+
     extension_service_.reset(new MockExtensionService);
     scoped_ptr<drive::FakeDriveService> fake_drive_service(
         new drive::FakeDriveService);
@@ -120,7 +124,8 @@ class SyncEngineTest
         scoped_ptr<drive::DriveUploaderInterface>(),
         NULL /* notification_manager */,
         extension_service_.get(),
-        NULL /* auth_token_service */));
+        NULL /* auth_token_service */,
+        in_memory_env_.get()));
     sync_engine_->Initialize();
     base::RunLoop().RunUntilIdle();
   }
@@ -152,6 +157,7 @@ class SyncEngineTest
  private:
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir profile_dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
 
   scoped_ptr<MockExtensionService> extension_service_;
   scoped_ptr<drive_backend::SyncEngine> sync_engine_;

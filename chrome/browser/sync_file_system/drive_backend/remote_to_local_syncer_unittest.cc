@@ -26,6 +26,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/gdata_errorcode.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -51,6 +53,7 @@ class RemoteToLocalSyncerTest : public testing::Test,
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     fake_drive_service_.reset(new drive::FakeDriveService);
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
@@ -83,7 +86,8 @@ class RemoteToLocalSyncerTest : public testing::Test,
     SyncEngineInitializer initializer(this,
                                       base::MessageLoopProxy::current(),
                                       fake_drive_service_.get(),
-                                      database_dir_.path());
+                                      database_dir_.path(),
+                                      in_memory_env_.get());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     initializer.Run(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
@@ -200,6 +204,7 @@ class RemoteToLocalSyncerTest : public testing::Test,
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir database_dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
 
   scoped_ptr<drive::FakeDriveService> fake_drive_service_;
   scoped_ptr<drive::DriveUploader> drive_uploader_;

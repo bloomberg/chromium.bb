@@ -94,8 +94,10 @@ SyncEngineInitializer::SyncEngineInitializer(
     SyncEngineContext* sync_context,
     base::SequencedTaskRunner* task_runner,
     drive::DriveServiceInterface* drive_service,
-    const base::FilePath& database_path)
+    const base::FilePath& database_path,
+    leveldb::Env* env_override)
     : sync_context_(sync_context),
+      env_override_(env_override),
       task_runner_(task_runner),
       drive_service_(drive_service),
       database_path_(database_path),
@@ -123,7 +125,7 @@ void SyncEngineInitializer::Run(const SyncStatusCallback& callback) {
   }
 
   MetadataDatabase::Create(
-      task_runner_.get(), database_path_,
+      task_runner_.get(), database_path_, env_override_,
       base::Bind(&SyncEngineInitializer::DidCreateMetadataDatabase,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

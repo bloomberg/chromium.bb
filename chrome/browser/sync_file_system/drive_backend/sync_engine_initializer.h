@@ -25,6 +25,10 @@ class ResourceEntry;
 class ResourceList;
 }
 
+namespace leveldb {
+class Env;
+}
+
 namespace sync_file_system {
 namespace drive_backend {
 
@@ -63,7 +67,8 @@ class SyncEngineInitializer : public SyncTask {
   SyncEngineInitializer(SyncEngineContext* sync_context,
                         base::SequencedTaskRunner* task_runner,
                         drive::DriveServiceInterface* drive_service,
-                        const base::FilePath& database_path);
+                        const base::FilePath& database_path,
+                        leveldb::Env* env_override);
   virtual ~SyncEngineInitializer();
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
 
@@ -102,6 +107,7 @@ class SyncEngineInitializer : public SyncTask {
                            SyncStatusCode status);
 
   SyncEngineContext* sync_context_;  // Not owned.
+  leveldb::Env* env_override_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   drive::DriveServiceInterface* drive_service_;

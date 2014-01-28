@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <stack>
 
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
@@ -25,6 +26,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
 #define FPL(a) FILE_PATH_LITERAL(a)
@@ -40,6 +43,7 @@ class DriveBackendSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::IO);
@@ -66,7 +70,7 @@ class DriveBackendSyncTest : public testing::Test {
         file_task_runner_.get(),
         drive_service.PassAs<drive::DriveServiceInterface>(),
         uploader.Pass(),
-        NULL, NULL, NULL));
+        NULL, NULL, NULL, in_memory_env_.get()));
     remote_sync_service_->Initialize();
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
@@ -368,6 +372,7 @@ class DriveBackendSyncTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir base_dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;
 
   scoped_ptr<SyncEngine> remote_sync_service_;

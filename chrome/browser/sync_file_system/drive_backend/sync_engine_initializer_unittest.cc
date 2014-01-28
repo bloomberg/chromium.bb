@@ -18,6 +18,8 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -41,6 +43,7 @@ class SyncEngineInitializerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     ASSERT_TRUE(fake_drive_service_.LoadAccountMetadataForWapi(
         "sync_file_system/account_metadata.json"));
     ASSERT_TRUE(fake_drive_service_.LoadResourceListForWapi(
@@ -62,7 +65,8 @@ class SyncEngineInitializerTest : public testing::Test {
         NULL,
         base::MessageLoopProxy::current(),
         &fake_drive_service_,
-        database_path()));
+        database_path(),
+        in_memory_env_.get()));
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
 
     initializer_->Run(CreateResultReceiver(&status));
@@ -81,6 +85,7 @@ class SyncEngineInitializerTest : public testing::Test {
     MetadataDatabase::Create(
         base::MessageLoopProxy::current(),
         database_path(),
+        in_memory_env_.get(),
         CreateResultReceiver(&status, &database));
     base::RunLoop().RunUntilIdle();
     if (status != SYNC_STATUS_OK)
@@ -192,6 +197,7 @@ class SyncEngineInitializerTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir database_dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
   drive::FakeDriveService fake_drive_service_;
 
   scoped_ptr<SyncEngineInitializer> initializer_;

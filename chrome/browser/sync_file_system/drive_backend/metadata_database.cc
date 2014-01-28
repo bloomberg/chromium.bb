@@ -31,6 +31,7 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_entry_kinds.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -187,6 +188,7 @@ bool IsDatabaseEmpty(leveldb::DB* db) {
 }
 
 SyncStatusCode OpenDatabase(const base::FilePath& path,
+                            leveldb::Env* env_override,
                             scoped_ptr<leveldb::DB>* db_out,
                             bool* created) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -196,6 +198,8 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  if (env_override)
+    options.env = env_override;
   leveldb::DB* db = NULL;
   leveldb::Status db_status =
       leveldb::DB::Open(options, path.AsUTF8Unsafe(), &db);
@@ -481,12 +485,13 @@ bool MetadataDatabase::DirtyTrackerComparator::operator()(
 // static
 void MetadataDatabase::Create(base::SequencedTaskRunner* task_runner,
                               const base::FilePath& database_path,
+                              leveldb::Env* env_override,
                               const CreateCallback& callback) {
   task_runner->PostTask(FROM_HERE, base::Bind(
       &CreateOnTaskRunner,
       base::MessageLoopProxy::current(),
       make_scoped_refptr(task_runner),
-      database_path, callback));
+      database_path, env_override, callback));
 }
 
 MetadataDatabase::~MetadataDatabase() {
@@ -1245,9 +1250,11 @@ void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
 }
 
 MetadataDatabase::MetadataDatabase(base::SequencedTaskRunner* task_runner,
-                                   const base::FilePath& database_path)
+                                   const base::FilePath& database_path,
+                                   leveldb::Env* env_override)
     : task_runner_(task_runner),
       database_path_(database_path),
+      env_override_(env_override),
       largest_known_change_id_(0),
       weak_ptr_factory_(this) {
   DCHECK(task_runner);
@@ -1258,9 +1265,10 @@ void MetadataDatabase::CreateOnTaskRunner(
     base::SingleThreadTaskRunner* callback_runner,
     base::SequencedTaskRunner* task_runner,
     const base::FilePath& database_path,
+    leveldb::Env* env_override,
     const CreateCallback& callback) {
   scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(task_runner, database_path));
+      new MetadataDatabase(task_runner, database_path, env_override));
   SyncStatusCode status =
       metadata_database->InitializeOnTaskRunner();
   if (status != SYNC_STATUS_OK)
@@ -1276,7 +1284,7 @@ SyncStatusCode MetadataDatabase::CreateForTesting(
     scoped_ptr<MetadataDatabase>* metadata_database_out) {
   scoped_ptr<MetadataDatabase> metadata_database(
       new MetadataDatabase(base::MessageLoopProxy::current(),
-                           base::FilePath()));
+                           base::FilePath(), NULL));
   metadata_database->db_ = db.Pass();
   SyncStatusCode status =
       metadata_database->InitializeOnTaskRunner();
@@ -1293,7 +1301,7 @@ SyncStatusCode MetadataDatabase::InitializeOnTaskRunner() {
   bool created = false;
   // Open database unless |db_| is overridden for testing.
   if (!db_) {
-    status = OpenDatabase(database_path_, &db_, &created);
+    status = OpenDatabase(database_path_, env_override_, &db_, &created);
     if (status != SYNC_STATUS_OK)
       return status;
   }

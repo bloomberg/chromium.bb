@@ -16,7 +16,9 @@
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 #define FPL(a) FILE_PATH_LITERAL(a)
@@ -145,6 +147,7 @@ class MetadataDatabaseTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
   }
 
   virtual void TearDown() OVERRIDE { DropDatabase(); }
@@ -167,6 +170,7 @@ class MetadataDatabaseTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     MetadataDatabase::Create(base::MessageLoopProxy::current(),
                              database_dir_.path(),
+                             in_memory_env_.get(),
                              CreateResultReceiver(&status,
                                                   &metadata_database_));
     message_loop_.RunUntilIdle();
@@ -223,6 +227,7 @@ class MetadataDatabaseTest : public testing::Test {
     leveldb::Options options;
     options.create_if_missing = true;
     options.max_open_files = 0;  // Use minimum.
+    options.env = in_memory_env_.get();
     leveldb::Status status =
         leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
     EXPECT_TRUE(status.ok());
@@ -580,6 +585,7 @@ class MetadataDatabaseTest : public testing::Test {
   base::ScopedTempDir database_dir_;
   base::MessageLoop message_loop_;
 
+  scoped_ptr<leveldb::Env> in_memory_env_;
   scoped_ptr<MetadataDatabase> metadata_database_;
 
   int64 current_change_id_;

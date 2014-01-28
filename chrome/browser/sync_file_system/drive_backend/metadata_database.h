@@ -27,6 +27,7 @@ class SingleThreadTaskRunner;
 
 namespace leveldb {
 class DB;
+class Env;
 class WriteBatch;
 }
 
@@ -122,8 +123,12 @@ class MetadataDatabase {
       CreateCallback;
 
   // The entry point of the MetadataDatabase for production code.
+  // If |env_override| is non-NULL, internal LevelDB uses |env_override| instead
+  // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
+  // testing.
   static void Create(base::SequencedTaskRunner* task_runner,
                      const base::FilePath& database_path,
+                     leveldb::Env* env_override,
                      const CreateCallback& callback);
   ~MetadataDatabase();
 
@@ -339,10 +344,12 @@ class MetadataDatabase {
   typedef std::set<FileTracker*, DirtyTrackerComparator> DirtyTrackers;
 
   MetadataDatabase(base::SequencedTaskRunner* task_runner,
-                   const base::FilePath& database_path);
+                   const base::FilePath& database_path,
+                   leveldb::Env* env_override);
   static void CreateOnTaskRunner(base::SingleThreadTaskRunner* callback_runner,
                                  base::SequencedTaskRunner* task_runner,
                                  const base::FilePath& database_path,
+                                 leveldb::Env* env_override,
                                  const CreateCallback& callback);
   static SyncStatusCode CreateForTesting(
       scoped_ptr<leveldb::DB> db,
@@ -426,6 +433,7 @@ class MetadataDatabase {
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::FilePath database_path_;
+  leveldb::Env* env_override_;
   scoped_ptr<leveldb::DB> db_;
 
   scoped_ptr<ServiceMetadata> service_metadata_;

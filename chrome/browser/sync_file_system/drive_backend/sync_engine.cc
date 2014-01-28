@@ -98,7 +98,8 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
           drive_uploader.Pass(),
           notification_manager,
           extension_service,
-          token_service));
+          token_service,
+          NULL));
   sync_engine->Initialize();
 
   return sync_engine.Pass();
@@ -404,9 +405,11 @@ SyncEngine::SyncEngine(
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     drive::DriveNotificationManager* notification_manager,
     ExtensionServiceInterface* extension_service,
-    ProfileOAuth2TokenService* auth_token_service)
+    ProfileOAuth2TokenService* auth_token_service,
+    leveldb::Env* env_override)
     : base_dir_(base_dir),
       task_runner_(task_runner),
+      env_override_(env_override),
       drive_service_(drive_service.Pass()),
       drive_uploader_(drive_uploader.Pass()),
       notification_manager_(notification_manager),
@@ -442,7 +445,8 @@ void SyncEngine::PostInitializeTask() {
       new SyncEngineInitializer(this,
                                 task_runner_.get(),
                                 drive_service_.get(),
-                                base_dir_.Append(kDatabaseName));
+                                base_dir_.Append(kDatabaseName),
+                                env_override_);
   task_manager_->ScheduleSyncTaskAtPriority(
       scoped_ptr<SyncTask>(initializer),
       SyncTaskManager::PRIORITY_HIGH,
