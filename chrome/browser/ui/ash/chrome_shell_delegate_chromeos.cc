@@ -119,11 +119,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::AccessibilityManager::Get()->IsAutoclickEnabled();
   }
 
-  virtual bool IsVirtualKeyboardEnabled() const OVERRIDE {
-    DCHECK(chromeos::AccessibilityManager::Get());
-    return chromeos::AccessibilityManager::Get()->IsVirtualKeyboardEnabled();
-  }
-
   virtual bool ShouldShowAccessibilityMenu() const OVERRIDE {
     DCHECK(chromeos::AccessibilityManager::Get());
     return chromeos::AccessibilityManager::Get()->

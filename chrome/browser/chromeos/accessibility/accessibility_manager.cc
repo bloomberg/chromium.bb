@@ -61,8 +61,6 @@
 #include "media/audio/sounds/sounds_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -298,14 +296,12 @@ AccessibilityManager::AccessibilityManager()
       high_contrast_pref_handler_(prefs::kHighContrastEnabled),
       autoclick_pref_handler_(prefs::kAutoclickEnabled),
       autoclick_delay_pref_handler_(prefs::kAutoclickDelayMs),
-      virtual_keyboard_pref_handler_(prefs::kVirtualKeyboardEnabled),
       large_cursor_enabled_(false),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       autoclick_enabled_(false),
       autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
-      virtual_keyboard_enabled_(false),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
       weak_ptr_factory_(this),
       should_speak_chrome_vox_announcements_on_user_screen_(true),
@@ -371,8 +367,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         pref_service->GetBoolean(prefs::kHighContrastEnabled) ||
         pref_service->GetBoolean(prefs::kAutoclickEnabled) ||
         pref_service->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu) ||
-        pref_service->GetBoolean(prefs::kScreenMagnifierEnabled) ||
-        pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled))
+        pref_service->GetBoolean(prefs::kScreenMagnifierEnabled))
       return true;
   }
   return false;
@@ -686,45 +681,6 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
 #endif
 }
 
-void AccessibilityManager::EnableVirtualKeyboard(bool enabled) {
-  if (!profile_)
-    return;
-
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetBoolean(prefs::kVirtualKeyboardEnabled, enabled);
-  pref_service->CommitPendingWrite();
-}
-
-bool AccessibilityManager::IsVirtualKeyboardEnabled() {
-  return virtual_keyboard_enabled_;
-}
-
-void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
-  if (!profile_)
-    return;
-
-  const bool enabled =
-      profile_->GetPrefs()->GetBoolean(prefs::kVirtualKeyboardEnabled);
-
-  if (virtual_keyboard_enabled_ == enabled)
-    return;
-  virtual_keyboard_enabled_ = enabled;
-
-  AccessibilityStatusEventDetails detail(enabled, ash::A11Y_NOTIFICATION_NONE);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-      content::NotificationService::AllSources(),
-      content::Details<AccessibilityStatusEventDetails>(&detail));
-
-#if defined(USE_ASH)
-  keyboard::SetAccessibilityKeyboardEnabled(enabled);
-  if (enabled)
-    ash::Shell::GetInstance()->CreateKeyboard();
-  else if (!keyboard::IsKeyboardEnabled())
-    ash::Shell::GetInstance()->DeactivateKeyboard();
-#endif
-}
-
 void AccessibilityManager::CheckBrailleState() {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE, base::Bind(
@@ -772,10 +728,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         prefs::kAutoclickDelayMs,
         base::Bind(&AccessibilityManager::UpdateAutoclickDelayFromPref,
                    base::Unretained(this)));
-    pref_change_registrar_->Add(
-        prefs::kVirtualKeyboardEnabled,
-        base::Bind(&AccessibilityManager::UpdateVirtualKeyboardFromPref,
-                   base::Unretained(this)));
 
     local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
@@ -809,7 +761,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateHighContrastFromPref();
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
-  UpdateVirtualKeyboardFromPref();
 }
 
 void AccessibilityManager::ActiveUserChanged(const std::string& user_id) {
@@ -844,7 +795,7 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosHighContrast",
                         IsHighContrastEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
-                        IsVirtualKeyboardEnabled());
+                        accessibility::IsVirtualKeyboardEnabled());
   if (MagnificationManager::Get()) {
     uint32 type = MagnificationManager::Get()->IsMagnifierEnabled() ?
                       MagnificationManager::Get()->GetMagnifierType() : 0;

@@ -292,12 +292,9 @@ class ASH_EXPORT Shell
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 
-  // Creates a virtual keyboard. Deletes the old virtual keyboard if it already
-  // exists.
+  // Creates virtual keyboard. Deletes the old virtual keyboard if it's already
+  // exist.
   void CreateKeyboard();
-
-  // Deactivates the virtual keyboard.
-  void DeactivateKeyboard();
 
   // Show shelf view if it was created hidden (before session has started).
   void ShowShelf();

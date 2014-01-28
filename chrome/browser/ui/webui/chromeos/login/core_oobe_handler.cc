@@ -31,7 +31,6 @@ const char kJsScreenPath[] = "cr.ui.Oobe";
 
 // JS API callbacks names.
 const char kJsApiEnableHighContrast[] = "enableHighContrast";
-const char kJsApiEnableVirtualKeyboard[] = "enableVirtualKeyboard";
 const char kJsApiEnableScreenMagnifier[] = "enableScreenMagnifier";
 const char kJsApiEnableLargeCursor[] = "enableLargeCursor";
 const char kJsApiEnableSpokenFeedback[] = "enableSpokenFeedback";
@@ -67,10 +66,6 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
       this,
       chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
       content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-      content::NotificationService::AllSources());
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -91,7 +86,6 @@ void CoreOobeHandler::DeclareLocalizedValues(LocalizedValuesBuilder* builder) {
   builder->Add("largeCursorOption", IDS_OOBE_LARGE_CURSOR_OPTION);
   builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
   builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
-  builder->Add("virtualKeyboardOption", IDS_OOBE_VIRTUAL_KEYBOARD_OPTION);
 
   // Strings for the device requisition prompt.
   builder->Add("deviceRequisitionPromptCancel",
@@ -132,8 +126,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableHighContrast);
   AddCallback(kJsApiEnableLargeCursor,
               &CoreOobeHandler::HandleEnableLargeCursor);
-  AddCallback(kJsApiEnableVirtualKeyboard,
-              &CoreOobeHandler::HandleEnableVirtualKeyboard);
   AddCallback(kJsApiEnableScreenMagnifier,
               &CoreOobeHandler::HandleEnableScreenMagnifier);
   AddCallback(kJsApiEnableSpokenFeedback,
@@ -226,10 +218,6 @@ void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
 
 void CoreOobeHandler::HandleEnableLargeCursor(bool enabled) {
   AccessibilityManager::Get()->EnableLargeCursor(enabled);
-}
-
-void CoreOobeHandler::HandleEnableVirtualKeyboard(bool enabled) {
-  AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
@@ -333,9 +321,7 @@ void CoreOobeHandler::Observe(int type,
           chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE ||
       type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR ||
       type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER ||
-      type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK ||
-      type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD)
-  {
+      type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
     UpdateA11yState();
   } else {
     NOTREACHED() << "Unexpected notification " << type;

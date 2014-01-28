@@ -1215,9 +1215,6 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_SCREEN_MAGNIFIER_OPTION" desc="Screen magnifier option shown on OOBE screens accessibility menu.">
     Screen magnifier
   </message>
-  <message name="IDS_OOBE_VIRTUAL_KEYBOARD_OPTION" desc="Virtual keyboard option shown on the OOBE screens accessibility menu.">
-    On-screen keyboard
-  </message>
   <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
     Sign in
   </message>
@@ -1850,7 +1847,7 @@ Press any key to continue exploring.
     Enable tap dragging
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for virtual keyboard.">
-    Enable on-screen keyboard
+    Enable virtual keyboard
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SHOULD_ALWAYS_SHOW_MENU" desc="In the settings tab, the text next to the checkbox to show the accessibility tray menu regardless of the state of a11y features.">
     Show accessibility options in the system menu

@@ -613,10 +613,13 @@ void RootWindowController::ActivateKeyboard(
 
 void RootWindowController::DeactivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
-  if (!keyboard_controller ||
-      !keyboard_controller->keyboard_container_initialized()) {
+  if (!keyboard::IsKeyboardEnabled())
     return;
-  }
+
+  DCHECK(keyboard_controller);
+  if (!keyboard_controller->keyboard_container_initialized())
+    return;
+
   aura::Window* keyboard_container =
       keyboard_controller->GetContainerWindow();
   if (keyboard_container->GetRootWindow() == root_window()) {

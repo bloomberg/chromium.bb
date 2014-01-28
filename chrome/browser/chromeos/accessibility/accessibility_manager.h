@@ -117,11 +117,6 @@ class AccessibilityManager : public content::NotificationObserver,
   // Returns the autoclick delay in milliseconds.
   int GetAutoclickDelay() const;
 
-  // Enables or disables the virtual keyboard.
-  void EnableVirtualKeyboard(bool enabled);
-  // Returns true if the virtual keyboard is enabled, otherwise false.
-  bool IsVirtualKeyboardEnabled();
-
   // SessionStateObserver overrides:
   virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE;
 
@@ -155,7 +150,6 @@ class AccessibilityManager : public content::NotificationObserver,
   void UpdateHighContrastFromPref();
   void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
-  void UpdateVirtualKeyboardFromPref();
   void LocalePrefChanged();
 
   void CheckBrailleState();
@@ -205,7 +199,6 @@ class AccessibilityManager : public content::NotificationObserver,
   PrefHandler high_contrast_pref_handler_;
   PrefHandler autoclick_pref_handler_;
   PrefHandler autoclick_delay_pref_handler_;
-  PrefHandler virtual_keyboard_pref_handler_;
 
   bool large_cursor_enabled_;
   bool sticky_keys_enabled_;
@@ -213,7 +206,6 @@ class AccessibilityManager : public content::NotificationObserver,
   bool high_contrast_enabled_;
   bool autoclick_enabled_;
   int autoclick_delay_ms_;
-  bool virtual_keyboard_enabled_;
 
   ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
 

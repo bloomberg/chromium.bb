@@ -63,9 +63,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns if autoclick is enabled or not.
   virtual bool IsAutoclickEnabled() const = 0;
 
-  // Returns if the a11y virtual keyboard is enabled.
-  virtual bool IsVirtualKeyboardEnabled() const = 0;
-
   // Returns true when the accessibility menu should be shown.
   virtual bool ShouldShowAccessibilityMenu() const = 0;
 

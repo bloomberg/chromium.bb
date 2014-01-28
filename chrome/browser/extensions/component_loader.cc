@@ -359,7 +359,8 @@ void ComponentLoader::AddChromeApp() {
 
 void ComponentLoader::AddKeyboardApp() {
 #if defined(USE_AURA)
-  Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
+  if (keyboard::IsKeyboardEnabled())
+    Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
 #endif
 }
 

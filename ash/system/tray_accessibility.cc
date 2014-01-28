@@ -38,7 +38,6 @@ enum AccessibilityState {
   A11Y_SCREEN_MAGNIFIER = 1 << 2,
   A11Y_LARGE_CURSOR     = 1 << 3,
   A11Y_AUTOCLICK        = 1 << 4,
-  A11Y_VIRTUAL_KEYBOARD = 1 << 5,
 };
 
 uint32 GetAccessibilityState() {
@@ -55,8 +54,6 @@ uint32 GetAccessibilityState() {
     state |= A11Y_LARGE_CURSOR;
   if (delegate->IsAutoclickEnabled())
     state |= A11Y_AUTOCLICK;
-  if (delegate->IsVirtualKeyboardEnabled())
-    state |= A11Y_VIRTUAL_KEYBOARD;
   return state;
 }
 
