@@ -35,6 +35,7 @@
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_file_mapping.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_fullscreen.h"

@@ -971,6 +971,16 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest, MAYBE_PNaCl_FileIO_Private) {
   );
 }
 
+// PPB_FileMapping is only implemented on POSIX currently.
+// http://crbug.com/83774
+#if defined(OS_WIN)
+#define MAYBE_FileMapping DISABLED_FileMapping
+#else
+#define MAYBE_FileMapping FileMapping
+#endif
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileMapping)
+TEST_PPAPI_NACL(MAYBE_FileMapping)
+
 // Note, the FileRef tests are split into two, because all of them together
 // sometimes take too long on windows: crbug.com/336999
 IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef1) {
