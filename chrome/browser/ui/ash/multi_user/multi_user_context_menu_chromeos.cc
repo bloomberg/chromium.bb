@@ -7,6 +7,7 @@
 #include "ash/multi_profile_uma.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -94,9 +95,10 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(
       menu->AddItem(
           user_index == 1 ? IDC_VISIT_DESKTOP_OF_LRU_USER_2 :
                             IDC_VISIT_DESKTOP_OF_LRU_USER_3,
-          l10n_util::GetStringFUTF16(IDS_VISIT_DESKTOP_OF_LRU_USER,
-                                     delegate->GetUserDisplayName(
-                                         user_index)));
+          l10n_util::GetStringFUTF16(
+              IDS_VISIT_DESKTOP_OF_LRU_USER,
+              delegate->GetUserDisplayName(user_index),
+              base::ASCIIToUTF16(delegate->GetUserEmail(user_index))));
     }
   }
   return model.Pass();
