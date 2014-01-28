@@ -103,6 +103,14 @@ cr.define('print_preview', function() {
    */
   DestinationSearch.LIST_BOTTOM_PADDING_ = 18;
 
+  /**
+   * Number of unregistered destinations that may be promoted to the top.
+   * @type {number}
+   * @const
+   * @private
+   */
+  DestinationSearch.MAX_PROMOTED_UNREGISTERED_PRINTERS_ = 2;
+
   DestinationSearch.prototype = {
     __proto__: print_preview.Component.prototype,
 
@@ -280,6 +288,8 @@ cr.define('print_preview', function() {
       var recentDestinations = [];
       var localDestinations = [];
       var cloudDestinations = [];
+      var unregisteredCloudDestinations = [];
+
       this.destinationStore_.destinations.forEach(function(destination) {
         if (destination.isRecent) {
           recentDestinations.push(destination);
@@ -288,12 +298,24 @@ cr.define('print_preview', function() {
             destination.origin == print_preview.Destination.Origin.DEVICE) {
           localDestinations.push(destination);
         } else {
-          cloudDestinations.push(destination);
+          if (destination.connectionStatus ==
+                print_preview.Destination.ConnectionStatus.UNREGISTERED) {
+            unregisteredCloudDestinations.push(destination);
+          } else {
+            cloudDestinations.push(destination);
+          }
         }
       });
+
+      var finalCloudDestinations = unregisteredCloudDestinations.slice(
+        0, DestinationSearch.MAX_PROMOTED_UNREGISTERED_PRINTERS_).concat(
+          cloudDestinations,
+          unregisteredCloudDestinations.slice(
+            DestinationSearch.MAX_PROMOTED_UNREGISTERED_PRINTERS_));
+
       this.recentList_.updateDestinations(recentDestinations);
       this.localList_.updateDestinations(localDestinations);
-      this.cloudList_.updateDestinations(cloudDestinations);
+      this.cloudList_.updateDestinations(finalCloudDestinations);
     },
 
     /**

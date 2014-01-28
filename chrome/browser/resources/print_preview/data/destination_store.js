@@ -155,8 +155,8 @@ cr.define('print_preview', function() {
     this.privetSearchTimeout_ = null;
 
     /**
-     * Map set of IDs of privet register promo destinations click.
-     * @type {!Object.<string, bool>}
+     * MDNS service name of destination that we are waiting to register.
+     * @type {?string}
      * @private
      */
     this.waitForRegisterDestination_ = null;
@@ -565,7 +565,6 @@ cr.define('print_preview', function() {
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
     },
-
 
     /**
      * Inserts a destination into the store without dispatching any events.

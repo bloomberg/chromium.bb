@@ -236,7 +236,9 @@ cr.define('print_preview', function() {
     /** @return {boolean} Whether the destination is local or cloud-based. */
     get isLocal() {
       return this.origin_ == Destination.Origin.LOCAL ||
-             this.origin_ == Destination.Origin.PRIVET;
+             (this.origin_ == Destination.Origin.PRIVET &&
+              this.connectionStatus_ !=
+              Destination.ConnectionStatus.UNREGISTERED);
     },
 
     /** @return {boolean} Whether the destination is a privet local printer */
