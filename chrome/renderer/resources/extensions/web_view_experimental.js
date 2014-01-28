@@ -34,7 +34,7 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
   'dialog': {
     cancelable: true,
     customHandler: function(webViewInternal, event, webViewEvent) {
-      webViewInternal.handleDialogEvent_(event, webViewEvent);
+      webViewInternal.handleDialogEvent(event, webViewEvent);
     },
     evt: CreateEvent('webview.onDialog'),
     fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
@@ -44,7 +44,7 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
 /**
  * @private
  */
-WebViewInternal.prototype.maybeAttachWebRequestEventToObject_ =
+WebViewInternal.prototype.maybeAttachWebRequestEventToObject =
     function(obj, eventName, webRequestEvent) {
   Object.defineProperty(
       obj,
@@ -59,7 +59,7 @@ WebViewInternal.prototype.maybeAttachWebRequestEventToObject_ =
 /**
  * @private
  */
-WebViewInternal.prototype.handleDialogEvent_ =
+WebViewInternal.prototype.handleDialogEvent =
     function(event, webViewEvent) {
   var showWarningMessage = function(dialogType) {
     var VOWELS = ['a', 'e', 'i', 'o', 'u'];
@@ -71,8 +71,8 @@ WebViewInternal.prototype.handleDialogEvent_ =
   };
 
   var self = this;
-  var browserPluginNode = this.browserPluginNode_;
-  var webviewNode = this.webviewNode_;
+  var browserPluginNode = this.browserPluginNode;
+  var webviewNode = this.webviewNode;
 
   var requestId = event.requestId;
   var actionTaken = false;
@@ -91,11 +91,11 @@ WebViewInternal.prototype.handleDialogEvent_ =
     ok: function(user_input) {
       validateCall();
       user_input = user_input || '';
-      WebView.setPermission(self.instanceId_, requestId, 'allow', user_input);
+      WebView.setPermission(self.instanceId, requestId, 'allow', user_input);
     },
     cancel: function() {
       validateCall();
-      WebView.setPermission(self.instanceId_, requestId, 'deny');
+      WebView.setPermission(self.instanceId, requestId, 'deny');
     }
   };
   webViewEvent.dialog = dialog;
@@ -114,7 +114,7 @@ WebViewInternal.prototype.handleDialogEvent_ =
         return;
       }
       WebView.setPermission(
-          self.instanceId_, requestId, 'default', '', function(allowed) {
+          self.instanceId, requestId, 'default', '', function(allowed) {
         if (allowed) {
           return;
         }
@@ -125,7 +125,7 @@ WebViewInternal.prototype.handleDialogEvent_ =
     actionTaken = true;
     // The default action is equivalent to canceling the dialog.
     WebView.setPermission(
-        self.instanceId_, requestId, 'default', '', function(allowed) {
+        self.instanceId, requestId, 'default', '', function(allowed) {
       if (allowed) {
         return;
       }
@@ -135,35 +135,35 @@ WebViewInternal.prototype.handleDialogEvent_ =
 };
 
 /** @private */
-WebViewInternal.prototype.maybeGetExperimentalEvents_ = function() {
+WebViewInternal.prototype.maybeGetExperimentalEvents = function() {
   return WEB_VIEW_EXPERIMENTAL_EVENTS;
 };
 
-WebViewInternal.prototype.maybeGetExperimentalPermissions_ = function() {
+WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
   return [];
 };
 
 /** @private */
-WebViewInternal.prototype.clearData_ = function(var_args) {
-  if (!this.instanceId_) {
+WebViewInternal.prototype.clearData = function(var_args) {
+  if (!this.instanceId) {
     return;
   }
-  var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
+  var args = $Array.concat([this.instanceId], $Array.slice(arguments));
   $Function.apply(WebView.clearData, null, args);
 };
 
 /** @private */
-WebViewInternal.prototype.captureVisibleRegion_ = function(spec, callback) {
-  WebView.captureVisibleRegion(this.instanceId_, spec, callback);
+WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
+  WebView.captureVisibleRegion(this.instanceId, spec, callback);
 };
 
-WebViewInternal.maybeRegisterExperimentalAPIs = function(proto, secret) {
+WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
   proto.clearData = function(var_args) {
-    var internal = this.internal_(secret);
-    $Function.apply(internal.clearData_, internal, arguments);
+    var internal = privates(this).internal;
+    $Function.apply(internal.clearData, internal, arguments);
   };
 
   proto.captureVisibleRegion = function(spec, callback) {
-    this.internal_(secret).captureVisibleRegion_(spec, callback);
+    privates(this).internal.captureVisibleRegion(spec, callback);
   };
 };
