@@ -52,10 +52,6 @@ void RenderSVGResourceMarker::layout()
     LayoutRectRecorder recorder(*this);
     TemporaryChange<bool> inLayoutChange(m_isInLayout, true);
 
-    // Invalidate all resources if our layout changed.
-    if (everHadLayout() && selfNeedsLayout())
-        removeAllClientsFromCache();
-
     // RenderSVGHiddenContainer overwrites layout(). We need the
     // layouting of RenderSVGContainer for calculating  local
     // transformations and repaint.
