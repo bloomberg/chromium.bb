@@ -421,14 +421,14 @@ static int32_t Pnacl_M34_PPB_FileMapping_Map(PP_Instance instance, PP_Resource f
   return iface->Map(instance, file_io, length, map_protection, map_flags, offset, address, *callback);
 }
 
-static int32_t Pnacl_M34_PPB_FileMapping_Unmap(PP_Instance instance, const void* address, int64_t length, struct PP_CompletionCallback* callback) {
+static int32_t Pnacl_M34_PPB_FileMapping_Unmap(PP_Instance file_io, const void* address, int64_t length, struct PP_CompletionCallback* callback) {
   const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
-  return iface->Unmap(instance, address, length, *callback);
+  return iface->Unmap(file_io, address, length, *callback);
 }
 
-static int64_t Pnacl_M34_PPB_FileMapping_GetMapPageSize(PP_Instance instance) {
+static int64_t Pnacl_M34_PPB_FileMapping_GetMapPageSize(PP_Instance file_io) {
   const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
-  return iface->GetMapPageSize(instance);
+  return iface->GetMapPageSize(file_io);
 }
 
 /* End wrapper methods for PPB_FileMapping_0_1 */
@@ -4231,8 +4231,8 @@ static struct PPB_FileIO_1_1 Pnacl_Wrappers_PPB_FileIO_1_1 = {
 
 static struct PPB_FileMapping_0_1 Pnacl_Wrappers_PPB_FileMapping_0_1 = {
     .Map = (int32_t (*)(PP_Instance instance, PP_Resource file_io, int64_t length, uint32_t map_protection, uint32_t map_flags, int64_t offset, void** address, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileMapping_Map,
-    .Unmap = (int32_t (*)(PP_Instance instance, const void* address, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileMapping_Unmap,
-    .GetMapPageSize = (int64_t (*)(PP_Instance instance))&Pnacl_M34_PPB_FileMapping_GetMapPageSize
+    .Unmap = (int32_t (*)(PP_Instance file_io, const void* address, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileMapping_Unmap,
+    .GetMapPageSize = (int64_t (*)(PP_Instance file_io))&Pnacl_M34_PPB_FileMapping_GetMapPageSize
 };
 
 static struct PPB_FileRef_1_0 Pnacl_Wrappers_PPB_FileRef_1_0 = {

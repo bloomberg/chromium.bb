@@ -9,8 +9,6 @@
  * memory.
  */
 
-[generate_thunk]
-
 label Chrome {
   [channel=dev] M34 = 0.1
 };

@@ -69,6 +69,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
       PP_FileHandle* handle,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
+ private:
   // FileHandleHolder is used to guarantee that file operations will have a
   // valid FD to operate on, even if they're in a different thread.
   // If instead we just passed the raw FD, the FD could be closed before the
@@ -101,11 +102,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
     ~FileHandleHolder();
     PP_FileHandle raw_handle_;
   };
-  scoped_refptr<FileHandleHolder> file_handle() {
-    return file_handle_;
-  }
 
- private:
   // Class to perform file query operations across multiple threads.
   class QueryOp : public base::RefCountedThreadSafe<QueryOp> {
    public:

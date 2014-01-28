@@ -19,7 +19,6 @@
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/extensions_common_resource.h"
-#include "ppapi/proxy/file_mapping_resource.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
 #include "ppapi/proxy/flash_file_resource.h"
 #include "ppapi/proxy/flash_fullscreen_resource.h"
@@ -363,9 +362,6 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
       break;
     case EXTENSIONS_COMMON_SINGLETON_ID:
       new_singleton = new ExtensionsCommonResource(connection, instance);
-      break;
-    case FILE_MAPPING_SINGLETON_ID:
-      new_singleton = new FileMappingResource(connection, instance);
       break;
     case GAMEPAD_SINGLETON_ID:
       new_singleton = new GamepadResource(connection, instance);
