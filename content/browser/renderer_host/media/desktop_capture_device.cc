@@ -366,13 +366,12 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
   switch (source.type) {
     case DesktopMediaID::TYPE_SCREEN: {
-      scoped_ptr<webrtc::DesktopCapturer> screen_capturer;
+      scoped_ptr<webrtc::ScreenCapturer> screen_capturer;
       screen_capturer.reset(webrtc::ScreenCapturer::Create(options));
-      if (screen_capturer) {
+      if (screen_capturer && screen_capturer->SelectScreen(source.id)) {
         capturer.reset(new webrtc::DesktopAndCursorComposer(
             screen_capturer.release(),
-            webrtc::MouseCursorMonitor::CreateForScreen(
-                options, webrtc::kFullDesktopScreenId)));
+            webrtc::MouseCursorMonitor::CreateForScreen(options, source.id)));
       }
       break;
     }

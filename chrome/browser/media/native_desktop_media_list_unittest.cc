@@ -52,11 +52,15 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   }
 
   virtual bool GetScreenList(ScreenList* screens) OVERRIDE {
-    return false;
+    webrtc::ScreenCapturer::Screen screen;
+    screen.id = 0;
+    screens->push_back(screen);
+    return true;
   }
 
   virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE {
-    return false;
+    EXPECT_EQ(0, id);
+    return true;
   }
 
  protected:

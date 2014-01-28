@@ -5,6 +5,7 @@
 #include "chrome/browser/media/native_desktop_media_list.h"
 
 #include <map>
+#include <sstream>
 
 #include "base/hash.h"
 #include "base/logging.h"
@@ -134,10 +135,23 @@ void NativeDesktopMediaList::Worker::Refresh(
   std::vector<SourceDescription> sources;
 
   if (screen_capturer_) {
-    // TODO(sergeyu): Enumerate each screen when ScreenCapturer supports it.
-    sources.push_back(SourceDescription(DesktopMediaID(
-        DesktopMediaID::TYPE_SCREEN, 0),
-        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SCREEN_NAME)));
+    webrtc::ScreenCapturer::ScreenList screens;
+    if (screen_capturer_->GetScreenList(&screens)) {
+      bool mutiple_screens = screens.size() > 1;
+      base::string16 title;
+      for (size_t i = 0; i < screens.size(); ++i) {
+        if (mutiple_screens) {
+          title = l10n_util::GetStringFUTF16Int(
+              IDS_DESKTOP_MEDIA_PICKER_MULTIPLE_SCREEN_NAME,
+              static_cast<int>(i + 1));
+        } else {
+          title = l10n_util::GetStringUTF16(
+              IDS_DESKTOP_MEDIA_PICKER_SINGLE_SCREEN_NAME);
+        }
+        sources.push_back(SourceDescription(DesktopMediaID(
+            DesktopMediaID::TYPE_SCREEN, screens[i].id), title));
+      }
+    }
   }
 
   if (window_capturer_) {
@@ -171,6 +185,8 @@ void NativeDesktopMediaList::Worker::Refresh(
     SourceDescription& source = sources[i];
     switch (source.id.type) {
       case DesktopMediaID::TYPE_SCREEN:
+        if (!screen_capturer_->SelectScreen(source.id.id))
+          continue;
         screen_capturer_->Capture(webrtc::DesktopRegion());
         DCHECK(current_frame_);
         break;
