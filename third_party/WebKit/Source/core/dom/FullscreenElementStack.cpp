@@ -37,6 +37,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
+#include "core/rendering/RenderFullScreen.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace WebCore {
@@ -99,6 +100,7 @@ bool FullscreenElementStack::isFullScreen(Document* document)
 FullscreenElementStack::FullscreenElementStack(Document* document)
     : DocumentLifecycleObserver(document)
     , m_areKeysEnabledInFullScreen(false)
+    , m_fullScreenRenderer(0)
     , m_fullScreenChangeDelayTimer(this, &FullscreenElementStack::fullScreenChangeDelayTimerFired)
 {
     document->setHasFullscreenElementStack();
@@ -117,6 +119,9 @@ void FullscreenElementStack::documentWasDetached()
 {
     m_fullScreenChangeEventTargetQueue.clear();
     m_fullScreenErrorEventTargetQueue.clear();
+
+    if (m_fullScreenRenderer)
+        setFullScreenRenderer(0);
 }
 
 void FullscreenElementStack::documentWasDisposed()
@@ -259,12 +264,6 @@ void FullscreenElementStack::webkitCancelFullScreen()
     Vector<RefPtr<Element> > replacementFullscreenElementStack;
     replacementFullscreenElementStack.append(fullscreenElementFrom(document()->topDocument()));
     FullscreenElementStack* topFullscreenElementStack = from(document()->topDocument());
-    // FIXME: This will remove a modal full screen dialog from the top layer.
-    // We shouldn't have separate vectors for full screen element stack and top layer. http://crbug.com/336704
-    Vector<RefPtr<Element> >::iterator end = topFullscreenElementStack->m_fullScreenElementStack.end();
-    for (Vector<RefPtr<Element> >::iterator iter = topFullscreenElementStack->m_fullScreenElementStack.begin(); iter + 1 < end; ++iter) {
-        topFullscreenElementStack->document()->removeFromTopLayer(iter->get());
-    }
     topFullscreenElementStack->m_fullScreenElementStack.swap(replacementFullscreenElementStack);
     topFullscreenElementStack->webkitExitFullscreen();
 }
@@ -365,8 +364,25 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
     ASSERT(document()->settings()); // If we're active we must have settings.
     ASSERT(document()->settings()->fullScreenEnabled());
 
+    if (m_fullScreenRenderer)
+        m_fullScreenRenderer->unwrapRenderer();
+
     m_fullScreenElement = element;
-    document()->addToTopLayer(element);
+
+    // Create a placeholder block for a the full-screen element, to keep the page from reflowing
+    // when the element is removed from the normal flow. Only do this for a RenderBox, as only
+    // a box will have a frameRect. The placeholder will be created in setFullScreenRenderer()
+    // during layout.
+    RenderObject* renderer = m_fullScreenElement->renderer();
+    bool shouldCreatePlaceholder = renderer && renderer->isBox();
+    if (shouldCreatePlaceholder) {
+        m_savedPlaceholderFrameRect = toRenderBox(renderer)->frameRect();
+        m_savedPlaceholderRenderStyle = RenderStyle::clone(renderer->style());
+    }
+
+    if (m_fullScreenElement != document()->documentElement())
+        RenderFullScreen::wrapRenderer(renderer, renderer ? renderer->parent() : 0, document());
+
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
     document()->recalcStyle(Force);
@@ -393,7 +409,6 @@ void FullscreenElementStack::webkitWillExitFullScreenForElement(Element*)
     if (!document()->isActive())
         return;
 
-    document()->removeFromTopLayer(m_fullScreenElement.get());
     m_fullScreenElement->willStopBeingFullscreenElement();
 }
 
@@ -409,6 +424,9 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
 
     m_areKeysEnabledInFullScreen = false;
 
+    if (m_fullScreenRenderer)
+        m_fullScreenRenderer->unwrapRenderer();
+
     m_fullScreenElement = 0;
     document()->setNeedsStyleRecalc();
 
@@ -419,6 +437,30 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     if (m_fullScreenChangeEventTargetQueue.isEmpty() && m_fullScreenErrorEventTargetQueue.isEmpty())
         exitingDocument = document()->topDocument();
     from(exitingDocument)->m_fullScreenChangeDelayTimer.startOneShot(0);
+}
+
+void FullscreenElementStack::setFullScreenRenderer(RenderFullScreen* renderer)
+{
+    if (renderer == m_fullScreenRenderer)
+        return;
+
+    if (renderer && m_savedPlaceholderRenderStyle) {
+        renderer->createPlaceholder(m_savedPlaceholderRenderStyle.release(), m_savedPlaceholderFrameRect);
+    } else if (renderer && m_fullScreenRenderer && m_fullScreenRenderer->placeholder()) {
+        RenderBlock* placeholder = m_fullScreenRenderer->placeholder();
+        renderer->createPlaceholder(RenderStyle::clone(placeholder->style()), placeholder->frameRect());
+    }
+
+    if (m_fullScreenRenderer)
+        m_fullScreenRenderer->destroy();
+    ASSERT(!m_fullScreenRenderer);
+
+    m_fullScreenRenderer = renderer;
+}
+
+void FullscreenElementStack::fullScreenRendererDestroyed()
+{
+    m_fullScreenRenderer = 0;
 }
 
 void FullscreenElementStack::fullScreenChangeDelayTimerFired(Timer<FullscreenElementStack>*)
@@ -492,9 +534,6 @@ void FullscreenElementStack::removeFullScreenElementOfSubtree(Node* node, bool a
 
 void FullscreenElementStack::clearFullscreenElementStack()
 {
-    Vector<RefPtr<Element> >::iterator end = m_fullScreenElementStack.end();
-    for (Vector<RefPtr<Element> >::iterator iter = m_fullScreenElementStack.begin(); iter != end; ++iter)
-        document()->removeFromTopLayer(iter->get());
     m_fullScreenElementStack.clear();
 }
 
@@ -503,14 +542,11 @@ void FullscreenElementStack::popFullscreenElementStack()
     if (m_fullScreenElementStack.isEmpty())
         return;
 
-    RefPtr<Element> element = m_fullScreenElementStack.last();
     m_fullScreenElementStack.removeLast();
-    document()->removeFromTopLayer(element.get());
 }
 
 void FullscreenElementStack::pushFullscreenElementStack(Element* element)
 {
-    document()->addToTopLayer(element);
     m_fullScreenElementStack.append(element);
 }
 
