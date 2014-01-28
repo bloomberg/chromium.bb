@@ -168,6 +168,23 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
         basicShapeValue = rectangleValue.release();
         break;
     }
+    case BasicShape::BasicShapeInsetType: {
+        const BasicShapeInset* inset = static_cast<const BasicShapeInset*>(basicShape);
+        RefPtr<CSSBasicShapeInset> insetValue = CSSBasicShapeInset::create();
+
+        insetValue->setTop(CSSPrimitiveValue::create(inset->top()));
+        insetValue->setRight(CSSPrimitiveValue::create(inset->right()));
+        insetValue->setBottom(CSSPrimitiveValue::create(inset->bottom()));
+        insetValue->setLeft(CSSPrimitiveValue::create(inset->left()));
+
+        insetValue->setTopLeftRadius(CSSPrimitiveValue::create(inset->topLeftRadius()));
+        insetValue->setTopRightRadius(CSSPrimitiveValue::create(inset->topRightRadius()));
+        insetValue->setBottomRightRadius(CSSPrimitiveValue::create(inset->bottomRightRadius()));
+        insetValue->setBottomLeftRadius(CSSPrimitiveValue::create(inset->bottomLeftRadius()));
+
+        basicShapeValue = insetValue.release();
+        break;
+    }
     default:
         break;
     }
@@ -180,7 +197,18 @@ PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicSha
 
 static Length convertToLength(const StyleResolverState& state, CSSPrimitiveValue* value)
 {
+    if (!value)
+        return Length(0, Fixed);
     return value->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
+}
+
+static LengthSize convertToLengthSize(const StyleResolverState& state, CSSPrimitiveValue* value)
+{
+    if (!value)
+        return LengthSize(Length(0, Fixed), Length(0, Fixed));
+
+    Pair* pair = value->getPairValue();
+    return LengthSize(convertToLength(state, pair->first()), convertToLength(state, pair->second()));
 }
 
 static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverState& state, CSSPrimitiveValue* value)
@@ -344,6 +372,23 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
             rect->setCornerRadiusX(Length(0, Fixed));
             rect->setCornerRadiusY(Length(0, Fixed));
         }
+        basicShape = rect.release();
+        break;
+    }
+    case CSSBasicShape::CSSBasicShapeInsetType: {
+        const CSSBasicShapeInset* rectValue = static_cast<const CSSBasicShapeInset* >(basicShapeValue);
+        RefPtr<BasicShapeInset> rect = BasicShapeInset::create();
+
+        rect->setTop(convertToLength(state, rectValue->top()));
+        rect->setRight(convertToLength(state, rectValue->right()));
+        rect->setBottom(convertToLength(state, rectValue->bottom()));
+        rect->setLeft(convertToLength(state, rectValue->left()));
+
+        rect->setTopLeftRadius(convertToLengthSize(state, rectValue->topLeftRadius()));
+        rect->setTopRightRadius(convertToLengthSize(state, rectValue->topRightRadius()));
+        rect->setBottomRightRadius(convertToLengthSize(state, rectValue->bottomRightRadius()));
+        rect->setBottomLeftRadius(convertToLengthSize(state, rectValue->bottomLeftRadius()));
+
         basicShape = rect.release();
         break;
     }

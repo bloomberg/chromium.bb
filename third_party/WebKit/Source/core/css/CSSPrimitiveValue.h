@@ -44,6 +44,8 @@ class RGBColor;
 class Rect;
 class RenderStyle;
 
+struct LengthSize;
+
 // Dimension calculations are imprecise, often resulting in values of e.g.
 // 44.99998. We need to go ahead and round if we're really close to the next
 // integer value.
@@ -204,6 +206,7 @@ public:
     static PassRefPtr<CSSPrimitiveValue> create(double value, UnitTypes type) { return adoptRef(new CSSPrimitiveValue(value, type)); }
     static PassRefPtr<CSSPrimitiveValue> create(const String& value, UnitTypes type) { return adoptRef(new CSSPrimitiveValue(value, type)); }
     static PassRefPtr<CSSPrimitiveValue> create(const Length& value, float zoom) { return adoptRef(new CSSPrimitiveValue(value, zoom)); }
+    static PassRefPtr<CSSPrimitiveValue> create(const LengthSize& value) { return adoptRef(new CSSPrimitiveValue(value)); }
 
     template<typename T> static PassRefPtr<CSSPrimitiveValue> create(T value)
     {
@@ -332,6 +335,7 @@ private:
         init(length);
     }
     CSSPrimitiveValue(const Length&, float zoom);
+    CSSPrimitiveValue(const LengthSize&);
     CSSPrimitiveValue(const String&, UnitTypes);
     CSSPrimitiveValue(double, UnitTypes);
 
@@ -353,6 +357,7 @@ private:
     template<typename T> operator T*(); // compile-time guard
 
     void init(const Length&);
+    void init(const LengthSize&);
     void init(PassRefPtr<Counter>);
     void init(PassRefPtr<Rect>);
     void init(PassRefPtr<Pair>);

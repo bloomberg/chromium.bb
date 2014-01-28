@@ -32,6 +32,7 @@
 
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Length.h"
+#include "platform/LengthSize.h"
 #include "platform/graphics/WindRule.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -54,7 +55,8 @@ public:
         BasicShapeEllipseType,
         BasicShapePolygonType,
         BasicShapeInsetRectangleType,
-        BasicShapeCircleType
+        BasicShapeCircleType,
+        BasicShapeInsetType
     };
 
     bool canBlend(const BasicShape*) const;
@@ -384,6 +386,51 @@ private:
 };
 
 DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeInsetRectangle);
+
+class BasicShapeInset : public BasicShape {
+public:
+    static PassRefPtr<BasicShapeInset> create() { return adoptRef(new BasicShapeInset); }
+
+    const Length& top() const { return m_top; }
+    const Length& right() const { return m_right; }
+    const Length& bottom() const { return m_bottom; }
+    const Length& left() const { return m_left; }
+
+    const LengthSize& topLeftRadius() const { return m_topLeftRadius; }
+    const LengthSize& topRightRadius() const { return m_topRightRadius; }
+    const LengthSize& bottomRightRadius() const { return m_bottomRightRadius; }
+    const LengthSize& bottomLeftRadius() const { return m_bottomLeftRadius; }
+
+    void setTop(Length top) { m_top = top; }
+    void setRight(Length right) { m_right = right; }
+    void setBottom(Length bottom) { m_bottom = bottom; }
+    void setLeft(Length left) { m_left = left; }
+
+    void setTopLeftRadius(LengthSize radius) { m_topLeftRadius = radius; }
+    void setTopRightRadius(LengthSize radius) { m_topRightRadius = radius; }
+    void setBottomRightRadius(LengthSize radius) { m_bottomRightRadius = radius; }
+    void setBottomLeftRadius(LengthSize radius) { m_bottomLeftRadius = radius; }
+
+    virtual void path(Path&, const FloatRect&) OVERRIDE;
+    virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
+    virtual bool operator==(const BasicShape&) const OVERRIDE;
+
+    virtual Type type() const OVERRIDE { return BasicShapeInsetType; }
+private:
+    BasicShapeInset() { }
+
+    Length m_right;
+    Length m_top;
+    Length m_bottom;
+    Length m_left;
+
+    LengthSize m_topLeftRadius;
+    LengthSize m_topRightRadius;
+    LengthSize m_bottomRightRadius;
+    LengthSize m_bottomLeftRadius;
+};
+
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeInset);
 
 }
 #endif

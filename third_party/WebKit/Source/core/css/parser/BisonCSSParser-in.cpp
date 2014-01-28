@@ -5107,6 +5107,125 @@ bool BisonCSSParser::parseClipShape(CSSPropertyID propId, bool important)
     return false;
 }
 
+static void completeBorderRadii(RefPtr<CSSPrimitiveValue> radii[4])
+{
+    if (radii[3])
+        return;
+    if (!radii[2]) {
+        if (!radii[1])
+            radii[1] = radii[0];
+        radii[2] = radii[0];
+    }
+    radii[3] = radii[1];
+}
+
+// FIXME: This should be refactored with CSSParser::parseBorderRadius.
+// CSSParser::parseBorderRadius contains support for some legacy radius construction.
+PassRefPtr<CSSBasicShape> BisonCSSParser::parseInsetRoundedCorners(PassRefPtr<CSSBasicShapeInset> shape, CSSParserValueList* args)
+{
+    CSSParserValue* argument = args->next();
+
+    CSSParserValueList radiusArguments;
+    while (argument) {
+        radiusArguments.addValue(*argument);
+        argument = args->next();
+    }
+
+    unsigned num = radiusArguments.size();
+    if (!num || num > 9)
+        return 0;
+
+    // FIXME: Refactor completeBorderRadii and the array
+    RefPtr<CSSPrimitiveValue> radii[2][4];
+
+    unsigned indexAfterSlash = 0;
+    for (unsigned i = 0; i < num; ++i) {
+        CSSParserValue* value = radiusArguments.valueAt(i);
+        if (value->unit == CSSParserValue::Operator) {
+            if (value->iValue != '/')
+                return 0;
+
+            if (!i || indexAfterSlash || i + 1 == num)
+                return 0;
+
+            indexAfterSlash = i + 1;
+            completeBorderRadii(radii[0]);
+            continue;
+        }
+
+        if (i - indexAfterSlash >= 4)
+            return 0;
+
+        if (!validUnit(value, FLength | FPercent | FNonNeg))
+            return 0;
+
+        RefPtr<CSSPrimitiveValue> radius = createPrimitiveNumericValue(value);
+
+        if (!indexAfterSlash)
+            radii[0][i] = radius;
+        else
+            radii[1][i - indexAfterSlash] = radius.release();
+    }
+
+    if (!indexAfterSlash) {
+        completeBorderRadii(radii[0]);
+        for (unsigned i = 0; i < 4; ++i)
+            radii[1][i] = radii[0][i];
+    } else {
+        completeBorderRadii(radii[1]);
+    }
+    shape->setTopLeftRadius(createPrimitiveValuePair(radii[0][0].release(), radii[1][0].release()));
+    shape->setTopRightRadius(createPrimitiveValuePair(radii[0][1].release(), radii[1][1].release()));
+    shape->setBottomRightRadius(createPrimitiveValuePair(radii[0][2].release(), radii[1][2].release()));
+    shape->setBottomLeftRadius(createPrimitiveValuePair(radii[0][3].release(), radii[1][3].release()));
+
+    return shape;
+}
+
+PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeInset(CSSParserValueList* args)
+{
+    ASSERT(args);
+
+    RefPtr<CSSBasicShapeInset> shape = CSSBasicShapeInset::create();
+
+    unsigned argumentNumber = 0;
+    CSSParserValue* argument = args->current();
+    while (argument) {
+        if (argument->unit == CSSPrimitiveValue::CSS_IDENT) {
+            if (argumentNumber > 0 && equalIgnoringCase(argument->string, "round"))
+                return parseInsetRoundedCorners(shape.release(), args);
+            return 0;
+        }
+
+        Units unitFlags = FLength | FPercent;
+        if (!validUnit(argument, unitFlags) || argumentNumber > 3)
+            return 0;
+
+        RefPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
+        switch (argumentNumber) {
+        case 0:
+            shape->setTop(length);
+            break;
+        case 1:
+            shape->setRight(length);
+            break;
+        case 2:
+            shape->setBottom(length);
+            break;
+        case 3:
+            shape->setLeft(length);
+            break;
+        }
+        argument = args->next();
+        argumentNumber++;
+    }
+
+    if (!argumentNumber)
+        return 0;
+
+    return shape;
+}
+
 static bool isItemPositionKeyword(CSSValueID id)
 {
     return id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter
@@ -5651,6 +5770,8 @@ PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseBasicShape()
         shape = parseBasicShapePolygon(args);
     else if (equalIgnoringCase(value->function->name, "inset-rectangle("))
         shape = parseBasicShapeInsetRectangle(args);
+    else if (equalIgnoringCase(value->function->name, "inset("))
+        shape = parseBasicShapeInset(args);
 
     if (!shape)
         return 0;
@@ -7370,18 +7491,6 @@ bool BisonCSSParser::parseBorderImageWidth(RefPtr<CSSPrimitiveValue>& result)
 bool BisonCSSParser::parseBorderImageOutset(RefPtr<CSSPrimitiveValue>& result)
 {
     return parseBorderImageQuad(FLength | FNumber | FNonNeg, result);
-}
-
-static void completeBorderRadii(RefPtr<CSSPrimitiveValue> radii[4])
-{
-    if (radii[3])
-        return;
-    if (!radii[2]) {
-        if (!radii[1])
-            radii[1] = radii[0];
-        radii[2] = radii[0];
-    }
-    radii[3] = radii[1];
 }
 
 bool BisonCSSParser::parseBorderRadius(CSSPropertyID propId, bool important)

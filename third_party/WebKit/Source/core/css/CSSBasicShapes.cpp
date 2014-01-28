@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/css/CSSBasicShapes.h"
 
+#include "core/css/Pair.h"
 #include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
@@ -498,6 +499,172 @@ bool CSSBasicShapeInsetRectangle::hasVariableReference() const
         || (m_radiusX.get() && m_radiusX->hasVariableReference())
         || (m_radiusY.get() && m_radiusY->hasVariableReference())
         || (m_layoutBox && m_layoutBox->hasVariableReference());
+}
+
+static String buildInsetString(const String& top, const String& right, const String& bottom, const String& left,
+    const String& topLeftRadiusWidth, const String& topLeftRadiusHeight,
+    const String& topRightRadiusWidth, const String& topRightRadiusHeight,
+    const String& bottomRightRadiusWidth, const String& bottomRightRadiusHeight,
+    const String& bottomLeftRadiusWidth, const String& bottomLeftRadiusHeight)
+{
+    char opening[] = "inset(";
+    char separator[] = " ";
+    char cornersSeparator[] = "round";
+    StringBuilder result;
+    result.appendLiteral(opening);
+    result.append(top);
+    if (!right.isNull()) {
+        result.appendLiteral(separator);
+        result.append(right);
+    }
+    if (!bottom.isNull()) {
+        result.appendLiteral(separator);
+        result.append(bottom);
+    }
+    if (!left.isNull()) {
+        result.appendLiteral(separator);
+        result.append(left);
+    }
+
+    if (!topLeftRadiusWidth.isNull() && !topLeftRadiusHeight.isNull()) {
+        result.appendLiteral(separator);
+        result.appendLiteral(cornersSeparator);
+        result.appendLiteral(separator);
+
+        result.append(topLeftRadiusWidth);
+        result.appendLiteral(separator);
+        result.append(topRightRadiusWidth);
+        result.appendLiteral(separator);
+        result.append(bottomRightRadiusWidth);
+        result.appendLiteral(separator);
+        result.append(bottomLeftRadiusWidth);
+
+        result.appendLiteral(separator);
+        result.appendLiteral("/");
+        result.appendLiteral(separator);
+
+        result.append(topLeftRadiusHeight);
+        result.appendLiteral(separator);
+        result.append(topRightRadiusHeight);
+        result.appendLiteral(separator);
+        result.append(bottomRightRadiusHeight);
+        result.appendLiteral(separator);
+        result.append(bottomLeftRadiusHeight);
+    }
+    result.append(')');
+
+    return result.toString();
+}
+
+static inline void updateCornerRadiusWidthAndHeight(CSSPrimitiveValue* corner, String& width, String& height)
+{
+    if (!corner)
+        return;
+
+    Pair* radius = corner->getPairValue();
+    width = radius->first() ? radius->first()->cssText() : String("0");
+    if (radius->second())
+        height = radius->second()->cssText();
+}
+
+String CSSBasicShapeInset::cssText() const
+{
+    String topLeftRadiusWidth;
+    String topLeftRadiusHeight;
+    String topRightRadiusWidth;
+    String topRightRadiusHeight;
+    String bottomRightRadiusWidth;
+    String bottomRightRadiusHeight;
+    String bottomLeftRadiusWidth;
+    String bottomLeftRadiusHeight;
+
+    updateCornerRadiusWidthAndHeight(topLeftRadius(), topLeftRadiusWidth, topLeftRadiusHeight);
+    updateCornerRadiusWidthAndHeight(topRightRadius(), topRightRadiusWidth, topRightRadiusHeight);
+    updateCornerRadiusWidthAndHeight(bottomRightRadius(), bottomRightRadiusWidth, bottomRightRadiusHeight);
+    updateCornerRadiusWidthAndHeight(bottomLeftRadius(), bottomLeftRadiusWidth, bottomLeftRadiusHeight);
+
+    return buildInsetString(m_top ? m_top->cssText() : String(),
+        m_right ? m_right->cssText() : String(),
+        m_bottom ? m_bottom->cssText() : String(),
+        m_left ? m_left->cssText() : String(),
+        topLeftRadiusWidth,
+        topLeftRadiusHeight,
+        topRightRadiusWidth,
+        topRightRadiusHeight,
+        bottomRightRadiusWidth,
+        bottomRightRadiusHeight,
+        bottomLeftRadiusWidth,
+        bottomLeftRadiusHeight);
+}
+
+bool CSSBasicShapeInset::equals(const CSSBasicShape& shape) const
+{
+    if (shape.type() != CSSBasicShapeInsetType)
+        return false;
+
+    const CSSBasicShapeInset& other = static_cast<const CSSBasicShapeInset&>(shape);
+    return compareCSSValuePtr(m_top, other.m_top)
+        && compareCSSValuePtr(m_right, other.m_right)
+        && compareCSSValuePtr(m_bottom, other.m_bottom)
+        && compareCSSValuePtr(m_left, other.m_left)
+        && compareCSSValuePtr(m_topLeftRadius, other.m_topLeftRadius)
+        && compareCSSValuePtr(m_topRightRadius, other.m_topRightRadius)
+        && compareCSSValuePtr(m_bottomRightRadius, other.m_bottomRightRadius)
+        && compareCSSValuePtr(m_bottomLeftRadius, other.m_bottomLeftRadius);
+}
+
+static inline void serializeCornerRadiusWidthAndHeight(CSSPrimitiveValue* corner, const HashMap<AtomicString, String>& variables, String& width, String& height)
+{
+    if (!corner)
+        return;
+
+    Pair* radius = corner->getPairValue();
+    if (radius->first())
+        width = radius->first()->serializeResolvingVariables(variables);
+    if (radius->second())
+        height = radius->second()->serializeResolvingVariables(variables);
+}
+
+String CSSBasicShapeInset::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
+{
+    String topLeftRadiusWidth;
+    String topLeftRadiusHeight;
+    String topRightRadiusWidth;
+    String topRightRadiusHeight;
+    String bottomRightRadiusWidth;
+    String bottomRightRadiusHeight;
+    String bottomLeftRadiusWidth;
+    String bottomLeftRadiusHeight;
+
+    serializeCornerRadiusWidthAndHeight(topLeftRadius(), variables, topLeftRadiusWidth, topLeftRadiusHeight);
+    serializeCornerRadiusWidthAndHeight(topRightRadius(), variables, topRightRadiusWidth, topRightRadiusHeight);
+    serializeCornerRadiusWidthAndHeight(bottomRightRadius(), variables, bottomRightRadiusWidth, bottomRightRadiusHeight);
+    serializeCornerRadiusWidthAndHeight(bottomLeftRadius(), variables, bottomLeftRadiusWidth, bottomLeftRadiusHeight);
+
+    return buildInsetString(m_top->serializeResolvingVariables(variables),
+        m_right->serializeResolvingVariables(variables),
+        m_bottom->serializeResolvingVariables(variables),
+        m_left->serializeResolvingVariables(variables),
+        topLeftRadiusWidth,
+        topLeftRadiusHeight,
+        topRightRadiusWidth,
+        topRightRadiusHeight,
+        bottomRightRadiusWidth,
+        bottomRightRadiusHeight,
+        bottomLeftRadiusWidth,
+        bottomLeftRadiusHeight);
+}
+
+bool CSSBasicShapeInset::hasVariableReference() const
+{
+    return m_top->hasVariableReference()
+        || (m_right && m_right->hasVariableReference())
+        || (m_bottom && m_bottom->hasVariableReference())
+        || (m_left && m_left->hasVariableReference())
+        || (m_topLeftRadius && m_topLeftRadius->hasVariableReference())
+        || (m_topRightRadius && m_topRightRadius->hasVariableReference())
+        || (m_bottomRightRadius && m_bottomRightRadius->hasVariableReference())
+        || (m_bottomLeftRadius && m_bottomLeftRadius->hasVariableReference());
 }
 
 } // namespace WebCore

@@ -375,4 +375,52 @@ bool BasicShapeInsetRectangle::operator==(const BasicShape& o) const
     const BasicShapeInsetRectangle& other = toBasicShapeInsetRectangle(o);
     return m_right == other.m_right && m_top == other.m_top && m_bottom == other.m_bottom && m_left == other.m_left && m_cornerRadiusX == other.m_cornerRadiusX && m_cornerRadiusY == other.m_cornerRadiusY;
 }
+
+static FloatSize floatSizeForLengthSize(const LengthSize& lengthSize, const FloatRect& boundingBox)
+{
+    return FloatSize(floatValueForLength(lengthSize.width(), boundingBox.width()),
+        floatValueForLength(lengthSize.height(), boundingBox.height()));
+}
+
+void BasicShapeInset::path(Path& path, const FloatRect& boundingBox)
+{
+    ASSERT(path.isEmpty());
+    float left = floatValueForLength(m_left, boundingBox.width());
+    float top = floatValueForLength(m_top, boundingBox.height());
+    path.addRoundedRect(
+        FloatRect(
+            left + boundingBox.x(),
+            top + boundingBox.y(),
+            std::max<float>(boundingBox.width() - left - floatValueForLength(m_right, boundingBox.width()), 0),
+            std::max<float>(boundingBox.height() - top - floatValueForLength(m_bottom, boundingBox.height()), 0)
+        ),
+        floatSizeForLengthSize(m_topLeftRadius, boundingBox),
+        floatSizeForLengthSize(m_topRightRadius, boundingBox),
+        floatSizeForLengthSize(m_bottomRightRadius, boundingBox),
+        floatSizeForLengthSize(m_bottomLeftRadius, boundingBox)
+    );
+}
+
+PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other, double) const
+{
+    ASSERT(type() == other->type());
+    // FIXME: Implement blend for BasicShapeInset.
+    return 0;
+}
+
+bool BasicShapeInset::operator==(const BasicShape& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const BasicShapeInset& other = toBasicShapeInset(o);
+    return m_right == other.m_right
+        && m_top == other.m_top
+        && m_bottom == other.m_bottom
+        && m_left == other.m_left
+        && m_topLeftRadius == other.m_topLeftRadius
+        && m_topRightRadius == other.m_topRightRadius
+        && m_bottomRightRadius == other.m_bottomRightRadius
+        && m_bottomLeftRadius == other.m_bottomLeftRadius;
+}
+
 }

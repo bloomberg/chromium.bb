@@ -54,6 +54,7 @@ class CSSSelectorList;
 class CSSValue;
 class CSSValueList;
 class CSSBasicShape;
+class CSSBasicShapeInset;
 class Document;
 class Element;
 class ImmutableStylePropertySet;
@@ -187,6 +188,7 @@ public:
     PassRefPtr<CSSBasicShape> parseDeprecatedBasicShapeEllipse(CSSParserValueList*);
     PassRefPtr<CSSBasicShape> parseBasicShapePolygon(CSSParserValueList* args);
     PassRefPtr<CSSBasicShape> parseBasicShapeInsetRectangle(CSSParserValueList* args);
+    PassRefPtr<CSSBasicShape> parseBasicShapeInset(CSSParserValueList* args);
 
     bool parseFont(bool important);
     PassRefPtr<CSSValueList> parseFontFamily();
@@ -489,6 +491,8 @@ private:
 
     bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, StyleSheetContents* contextStyleSheet);
     PassRefPtr<ImmutableStylePropertySet> parseDeclaration(const String&, StyleSheetContents* contextStyleSheet);
+
+    PassRefPtr<CSSBasicShape> parseInsetRoundedCorners(PassRefPtr<CSSBasicShapeInset>, CSSParserValueList*);
 
     enum SizeParameterType {
         None,
