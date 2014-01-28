@@ -54,6 +54,9 @@ install:
 	install "$(REMOTE_ASSISTANCE_PROGNAME)" \
 	  "$(INSTALL_DIR)/remote-assistance-host"
 
+	install -m 0644 \
+          "$(RELEASE)/icudtl.dat" "$(INSTALL_DIR)/icudtl.dat"
+
 	for locale in $(ls $(RELEASE)/remoting_locales); do \
 	  install "$(RELEASE)/remoting_locales/$locale \
 	    "$(INSTALL_DIR)/remoting_locales/$locale; \

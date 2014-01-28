@@ -866,6 +866,7 @@
           'target_name': 'remoting_me2me_host_deb_installer',
           'type': 'none',
           'dependencies': [
+            '<(icu_gyp_path):icudata',
             'remoting_it2me_native_messaging_host',
             'remoting_me2me_host',
             'remoting_me2me_native_messaging_host',
@@ -1729,6 +1730,7 @@
           'target_name': 'remoting_me2me_host_archive',
           'type': 'none',
           'dependencies': [
+            '<(icu_gyp_path):icudata',
             'remoting_core',
             'remoting_desktop',
             'remoting_host_exe',
@@ -1766,12 +1768,14 @@
             '<(sas_dll_path)/sas.dll',
             '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
             'resources/chromoting.ico',
+            '<(PRODUCT_DIR)/icudtl.dat',
           ],
           'generated_files_dst': [
             '<@(_compiled_inputs_dst)',
             'files/sas.dll',
             'files/com.google.chrome.remote_desktop.json',
             'files/chromoting.ico',
+            'files/icudtl.dat',
           ],
           'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
           'outputs': [

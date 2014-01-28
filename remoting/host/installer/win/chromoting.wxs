@@ -182,6 +182,14 @@
               Vital="yes"/>
       </Component>
 
+      <Component Id="icudtl" Guid="*">
+        <File Id="icudtl.dat"
+              DiskId="1"
+              KeyPath="yes"
+              Name="icudtl.dat"
+              Vital="yes"/>
+      </Component>
+
       <Component Id="remoting_host" Guid="*">
         <File Id="remoting_host.exe"
               DiskId="1"
@@ -564,6 +572,7 @@
       <?if $(var.OfficialBuild) != 0 ?>
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
+      <ComponentRef Id="icudtl"/>
       <ComponentRef Id="remoting_core"/>
       <ComponentRef Id="remoting_desktop"/>
       <ComponentRef Id="remoting_host"/>

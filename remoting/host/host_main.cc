@@ -12,6 +12,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
@@ -234,6 +235,9 @@ int HostMain(int argc, char** argv) {
     Usage(command_line->GetProgram());
     return kUsageExitCode;
   }
+
+  // Required to find the ICU data file, used by some file_util routines.
+  base::i18n::InitializeICU();
 
   remoting::LoadResources("");
 
