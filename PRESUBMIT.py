@@ -177,9 +177,9 @@ def GetPreferredTrySlaves(_, change):
 
   trybots = []
   if has_pnacl:
-    trybots += PNACL_TOOLCHAIN_BOTS
+    trybots += PNACL_TOOLCHAIN_TRYBOTS
   if has_toolchain_build:
-    trybots += TOOLCHAIN_BUILD_BOTS
+    trybots += TOOLCHAIN_BUILD_TRYBOTS
   if has_others:
     trybots += DEFAULT_TRYBOTS
 
