@@ -203,7 +203,7 @@ FileManagerUI.prototype.updateProfileBatch = function() {
     var imageUri;
     if (currentId !== displayedId) {
       for (var i = 0; i < profiles.length; i++) {
-        if (profiles[i].profileId !== currentId) {
+        if (profiles[i].profileId === currentId) {
           imageUri = profiles[i].imageUri;
           break;
         }
