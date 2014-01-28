@@ -2,11 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains type definitions for the host plugin. It is used only
-// with JSCompiler to verify the type-correctness of our code.
+// This file contains type definitions for various remoting classes.
+// It is used only with JSCompiler to verify the type-correctness of our code.
 
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+/** @constructor
+ *  @extends Event
+ */
+remoting.ClipboardData = function() {};
+
+/** @type {Array.<string>} */
+remoting.ClipboardData.prototype.types;
+
+/** @type {function(string): string} */
+remoting.ClipboardData.prototype.getData;
+
+/** @type {function(string, string): void} */
+remoting.ClipboardData.prototype.setData;
+
+/** @constructor
+ */
+remoting.ClipboardEvent = function() {};
+
+/** @type {remoting.ClipboardData} */
+remoting.ClipboardEvent.prototype.clipboardData;
+
+/** @type {function(): void} */
+remoting.ClipboardEvent.prototype.preventDefault;
+
 
 /** @constructor
  *  @extends HTMLElement
@@ -129,3 +154,12 @@ remoting.HostPlugin.prototype.onNatTraversalPolicyChanged;
 /** @type {boolean} */ remoting.HostPlugin.prototype.xmppServerUseTls;
 /** @type {string} */ remoting.HostPlugin.prototype.directoryBotJid;
 /** @type {string} */ remoting.HostPlugin.prototype.supportedFeatures;
+
+
+/** @constructor
+ *  @extends HTMLEmbedElement
+ */
+remoting.ViewerPlugin = function() { };
+
+/** @param {string} message The message to send to the host. */
+remoting.ViewerPlugin.prototype.postMessage = function(message) {};

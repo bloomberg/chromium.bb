@@ -11,6 +11,15 @@
       'webapp/manifest.json',
     ],
 
+    # Jscompile proto files.
+    # These provide type information for jscompile.
+    'remoting_webapp_js_proto_files': [
+      'webapp/js_proto/chrome_proto.js',
+      'webapp/js_proto/console_proto.js',
+      'webapp/js_proto/dom_proto.js',
+      'webapp/js_proto/remoting_proto.js',
+    ],
+
     # Auth (client to host) JavaScript files.
     'remoting_webapp_js_auth_client2host_files': [
       'webapp/cs_third_party_auth_trampoline.js',
