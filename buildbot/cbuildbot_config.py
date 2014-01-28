@@ -819,6 +819,7 @@ paladin = _config(
   trybot_list=True,
   description='Commit Queue',
   upload_standalone_images=False,
+  chroot_replace=True,
 )
 
 # Used for paladin builders that build from source.

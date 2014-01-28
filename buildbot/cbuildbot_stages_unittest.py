@@ -628,6 +628,8 @@ class InitSDKTest(RunCommandAbstractStageTest):
   def testBinBuildWithMissingChroot(self):
     """Tests whether we create chroots when needed."""
     self._PrepareBin()
+    # Do not force chroot replacement in build config.
+    self.run._config.chroot_replace = False
     self._Run(dir_exists=False)
     self.assertCommandContains(['cros_sdk'])
 
@@ -637,7 +639,7 @@ class InitSDKTest(RunCommandAbstractStageTest):
     self._Run(dir_exists=True)
     self.assertCommandContains(['cros_sdk'])
 
-  def testBinBuildWithNoSDK(self):
+  def testFullBuildWithNoSDK(self):
     """Tests whether the --nosdk option works."""
     self._PrepareFull(extra_cmd_args=['--nosdk'])
     self._Run(dir_exists=False)
@@ -645,7 +647,9 @@ class InitSDKTest(RunCommandAbstractStageTest):
 
   def testBinBuildWithExistingChroot(self):
     """Tests whether the --nosdk option works."""
-    self._PrepareBin()
+    self._PrepareFull(extra_cmd_args=['--nosdk'])
+    # Do not force chroot replacement in build config.
+    self.run._config.chroot_replace = False
     self._Run(dir_exists=True)
     self.assertCommandContains(['cros_sdk'], expected=False)
 
