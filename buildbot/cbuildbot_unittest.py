@@ -18,12 +18,28 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_run
+from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel_unittest
+from chromite.lib import partial_mock
 from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot
+
+DEFAULT_CHROME_BRANCH = '27'
+
+
+class BuilderRunMock(partial_mock.PartialMock):
+  """Partial mock for BuilderRun class."""
+
+  TARGET = 'chromite.buildbot.cbuildbot_run._BuilderRunBase'
+  ATTRS = ('GetVersionInfo', )
+  VERSION = '3333.1.0'
+
+  def GetVersionInfo(self, _build_root):
+    return manifest_version.VersionInfo(
+        version_string=self.VERSION, chrome_branch=DEFAULT_CHROME_BRANCH)
 
 
 # pylint: disable=W0212,R0904
@@ -39,8 +55,11 @@ class TestFailedException(Exception):
   """Exception used by mocks to halt execution and indicate failure."""
 
 
-class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
+class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase,
+                         cros_test_lib.MockTestCase):
   """Test that cbuildbot runs the appropriate stages for a given config."""
+
+  VERSION = '1234.5.6'
 
   def setUp(self):
     self.buildroot = os.path.join(self.tempdir, 'buildroot')
@@ -70,6 +89,8 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
     self.options.prebuilts = False
 
     self.run = cbuildbot_run.BuilderRun(self.options, self.build_config)
+
+    self.StartPatcher(BuilderRunMock())
 
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""

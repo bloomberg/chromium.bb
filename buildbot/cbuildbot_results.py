@@ -271,7 +271,15 @@ class _Results(object):
     return tracebacks
 
   def Report(self, out, archive_urls=None, current_version=None):
-    """Generate a user friendly text display of the results data."""
+    """Generate a user friendly text display of the results data.
+
+    Args:
+      out: Output stream to write to (e.g. sys.stdout).
+      archive_urls: Dict where values are archive URLs and keys are names
+        to associate with those URLs (typically board name).  If None then
+        omit the name when logging the URL.
+      current_version: Chrome OS version associated with this report.
+    """
     results = self._results_log
 
     line = '*' * 60 + '\n'
@@ -324,10 +332,14 @@ class _Results(object):
 
     if archive_urls:
       out.write('%s BUILD ARTIFACTS FOR THIS BUILD CAN BE FOUND AT:\n' % edge)
-      for board, url in sorted(archive_urls.iteritems()):
-        out.write('%s  %s: %s' % (edge, board, url))
-        cros_build_lib.PrintBuildbotLink('Artifacts[%s]' % board, url,
-                                         handle=out)
+      for name, url in sorted(archive_urls.iteritems()):
+        named_url = url
+        link_name = 'Artifacts'
+        if name:
+          named_url = '%s: %s' % (name, url)
+          link_name = 'Artifacts[%s]' % name
+        out.write('%s  %s' % (edge, named_url))
+        cros_build_lib.PrintBuildbotLink(link_name, url, handle=out)
       out.write(line)
 
     for x in self.GetTracebacks():

@@ -150,42 +150,80 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
                         self._current_board, pointer)
 
 
-class ArchivingStage(BoardSpecificBuilderStage):
-  """Helper for stages that archive files.
+class ArchivingStageMixin(object):
+  """Stage with utilities for uploading artifacts.
+
+  This provides functionality for doing archiving.  All it needs is access
+  to the BuilderRun object at self._run.  No __init__ needed.
 
   Attributes:
-    archive_stage: The ArchiveStage instance for this board.
-    bot_archive_root: The root path where output from this builder is stored.
-    download_url: The URL where we can download artifacts.
-    upload_url: The Google Storage location where we should upload artifacts.
+    acl: GS ACL to use for uploads.
+    archive: Archive object.
+    archive_path: Local path where archives are kept for this run.  Also copy
+      of self.archive.archive_path.
+    download_url: The URL where artifacts for this run can be downloaded.
+      Also copy of self.archive.download_url.
+    upload_url: The Google Storage location where artifacts for this run should
+      be uploaded.  Also copy of self.archive.upload_url.
+    version: Copy of self.archive.version.
   """
 
   PROCESSES = 10
 
+  @property
+  def archive(self):
+    """Retrieve the Archive object to use."""
+    # pylint: disable=W0201
+    if not hasattr(self, '_archive'):
+      self._archive = self._run.GetArchive()
+
+    return self._archive
+
+  @property
+  def acl(self):
+    """Retrieve GS ACL to use for uploads."""
+    return self.GetUploadACL(self._run.config)
+
+  # TODO(mtennant): Get rid of this property.
+  @property
+  def version(self):
+    """Retrieve the ChromeOS version for the archiving."""
+    return self.archive.version
+
+  @property
+  def archive_path(self):
+    """Local path where archives are kept for this run."""
+    return self.archive.archive_path
+
+  # TODO(mtennant): Rename base_archive_path.
+  @property
+  def bot_archive_root(self):
+    """Path of directory one level up from self.archive_path."""
+    return os.path.dirname(self.archive_path)
+
+  @property
+  def upload_url(self):
+    """The GS location where artifacts should be uploaded for this run."""
+    return self.archive.upload_url
+
+  @property
+  def base_upload_url(self):
+    """The GS path one level up from self.upload_url."""
+    return os.path.dirname(self.upload_url)
+
+  @property
+  def download_url(self):
+    """The URL where artifacts for this run can be downloaded."""
+    return self.archive.download_url
+
   @classmethod
   def GetUploadACL(cls, config):
     """Get the ACL we should use to upload artifacts for a given config."""
-    if config['internal']:
+    if config.internal:
       # Use the bucket default ACL.
       return None
+
     return 'public-read'
-
-  def __init__(self, builder_run, board, archive_stage, **kwargs):
-    super(ArchivingStage, self).__init__(builder_run, board, **kwargs)
-    self.acl = self.GetUploadACL(self._run.config)
-    self.archive_stage = archive_stage
-
-    self.debug = self._run.debug
-
-    self.archive = builder_run.GetArchive()
-
-    # TODO(mtennant): Do away with deprecated access below.
-    self.version = self.archive.version
-    self.archive_path = self.archive.archive_path
-    self.bot_archive_root = os.path.dirname(self.archive_path)
-    self.upload_url = self.archive.upload_url
-    self.base_upload_url = os.path.dirname(self.upload_url)
-    self.download_url = self.archive.download_url
 
   @contextlib.contextmanager
   def ArtifactUploader(self, queue=None, archive=True, strict=True):
@@ -232,20 +270,22 @@ class ArchivingStage(BoardSpecificBuilderStage):
       filename = commands.ArchiveFile(path, self.archive_path)
     try:
       commands.UploadArchivedFile(
-          self.archive_path, self.upload_url, filename, self.debug,
+          self.archive_path, self.upload_url, filename, self._run.debug,
           update_list=True, acl=self.acl)
     except (cros_build_lib.RunCommandError, timeout_util.TimeoutError) as e:
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
         raise
+
       # Treat gsutil flake as a warning if it's the only problem.
       self._HandleExceptionAsWarning(e)
 
-  def GetMetadata(self, stage=None, final_status=None, sync_instance=None,
-                  completion_instance=None):
+  def GetMetadata(self, config=None, stage=None, final_status=None,
+                  sync_instance=None, completion_instance=None):
     """Constructs the metadata json object.
 
     Args:
+      config: The build config for this run.  Defaults to self._run.config.
       stage: The stage name that this metadata file is being uploaded for.
       final_status: Whether the build passed or failed. If None, the build
         will be treated as still running.
@@ -257,7 +297,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
         metadata. If None, no such status information will be included. It not
         None, this should be a derivative of MasterSlaveSyncCompletionStage.
     """
-    config = self._run.config
+    config = config or self._run.config
 
     start_time = results_lib.Results.start_time
     current_time = datetime.datetime.now()
@@ -269,6 +309,9 @@ class ArchivingStage(BoardSpecificBuilderStage):
         os.path.join(self._build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
     verinfo = self._run.GetVersionInfo(self._build_root)
+    platform_tag = getattr(self._run.attrs, 'release_tag')
+    if not platform_tag:
+      platform_tag = verinfo.VersionString()
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
@@ -289,11 +332,10 @@ class ArchivingStage(BoardSpecificBuilderStage):
             'duration': duration,
         },
         'version': {
-            'chrome': self.archive_stage.chrome_version,
-            'full': self.version,
+            'chrome': self._run.attrs.chrome_version,
+            'full': self.archive.version,
             'milestone': verinfo.chrome_branch,
-            'platform': (self.archive_stage.release_tag
-                         or verinfo.VersionString()),
+            'platform': platform_tag,
         },
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
@@ -356,9 +398,19 @@ class ArchivingStage(BoardSpecificBuilderStage):
 
     return metadata
 
-  def UploadMetadata(self, stage=None, upload_queue=None, **kwargs):
-    """Create a JSON of various metadata describing this build."""
-    metadata = self.GetMetadata(stage=stage, **kwargs)
+  def UploadMetadata(self, config=None, stage=None, upload_queue=None,
+                     **kwargs):
+    """Create and upload JSON of various metadata describing this run.
+
+    Args:
+      config: Build config to use.  Passed to GetMetadata.
+      stage: Stage to upload metadata for.  If None the metadata is for the
+        entire run.
+      upload_queue: If specified then put the artifact file to upload on
+        this queue.  If None then upload it directly now.
+      kwargs: Pass to self.GetMetadata.
+    """
+    metadata = self.GetMetadata(config=config, stage=stage, **kwargs)
     filename = constants.METADATA_JSON
     if stage is not None:
       filename = constants.METADATA_STAGE_JSON % { 'stage': stage }
@@ -371,6 +423,22 @@ class ArchivingStage(BoardSpecificBuilderStage):
       upload_queue.put([filename])
     else:
       self.UploadArtifact(filename, archive=False)
+
+
+# TODO(mtennant): This class continues to exist only for subclasses that still
+# need self.archive_stage.  Hopefully, we can get rid of that need, eventually.
+class ArchivingStage(BoardSpecificBuilderStage, ArchivingStageMixin):
+  """Helper for stages that archive files.
+
+  See ArchivingStageMixin for functionality.
+
+  Attributes:
+    archive_stage: The ArchiveStage instance for this board.
+  """
+
+  def __init__(self, builder_run, board, archive_stage, **kwargs):
+    super(ArchivingStage, self).__init__(builder_run, board, **kwargs)
+    self.archive_stage = archive_stage
 
 
 class CleanUpStage(bs.BuilderStage):
@@ -2940,7 +3008,7 @@ class SignerResultsStage(ArchivingStage):
     if not instruction_urls_per_channel:
       raise MissingInstructionException('No signer requests to validate.')
 
-    gs_ctx = gs.GSContext(dry_run=self.debug)
+    gs_ctx = gs.GSContext(dry_run=self._run.debug)
 
     try:
       cros_build_lib.Info('Waiting for signer results.')
@@ -3139,9 +3207,6 @@ class ArchiveStage(ArchivingStage):
     self._push_image_status_queue = multiprocessing.Queue()
     self._wait_for_channel_signing = multiprocessing.Queue()
 
-    # Setup the archive path. This is used by other stages.
-    self._SetupArchivePath()
-
   def WaitForRecoveryImage(self):
     """Wait until artifacts needed by SignerTest stage are created.
 
@@ -3218,18 +3283,6 @@ class ArchiveStage(ArchivingStage):
           'Breakpad symbols were not generated within timeout period.')
     return success
 
-  def _SetupArchivePath(self):
-    """Create a fresh directory for archiving a build."""
-    if self._run.options.buildbot:
-      # Buildbot: Clear out any leftover build artifacts, if present.
-      osutils.RmDir(self.archive_path, ignore_missing=True)
-    else:
-      # Clear the list of uploaded file if it exists
-      osutils.SafeUnlink(os.path.join(self.archive_path,
-                                      commands.UPLOADED_LIST_FILENAME))
-
-    osutils.SafeMakedirs(self.archive_path)
-
   @staticmethod
   def SingleMatchGlob(path_pattern):
     """Returns the last match (after sort) if multiple found."""
@@ -3284,7 +3337,7 @@ class ArchiveStage(ArchivingStage):
     buildroot = self._build_root
     config = self._run.config
     board = self._current_board
-    debug = self.debug
+    debug = self._run.debug
     upload_url = self.upload_url
     archive_path = self.archive_path
     image_dir = self.GetImageDirSymlink()
@@ -3510,7 +3563,7 @@ class DebugSymbolsStage(ArchivingStage):
     buildroot = self._build_root
     config = self._run.config
     board = self._current_board
-    debug = self.debug
+    debug = self._run.debug
     archive_path = self.archive_path
 
     self._GenerateBreakpadSymbols(buildroot, board, debug)
@@ -3528,7 +3581,7 @@ class DebugSymbolsStage(ArchivingStage):
 
   def UploadSymbols(self, buildroot, board):
     """Upload generated debug symbols."""
-    if self._run.options.remote_trybot or self.debug:
+    if self._run.options.remote_trybot or self._run.debug:
       # For debug builds, limit ourselves to just uploading 1 symbol.
       # This way trybots and such still exercise this code.
       cnt = 1
@@ -3816,7 +3869,7 @@ class PublishUprevChangesStage(bs.BuilderStage):
     commands.UprevPush(self._build_root, push_overlays, self._run.options.debug)
 
 
-class ReportStage(bs.BuilderStage):
+class ReportStage(bs.BuilderStage, ArchivingStageMixin):
   """Summarize all the builds."""
 
   _HTML_HEAD = """<html>
@@ -3826,22 +3879,47 @@ class ReportStage(bs.BuilderStage):
 <body>
 <h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
 
-  def __init__(self, builder_run, archive_stages, sync_instance,
-               completion_instance=None, **kwargs):
+  def __init__(self, builder_run, sync_instance, completion_instance, **kwargs):
     super(ReportStage, self).__init__(builder_run, **kwargs)
+
     # TODO(mtennant): All these should be retrieved from builder_run instead.
     # Or, more correctly, the info currently retrieved from these stages should
     # be stored and retrieved from builder_run instead.
-    self._archive_stages = archive_stages
     self._sync_instance = sync_instance
     self._completion_instance = completion_instance
 
-    # TODO(mtennant): In the future, we should avoid accessing run attributes
-    # in stage constructors, but instead do so at PerformStage time.  This
-    # is so that the Builder can construct all stage objects for a flow
-    # and then run them.  In other words, a stage object should not assume
-    # that it is ready to run at construction time.
-    self._version = getattr(self._run.attrs, 'release_tag', '')
+  def _UpdateRunStreak(self, builder_run, final_status):
+    """Update the streak counter for this builder, if applicable, and notify.
+
+    If this run was a Commit Queue run, then update the pass/fail streak
+    counter for it.  If the new streak should trigger a notification email
+    then send it now.
+
+    Args:
+      builder_run: BuilderRun for this run.
+      final_status: Final status string for this run.
+    """
+    # If, and only if, this was a Commit Queue build, update the streak counter.
+    if (self._sync_instance and
+        isinstance(self._sync_instance, CommitQueueSyncStage)):
+      streak_value = self._UpdateStreakCounter(
+          final_status=final_status, counter_name=builder_run.config.name,
+          dry_run=self._run.debug)
+      cros_build_lib.Info('New pass/fail streak value for %s is: %s',
+                          builder_run.config.name, streak_value)
+
+      # See if updated streak should trigger a notification email.
+      if (builder_run.config.health_alert_recipients and
+          streak_value == -builder_run.config.health_threshold):
+        logging.info('Builder failed %i consecutive times, sending health '
+                     'alert email to %s.',
+                     builder_run.config.health_threshold,
+                     builder_run.config.health_alert_recipients)
+        alerts.SendEmail('%s health alert' % builder_run.config.name,
+                         builder_run.config.health_alert_recipients,
+                         message=self._HealthAlertMessage(),
+                         smtp_server=constants.GOLO_SMTP_SERVER,
+                         extra_fields={'X-cbuildbot-alert': 'cq-health'})
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):
@@ -3880,99 +3958,104 @@ class ReportStage(bs.BuilderStage):
         self._run.config['name'], self._run.config['health_threshold'],
         self.ConstructDashboardURL())
 
+  def _UploadMetadataForRun(self, builder_run, final_status):
+    """Upload metadata.json for this entire run.
+
+    Args:
+      builder_run: BuilderRun object for this run.
+      final_status: Final status string for this run.
+    """
+    cros_build_lib.Info('Uploading metadata for %s run now.',
+                        builder_run.config.name)
+    self.UploadMetadata(
+        config=builder_run.config, final_status=final_status,
+        sync_instance=self._sync_instance,
+        completion_instance=self._completion_instance)
+
+  def _UploadArchiveIndex(self, builder_run):
+    """Upload an HTML index for the artifacts at remote archive location.
+
+    If there are no artifacts in the archive then do nothing.
+
+    Args:
+      builder_run: BuilderRun object for this run.
+
+    Returns:
+      If an index file is uploaded then a dict is returned where each value
+        is the same (the URL for the uploaded HTML index) and the keys are
+        the boards it applies to, including None if applicable.  If no index
+        file is uploaded then this returns None.
+    """
+    # Generate the index page needed for public reading.
+    archive_path = self.archive.archive_path
+    download_url = self.archive.download_url
+    upload_url = self.archive.upload_url
+
+    config = builder_run.config
+    boards = config.boards
+    if boards:
+      board_names = ' '.join(boards)
+    else:
+      boards = [None]
+      board_names = '<no board>'
+
+    # See if there are any artifacts found for this run.
+    uploaded = os.path.join(archive_path, commands.UPLOADED_LIST_FILENAME)
+    if not os.path.exists(uploaded):
+      # UPLOADED doesn't exist.  Normal if Archive stage never ran, which
+      # is possibly normal.  Regardless, no archive index is needed.
+      logging.info('No archived artifacts found for %s run (%s)',
+                   builder_run.config.name, board_names)
+
+    else:
+      # Prepare html head.
+      head_data = {
+          'board': board_names,
+          'config': config.name,
+          'version': builder_run.GetVersion(),
+      }
+      head = self._HTML_HEAD % head_data
+
+      files = osutils.ReadFile(uploaded).splitlines() + [
+          '.|Google Storage Index',
+          '..|',
+      ]
+      index = os.path.join(archive_path, 'index.html')
+      commands.GenerateHtmlIndex(index, files, url_base=download_url,
+                                 head=head)
+      commands.UploadArchivedFile(
+          archive_path, upload_url, os.path.basename(index),
+          debug=self._run.debug, acl=self.acl)
+
+      return dict((b, download_url + '/index.html') for b in boards)
+
   def PerformStage(self):
-    acl = ArchivingStage.GetUploadACL(self._run.config)
     archive_urls = {}
 
-    debug = self._run.debug
+    if results_lib.Results.BuildSucceededSoFar():
+      final_status = constants.FINAL_STATUS_PASSED
+    else:
+      final_status = constants.FINAL_STATUS_FAILED
 
-    archive = self._run.GetArchive()
-    download_url = archive.download_url
-    archive_path = archive.archive_path
-    upload_url = archive.upload_url
-
+    # Iterate through each builder run, whether there is just the main one
+    # or multiple child builder runs.
     for builder_run in self._run.GetUngroupedBuilderRuns():
-      config = builder_run.config
+      # Generate the final metadata for this run.
+      self._UploadMetadataForRun(builder_run, final_status)
 
-      # Soon neither a board nor an archive stage will be strictly required
-      # to run the code below, but for now the requirement remains in place.
-      # TODO(mtennant): boards = config.boards or [None]
-      boards = config.boards
-      for board in boards:
-        # This is temporary.  We are almost done with the need to have access
-        # to the archive stage object, but for now fetch it.
-        archive_stage = None
-        for board_config in self._archive_stages:
-          if board_config.board == board and board_config.name == config.name:
-            archive_stage = self._archive_stages[board_config]
+      # Handle pass/fail streak counter for this run.
+      self._UpdateRunStreak(builder_run, final_status)
 
-        # Without an Archive stage there is no archive information to prepare.
-        if not archive_stage:
-          continue
+      # Generate an index for archived artifacts if there are any.  All the
+      # archived artifacts for one run/config are in one location, so the index
+      # is only specific to each run/config.  In theory multiple boards could
+      # share that archive, but in practice it is usually one board.  A
+      # run/config without a board will also usually not have artifacts to
+      # archive, but that restriction is not assumed here.
+      run_archive_urls = self._UploadArchiveIndex(builder_run)
+      if run_archive_urls:
+        archive_urls.update(run_archive_urls)
 
-        # TODO(mtennant): Move this block to new self.UploadMetadata, and
-        # move the logic from ArchiveStage.UploadMetadata there.
-        # Generate the final metadata before we look at the uploaded list.
-        if results_lib.Results.BuildSucceededSoFar():
-          final_status = constants.FINAL_STATUS_PASSED
-        else:
-          final_status = constants.FINAL_STATUS_FAILED
-        archive_stage.UploadMetadata(
-            final_status=final_status, sync_instance=self._sync_instance,
-            completion_instance=self._completion_instance)
-
-        # TODO(mtennant): Move this block to new self.UpdateStreak.
-        # If this was a Commit Queue build, update the streak counter
-        if (self._sync_instance and
-            isinstance(self._sync_instance, CommitQueueSyncStage)):
-          streak_value = self._UpdateStreakCounter(
-              final_status=final_status, counter_name=builder_run.config.name,
-              dry_run=debug)
-          if (builder_run.config['health_alert_recipients'] and
-              streak_value == -builder_run.config['health_threshold']):
-            logging.info('Builder failed %i consecutive times, sending health '
-                         'alert email to %s.',
-                         builder_run.config['health_threshold'],
-                         builder_run.config['health_alert_recipients'])
-            alerts.SendEmail('%s health alert' % builder_run.config['name'],
-                             builder_run.config['health_alert_recipients'],
-                             message=self._HealthAlertMessage(),
-                             smtp_server=constants.GOLO_SMTP_SERVER,
-                             extra_fields={'X-cbuildbot-alert': 'cq-health'})
-
-        # TODO(mtennant: Move the rest to new self.UploadArchiveIndex.
-        # Generate the index page needed for public reading.
-        uploaded = os.path.join(archive_path, commands.UPLOADED_LIST_FILENAME)
-        if not os.path.exists(uploaded):
-          # UPLOADED doesn't exist.  Normal if buildboard failed.
-          if (board and not self._run.config.compilecheck and
-              not self._run.options.compilecheck):
-            logging.warning('Board %s did not make it to the archive stage; '
-                            'skipping', board)
-
-          # No HTML index is needed.
-          continue
-
-        # Prepare html head.
-        head_data = {
-            'board': board,
-            'config': builder_run.config.name,
-            'version': builder_run.GetVersion(),
-        }
-        head = self._HTML_HEAD % head_data
-
-        files = osutils.ReadFile(uploaded).splitlines() + [
-            '.|Google Storage Index',
-            '..|',
-        ]
-        index = os.path.join(archive_path, 'index.html')
-        commands.GenerateHtmlIndex(index, files, url_base=download_url,
-                                   head=head)
-        commands.UploadArchivedFile(
-            archive_path, upload_url, os.path.basename(index), debug=debug,
-            acl=acl)
-
-        archive_urls[board] = download_url + '/index.html'
-
+    version = getattr(self._run.attrs, 'release_tag', '')
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
-                               current_version=self._version)
+                               current_version=version)

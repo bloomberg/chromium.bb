@@ -7,9 +7,12 @@
 import os
 
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import constants
 
+from chromite.lib import cros_build_lib
 from chromite.lib import gs
+from chromite.lib import osutils
 
 
 def GetBaseUploadURI(config, archive_base=None, bot_id=None,
@@ -119,3 +122,21 @@ class Archive(object):
 
     archive_base = self._TRYBOT_ARCHIVE if trybot else self._BUILDBOT_ARCHIVE
     return os.path.join(buildroot, archive_base)
+
+  def SetupArchivePath(self):
+    """Create a fresh directory for archiving a build."""
+    cros_build_lib.Info('Preparing local archive directory at "%s".',
+                        self.archive_path)
+    if self._options.buildbot:
+      # Buildbot: Clear out any leftover build artifacts, if present, for
+      # this particular run.  The Clean stage is responsible for trimming
+      # back the number of archive paths to the last X runs.
+      osutils.RmDir(self.archive_path, ignore_missing=True)
+    else:
+      # Clear the list of uploaded file if it exists.  In practice, the Clean
+      # stage deletes everything in the archive root, so this may not be
+      # doing anything at all.
+      osutils.SafeUnlink(os.path.join(self.archive_path,
+                                      commands.UPLOADED_LIST_FILENAME))
+
+    osutils.SafeMakedirs(self.archive_path)

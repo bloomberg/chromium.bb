@@ -200,6 +200,8 @@ class Builder(object):
     finally:
       self._SetReleaseTag()
 
+    # Set up local archive directory for this run, now that we have a version.
+    self._run.GetArchive().SetupArchivePath()
 
   def GetSyncInstance(self):
     """Returns an instance of a SyncStage that should be run.
@@ -352,8 +354,7 @@ class Builder(object):
       if print_report:
         results_lib.WriteCheckpoint(self._run.options.buildroot)
         completion_instance = self.GetCompletionInstance()
-        self._RunStage(stages.ReportStage, self.archive_stages, sync_instance,
-                       completion_instance)
+        self._RunStage(stages.ReportStage, sync_instance, completion_instance)
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False
@@ -419,6 +420,10 @@ class SimpleBuilder(Builder):
       compilecheck: Boolean.  If True, run only the compile steps.
     """
     config = builder_run.config
+
+    # TODO(mtennant): This is the last usage of self.archive_stages.  We can
+    # kill it once we migrate its uses to BuilderRun so that none of the
+    # stages below need it as an argument.
     archive_stage = self.archive_stages[BoardConfig(board, config.name)]
     if config.pgo_generate:
       self._RunParallelStages([archive_stage])

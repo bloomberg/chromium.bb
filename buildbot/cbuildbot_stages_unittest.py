@@ -787,6 +787,7 @@ class VMTestStageTest(AbstractStageTest):
     self._Prepare()
 
   def ConstructStage(self):
+    self.run.GetArchive().SetupArchivePath()
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.VMTestStage(self.run, self._current_board, archive_stage)
 
@@ -893,6 +894,7 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = self.suite_config.suite
 
   def ConstructStage(self):
+    self.run.GetArchive().SetupArchivePath()
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.HWTestStage(self.run, self._current_board, archive_stage,
                               self.suite_config)
@@ -1189,6 +1191,7 @@ class AUTestStageTest(AbstractStageTest,
   def _Prepare(self, bot_id=None, **kwargs):
     super(AUTestStageTest, self)._Prepare(bot_id, **kwargs)
 
+    self.run.GetArchive().SetupArchivePath()
     self.archive_stage = stages.ArchiveStage(self.run, self._current_board)
     self.suite_config = self.GetHWTestSuite()
     self.suite = self.suite_config.suite
@@ -1398,6 +1401,7 @@ class ArchivingStageTest(AbstractStageTest):
     self._Prepare()
 
   def ConstructStage(self):
+    self.run.GetArchive().SetupArchivePath()
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.ArchivingStage(self.run, self._current_board, archive_stage)
 
@@ -1483,6 +1487,7 @@ class ArchiveStageTest(AbstractStageTest):
                                            **kwargs)
 
   def ConstructStage(self):
+    self.run.GetArchive().SetupArchivePath()
     return stages.ArchiveStage(self.run, self._current_board)
 
   def testArchive(self):
@@ -1783,6 +1788,7 @@ class DebugSymbolsStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     """Create a DebugSymbolsStage instance for testing"""
+    self.run.GetArchive().SetupArchivePath()
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.DebugSymbolsStage(self.run, self._current_board,
                                     archive_stage)
@@ -2188,10 +2194,7 @@ class ReportStageTest(AbstractStageTest):
     self.sync_stage.pool = pool
 
   def ConstructStage(self):
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    archive_stages = dict((cbuildbot.BoardConfig(b, self.bot_id), archive_stage)
-                          for b in self._boards)
-    return stages.ReportStage(self.run, archive_stages, self.sync_stage)
+    return stages.ReportStage(self.run, self.sync_stage, None)
 
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
@@ -2497,6 +2500,7 @@ class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
     self.run.options.chrome_root = '/tmp/non-existent'
 
   def ConstructStage(self):
+    self.run.GetArchive().SetupArchivePath()
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.ChromeSDKStage(self.run, self._current_board, archive_stage)
 
