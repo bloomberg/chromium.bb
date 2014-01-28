@@ -43,7 +43,8 @@ bool VerifyDigestString(const std::string& key,
 }
 
 // Renders |value| as a string. |value| may be NULL, in which case the result
-// is an empty string.
+// is an empty string. This method can be expensive and its result should be
+// re-used rather than recomputed where possible.
 std::string ValueAsString(const base::Value* value) {
   // Dictionary values may contain empty lists and sub-dictionaries. Make a
   // deep copy with those removed to make the hash more stable.
@@ -65,9 +66,9 @@ std::string ValueAsString(const base::Value* value) {
 
 // Common helper for all hash algorithms.
 std::string GetMessageFromValueAndComponents(
-    const base::Value* value,
+    const std::string& value_as_string,
     const std::vector<std::string>& extra_components) {
-  return JoinString(extra_components, "") + ValueAsString(value);
+  return JoinString(extra_components, "") + value_as_string;
 }
 
 
@@ -85,11 +86,12 @@ std::string GenerateDeviceIdLikePrefMetricsServiceDid(
 // Verifies a hash using a deprecated hash algorithm. For validating old
 // hashes during migration.
 bool VerifyLegacyHash(const std::string& seed,
-                      const base::Value* value,
+                      const std::string& value_as_string,
                       const std::string& digest_string) {
   return VerifyDigestString(
       seed,
-      GetMessageFromValueAndComponents(value, std::vector<std::string>()),
+      GetMessageFromValueAndComponents(value_as_string,
+                                       std::vector<std::string>()),
       digest_string);
 }
 
@@ -102,25 +104,29 @@ PrefHashCalculator::PrefHashCalculator(const std::string& seed,
 
 std::string PrefHashCalculator::Calculate(const std::string& path,
                                           const base::Value* value) const {
-  return GetDigestString(seed_, GetMessage(path, value));
+  return GetDigestString(seed_, GetMessage(path, ValueAsString(value)));
 }
 
 PrefHashCalculator::ValidationResult PrefHashCalculator::Validate(
     const std::string& path,
     const base::Value* value,
     const std::string& digest_string) const {
-  if (VerifyDigestString(seed_, GetMessage(path, value), digest_string))
+  const std::string value_as_string(ValueAsString(value));
+  if (VerifyDigestString(seed_, GetMessage(path, value_as_string),
+                         digest_string)) {
     return VALID;
-  if (VerifyLegacyHash(seed_, value, digest_string))
+  }
+  if (VerifyLegacyHash(seed_, value_as_string, digest_string))
     return VALID_LEGACY;
   return INVALID;
 }
 
-std::string PrefHashCalculator::GetMessage(const std::string& path,
-                                           const base::Value* value) const {
+std::string PrefHashCalculator::GetMessage(
+    const std::string& path,
+    const std::string& value_as_string) const {
   std::vector<std::string> components;
   if (!device_id_.empty())
     components.push_back(device_id_);
   components.push_back(path);
-  return GetMessageFromValueAndComponents(value, components);
+  return GetMessageFromValueAndComponents(value_as_string, components);
 }

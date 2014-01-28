@@ -39,9 +39,10 @@ class PrefHashCalculator {
                             const std::string& hash) const;
 
  private:
-  // Concatenates |device_id_|, |path|, and |value| to give the hash input.
+  // Concatenates |device_id_|, |path|, and |value_as_string| to give the hash
+  // input.
   std::string GetMessage(const std::string& path,
-                         const base::Value* value) const;
+                         const std::string& value_as_string) const;
 
   std::string seed_;
   std::string device_id_;
