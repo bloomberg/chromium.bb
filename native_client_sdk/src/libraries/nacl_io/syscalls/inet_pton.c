@@ -13,8 +13,8 @@
 #include "sdk_util/macros.h"
 
 enum {
-kIpv4AddressSize = 4,
-kIpv6AddressSize = 16,
+  kIpv4AddressSize = sizeof(in_addr_t),
+  kIpv6AddressSize = sizeof(struct in6_addr),
 };
 
 /* Helper function for inet_pton() for IPv4 addresses. */

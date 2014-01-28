@@ -269,6 +269,8 @@ TEST(SocketUtilityFunctions, Hstrerror) {
                "Unknown error in gethostbyname: 2718.");
 }
 
+#endif  // !defined(__GLIBC__)
+
 TEST(SocketUtilityFunctions, Htonl) {
   uint32_t host_long = 0x44332211;
   uint32_t network_long = htonl(host_long);
@@ -289,151 +291,220 @@ TEST(SocketUtilityFunctions, Htons) {
   EXPECT_EQ(network_bytes[1], 0x11);
 }
 
-static struct in_addr generate_ipv4_addr(int tuple1, int tuple2,
-                                         int tuple3, int tuple4) {
+static struct in_addr generate_ipv4_addr(uint8_t* tuple) {
   unsigned char addr[4];
-  addr[0] = static_cast<unsigned char>(tuple1);
-  addr[1] = static_cast<unsigned char>(tuple2);
-  addr[2] = static_cast<unsigned char>(tuple3);
-  addr[3] = static_cast<unsigned char>(tuple4);
+  addr[0] = static_cast<unsigned char>(tuple[0]);
+  addr[1] = static_cast<unsigned char>(tuple[1]);
+  addr[2] = static_cast<unsigned char>(tuple[2]);
+  addr[3] = static_cast<unsigned char>(tuple[3]);
   struct in_addr real_addr;
   memcpy(&real_addr, addr, 4);
   return real_addr;
 }
 
-static struct in6_addr generate_ipv6_addr(int* tuples) {
+static struct in6_addr generate_ipv6_addr(uint16_t* tuple) {
   unsigned char addr[16];
   for (int i = 0; i < 8; i++) {
-    addr[2*i] = (tuples[i] >> 8) & 0xFF;
-    addr[2*i+1] = tuples[i] & 0xFF;
+    addr[2*i] = (tuple[i] >> 8) & 0xFF;
+    addr[2*i+1] = tuple[i] & 0xFF;
   }
   struct in6_addr real_addr;
   memcpy(&real_addr, addr, 16);
   return real_addr;
 }
 
+TEST(SocketUtilityFunctions, Inet_addr) {
+   // Fails for if string contains non-integers.
+   ASSERT_EQ(INADDR_NONE, inet_addr("foobar"));
+
+   // Fails if there are too many quads
+   ASSERT_EQ(INADDR_NONE, inet_addr("0.0.0.0.0"));
+
+   // Fails if a single element is > 255
+   ASSERT_EQ(INADDR_NONE, inet_addr("999.0.0.0"));
+
+   // Fails if a single element is negative.
+   ASSERT_EQ(INADDR_NONE, inet_addr("-55.0.0.0"));
+
+   // In tripple, notation third integer cannot be larger
+   // and 16bit unsigned int.
+   ASSERT_EQ(INADDR_NONE, inet_addr("1.2.66000"));
+
+   // Success cases.
+   // Normal dotted-quad address.
+   uint32_t expected_addr = ntohl(0x07060504);
+   ASSERT_EQ(expected_addr, inet_addr("7.6.5.4"));
+   expected_addr = ntohl(0xffffffff);
+   ASSERT_EQ(expected_addr, inet_addr("255.255.255.255"));
+
+   // Tripple case
+   expected_addr = ntohl(1 << 24 | 2 << 16 | 3);
+   ASSERT_EQ(expected_addr, inet_addr("1.2.3"));
+   expected_addr = ntohl(1 << 24 | 2 << 16 | 300);
+   ASSERT_EQ(expected_addr, inet_addr("1.2.300"));
+
+   // Double case
+   expected_addr = ntohl(1 << 24 | 20000);
+   ASSERT_EQ(expected_addr, inet_addr("1.20000"));
+   expected_addr = ntohl(1 << 24 | 2);
+   ASSERT_EQ(expected_addr, inet_addr("1.2"));
+
+   // Single case
+   expected_addr = ntohl(255);
+   ASSERT_EQ(expected_addr, inet_addr("255"));
+   expected_addr = ntohl(4000000000U);
+   ASSERT_EQ(expected_addr, inet_addr("4000000000"));
+}
+
+TEST(SocketUtilityFunctions, Inet_aton) {
+   struct in_addr addr;
+
+   // Failure cases
+   ASSERT_EQ(0, inet_aton("foobar", &addr));
+   ASSERT_EQ(0, inet_aton("0.0.0.0.0", &addr));
+   ASSERT_EQ(0, inet_aton("999.0.0.0", &addr));
+
+   // Success cases
+   uint32_t expected_addr = htonl(0xff020304);
+   ASSERT_NE(0, inet_aton("255.2.3.4", &addr));
+   ASSERT_EQ(expected_addr, addr.s_addr);
+
+   expected_addr = htonl(0x01000002);
+   ASSERT_NE(0, inet_aton("1.2", &addr));
+   ASSERT_EQ(expected_addr, addr.s_addr);
+
+   expected_addr = htonl(0x01020003);
+   ASSERT_NE(0, inet_aton("1.2.3", &addr));
+   ASSERT_EQ(expected_addr, addr.s_addr);
+
+   expected_addr = htonl(0x0000100);
+   ASSERT_NE(0, inet_aton("256", &addr));
+   ASSERT_EQ(expected_addr, addr.s_addr);
+}
+
 TEST(SocketUtilityFunctions, Inet_ntoa) {
-  char* stringified_addr = inet_ntoa(generate_ipv4_addr(0,0,0,0));
-  ASSERT_TRUE(NULL != stringified_addr);
-  EXPECT_STREQ("0.0.0.0", stringified_addr);
+  struct {
+    unsigned char addr_tuple[4];
+    const char* output;
+  } tests[] = {
+    { { 0,   0,   0,   0   }, "0.0.0.0" },
+    { { 127, 0,   0,   1   }, "127.0.0.1" },
+    { { 255, 255, 255, 255 }, "255.255.255.255" },
+  };
 
-  stringified_addr = inet_ntoa(generate_ipv4_addr(127,0,0,1));
-  ASSERT_TRUE(NULL != stringified_addr);
-  EXPECT_STREQ("127.0.0.1", stringified_addr);
-
-  stringified_addr = inet_ntoa(generate_ipv4_addr(255,255,255,255));
-  ASSERT_TRUE(NULL != stringified_addr);
-  EXPECT_STREQ("255.255.255.255", stringified_addr);
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {
+    char* stringified_addr = inet_ntoa(generate_ipv4_addr(tests[i].addr_tuple));
+    ASSERT_TRUE(NULL != stringified_addr);
+    EXPECT_STREQ(tests[i].output, stringified_addr);
+  }
 }
 
 TEST(SocketUtilityFunctions, Inet_ntop_ipv4) {
-  char stringified_addr[INET_ADDRSTRLEN];
+  struct {
+    unsigned char addr_tuple[4];
+    const char* output;
+  } tests[] = {
+    { { 0,   0,   0,   0   }, "0.0.0.0" },
+    { { 127, 0,   0,   1   }, "127.0.0.1" },
+    { { 255, 255, 255, 255 }, "255.255.255.255" },
+  };
 
-  struct in_addr real_addr = generate_ipv4_addr(0,0,0,0);
-  EXPECT_TRUE(NULL != inet_ntop(AF_INET, &real_addr,
-                                stringified_addr, INET_ADDRSTRLEN));
-  EXPECT_STREQ("0.0.0.0", stringified_addr);
-
-  real_addr = generate_ipv4_addr(127,0,0,1);
-  EXPECT_TRUE(NULL != inet_ntop(AF_INET, &real_addr,
-                                stringified_addr, INET_ADDRSTRLEN));
-  EXPECT_STREQ("127.0.0.1", stringified_addr);
-
-  real_addr = generate_ipv4_addr(255,255,255,255);
-  EXPECT_TRUE(NULL != inet_ntop(AF_INET, &real_addr,
-                                stringified_addr, INET_ADDRSTRLEN));
-  EXPECT_STREQ("255.255.255.255", stringified_addr);
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {
+    char stringified_addr[INET_ADDRSTRLEN];
+    struct in_addr real_addr = generate_ipv4_addr(tests[i].addr_tuple);
+    EXPECT_TRUE(NULL != inet_ntop(AF_INET, &real_addr,
+                                  stringified_addr, INET_ADDRSTRLEN));
+    EXPECT_STREQ(tests[i].output, stringified_addr);
+  }
 }
 
 TEST(SocketUtilityFunctions, Inet_ntop_ipv6) {
-  char stringified_addr[INET6_ADDRSTRLEN];
+  struct {
+    unsigned short addr_tuple[8];
+    const char* output;
+  } tests[] = {
+    { { 0, 0, 0, 0, 0, 0, 0, 0 }, "::" },
+    { { 1, 2, 3, 0, 0, 0, 0, 0 }, "1:2:3::" },
+    { { 0, 0, 0, 0, 0, 1, 2, 3 }, "::1:2:3" },
+    { { 0x1234, 0xa, 0x12, 0x0000, 0x5678, 0x9abc, 0xdef, 0xffff },
+      "1234:a:12:0:5678:9abc:def:ffff" },
+    { { 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff },
+      "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff" },
+    { { 0, 0, 0, 0, 0, 0xffff, 0x101, 0x101 }, "::ffff:1.1.1.1" },
+    { { 0, 0, 0, 0, 0, 0, 0x101, 0x101 }, "::1.1.1.1" },
+  };
 
-  {
-    int addr_tuples[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-    struct in6_addr real_addr = generate_ipv6_addr(addr_tuples);
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {
+    char stringified_addr[INET6_ADDRSTRLEN];
+    struct in6_addr real_addr = generate_ipv6_addr(tests[i].addr_tuple);
     EXPECT_TRUE(NULL != inet_ntop(AF_INET6, &real_addr,
                                   stringified_addr, INET6_ADDRSTRLEN));
-    EXPECT_STREQ("0:0:0:0:0:0:0:0", stringified_addr);
-  }
-
-  {
-    int addr_tuples[8] = { 0x1234, 0xa, 0x12, 0x0000,
-                                0x5678, 0x9abc, 0xdef, 0xffff };
-    struct in6_addr real_addr = generate_ipv6_addr(addr_tuples);
-    EXPECT_TRUE(NULL != inet_ntop(AF_INET6, &real_addr,
-                                  stringified_addr, INET6_ADDRSTRLEN));
-    EXPECT_STREQ("1234:a:12:0:5678:9abc:def:ffff", stringified_addr);
-  }
-
-  {
-    int addr_tuples[8] = { 0xffff, 0xffff, 0xffff, 0xffff,
-                                0xffff, 0xffff, 0xffff, 0xffff };
-    struct in6_addr real_addr = generate_ipv6_addr(addr_tuples);
-    EXPECT_TRUE(NULL != inet_ntop(AF_INET6, &real_addr,
-                                  stringified_addr, INET6_ADDRSTRLEN));
-    EXPECT_STREQ("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", stringified_addr);
+    EXPECT_STREQ(tests[i].output, stringified_addr);
   }
 }
 
 TEST(SocketUtilityFunctions, Inet_ntop_failure) {
   char addr_name[INET6_ADDRSTRLEN];
-  int addr_tuples[8] = { 0xffff, 0xffff, 0xffff, 0xffff,
+  uint16_t addr6_tuple[8] = { 0xffff, 0xffff, 0xffff, 0xffff,
                               0xffff, 0xffff, 0xffff, 0xffff };
-  struct in6_addr ipv6_addr = generate_ipv6_addr(addr_tuples);
-  struct in_addr ipv4_addr = generate_ipv4_addr(255,255,255,255);
+  uint8_t addr_tuple[4] = { 255, 255, 255, 255 };
+  struct in6_addr ipv6_addr = generate_ipv6_addr(addr6_tuple);
+  struct in_addr ipv4_addr = generate_ipv4_addr(addr_tuple);
 
-  EXPECT_TRUE(NULL == inet_ntop(AF_UNIX, &ipv6_addr,
-                                addr_name, INET6_ADDRSTRLEN));
-  EXPECT_EQ(errno, EAFNOSUPPORT);
+  EXPECT_EQ(NULL, inet_ntop(AF_UNIX, &ipv6_addr,
+                            addr_name, INET6_ADDRSTRLEN));
+  EXPECT_EQ(EAFNOSUPPORT, errno);
 
-  EXPECT_TRUE(NULL == inet_ntop(AF_INET, &ipv4_addr,
-                                addr_name, INET_ADDRSTRLEN - 1));
-  EXPECT_EQ(errno, ENOSPC);
+  EXPECT_EQ(NULL, inet_ntop(AF_INET, &ipv4_addr,
+                            addr_name, INET_ADDRSTRLEN - 1));
+  EXPECT_EQ(ENOSPC, errno);
 
-  EXPECT_TRUE(NULL == inet_ntop(AF_INET6, &ipv6_addr,
-                                addr_name, INET6_ADDRSTRLEN - 1));
-  EXPECT_EQ(errno, ENOSPC);
+  EXPECT_EQ(NULL, inet_ntop(AF_INET6, &ipv6_addr,
+                            addr_name, INET6_ADDRSTRLEN / 2));
+  EXPECT_EQ(ENOSPC, errno);
 }
 
 TEST(SocketUtilityFunctions, Inet_pton) {
   struct {
     int family;
     const char* input;
-    const char* output;
+    const char* output; // NULL means output should match input
   } tests[] = {
     { AF_INET, "127.127.12.0", NULL },
     { AF_INET, "0.0.0.0", NULL },
 
-    { AF_INET6, "0:0:0:0:0:0:0:0", NULL },
+    { AF_INET6, "0:0:0:0:0:0:0:0", "::" },
     { AF_INET6, "1234:5678:9abc:def0:1234:5678:9abc:def0", NULL },
     { AF_INET6, "1:2:3:4:5:6:7:8", NULL },
     { AF_INET6, "a:b:c:d:e:f:1:2", NULL },
     { AF_INET6, "A:B:C:D:E:F:1:2", "a:b:c:d:e:f:1:2" },
-    { AF_INET6, "::", "0:0:0:0:0:0:0:0" },
-    { AF_INET6, "::12", "0:0:0:0:0:0:0:12" },
-    { AF_INET6, "::1:2:3", "0:0:0:0:0:1:2:3" },
-    { AF_INET6, "12::", "12:0:0:0:0:0:0:0" },
-    { AF_INET6, "1:2::", "1:2:0:0:0:0:0:0" },
-    { AF_INET6, "::12:0:0:0:0:0:0:0", "12:0:0:0:0:0:0:0" },
-    { AF_INET6, "1:2:3::4:5", "1:2:3:0:0:0:4:5" },
-    { AF_INET6, "::1.1.1.1", "0:0:0:0:0:0:101:101" },
-    { AF_INET6, "::ffff:1.1.1.1", "0:0:0:0:0:ffff:101:101" },
-    { AF_INET6, "ffff::1.1.1.1", "ffff:0:0:0:0:0:101:101" },
-    { AF_INET6, "::1.1.1.1", "0:0:0:0:0:0:101:101" },
+    { AF_INET6, "::", "::" },
+    { AF_INET6, "::12", "::12" },
+    { AF_INET6, "::1:2:3", "::1:2:3" },
+    { AF_INET6, "12::", "12::" },
+    { AF_INET6, "1:2::", "1:2::" },
+    { AF_INET6, "12:0:0:0:0:0:0:0", "12::" },
+    { AF_INET6, "1:2:3::4:5", "1:2:3::4:5" },
+    { AF_INET6, "::ffff:1.1.1.1", "::ffff:1.1.1.1" },
+    { AF_INET6, "ffff::1.1.1.1", "ffff::101:101" },
+    { AF_INET6, "::1.1.1.1", "::1.1.1.1" },
   };
 
   for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {
     uint8_t addr[16];
-    EXPECT_TRUE(inet_pton(tests[i].family, tests[i].input, addr));
+    ASSERT_TRUE(inet_pton(tests[i].family, tests[i].input, addr))
+        << "inet_pton failed for " << tests[i].input;
     const char* expected = tests[i].output ? tests[i].output : tests[i].input;
     char out_buffer[256];
-    EXPECT_TRUE(
-        inet_ntop(tests[i].family, addr, out_buffer, sizeof(out_buffer)));
-    EXPECT_EQ(std::string(expected), std::string(out_buffer));
+    ASSERT_EQ(out_buffer,
+              inet_ntop(tests[i].family, addr, out_buffer, sizeof(out_buffer)));
+    ASSERT_STREQ(expected, out_buffer);
   }
 }
 
 TEST(SocketUtilityFunctions, Inet_pton_failure) {
+  // All these are examples of strings that do not map
+  // to IP address.  inet_pton returns 0 on failure.
   uint8_t addr[16];
   EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.24312", &addr));
   EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.24 ", &addr));
@@ -455,6 +526,7 @@ TEST(SocketUtilityFunctions, Inet_pton_failure) {
   EXPECT_EQ(0, inet_pton(AF_INET6, "0:0:0:0:0:0:1:0.0.0.0", &addr));
   EXPECT_EQ(0, inet_pton(AF_INET6, "::0.0.0.0:1", &addr));
   EXPECT_EQ(0, inet_pton(AF_INET6, "::0.0.0.0.0", &addr));
+  EXPECT_EQ(0, inet_pton(AF_INET6, "::1.2.3.4.5.6.7.8", &addr));
 }
 
 TEST(SocketUtilityFunctions, Ntohs) {
@@ -473,5 +545,4 @@ TEST(SocketUtilityFunctions, Ntohl) {
   EXPECT_EQ(host_long, 0x44332211);
 }
 
-#endif  // !defined(__GLIBC__)
 #endif  // PROVIDES_SOCKETPAIR_API
