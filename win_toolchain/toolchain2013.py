@@ -93,7 +93,7 @@ def Download(url, local_path):
       sys.stdout.flush()
   sys.stdout.write('\n')
   if content_length and content_length != bytes_read:
-    raise SystemExit('Got incorrect number of bytes downloading %s' % url)
+    sys.exit('Got incorrect number of bytes downloading %s' % url)
 
 
 def ExtractIso(iso_path):
@@ -156,7 +156,7 @@ def DownloadSDK8():
       return standalone_path
     count += 1
     sys.stdout.write('Windows 8 SDK failed to download, retrying.\n')
-  raise SystemExit("After multiple retries, couldn't download Win8 SDK")
+  sys.exit('After multiple retries, couldn\'t download Win8 SDK')
 
 
 def DownloadUsingGsutil(filename):
@@ -168,7 +168,7 @@ def DownloadUsingGsutil(filename):
       download_from_google_storage.GSUTIL_DEFAULT_PATH, boto_path=None)
   code = gsutil.call('cp', 'gs://chrome-wintoolchain/' + filename, target_path)
   if code != 0:
-    raise SystemExit('gsutil failed')
+    sys.exit('gsutil failed')
   return target_path
 
 
