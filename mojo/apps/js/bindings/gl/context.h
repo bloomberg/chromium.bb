@@ -62,11 +62,8 @@ class Context : public gin::Wrappable<Context> {
                    v8::Handle<v8::Function> did_create_callback);
   virtual ~Context();
 
-  void DidCreateContext(uint32_t width, uint32_t height);
-  static void DidCreateContextThunk(
-      void* closure,
-      uint32_t width,
-      uint32_t height);
+  void DidCreateContext();
+  static void DidCreateContextThunk(void* closure);
   void ContextLost();
   static void ContextLostThunk(void* closure);
 

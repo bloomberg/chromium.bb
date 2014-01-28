@@ -268,6 +268,5 @@ extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
   loop.Run();
 
-  MojoGLES2Terminate();
   return MOJO_RESULT_OK;
 }

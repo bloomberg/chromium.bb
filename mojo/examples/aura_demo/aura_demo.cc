@@ -140,7 +140,8 @@ class AuraDemo : public ShellClient {
 
  private:
   void HostContextCreated() {
-    aura::RootWindow::CreateParams params(gfx::Rect(0, 0, 500, 500));
+    aura::RootWindow::CreateParams params(
+        gfx::Rect(root_window_host_->bounds().size()));
     params.host = root_window_host_.get();
     root_window_.reset(new aura::RootWindow(params));
     root_window_host_->set_delegate(root_window_.get());

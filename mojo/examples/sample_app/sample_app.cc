@@ -77,6 +77,7 @@ class SampleApp : public ShellClient {
     }
 
     virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
+      gles2_client_->SetSize(bounds.size());
     }
 
     virtual void OnEvent(const Event& event) MOJO_OVERRIDE {

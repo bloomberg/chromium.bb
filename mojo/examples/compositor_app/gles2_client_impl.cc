@@ -13,7 +13,7 @@ namespace examples {
 
 GLES2ClientImpl::GLES2ClientImpl(
     ScopedMessagePipeHandle pipe,
-    const base::Callback<void(gfx::Size)>& context_created_callback)
+    const base::Callback<void()>& context_created_callback)
     : context_created_callback_(context_created_callback) {
   context_ = MojoGLES2CreateContext(
       pipe.release().value(),
@@ -42,18 +42,14 @@ gpu::ContextSupport* GLES2ClientImpl::Support() const {
       MojoGLES2GetContextSupport(context_));
 }
 
-void GLES2ClientImpl::DidCreateContext(uint32_t width,
-                                       uint32_t height) {
+void GLES2ClientImpl::DidCreateContext() {
   TRACE_EVENT0("compositor_app", "DidCreateContext");
   if (!context_created_callback_.is_null())
-    context_created_callback_.Run(gfx::Size(width, height));
+    context_created_callback_.Run();
 }
 
-void GLES2ClientImpl::DidCreateContextThunk(
-    void* closure,
-    uint32_t width,
-    uint32_t height) {
-  static_cast<GLES2ClientImpl*>(closure)->DidCreateContext(width, height);
+void GLES2ClientImpl::DidCreateContextThunk(void* closure) {
+  static_cast<GLES2ClientImpl*>(closure)->DidCreateContext();
 }
 
 void GLES2ClientImpl::ContextLost() {

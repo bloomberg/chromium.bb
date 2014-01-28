@@ -95,6 +95,9 @@ define(function() {
     this.viewU32 = new Uint32Array(
         this.memory.buffer, 0,
         Math.floor(this.memory.length / Uint32Array.BYTES_PER_ELEMENT));
+    this.viewFloat = new Float32Array(
+        this.memory.buffer, 0,
+        Math.floor(this.memory.length / Float32Array.BYTES_PER_ELEMENT));
   }
 
   Decoder.prototype.skip = function(offset) {
@@ -117,6 +120,12 @@ define(function() {
     var low = this.read32();
     var high = this.read32();
     return low + high * 0x100000000;
+  };
+
+  Decoder.prototype.decodeFloat = function() {
+    var result = this.viewFloat[this.next / this.viewFloat.BYTES_PER_ELEMENT];
+    this.next += this.viewFloat.BYTES_PER_ELEMENT;
+    return result;
   };
 
   Decoder.prototype.decodePointer = function() {
@@ -201,6 +210,14 @@ define(function() {
   Encoder.prototype.write64 = function(val) {
     store64(this.buffer.memory, this.next, val);
     this.next += 8;
+  };
+
+  Encoder.prototype.encodeFloat = function(val) {
+    var floatBuffer = new Float32Array(1);
+    floatBuffer[0] = val;
+    var buffer = new Uint8Array(floatBuffer.buffer, 0);
+    for (var i = 0; i < buffer.length; ++i)
+      this.buffer.memory[this.next++] = buffer[i];
   };
 
   Encoder.prototype.encodePointer = function(pointer) {

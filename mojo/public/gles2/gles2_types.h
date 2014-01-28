@@ -16,11 +16,8 @@ extern "C" {
 #endif
 
 typedef struct MojoGLES2ContextPrivate *MojoGLES2Context;
-// TODO(piman):
-// - create context synchronously
-// - pass width/height through native viewport, not here.
-typedef void (*MojoGLES2ContextCreated)(
-    void* closure, uint32_t width, uint32_t height);
+// TODO(piman): create context synchronously
+typedef void (*MojoGLES2ContextCreated)(void* closure);
 typedef void (*MojoGLES2ContextLost)(void* closure);
 typedef void (*MojoGLES2DrawAnimationFrame)(void* closure);
 

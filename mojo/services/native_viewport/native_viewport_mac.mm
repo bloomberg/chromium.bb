@@ -38,6 +38,7 @@ class NativeViewportMac : public NativeViewport {
                               backing:NSBackingStoreBuffered
                                 defer:NO];
     delegate_->OnAcceleratedWidgetAvailable([window_ contentView]);
+    delegate_->OnBoundsChanged(rect_);
   }
 
   virtual void Show() OVERRIDE {

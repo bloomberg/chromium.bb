@@ -80,7 +80,7 @@ class NativeViewportService::NativeViewportImpl
     if (widget_ == gfx::kNullAcceleratedWidget || !gles2_)
       return;
     gfx::Size size = native_viewport_->GetSize();
-    if (size.width() == 0 || size.height() == 0)
+    if (size.IsEmpty())
       return;
     gles2_->CreateContext(widget_, size);
     created_context_ = true;
@@ -147,6 +147,7 @@ class NativeViewportService::NativeViewportImpl
 
   virtual void OnBoundsChanged(const gfx::Rect& bounds) MOJO_OVERRIDE {
     CreateGLES2ContextIfNeeded();
+    AllocationScope allocation;
     client_->OnBoundsChanged(bounds);
   }
 

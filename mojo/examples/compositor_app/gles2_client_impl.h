@@ -10,7 +10,6 @@
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojom/native_viewport.h"
-#include "ui/gfx/size.h"
 
 namespace gpu {
 class ContextSupport;
@@ -26,22 +25,19 @@ class GLES2ClientImpl {
  public:
   GLES2ClientImpl(
       ScopedMessagePipeHandle pipe,
-      const base::Callback<void(gfx::Size)>& context_created_callback);
+      const base::Callback<void()>& context_created_callback);
   virtual ~GLES2ClientImpl();
 
   gpu::gles2::GLES2Interface* Interface() const;
   gpu::ContextSupport* Support() const;
 
  private:
-  void DidCreateContext(uint32_t width, uint32_t height);
-  static void DidCreateContextThunk(
-      void* closure,
-      uint32_t width,
-      uint32_t height);
+  void DidCreateContext();
+  static void DidCreateContextThunk(void* closure);
   void ContextLost();
   static void ContextLostThunk(void* closure);
 
-  base::Callback<void(gfx::Size viewport_size)> context_created_callback_;
+  base::Callback<void()> context_created_callback_;
 
   MojoGLES2Context context_;
 

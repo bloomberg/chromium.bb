@@ -31,7 +31,8 @@ WindowTreeHostMojo::WindowTreeHostMojo(
     ScopedMessagePipeHandle viewport_handle,
     const gfx::Rect& bounds,
     const base::Callback<void()>& compositor_created_callback)
-    : native_viewport_(viewport_handle.Pass(), this),
+    : context_created_(false),
+      native_viewport_(viewport_handle.Pass(), this),
       compositor_created_callback_(compositor_created_callback) {
   AllocationScope scope;
   native_viewport_->Create(bounds);
@@ -160,7 +161,9 @@ void WindowTreeHostMojo::OnCreated() {
 void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
   bounds_ = gfx::Rect(bounds.position().x(), bounds.position().y(),
                       bounds.size().width(), bounds.size().height());
-  window()->SetBounds(gfx::Rect(bounds_.size()));
+  if (delegate_)
+    window()->SetBounds(gfx::Rect(bounds_.size()));
+  CreateCompositorIfNeeded();
 }
 
 void WindowTreeHostMojo::OnDestroyed() {
@@ -200,10 +203,17 @@ void WindowTreeHostMojo::OnEvent(const Event& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, private:
 
-void WindowTreeHostMojo::DidCreateContext(gfx::Size viewport_size) {
+void WindowTreeHostMojo::DidCreateContext() {
+  context_created_ = true;
+  CreateCompositorIfNeeded();
+}
+
+void WindowTreeHostMojo::CreateCompositorIfNeeded() {
+  if (bounds_.IsEmpty() || !context_created_)
+    return;
   CreateCompositor(GetAcceleratedWidget());
   compositor_created_callback_.Run();
-  NotifyHostResized(viewport_size);
+  NotifyHostResized(bounds_.size());
 }
 
 }  // namespace examples

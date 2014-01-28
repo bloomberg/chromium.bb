@@ -67,8 +67,11 @@ CompositorHost::CompositorHost(GLES2ClientImpl* gles2_client_impl)
 
 CompositorHost::~CompositorHost() {}
 
-void CompositorHost::DidCreateContext(gfx::Size viewport_size) {
+void CompositorHost::SetSize(gfx::Size viewport_size) {
   tree_->SetViewportSize(viewport_size);
+}
+
+void CompositorHost::DidCreateContext() {
   tree_->SetLayerTreeHostClientReady();
   tree_->InitializeOutputSurfaceIfNeeded();
 }

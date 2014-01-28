@@ -25,7 +25,8 @@ class CompositorHost : public cc::LayerTreeHostClient {
   explicit CompositorHost(GLES2ClientImpl* gles2_client_impl);
   virtual ~CompositorHost();
 
-  void DidCreateContext(gfx::Size viewport_size);
+  void SetSize(gfx::Size viewport_size);
+  void DidCreateContext();
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE;

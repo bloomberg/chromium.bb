@@ -166,7 +166,7 @@ Context::~Context() {
   MojoGLES2DestroyContext(context_);
 }
 
-void Context::DidCreateContext(uint32_t width, uint32_t height) {
+void Context::DidCreateContext() {
   // TODO(aa): When we want to support multiple contexts, we should add
   // Context::MakeCurrent() for developers to switch between them.
   MojoGLES2MakeCurrent(context_);
@@ -178,18 +178,11 @@ void Context::DidCreateContext(uint32_t width, uint32_t height) {
   v8::Handle<v8::Function> callback = v8::Local<v8::Function>::New(
       isolate, did_create_callback_);
 
-  v8::Handle<v8::Value> args[] = {
-    gin::ConvertToV8(isolate, width),
-    gin::ConvertToV8(isolate, height),
-  };
-  runner_->Call(callback, runner_->global(), 2, args);
+  runner_->Call(callback, runner_->global(), 0, NULL);
 }
 
-void Context::DidCreateContextThunk(
-    void* closure,
-    uint32_t width,
-    uint32_t height) {
-  static_cast<Context*>(closure)->DidCreateContext(width, height);
+void Context::DidCreateContextThunk(void* closure) {
+  static_cast<Context*>(closure)->DidCreateContext();
 }
 
 void Context::ContextLost() {

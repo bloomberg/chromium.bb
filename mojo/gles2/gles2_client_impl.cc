@@ -38,9 +38,7 @@ void GLES2ClientImpl::CancelAnimationFrames() {
   service_->CancelAnimationFrames();
 }
 
-void GLES2ClientImpl::DidCreateContext(uint64_t encoded,
-                                       uint32_t width,
-                                       uint32_t height) {
+void GLES2ClientImpl::DidCreateContext(uint64_t encoded) {
   // Ack, Hans! It's the giant hack.
   // TODO(abarth): Replace this hack with something more disciplined. Most
   // likley, we should receive a MojoHandle that we use to wire up the
@@ -48,7 +46,7 @@ void GLES2ClientImpl::DidCreateContext(uint64_t encoded,
   // still in-process, we just reinterpret_cast the value into a GL interface.
   implementation_ = reinterpret_cast<gpu::gles2::GLES2Implementation*>(
       static_cast<uintptr_t>(encoded));
-  created_callback_(closure_, width, height);
+  created_callback_(closure_);
 }
 
 void GLES2ClientImpl::ContextLost() {

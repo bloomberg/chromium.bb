@@ -50,6 +50,7 @@ class NativeViewportX11 : public NativeViewport,
     base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
 
     delegate_->OnAcceleratedWidgetAvailable(window_);
+    delegate_->OnBoundsChanged(bounds_);
   }
 
   virtual void Show() OVERRIDE {

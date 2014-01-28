@@ -295,9 +295,15 @@ define([
     this.remote_ = remote;
 
     var pipe = core.createMessagePipe();
-    new GLES2ClientImpl(pipe.handle0);
+    this.gles2_ = new GLES2ClientImpl(pipe.handle0);
 
-    this.remote_.open();
+    var rect = new nativeViewport.Rect;
+    rect.position = new nativeViewport.Point;
+    rect.size = new nativeViewport.Size;
+    rect.size.width = 800;
+    rect.size.height = 600;
+    this.remote_.create(rect);
+    this.remote_.show();
     this.remote_.createGLES2Context(pipe.handle1);
   }
   NativeViewportClientImpl.prototype =
@@ -306,10 +312,11 @@ define([
   NativeViewportClientImpl.prototype.onCreated = function() {
     console.log('NativeViewportClientImpl.prototype.OnCreated');
   };
-  NativeViewportClientImpl.prototype.didOpen = function() {
-    console.log('NativeViewportClientImpl.prototype.DidOpen');
-  };
 
+  NativeViewportClientImpl.prototype.onBoundsChanged = function(bounds) {
+    console.log('NativeViewportClientImpl.prototype.OnBoundsChanged');
+    this.gles2_.setDimensions(bounds.size);
+  }
 
   function GLES2ClientImpl(remotePipe) {
     this.gl_ = new gljs.Context(remotePipe, this.didCreateContext.bind(this));
@@ -317,9 +324,7 @@ define([
     this.angle_ = 45;
   }
 
-  GLES2ClientImpl.prototype.didCreateContext = function(width, height) {
-    this.width_ = width;
-    this.height_ = height;
+  GLES2ClientImpl.prototype.didCreateContext = function() {
     this.program_ = loadProgram(this.gl_);
     this.positionLocation_ =
         this.gl_.getAttribLocation(this.program_, 'a_position');
@@ -333,7 +338,14 @@ define([
     this.timer_ = timer.createRepeating(16, this.handleTimer.bind(this));
   };
 
+  GLES2ClientImpl.prototype.setDimensions = function(size) {
+    this.width_ = size.width;
+    this.height_ = size.height;
+  }
+
   GLES2ClientImpl.prototype.drawCube = function() {
+    if (!this.width_ || !this.height_)
+      return;
     this.gl_.viewport(0, 0, this.width_, this.height_);
     this.gl_.clear(this.gl_.COLOR_BUFFER_BIT);
     this.gl_.useProgram(this.program_);

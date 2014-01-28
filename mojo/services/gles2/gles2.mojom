@@ -13,7 +13,7 @@ interface GLES2 {
 
 [Peer=GLES2]
 interface GLES2Client {
-  void DidCreateContext(uint64 encoded, uint32 width, uint32 height);
+  void DidCreateContext(uint64 encoded);
   void ContextLost();
   void DrawAnimationFrame();
 };

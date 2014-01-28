@@ -30,9 +30,7 @@ class GLES2ClientImpl : public GLES2Client, public MojoGLES2ContextPrivate {
   void CancelAnimationFrames();
 
  private:
-  virtual void DidCreateContext(uint64_t encoded,
-                                uint32_t width,
-                                uint32_t height) MOJO_OVERRIDE;
+  virtual void DidCreateContext(uint64_t encoded) MOJO_OVERRIDE;
   virtual void ContextLost() MOJO_OVERRIDE;
   virtual void DrawAnimationFrame() MOJO_OVERRIDE;
 

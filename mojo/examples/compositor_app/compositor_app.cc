@@ -52,6 +52,7 @@ class SampleApp : public ShellClient {
    public:
     explicit NativeViewportClientImpl(ScopedMessagePipeHandle viewport_handle)
         : viewport_(viewport_handle.Pass(), this) {
+      AllocationScope allocation;
       viewport_->Create(gfx::Rect(10, 10, 800, 600));
       viewport_->Show();
       ScopedMessagePipeHandle gles2_handle;
@@ -66,8 +67,8 @@ class SampleApp : public ShellClient {
       host_.reset(new CompositorHost(gles2_client_.get()));
     }
 
-    void DidCreateContext(gfx::Size viewport_size) {
-      host_->DidCreateContext(viewport_size);
+    void DidCreateContext() {
+      host_->DidCreateContext();
     }
 
     virtual ~NativeViewportClientImpl() {}
@@ -80,6 +81,7 @@ class SampleApp : public ShellClient {
     }
 
     virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
+      host_->SetSize(bounds.size());
     }
 
     virtual void OnEvent(const Event& event) MOJO_OVERRIDE {

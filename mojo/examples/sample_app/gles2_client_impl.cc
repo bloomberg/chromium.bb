@@ -22,7 +22,8 @@ float CalculateDragDistance(const gfx::PointF& start, const Point& end) {
 }
 
 GLES2ClientImpl::GLES2ClientImpl(ScopedMessagePipeHandle pipe)
-    : getting_animation_frames_(false) {
+    : getting_animation_frames_(false),
+      context_created_(false) {
   context_ = MojoGLES2CreateContext(
       pipe.release().value(),
       &DidCreateContextThunk,
@@ -33,6 +34,11 @@ GLES2ClientImpl::GLES2ClientImpl(ScopedMessagePipeHandle pipe)
 
 GLES2ClientImpl::~GLES2ClientImpl() {
   MojoGLES2DestroyContext(context_);
+}
+
+void GLES2ClientImpl::SetSize(const Size& size) {
+  size_ = gfx::Size(size.width(), size.height());
+  InitializeCubeIfNeeded();
 }
 
 void GLES2ClientImpl::HandleInputEvent(const Event& event) {
@@ -75,19 +81,21 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
   }
 }
 
-void GLES2ClientImpl::DidCreateContext(uint32_t width,
-                                       uint32_t height) {
+void GLES2ClientImpl::DidCreateContext() {
   MojoGLES2MakeCurrent(context_);
+  context_created_ = true;
+  InitializeCubeIfNeeded();
+}
 
-  cube_.Init(width, height);
+void GLES2ClientImpl::InitializeCubeIfNeeded() {
+  if (size_.IsEmpty() || !context_created_)
+    return;
+  cube_.Init(size_.width(), size_.height());
   RequestAnimationFrames();
 }
 
-void GLES2ClientImpl::DidCreateContextThunk(
-    void* closure,
-    uint32_t width,
-    uint32_t height) {
-  static_cast<GLES2ClientImpl*>(closure)->DidCreateContext(width, height);
+void GLES2ClientImpl::DidCreateContextThunk(void* closure) {
+  static_cast<GLES2ClientImpl*>(closure)->DidCreateContext();
 }
 
 void GLES2ClientImpl::ContextLost() {

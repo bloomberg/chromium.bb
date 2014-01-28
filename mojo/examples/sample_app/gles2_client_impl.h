@@ -10,6 +10,7 @@
 #include "mojo/public/gles2/gles2.h"
 #include "mojom/native_viewport.h"
 #include "ui/gfx/point_f.h"
+#include "ui/gfx/size.h"
 
 namespace mojo {
 namespace examples {
@@ -19,14 +20,12 @@ class GLES2ClientImpl {
   explicit GLES2ClientImpl(ScopedMessagePipeHandle pipe);
   virtual ~GLES2ClientImpl();
 
+  void SetSize(const Size& size);
   void HandleInputEvent(const Event& event);
 
  private:
-  void DidCreateContext(uint32_t width, uint32_t height);
-  static void DidCreateContextThunk(
-      void* closure,
-      uint32_t width,
-      uint32_t height);
+  void DidCreateContext();
+  static void DidCreateContextThunk(void* closure);
   void ContextLost();
   static void ContextLostThunk(void* closure);
   void DrawAnimationFrame();
@@ -35,7 +34,10 @@ class GLES2ClientImpl {
   void RequestAnimationFrames();
   void CancelAnimationFrames();
 
+  void InitializeCubeIfNeeded();
+
   MojoTimeTicks last_time_;
+  gfx::Size size_;
   SpinningCube cube_;
   gfx::PointF capture_point_;
   gfx::PointF last_drag_point_;
@@ -43,6 +45,7 @@ class GLES2ClientImpl {
   bool getting_animation_frames_;
 
   MojoGLES2Context context_;
+  bool context_created_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(GLES2ClientImpl);
 };
