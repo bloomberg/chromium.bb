@@ -1105,4 +1105,63 @@ double RenderView::layoutViewportHeight() const
     return viewHeight(ScrollableArea::IncludeScrollbars) / scale;
 }
 
+void RenderView::viewResized()
+{
+    if (logicalWidth() != viewLogicalWidth() || needsLayoutOnLogicalHeightChange()) {
+        setNeedsLayout();
+    } else if (!needsLayout()) {
+        setLogicalHeight(viewLogicalHeight());
+        if (m_overflow)
+            m_overflow->setVisualOverflow(borderBoxRect());
+        layer()->updateLayerPositionsAfterLayout(layer(), RenderLayer::defaultFlags);
+    }
+}
+
+bool RenderView::needsLayoutOnLogicalHeightChange() const
+{
+    // FIXME: Move logics that are generic to RenderBox or RenderBlock into these classes
+    // so that this function can be also used to optimize layout of them.
+
+    if (document().inQuirksMode() || document().paginated() || shouldUsePrintingLayout())
+        return true;
+
+    // Optimize layout in horizontal writing mode only to simplify the logic.
+    if (!style()->isHorizontalWritingMode())
+        return true;
+
+    if (hasPercentHeightDescendants())
+        return true;
+
+    if (document().ensureStyleResolver().mediaQueryAffectedByViewportChange() || document().hasViewportUnits())
+        return true;
+
+    // Needs layout if there is no body element (e.g. there is frameset).
+    Element* body = document().body();
+    if (!body || !body->hasTagName(HTMLNames::bodyTag))
+        return true;
+
+    // Root background image may be stretched related to the viewport size.
+    Element* documentElement = document().documentElement();
+    if (!documentElement || !documentElement->renderer()
+        || documentElement->renderer()->rendererForRootBackground()->style()->hasBackgroundImage())
+        return true;
+
+    if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
+        TrackedRendererListHashSet::iterator end = positionedObjects->end();
+        for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
+            if ((*it)->node() && (*it)->node()->hasTagName(HTMLNames::dialogTag))
+                return true;
+
+            RenderStyle* childStyle = (*it)->style();
+            // Fixed position element may change compositing state when viewport height changes.
+            if (childStyle->position() == FixedPosition)
+                return true;
+            if (childStyle->top().isPercent() || childStyle->height().isPercent() || childStyle->minHeight().isPercent() || childStyle->maxHeight().isPercent() || !childStyle->bottom().isAuto())
+                return true;
+        }
+    }
+
+    return false;
+}
+
 } // namespace WebCore

@@ -3181,7 +3181,20 @@ void FrameView::setLayoutSizeInternal(const IntSize& size)
         return;
 
     m_layoutSize = size;
-    contentsResized();
+
+    // Update scrollbars. Not calling this->contentsResized() to avoid setNeedsLayout.
+    ScrollView::contentsResized();
+
+    if (RenderView* renderView = this->renderView()) {
+        renderView->viewResized();
+        // If selfNeedsLayout, resize event will be sent if needed during the next layout;
+        // otherwise we need to send the resize event now if needed.
+        if (!renderView->selfNeedsLayout()) {
+            // Call scheduleOrPerformPostLayoutTasks() instead of synchronized sendResizeEventIfNeeded()
+            // to avoid hang with resize events in seamless frames.
+            scheduleOrPerformPostLayoutTasks();
+        }
+    }
 }
 
 void FrameView::didAddScrollbar(Scrollbar* scrollbar, ScrollbarOrientation orientation)

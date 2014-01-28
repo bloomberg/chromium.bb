@@ -104,10 +104,12 @@ namespace {
 const int touchPointPadding = 32;
 
 #define EXPECT_EQ_RECT(a, b) \
-    EXPECT_EQ(a.x(), b.x()); \
-    EXPECT_EQ(a.y(), b.y()); \
-    EXPECT_EQ(a.width(), b.width()); \
-    EXPECT_EQ(a.height(), b.height());
+    do { \
+        EXPECT_EQ(a.x(), b.x()); \
+        EXPECT_EQ(a.y(), b.y()); \
+        EXPECT_EQ(a.width(), b.width()); \
+        EXPECT_EQ(a.height(), b.height()); \
+    } while (false)
 
 class FakeCompositingWebViewClient : public WebViewClient {
 public:
@@ -5045,6 +5047,59 @@ TEST_F(WebFrameTest, CreateChildFrameFailure)
     webViewHelper.initializeAndLoad(m_baseURL + "create_child_frame_fail.html", true, &client);
 
     EXPECT_EQ(1, client.callCount());
+}
+
+TEST_F(WebFrameTest, heightChangeRepaint)
+{
+    const char* kTests[] = {
+        "repaint/height-change-no-full-repaint1.html",
+        "repaint/height-change-no-full-repaint2.html",
+
+        // The following tests need full repaint on height change for now,
+        // but may be optimized not to need full repaint in the future and need
+        // to be updated.
+        "repaint/height-change-repaint1.html", // vertical writing mode
+        "repaint/height-change-repaint2.html", // frameset
+        "repaint/height-change-repaint3.html", // percentage height
+        "repaint/height-change-repaint4.html", // positioned percentage height
+        "repaint/height-change-repaint5.html", // percentage top
+        "repaint/height-change-repaint6.html", // bottom
+        "repaint/height-change-repaint7.html", // viewport related media query
+        "repaint/height-change-repaint8.html", // viewport percentage length
+    };
+
+    UseMockScrollbarSettings mockScrollbarSettings;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webView = webViewHelper.initialize(true);
+
+    for (size_t i = 0; i < arraysize(kTests); ++i) {
+        SCOPED_TRACE(kTests[i]);
+        registerMockedHttpURLLoad(kTests[i]);
+        FrameTestHelpers::loadFrame(webView->mainFrame(), m_baseURL + kTests[i]);
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+        webView->resize(WebSize(200, 200));
+        webView->layout();
+
+        // Change height.
+        WebCore::FrameView* frameView = webView->mainFrameImpl()->frameView();
+        frameView->setTracksRepaints(true);
+        webView->resize(WebSize(200, 300));
+        webView->layout();
+        if (strstr(kTests[i], "no-full-repaint"))
+            EXPECT_EQ_RECT(WebCore::IntRect(0, 200, 200, 100), WebCore::unionRect(frameView->trackedRepaintRects()));
+        else
+            EXPECT_EQ_RECT(WebCore::IntRect(0, 0, 200, 300), WebCore::unionRect(frameView->trackedRepaintRects()));
+        frameView->setTracksRepaints(false);
+
+        // Change width, ensure optimized logic for height change doesn't break repaint on width change.
+        frameView->setTracksRepaints(true);
+        webView->resize(WebSize(300, 300));
+        webView->layout();
+        EXPECT_EQ_RECT(WebCore::IntRect(0, 0, 300, 300), WebCore::unionRect(frameView->trackedRepaintRects()));
+        frameView->setTracksRepaints(false);
+    }
 }
 
 } // namespace

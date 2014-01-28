@@ -117,11 +117,17 @@ public:
 
     void addPercentHeightDescendant(RenderBox*);
     static void removePercentHeightDescendant(RenderBox*);
-    TrackedRendererListHashSet* percentHeightDescendants() const;
     static bool hasPercentHeightContainerMap();
     static bool hasPercentHeightDescendant(RenderBox*);
     static void clearPercentHeightDescendantsFrom(RenderBox*);
     static void removePercentHeightDescendantIfNeeded(RenderBox*);
+
+    TrackedRendererListHashSet* percentHeightDescendants() const;
+    bool hasPercentHeightDescendants() const
+    {
+        TrackedRendererListHashSet* descendants = percentHeightDescendants();
+        return descendants && !descendants->isEmpty();
+    }
 
     void setHasMarkupTruncation(bool b) { m_hasMarkupTruncation = b; }
     bool hasMarkupTruncation() const { return m_hasMarkupTruncation; }
