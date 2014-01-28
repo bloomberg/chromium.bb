@@ -60,25 +60,6 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_FALSE(button.GetImageToPaint().isNull());
   EXPECT_EQ(10, button.GetImageToPaint().width());
   EXPECT_EQ(20, button.GetImageToPaint().height());
-
-  // Set an overlay image.
-  gfx::ImageSkia overlay_image = CreateTestImage(12, 22);
-  button.SetOverlayImage(&overlay_image);
-  EXPECT_EQ(12, button.overlay_image_.width());
-  EXPECT_EQ(22, button.overlay_image_.height());
-
-  // By convention, preferred size doesn't change, even though pushed image
-  // is bigger.
-  EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
-
-  // We're still painting the normal image.
-  EXPECT_FALSE(button.GetImageToPaint().isNull());
-  EXPECT_EQ(10, button.GetImageToPaint().width());
-  EXPECT_EQ(20, button.GetImageToPaint().height());
-
-  // Reset the overlay image.
-  button.SetOverlayImage(NULL);
-  EXPECT_TRUE(button.overlay_image_.isNull());
 }
 
 TEST_F(ImageButtonTest, SetAndGetImage) {

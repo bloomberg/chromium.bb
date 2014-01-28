@@ -75,8 +75,6 @@ void ButtonExample::CreateExampleView(View* container) {
                           rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia());
   image_button_->SetImage(ImageButton::STATE_PRESSED,
                           rb.GetImageNamed(IDR_CLOSE_P).ToImageSkia());
-  image_button_->SetOverlayImage(rb.GetImageNamed(
-      IDR_MENU_CHECK).ToImageSkia());
   container->AddChildView(image_button_);
 }
 

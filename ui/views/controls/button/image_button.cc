@@ -60,14 +60,6 @@ void ImageButton::SetBackground(SkColor color,
      *image, *mask);
 }
 
-void ImageButton::SetOverlayImage(const gfx::ImageSkia* image) {
-  if (!image) {
-    overlay_image_ = gfx::ImageSkia();
-    return;
-  }
-  overlay_image_ = *image;
-}
-
 void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
                                     VerticalAlignment v_align) {
   h_alignment_ = h_align;
@@ -116,9 +108,6 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
       canvas->DrawImageInt(background_image_, position.x(), position.y());
 
     canvas->DrawImageInt(img, position.x(), position.y());
-
-    if (!overlay_image_.isNull())
-      canvas->DrawImageInt(overlay_image_, position.x(), position.y());
   }
 
   Painter::PaintFocusPainter(this, canvas, focus_painter());

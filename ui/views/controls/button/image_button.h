@@ -51,10 +51,6 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
                      const gfx::ImageSkia* image,
                      const gfx::ImageSkia* mask);
 
-  // Set an |image| to draw on top of the normal / hot / pushed image.
-  // Pass NULL for no image.
-  void SetOverlayImage(const gfx::ImageSkia* image);
-
   // Sets how the image is laid out within the button's bounds.
   void SetImageAlignment(HorizontalAlignment h_align,
                          VerticalAlignment v_align);
@@ -95,9 +91,6 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   gfx::ImageSkia images_[STATE_COUNT];
 
   gfx::ImageSkia background_image_;
-
-  // Image to draw on top of normal / hot / pushed image.  Usually empty.
-  gfx::ImageSkia overlay_image_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, Basics);
