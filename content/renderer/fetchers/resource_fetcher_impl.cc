@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
@@ -17,6 +18,7 @@
 
 using base::TimeDelta;
 using blink::WebFrame;
+using blink::WebHTTPBody;
 using blink::WebURLError;
 using blink::WebURLLoader;
 using blink::WebURLRequest;
@@ -25,21 +27,13 @@ using blink::WebURLResponse;
 namespace content {
 
 // static
-ResourceFetcher* ResourceFetcher::Create(
-    const GURL& url, WebFrame* frame, WebURLRequest::TargetType target_type,
-    const Callback& callback) {
-  return new ResourceFetcherImpl(url, frame, target_type, callback);
+ResourceFetcher* ResourceFetcher::Create(const GURL& url) {
+  return new ResourceFetcherImpl(url);
 }
 
-ResourceFetcherImpl::ResourceFetcherImpl(const GURL& url, WebFrame* frame,
-                                         WebURLRequest::TargetType target_type,
-                                         const Callback& callback)
-    : completed_(false),
-      callback_(callback) {
-  // Can't do anything without a frame.  However, delegate can be NULL (so we
-  // can do a http request and ignore the results).
-  DCHECK(frame);
-  Start(url, frame, target_type);
+ResourceFetcherImpl::ResourceFetcherImpl(const GURL& url)
+    : request_(url),
+      completed_(false) {
 }
 
 ResourceFetcherImpl::~ResourceFetcherImpl() {
@@ -47,22 +41,60 @@ ResourceFetcherImpl::~ResourceFetcherImpl() {
     loader_->cancel();
 }
 
+void ResourceFetcherImpl::SetMethod(const std::string& method) {
+  DCHECK(!request_.isNull());
+  DCHECK(!loader_);
+
+  request_.setHTTPMethod(blink::WebString::fromUTF8(method));
+}
+
+void ResourceFetcherImpl::SetBody(const std::string& body) {
+  DCHECK(!request_.isNull());
+  DCHECK(!loader_);
+
+  WebHTTPBody web_http_body;
+  web_http_body.initialize();
+  web_http_body.appendData(blink::WebData(body));
+  request_.setHTTPBody(web_http_body);
+}
+
+void ResourceFetcherImpl::SetHeader(const std::string& header,
+                                    const std::string& value) {
+  DCHECK(!request_.isNull());
+  DCHECK(!loader_);
+
+  request_.setHTTPHeaderField(blink::WebString::fromUTF8(header),
+                              blink::WebString::fromUTF8(value));
+}
+
+void ResourceFetcherImpl::Start(WebFrame* frame,
+                                WebURLRequest::TargetType target_type,
+                                const Callback& callback) {
+  DCHECK(!loader_);
+  DCHECK(!request_.isNull());
+  DCHECK(callback_.is_null());
+  DCHECK(!completed_);
+  if (!request_.httpBody().isNull())
+    DCHECK_NE("GET", request_.httpMethod().utf8()) << "GETs can't have bodies.";
+
+  callback_ = callback;
+
+  request_.setTargetType(target_type);
+  request_.setFirstPartyForCookies(frame->document().firstPartyForCookies());
+  frame->dispatchWillSendRequest(request_);
+  loader_.reset(blink::Platform::current()->createURLLoader());
+  loader_->loadAsynchronously(request_, this);
+
+  // No need to hold on to the request.
+  request_.reset();
+}
+
 void ResourceFetcherImpl::SetTimeout(const base::TimeDelta& timeout) {
   DCHECK(loader_);
   DCHECK(!completed_);
+
   timeout_timer_.Start(FROM_HERE, timeout, this,
                        &ResourceFetcherImpl::TimeoutFired);
-}
-
-void ResourceFetcherImpl::Start(const GURL& url, WebFrame* frame,
-                                WebURLRequest::TargetType target_type) {
-  WebURLRequest request(url);
-  request.setTargetType(target_type);
-  request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
-  frame->dispatchWillSendRequest(request);
-
-  loader_.reset(blink::Platform::current()->createURLLoader());
-  loader_->loadAsynchronously(request, this);
 }
 
 void ResourceFetcherImpl::RunCallback(const WebURLResponse& response,

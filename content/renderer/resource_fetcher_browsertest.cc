@@ -149,8 +149,9 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
-        url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    fetcher->Start(frame, WebURLRequest::TargetIsMainFrame,
+                   delegate->NewCallback());
 
     delegate->WaitForResponse();
 
@@ -164,8 +165,9 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
-        url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    fetcher->Start(frame, WebURLRequest::TargetIsMainFrame,
+                   delegate->NewCallback());
 
     delegate->WaitForResponse();
 
@@ -180,8 +182,9 @@ class ResourceFetcherTests : public ContentBrowserTest {
     // Try to fetch a page on a site that doesn't exist.
     GURL url("http://localhost:1339/doesnotexist");
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
-        url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    fetcher->Start(frame, WebURLRequest::TargetIsMainFrame,
+                   delegate->NewCallback());
 
     delegate->WaitForResponse();
 
@@ -197,9 +200,9 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
-        url, frame, WebURLRequest::TargetIsMainFrame,
-        delegate->NewCallback()));
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    fetcher->Start(frame, WebURLRequest::TargetIsMainFrame,
+                   delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
 
     delegate->WaitForResponse();
@@ -216,14 +219,49 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
-        url, frame, WebURLRequest::TargetIsMainFrame,
-        delegate->NewCallback()));
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    fetcher->Start(frame, WebURLRequest::TargetIsMainFrame,
+                   delegate->NewCallback());
     fetcher->SetTimeout(base::TimeDelta());
     delegate->SetFetcher(fetcher.release());
 
     delegate->WaitForResponse();
     EXPECT_FALSE(delegate->timed_out());
+  }
+
+  void ResourceFetcherPost(const GURL& url) {
+    const char* kBody = "Really nifty POST body!";
+
+    WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
+
+    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    fetcher->SetMethod("POST");
+    fetcher->SetBody(kBody);
+    fetcher->Start(frame, WebURLRequest::TargetIsMainFrame,
+                   delegate->NewCallback());
+
+    delegate->WaitForResponse();
+    ASSERT_TRUE(delegate->completed());
+    EXPECT_EQ(delegate->response().httpStatusCode(), 200);
+    EXPECT_EQ(kBody, delegate->data());
+  }
+
+  void ResourceFetcherSetHeader(const GURL& url) {
+    const char* kHeader = "Rather boring header.";
+
+    WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
+
+    scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(url));
+    fetcher->SetHeader("header", kHeader);
+    fetcher->Start(frame, WebURLRequest::TargetIsMainFrame,
+                   delegate->NewCallback());
+
+    delegate->WaitForResponse();
+    ASSERT_TRUE(delegate->completed());
+    EXPECT_EQ(delegate->response().httpStatusCode(), 200);
+    EXPECT_EQ(kHeader, delegate->data());
   }
 };
 
@@ -290,6 +328,36 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
   PostTaskToInProcessRendererAndWait(
         base::Bind(
             &ResourceFetcherTests::ResourceFetcherDeletedInCallbackOnRenderer,
+            base::Unretained(this), url));
+}
+
+// Test that ResourceFetchers can handle POSTs.
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherPost) {
+  // Need to spin up the renderer.
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
+
+  // Grab a page that echos the POST body.
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("echo"));
+
+  PostTaskToInProcessRendererAndWait(
+        base::Bind(
+            &ResourceFetcherTests::ResourceFetcherPost,
+            base::Unretained(this), url));
+}
+
+// Test that ResourceFetchers can set headers.
+IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherSetHeader) {
+  // Need to spin up the renderer.
+  NavigateToURL(shell(), GURL(kAboutBlankURL));
+
+  // Grab a page that echos the POST body.
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("echoheader?header"));
+
+  PostTaskToInProcessRendererAndWait(
+        base::Bind(
+            &ResourceFetcherTests::ResourceFetcherSetHeader,
             base::Unretained(this), url));
 }
 

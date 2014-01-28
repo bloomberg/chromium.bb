@@ -31,10 +31,10 @@ ImageResourceFetcher::ImageResourceFetcher(
       id_(id),
       image_url_(image_url),
       image_size_(image_size) {
-  fetcher_.reset(ResourceFetcher::Create(
-      image_url, frame, target_type,
-      base::Bind(&ImageResourceFetcher::OnURLFetchComplete,
-                 base::Unretained(this))));
+  fetcher_.reset(ResourceFetcher::Create(image_url));
+  fetcher_->Start(frame, target_type,
+                  base::Bind(&ImageResourceFetcher::OnURLFetchComplete,
+                      base::Unretained(this)));
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", image_url.spec());

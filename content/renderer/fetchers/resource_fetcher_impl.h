@@ -31,21 +31,21 @@ class ResourceFetcherImpl : public ResourceFetcher,
                             public blink::WebURLLoaderClient {
  public:
   // ResourceFetcher implementation:
+  virtual void SetMethod(const std::string& method) OVERRIDE;
+  virtual void SetBody(const std::string& body) OVERRIDE;
+  virtual void SetHeader(const std::string& header,
+                         const std::string& value) OVERRIDE;
+  virtual void Start(blink::WebFrame* frame,
+                     blink::WebURLRequest::TargetType target_type,
+                     const Callback& callback) OVERRIDE;
   virtual void SetTimeout(const base::TimeDelta& timeout) OVERRIDE;
 
  private:
   friend class ResourceFetcher;
 
-  ResourceFetcherImpl(
-      const GURL& url, blink::WebFrame* frame,
-      blink::WebURLRequest::TargetType target_type,
-      const Callback& callback);
+  explicit ResourceFetcherImpl(const GURL& url);
 
   virtual ~ResourceFetcherImpl();
-
-  // Start the actual download.
-  void Start(const GURL& url, blink::WebFrame* frame,
-             blink::WebURLRequest::TargetType target_type);
 
   void RunCallback(const blink::WebURLResponse& response,
                    const std::string& data);
@@ -75,6 +75,9 @@ class ResourceFetcherImpl : public ResourceFetcher,
       blink::WebURLLoader* loader, const blink::WebURLError& error);
 
   scoped_ptr<blink::WebURLLoader> loader_;
+
+  // Request to send.  Released once Start() is called.
+  blink::WebURLRequest request_;
 
   // Set to true once the request is complete.
   bool completed_;

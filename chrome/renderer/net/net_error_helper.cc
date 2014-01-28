@@ -173,11 +173,12 @@ void NetErrorHelper::FetchErrorPage(const GURL& url) {
     return;
   blink::WebFrame* frame = web_view->mainFrame();
 
-  alt_error_page_fetcher_.reset(
-      content::ResourceFetcher::Create(
-          url, frame, blink::WebURLRequest::TargetIsMainFrame,
-          base::Bind(&NetErrorHelper::OnAlternateErrorPageRetrieved,
-                     base::Unretained(this))));
+  alt_error_page_fetcher_.reset(content::ResourceFetcher::Create(url));
+
+  alt_error_page_fetcher_->Start(
+      frame, blink::WebURLRequest::TargetIsMainFrame,
+      base::Bind(&NetErrorHelper::OnAlternateErrorPageRetrieved,
+                     base::Unretained(this)));
 
   alt_error_page_fetcher_->SetTimeout(
       base::TimeDelta::FromSeconds(kAlterErrorPageFetchTimeoutSec));

@@ -29,10 +29,11 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
       id_(id),
       http_status_code_(0),
       image_url_(image_url) {
-  fetcher_.reset(ResourceFetcher::Create(
-      image_url, frame, target_type,
+  fetcher_.reset(ResourceFetcher::Create(image_url));
+  fetcher_->Start(
+      frame, target_type,
       base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 }
 
 MultiResolutionImageResourceFetcher::~MultiResolutionImageResourceFetcher() {
