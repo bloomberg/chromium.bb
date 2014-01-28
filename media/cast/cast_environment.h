@@ -71,6 +71,14 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::TaskRunner> GetMessageTaskRunnerForThread(
       ThreadId identifier);
 
+  bool HasAudioEncoderThread() {
+    return audio_encode_thread_proxy_ ? true : false;
+  }
+
+  bool HasVideoEncoderThread() {
+    return video_encode_thread_proxy_ ? true : false;
+  }
+
  protected:
   virtual ~CastEnvironment();
 

@@ -46,14 +46,28 @@ class AudioEncoder::ImplBase {
         callback_(callback),
         buffer_fill_end_(0),
         frame_id_(0) {
-    CHECK_GT(num_channels_, 0);
-    CHECK_GT(samples_per_10ms_, 0);
-    CHECK_EQ(sampling_rate % 100, 0);
-    CHECK_LE(samples_per_10ms_ * num_channels_,
-             transport::EncodedAudioFrame::kMaxNumberOfSamples);
+    DCHECK_GT(num_channels_, 0);
+    DCHECK_GT(samples_per_10ms_, 0);
+    DCHECK_EQ(sampling_rate % 100, 0);
+    DCHECK_LE(samples_per_10ms_ * num_channels_,
+              transport::EncodedAudioFrame::kMaxNumberOfSamples);
+
+    if (num_channels_ <= 0 ||
+        samples_per_10ms_ <= 0 ||
+        sampling_rate % 100 != 0 ||
+        samples_per_10ms_ * num_channels_ >
+            transport::EncodedAudioFrame::kMaxNumberOfSamples) {
+      initialization_status_ = STATUS_INVALID_AUDIO_CONFIGURATION;
+    } else {
+      initialization_status_ = STATUS_INITIALIZED;
+    }
   }
 
   virtual ~ImplBase() {}
+
+  CastInitializationStatus InitializationResult() const {
+    return initialization_status_;
+  }
 
   void EncodeAudio(const AudioBus* audio_bus,
                    const base::TimeTicks& recorded_time,
@@ -112,6 +126,7 @@ class AudioEncoder::ImplBase {
   const int num_channels_;
   const int samples_per_10ms_;
   const FrameEncodedCallback callback_;
+  CastInitializationStatus initialization_status_;
 
  private:
   // In the case where a call to EncodeAudio() cannot completely fill the
@@ -136,6 +151,10 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
         encoder_memory_(new uint8[opus_encoder_get_size(num_channels)]),
         opus_encoder_(reinterpret_cast<OpusEncoder*>(encoder_memory_.get())),
         buffer_(new float[num_channels * samples_per_10ms_]) {
+    if (ImplBase::initialization_status_ != STATUS_INITIALIZED) {
+      return;
+    }
+
     CHECK_EQ(opus_encoder_init(opus_encoder_, sampling_rate, num_channels,
                                OPUS_APPLICATION_AUDIO),
              OPUS_OK);
@@ -265,6 +284,13 @@ AudioEncoder::AudioEncoder(
 }
 
 AudioEncoder::~AudioEncoder() {}
+
+CastInitializationStatus AudioEncoder::InitializationResult() const {
+  if (impl_) {
+    return impl_->InitializationResult();
+  }
+  return STATUS_UNSUPPORTED_AUDIO_CODEC;
+}
 
 void AudioEncoder::InsertAudio(
     const AudioBus* audio_bus,

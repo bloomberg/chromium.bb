@@ -65,8 +65,8 @@ class CastSender {
       const AudioSenderConfig& audio_config,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+      const CastInitializationCallback& cast_initialization,
       transport::CastTransportSender* const transport_sender);
-  // TODO(pwestin): Add callback for status messages; initialized, errors etc.
 
   virtual ~CastSender() {}
 

@@ -311,12 +311,14 @@ class TestReceiverVideoCallback :
   std::list<ExpectedVideoFrame> expected_frame_;
 };
 
+
 CastLoggingConfig EnableCastLoggingConfig(bool sender) {
   CastLoggingConfig config(sender);
   config.enable_raw_data_collection = true;
   config.enable_stats_data_collection = true;
   return config;
 }
+
 // The actual test class, generate synthetic data for both audio and video and
 // send those through the sender and receiver and analyzes the result.
 class End2EndTest : public ::testing::Test {
@@ -421,11 +423,13 @@ class End2EndTest : public ::testing::Test {
         transport_task_runner_));
     transport_sender_->InsertFakeTransportForTesting(&sender_to_receiver_);
 
-    cast_sender_.reset(CastSender::CreateCastSender(cast_environment_,
-                                                    audio_sender_config_,
-                                                    video_sender_config_,
-                                                    NULL,
-                                                    transport_sender_.get()));
+    cast_sender_.reset(CastSender::CreateCastSender(
+        cast_environment_,
+        audio_sender_config_,
+        video_sender_config_,
+        NULL,
+        base::Bind(&End2EndTest::InitializationResult, base::Unretained(this)),
+        transport_sender_.get()));
 
     receiver_to_sender_.SetPacketReceiver(cast_sender_->packet_receiver());
     sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver());
@@ -468,6 +472,10 @@ class End2EndTest : public ::testing::Test {
       task_runner_->RunTasks();
       transport_task_runner_->RunTasks();
     }
+  }
+
+  void InitializationResult(CastInitializationStatus result) {
+    EXPECT_EQ(result, STATUS_INITIALIZED);
   }
 
   AudioReceiverConfig audio_receiver_config_;

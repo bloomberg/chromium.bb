@@ -38,7 +38,7 @@ CastEnvironment::CastEnvironment(
       video_decode_thread_proxy_(video_decode_thread_proxy),
       transport_thread_proxy_(transport_thread_proxy),
       logging_(new LoggingImpl(main_thread_proxy, config)) {
-  DCHECK(main_thread_proxy) << "Main thread required";
+  DCHECK(main_thread_proxy);
 }
 
 CastEnvironment::~CastEnvironment() {

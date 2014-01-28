@@ -70,9 +70,10 @@ class PeerVideoSender : public VideoSender {
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+      const CastInitializationCallback& initialization_status,
       transport::CastTransportSender* const transport_sender)
       : VideoSender(cast_environment, video_config, gpu_factories,
-                    transport_sender) {
+                    initialization_status, transport_sender) {
   }
   using VideoSender::OnReceivedCastFeedback;
 };
@@ -129,10 +130,17 @@ class VideoSenderTest : public ::testing::Test {
       video_sender_.reset(new PeerVideoSender(cast_environment_,
           video_config,
           new test::FakeGpuVideoAcceleratorFactories(task_runner_),
+          base::Bind(&VideoSenderTest::InitializationResult,
+                     base::Unretained(this)),
           transport_sender_.get()));
     } else {
-      video_sender_.reset(new PeerVideoSender(cast_environment_, video_config,
-                                              NULL, transport_sender_.get()));
+      video_sender_.reset(new PeerVideoSender(
+        cast_environment_,
+        video_config,
+        NULL,
+        base::Bind(&VideoSenderTest::InitializationResult,
+                   base::Unretained(this)),
+        transport_sender_.get()));
     }
   }
 
@@ -151,6 +159,10 @@ class VideoSenderTest : public ::testing::Test {
       testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
     }
+  }
+
+  void InitializationResult(CastInitializationStatus result) {
+    EXPECT_EQ(result, STATUS_INITIALIZED);
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.

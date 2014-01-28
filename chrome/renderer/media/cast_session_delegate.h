@@ -57,6 +57,9 @@ class CastSessionDelegate {
   // audio/video frames after this call.
   void StartSendingInternal();
 
+  // Callback with the result of the initialization.
+  void InitializationResult(media::cast::CastInitializationStatus result);
+
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   scoped_ptr<media::cast::CastSender> cast_sender_;

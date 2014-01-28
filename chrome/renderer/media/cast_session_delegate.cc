@@ -101,11 +101,14 @@ void CastSessionDelegate::StartVideo(
   StartSendingInternal();
 }
 
+// TODO(pwestin): This design does not work; as soon as audio or video is
+// initialized it will prevent the other from being enabled.
 void CastSessionDelegate::StartSendingInternal() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (cast_environment_)
     return;
+
   if (!audio_configured_ || !video_configured_)
     return;
 
@@ -131,8 +134,17 @@ void CastSessionDelegate::StartSendingInternal() {
       cast_environment_,
       audio_config_,
       video_config_,
-      NULL,
+      NULL,  // GPU.
+      base::Bind(&CastSessionDelegate::InitializationResult,
+          base::Unretained(this)),
       cast_transport_.get()));
+}
+
+void CastSessionDelegate::InitializationResult(
+    media::cast::CastInitializationStatus result) {
+  DCHECK(cast_sender_);
+
+  // TODO(pwestin): handle the error codes.
 
   for (size_t i = 0; i < frame_input_available_callbacks_.size(); ++i) {
     frame_input_available_callbacks_[i].Run(

@@ -73,13 +73,15 @@ AudioSender::AudioSender(
               audio_config.sender_ssrc,
               audio_config.incoming_feedback_ssrc,
               audio_config.rtcp_c_name),
-        initialized_(false),
+        timers_initialized_(false),
+        initialization_status_(STATUS_INITIALIZED),
         weak_factory_(this) {
   if (!audio_config.use_external_encoder) {
     audio_encoder_ = new AudioEncoder(
         cast_environment, audio_config,
         base::Bind(&AudioSender::SendEncodedAudioFrame,
                    weak_factory_.GetWeakPtr()));
+    initialization_status_ = audio_encoder_->InitializationResult();
   }
 }
 
@@ -87,8 +89,8 @@ AudioSender::~AudioSender() {}
 
 void AudioSender::InitializeTimers() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (!initialized_) {
-    initialized_ = true;
+  if (!timers_initialized_) {
+    timers_initialized_ = true;
     ScheduleNextRtcpReport();
   }
 }

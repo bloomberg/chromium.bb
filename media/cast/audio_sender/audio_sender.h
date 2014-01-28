@@ -38,6 +38,10 @@ class AudioSender : public base::NonThreadSafe,
 
   virtual ~AudioSender();
 
+  CastInitializationStatus InitializationResult() const {
+    return initialization_status_;
+  }
+
   // The |audio_bus| must be valid until the |done_callback| is called.
   // The callback is called from the main cast thread as soon as the encoder is
   // done with |audio_bus|; it does not mean that the encoded data has been
@@ -80,7 +84,8 @@ class AudioSender : public base::NonThreadSafe,
   scoped_ptr<LocalRtpSenderStatistics> rtp_audio_sender_statistics_;
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;
-  bool initialized_;
+  bool timers_initialized_;
+  CastInitializationStatus initialization_status_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSender);
 };

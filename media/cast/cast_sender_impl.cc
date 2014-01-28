@@ -56,9 +56,14 @@ CastSender* CastSender::CreateCastSender(
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender) {
-  return new CastSenderImpl(cast_environment, audio_config, video_config,
-                            gpu_factories, transport_sender);
+  return new CastSenderImpl(cast_environment,
+                            audio_config,
+                            video_config,
+                            gpu_factories,
+                            initialization_status,
+                            transport_sender);
 }
 
 CastSenderImpl::CastSenderImpl(
@@ -66,16 +71,35 @@ CastSenderImpl::CastSenderImpl(
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender)
     : audio_sender_(cast_environment, audio_config, transport_sender),
-      video_sender_(cast_environment, video_config, gpu_factories,
+      video_sender_(cast_environment,
+                    video_config,
+                    gpu_factories,
+                    initialization_status,
                     transport_sender),
       frame_input_(new LocalFrameInput(cast_environment,
                                        audio_sender_.AsWeakPtr(),
                                        video_sender_.AsWeakPtr())),
       cast_environment_(cast_environment),
       ssrc_of_audio_sender_(audio_config.incoming_feedback_ssrc),
-      ssrc_of_video_sender_(video_config.incoming_feedback_ssrc) {}
+      ssrc_of_video_sender_(video_config.incoming_feedback_ssrc) {
+  CHECK(audio_config.use_external_encoder ||
+        cast_environment->HasAudioEncoderThread());
+  CHECK(video_config.use_external_encoder ||
+        cast_environment->HasVideoEncoderThread());
+
+  CastInitializationStatus status = audio_sender_.InitializationResult();
+  if (status != STATUS_INITIALIZED) {
+    cast_environment->PostTask(CastEnvironment::MAIN,
+                               FROM_HERE,
+                               base::Bind(initialization_status, status));
+    return;
+  }
+  // Handing over responsibility to call NotifyInitialization to the
+  // video sender.
+}
 
 CastSenderImpl::~CastSenderImpl() {}
 

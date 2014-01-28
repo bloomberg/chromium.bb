@@ -86,7 +86,7 @@ bool ReadFromFile() {
 }
 
 std::string GetVideoFile() {
-  test::InputBuilder input("Enter file and path to raw video file.","",
+  test::InputBuilder input("Enter file and path to raw video file.", "",
       INT_MIN, INT_MAX);
   return input.GetStringInput();
 }
@@ -272,7 +272,7 @@ class SendProcess {
     send_time_ = clock_->NowTicks();
     frame_input_->InsertRawVideoFrame(video_frame, send_time_);
     test_app_thread_proxy_->PostTask(FROM_HERE,
-          base::Bind(&SendProcess::SendFrame, base::Unretained(this)));
+        base::Bind(&SendProcess::SendFrame, base::Unretained(this)));
   }
 
  private:
@@ -293,8 +293,13 @@ class SendProcess {
 }  // namespace media
 
 namespace {
-void UpdateCastTransportStatus(media::cast::transport::CastTransportStatus
-                               status) {
+void UpdateCastTransportStatus(
+    media::cast::transport::CastTransportStatus status) {
+}
+
+void InitializationResult(media::cast::CastInitializationStatus result)  {
+  CHECK_EQ(result, media::cast::STATUS_INITIALIZED);
+  VLOG(1) << "Cast Sender initialized";
 }
 }
 
@@ -358,6 +363,7 @@ int main(int argc, char** argv) {
       audio_config,
       video_config,
       NULL,  // gpu_factories.
+      base::Bind(&InitializationResult),
       transport_sender.get()));
 
   transport_sender->SetPacketReceiver(cast_sender->packet_receiver());
@@ -369,7 +375,11 @@ int main(int argc, char** argv) {
                                video_config,
                                frame_input));
 
-  send_process->SendFrame();
+  test_thread.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&media::cast::SendProcess::SendFrame,
+      base::Unretained(send_process.get())));
+
   io_message_loop.Run();
   return 0;
 }

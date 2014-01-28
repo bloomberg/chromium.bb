@@ -31,6 +31,8 @@ class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
                const AudioSenderConfig& audio_config,
                const FrameEncodedCallback& frame_encoded_callback);
 
+  CastInitializationStatus InitializationResult() const;
+
   // The |audio_bus| must be valid until the |done_callback| is called.
   // The callback is called from the main cast thread as soon as the encoder is
   // done with |audio_bus|; it does not mean that the encoded data has been

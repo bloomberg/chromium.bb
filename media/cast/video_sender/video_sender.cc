@@ -54,6 +54,7 @@ VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender)
     : rtp_max_delay_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
@@ -100,6 +101,13 @@ VideoSender::VideoSender(
       video_config.sender_ssrc,
       video_config.incoming_feedback_ssrc,
       video_config.rtcp_c_name));
+
+  // TODO(pwestin): pass cast_initialization to |video_encoder_|
+  // and remove this call.
+  cast_environment->PostTask(
+      CastEnvironment::MAIN,
+      FROM_HERE,
+      base::Bind(initialization_status, STATUS_INITIALIZED));
 }
 
 VideoSender::~VideoSender() {}
