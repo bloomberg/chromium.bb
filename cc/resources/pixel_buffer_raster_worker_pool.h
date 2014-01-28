@@ -6,8 +6,6 @@
 #define CC_RESOURCES_PIXEL_BUFFER_RASTER_WORKER_POOL_H_
 
 #include <deque>
-#include <set>
-#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/containers/hash_tables.h"
@@ -15,7 +13,9 @@
 
 namespace cc {
 
-class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
+class CC_EXPORT PixelBufferRasterWorkerPool
+    : public RasterWorkerPool,
+      public internal::WorkerPoolTaskClient {
  public:
   virtual ~PixelBufferRasterWorkerPool();
 
@@ -27,34 +27,45 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
         resource_provider, context_provider, max_transfer_buffer_usage_bytes));
   }
 
-  // Overridden from WorkerPool:
-  virtual void Shutdown() OVERRIDE;
-
   // Overridden from RasterWorkerPool:
+  virtual void Shutdown() OVERRIDE;
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
   virtual unsigned GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
-  virtual void OnRasterTasksFinished() OVERRIDE;
-  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
+
+  // Overridden from internal::WorkerPoolTaskClient:
+  virtual void* AcquireBufferForRaster(internal::RasterWorkerPoolTask* task,
+                                       int* stride) OVERRIDE;
+  virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,
+                                 const PicturePileImpl::Analysis& analysis)
+      OVERRIDE;
+  virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE;
 
  private:
+  enum RasterTaskState { UNSCHEDULED, SCHEDULED, UPLOADING, COMPLETED };
+  typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> >
+      RasterTaskDeque;
+  typedef internal::RasterWorkerPoolTask* RasterTaskMapKey;
+  typedef base::hash_map<RasterTaskMapKey, RasterTaskState> RasterTaskStateMap;
+
   PixelBufferRasterWorkerPool(ResourceProvider* resource_provider,
                               ContextProvider* context_provider,
                               size_t max_transfer_buffer_usage_bytes);
+
+  // Overridden from RasterWorkerPool:
+  virtual void OnRasterTasksFinished() OVERRIDE;
+  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
 
   void FlushUploads();
   void CheckForCompletedUploads();
   void ScheduleCheckForCompletedRasterTasks();
   void CheckForCompletedRasterTasks();
   void ScheduleMoreTasks();
-  void OnRasterTaskCompleted(scoped_refptr<internal::RasterWorkerPoolTask> task,
-                             bool was_canceled,
-                             bool needs_upload);
-  void DidCompleteRasterTask(internal::RasterWorkerPoolTask* task);
   unsigned PendingRasterTaskCount() const;
   bool HasPendingTasks() const;
   bool HasPendingTasksRequiredForActivation() const;
+  void CheckForCompletedWorkerPoolTasks();
 
   const char* StateName() const;
   scoped_ptr<base::Value> StateAsValue() const;
@@ -62,10 +73,11 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   bool shutdown_;
 
-  TaskMap pixel_buffer_tasks_;
-  RasterTaskDeque tasks_with_pending_upload_;
-  RasterTaskDeque completed_tasks_;
-  RasterTaskSet tasks_required_for_activation_;
+  RasterTaskSet raster_tasks_required_for_activation_;
+  RasterTaskStateMap raster_task_states_;
+  RasterTaskDeque raster_tasks_with_pending_upload_;
+  RasterTaskDeque completed_raster_tasks_;
+  TaskDeque completed_image_decode_tasks_;
 
   size_t scheduled_raster_task_count_;
   size_t bytes_pending_upload_;

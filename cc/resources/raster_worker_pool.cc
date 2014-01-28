@@ -92,7 +92,9 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         tile_id_(tile_id),
         source_frame_number_(source_frame_number),
         rendering_stats_(rendering_stats),
-        reply_(reply) {}
+        reply_(reply),
+        buffer_(NULL),
+        stride_(0) {}
 
   void RunAnalysisOnThread(unsigned thread_index) {
     TRACE_EVENT1("cc",
@@ -119,7 +121,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     analysis_.is_solid_color &= kUseColorEstimator;
   }
 
-  bool RunRasterOnThread(unsigned thread_index,
+  void RunRasterOnThread(unsigned thread_index,
                          void* buffer,
                          gfx::Size size,
                          int stride) {
@@ -136,9 +138,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
     DCHECK(picture_pile_.get());
     DCHECK(buffer);
-
-    if (analysis_.is_solid_color)
-      return false;
 
     SkBitmap bitmap;
     switch (resource()->format()) {
@@ -166,21 +165,35 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     SkCanvas canvas(&device);
     Raster(picture_pile_->GetCloneForDrawingOnThread(thread_index), &canvas);
     ChangeBitmapConfigIfNeeded(bitmap, buffer);
-
-    return true;
   }
 
-  // Overridden from internal::RasterWorkerPoolTask:
-  virtual bool RunOnWorkerThread(unsigned thread_index,
-                                 void* buffer,
-                                 gfx::Size size,
-                                 int stride) OVERRIDE {
+  // Overridden from internal::Task:
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     // TODO(alokp): For now run-on-worker-thread implies software rasterization.
     DCHECK(!use_gpu_rasterization());
     RunAnalysisOnThread(thread_index);
-    return RunRasterOnThread(thread_index, buffer, size, stride);
+    if (buffer_ && !analysis_.is_solid_color)
+      RunRasterOnThread(thread_index, buffer_, resource()->size(), stride_);
   }
 
+  // Overridden from internal::WorkerPoolTask:
+  virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {
+    DCHECK(!use_gpu_rasterization());
+    if (buffer_)
+      return;
+    buffer_ = client->AcquireBufferForRaster(this, &stride_);
+  }
+  virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {
+    DCHECK(!use_gpu_rasterization());
+    client->OnRasterCompleted(this, analysis_);
+  }
+  virtual void RunReplyOnOriginThread() OVERRIDE {
+    reply_.Run(analysis_, !HasFinishedRunning());
+  }
+
+  // Overridden from internal::RasterWorkerPoolTask:
   virtual void RunOnOriginThread(ResourceProvider* resource_provider,
                                  ContextProvider* context_provider) OVERRIDE {
     // TODO(alokp): For now run-on-origin-thread implies gpu rasterization.
@@ -205,10 +218,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(device.get()));
 
     Raster(picture_pile_, canvas.get());
-  }
-
-  virtual void CompleteOnOriginThread() OVERRIDE {
-    reply_.Run(analysis_, !HasFinishedRunning() || WasCanceled());
   }
 
  protected:
@@ -303,6 +312,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   int source_frame_number_;
   RenderingStatsInstrumentation* rendering_stats_;
   const RasterWorkerPool::RasterTask::Reply reply_;
+  void* buffer_;
+  int stride_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterWorkerPoolTaskImpl);
 };
@@ -329,7 +340,13 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   }
 
   // Overridden from internal::WorkerPoolTask:
-  virtual void CompleteOnOriginThread() OVERRIDE {
+  virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {}
+  virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {
+    client->OnImageDecodeCompleted(this);
+  }
+  virtual void RunReplyOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
   }
 
@@ -354,14 +371,20 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
       : origin_loop_(base::MessageLoopProxy::current().get()),
         on_raster_finished_callback_(on_raster_finished_callback) {}
 
-  // Overridden from internal::WorkerPoolTask:
+  // Overridden from internal::Task:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     TRACE_EVENT0("cc", "RasterFinishedWorkerPoolTaskImpl::RunOnWorkerThread");
     origin_loop_->PostTask(
         FROM_HERE,
         base::Bind(&RasterFinishedWorkerPoolTaskImpl::RunOnOriginThread, this));
   }
-  virtual void CompleteOnOriginThread() OVERRIDE {}
+
+  // Overridden from internal::WorkerPoolTask:
+  virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {}
+  virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {}
+  virtual void RunReplyOnOriginThread() OVERRIDE {}
 
  protected:
   virtual ~RasterFinishedWorkerPoolTaskImpl() {}
@@ -449,34 +472,11 @@ bool WorkerPoolTask::HasCompleted() const { return did_complete_; }
 RasterWorkerPoolTask::RasterWorkerPoolTask(const Resource* resource,
                                            internal::Task::Vector* dependencies,
                                            bool use_gpu_rasterization)
-    : did_run_(false),
-      did_complete_(false),
-      was_canceled_(false),
-      resource_(resource),
-      use_gpu_rasterization_(use_gpu_rasterization) {
+    : resource_(resource), use_gpu_rasterization_(use_gpu_rasterization) {
   dependencies_.swap(*dependencies);
 }
 
 RasterWorkerPoolTask::~RasterWorkerPoolTask() {}
-
-void RasterWorkerPoolTask::DidRun(bool was_canceled) {
-  DCHECK(!did_run_);
-  did_run_ = true;
-  was_canceled_ = was_canceled;
-}
-
-bool RasterWorkerPoolTask::HasFinishedRunning() const { return did_run_; }
-
-bool RasterWorkerPoolTask::WasCanceled() const { return was_canceled_; }
-
-void RasterWorkerPoolTask::WillComplete() { DCHECK(!did_complete_); }
-
-void RasterWorkerPoolTask::DidComplete() {
-  DCHECK(!did_complete_);
-  did_complete_ = true;
-}
-
-bool RasterWorkerPoolTask::HasCompleted() const { return did_complete_; }
 
 }  // namespace internal
 
@@ -580,10 +580,10 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
 RasterWorkerPool::Task RasterWorkerPool::CreateImageDecodeTask(
     SkPixelRef* pixel_ref,
     int layer_id,
-    RenderingStatsInstrumentation* stats_instrumentation,
+    RenderingStatsInstrumentation* rendering_stats,
     const Task::Reply& reply) {
   return Task(new ImageDecodeWorkerPoolTaskImpl(
-      pixel_ref, layer_id, stats_instrumentation, reply));
+      pixel_ref, layer_id, rendering_stats, reply));
 }
 
 void RasterWorkerPool::SetClient(RasterWorkerPoolClient* client) {
@@ -600,48 +600,6 @@ void RasterWorkerPool::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void RasterWorkerPool::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "RasterWorkerPool::CheckForCompletedTasks");
-
-  CheckForCompletedWorkerPoolTasks();
-
-  // Complete gpu rasterization tasks.
-  while (!completed_gpu_raster_tasks_.empty()) {
-    internal::RasterWorkerPoolTask* task =
-        completed_gpu_raster_tasks_.front().get();
-
-    task->WillComplete();
-    task->CompleteOnOriginThread();
-    task->DidComplete();
-
-    completed_gpu_raster_tasks_.pop_front();
-  }
-}
-
-void RasterWorkerPool::CheckForCompletedWorkerPoolTasks() {
-  internal::Task::Vector completed_tasks;
-  g_task_graph_runner.Pointer()->CollectCompletedTasks(namespace_token_,
-                                                       &completed_tasks);
-
-  for (internal::Task::Vector::const_iterator it = completed_tasks.begin();
-       it != completed_tasks.end();
-       ++it) {
-    internal::WorkerPoolTask* task =
-        static_cast<internal::WorkerPoolTask*>(it->get());
-
-    task->WillComplete();
-    task->CompleteOnOriginThread();
-    task->DidComplete();
-  }
-}
-
-void RasterWorkerPool::SetTaskGraph(TaskGraph* graph) {
-  TRACE_EVENT1(
-      "cc", "RasterWorkerPool::SetTaskGraph", "num_tasks", graph->size());
-
-  g_task_graph_runner.Pointer()->SetTaskGraph(namespace_token_, graph);
-}
-
 void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
   raster_tasks_.swap(queue->tasks_);
   raster_tasks_required_for_activation_.swap(
@@ -652,6 +610,19 @@ bool RasterWorkerPool::IsRasterTaskRequiredForActivation(
     internal::RasterWorkerPoolTask* task) const {
   return raster_tasks_required_for_activation_.find(task) !=
          raster_tasks_required_for_activation_.end();
+}
+
+void RasterWorkerPool::SetTaskGraph(TaskGraph* graph) {
+  TRACE_EVENT1(
+      "cc", "RasterWorkerPool::SetTaskGraph", "num_tasks", graph->size());
+
+  g_task_graph_runner.Pointer()->SetTaskGraph(namespace_token_, graph);
+}
+
+void RasterWorkerPool::CollectCompletedWorkerPoolTasks(
+    internal::Task::Vector* completed_tasks) {
+  g_task_graph_runner.Pointer()->CollectCompletedTasks(namespace_token_,
+                                                       completed_tasks);
 }
 
 void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
@@ -668,14 +639,30 @@ void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
     internal::RasterWorkerPoolTask* task = it->get();
     DCHECK(task->use_gpu_rasterization());
 
+    task->DidSchedule();
+    task->WillRun();
     task->RunOnOriginThread(resource_provider_, context_provider_);
-    task->DidRun(false);
+    task->DidRun();
+    task->WillComplete();
+    task->DidComplete();
+
     completed_gpu_raster_tasks_.push_back(task);
   }
 
   // TODO(alokp): Implement TestContextProvider::GrContext().
   if (gr_context)
     gr_context->flush();
+}
+
+void RasterWorkerPool::CheckForCompletedGpuRasterTasks() {
+  // Complete gpu rasterization tasks.
+  while (!completed_gpu_raster_tasks_.empty()) {
+    internal::WorkerPoolTask* task = completed_gpu_raster_tasks_.front().get();
+
+    task->RunReplyOnOriginThread();
+
+    completed_gpu_raster_tasks_.pop_front();
+  }
 }
 
 scoped_refptr<internal::WorkerPoolTask>

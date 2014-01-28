@@ -17,19 +17,8 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
- public:
-  // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
-
-  // Overridden from internal::WorkerPoolTask:
-  virtual void CompleteOnOriginThread() OVERRIDE {}
-
- private:
-  virtual ~PerfWorkerPoolTaskImpl() {}
-};
-
-class PerfRasterWorkerPool : public RasterWorkerPool {
+class PerfRasterWorkerPool : public RasterWorkerPool,
+                             public internal::WorkerPoolTaskClient {
  public:
   PerfRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
   virtual ~PerfRasterWorkerPool() {}
@@ -50,6 +39,37 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
     NOTREACHED();
     return RGBA_8888;
   }
+  virtual void CheckForCompletedTasks() OVERRIDE {
+    internal::Task::Vector completed_tasks;
+    CollectCompletedWorkerPoolTasks(&completed_tasks);
+
+    for (internal::Task::Vector::const_iterator it = completed_tasks.begin();
+         it != completed_tasks.end();
+         ++it) {
+      internal::WorkerPoolTask* task =
+          static_cast<internal::WorkerPoolTask*>(it->get());
+
+      task->WillComplete();
+      task->CompleteOnOriginThread(this);
+      task->DidComplete();
+
+      task->RunReplyOnOriginThread();
+    }
+
+    CheckForCompletedGpuRasterTasks();
+  }
+
+  // Overridden from internal::WorkerPoolTaskClient:
+  virtual void* AcquireBufferForRaster(internal::RasterWorkerPoolTask* task,
+                                       int* stride) OVERRIDE {
+    return NULL;
+  }
+  virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,
+                                 const PicturePileImpl::Analysis& analysis)
+      OVERRIDE {}
+  virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE {
+  }
+
   virtual void OnRasterTasksFinished() OVERRIDE { NOTREACHED(); }
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {
     NOTREACHED();
@@ -57,19 +77,6 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
 
   void SetRasterTasks(RasterTask::Queue* queue) {
     RasterWorkerPool::SetRasterTasks(queue);
-
-    TaskMap perf_tasks;
-    for (RasterTaskVector::const_iterator it = raster_tasks().begin();
-         it != raster_tasks().end();
-         ++it) {
-      internal::RasterWorkerPoolTask* task = it->get();
-
-      scoped_refptr<internal::WorkerPoolTask> new_perf_task(
-          new PerfWorkerPoolTaskImpl);
-      perf_tasks[task] = new_perf_task;
-    }
-
-    perf_tasks_.swap(perf_tasks);
   }
 
   void BuildTaskGraph() {
@@ -96,29 +103,20 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
          ++it) {
       internal::RasterWorkerPoolTask* task = it->get();
 
-      TaskMap::iterator perf_it = perf_tasks_.find(task);
-      DCHECK(perf_it != perf_tasks_.end());
-      if (perf_it != perf_tasks_.end()) {
-        internal::WorkerPoolTask* perf_task = perf_it->second.get();
+      internal::GraphNode* node = CreateGraphNodeForRasterTask(
+          task, task->dependencies(), priority++, &graph);
 
-        internal::GraphNode* perf_node = CreateGraphNodeForRasterTask(
-            perf_task, task->dependencies(), priority++, &graph);
-
-        if (IsRasterTaskRequiredForActivation(task)) {
-          raster_required_for_activation_finished_node->add_dependency();
-          perf_node->add_dependent(
-              raster_required_for_activation_finished_node);
-        }
-
-        raster_finished_node->add_dependency();
-        perf_node->add_dependent(raster_finished_node);
+      if (IsRasterTaskRequiredForActivation(task)) {
+        raster_required_for_activation_finished_node->add_dependency();
+        node->add_dependent(raster_required_for_activation_finished_node);
       }
+
+      raster_finished_node->add_dependency();
+      node->add_dependent(raster_finished_node);
     }
   }
 
  private:
-  TaskMap perf_tasks_;
-
   DISALLOW_COPY_AND_ASSIGN(PerfRasterWorkerPool);
 };
 

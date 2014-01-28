@@ -9,7 +9,8 @@
 
 namespace cc {
 
-class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
+class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
+                                        public internal::WorkerPoolTaskClient {
  public:
   virtual ~ImageRasterWorkerPool();
 
@@ -25,20 +26,28 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
   virtual unsigned GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
-  virtual void OnRasterTasksFinished() OVERRIDE;
-  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
+  virtual void CheckForCompletedTasks() OVERRIDE;
+
+  // Overridden from internal::WorkerPoolTaskClient:
+  virtual void* AcquireBufferForRaster(internal::RasterWorkerPoolTask* task,
+                                       int* stride) OVERRIDE;
+  virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,
+                                 const PicturePileImpl::Analysis& analysis)
+      OVERRIDE;
+  virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE;
 
  private:
   ImageRasterWorkerPool(ResourceProvider* resource_provider,
                         ContextProvider* context_provider,
                         unsigned texture_target);
 
-  void OnRasterTaskCompleted(scoped_refptr<internal::RasterWorkerPoolTask> task,
-                             bool was_canceled);
+  // Overridden from RasterWorkerPool:
+  virtual void OnRasterTasksFinished() OVERRIDE;
+  virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
 
   scoped_ptr<base::Value> StateAsValue() const;
 
-  static void CreateGraphNodeForImageTask(
+  static void CreateGraphNodeForImageRasterTask(
       internal::WorkerPoolTask* image_task,
       const internal::Task::Vector& decode_tasks,
       unsigned priority,
@@ -48,8 +57,6 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
       TaskGraph* graph);
 
   const unsigned texture_target_;
-
-  TaskMap image_tasks_;
 
   bool raster_tasks_pending_;
   bool raster_tasks_required_for_activation_pending_;

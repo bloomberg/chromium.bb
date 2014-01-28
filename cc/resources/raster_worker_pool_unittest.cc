@@ -41,22 +41,30 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         reply_(reply),
         raster_thread_(RASTER_THREAD_NONE) {}
 
-  // Overridden from internal::RasterWorkerPoolTask:
-  virtual bool RunOnWorkerThread(unsigned thread_index,
-                                 void* buffer,
-                                 gfx::Size size,
-                                 int stride) OVERRIDE {
+  // Overridden from internal::Task:
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     raster_thread_ = RASTER_THREAD_WORKER;
-    return true;
   }
+
+  // Overridden from internal::WorkerPoolTask:
+  virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {
+    int stride;
+    client->AcquireBufferForRaster(this, &stride);
+  }
+  virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
+      OVERRIDE {
+    client->OnRasterCompleted(this, PicturePileImpl::Analysis());
+  }
+  virtual void RunReplyOnOriginThread() OVERRIDE {
+    reply_.Run(
+        PicturePileImpl::Analysis(), !HasFinishedRunning(), raster_thread_);
+  }
+
+  // Overridden from internal::RasterWorkerPoolTask:
   virtual void RunOnOriginThread(ResourceProvider* resource_provider,
                                  ContextProvider* context_provider) OVERRIDE {
     raster_thread_ = RASTER_THREAD_ORIGIN;
-  }
-  virtual void CompleteOnOriginThread() OVERRIDE {
-    reply_.Run(PicturePileImpl::Analysis(),
-               !HasFinishedRunning() || WasCanceled(),
-               raster_thread_);
   }
 
  protected:
@@ -82,16 +90,14 @@ class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
                                      use_gpu_rasterization),
         lock_(lock) {}
 
-  // Overridden from internal::RasterWorkerPoolTask:
-  virtual bool RunOnWorkerThread(unsigned thread_index,
-                                 void* buffer,
-                                 gfx::Size size,
-                                 int stride) OVERRIDE {
+  // Overridden from internal::Task:
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     base::AutoLock lock(*lock_);
-    return TestRasterWorkerPoolTaskImpl::RunOnWorkerThread(
-        thread_index, buffer, size, stride);
+    TestRasterWorkerPoolTaskImpl::RunOnWorkerThread(thread_index);
   }
-  virtual void CompleteOnOriginThread() OVERRIDE {}
+
+  // Overridden from internal::WorkerPoolTask:
+  virtual void RunReplyOnOriginThread() OVERRIDE {}
 
  protected:
   virtual ~BlockingRasterWorkerPoolTaskImpl() {}
@@ -397,7 +403,8 @@ class RasterWorkerPoolTestFailedMapResource : public RasterWorkerPoolTest {
       bool was_canceled,
       TestRasterWorkerPoolTaskImpl::RasterThread raster_thread) OVERRIDE {
     EXPECT_FALSE(was_canceled);
-    EXPECT_EQ(TestRasterWorkerPoolTaskImpl::RASTER_THREAD_NONE, raster_thread);
+    EXPECT_EQ(TestRasterWorkerPoolTaskImpl::RASTER_THREAD_WORKER,
+              raster_thread);
     EndTest();
   }
 

@@ -13,23 +13,31 @@ namespace cc {
 
 namespace {
 
-class FakeRasterWorkerPool : public RasterWorkerPool {
+class FakeRasterWorkerPool : public RasterWorkerPool,
+                             public internal::WorkerPoolTaskClient {
  public:
   FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
 
+  // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
     RasterWorkerPool::SetRasterTasks(queue);
     for (RasterTaskVector::const_iterator it = raster_tasks().begin();
          it != raster_tasks().end(); ++it) {
+      internal::WorkerPoolTask* task = it->get();
+
+      task->DidSchedule();
+
       completed_tasks_.push_back(it->get());
     }
   }
   virtual void CheckForCompletedTasks() OVERRIDE {
     while (!completed_tasks_.empty()) {
-      internal::RasterWorkerPoolTask* task = completed_tasks_.front().get();
+      internal::WorkerPoolTask* task = completed_tasks_.front().get();
+
       task->WillComplete();
-      task->CompleteOnOriginThread();
       task->DidComplete();
+      task->RunReplyOnOriginThread();
+
       completed_tasks_.pop_front();
     }
   }
@@ -39,11 +47,23 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
   virtual ResourceFormat GetResourceFormat() const OVERRIDE {
     return RGBA_8888;
   }
+
+  // Overridden from internal::WorkerPoolTaskClient:
+  virtual void* AcquireBufferForRaster(internal::RasterWorkerPoolTask* task,
+                                       int* stride) OVERRIDE {
+    return NULL;
+  }
+  virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,
+                                 const PicturePileImpl::Analysis& analysis)
+      OVERRIDE {}
+  virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE {
+  }
+
+ private:
+  // Overridden from RasterWorkerPool:
   virtual void OnRasterTasksFinished() OVERRIDE {}
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {}
 
- private:
-  typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> > TaskDeque;
   TaskDeque completed_tasks_;
 };
 
