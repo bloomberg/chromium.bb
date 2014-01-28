@@ -5894,7 +5894,8 @@
    fun:NSSTrustDomain_TraverseCertificates
    fun:PK11_ListCerts
    fun:_ZN3net15NSSCertDatabase9ListCertsEPSt6vectorI13scoped_refptrINS_15X509CertificateEESaIS4_EE
-   fun:_ZN8chromeos12_GLOBAL__N_119LoadNSSCertificates*
+   fun:_ZN3net23NSSCertDatabaseChromeOS9ListCertsEPSt6vectorI13scoped_refptrINS_15X509CertificateEESaIS4_EE
+   fun:_ZN8chromeos12_GLOBAL__N_119LoadNSSCertificatesEPN3net15NSSCertDatabaseEPSt6vectorI13scoped_refptrINS1_15X509CertificateEESaIS7_EE
 }
 {
    bug_273398
@@ -6263,8 +6264,9 @@
    fun:pk11_IsPresentCertLoad
    fun:SECMOD_OpenNewSlot
    fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton10OpenUserDBERKN4base8FilePathEPKc
-   fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton13OpenTestNSSDBEv
-   fun:_ZN6crypto15ScopedTestNSSDBC1Ev
+   fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton26OpenPersistentNSSDBForPathERKN4base8FilePathE
+   fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton28InitializeNSSForChromeOSUserERKSsS3_bRKN4base8FilePathE
+   fun:_ZN6crypto28InitializeNSSForChromeOSUserERKSsS1_bRKN4base8FilePathE
 }
 {
    bug_327672
