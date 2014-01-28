@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Shim that simulates a <webview> tag via Mutation Observers.
-//
-// The actual tag is implemented via the browser plugin. The internals of this
-// are hidden via Shadow DOM.
-
-'use strict';
+// This module implements Webview (<webview>) as a custom element that wraps a
+// BrowserPlugin object element. The object element is hidden within
+// the shadow DOM of the Webview element.
 
 var DocumentNatives = requireNative('document_natives');
 var EventBindings = require('event_bindings');

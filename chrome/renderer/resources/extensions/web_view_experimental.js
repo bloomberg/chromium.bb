@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Shim extension to provide permission request API (and possibly other future
-// experimental APIs) for <webview> tag.
+// This module implements experimental API for <webview>.
 // See web_view.js for details.
 //
-// We want to control the permission API feature in <webview> separately from
-// the <webview> feature itself. <webview> is available in stable channel, but
-// permission API would only be available for channels CHANNEL_DEV and
-// CHANNEL_CANARY.
+// <webview> Experimental API is only available on canary and dev channels of
+// Chrome.
 
 var CreateEvent = require('webView').CreateEvent;
 var MessagingNatives = requireNative('messaging_natives');
