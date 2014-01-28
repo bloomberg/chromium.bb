@@ -1,7 +1,3 @@
-if ENABLE_XWAYLAND
-xwayland_subdir = xwayland
-endif
-
 bin_PROGRAMS =
 moduledir = $(libdir)/weston
 module_LTLIBRARIES =
@@ -10,7 +6,6 @@ BUILT_SOURCES =
 SUBDIRS =					\
 	shared					\
 	src					\
-	$(xwayland_subdir)			\
 	clients					\
 	protocol				\
 	tests					\
@@ -91,6 +86,46 @@ BUILT_SOURCES +=					\
 	desktop-shell/desktop-shell-server-protocol.h	\
 	desktop-shell/xdg-shell-protocol.c		\
 	desktop-shell/xdg-shell-server-protocol.h
+endif
+
+
+if ENABLE_XWAYLAND
+
+module_LTLIBRARIES += xwayland.la
+
+xwayland_la_CPPFLAGS =				\
+	-I$(top_srcdir)/shared			\
+	-I$(top_srcdir)/src			\
+	-I$(top_builddir)/src			\
+	-I$(top_builddir)/xwayland		\
+	-DDATADIR='"$(datadir)"'		\
+	-DMODULEDIR='"$(moduledir)"'		\
+	-DLIBEXECDIR='"$(libexecdir)"'		\
+	-DXSERVER_PATH='"@XSERVER_PATH@"'
+
+xwayland_la_LDFLAGS = -module -avoid-version
+xwayland_la_LIBADD =			\
+	$(XWAYLAND_LIBS)		\
+	$(top_builddir)/shared/libshared-cairo.la
+xwayland_la_CFLAGS =				\
+	$(GCC_CFLAGS)				\
+	$(COMPOSITOR_CFLAGS)			\
+	$(PIXMAN_CFLAGS)			\
+	$(CAIRO_CFLAGS)
+xwayland_la_SOURCES =				\
+	xwayland/xwayland.h			\
+	xwayland/window-manager.c		\
+	xwayland/selection.c			\
+	xwayland/dnd.c				\
+	xwayland/launcher.c			\
+	xwayland/xserver-protocol.c		\
+	xwayland/xserver-server-protocol.h	\
+	xwayland/hash.c				\
+	xwayland/hash.h
+
+BUILT_SOURCES +=				\
+	xwayland/xserver-protocol.c		\
+	xwayland/xserver-server-protocol.h
 endif
 
 wayland_protocoldir = $(top_srcdir)/protocol
