@@ -56,7 +56,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   // Check for newly-opened web views.
   for (size_t i = 0; i < views_info.GetSize(); ++i) {
     const WebViewInfo& view = views_info.Get(i);
-    if (view.type != WebViewInfo::kPage && view.type != WebViewInfo::kApp)
+    if (view.type != WebViewInfo::kPage)
       continue;
 
     bool found = false;
