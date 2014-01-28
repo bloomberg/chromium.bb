@@ -102,6 +102,21 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TestSpecialOperations* collection = V8TestSpecialOperations::toNative(info.Holder());
+    DeleteResult result = collection->anonymousIndexedDeleter(index);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    TestSpecialOperationsV8Internal::indexedPropertyDeleter(index, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 } // namespace TestSpecialOperationsV8Internal
 
 static void configureV8TestSpecialOperationsTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -116,7 +131,7 @@ static void configureV8TestSpecialOperationsTemplate(v8::Handle<v8::FunctionTemp
         isolate, currentWorldType);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
-    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestSpecialOperationsV8Internal::indexedPropertyGetterCallback, TestSpecialOperationsV8Internal::indexedPropertySetterCallback, 0, 0, indexedPropertyEnumerator<TestSpecialOperations>);
+    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestSpecialOperationsV8Internal::indexedPropertyGetterCallback, TestSpecialOperationsV8Internal::indexedPropertySetterCallback, 0, TestSpecialOperationsV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestSpecialOperations>);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());

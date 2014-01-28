@@ -229,6 +229,7 @@ def generate_interface(interface):
     template_contents.update({
         'anonymous_indexed_property_getter': anonymous_indexed_property_getter(interface),
         'anonymous_indexed_property_setter': anonymous_indexed_property_setter(interface),
+        'anonymous_indexed_property_deleter': anonymous_indexed_property_deleter(interface),
     })
 
     return template_contents
@@ -535,4 +536,30 @@ def anonymous_indexed_property_setter(interface):
                                         'anonymousIndexedSetter'),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
             idl_type, extended_attributes, 'jsValue', 'propertyValue'),
+    }
+
+
+def anonymous_indexed_property_deleter(interface):
+    try:
+        # Find anonymous indexed property deleter, if present; has form:
+        # deleter TYPE (unsigned long ARG)
+        deleter = next(
+            method
+            for method in interface.operations
+            if ('deleter' in method.specials and
+                len(method.arguments) == 1 and
+                method.arguments[0].idl_type == 'unsigned long' and
+                not method.name))
+    except StopIteration:
+        return None
+
+    idl_type = deleter.idl_type
+    if idl_type != 'boolean':
+        raise Exception(
+            'Only deleters with boolean type are allowed, but type is "%s"' %
+            idl_type)
+    extended_attributes = deleter.extended_attributes
+    return {
+        'name': extended_attributes.get('ImplementedAs',
+                                        'anonymousIndexedDeleter'),
     }

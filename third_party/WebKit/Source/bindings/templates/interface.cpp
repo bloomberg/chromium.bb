@@ -147,6 +147,29 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 
 
 {##############################################################################}
+{% block anonymous_indexed_property_deleter_and_callback %}
+{% if anonymous_indexed_property_deleter %}
+{% set deleter = anonymous_indexed_property_deleter %}
+static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    DeleteResult result = collection->{{deleter.name}}(index);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    {{cpp_class}}V8Internal::indexedPropertyDeleter(index, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block origin_safe_method_setter %}
 {% if has_origin_safe_method_setter %}
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -515,10 +538,16 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endif %}
     {% if anonymous_indexed_property_getter %}
     {# if have indexed properties, MUST have an indexed property getter #}
+    {% set indexed_property_getter_callback =
+           '%sV8Internal::indexedPropertyGetterCallback' % cpp_class %}
     {% set indexed_property_setter_callback =
            '%sV8Internal::indexedPropertySetterCallback' % cpp_class
            if anonymous_indexed_property_setter else '0' %}
-    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{cpp_class}}V8Internal::indexedPropertyGetterCallback, {{indexed_property_setter_callback}}, 0, 0, indexedPropertyEnumerator<{{cpp_class}}>);
+    {% set indexed_property_query_callback = '0' %}{# Unused #}
+    {% set indexed_property_deleter_callback =
+           '%sV8Internal::indexedPropertyDeleterCallback' % cpp_class
+           if anonymous_indexed_property_deleter else '0' %}
+    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, indexedPropertyEnumerator<{{cpp_class}}>);
     {% endif %}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
