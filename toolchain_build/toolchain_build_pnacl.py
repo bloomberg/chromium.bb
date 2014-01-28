@@ -307,9 +307,7 @@ def HostTools(host):
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
                   'all']),
-              command.Command(MAKE_DESTDIR_CMD + ['install']),
-              command.SkipForIncrementalCommand(MakeCommand(host) +
-                                                ['check-all'])] +
+              command.Command(MAKE_DESTDIR_CMD + ['install'])] +
               CopyWindowsHostLibs(host),
       },
       H('driver'): {
