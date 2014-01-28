@@ -22,16 +22,40 @@
     }
   },
   "permissions": [
+    "identity",
     "chromeosInfoPrivate",
     "management",
     "webview",
+    "storage",
     "unlimitedStorage",
     "https://*.ytimg.com/*",
     "https://www.google.com/*",
     "https://commondatastorage.googleapis.com/*",
     "https://storage.googleapis.com/*",
     "https://www-googleapis-test.sandbox.google.com/*",
-    "https://www.googleapis.com/*"
+    "https://www.googleapis.com/*",
+    "https://www.google-analytics.com/"
   ],
-  "display_in_new_tab_page": false
+  "oauth2": {
+    "client_id": "929143421683.apps.googleusercontent.com",
+    "scopes": [
+        "https://www.googleapis.com/auth/supportcontent"
+    ]
+  },
+  "display_in_new_tab_page": false,
+  "url_handlers": {
+    "view_answer": {
+      "matches": [
+        "https://support.google.com/chromeos-gethelp/answer/*"
+      ],
+      "title": "Open Help Article"
+    },
+    "home": {
+      "matches": [
+        "https://support.google.com/chromeos-gethelp",
+        "https://support.google.com/chromeos-gethelp/"
+      ],
+      "title": "Open Help"
+    }
+  }
 }
