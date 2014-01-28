@@ -28,58 +28,44 @@
 # SUCH DAMAGE.
 
 """
- This script imports a directory of W3C CSS tests into WebKit.
-
- You must have checked out the W3C repository to your local drive.
+ This script imports a directory of W3C tests into WebKit.
 
  This script will import the tests into WebKit following these rules:
 
-    - Only tests that are approved or officially submitted awaiting review are imported
+    - By default, all tests are imported under LayoutTests/w3c/[repo-name].
 
-    - All tests are imported into LayoutTests/csswg
+    - By default, only reftests and jstest are imported. This can be overridden
+      with a -a or --all argument
 
-    - If the tests are approved, they'll be imported into a directory tree that
-      mirrors the CSS Mercurial repo. For example, <csswg_repo_root>/approved/css2.1 is brought in
-      as LayoutTests/csswg/approved/css2.1, maintaining the entire directory structure under that
-
-    - If the tests are submitted, they'll maintain their directory structure under
-      LayoutTests/csswg. For example, everything under
-      <csswg_repo_root>/contributors/adobe/submitted is brought into
-      LayoutTests/csswg/contributors/adobe/submitted, mirroring its directory structure in the
-      csswg repo
-
-    - If the import directory specified is just a contributor folder, only the submitted folder
-      for that contributor is brought in. For example, to import all of Mozilla's tests, either
-      <csswg_repo_root>/contributors/mozilla or <csswg_repo_root>/contributors/mozilla/submitted
-      will work and are equivalent.
-
-    - By default, only reftests and jstest are imported. This can be overridden with a -a or --all
-      argument
-
-    - Also by default, if test files by the same name already exist in the destination directory,
-      they are overwritten with the idea that running this script would refresh files periodically.
-      This can also be overridden by a -n or --no-overwrite flag
+    - Also by default, if test files by the same name already exist in the
+      destination directory, they are overwritten with the idea that running
+      this script would refresh files periodically.  This can also be
+      overridden by a -n or --no-overwrite flag
 
     - All files are converted to work in WebKit:
-         1. Paths to testharness.js files are modified point to Webkit's copy of them in
-            LayoutTests/resources, using the correct relative path from the new location
-         2. All CSS properties requiring the -webkit-vendor prefix are prefixed - this current
-            list of what needs prefixes is read from Source/WebCore/CSS/CSSProperties.in
-         3. Each reftest has its own copy of its reference file following the naming conventions
-            new-run-webkit-tests expects
-         4. If a reference files lives outside the directory of the test that uses it, it is checked
-            for paths to support files as it will be imported into a different relative position to the
-            test file (in the same directory)
+         1. Paths to testharness.js files are modified point to Webkit's copy
+            of them in LayoutTests/resources, using the correct relative path
+            from the new location.
+         2. All CSS properties requiring the -webkit-vendor prefix are prefixed
+            (the list of what needs prefixes is read from Source/WebCore/CSS/CSSProperties.in).
+         3. Each reftest has its own copy of its reference file following
+            the naming conventions new-run-webkit-tests expects.
+         4. If a reference files lives outside the directory of the test that
+            uses it, it is checked for paths to support files as it will be
+            imported into a different relative position to the test file
+            (in the same directory).
 
-     - Upon completion, script outputs the total number tests imported, broken down by test type
+     - Upon completion, script outputs the total number tests imported, broken
+       down by test type
 
-     - Also upon completion, each directory where files are imported will have w3c-import.log written
-       with a timestamp, the W3C Mercurial changeset if available, the list of CSS properties used that
-       require prefixes, the list of imported files, and guidance for future test modification and
-       maintenance.
-
-     - On subsequent imports, this file is read to determine if files have been removed in the newer changesets.
-       The script removes these files accordingly.
+     - Also upon completion, if we are not importing the files in place, each
+       directory where files are imported will have a w3c-import.log file written with
+       a timestamp, the W3C Mercurial changeset if available, the list of CSS
+       properties used that require prefixes, the list of imported files, and
+       guidance for future test modification and maintenance. On subsequent
+       imports, this file is read to determine if files have been
+       removed in the newer changesets.  The script removes these files
+       accordingly.
 """
 
 # FIXME: Change this file to use the Host abstractions rather that os, sys, shutils, etc.
@@ -95,6 +81,7 @@ import sys
 from webkitpy.common.host import Host
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.system.executive import ScriptError
+from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 from webkitpy.w3c.test_parser import TestParser
 from webkitpy.w3c.test_converter import convert_for_webkit
 
@@ -114,29 +101,21 @@ _log = logging.getLogger(__name__)
 
 def main(_argv, _stdout, _stderr):
     options, args = parse_args()
-    import_dir = args[0]
+    dir_to_import = os.path.normpath(os.path.abspath(args[0]))
     if len(args) == 1:
-        repo_dir_parts = []
-        for part in import_dir.split(os.path.sep):
-            if part in VALID_TEST_STATUSES:
-                break
-            else:
-                repo_dir_parts.append(part)
-        repo_dir = os.path.sep.join(repo_dir_parts)
+        top_of_repo = dir_to_import
     else:
-        repo_dir = args[1]
+        top_of_repo = os.path.normpath(os.path.abspath(args[1]))
 
-    if not os.path.exists(import_dir):
-        sys.exit('Source directory %s not found!' % import_dir)
-
-    if not os.path.exists(repo_dir):
-        sys.exit('Repository directory %s not found!' % repo_dir)
-    if not repo_dir in import_dir:
-        sys.exit('Repository directory %s must be a parent of %s' % (repo_dir, import_dir))
+    if not os.path.exists(dir_to_import):
+        sys.exit('Directory %s not found!' % dir_to_import)
+    if not os.path.exists(top_of_repo):
+        sys.exit('Repository directory %s not found!' % top_of_repo)
+    if top_of_repo not in dir_to_import:
+        sys.exit('Repository directory %s must be a parent of %s' % (top_of_repo, dir_to_import))
 
     configure_logging()
-
-    test_importer = TestImporter(Host(), import_dir, repo_dir, options)
+    test_importer = TestImporter(Host(), dir_to_import, top_of_repo, options)
     test_importer.do_import()
 
 
@@ -157,34 +136,41 @@ def configure_logging():
 
 
 def parse_args():
-    parser = optparse.OptionParser(usage='usage: %prog [options] w3c_test_directory [repo_directory]')
+    parser = optparse.OptionParser(usage='usage: %prog [options] [dir_to_import] [top_of_repo]')
     parser.add_option('-n', '--no-overwrite', dest='overwrite', action='store_false', default=True,
-        help='Flag to prevent duplicate test files from overwriting existing tests. By default, they will be overwritten')
+        help='Flag to prevent duplicate test files from overwriting existing tests. By default, they will be overwritten.')
     parser.add_option('-a', '--all', action='store_true', default=False,
-        help='Import all tests including reftests, JS tests, and manual/pixel tests. By default, only reftests and JS tests are imported')
+        help='Import all tests including reftests, JS tests, and manual/pixel tests. By default, only reftests and JS tests are imported.')
     parser.add_option('-d', '--dest-dir', dest='destination', default='w3c',
-        help='Import into a specified directory relative to the LayoutTests root. By default, imports into w3c')
+        help='Import into a specified directory relative to the LayoutTests root. By default, files are imported under LayoutTests/w3c.')
+    parser.add_option('--ignore-expectations', action='store_true', default=False,
+        help='Ignore the W3CImportExpectations file and import everything.')
+    parser.add_option('--dry-run', action='store_true', default=False,
+        help='Dryrun only (don\'t actually write any results).')
 
     options, args = parser.parse_args()
-    if len(args) not in (1, 2):
+    if len(args) > 2:
         parser.error('Incorrect number of arguments')
+    elif len(args) == 0:
+        args = (os.getcwd(),)
     return options, args
 
 
 class TestImporter(object):
 
-    def __init__(self, host, source_directory, repo_dir, options):
+    def __init__(self, host, dir_to_import, top_of_repo, options):
         self.host = host
-        self.source_directory = source_directory
+        self.dir_to_import = dir_to_import
+        self.top_of_repo = top_of_repo
         self.options = options
 
         self.filesystem = self.host.filesystem
-
-        webkit_finder = WebKitFinder(self.filesystem)
-        self._webkit_root = webkit_finder.webkit_base()
-        self.repo_dir = self.filesystem.abspath(repo_dir)
-
-        self.destination_directory = webkit_finder.path_from_webkit_base("LayoutTests", options.destination, self.filesystem.basename(self.repo_dir))
+        self.webkit_finder = WebKitFinder(self.filesystem)
+        self._webkit_root = self.webkit_finder.webkit_base()
+        self.layout_tests_dir = self.webkit_finder.path_from_webkit_base('LayoutTests')
+        self.destination_directory = self.filesystem.normpath(self.filesystem.join(self.layout_tests_dir, options.destination,
+                                                                                   self.filesystem.basename(self.top_of_repo)))
+        self.import_in_place = (self.dir_to_import == self.destination_directory)
 
         self.changeset = CHANGESET_NOT_AVAILABLE
         self.test_status = TEST_STATUS_UNKNOWN
@@ -192,8 +178,8 @@ class TestImporter(object):
         self.import_list = []
 
     def do_import(self):
-        _log.info("Importing %s into %s", self.repo_dir, self.destination_directory)
-        self.find_importable_tests(self.source_directory)
+        _log.info("Importing %s into %s", self.dir_to_import, self.destination_directory)
+        self.find_importable_tests(self.dir_to_import)
         self.load_changeset()
         self.import_tests()
 
@@ -206,8 +192,11 @@ class TestImporter(object):
 
     def find_importable_tests(self, directory):
         # FIXME: use filesystem
+        paths_to_skip = self.find_paths_to_skip()
+
         for root, dirs, files in os.walk(directory):
-            _log.info('Scanning ' + root + '...')
+            cur_dir = root.replace(self.layout_tests_dir + '/', '') + '/'
+            _log.info('Scanning ' + cur_dir + '...')
             total_tests = 0
             reftests = 0
             jstests = 0
@@ -221,9 +210,25 @@ class TestImporter(object):
                     if d in dirs:
                         dirs.remove(d)
 
+                for path in paths_to_skip:
+                    path_base = path.replace(cur_dir, '')
+                    path_full = self.filesystem.join(root, path_base)
+                    if path_base in dirs:
+                        dirs.remove(path_base)
+                        if not self.options.dry_run and self.import_in_place:
+                            _log.info("Pruning %s" % path_full)
+                            self.filesystem.rmtree(path_full)
+
             copy_list = []
 
             for filename in files:
+                path_full = self.filesystem.join(root, filename)
+                path_base = path_full.replace(self.layout_tests_dir + '/', '')
+                if path_base in paths_to_skip:
+                    if not self.options.dry_run and self.import_in_place:
+                        _log.info("Pruning %s" % path_base)
+                        self.filesystem.remove(path_full)
+                        continue
                 # FIXME: This block should really be a separate function, but the early-continues make that difficult.
 
                 if filename.startswith('.') or filename.endswith('.pl'):
@@ -291,6 +296,24 @@ class TestImporter(object):
                 self.import_list.append({'dirname': root, 'copy_list': copy_list,
                     'reftests': reftests, 'jstests': jstests, 'total_tests': total_tests})
 
+    def find_paths_to_skip(self):
+        if self.options.ignore_expectations:
+            return set()
+
+        paths_to_skip = set()
+        port = self.host.port_factory.get()
+        w3c_import_expectations_path = self.webkit_finder.path_from_webkit_base('LayoutTests', 'W3CImportExpectations')
+        w3c_import_expectations = self.filesystem.read_text_file(w3c_import_expectations_path)
+        parser = TestExpectationParser(port, full_test_list=(), is_lint_mode=False)
+        expectation_lines = parser.parse(w3c_import_expectations_path, w3c_import_expectations)
+        for line in expectation_lines:
+            if 'SKIP' in line.expectations:
+                if line.specifiers:
+                    _log.warning("W3CImportExpectations:%s should not have any specifiers" % line.line_numbers)
+                    continue
+                paths_to_skip.add(line.name)
+        return paths_to_skip
+
     def import_tests(self):
         total_imported_tests = 0
         total_imported_reftests = 0
@@ -309,7 +332,7 @@ class TestImporter(object):
 
             orig_path = dir_to_copy['dirname']
 
-            subpath = os.path.relpath(orig_path, self.repo_dir)
+            subpath = os.path.relpath(orig_path, self.top_of_repo)
             new_path = os.path.join(self.destination_directory, subpath)
 
             if not(os.path.exists(new_path)):
@@ -333,7 +356,8 @@ class TestImporter(object):
                 new_filepath = os.path.join(new_path, file_to_copy['dest'])
 
                 if not(os.path.exists(os.path.dirname(new_filepath))):
-                    os.makedirs(os.path.dirname(new_filepath))
+                    if not self.import_in_place and not self.options.dry_run:
+                        os.makedirs(os.path.dirname(new_filepath))
 
                 if not self.options.overwrite and os.path.exists(new_filepath):
                     _log.info('Skipping import of existing file ' + new_filepath)
@@ -351,23 +375,27 @@ class TestImporter(object):
                     converted_file = convert_for_webkit(new_path, filename=orig_filepath)
 
                     if not converted_file:
-                        shutil.copyfile(orig_filepath, new_filepath)  # The file was unmodified.
+                        if not self.import_in_place and not self.options.dry_run:
+                            shutil.copyfile(orig_filepath, new_filepath)  # The file was unmodified.
                     else:
                         for prefixed_property in converted_file[0]:
                             total_prefixed_properties.setdefault(prefixed_property, 0)
                             total_prefixed_properties[prefixed_property] += 1
 
                         prefixed_properties.extend(set(converted_file[0]) - set(prefixed_properties))
-                        outfile = open(new_filepath, 'wb')
-                        outfile.write(converted_file[1])
-                        outfile.close()
+                        if not self.options.dry_run:
+                            outfile = open(new_filepath, 'wb')
+                            outfile.write(converted_file[1])
+                            outfile.close()
                 else:
-                    shutil.copyfile(orig_filepath, new_filepath)
+                    if not self.import_in_place and not self.options.dry_run:
+                        shutil.copyfile(orig_filepath, new_filepath)
 
                 copied_files.append(new_filepath.replace(self._webkit_root, ''))
 
-            self.remove_deleted_files(new_path, copied_files)
-            self.write_import_log(new_path, copied_files, prefixed_properties)
+            if not self.options.import_in_place and not self.options.dry_run:
+                self.remove_deleted_files(new_path, copied_files)
+                self.write_import_log(new_path, copied_files, prefixed_properties)
 
         _log.info('Import complete')
 
@@ -385,8 +413,8 @@ class TestImporter(object):
 
         self.update_test_status()
 
-        start = self.source_directory.find(self.test_status)
-        new_subpath = self.source_directory[len(self.repo_dir):]
+        start = self.dir_to_import.find(self.test_status)
+        new_subpath = self.dir_to_import[len(self.top_of_repo):]
 
         destination_directory = os.path.join(self.destination_directory, new_subpath)
 
@@ -400,19 +428,17 @@ class TestImporter(object):
 
         status = TEST_STATUS_UNKNOWN
 
-        directory_parts = self.source_directory.split(os.path.sep)
+        directory_parts = self.dir_to_import.split(os.path.sep)
         for test_status in VALID_TEST_STATUSES:
             if test_status in directory_parts:
                 status = test_status
 
         self.test_status = status
 
-    def remove_deleted_files(self, import_directory, new_file_list):
-        """ Reads an import log in |import_directory|, compares it to the |new_file_list|, and removes files not in the new list."""
-
+    def remove_deleted_files(self, dir_to_import, new_file_list):
         previous_file_list = []
 
-        import_log_file = os.path.join(import_directory, 'w3c-import.log')
+        import_log_file = os.path.join(dir_to_import, 'w3c-import.log')
         if not os.path.exists(import_log_file):
             return
 
@@ -431,12 +457,10 @@ class TestImporter(object):
 
         import_log.close()
 
-    def write_import_log(self, import_directory, file_list, prop_list):
-        """ Writes a w3c-import.log file in each directory with imported files. """
-
+    def write_import_log(self, dir_to_import, file_list, prop_list):
         now = datetime.datetime.now()
 
-        import_log = open(os.path.join(import_directory, 'w3c-import.log'), 'w')
+        import_log = open(os.path.join(dir_to_import, 'w3c-import.log'), 'w')
         import_log.write('The tests in this directory were imported from the W3C repository.\n')
         import_log.write('Do NOT modify these tests directly in Webkit. Instead, push changes to the W3C CSS repo:\n\n')
         import_log.write('http://hg.csswg.org/test\n\n')

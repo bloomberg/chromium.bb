@@ -44,7 +44,8 @@ FAKE_REPO_DIR = '/blink'
 
 FAKE_FILES = {
     '/blink/w3c/empty_dir/README.txt': '',
-    '/mock-checkout/LayoutTests/w3c/README.txt': '',
+    '/mock-checkout/third_party/WebKit/LayoutTests/w3c/README.txt': '',
+    '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
 }
 
 class TestImporterTest(unittest.TestCase):
@@ -54,7 +55,7 @@ class TestImporterTest(unittest.TestCase):
         host.executive = MockExecutive2(exception=OSError())
         host.filesystem = MockFileSystem(files=FAKE_FILES)
 
-        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, optparse.Values({"overwrite": False, 'destination': 'w3c'}))
+        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, optparse.Values({"overwrite": False, 'destination': 'w3c', 'ignore_expectations': False}))
 
         oc = OutputCapture()
         oc.capture_output()
@@ -68,7 +69,7 @@ class TestImporterTest(unittest.TestCase):
         host.executive = MockExecutive2(exception=ScriptError("abort: no repository found in '/Volumes/Source/src/wk/Tools/Scripts/webkitpy/w3c' (.hg not found)!"))
         host.filesystem = MockFileSystem(files=FAKE_FILES)
 
-        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, optparse.Values({"overwrite": False, 'destination': 'w3c'}))
+        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, optparse.Values({"overwrite": False, 'destination': 'w3c', 'ignore_expectations': False}))
         oc = OutputCapture()
         oc.capture_output()
         try:
