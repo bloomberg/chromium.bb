@@ -22,6 +22,7 @@
 #include "content/browser/android/browser_jni_registrar.h"
 #include "content/child/android/child_jni_registrar.h"
 #include "content/common/android/common_jni_registrar.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "jni/LibraryLoader_jni.h"
@@ -95,6 +96,13 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
         base::debug::TraceLog::RECORDING_MODE,
         base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
+
+  // Android's main browser loop is custom so we set the browser
+  // name here as early as possible.
+  TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
+  base::debug::TraceLog::GetInstance()->SetProcessName("Browser");
+  base::debug::TraceLog::GetInstance()->SetProcessSortIndex(
+      kTraceEventBrowserProcessSortIndex);
 
   // Can only use event tracing after setting up the command line.
   TRACE_EVENT0("jni", "JNI_OnLoad continuation");
