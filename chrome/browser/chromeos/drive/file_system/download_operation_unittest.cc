@@ -469,5 +469,48 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
   EXPECT_EQ(static_cast<int64>(dirty_size), entry->file_info().size());
 }
 
+TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_LocallyCreatedFile) {
+  // Add a new file with an empty resource ID.
+  base::FilePath file_path(FILE_PATH_LITERAL("drive/root/New File.txt"));
+  ResourceEntry parent;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_path.DirName(), &parent));
+
+  ResourceEntry new_file;
+  new_file.set_title("New File.txt");
+  new_file.set_parent_local_id(parent.local_id());
+
+  FileError error = FILE_ERROR_FAILED;
+  std::string local_id;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::AddEntry,
+                 base::Unretained(metadata()),
+                 new_file,
+                 &local_id),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Empty cache file should be returned.
+  base::FilePath cache_file_path;
+  scoped_ptr<ResourceEntry> entry;
+  operation_->EnsureFileDownloadedByPath(
+      file_path,
+      ClientContext(USER_INITIATED),
+      GetFileContentInitializedCallback(),
+      google_apis::GetContentCallback(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &cache_file_path, &entry));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  int64 cache_file_size = 0;
+  EXPECT_TRUE(base::GetFileSize(cache_file_path, &cache_file_size));
+  EXPECT_EQ(static_cast<int64>(0), cache_file_size);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(cache_file_size, entry->file_info().size());
+}
+
 }  // namespace file_system
 }  // namespace drive

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -52,9 +53,6 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   if (entry->file_info().is_directory())
     return FILE_ERROR_NOT_A_FILE;
 
-  // The file's entry should have its file specific info.
-  DCHECK(entry->has_file_specific_info());
-
   // For a hosted document, we create a special JSON file to represent the
   // document instead of fetching the document content in one of the exported
   // formats. The JSON file contains the edit URL and resource ID of the
@@ -77,10 +75,32 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     return FILE_ERROR_OK;
   }
 
-  // Leave |cache_file_path| empty when no cache entry is found.
   FileCacheEntry cache_entry;
-  if (!cache->GetCacheEntry(local_id, &cache_entry))
-    return FILE_ERROR_OK;
+  if (!cache->GetCacheEntry(local_id, &cache_entry) ||
+      !cache_entry.is_present()) {  // This file has no cache file.
+    if (!entry->resource_id().empty()) {
+      // This entry exists on the server, leave |cache_file_path| empty to
+      // start download.
+      return FILE_ERROR_OK;
+    }
+
+    // This entry does not exist on the server, store an empty file and mark it
+    // as dirty.
+    base::FilePath empty_file;
+    if (!base::CreateTemporaryFileInDir(temporary_file_directory, &empty_file))
+      return FILE_ERROR_FAILED;
+    error = cache->Store(local_id, base::MD5String(""), empty_file,
+                         internal::FileCache::FILE_OPERATION_MOVE);
+    if (error != FILE_ERROR_OK)
+      return error;
+    scoped_ptr<base::ScopedClosureRunner> file_closer;
+    error = cache->OpenForWrite(entry->local_id(), &file_closer);
+    if (error != FILE_ERROR_OK)
+      return error;
+
+    if (!cache->GetCacheEntry(local_id, &cache_entry))
+      return FILE_ERROR_NOT_FOUND;
+  }
 
   // Leave |cache_file_path| empty when the stored file is obsolete and has no
   // local modification.
@@ -382,6 +402,8 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
     params->OnComplete(*cache_file_path);
     return;
   }
+
+  DCHECK(!params->entry().resource_id().empty());
 
   // If cache file is not found, try to download the file from the server
   // instead. Check if we have enough space, based on the expected file size.
