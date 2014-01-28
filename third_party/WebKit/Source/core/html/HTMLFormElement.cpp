@@ -563,8 +563,10 @@ WeakPtr<HTMLFormElement> HTMLFormElement::createWeakPtr()
 
 void HTMLFormElement::didAssociateByParser()
 {
-    if (m_didFinishParsingChildren)
-        m_hasElementsAssociatedByParser = true;
+    if (!m_didFinishParsingChildren)
+        return;
+    m_hasElementsAssociatedByParser = true;
+    UseCounter::count(document(), UseCounter::FormAssociationByParser);
 }
 
 PassRefPtr<HTMLCollection> HTMLFormElement::elements()
@@ -757,10 +759,12 @@ void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<N
     elements()->namedItems(name, namedItems);
 
     Node* elementFromPast = elementFromPastNamesMap(name);
-    if (namedItems.size() && namedItems.first() != elementFromPast)
+    if (namedItems.size() && namedItems.first() != elementFromPast) {
         addToPastNamesMap(namedItems.first().get(), name);
-    else if (elementFromPast && namedItems.isEmpty())
+    } else if (elementFromPast && namedItems.isEmpty()) {
         namedItems.append(elementFromPast);
+        UseCounter::count(document(), UseCounter::FormNameAccessForPastNamesMap);
+    }
 }
 
 bool HTMLFormElement::shouldAutocomplete() const

@@ -24,6 +24,7 @@
 #include "core/html/HTMLFormControlsCollection.h"
 
 #include "HTMLNames.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -124,8 +125,10 @@ static HTMLElement* firstNamedItem(const Vector<FormAssociatedElement*>& element
 
     for (unsigned i = 0; i < imageElementsArray->size(); ++i) {
         HTMLImageElement* element = (*imageElementsArray)[i];
-        if (element->fastGetAttribute(attrName) == name)
+        if (element->fastGetAttribute(attrName) == name) {
+            UseCounter::count(element->document(), UseCounter::FormNameAccessForImageElement);
             return element;
+        }
     }
 
     return 0;
