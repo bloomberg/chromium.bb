@@ -11,6 +11,8 @@
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
+namespace autofill {
+
 ChromeDownloaderImpl::ChromeDownloaderImpl(net::URLRequestContextGetter* getter)
     : getter_(getter) {}
 
@@ -39,7 +41,7 @@ void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   bool ok = source->GetResponseCode() == net::HTTP_OK;
   scoped_ptr<std::string> data(new std::string());
   if (ok)
-    source->GetResponseAsString(&*data);
+    source->GetResponseAsString(data.get());
   (*request->second->callback)(ok, request->second->url, data.Pass());
 
   delete request->first;
@@ -51,3 +53,5 @@ ChromeDownloaderImpl::Request::Request(const std::string& url,
                                        scoped_ptr<Callback> callback)
     : url(url),
       callback(callback.Pass()) {}
+
+}  // namespace autofill

@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/callback.h"
 
+namespace autofill {
+
 // Tests for ChromeStorageImpl object.
 class ChromeStorageImplTest : public testing::Test {
  protected:
@@ -29,3 +31,5 @@ class ChromeStorageImplTest : public testing::Test {
 TEST_F(ChromeStorageImplTest, StandardStorageTests) {
   EXPECT_NO_FATAL_FAILURE(runner_.RunAllTests());
 }
+
+}  // namespace autofill

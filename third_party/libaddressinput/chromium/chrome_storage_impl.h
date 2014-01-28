@@ -16,16 +16,18 @@
 
 class WriteablePrefStore;
 
+namespace autofill {
+
 // An implementation of the Storage interface which passes through to an
 // underlying WriteablePrefStore.
-class ChromeStorageImpl : public i18n::addressinput::Storage,
+class ChromeStorageImpl : public ::i18n::addressinput::Storage,
                           public PrefStore::Observer {
  public:
   // |store| must outlive |this|.
   explicit ChromeStorageImpl(WriteablePrefStore* store);
   virtual ~ChromeStorageImpl();
 
-  // i18n::addressinput::Storage implementation.
+  // ::i18n::addressinput::Storage implementation.
   virtual void Put(const std::string& key, const std::string& data) OVERRIDE;
   virtual void Get(const std::string& key, scoped_ptr<Callback> data_ready)
       const OVERRIDE;
@@ -54,5 +56,7 @@ class ChromeStorageImpl : public i18n::addressinput::Storage,
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStorageImpl);
 };
+
+}  // namespace autofill
 
 #endif  // THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_STORAGE_IMPL_H_

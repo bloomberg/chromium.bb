@@ -17,15 +17,17 @@ class URLFetcher;
 class URLRequestContextGetter;
 }
 
+namespace autofill {
+
 // A class for downloading rules to let libaddressinput validate international
 // addresses.
-class ChromeDownloaderImpl : public i18n::addressinput::Downloader,
+class ChromeDownloaderImpl : public ::i18n::addressinput::Downloader,
                              public net::URLFetcherDelegate {
  public:
   explicit ChromeDownloaderImpl(net::URLRequestContextGetter* getter);
   virtual ~ChromeDownloaderImpl();
 
-  // i18n::addressinput::Downloader:
+  // ::i18n::addressinput::Downloader:
   virtual void Download(const std::string& url,
                         scoped_ptr<Callback> downloaded) OVERRIDE;
 
@@ -48,5 +50,7 @@ class ChromeDownloaderImpl : public i18n::addressinput::Downloader,
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloaderImpl);
 };
+
+}  // namespace autofill
 
 #endif  // THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_DOWNLOADER_IMPL_H_

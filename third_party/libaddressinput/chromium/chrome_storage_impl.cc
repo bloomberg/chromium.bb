@@ -7,6 +7,8 @@
 #include "base/prefs/writeable_pref_store.h"
 #include "base/values.h"
 
+namespace autofill {
+
 ChromeStorageImpl::ChromeStorageImpl(WriteablePrefStore* store)
     : backing_store_(store),
       scoped_observer_(this) {
@@ -61,3 +63,5 @@ ChromeStorageImpl::Request::Request(const std::string& key,
                                     scoped_ptr<Storage::Callback> callback)
     : key(key),
       callback(callback.Pass()) {}
+
+}  // namespace autofill

@@ -9,6 +9,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace autofill {
+
 static const char kFakeUrl[] = "http://example.com";
 
 class ChromeDownloaderImplTest : public testing::Test {
@@ -75,3 +77,5 @@ TEST_F(ChromeDownloaderImplTest, Failure) {
   EXPECT_FALSE(success());
   EXPECT_EQ(std::string(), data());
 }
+
+}  // namespace autofill
