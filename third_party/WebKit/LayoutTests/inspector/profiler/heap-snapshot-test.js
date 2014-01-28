@@ -435,11 +435,15 @@ InspectorTest.runHeapSnapshotTestSuite = function(testSuite)
 {
     InspectorTest._nextUid = 1;
     var testSuiteTests = testSuite.slice();
+    var completeTestStack;
 
     function runner()
     {
         if (!testSuiteTests.length) {
+            if (completeTestStack)
+                InspectorTest.addResult("FAIL: test already completed at " + completeTestStack);
             InspectorTest.completeProfilerTest();
+            completeTestStack = new Error().stack;
             return;
         }
 
