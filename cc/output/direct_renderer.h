@@ -74,7 +74,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
   void InitializeViewport(DrawingFrame* frame,
                           const gfx::Rect& draw_rect,
                           const gfx::Rect& viewport_rect,
-                          const gfx::Size& surface_size);
+                          gfx::Size surface_size);
   gfx::Rect MoveFromDrawToWindowSpace(const gfx::RectF& draw_rect) const;
 
   bool NeedDeviceClip(const DrawingFrame* frame) const;

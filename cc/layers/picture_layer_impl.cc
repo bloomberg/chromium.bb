@@ -514,7 +514,7 @@ const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
-    const gfx::Size& content_bounds) const {
+    gfx::Size content_bounds) const {
   if (is_mask_) {
     int max_size = layer_tree_impl()->MaxTextureSize();
     return gfx::Size(

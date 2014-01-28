@@ -114,7 +114,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
-  virtual void Reshape(const gfx::Size& size, float scale_factor);
+  virtual void Reshape(gfx::Size size, float scale_factor);
   virtual gfx::Size SurfaceSize() const;
 
   virtual void BindFramebuffer();

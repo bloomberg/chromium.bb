@@ -31,7 +31,7 @@ class CC_EXPORT PictureLayerTilingClient {
     const gfx::Rect& content_rect) = 0;
   virtual void UpdatePile(Tile* tile) = 0;
   virtual gfx::Size CalculateTileSize(
-    const gfx::Size& content_bounds) const = 0;
+    gfx::Size content_bounds) const = 0;
   virtual const Region* GetInvalidation() = 0;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const = 0;
@@ -47,10 +47,10 @@ class CC_EXPORT PictureLayerTiling {
   // Create a tiling with no tiles.  CreateTiles must be called to add some.
   static scoped_ptr<PictureLayerTiling> Create(
       float contents_scale,
-      const gfx::Size& layer_bounds,
+      gfx::Size layer_bounds,
       PictureLayerTilingClient* client);
   gfx::Size layer_bounds() const { return layer_bounds_; }
-  void SetLayerBounds(const gfx::Size& layer_bounds);
+  void SetLayerBounds(gfx::Size layer_bounds);
   void Invalidate(const Region& layer_region);
   void CreateMissingTilesInLiveTilesRect();
 
@@ -135,11 +135,11 @@ class CC_EXPORT PictureLayerTiling {
 
   void UpdateTilePriorities(
       WhichTree tree,
-      const gfx::Size& device_viewport,
+      gfx::Size device_viewport,
       const gfx::Rect& viewport_in_layer_space,
       const gfx::Rect& visible_layer_rect,
-      const gfx::Size& last_layer_bounds,
-      const gfx::Size& current_layer_bounds,
+      gfx::Size last_layer_bounds,
+      gfx::Size current_layer_bounds,
       float last_layer_contents_scale,
       float current_layer_contents_scale,
       const gfx::Transform& last_screen_transform,
@@ -193,7 +193,7 @@ class CC_EXPORT PictureLayerTiling {
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
 
   PictureLayerTiling(float contents_scale,
-                     const gfx::Size& layer_bounds,
+                     gfx::Size layer_bounds,
                      PictureLayerTilingClient* client);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   void CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);

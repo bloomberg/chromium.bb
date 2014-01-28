@@ -80,7 +80,7 @@ class CC_EXPORT VideoResourceUpdater
     gpu::Mailbox mailbox;
 
     PlaneResource(unsigned resource_id,
-                  const gfx::Size& resource_size,
+                  gfx::Size resource_size,
                   ResourceFormat resource_format,
                   gpu::Mailbox mailbox)
         : resource_id(resource_id),
@@ -98,7 +98,7 @@ class CC_EXPORT VideoResourceUpdater
 
   struct RecycleResourceData {
     unsigned resource_id;
-    const gfx::Size& resource_size;
+    gfx::Size resource_size;
     ResourceFormat resource_format;
     gpu::Mailbox mailbox;
   };

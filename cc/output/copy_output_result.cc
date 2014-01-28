@@ -20,7 +20,7 @@ CopyOutputResult::CopyOutputResult(scoped_ptr<SkBitmap> bitmap)
 }
 
 CopyOutputResult::CopyOutputResult(
-    const gfx::Size& size,
+    gfx::Size size,
     const TextureMailbox& texture_mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback)
     : size_(size),

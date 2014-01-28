@@ -28,7 +28,7 @@ class CC_EXPORT TextureMailbox {
                  unsigned texture_target,
                  unsigned sync_point);
   TextureMailbox(base::SharedMemory* shared_memory,
-                 const gfx::Size& size);
+                 gfx::Size size);
 
   ~TextureMailbox();
 

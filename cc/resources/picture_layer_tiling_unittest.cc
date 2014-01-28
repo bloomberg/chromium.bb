@@ -18,7 +18,7 @@ namespace {
 
 static gfx::Rect ViewportInLayerSpace(
     const gfx::Transform& transform,
-    const gfx::Size& device_viewport) {
+    gfx::Size device_viewport) {
 
   gfx::Transform inverse;
   if (!transform.GetInverse(&inverse))
@@ -37,7 +37,7 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
 
   static scoped_ptr<TestablePictureLayerTiling> Create(
       float contents_scale,
-      const gfx::Size& layer_bounds,
+      gfx::Size layer_bounds,
       PictureLayerTilingClient* client) {
     return make_scoped_ptr(new TestablePictureLayerTiling(
         contents_scale,
@@ -47,7 +47,7 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
 
  protected:
   TestablePictureLayerTiling(float contents_scale,
-                             const gfx::Size& layer_bounds,
+                             gfx::Size layer_bounds,
                              PictureLayerTilingClient* client)
       : PictureLayerTiling(contents_scale, layer_bounds, client) { }
 };
@@ -57,9 +57,9 @@ class PictureLayerTilingIteratorTest : public testing::Test {
   PictureLayerTilingIteratorTest() {}
   virtual ~PictureLayerTilingIteratorTest() {}
 
-  void Initialize(const gfx::Size& tile_size,
+  void Initialize(gfx::Size tile_size,
                   float contents_scale,
-                  const gfx::Size& layer_bounds) {
+                  gfx::Size layer_bounds) {
     client_.SetTileSize(tile_size);
     tiling_ = TestablePictureLayerTiling::Create(contents_scale,
                                                  layer_bounds,

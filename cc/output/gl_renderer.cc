@@ -2402,7 +2402,7 @@ void GLRenderer::FinishedReadback(
     unsigned source_buffer,
     unsigned query,
     uint8* dest_pixels,
-    const gfx::Size& size) {
+    gfx::Size size) {
   DCHECK(!pending_async_read_pixels_.empty());
 
   if (query != 0) {

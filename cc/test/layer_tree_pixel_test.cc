@@ -228,7 +228,7 @@ void LayerTreePixelTest::SetupTree() {
 }
 
 scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
-    const gfx::Size& size,
+    gfx::Size size,
     const TextureMailbox& texture_mailbox) {
   DCHECK(texture_mailbox.IsTexture());
   if (!texture_mailbox.IsTexture())

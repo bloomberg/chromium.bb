@@ -30,7 +30,7 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
 
   void SetUIResourceId(UIResourceId uid);
 
-  void SetImageBounds(const gfx::Size& image_bounds);
+  void SetImageBounds(gfx::Size image_bounds);
 
   // Sets a UV transform to be used at draw time. Defaults to (0, 0) and (1, 1).
   void SetUV(const gfx::PointF& top_left, const gfx::PointF& bottom_right);

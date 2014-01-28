@@ -14,7 +14,7 @@
 namespace cc {
 
 PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager,
-                                         const gfx::Size& size,
+                                         gfx::Size size,
                                          ResourceFormat format)
     : size_(size),
       format_(format),
@@ -45,8 +45,7 @@ void PrioritizedResource::SetTextureManager(
     manager->RegisterTexture(this);
 }
 
-void PrioritizedResource::SetDimensions(const gfx::Size& size,
-                                        ResourceFormat format) {
+void PrioritizedResource::SetDimensions(gfx::Size size, ResourceFormat format) {
   if (format_ != format || size_ != size) {
     is_above_priority_cutoff_ = false;
     format_ = format;
@@ -118,7 +117,7 @@ void PrioritizedResource::SetToSelfManagedMemoryPlaceholder(size_t bytes) {
 
 PrioritizedResource::Backing::Backing(unsigned id,
                                       ResourceProvider* resource_provider,
-                                      const gfx::Size& size,
+                                      gfx::Size size,
                                       ResourceFormat format)
     : Resource(id, size, format),
       owner_(NULL),

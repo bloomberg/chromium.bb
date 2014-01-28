@@ -131,7 +131,7 @@ void IOSurfaceLayerImpl::ReleaseResources() {
 }
 
 void IOSurfaceLayerImpl::SetIOSurfaceProperties(unsigned io_surface_id,
-                                                const gfx::Size& size) {
+                                                gfx::Size size) {
   if (io_surface_id_ != io_surface_id)
     io_surface_changed_ = true;
 

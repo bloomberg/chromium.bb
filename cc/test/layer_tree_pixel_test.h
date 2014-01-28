@@ -75,7 +75,7 @@ class LayerTreePixelTest : public LayerTreeTest {
                                       base::FilePath file_name);
 
   scoped_ptr<SkBitmap> CopyTextureMailboxToBitmap(
-      const gfx::Size& size,
+      gfx::Size size,
       const TextureMailbox& texture_mailbox);
 
   void CopyBitmapToTextureMailboxAsTexture(

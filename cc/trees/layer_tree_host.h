@@ -201,7 +201,7 @@ class CC_EXPORT LayerTreeHost {
   void SetDebugState(const LayerTreeDebugState& debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
-  void SetViewportSize(const gfx::Size& device_viewport_size);
+  void SetViewportSize(gfx::Size device_viewport_size);
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
 
   gfx::Size device_viewport_size() const { return device_viewport_size_; }

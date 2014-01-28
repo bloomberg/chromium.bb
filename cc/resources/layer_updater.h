@@ -49,7 +49,7 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
   // painted opaque. If the layer is marked opaque in the updater, then this
   // region should be ignored in preference for the entire layer's area.
   virtual void PrepareToUpdate(const gfx::Rect& content_rect,
-                               const gfx::Size& tile_size,
+                               gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
                                gfx::Rect* resulting_opaque_rect) {}

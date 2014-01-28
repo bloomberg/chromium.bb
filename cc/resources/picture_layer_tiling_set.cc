@@ -22,7 +22,7 @@ class LargestToSmallestScaleFunctor {
 
 PictureLayerTilingSet::PictureLayerTilingSet(
     PictureLayerTilingClient* client,
-    const gfx::Size& layer_bounds)
+    gfx::Size layer_bounds)
     : client_(client),
       layer_bounds_(layer_bounds) {
 }
@@ -38,7 +38,7 @@ void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
 
 void PictureLayerTilingSet::SyncTilings(
     const PictureLayerTilingSet& other,
-    const gfx::Size& new_layer_bounds,
+    gfx::Size new_layer_bounds,
     const Region& layer_invalidation,
     float minimum_contents_scale) {
   if (new_layer_bounds.IsEmpty()) {
@@ -303,11 +303,11 @@ PictureLayerTilingSet::CoverageIterator::operator bool() const {
 
 void PictureLayerTilingSet::UpdateTilePriorities(
     WhichTree tree,
-    const gfx::Size& device_viewport,
+    gfx::Size device_viewport,
     const gfx::Rect& viewport_in_content_space,
     const gfx::Rect& visible_content_rect,
-    const gfx::Size& last_layer_bounds,
-    const gfx::Size& current_layer_bounds,
+    gfx::Size last_layer_bounds,
+    gfx::Size current_layer_bounds,
     float last_layer_contents_scale,
     float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,

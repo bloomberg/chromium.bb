@@ -135,7 +135,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   // Methods called by by tile manager.
   Tile(TileManager* tile_manager,
        PicturePileImpl* picture_pile,
-       const gfx::Size& tile_size,
+       gfx::Size tile_size,
        const gfx::Rect& content_rect,
        const gfx::Rect& opaque_rect,
        float contents_scale,

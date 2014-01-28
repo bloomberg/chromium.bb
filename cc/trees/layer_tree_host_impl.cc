@@ -1899,7 +1899,7 @@ void LayerTreeHostImpl::ReleaseGL() {
   client_->SetNeedsCommitOnImplThread();
 }
 
-void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
+void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {
   if (device_viewport_size == device_viewport_size_)
     return;
 
@@ -1925,7 +1925,7 @@ void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
 
 void LayerTreeHostImpl::SetOverhangUIResource(
     UIResourceId overhang_ui_resource_id,
-    const gfx::Size& overhang_ui_resource_size) {
+    gfx::Size overhang_ui_resource_size) {
   overhang_ui_resource_id_ = overhang_ui_resource_id;
   overhang_ui_resource_size_ = overhang_ui_resource_size;
 }

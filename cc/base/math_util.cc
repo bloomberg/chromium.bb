@@ -508,7 +508,7 @@ gfx::Vector2dF MathUtil::ProjectVector(const gfx::Vector2dF& source,
                         projected_length * destination.y());
 }
 
-scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Size& s) {
+scoped_ptr<base::Value> MathUtil::AsValue(gfx::Size s) {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
   res->SetDouble("width", s.width());
   res->SetDouble("height", s.height());

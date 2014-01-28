@@ -83,7 +83,7 @@ void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
 void DirectRenderer::InitializeViewport(DrawingFrame* frame,
                                         const gfx::Rect& draw_rect,
                                         const gfx::Rect& viewport_rect,
-                                        const gfx::Size& surface_size) {
+                                        gfx::Size surface_size) {
   bool flip_y = FlippedFramebuffer();
 
   DCHECK_GE(viewport_rect.x(), 0);

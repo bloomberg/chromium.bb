@@ -50,7 +50,7 @@ TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox_name,
 }
 
 TextureMailbox::TextureMailbox(base::SharedMemory* shared_memory,
-                               const gfx::Size& size)
+                               gfx::Size size)
     : target_(GL_TEXTURE_2D),
       sync_point_(0),
       shared_memory_(shared_memory),

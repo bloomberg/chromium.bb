@@ -340,10 +340,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // contents scale to appropriate values. LayerImpl doesn't calculate any of
   // them from the other values.
 
-  void SetBounds(const gfx::Size& bounds);
+  void SetBounds(gfx::Size bounds);
   gfx::Size bounds() const { return bounds_; }
 
-  void SetContentBounds(const gfx::Size& content_bounds);
+  void SetContentBounds(gfx::Size content_bounds);
   gfx::Size content_bounds() const { return draw_properties_.content_bounds; }
 
   float contents_scale_x() const { return draw_properties_.contents_scale_x; }

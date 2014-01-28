@@ -17,7 +17,7 @@ SoftwareOutputDevice::SoftwareOutputDevice() {}
 
 SoftwareOutputDevice::~SoftwareOutputDevice() {}
 
-void SoftwareOutputDevice::Resize(const gfx::Size& viewport_size) {
+void SoftwareOutputDevice::Resize(gfx::Size viewport_size) {
   if (viewport_size_ == viewport_size)
     return;
 

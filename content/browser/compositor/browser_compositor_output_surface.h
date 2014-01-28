@@ -32,7 +32,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   // cc::OutputSurface implementation.
   virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
-  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE;
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
 
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval);

@@ -60,7 +60,7 @@ class DirectOutputSurface : public cc::OutputSurface {
     capabilities_.adjust_deadline_for_parent = false;
   }
 
-  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE {
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {
     surface_size_ = size;
   }
   virtual void SwapBuffers(cc::CompositorFrame*) OVERRIDE {

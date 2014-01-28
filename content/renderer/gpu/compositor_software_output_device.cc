@@ -97,7 +97,7 @@ size_t CompositorSoftwareOutputDevice::FindFreeBuffer(size_t hint) {
   return buffers_.size() - 1;
 }
 
-void CompositorSoftwareOutputDevice::Resize(const gfx::Size& viewport_size) {
+void CompositorSoftwareOutputDevice::Resize(gfx::Size viewport_size) {
   DCHECK(CalledOnValidThread());
 
   if (viewport_size_ == viewport_size)

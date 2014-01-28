@@ -21,7 +21,7 @@ class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::RectF& tex_coord_rect,
-              const gfx::Size& texture_size,
+              gfx::Size texture_size,
               bool swizzle_contents);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -31,7 +31,7 @@ class CC_EXPORT ContentDrawQuadBase : public DrawQuad {
               const gfx::Rect& visible_rect,
               bool needs_blending,
               const gfx::RectF& tex_coord_rect,
-              const gfx::Size& texture_size,
+              gfx::Size texture_size,
               bool swizzle_contents);
 
   gfx::RectF tex_coord_rect;

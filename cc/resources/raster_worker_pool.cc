@@ -121,7 +121,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
   bool RunRasterOnThread(unsigned thread_index,
                          void* buffer,
-                         const gfx::Size& size,
+                         gfx::Size size,
                          int stride) {
     TRACE_EVENT2(
         "cc",
@@ -173,7 +173,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::RasterWorkerPoolTask:
   virtual bool RunOnWorkerThread(unsigned thread_index,
                                  void* buffer,
-                                 const gfx::Size& size,
+                                 gfx::Size size,
                                  int stride) OVERRIDE {
     // TODO(alokp): For now run-on-worker-thread implies software rasterization.
     DCHECK(!use_gpu_rasterization());

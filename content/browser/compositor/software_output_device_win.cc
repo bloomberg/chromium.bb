@@ -29,7 +29,7 @@ SoftwareOutputDeviceWin::~SoftwareOutputDeviceWin() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_size) {
+void SoftwareOutputDeviceWin::Resize(gfx::Size viewport_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (viewport_size_ == viewport_size)

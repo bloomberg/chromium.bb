@@ -21,7 +21,7 @@ void SetLayerPropertiesForTesting(LayerImpl* layer,
                                   const gfx::Transform& sublayer_transform,
                                   const gfx::PointF& anchor,
                                   const gfx::PointF& position,
-                                  const gfx::Size& bounds,
+                                  gfx::Size bounds,
                                   bool preserves3d) {
   layer->SetTransform(transform);
   layer->SetSublayerTransform(sublayer_transform);

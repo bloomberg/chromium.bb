@@ -29,7 +29,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   explicit PicturePileBase(const PicturePileBase* other);
   PicturePileBase(const PicturePileBase* other, unsigned thread_index);
 
-  void Resize(const gfx::Size& size);
+  void Resize(gfx::Size size);
   gfx::Size size() const { return tiling_.total_size(); }
   void SetMinContentsScale(float min_contents_scale);
 
@@ -42,10 +42,10 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   bool HasRecordingAt(int x, int y);
   bool CanRaster(float contents_scale, const gfx::Rect& content_rect);
 
-  static void ComputeTileGridInfo(const gfx::Size& tile_grid_size,
+  static void ComputeTileGridInfo(gfx::Size tile_grid_size,
                                   SkTileGridPicture::TileGridInfo* info);
 
-  void SetTileGridSize(const gfx::Size& tile_grid_size);
+  void SetTileGridSize(gfx::Size tile_grid_size);
   TilingData& tiling() { return tiling_; }
 
   scoped_ptr<base::Value> AsValue() const;

@@ -23,7 +23,7 @@ void DrawPicture(unsigned char* buffer,
                  const gfx::Rect& layer_rect,
                  scoped_refptr<Picture> picture);
 
-void CreateBitmap(const gfx::Size& size, const char* uri, SkBitmap* bitmap);
+void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap);
 
 }  // namespace cc
 

@@ -638,7 +638,7 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
+void LayerTreeHost::SetViewportSize(gfx::Size device_viewport_size) {
   if (device_viewport_size == device_viewport_size_)
     return;
 

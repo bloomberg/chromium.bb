@@ -64,7 +64,7 @@ static void ReleaseSharedMemoryCallback(
 }
 
 static scoped_ptr<base::SharedMemory> CreateAndFillSharedMemory(
-    const gfx::Size& size,
+    gfx::Size size,
     uint32_t value) {
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
   CHECK(shared_memory->CreateAndMapAnonymous(4 * size.GetArea()));
@@ -264,9 +264,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     namespace_->textures.Replace(BoundTextureId(target), texture);
   }
 
-  void GetPixels(const gfx::Size& size,
-                 ResourceFormat format,
-                 uint8_t* pixels) {
+  void GetPixels(gfx::Size size, ResourceFormat format, uint8_t* pixels) {
     CheckTextureIsBound(GL_TEXTURE_2D);
     base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture = BoundTexture(GL_TEXTURE_2D);
@@ -281,7 +279,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
         last_waited_sync_point_(0) {}
 
  private:
-  void AllocateTexture(const gfx::Size& size, GLenum format) {
+  void AllocateTexture(gfx::Size size, GLenum format) {
     CheckTextureIsBound(GL_TEXTURE_2D);
     ResourceFormat texture_format = RGBA_8888;
     switch (format) {
@@ -342,7 +340,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
   TestSharedBitmapManager() : count_(0) {}
   virtual ~TestSharedBitmapManager() {}
 
-  virtual scoped_ptr<SharedBitmap> AllocateSharedBitmap(const gfx::Size& size)
+  virtual scoped_ptr<SharedBitmap> AllocateSharedBitmap(gfx::Size size)
       OVERRIDE {
     scoped_ptr<base::SharedMemory> memory(new base::SharedMemory);
     memory->CreateAndMapAnonymous(size.GetArea() * 4);
@@ -356,7 +354,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
   }
 
   virtual scoped_ptr<SharedBitmap> GetSharedBitmapFromId(
-      const gfx::Size&,
+      gfx::Size,
       const SharedBitmapId& id) OVERRIDE {
     if (bitmap_map_.find(id) == bitmap_map_.end())
       return scoped_ptr<SharedBitmap>();
@@ -383,7 +381,7 @@ class TestSharedBitmapManager : public SharedBitmapManager {
 void GetResourcePixels(ResourceProvider* resource_provider,
                        ResourceProviderContext* context,
                        ResourceProvider::ResourceId id,
-                       const gfx::Size& size,
+                       gfx::Size size,
                        ResourceFormat format,
                        uint8_t* pixels) {
   switch (resource_provider->default_resource_type()) {

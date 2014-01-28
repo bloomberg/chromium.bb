@@ -82,7 +82,7 @@ class CC_EXPORT OcclusionTrackerBase {
                            stack_.back().occlusion_from_inside_target);
   }
 
-  void set_minimum_tracking_size(const gfx::Size& size) {
+  void set_minimum_tracking_size(gfx::Size size) {
     minimum_tracking_size_ = size;
   }
 

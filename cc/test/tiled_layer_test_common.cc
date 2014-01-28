@@ -35,7 +35,7 @@ FakeLayerUpdater::FakeLayerUpdater() : prepare_count_(0), update_count_(0) {}
 FakeLayerUpdater::~FakeLayerUpdater() {}
 
 void FakeLayerUpdater::PrepareToUpdate(const gfx::Rect& content_rect,
-                                       const gfx::Size& tile_size,
+                                       gfx::Size tile_size,
                                        float contents_width_scale,
                                        float contents_height_scale,
                                        gfx::Rect* resulting_opaque_rect) {
@@ -148,7 +148,7 @@ LayerUpdater* FakeTiledLayer::Updater() const {
 }
 
 void FakeTiledLayerWithScaledBounds::SetContentBounds(
-    const gfx::Size& content_bounds) {
+    gfx::Size content_bounds) {
   forced_content_bounds_ = content_bounds;
   draw_properties().content_bounds = forced_content_bounds_;
 }

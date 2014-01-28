@@ -62,7 +62,7 @@ class CC_EXPORT CopyOutputRequest {
 
   void SendEmptyResult();
   void SendBitmapResult(scoped_ptr<SkBitmap> bitmap);
-  void SendTextureResult(const gfx::Size& size,
+  void SendTextureResult(gfx::Size size,
                          const TextureMailbox& texture_mailbox,
                          scoped_ptr<SingleReleaseCallback> release_callback);
 

@@ -26,7 +26,7 @@ class CC_EXPORT ResourcePool {
 
   virtual ~ResourcePool();
 
-  scoped_ptr<ScopedResource> AcquireResource(const gfx::Size& size);
+  scoped_ptr<ScopedResource> AcquireResource(gfx::Size size);
   void ReleaseResource(scoped_ptr<ScopedResource>);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,

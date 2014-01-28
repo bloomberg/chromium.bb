@@ -46,7 +46,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   void UpdateBounds();
 
   // Exposed to subclasses for testing.
-  void SetTileSize(const gfx::Size& size);
+  void SetTileSize(gfx::Size size);
   void SetTextureFormat(ResourceFormat texture_format) {
     texture_format_ = texture_format;
   }

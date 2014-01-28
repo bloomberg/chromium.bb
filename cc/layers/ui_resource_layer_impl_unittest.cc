@@ -21,8 +21,8 @@ namespace {
 
 scoped_ptr<UIResourceLayerImpl> GenerateUIResourceLayer(
     FakeUIResourceLayerTreeHostImpl* host_impl,
-    const gfx::Size& bitmap_size,
-    const gfx::Size& layer_size,
+    gfx::Size bitmap_size,
+    gfx::Size layer_size,
     bool opaque,
     UIResourceId uid) {
   gfx::Rect visible_content_rect(layer_size);

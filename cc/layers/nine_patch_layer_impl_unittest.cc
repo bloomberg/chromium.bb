@@ -30,9 +30,9 @@ gfx::Rect ToRoundedIntRect(const gfx::RectF& rect_f) {
                    gfx::ToRoundedInt(rect_f.height()));
 }
 
-void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
+void NinePatchLayerLayoutTest(gfx::Size bitmap_size,
                               const gfx::Rect& aperture_rect,
-                              const gfx::Size& layer_size,
+                              gfx::Size layer_size,
                               const gfx::Rect& border,
                               bool fill_center,
                               size_t expected_quad_size) {

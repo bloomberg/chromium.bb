@@ -157,7 +157,7 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
   }
 
   // Sync from source to target.
-  void SyncTilings(const gfx::Size& new_bounds,
+  void SyncTilings(gfx::Size new_bounds,
                    const Region& invalidation,
                    float minimum_scale) {
     for (size_t i = 0; i < source_->num_tilings(); ++i)
@@ -168,19 +168,19 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     target_->SyncTilings(
         *source_.get(), new_bounds, invalidation, minimum_scale);
   }
-  void SyncTilings(const gfx::Size& new_bounds) {
+  void SyncTilings(gfx::Size new_bounds) {
     Region invalidation;
     SyncTilings(new_bounds, invalidation, 0.f);
   }
-  void SyncTilings(const gfx::Size& new_bounds, const Region& invalidation) {
+  void SyncTilings(gfx::Size new_bounds, const Region& invalidation) {
     SyncTilings(new_bounds, invalidation, 0.f);
   }
-  void SyncTilings(const gfx::Size& new_bounds, float minimum_scale) {
+  void SyncTilings(gfx::Size new_bounds, float minimum_scale) {
     Region invalidation;
     SyncTilings(new_bounds, invalidation, minimum_scale);
   }
 
-  void VerifyTargetEqualsSource(const gfx::Size& new_bounds) const {
+  void VerifyTargetEqualsSource(gfx::Size new_bounds) const {
     ASSERT_FALSE(new_bounds.IsEmpty());
     EXPECT_EQ(target_->num_tilings(), source_->num_tilings());
     EXPECT_EQ(target_->layer_bounds().ToString(), new_bounds.ToString());

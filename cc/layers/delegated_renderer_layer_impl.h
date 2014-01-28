@@ -48,7 +48,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   void SetFrameData(const DelegatedFrameData* frame_data,
                     const gfx::RectF& damage_in_frame);
 
-  void SetDisplaySize(const gfx::Size& size);
+  void SetDisplaySize(gfx::Size size);
 
  protected:
   DelegatedRendererLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -77,14 +77,14 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       RenderPass::Id delegated_render_pass_id,
       RenderPass::Id* output_render_pass_id) const;
 
-  gfx::Transform DelegatedFrameToLayerSpaceTransform(
-      const gfx::Size& frame_size) const;
+  gfx::Transform DelegatedFrameToLayerSpaceTransform(gfx::Size frame_size)
+      const;
 
   void AppendRenderPassQuads(
       QuadSink* quad_sink,
       AppendQuadsData* append_quads_data,
       const RenderPass* delegated_render_pass,
-      const gfx::Size& frame_size) const;
+      gfx::Size frame_size) const;
 
   // LayerImpl overrides.
   virtual const char* LayerTypeAsString() const OVERRIDE;

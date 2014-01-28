@@ -40,7 +40,7 @@ class CC_EXPORT PrioritizedResourceManager {
     return make_scoped_ptr(new PrioritizedResourceManager(proxy));
   }
   scoped_ptr<PrioritizedResource> CreateTexture(
-      const gfx::Size& size, ResourceFormat format) {
+      gfx::Size size, ResourceFormat format) {
     return make_scoped_ptr(new PrioritizedResource(this, size, format));
   }
   ~PrioritizedResourceManager();
@@ -189,7 +189,7 @@ class CC_EXPORT PrioritizedResourceManager {
                                    UnlinkPolicy unlink_policy,
                                    ResourceProvider* resource_provider);
   PrioritizedResource::Backing* CreateBacking(
-      const gfx::Size& size,
+      gfx::Size size,
       ResourceFormat format,
       ResourceProvider* resource_provider);
   void EvictFirstBackingResource(ResourceProvider* resource_provider);

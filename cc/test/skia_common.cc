@@ -25,7 +25,7 @@ void DrawPicture(unsigned char* buffer,
   picture->Raster(&canvas, NULL, layer_rect, 1.0f);
 }
 
-void CreateBitmap(const gfx::Size& size, const char* uri, SkBitmap* bitmap) {
+void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
   SkImageInfo info = {
     size.width(),
     size.height(),

@@ -87,7 +87,7 @@ PicturePileBase::PicturePileBase(
 PicturePileBase::~PicturePileBase() {
 }
 
-void PicturePileBase::Resize(const gfx::Size& new_size) {
+void PicturePileBase::Resize(gfx::Size new_size) {
   if (size() == new_size)
     return;
 
@@ -136,7 +136,7 @@ void PicturePileBase::SetMinContentsScale(float min_contents_scale) {
 
 // static
 void PicturePileBase::ComputeTileGridInfo(
-    const gfx::Size& tile_grid_size,
+    gfx::Size tile_grid_size,
     SkTileGridPicture::TileGridInfo* info) {
   DCHECK(info);
   info->fTileInterval.set(tile_grid_size.width() - 2 * kTileGridBorderPixels,
@@ -150,7 +150,7 @@ void PicturePileBase::ComputeTileGridInfo(
   info->fOffset.set(-kTileGridBorderPixels, -kTileGridBorderPixels);
 }
 
-void PicturePileBase::SetTileGridSize(const gfx::Size& tile_grid_size) {
+void PicturePileBase::SetTileGridSize(gfx::Size tile_grid_size) {
   ComputeTileGridInfo(tile_grid_size, &tile_grid_info_);
 }
 
