@@ -286,14 +286,12 @@ bool RenderObject::isLegend() const
 
 void RenderObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
 {
-    setFlowThreadState(state);
-
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-        // If the child is a fragmentation context it already updated the descendants flag accordingly.
-        if (child->isRenderFlowThread())
+    for (RenderObject *object = this; object; object = object->nextInPreOrder(this)) {
+        // If object is a fragmentation context it already updated the descendants flag accordingly.
+        if (object->isRenderFlowThread())
             continue;
-        ASSERT(state != child->flowThreadState());
-        child->setFlowThreadStateIncludingDescendants(state);
+        ASSERT(state != object->flowThreadState());
+        object->setFlowThreadState(state);
     }
 }
 
