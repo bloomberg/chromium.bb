@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 * Requesting persistent quota.
-PASS usage is 0
+PASS usage is >= 0
 PASS grantedQuota is non-zero.
 * Requesting persistent quota with missing argument.
 PASS navigator.storageQuota.requestPersistentQuota() threw exception TypeError: Failed to execute 'requestPersistentQuota' on 'StorageQuota': 1 argument required, but only 0 present..

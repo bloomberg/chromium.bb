@@ -22,9 +22,9 @@ function runQueryTemporaryTest() {
         usage = storageInfo.usage;
         quota = storageInfo.quota;
 
-        shouldBe("usage", "0");
         // Quota value would vary depending on the test environment.
-        shouldBeGreaterThanOrEqual("quota", "0");
+        shouldBeGreaterThanOrEqual("usage", "0");
+        shouldBeGreaterThanOrEqual("quota", "usage");
 
         runNextTest();
     }, onrejected);
@@ -36,8 +36,9 @@ function runQueryPersistentTest() {
         usage = storageInfo.usage;
         quota = storageInfo.quota;
 
-        shouldBe("usage", "0");
-        shouldBe("quota", "0");
+        // Quota value would vary depending on the test environment.
+        shouldBeGreaterThanOrEqual("usage", "0");
+        shouldBeGreaterThanOrEqual("quota", "usage");
 
         runNextTest();
     }, onrejected);
@@ -81,5 +82,5 @@ if (navigator.storageQuota) {
     debug("This test requires navigator.storageQuota.");
 }
 </script>
-</body
+</body>
 </html>
