@@ -23,6 +23,10 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
+namespace ppapi {
+struct FileGrowth;
+}
+
 namespace content {
 class PepperFileSystemBrowserHost;
 
@@ -58,7 +62,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   int32_t OnHostMsgSetLength(ppapi::host::HostMessageContext* context,
                              int64_t length);
   int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context,
-                         int64_t max_written_offset);
+                         const ppapi::FileGrowth& file_growth);
   int32_t OnHostMsgFlush(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgRequestOSFileHandle(
       ppapi::host::HostMessageContext* context);

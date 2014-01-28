@@ -124,18 +124,18 @@ TEST_F(NaClMessageScannerTest, FileOpenClose) {
   test.ScanUntrustedMessage(
       PpapiHostMsg_ResourceCall(
           fio_call_params,
-          PpapiHostMsg_FileIO_Close(0)),
+          PpapiHostMsg_FileIO_Close(FileGrowth(0, 0))),
       &new_msg_ptr);
   EXPECT_TRUE(new_msg_ptr);
   ResourceMessageCallParams call_params;
   IPC::Message nested_msg;
-  int64_t max_written_offset = 0;
+  FileGrowth file_growth;
   EXPECT_TRUE(UnpackMessage<PpapiHostMsg_ResourceCall>(
                   *new_msg_ptr, &call_params, &nested_msg) &&
               UnpackMessage<PpapiHostMsg_FileIO_Close>(
-                  nested_msg, &max_written_offset));
+                  nested_msg, &file_growth));
   new_msg_ptr.reset();
-  EXPECT_EQ(kNewFileSize, max_written_offset);
+  EXPECT_EQ(kNewFileSize, file_growth.max_written_offset);
   EXPECT_FALSE(FindFileIO(test, kFileIO));
 
   // Reopen the file.
@@ -147,7 +147,7 @@ TEST_F(NaClMessageScannerTest, FileOpenClose) {
   test.ScanUntrustedMessage(
       PpapiHostMsg_ResourceCall(
           fio_call_params,
-          PpapiHostMsg_FileIO_Close(kNewFileSize)),
+          PpapiHostMsg_FileIO_Close(FileGrowth(kNewFileSize, 0))),
       &new_msg_ptr);
   EXPECT_FALSE(new_msg_ptr);
   EXPECT_FALSE(FindFileIO(test, kFileIO));
@@ -185,14 +185,14 @@ TEST_F(NaClMessageScannerTest, QuotaAuditing) {
 
   // Receive reserved quota, and updated file sizes.
   const int64_t kNewFileSize = 10;
-  FileOffsetMap offset_map;
-  offset_map.insert(std::make_pair(kFileIO, kNewFileSize));
+  FileSizeMap file_sizes;
+  file_sizes[kFileIO] = kNewFileSize;
   test.ScanMessage(
       PpapiPluginMsg_ResourceReply(
           fs_reply_params,
           PpapiPluginMsg_FileSystem_ReserveQuotaReply(
               kQuotaReservationAmount,
-              offset_map)),
+              file_sizes)),
       &unused_handles,
       &new_msg_ptr);
   EXPECT_FALSE(new_msg_ptr);
@@ -210,26 +210,26 @@ TEST_F(NaClMessageScannerTest, QuotaAuditing) {
   EXPECT_EQ(kNewFileSize + 1, fio->max_written_offset());
 
   // Plugin should not under-report max written offsets when reserving quota.
-  offset_map[kFileIO] = 0;  // should be kNewFileSize + 1.
+  file_sizes[kFileIO] = 0;  // should be kNewFileSize + 1.
   test.ScanUntrustedMessage(
       PpapiHostMsg_ResourceCall(
           fio_call_params,
           PpapiHostMsg_FileSystem_ReserveQuota(
               kQuotaReservationAmount,
-              offset_map)),
+              FileSizeMapToFileGrowthMapForTesting(file_sizes))),
       &new_msg_ptr);
   EXPECT_TRUE(new_msg_ptr);
   ResourceMessageCallParams call_params;
   IPC::Message nested_msg;
   int64_t amount = 0;
-  FileOffsetMap new_offset_map;
+  FileGrowthMap new_file_growths;
   EXPECT_TRUE(UnpackMessage<PpapiHostMsg_ResourceCall>(
                   *new_msg_ptr, &call_params, &nested_msg) &&
               UnpackMessage<PpapiHostMsg_FileSystem_ReserveQuota>(
-                  nested_msg, &amount, &new_offset_map));
+                  nested_msg, &amount, &new_file_growths));
   new_msg_ptr.reset();
   EXPECT_EQ(kQuotaReservationAmount, amount);
-  EXPECT_EQ(kNewFileSize + 1, new_offset_map[kFileIO]);
+  EXPECT_EQ(kNewFileSize + 1, new_file_growths[kFileIO].max_written_offset);
 }
 
 TEST_F(NaClMessageScannerTest, SetLength) {
@@ -247,14 +247,14 @@ TEST_F(NaClMessageScannerTest, SetLength) {
 
   // Receive reserved quota, and updated file sizes.
   const int64_t kNewFileSize = 10;
-  FileOffsetMap offset_map;
-  offset_map.insert(std::make_pair(kFileIO, 0));
+  FileSizeMap file_sizes;
+  file_sizes[kFileIO] = 0;
   test.ScanMessage(
       PpapiPluginMsg_ResourceReply(
           fs_reply_params,
           PpapiPluginMsg_FileSystem_ReserveQuotaReply(
               kQuotaReservationAmount,
-              offset_map)),
+              file_sizes)),
       &unused_handles,
       &new_msg_ptr);
 

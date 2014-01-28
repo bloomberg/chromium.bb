@@ -365,18 +365,13 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
 int32_t PepperFileSystemBrowserHost::OnHostMsgReserveQuota(
     ppapi::host::HostMessageContext* context,
     int64_t amount,
-    const ppapi::FileSizeMap& file_sizes) {
+    const ppapi::FileGrowthMap& file_growths) {
   DCHECK(ChecksQuota());
   DCHECK(amount > 0);
 
   if (reserving_quota_)
     return PP_ERROR_INPROGRESS;
   reserving_quota_ = true;
-
-  ppapi::FileGrowthMap file_growths;
-  for (ppapi::FileSizeMap::const_iterator it = file_sizes.begin();
-       it != file_sizes.end(); ++it)
-    file_growths[it->first] = ppapi::FileGrowth(it->second, 0);
 
   int64_t reservation_amount = std::max<int64_t>(kMinimumQuotaReservationSize,
                                                  amount);
@@ -463,7 +458,7 @@ void PepperFileSystemBrowserHost::GotQuotaReservation(
 void PepperFileSystemBrowserHost::GotReservedQuota(
     ppapi::host::ReplyMessageContext reply_context,
     int64_t amount,
-    const ppapi::FileSizeMap& max_written_offsets) {
+    const ppapi::FileSizeMap& file_sizes) {
   DCHECK(reserving_quota_);
   reserving_quota_ = false;
   reserved_quota_ = amount;
@@ -471,7 +466,7 @@ void PepperFileSystemBrowserHost::GotReservedQuota(
   reply_context.params.set_result(PP_OK);
   host()->SendReply(
       reply_context,
-      PpapiPluginMsg_FileSystem_ReserveQuotaReply(amount, max_written_offsets));
+      PpapiPluginMsg_FileSystem_ReserveQuotaReply(amount, file_sizes));
 }
 
 std::string PepperFileSystemBrowserHost::GetPluginMimeType() const {

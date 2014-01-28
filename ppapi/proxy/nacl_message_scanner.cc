@@ -381,9 +381,9 @@ void NaClMessageScanner::ScanUntrustedMessage(
           return;
         // Audit FileIO Close messages to make sure the plugin reports an
         // accurate file size.
-        int64_t max_written_offset = 0;
+        FileGrowth file_growth;
         if (!UnpackMessage<PpapiHostMsg_FileIO_Close>(
-                nested_msg, &max_written_offset))
+                nested_msg, &file_growth))
           return;
 
         int64_t trusted_max_written_offset = it->second->max_written_offset();
@@ -391,11 +391,12 @@ void NaClMessageScanner::ScanUntrustedMessage(
         files_.erase(it);
         // If the plugin is under-reporting, rewrite the message with the
         // trusted value.
-        if (trusted_max_written_offset > max_written_offset) {
+        if (trusted_max_written_offset > file_growth.max_written_offset) {
           new_msg_ptr->reset(
               new PpapiHostMsg_ResourceCall(
                   params,
-                  PpapiHostMsg_FileIO_Close(trusted_max_written_offset)));
+                  PpapiHostMsg_FileIO_Close(
+                      FileGrowth(trusted_max_written_offset, 0))));
         }
       }
       case PpapiHostMsg_FileIO_SetLength::ID: {
@@ -429,22 +430,26 @@ void NaClMessageScanner::ScanUntrustedMessage(
         // Audit FileSystem ReserveQuota messages to make sure the plugin
         // reports accurate file sizes.
         int64_t amount = 0;
-        FileOffsetMap max_written_offsets;
+        FileGrowthMap file_growths;
         if (!UnpackMessage<PpapiHostMsg_FileSystem_ReserveQuota>(
-                nested_msg, &amount, &max_written_offsets))
+                nested_msg, &amount, &file_growths))
           return;
 
         bool audit_failed = false;
-        for (FileOffsetMap::iterator it = max_written_offsets.begin();
-            it != max_written_offsets.end(); ++it) {
+        for (FileGrowthMap::iterator it = file_growths.begin();
+            it != file_growths.end(); ++it) {
           FileIOMap::iterator file_it = files_.find(it->first);
           if (file_it == files_.end())
             continue;
           int64_t trusted_max_written_offset =
               file_it->second->max_written_offset();
-          if (trusted_max_written_offset > it->second) {
+          if (trusted_max_written_offset > it->second.max_written_offset) {
             audit_failed = true;
-            it->second = trusted_max_written_offset;
+            it->second.max_written_offset = trusted_max_written_offset;
+          }
+          if (it->second.append_mode_write_amount < 0) {
+            audit_failed = true;
+            it->second.append_mode_write_amount = 0;
           }
         }
         if (audit_failed) {
@@ -452,7 +457,7 @@ void NaClMessageScanner::ScanUntrustedMessage(
               new PpapiHostMsg_ResourceCall(
                   params,
                   PpapiHostMsg_FileSystem_ReserveQuota(
-                      amount, max_written_offsets)));
+                      amount, file_growths)));
         }
         break;
       }
@@ -518,15 +523,15 @@ void NaClMessageScanner::AuditNestedMessage(PP_Resource resource,
     case PpapiPluginMsg_FileSystem_ReserveQuotaReply::ID: {
       // The amount of reserved quota for a FileSystem was refreshed.
       int64_t amount = 0;
-      FileOffsetMap max_written_offsets;
+      FileSizeMap file_sizes;
       if (ppapi::UnpackMessage<PpapiPluginMsg_FileSystem_ReserveQuotaReply>(
-          msg, &amount, &max_written_offsets)) {
+          msg, &amount, &file_sizes)) {
         FileSystemMap::iterator it = file_systems_.find(resource);
         DCHECK(it != file_systems_.end());
         it->second->UpdateReservedQuota(amount);
 
-        FileOffsetMap::const_iterator offset_it = max_written_offsets.begin();
-        for (; offset_it != max_written_offsets.end(); ++offset_it) {
+        FileSizeMap::const_iterator offset_it = file_sizes.begin();
+        for (; offset_it != file_sizes.end(); ++offset_it) {
           FileIOMap::iterator fio_it = files_.find(offset_it->first);
           DCHECK(fio_it != files_.end());
           if (fio_it != files_.end())

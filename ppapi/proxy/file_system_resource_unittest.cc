@@ -238,13 +238,13 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
   sink().ClearMessages();
 
   int64_t amount = 0;
-  FileOffsetMap max_written_offsets;
+  FileGrowthMap file_growths;
   ASSERT_TRUE(UnpackMessage<PpapiHostMsg_FileSystem_ReserveQuota>(
-      msg, &amount, &max_written_offsets));
+      msg, &amount, &file_growths));
   ASSERT_EQ(kQuotaRequestAmount1, amount);
-  ASSERT_EQ(2U, max_written_offsets.size());
-  ASSERT_EQ(0, max_written_offsets[file_io1.get()]);
-  ASSERT_EQ(0, max_written_offsets[file_io2.get()]);
+  ASSERT_EQ(2U, file_growths.size());
+  ASSERT_EQ(0, file_growths[file_io1.get()].max_written_offset);
+  ASSERT_EQ(0, file_growths[file_io2.get()].max_written_offset);
 
   // Make another request while the "reserve quota" message is pending.
   MockRequestQuotaCallback cb2;
@@ -263,7 +263,7 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
               PP_OK,
               PpapiPluginMsg_FileSystem_ReserveQuotaReply(
                   kQuotaRequestAmount1 + kQuotaRequestAmount2,
-                  max_written_offsets));
+                  FileGrowthMapToFileSizeMapForTesting(file_growths)));
   }
   ASSERT_TRUE(cb1.called());
   ASSERT_EQ(kQuotaRequestAmount1, cb1.result());
@@ -294,7 +294,7 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
               PP_OK,
               PpapiPluginMsg_FileSystem_ReserveQuotaReply(
                   kQuotaRequestAmount1 - 1,
-                  max_written_offsets));
+                  FileGrowthMapToFileSizeMapForTesting(file_growths)));
   }
   ASSERT_TRUE(cb1.called());
   ASSERT_EQ(0, cb1.result());
@@ -325,7 +325,7 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
               PP_OK,
               PpapiPluginMsg_FileSystem_ReserveQuotaReply(
                   kQuotaRequestAmount1,
-                  max_written_offsets));
+                  FileGrowthMapToFileSizeMapForTesting(file_growths)));
   }
   ASSERT_TRUE(cb1.called());
   ASSERT_EQ(kQuotaRequestAmount1, cb1.result());
@@ -343,7 +343,7 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
               PP_OK,
               PpapiPluginMsg_FileSystem_ReserveQuotaReply(
                   kQuotaRequestAmount1 + kQuotaRequestAmount2,
-                  max_written_offsets));
+                  FileGrowthMapToFileSizeMapForTesting(file_growths)));
   }
 
   ASSERT_TRUE(cb2.called());

@@ -59,6 +59,7 @@
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/dir_contents.h"
+#include "ppapi/shared_impl/file_growth.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
@@ -208,6 +209,11 @@ IPC_STRUCT_TRAITS_BEGIN(PP_FileInfo)
   IPC_STRUCT_TRAITS_MEMBER(creation_time)
   IPC_STRUCT_TRAITS_MEMBER(last_access_time)
   IPC_STRUCT_TRAITS_MEMBER(last_modified_time)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::FileGrowth)
+  IPC_STRUCT_TRAITS_MEMBER(max_written_offset)
+  IPC_STRUCT_TRAITS_MEMBER(append_mode_write_amount)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::DeviceRefData)
@@ -1246,9 +1252,9 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Open,
                      int32_t /* open_flags */)
 IPC_MESSAGE_CONTROL2(PpapiPluginMsg_FileIO_OpenReply,
                      PP_Resource /* quota_file_system */,
-                     int64_t /* max_written_offset */)
+                     int64_t /* file_size */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileIO_Close,
-                     int64_t /* max_written_offset */)
+                     ppapi::FileGrowth /* file_growth */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Touch,
                      PP_Time /* last_access_time */,
                      PP_Time /* last_modified_time */)
@@ -1337,15 +1343,12 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileSystem_CreateFromRenderer,
 // linked to the existing resource host given in the ResourceVar.
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileSystem_CreateFromPendingHost,
                      PP_FileSystemType /* file_system_type */)
-// IPC_MESSAGE macros choke on extra , in the std::map, when expanding. We need
-// to typedef it to avoid that.
-typedef std::map<int32_t, int64_t> FileOffsetMap;
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileSystem_ReserveQuota,
                      int64_t /* amount */,
-                     FileOffsetMap /* max_written_offsets */)
+                     ppapi::FileGrowthMap /* file_growths */)
 IPC_MESSAGE_CONTROL2(PpapiPluginMsg_FileSystem_ReserveQuotaReply,
                      int64_t /* amount */,
-                     FileOffsetMap /* max_written_offsets */)
+                     ppapi::FileSizeMap /* file_sizes */)
 
 // Flash DRM ------------------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDRM_Create)

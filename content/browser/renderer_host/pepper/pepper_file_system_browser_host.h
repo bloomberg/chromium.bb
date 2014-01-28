@@ -115,7 +115,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   int32_t OnHostMsgReserveQuota(
       ppapi::host::HostMessageContext* context,
       int64_t amount,
-      const ppapi::FileSizeMap& max_written_offsets);
+      const ppapi::FileGrowthMap& file_growths);
 
   void SendReplyForFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
@@ -137,7 +137,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   void GotReservedQuota(
       ppapi::host::ReplyMessageContext reply_context,
       int64_t amount,
-      const ppapi::FileSizeMap& max_written_offsets);
+      const ppapi::FileSizeMap& file_sizes);
   void DidOpenQuotaFile(
       PP_Resource file_io_resource,
       const OpenQuotaFileCallback& callback,

@@ -121,11 +121,9 @@ void QuotaReservation::OnClientCrash() {
 void QuotaReservation::GotReservedQuota(
     const ReserveQuotaCallback& callback,
     base::File::Error error) {
-  ppapi::FileSizeMap max_written_offsets;
-  for (FileMap::iterator it = files_.begin(); it != files_.end(); ++ it) {
-    max_written_offsets.insert(
-        std::make_pair(it->first, it->second->GetMaxWrittenOffset()));
-  }
+  ppapi::FileSizeMap file_sizes;
+  for (FileMap::iterator it = files_.begin(); it != files_.end(); ++ it)
+    file_sizes[it->first] = it->second->GetMaxWrittenOffset();
 
   if (file_system_context_) {
     BrowserThread::PostTask(
@@ -133,10 +131,10 @@ void QuotaReservation::GotReservedQuota(
         FROM_HERE,
         base::Bind(callback,
                    quota_reservation_->remaining_quota(),
-                   max_written_offsets));
+                   file_sizes));
   } else {
     // Unit testing code path.
-    callback.Run(quota_reservation_->remaining_quota(), max_written_offsets);
+    callback.Run(quota_reservation_->remaining_quota(), file_sizes);
   }
 }
 

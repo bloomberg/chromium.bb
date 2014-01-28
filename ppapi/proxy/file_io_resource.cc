@@ -404,10 +404,8 @@ void FileIOResource::Close() {
   if (file_handle_)
     file_handle_ = NULL;
 
-  // TODO(tzik): Post |max_written_offset_| and |append_mode_write_amount_|
-  // separately by using FileGrowth after the IPC signature changed.
   Post(BROWSER, PpapiHostMsg_FileIO_Close(
-      max_written_offset_ + append_mode_write_amount_));
+      FileGrowth(max_written_offset_, append_mode_write_amount_)));
 }
 
 int32_t FileIOResource::RequestOSFileHandle(

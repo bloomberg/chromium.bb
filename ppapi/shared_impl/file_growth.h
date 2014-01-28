@@ -23,6 +23,11 @@ struct PPAPI_SHARED_EXPORT FileGrowth {
 typedef std::map<int32_t, FileGrowth> FileGrowthMap;
 typedef std::map<int32_t, int64_t> FileSizeMap;
 
+PPAPI_SHARED_EXPORT FileGrowthMap FileSizeMapToFileGrowthMapForTesting(
+    const FileSizeMap& file_sizes);
+PPAPI_SHARED_EXPORT FileSizeMap FileGrowthMapToFileSizeMapForTesting(
+    const FileGrowthMap& file_growths);
+
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_FILE_GROWTH_H_
