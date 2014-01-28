@@ -383,15 +383,13 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   return render_time;
 }
 
-void VideoReceiver::IncomingPacket(const uint8* packet, size_t length,
-                                   const base::Closure callback) {
+void VideoReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (Rtcp::IsRtcpPacket(packet, length)) {
-    rtcp_->IncomingRtcpPacket(packet, length);
+  if (Rtcp::IsRtcpPacket(&packet->front(), packet->size())) {
+    rtcp_->IncomingRtcpPacket(&packet->front(), packet->size());
   } else {
-    rtp_receiver_.ReceivedPacket(packet, length);
+    rtp_receiver_.ReceivedPacket(&packet->front(), packet->size());
   }
-  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
 }
 
 void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,

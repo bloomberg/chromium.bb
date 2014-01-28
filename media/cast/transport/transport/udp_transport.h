@@ -40,7 +40,7 @@ class UdpTransport : public PacketSender {
   virtual ~UdpTransport();
 
   // Start receiving packets. Packets are submitted to |packet_receiver|.
-  void StartReceiving(PacketReceiver* packet_receiver);
+  void StartReceiving(const PacketReceiverCallback& packet_receiver);
 
   // PacketSender implementations.
   virtual bool SendPacket(const Packet& packet) OVERRIDE;
@@ -56,7 +56,7 @@ class UdpTransport : public PacketSender {
   scoped_ptr<net::UDPServerSocket> udp_socket_;
   scoped_refptr<net::IOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
-  PacketReceiver* packet_receiver_;
+  PacketReceiverCallback packet_receiver_;
   const CastTransportStatusCallback& status_callback_;
   base::WeakPtrFactory<UdpTransport> weak_factory_;
 

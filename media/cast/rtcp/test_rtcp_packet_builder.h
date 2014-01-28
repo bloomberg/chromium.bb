@@ -7,6 +7,7 @@
 #ifndef MEDIA_CAST_RTCP_TEST_RTCP_PACKET_BUILDER_H_
 #define MEDIA_CAST_RTCP_TEST_RTCP_PACKET_BUILDER_H_
 
+#include "media/cast/cast_config.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "net/base/big_endian.h"
 
@@ -85,7 +86,8 @@ class TestRtcpPacketBuilder {
   void AddReceiverEventLog(uint16 event_data, uint8 event_id,
                            uint16 event_timesamp_delta);
 
-  const uint8* Packet();
+  scoped_ptr<Packet> GetPacket();
+  const uint8* Data();
   int Length() { return kMaxIpPacketSize - big_endian_writer_.remaining(); }
 
  private:

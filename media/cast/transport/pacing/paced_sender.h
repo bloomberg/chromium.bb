@@ -51,7 +51,7 @@ class PacedSender : public PacedPacketSender,
   virtual ~PacedSender();
 
   // PacedPacketSender implementation.
-  virtual void SetPacketReceiver(scoped_refptr<PacketReceiver> packet_receiver);
+  virtual void SetPacketReceiver(const PacketReceiverCallback& packet_receiver);
 
   virtual bool SendPackets(const PacketList& packets) OVERRIDE;
 

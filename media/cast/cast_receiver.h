@@ -75,9 +75,11 @@ class CastReceiver {
       const VideoReceiverConfig& video_config,
       transport::PacketSender* const packet_sender);
 
-  // All received RTP and RTCP packets for the call should be inserted to this
-  // PacketReceiver.
-  virtual scoped_refptr<transport::PacketReceiver> packet_receiver() = 0;
+  // All received RTP and RTCP packets for the call should be sent to this
+  // PacketReceiver. Can be called from any function.
+  // TODO(hubbe): Replace with:
+  //   virtual void ReceivePacket(scoped_ptr<Packet> packet) = 0;
+  virtual transport::PacketReceiverCallback packet_receiver() = 0;
 
   // Polling interface to get audio and video frames from the CastReceiver.
   virtual scoped_refptr<FrameReceiver> frame_receiver() = 0;

@@ -58,9 +58,9 @@ PacedSender::PacedSender(
 PacedSender::~PacedSender() {}
 
 void PacedSender::SetPacketReceiver(
-    scoped_refptr<PacketReceiver> packet_receiver) {
+    const PacketReceiverCallback& packet_receiver) {
   DCHECK(!external_transport_);
-  transport_->StartReceiving(packet_receiver.get());
+  transport_->StartReceiving(packet_receiver);
 }
 
 bool PacedSender::SendPackets(const PacketList& packets) {

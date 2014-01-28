@@ -170,8 +170,7 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
 
-  receiver_->IncomingPacket(rtcp_packet.Packet(), rtcp_packet.Length(),
-      base::Bind(AudioReceiverTest::DummyDeletePacket, rtcp_packet.Packet()));
+  receiver_->IncomingPacket(rtcp_packet.GetPacket().Pass());
 
   // Make sure that we are not continuous and that the RTP timestamp represent a
   // time in the future.

@@ -39,11 +39,6 @@ EncodedVideoFrame::~EncodedVideoFrame() {}
 EncodedAudioFrame::EncodedAudioFrame() {}
 EncodedAudioFrame::~EncodedAudioFrame() {}
 
-// static
-void PacketReceiver::DeletePacket(const uint8* packet) {
-  delete [] packet;
-}
-
 RtcpSenderFrameLogMessage::RtcpSenderFrameLogMessage ()
     : frame_status(kRtcpSenderFrameStatusUnknown),
       rtp_timestamp(0) {}

@@ -52,8 +52,7 @@ class VideoReceiver : public base::NonThreadSafe,
   void GetEncodedVideoFrame(const VideoFrameEncodedCallback& callback);
 
   // Insert a RTP packet to the video receiver.
-  void IncomingPacket(const uint8* packet, size_t length,
-                      const base::Closure callback);
+  void IncomingPacket(scoped_ptr<Packet> packet);
 
  protected:
   void IncomingParsedRtpPacket(const uint8* payload_data,

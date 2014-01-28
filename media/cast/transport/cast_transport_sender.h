@@ -52,7 +52,7 @@ class CastTransportSender : public base::NonThreadSafe {
   // Sets the Cast packet receiver. Should be called after creation on the
   // Cast sender. Packets won't be received until this function is called.
   virtual void SetPacketReceiver(
-      scoped_refptr<PacketReceiver> packet_receiver) = 0;
+      const PacketReceiverCallback& packet_receiver) = 0;
 
   // The following two functions handle the encoded media frames (audio and
   // video) to be processed.

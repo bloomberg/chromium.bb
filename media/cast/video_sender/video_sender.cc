@@ -157,11 +157,9 @@ void VideoSender::SendEncodedVideoFrameToTransport(
   transport_sender_->InsertCodedVideoFrame(encoded_frame.get(), capture_time);
 }
 
-void VideoSender::IncomingRtcpPacket(const uint8* packet, size_t length,
-                                     const base::Closure callback) {
+void VideoSender::IncomingRtcpPacket(scoped_ptr<Packet> packet) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_->IncomingRtcpPacket(packet, length);
-  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
+  rtcp_->IncomingRtcpPacket(&packet->front(), packet->size());
 }
 
 void VideoSender::ScheduleNextRtcpReport() {

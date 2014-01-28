@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
-
 #include "base/logging.h"
 
 namespace media {
@@ -252,7 +251,13 @@ void TestRtcpPacketBuilder::AddReceiverEventLog(uint16 event_data,
   big_endian_writer_.WriteU16(type_and_delta);
 }
 
-const uint8* TestRtcpPacketBuilder::Packet() {
+scoped_ptr<media::cast::Packet> TestRtcpPacketBuilder::GetPacket() {
+  PatchLengthField();
+  return scoped_ptr<media::cast::Packet>(
+      new media::cast::Packet(buffer_, buffer_ + Length()));
+}
+
+const uint8* TestRtcpPacketBuilder::Data() {
   PatchLengthField();
   return buffer_;
 }

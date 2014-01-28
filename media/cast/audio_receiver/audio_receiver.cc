@@ -378,16 +378,14 @@ bool AudioReceiver::PostEncodedAudioFrame(
   return true;
 }
 
-void AudioReceiver::IncomingPacket(const uint8* packet, size_t length,
-                                   const base::Closure callback) {
+void AudioReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  bool rtcp_packet = Rtcp::IsRtcpPacket(packet, length);
+  bool rtcp_packet = Rtcp::IsRtcpPacket(&packet->front(), packet->size());
   if (!rtcp_packet) {
-    rtp_receiver_->ReceivedPacket(packet, length);
+    rtp_receiver_->ReceivedPacket(&packet->front(), packet->size());
   } else {
-    rtcp_->IncomingRtcpPacket(packet, length);
+    rtcp_->IncomingRtcpPacket(&packet->front(), packet->size());
   }
-  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
 }
 
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {

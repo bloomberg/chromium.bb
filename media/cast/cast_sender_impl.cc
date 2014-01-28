@@ -51,7 +51,35 @@ class LocalFrameInput : public FrameInput {
   base::WeakPtr<VideoSender> video_sender_;
 };
 
-// LocalCastSenderPacketReceiver handle the incoming packets to the cast sender
+CastSender* CastSender::CreateCastSender(
+    scoped_refptr<CastEnvironment> cast_environment,
+    const AudioSenderConfig& audio_config,
+    const VideoSenderConfig& video_config,
+    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    transport::CastTransportSender* const transport_sender) {
+  return new CastSenderImpl(cast_environment, audio_config, video_config,
+                            gpu_factories, transport_sender);
+}
+
+CastSenderImpl::CastSenderImpl(
+    scoped_refptr<CastEnvironment> cast_environment,
+    const AudioSenderConfig& audio_config,
+    const VideoSenderConfig& video_config,
+    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+    transport::CastTransportSender* const transport_sender)
+    : audio_sender_(cast_environment, audio_config, transport_sender),
+      video_sender_(cast_environment, video_config, gpu_factories,
+                    transport_sender),
+      frame_input_(new LocalFrameInput(cast_environment,
+                                       audio_sender_.AsWeakPtr(),
+                                       video_sender_.AsWeakPtr())),
+      cast_environment_(cast_environment),
+      ssrc_of_audio_sender_(audio_config.incoming_feedback_ssrc),
+      ssrc_of_video_sender_(video_config.incoming_feedback_ssrc) {}
+
+CastSenderImpl::~CastSenderImpl() {}
+
+// ReceivedPacket handle the incoming packets to the cast sender
 // it's only expected to receive RTCP feedback packets from the remote cast
 // receiver. The class verifies that that it is a RTCP packet and based on the
 // SSRC of the incoming packet route the packet to the correct sender; audio or
@@ -76,98 +104,41 @@ class LocalFrameInput : public FrameInput {
 //    generates multiple streams in one RTP session, for example from
 //    separate video cameras, each MUST be identified as a different
 //    SSRC.
-
-class LocalCastSenderPacketReceiver : public transport::PacketReceiver {
- public:
-  LocalCastSenderPacketReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                                base::WeakPtr<AudioSender> audio_sender,
-                                base::WeakPtr<VideoSender> video_sender,
-                                uint32 ssrc_of_audio_sender,
-                                uint32 ssrc_of_video_sender)
-      : cast_environment_(cast_environment),
-        audio_sender_(audio_sender),
-        video_sender_(video_sender),
-        ssrc_of_audio_sender_(ssrc_of_audio_sender),
-        ssrc_of_video_sender_(ssrc_of_video_sender) {}
-
-  virtual void ReceivedPacket(const uint8* packet,
-                              size_t length,
-                              const base::Closure callback) OVERRIDE {
-    if (!Rtcp::IsRtcpPacket(packet, length)) {
-      // We should have no incoming RTP packets.
-      // No action; just log and call the callback informing that we are done
-      // with the packet.
-      VLOG(1) << "Unexpectedly received a RTP packet in the cast sender";
-      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
-      return;
-    }
-    uint32 ssrc_of_sender = Rtcp::GetSsrcOfSender(packet, length);
-    if (ssrc_of_sender == ssrc_of_audio_sender_) {
-      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-          base::Bind(&AudioSender::IncomingRtcpPacket, audio_sender_,
-              packet, length, callback));
-    } else if (ssrc_of_sender == ssrc_of_video_sender_) {
-      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-          base::Bind(&VideoSender::IncomingRtcpPacket, video_sender_,
-              packet, length, callback));
-    } else {
-      // No action; just log and call the callback informing that we are done
-      // with the packet.
-      VLOG(1) << "Received a RTCP packet with a non matching sender SSRC "
-              << ssrc_of_sender;
-
-      cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
-    }
+void CastSenderImpl::ReceivedPacket(scoped_ptr<Packet> packet) {
+  DCHECK(cast_environment_);
+  size_t length = packet->size();
+  const uint8_t *data = &packet->front();
+  if (!Rtcp::IsRtcpPacket(data, length)) {
+    // We should have no incoming RTP packets.
+    VLOG(1) << "Unexpectedly received a RTP packet in the cast sender";
+    return;
   }
-
- protected:
-  virtual ~LocalCastSenderPacketReceiver() {}
-
- private:
-  friend class base::RefCountedThreadSafe<LocalCastSenderPacketReceiver>;
-
-  scoped_refptr<CastEnvironment> cast_environment_;
-  base::WeakPtr<AudioSender> audio_sender_;
-  base::WeakPtr<VideoSender> video_sender_;
-  const uint32 ssrc_of_audio_sender_;
-  const uint32 ssrc_of_video_sender_;
-};
-
-CastSender* CastSender::CreateCastSender(
-    scoped_refptr<CastEnvironment> cast_environment,
-    const AudioSenderConfig& audio_config,
-    const VideoSenderConfig& video_config,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    transport::CastTransportSender* const transport_sender) {
-  return new CastSenderImpl(cast_environment, audio_config, video_config,
-                            gpu_factories, transport_sender);
+  uint32 ssrc_of_sender = Rtcp::GetSsrcOfSender(data, length);
+  if (ssrc_of_sender == ssrc_of_audio_sender_) {
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::Bind(&AudioSender::IncomingRtcpPacket,
+                   audio_sender_.AsWeakPtr(),
+                   base::Passed(&packet)));
+  } else if (ssrc_of_sender == ssrc_of_video_sender_) {
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN, FROM_HERE,
+        base::Bind(&VideoSender::IncomingRtcpPacket,
+                   video_sender_.AsWeakPtr(),
+                   base::Passed(&packet)));
+  } else {
+    VLOG(1) << "Received a RTCP packet with a non matching sender SSRC "
+            << ssrc_of_sender;
+  }
 }
-
-CastSenderImpl::CastSenderImpl(
-    scoped_refptr<CastEnvironment> cast_environment,
-    const AudioSenderConfig& audio_config,
-    const VideoSenderConfig& video_config,
-    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    transport::CastTransportSender* const transport_sender)
-    : audio_sender_(cast_environment, audio_config, transport_sender),
-      video_sender_(cast_environment, video_config, gpu_factories,
-                    transport_sender),
-      frame_input_(new LocalFrameInput(cast_environment,
-                                       audio_sender_.AsWeakPtr(),
-                                       video_sender_.AsWeakPtr())),
-      packet_receiver_(new LocalCastSenderPacketReceiver(cast_environment,
-          audio_sender_.AsWeakPtr(), video_sender_.AsWeakPtr(),
-          audio_config.incoming_feedback_ssrc,
-          video_config.incoming_feedback_ssrc)) {}
-
-CastSenderImpl::~CastSenderImpl() {}
 
 scoped_refptr<FrameInput> CastSenderImpl::frame_input() {
   return frame_input_;
 }
 
-scoped_refptr<transport::PacketReceiver> CastSenderImpl::packet_receiver() {
-  return packet_receiver_;
+transport::PacketReceiverCallback CastSenderImpl::packet_receiver() {
+  return base::Bind(&CastSenderImpl::ReceivedPacket,
+                    base::Unretained(this));
 }
 
 }  // namespace cast

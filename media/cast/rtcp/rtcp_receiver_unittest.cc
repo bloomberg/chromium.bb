@@ -226,14 +226,14 @@ TEST_F(RtcpReceiverTest, InjectSenderReportPacket) {
 
   // Expected to be ignored since the sender ssrc does not match our
   // remote ssrc.
-  InjectRtcpPacket(p.Packet(), p.Length());
+  InjectRtcpPacket(p.Data(), p.Length());
 
   EXPECT_CALL(mock_receiver_feedback_,
               OnReceivedSenderReport(expected_sender_info_)).Times(1);
   rtcp_receiver_->SetRemoteSSRC(kSenderSsrc);
 
   // Expected to be pass through since the sender ssrc match our remote ssrc.
-  InjectRtcpPacket(p.Packet(), p.Length());
+  InjectRtcpPacket(p.Data(), p.Length());
 }
 
 TEST_F(RtcpReceiverTest, InjectReceiveReportPacket) {
@@ -243,7 +243,7 @@ TEST_F(RtcpReceiverTest, InjectReceiveReportPacket) {
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
-  InjectRtcpPacket(p1.Packet(), p1.Length());
+  InjectRtcpPacket(p1.Data(), p1.Length());
 
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
@@ -255,7 +255,7 @@ TEST_F(RtcpReceiverTest, InjectReceiveReportPacket) {
   p2.AddRb(kSourceSsrc);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
-  InjectRtcpPacket(p2.Packet(), p2.Length());
+  InjectRtcpPacket(p2.Data(), p2.Length());
 }
 
 TEST_F(RtcpReceiverTest, InjectSenderReportWithReportBlockPacket) {
@@ -267,7 +267,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithReportBlockPacket) {
   // our remote ssrc.
   // Report block expected to be ignored since the source ssrc does not match
   // our local ssrc.
-  InjectRtcpPacket(p1.Packet(), p1.Length());
+  InjectRtcpPacket(p1.Data(), p1.Length());
 
   EXPECT_CALL(mock_receiver_feedback_,
               OnReceivedSenderReport(expected_sender_info_)).Times(1);
@@ -277,7 +277,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithReportBlockPacket) {
   // remote ssrc.
   // Report block expected to be ignored since the source ssrc does not match
   // our local ssrc.
-  InjectRtcpPacket(p1.Packet(), p1.Length());
+  InjectRtcpPacket(p1.Data(), p1.Length());
 
   EXPECT_CALL(mock_receiver_feedback_, OnReceivedSenderReport(_)).Times(0);
   EXPECT_CALL(mock_rtt_feedback_,
@@ -295,7 +295,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithReportBlockPacket) {
   // our remote ssrc.
   // Receiver report expected to be pass through since the sender ssrc match
   // our local ssrc.
-  InjectRtcpPacket(p2.Packet(), p2.Length());
+  InjectRtcpPacket(p2.Data(), p2.Length());
 
   EXPECT_CALL(mock_receiver_feedback_,
               OnReceivedSenderReport(expected_sender_info_)).Times(1);
@@ -310,7 +310,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithReportBlockPacket) {
   // remote ssrc.
   // Receiver report expected to be pass through since the sender ssrc match
   // our local ssrc.
-  InjectRtcpPacket(p2.Packet(), p2.Length());
+  InjectRtcpPacket(p2.Data(), p2.Length());
 }
 
 TEST_F(RtcpReceiverTest, InjectSenderReportPacketWithDlrr) {
@@ -324,7 +324,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportPacketWithDlrr) {
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
-  InjectRtcpPacket(p.Packet(), p.Length());
+  InjectRtcpPacket(p.Data(), p.Length());
 
   EXPECT_CALL(mock_receiver_feedback_,
               OnReceivedSenderReport(expected_sender_info_)).Times(1);
@@ -337,7 +337,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportPacketWithDlrr) {
   rtcp_receiver_->SetRemoteSSRC(kSenderSsrc);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
-  InjectRtcpPacket(p.Packet(), p.Length());
+  InjectRtcpPacket(p.Data(), p.Length());
 }
 
 TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithRrtr) {
@@ -349,7 +349,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithRrtr) {
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
-  InjectRtcpPacket(p1.Packet(), p1.Length());
+  InjectRtcpPacket(p1.Data(), p1.Length());
 
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
@@ -368,7 +368,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithRrtr) {
   p2.AddXrRrtrBlock();
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
-  InjectRtcpPacket(p2.Packet(), p2.Length());
+  InjectRtcpPacket(p2.Data(), p2.Length());
 }
 
 TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithIntraFrameRequest) {
@@ -379,7 +379,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithIntraFrameRequest) {
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
-  InjectRtcpPacket(p1.Packet(), p1.Length());
+  InjectRtcpPacket(p1.Data(), p1.Length());
 
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
@@ -392,7 +392,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithIntraFrameRequest) {
   p2.AddPli(kSenderSsrc, kSourceSsrc);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
-  InjectRtcpPacket(p2.Packet(), p2.Length());
+  InjectRtcpPacket(p2.Data(), p2.Length());
 }
 
 TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastFeedback) {
@@ -403,7 +403,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastFeedback) {
 
   // Expected to be ignored since the source ssrc does not match our
   // local ssrc.
-  InjectRtcpPacket(p1.Packet(), p1.Length());
+  InjectRtcpPacket(p1.Data(), p1.Length());
 
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
@@ -420,7 +420,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastFeedback) {
   p2.AddCast(kSenderSsrc, kSourceSsrc);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
-  InjectRtcpPacket(p2.Packet(), p2.Length());
+  InjectRtcpPacket(p2.Data(), p2.Length());
 }
 
 TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastVerification) {
@@ -445,7 +445,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastVerification) {
   p.AddCast(kSenderSsrc, kSourceSsrc);
 
   // Expected to be pass through since the sender ssrc match our local ssrc.
-  RtcpParser rtcp_parser(p.Packet(), p.Length());
+  RtcpParser rtcp_parser(p.Data(), p.Length());
   rtcp_receiver.IncomingRtcpPacket(&rtcp_parser);
 
   EXPECT_TRUE(sender_feedback_cast_verification.called());
@@ -479,7 +479,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithCastSenderLogVerification) {
     p.AddSenderFrameLog(transport::kRtcpSenderFrameStatusSentToNetwork,
                         kRtpTimestamp + i * 90);
   }
-  RtcpParser rtcp_parser(p.Packet(), p.Length());
+  RtcpParser rtcp_parser(p.Data(), p.Length());
   rtcp_receiver.IncomingRtcpPacket(&rtcp_parser);
 
   EXPECT_TRUE(cast_log_verification.OnReceivedSenderLogCalled());
@@ -530,7 +530,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
       OnReceivedDelaySinceLastReport(kSourceSsrc, kLastSr, kDelayLastSr)).
           Times(1);
 
-  RtcpParser rtcp_parser(p.Packet(), p.Length());
+  RtcpParser rtcp_parser(p.Data(), p.Length());
   rtcp_receiver.IncomingRtcpPacket(&rtcp_parser);
 
   EXPECT_TRUE(cast_log_verification.OnReceivedReceiverLogCalled());
@@ -579,7 +579,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
       OnReceivedDelaySinceLastReport(kSourceSsrc, kLastSr, kDelayLastSr)).
           Times(1);
 
-  RtcpParser rtcp_parser(p.Packet(), p.Length());
+  RtcpParser rtcp_parser(p.Data(), p.Length());
   rtcp_receiver.IncomingRtcpPacket(&rtcp_parser);
 
   EXPECT_TRUE(cast_log_verification.OnReceivedReceiverLogCalled());

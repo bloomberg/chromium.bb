@@ -41,7 +41,7 @@ CastTransportSenderImpl::~CastTransportSenderImpl() {
 }
 
 void CastTransportSenderImpl::SetPacketReceiver(
-    scoped_refptr<PacketReceiver> packet_receiver) {
+    const PacketReceiverCallback& packet_receiver) {
   pacer_.SetPacketReceiver(packet_receiver);
 }
 

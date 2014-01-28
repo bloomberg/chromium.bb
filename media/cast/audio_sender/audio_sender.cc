@@ -134,11 +134,9 @@ void AudioSender::ResendPackets(
                  base::Unretained(this), missing_frames_and_packets));
 }
 
-void AudioSender::IncomingRtcpPacket(const uint8* packet, size_t length,
-                                     const base::Closure callback) {
+void AudioSender::IncomingRtcpPacket(scoped_ptr<Packet> packet) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  rtcp_.IncomingRtcpPacket(packet, length);
-  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
+  rtcp_.IncomingRtcpPacket(&packet->front(), packet->size());
 }
 
 void AudioSender::ScheduleNextRtcpReport() {

@@ -73,20 +73,18 @@ void UpdateCastTransportStatus(transport::CastTransportStatus status) {
 class LoopBackTransport : public transport::PacketSender {
  public:
   explicit LoopBackTransport(scoped_refptr<CastEnvironment> cast_environment)
-      : packet_receiver_(NULL),
-        send_packets_(true),
+      : send_packets_(true),
         drop_packets_belonging_to_odd_frames_(false),
         reset_reference_frame_id_(false),
         cast_environment_(cast_environment) {
   }
 
-  void SetPacketReceiver(transport::PacketReceiver* packet_receiver) {
-    DCHECK(packet_receiver);
+  void SetPacketReceiver(
+      const transport::PacketReceiverCallback& packet_receiver) {
     packet_receiver_ = packet_receiver;
   }
 
   virtual bool SendPacket(const Packet& packet) OVERRIDE {
-    DCHECK(packet_receiver_);
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
     if (!send_packets_) return false;
 
@@ -95,15 +93,12 @@ class LoopBackTransport : public transport::PacketSender {
       if (frame_id % 2 == 1) return true;
     }
 
-    uint8* packet_copy = new uint8[packet.size()];
-    memcpy(packet_copy, packet.data(), packet.size());
-
+    scoped_ptr<Packet> packet_copy(new Packet(packet));
     if (reset_reference_frame_id_) {
       // Reset the is_reference bit in the cast header.
-      packet_copy[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;
+      (*packet_copy)[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;
     }
-    packet_receiver_->ReceivedPacket(packet_copy, packet.size(),
-        base::Bind(transport::PacketReceiver::DeletePacket, packet_copy));
+    packet_receiver_.Run(packet_copy.Pass());
     return true;
   }
 
@@ -120,7 +115,7 @@ class LoopBackTransport : public transport::PacketSender {
   }
 
  private:
-  transport::PacketReceiver* packet_receiver_;
+  transport::PacketReceiverCallback packet_receiver_;
   bool send_packets_;
   bool drop_packets_belonging_to_odd_frames_;
   bool reset_reference_frame_id_;

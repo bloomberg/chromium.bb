@@ -20,26 +20,25 @@ namespace media {
 namespace cast {
 namespace transport {
 
-class MockPacketReceiver : public PacketReceiver {
+class MockPacketReceiver {
  public:
   MockPacketReceiver(const base::Closure& callback)
       : packet_callback_(callback) {
   }
 
-  virtual void ReceivedPacket(const uint8* packet, size_t length,
-                              const base::Closure callback) OVERRIDE {
-    packet_ = std::string(length, '\0');
-    std::copy(packet, packet + length, packet_.begin());
-    callback.Run();
+  void ReceivedPacket(scoped_ptr<Packet> packet) {
+    packet_ = std::string(packet->size(), '\0');
+    std::copy(packet->begin(), packet->end(), packet_.begin());
     packet_callback_.Run();
   }
 
   std::string packet() const { return packet_; }
+  transport::PacketReceiverCallback packet_receiver() {
+    return base::Bind(&MockPacketReceiver::ReceivedPacket,
+                      base::Unretained(this));
+  }
 
  private:
-  friend class base::RefCountedThreadSafe<PacketReceiver>;
-  virtual ~MockPacketReceiver() {}
-
   std::string packet_;
   base::Closure packet_callback_;
 
@@ -77,21 +76,20 @@ TEST(UdpTransport, SendAndReceive) {
   packet.push_back('t');
 
   base::RunLoop run_loop;
-  scoped_refptr<MockPacketReceiver> receiver1 = new MockPacketReceiver(
-      run_loop.QuitClosure());
-  scoped_refptr<MockPacketReceiver> receiver2 = new MockPacketReceiver(
+  MockPacketReceiver receiver1(run_loop.QuitClosure());
+  MockPacketReceiver receiver2(
       base::Bind(&SendPacket, &recv_transport, packet));
-  send_transport.StartReceiving(receiver1);
-  recv_transport.StartReceiving(receiver2);
+  send_transport.StartReceiving(receiver1.packet_receiver());
+  recv_transport.StartReceiving(receiver2.packet_receiver());
 
   send_transport.SendPacket(packet);
   run_loop.Run();
   EXPECT_TRUE(std::equal(packet.begin(),
                          packet.end(),
-                         receiver1->packet().begin()));
+                         receiver1.packet().begin()));
   EXPECT_TRUE(std::equal(packet.begin(),
                          packet.end(),
-                         receiver2->packet().begin()));
+                         receiver2.packet().begin()));
 }
 
 }  // namespace transport

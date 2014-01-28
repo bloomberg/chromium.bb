@@ -50,7 +50,6 @@ UdpTransport::UdpTransport(
       remote_addr_(remote_end_point),
       udp_socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       recv_buf_(new net::IOBuffer(kMaxPacketSize)),
-      packet_receiver_(NULL),
       status_callback_(status_callback),
       weak_factory_(this) {
 }
@@ -58,9 +57,9 @@ UdpTransport::UdpTransport(
 UdpTransport::~UdpTransport() {
 }
 
-void UdpTransport::StartReceiving(PacketReceiver* packet_receiver) {
+void UdpTransport::StartReceiving(
+    const PacketReceiverCallback& packet_receiver) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
-  DCHECK(!packet_receiver_);
 
   packet_receiver_ = packet_receiver;
   udp_socket_->AllowAddressReuse();
@@ -109,12 +108,9 @@ void UdpTransport::OnReceived(int result) {
     return;
   }
   // TODO(hclam): The interfaces should use net::IOBuffer to eliminate memcpy.
-  uint8* data = new uint8[result];
-  memcpy(data, recv_buf_->data(), result);
-  packet_receiver_->ReceivedPacket(
-      data,
-      result,
-      base::Bind(&PacketReceiver::DeletePacket, data));
+  scoped_ptr<Packet> packet(new Packet(recv_buf_->data(),
+                                       recv_buf_->data() + result));
+  packet_receiver_.Run(packet.Pass());
   ReceiveOnePacket();
 }
 

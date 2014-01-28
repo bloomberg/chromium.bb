@@ -33,7 +33,7 @@ class CastTransportSenderImpl : public CastTransportSender {
 
   // CastTransportSender implementation.
   virtual void
-      SetPacketReceiver(scoped_refptr<PacketReceiver> packet_receiver) OVERRIDE;
+      SetPacketReceiver(const PacketReceiverCallback& packet_receiver) OVERRIDE;
 
   virtual void InsertCodedAudioFrame(
       const EncodedAudioFrame* audio_frame,

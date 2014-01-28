@@ -34,8 +34,8 @@ class DummyTransport : public media::cast::transport::CastTransportSender {
 
   // CastTransportSender implementations.
   virtual void SetPacketReceiver(
-      scoped_refptr<
-        media::cast::transport::PacketReceiver> packet_receiver) OVERRIDE {}
+      const media::cast::transport::PacketReceiverCallback& packet_receiver)
+      OVERRIDE {}
   virtual void InsertCodedAudioFrame(
       const media::cast::transport::EncodedAudioFrame* audio_frame,
       const base::TimeTicks& recorded_time) OVERRIDE {}

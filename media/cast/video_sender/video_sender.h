@@ -58,8 +58,7 @@ class VideoSender : public base::NonThreadSafe,
       const base::TimeTicks& capture_time);
 
   // Only called from the main cast thread.
-  void IncomingRtcpPacket(const uint8* packet, size_t length,
-                          const base::Closure callback);
+  void IncomingRtcpPacket(scoped_ptr<Packet> packet);
 
  protected:
   // Protected for testability.

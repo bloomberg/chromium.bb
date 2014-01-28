@@ -283,10 +283,8 @@ int main(int argc, char** argv) {
       video_config,
       transport.get()));
 
-  media::cast::transport::PacketReceiver* packet_receiver =
-      cast_receiver->packet_receiver();
-
-  transport->StartReceiving(packet_receiver);
+  // TODO(hubbe): Make the cast receiver do this automatically.
+  transport->StartReceiving(cast_receiver->packet_receiver());
 
   scoped_refptr<media::cast::ReceiveProcess> receive_process(
       new media::cast::ReceiveProcess(cast_receiver->frame_receiver()));

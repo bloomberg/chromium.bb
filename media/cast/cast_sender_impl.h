@@ -36,17 +36,20 @@ class CastSenderImpl : public CastSender {
   virtual ~CastSenderImpl();
 
   virtual scoped_refptr<FrameInput> frame_input() OVERRIDE;
-  virtual scoped_refptr<transport::PacketReceiver> packet_receiver() OVERRIDE;
+  virtual transport::PacketReceiverCallback packet_receiver() OVERRIDE;
 
  private:
+  void ReceivedPacket(scoped_ptr<Packet> packet);
+
   AudioSender audio_sender_;
   VideoSender video_sender_;
   scoped_refptr<FrameInput> frame_input_;
-  scoped_refptr<transport::PacketReceiver> packet_receiver_;
+  scoped_refptr<CastEnvironment> cast_environment_;
+  const uint32 ssrc_of_audio_sender_;
+  const uint32 ssrc_of_video_sender_;
 };
 
 }  // namespace cast
 }  // namespace media
 
 #endif  // MEDIA_CAST_CAST_SENDER_IMPL_H_
-

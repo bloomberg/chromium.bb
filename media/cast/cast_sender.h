@@ -77,7 +77,7 @@ class CastSender {
 
   // All RTCP packets for the session should be inserted to this object.
   // Can be called from any thread.
-  virtual scoped_refptr<transport::PacketReceiver> packet_receiver() = 0;
+  virtual transport::PacketReceiverCallback packet_receiver() = 0;
 };
 
 }  // namespace cast

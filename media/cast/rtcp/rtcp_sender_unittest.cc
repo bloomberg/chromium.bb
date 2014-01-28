@@ -25,14 +25,12 @@ static const std::string kCName("test@10.1.1.1");
 
 class TestRtcpTransport : public transport::PacedPacketSender {
  public:
-  TestRtcpTransport()
-      : expected_packet_length_(0),
-        packet_count_(0) {
+  TestRtcpTransport() : packet_count_(0) {
   }
 
   virtual bool SendRtcpPacket(const Packet& packet) OVERRIDE {
-    EXPECT_EQ(expected_packet_length_, packet.size());
-    EXPECT_EQ(0, memcmp(expected_packet_, &(packet[0]), packet.size()));
+    EXPECT_EQ(expected_packet_.size(), packet.size());
+    EXPECT_EQ(0, memcmp(expected_packet_.data(), packet.data(), packet.size()));
     packet_count_++;
     return true;
   }
@@ -45,16 +43,14 @@ class TestRtcpTransport : public transport::PacedPacketSender {
     return false;
   }
 
-  void SetExpectedRtcpPacket(const uint8* rtcp_buffer, size_t length) {
-    expected_packet_length_ = length;
-    memcpy(expected_packet_, rtcp_buffer, length);
+  void SetExpectedRtcpPacket(scoped_ptr<Packet> packet) {
+    expected_packet_.swap(*packet);
   }
 
   int packet_count() const { return packet_count_; }
 
  private:
-  uint8 expected_packet_[kMaxIpPacketSize];
-  size_t expected_packet_length_;
+  Packet expected_packet_;
   int packet_count_;
 };
 
@@ -85,7 +81,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   TestRtcpPacketBuilder p1;
   p1.AddRr(kSendingSsrc, 0);
   p1.AddSdesCname(kSendingSsrc, kCName);
-  test_transport_.SetExpectedRtcpPacket(p1.Packet(), p1.Length());
+  test_transport_.SetExpectedRtcpPacket(p1.GetPacket());
 
   rtcp_sender_->SendRtcpFromRtpReceiver(RtcpSender::kRtcpRr,
       NULL, NULL, NULL, NULL);
@@ -97,7 +93,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   p2.AddRr(kSendingSsrc, 1);
   p2.AddRb(kMediaSsrc);
   p2.AddSdesCname(kSendingSsrc, kCName);
-  test_transport_.SetExpectedRtcpPacket(p2.Packet(), p2.Length());
+  test_transport_.SetExpectedRtcpPacket(p2.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
@@ -124,7 +120,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtr) {
   p.AddSdesCname(kSendingSsrc, kCName);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
@@ -158,7 +154,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
   p.AddRb(kMediaSsrc);
   p.AddSdesCname(kSendingSsrc, kCName);
   p.AddCast(kSendingSsrc, kMediaSsrc);
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
@@ -200,7 +196,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
   p.AddCast(kSendingSsrc, kMediaSsrc);
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
@@ -250,7 +246,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
   p.AddCast(kSendingSsrc, kMediaSsrc);
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
@@ -298,7 +294,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
   p.AddReceiverEventLog(kLostPacketId1, 8, kTimeDelayMs);
 
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
   RtcpReceiverEventLogMessage event_log;
@@ -364,7 +360,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
         kLostPacketId1, 8, static_cast<uint16>(kTimeDelayMs * i));
   }
 
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   RtcpReceiverFrameLogMessage frame_1_log(kRtpTimestamp);
   RtcpReceiverEventLogMessage event_log;
@@ -431,7 +427,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
     p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs +  i * kTimeDelayMs);
     p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
   }
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   RtcpReceiverLogMessage receiver_log;
 
