@@ -211,13 +211,7 @@ sdk_build_init() {
     export ANDROID_SDK_BUILD_TOOLS_VERSION=19.0.0
   fi
 
-  unset ANDROID_BUILD_TOP
-
-  # Set default target.
-  export TARGET_PRODUCT="${TARGET_PRODUCT:-trygon}"
-
-  # Unset toolchain so that it can be set based on TARGET_PRODUCT.
-  # This makes it easy to switch between architectures.
+  # Unset toolchain. This makes it easy to switch between architectures.
   unset ANDROID_TOOLCHAIN
 
   common_vars_defines
