@@ -33,7 +33,7 @@ IPC_ENUM_TRAITS(content::SecurityStyle)
 IPC_ENUM_TRAITS(blink::WebReferrerPolicy)
 IPC_ENUM_TRAITS(WindowOpenDisposition)
 IPC_ENUM_TRAITS(webkit_glue::EditingBehavior)
-IPC_ENUM_TRAITS(net::RequestPriority)
+IPC_ENUM_TRAITS_MAX_VALUE(net::RequestPriority, net::MAXIMUM_PRIORITY)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
   IPC_STRUCT_TRAITS_MEMBER(x)
