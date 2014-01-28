@@ -8,7 +8,7 @@
   </outputs>
   <release seq="1">
     <structures>
-      <if expr="is_posix and not is_macosx and not is_ios">
+      <if expr="not is_win and not is_macosx and not is_ios">
         <structure name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="chrome_html" />
       </if>
       <if expr="is_macosx or is_ios">
