@@ -207,6 +207,7 @@ devsite:
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/devsite."
 
 chromesite:
+	-rm $(CHROMESITE_BUILDDIR)/.buildinfo
 	doxygen/generate_docs.py $(CHROMESITE_BUILDDIR)
 	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(CHROMESITE_BUILDDIR)
 	rm -rf $(CHROMESITE_BUILDDIR)/images

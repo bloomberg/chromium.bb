@@ -18,7 +18,7 @@ namespace pp {
 class InstanceHandle;
 
 /// A 16 bit stereo AudioConfig resource. Refer to the
-/// <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Audio
+/// <a href="/native-client/devguide/coding/audio.html">Audio
 /// </a>chapter in the Developer's Guide for information on using this
 /// interface.
 ///

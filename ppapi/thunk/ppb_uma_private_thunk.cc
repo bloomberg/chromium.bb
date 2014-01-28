@@ -1,17 +1,15 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_uma_private.idl modified Mon Nov 18 14:39:43 2013.
+// From private/ppb_uma_private.idl modified Fri Jan 24 13:23:21 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_uma_singleton_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -76,7 +74,7 @@ const PPB_UMA_Private_0_2 g_ppb_uma_private_thunk_0_2 = {
 
 }  // namespace
 
-const PPB_UMA_Private_0_2* GetPPB_UMA_Private_0_2_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_UMA_Private_0_2* GetPPB_UMA_Private_0_2_Thunk() {
   return &g_ppb_uma_private_thunk_0_2;
 }
 

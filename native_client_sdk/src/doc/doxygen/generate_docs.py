@@ -102,6 +102,46 @@ def CheckoutPepperDocs(branch, doc_dirname):
   subprocess.check_call(cmd)
 
 
+def FixPepperDocLinks(doc_dirname):
+  # TODO(binji): We can remove this step when the correct links are in the
+  # stable branch.
+  Trace('Looking for links to fix in Pepper headers...')
+  for root, dirs, filenames in os.walk(doc_dirname):
+    # Don't recurse into .svn
+    if '.svn' in dirs:
+      dirs.remove('.svn')
+
+    for filename in filenames:
+      header_filename = os.path.join(root, filename)
+      Trace('  Checking file %r...' % header_filename)
+      replacements = {
+        '<a href="/native-client/{{pepperversion}}/devguide/coding/audio">':
+            '<a href="/native-client/devguide/coding/audio.html">',
+        '<a href="/native-client/devguide/coding/audio">':
+            '<a href="/native-client/devguide/coding/audio.html">',
+        '<a href="/native-client/{{pepperversion}}/pepperc/globals_defs"':
+            '<a href="globals_defs.html"',
+        '<a href="../pepperc/ppb__image__data_8h.html">':
+            '<a href="../c/ppb__image__data_8h.html">'}
+
+      with open(header_filename) as f:
+        lines = []
+        replaced = False
+        for line in f:
+          for find, replace in replacements.iteritems():
+            pos = line.find(find)
+            if pos != -1:
+              Trace('    Found %r...' % find)
+              replaced = True
+              line = line[:pos] + replace + line[pos + len(find):]
+          lines.append(line)
+
+      if replaced:
+        Trace('  Writing new file.')
+        with open(header_filename, 'w') as f:
+          f.writelines(lines)
+
+
 def GenerateCHeaders(pepper_version, doc_dirname):
   script = os.path.join(os.pardir, 'generators', 'generator.py')
   cwd = os.path.join(doc_dirname, 'api')
@@ -171,6 +211,7 @@ def GenerateDocs(root_dirname, channel, pepper_version, branch):
     doxyfile_dirname = tempfile.mkdtemp(prefix='%s_doxyfiles' % pepper_dirname)
 
     CheckoutPepperDocs(branch, svn_dirname)
+    FixPepperDocLinks(svn_dirname)
     GenerateCHeaders(pepper_version, svn_dirname)
 
     doxyfile_c = ''

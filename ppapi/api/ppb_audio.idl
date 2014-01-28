@@ -33,7 +33,7 @@ typedef void PPB_Audio_Callback([out] mem_t sample_buffer,
 /**
  * The <code>PPB_Audio</code> interface contains pointers to several functions
  * for handling audio resources. Refer to the
- * <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Audio</a>
+ * <a href="/native-client/devguide/coding/audio.html">Audio</a>
  * chapter in the Developer's Guide for information on using this interface.
  * Please see descriptions for each <code>PPB_Audio</code> and
  * <code>PPB_AudioConfig</code> function for more details. A C example using

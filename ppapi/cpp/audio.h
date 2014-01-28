@@ -19,7 +19,7 @@ namespace pp {
 class InstanceHandle;
 
 /// An audio resource. Refer to the
-/// <a href="/native-client/devguide/coding/audio">Audio</a>
+/// <a href="/native-client/devguide/coding/audio.html">Audio</a>
 /// chapter in the Developer's Guide for information on using this interface.
 class Audio : public Resource {
  public:
