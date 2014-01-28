@@ -2807,6 +2807,10 @@ class SignerResultsStage(ArchivingStage):
   # If the signing takes longer than 30 minutes, abort.
   SIGNING_TIMEOUT = 1800
 
+  def __init__(self, *args, **kwargs):
+    super(SignerResultsStage, self).__init__(*args, **kwargs)
+    self.final_results = {}
+
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
     # This stage is experimental, don't trust it yet.
@@ -2814,6 +2818,81 @@ class SignerResultsStage(ArchivingStage):
       return self._HandleExceptionAsWarning(exception)
 
     return super(SignerResultsStage, self)._HandleStageException(exception)
+
+
+  def _JsonFromUrl(self, gs_ctx, url):
+    """Fetch a GS Url, and parse it as Json.
+
+    Args:
+      gs_ctx: GS Context.
+      url: Url to fetch and parse.
+
+    Returns:
+      None if the Url doesn't exist.
+      Parsed Json structure if it did.
+
+    Raises:
+      MalformedResultsException if it failed to parse.
+    """
+    try:
+      signer_txt = gs_ctx.Cat(url).output
+    except gs.GSNoSuchKey:
+      return None
+
+    try:
+      return json.loads(signer_txt)
+    except ValueError:
+      # We should never see malformed Json, even for intermediate statuses.
+      raise MalformedResultsException(signer_txt)
+
+  def _SigningStatusFromJson(self, signer_json):
+    """Extract a signing status from a signer result Json DOM.
+
+    Args:
+      signer_json: The parsed json status from a signer operation.
+
+    Returns:
+      string with a simple status: 'passed', 'failed', 'downloading', etc,
+      or '' if the json doesn't contain a status.
+    """
+    return signer_json.get('status', {}).get('status', '')
+
+  def _CheckForResults(self, gs_ctx, result_urls):
+    """timeout_util.WaitForSuccess func to check a list of signer results.
+
+    Args:
+      gs_ctx: Google Storage Context.
+      result_urls: Urls of the signer result files we're expecting.
+
+    Returns:
+      Number of results not yet collected.
+    """
+    COMPLETED_STATUS = ('passed', 'failed')
+
+    for url in result_urls:
+      # We already have a result for this URL.
+      if url in self.final_results:
+        continue
+
+      signer_json = self._JsonFromUrl(gs_ctx, url)
+      if self._SigningStatusFromJson(signer_json) in COMPLETED_STATUS:
+        # If we find a completed result, remember it.
+        self.final_results[url] = signer_json
+
+    # How many results are we still waiting on?
+    remaining = len(result_urls) - len(self.final_results)
+    return remaining
+
+  def _Retry(self, remaining):
+    """Should timeout_util.WaitForSuccess, try again?
+
+    Args:
+      remaining: number of incomplete signing operations.
+
+    Returns:
+      True to keep trying, False if we have all results.
+    """
+    return remaining > 0
 
   def PerformStage(self):
     """Do the work of waiting for signer results and logging them.
@@ -2830,7 +2909,6 @@ class SignerResultsStage(ArchivingStage):
 
     # We will want seperate parallel handling for each channel in time, but for
     # now, just lump all of the channels together.
-
     result_urls = [
         '%s.json' % url for url in
         cros_build_lib.iflatten_instance(instruction_urls_per_channel.values())]
@@ -2839,7 +2917,9 @@ class SignerResultsStage(ArchivingStage):
 
     try:
       cros_build_lib.Info('Waiting for signer results.')
-      gs_ctx.WaitForGsPaths(result_urls, timeout=self.SIGNING_TIMEOUT)
+      timeout_util.WaitForSuccess(self._Retry, self._CheckForResults,
+                                  func_args=(gs_ctx, result_urls),
+                                  timeout=self.SIGNING_TIMEOUT, period=30)
     except timeout_util.TimeoutError:
       msg = 'Image signing timed out.'
       cros_build_lib.Error(msg)
@@ -2848,19 +2928,14 @@ class SignerResultsStage(ArchivingStage):
 
     # Log all signer results, then handle any signing failures.
     failures = []
-    for url in result_urls:
-      json_txt = gs_ctx.Cat(url).output
-      try:
-        signer_result = json.loads(json_txt)
-      except ValueError:
-        raise MalformedResultsException(json_txt)
-
+    for url, signer_result in self.final_results.iteritems():
       result_description = os.path.basename(url)
       cros_build_lib.PrintBuildbotStepText(result_description)
       cros_build_lib.Info('Received results for: %s', result_description)
       cros_build_lib.Info(json.dumps(signer_result, indent=4))
 
-      if signer_result.get('status', {}).get('status') != 'passed':
+      status = self._SigningStatusFromJson(signer_result)
+      if status != 'passed':
         failures.append(result_description)
         cros_build_lib.Error('Signing failed for: %s', result_description)
 
