@@ -492,7 +492,6 @@ AC_CONFIG_FILES([Makefile
 		 src/version.h
 		 src/weston.pc
 		 clients/Makefile
-		 wcap/Makefile
 		 protocol/Makefile
 		 man/Makefile
 		 tests/Makefile])

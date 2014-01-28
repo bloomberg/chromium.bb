@@ -1,10 +1,8 @@
-if BUILD_WCAP_TOOLS
-wcap_subdir = wcap
-endif
-
 if ENABLE_XWAYLAND
 xwayland_subdir = xwayland
 endif
+
+bin_PROGRAMS =
 
 SUBDIRS =					\
 	shared					\
@@ -14,7 +12,6 @@ SUBDIRS =					\
 	clients					\
 	protocol				\
 	tests					\
-	$(wcap_subdir)				\
 	man
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
@@ -44,3 +41,16 @@ dist_westondata_DATA =				\
 	data/sign_close.png			\
 	data/sign_maximize.png			\
 	data/sign_minimize.png
+
+
+if BUILD_WCAP_TOOLS
+bin_PROGRAMS += wcap-decode
+
+wcap_decode_SOURCES =				\
+	wcap/main.c				\
+	wcap/wcap-decode.c			\
+	wcap/wcap-decode.h
+
+wcap_decode_CFLAGS = $(GCC_CFLAGS) $(WCAP_CFLAGS)
+wcap_decode_LDADD = $(WCAP_LIBS)
+endif
