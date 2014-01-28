@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -77,6 +78,7 @@ class MockPrefHashStore : public PrefHashStore {
   }
 
   // PrefHashStore implementation.
+  virtual bool IsInitialized() const OVERRIDE;
   virtual PrefHashStore::ValueState CheckValue(
       const std::string& path, const base::Value* value) const OVERRIDE;
   virtual void StoreHash(const std::string& path,
@@ -93,6 +95,11 @@ class MockPrefHashStore : public PrefHashStore {
 void MockPrefHashStore::SetCheckResult(
     const std::string& path, PrefHashStore::ValueState result) {
   check_results_.insert(std::make_pair(path, result));
+}
+
+bool MockPrefHashStore::IsInitialized() const {
+  NOTREACHED();
+  return true;
 }
 
 PrefHashStore::ValueState MockPrefHashStore::CheckValue(
