@@ -4133,7 +4133,7 @@ void RenderBlock::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidt
                 t->trimmedPrefWidths(inlineMax,
                     firstLineMinWidth, hasBreakableStart, lastLineMinWidth, hasBreakableEnd,
                     hasBreakableChar, hasBreak, firstLineMaxWidth, lastLineMaxWidth,
-                    childMin, childMax, stripFrontSpaces);
+                    childMin, childMax, stripFrontSpaces, styleToUse->direction());
 
                 // This text object will not be rendered, but it may still provide a breaking opportunity.
                 if (!hasBreak && childMax == 0) {

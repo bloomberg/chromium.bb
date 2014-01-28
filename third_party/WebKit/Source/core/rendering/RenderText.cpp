@@ -777,7 +777,8 @@ void RenderText::trimmedPrefWidths(float leadWidth,
     float& lastLineMinWidth, bool& hasBreakableEnd,
     bool& hasBreakableChar, bool& hasBreak,
     float& firstLineMaxWidth, float& lastLineMaxWidth,
-    float& minWidth, float& maxWidth, bool& stripFrontSpaces)
+    float& minWidth, float& maxWidth, bool& stripFrontSpaces,
+    TextDirection direction)
 {
     bool collapseWhiteSpace = style()->collapseWhiteSpace();
     if (!collapseWhiteSpace)
@@ -817,7 +818,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         const Font& font = style()->font(); // FIXME: This ignores first-line.
         if (stripFrontSpaces) {
             const UChar space = ' ';
-            float spaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, &space, 1, style(), LTR));
+            float spaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, &space, 1, style(), direction));
             maxWidth -= spaceWidth;
         } else {
             maxWidth += font.wordSpacing();
@@ -841,7 +842,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
                 linelen++;
 
             if (linelen) {
-                lastLineMaxWidth = widthFromCache(f, i, linelen, leadWidth + lastLineMaxWidth, LTR, 0, 0);
+                lastLineMaxWidth = widthFromCache(f, i, linelen, leadWidth + lastLineMaxWidth, direction, 0, 0);
                 if (firstLine) {
                     firstLine = false;
                     leadWidth = 0;

@@ -95,7 +95,8 @@ public:
         float& lastLineMinWidth, bool& hasBreakableEnd,
         bool& hasBreakableChar, bool& hasBreak,
         float& firstLineMaxWidth, float& lastLineMaxWidth,
-        float& minWidth, float& maxWidth, bool& stripFrontSpaces);
+        float& minWidth, float& maxWidth, bool& stripFrontSpaces,
+        TextDirection);
 
     virtual IntRect linesBoundingBox() const;
     LayoutRect linesVisualOverflowBoundingBox() const;
