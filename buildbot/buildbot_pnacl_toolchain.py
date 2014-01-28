@@ -66,7 +66,7 @@ toolchain_build_cmd = [
     sys.executable,
     os.path.join(
         NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
-    '--verbose', '--sync', '--clobber']
+    '--verbose', '--sync', '--clobber', '--build-64bit-host']
 
 # Sync the git repos used by build.sh
 with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):

@@ -283,7 +283,8 @@ def HostTools(host):
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(command.path.join('%(abs_output)s', dir))
-               for dir in ('arm-pc-nacl', 'lib', 'lib32')]
+               for dir in ('arm-pc-nacl', 'lib', 'lib32')] +
+              [command.SkipForIncrementalCommand(MakeCommand(host) + ['check'])]
           },
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
@@ -306,7 +307,9 @@ def HostTools(host):
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
                   'all']),
-              command.Command(MAKE_DESTDIR_CMD + ['install'])] +
+              command.Command(MAKE_DESTDIR_CMD + ['install']),
+              command.SkipForIncrementalCommand(MakeCommand(host) +
+                                                ['check-all'])] +
               CopyWindowsHostLibs(host),
       },
       H('driver'): {
@@ -420,11 +423,18 @@ if __name__ == '__main__':
   # This sets the logging for gclient-alike repo sync. It will be overridden
   # by the package builder based on the command-line flags.
   logging.getLogger().setLevel(logging.DEBUG)
-  parser = argparse.ArgumentParser()
+  parser = argparse.ArgumentParser(add_help=False)
   parser.add_argument('--legacy-repo-sync', action='store_true',
                       dest='legacy_repo_sync', default=False,
                       help='Sync the git repo directories used by build.sh')
+  parser.add_argument('--build-64bit-host', action='store_true',
+                      dest='build_64bit_host', default=False,
+                      help='Build 64-bit Linux host binaries in addition to 32')
   args, leftover_args = parser.parse_known_args()
+  if '-h' in leftover_args or '--help' in leftover_args:
+    print 'The following arguments are specific to toolchain_build_pnacl.py:'
+    parser.print_help()
+    print 'The rest of the arguments are generic, in toolchain_main.py'
   revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)
   if args.legacy_repo_sync:
     SyncPNaClRepos(revisions)
@@ -437,7 +447,9 @@ if __name__ == '__main__':
   packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
 
   if platform_tools.Is64BitLinux():
-    hosts = ['i686-linux', NativeTriple()]
+    hosts = ['i686-linux']
+    if args.build_64bit_host:
+      hosts.append(NativeTriple())
   else:
     hosts = [NativeTriple()]
   if platform_tools.IsLinux() and BUILD_CROSS_MINGW:
