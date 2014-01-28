@@ -89,6 +89,6 @@ component("ssl") {
     configs += [ "//third_party/nss:nss_linux_config" ]
   }
   if (is_mac) {
-    sources -= "ssl/bodge/secitem_array.c"
+    sources -= [ "ssl/bodge/secitem_array.c" ]
   }
 }

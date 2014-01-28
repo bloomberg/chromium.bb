@@ -420,7 +420,7 @@ config("chromium_code") {
     # TODO(brettw) this should also be enabled on Linux but some files
     # currently fail.
     if (is_mac) {
-      cflags += "-Wextra"
+      cflags += [ "-Wextra" ]
     }
   }
 }

@@ -64,14 +64,14 @@ toolchain("32") {
     rspfile_content = "\$in_newline \$libflags"
   }
   tool("solink") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 cmd /c if exist \$dll.manifest del \$dll.manifest && $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
+    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x86 False link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 cmd /c if exist \$dll.manifest del \$dll.manifest && $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
     description = "LINK(DLL) \$dll"
     restat = "1"
     rspfile = "\$dll.rsp"
     rspfile_content = "\$libs \$in_newline \$ldflags"
   }
   tool("link") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x86 link.exe /nologo /OUT:\$out /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 cmd /c if exist \$out.manifest del \$out.manifest && $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$out.manifest"
+    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x86 False link.exe /nologo /OUT:\$out /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 cmd /c if exist \$out.manifest del \$out.manifest && $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$out.manifest"
     description = "LINK \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$in_newline \$libs \$ldflags"
@@ -117,20 +117,20 @@ toolchain("64") {
     description = "ASM \$in"
   }
   tool("alink") {
-    command = "$python_path gyp-win-tool link-wrapper environment.x64 lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
+    command = "$python_path gyp-win-tool link-wrapper environment.x64 False lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
     description = "LIB \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$in_newline \$libflags"
   }
   tool("solink") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 cmd /c if exist \$dll.manifest del \$dll.manifest && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
+    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 False link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 cmd /c if exist \$dll.manifest del \$dll.manifest && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
     description = "LINK(DLL) \$dll"
     restat = "1"
     rspfile = "\$dll.rsp"
     rspfile_content = "\$libs \$in_newline \$ldflags"
   }
   tool("link") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 link.exe /nologo /OUT:\$out /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 cmd /c if exist \$out.manifest del \$out.manifest && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$out.manifest"
+    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 False link.exe /nologo /OUT:\$out /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 cmd /c if exist \$out.manifest del \$out.manifest && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$out.manifest"
     description = "LINK \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$in_newline \$libs \$ldflags"

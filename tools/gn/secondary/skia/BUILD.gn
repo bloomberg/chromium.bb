@@ -1232,7 +1232,7 @@ if (component_mode == "static_library") {
     }
 
     if (skia_support_pdf) {
-      deps += "//third_party/sfntly"
+      deps += [ "//third_party/sfntly" ]
     }
   }
 }

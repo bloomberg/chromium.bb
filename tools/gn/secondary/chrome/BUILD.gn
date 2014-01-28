@@ -152,7 +152,7 @@ source_set("debugger") {
       "browser/devtools/devtools_window.cc",
       "browser/devtools/remote_debugging_server.cc",
     ]
-    deps -= "//third_party/libusb"
+    deps -= [ "//third_party/libusb" ]
   }
 
   # TODO implement debug_devtools
