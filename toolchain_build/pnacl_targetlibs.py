@@ -441,15 +441,7 @@ def NativeLibs(host, arch):
                   PnaclTool('ar'), 'rc',
                   command.path.join('%(output)s', 'libcrt_platform.a'),
                   '*.o']), shell=True),
-          ],
-      },
-      Mangle('dummy_irt_shim', arch): {
-          'type': 'build',
-          'dependencies': [ 'newlib', H('llvm'), H('binutils_pnacl')],
-          'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
-                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver') },
-          'commands':
-              CopyDriverForTargetLib(host) + [
+              # Dummy IRT shim
               BuildTargetNativeCmd('dummy_shim_entry.c', 'dummy_shim_entry.o',
                                    arch),
               command.Command([PnaclTool('ar'), 'rc',
