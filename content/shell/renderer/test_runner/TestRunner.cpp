@@ -279,6 +279,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setShouldStayOnPageAfterHandlingBeforeUnload", &TestRunner::setShouldStayOnPageAfterHandlingBeforeUnload);
     bindMethod("setWillSendRequestClearHeader", &TestRunner::setWillSendRequestClearHeader);
     bindMethod("dumpResourceRequestPriorities", &TestRunner::dumpResourceRequestPriorities);
+    bindMethod("setUseMockTheme", &TestRunner::setUseMockTheme);
 
     // The following methods interact with the WebTestProxy.
     // The following methods interact with the WebTestDelegate.
@@ -451,7 +452,7 @@ void TestRunner::reset()
     m_webPermissions->reset();
 
     m_notificationPresenter->reset();
-
+    m_useMockTheme = true;
     m_pointerLocked = false;
     m_pointerLockPlannedResult = PointerLockWillSucceed;
 
@@ -1478,6 +1479,12 @@ void TestRunner::dumpResourceRequestPriorities(const CppArgumentList& arguments,
 {
     m_shouldDumpResourcePriorities = true;
     result->setNull();
+}
+
+void TestRunner::setUseMockTheme(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+    m_useMockTheme = arguments.size() < 1 || arguments[0].toBoolean();
 }
 
 void TestRunner::useUnfortunateSynchronousResizeMode(const CppArgumentList& arguments, CppVariant* result)

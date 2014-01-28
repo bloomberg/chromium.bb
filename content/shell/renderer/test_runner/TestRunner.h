@@ -84,6 +84,8 @@ public:
     void setTestIsRunning(bool);
     bool testIsRunning() const { return m_testIsRunning; }
 
+    bool useMockTheme() const { return m_useMockTheme; }
+
     // WebTestRunner implementation.
     virtual bool shouldGeneratePixelResults() OVERRIDE;
     virtual bool shouldDumpAsAudio() const OVERRIDE;
@@ -432,6 +434,9 @@ private:
     // changes. It takes no arguments, and ignores any that may be present.
     void dumpResourceRequestPriorities(const CppArgumentList&, CppVariant*);
 
+    // Sets a flag to enable the mock theme.
+    void setUseMockTheme(const CppArgumentList&, CppVariant*);
+
     ///////////////////////////////////////////////////////////////////////////
     // Methods interacting with the WebTestProxy
 
@@ -720,6 +725,7 @@ private:
         PointerLockWillRespondAsync,
         PointerLockWillFailSync,
     } m_pointerLockPlannedResult;
+    bool m_useMockTheme;
 };
 
 }
