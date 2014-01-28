@@ -20,6 +20,10 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 g_temp_dirs = []
 
 
+sys.path.append(os.path.join(BASEDIR, '..'))
+import download_from_google_storage
+
+
 def GetLongPathName(path):
   """Converts any 8dot3 names in the path to the full name."""
   buf = ctypes.create_unicode_buffer(260)
@@ -56,7 +60,9 @@ def DeleteAllTempDirs():
 def GetIsoUrl(pro):
   """Gets the .iso URL.
 
-  If |pro| is False, downloads the Express edition.
+  If |pro| is False, downloads the Express edition. If |CHROME_HEADLESS| is
+  set in the environment, then we assume we're on an internal bot, and download
+  from internal google storage instead.
   """
   prefix = 'http://download.microsoft.com/download/'
   if pro:
@@ -153,6 +159,31 @@ def DownloadSDK8():
   raise SystemExit("After multiple retries, couldn't download Win8 SDK")
 
 
+def DownloadUsingGsutil(filename):
+  """Downloads the given file from Google Storage chrome-wintoolchain bucket."""
+  temp_dir = TempDir()
+  assert os.path.basename(filename) == filename
+  target_path = os.path.join(temp_dir, filename)
+  gsutil = download_from_google_storage.Gsutil(
+      download_from_google_storage.GSUTIL_DEFAULT_PATH, boto_path=None)
+  code = gsutil.call('cp', 'gs://chrome-wintoolchain/' + filename, target_path)
+  if code != 0:
+    raise SystemExit('gsutil failed')
+  return target_path
+
+
+def GetVSInternal():
+  """Uses gsutil to pull the toolchain from internal Google Storage bucket."""
+  return DownloadUsingGsutil('VS2013_RTM_PRO_ENU.iso')
+
+
+def GetSDKInternal():
+  """Downloads a zipped copy of the SDK from internal Google Storage bucket,
+  and extracts it."""
+  zip_file = DownloadUsingGsutil('Standalone.zip')
+  return ExtractIso(zip_file)
+
+
 class SourceImages(object):
   def __init__(self, vs_path, sdk8_path):
     self.vs_path = vs_path
@@ -161,7 +192,9 @@ class SourceImages(object):
 
 def GetSourceImages(local_dir, pro):
   url = GetIsoUrl(pro)
-  if local_dir:
+  if os.environ.get('CHROME_HEADLESS'):
+    return SourceImages(GetVSInternal(), GetSDKInternal())
+  elif local_dir:
     return SourceImages(os.path.join(local_dir, os.path.basename(url)),
                         os.path.join(local_dir, 'Standalone'))
   else:
