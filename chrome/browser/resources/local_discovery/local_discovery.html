@@ -23,7 +23,6 @@
     <div class="overlay" id="overlay" hidden>
       <div id="register-overlay" class="page">
         <div class="close-button"></div>
-
         <div id="register-page-confirm" class="register-page">
           <h1 i18n-content="confirmRegistration"></h1>
           <div class="dialog-contents">
@@ -31,6 +30,13 @@
             </div>
 
             <div class="button-list">
+              <div id="register-overlay-login-promo"
+                   class="inline-login-promo"
+                   hidden>
+                <span i18n-content="registerNeedLogin"></span>
+                <button class="link-button" id="register-overlay-login-button"
+                        i18n-content="cloudDevicesLogin"></button>
+              </div>
               <button class="register-cancel" i18n-content="cancel"></button>
               <button id="register-continue-button"
                       i18n-content="serviceRegister">

@@ -35,7 +35,8 @@ cr.define('local_discovery', function() {
     MANAGE_CLICKED: 9,
     REGISTER_CANCEL_ON_PRINTER: 10,
     REGISTER_TIMEOUT: 11,
-    MAX_EVENT: 12,
+    LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO: 12,
+    MAX_EVENT: 13,
   };
 
   /**
@@ -486,7 +487,8 @@ cr.define('local_discovery', function() {
     isUserLoggedIn = userLoggedIn;
 
     $('cloud-devices-login-promo').hidden = isUserLoggedIn;
-
+    $('register-overlay-login-promo').hidden = isUserLoggedIn;
+    $('register-continue-button').disabled = !isUserLoggedIn;
 
     if (isUserLoggedIn) {
       requestPrinterList();
@@ -511,6 +513,12 @@ cr.define('local_discovery', function() {
 
   function registerLoginButtonClicked() {
     recordUmaEvent(DEVICES_PAGE_EVENTS.LOG_IN_STARTED_FROM_REGISTER_PROMO);
+    openSignInPage();
+  }
+
+  function registerOverlayLoginButtonClicked() {
+    recordUmaEvent(
+      DEVICES_PAGE_EVENTS.LOG_IN_STARTED_FROM_REGISTER_OVERLAY_PROMO);
     openSignInPage();
   }
 
@@ -591,6 +599,10 @@ cr.define('local_discovery', function() {
     $('register-login-button').addEventListener(
       'click',
       registerLoginButtonClicked);
+
+    $('register-overlay-login-button').addEventListener(
+      'click',
+      registerOverlayLoginButtonClicked);
 
     updateVisibility();
     document.addEventListener('visibilitychange', updateVisibility, false);
