@@ -3,12 +3,14 @@ xwayland_subdir = xwayland
 endif
 
 bin_PROGRAMS =
+moduledir = $(libdir)/weston
+module_LTLIBRARIES =
+BUILT_SOURCES =
 
 SUBDIRS =					\
 	shared					\
 	src					\
 	$(xwayland_subdir)			\
-	desktop-shell				\
 	clients					\
 	protocol				\
 	tests					\
@@ -27,7 +29,7 @@ weston.ini : $(srcdir)/weston.ini.in
 
 all-local : weston.ini
 
-CLEANFILES = weston.ini
+CLEANFILES = weston.ini $(BUILT_SOURCES)
 
 
 westondatadir = $(datadir)/weston
@@ -54,3 +56,42 @@ wcap_decode_SOURCES =				\
 wcap_decode_CFLAGS = $(GCC_CFLAGS) $(WCAP_CFLAGS)
 wcap_decode_LDADD = $(WCAP_LIBS)
 endif
+
+
+if ENABLE_DESKTOP_SHELL
+
+module_LTLIBRARIES += desktop-shell.la
+
+desktop_shell_la_CPPFLAGS =			\
+	-I$(top_srcdir)/shared			\
+	-I$(top_srcdir)/src			\
+	-I$(top_builddir)/src			\
+	-I$(top_builddir)/desktop-shell		\
+	-DDATADIR='"$(datadir)"'		\
+	-DMODULEDIR='"$(moduledir)"'		\
+	-DLIBEXECDIR='"$(libexecdir)"'		\
+	-DIN_WESTON
+
+desktop_shell_la_LDFLAGS = -module -avoid-version
+desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
+	shared/libshared.la
+desktop_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+desktop_shell_la_SOURCES =				\
+	desktop-shell/shell.h				\
+	desktop-shell/shell.c				\
+	desktop-shell/exposay.c				\
+	desktop-shell/input-panel.c			\
+	desktop-shell/desktop-shell-protocol.c		\
+	desktop-shell/desktop-shell-server-protocol.h	\
+	desktop-shell/xdg-shell-protocol.c		\
+	desktop-shell/xdg-shell-server-protocol.h
+
+BUILT_SOURCES +=					\
+	desktop-shell/desktop-shell-protocol.c		\
+	desktop-shell/desktop-shell-server-protocol.h	\
+	desktop-shell/xdg-shell-protocol.c		\
+	desktop-shell/xdg-shell-server-protocol.h
+endif
+
+wayland_protocoldir = $(top_srcdir)/protocol
+include $(top_srcdir)/wayland-scanner.mk

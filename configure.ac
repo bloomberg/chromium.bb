@@ -488,7 +488,6 @@ AC_CONFIG_FILES([Makefile
 		 shared/Makefile
 		 src/Makefile
 		 xwayland/Makefile
-		 desktop-shell/Makefile
 		 src/version.h
 		 src/weston.pc
 		 clients/Makefile
