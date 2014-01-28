@@ -1046,6 +1046,38 @@ class SignerResultsStageTest(AbstractStageTest):
         mock_gs_ctx.WaitForGsPaths.assert_called_once_with(results,
                                                            timeout=1800)
 
+  def testPerformStageUnexpectedJson(self):
+    """Test that SignerResultsStage errors when the signers report an error."""
+    insns = { 'chan1': ['chan1_uri1'] }
+    results = ['chan1_uri1.json']
+
+    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
+      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+        mock_gs_ctx = mock_gs_ctx_init.return_value
+        mock_gs_ctx.WaitForGsPaths.return_value = None
+        mock_gs_ctx.Cat.return_value.output = "{}"
+
+        stage = self.ConstructStage()
+        self.assertRaises(stages.SignerFailure, stage.PerformStage)
+        mock_gs_ctx.WaitForGsPaths.assert_called_once_with(results,
+                                                           timeout=1800)
+
+  def testPerformStageMalformedJson(self):
+    """Test that SignerResultsStage errors when the signers report an error."""
+    insns = { 'chan1': ['chan1_uri1'] }
+    results = ['chan1_uri1.json']
+
+    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
+      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+        mock_gs_ctx = mock_gs_ctx_init.return_value
+        mock_gs_ctx.WaitForGsPaths.return_value = None
+        mock_gs_ctx.Cat.return_value.output = "{"
+
+        stage = self.ConstructStage()
+        self.assertRaises(stages.MalformedResultsException, stage.PerformStage)
+        mock_gs_ctx.WaitForGsPaths.assert_called_once_with(results,
+                                                           timeout=1800)
+
   def testPerformStageTimeout(self):
     """Test that SignerResultsStage errors when no signer results appear."""
     insns = { 'chan1': ['chan1_uri1'] }

@@ -2794,6 +2794,10 @@ class MissingInstructionException(SignerResultsException):
   """We didn't receive the list of signing instructions PushImage uploaded."""
 
 
+class MalformedResultsException(SignerResultsException):
+  """The Signer results aren't formatted as we expect."""
+
+
 class SignerResultsStage(ArchivingStage):
   """Stage that blocks on and retrieves signer results."""
 
@@ -2845,16 +2849,18 @@ class SignerResultsStage(ArchivingStage):
     # Log all signer results, then handle any signing failures.
     failures = []
     for url in result_urls:
-      signer_result = json.loads(gs_ctx.Cat(url).output)
+      json_txt = gs_ctx.Cat(url).output
+      try:
+        signer_result = json.loads(json_txt)
+      except ValueError:
+        raise MalformedResultsException(json_txt)
 
-      result_description = ('%(type)s - %(board)s - %(channel)s - %(keyset)s' %
-                            signer_result)
-
+      result_description = os.path.basename(url)
       cros_build_lib.PrintBuildbotStepText(result_description)
       cros_build_lib.Info('Received results for: %s', result_description)
       cros_build_lib.Info(json.dumps(signer_result, indent=4))
 
-      if signer_result['status']['status'] != 'passed':
+      if signer_result.get('status', {}).get('status') != 'passed':
         failures.append(result_description)
         cros_build_lib.Error('Signing failed for: %s', result_description)
 
