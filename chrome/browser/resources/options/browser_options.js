@@ -457,9 +457,6 @@ cr.define('options', function() {
         Preferences.getInstance().addEventListener(
             $('accessibility-autoclick-check').getAttribute('pref'),
             updateDelayDropdown);
-
-        $('accessibility-sticky-keys').hidden =
-            !loadTimeData.getBoolean('enableStickyKeys');
       }
 
       // Display management section (CrOS only).

@@ -545,10 +545,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   magnifier_list->Append(option_partial.release());
 
   values->Set("magnifierList", magnifier_list.release());
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  values->SetBoolean("enableStickyKeys",
-                     command_line.HasSwitch(switches::kEnableStickyKeys));
 #endif
 
 #if defined(OS_MACOSX)

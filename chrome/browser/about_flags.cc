@@ -1674,14 +1674,6 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableQuickofficeViewing),
   },
-  {
-    "enable-sticky-keys",
-    IDS_FLAGS_ENABLE_STICKY_KEYS_NAME,
-    IDS_FLAGS_ENABLE_STICKY_KEYS_DESCRIPTION,
-    kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableStickyKeys,
-                              switches::kDisableStickyKeys)
-  },
 #endif
   {
     "enable-web-midi",

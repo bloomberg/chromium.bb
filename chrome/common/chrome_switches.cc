@@ -434,9 +434,6 @@ const char kDisableSearchButtonInOmnibox[]  =
 // Disable SPDY/3.1. This is a temporary testing flag.
 const char kDisableSpdy31[]                 = "disable-spdy31";
 
-// Disables support of sticky keys.
-const char kDisableStickyKeys[]             = "disable-sticky-keys";
-
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -755,9 +752,6 @@ const char kEnableSearchButtonInOmniboxForStr[] =
     "enable-search-button-in-omnibox-for-str";
 const char kEnableSearchButtonInOmniboxForStrOrIip[] =
     "enable-search-button-in-omnibox-for-str-or-iip";
-
-// Enables support of sticky keys.
-const char kEnableStickyKeys[]              = "enable-sticky-keys";
 
 // Enable SPDY/2. This is a temporary testing flag. See
 // http://crbug.com/303957 .
