@@ -36,6 +36,9 @@ var g_failuresController = null;
 
 var g_nonLayoutTestFailureBuilders = null;
 
+var g_updating = false;
+var g_updateButton = null;
+
 function updatePartyTime()
 {
     if (!g_unexpectedFailuresController.length() && !g_nonLayoutTestFailureBuilders.hasFailures())
@@ -55,6 +58,13 @@ function updateTreeStatus()
 
 function update()
 {
+    if (g_updating)
+        return;
+
+    g_updating = true;
+    if (g_updateButton)
+        g_updateButton.disabled = true;
+
     if (g_revisionHint)
         g_revisionHint.dismiss();
 
@@ -96,6 +106,10 @@ function update()
             g_revisionHint = new ui.notifications.Info('');
             g_revisionHint.updateWithNode(new ui.revisionDetails());
             g_info.add(g_revisionHint);
+
+            g_updating = false;
+            if (g_updateButton)
+                g_updateButton.disabled = false;
         });
     });
 }
@@ -136,6 +150,7 @@ $(document).ready(function() {
     updateButton.addEventListener("click", update);
     updateButton.textContent = 'update';
     topBar.appendChild(updateButton);
+    g_updateButton = updateButton;
 
     var treeStatus = new ui.TreeStatus();
     topBar.appendChild(treeStatus);
