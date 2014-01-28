@@ -237,6 +237,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called from a site instance's destructor.
   virtual void SiteInstanceDeleting(SiteInstance* site_instance) {}
 
+  // Called when a worker process is created.
+  virtual void WorkerProcessCreated(SiteInstance* site_instance,
+                                    int worker_process_id) {}
+
+  // Called when a worker process is terminated.
+  virtual void WorkerProcessTerminated(SiteInstance* site_instance,
+                                       int worker_process_id) {}
+
   // Returns true if for the navigation from |current_url| to |new_url|
   // in |site_instance|, a new SiteInstance and BrowsingInstance should be
   // created (even if we are in a process model that doesn't usually swap.)

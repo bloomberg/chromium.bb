@@ -63,6 +63,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
                    blink::WebContentSecurityPolicyType security_policy_type,
                    int worker_route_id,
                    int parent_process_id,
+                   int render_frame_id,
                    int64 main_resource_appcache_id,
                    ResourceContext* resource_context,
                    const WorkerStoragePartition& partition);
@@ -119,6 +120,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     }
     int worker_route_id() const { return worker_route_id_; }
     int parent_process_id() const { return parent_process_id_; }
+    int render_frame_id() const { return render_frame_id_; }
     int64 main_resource_appcache_id() const {
       return main_resource_appcache_id_;
     }
@@ -141,6 +143,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     blink::WebContentSecurityPolicyType security_policy_type_;
     int worker_route_id_;
     int parent_process_id_;
+    int render_frame_id_;
     int64 main_resource_appcache_id_;
     FilterList filters_;
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
@@ -156,9 +159,9 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Starts the process.  Returns true iff it succeeded.
-  // |render_process_id| is the renderer process responsible for starting this
-  // worker.
-  bool Init(int render_process_id);
+  // |render_process_id| and |render_frame_id| are the renderer process and the
+  // renderer frame responsible for starting this worker.
+  bool Init(int render_process_id, int render_frame_id);
 
   // Creates a worker object in the process.
   void CreateWorker(const WorkerInstance& instance);

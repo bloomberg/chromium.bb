@@ -124,6 +124,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -1334,6 +1335,37 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
                  site_instance->GetId()));
+}
+
+void ChromeContentBrowserClient::WorkerProcessCreated(
+    SiteInstance* site_instance,
+    int worker_process_id) {
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(site_instance->GetBrowserContext());
+  if (!extension_registry)
+    return;
+  const Extension* extension =
+      extension_registry->enabled_extensions().GetExtensionOrAppByURL(
+        site_instance->GetSiteURL());
+  if (!extension)
+    return;
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::GetForBrowserContext(
+          site_instance->GetBrowserContext());
+  extension_system->info_map()->RegisterExtensionWorkerProcess(
+      extension->id(),
+      worker_process_id,
+      site_instance->GetId());
+}
+
+void ChromeContentBrowserClient::WorkerProcessTerminated(
+    SiteInstance* site_instance,
+    int worker_process_id) {
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::GetForBrowserContext(
+          site_instance->GetBrowserContext());
+  extension_system->info_map()->UnregisterExtensionWorkerProcess(
+      worker_process_id);
 }
 
 bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(

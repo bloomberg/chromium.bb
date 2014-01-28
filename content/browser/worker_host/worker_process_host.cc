@@ -79,8 +79,6 @@ class WorkerSandboxedProcessLauncherDelegate
 };
 #endif  // OS_WIN
 
-}  // namespace
-
 // Notifies RenderViewHost that one or more worker objects crashed.
 void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
   RenderFrameHostImpl* host =
@@ -88,6 +86,34 @@ void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
   if (host)
     host->delegate()->WorkerCrashed();
 }
+
+void WorkerCreatedCallback(int render_process_id,
+                           int render_frame_id,
+                           int worker_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  GetContentClient()->browser()->WorkerProcessCreated(site_instance,
+                                                      worker_process_id);
+}
+
+void WorkerTerminatedCallback(int render_process_id,
+                              int render_frame_id,
+                              int worker_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  GetContentClient()->browser()->WorkerProcessTerminated(site_instance,
+                                                         worker_process_id);
+}
+
+}  // namespace
 
 WorkerProcessHost::WorkerProcessHost(
     ResourceContext* resource_context,
@@ -125,7 +151,7 @@ bool WorkerProcessHost::Send(IPC::Message* message) {
   return process_->Send(message);
 }
 
-bool WorkerProcessHost::Init(int render_process_id) {
+bool WorkerProcessHost::Init(int render_process_id, int render_frame_id) {
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
     return false;
@@ -205,6 +231,12 @@ bool WorkerProcessHost::Init(int render_process_id) {
       process_->GetData().id, render_process_id);
   CreateMessageFilters(render_process_id);
 
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WorkerCreatedCallback,
+                 render_process_id,
+                 render_frame_id,
+                 process_->GetData().id));
   return true;
 }
 
@@ -465,11 +497,27 @@ void WorkerProcessHost::FilterShutdown(WorkerMessageFilter* filter) {
     bool shutdown = false;
     i->RemoveFilters(filter);
 
+    int render_frame_id = 0;
+    const WorkerDocumentSet::DocumentInfoSet& documents =
+        i->worker_document_set()->documents();
+    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
+         documents.begin(); doc != documents.end(); ++doc) {
+      if (doc->filter() == filter) {
+        render_frame_id = doc->render_frame_id();
+        break;
+      }
+    }
     i->worker_document_set()->RemoveAll(filter);
     if (i->worker_document_set()->IsEmpty()) {
       shutdown = true;
     }
     if (shutdown) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&WorkerTerminatedCallback,
+                     filter->render_process_id(),
+                     render_frame_id,
+                     process_->GetData().id));
       Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id()));
       i = instances_.erase(i);
     } else {
@@ -521,8 +569,24 @@ void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,
                                          unsigned long long document_id) {
   // Walk all instances and remove the document from their document set.
   for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
+    int render_frame_id = 0;
+    const WorkerDocumentSet::DocumentInfoSet& documents =
+        i->worker_document_set()->documents();
+    for (WorkerDocumentSet::DocumentInfoSet::const_iterator doc =
+         documents.begin(); doc != documents.end(); ++doc) {
+      if (doc->filter() == filter && doc->document_id() == document_id) {
+        render_frame_id = doc->render_frame_id();
+        break;
+      }
+    }
     i->worker_document_set()->Remove(filter, document_id);
     if (i->worker_document_set()->IsEmpty()) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&WorkerTerminatedCallback,
+                     filter->render_process_id(),
+                     render_frame_id,
+                     process_->GetData().id));
       // This worker has no more associated documents - shut it down.
       Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id()));
       i = instances_.erase(i);
@@ -583,6 +647,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     blink::WebContentSecurityPolicyType security_policy_type,
     int worker_route_id,
     int parent_process_id,
+    int render_frame_id,
     int64 main_resource_appcache_id,
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition)
@@ -593,6 +658,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
       security_policy_type_(security_policy_type),
       worker_route_id_(worker_route_id),
       parent_process_id_(parent_process_id),
+      render_frame_id_(render_frame_id),
       main_resource_appcache_id_(main_resource_appcache_id),
       worker_document_set_(new WorkerDocumentSet()),
       resource_context_(resource_context),

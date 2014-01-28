@@ -98,6 +98,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::SiteInstance* site_instance) OVERRIDE;
   virtual void SiteInstanceDeleting(content::SiteInstance* site_instance)
       OVERRIDE;
+  virtual void WorkerProcessCreated(content::SiteInstance* site_instance,
+                                    int worker_process_id) OVERRIDE;
+  virtual void WorkerProcessTerminated(content::SiteInstance* site_instance,
+                                       int worker_process_id) OVERRIDE;
   virtual bool ShouldSwapBrowsingInstancesForNavigation(
       content::SiteInstance* site_instance,
       const GURL& current_url,

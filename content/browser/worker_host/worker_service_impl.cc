@@ -316,6 +316,7 @@ void WorkerServiceImpl::CreateWorker(
       params.security_policy_type,
       next_worker_route_id(),
       0,
+      params.render_frame_route_id,
       params.script_resource_appcache_id,
       resource_context,
       partition);
@@ -490,7 +491,8 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
   // We don't support that yet though (this message is only sent from
   // renderers) but when we do, we'll need to add code to pass in the current
   // worker's document set for nested workers.
-  if (!worker->Init(first_filter->render_process_id())) {
+  if (!worker->Init(first_filter->render_process_id(),
+                    instance.render_frame_id())) {
     delete worker;
     return false;
   }

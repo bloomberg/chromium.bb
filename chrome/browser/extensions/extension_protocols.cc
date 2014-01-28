@@ -400,6 +400,12 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
     return true;
   }
 
+  // Check workers so that importScripts works from extension workers.
+  if (extension_info_map->worker_process_map().Contains(
+      request->url().host(), info->GetChildID())) {
+    return true;
+  }
+
   // Extensions with webview: allow loading certain resources by guest renderers
   // with privileged partition IDs as specified in the manifest file.
   ExtensionRendererState* renderer_state =
