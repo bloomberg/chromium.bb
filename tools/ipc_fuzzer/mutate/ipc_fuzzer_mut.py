@@ -60,6 +60,7 @@ class MutationalFuzzer:
   def list_corpus(self):
     input_dir = self.args.input_dir
     entries = os.listdir(input_dir)
+    entries = [i for i in entries if i.endswith('.ipcdump')]
     self.corpus = [os.path.join(input_dir, entry) for entry in entries]
 
   def create_mutated_ipcdump(self):
