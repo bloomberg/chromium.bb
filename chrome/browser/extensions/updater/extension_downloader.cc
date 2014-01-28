@@ -721,8 +721,8 @@ void ExtensionDownloader::OnCRXFetchComplete(
       delegate_->OnExtensionDownloadFailed(
           id, ExtensionDownloaderDelegate::CRX_FETCH_FAILED, ping, request_ids);
     }
-    extensions_queue_.reset_active_request();
     ping_results_.erase(id);
+    extensions_queue_.reset_active_request();
   }
 
   extension_fetcher_.reset();
