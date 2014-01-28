@@ -6,16 +6,18 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
 
 namespace content {
 
-class EmbeddedWorkerInstance;
 class EmbeddedWorkerRegistry;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
@@ -56,6 +58,15 @@ struct ServiceWorkerFetchRequest;
 class CONTENT_EXPORT ServiceWorkerVersion
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerVersion>) {
  public:
+  typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
+
+  enum Status {
+    STOPPED = EmbeddedWorkerInstance::STOPPED,
+    STARTING = EmbeddedWorkerInstance::STARTING,
+    RUNNING = EmbeddedWorkerInstance::RUNNING,
+    STOPPING = EmbeddedWorkerInstance::STOPPING,
+  };
+
   ServiceWorkerVersion(
       ServiceWorkerRegistration* registration,
       EmbeddedWorkerRegistry* worker_registry,
@@ -66,22 +77,43 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void Shutdown();
   bool is_shutdown() const { return is_shutdown_; }
 
-  // Starts and stops an embedded worker for this version.
-  void StartWorker();
-  void StopWorker();
+  Status status() const {
+    return static_cast<Status>(embedded_worker_->status());
+  }
+
+  // Starts an embedded worker for this version.
+  // It is not valid to call this while there's other inflight start or
+  // stop process running.
+  // This returns OK (success) if the worker is already running.
+  void StartWorker(const StatusCallback& callback);
+
+  // Starts an embedded worker for this version.
+  // It is not valid to call this while there's other inflight start or
+  // stop process running.
+  // This returns OK (success) if the worker is already stopped.
+  void StopWorker(const StatusCallback& callback);
 
   // Sends fetch event to the associated embedded worker.
   // This immediately returns false if the worker is not running
   // or sending a message to the child process fails.
+  // TODO(kinuko): Make this take callback as well.
   bool DispatchFetchEvent(const ServiceWorkerFetchRequest& request);
 
-  // Called when this version is associated to a provider host.
-  // Non-null |provider_host| must be given.
-  void OnAssociateProvider(ServiceWorkerProviderHost* provider_host);
-  void OnUnassociateProvider(ServiceWorkerProviderHost* provider_host);
+  // These are expected to be called when a renderer process host for the
+  // same-origin as for this ServiceWorkerVersion is created.  The added
+  // processes are used to run an in-renderer embedded worker.
+  void AddProcessToWorker(int process_id);
+  void RemoveProcessToWorker(int process_id);
+
+  EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
+
+  // Embedded worker observer classes.
+  class WorkerObserverBase;
+  class StartObserver;
+  class StopObserver;
 
   ~ServiceWorkerVersion();
 
@@ -91,6 +123,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   scoped_refptr<ServiceWorkerRegistration> registration_;
 
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
+  scoped_ptr<EmbeddedWorkerInstance::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };
