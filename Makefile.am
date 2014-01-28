@@ -7,8 +7,7 @@ SUBDIRS =					\
 	shared					\
 	src					\
 	clients					\
-	tests					\
-	man
+	tests
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
 
@@ -152,6 +151,31 @@ CLEANFILES += $(protocol_sources:protocol/%.xml=.%.xml.valid)
 EXTRA_DIST += $(protocol_sources)
 
 endif
+
+
+man_MANS = weston.1 weston.ini.5
+
+if ENABLE_DRM_COMPOSITOR
+man_MANS += weston-drm.7
+endif
+
+MAN_SUBSTS =								\
+	-e 's|__weston_native_backend__|$(WESTON_NATIVE_BACKEND)|g'	\
+	-e 's|__weston_modules_dir__|$(pkglibdir)|g'			\
+	-e 's|__weston_shell_client__|$(WESTON_SHELL_CLIENT)|g'		\
+	-e 's|__version__|$(PACKAGE_VERSION)|g'
+
+SUFFIXES = .1 .5 .7 .man
+
+%.1 %.5 %.7 : man/%.man
+	$(AM_V_GEN)$(SED) $(MAN_SUBSTS) < $< > $@
+
+EXTRA_DIST +=					\
+	man/weston.man				\
+	man/weston-drm.man			\
+	man/weston.ini.man
+
+CLEANFILES += $(man_MANS)
 
 
 wayland_protocoldir = $(top_srcdir)/protocol
