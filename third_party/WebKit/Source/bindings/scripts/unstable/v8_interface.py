@@ -498,7 +498,8 @@ def anonymous_indexed_property_getter(interface):
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
         'is_null_expression': getter_is_null_expression(idl_type),
-        'name': extended_attributes['ImplementedAs'],
+        'name': extended_attributes.get('ImplementedAs',
+                                        'anonymousIndexedGetter'),
         'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
     }
 

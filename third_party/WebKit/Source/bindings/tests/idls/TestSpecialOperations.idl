@@ -29,5 +29,5 @@
  */
 
 interface TestSpecialOperations {
-    [ImplementedAs=anonymousIndexedGetter] getter DOMString (unsigned long index);
+    getter DOMString (unsigned long index);
 };

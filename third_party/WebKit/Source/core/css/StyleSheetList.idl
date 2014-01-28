@@ -22,8 +22,7 @@
 [
     SetWrapperReferenceFrom=document,
 ] interface StyleSheetList {
-    readonly attribute unsigned long    length;
-    getter StyleSheet         item(unsigned long index);
-    [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter CSSStyleSheet (DOMString name);
+    readonly attribute unsigned long length;
+    getter StyleSheet item(unsigned long index);
+    [NotEnumerable] getter CSSStyleSheet (DOMString name);
 };
-

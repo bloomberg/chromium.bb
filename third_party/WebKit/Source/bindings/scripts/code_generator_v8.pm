@@ -3644,7 +3644,7 @@ sub GenerateImplementationIndexedPropertyGetter
     my $indexedGetterFunction = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $methodName = GetImplName($indexedGetterFunction);
+    my $methodName = GetImplName($indexedGetterFunction) || "anonymousIndexedGetter";
 
     my $returnType = $indexedGetterFunction->type;
     my $nativeType = GetNativeType($returnType);
@@ -3743,7 +3743,7 @@ sub GenerateImplementationIndexedPropertySetter
     my $indexedSetterFunction = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $methodName = GetImplName($indexedSetterFunction);
+    my $methodName = GetImplName($indexedSetterFunction) || "anonymousIndexedSetter";
     my $interfaceName = $interface->name;
 
     my $type = $indexedSetterFunction->parameters->[1]->type;
@@ -4003,7 +4003,7 @@ sub GenerateImplementationNamedPropertyGetter
     my $namedGetterFunction = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $methodName = GetImplName($namedGetterFunction);
+    my $methodName = GetImplName($namedGetterFunction) || "anonymousNamedGetter";
 
     my $returnType = $namedGetterFunction->type;
     my $isNull = GenerateIsNullExpression($returnType, "element");
@@ -4052,7 +4052,7 @@ sub GenerateImplementationNamedPropertySetter
     my $namedSetterFunction = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $methodName = GetImplName($namedSetterFunction);
+    my $methodName = GetImplName($namedSetterFunction) || "anonymousNamedSetter";
     my $interfaceName = $interface->name;
 
     my $type = $namedSetterFunction->parameters->[1]->type;
@@ -4115,7 +4115,7 @@ sub GenerateImplementationIndexedPropertyDeleter
     my $indexedDeleterFunction = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $methodName = GetImplName($indexedDeleterFunction);
+    my $methodName = GetImplName($indexedDeleterFunction) || "anonymousIndexedDeleter";
 
     my $raisesExceptions = $indexedDeleterFunction->extendedAttributes->{"RaisesException"};
 
@@ -4144,7 +4144,7 @@ sub GenerateImplementationNamedPropertyDeleter
     my $namedDeleterFunction = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $methodName = GetImplName($namedDeleterFunction);
+    my $methodName = GetImplName($namedDeleterFunction) || "anonymousNamedDeleter";
 
     my $raisesExceptions = $namedDeleterFunction->extendedAttributes->{"RaisesException"};
 

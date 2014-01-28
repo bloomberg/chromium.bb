@@ -26,11 +26,10 @@
 [
     SetWrapperReferenceFrom=element,
 ] interface DOMStringMap {
-    [ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter DOMString (unsigned long index);
-    [ImplementedAs=anonymousIndexedSetter, RaisesException, NotEnumerable] setter DOMString (unsigned long index, DOMString value);
-    [ImplementedAs=anonymousIndexedDeleter, NotEnumerable] deleter boolean (unsigned long index);
+    [NotEnumerable] getter DOMString (unsigned long index);
+    [NotEnumerable, RaisesException] setter DOMString (unsigned long index, DOMString value);
+    [NotEnumerable] deleter boolean (unsigned long index);
     [ImplementedAs=item, OverrideBuiltins] getter DOMString (DOMString name);
-    [ImplementedAs=anonymousNamedSetter, RaisesException, OverrideBuiltins] setter DOMString (DOMString name, DOMString value);
-    [ImplementedAs=anonymousNamedDeleter] deleter boolean (DOMString name);
+    [RaisesException, OverrideBuiltins] setter DOMString (DOMString name, DOMString value);
+    deleter boolean (DOMString name);
 };
-

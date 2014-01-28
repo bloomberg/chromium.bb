@@ -5517,7 +5517,7 @@ static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* collection = V8TestObject::toNative(info.Holder());
-    RefPtr<Node> element = collection->item(index);
+    RefPtr<Node> element = collection->anonymousIndexedGetter(index);
     if (!element)
         return;
     v8SetReturnValueFast(info, element.release(), collection);
@@ -5541,7 +5541,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
 
     TestObj* collection = V8TestObject::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    String element = collection->namedItem(propertyName);
+    String element = collection->anonymousNamedGetter(propertyName);
     if (element.isNull())
         return;
     v8SetReturnValueString(info, element, info.GetIsolate());

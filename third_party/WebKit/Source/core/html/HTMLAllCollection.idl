@@ -31,9 +31,8 @@
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter Node (unsigned long index);
     [Custom] Node item([Default=Undefined] optional unsigned long index);
-    [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter (NodeList or Node) (DOMString name);
+    [NotEnumerable] getter (NodeList or Node) (DOMString name);
     [Custom] Node namedItem(DOMString name);
     // FIXME: This should return an HTMLAllCollection.
     [MeasureAs=DocumentAllTags] NodeList tags(DOMString name);
 };
-
