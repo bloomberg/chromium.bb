@@ -1682,6 +1682,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   cxx_host = None
   cc_host_global_setting = None
   cxx_host_global_setting = None
+  clang_cl = None
 
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
   make_global_settings = data[build_file].get('make_global_settings', [])
@@ -1691,6 +1692,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   for key, value in make_global_settings:
     if key == 'CC':
       cc = os.path.join(build_to_root, value)
+      if cc.endswith('clang-cl'):
+        clang_cl = cc
     if key == 'CXX':
       cxx = os.path.join(build_to_root, value)
     if key == 'CC.host':
@@ -1713,9 +1716,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     cl_paths = gyp.msvs_emulation.GenerateEnvironmentFiles(
         toplevel_build, generator_flags, OpenOutput)
     for arch, path in cl_paths.iteritems():
-      master_ninja.variable(
-          'cl_' + arch, CommandWithWrapper('CC', wrappers,
-                                           QuoteShellArgument(path, flavor)))
+      if clang_cl:
+        # If we have selected clang-cl, use that instead.
+        path = clang_cl
+      command = CommandWithWrapper('CC', wrappers,
+          QuoteShellArgument(path, 'win'))
+      if clang_cl:
+        # Use clang-cl to cross-compile for x86 or x86_64.
+        command += (' -m32' if arch == 'x86' else ' -m64')
+      master_ninja.variable('cl_' + arch, command)
 
   cc = GetEnvironFallback(['CC_target', 'CC'], cc)
   master_ninja.variable('cc', CommandWithWrapper('CC', wrappers, cc))
