@@ -520,7 +520,6 @@
     // TODO(fsamuel): We really shouldn't be exposing these private methods
     // but certain tests rely on them.
     'attach_',
-    'destroy_',
     'detach_',
     'dispatch_',
     'findListener_'

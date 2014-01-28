@@ -82,8 +82,8 @@
 
     if (this.onDestroy_)
       this.onDestroy_();
-    this.onDisconnect.destroy_();
-    this.onMessage.destroy_();
+    privates(this.onDisconnect).impl.destroy_();
+    privates(this.onMessage).impl.destroy_();
 
     messagingNatives.PortRelease(portId);
     unloadEvent.removeListener(portReleasers[portId]);
