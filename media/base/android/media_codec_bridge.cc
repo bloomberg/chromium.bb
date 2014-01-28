@@ -121,7 +121,6 @@ std::vector<MediaCodecBridge::CodecsInfo> MediaCodecBridge::GetCodecsInfo() {
     return codecs_info;
 
   std::string mime_type;
-  std::string codec_name;
   ScopedJavaLocalRef<jobjectArray> j_codec_info_array =
       Java_MediaCodecBridge_getCodecsInfo(env);
   jsize len = env->GetArrayLength(j_codec_info_array.obj());
