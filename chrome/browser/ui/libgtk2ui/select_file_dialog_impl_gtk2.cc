@@ -205,6 +205,15 @@ bool SelectFileDialogImplGTK::HasMultipleFileTypeChoicesImpl() {
 }
 
 void SelectFileDialogImplGTK::OnWindowDestroying(aura::Window* window) {
+  // Remove the |parent| property associated with the |dialog|.
+  for (std::set<GtkWidget*>::iterator it = dialogs_.begin();
+       it != dialogs_.end(); ++it) {
+    aura::Window* parent = reinterpret_cast<aura::Window*>(
+      g_object_get_data(G_OBJECT(*it), kAuraTransientParent));
+    if (parent == window)
+      g_object_set_data(G_OBJECT(*it), kAuraTransientParent, NULL);
+  }
+
   std::set<aura::Window*>::iterator iter = parents_.find(window);
   if (iter != parents_.end()) {
     (*iter)->RemoveObserver(this);
