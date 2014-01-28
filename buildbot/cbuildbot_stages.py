@@ -2809,6 +2809,8 @@ class SignerResultsStage(ArchivingStage):
     if isinstance(exception, SignerResultsException):
       return self._HandleExceptionAsWarning(exception)
 
+    return super(SignerResultsStage, self)._HandleStageException(exception)
+
   def PerformStage(self):
     """Do the work of waiting for signer results and logging them.
 
