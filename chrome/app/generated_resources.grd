@@ -7738,67 +7738,69 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Skip Import
       </message>
 
-      <!-- Feedback Dialog -->
-      <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
-        Tell us what is happening.
-      </message>
-      <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
-        URL (optional):
-      </message>
-      <message name="IDS_FEEDBACK_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
-        Email (optional):
-      </message>
-      <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
-        Include this screenshot:
-      </message>
-      <message name="IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX" desc="Checkbox for including system performance data on the bug report dialog box">
-        Send performance trace data
-      </message>
-      <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
-          Send <ph name="BEGIN_LINK1">&lt;a href="#" id="sys-info-url"&gt;</ph>system information<ph name="END_LINK1">&lt;/a&gt;</ph>
+      <if expr="pp_ifdef('enable_extensions')">
+        <!-- Feedback Dialog -->
+        <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
+          Tell us what is happening.
+        </message>
+        <message name="IDS_FEEDBACK_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
+          URL (optional):
+        </message>
+        <message name="IDS_FEEDBACK_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
+          Email (optional):
+        </message>
+        <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
+          Include this screenshot:
+        </message>
+        <message name="IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX" desc="Checkbox for including system performance data on the bug report dialog box">
+          Send performance trace data
+        </message>
+        <if expr="not pp_ifdef('chromeos')">
+          <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
+            Send <ph name="BEGIN_LINK1">&lt;a href="#" id="sys-info-url"&gt;</ph>system information<ph name="END_LINK1">&lt;/a&gt;</ph>
+          </message>
+        </if>
+        <if expr="pp_ifdef('chromeos')">
+          <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX" desc="Checkbox for including system information and metrics on the bug report dialog box">
+            Send <ph name="BEGIN_LINK1">&lt;a href="#" id="sys-info-url"&gt;</ph>system information<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a href="#" id="histograms-url"&gt;</ph>metrics<ph name="END_LINK2">&lt;/a&gt;</ph>
+          </message>
+        </if>
+        <message name="IDS_FEEDBACK_ATTACH_FILE_NOTE" desc="Text for describing the maximum size for an attached file">
+          The attached file is uploaded to Google servers for debugging.
+        </message>
+        <message name="IDS_FEEDBACK_ATTACH_FILE_LABEL" desc="Text for the label for the attached filename">
+          Attach file:
+        </message>
+        <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
+          Reading file..
+        </message>
+        <message name="IDS_FEEDBACK_ATTACH_FILE_TO_BIG" desc="Text to display if the file being attached is too big">
+          Selected file is too big (max size: 3mb).
+        </message>
+        <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
+          Your Chrome and operating system version will be submitted in addition
+          to any information you choose to include above. If you include your email
+          address, Google may contact you regarding your feedback report. This feedback
+          is used to diagnose problems and help improve Chrome. Any personal information
+          you submit, whether explicitly or incidentally will be protected in
+          accordance with our privacy policies.<ph name="BEGIN_BOLD">&lt;strong&gt;
+          </ph> By submitting this feedback, you agree that Google may use feedback
+          that you provide to improve any Google product or service.
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+        </message>
+        <message name="IDS_FEEDBACK_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
+          Please tell us what is happening before sending the feedback.
+        </message>
+        <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
+          Send feedback
+        </message>
+        <message name="IDS_FEEDBACK_LAUNCHER_TITLE" desc="Dialog title for app launcher feedback dialog">
+          Send Feedback.
+        </message>
+        <message name="IDS_FEEDBACK_LAUNCHER_DESCRIPTION_LABEL" desc="Label for the description field when asking for app launcher feedback">
+          Tell us what you think of the App Launcher.
         </message>
       </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX" desc="Checkbox for including system information and metrics on the bug report dialog box">
-          Send <ph name="BEGIN_LINK1">&lt;a href="#" id="sys-info-url"&gt;</ph>system information<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a href="#" id="histograms-url"&gt;</ph>metrics<ph name="END_LINK2">&lt;/a&gt;</ph>
-        </message>
-      </if>
-      <message name="IDS_FEEDBACK_ATTACH_FILE_NOTE" desc="Text for describing the maximum size for an attached file">
-        The attached file is uploaded to Google servers for debugging.
-      </message>
-      <message name="IDS_FEEDBACK_ATTACH_FILE_LABEL" desc="Text for the label for the attached filename">
-        Attach file:
-      </message>
-      <message name="IDS_FEEDBACK_READING_FILE" desc="Text to display if reading a file when the user clicks the send report button">
-        Reading file..
-      </message>
-      <message name="IDS_FEEDBACK_ATTACH_FILE_TO_BIG" desc="Text to display if the file being attached is too big">
-        Selected file is too big (max size: 3mb).
-      </message>
-      <message name="IDS_FEEDBACK_PRIVACY_NOTE" desc="Text for the privacy note included with Chrome OS">
-        Your Chrome and operating system version will be submitted in addition
-        to any information you choose to include above. If you include your email
-        address, Google may contact you regarding your feedback report. This feedback
-        is used to diagnose problems and help improve Chrome. Any personal information
-        you submit, whether explicitly or incidentally will be protected in
-        accordance with our privacy policies.<ph name="BEGIN_BOLD">&lt;strong&gt;
-        </ph> By submitting this feedback, you agree that Google may use feedback
-        that you provide to improve any Google product or service.
-        <ph name="END_BOLD">&lt;/strong&gt;</ph>
-      </message>
-      <message name="IDS_FEEDBACK_NO_DESCRIPTION" desc="Message shown when no text is entered before hitting send feedback">
-        Please tell us what is happening before sending the feedback.
-      </message>
-      <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
-        Send feedback
-      </message>
-      <message name="IDS_FEEDBACK_LAUNCHER_TITLE" desc="Dialog title for app launcher feedback dialog">
-        Send Feedback.
-      </message>
-      <message name="IDS_FEEDBACK_LAUNCHER_DESCRIPTION_LABEL" desc="Label for the description field when asking for app launcher feedback">
-        Tell us what you think of the App Launcher.
-      </message>
 
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
