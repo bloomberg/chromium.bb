@@ -104,7 +104,7 @@ Object.freeze(DirectoryItemTreeBaseMethods);
  * @constructor
  */
 function DirectoryItem(label, dirEntry, parentDirItem, tree) {
-  var item = cr.doc.createElement('div');
+  var item = new cr.ui.TreeItem();
   DirectoryItem.decorate(item, label, dirEntry, parentDirItem, tree);
   return item;
 }
@@ -175,7 +175,6 @@ DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
  */
 DirectoryItem.prototype.decorate = function(
     label, dirEntry, parentDirItem, tree) {
-  this.className = 'tree-item';
   this.innerHTML =
       '<div class="tree-row">' +
       ' <span class="expand-icon"></span>' +
@@ -183,7 +182,6 @@ DirectoryItem.prototype.decorate = function(
       ' <span class="label"></span>' +
       '</div>' +
       '<div class="tree-children"></div>';
-  this.setAttribute('role', 'treeitem');
 
   this.parentTree_ = tree;
   this.directoryModel_ = tree.directoryModel;
