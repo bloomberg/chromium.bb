@@ -42,6 +42,8 @@ class ShareableElementData;
 class StylePropertySet;
 class UniqueElementData;
 
+// ElementData represents very common, but not necessarily unique to an element,
+// data such as attributes, inline style, and parsed class names and ids.
 class ElementData : public RefCounted<ElementData> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -81,6 +83,7 @@ protected:
     explicit ElementData(unsigned arraySize);
     ElementData(const ElementData&, bool isUnique);
 
+    // Keep the type in a bitfield instead of using virtual destructors to avoid adding a vtable.
     unsigned m_isUnique : 1;
     unsigned m_arraySize : 28;
     mutable unsigned m_presentationAttributeStyleIsDirty : 1;
@@ -111,7 +114,11 @@ private:
 #pragma warning(disable: 4200) // Disable "zero-sized array in struct/union" warning
 #endif
 
-class ShareableElementData : public ElementData {
+// SharableElementData is managed by DocumentSharedObjectPool and is produced by
+// the parser during page load for elements that have identical attributes. This
+// is a memory optimization since it's very common for many elements to have
+// duplicate sets of attributes (ex. the same classes).
+class ShareableElementData FINAL : public ElementData {
 public:
     static PassRefPtr<ShareableElementData> createWithAttributes(const Vector<Attribute>&);
 
@@ -126,7 +133,13 @@ public:
 #pragma warning(pop)
 #endif
 
-class UniqueElementData : public ElementData {
+// UniqueElementData is created when an element needs to mutate its attributes
+// or gains presentation attribute style (ex. width="10"). It does not need to
+// be created to fill in values in the ElementData that are derived from
+// attributes. For example populating the m_inlineStyle from the style attribute
+// doesn't require a UniqueElementData as all elements with the same style
+// attribute will have the same inline style.
+class UniqueElementData FINAL : public ElementData {
 public:
     static PassRefPtr<UniqueElementData> create();
     PassRefPtr<ShareableElementData> makeShareableCopy() const;
@@ -142,6 +155,10 @@ public:
     explicit UniqueElementData(const ShareableElementData&);
     explicit UniqueElementData(const UniqueElementData&);
 
+    // FIXME: We might want to support sharing element data for elements with
+    // presentation attribute style. Lots of table cells likely have the same
+    // attributes. Most modern pages don't use presentation attributes though
+    // so this might not make sense.
     mutable RefPtr<StylePropertySet> m_presentationAttributeStyle;
     Vector<Attribute, 4> m_attributeVector;
 };
