@@ -247,14 +247,12 @@ bool ImageLoader::IsComponentExtensionResource(
         path_to_resource_id.Pointer(),
         kExtraComponentExtensionResources,
         arraysize(kExtraComponentExtensionResources));
-#if defined(USE_AURA)
-    if (keyboard::IsKeyboardEnabled()) {
-      size_t size;
-      const GritResourceMap* keyboard_resources =
-          keyboard::GetKeyboardExtensionResources(&size);
-      AddComponentResourceEntries(
-          path_to_resource_id.Pointer(), keyboard_resources, size);
-    }
+#if defined(OS_CHROMEOS)
+    size_t size;
+    const GritResourceMap* keyboard_resources =
+        keyboard::GetKeyboardExtensionResources(&size);
+    AddComponentResourceEntries(
+        path_to_resource_id.Pointer(), keyboard_resources, size);
 #endif
   }
 

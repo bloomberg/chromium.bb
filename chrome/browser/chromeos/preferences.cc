@@ -170,6 +170,10 @@ void Preferences::RegisterProfilePrefs(
       ash::AutoclickController::kDefaultAutoclickDelayMs,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
+    prefs::kVirtualKeyboardEnabled,
+    false,
+    user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kShouldAlwaysShowAccessibilityMenu,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -331,6 +335,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
                                    prefs, callback);
   a11y_screen_magnifier_scale_.Init(prefs::kScreenMagnifierScale,
                                     prefs, callback);
+  a11y_virtual_keyboard_enabled_.Init(prefs::kVirtualKeyboardEnabled,
+                                      prefs, callback);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, callback);

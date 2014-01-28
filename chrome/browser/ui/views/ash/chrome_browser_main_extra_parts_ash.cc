@@ -79,8 +79,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
   // initialized. Otherwise, virtual keyboard extension will not load at login
   // screen.
-  if (keyboard::IsKeyboardEnabled())
-    keyboard::InitializeKeyboard();
+  keyboard::InitializeKeyboard();
 #endif
 
 #if defined(OS_CHROMEOS)

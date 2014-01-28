@@ -32,6 +32,9 @@ enum KeyboardControlEvent {
   KEYBOARD_CONTROL_MAX,
 };
 
+// Sets the state of the a11y onscreen keyboard.
+KEYBOARD_EXPORT void SetAccessibilityKeyboardEnabled(bool enabled);
+
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 

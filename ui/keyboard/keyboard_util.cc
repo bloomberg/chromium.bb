@@ -35,14 +35,21 @@ void SendProcessKeyEvent(ui::EventType type,
 base::LazyInstance<base::Time> g_keyboard_load_time_start =
     LAZY_INSTANCE_INITIALIZER;
 
+bool g_accessibility_keyboard_enabled = false;
+
 }  // namespace
 
 namespace keyboard {
 
+void SetAccessibilityKeyboardEnabled(bool enabled) {
+  g_accessibility_keyboard_enabled = enabled;
+}
+
 bool IsKeyboardEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVirtualKeyboard) ||
-          IsKeyboardUsabilityExperimentEnabled();
+  return g_accessibility_keyboard_enabled ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVirtualKeyboard) ||
+      IsKeyboardUsabilityExperimentEnabled();
 }
 
 bool IsKeyboardUsabilityExperimentEnabled() {

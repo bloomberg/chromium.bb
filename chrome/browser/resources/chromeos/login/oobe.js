@@ -100,6 +100,8 @@ cr.define('cr.ui.Oobe', function() {
                                             Oobe.handleSpokenFeedbackClick);
       $('screen-magnifier').addEventListener('click',
                                              Oobe.handleScreenMagnifierClick);
+      $('virtual-keyboard').addEventListener('click',
+                                              Oobe.handleVirtualKeyboardClick);
 
       // A11y menu should be accessible i.e. disable autohide on any
       // keydown or click inside menu.
@@ -159,6 +161,14 @@ cr.define('cr.ui.Oobe', function() {
      */
     handleScreenMagnifierClick: function(e) {
       chrome.send('enableScreenMagnifier', [$('screen-magnifier').checked]);
+      e.stopPropagation();
+    },
+
+    /**
+     * On-screen keyboard checkbox handler.
+     */
+    handleVirtualKeyboardClick: function(e) {
+      chrome.send('enableVirtualKeyboard', [$('virtual-keyboard').checked]);
       e.stopPropagation();
     },
 
