@@ -189,7 +189,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
 
     bool hasStrongDirectionality;
     TextRun textRun = textRunWithDirectionality(label, hasStrongDirectionality);
-    IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.pixelSize());
+    IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.fontDescription().computedPixelSize());
     if (hasStrongDirectionality && textRun.direction() == RTL) {
         float textWidth = urlFont.width(textRun);
         int availableWidth = imageSize.width() - kDragLabelBorderX * 2;

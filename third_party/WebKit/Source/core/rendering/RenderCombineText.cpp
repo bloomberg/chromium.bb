@@ -61,7 +61,7 @@ float RenderCombineText::width(unsigned from, unsigned length, const Font& font,
         return 0;
 
     if (m_isCombined)
-        return font.size();
+        return font.fontDescription().computedSize();
 
     return RenderText::width(from, length, font, xPosition, direction, fallbackFonts, glyphOverflow);
 }
@@ -69,7 +69,7 @@ float RenderCombineText::width(unsigned from, unsigned length, const Font& font,
 void RenderCombineText::adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const
 {
     if (m_isCombined)
-        textOrigin.move(boxRect.height() / 2 - ceilf(m_combinedTextWidth) / 2, style()->font().pixelSize());
+        textOrigin.move(boxRect.height() / 2 - ceilf(m_combinedTextWidth) / 2, style()->font().fontDescription().computedPixelSize());
 }
 
 void RenderCombineText::getStringToRender(int start, StringView& string, int& length) const

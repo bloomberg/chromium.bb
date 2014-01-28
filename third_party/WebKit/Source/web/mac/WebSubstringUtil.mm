@@ -90,7 +90,7 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
         // TODO(rsesek): Change the font activation flags to allow other processes
         // to use the font.
         if (!font)
-          font = [NSFont systemFontOfSize:style->font().size()];
+          font = [NSFont systemFontOfSize:style->font().fontDescription().computedSize()];
         [attrs setObject:font forKey:NSFontAttributeName];
 
         if (style->visitedDependentColor(CSSPropertyColor).alpha())

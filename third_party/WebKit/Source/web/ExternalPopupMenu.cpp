@@ -205,7 +205,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
     }
 
     info->itemHeight = m_popupMenuClient->menuStyle().font().fontMetrics().height();
-    info->itemFontSize = static_cast<int>(m_popupMenuClient->menuStyle().font().size());
+    info->itemFontSize = static_cast<int>(m_popupMenuClient->menuStyle().font().fontDescription().computedSize());
     info->selectedIndex = m_popupMenuClient->selectedIndex();
     info->rightAligned = m_popupMenuClient->menuStyle().textDirection() == WebCore::RTL;
     info->allowMultipleSelection = m_popupMenuClient->multiple();

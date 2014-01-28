@@ -72,7 +72,7 @@ float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, const
 
     m_lastGlyph = currentGlyph;
     m_lastGlyph.isValid = true;
-    kerning *= m_font.size() / m_font.fontMetrics().unitsPerEm();
+    kerning *= m_font.fontDescription().computedSize() / m_font.fontMetrics().unitsPerEm();
     return kerning;
 #else
     return false;
@@ -84,7 +84,7 @@ float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderS
     float kerning = 0;
     RefPtr<SVGLength> kerningLength = style->kerning();
     if (kerningLength->unitType() == LengthTypePercentage)
-        kerning = kerningLength->valueAsPercentage() * m_font.pixelSize();
+        kerning = kerningLength->valueAsPercentage() * m_font.fontDescription().computedPixelSize();
     else {
         SVGLengthContext lengthContext(contextElement);
         kerning = kerningLength->value(lengthContext);

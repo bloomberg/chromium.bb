@@ -184,7 +184,7 @@ static inline bool textShouldBePainted(RenderSVGInlineText* textRenderer)
 {
     // Font::pixelSize(), returns FontDescription::computedPixelSize(), which returns "int(x + 0.5)".
     // If the absolute font size on screen is below x=0.5, don't render anything.
-    return textRenderer->scaledFont().pixelSize();
+    return textRenderer->scaledFont().fontDescription().computedPixelSize();
 }
 
 void SVGInlineTextBox::paintSelectionBackground(PaintInfo& paintInfo)
@@ -513,7 +513,7 @@ static inline float thicknessForDecoration(TextDecoration, const Font& font)
 {
     // FIXME: For SVG Fonts we need to use the attributes defined in the <font-face> if specified.
     // Compatible with Batik/Opera
-    return font.size() / 20.0f;
+    return font.fontDescription().computedSize() / 20.0f;
 }
 
 static inline RenderObject* findRenderObjectDefininingTextDecoration(InlineFlowBox* parentBox)

@@ -406,7 +406,7 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
     }
 
     CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
-    for (const FontFamily* f = &font.family(); f; f = f->next()) {
+    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
         if (face)
             matchedFonts.append(face->fontFaces(nullToSpace(text)));
@@ -424,8 +424,8 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
 
     CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     ScriptPromise promise = ScriptPromise::createPending(executionContext());
-    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.family(), promise, executionContext());
-    for (const FontFamily* f = &font.family(); f; f = f->next()) {
+    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.fontDescription().family(), promise, executionContext());
+    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
         if (!face) {
             resolver->error();
@@ -445,7 +445,7 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
     }
 
     CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
-    for (const FontFamily* f = &font.family(); f; f = f->next()) {
+    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
         if (!face || !face->checkFont(nullToSpace(text)))
             return false;

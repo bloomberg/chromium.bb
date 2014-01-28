@@ -1177,7 +1177,7 @@ const FontMetrics& RenderStyle::fontMetrics() const { return inherited->font.fon
 const FontDescription& RenderStyle::fontDescription() const { return inherited->font.fontDescription(); }
 float RenderStyle::specifiedFontSize() const { return fontDescription().specifiedSize(); }
 float RenderStyle::computedFontSize() const { return fontDescription().computedSize(); }
-int RenderStyle::fontSize() const { return inherited->font.pixelSize(); }
+int RenderStyle::fontSize() const { return fontDescription().computedPixelSize(); }
 
 float RenderStyle::wordSpacing() const { return inherited->font.wordSpacing(); }
 float RenderStyle::letterSpacing() const { return inherited->font.letterSpacing(); }

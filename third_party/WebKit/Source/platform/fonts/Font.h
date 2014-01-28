@@ -90,9 +90,6 @@ public:
 
     const FontDescription& fontDescription() const { return m_fontDescription; }
 
-    int pixelSize() const { return fontDescription().computedPixelSize(); }
-    float size() const { return fontDescription().computedSize(); }
-
     void update(PassRefPtr<FontSelector>) const;
 
     enum CustomFontNotReadyAction { DoNotPaintIfFontNotReady, UseFallbackIfFontNotReady };
@@ -105,23 +102,13 @@ public:
     int offsetForPosition(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForText(const TextRun&, const FloatPoint&, int h, int from = 0, int to = -1) const;
 
-    bool isSmallCaps() const { return m_fontDescription.smallCaps(); }
-
     float wordSpacing() const { return m_wordSpacing; }
     float letterSpacing() const { return m_letterSpacing; }
     void setWordSpacing(float s) { m_wordSpacing = s; }
     void setLetterSpacing(float s) { m_letterSpacing = s; }
     bool isFixedPitch() const;
-    bool isPrinterFont() const { return m_fontDescription.usePrinterFont(); }
 
     TypesettingFeatures typesettingFeatures() const { return static_cast<TypesettingFeatures>(m_typesettingFeatures); }
-
-    FontFamily& firstFamily() { return m_fontDescription.firstFamily(); }
-    const FontFamily& family() const { return m_fontDescription.family(); }
-
-    FontItalic italic() const { return m_fontDescription.italic(); }
-    FontWeight weight() const { return m_fontDescription.weight(); }
-    FontWidthVariant widthVariant() const { return m_fontDescription.widthVariant(); }
 
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& fontMetrics() const { return primaryFont()->fontMetrics(); }

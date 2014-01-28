@@ -34,7 +34,7 @@ public:
     void adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const;
     void getStringToRender(int, StringView&, int& length) const;
     bool isCombined() const { return m_isCombined; }
-    float combinedTextWidth(const Font& font) const { return font.size(); }
+    float combinedTextWidth(const Font& font) const { return font.fontDescription().computedSize(); }
     const Font& originalFont() const { return parent()->style()->font(); }
 
 private:

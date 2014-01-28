@@ -865,7 +865,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     if (verticalAlign != BASELINE) {
         const Font& font = parent->style(firstLine)->font();
         const FontMetrics& fontMetrics = font.fontMetrics();
-        int fontSize = font.pixelSize();
+        int fontSize = font.fontDescription().computedPixelSize();
 
         LineDirectionMode lineDirection = parent->isHorizontalWritingMode() ? HorizontalLine : VerticalLine;
 
