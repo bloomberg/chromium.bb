@@ -98,9 +98,6 @@
       'webapp/wcs_sandbox_container.js',
       'webapp/wcs_sandbox_content.js',
     ],
-    'remoting_webapp_js_unused_files': [
-      'webapp/connection_history.js',
-    ],
     'remoting_webapp_js_files': [
       '<@(remoting_webapp_js_auth_client2host_files)',
       '<@(remoting_webapp_js_auth_google_files)',
@@ -127,7 +124,6 @@
       'resources/plus.webp',
       'resources/reload.webp',
       'resources/tick.webp',
-      'webapp/connection_history.css',
       'webapp/connection_stats.css',
       'webapp/main.css',
       'webapp/main.html',
