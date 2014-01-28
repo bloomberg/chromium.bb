@@ -11,16 +11,16 @@
 
 class FakeCoreInterface : public nacl_io::CoreInterface {
  public:
-  FakeCoreInterface();
+  explicit FakeCoreInterface(FakeResourceManager* manager);
 
   virtual void AddRefResource(PP_Resource handle);
   virtual void ReleaseResource(PP_Resource handle);
   virtual PP_Bool IsMainThread() { return PP_FALSE; }
 
-  FakeResourceManager* resource_manager() { return &resource_manager_; }
+  FakeResourceManager* resource_manager() { return resource_manager_; }
 
  private:
-  FakeResourceManager resource_manager_;
+  FakeResourceManager* resource_manager_;  // Weak reference
 
   DISALLOW_COPY_AND_ASSIGN(FakeCoreInterface);
 };

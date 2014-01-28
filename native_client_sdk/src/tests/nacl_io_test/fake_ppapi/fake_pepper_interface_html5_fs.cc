@@ -656,7 +656,8 @@ int32_t FakeFileSystemInterface::Open(PP_Resource file_system,
 }
 
 FakePepperInterfaceHtml5Fs::FakePepperInterfaceHtml5Fs()
-    : var_interface_(&var_manager_),
+    : core_interface_(&resource_manager_),
+      var_interface_(&var_manager_),
       file_system_interface_(&core_interface_),
       file_ref_interface_(&core_interface_, &var_interface_),
       file_io_interface_(&core_interface_) {
@@ -665,7 +666,8 @@ FakePepperInterfaceHtml5Fs::FakePepperInterfaceHtml5Fs()
 
 FakePepperInterfaceHtml5Fs::FakePepperInterfaceHtml5Fs(
     const FakeHtml5FsFilesystem& filesystem)
-    : var_interface_(&var_manager_),
+    : core_interface_(&resource_manager_),
+      var_interface_(&var_manager_),
       filesystem_template_(filesystem),
       file_system_interface_(&core_interface_),
       file_ref_interface_(&core_interface_, &var_interface_),

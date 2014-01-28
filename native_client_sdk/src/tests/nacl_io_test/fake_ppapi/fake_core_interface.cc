@@ -4,12 +4,13 @@
 
 #include "fake_ppapi/fake_core_interface.h"
 
-FakeCoreInterface::FakeCoreInterface() {}
+FakeCoreInterface::FakeCoreInterface(FakeResourceManager* manager)
+    : resource_manager_(manager) {}
 
 void FakeCoreInterface::AddRefResource(PP_Resource handle) {
-  return resource_manager_.AddRef(handle);
+  return resource_manager_->AddRef(handle);
 }
 
 void FakeCoreInterface::ReleaseResource(PP_Resource handle) {
-  return resource_manager_.Release(handle);
+  return resource_manager_->Release(handle);
 }

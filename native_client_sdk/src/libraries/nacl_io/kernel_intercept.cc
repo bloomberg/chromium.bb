@@ -33,6 +33,14 @@ void ki_init(void* kp) {
 void ki_init_ppapi(void* kp,
                    PP_Instance instance,
                    PPB_GetInterface get_browser_interface) {
+  PepperInterface* ppapi = NULL;
+  if (instance && get_browser_interface)
+    ppapi = new RealPepperInterface(instance, get_browser_interface);
+  ki_init_interface(kp, ppapi);
+}
+
+void ki_init_interface(void* kp, void* pepper_interface) {
+  PepperInterface* ppapi = static_cast<PepperInterface*>(pepper_interface);
   kernel_wrap_init();
 
   if (kp == NULL) {
@@ -42,10 +50,6 @@ void ki_init_ppapi(void* kp,
     s_kp = static_cast<KernelProxy*>(kp);
     s_kp_owned = false;
   }
-
-  PepperInterface* ppapi = NULL;
-  if (instance && get_browser_interface)
-    ppapi = new RealPepperInterface(instance, get_browser_interface);
 
   s_kp->Init(ppapi);
 }

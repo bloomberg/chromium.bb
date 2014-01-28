@@ -33,7 +33,15 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
     return NULL;
 
   HostResolverInterface* resolver_interface =
-    ppapi_->GetHostResolverInterface();
+      ppapi_->GetHostResolverInterface();
+  VarInterface* var_interface = ppapi_->GetVarInterface();
+  NetAddressInterface* netaddr_iface = ppapi_->GetNetAddressInterface();
+
+  if (NULL == resolver_interface ||
+      NULL == netaddr_iface ||
+      NULL == var_interface)
+    return NULL;
+
   ScopedResource resolver(ppapi_,
                           resolver_interface->Create(ppapi_->GetInstance()));
 
@@ -72,7 +80,7 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
     return NULL;
 
   uint32_t len;
-  const char* name_ptr = ppapi_->GetVarInterface()->VarToUtf8(name_var, &len);
+  const char* name_ptr = var_interface->VarToUtf8(name_var, &len);
   if (NULL == name_ptr)
     return NULL;
   if (0 == len) {
@@ -88,19 +96,20 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
   memcpy(hostent_.h_name, name_ptr, len);
   hostent_.h_name[len] = '\0';
 
+  var_interface->Release(name_var);
+
   // Aliases aren't supported at the moment, so we just make an empty list.
   hostent_.h_aliases = static_cast<char**>(malloc(sizeof(char*)));
   if (NULL == hostent_.h_aliases)
     return NULL;
   hostent_.h_aliases[0] = NULL;
 
-  NetAddressInterface* netaddr_interface = ppapi_->GetNetAddressInterface();
-  PP_Resource addr =
-      resolver_interface->GetNetAddress(resolver.pp_resource(), 0);
-  if (!PP_ToBool(netaddr_interface->IsNetAddress(addr)))
+  ScopedResource addr(ppapi_);
+  addr.Reset(resolver_interface->GetNetAddress(resolver.pp_resource(), 0));
+  if (!PP_ToBool(netaddr_iface->IsNetAddress(addr.pp_resource())))
     return NULL;
 
-  switch (netaddr_interface->GetFamily(addr)) {
+  switch (netaddr_iface->GetFamily(addr.pp_resource())) {
     case PP_NETADDRESS_FAMILY_IPV4:
       hostent_.h_addrtype = AF_INET;
       hostent_.h_length = 4;
@@ -123,22 +132,22 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
     return NULL;
 
   for (uint32_t i = 0; i < num_addresses; i++) {
-    PP_Resource addr =
-      resolver_interface->GetNetAddress(resolver.pp_resource(), i);
-    if (!PP_ToBool(netaddr_interface->IsNetAddress(addr)))
+    addr.Reset(resolver_interface->GetNetAddress(resolver.pp_resource(), i));
+    if (!PP_ToBool(netaddr_iface->IsNetAddress(addr.pp_resource())))
       return NULL;
     if (AF_INET == hostent_.h_addrtype) {
       struct PP_NetAddress_IPv4 addr_struct;
-      if (!netaddr_interface->DescribeAsIPv4Address(addr, &addr_struct)) {
+      if (!netaddr_iface->DescribeAsIPv4Address(addr.pp_resource(),
+                                                &addr_struct))
         return NULL;
-      }
       hostent_.h_addr_list[i] = static_cast<char*>(malloc(hostent_.h_length));
       if (NULL == hostent_.h_addr_list[i])
         return NULL;
       memcpy(hostent_.h_addr_list[i], addr_struct.addr, hostent_.h_length);
     } else { // IPv6
       struct PP_NetAddress_IPv6 addr_struct;
-      if (!netaddr_interface->DescribeAsIPv6Address(addr, &addr_struct))
+      if (!netaddr_iface->DescribeAsIPv6Address(addr.pp_resource(),
+                                                &addr_struct))
         return NULL;
       hostent_.h_addr_list[i] = static_cast<char*>(malloc(hostent_.h_length));
       if (NULL == hostent_.h_addr_list[i])
@@ -146,6 +155,7 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
       memcpy(hostent_.h_addr_list[i], addr_struct.addr, hostent_.h_length);
     }
   }
+
   return &hostent_;
 }
 

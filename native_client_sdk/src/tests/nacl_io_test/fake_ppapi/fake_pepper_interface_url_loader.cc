@@ -497,7 +497,8 @@ PP_Var FakeURLResponseInfoInterface::GetProperty(
 }
 
 FakePepperInterfaceURLLoader::FakePepperInterfaceURLLoader()
-    : var_interface_(&var_manager_),
+    : core_interface_(&resource_manager_),
+      var_interface_(&var_manager_),
       url_loader_interface_(&core_interface_),
       url_request_info_interface_(&core_interface_, &var_interface_),
       url_response_info_interface_(&core_interface_, &var_interface_) {

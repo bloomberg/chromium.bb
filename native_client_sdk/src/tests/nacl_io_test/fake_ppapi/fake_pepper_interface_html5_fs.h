@@ -188,6 +188,7 @@ class FakePepperInterfaceHtml5Fs : public nacl_io::PepperInterfaceDummy {
  private:
   void Init();
 
+  FakeResourceManager resource_manager_;
   FakeCoreInterface core_interface_;
   FakeVarInterface var_interface_;
   FakeVarManager var_manager_;

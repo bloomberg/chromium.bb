@@ -1,6 +1,6 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 #ifndef LIBRARIES_NACL_IO_KERNEL_INTERCEPT_H_
 #define LIBRARIES_NACL_IO_KERNEL_INTERCEPT_H_
@@ -23,16 +23,28 @@ EXTERN_C_BEGIN
 
 struct fuse_operations;
 
-// The kernel intercept module provides a C->C++ thunk between the libc
-// kernel calls and the KernelProxy singleton.
+/*
+ * The kernel intercept module provides a C->C++ thunk between the libc
+ * kernel calls and the KernelProxy singleton.
+ */
 
-// ki_init must be called with an uninitialized KernelProxy object.  Calling
-// with NULL will instantiate a default kernel proxy object.  ki_init must
-// be called before any other ki_XXX function can be used.
+/*
+ * ki_init must be called with an uninitialized KernelProxy object.  Calling
+ * with NULL will instantiate a default kernel proxy object.  ki_init must
+ * be called before any other ki_XXX function can be used.
+ */
 void ki_init(void* kernel_proxy);
 void ki_init_ppapi(void* kernel_proxy,
                    PP_Instance instance,
                    PPB_GetInterface get_browser_interface);
+
+/*
+ * ki_init_interface() is a variant of ki_init() that can be called with
+ * a PepperInterface object.  The ownership of this object then passes
+ * to nacl_io and it will be deleted on ki_uninit().
+ */
+void ki_init_interface(void* kp, void* pepper_interface);
+
 int ki_register_fs_type(const char* fs_type, struct fuse_operations* fuse_ops);
 int ki_unregister_fs_type(const char* fs_type);
 int ki_is_initialized();
@@ -104,7 +116,7 @@ sighandler_t ki_signal(int signum, sighandler_t handler);
 sighandler_t ki_sigset(int signum, sighandler_t handler);
 
 #ifdef PROVIDES_SOCKET_API
-// Socket Functions
+/* Socket Functions */
 int ki_accept(int fd, struct sockaddr* addr, socklen_t* len);
 int ki_bind(int fd, const struct sockaddr* addr, socklen_t len);
 int ki_connect(int fd, const struct sockaddr* addr, socklen_t len);
@@ -126,8 +138,8 @@ int ki_setsockopt(int fd, int lvl, int optname, const void* optval,
 int ki_shutdown(int fd, int how);
 int ki_socket(int domain, int type, int protocol);
 int ki_socketpair(int domain, int type, int protocl, int* sv);
-#endif  // PROVIDES_SOCKET_API
+#endif  /* PROVIDES_SOCKET_API */
 
 EXTERN_C_END
 
-#endif  // LIBRARIES_NACL_IO_KERNEL_INTERCEPT_H_
+#endif  /* LIBRARIES_NACL_IO_KERNEL_INTERCEPT_H_ */
