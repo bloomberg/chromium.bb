@@ -43,6 +43,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/focus/view_storage.h"
@@ -2303,9 +2304,11 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
     DCHECK(widget);
     aura::Window* widget_window = widget->GetNativeWindow();
     DCHECK(widget_window->GetRootWindow());
-    gfx::Point touch_point;
+    gfx::PointF touch_point_f;
     bool got_touch_point = ui::GestureRecognizer::Get()->
-        GetLastTouchPointForTarget(widget_window, &touch_point);
+        GetLastTouchPointForTarget(widget_window, &touch_point_f);
+    // TODO(tdresser): Switch to using gfx::PointF. See crbug.com/337824.
+    gfx::Point touch_point = gfx::ToFlooredPoint(touch_point_f);
     DCHECK(got_touch_point);
     ash::wm::ConvertPointToScreen(widget_window->GetRootWindow(), &touch_point);
     return touch_point;

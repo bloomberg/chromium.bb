@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <cmath>
+#include <limits>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -419,7 +420,7 @@ EdgeStateSignatureType Signature(GestureState gesture_state,
 }
 #undef G
 
-float BoundingBoxDiagonal(const gfx::Rect& rect) {
+float BoundingBoxDiagonal(const gfx::RectF& rect) {
   float width = rect.width() * rect.width();
   float height = rect.height() * rect.height();
   return sqrt(width + height);
@@ -812,8 +813,10 @@ void GestureSequence::RecreateBoundingBox() {
   } else if (point_count_ == 1) {
     bounding_box_ = GetPointByPointId(0)->enclosing_rectangle();
   } else {
-    int left = INT_MAX / 20, top = INT_MAX / 20;
-    int right = INT_MIN / 20, bottom = INT_MIN / 20;
+    float left = std::numeric_limits<float>::max();
+    float top = std::numeric_limits<float>::max();
+    float right = -std::numeric_limits<float>::max();
+    float bottom = -std::numeric_limits<float>::max();
     for (int i = 0; i < kMaxGesturePoints; ++i) {
       if (!points_[i].in_use())
         continue;
@@ -821,7 +824,7 @@ void GestureSequence::RecreateBoundingBox() {
       // However, this becomes brittle especially when a finger is in motion
       // because the change in radius can overshadow the actual change in
       // position. So the actual position of the point is used instead.
-      const gfx::Point& point = points_[i].last_touch_position();
+      const gfx::PointF& point = points_[i].last_touch_position();
       left = std::min(left, point.x());
       right = std::max(right, point.x());
       top = std::min(top, point.y());
@@ -877,8 +880,8 @@ GesturePoint* GestureSequence::GetPointByPointId(int point_id) {
 }
 
 bool GestureSequence::IsSecondTouchDownCloseEnoughForTwoFingerTap() {
-  gfx::Point p1 = GetPointByPointId(0)->last_touch_position();
-  gfx::Point p2 = GetPointByPointId(1)->last_touch_position();
+  gfx::PointF p1 = GetPointByPointId(0)->last_touch_position();
+  gfx::PointF p2 = GetPointByPointId(1)->last_touch_position();
   double max_distance =
       GestureConfiguration::max_distance_for_two_finger_tap_in_pixels();
   double distance = (p1.x() - p2.x()) * (p1.x() - p2.x()) +
@@ -890,7 +893,7 @@ bool GestureSequence::IsSecondTouchDownCloseEnoughForTwoFingerTap() {
 
 GestureEvent* GestureSequence::CreateGestureEvent(
     const GestureEventDetails& details,
-    const gfx::Point& location,
+    const gfx::PointF& location,
     int flags,
     base::Time timestamp,
     unsigned int touch_id_bitmask) {
@@ -947,8 +950,8 @@ void GestureSequence::AppendEndGestureEvent(const GesturePoint& point,
 void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
                                               int tap_count,
                                               Gestures* gestures) {
-  gfx::Rect er = point.enclosing_rectangle();
-  gfx::Point center = er.CenterPoint();
+  gfx::RectF er = point.enclosing_rectangle();
+  gfx::PointF center = er.CenterPoint();
   gestures->push_back(CreateGestureEvent(
       GestureEventDetails(ui::ET_GESTURE_TAP, tap_count, 0),
       center,
@@ -958,7 +961,7 @@ void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
 }
 
 void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
-                                               const gfx::Point& location,
+                                               const gfx::PointF& location,
                                                Gestures* gestures) {
   gfx::Vector2dF d = point.ScrollDelta();
   gestures->push_back(CreateGestureEvent(
@@ -970,7 +973,7 @@ void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
 }
 
 void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
-                                             const gfx::Point& location,
+                                             const gfx::PointF& location,
                                              Gestures* gestures,
                                              float x_velocity,
                                              float y_velocity) {
@@ -1011,7 +1014,7 @@ void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
   static bool use_scroll_prediction = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableScrollPrediction);
   gfx::Vector2dF d;
-  gfx::Point location;
+  gfx::PointF location;
   if (point_count_ == 1) {
     d = point.ScrollDelta();
     location = point.last_touch_position();
@@ -1030,8 +1033,8 @@ void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
     last_scroll_prediction_offset_.set_y(
         GestureConfiguration::scroll_prediction_seconds() * point.YVelocity());
     d += last_scroll_prediction_offset_;
-    location += gfx::Vector2d(last_scroll_prediction_offset_.x(),
-                              last_scroll_prediction_offset_.y());
+    location += gfx::Vector2dF(last_scroll_prediction_offset_.x(),
+                               last_scroll_prediction_offset_.y());
   }
 
   gfx::Vector2dF o = d;
@@ -1061,7 +1064,7 @@ void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
 void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
                                               const GesturePoint& p2,
                                               Gestures* gestures) {
-  gfx::Point center = bounding_box_.CenterPoint();
+  gfx::PointF center = bounding_box_.CenterPoint();
   gestures->push_back(CreateGestureEvent(
       GestureEventDetails(ui::ET_GESTURE_PINCH_BEGIN, 0, 0),
       center,
@@ -1074,7 +1077,7 @@ void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
                                             const GesturePoint& p2,
                                             float scale,
                                             Gestures* gestures) {
-  gfx::Point center = bounding_box_.CenterPoint();
+  gfx::PointF center = bounding_box_.CenterPoint();
   gestures->push_back(CreateGestureEvent(
       GestureEventDetails(ui::ET_GESTURE_PINCH_END, 0, 0),
       center,
@@ -1110,7 +1113,7 @@ void GestureSequence::AppendSwipeGesture(const GesturePoint& point,
 
 void GestureSequence::AppendTwoFingerTapGestureEvent(Gestures* gestures) {
   const GesturePoint* point = GetPointByPointId(0);
-  const gfx::Rect rect = point->enclosing_rectangle();
+  const gfx::RectF& rect = point->enclosing_rectangle();
   gestures->push_back(CreateGestureEvent(
       GestureEventDetails(ui::ET_GESTURE_TWO_FINGER_TAP,
                           rect.width(),
@@ -1214,8 +1217,9 @@ bool GestureSequence::TwoFingerTouchDown(const TouchEvent& event,
          state_ == GS_SCROLL);
 
   if (state_ == GS_SCROLL) {
-    AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
-        0.f, 0.f);
+    AppendScrollGestureEnd(point,
+                           point.last_touch_position(),
+                           gestures, 0.f, 0.f);
   }
   second_touch_time_ = event.time_stamp();
   return true;
@@ -1274,11 +1278,9 @@ void GestureSequence::AppendShowPressGestureEvent() {
 
 void GestureSequence::AppendLongTapGestureEvent(const GesturePoint& point,
                                                 Gestures* gestures) {
-  gfx::Rect er = point.enclosing_rectangle();
-  gfx::Point center = er.CenterPoint();
   gestures->push_back(CreateGestureEvent(
       GestureEventDetails(ui::ET_GESTURE_LONG_TAP, 0, 0),
-      center,
+      point.enclosing_rectangle().CenterPoint(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       1 << point.touch_id()));
@@ -1289,11 +1291,14 @@ bool GestureSequence::ScrollEnd(const TouchEvent& event,
                                 Gestures* gestures) {
   DCHECK(state_ == GS_SCROLL);
   if (point.IsInFlickWindow(event)) {
-    AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
-        point.XVelocity(), point.YVelocity());
+    AppendScrollGestureEnd(point,
+                           point.last_touch_position(),
+                           gestures,
+                           point.XVelocity(), point.YVelocity());
   } else {
-    AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
-        0.f, 0.f);
+    AppendScrollGestureEnd(point,
+                           point.last_touch_position(),
+                           gestures, 0.f, 0.f);
   }
   return true;
 }
@@ -1318,8 +1323,7 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
 
   if (state_ == GS_PENDING_TWO_FINGER_TAP ||
       state_ == GS_PENDING_PINCH) {
-    gfx::Point center = bounding_box_.CenterPoint();
-    AppendScrollGestureBegin(point, center, gestures);
+    AppendScrollGestureBegin(point, bounding_box_.CenterPoint(), gestures);
   }
 
   return true;

@@ -30,7 +30,7 @@ float VelocityCalculator::YVelocity() {
   return y_velocity_;
 }
 
-void VelocityCalculator::PointSeen(int x, int y, int64 time) {
+void VelocityCalculator::PointSeen(float x, float y, int64 time) {
   buffer_[index_].x = x;
   buffer_[index_].y = y;
   buffer_[index_].time = time;

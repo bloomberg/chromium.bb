@@ -48,7 +48,7 @@ void GesturePoint::ResetVelocity() {
   same_direction_count_ = gfx::Vector2d();
 }
 
-gfx::Vector2d GesturePoint::ScrollDelta() const {
+gfx::Vector2dF GesturePoint::ScrollDelta() const {
   return last_touch_position_ - second_last_touch_position_;
 }
 
@@ -65,7 +65,7 @@ void GesturePoint::UpdateValues(const TouchEvent& event) {
   }
 
   last_touch_time_ = event.time_stamp().InSecondsF();
-  last_touch_position_ = event.location();
+  last_touch_position_ = event.location_f();
 
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     ResetVelocity();
@@ -137,8 +137,8 @@ int GesturePoint::ScrollVelocityDirection(float v) {
 }
 
 bool GesturePoint::DidScroll(const TouchEvent& event, int dist) const {
-  gfx::Vector2d d = last_touch_position_ - second_last_touch_position_;
-  return abs(d.x()) > dist || abs(d.y()) > dist;
+  gfx::Vector2dF d = last_touch_position_ - second_last_touch_position_;
+  return fabs(d.x()) > dist || fabs(d.y()) > dist;
 }
 
 bool GesturePoint::IsConsistentScrollingActionUnderway() const {
@@ -150,13 +150,13 @@ bool GesturePoint::IsConsistentScrollingActionUnderway() const {
 }
 
 bool GesturePoint::IsInHorizontalRailWindow() const {
-  gfx::Vector2d d = last_touch_position_ - second_last_touch_position_;
+  gfx::Vector2dF d = last_touch_position_ - second_last_touch_position_;
   return abs(d.x()) >
       GestureConfiguration::rail_start_proportion() * abs(d.y());
 }
 
 bool GesturePoint::IsInVerticalRailWindow() const {
-  gfx::Vector2d d = last_touch_position_ - second_last_touch_position_;
+  gfx::Vector2dF d = last_touch_position_ - second_last_touch_position_;
   return abs(d.y()) >
       GestureConfiguration::rail_start_proportion() * abs(d.x());
 }
@@ -190,16 +190,16 @@ bool GesturePoint::IsInClickAggregateTimeWindow(double before,
 }
 
 bool GesturePoint::IsInsideTouchSlopRegion(const TouchEvent& event) const {
-  const gfx::Point& p1 = event.location();
-  const gfx::Point& p2 = first_touch_position_;
+  const gfx::PointF& p1 = event.location();
+  const gfx::PointF& p2 = first_touch_position_;
   float dx = p1.x() - p2.x();
   float dy = p1.y() - p2.y();
   float distance = dx * dx + dy * dy;
   return distance < max_touch_move_in_pixels_for_click_squared_;
 }
 
-bool GesturePoint::IsPointInsideDoubleTapTouchSlopRegion(gfx::Point p1,
-                                                gfx::Point p2) const {
+bool GesturePoint::IsPointInsideDoubleTapTouchSlopRegion(gfx::PointF p1,
+                                                         gfx::PointF p2) const {
   float dx = p1.x() - p2.x();
   float dy = p1.y() - p2.y();
   float distance = dx * dx + dy * dy;
@@ -231,10 +231,10 @@ void GesturePoint::UpdateEnclosingRectangle(const TouchEvent& event) {
   else
     radius = GestureConfiguration::default_radius();
 
-  gfx::Rect rect(event.location().x() - radius,
-                 event.location().y() - radius,
-                 radius * 2,
-                 radius * 2);
+  gfx::RectF rect(event.location_f().x() - radius,
+                  event.location_f().y() - radius,
+                  radius * 2,
+                  radius * 2);
   if (IsInClickWindow(event))
     enclosing_rect_.Union(rect);
   else

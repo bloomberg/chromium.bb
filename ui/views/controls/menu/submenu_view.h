@@ -202,6 +202,12 @@ class VIEWS_EXPORT SubmenuView : public View,
   // The submenu's scroll animator
   scoped_ptr<ScrollAnimator> scroll_animator_;
 
+  // Difference between current position and cumulative deltas passed to
+  // OnScroll.
+  // TODO(tdresser): This should be removed when raw pixel scrolling for views
+  // is enabled. See crbug.com/329354.
+  float roundoff_error_;
+
   DISALLOW_COPY_AND_ASSIGN(SubmenuView);
 };
 

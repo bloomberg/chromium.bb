@@ -17,7 +17,7 @@ class EVENTS_EXPORT VelocityCalculator {
  public:
   explicit VelocityCalculator(int bufferSize);
   ~VelocityCalculator();
-  void PointSeen(int x, int y, int64 time);
+  void PointSeen(float x, float y, int64 time);
   float XVelocity();
   float YVelocity();
   float VelocitySquared();
@@ -25,8 +25,8 @@ class EVENTS_EXPORT VelocityCalculator {
 
  private:
   struct Point {
-    int x;
-    int y;
+    float x;
+    float y;
     int64 time;
   };
 

@@ -17,6 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
@@ -235,10 +236,19 @@ void BaseScrollBar::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    if (ScrollByContentsOffset(IsHorizontal() ? event->details().scroll_x() :
-                                                event->details().scroll_y())) {
-      event->SetHandled();
+    float scroll_amount_f;
+    int scroll_amount;
+    if (IsHorizontal()) {
+      scroll_amount_f = event->details().scroll_x() - roundoff_error_.x();
+      scroll_amount = gfx::ToRoundedInt(scroll_amount_f);
+      roundoff_error_.set_x(scroll_amount - scroll_amount_f);
+    } else {
+      scroll_amount_f = event->details().scroll_y() - roundoff_error_.y();
+      scroll_amount = gfx::ToRoundedInt(scroll_amount_f);
+      roundoff_error_.set_y(scroll_amount - scroll_amount_f);
     }
+    if (ScrollByContentsOffset(scroll_amount))
+      event->SetHandled();
     return;
   }
 

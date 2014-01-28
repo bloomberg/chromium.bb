@@ -251,8 +251,8 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
 }
 
 LocatedEvent::LocatedEvent(EventType type,
-                           const gfx::Point& location,
-                           const gfx::Point& root_location,
+                           const gfx::PointF& location,
+                           const gfx::PointF& root_location,
                            base::TimeDelta time_stamp,
                            int flags)
     : Event(type, time_stamp, flags),
@@ -265,7 +265,8 @@ void LocatedEvent::UpdateForRootTransform(
   // Transform has to be done at root level.
   gfx::Point3F p(location_);
   reversed_root_transform.TransformPoint(&p);
-  root_location_ = location_ = gfx::ToFlooredPoint(p.AsPointF());
+  location_ = p.AsPointF();
+  root_location_ = location_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,8 +281,8 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
 }
 
 MouseEvent::MouseEvent(EventType type,
-                       const gfx::Point& location,
-                       const gfx::Point& root_location,
+                       const gfx::PointF& location,
+                       const gfx::PointF& root_location,
                        int flags,
                        int changed_button_flags)
     : LocatedEvent(type, location, root_location, EventTimeForNow(), flags),
@@ -456,7 +457,7 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
 }
 
 TouchEvent::TouchEvent(EventType type,
-                       const gfx::Point& location,
+                       const gfx::PointF& location,
                        int touch_id,
                        base::TimeDelta time_stamp)
     : LocatedEvent(type, location, location, time_stamp, 0),
@@ -470,7 +471,7 @@ TouchEvent::TouchEvent(EventType type,
 }
 
 TouchEvent::TouchEvent(EventType type,
-                       const gfx::Point& location,
+                       const gfx::PointF& location,
                        int flags,
                        int touch_id,
                        base::TimeDelta time_stamp,
@@ -666,7 +667,7 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
 }
 
 ScrollEvent::ScrollEvent(EventType type,
-                         const gfx::Point& location,
+                         const gfx::PointF& location,
                          base::TimeDelta time_stamp,
                          int flags,
                          float x_offset,
@@ -695,15 +696,15 @@ void ScrollEvent::Scale(const float factor) {
 // GestureEvent
 
 GestureEvent::GestureEvent(EventType type,
-                           int x,
-                           int y,
+                           float x,
+                           float y,
                            int flags,
                            base::TimeDelta time_stamp,
                            const GestureEventDetails& details,
                            unsigned int touch_ids_bitfield)
     : LocatedEvent(type,
-                   gfx::Point(x, y),
-                   gfx::Point(x, y),
+                   gfx::PointF(x, y),
+                   gfx::PointF(x, y),
                    time_stamp,
                    flags | EF_FROM_TOUCH),
       details_(details),

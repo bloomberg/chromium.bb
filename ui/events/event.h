@@ -15,6 +15,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/point_conversions.h"
 
 namespace gfx {
 class Transform;
@@ -243,14 +244,19 @@ class EVENTS_EXPORT LocatedEvent : public Event {
  public:
   virtual ~LocatedEvent();
 
-  int x() const { return location_.x(); }
-  int y() const { return location_.y(); }
-  void set_location(const gfx::Point& location) { location_ = location; }
-  gfx::Point location() const { return location_; }
-  void set_root_location(const gfx::Point& root_location) {
+  float x() const { return location_.x(); }
+  float y() const { return location_.y(); }
+  void set_location(const gfx::PointF& location) { location_ = location; }
+  // TODO(tdresser): Always return floating point location. See
+  // crbug.com/337824.
+  gfx::Point location() const { return gfx::ToFlooredPoint(location_); }
+  gfx::PointF location_f() const { return location_; }
+  void set_root_location(const gfx::PointF& root_location) {
     root_location_ = root_location;
   }
-  gfx::Point root_location() const { return root_location_; }
+  gfx::Point root_location() const {
+    return gfx::ToFlooredPoint(root_location_);
+  }
 
   // Transform the locations using |inverted_root_transform|.
   // This is applied to both |location_| and |root_location_|.
@@ -258,8 +264,14 @@ class EVENTS_EXPORT LocatedEvent : public Event {
       const gfx::Transform& inverted_root_transform);
 
   template <class T> void ConvertLocationToTarget(T* source, T* target) {
-    if (target && target != source)
-      T::ConvertPointToTarget(source, target, &location_);
+    if (!target || target == source)
+      return;
+    // TODO(tdresser): Rewrite ConvertPointToTarget to use PointF. See
+    // crbug.com/337824.
+    gfx::Point offset = gfx::ToFlooredPoint(location_);
+    T::ConvertPointToTarget(source, target, &offset);
+    gfx::Vector2d diff = gfx::ToFlooredPoint(location_) - offset;
+    location_= location_ - diff;
   }
 
  protected:
@@ -279,16 +291,16 @@ class EVENTS_EXPORT LocatedEvent : public Event {
 
   // Used for synthetic events in testing.
   LocatedEvent(EventType type,
-               const gfx::Point& location,
-               const gfx::Point& root_location,
+               const gfx::PointF& location,
+               const gfx::PointF& root_location,
                base::TimeDelta time_stamp,
                int flags);
 
-  gfx::Point location_;
+  gfx::PointF location_;
 
   // |location_| multiplied by an optional transformation matrix for
   // rotations, animations and skews.
-  gfx::Point root_location_;
+  gfx::PointF root_location_;
 };
 
 class EVENTS_EXPORT MouseEvent : public LocatedEvent {
@@ -319,8 +331,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
 
   // Used for synthetic events in testing and by the gesture recognizer.
   MouseEvent(EventType type,
-             const gfx::Point& location,
-             const gfx::Point& root_location,
+             const gfx::PointF& location,
+             const gfx::PointF& root_location,
              int flags,
              int changed_button_flags);
 
@@ -442,12 +454,12 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   }
 
   TouchEvent(EventType type,
-             const gfx::Point& root_location,
+             const gfx::PointF& location,
              int touch_id,
              base::TimeDelta time_stamp);
 
   TouchEvent(EventType type,
-             const gfx::Point& location,
+             const gfx::PointF& location,
              int flags,
              int touch_id,
              base::TimeDelta timestamp,
@@ -609,7 +621,7 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
 
   // Used for tests.
   ScrollEvent(EventType type,
-              const gfx::Point& location,
+              const gfx::PointF& location,
               base::TimeDelta time_stamp,
               int flags,
               float x_offset,
@@ -643,8 +655,8 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
 class EVENTS_EXPORT GestureEvent : public LocatedEvent {
  public:
   GestureEvent(EventType type,
-               int x,
-               int y,
+               float x,
+               float y,
                int flags,
                base::TimeDelta time_stamp,
                const GestureEventDetails& details,

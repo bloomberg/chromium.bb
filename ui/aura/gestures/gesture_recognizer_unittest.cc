@@ -579,8 +579,8 @@ class TimedEvents {
   }
 
   void SendScrollEvents(RootWindow* root_window,
-                        int x_start,
-                        int y_start,
+                        float x_start,
+                        float y_start,
                         int dx,
                         int dy,
                         int touch_id,
@@ -593,7 +593,7 @@ class TimedEvents {
     for (int i = 0; i < num_steps; i++) {
       x += dx;
       y += dy;
-      ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(x, y),
+      ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(x, y),
                           touch_id,
                           base::TimeDelta::FromMilliseconds(simulated_now_));
       root_window->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
@@ -602,12 +602,12 @@ class TimedEvents {
   }
 
   void SendScrollEvent(RootWindow* root_window,
-                       int x,
-                       int y,
+                       float x,
+                       float y,
                        int touch_id,
                        GestureEventConsumeDelegate* delegate) {
     delegate->Reset();
-    ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(x, y),
+    ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::PointF(x, y),
                         touch_id,
                         base::TimeDelta::FromMilliseconds(simulated_now_));
     root_window->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
@@ -1024,13 +1024,13 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
   // The first movement is diagonal, to ensure that we have a free scroll,
   // and not a rail scroll.
-  tes.SendScrollEvent(dispatcher(), 130, 230, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 130.5, 230.5, kTouchId, delegate.get());
   EXPECT_3_EVENTS(delegate->events(),
                   ui::ET_GESTURE_TAP_CANCEL,
                   ui::ET_GESTURE_SCROLL_BEGIN,
                   ui::ET_GESTURE_SCROLL_UPDATE);
-  EXPECT_EQ(29, delegate->scroll_x());
-  EXPECT_EQ(29, delegate->scroll_y());
+  EXPECT_FLOAT_EQ(29.5, delegate->scroll_x());
+  EXPECT_FLOAT_EQ(29.5, delegate->scroll_y());
   EXPECT_EQ(gfx::Point(1, 1).ToString(),
             delegate->scroll_begin_position().ToString());
 
@@ -1041,8 +1041,8 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   // Move some more to generate a few more scroll updates.
   tes.SendScrollEvent(dispatcher(), 110, 211, kTouchId, delegate.get());
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
-  EXPECT_EQ(-20, delegate->scroll_x());
-  EXPECT_EQ(-19, delegate->scroll_y());
+  EXPECT_FLOAT_EQ(-20.5, delegate->scroll_x());
+  EXPECT_FLOAT_EQ(-19.5, delegate->scroll_y());
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
   tes.SendScrollEvent(dispatcher(), 140, 215, kTouchId, delegate.get());

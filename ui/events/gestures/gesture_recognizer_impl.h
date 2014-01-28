@@ -39,11 +39,11 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   virtual GestureConsumer* GetTargetForGestureEvent(
       const GestureEvent& event) OVERRIDE;
   virtual GestureConsumer* GetTargetForLocation(
-      const gfx::Point& location, int source_device_id) OVERRIDE;
+      const gfx::PointF& location, int source_device_id) OVERRIDE;
   virtual void TransferEventsTo(GestureConsumer* current_consumer,
                                 GestureConsumer* new_consumer) OVERRIDE;
   virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
-                                          gfx::Point* point) OVERRIDE;
+                                          gfx::PointF* point) OVERRIDE;
   virtual void CancelActiveTouches(GestureConsumer* consumer) OVERRIDE;
 
  protected:

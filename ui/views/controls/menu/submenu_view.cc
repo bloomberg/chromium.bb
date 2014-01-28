@@ -10,6 +10,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_host.h"
@@ -41,7 +42,8 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       max_minor_text_width_(0),
       minimum_preferred_width_(0),
       resize_open_menu_(false),
-      scroll_animator_(new ScrollAnimator(this)) {
+      scroll_animator_(new ScrollAnimator(this)),
+      roundoff_error_(0) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_owned_by_client();
@@ -446,7 +448,9 @@ bool SubmenuView::OnScroll(float dx, float dy) {
   const gfx::Rect& vis_bounds = GetVisibleBounds();
   const gfx::Rect& full_bounds = bounds();
   int x = vis_bounds.x();
-  int y = vis_bounds.y() - static_cast<int>(dy);
+  float y_f = vis_bounds.y() - dy - roundoff_error_;
+  int y = gfx::ToRoundedInt(y_f);
+  roundoff_error_ = y - y_f;
   // clamp y to [0, full_height - vis_height)
   y = std::min(y, full_bounds.height() - vis_bounds.height() - 1);
   y = std::max(y, 0);

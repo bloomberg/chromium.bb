@@ -25,6 +25,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/screen.h"
 
 namespace {
@@ -377,11 +378,14 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   aura::Window* root_window = source->GetRootWindow();
   DCHECK(root_window);
+  // TODO(tdresser): Use gfx::PointF. See crbug.com/337824.
   gfx::Point drag_location;
   if (move_source == aura::client::WINDOW_MOVE_SOURCE_TOUCH &&
       aura::Env::GetInstance()->is_touch_down()) {
+    gfx::PointF drag_location_f;
     bool has_point = ui::GestureRecognizer::Get()->
-        GetLastTouchPointForTarget(source, &drag_location);
+        GetLastTouchPointForTarget(source, &drag_location_f);
+    drag_location = gfx::ToFlooredPoint(drag_location_f);
     DCHECK(has_point);
   } else {
     drag_location = root_window->GetDispatcher()->GetLastMouseLocationInRoot();
