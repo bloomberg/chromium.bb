@@ -4,6 +4,7 @@
 
 import os
 
+from metrics import power
 from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
@@ -11,9 +12,22 @@ from telemetry.page import page_set
 
 
 class _DromaeoMeasurement(page_measurement.PageMeasurement):
+  def __init__(self):
+    super(_DromaeoMeasurement, self).__init__()
+    self._power_metric = power.PowerMetric()
+
+  def CustomizeBrowserOptions(self, options):
+    power.PowerMetric.CustomizeBrowserOptions(options)
+
+  def DidNavigateToPage(self, page, tab):
+    self._power_metric.Start(page, tab)
+
   def MeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression(
         'window.document.cookie.indexOf("__done=1") >= 0', 600)
+
+    self._power_metric.Stop(page, tab)
+    self._power_metric.AddResults(tab, results)
 
     js_get_results = 'JSON.stringify(window.automation.GetResults())'
     print js_get_results

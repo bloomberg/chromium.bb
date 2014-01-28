@@ -21,6 +21,7 @@ import os
 from metrics import cpu
 from metrics import io
 from metrics import memory
+from metrics import power
 from metrics import speedindex
 from metrics import v8_object_stats
 from telemetry.core import util
@@ -38,6 +39,7 @@ class PageCycler(page_measurement.PageMeasurement):
     self._report_speed_index = False
     self._speedindex_metric = speedindex.SpeedIndexMetric()
     self._memory_metric = None
+    self._power_metric = power.PowerMetric()
     self._cpu_metric = None
     self._v8_object_stats_metric = None
     self._cold_run_start_index = None
@@ -84,6 +86,7 @@ class PageCycler(page_measurement.PageMeasurement):
 
   def DidNavigateToPage(self, page, tab):
     self._memory_metric.Start(page, tab)
+    self._power_metric.Start(page, tab)
     # TODO(qyearsley): Uncomment the following line and move it to
     # WillNavigateToPage once the cpu metric has been changed.
     # This is being temporarily commented out to let the page cycler
@@ -94,6 +97,7 @@ class PageCycler(page_measurement.PageMeasurement):
 
   def CustomizeBrowserOptions(self, options):
     memory.MemoryMetric.CustomizeBrowserOptions(options)
+    power.PowerMetric.CustomizeBrowserOptions(options)
     io.IOMetric.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs('--js-flags=--expose_gc')
 
@@ -145,8 +149,11 @@ class PageCycler(page_measurement.PageMeasurement):
 
     self._has_loaded_page[page.url] += 1
 
+    self._power_metric.Stop(page, tab)
     self._memory_metric.Stop(page, tab)
     self._memory_metric.AddResults(tab, results)
+    self._power_metric.AddResults(tab, results)
+
     # TODO(qyearsley): Uncomment the following line when CPU metric is
     # changed. See crbug.com/301714.
     # self._cpu_metric.Stop(page, tab)

@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 
+from metrics import power
 from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
@@ -15,12 +16,23 @@ from telemetry.page import page_set
 
 
 class _SpaceportMeasurement(page_measurement.PageMeasurement):
+  def __init__(self):
+    super(_SpaceportMeasurement, self).__init__()
+    self._power_metric = power.PowerMetric()
+
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--disable-gpu-vsync')
+    power.PowerMetric.CustomizeBrowserOptions(options)
 
-  def MeasurePage(self, _, tab, results):
+  def DidNavigateToPage(self, page, tab):
+    self._power_metric.Start(page, tab)
+
+  def MeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression(
         '!document.getElementById("start-performance-tests").disabled', 60)
+
+    self._power_metric.Stop(page, tab)
+    self._power_metric.AddResults(tab, results)
 
     tab.ExecuteJavaScript("""
         window.__results = {};

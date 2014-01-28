@@ -6,17 +6,32 @@
 
 import os
 
+from metrics import power
 from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
 
 class _RobohornetProMeasurement(page_measurement.PageMeasurement):
-  def MeasurePage(self, _, tab, results):
+  def __init__(self):
+    super(_RobohornetProMeasurement, self).__init__()
+    self._power_metric = power.PowerMetric()
+
+  def CustomizeBrowserOptions(self, options):
+    power.PowerMetric.CustomizeBrowserOptions(options)
+
+  def DidNavigateToPage(self, page, tab):
+    self._power_metric.Start(page, tab)
+
+  def MeasurePage(self, page, tab, results):
     tab.ExecuteJavaScript('ToggleRoboHornet()')
     tab.WaitForJavaScriptExpression(
         'document.getElementById("results").innerHTML.indexOf("Total") != -1',
         120)
+
+    self._power_metric.Stop(page, tab)
+    self._power_metric.AddResults(tab, results)
+
     result = int(tab.EvaluateJavaScript('stopTime - startTime'))
     results.Add('Total', 'ms', result)
 

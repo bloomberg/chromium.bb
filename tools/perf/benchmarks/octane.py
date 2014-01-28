@@ -13,6 +13,7 @@ Octane 2.0 consists of 17 tests, four more than Octane v1.
 
 import os
 
+from metrics import power
 from metrics import statistics
 from telemetry import test
 from telemetry.page import page_measurement
@@ -20,6 +21,12 @@ from telemetry.page import page_set
 
 
 class _OctaneMeasurement(page_measurement.PageMeasurement):
+  def __init__(self):
+    super(_OctaneMeasurement, self).__init__()
+    self._power_metric = power.PowerMetric()
+
+  def CustomizeBrowserOptions(self, options):
+    power.PowerMetric.CustomizeBrowserOptions(options)
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """
@@ -31,9 +38,15 @@ class _OctaneMeasurement(page_measurement.PageMeasurement):
         }
         """
 
-  def MeasurePage(self, _, tab, results):
+  def DidNavigateToPage(self, page, tab):
+    self._power_metric.Start(page, tab)
+
+  def MeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression(
         'completed && !document.getElementById("progress-bar-container")', 1200)
+
+    self._power_metric.Stop(page, tab)
+    self._power_metric.AddResults(tab, results)
 
     results_log = tab.EvaluateJavaScript('__results')
     all_scores = []
