@@ -87,6 +87,7 @@ public:
 
     void forceFullCompositingUpdate()
     {
+        webViewImpl()->layout();
         RenderLayerCompositor* compositor = frame()->contentRenderer()->compositor();
         compositor->updateCompositingLayers();
     }

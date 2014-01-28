@@ -1039,7 +1039,6 @@ private:
     void updateUseShadowTrees();
 
     void unscheduleStyleRecalc();
-    void styleRecalcTimerFired(Timer<Document>*);
 
     void detachParser();
 
@@ -1173,7 +1172,7 @@ private:
     ReadyState m_readyState;
     bool m_bParsing;
 
-    Timer<Document> m_styleRecalcTimer;
+    bool m_hasPendingStyleRecalc;
     bool m_inStyleRecalc;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;

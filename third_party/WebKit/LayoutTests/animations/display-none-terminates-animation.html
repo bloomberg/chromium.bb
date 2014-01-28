@@ -43,14 +43,18 @@
     function onStart(e) {
       log('INFO: Start event fired');
       target.removeEventListener('webkitAnimationStart', onStart);
-      setTimeout(setDisplayNone, 100);
+      requestAnimationFrame(function() {
+        setTimeout(setDisplayNone, 100);
+      });
     }
 
     var leftPropertyWhenSetDisplayNone;
     function setDisplayNone() {
       leftPropertyWhenSetDisplayNone = getComputedStyle(target).left;
       target.style.display = 'none';
-      setTimeout(setDisplayBlock, 100);
+      requestAnimationFrame(function() {
+        setTimeout(setDisplayBlock, 100);
+      });
     }
 
     function setDisplayBlock() {
