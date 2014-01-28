@@ -1675,8 +1675,11 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
 
     if (layoutState.isFullLayout()) {
         // If we encountered a new float and have inline children, mark ourself to force us to repaint.
-        if (layoutState.hasInlineChild() && !selfNeedsLayout())
+        if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
             setNeedsLayout(MarkOnlyThis);
+            if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+                setShouldDoFullRepaintAfterLayout(true);
+        }
 
         // FIXME: This should just call deleteLineBoxTree, but that causes
         // crashes for fast/repaint tests.
