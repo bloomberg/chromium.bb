@@ -98,6 +98,30 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 
 
 {##############################################################################}
+{% block anonymous_indexed_property_getter_and_callback %}
+{% if anonymous_indexed_property_getter %}
+{% set getter = anonymous_indexed_property_getter %}
+static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{getter.cpp_type}} element = collection->{{getter.name}}(index);
+    if ({{getter.is_null_expression}})
+        return;
+    {{getter.v8_set_return_value}};
+}
+
+static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    {{cpp_class}}V8Internal::indexedPropertyGetter(index, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block origin_safe_method_setter %}
 {% if has_origin_safe_method_setter %}
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -463,6 +487,9 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endfor %}
     {% if constants %}
     {{install_constants() | indent}}
+    {% endif %}
+    {% if anonymous_indexed_property_getter %}
+    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{cpp_class}}V8Internal::indexedPropertyGetterCallback, 0, 0, 0, indexedPropertyEnumerator<{{cpp_class}}>);
     {% endif %}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);

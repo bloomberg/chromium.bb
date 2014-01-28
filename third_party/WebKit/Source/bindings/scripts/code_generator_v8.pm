@@ -4387,7 +4387,7 @@ END
     my $needsDomainSafeFunctionSetter = 0;
     # Generate methods for functions.
     foreach my $function (@{$interface->functions}) {
-        next if $function->name eq "";
+        next if $function->name eq "";  # Skip anonymous special operations
         my @worldSuffixes = ("");
         if ($function->extendedAttributes->{"PerWorldBindings"}) {
             push(@worldSuffixes, "ForMainWorld");

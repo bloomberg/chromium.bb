@@ -76,7 +76,7 @@ def generate_method(interface, method):
         'DoNotCheckSecurity' not in extended_attributes)
     is_raises_exception = 'RaisesException' in extended_attributes
 
-    contents = {
+    return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
                       for index, argument in enumerate(arguments)],
@@ -129,7 +129,6 @@ def generate_method(interface, method):
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
-    return contents
 
 
 def generate_argument(interface, method, argument, index):

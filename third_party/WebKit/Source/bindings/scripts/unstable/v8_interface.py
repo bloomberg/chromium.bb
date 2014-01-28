@@ -207,7 +207,8 @@ def generate_interface(interface):
 
     # Methods
     methods = [v8_methods.generate_method(interface, method)
-               for method in interface.operations]
+               for method in interface.operations
+               if method.name]  # Skip anonymous special operations (methods)
     generate_overloads(methods)
     for method in methods:
         method['do_generate_method_configuration'] = (
@@ -223,6 +224,10 @@ def generate_interface(interface):
         'has_method_configuration': any(method['do_generate_method_configuration'] for method in methods),
         'has_per_context_enabled_methods': any(method['per_context_enabled_function'] for method in methods),
         'methods': methods,
+    })
+
+    template_contents.update({
+        'anonymous_indexed_property_getter': anonymous_indexed_property_getter(interface),
     })
 
     return template_contents
@@ -469,3 +474,36 @@ def interface_length(interface, constructors):
         return 0
     return min(constructor['number_of_required_arguments']
                for constructor in constructors)
+
+
+################################################################################
+# Special operations (methods)
+# http://heycam.github.io/webidl/#idl-special-operations
+################################################################################
+
+def anonymous_indexed_property_getter(interface):
+    try:
+        getter = next(
+            method
+            for method in interface.operations
+            if ('getter' in method.specials and
+                len(method.arguments) == 1 and
+                method.arguments[0].idl_type == 'unsigned long' and
+                not method.name))
+    except StopIteration:
+        return None
+
+    idl_type = getter.idl_type
+    extended_attributes = getter.extended_attributes
+    return {
+        'cpp_type': v8_types.cpp_type(idl_type),
+        'is_null_expression': getter_is_null_expression(idl_type),
+        'name': extended_attributes['ImplementedAs'],
+        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
+    }
+
+
+def getter_is_null_expression(idl_type):
+    if idl_type == 'DOMString':
+        return 'element.isNull()'
+    return None
