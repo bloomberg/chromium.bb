@@ -9622,124 +9622,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
        Unlock
       </message>
 
-      <!-- Extension settings -->
-      <message name="IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for manage extensions settings">
-        Extensions
-      </message>
-
-      <!-- Font settings -->
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the Fonts and Encoding subpage">
-        Fonts and encoding
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="Label of the Standard font section of the Fonts and Encoding subpage">
-        Standard font
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Label of the Serif font section of the Fonts and Encoding subpage">
-        Serif font
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Label of the Sans-serif font section of the Fonts and Encoding subpage">
-        Sans-serif font
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the Fixed-width font section of the Fonts and Encoding subpage">
-        Fixed-width font
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Label of the Minimum font size section of the Fonts and Encoding subpage">
-        Minimum font size
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE" desc="Label of the Encoding section of the Fonts and Encoding subpage">
-        Encoding
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY" desc="Label for the 'Tiny' side of the font size range selector">
-        Tiny
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_HUGE" desc="Label for the 'Huge' side of the font size range selector">
-        Huge
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM" desc="Sample text of 'Lorem ipsum' used to show the selected font/size">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER" desc="Placeholder string for the Fonts and Encodings select menus">
-        Loading...
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_INSTALL"
-               desc="Explanatory message about how to get the Advanced Font Settings extension">
-        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Advanced font settings<ph name="END_LINK">&lt;/a&gt;</ph> (requires extension)
-      </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_OPTIONS"
-               desc="Link to the Advanced Font Settings extension's options page">
-        Advanced font settings
-      </message>
-
-      <!-- Language & spell-checker settings -->
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
-        Languages
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE">
-        Languages and input
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
-        Languages
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON"
-               desc="The label for the add button for adding a language">
-        Add
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS"
-               desc="Explanatory message about how to add and order languages">
-        Add languages and drag to order them based on your preference.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE"
-               desc="The label for a language that cannot be used for UI">
-        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> cannot be displayed in this language
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE"
-               desc="The label for a language that is currently used for UI">
-        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> is displayed in this language
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
-               desc="The label is used for a button that changes the UI
-                     language of Chrome OS">
-        Display <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> in this language
-      </message>
-      <if expr="not is_macosx">
-        <message name="IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING"
-                 desc="The label for a language a button that changes the spell check language of Chrome">
-          Use this language for spell checking
-        </message>
-        <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
-                 desc="The label for a language that cannot be used for spell checking">
-          This language cannot be used for spell checking
-        </message>
-        <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
-                 desc="The label for a language that is currently used for spell checking">
-          This language is used for spell checking
-        </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
-                 desc="The label for the relaunch button for changing UI language">
-          Relaunch
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
-                 desc="The label for the restart button for changing UI language">
-          Restart
-        </message>
-      </if>
-      <message name="IDS_OPTIONS_LANGUAGES_ADD_TITLE" desc="The title for the add language dialog.">
-        Add language
-      </message>
-      <message name="IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL" desc="The label for the add language select control.">
-        Language:
-      </message>
-      <message name="IDS_OPTIONS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE" desc="The label for a checkbox which indicates whether or not the language should be translated.">
-        Offer to translate pages in this language
-      </message>
-      <message name="IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE" desc="The string displayed to user when the language cannot be translated.">
-        This language cannot be translated
-      </message>
-
       <!-- HTTP POST Warning -->
       <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost">
         Confirm Form Resubmission
@@ -9845,40 +9727,6 @@ To hide access to this program, you need to uninstall it by using
 <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph> in Control Panel.
 
 Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph>?
-      </message>
-
-      <!-- Settings -->
-      <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
-        Settings
-      </message>
-      <message name="IDS_SETTINGS_HIDE_ADVANCED_SETTINGS" desc="Title for the link to hide advanced settings.">
-        Hide advanced settings...
-      </message>
-      <message name="IDS_SETTINGS_SHOW_ADVANCED_SETTINGS" desc="Title for the link to show advanced settings.">
-        Show advanced settings...
-      </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
-          Internet
-        </message>
-        <message name="IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL" desc="The title of the 'Internet connections' group">
-          Internet connection
-        </message>
-        <message name="IDS_OPTIONS_INTERNET_OPTIONS_BUTTON_TITLE" desc="The title of the 'Manage connections...' button">
-          Manage connections...
-        </message>
-        <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
-          Users
-        </message>
-        <message name="IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE" desc="The title of the Manage Accounts button">
-          Manage other users...
-        </message>
-        <message name="IDS_OPTIONS_PROXY_TAB_LABEL" desc="The title of the proxy subtab">
-          Proxy
-        </message>
-      </if>
-      <message name="IDS_OPTIONS_TAB_TITLE" desc="The format of the title on the browser tab for an options subpage, e.g. Settings - Basics">
-        <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
       </message>
 
       <!-- chrome://help -->
@@ -10040,244 +9888,530 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Remembered Wi-Fi Networks:
       </message>
 
-      <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
-        On startup
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_SHOW_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
-        Open the New Tab page
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION" desc="The label of the 'Continue where I left off' startup option radio button">
-        Continue where I left off
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
-        Open a specific page or set of pages.
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_SET_PAGES" desc="The link that is clicked to choose the set of pages that will be shown at startup">
-        Set pages
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
-        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - <ph name="PAGE_URL">$2<ex>http://www.google.com/</ex></ph>
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_ADD_LABEL" desc="The text labelling the add row in the custom startup urls list">
-        Add a new page
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog" formatter_data="android_java">
-        Enter URL...
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
-        Startup pages
-      </message>
-      <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="The label of the 'Use Current' button for the custom startup urls list">
-        Use current pages
-      </message>
-      <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="The label of the 'Manage search engines' button">
-        Manage search engines...
-      </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_NTP" desc="The value displayed on the settings page to indicate that we're using the new tab page as the homepage">
-        New Tab page
-      </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay"  formatter_data="android_java">
-        Home page
-      </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
-        Use the New Tab page
-      </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_USE_URL" desc="The title of the 'Use this page' for the home page radio">
-        Open this page:
-      </message>
-      <message name="IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON" desc="The label of the 'Show Home button' checkbox">
-        Show Home button
-      </message>
-      <message name="IDS_OPTIONS_CHANGE_HOME_PAGE" desc="The text of the button that allows the user to change her home page">
-        Change
-      </message>
-      <message name="IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR" desc="The label of the 'Show bookmarks bar' checkbox">
-        Always show the bookmarks bar
-      </message>
-      <message name="IDS_TOOLBAR_INFORM_SET_HOME_PAGE" desc="The confirmation message when dropping a link on the Home toolbar button">
-         Your home page has been set.
-      </message>
-      <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
-        Search
-      </message>
-      <message name="IDS_SEARCH_ENGINE_ADD_NEW_NAME_PLACEHOLDER" desc="Placeholder text for name before the user adds a new search engine" >
-        Add a new search engine
-      </message>
-      <message name="IDS_SEARCH_ENGINE_ADD_NEW_KEYWORD_PLACEHOLDER" desc="Placeholder text for keyword before the user adds a new search engine" >
-        Keyword
-      </message>
-      <message name="IDS_SEARCH_ENGINE_ADD_NEW_URL_PLACEHOLDER" desc="Placeholder text for URL before the user adds a new search engine" >
-        URL with %s in place of query
-      </message>
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="The title of the default browser group">
-        Default browser
-      </message>
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
-        The default browser is currently <ph name="BROWSER_NAME">$1<ex>Firefox</ex></ph>.
-      </message>
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT" desc="The text displayed when Chrome is not the default browser">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is not currently your default browser.
-      </message>
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN" desc="The text displayed when Chrome cannot determine or set the default browser">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cannot determine or set the default browser.
-      </message>
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_SXS" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
-        This is a secondary installation of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, and cannot be made your default browser.
-      </message>
-      <if expr="is_android">
-        <message name="IDS_AUTOLAUNCH_TEXT" desc="Mobile: The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
-          Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my device
-        </message>
-      </if>
+      <!-- chrome://settings. Android uses native UI for settings -->
       <if expr="not is_android">
+        <if expr="pp_ifdef('chromeos')">
+          <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
+            Internet
+          </message>
+          <message name="IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL" desc="The title of the 'Internet connections' group">
+            Internet connection
+          </message>
+          <message name="IDS_OPTIONS_INTERNET_OPTIONS_BUTTON_TITLE" desc="The title of the 'Manage connections...' button">
+            Manage connections...
+          </message>
+          <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
+            Users
+          </message>
+          <message name="IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE" desc="The title of the Manage Accounts button">
+            Manage other users...
+          </message>
+          <message name="IDS_OPTIONS_PROXY_TAB_LABEL" desc="The title of the proxy subtab">
+            Proxy
+          </message>
+        </if>
+        <message name="IDS_OPTIONS_TAB_TITLE" desc="The format of the title on the browser tab for an options subpage, e.g. Settings - Basics">
+          <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
+          On startup
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_SHOW_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
+          Open the New Tab page
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION" desc="The label of the 'Continue where I left off' startup option radio button">
+          Continue where I left off
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_SHOW_PAGES" desc="The label of the 'Show these pages:' startup option radio button">
+          Open a specific page or set of pages.
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_SET_PAGES" desc="The link that is clicked to choose the set of pages that will be shown at startup">
+          Set pages
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_PAGE_TOOLTIP" desc="A tooltip to display for a page in the list of pages to open on startup">
+          <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - <ph name="PAGE_URL">$2<ex>http://www.google.com/</ex></ph>
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_ADD_LABEL" desc="The text labelling the add row in the custom startup urls list">
+          Add a new page
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
+          Startup pages
+        </message>
+        <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="The label of the 'Use Current' button for the custom startup urls list">
+          Use current pages
+        </message>
+        <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="The label of the 'Manage search engines' button">
+          Manage search engines...
+        </message>
+        <message name="IDS_OPTIONS_HOMEPAGE_NTP" desc="The value displayed on the settings page to indicate that we're using the new tab page as the homepage">
+          New Tab page
+        </message>
+        <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
+          Use the New Tab page
+        </message>
+        <message name="IDS_OPTIONS_HOMEPAGE_USE_URL" desc="The title of the 'Use this page' for the home page radio">
+          Open this page:
+        </message>
+        <message name="IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON" desc="The label of the 'Show Home button' checkbox">
+          Show Home button
+        </message>
+        <message name="IDS_OPTIONS_CHANGE_HOME_PAGE" desc="The text of the button that allows the user to change her home page">
+          Change
+        </message>
+        <message name="IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR" desc="The label of the 'Show bookmarks bar' checkbox">
+          Always show the bookmarks bar
+        </message>
+        <message name="IDS_TOOLBAR_INFORM_SET_HOME_PAGE" desc="The confirmation message when dropping a link on the Home toolbar button">
+           Your home page has been set.
+        </message>
+        <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
+          Search
+        </message>
+        <message name="IDS_SEARCH_ENGINE_ADD_NEW_NAME_PLACEHOLDER" desc="Placeholder text for name before the user adds a new search engine" >
+          Add a new search engine
+        </message>
+        <message name="IDS_SEARCH_ENGINE_ADD_NEW_KEYWORD_PLACEHOLDER" desc="Placeholder text for keyword before the user adds a new search engine" >
+          Keyword
+        </message>
+        <message name="IDS_SEARCH_ENGINE_ADD_NEW_URL_PLACEHOLDER" desc="Placeholder text for URL before the user adds a new search engine" >
+          URL with %s in place of query
+        </message>
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="The title of the default browser group">
+          Default browser
+        </message>
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
+          The default browser is currently <ph name="BROWSER_NAME">$1<ex>Firefox</ex></ph>.
+        </message>
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT" desc="The text displayed when Chrome is not the default browser">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is not currently your default browser.
+        </message>
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN" desc="The text displayed when Chrome cannot determine or set the default browser">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cannot determine or set the default browser.
+        </message>
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_SXS" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
+          This is a secondary installation of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, and cannot be made your default browser.
+        </message>
         <message name="IDS_AUTOLAUNCH_TEXT" desc="The text displayed in settings to explain whether Chrome is set to auto-launch on startup or not.">
           Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
         </message>
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chrome as default' browser button">
+          Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
+        </message>
+        <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
+          Downloads
+        </message>
+        <message name="IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON" desc="The label of the 'Change...' button">
+          Change...
+        </message>
+        <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE" desc="In the 'Browse For Folder' dialog on Windows, this is the text that appears above the directory selector.">
+          Download location:
+        </message>
+        <message name="IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION" desc="The 'Ask for save location before downloading' checkbox label">
+          Ask where to save each file before downloading
+        </message>
+        <message name="IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY" desc="The information label for the 'Clear auto-opening settings' button">
+          You have chosen to open certain file types automatically after downloading.
+        </message>
+        <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="The label of the 'Reset always open files' button">
+          Clear auto-opening settings
+        </message>
+        <message name="IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL" desc="The label for the Language section">
+          Change how <ph name="APP_NAME">$1<ex>Chrome</ex></ph> handles and displays languages.
+        </message>
+        <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
+          Offer to translate pages that aren't in a language I read.
+        </message>
+        <message name="IDS_OPTIONS_TRANSLATE_MANAGE_LANGUAGES" desc="The link that is clicked to manage languages for translate">
+          Manage languages
+        </message>
+        <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="The title of the 'Passwords and forms' group">
+          Passwords and forms
+        </message>
+        <message name="IDS_OPTIONS_PASSWORD_MANAGER_ENABLE" desc="The label of the password manager checkbox">
+          Offer to save passwords I enter on the web.
+        </message>
+        <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="The label of the 'Manage saved passwords' button">
+          Manage saved passwords...
+        </message>
+        <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
+          Offer to sign into Google sites automatically with this account
+        </message>
+        <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable Autofill' radio button">
+          Enable Autofill to fill out web forms in a single click.
+        </message>
+        <message name="IDS_AUTOFILL_EDIT_PROFILE_BUTTON" desc="The label of the button that edits the currently selected Autofill profile.">
+          Edit...
+        </message>
+        <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK" desc="The label of the 'Manage Autofill settings' link">
+          Manage Autofill settings
+        </message>
+        <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link in the Autofill settings overlay.">
+          About Autofill
+        </message>
+        <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new Autofill address.">
+          Add new street address...
+        </message>
+        <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new Autofill credit card.">
+          Add new credit card...
+        </message>
+        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
+          Autofill settings
+        </message>
+        <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
+          Include addresses from my Address Book card
+        </message>
+        <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
+          Addresses
+        </message>
+        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="IThe name of the Credit Cards group of the Autofill dialog.">
+          Credit cards
+        </message>
+        <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog.">
+          Edit address
+        </message>
+        <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog for the new entry.">
+          Add an address
+        </message>
+        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog.">
+          Edit credit card
+        </message>
+        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog the new entry.">
+          Add a credit card
+        </message>
+
+        <message name="IDS_AUTOFILL_FIELD_LABEL_FIRST_NAME" desc="The label of the first name entry.">
+          First name
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_MIDDLE_NAME" desc="The label of the middle name entry.">
+          Middle name(s)
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_LAST_NAME" desc="The label of the last name entry.">
+          Last name
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_EMAIL" desc="The label of the Email entry.">
+          Email
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_COMPANY_NAME" desc="The label of the Company name entry.">
+          Company name
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_1" desc="The label of the Address Line 1 entry.">
+          Address line 1
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
+          Address line 2
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_CITY" desc="The label of the City entry.">
+          City/Town
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry.">
+          Phone
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_FIRST_NAME" desc="The placeholder text of the first name field.">
+          Add first name
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_MIDDLE_NAME" desc="The placeholder text of the middle name field.">
+          Add middle name(s)
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_LAST_NAME" desc="The placeholder text of the last name field.">
+          Add last name
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_PHONE" desc="The placeholder text of the phone field.">
+          Add phone number
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_EMAIL" desc="The placeholder text of the email field.">
+          Add email address
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD" desc="The label of the Name on card entry.">
+          Name on card
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
+          Credit card number
+        </message>
+        <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
+          Expiration date
+        </message>
+
+        <!-- Extension settings -->
+        <message name="IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE" desc="Title that appears in the dialogue title bar for manage extensions settings">
+          Extensions
+        </message>
+  
+        <!-- Font settings -->
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the Fonts and Encoding subpage">
+          Fonts and encoding
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="Label of the Standard font section of the Fonts and Encoding subpage">
+          Standard font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Label of the Serif font section of the Fonts and Encoding subpage">
+          Serif font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Label of the Sans-serif font section of the Fonts and Encoding subpage">
+          Sans-serif font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the Fixed-width font section of the Fonts and Encoding subpage">
+          Fixed-width font
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Label of the Minimum font size section of the Fonts and Encoding subpage">
+          Minimum font size
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE" desc="Label of the Encoding section of the Fonts and Encoding subpage">
+          Encoding
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY" desc="Label for the 'Tiny' side of the font size range selector">
+          Tiny
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_HUGE" desc="Label for the 'Huge' side of the font size range selector">
+          Huge
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM" desc="Sample text of 'Lorem ipsum' used to show the selected font/size">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_PLACEHOLDER" desc="Placeholder string for the Fonts and Encodings select menus">
+          Loading...
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_INSTALL"
+                 desc="Explanatory message about how to get the Advanced Font Settings extension">
+          <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Advanced font settings<ph name="END_LINK">&lt;/a&gt;</ph> (requires extension)
+        </message>
+        <message name="IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_OPTIONS"
+                 desc="Link to the Advanced Font Settings extension's options page">
+          Advanced font settings
+        </message>
+
+        <!-- Language & spell-checker settings -->
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
+          Languages
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE">
+          Languages and input
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
+          Languages
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON"
+                 desc="The label for the add button for adding a language">
+          Add
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS"
+                 desc="Explanatory message about how to add and order languages">
+          Add languages and drag to order them based on your preference.
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE"
+                 desc="The label for a language that cannot be used for UI">
+          <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> cannot be displayed in this language
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE"
+                 desc="The label for a language that is currently used for UI">
+          <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> is displayed in this language
+        </message>
+        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
+                 desc="The label is used for a button that changes the UI
+                       language of Chrome OS">
+          Display <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> in this language
+        </message>
+        <if expr="not is_macosx">
+          <message name="IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING"
+                   desc="The label for a language a button that changes the spell check language of Chrome">
+            Use this language for spell checking
+          </message>
+          <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
+                   desc="The label for a language that cannot be used for spell checking">
+            This language cannot be used for spell checking
+          </message>
+          <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
+                   desc="The label for a language that is currently used for spell checking">
+            This language is used for spell checking
+          </message>
+        </if>
+        <if expr="not pp_ifdef('chromeos')">
+          <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
+                   desc="The label for the relaunch button for changing UI language">
+            Relaunch
+          </message>
+        </if>
+        <if expr="pp_ifdef('chromeos')">
+          <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON"
+                   desc="The label for the restart button for changing UI language">
+            Restart
+          </message>
+        </if>
+        <message name="IDS_OPTIONS_LANGUAGES_ADD_TITLE" desc="The title for the add language dialog.">
+          Add language
+        </message>
+        <message name="IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL" desc="The label for the add language select control.">
+          Language:
+        </message>
+        <message name="IDS_OPTIONS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE" desc="The label for a checkbox which indicates whether or not the language should be translated.">
+          Offer to translate pages in this language
+        </message>
+        <message name="IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE" desc="The string displayed to user when the language cannot be translated.">
+          This language cannot be translated
+        </message>
+
+        <if expr="is_android or is_ios">
+          <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="Mobile: The info label for the 'Proxy settings' button when managed by the system.">
+            <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your device's system proxy settings to connect to the network.
+          </message>
+        </if>
+        <if expr="not is_android and not is_ios">
+          <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by the system.">
+            <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your computer's system proxy settings to connect to the network.
+          </message>
+        </if>
+        <message name="IDS_OPTIONS_EXTENSION_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by an extension.">
+          Your network proxy settings are being managed by an extension.
+        </message>
+
+        <message name="IDS_GOOGLE_CLOUD_PRINT" desc="The name of the Google Cloud Print product.">
+          Google Cloud Print
+        </message>
+        <message name="IDS_OPTIONS_CURRENT_USER_ONLY" desc="In the multi profiles user list, the tooltip text noticing that only the current user can modify these settings.">
+          You can only edit settings for the current user. Switch to this user to edit settings for it.
+        </message>
+        <if expr="is_android">
+          <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="Mobile: The label of the cloud print setup button when it hasn't been set up yet.">
+            <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this device's printers from anywhere. Click to enable.
+          </message>
+        </if>
+        <if expr="not is_android">
+          <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
+            <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this computer's printers from anywhere.
+          </message>
+        </if>
+        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
+          Add printers
+        </message>
+        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
+          You have registered your printers with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> using the account <ph name="EMAIL">$2<ex>foo@bar.com</ex></ph>
+        </message>
+        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON" desc="The label of the cloud print connector configure button when it has been set up.">
+          Disconnect printers
+        </message>
+        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
+          Manage print settings...
+        </message>
+        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON" desc="The label of the cloud connector configure button while it is being set up.">
+          Enabling...
+        </message>
+        <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
+          Enable phishing and malware protection
+        </message>
+        <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
+          Check for server certificate revocation
+        </message>
+
+        <if expr="pp_ifdef('chromeos')">
+          <message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the chrome settings page">
+            Powerwash
+          </message>
+          <message name="IDS_OPTIONS_FACTORY_RESET_HEADING" desc="Name of the 'Factory reset' window">
+            Restart your device
+          </message>
+          <message name="IDS_OPTIONS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the chrome settings page">
+            Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
+          </message>
+          <message name="IDS_OPTIONS_FACTORY_RESET_BUTTON" desc="Name of the button to activate the factory reset option on the chrome settings page">
+            Powerwash
+          </message>
+          <message name="IDS_OPTIONS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
+            A restart is required before your device can be reset with Powerwash.
+          </message>
+        </if>
+
+        <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="Label for the import data button.">
+          Import bookmarks and settings...
+        </message>
+
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by policy.">
+          This setting is enforced by your administrator.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
+          This setting is enforced by an extension.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
+          This setting is controlled by:
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_MANAGE_EXTENSIONS" desc="Text displayed for a link to manage extensions from the controlled settings bubble.">
+          Manage extensions
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy and the user has not overridden this recommendation.">
+          You are following the administrator's recommendation for this setting.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy but is currently overridden by a user-supplied value.">
+          Your administrator recommends a specific value for this setting.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_FOLLOW_RECOMMENDATION" desc="Link text displayed in the controlled settings bubble to clear the user-supplied value and start following the recommendation.">
+          Follow recommendation
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_POLICY" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by policy.">
+          These settings are enforced by your administrator.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension.">
+          These settings are enforced by an extension.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
+          These settings are controlled by:
+        </message>
+
+        <!-- Extension install location strings -->
+        <message name="IDS_OPTIONS_INSTALL_LOCATION_UNKNOWN" desc="The text explaining the the installation location is unknown.">
+          Not from Chrome Web Store.
+        </message>
+        <message name="IDS_OPTIONS_INSTALL_LOCATION_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
+          Installed by a third party.
+        </message>
+        <message name="IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE" desc="The text explaining the the installation of the extension came from an enterprise policy.">
+          Installed by enterprise policy.
+        </message>
+
+        <!-- Extension blacklist state -->
+        <message name="IDS_OPTIONS_BLACKLISTED_SECURITY_VULNERABILITY" desc="The text explaining the reason for disabling extension or app. The extension in question has a security vulnerability.">
+          This extension contains a serious security vulnerability.
+        </message>
+        <message name="IDS_OPTIONS_BLACKLISTED_CWS_POLICY_VIOLATION" desc="The text explaining the reason for disabling extension or app. The extension in question violates Chrome Web Store policy.">
+          This extension violates the Chrome Web Store policy.
+        </message>
+        <message name="IDS_OPTIONS_BLACKLISTED_POTENTIALLY_UNWANTED" desc="The text explaining the reason for disabling extension or app. The extension in question might have been installed without user consent.">
+          This extension may have been added without your knowledge.
+        </message>
+
+        <!-- Options search page strings. -->
+        <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
+          Search results
+        </message>
+        <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="Text description of a search that has no results.">
+          No matches were found.
+        </message>
+        <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_LABEL" desc="Help text for a serach that has no results.">
+          Can't find what you're looking for?
+        </message>
+        <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="Help link for a search that has no results.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> help
+        </message>
+        <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
+          Search settings
+        </message>
       </if>
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chrome as default' browser button">
-        Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
+
+      <!-- chrome://settings strings that are used by all platforms including Android -->
+      <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
+        Settings
       </message>
-      <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
-        Downloads
+      <message name="IDS_SETTINGS_HIDE_ADVANCED_SETTINGS" desc="Title for the link to hide advanced settings.">
+        Hide advanced settings...
       </message>
-      <message name="IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON" desc="The label of the 'Change...' button">
-        Change...
-      </message>
-      <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE" desc="In the 'Browse For Folder' dialog on Windows, this is the text that appears above the directory selector.">
-        Download location:
-      </message>
-      <message name="IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION" desc="The 'Ask for save location before downloading' checkbox label">
-        Ask where to save each file before downloading
-      </message>
-      <message name="IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY" desc="The information label for the 'Clear auto-opening settings' button">
-        You have chosen to open certain file types automatically after downloading.
-      </message>
-      <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="The label of the 'Reset always open files' button">
-        Clear auto-opening settings
-      </message>
-      <message name="IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL" desc="The label for the Language section">
-        Change how <ph name="APP_NAME">$1<ex>Chrome</ex></ph> handles and displays languages.
-      </message>
-      <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
-        Offer to translate pages that aren't in a language I read.
-      </message>
-      <message name="IDS_OPTIONS_TRANSLATE_MANAGE_LANGUAGES" desc="The link that is clicked to manage languages for translate">
-        Manage languages
-      </message>
-      <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="The title of the 'Passwords and forms' group">
-        Passwords and forms
-      </message>
-      <message name="IDS_OPTIONS_PASSWORD_MANAGER_ENABLE" desc="The label of the password manager checkbox">
-        Offer to save passwords I enter on the web.
+      <message name="IDS_SETTINGS_SHOW_ADVANCED_SETTINGS" desc="Title for the link to show advanced settings.">
+        Show advanced settings...
       </message>
       <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK" desc="The label of the 'Manage saved passwords' link">
         Manage saved passwords
       </message>
-      <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="The label of the 'Manage saved passwords' button">
-        Manage saved passwords...
+      <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay"  formatter_data="android_java">
+        Home page
       </message>
-      <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
-        Offer to sign into Google sites automatically with this account
-      </message>
-      <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable Autofill' radio button">
-        Enable Autofill to fill out web forms in a single click.
-      </message>
-      <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
-        Save info
-      </message>
-      <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
-        Don't save
-      </message>
-      <message name="IDS_AUTOFILL_EDIT_PROFILE_BUTTON" desc="The label of the button that edits the currently selected Autofill profile.">
-        Edit...
-      </message>
-      <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK" desc="The label of the 'Manage Autofill settings' link">
-        Manage Autofill settings
-      </message>
-      <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link in the Autofill settings overlay.">
-        About Autofill
-      </message>
-      <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new Autofill address.">
-        Add new street address...
-      </message>
-      <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new Autofill credit card.">
-        Add new credit card...
-      </message>
-      <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
-        Autofill settings
-      </message>
-      <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
-        Include addresses from my Address Book card
-      </message>
-      <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
-        Addresses
-      </message>
-      <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="IThe name of the Credit Cards group of the Autofill dialog.">
-        Credit cards
-      </message>
-      <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog.">
-        Edit address
-      </message>
-      <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog for the new entry.">
-        Add an address
-      </message>
-      <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog.">
-        Edit credit card
-      </message>
-      <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog the new entry.">
-        Add a credit card
-      </message>
-
-      <message name="IDS_AUTOFILL_FIELD_LABEL_FIRST_NAME" desc="The label of the first name entry.">
-        First name
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_MIDDLE_NAME" desc="The label of the middle name entry.">
-        Middle name(s)
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_LAST_NAME" desc="The label of the last name entry.">
-        Last name
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_EMAIL" desc="The label of the Email entry.">
-        Email
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_COMPANY_NAME" desc="The label of the Company name entry.">
-        Company name
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_1" desc="The label of the Address Line 1 entry.">
-        Address line 1
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_ADDRESS_LINE_2" desc="The label of the Address Line 2 entry.">
-        Address line 2
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_CITY" desc="The label of the City entry.">
-        City/Town
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry.">
-        Phone
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_FIRST_NAME" desc="The placeholder text of the first name field.">
-        Add first name
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_MIDDLE_NAME" desc="The placeholder text of the middle name field.">
-        Add middle name(s)
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_LAST_NAME" desc="The placeholder text of the last name field.">
-        Add last name
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_PHONE" desc="The placeholder text of the phone field.">
-        Add phone number
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_EMAIL" desc="The placeholder text of the email field.">
-        Add email address
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD" desc="The label of the Name on card entry.">
-        Name on card
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER" desc="The label of the Credit card number entry.">
-        Credit card number
-      </message>
-      <message name="IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
-        Expiration date
+      <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog" formatter_data="android_java">
+        Enter URL...
       </message>
 
       <!-- Autofill dialog: field labels. -->
@@ -10555,150 +10689,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Get themes
       </message>
 
-      <if expr="is_android or is_ios">
-        <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="Mobile: The info label for the 'Proxy settings' button when managed by the system.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your device's system proxy settings to connect to the network.
-        </message>
-      </if>
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by the system.">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your computer's system proxy settings to connect to the network.
-        </message>
-      </if>
-      <message name="IDS_OPTIONS_EXTENSION_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by an extension.">
-        Your network proxy settings are being managed by an extension.
-      </message>
-
-      <message name="IDS_GOOGLE_CLOUD_PRINT" desc="The name of the Google Cloud Print product.">
-        Google Cloud Print
-      </message>
-      <message name="IDS_OPTIONS_CURRENT_USER_ONLY" desc="In the multi profiles user list, the tooltip text noticing that only the current user can modify these settings.">
-        You can only edit settings for the current user. Switch to this user to edit settings for it.
-      </message>
-      <if expr="is_android">
-        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="Mobile: The label of the cloud print setup button when it hasn't been set up yet.">
-          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this device's printers from anywhere. Click to enable.
-        </message>
-      </if>
-      <if expr="not is_android">
-        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
-          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this computer's printers from anywhere.
-        </message>
-      </if>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
-        Add printers
-      </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
-        You have registered your printers with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> using the account <ph name="EMAIL">$2<ex>foo@bar.com</ex></ph>
-      </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON" desc="The label of the cloud print connector configure button when it has been set up.">
-        Disconnect printers
-      </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
-        Manage print settings...
-      </message>
-      <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON" desc="The label of the cloud connector configure button while it is being set up.">
-        Enabling...
-      </message>
-      <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
-        Enable phishing and malware protection
-      </message>
-      <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
-        Check for server certificate revocation
-      </message>
-
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_OPTIONS_FACTORY_RESET" desc="Name of the factory reset option on the chrome settings page">
-          Powerwash
-        </message>
-        <message name="IDS_OPTIONS_FACTORY_RESET_HEADING" desc="Name of the 'Factory reset' window">
-          Restart your device
-        </message>
-        <message name="IDS_OPTIONS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the chrome settings page">
-          Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
-        </message>
-        <message name="IDS_OPTIONS_FACTORY_RESET_BUTTON" desc="Name of the button to activate the factory reset option on the chrome settings page">
-          Powerwash
-        </message>
-        <message name="IDS_OPTIONS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
-          A restart is required before your device can be reset with Powerwash.
-        </message>
-      </if>
-
-      <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="Label for the import data button.">
-        Import bookmarks and settings...
-      </message>
-
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by policy.">
-        This setting is enforced by your administrator.
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
-        This setting is enforced by an extension.
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
-        This setting is controlled by:
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_MANAGE_EXTENSIONS" desc="Text displayed for a link to manage extensions from the controlled settings bubble.">
-        Manage extensions
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy and the user has not overridden this recommendation.">
-        You are following the administrator's recommendation for this setting.
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy but is currently overridden by a user-supplied value.">
-        Your administrator recommends a specific value for this setting.
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTING_FOLLOW_RECOMMENDATION" desc="Link text displayed in the controlled settings bubble to clear the user-supplied value and start following the recommendation.">
-        Follow recommendation
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_POLICY" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by policy.">
-        These settings are enforced by your administrator.
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension.">
-        These settings are enforced by an extension.
-      </message>
-      <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
-        These settings are controlled by:
-      </message>
-
-      <!-- Extension install location strings -->
-      <message name="IDS_OPTIONS_INSTALL_LOCATION_UNKNOWN" desc="The text explaining the the installation location is unknown.">
-        Not from Chrome Web Store.
-      </message>
-      <message name="IDS_OPTIONS_INSTALL_LOCATION_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
-        Installed by a third party.
-      </message>
-      <message name="IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE" desc="The text explaining the the installation of the extension came from an enterprise policy.">
-        Installed by enterprise policy.
-      </message>
-
-      <!-- Extension blacklist state -->
-      <message name="IDS_OPTIONS_BLACKLISTED_SECURITY_VULNERABILITY" desc="The text explaining the reason for disabling extension or app. The extension in question has a security vulnerability.">
-        This extension contains a serious security vulnerability.
-      </message>
-      <message name="IDS_OPTIONS_BLACKLISTED_CWS_POLICY_VIOLATION" desc="The text explaining the reason for disabling extension or app. The extension in question violates Chrome Web Store policy.">
-        This extension violates the Chrome Web Store policy.
-      </message>
-      <message name="IDS_OPTIONS_BLACKLISTED_POTENTIALLY_UNWANTED" desc="The text explaining the reason for disabling extension or app. The extension in question might have been installed without user consent.">
-        This extension may have been added without your knowledge.
-      </message>
-
-      <!-- Options search page strings. -->
-      <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
-        Search results
-      </message>
-      <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="Text description of a search that has no results.">
-        No matches were found.
-      </message>
-      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_LABEL" desc="Help text for a serach that has no results.">
-        Can't find what you're looking for?
-      </message>
-      <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="Help link for a search that has no results.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> help
-      </message>
-      <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
-        Search settings
-      </message>
-
       <!-- Android welcome page strings -->
       <if expr="is_android">
         <message name="IDS_WELCOME_PAGE_SEARCH_BUBBLE" desc="The message displayed on the search bubble on the welcome page">
@@ -10768,6 +10758,14 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_COLLECTED_COOKIES_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
         Reload
+      </message>
+
+      <!-- Autofill infobar -->
+      <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
+        Save info
+      </message>
+      <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
+        Don't save
       </message>
 
       <!-- Auto-login infobar -->
