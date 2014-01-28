@@ -34,6 +34,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -392,6 +393,33 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
   window->parent()->AddChild(sibling.get());
   sibling->Focus();
   ASSERT_TRUE(sibling->HasFocus());
+  ASSERT_TRUE(observer.destroyed());
+
+  widget_host_ = NULL;
+  view_ = NULL;
+}
+
+// Checks that a popup view is destroyed when a user clicks outside of the popup
+// view and focus does not change. This is the case when the user clicks on the
+// desktop background on Chrome OS.
+TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupClickOutsidePopup) {
+  parent_view_->SetBounds(gfx::Rect(10, 10, 400, 400));
+  parent_view_->Focus();
+  EXPECT_TRUE(parent_view_->HasFocus());
+
+  view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
+  aura::Window* window = view_->GetNativeView();
+  ASSERT_TRUE(window != NULL);
+
+  gfx::Point click_point;
+  EXPECT_FALSE(window->GetBoundsInRootWindow().Contains(click_point));
+  aura::Window* parent_window = parent_view_->GetNativeView();
+  EXPECT_FALSE(parent_window->GetBoundsInRootWindow().Contains(click_point));
+
+  TestWindowObserver observer(window);
+  aura::test::EventGenerator generator(window->GetRootWindow(), gfx::Point());
+  generator.ClickLeftButton();
+  ASSERT_TRUE(parent_view_->HasFocus());
   ASSERT_TRUE(observer.destroyed());
 
   widget_host_ = NULL;

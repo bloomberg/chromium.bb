@@ -384,15 +384,11 @@ class RenderWidgetHostViewAura::EventFilterForPopupExit :
   explicit EventFilterForPopupExit(RenderWidgetHostViewAura* rwhva)
       : rwhva_(rwhva) {
     DCHECK(rwhva_);
-    aura::Window* root_window = rwhva_->window_->GetRootWindow();
-    DCHECK(root_window);
-    root_window->AddPreTargetHandler(this);
+    aura::Env::GetInstance()->AddPreTargetHandler(this);
   }
 
   virtual ~EventFilterForPopupExit() {
-    aura::Window* root_window = rwhva_->window_->GetRootWindow();
-    DCHECK(root_window);
-    root_window->RemovePreTargetHandler(this);
+    aura::Env::GetInstance()->RemovePreTargetHandler(this);
   }
 
   // Overridden from ui::EventHandler
@@ -569,6 +565,8 @@ void RenderWidgetHostViewAura::InitAsPopup(
   if (NeedsInputGrab())
     window_->SetCapture();
 #endif
+
+  event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
@@ -3320,6 +3318,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
            popup_child_host_view_->popup_parent_host_view_ == this);
     popup_child_host_view_->popup_parent_host_view_ = NULL;
   }
+  event_filter_for_popup_exit_.reset();
   aura::client::SetTooltipText(window_, NULL);
   gfx::Screen::GetScreenFor(window_)->RemoveObserver(this);
 
@@ -3492,8 +3491,6 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   window_->GetDispatcher()->AddRootWindowObserver(this);
   host_->ParentChanged(GetNativeViewId());
   UpdateScreenInfo(window_);
-  if (popup_type_ != blink::WebPopupTypeNone)
-    event_filter_for_popup_exit_.reset(new EventFilterForPopupExit(this));
 
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(window_->GetRootWindow());
@@ -3518,7 +3515,6 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
   DetachFromInputMethod();
 
-  event_filter_for_popup_exit_.reset();
   window_->GetDispatcher()->RemoveRootWindowObserver(this);
   host_->ParentChanged(0);
   ui::Compositor* compositor = GetCompositor();
