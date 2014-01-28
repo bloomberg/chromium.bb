@@ -335,6 +335,7 @@ class MetadataDatabase {
   friend class MetadataDatabaseTest;
   friend class RegisterAppTaskTest;
   friend class SyncEngineInitializerTest;
+  friend class DriveBackendSyncTest;
 
   struct DirtyTrackerComparator {
     bool operator()(const FileTracker* left,

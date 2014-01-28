@@ -35,6 +35,8 @@
 namespace sync_file_system {
 namespace drive_backend {
 
+typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
+
 class DriveBackendSyncTest : public testing::Test {
  public:
   DriveBackendSyncTest()
@@ -116,6 +118,12 @@ class DriveBackendSyncTest : public testing::Test {
       return false;
     *folder_id = tracker.file_id();
     return true;
+  }
+
+  bool GetFileIDByPath(const std::string& app_id,
+                       const base::FilePath::StringType& path,
+                       std::string* file_id) {
+    return GetFileIDByPath(app_id, base::FilePath(path), file_id);
   }
 
   bool GetFileIDByPath(const std::string& app_id,
@@ -308,11 +316,10 @@ class DriveBackendSyncTest : public testing::Test {
     }
 
     fileapi::FileSystemURL url(CreateURL(app_id, path));
-    CannedSyncableFileSystem::FileEntryList local_entries;
+    FileEntryList local_entries;
     EXPECT_EQ(base::File::FILE_OK,
               file_system->ReadDirectory(url, &local_entries));
-    for (CannedSyncableFileSystem::FileEntryList::iterator itr =
-             local_entries.begin();
+    for (FileEntryList::iterator itr = local_entries.begin();
          itr != local_entries.end();
          ++itr) {
       const fileapi::DirectoryEntry& local_entry = *itr;
@@ -349,6 +356,54 @@ class DriveBackendSyncTest : public testing::Test {
               fake_drive_service_helper_->ReadFile(file_id, &file_content));
     EXPECT_EQ(base::File::FILE_OK,
               file_system->VerifyFile(url, file_content));
+  }
+
+  size_t CountApp() {
+    return file_systems_.size();
+  }
+
+  size_t CountLocalFile(const std::string& app_id) {
+    if (!ContainsKey(file_systems_, app_id))
+      return 0;
+
+    CannedSyncableFileSystem* file_system = file_systems_[app_id];
+    std::stack<base::FilePath> folders;
+    folders.push(base::FilePath()); // root folder
+
+    size_t result = 1;
+    while (!folders.empty()) {
+      fileapi::FileSystemURL url(CreateURL(app_id, folders.top()));
+      folders.pop();
+
+      FileEntryList entries;
+      EXPECT_EQ(base::File::FILE_OK,
+                file_system->ReadDirectory(url, &entries));
+      for (FileEntryList::iterator itr = entries.begin();
+           itr != entries.end(); ++itr) {
+        ++result;
+        if (itr->is_directory)
+          folders.push(url.path().Append(itr->name));
+      }
+    }
+
+    return result;
+  }
+
+  void VerifyLocalFile(const std::string& app_id,
+                       const base::FilePath& path,
+                       const std::string& content) {
+    ASSERT_TRUE(ContainsKey(file_systems_, app_id));
+    EXPECT_EQ(base::File::FILE_OK,
+              file_systems_[app_id]->VerifyFile(
+                  CreateURL(app_id, path), content));
+  }
+
+  size_t CountMetadata() {
+    return metadata_database()->file_by_id_.size();
+  }
+
+  size_t CountTracker() {
+    return metadata_database()->tracker_by_id_.size();
   }
 
   drive::FakeDriveService* fake_drive_service() {
@@ -396,6 +451,13 @@ TEST_F(DriveBackendSyncTest, LocalToRemoteBasicTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "abcde");
+
+  EXPECT_EQ(3u, CountMetadata());
+  EXPECT_EQ(3u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, RemoteToLocalBasicTest) {
@@ -412,6 +474,13 @@ TEST_F(DriveBackendSyncTest, RemoteToLocalBasicTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "abcde");
+
+  EXPECT_EQ(3u, CountMetadata());
+  EXPECT_EQ(3u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, LocalFileUpdateTest) {
@@ -428,6 +497,13 @@ TEST_F(DriveBackendSyncTest, LocalFileUpdateTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "1234567890");
+
+  EXPECT_EQ(3u, CountMetadata());
+  EXPECT_EQ(3u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, RemoteFileUpdateTest) {
@@ -450,6 +526,13 @@ TEST_F(DriveBackendSyncTest, RemoteFileUpdateTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "1234567890");
+
+  EXPECT_EQ(3u, CountMetadata());
+  EXPECT_EQ(3u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, LocalFileDeletionTest) {
@@ -466,6 +549,12 @@ TEST_F(DriveBackendSyncTest, LocalFileDeletionTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(1u, CountLocalFile(app_id));
+
+  EXPECT_EQ(2u, CountMetadata());
+  EXPECT_EQ(2u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, RemoteFileDeletionTest) {
@@ -485,6 +574,12 @@ TEST_F(DriveBackendSyncTest, RemoteFileDeletionTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(1u, CountLocalFile(app_id));
+
+  EXPECT_EQ(2u, CountMetadata());
+  EXPECT_EQ(2u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, RemoteRenameTest) {
@@ -505,6 +600,13 @@ TEST_F(DriveBackendSyncTest, RemoteRenameTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("renamed_file")), "abcde");
+
+  EXPECT_EQ(3u, CountMetadata());
+  EXPECT_EQ(3u, CountTracker());
 }
 
 TEST_F(DriveBackendSyncTest, RemoteRenameAndRevertTest) {
@@ -531,6 +633,13 @@ TEST_F(DriveBackendSyncTest, RemoteRenameAndRevertTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("file")), "abcde");
+
+  EXPECT_EQ(3u, CountMetadata());
+  EXPECT_EQ(3u, CountTracker());
 }
 
 }  // namespace drive_backend
