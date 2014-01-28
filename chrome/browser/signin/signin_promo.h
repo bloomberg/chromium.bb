@@ -60,6 +60,9 @@ GURL GetLandingURL(const char* option, int value);
 GURL GetPromoURL(Source source, bool auto_close);
 GURL GetPromoURL(Source source, bool auto_close, bool is_constrained);
 
+// Returns a sign in promo URL specifically for reauthenticating |account_id|.
+GURL GetReauthURL(Profile* profile, const std::string& account_id);
+
 // Gets the next page URL from the query portion of the sign in promo URL.
 GURL GetNextPageURLForPromoURL(const GURL& url);
 

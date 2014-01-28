@@ -20,6 +20,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "google_apis/gaia/gaia_urls.h"
 
 class AccountReconcilor::UserIdFetcher
     : public gaia::GaiaOAuthClient::Delegate {
@@ -36,6 +37,7 @@ class AccountReconcilor::UserIdFetcher
 
   AccountReconcilor* const reconcilor_;
   const std::string account_id_;
+  const std::string access_token_;
   gaia::GaiaOAuthClient gaia_auth_client_;
 
   DISALLOW_COPY_AND_ASSIGN(UserIdFetcher);
@@ -46,12 +48,13 @@ AccountReconcilor::UserIdFetcher::UserIdFetcher(AccountReconcilor* reconcilor,
                                                 const std::string& account_id)
     : reconcilor_(reconcilor),
       account_id_(account_id),
+      access_token_(access_token),
       gaia_auth_client_(reconcilor_->profile()->GetRequestContext()) {
   DCHECK(reconcilor_);
   DCHECK(!account_id_.empty());
 
   const int kMaxRetries = 5;
-  gaia_auth_client_.GetUserId(access_token, kMaxRetries, this);
+  gaia_auth_client_.GetUserId(access_token_, kMaxRetries, this);
 }
 
 void AccountReconcilor::UserIdFetcher::OnGetUserIdResponse(
@@ -63,6 +66,12 @@ void AccountReconcilor::UserIdFetcher::OnGetUserIdResponse(
 void AccountReconcilor::UserIdFetcher::OnOAuthError() {
   DVLOG(1) << "AccountReconcilor::OnOAuthError: " << account_id_;
   reconcilor_->HandleFailedAccountIdCheck(account_id_);
+
+  // Invalidate the access token to force a refetch next time.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(reconcilor_->profile());
+  token_service->InvalidateToken(account_id_, OAuth2TokenService::ScopeSet(),
+                                 access_token_);
 }
 
 void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
@@ -205,7 +214,7 @@ void AccountReconcilor::StopPeriodicReconciliation() {
 
 void AccountReconcilor::PeriodicReconciliation() {
   DVLOG(1) << "AccountReconcilor::PeriodicReconciliation";
-  StartReconcileAction();
+  StartReconcile();
 }
 
 void AccountReconcilor::Observe(int type,
@@ -222,8 +231,15 @@ void AccountReconcilor::Observe(int type,
 }
 
 void AccountReconcilor::OnCookieChanged(ChromeCookieDetails* details) {
-  // TODO(acleung): Filter out cookies by looking at the domain.
-  // StartReconcileAction();
+  /*
+  Commenting out for now until I speak with gaia team.
+  if (details->cookie->Name() == "LSID" &&
+      details->cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
+      details->cookie->IsSecure() &&
+      details->cookie->IsHttpOnly()) {
+    StartReconcile();
+  }
+  */
 }
 
 void AccountReconcilor::OnRefreshTokenAvailable(const std::string& account_id) {
@@ -252,10 +268,12 @@ void AccountReconcilor::GoogleSignedOut(const std::string& username) {
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
+  DVLOG(1) << "AccountReconcilor::PerformMergeAction: " << account_id;
   merge_session_helper_.LogIn(account_id);
 }
 
 void AccountReconcilor::StartRemoveAction(const std::string& account_id) {
+  DVLOG(1) << "AccountReconcilor::StartRemoveAction: " << account_id;
   GetAccountsFromCookie(
       base::Bind(&AccountReconcilor::FinishRemoveAction,
                  base::Unretained(this),
@@ -266,13 +284,28 @@ void AccountReconcilor::FinishRemoveAction(
     const std::string& account_id,
     const GoogleServiceAuthError& error,
     const std::vector<std::string>& accounts) {
+  DVLOG(1) << "AccountReconcilor::FinishRemoveAction:"
+           << " account=" << account_id
+           << " error=" << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
     merge_session_helper_.LogOut(account_id, accounts);
   }
   // Wait for the next ReconcileAction if there is an error.
 }
 
-void AccountReconcilor::StartReconcileAction() {
+void AccountReconcilor::PerformAddToChromeAction(
+    const std::string& account_id) {
+  DVLOG(1) << "AccountReconcilor::PerformAddToChromeAction: " << account_id;
+  // TODO(rogerta): not sure if we should add the account to chrome
+  // automatically or ask the user first.
+}
+
+void AccountReconcilor::PerformLogoutAllAccountsAction() {
+  DVLOG(1) << "AccountReconcilor::PerformLogoutAllAccountsAction";
+  merge_session_helper_.LogOutAllAccounts();
+}
+
+void AccountReconcilor::StartReconcile() {
   if (!IsProfileConnected())
     return;
 
@@ -356,7 +389,7 @@ void AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts(
     gaia_accounts_ = accounts;
   }
   are_gaia_accounts_set_ = true;
-  FinishReconcileAction();
+  FinishReconcile();
 }
 
 void AccountReconcilor::ValidateAccountsFromTokenService() {
@@ -409,56 +442,91 @@ void AccountReconcilor::OnGetTokenSuccess(
 void AccountReconcilor::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
+  size_t index;
+  for (index = 0; index < chrome_accounts_.size(); ++index) {
+    if (request == requests_[index].get())
+      break;
+  }
+  DCHECK(index < chrome_accounts_.size());
+
+  const std::string& account_id = chrome_accounts_[index];
+
   DVLOG(1) << "AccountReconcilor::OnGetTokenFailure: invalid "
-           << request->GetAccountId();
-  HandleFailedAccountIdCheck(request->GetAccountId());
+           << account_id;
+  HandleFailedAccountIdCheck(account_id);
 }
 
-void AccountReconcilor::FinishReconcileAction() {
+void AccountReconcilor::FinishReconcile() {
   // Make sure that the process of validating the gaia cookie and the oauth2
   // tokens individually is done before proceeding with reconciliation.
   if (!are_gaia_accounts_set_ || !AreAllRefreshTokensChecked())
     return;
 
-  DVLOG(1) << "AccountReconcilor::FinishReconcileAction";
+  DVLOG(1) << "AccountReconcilor::FinishReconcile";
 
   DeleteAccessTokenRequestsAndUserIdFetchers();
 
+  std::vector<std::string> add_to_cookie;
+  std::vector<std::string> add_to_chrome;
   bool are_primaries_equal =
       gaia_accounts_.size() > 0 && primary_account_ == gaia_accounts_[0];
-  bool have_same_accounts = chrome_accounts_.size() == gaia_accounts_.size();
-  if (have_same_accounts) {
+
+  if (are_primaries_equal) {
+    // Determine if we need to merge accounts from gaia cookie to chrome.
     for (size_t i = 0; i < gaia_accounts_.size(); ++i) {
-      if (std::find(chrome_accounts_.begin(), chrome_accounts_.end(),
-              gaia_accounts_[i]) == chrome_accounts_.end()) {
-        have_same_accounts = false;
-        break;
+      const std::string& gaia_account = gaia_accounts_[i];
+      if (valid_chrome_accounts_.find(gaia_account) ==
+          valid_chrome_accounts_.end()) {
+        add_to_chrome.push_back(gaia_account);
+      }
+    }
+
+    // Determine if we need to merge accounts from chrome into gaia cookie.
+    for (std::set<std::string>::const_iterator i =
+             valid_chrome_accounts_.begin();
+         i != valid_chrome_accounts_.end(); ++i) {
+      if (std::find(gaia_accounts_.begin(), gaia_accounts_.end(), *i) ==
+          gaia_accounts_.end()) {
+        add_to_cookie.push_back(*i);
       }
     }
   }
 
   if (!are_primaries_equal) {
-    // TODO(rogerta): really messed up state.  Blow away the gaia cookie
-    // completely and rebuild it, making sure the primary account as specified
-    // by the SigninManager is the first session in the gaia cookie.
-  } else if (!have_same_accounts) {
-    // TODO(rogerta): for each account known to chrome but not in the gaia
-    // cookie, PerformMergeAction().
+    DVLOG(1) << "AccountReconcilor::FinishReconcile: rebuild cookie";
+    // Really messed up state.  Blow away the gaia cookie completely and
+    // rebuild it, making sure the primary account as specified by the
+    // SigninManager is the first session in the gaia cookie.
+    PerformLogoutAllAccountsAction();
+    PerformMergeAction(primary_account_);
+    for (std::set<std::string>::const_iterator i =
+             valid_chrome_accounts_.begin();
+         i != valid_chrome_accounts_.end(); ++i) {
+      if (*i != primary_account_)
+        PerformMergeAction(*i);
+    }
+  } else {
+    // For each account known to chrome but not in the gaia cookie,
+    // PerformMergeAction().
+    for (size_t i = 0; i < add_to_cookie.size(); ++i)
+      PerformMergeAction(add_to_cookie[i]);
 
-    // TODO(rogerta): for each account in the gaia cookie not known to chrome,
-    // warn the user by showing a signin global error.  I don't think we want
-    // automatically add the account to chrome.
+    // For each account in the gaia cookie not known to chrome, warn the user
+    // by showing a signin global error.  I don't think we want automatically
+    // add the account to chrome.
+    for (size_t i = 0; i < add_to_chrome.size(); ++i)
+      PerformAddToChromeAction(add_to_chrome[i]);
   }
 }
 
 void AccountReconcilor::HandleSuccessfulAccountIdCheck(
     const std::string& account_id) {
   valid_chrome_accounts_.insert(account_id);
-  FinishReconcileAction();
+  FinishReconcile();
 }
 
 void AccountReconcilor::HandleFailedAccountIdCheck(
     const std::string& account_id) {
   invalid_chrome_accounts_.insert(account_id);
-  FinishReconcileAction();
+  FinishReconcile();
 }

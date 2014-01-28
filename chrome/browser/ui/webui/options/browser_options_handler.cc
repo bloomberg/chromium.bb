@@ -755,6 +755,8 @@ void BrowserOptionsHandler::InitializeHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
+  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+                 content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
@@ -1091,6 +1093,7 @@ void BrowserOptionsHandler::Observe(
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
     SendProfilesInfo();
       break;
+    case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
       // Update our sync/signin status display.

@@ -50,6 +50,12 @@ void MergeSessionHelper::LogOut(
     const std::string& account_id,
     const std::vector<std::string>& accounts) {
   DCHECK(!account_id.empty());
+  LogOutInternal(account_id, accounts);
+}
+
+void MergeSessionHelper::LogOutInternal(
+    const std::string& account_id,
+    const std::vector<std::string>& accounts) {
   bool pending = !accounts_.empty();
 
   if (pending) {
@@ -57,7 +63,7 @@ void MergeSessionHelper::LogOut(
         it != accounts_.end(); it++) {
       if (!it->empty() &&
           (std::find(accounts.begin(), accounts.end(), *it) == accounts.end() ||
-          *it == account_id)) {
+           *it == account_id)) {
         // We have a pending log in request for an account followed by
         // a signout.
         GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
@@ -71,9 +77,8 @@ void MergeSessionHelper::LogOut(
 
   // Signal a logout to be the next thing to do unless the pending
   // action is already a logout.
-  if (!pending || !accounts_.front().empty()) {
+  if (!pending || !accounts_.front().empty())
     accounts_.push_back("");
-  }
 
   for (std::vector<std::string>::const_iterator it = accounts.begin();
       it != accounts.end(); it++) {
@@ -83,9 +88,12 @@ void MergeSessionHelper::LogOut(
     }
   }
 
-  if (!pending) {
+  if (!pending)
     StartLogOutUrlFetch();
-  }
+}
+
+void MergeSessionHelper::LogOutAllAccounts() {
+  LogOutInternal("", std::vector<std::string>());
 }
 
 void MergeSessionHelper::StartLogOutUrlFetch() {

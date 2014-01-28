@@ -241,9 +241,12 @@ void GaiaOAuthClient::Core::HandleResponse(
   scoped_ptr<net::URLFetcher> old_request = request_.Pass();
   DCHECK_EQ(source, old_request.get());
 
-  // RC_BAD_REQUEST means the arguments are invalid. No point retrying. We are
+  // HTTP_BAD_REQUEST means the arguments are invalid.  HTTP_UNAUTHORIZED means
+  // the access or refresh token is invalid. No point retrying. We are
   // done here.
-  if (source->GetResponseCode() == net::HTTP_BAD_REQUEST) {
+  int response_code = source->GetResponseCode();
+  if (response_code == net::HTTP_BAD_REQUEST ||
+      response_code == net::HTTP_UNAUTHORIZED) {
     delegate_->OnOAuthError();
     return;
   }

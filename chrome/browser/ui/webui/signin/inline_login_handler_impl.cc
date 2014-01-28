@@ -66,12 +66,16 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   params.SetString("continueUrl",
       signin::GetLandingURL("source", static_cast<int>(source)).spec());
 
+  std::string default_email;
   if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
-    std::string last_email = Profile::FromWebUI(web_ui())->GetPrefs()->
+    default_email = Profile::FromWebUI(web_ui())->GetPrefs()->
         GetString(prefs::kGoogleServicesLastUsername);
-    if (!last_email.empty())
-      params.SetString("email", last_email);
+  } else {
+    if (!net::GetValueForKeyInQuery(current_url, "email", &default_email))
+      default_email.clear();
   }
+  if (!default_email.empty())
+    params.SetString("email", default_email);
 
   std::string frame_url;
   net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
@@ -82,6 +86,12 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
   if (!is_constrained.empty())
     params.SetString("constrained", is_constrained);
+
+  // TODO(rogerta): this needs to be passed on to gaia somehow.
+  std::string read_only_email;
+  net::GetValueForKeyInQuery(current_url, "readOnlyEmail", &read_only_email);
+  if (!read_only_email.empty())
+    params.SetString("readOnlyEmail", read_only_email);
 
   net::GetValueForKeyInQuery(current_url, "partitionId", &partition_id_);
   if (partition_id_.empty()) {
@@ -115,6 +125,9 @@ void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
 void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   DCHECK(email_.empty() && password_.empty());
 
+  content::WebContents* contents = web_ui()->GetWebContents();
+  const GURL& current_url = contents->GetURL();
+
   const base::DictionaryValue* dict = NULL;
   base::string16 email;
   if (!args->GetDictionary(0, &dict) || !dict ||
@@ -133,10 +146,25 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   dict->GetString("password", &password);
   password_ = UTF16ToASCII(password);
 
+  // When doing a SAML sign in, this email check may result in a false
+  // positive.  This happens when the user types one email address in the
+  // gaia sign in page, but signs in to a different account in the SAML sign in
+  // page.
+  std::string default_email;
+  std::string validate_email;
+  if (net::GetValueForKeyInQuery(current_url, "email", &default_email) &&
+      net::GetValueForKeyInQuery(current_url, "validateEmail",
+                                 &validate_email) &&
+      validate_email == "1") {
+    if (email_ != default_email) {
+      SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+      return;
+    }
+  }
+
   dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
-  content::WebContents* contents = web_ui()->GetWebContents();
-  signin::Source source = signin::GetSourceForPromoURL(contents->GetURL());
+  signin::Source source = signin::GetSourceForPromoURL(current_url);
   OneClickSigninHelper::CanOfferFor can_offer =
       source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ?
       OneClickSigninHelper::CAN_OFFER_FOR_SECONDARY_ACCOUNT :
@@ -176,6 +204,15 @@ void InlineLoginHandlerImpl::OnClientOAuthCodeSuccess(
     // SigninOAuthHelper will delete itself.
     SigninOAuthHelper* helper = new SigninOAuthHelper(profile);
     helper->StartAddingAccount(oauth_code);
+
+    if (signin::IsAutoCloseEnabledInURL(current_url)) {
+      // Close the gaia sign in tab via a task to make sure we aren't in the
+      // middle of any webui handler code.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&InlineLoginHandlerImpl::CloseTab,
+                     weak_factory_.GetWeakPtr()));
+    }
   } else {
     OneClickSigninSyncStarter::StartSyncMode start_mode =
         source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?

@@ -12,16 +12,19 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 SigninGlobalError::SigninGlobalError(Profile* profile)
@@ -112,16 +115,12 @@ base::string16 SigninGlobalError::MenuItemLabel() {
 void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
 #if defined(OS_CHROMEOS)
   if (auth_error_.state() != GoogleServiceAuthError::NONE) {
-    DLOG(INFO) << "Signing out the user to fix a sync error.";
+    DVLOG(1) << "Signing out the user to fix a sync error.";
     // TODO(beng): seems like this could just call chrome::AttemptUserExit().
     chrome::ExecuteCommand(browser, IDC_EXIT);
     return;
   }
 #endif
-
-  // TODO(rogerta): what we do depends on which account is reporting an error.
-  // This will be needed once the account reconcilor is implemented.  The
-  // LoginUIService will support multi-login as well.
 
   // Global errors don't show up in the wrench menu on android.
 #if !defined(OS_ANDROID)
@@ -130,8 +129,9 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
     login_ui->current_login_ui()->FocusUI();
     return;
   }
-  // Need to navigate to the settings page and display the UI.
-  chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
+
+  chrome::ShowSingletonTab(browser, signin::GetReauthURL(profile_,
+                                                         account_id_));
 #endif
 }
 

@@ -82,7 +82,11 @@ class AccountReconcilor : public BrowserContextKeyedService,
                            ValidateAccountsFromTokensFailedUserInfo);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                             ValidateAccountsFromTokensFailedTokenRequest);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAction);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopMultiple);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToChrome);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileBadPrimary);
 
   class UserIdFetcher;
 
@@ -103,16 +107,20 @@ class AccountReconcilor : public BrowserContextKeyedService,
   void StopPeriodicReconciliation();
   void PeriodicReconciliation();
 
-  void PerformMergeAction(const std::string& account_id);
-  void StartRemoveAction(const std::string& account_id);
-  void FinishRemoveAction(
+  // All actions with side effects.  Virtual so that they can be overridden
+  // in tests.
+  virtual void PerformMergeAction(const std::string& account_id);
+  virtual void StartRemoveAction(const std::string& account_id);
+  virtual void FinishRemoveAction(
       const std::string& account_id,
       const GoogleServiceAuthError& error,
       const std::vector<std::string>& accounts);
+  virtual void PerformAddToChromeAction(const std::string& account_id);
+  virtual void PerformLogoutAllAccountsAction();
 
   // Used during period reconciliation.
-  void StartReconcileAction();
-  void FinishReconcileAction();
+  void StartReconcile();
+  void FinishReconcile();
   void HandleSuccessfulAccountIdCheck(const std::string& account_id);
   void HandleFailedAccountIdCheck(const std::string& account_id);
 

@@ -23,6 +23,8 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/signin_histogram.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -488,8 +491,6 @@ void SyncSetupHandler::DisplayGaiaLogin() {
 }
 
 void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
-  GURL url(signin::GetPromoURL(signin::SOURCE_SETTINGS,
-                               true));  // auto close after success.
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   if (!browser) {
@@ -501,18 +502,25 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   // If the signin manager already has an authenticated username, this is a
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
+  GURL url;
   std::string email = SigninManagerFactory::GetForProfile(
       browser->profile())->GetAuthenticatedUsername();
   if (!email.empty()) {
     UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
                               signin::HISTOGRAM_SHOWN,
                               signin::HISTOGRAM_MAX);
-    url = net::AppendQueryParameter(url, "Email", email);
+
+    SigninGlobalError* signin_error =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(browser->profile())->
+            signin_global_error();
+    DCHECK(signin_error->HasMenuItem());
+    url = signin::GetReauthURL(browser->profile(),
+                               signin_error->GetAccountIdOfLastAuthError());
+  } else {
+    url = signin::GetPromoURL(signin::SOURCE_SETTINGS, true);
   }
 
-  browser->OpenURL(
-      content::OpenURLParams(url, content::Referrer(), SINGLETON_TAB,
-                             content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+  chrome::ShowSingletonTab(browser, url);
 }
 #endif
 

@@ -61,6 +61,9 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   void LogOut(const std::string& account_id,
               const std::vector<std::string>& accounts);
 
+  // Signout all accounts.
+  void LogOutAllAccounts();
+
  private:
   // Overridden from UbertokenConsumer.
   virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
@@ -70,6 +73,9 @@ class MergeSessionHelper : public GaiaAuthConsumer,
   virtual void OnMergeSessionSuccess(const std::string& data) OVERRIDE;
   virtual void OnMergeSessionFailure(const GoogleServiceAuthError& error)
       OVERRIDE;
+
+  void LogOutInternal(const std::string& account_id,
+                      const std::vector<std::string>& accounts);
 
   // Starts the proess of fetching the uber token and performing a merge session
   // for the next account.  Virtual so that it can be overriden in tests.

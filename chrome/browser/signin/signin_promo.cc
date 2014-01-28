@@ -218,6 +218,26 @@ GURL GetPromoURL(Source source, bool auto_close, bool is_constrained) {
   return GaiaUrls::GetInstance()->service_login_url().Resolve(query_string);
 }
 
+GURL GetReauthURL(Profile* profile, const std::string& account_id) {
+  if (switches::IsEnableWebBasedSignin()) {
+    return net::AppendQueryParameter(
+        signin::GetPromoURL(signin::SOURCE_SETTINGS, true),
+        "Email",
+        account_id);
+  }
+
+  const std::string primary_account_id =
+    SigninManagerFactory::GetForProfile(profile)->
+        GetAuthenticatedAccountId();
+  signin::Source source = account_id == primary_account_id ?
+      signin::SOURCE_SETTINGS : signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
+
+  GURL url = signin::GetPromoURL(source, true);
+  url = net::AppendQueryParameter(url, "email", account_id);
+  url = net::AppendQueryParameter(url, "validateEmail", "1");
+  return net::AppendQueryParameter(url, "readOnlyEmail", "1");
+}
+
 GURL GetNextPageURLForPromoURL(const GURL& url) {
   std::string value;
   if (net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyContinue, &value))
