@@ -182,8 +182,13 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     // Try recycle a previously-allocated resource.
     for (size_t i = 0; i < recycled_resources_.size(); ++i) {
-      if (recycled_resources_[i].resource_format == output_resource_format &&
-          recycled_resources_[i].resource_size == output_plane_resource_size) {
+      bool resource_matches =
+          recycled_resources_[i].resource_format == output_resource_format &&
+          recycled_resources_[i].resource_size == output_plane_resource_size;
+      bool not_in_use =
+          !software_compositor || !resource_provider_->InUseByConsumer(
+                                       recycled_resources_[i].resource_id);
+      if (resource_matches && not_in_use) {
         resource_id = recycled_resources_[i].resource_id;
         mailbox = recycled_resources_[i].mailbox;
         recycled_resources_.erase(recycled_resources_.begin() + i);
@@ -267,23 +272,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       plane_resources[0].resource_format,
       gpu::Mailbox()
     };
-    base::SharedMemory* shared_memory =
-        resource_provider_->GetSharedMemory(plane_resources[0].resource_id);
-    if (shared_memory) {
-      external_resources.mailboxes.push_back(
-          TextureMailbox(shared_memory, plane_resources[0].resource_size));
-      external_resources.release_callbacks
-          .push_back(base::Bind(&RecycleResource, AsWeakPtr(), recycle_data));
-      external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
-    } else {
-      // TODO(jbauman): Remove this path once shared memory is available
-      // everywhere.
-      external_resources.software_resources
-          .push_back(plane_resources[0].resource_id);
-      external_resources.software_release_callback =
-          base::Bind(&RecycleResource, AsWeakPtr(), recycle_data);
-      external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
-    }
+    external_resources.software_resources.push_back(
+        plane_resources[0].resource_id);
+    external_resources.software_release_callback =
+        base::Bind(&RecycleResource, AsWeakPtr(), recycle_data);
+    external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
 
     return external_resources;
   }
