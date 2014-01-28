@@ -209,21 +209,21 @@ class TabCapturePerformanceTest
     bool sw_frames = PrintResults(analyzer.get(),
                                   test_name,
                                   "TestFrameTickSW",
-                                  "frame_time");
+                                  "ms");
     bool gpu_frames = PrintResults(analyzer.get(),
                                    test_name,
                                    "TestFrameTickGPU",
-                                   "frame_time");
+                                   "ms");
     EXPECT_TRUE(sw_frames || gpu_frames);
     EXPECT_NE(sw_frames, gpu_frames);
 
     // This prints out the average time between capture events.
     // As the capture frame rate is capped at 30fps, this score
-    // cannot get any better than 33.33 ms.
+    // cannot get any better than (lower) 33.33 ms.
     EXPECT_TRUE(PrintResults(analyzer.get(),
                              test_name,
                              "Capture",
-                             "capture_time"));
+                             "ms"));
   }
 };
 
