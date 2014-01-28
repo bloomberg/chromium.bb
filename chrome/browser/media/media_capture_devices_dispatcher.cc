@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -526,12 +527,27 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(
       pending_requests_.find(web_contents);
 
   if (it == pending_requests_.end() || it->second.empty()) {
-    // Don't do anything if the tab was was closed.
+    // Don't do anything if the tab was closed.
     return;
   }
 
   DCHECK(!it->second.empty());
 
+  if (PermissionBubbleManager::Enabled()) {
+    scoped_ptr<MediaStreamDevicesController> controller(
+        new MediaStreamDevicesController(web_contents,
+            it->second.front().request,
+            base::Bind(&MediaCaptureDevicesDispatcher::OnAccessRequestResponse,
+                       base::Unretained(this), web_contents)));
+    if (controller->DismissInfoBarAndTakeActionOnSettings())
+      return;
+    PermissionBubbleManager::FromWebContents(web_contents)->
+        AddPermissionBubbleDelegate(controller.release());
+    return;
+  }
+
+  // TODO(gbillock): delete this block and the MediaStreamInfoBarDelegate
+  // when we've transitioned to bubbles. (crbug/337458)
   MediaStreamInfoBarDelegate::Create(
       web_contents, it->second.front().request,
       base::Bind(&MediaCaptureDevicesDispatcher::OnAccessRequestResponse,

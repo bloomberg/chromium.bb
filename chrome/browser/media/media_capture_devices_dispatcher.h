@@ -150,6 +150,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
                          const content::MediaResponseCallback& callback);
     ~PendingAccessRequest();
 
+    // TODO(gbillock): make the MediaStreamDevicesController owned by
+    // this object when we're using bubbles.
     content::MediaStreamRequest request;
     content::MediaResponseCallback callback;
   };

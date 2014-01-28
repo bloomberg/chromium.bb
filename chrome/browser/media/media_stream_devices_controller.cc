@@ -5,8 +5,10 @@
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -23,6 +25,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -52,6 +57,14 @@ bool IsInKioskMode() {
   return false;
 #endif
 }
+
+enum DevicePermissionActions {
+  kAllowHttps = 0,
+  kAllowHttp,
+  kDeny,
+  kCancel,
+  kPermissionActionsMax  // Must always be last!
+};
 
 }  // namespace
 
@@ -137,7 +150,8 @@ void MediaStreamDevicesController::RegisterProfilePrefs(
                           user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-
+// TODO(gbillock): rename? doesn't actually dismiss. More of a 'check profile
+// and system for compatibility' thing.
 bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
   // Tab capture is allowed for extensions only and infobar is not shown for
   // extensions.
@@ -333,6 +347,63 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
   content::MediaResponseCallback cb = callback_;
   callback_.Reset();
   cb.Run(content::MediaStreamDevices(), scoped_ptr<content::MediaStreamUI>());
+}
+
+base::string16 MediaStreamDevicesController::GetMessageText() const {
+  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
+  if (!HasAudio())
+    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
+  else if (!HasVideo())
+    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
+  return l10n_util::GetStringFUTF16(
+      message_id, base::UTF8ToUTF16(GetSecurityOriginSpec()));
+}
+
+base::string16 MediaStreamDevicesController::GetMessageTextFragment() const {
+  int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_PERMISSION_FRAGMENT;
+  if (!HasAudio())
+    message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT;
+  else if (!HasVideo())
+    message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT;
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+base::string16
+MediaStreamDevicesController::GetAlternateAcceptButtonText() const {
+  return l10n_util::GetStringUTF16(IDS_MEDIA_CAPTURE_ALLOW);
+}
+
+base::string16
+MediaStreamDevicesController::GetAlternateDenyButtonText() const {
+  return l10n_util::GetStringUTF16(IDS_MEDIA_CAPTURE_DENY);
+}
+
+void MediaStreamDevicesController::PermissionGranted() {
+  GURL origin(GetSecurityOriginSpec());
+  if (origin.SchemeIsSecure()) {
+    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                              kAllowHttps, kPermissionActionsMax);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                              kAllowHttp, kPermissionActionsMax);
+  }
+  Accept(true);
+}
+
+void MediaStreamDevicesController::PermissionDenied() {
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                            kDeny, kPermissionActionsMax);
+  Deny(true);
+}
+
+void MediaStreamDevicesController::Cancelled() {
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                            kCancel, kPermissionActionsMax);
+  Deny(true);
+}
+
+void MediaStreamDevicesController::RequestFinished() {
+  delete this;
 }
 
 MediaStreamDevicesController::DevicePolicy
