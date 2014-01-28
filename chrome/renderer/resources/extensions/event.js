@@ -521,8 +521,7 @@
     // but certain tests rely on them.
     'attach_',
     'detach_',
-    'dispatch_',
-    'findListener_'
+    'dispatch_'
   ]);
 
   // NOTE: Event is (lazily) exposed as chrome.Event from dispatcher.cc.

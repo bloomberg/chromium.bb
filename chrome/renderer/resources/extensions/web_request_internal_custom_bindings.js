@@ -49,7 +49,7 @@ function WebRequestEventImpl(eventName, opt_argSchemas, opt_extraArgSchemas,
 WebRequestEventImpl.prototype.hasListener = function(cb) {
   if (!this.eventOptions.supportsListeners)
     throw new Error('This event does not support listeners.');
-  return this.findListener(cb) > -1;
+  return this.findListener_(cb) > -1;
 };
 
 // Test if any callbacks are registered fur thus event.
@@ -116,7 +116,7 @@ WebRequestEventImpl.prototype.removeListener = function(cb) {
   if (!this.eventOptions.supportsListeners)
     throw new Error('This event does not support listeners.');
   var idx;
-  while ((idx = this.findListener(cb)) >= 0) {
+  while ((idx = this.findListener_(cb)) >= 0) {
     var e = this.subEvents[idx];
     e.subEvent.removeListener(e.subEventCallback);
     if (e.subEvent.hasListeners()) {
@@ -127,11 +127,11 @@ WebRequestEventImpl.prototype.removeListener = function(cb) {
   }
 };
 
-WebRequestEventImpl.prototype.findListener = function(cb) {
+WebRequestEventImpl.prototype.findListener_ = function(cb) {
   for (var i in this.subEvents) {
     var e = this.subEvents[i];
     if (e.callback === cb) {
-      if (e.subEvent.findListener_(e.subEventCallback) > -1)
+      if (e.subEvent.hasListener(e.subEventCallback))
         return i;
       console.error('Internal error: webRequest subEvent has no callback.');
     }
