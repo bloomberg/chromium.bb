@@ -218,6 +218,18 @@ TEST_F(TrayPowerTest, UpdateNotificationState) {
   safe_usb.set_battery_percent(TrayPower::kNoWarningPercentage - 0.1);
   EXPECT_FALSE(UpdateNotificationState(safe_usb));
   EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+
+  // A notification shouldn't be shown when we're in the full state with an
+  // original Spring charger connected: http://crbug.com/338376
+  PowerSupplyProperties spring = DefaultPowerSupplyProperties();
+  spring.set_external_power(power_manager::
+      PowerSupplyProperties_ExternalPower_ORIGINAL_SPRING_CHARGER);
+  spring.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_FULL);
+  spring.set_battery_time_to_empty_sec(0);
+  spring.set_battery_time_to_full_sec(0);
+  EXPECT_FALSE(UpdateNotificationState(spring));
+  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
 }
 
 }  // namespace internal

@@ -233,7 +233,8 @@ bool TrayPower::UpdateNotificationState() {
   const PowerStatus& status = *PowerStatus::Get();
   if (!status.IsBatteryPresent() ||
       status.IsBatteryTimeBeingCalculated() ||
-      status.IsMainsChargerConnected()) {
+      status.IsMainsChargerConnected() ||
+      status.IsOriginalSpringChargerConnected()) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
@@ -249,7 +250,8 @@ bool TrayPower::UpdateNotificationStateForRemainingTime() {
   const int remaining_minutes = static_cast<int>(
       PowerStatus::Get()->GetBatteryTimeToEmpty().InSecondsF() / 60.0 + 0.5);
 
-  if (remaining_minutes >= kNoWarningMinutes) {
+  if (remaining_minutes >= kNoWarningMinutes ||
+      PowerStatus::Get()->IsBatteryFull()) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
@@ -284,7 +286,8 @@ bool TrayPower::UpdateNotificationStateForRemainingPercentage() {
   const int remaining_percentage =
       PowerStatus::Get()->GetRoundedBatteryPercent();
 
-  if (remaining_percentage >= kNoWarningPercentage) {
+  if (remaining_percentage >= kNoWarningPercentage ||
+      PowerStatus::Get()->IsBatteryFull()) {
     notification_state_ = NOTIFICATION_NONE;
     return false;
   }
