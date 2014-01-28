@@ -291,6 +291,11 @@ void SearchResultView::OnIconChanged() {
     icon_->ResetImageSize();
   }
 
+  // Set the image to an empty image before we reset the image because
+  // since we're using the same backing store for our images, sometimes
+  // ImageView won't detect that we have a new image set due to the pixel
+  // buffer pointers remaining the same despite the image changing.
+  icon_->SetImage(gfx::ImageSkia());
   icon_->SetImage(image);
 }
 
