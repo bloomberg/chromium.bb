@@ -42,9 +42,9 @@ const char kTitlePageOfAppEngineAdminPage[] = "Instances";
 //
 // This test will bring up a AppRTC instance on localhost and verify that the
 // call gets up when connecting to the same room from two tabs in a browser.
-class WebrtcApprtcBrowserTest : public WebRtcTestBase {
+class WebRtcApprtcBrowserTest : public WebRtcTestBase {
  public:
-  WebrtcApprtcBrowserTest()
+  WebRtcApprtcBrowserTest()
       : dev_appserver_(base::kNullProcessHandle),
         firefox_(base::kNullProcessHandle) {
   }
@@ -160,7 +160,7 @@ class WebrtcApprtcBrowserTest : public WebRtcTestBase {
   base::ProcessHandle firefox_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   // TODO(mcasas): Remove Win version filtering when this bug gets fixed:
   // http://code.google.com/p/webrtc/issues/detail?id=2703
 #if defined(OS_WIN)
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 #define MAYBE_MANUAL_FirefoxApprtcInteropTest DISABLED_MANUAL_FirefoxApprtcInteropTest
 #endif
 
-IN_PROC_BROWSER_TEST_F(WebrtcApprtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
                        MAYBE_MANUAL_FirefoxApprtcInteropTest) {
   // TODO(mcasas): Remove Win version filtering when this bug gets fixed:
   // http://code.google.com/p/webrtc/issues/detail?id=2703
