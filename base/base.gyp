@@ -676,11 +676,6 @@
         'module_dir': 'base'
       },
       'conditions': [
-        ['desktop_linux == 1 or chromeos == 1', {
-          'defines': [
-            'USE_SYMBOLIZE',
-          ],
-        }],
         ['OS == "android"', {
           'dependencies': [
             'android/jni_generator/jni_generator.gyp:jni_generator_tests',
@@ -718,6 +713,9 @@
           ],
         }],
         ['desktop_linux == 1 or chromeos == 1', {
+          'defines': [
+            'USE_SYMBOLIZE',
+          ],
           'sources!': [
             'file_version_info_unittest.cc',
           ],
