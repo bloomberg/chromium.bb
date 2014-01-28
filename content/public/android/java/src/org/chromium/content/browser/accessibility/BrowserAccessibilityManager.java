@@ -46,6 +46,7 @@ public class BrowserAccessibilityManager {
     private final int[] mTempLocation = new int[2];
     private final View mView;
     private boolean mUserHasTouchExplored;
+    private boolean mPendingScrollToMakeNodeVisible;
     private boolean mFrameInfoInitialized;
 
     // If this is true, enables an experimental feature that focuses the web page after it
@@ -168,6 +169,12 @@ public class BrowserAccessibilityManager {
                 mAccessibilityFocusId = virtualViewId;
                 sendAccessibilityEvent(mAccessibilityFocusId,
                         AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+                if (mCurrentHoverId == View.NO_ID) {
+                    nativeScrollToMakeNodeVisible(
+                            mNativeObj, mAccessibilityFocusId);
+                } else {
+                    mPendingScrollToMakeNodeVisible = true;
+                }
                 return true;
             case AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS:
                 if (mAccessibilityFocusId == virtualViewId) {
@@ -201,7 +208,18 @@ public class BrowserAccessibilityManager {
             return false;
         }
 
-        if (event.getAction() == MotionEvent.ACTION_HOVER_EXIT) return true;
+        if (event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
+            if (mCurrentHoverId != View.NO_ID) {
+                sendAccessibilityEvent(mCurrentHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+                mCurrentHoverId = View.NO_ID;
+            }
+            if (mPendingScrollToMakeNodeVisible) {
+                nativeScrollToMakeNodeVisible(
+                        mNativeObj, mAccessibilityFocusId);
+            }
+            mPendingScrollToMakeNodeVisible = false;
+            return true;
+        }
 
         mUserHasTouchExplored = true;
         float x = event.getX();
@@ -617,4 +635,6 @@ public class BrowserAccessibilityManager {
     private native void nativeClick(long nativeBrowserAccessibilityManagerAndroid, int id);
     private native void nativeFocus(long nativeBrowserAccessibilityManagerAndroid, int id);
     private native void nativeBlur(long nativeBrowserAccessibilityManagerAndroid);
+    private native void nativeScrollToMakeNodeVisible(
+            long nativeBrowserAccessibilityManagerAndroid, int id);
 }

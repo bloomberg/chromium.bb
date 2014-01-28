@@ -379,6 +379,13 @@ void BrowserAccessibilityManagerAndroid::Blur(JNIEnv* env, jobject obj) {
   SetFocus(root_, true);
 }
 
+void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(
+    JNIEnv* env, jobject obj, jint id) {
+  BrowserAccessibility* node = GetFromRendererID(id);
+  if (node)
+    ScrollToMakeVisible(*node, gfx::Rect(node->location().size()));
+}
+
 BrowserAccessibility* BrowserAccessibilityManagerAndroid::FuzzyHitTest(
     int x, int y, BrowserAccessibility* start_node) {
   BrowserAccessibility* nearest_node = NULL;

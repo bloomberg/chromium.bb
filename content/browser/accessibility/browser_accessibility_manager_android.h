@@ -55,6 +55,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   void Click(JNIEnv* env, jobject obj, jint id);
   void Focus(JNIEnv* env, jobject obj, jint id);
   void Blur(JNIEnv* env, jobject obj);
+  void ScrollToMakeNodeVisible(JNIEnv* env, jobject obj, int id);
 
  protected:
   virtual void NotifyRootChanged() OVERRIDE;
