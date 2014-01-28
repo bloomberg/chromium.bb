@@ -272,6 +272,9 @@ public:
 
     bool supportsInputModeAttribute() const;
 
+    void setShouldRevealPassword(bool value);
+    bool shouldRevealPassword() const { return m_shouldRevealPassword; }
+
 protected:
     HTMLInputElement(Document&, HTMLFormElement*, bool createdByParser);
 
@@ -385,6 +388,7 @@ private:
     bool m_valueAttributeWasUpdatedAfterParsing : 1;
     bool m_canReceiveDroppedFiles : 1;
     bool m_hasTouchEventHandler : 1;
+    bool m_shouldRevealPassword : 1;
     RefPtr<InputType> m_inputType;
     RefPtr<InputTypeView> m_inputTypeView;
     // The ImageLoader must be owned by this element because the loader code assumes

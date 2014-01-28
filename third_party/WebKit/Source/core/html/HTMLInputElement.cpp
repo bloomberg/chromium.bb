@@ -120,6 +120,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_valueAttributeWasUpdatedAfterParsing(false)
     , m_canReceiveDroppedFiles(false)
     , m_hasTouchEventHandler(false)
+    , m_shouldRevealPassword(false)
     , m_inputType(InputType::createText(*this))
     , m_inputTypeView(m_inputType)
 {
@@ -1842,6 +1843,14 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
 bool HTMLInputElement::supportsInputModeAttribute() const
 {
     return m_inputType->supportsInputModeAttribute();
+}
+
+void HTMLInputElement::setShouldRevealPassword(bool value)
+{
+    if (m_shouldRevealPassword == value)
+        return;
+    m_shouldRevealPassword = value;
+    lazyReattachIfAttached();
 }
 
 bool HTMLInputElement::isInteractiveContent() const

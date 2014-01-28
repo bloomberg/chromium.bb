@@ -2387,6 +2387,16 @@ void Internals::setZoomFactor(float factor)
     frame()->setPageZoomFactor(factor);
 }
 
+void Internals::setShouldRevealPassword(Element* element, bool reveal, ExceptionState& exceptionState)
+{
+    if (!element || !element->hasTagName(inputTag)) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return;
+    }
+
+    return toHTMLInputElement(element)->setShouldRevealPassword(reveal);
+}
+
 namespace {
 
 class AddOneFunction : public ScriptFunction {

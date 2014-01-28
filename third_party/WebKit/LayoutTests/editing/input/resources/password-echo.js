@@ -74,6 +74,11 @@ function run(tests, testIdx)
         window.setTimeout(function(){ run(tests, testIdx); }, 0);
 }
 
+function setTestNode(testNode)
+{
+  testnode = testNode;
+}
+
 function init(tests)
 {
     if (window.testRunner && window.textInputController && window.eventSender) {

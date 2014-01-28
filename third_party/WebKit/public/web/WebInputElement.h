@@ -111,6 +111,9 @@ namespace blink {
         BLINK_EXPORT WebElement decorationElementFor(void*);
         BLINK_EXPORT WebElement passwordGeneratorButtonElement() const;
 
+        // If true, forces the text of the element to be visible.
+        BLINK_EXPORT void setShouldRevealPassword(bool value);
+
 #if BLINK_IMPLEMENTATION
         WebInputElement(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);
         WebInputElement& operator=(const WTF::PassRefPtr<WebCore::HTMLInputElement>&);

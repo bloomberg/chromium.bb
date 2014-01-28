@@ -244,6 +244,11 @@ WebElement WebInputElement::passwordGeneratorButtonElement() const
     return WebElement(constUnwrap<HTMLInputElement>()->passwordGeneratorButtonElement());
 }
 
+void WebInputElement::setShouldRevealPassword(bool value)
+{
+    unwrap<HTMLInputElement>()->setShouldRevealPassword(value);
+}
+
 WebInputElement::WebInputElement(const PassRefPtr<HTMLInputElement>& elem)
     : WebFormControlElement(elem)
 {

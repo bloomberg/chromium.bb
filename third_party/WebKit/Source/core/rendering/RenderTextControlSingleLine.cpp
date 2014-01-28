@@ -376,6 +376,9 @@ PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerTextStyle(const 
     textBlockStyle->setDisplay(BLOCK);
     textBlockStyle->setUnique();
 
+    if (inputElement()->shouldRevealPassword())
+        textBlockStyle->setTextSecurity(TSNONE);
+
     return textBlockStyle.release();
 }
 

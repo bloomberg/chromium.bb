@@ -311,6 +311,8 @@ public:
 
     void setZoomFactor(float);
 
+    void setShouldRevealPassword(Element*, bool, ExceptionState&);
+
     ScriptPromise addOneToPromise(ExecutionContext*, ScriptPromise);
 
 private:

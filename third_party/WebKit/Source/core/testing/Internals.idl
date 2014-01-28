@@ -279,5 +279,7 @@
 
     void setZoomFactor(float factor);
 
+    [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
+
     [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);
 };
