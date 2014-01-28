@@ -203,11 +203,10 @@ public:
     static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
 
-    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*, TextDirection = LTR,
+    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
-    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*,
-        TextDirection = LTR,
+    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
     static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, RenderStyle*,

@@ -96,7 +96,7 @@ void RenderCombineText::combineText()
     if (style()->isHorizontalWritingMode())
         return;
 
-    TextRun run = RenderBlockFlow::constructTextRun(this, originalFont(), this, style());
+    TextRun run = RenderBlockFlow::constructTextRun(this, originalFont(), this, style(), style()->direction());
     FontDescription description = originalFont().fontDescription();
     float emWidth = description.computedSize() * textCombineMargin;
     bool shouldUpdateFont = false;

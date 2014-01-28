@@ -889,10 +889,10 @@ void RenderText::computePreferredLogicalWidths(float leadWidth)
         m_knownToHaveNoOverflowAndNoFallbackFonts = true;
 }
 
-static inline float hyphenWidth(RenderText* renderer, const Font& font)
+static inline float hyphenWidth(RenderText* renderer, const Font& font, TextDirection direction)
 {
     RenderStyle* style = renderer->style();
-    return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style));
+    return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style, direction));
 }
 
 void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow)
@@ -1032,7 +1032,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             else {
                 w = widthFromCache(f, i, wordLen, leadWidth + currMaxWidth, textDirection, &fallbackFonts, &glyphOverflow);
                 if (c == softHyphen)
-                    currMinWidth += hyphenWidth(this, f);
+                    currMinWidth += hyphenWidth(this, f, textDirection);
             }
 
             maxWordWidth = max(maxWordWidth, w);
@@ -1095,7 +1095,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                     m_maxWidth = currMaxWidth;
                 currMaxWidth = 0;
             } else {
-                TextRun run = RenderBlockFlow::constructTextRun(this, f, this, i, 1, styleToUse);
+                TextRun run = RenderBlockFlow::constructTextRun(this, f, this, i, 1, styleToUse, textDirection);
                 run.setCharactersLength(len - i);
                 ASSERT(run.charactersLength() >= run.length());
                 run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
