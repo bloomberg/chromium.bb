@@ -66,7 +66,8 @@ class PepperIsolatedFileSystemMessageFilter
   int32_t OpenPluginPrivateFileSystem(ppapi::host::HostMessageContext* context);
 
   const int render_process_id_;
-  const base::FilePath& profile_directory_;
+  // Keep a copy from original thread.
+  const base::FilePath profile_directory_;
   const GURL document_url_;
 
   // Not owned by this object.
