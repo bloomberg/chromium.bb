@@ -92,8 +92,10 @@ void WindowSlider::ChangeOwner(aura::Window* new_owner) {
 }
 
 bool WindowSlider::IsSlideInProgress() const {
-  return fabs(delta_x_) >= active_start_threshold_ || slider_.get() ||
-      weak_factory_.HasWeakPtrs();
+  // if active_start_threshold_ is 0, it means that sliding hasn't been started
+  return active_start_threshold_ != 0 &&
+      (fabs(delta_x_) >= active_start_threshold_ || slider_.get() ||
+      weak_factory_.HasWeakPtrs());
 }
 
 void WindowSlider::SetupSliderLayer() {
