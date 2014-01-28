@@ -42,7 +42,6 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
-#include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
@@ -54,6 +53,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/ElementRuleCollector.h"
+#include "core/css/FontFace.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/PageRuleCollector.h"
 #include "core/css/StylePropertySet.h"
@@ -123,9 +123,9 @@ static StylePropertySet* rightToLeftDeclaration()
 
 static void addFontFaceRule(Document* document, CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule)
 {
-    RefPtr<CSSFontFace> cssFontFace = CSSFontFace::createFromStyleRule(document, fontFaceRule);
-    if (cssFontFace)
-        cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, cssFontFace);
+    RefPtr<FontFace> fontFace = FontFace::create(document, fontFaceRule);
+    if (fontFace)
+        cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, fontFace);
 }
 
 StyleResolver::StyleResolver(Document& document)

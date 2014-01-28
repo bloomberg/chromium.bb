@@ -53,8 +53,8 @@ public:
 
     void fontLoaded(CSSFontFace*);
 
-    void addFontFace(PassRefPtr<CSSFontFace>, bool cssConnected);
-    void removeFontFace(PassRefPtr<CSSFontFace>);
+    void addFontFace(PassRefPtr<FontFace>, bool cssConnected);
+    void removeFontFace(PassRefPtr<FontFace>);
     bool isEmpty() const { return m_fontFaces.isEmpty(); }
 
     PassRefPtr<FontData> getFontData(const FontDescription&);
@@ -79,7 +79,7 @@ private:
     bool isLoading() const;
     bool isLoaded() const;
 
-    typedef ListHashSet<RefPtr<CSSFontFace> > FontFaceList;
+    typedef ListHashSet<RefPtr<FontFace> > FontFaceList;
 
     CSSFontSelector* m_fontSelector;
     FontTraitsMask m_traitsMask;

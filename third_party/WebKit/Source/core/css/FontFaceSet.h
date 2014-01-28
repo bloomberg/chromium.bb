@@ -132,7 +132,7 @@ private:
     bool resolveFontStyle(const String&, Font&);
     void handlePendingEventsAndPromisesSoon();
     void handlePendingEventsAndPromises();
-    const ListHashSet<RefPtr<CSSFontFace> >& cssConnectedFontFaceList() const;
+    const ListHashSet<RefPtr<FontFace> >& cssConnectedFontFaceList() const;
     bool isCSSConnectedFontFace(FontFace*) const;
 
     unsigned m_loadingCount;

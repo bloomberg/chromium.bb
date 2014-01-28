@@ -35,30 +35,6 @@
 
 namespace WebCore {
 
-CSSFontFace::~CSSFontFace()
-{
-    m_fontFace->cssFontFaceDestroyed();
-}
-
-PassRefPtr<CSSFontFace> CSSFontFace::createFromStyleRule(Document* document, const StyleRuleFontFace* fontFaceRule)
-{
-    RefPtr<FontFace> fontFace = FontFace::create(fontFaceRule);
-    if (!fontFace || fontFace->family().isEmpty())
-        return 0;
-
-    unsigned traitsMask = fontFace->traitsMask();
-    if (!traitsMask)
-        return 0;
-
-    // FIXME: Plumbing back into createCSSFontFace seems odd.
-    // Maybe move FontFace::createCSSFontFace logic here?
-    RefPtr<CSSFontFace> cssFontFace = fontFace->createCSSFontFace(document);
-    if (!cssFontFace || !cssFontFace->isValid())
-        return 0;
-
-    return cssFontFace;
-}
-
 bool CSSFontFace::isLoaded() const
 {
     size_t size = m_sources.size();
@@ -211,13 +187,13 @@ void CSSFontFace::setLoadStatus(FontFace::LoadStatus newStatus)
 
     switch (newStatus) {
     case FontFace::Loading:
-        FontFaceSet::from(document)->beginFontLoading(m_fontFace.get());
+        FontFaceSet::from(document)->beginFontLoading(m_fontFace);
         break;
     case FontFace::Loaded:
-        FontFaceSet::from(document)->fontLoaded(m_fontFace.get());
+        FontFaceSet::from(document)->fontLoaded(m_fontFace);
         break;
     case FontFace::Error:
-        FontFaceSet::from(document)->loadError(m_fontFace.get());
+        FontFaceSet::from(document)->loadError(m_fontFace);
         break;
     default:
         break;

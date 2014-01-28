@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class CSSFontFace;
+class FontFace;
 class CSSFontSelector;
 class CSSSegmentedFontFace;
 class FontDescription;
@@ -45,28 +45,28 @@ public:
     CSSSegmentedFontFaceCache();
 
     // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
-    // a result of egregious spaghettification in CSSFontFace/FontFaceSet.
-    void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtr<CSSFontFace>);
+    // a result of egregious spaghettification in FontFace/FontFaceSet.
+    void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtr<FontFace>);
     void remove(const StyleRuleFontFace*);
-    void addCSSFontFace(CSSFontSelector*, PassRefPtr<CSSFontFace>, bool cssConnected);
-    void removeCSSFontFace(CSSFontFace*, bool cssConnected);
+    void addFontFace(CSSFontSelector*, PassRefPtr<FontFace>, bool cssConnected);
+    void removeFontFace(FontFace*, bool cssConnected);
 
     // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,
     // but this function uses FontDescription/family pair.
     CSSSegmentedFontFace* get(const FontDescription&, const AtomicString& family);
 
-    const ListHashSet<RefPtr<CSSFontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
+    const ListHashSet<RefPtr<FontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
 
     unsigned version() const { return m_version; }
 
 private:
     typedef HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > TraitsMap;
     typedef HashMap<String, OwnPtr<TraitsMap>, CaseFoldingHash> FamilyToTraitsMap;
-    typedef HashMap<const StyleRuleFontFace*, RefPtr<CSSFontFace> > StyleRuleToFontFace;
+    typedef HashMap<const StyleRuleFontFace*, RefPtr<FontFace> > StyleRuleToFontFace;
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;
-    ListHashSet<RefPtr<CSSFontFace> > m_cssConnectedFontFaces;
+    ListHashSet<RefPtr<FontFace> > m_cssConnectedFontFaces;
 
     // FIXME: See if this could be ditched
     // Used to compare Font instances, and the usage seems suspect.

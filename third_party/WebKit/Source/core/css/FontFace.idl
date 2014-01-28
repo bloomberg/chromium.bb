@@ -38,6 +38,7 @@ enum FontFaceLoadStatus {
 [
     RuntimeEnabled=FontLoadEvents,
     Constructor(DOMString family, DOMString source, Dictionary descriptors),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor
 ] interface FontFace {
 

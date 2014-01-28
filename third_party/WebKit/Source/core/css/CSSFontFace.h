@@ -30,7 +30,6 @@
 #include "core/css/FontFace.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -41,17 +40,19 @@ class FontDescription;
 class SimpleFontData;
 class StyleRuleFontFace;
 
-// FIXME: Can this be a subclass of FontFace?
-class CSSFontFace : public RefCounted<CSSFontFace> {
+class CSSFontFace {
 public:
-    static PassRefPtr<CSSFontFace> create(PassRefPtr<FontFace> fontFace) { return adoptRef(new CSSFontFace(fontFace)); }
-    static PassRefPtr<CSSFontFace> createFromStyleRule(Document*, const StyleRuleFontFace*);
-
     class UnicodeRangeSet;
 
-    ~CSSFontFace();
+    CSSFontFace(FontFace* fontFace)
+        : m_segmentedFontFace(0)
+        , m_activeSource(0)
+        , m_fontFace(fontFace)
+    {
+        ASSERT(m_fontFace);
+    }
 
-    FontFace* fontFace() const { return m_fontFace.get(); }
+    FontFace* fontFace() const { return m_fontFace; }
 
     UnicodeRangeSet& ranges() { return m_ranges; }
 
@@ -100,20 +101,13 @@ public:
     void load(const FontDescription&);
 
 private:
-    CSSFontFace(PassRefPtr<FontFace> fontFace)
-        : m_segmentedFontFace(0)
-        , m_activeSource(0)
-        , m_fontFace(fontFace)
-    {
-        ASSERT(m_fontFace);
-    }
     void setLoadStatus(FontFace::LoadStatus);
 
     UnicodeRangeSet m_ranges;
     CSSSegmentedFontFace* m_segmentedFontFace;
     Vector<OwnPtr<CSSFontFaceSource> > m_sources;
     CSSFontFaceSource* m_activeSource;
-    RefPtr<FontFace> m_fontFace;
+    FontFace* m_fontFace;
 };
 
 }

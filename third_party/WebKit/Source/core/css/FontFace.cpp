@@ -97,7 +97,7 @@ static PassRefPtr<CSSValue> parseCSSValue(const String& s, CSSPropertyID propert
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 
-PassRefPtr<FontFace> FontFace::create(const AtomicString& family, const String& source, const Dictionary& descriptors, ExceptionState& exceptionState)
+PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const Dictionary& descriptors, ExceptionState& exceptionState)
 {
     RefPtr<CSSValue> src = parseCSSValue(source, CSSPropertySrc);
     if (!src || !src->isValueList()) {
@@ -142,10 +142,11 @@ PassRefPtr<FontFace> FontFace::create(const AtomicString& family, const String& 
             return 0;
     }
 
+    fontFace->initCSSFontFace(toDocument(context));
     return fontFace;
 }
 
-PassRefPtr<FontFace> FontFace::create(const StyleRuleFontFace* fontFaceRule)
+PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFace* fontFaceRule)
 {
     const StylePropertySet* properties = fontFaceRule->properties();
 
@@ -165,15 +166,18 @@ PassRefPtr<FontFace> FontFace::create(const StyleRuleFontFace* fontFaceRule)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStretch)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyUnicodeRange)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontVariant)
-        && fontFace->setPropertyFromStyle(properties, CSSPropertyWebkitFontFeatureSettings))
+        && fontFace->setPropertyFromStyle(properties, CSSPropertyWebkitFontFeatureSettings)
+        && !fontFace->family().isEmpty()
+        && fontFace->traitsMask()) {
+        fontFace->initCSSFontFace(document);
         return fontFace;
+    }
     return 0;
 }
 
 FontFace::FontFace(PassRefPtr<CSSValue> src)
     : m_src(src)
     , m_status(Unloaded)
-    , m_cssFontFace(0)
 {
 }
 
@@ -349,8 +353,7 @@ void FontFace::setLoadStatus(LoadStatus status)
 
 void FontFace::load()
 {
-    // FIXME: This does not load FontFace created by JavaScript, since m_cssFontFace is null.
-    if (m_status != Unloaded || !m_cssFontFace)
+    if (m_status != Unloaded)
         return;
 
     FontDescription fontDescription;
@@ -479,13 +482,10 @@ unsigned FontFace::traitsMask() const
     return traitsMask;
 }
 
-PassRefPtr<CSSFontFace> FontFace::createCSSFontFace(Document* document)
+void FontFace::initCSSFontFace(Document* document)
 {
-    if (m_cssFontFace)
-        return m_cssFontFace;
-
-    RefPtr<CSSFontFace> cssFontFace = CSSFontFace::create(this);
-    m_cssFontFace = cssFontFace.get();
+    ASSERT(!m_cssFontFace);
+    m_cssFontFace = adoptPtr(new CSSFontFace(this));
 
     // Each item in the src property's list is a single CSSFontFaceSource. Put them all into a CSSFontFace.
     CSSValueList* srcList = toCSSValueList(m_src.get());
@@ -522,7 +522,7 @@ PassRefPtr<CSSFontFace> FontFace::createCSSFontFace(Document* document)
 #if ENABLE(SVG_FONTS)
             source->setSVGFontFaceElement(item->svgFontFaceElement());
 #endif
-            cssFontFace->addSource(source.release());
+            m_cssFontFace->addSource(source.release());
         }
     }
 
@@ -530,10 +530,9 @@ PassRefPtr<CSSFontFace> FontFace::createCSSFontFace(Document* document)
         unsigned numRanges = rangeList->length();
         for (unsigned i = 0; i < numRanges; i++) {
             CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->itemWithoutBoundsCheck(i));
-            cssFontFace->ranges().add(range->from(), range->to());
+            m_cssFontFace->ranges().add(range->from(), range->to());
         }
     }
-    return cssFontFace;
 }
 
 } // namespace WebCore

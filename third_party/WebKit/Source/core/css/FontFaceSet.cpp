@@ -31,9 +31,7 @@
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptState.h"
-#include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
-#include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSSegmentedFontFace.h"
@@ -141,7 +139,7 @@ Document* FontFaceSet::document() const
 void FontFaceSet::addFontFacesToCSSSegmentedFontFaceCache(CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache, CSSFontSelector* fontSelector)
 {
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
-        cssSegmentedFontFaceCache->addCSSFontFace(fontSelector, (*it)->cssFontFace(), false);
+        cssSegmentedFontFaceCache->addFontFace(fontSelector, *it, false);
 }
 
 const AtomicString& FontFaceSet::interfaceName() const
@@ -268,16 +266,15 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
         return;
     }
     CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
-    RefPtr<CSSFontFace> cssFontFace = fontFace->createCSSFontFace(document());
     m_nonCSSConnectedFaces.add(fontFace);
-    fontSelector->fontFaceCache()->addCSSFontFace(fontSelector, cssFontFace, false);
+    fontSelector->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
 }
 
 void FontFaceSet::clear()
 {
     CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
-        cssSegmentedFontFaceCache->removeCSSFontFace((*it)->cssFontFace(), false);
+        cssSegmentedFontFaceCache->removeFontFace(it->get(), false);
     m_nonCSSConnectedFaces.clear();
 }
 
@@ -290,7 +287,7 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
     ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.find(fontFace);
     if (it != m_nonCSSConnectedFaces.end()) {
         m_nonCSSConnectedFaces.remove(it);
-        document()->styleEngine()->fontSelector()->fontFaceCache()->removeCSSFontFace(fontFace->cssFontFace(), false);
+        document()->styleEngine()->fontSelector()->fontFaceCache()->removeFontFace(fontFace, false);
         return true;
     }
     if (isCSSConnectedFontFace(fontFace))
@@ -307,7 +304,7 @@ bool FontFaceSet::has(FontFace* fontFace, ExceptionState& exceptionState) const
     return m_nonCSSConnectedFaces.contains(fontFace) || isCSSConnectedFontFace(fontFace);
 }
 
-const ListHashSet<RefPtr<CSSFontFace> >& FontFaceSet::cssConnectedFontFaceList() const
+const ListHashSet<RefPtr<FontFace> >& FontFaceSet::cssConnectedFontFaceList() const
 {
     Document* d = document();
     d->ensureStyleResolver(); // Flush pending style changes.
@@ -316,7 +313,7 @@ const ListHashSet<RefPtr<CSSFontFace> >& FontFaceSet::cssConnectedFontFaceList()
 
 bool FontFaceSet::isCSSConnectedFontFace(FontFace* fontFace) const
 {
-    return cssConnectedFontFaceList().contains(fontFace->cssFontFace());
+    return cssConnectedFontFaceList().contains(fontFace);
 }
 
 void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue& thisArg) const
@@ -331,11 +328,11 @@ void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback) const
 
 void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue* thisArg) const
 {
-    const ListHashSet<RefPtr<CSSFontFace> >& cssConnectedFaces = cssConnectedFontFaceList();
+    const ListHashSet<RefPtr<FontFace> >& cssConnectedFaces = cssConnectedFontFaceList();
     Vector<RefPtr<FontFace> > fontFaces;
     fontFaces.reserveInitialCapacity(cssConnectedFaces.size() + m_nonCSSConnectedFaces.size());
-    for (ListHashSet<RefPtr<CSSFontFace> >::const_iterator it = cssConnectedFaces.begin(); it != cssConnectedFaces.end(); ++it)
-        fontFaces.append((*it)->fontFace());
+    for (ListHashSet<RefPtr<FontFace> >::const_iterator it = cssConnectedFaces.begin(); it != cssConnectedFaces.end(); ++it)
+        fontFaces.append(*it);
     for (ListHashSet<RefPtr<FontFace> >::const_iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
         fontFaces.append(*it);
 

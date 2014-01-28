@@ -53,8 +53,8 @@ class FontFace : public RefCounted<FontFace> {
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 
-    static PassRefPtr<FontFace> create(const AtomicString& family, const String& source, const Dictionary&, ExceptionState&);
-    static PassRefPtr<FontFace> create(const StyleRuleFontFace*);
+    static PassRefPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const Dictionary&, ExceptionState&);
+    static PassRefPtr<FontFace> create(Document*, const StyleRuleFontFace*);
 
     ~FontFace();
 
@@ -83,13 +83,12 @@ public:
     LoadStatus loadStatus() const { return m_status; }
     void setLoadStatus(LoadStatus);
     unsigned traitsMask() const;
-    PassRefPtr<CSSFontFace> createCSSFontFace(Document*);
-    CSSFontFace* cssFontFace() { return m_cssFontFace; }
-    void cssFontFaceDestroyed() { m_cssFontFace = 0; }
+    CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
 private:
     FontFace(PassRefPtr<CSSValue> source);
 
+    void initCSSFontFace(Document*);
     void setPropertyFromString(const String&, CSSPropertyID, ExceptionState&);
     bool setPropertyFromStyle(const StylePropertySet*, CSSPropertyID);
     bool setPropertyValue(PassRefPtr<CSSValue>, CSSPropertyID);
@@ -107,7 +106,7 @@ private:
     LoadStatus m_status;
 
     Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;
-    CSSFontFace* m_cssFontFace;
+    OwnPtr<CSSFontFace> m_cssFontFace;
 };
 
 typedef Vector<RefPtr<FontFace> > FontFaceArray;
