@@ -31341,6 +31341,7 @@ other types of suffix sets.
   <int value="4" label="YV12A"/>
   <int value="5" label="HOLE"/>
   <int value="6" label="NATIVE_TEXTURE"/>
+  <int value="7" label="YV12J"/>
 </enum>
 
 <enum name="ViewFileType" type="int">
