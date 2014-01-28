@@ -101,6 +101,7 @@ template <typename T> void V8_USE(T) { }
 {% block security_check_functions %}{% endblock %}
 {# Special operations (methods) #}
 {% block anonymous_indexed_property_getter_and_callback %}{% endblock %}
+{% block anonymous_indexed_property_setter_and_callback %}{% endblock %}
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
        method_callback, origin_safe_method_getter, generate_constructor

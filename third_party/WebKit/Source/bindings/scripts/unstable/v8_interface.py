@@ -228,6 +228,7 @@ def generate_interface(interface):
 
     template_contents.update({
         'anonymous_indexed_property_getter': anonymous_indexed_property_getter(interface),
+        'anonymous_indexed_property_setter': anonymous_indexed_property_setter(interface),
     })
 
     return template_contents
@@ -483,6 +484,8 @@ def interface_length(interface, constructors):
 
 def anonymous_indexed_property_getter(interface):
     try:
+        # Find anonymous indexed property getter, if present; has form:
+        # getter TYPE (unsigned long ARG1)
         getter = next(
             method
             for method in interface.operations
@@ -508,3 +511,28 @@ def getter_is_null_expression(idl_type):
     if idl_type == 'DOMString':
         return 'element.isNull()'
     return None
+
+
+def anonymous_indexed_property_setter(interface):
+    try:
+        # Find anonymous indexed property setter, if present; has form:
+        # setter RETURN_TYPE (unsigned long ARG1, ARG_TYPE ARG2)
+        setter = next(
+            method
+            for method in interface.operations
+            if ('setter' in method.specials and
+                len(method.arguments) == 2 and
+                method.arguments[0].idl_type == 'unsigned long' and
+                not method.name))
+    except StopIteration:
+        return None
+
+    idl_type = setter.idl_type
+    extended_attributes = setter.extended_attributes
+    return {
+        'cpp_type': v8_types.cpp_type(idl_type),
+        'name': extended_attributes.get('ImplementedAs',
+                                        'anonymousIndexedSetter'),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
+            idl_type, extended_attributes, 'jsValue', 'propertyValue'),
+    }

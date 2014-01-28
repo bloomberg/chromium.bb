@@ -30,4 +30,5 @@
 
 interface TestSpecialOperations {
     getter DOMString (unsigned long index);
+    setter DOMString (unsigned long index, DOMString value);
 };

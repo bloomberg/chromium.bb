@@ -122,6 +122,31 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 
 {##############################################################################}
+{% block anonymous_indexed_property_setter_and_callback %}
+{% if anonymous_indexed_property_setter %}
+{% set setter = anonymous_indexed_property_setter %}
+static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {{setter.v8_value_to_local_cpp_value}};
+    bool result = collection->{{setter.name}}(index, propertyValue);
+    if (!result)
+        return;
+    v8SetReturnValue(info, jsValue);
+}
+
+static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    {{cpp_class}}V8Internal::indexedPropertySetter(index, jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block origin_safe_method_setter %}
 {% if has_origin_safe_method_setter %}
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -489,7 +514,11 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {{install_constants() | indent}}
     {% endif %}
     {% if anonymous_indexed_property_getter %}
-    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{cpp_class}}V8Internal::indexedPropertyGetterCallback, 0, 0, 0, indexedPropertyEnumerator<{{cpp_class}}>);
+    {# if have indexed properties, MUST have an indexed property getter #}
+    {% set indexed_property_setter_callback =
+           '%sV8Internal::indexedPropertySetterCallback' % cpp_class
+           if anonymous_indexed_property_setter else '0' %}
+    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{cpp_class}}V8Internal::indexedPropertyGetterCallback, {{indexed_property_setter_callback}}, 0, 0, indexedPropertyEnumerator<{{cpp_class}}>);
     {% endif %}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
