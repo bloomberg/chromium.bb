@@ -43,6 +43,7 @@ public:
     void closeDialog(const String& returnValue = String());
     void show();
     void showModal(ExceptionState&);
+    bool isModal() const { return m_modal; }
 
     enum CenteringMode { Uninitialized, Centered, NotCentered };
     CenteringMode centeringMode() const { return m_centeringMode; }
@@ -62,12 +63,14 @@ private:
 
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
+    virtual void removedFrom(ContainerNode*) OVERRIDE;
 
     void forceLayoutForCentering();
 
     CenteringMode m_centeringMode;
     LayoutUnit m_centeredPosition;
     String m_returnValue;
+    bool m_modal;
 };
 
 inline bool isHTMLDialogElement(const Node& node)

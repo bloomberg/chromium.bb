@@ -880,7 +880,9 @@ PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& pa
     if (pseudoId == BACKDROP && !parent.isInTopLayer())
         return 0;
 
-    if (!parentRenderer->canHaveGeneratedChildren())
+    // It's safe to have a backdrop since its renderer is always a child of RenderView.
+    ASSERT(static_cast<RenderObject*>(parentRenderer->view())->canHaveGeneratedChildren());
+    if (pseudoId != BACKDROP && !parentRenderer->canHaveGeneratedChildren())
         return 0;
 
     RenderStyle* parentStyle = parentRenderer->style();
