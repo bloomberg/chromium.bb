@@ -329,6 +329,12 @@ void FullscreenElementStack::webkitExitFullscreen()
 
     FrameHost* host = document()->frameHost();
 
+    // Speculative fix for engaget.com/videos per crbug.com/336239.
+    // FIXME: This check is wrong. We ASSERT(document->isActive()) above
+    // so this should be redundant and should be removed!
+    if (!host)
+        return;
+
     // Only exit out of full screen window mode if there are no remaining elements in the
     // full screen stack.
     if (!newTop) {
