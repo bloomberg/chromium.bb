@@ -6,8 +6,6 @@ module_LTLIBRARIES =
 noinst_LTLIBRARIES =
 BUILT_SOURCES =
 
-SUBDIRS = shared
-
 DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
 
 EXTRA_DIST = weston.ini.in wayland-scanner.mk
@@ -42,7 +40,7 @@ weston_LDFLAGS = -export-dynamic
 weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
 weston_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
-	$(DLOPEN_LIBS) -lm shared/libshared.la
+	$(DLOPEN_LIBS) -lm libshared.la
 
 weston_SOURCES =					\
 	src/git-version.h				\
@@ -157,7 +155,7 @@ if ENABLE_X11_COMPOSITOR
 module_LTLIBRARIES += x11-backend.la
 x11_backend_la_LDFLAGS = -module -avoid-version
 x11_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(X11_COMPOSITOR_LIBS) \
-	shared/libshared-cairo.la
+	libshared-cairo.la
 x11_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
@@ -174,7 +172,7 @@ drm_backend_la_LDFLAGS = -module -avoid-version
 drm_backend_la_LIBADD =				\
 	$(COMPOSITOR_LIBS)			\
 	$(DRM_COMPOSITOR_LIBS)			\
-	shared/libshared.la -lrt		\
+	libshared.la -lrt		\
 	libsession-helper.la
 drm_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
@@ -204,7 +202,7 @@ wayland_backend_la_LDFLAGS = -module -avoid-version
 wayland_backend_la_LIBADD =			\
 	$(COMPOSITOR_LIBS)			\
 	$(WAYLAND_COMPOSITOR_LIBS)		\
-	shared/libshared-cairo.la
+	libshared-cairo.la
 wayland_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
@@ -227,7 +225,7 @@ rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	$(RPI_COMPOSITOR_LIBS)			\
 	$(RPI_BCM_HOST_LIBS)			\
 	libsession-helper.la			\
-	shared/libshared.la
+	libshared.la
 rpi_backend_la_CFLAGS =				\
 	$(GCC_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
@@ -255,7 +253,7 @@ if ENABLE_HEADLESS_COMPOSITOR
 module_LTLIBRARIES += headless-backend.la
 headless_backend_la_LDFLAGS = -module -avoid-version
 headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) \
-	shared/libshared.la
+	libshared.la
 headless_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(GCC_CFLAGS)
@@ -269,7 +267,7 @@ fbdev_backend_la_LIBADD =			\
 	$(COMPOSITOR_LIBS)			\
 	$(FBDEV_COMPOSITOR_LIBS)		\
 	libsession-helper.la			\
-	shared/libshared.la
+	libshared.la
 fbdev_backend_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(EGL_CFLAGS)				\
@@ -290,7 +288,7 @@ module_LTLIBRARIES += rdp-backend.la
 rdp_backend_la_LDFLAGS = -module -avoid-version
 rdp_backend_la_LIBADD = $(COMPOSITOR_LIBS) \
 	$(RDP_COMPOSITOR_LIBS) \
-	shared/libshared.la
+	libshared.la
 rdp_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(RDP_COMPOSITOR_CFLAGS)		\
@@ -301,7 +299,7 @@ endif
 if HAVE_LCMS
 module_LTLIBRARIES += cms-static.la
 cms_static_la_LDFLAGS = -module -avoid-version
-cms_static_la_LIBADD = $(COMPOSITOR_LIBS) $(LCMS_LIBS) shared/libshared.la
+cms_static_la_LIBADD = $(COMPOSITOR_LIBS) $(LCMS_LIBS) libshared.la
 cms_static_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS) $(LCMS_CFLAGS)
 cms_static_la_SOURCES =				\
 	src/cms-static.c				\
@@ -426,7 +424,7 @@ libtoytoolkit_la_SOURCES =				\
 libtoytoolkit_la_LIBADD =			\
 	$(CLIENT_LIBS)				\
 	$(CAIRO_EGL_LIBS)			\
-	shared/libshared-cairo.la -lrt -lm
+	libshared-cairo.la -lrt -lm
 libtoytoolkit_la_CFLAGS = $(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
 
 weston_flower_SOURCES = clients/flower.c
@@ -638,7 +636,7 @@ desktop_shell_la_CPPFLAGS =			\
 
 desktop_shell_la_LDFLAGS = -module -avoid-version
 desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
-	shared/libshared.la
+	libshared.la
 desktop_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 desktop_shell_la_SOURCES =				\
 	desktop-shell/shell.h				\
@@ -675,7 +673,7 @@ xwayland_la_CPPFLAGS =				\
 xwayland_la_LDFLAGS = -module -avoid-version
 xwayland_la_LIBADD =			\
 	$(XWAYLAND_LIBS)		\
-	$(top_builddir)/shared/libshared-cairo.la
+	$(top_builddir)/libshared-cairo.la
 xwayland_la_CFLAGS =				\
 	$(GCC_CFLAGS)				\
 	$(COMPOSITOR_CFLAGS)			\
@@ -696,6 +694,46 @@ BUILT_SOURCES +=				\
 	xwayland/xserver-protocol.c		\
 	xwayland/xserver-server-protocol.h
 endif
+
+
+#
+# Shared utilities
+#
+
+noinst_LTLIBRARIES += libshared.la libshared-cairo.la
+
+libshared_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+
+libshared_la_SOURCES =				\
+	shared/config-parser.c			\
+	shared/option-parser.c			\
+	shared/config-parser.h			\
+	shared/os-compatibility.c		\
+	shared/os-compatibility.h
+
+libshared_cairo_la_CFLAGS =			\
+	-DDATADIR='"$(datadir)"'		\
+	$(GCC_CFLAGS)				\
+	$(COMPOSITOR_CFLAGS)			\
+	$(PIXMAN_CFLAGS)			\
+	$(CAIRO_CFLAGS)				\
+	$(PNG_CFLAGS)				\
+	$(WEBP_CFLAGS)
+
+libshared_cairo_la_LIBADD =			\
+	$(PIXMAN_LIBS)				\
+	$(CAIRO_LIBS)				\
+	$(PNG_LIBS)				\
+	$(WEBP_LIBS)				\
+	$(JPEG_LIBS)
+
+libshared_cairo_la_SOURCES =			\
+	$(libshared_la_SOURCES)			\
+	shared/image-loader.c			\
+	shared/image-loader.h			\
+	shared/cairo-util.c			\
+	shared/frame.c				\
+	shared/cairo-util.h
 
 
 #
@@ -757,7 +795,7 @@ surface_test_la_SOURCES = tests/surface-test.c
 surface_test_la_LDFLAGS = $(test_module_ldflags)
 surface_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 
-weston_test_la_LIBADD = $(COMPOSITOR_LIBS) shared/libshared.la
+weston_test_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 weston_test_la_LDFLAGS = $(test_module_ldflags)
 weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_SOURCES =			\
@@ -776,7 +814,7 @@ libtest_runner_la_SOURCES =			\
 libtest_runner_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 
 config_parser_test_SOURCES = tests/config-parser-test.c
-config_parser_test_LDADD = shared/libshared.la libtest-runner.la $(COMPOSITOR_LIBS)
+config_parser_test_LDADD = libshared.la libtest-runner.la $(COMPOSITOR_LIBS)
 
 vertex_clip_test_SOURCES =			\
 	tests/vertex-clip-test.c		\
@@ -789,7 +827,7 @@ libtest_client_la_SOURCES =		\
 	tests/weston-test-client-helper.h	\
 	tests/wayland-test-protocol.c		\
 	tests/wayland-test-client-protocol.h
-libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) shared/libshared.la libtest-runner.la
+libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
 
 bad_buffer_weston_SOURCES = tests/bad-buffer-test.c
 bad_buffer_weston_LDADD = libtest-client.la
