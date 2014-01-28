@@ -320,6 +320,8 @@ _COPY_PATHS = (
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
   Path('content_shell.pak',
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
+  Path('icudtl.dat',
+       cond=C.GypSet('icu_use_data_file_flag')),
   Path('keyboard_resources.pak'),
   Path('lib/*.so',
        exe=True,
