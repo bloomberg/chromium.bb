@@ -721,7 +721,7 @@ public:
     inline Address allocate(size_t, const GCInfo*);
     void addToFreeList(Address, size_t);
     void addPageToPool(HeapPage<Header>*);
-    inline size_t roundedAllocationSize(size_t size)
+    inline static size_t roundedAllocationSize(size_t size)
     {
         return allocationSizeFromSize(size) - sizeof(Header);
     }
@@ -752,7 +752,7 @@ private:
     };
 
     HEAP_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
-    size_t allocationSizeFromSize(size_t);
+    static size_t allocationSizeFromSize(size_t);
     void addPageToHeap(const GCInfo*);
     HEAP_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
@@ -1161,7 +1161,7 @@ public:
     static size_t quantizedSize(size_t count)
     {
         RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return typename HeapTrait<T>::HeapType::roundedAllocationSize(count * sizeof(T));
+        return HeapTrait<T>::HeapType::roundedAllocationSize(count * sizeof(T));
     }
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
@@ -1212,7 +1212,7 @@ public:
     }
 
     template<typename T, typename Traits>
-    static void mark(Visitor* visitor, T& t)
+    static void trace(Visitor* visitor, T& t)
     {
         CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, false, T, Traits>::mark(visitor, t);
     }
@@ -1279,7 +1279,7 @@ public:
     template<typename T>
     static T& getOther(T* other)
     {
-        return *(other);
+        return *other;
     }
 
 private:
@@ -1287,6 +1287,63 @@ private:
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
     template<typename T, typename U, typename V, typename W, typename X, typename Y> friend class WTF::HashMap;
 };
+
+// FIXME: These should just be template aliases:
+//
+// template<typename T, size_t inlineCapacity = 0>
+// using HeapVector = Vector<T, inlineCapacity, HeapAllocator>;
+//
+// as soon as all the compilers we care about support that.
+// MSVC supports it only in MSVC 2013.
+template<
+    typename KeyArg,
+    typename MappedArg,
+    typename HashArg = typename DefaultHash<KeyArg>::Hash,
+    typename KeyTraitsArg = HashTraits<KeyArg>,
+    typename MappedTraitsArg = HashTraits<MappedArg> >
+class HeapHashMap : public HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, HeapAllocator> { };
+
+template<
+    typename ValueArg,
+    typename HashArg = typename DefaultHash<ValueArg>::Hash,
+    typename TraitsArg = HashTraits<ValueArg> >
+class HeapHashSet : public HashSet<ValueArg, HashArg, TraitsArg, HeapAllocator> { };
+
+template<typename T, size_t inlineCapacity = 0>
+class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
+public:
+    HeapVector() { }
+
+    explicit HeapVector(size_t size) : Vector<T, inlineCapacity, HeapAllocator>(size)
+    {
+    }
+
+    template<size_t otherCapacity>
+    HeapVector(const HeapVector<T, otherCapacity>& other)
+        : Vector<T, inlineCapacity, HeapAllocator>(other)
+    {
+    }
+
+    template<typename U>
+    void append(const U& other)
+    {
+        Vector<T, inlineCapacity, HeapAllocator>::append(other);
+    }
+
+    template<typename U, size_t otherCapacity>
+    void append(const HeapVector<U, otherCapacity>& other)
+    {
+        const Vector<U, otherCapacity, HeapAllocator>& otherVector = other;
+        Vector<T, inlineCapacity, HeapAllocator>::append(otherVector);
+    }
+};
+
+template<typename Key, typename Value>
+struct ThreadingTrait<HeapHashMap<Key, Value> > : public ThreadingTrait<HashMap<Key, Value, HeapAllocator> > { };
+template<typename Value>
+struct ThreadingTrait<HeapHashSet<Value> > : public ThreadingTrait<HashSet<Value, HeapAllocator> > { };
+template<typename T, size_t inlineCapacity>
+struct ThreadingTrait<HeapVector<T, inlineCapacity> > : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
 
 // The standard implementation of GCInfoTrait<T>::get() just returns a static
 // from the class T, but we can't do that for HashMap, HashSet and Vector
@@ -1562,6 +1619,13 @@ struct TraceTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>
     }
 };
 
+template<typename T, typename U, typename V, typename W, typename X>
+struct GCInfoTrait<HeapHashMap<T, U, V, W, X> > : public GCInfoTrait<HashMap<T, U, V, W, X, HeapAllocator> > { };
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HeapHashSet<T, U, V> > : public GCInfoTrait<HashSet<T, U, V, HeapAllocator> > { };
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<HeapVector<T, inlineCapacity> > : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
+
 template<typename T>
 struct IfWeakMember;
 
@@ -1575,56 +1639,6 @@ template<typename T>
 struct IfWeakMember<WeakMember<T> > {
     static bool isDead(Visitor* visitor, const WeakMember<T>& t) { return !visitor->isAlive(t.get()); }
 };
-
-template<typename K, typename V, typename HashFunctions, typename KeyTraits, typename ValueTraits>
-void processWeakOffHeapHashMap(Visitor* visitor, void* self)
-{
-    typedef HashMap<K, V, WTF::DefaultAllocator, HashFunctions, KeyTraits, ValueTraits> Map;
-    Map* map = reinterpret_cast<Map*>(self);
-    // Collect up keys here because we can't modify a hash map while iterating
-    // over it.
-    Vector<K> deletionKeys;
-    ASSERT(KeyTraits::isWeak || ValueTraits::isWeak);
-    typedef typename Map::iterator Iterator;
-    Iterator endIterator(map->end());
-    for (Iterator it = map->begin(); it != endIterator; ++it) {
-        if (IfWeakMember<K>::isDead(visitor, it->key))
-            deletionKeys.append(it->key);
-        else if (IfWeakMember<V>::isDead(visitor, it->value))
-            deletionKeys.append(it->key);
-    }
-    size_t size = deletionKeys.size();
-    if (size == map->size()) {
-        map->clear();
-        return;
-    }
-    for (size_t i = 0; i < size; i++)
-        map->remove(deletionKeys[i]);
-}
-
-template<typename T, typename HashFunctions, typename Traits>
-void processWeakOffHeapHashSet(Visitor* visitor, void* self)
-{
-    typedef HashSet<T, WTF::DefaultAllocator, HashFunctions, Traits> Set;
-    Set* set = reinterpret_cast<Set*>(self);
-    ASSERT(Traits::isWeak);
-    // Collect up keys here because we can't modify a hash set while iterating
-    // over it.
-    Vector<T> deletionKeys;
-    typedef typename Set::iterator Iterator;
-    Iterator endIterator(set->end());
-    for (Iterator it = set->begin(); it != endIterator; ++it) {
-        if (IfWeakMember<T>::isDead(visitor, *it))
-            deletionKeys.append(*it);
-    }
-    size_t size = deletionKeys.size();
-    if (size == set->size()) {
-        set->clear();
-        return;
-    }
-    for (size_t i = 0; i < size; i++)
-        set->remove(deletionKeys[i]);
-}
 
 #if COMPILER(CLANG)
 // Clang does not export the symbols that we have explicitly asked it

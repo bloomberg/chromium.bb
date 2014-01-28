@@ -195,6 +195,11 @@ public:
 
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
+template<typename Collection>
+struct OffHeapCollectionTraceTrait {
+    static void trace(Visitor*, const Collection&);
+};
+
 template<typename T>
 struct ObjectAliveTrait {
     static bool isAlive(Visitor*, T);
@@ -335,6 +340,53 @@ private:
             *cell = 0;
     }
 };
+template<typename T, typename HashFunctions, typename Traits>
+struct OffHeapCollectionTraceTrait<WTF::HashSet<T, WTF::DefaultAllocator, HashFunctions, Traits> > {
+    typedef WTF::HashSet<T, WTF::DefaultAllocator, HashFunctions, Traits> HashSet;
+
+    static void trace(Visitor* visitor, const HashSet& set)
+    {
+        if (set.isEmpty())
+            return;
+        if (WTF::NeedsTracing<T>::value) {
+            for (typename HashSet::const_iterator it = set.begin(), end = set.end(); it != end; ++it)
+                CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, false, T, Traits>::mark(visitor, *it);
+        }
+        COMPILE_ASSERT(!Traits::isWeak, WeakOffHeapCollectionsConsideredDangerous0);
+    }
+};
+
+template<typename T, size_t inlineCapacity, typename HashFunctions>
+struct OffHeapCollectionTraceTrait<WTF::ListHashSet<T, inlineCapacity, HashFunctions> > {
+    typedef WTF::ListHashSet<T, inlineCapacity, HashFunctions> ListHashSet;
+
+    static void trace(Visitor* visitor, const ListHashSet& set)
+    {
+        if (set.isEmpty())
+            return;
+        for (typename ListHashSet::const_iterator it = set.begin(), end = set.end(); it != end; ++it)
+            visitor->trace(*it);
+    }
+};
+
+template<typename Key, typename Value, typename HashFunctions, typename KeyTraits, typename ValueTraits>
+struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, WTF::DefaultAllocator, HashFunctions, KeyTraits, ValueTraits> > {
+    typedef WTF::HashMap<Key, Value, WTF::DefaultAllocator, HashFunctions, KeyTraits, ValueTraits> HashMap;
+
+    static void trace(Visitor* visitor, const HashMap& map)
+    {
+        if (map.isEmpty())
+            return;
+        if (WTF::NeedsTracing<Key>::value || WTF::NeedsTracing<Value>::value) {
+            for (typename HashMap::const_iterator it = map.begin(), end = map.end(); it != end; ++it) {
+                CollectionBackingTraceTrait<KeyTraits::needsTracing, KeyTraits::isWeak, false, Key, KeyTraits>::mark(visitor, it->key);
+                CollectionBackingTraceTrait<ValueTraits::needsTracing, ValueTraits::isWeak, false, Value, ValueTraits>::mark(visitor, it->value);
+            }
+        }
+        COMPILE_ASSERT(!KeyTraits::isWeak, WeakOffHeapCollectionsConsideredDangerous1);
+        COMPILE_ASSERT(!ValueTraits::isWeak, WeakOffHeapCollectionsConsideredDangerous2);
+    }
+};
 
 template<typename T, typename Traits = WTF::VectorTraits<T> >
 class HeapVectorBacking;
@@ -347,36 +399,62 @@ inline void doNothingTrace(Visitor*, void*) { }
 // specialized template instantiation here that will be selected in preference
 // to the default. Most of them do nothing, since the type in question cannot
 // point to other heap allocated objects.
-#define ITERATE_DO_NOTHING_TYPES(f)                            \
-    f(uint8_t)                                                 \
+#define ITERATE_DO_NOTHING_TYPES(f)                                  \
+    f(uint8_t)                                                       \
     f(void)
 
-#define DECLARE_DO_NOTHING_TRAIT(type)                         \
-    template<>                                                 \
-    class TraceTrait<type> {                                   \
-    public:                                                    \
-        static void checkTypeMarker(Visitor*, const void*) { } \
-        static void mark(Visitor* v, const type* p) {          \
-            v->mark(p, reinterpret_cast<TraceCallback>(0));    \
-        }                                                      \
-    };                                                         \
-    template<>                                                 \
-    struct FinalizerTrait<type> {                              \
-        static void finalize(void*) { }                        \
-        static const bool nonTrivialFinalizer = false;         \
-    };                                                         \
-    template<>                                                 \
-    struct HEAP_EXPORT GCInfoTrait<type> {                                 \
-        static const GCInfo* get()                             \
-        {                                                      \
-            return &info;                                      \
-        }                                                      \
-        static const GCInfo info;                              \
+#define DECLARE_DO_NOTHING_TRAIT(type)                               \
+    template<>                                                       \
+    class TraceTrait<type> {                                         \
+    public:                                                          \
+        static void checkTypeMarker(Visitor*, const void*) { }       \
+        static void mark(Visitor* visitor, const type* p) {          \
+            visitor->mark(p, reinterpret_cast<TraceCallback>(0));    \
+        }                                                            \
+    };                                                               \
+    template<>                                                       \
+    struct FinalizerTrait<type> {                                    \
+        static void finalize(void*) { }                              \
+        static const bool nonTrivialFinalizer = false;               \
+    };                                                               \
+    template<>                                                       \
+    struct HEAP_EXPORT GCInfoTrait<type> {                           \
+        static const GCInfo* get()                                   \
+        {                                                            \
+            return &info;                                            \
+        }                                                            \
+        static const GCInfo info;                                    \
     };
 
 ITERATE_DO_NOTHING_TYPES(DECLARE_DO_NOTHING_TRAIT)
 
 #undef DECLARE_DO_NOTHING_TRAIT
+
+// Vectors are simple collections, and it's possible to mark vectors in a more
+// general way so that collections of objects (not pointers to objects) can be
+// marked.
+template<typename T, size_t N>
+struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator> > {
+    typedef WTF::Vector<T, N, WTF::DefaultAllocator> Vector;
+
+    static void trace(Visitor* visitor, const Vector& vector)
+    {
+        if (vector.isEmpty())
+            return;
+        for (typename Vector::const_iterator it = vector.begin(), end = vector.end(); it != end; ++it)
+            TraceTrait<T>::trace(visitor, const_cast<T*>(it));
+    }
+};
+
+// Fallback definition.
+template<typename Collection>
+void OffHeapCollectionTraceTrait<Collection>::trace(Visitor* visitor, const Collection& collection)
+{
+    if (collection.isEmpty())
+        return;
+    for (typename Collection::const_iterator it = collection.begin(), end = collection.end(); it != end; ++it)
+        visitor->trace(*it);
+}
 
 #ifndef NDEBUG
 template<typename T> void TraceTrait<T>::checkTypeMarker(Visitor* visitor, const T* t)

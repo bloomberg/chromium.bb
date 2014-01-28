@@ -1073,8 +1073,10 @@ TEST(HeapTest, BasicFunctionality)
     if (testPagesAllocated)
         EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
 
-    for (size_t i = 0; i < persistentCount; i++)
-        persistents[i]->release();
+    for (size_t i = 0; i < persistentCount; i++) {
+        delete persistents[i];
+        persistents[i] = 0;
+    }
 
     uint8_t* address = Heap::reallocate<uint8_t>(0, 100);
     for (int i = 0; i < 100; i++)
@@ -1415,6 +1417,490 @@ TEST(HeapTest, LargeObjects)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
 }
 
+class Container : public GarbageCollected<Container> {
+    DECLARE_GC_INFO
+public:
+    static Container* create() { return new Container(); }
+    HeapHashMap<Member<IntWrapper>, Member<IntWrapper> > map;
+    HeapHashSet<Member<IntWrapper> > set;
+    HeapHashSet<Member<IntWrapper> > set2;
+    HeapVector<Member<IntWrapper>, 2> vector;
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(map);
+        visitor->trace(set);
+        visitor->trace(set2);
+        visitor->trace(vector);
+    }
+};
+
+TEST(HeapTest, HeapVectorWithInlineCapacity)
+{
+    IntWrapper* one = IntWrapper::create(1);
+    IntWrapper* two = IntWrapper::create(2);
+    IntWrapper* three = IntWrapper::create(3);
+    IntWrapper* four = IntWrapper::create(4);
+    IntWrapper* five = IntWrapper::create(5);
+    IntWrapper* six = IntWrapper::create(6);
+    {
+        HeapVector<Member<IntWrapper>, 2> vector;
+        vector.append(one);
+        vector.append(two);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(vector.contains(one));
+        EXPECT_TRUE(vector.contains(two));
+
+        vector.append(three);
+        vector.append(four);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(vector.contains(one));
+        EXPECT_TRUE(vector.contains(two));
+        EXPECT_TRUE(vector.contains(three));
+        EXPECT_TRUE(vector.contains(four));
+
+        vector.shrink(1);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(vector.contains(one));
+        EXPECT_FALSE(vector.contains(two));
+        EXPECT_FALSE(vector.contains(three));
+        EXPECT_FALSE(vector.contains(four));
+    }
+    {
+        HeapVector<Member<IntWrapper>, 2> vector1;
+        HeapVector<Member<IntWrapper>, 2> vector2;
+
+        vector1.append(one);
+        vector2.append(two);
+        vector1.swap(vector2);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(vector1.contains(two));
+        EXPECT_TRUE(vector2.contains(one));
+    }
+    {
+        HeapVector<Member<IntWrapper>, 2> vector1;
+        HeapVector<Member<IntWrapper>, 2> vector2;
+
+        vector1.append(one);
+        vector1.append(two);
+        vector2.append(three);
+        vector2.append(four);
+        vector2.append(five);
+        vector2.append(six);
+        vector1.swap(vector2);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(vector1.contains(three));
+        EXPECT_TRUE(vector1.contains(four));
+        EXPECT_TRUE(vector1.contains(five));
+        EXPECT_TRUE(vector1.contains(six));
+        EXPECT_TRUE(vector2.contains(one));
+        EXPECT_TRUE(vector2.contains(two));
+    }
+}
+
+TEST(HeapTest, HeapCollectionTypes)
+{
+    HeapStats initialHeapSize;
+    IntWrapper::s_destructorCalls = 0;
+
+    typedef HeapHashMap<Member<IntWrapper>, Member<IntWrapper> > MemberMember;
+    typedef HeapHashMap<Member<IntWrapper>, int> MemberPrimitive;
+    typedef HeapHashMap<int, Member<IntWrapper> > PrimitiveMember;
+
+    typedef HeapHashSet<Member<IntWrapper> > MemberSet;
+    typedef HeapHashSet<WeakMember<IntWrapper> > WeakMemberSet;
+
+    typedef HeapVector<Member<IntWrapper>, 2> MemberVector;
+
+    Persistent<MemberMember> memberMember = new MemberMember();
+    Persistent<MemberMember> memberMember2 = new MemberMember();
+    Persistent<MemberMember> memberMember3 = new MemberMember();
+    Persistent<MemberPrimitive> memberPrimitive = new MemberPrimitive();
+    Persistent<PrimitiveMember> primitiveMember = new PrimitiveMember();
+    Persistent<MemberSet> set = new MemberSet();
+    Persistent<MemberSet> set2 = new MemberSet();
+    Persistent<MemberVector> vector = new MemberVector();
+    Persistent<MemberVector> vector2 = new MemberVector();
+    Persistent<Container> container = Container::create();
+
+    clearOutOldGarbage(&initialHeapSize);
+    {
+        Persistent<IntWrapper> one(IntWrapper::create(1));
+        Persistent<IntWrapper> two(IntWrapper::create(2));
+        Persistent<IntWrapper> oneB(IntWrapper::create(1));
+        Persistent<IntWrapper> twoB(IntWrapper::create(2));
+        Persistent<IntWrapper> oneC(IntWrapper::create(1));
+        Persistent<IntWrapper> twoC(IntWrapper::create(2));
+        {
+            IntWrapper* three(IntWrapper::create(3));
+            IntWrapper* four(IntWrapper::create(4));
+            IntWrapper* threeB(IntWrapper::create(3));
+            IntWrapper* fourB(IntWrapper::create(4));
+
+            // Member Collections.
+            memberMember2->add(one, two);
+            memberMember2->add(two, three);
+            memberMember2->add(three, four);
+            memberMember2->add(four, one);
+            primitiveMember->add(1, two);
+            primitiveMember->add(2, three);
+            primitiveMember->add(3, four);
+            primitiveMember->add(4, one);
+            memberPrimitive->add(one, 2);
+            memberPrimitive->add(two, 3);
+            memberPrimitive->add(three, 4);
+            memberPrimitive->add(four, 1);
+            set2->add(one);
+            set2->add(two);
+            set2->add(three);
+            set2->add(four);
+            set->add(oneB);
+            vector->append(oneB);
+            vector2->append(threeB);
+            vector2->append(fourB);
+
+            // Collect garbage. This should change nothing since we are keeping
+            // alive the IntWrapper objects with on-stack pointers.
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+            EXPECT_EQ(0u, memberMember->size());
+            EXPECT_EQ(4u, memberMember2->size());
+            EXPECT_EQ(4u, primitiveMember->size());
+            EXPECT_EQ(4u, memberPrimitive->size());
+            EXPECT_EQ(1u, set->size());
+            EXPECT_EQ(4u, set2->size());
+            EXPECT_EQ(1u, vector->size());
+            EXPECT_EQ(2u, vector2->size());
+
+            MemberVector& cvec = container->vector;
+            cvec.swap(*vector.get());
+            vector2->swap(cvec);
+            vector->swap(cvec);
+
+            // Swap set and set2 in a roundabout way.
+            MemberSet& cset1 = container->set;
+            MemberSet& cset2 = container->set2;
+            set->swap(cset1);
+            set2->swap(cset2);
+            set->swap(cset2);
+            cset1.swap(cset2);
+            cset2.swap(set2);
+
+            // Triple swap.
+            container->map.swap(memberMember2);
+            MemberMember& containedMap = container->map;
+            memberMember3->swap(containedMap);
+            memberMember3->swap(memberMember);
+
+            EXPECT_TRUE(memberMember->get(one) == two);
+            EXPECT_TRUE(memberMember->get(two) == three);
+            EXPECT_TRUE(memberMember->get(three) == four);
+            EXPECT_TRUE(memberMember->get(four) == one);
+            EXPECT_TRUE(primitiveMember->get(1) == two);
+            EXPECT_TRUE(primitiveMember->get(2) == three);
+            EXPECT_TRUE(primitiveMember->get(3) == four);
+            EXPECT_TRUE(primitiveMember->get(4) == one);
+            EXPECT_EQ(1, memberPrimitive->get(four));
+            EXPECT_EQ(2, memberPrimitive->get(one));
+            EXPECT_EQ(3, memberPrimitive->get(two));
+            EXPECT_EQ(4, memberPrimitive->get(three));
+            EXPECT_TRUE(set->contains(one));
+            EXPECT_TRUE(set->contains(two));
+            EXPECT_TRUE(set->contains(three));
+            EXPECT_TRUE(set->contains(four));
+            EXPECT_TRUE(set2->contains(oneB));
+            EXPECT_TRUE(vector->contains(threeB));
+            EXPECT_TRUE(vector->contains(fourB));
+            EXPECT_TRUE(vector2->contains(oneB));
+            EXPECT_FALSE(vector2->contains(threeB));
+        }
+
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+        EXPECT_EQ(4u, memberMember->size());
+        EXPECT_EQ(0u, memberMember2->size());
+        EXPECT_EQ(4u, primitiveMember->size());
+        EXPECT_EQ(4u, memberPrimitive->size());
+        EXPECT_EQ(4u, set->size());
+        EXPECT_EQ(1u, set2->size());
+        EXPECT_EQ(2u, vector->size());
+        EXPECT_EQ(1u, vector2->size());
+
+        EXPECT_TRUE(memberMember->get(one) == two);
+        EXPECT_TRUE(primitiveMember->get(1) == two);
+        EXPECT_TRUE(primitiveMember->get(4) == one);
+        EXPECT_EQ(2, memberPrimitive->get(one));
+        EXPECT_EQ(3, memberPrimitive->get(two));
+        EXPECT_TRUE(set->contains(one));
+        EXPECT_TRUE(set->contains(two));
+        EXPECT_FALSE(set->contains(oneB));
+        EXPECT_TRUE(set2->contains(oneB));
+        EXPECT_EQ(3, vector->at(0)->value());
+        EXPECT_EQ(4, vector->at(1)->value());
+    }
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+    EXPECT_EQ(4u, memberMember->size());
+    EXPECT_EQ(4u, primitiveMember->size());
+    EXPECT_EQ(4u, memberPrimitive->size());
+    EXPECT_EQ(4u, set->size());
+    EXPECT_EQ(1u, set2->size());
+    EXPECT_EQ(2u, vector->size());
+    EXPECT_EQ(1u, vector2->size());
+    EXPECT_EQ(2u, vector->size());
+    EXPECT_EQ(1u, vector2->size());
+}
+
+template<typename T>
+void MapIteratorCheck(T& it, const T& end, int expected)
+{
+    int found = 0;
+    while (it != end) {
+        found++;
+        int key = it->key->value();
+        int value = it->value->value();
+        EXPECT_TRUE(key >= 0 && key < 1100);
+        EXPECT_TRUE(value >= 0 && value < 1100);
+        ++it;
+    }
+    EXPECT_EQ(expected, found);
+}
+
+template<typename T>
+void SetIteratorCheck(T& it, const T& end, int expected)
+{
+    int found = 0;
+    while (it != end) {
+        found++;
+        int value = (*it)->value();
+        EXPECT_TRUE(value >= 0 && value < 1100);
+        ++it;
+    }
+    EXPECT_EQ(expected, found);
+}
+
+TEST(HeapTest, HeapWeakCollectionSimple)
+{
+
+    IntWrapper::s_destructorCalls = 0;
+
+    CollectionPersistent<Vector<Member<IntWrapper> > > keepNumbersAlive;
+
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > WeakStrong;
+    typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeak;
+    typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper> > WeakWeak;
+    typedef HeapHashSet<WeakMember<IntWrapper> > WeakSet;
+
+    Persistent<WeakStrong> weakStrong = new WeakStrong();
+    Persistent<StrongWeak> strongWeak = new StrongWeak();
+    Persistent<WeakWeak> weakWeak = new WeakWeak();
+    Persistent<WeakSet> weakSet = new WeakSet();
+
+    Persistent<IntWrapper> two = IntWrapper::create(2);
+
+    keepNumbersAlive->append(IntWrapper::create(103));
+    keepNumbersAlive->append(IntWrapper::create(10));
+
+    {
+        weakStrong->add(IntWrapper::create(1), two);
+        strongWeak->add(two, IntWrapper::create(1));
+        weakWeak->add(two, IntWrapper::create(42));
+        weakWeak->add(IntWrapper::create(42), two);
+        weakSet->add(IntWrapper::create(0));
+        weakSet->add(two);
+        weakSet->add(keepNumbersAlive[0]);
+        weakSet->add(keepNumbersAlive[1]);
+        EXPECT_EQ(1u, weakStrong->size());
+        EXPECT_EQ(1u, strongWeak->size());
+        EXPECT_EQ(2u, weakWeak->size());
+        EXPECT_EQ(4u, weakSet->size());
+    }
+
+    keepNumbersAlive[0] = nullptr;
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+    EXPECT_EQ(0u, weakStrong->size());
+    EXPECT_EQ(0u, strongWeak->size());
+    EXPECT_EQ(0u, weakWeak->size());
+    EXPECT_EQ(2u, weakSet->size());
+}
+
+TEST(HeapTest, HeapWeakCollectionTypes)
+{
+    HeapStats initialHeapSize;
+    IntWrapper::s_destructorCalls = 0;
+
+    typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper> > WeakStrong;
+    typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper> > StrongWeak;
+    typedef HeapHashMap<WeakMember<IntWrapper>, WeakMember<IntWrapper> > WeakWeak;
+    typedef HeapHashSet<WeakMember<IntWrapper> > WeakSet;
+
+    clearOutOldGarbage(&initialHeapSize);
+
+    const int weakStrongIndex = 0;
+    const int strongWeakIndex = 1;
+    const int weakWeakIndex = 2;
+    const int numberOfMapIndices = 3;
+    const int weakSetIndex = 3;
+    const int numberOfCollections = 4;
+
+    for (int testRun = 0; testRun < 4; testRun++) {
+        for (int collectionNumber = 0; collectionNumber < numberOfCollections; collectionNumber++) {
+            bool testThatIteratorsMakeStrong = (testRun == weakSetIndex);
+            bool deleteAfterwards = (testRun == 1);
+            bool addAfterwards = (testRun == weakWeakIndex);
+
+            // The test doesn't work for strongWeak with deleting because we lost
+            // the key from the keepNumbersAlive array, so we can't do the lookup.
+            if (deleteAfterwards && collectionNumber == strongWeakIndex)
+                continue;
+
+            unsigned added = addAfterwards ? 100 : 0;
+
+            Persistent<WeakStrong> weakStrong = new WeakStrong();
+            Persistent<StrongWeak> strongWeak = new StrongWeak();
+            Persistent<WeakWeak> weakWeak = new WeakWeak();
+
+            Persistent<WeakSet> weakSet = new WeakSet();
+
+            CollectionPersistent<Vector<Member<IntWrapper> > > keepNumbersAlive;
+            for (int i = 0; i < 128; i += 2) {
+                IntWrapper* wrapped = IntWrapper::create(i);
+                IntWrapper* wrapped2 = IntWrapper::create(i + 1);
+                keepNumbersAlive->append(wrapped);
+                keepNumbersAlive->append(wrapped2);
+                weakStrong->add(wrapped, wrapped2);
+                strongWeak->add(wrapped2, wrapped);
+                weakWeak->add(wrapped, wrapped2);
+                weakSet->add(wrapped);
+            }
+
+            EXPECT_EQ(64u, weakStrong->size());
+            EXPECT_EQ(64u, strongWeak->size());
+            EXPECT_EQ(64u, weakWeak->size());
+            EXPECT_EQ(64u, weakSet->size());
+
+            // Collect garbage. This should change nothing since we are keeping
+            // alive the IntWrapper objects.
+            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+            EXPECT_EQ(64u, weakStrong->size());
+            EXPECT_EQ(64u, strongWeak->size());
+            EXPECT_EQ(64u, weakWeak->size());
+            EXPECT_EQ(64u, weakSet->size());
+
+            for (int i = 0; i < 128; i += 2) {
+                IntWrapper* wrapped = keepNumbersAlive[i];
+                IntWrapper* wrapped2 = keepNumbersAlive[i + 1];
+                EXPECT_EQ(wrapped2, weakStrong->get(wrapped));
+                EXPECT_EQ(wrapped, strongWeak->get(wrapped2));
+                EXPECT_EQ(wrapped2, weakWeak->get(wrapped));
+                EXPECT_TRUE(weakSet->contains(wrapped));
+            }
+
+            for (int i = 0; i < 128; i += 3)
+                keepNumbersAlive[i] = nullptr;
+
+            if (collectionNumber != weakStrongIndex)
+                weakStrong->clear();
+            if (collectionNumber != strongWeakIndex)
+                strongWeak->clear();
+            if (collectionNumber != weakWeakIndex)
+                weakWeak->clear();
+            if (collectionNumber != weakSetIndex)
+                weakSet->clear();
+
+            if (testThatIteratorsMakeStrong) {
+                WeakStrong::iterator it1 = weakStrong->begin();
+                StrongWeak::iterator it2 = strongWeak->begin();
+                WeakWeak::iterator it3 = weakWeak->begin();
+                WeakSet::iterator it4 = weakSet->begin();
+                // Collect garbage. This should change nothing since the
+                // iterators make the collections strong.
+                Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+                if (collectionNumber == weakStrongIndex) {
+                    EXPECT_EQ(64u, weakStrong->size());
+                    MapIteratorCheck(it1, weakStrong->end(), 64);
+                } else if (collectionNumber == strongWeakIndex) {
+                    EXPECT_EQ(64u, strongWeak->size());
+                    MapIteratorCheck(it2, strongWeak->end(), 64);
+                } else if (collectionNumber == weakWeakIndex) {
+                    EXPECT_EQ(64u, weakWeak->size());
+                    MapIteratorCheck(it3, weakWeak->end(), 64);
+                } else if (collectionNumber == weakSetIndex) {
+                    EXPECT_EQ(64u, weakSet->size());
+                    SetIteratorCheck(it4, weakSet->end(), 64);
+                }
+            } else {
+                // Collect garbage. This causes weak processing to remove
+                // things from the collections.
+                Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+                unsigned count = 0;
+                for (int i = 0; i < 128; i += 2) {
+                    bool firstAlive = keepNumbersAlive[i];
+                    bool secondAlive = keepNumbersAlive[i + 1];
+                    if (firstAlive && (collectionNumber == weakStrongIndex || collectionNumber == strongWeakIndex))
+                        secondAlive = true;
+                    if (firstAlive && secondAlive && collectionNumber < numberOfMapIndices) {
+                        if (collectionNumber == weakStrongIndex) {
+                            if (deleteAfterwards)
+                                EXPECT_EQ(i + 1, weakStrong->take(keepNumbersAlive[i])->value());
+                        } else if (collectionNumber == strongWeakIndex) {
+                            if (deleteAfterwards)
+                                EXPECT_EQ(i, strongWeak->take(keepNumbersAlive[i + 1])->value());
+                        } else if (collectionNumber == weakWeakIndex) {
+                            if (deleteAfterwards)
+                                EXPECT_EQ(i + 1, weakWeak->take(keepNumbersAlive[i])->value());
+                        }
+                        if (!deleteAfterwards)
+                            count++;
+                    } else if (collectionNumber == weakSetIndex && firstAlive) {
+                        ASSERT_TRUE(weakSet->contains(keepNumbersAlive[i]));
+                        if (deleteAfterwards)
+                            weakSet->remove(keepNumbersAlive[i]);
+                        else
+                            count++;
+                    }
+                }
+                if (addAfterwards) {
+                    for (int i = 1000; i < 1100; i++) {
+                        IntWrapper* wrapped = IntWrapper::create(i);
+                        keepNumbersAlive->append(wrapped);
+                        weakStrong->add(wrapped, wrapped);
+                        strongWeak->add(wrapped, wrapped);
+                        weakWeak->add(wrapped, wrapped);
+                        weakSet->add(wrapped);
+                    }
+                }
+                if (collectionNumber == weakStrongIndex)
+                    EXPECT_EQ(count + added, weakStrong->size());
+                else if (collectionNumber == strongWeakIndex)
+                    EXPECT_EQ(count + added, strongWeak->size());
+                else if (collectionNumber == weakWeakIndex)
+                    EXPECT_EQ(count + added, weakWeak->size());
+                else if (collectionNumber == weakSetIndex)
+                    EXPECT_EQ(count + added, weakSet->size());
+                WeakStrong::iterator it1 = weakStrong->begin();
+                StrongWeak::iterator it2 = strongWeak->begin();
+                WeakWeak::iterator it3 = weakWeak->begin();
+                WeakSet::iterator it4 = weakSet->begin();
+                MapIteratorCheck(it1, weakStrong->end(), (collectionNumber == weakStrongIndex ? count : 0) + added);
+                MapIteratorCheck(it2, strongWeak->end(), (collectionNumber == strongWeakIndex ? count : 0) + added);
+                MapIteratorCheck(it3, weakWeak->end(), (collectionNumber == weakWeakIndex ? count : 0) + added);
+                SetIteratorCheck(it4, weakSet->end(), (collectionNumber == weakSetIndex ? count : 0) + added);
+            }
+            for (unsigned i = 0; i < 128 + added; i++)
+                keepNumbersAlive[i] = nullptr;
+            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+            EXPECT_EQ(added, weakStrong->size());
+            EXPECT_EQ(added, strongWeak->size());
+            EXPECT_EQ(added, weakWeak->size());
+            EXPECT_EQ(added, weakSet->size());
+        }
+    }
+}
+
 TEST(HeapTest, RefCountedGarbageCollected)
 {
     RefCountedAndGarbageCollected::s_destructorCalls = 0;
@@ -1610,6 +2096,7 @@ DEFINE_GC_INFO(Bar);
 DEFINE_GC_INFO(Baz);
 DEFINE_GC_INFO(ClassWithMember);
 DEFINE_GC_INFO(ConstructorAllocation);
+DEFINE_GC_INFO(Container);
 DEFINE_GC_INFO(HeapAllocatedArray);
 DEFINE_GC_INFO(HeapTestSuperClass);
 DEFINE_GC_INFO(IntWrapper);

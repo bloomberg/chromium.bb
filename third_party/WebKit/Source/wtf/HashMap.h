@@ -94,9 +94,15 @@ namespace WTF {
         typedef typename HashTableType::AddResult AddResult;
 
     public:
-        void swap(HashMap& other)
+        void swap(HashMap& ref)
         {
-            m_impl.swap(other.m_impl);
+            m_impl.swap(ref.m_impl);
+        }
+
+        void swap(typename Allocator::template OtherType<HashMap>::Type other)
+        {
+            HashMap& ref = Allocator::getOther(other);
+            m_impl.swap(ref.m_impl);
         }
 
         unsigned size() const;

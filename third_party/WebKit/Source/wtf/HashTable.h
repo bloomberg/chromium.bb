@@ -203,7 +203,7 @@ namespace WTF {
     public:
         template<typename T> static unsigned hash(const T& key) { return HashFunctions::hash(key); }
         template<typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a, b); }
-        template<typename T, typename U> static void translate(T& location, const U&, const T& value) { location = value; }
+        template<typename T, typename U, typename V> static void translate(T& location, const U&, const V& value) { location = value; }
     };
 
     template<typename IteratorType> struct HashTableAddResult {
@@ -1068,7 +1068,7 @@ namespace WTF {
         if (Traits::needsTracing) {
             for (ValueType* element = m_table + m_tableSize - 1; element >= m_table; element--) {
                 if (!isEmptyOrDeletedBucket(*element))
-                    Allocator::template mark<ValueType, Traits>(visitor, *element);
+                    Allocator::template trace<ValueType, Traits>(visitor, *element);
             }
         }
     }
@@ -1081,7 +1081,7 @@ namespace WTF {
         typedef typename Traits::IteratorConstGetType GetType;
         typedef typename HashTableType::ValueTraits::IteratorConstGetType SourceGetType;
 
-        GetType get() const { return (GetType)SourceGetType(m_impl.get()); }
+        GetType get() const { return const_cast<GetType>(SourceGetType(m_impl.get())); }
         typename Traits::IteratorConstReferenceType operator*() const { return Traits::getToReferenceConstConversion(get()); }
         GetType operator->() const { return get(); }
 
@@ -1098,7 +1098,7 @@ namespace WTF {
         HashTableIteratorAdapter() {}
         HashTableIteratorAdapter(const typename HashTableType::iterator& impl) : m_impl(impl) {}
 
-        GetType get() const { return (GetType)SourceGetType(m_impl.get()); }
+        GetType get() const { return const_cast<GetType>(SourceGetType(m_impl.get())); }
         typename Traits::IteratorReferenceType operator*() const { return Traits::getToReferenceConversion(get()); }
         GetType operator->() const { return get(); }
 

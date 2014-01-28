@@ -1143,10 +1143,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         const T* bufferEnd = buffer() + size();
         if (VectorTraits<T>::needsTracing) {
             for (const T* bufferEntry = bufferBegin; bufferEntry != bufferEnd; bufferEntry++)
-                Allocator::template visitWith<T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
+                Allocator::template trace<T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
         }
         if (this->hasOutOfLineBuffer())
-            Allocator::markUsingGCInfo(visitor, buffer());
+            Allocator::markNoTracing(visitor, buffer());
     }
 
 } // namespace WTF

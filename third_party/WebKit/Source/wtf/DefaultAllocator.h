@@ -107,9 +107,20 @@ public:
     }
 
     template<typename T, typename Traits>
-    static void mark(...)
+    static void trace(...)
     {
         ASSERT_NOT_REACHED();
+    }
+
+    template<typename T>
+    struct OtherType {
+        typedef T* Type;
+    };
+
+    template<typename T>
+    static T& getOther(T* other)
+    {
+        return *other;
     }
 };
 

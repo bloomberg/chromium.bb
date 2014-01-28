@@ -41,12 +41,22 @@
 namespace WebCore {
 
 template<typename T> class Member;
+template<typename T> struct OffHeapCollectionTraceTrait;
 
 class PersistentNode {
 public:
-    explicit PersistentNode(TraceCallback trace) : m_trace(trace) { }
+    explicit PersistentNode(TraceCallback trace)
+        : m_trace(trace)
+    {
+    }
 
-    virtual ~PersistentNode() { }
+    bool isAlive() { return m_trace; }
+
+    virtual ~PersistentNode()
+    {
+        ASSERT(isAlive());
+        m_trace = 0;
+    }
 
     // Ideally the trace method should be virtual and automatically dispatch
     // to the most specific implementation. However having a virtual method
@@ -78,6 +88,9 @@ public:
     ~PersistentBase()
     {
 #ifndef NDEBUG
+        ASSERT(isAlive());
+        ASSERT(m_next->isAlive());
+        ASSERT(m_prev->isAlive());
         m_threadState->checkThread();
 #endif
         m_next->m_prev = m_prev;
@@ -138,7 +151,11 @@ public:
     void trace(Visitor*) { }
 
 private:
-    virtual ~PersistentAnchor() { }
+    virtual ~PersistentAnchor()
+    {
+        ASSERT(m_next == this);
+        ASSERT(m_prev == this);
+    }
     PersistentAnchor() : PersistentNode(TraceMethodDelegate<PersistentAnchor, &PersistentAnchor::trace>::trampoline)
     {
         m_next = this;
@@ -411,6 +428,55 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
 
+template<typename Collection, ThreadAffinity Affinity = MainThreadOnly> class CollectionPersistent;
+
+// Used to inject correctly typed operator[] into CollectionPersistent when we are wrapping Vector.
+template<typename T> class IndexingBehavior { };
+
+template<typename T, size_t inlineCapacity>
+class IndexingBehavior<CollectionPersistent<Vector<T, inlineCapacity, WTF::DefaultAllocator> > > {
+    typedef CollectionPersistent<Vector<T, inlineCapacity, WTF::DefaultAllocator> > CollectionPersistentType;
+public:
+    T& operator[] (size_t i) { return (**static_cast<CollectionPersistentType*>(this))[i]; }
+    const T& operator[] (size_t i) const { return (**static_cast<const CollectionPersistentType*>(this))[i]; }
+};
+
+template<typename Collection, ThreadAffinity Affinity>
+class CollectionPersistent
+    : public PersistentBase<Affinity, CollectionPersistent<Collection, Affinity> >
+    , public IndexingBehavior<CollectionPersistent<Collection, Affinity> > {
+public:
+    typedef Collection CollectionType;
+    typedef typename Collection::iterator iterator;
+    typedef typename Collection::const_iterator const_iterator;
+
+    CollectionPersistent() { }
+    explicit CollectionPersistent(size_t size) : m_collection(Collection(size)) { }
+    explicit CollectionPersistent(const Collection& collection) : m_collection(collection) { }
+    CollectionPersistent& operator=(const Collection& collection) { m_collection = collection; return *this; }
+    Collection* operator->() { return &m_collection; }
+    const Collection* operator->() const { return &m_collection; }
+    Collection& operator*() { return m_collection; }
+    const Collection& operator*() const { return m_collection; }
+
+    void trace(Visitor* visitor)
+    {
+        OffHeapCollectionTraceTrait<Collection>::trace(visitor, m_collection);
+    }
+
+#if defined(TRACE_GC_MARKING) && TRACE_GC_MARKING
+    virtual const char* name() OVERRIDE
+    {
+        ASSERT(this == static_cast<PersistentNode*>(this));
+        const char* n = FieldAnnotationBase::fromAddress(this);
+        return n ? n : "CollectionPersistent";
+    }
+#endif
+
+private:
+    Collection m_collection;
+};
+
 // Template aliases for the transition period where we want to support
 // both reference counting and garbage collection based on a
 // compile-time flag.
@@ -522,13 +588,13 @@ template<typename T> struct HashTraits<WebCore::Member<T> > : SimpleClassHashTra
     // in the marking Visitor.
     typedef T* PeekInType;
     typedef T* PassInType;
-    typedef T* IteratorGetType;
-    typedef T* IteratorConstGetType;
+    typedef WebCore::Member<T>* IteratorGetType;
+    typedef const WebCore::Member<T>* IteratorConstGetType;
     typedef T* IteratorReferenceType;
     typedef T* IteratorConstReferenceType;
     static IteratorConstGetType getToConstGetConversion(const WebCore::Member<T>* x) { return x->get(); }
-    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x; }
-    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x; }
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x->get(); }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType
     // and PassOutType without reference counting.
     typedef T* PeekOutType;
@@ -550,13 +616,13 @@ template<typename T> struct HashTraits<WebCore::WeakMember<T> > : SimpleClassHas
     // in the marking Visitor.
     typedef T* PeekInType;
     typedef T* PassInType;
-    typedef T* IteratorGetType;
-    typedef T* IteratorConstGetType;
+    typedef WebCore::WeakMember<T>* IteratorGetType;
+    typedef const WebCore::WeakMember<T>* IteratorConstGetType;
     typedef T* IteratorReferenceType;
     typedef T* IteratorConstReferenceType;
     static IteratorConstGetType getToConstGetConversion(const WebCore::WeakMember<T>* x) { return x->get(); }
-    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x; }
-    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x; }
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x->get(); }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType
     // and PassOutType without reference counting.
     typedef T* PeekOutType;

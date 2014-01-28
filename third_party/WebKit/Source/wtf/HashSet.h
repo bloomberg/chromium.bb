@@ -68,9 +68,15 @@ namespace WTF {
         typedef HashTableConstIteratorAdapter<HashTableType, ValueTraits> const_iterator;
         typedef typename HashTableType::AddResult AddResult;
 
-        void swap(HashSet& other)
+        void swap(HashSet& ref)
         {
-            m_impl.swap(other.m_impl);
+            m_impl.swap(ref.m_impl);
+        }
+
+        void swap(typename Allocator::template OtherType<HashSet>::Type other)
+        {
+            HashSet& ref = Allocator::getOther(other);
+            m_impl.swap(ref.m_impl);
         }
 
         unsigned size() const;
