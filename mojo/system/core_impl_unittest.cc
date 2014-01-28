@@ -582,10 +582,10 @@ TEST_F(CoreImplTest, DataPipe) {
   EXPECT_EQ(-1, elements[1]);
 
   // Two-phase write.
-  void* buffer = NULL;
+  void* write_ptr = NULL;
   num_bytes = 0u;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginWriteData(ph, &buffer, &num_bytes,
+            core()->BeginWriteData(ph, &write_ptr, &num_bytes,
                                    MOJO_WRITE_DATA_FLAG_NONE));
   // We count on the default options providing a decent buffer size.
   ASSERT_GE(num_bytes, 3u);
@@ -598,9 +598,9 @@ TEST_F(CoreImplTest, DataPipe) {
                               MOJO_WRITE_DATA_FLAG_NONE));
 
   // Actually write the data, and complete it now.
-  static_cast<char*>(buffer)[0] = 'C';
-  static_cast<char*>(buffer)[1] = 'D';
-  static_cast<char*>(buffer)[2] = 'E';
+  static_cast<char*>(write_ptr)[0] = 'C';
+  static_cast<char*>(write_ptr)[1] = 'D';
+  static_cast<char*>(write_ptr)[2] = 'E';
   EXPECT_EQ(MOJO_RESULT_OK, core()->EndWriteData(ph, 3u));
 
   // Query how much data we have.
@@ -624,10 +624,10 @@ TEST_F(CoreImplTest, DataPipe) {
                                  MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
   // Read the remaining two characters, in two-phase mode (all-or-none).
-  const void* read_buffer = NULL;
+  const void* read_ptr = NULL;
   num_bytes = 2;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginReadData(ch, &read_buffer, &num_bytes,
+            core()->BeginReadData(ch, &read_ptr, &num_bytes,
                                   MOJO_READ_DATA_FLAG_ALL_OR_NONE));
   // Note: Count on still being able to do the contiguous read here.
   ASSERT_EQ(2u, num_bytes);
@@ -639,8 +639,8 @@ TEST_F(CoreImplTest, DataPipe) {
                              MOJO_READ_DATA_FLAG_DISCARD));
 
   // Actually check our data and end the two-phase read.
-  EXPECT_EQ('D', static_cast<const char*>(read_buffer)[0]);
-  EXPECT_EQ('E', static_cast<const char*>(read_buffer)[1]);
+  EXPECT_EQ('D', static_cast<const char*>(read_ptr)[0]);
+  EXPECT_EQ('E', static_cast<const char*>(read_ptr)[1]);
   EXPECT_EQ(MOJO_RESULT_OK, core()->EndReadData(ch, 2u));
 
   // Consumer should now be no longer readable.
@@ -670,7 +670,6 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing2) {
   uint32_t num_bytes;
   MojoHandle handles[10];
   uint32_t num_handles;
-  MojoHandle ch_received, ph_received;
 
   MojoHandle h_passing[2];
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -698,7 +697,7 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing2) {
   EXPECT_EQ(kHelloSize, num_bytes);
   EXPECT_STREQ(kHello, buffer);
   EXPECT_EQ(1u, num_handles);
-  ch_received = handles[0];
+  MojoHandle ch_received = handles[0];
   EXPECT_NE(ch_received, MOJO_HANDLE_INVALID);
   EXPECT_NE(ch_received, h_passing[0]);
   EXPECT_NE(ch_received, h_passing[1]);
@@ -743,7 +742,7 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing2) {
   EXPECT_EQ(kWorldSize, num_bytes);
   EXPECT_STREQ(kWorld, buffer);
   EXPECT_EQ(1u, num_handles);
-  ph_received = handles[0];
+  MojoHandle ph_received = handles[0];
   EXPECT_NE(ph_received, MOJO_HANDLE_INVALID);
   EXPECT_NE(ph_received, h_passing[0]);
   EXPECT_NE(ph_received, h_passing[1]);
@@ -770,10 +769,96 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing2) {
   EXPECT_EQ(kHelloSize, num_bytes);
   EXPECT_STREQ(kHello, buffer);
 
+  ph = ph_received;
+  ph_received = MOJO_HANDLE_INVALID;
+  ch = ch_received;
+  ch_received = MOJO_HANDLE_INVALID;
+
+  // Make sure that |ph| can't be sent if it's in a two-phase write.
+  void* write_ptr = NULL;
+  num_bytes = 0;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->BeginWriteData(ph, &write_ptr, &num_bytes,
+                                   MOJO_WRITE_DATA_FLAG_NONE));
+  ASSERT_GE(num_bytes, 1u);
+  EXPECT_EQ(MOJO_RESULT_BUSY,
+            core()->WriteMessage(h_passing[0],
+                                 kHello, kHelloSize,
+                                 &ph, 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // But |ch| can, even if |ph| is in a two-phase write.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passing[0],
+                                 kHello, kHelloSize,
+                                 &ch, 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ch = MOJO_HANDLE_INVALID;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passing[1],
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, num_bytes);
+  EXPECT_STREQ(kHello, buffer);
+  EXPECT_EQ(1u, num_handles);
+  ch = handles[0];
+  EXPECT_NE(ch, MOJO_HANDLE_INVALID);
+
+  // Complete the two-phase write.
+  static_cast<char*>(write_ptr)[0] = 'x';
+  EXPECT_EQ(MOJO_RESULT_OK, core()->EndWriteData(ph, 1));
+
+  // Wait for |ch| to be readable.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(ch, MOJO_WAIT_FLAG_READABLE, 1000000000));
+
+  // Make sure that |ch| can't be sent if it's in a two-phase read.
+  const void* read_ptr = NULL;
+  num_bytes = 1;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->BeginReadData(ch, &read_ptr, &num_bytes,
+                                  MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+  EXPECT_EQ(MOJO_RESULT_BUSY,
+            core()->WriteMessage(h_passing[0],
+                                 kHello, kHelloSize,
+                                 &ch, 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // But |ph| can, even if |ch| is in a two-phase read.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passing[0],
+                                 kWorld, kWorldSize,
+                                 &ph, 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ph = MOJO_HANDLE_INVALID;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passing[1],
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kWorldSize, num_bytes);
+  EXPECT_STREQ(kWorld, buffer);
+  EXPECT_EQ(1u, num_handles);
+  ph = handles[0];
+  EXPECT_NE(ph, MOJO_HANDLE_INVALID);
+
+  // Complete the two-phase read.
+  EXPECT_EQ('x', static_cast<const char*>(read_ptr)[0]);
+  EXPECT_EQ(MOJO_RESULT_OK, core()->EndReadData(ch, 1));
+
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[0]));
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
-  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ph_received));
-  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch_received));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ph));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch));
 }
 
 }  // namespace

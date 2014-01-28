@@ -250,5 +250,13 @@ void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/) {
   // will do something nontrivial.
 }
 
+bool Dispatcher::IsBusyNoLock() {
+  lock_.AssertAcquired();
+  DCHECK(!is_closed_);
+  // Most dispatchers support only "atomic" operations, so they are never busy
+  // (in this sense).
+  return false;
+}
+
 }  // namespace system
 }  // namespace mojo

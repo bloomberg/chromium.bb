@@ -137,6 +137,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                                          MojoResult wake_result);
   virtual void RemoveWaiterImplNoLock(Waiter* waiter);
 
+  // This should be overridden to return true if/when there's an ongoing
+  // operation (e.g., two-phase read/writes on data pipes) that should prevent a
+  // handle from being sent over a message pipe (with status "busy").
+  virtual bool IsBusyNoLock();
+
   // This must be implemented by subclasses, since only they can instantiate a
   // new dispatcher of the same class. See
   // |CreateEquivalentDispatcherAndCloseNoLock()| for more details.
@@ -150,8 +155,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   bool is_closed_no_lock() const { return is_closed_; }
 
  private:
-  // For |WriteMessage()|, |CoreImpl| needs access to |lock()| and
-  // |is_closed_no_lock()|.
+  // For |WriteMessage()|, |CoreImpl| needs access to |lock()|,
+  // |is_closed_no_lock()|, and |IsBusyNoLock()|.
   friend class CoreImpl;
 
   // This protects the following members as well as any state added by

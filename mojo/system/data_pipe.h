@@ -52,6 +52,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                MojoWaitFlags flags,
                                MojoResult wake_result);
   void ProducerRemoveWaiter(Waiter* waiter);
+  bool ProducerIsBusy();
 
   // These are called by the consumer dispatcher to implement its methods of
   // corresponding names.
@@ -74,6 +75,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                MojoWaitFlags flags,
                                MojoResult wake_result);
   void ConsumerRemoveWaiter(Waiter* waiter);
+  bool ConsumerIsBusy();
 
  protected:
   DataPipe(bool has_local_producer,

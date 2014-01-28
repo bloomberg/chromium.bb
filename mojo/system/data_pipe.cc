@@ -183,6 +183,11 @@ void DataPipe::ProducerRemoveWaiter(Waiter* waiter) {
   producer_waiter_list_->RemoveWaiter(waiter);
 }
 
+bool DataPipe::ProducerIsBusy() {
+  base::AutoLock locker(lock_);
+  return producer_in_two_phase_write_no_lock();
+}
+
 void DataPipe::ConsumerCancelAllWaiters() {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
@@ -324,6 +329,12 @@ void DataPipe::ConsumerRemoveWaiter(Waiter* waiter) {
   DCHECK(has_local_consumer_no_lock());
   consumer_waiter_list_->RemoveWaiter(waiter);
 }
+
+bool DataPipe::ConsumerIsBusy() {
+  base::AutoLock locker(lock_);
+  return consumer_in_two_phase_read_no_lock();
+}
+
 
 DataPipe::DataPipe(bool has_local_producer,
                    bool has_local_consumer,

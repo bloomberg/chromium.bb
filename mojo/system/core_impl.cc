@@ -263,6 +263,17 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
       // marked as busy.
       DCHECK(!entries[i]->dispatcher->is_closed_no_lock());
 
+      // Check if the dispatcher is busy (e.g., in a two-phase read/write).
+      // (Note that this must be done after the dispatcher's lock is acquired.)
+      if (entries[i]->dispatcher->IsBusyNoLock()) {
+        // Unset the busy flag and release the lock (since it won't be done
+        // below).
+        entries[i]->busy = false;
+        entries[i]->dispatcher->lock().Release();
+        error_result = MOJO_RESULT_BUSY;
+        break;
+      }
+
       // Hang on to the pointer to the dispatcher (which we'll need to release
       // the lock without going through the handle table).
       dispatchers[i] = entries[i]->dispatcher;
