@@ -117,7 +117,7 @@ crbug.com/30536 [ Win ] http/tests/xmlhttprequest/methods-async.html [ WontFix ]
 
 # Tests differences from switching to webkit.org's test netscape plugin rather
 # than chromium's old forked copy.
-crbug.com/108833 [ Debug ] plugins/geturlnotify-during-document-teardown.html [ WontFix ]
+crbug.com/108833 plugins/geturlnotify-during-document-teardown.html [ WontFix ]
 
 # This test sometimes fails indefinitely, other times it takes 1-2 seconds.
 crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ WontFix ]
@@ -183,7 +183,7 @@ crbug.com/241576 [ Win7 ] http/tests/appcache/video.html [ WontFix ]
 
 crbug.com/260660 [ Linux ] fast/canvas/webgl/array-large-array-tests.html [ WontFix ]
 crbug.com/260660 [ Linux ] virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ WontFix ]
-crbug.com/178745 [ Debug ] plugins/open-and-close-window-with-plugin.html [ WontFix ]
+crbug.com/178745 plugins/open-and-close-window-with-plugin.html [ WontFix ]
 crbug.com/243248 [ Mac Win ] fast/events/attempt-scroll-with-no-scrollbars.html [ WontFix ]
 crbug.com/243649 [ Mac ] virtual/legacy-animations-engine/transitions/cancel-transition.html [ WontFix ]
 crbug.com/243732 [ Mac ] transforms/3d/point-mapping/3d-point-mapping-3.html [ WontFix ]
