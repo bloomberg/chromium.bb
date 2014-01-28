@@ -9,7 +9,7 @@
 
 namespace {
 
-// TODO(qinmin): modify ui/range/Range.h to support template so that we
+// TODO(qinmin): modify ui/gfx/range/range.h to support template so that we
 // don't need to define this.
 struct Range {
   Range(float start, float end) : start_(start), end_(end) {}

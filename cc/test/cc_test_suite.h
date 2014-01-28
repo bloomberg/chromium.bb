@@ -5,7 +5,7 @@
 #ifndef CC_TEST_CC_TEST_SUITE_H_
 #define CC_TEST_CC_TEST_SUITE_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
 
