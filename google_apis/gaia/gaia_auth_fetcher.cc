@@ -4,7 +4,6 @@
 
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
-#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -33,7 +32,12 @@ const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
 
 static bool CookiePartsContains(const std::vector<std::string>& parts,
                                 const char* part) {
-  return std::find(parts.begin(), parts.end(), part) != parts.end();
+  for (std::vector<std::string>::const_iterator it = parts.begin();
+       it != parts.end(); ++it) {
+    if (LowerCaseEqualsASCII(*it, part))
+      return true;
+  }
+  return false;
 }
 
 bool ExtractOAuth2TokenPairResponse(base::DictionaryValue* dict,
@@ -156,10 +160,10 @@ const char GaiaAuthFetcher::kOAuthHeaderFormat[] = "Authorization: OAuth %s";
 const char GaiaAuthFetcher::kOAuth2BearerHeaderFormat[] =
     "Authorization: Bearer %s";
 // static
-const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartSecure[] = "Secure";
+const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartSecure[] = "secure";
 // static
 const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartHttpOnly[] =
-    "HttpOnly";
+    "httponly";
 // static
 const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefix[] =
     "oauth_code=";
