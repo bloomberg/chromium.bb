@@ -51,6 +51,7 @@ ResourceError ResourceError::copy() const
     errorCopy.m_isNull = m_isNull;
     errorCopy.m_isCancellation = m_isCancellation;
     errorCopy.m_isTimeout = m_isTimeout;
+    errorCopy.m_staleCopyInCache = m_staleCopyInCache;
     return errorCopy;
 }
 
@@ -78,6 +79,9 @@ bool ResourceError::compare(const ResourceError& a, const ResourceError& b)
         return false;
 
     if (a.isTimeout() != b.isTimeout())
+        return false;
+
+    if (a.staleCopyInCache() != b.staleCopyInCache())
         return false;
 
     return true;

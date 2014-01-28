@@ -52,6 +52,10 @@ struct WebURLError {
     // embedder (see for example WebFrameClient).
     int reason;
 
+    // A flag showing whether or not "unreachableURL" has a copy in the
+    // cache that was too stale to return for this request.
+    bool staleCopyInCache;
+
     // A flag showing whether this error should be treated as a cancellation,
     // e.g. we do not show console errors for cancellations.
     bool isCancellation;
@@ -62,7 +66,7 @@ struct WebURLError {
     // A description for the error.
     WebString localizedDescription;
 
-    WebURLError() : reason(0), isCancellation(false) { }
+    WebURLError() : reason(0), staleCopyInCache(false), isCancellation(false) { }
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT WebURLError(const WebCore::ResourceError&);

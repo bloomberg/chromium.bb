@@ -43,6 +43,7 @@ public:
         , m_isNull(true)
         , m_isCancellation(false)
         , m_isTimeout(false)
+        , m_staleCopyInCache(false)
     {
     }
 
@@ -54,6 +55,7 @@ public:
         , m_isNull(false)
         , m_isCancellation(false)
         , m_isTimeout(false)
+        , m_staleCopyInCache(false)
     {
     }
 
@@ -72,6 +74,8 @@ public:
 
     void setIsTimeout(bool isTimeout) { m_isTimeout = isTimeout; }
     bool isTimeout() const { return m_isTimeout; }
+    void setStaleCopyInCache(bool staleCopyInCache) { m_staleCopyInCache = staleCopyInCache; }
+    bool staleCopyInCache() const { return m_staleCopyInCache; }
 
     static bool compare(const ResourceError&, const ResourceError&);
 
@@ -83,6 +87,7 @@ private:
     bool m_isNull;
     bool m_isCancellation;
     bool m_isTimeout;
+    bool m_staleCopyInCache;
 };
 
 inline bool operator==(const ResourceError& a, const ResourceError& b) { return ResourceError::compare(a, b); }
