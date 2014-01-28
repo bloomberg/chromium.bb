@@ -480,7 +480,7 @@ crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.h
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass Failure ]
-crbug.com/248067 storage/storageinfo-query-usage.html [ Pass Failure ]
+crbug.com/248067 storage/quota/storageinfo-query-usage.html [ Pass Failure ]
 
 crbug.com/254332 [ SnowLeopard Debug ] fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
@@ -616,7 +616,7 @@ crbug.com/307777 [ Android ] fast/multicol/huge-column-gap-crash.html [ Timeout 
 crbug.com/307777 [ Android ] fast/xsl/import-non-document-node.xhtml [ Timeout Pass ]
 crbug.com/307777 [ Android ] http/tests/download/inherited-encoding-form-submission-result.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] http/tests/security/no-javascript-refresh.php [ Timeout Pass ]
-crbug.com/307777 [ Android ] storage/storagequota-query-usage.html [ Failure Timeout Pass ]
+crbug.com/307777 [ Android ] storage/quota/storagequota-query-usage.html [ Failure Timeout Pass ]
 crbug.com/307777 [ Android ] svg/foreignObject/absolute-position-foreign-object-child-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] svg/in-html/svg-assert-failure-percentage.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] tables/hittesting/filltable-levels.html [ Timeout Pass ]
@@ -746,7 +746,7 @@ crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests
 
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
-crbug.com/311804 [ Mac Win Linux ] storage/storagequota-query-usage.html [ Failure Pass ]
+crbug.com/311804 [ Mac Win Linux ] storage/quota/storagequota-query-usage.html [ Failure Pass ]
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 
