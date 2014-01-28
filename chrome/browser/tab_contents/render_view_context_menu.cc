@@ -870,7 +870,7 @@ void RenderViewContextMenu::AppendImageItems() {
   const TemplateURL* const default_provider =
       TemplateURLServiceFactory::GetForProfile(profile_)->
           GetDefaultSearchProvider();
-  if (params_.has_image_contents && default_provider &&
+  if (!is_guest_ && params_.has_image_contents && default_provider &&
       !default_provider->image_url().empty() &&
       default_provider->image_url_ref().IsValid()) {
     menu_model_.AddItem(
