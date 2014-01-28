@@ -295,17 +295,25 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   }
 
 #if defined(OS_CHROMEOS)
+  // Check if we need to add offline throttle. This should be done only
+  // for main frames.
   if (resource_type == ResourceType::MAIN_FRAME) {
     // We check offline first, then check safe browsing so that we still can
     // block unsafe site after we remove offline page.
     throttles->push_back(new OfflineResourceThrottle(request,
                                                      appcache_service));
+  }
+
+  // Check if we need to add merge session throttle. This throttle will postpone
+  // loading of main frames and XHR request.
+  if (resource_type == ResourceType::MAIN_FRAME ||
+      resource_type == ResourceType::XHR) {
     // Add interstitial page while merge session process (cookie
     // reconstruction from OAuth2 refresh token in ChromeOS login) is still in
     // progress while we are attempting to load a google property.
     if (!MergeSessionThrottle::AreAllSessionMergedAlready() &&
         request->url().SchemeIsHTTPOrHTTPS()) {
-      throttles->push_back(new MergeSessionThrottle(request));
+      throttles->push_back(new MergeSessionThrottle(request, resource_type));
     }
   }
 #endif

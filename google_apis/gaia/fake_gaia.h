@@ -77,7 +77,7 @@ class FakeGaia {
   };
 
   FakeGaia();
-  ~FakeGaia();
+  virtual ~FakeGaia();
 
   // Sets the initial value of tokens and cookies.
   void SetMergeSessionParams(const MergeSessionParams& params);
@@ -109,6 +109,11 @@ class FakeGaia {
   static bool GetQueryParameter(const std::string& query,
                                 const std::string& key,
                                 std::string* value);
+ protected:
+  // HTTP handler for /MergeSession.
+  virtual void HandleMergeSession(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
 
  private:
   typedef std::multimap<std::string, AccessTokenInfo> AccessTokenInfoMap;
@@ -132,8 +137,6 @@ class FakeGaia {
                           net::test_server::BasicHttpResponse* http_response);
   void HandleOAuthLogin(const net::test_server::HttpRequest& request,
                         net::test_server::BasicHttpResponse* http_response);
-  void HandleMergeSession(const net::test_server::HttpRequest& request,
-                          net::test_server::BasicHttpResponse* http_response);
   void HandleServiceLoginAuth(
       const net::test_server::HttpRequest& request,
       net::test_server::BasicHttpResponse* http_response);

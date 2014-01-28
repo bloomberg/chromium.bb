@@ -62,7 +62,7 @@ class OobeBaseTest : public ExtensionApiTest {
   // Returns login display.
   WebUILoginDisplay* GetLoginDisplay();
 
-  FakeGaia fake_gaia_;
+  scoped_ptr<FakeGaia> fake_gaia_;
   NetworkPortalDetectorTestImpl* network_portal_detector_;
 };
 

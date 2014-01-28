@@ -12,6 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/merge_session_load_page.h"
+#include "chrome/browser/chromeos/login/merge_session_xhr_request_waiter.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -42,24 +44,24 @@ const int64 kMaxSessionRestoreTimeInSec = 60;
 class ProfileSet : public base::NonThreadSafe,
                    public std::set<Profile*> {
  public:
-  ProfileSet();
-  virtual ~ProfileSet();
+  ProfileSet() {
+  }
+
+  virtual ~ProfileSet() {
+  }
+
   static ProfileSet* Get();
 
  private:
   friend struct ::base::DefaultLazyInstanceTraits<ProfileSet>;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileSet);
 };
 
 // Set of all of profiles for which restore session is in progress.
 // This static member is accessible only form UI thread.
 static base::LazyInstance<ProfileSet> g_blocked_profiles =
     LAZY_INSTANCE_INITIALIZER;
-
-ProfileSet::ProfileSet() {
-}
-
-ProfileSet::~ProfileSet() {
-}
 
 ProfileSet* ProfileSet::Get() {
   return g_blocked_profiles.Pointer();
@@ -69,8 +71,10 @@ ProfileSet* ProfileSet::Get() {
 
 base::AtomicRefCount MergeSessionThrottle::all_profiles_restored_(0);
 
-MergeSessionThrottle::MergeSessionThrottle(net::URLRequest* request)
-    : request_(request) {
+MergeSessionThrottle::MergeSessionThrottle(net::URLRequest* request,
+                                           ResourceType::Type resource_type)
+    : request_(request),
+      resource_type_(resource_type) {
 }
 
 MergeSessionThrottle::~MergeSessionThrottle() {
@@ -78,8 +82,7 @@ MergeSessionThrottle::~MergeSessionThrottle() {
 }
 
 void MergeSessionThrottle::WillStartRequest(bool* defer) {
-  DCHECK(request_->url().SchemeIsHTTPOrHTTPS());
-  if (!ShouldShowMergeSessionPage(request_->url()))
+  if (!ShouldDelayUrl(request_->url()))
     return;
 
   DVLOG(1) << "WillStartRequest: defer " << request_->url();
@@ -89,7 +92,8 @@ void MergeSessionThrottle::WillStartRequest(bool* defer) {
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &MergeSessionThrottle::ShowDeleayedLoadingPageOnUIThread,
+          &MergeSessionThrottle::DeleayResourceLoadingOnUIThread,
+          resource_type_,
           info->GetChildID(),
           info->GetRouteID(),
           request_->url(),
@@ -113,7 +117,7 @@ void MergeSessionThrottle::OnBlockingPageComplete() {
   controller()->Resume();
 }
 
-bool MergeSessionThrottle::ShouldShowMergeSessionPage(const GURL& url) const {
+bool MergeSessionThrottle::ShouldDelayUrl(const GURL& url) const {
   // If we are loading google properties while merge session is in progress,
   // we will show delayed loading page instead.
   return !net::NetworkChangeNotifier::IsOffline() &&
@@ -154,7 +158,7 @@ void MergeSessionThrottle::UnblockProfile(Profile* profile) {
 }
 
 // static
-bool MergeSessionThrottle::ShouldShowInterstitialPage(
+bool MergeSessionThrottle::ShouldDelayRequest(
     int render_process_id,
     int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -237,14 +241,15 @@ bool MergeSessionThrottle::ShouldShowInterstitialPage(
 }
 
 // static.
-void MergeSessionThrottle::ShowDeleayedLoadingPageOnUIThread(
+void MergeSessionThrottle::DeleayResourceLoadingOnUIThread(
+    ResourceType::Type resource_type,
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const chromeos::MergeSessionLoadPage::CompletionCallback& callback) {
+    const CompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (ShouldShowInterstitialPage(render_process_id, render_view_id)) {
+  if (ShouldDelayRequest(render_process_id, render_view_id)) {
     // There is a chance that the tab closed after we decided to show
     // the offline page on the IO thread and before we actually show the
     // offline page here on the UI thread.
@@ -252,11 +257,19 @@ void MergeSessionThrottle::ShowDeleayedLoadingPageOnUIThread(
         RenderViewHost::FromID(render_process_id, render_view_id);
     WebContents* web_contents = render_view_host ?
         WebContents::FromRenderViewHost(render_view_host) : NULL;
-    if (web_contents)
+    if (resource_type == ResourceType::MAIN_FRAME) {
+      DVLOG(1) << "Creating page waiter for " << url.spec();
       (new chromeos::MergeSessionLoadPage(web_contents, url, callback))->Show();
+    } else {
+      DVLOG(1) << "Creating XHR waiter for " << url.spec();
+      DCHECK(resource_type == ResourceType::XHR);
+      Profile* profile = Profile::FromBrowserContext(
+          web_contents->GetBrowserContext());
+      (new chromeos::MergeSessionXHRRequestWaiter(profile,
+                                                  callback))->StartWaiting();
+    }
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, callback);
   }
 }
-
