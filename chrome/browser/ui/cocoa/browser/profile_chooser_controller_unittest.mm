@@ -125,9 +125,9 @@ TEST_F(ProfileChooserControllerTest, InitialLayout) {
   // There are some links in between. The profile name is added last.
   CGFloat index = [activeCardSubviews count] - 1;
   NSView* activeProfileName = [activeCardSubviews objectAtIndex:index];
-  EXPECT_TRUE([activeProfileName isKindOfClass:[NSTextField class]]);
+  EXPECT_TRUE([activeProfileName isKindOfClass:[NSButton class]]);
   EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
-      [static_cast<NSTextField*>(activeProfileName) stringValue]));
+      [static_cast<NSButton*>(activeProfileName) title]));
 }
 
 TEST_F(ProfileChooserControllerTest, LocalProfileActiveCardLinks) {
@@ -242,7 +242,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   EXPECT_TRUE([activeProfileImage isKindOfClass:[NSImageView class]]);
 
   NSView* activeProfileName = [activeCardSubviews objectAtIndex:1];
-  EXPECT_TRUE([activeProfileName isKindOfClass:[NSTextField class]]);
+  EXPECT_TRUE([activeProfileName isKindOfClass:[NSButton class]]);
   EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
-      [static_cast<NSTextField*>(activeProfileName) stringValue]));
+      [static_cast<NSButton*>(activeProfileName) title]));
 }

@@ -41,6 +41,7 @@
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
+#import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -61,6 +62,9 @@ const CGFloat kSmallVerticalSpacing = 10.0;
 const CGFloat kHorizontalSpacing = 20.0;
 const CGFloat kTitleFontSize = 15.0;
 const CGFloat kTextFontSize = 12.0;
+const CGFloat kProfileButtonHeight = 30;
+const int kOverlayHeight = 20;  // Height of the "Change" avatar photo overlay.
+const int kBezelThickness = 3;  // Width of the bezel on an NSButton.
 
 // Minimum size for embedded sign in pages as defined in Gaia.
 const CGFloat kMinGaiaViewWidth = 320;
@@ -140,6 +144,205 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   DISALLOW_COPY_AND_ASSIGN(ActiveProfileObserverBridge);
 };
+
+
+// A custom button that has a transparent backround.
+@interface TransparentBackgroundButton : NSButton
+@end
+
+@implementation TransparentBackgroundButton
+- (id)initWithFrame:(NSRect)frameRect {
+  if ((self = [super initWithFrame:frameRect])) {
+    [self setBordered:NO];
+    [self setFont:[NSFont labelFontOfSize:kTextFontSize]];
+    [self setButtonType:NSMomentaryChangeButton];
+  }
+  return self;
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:0 alpha:0.5f];
+  [backgroundColor setFill];
+  NSRectFillUsingOperation(dirtyRect, NSCompositeSourceAtop);
+  [super drawRect:dirtyRect];
+}
+@end
+
+// A custom image control that shows a "Change" button when moused over.
+@interface EditableProfilePhoto : NSImageView {
+ @private
+  AvatarMenu* avatarMenu_;  // Weak; Owned by ProfileChooserController.
+  base::scoped_nsobject<TransparentBackgroundButton> changePhotoButton_;
+  // Used to display the "Change" button on hover.
+  ui::ScopedCrTrackingArea trackingArea_;
+}
+
+// Called when the "Change" button is clicked.
+- (void)editPhoto:(id)sender;
+
+// When hovering over the profile photo, show the "Change" button.
+- (void)mouseEntered:(NSEvent*)event;
+
+// When hovering away from the profile photo, hide the "Change" button.
+- (void)mouseExited:(NSEvent*)event;
+@end
+
+@interface EditableProfilePhoto (Private)
+// Create the "Change" avatar photo button.
+- (TransparentBackgroundButton*)changePhotoButtonWithRect:(NSRect)rect;
+@end
+
+@implementation EditableProfilePhoto
+- (id)initWithFrame:(NSRect)frameRect
+         avatarMenu:(AvatarMenu*)avatarMenu
+        profileIcon:(const gfx::Image&)profileIcon
+     editingAllowed:(BOOL)editingAllowed {
+  if ((self = [super initWithFrame:frameRect])) {
+    avatarMenu_ = avatarMenu;
+    [self setImage:CreateProfileImage(
+        profileIcon, kLargeImageSide).ToNSImage()];
+
+    // Add a tracking area so that we can show/hide the button when hovering.
+    trackingArea_.reset([[CrTrackingArea alloc]
+        initWithRect:[self bounds]
+             options:NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways
+               owner:self
+            userInfo:nil]);
+    [self addTrackingArea:trackingArea_.get()];
+
+    if (editingAllowed) {
+      // The avatar photo uses a frame of width profiles::kAvatarIconPadding,
+      // which we must subtract from the button's bounds.
+      changePhotoButton_.reset([self changePhotoButtonWithRect:NSMakeRect(
+          profiles::kAvatarIconPadding, profiles::kAvatarIconPadding,
+          kLargeImageSide - 2 * profiles::kAvatarIconPadding,
+          kOverlayHeight)]);
+      [self addSubview:changePhotoButton_];
+
+      // Hide the button until the image is hovered over.
+      [changePhotoButton_ setHidden:YES];
+    }
+  }
+  return self;
+}
+
+- (void)editPhoto:(id)sender {
+  avatarMenu_->EditProfile(avatarMenu_->GetActiveProfileIndex());
+}
+
+- (void)mouseEntered:(NSEvent*)event {
+  [changePhotoButton_ setHidden:NO];
+}
+
+- (void)mouseExited:(NSEvent*)event {
+  [changePhotoButton_ setHidden:YES];
+}
+
+- (TransparentBackgroundButton*)changePhotoButtonWithRect:(NSRect)rect {
+  TransparentBackgroundButton* button =
+      [[TransparentBackgroundButton alloc] initWithFrame:rect];
+
+  // The button has a centered white text and a transparent background.
+  base::scoped_nsobject<NSMutableParagraphStyle> textStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [textStyle setAlignment:NSCenterTextAlignment];
+  NSDictionary* titleAttributes = @{
+      NSParagraphStyleAttributeName : textStyle,
+      NSForegroundColorAttributeName : [NSColor whiteColor]
+  };
+  NSString* buttonTitle = l10n_util::GetNSString(
+      IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON);
+  base::scoped_nsobject<NSAttributedString> attributedTitle(
+      [[NSAttributedString alloc] initWithString:buttonTitle
+                                      attributes:titleAttributes]);
+  [button setAttributedTitle:attributedTitle];
+  [button setTarget:self];
+  [button setAction:@selector(editPhoto:)];
+  return button;
+}
+@end
+
+// A custom text control that turns into a textfield for editing when clicked.
+@interface EditableProfileNameButton : HoverImageButton<NSTextFieldDelegate> {
+ @private
+  base::scoped_nsobject<NSTextField> profileNameTextField_;
+  Profile* profile_;  // Weak.
+}
+
+// Called when the button is clicked.
+- (void)showEditableView:(id)sender;
+
+// Called when the user presses "Enter" in the textfield.
+- (void)controlTextDidEndEditing:(NSNotification *)obj;
+@end
+
+@implementation EditableProfileNameButton
+- (id)initWithFrame:(NSRect)frameRect
+            profile:(Profile*)profile
+        profileName:(NSString*)profileName
+     editingAllowed:(BOOL)editingAllowed {
+  if ((self = [super initWithFrame:frameRect])) {
+    profile_ = profile;
+
+    [self setBordered:NO];
+    [self setFont:[NSFont labelFontOfSize:kTitleFontSize]];
+    [self setAlignment:NSLeftTextAlignment];
+    [self setTitle:profileName];
+
+    if (editingAllowed) {
+      // Show an "edit" pencil icon when hovering over.
+      ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+      [self setHoverImage:
+          rb->GetNativeImageNamed(IDR_ICON_PROFILES_EDIT_HOVER).AsNSImage()];
+      [self setAlternateImage:
+          rb->GetNativeImageNamed(IDR_ICON_PROFILES_EDIT_PRESSED).AsNSImage()];
+      [self setImagePosition:NSImageRight];
+      [self setTarget:self];
+      [self setAction:@selector(showEditableView:)];
+
+      // We need to subtract the width of the bezel from the frame rect, so that
+      // the textfield can take the exact same space as the button.
+      frameRect.size.height -= 2 * kBezelThickness;
+      frameRect.origin = NSMakePoint(0, kBezelThickness);
+      profileNameTextField_.reset(
+          [[NSTextField alloc] initWithFrame:frameRect]);
+      [profileNameTextField_ setStringValue:profileName];
+      [profileNameTextField_ setFont:[NSFont labelFontOfSize:kTitleFontSize]];
+      [profileNameTextField_ setEditable:YES];
+      [profileNameTextField_ setDrawsBackground:YES];
+      [profileNameTextField_ setBezeled:YES];
+      [profileNameTextField_ setDelegate:self];
+
+      [self addSubview:profileNameTextField_];
+
+      // Hide the textfield until the user clicks on the button.
+      [profileNameTextField_ setHidden:YES];
+    }
+  }
+  return self;
+}
+
+// NSTextField objects send an NSNotification to a delegate if
+// it implements this method:
+- (void)controlTextDidEndEditing:(NSNotification *)obj {
+  NSString* newProfileName = [profileNameTextField_ stringValue];
+  if ([newProfileName length] > 0) {
+    profiles::UpdateProfileName(profile_,
+        base::SysNSStringToUTF16(newProfileName));
+    [self setTitle:newProfileName];
+  }
+  [profileNameTextField_ setHidden:YES];
+}
+
+- (void)showEditableView:(id)sender {
+  [profileNameTextField_ setHidden:NO];
+  [profileNameTextField_ becomeFirstResponder];
+}
+
+- (NSString*)profileName {
+  return [self title];
+}
+@end
 
 @interface ProfileChooserController (Private)
 // Creates the main profile card for the profile |item| at the top of
@@ -391,11 +594,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       initWithFrame:NSZeroRect]);
 
   // Profile icon.
-  base::scoped_nsobject<NSImageView> iconView([[NSImageView alloc]
-      initWithFrame:NSMakeRect(0, 0, kLargeImageSide, kLargeImageSide)]);
-  [iconView setImage:CreateProfileImage(
-      item.icon, kLargeImageSide).ToNSImage()];
-  [iconView setFrameOrigin:NSMakePoint(0, 0)];
+  base::scoped_nsobject<EditableProfilePhoto> iconView(
+      [[EditableProfilePhoto alloc]
+          initWithFrame:NSMakeRect(0, 0, kLargeImageSide, kLargeImageSide)
+             avatarMenu:avatarMenu_.get()
+            profileIcon:item.icon
+         editingAllowed:!isGuestSession_]);
+
   [container addSubview:iconView];
 
   CGFloat xOffset = NSMaxX([iconView frame]) + kHorizontalSpacing;
@@ -409,21 +614,22 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     maxXLinksContainer = NSMaxX([linksContainer frame]);
   }
 
+  // TODO(noms): At the moment, this means that long profile names will
+  // not be displayed correctly in the bubble. This is related to
+  // crbug.com/334761, which will also fix this issue.
+  CGFloat maxX = std::max(maxXLinksContainer, kMinMenuWidth);
+
   // Profile name.
-  base::scoped_nsobject<NSTextField> profileName([[NSTextField alloc]
-      initWithFrame:NSZeroRect]);
-  [profileName setStringValue:base::SysUTF16ToNSString(item.name)];
-  [profileName setFont:[NSFont labelFontOfSize:kTitleFontSize]];
-  [profileName setEditable:NO];
-  [profileName setDrawsBackground:NO];
-  [profileName setBezeled:NO];
-  [profileName setFrameOrigin:NSMakePoint(xOffset, yOffset)];
-  [profileName sizeToFit];
+  base::scoped_nsobject<EditableProfileNameButton> profileName(
+      [[EditableProfileNameButton alloc]
+          initWithFrame:NSMakeRect(xOffset, yOffset,
+                                   maxX - xOffset, /* Width of the column */
+                                   kProfileButtonHeight)
+                profile:browser_->profile()
+            profileName:base::SysUTF16ToNSString(item.name)
+         editingAllowed:!isGuestSession_]);
+
   [container addSubview:profileName];
-
-  CGFloat maxX = std::max(maxXLinksContainer,
-                          NSMaxX([profileName frame]));
-
   [container setFrameSize:NSMakeSize(maxX, NSHeight([iconView frame]))];
   return container.autorelease();
 }
@@ -453,7 +659,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
             IDS_PROFILES_PROFILE_SIGNOUT_BUTTON)
                       frameOrigin:NSMakePoint(xOffset, yOffset)
                            action:@selector(lockProfile:)];
-    yOffset = NSMaxY([signOutLink frame]) + kLinkSpacing;
+    yOffset = NSMaxY([signOutLink frame]);
 
     maxX = std::max(NSMaxX([manageAccountsLink frame]),
                                  NSMaxX([signOutLink frame]));
