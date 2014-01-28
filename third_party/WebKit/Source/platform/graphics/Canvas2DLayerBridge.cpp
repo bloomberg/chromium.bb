@@ -62,6 +62,8 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
 {
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
     RefPtr<GraphicsContext3D> context = SharedGraphicsContext3D::get();
+    if (!context)
+        return 0;
     RefPtr<SkSurface> surface(createSkSurface(context.get(), size, msaaSampleCount));
     if (!surface)
         return 0;
