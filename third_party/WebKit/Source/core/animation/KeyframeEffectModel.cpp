@@ -38,28 +38,6 @@ namespace {
 
 using namespace WebCore;
 
-class ReplaceCompositableValue FINAL : public AnimationEffect::CompositableValue {
-public:
-    static PassRefPtr<ReplaceCompositableValue> create(const AnimatableValue* value)
-    {
-        return adoptRef(new ReplaceCompositableValue(value));
-    }
-    virtual bool dependsOnUnderlyingValue() const OVERRIDE
-    {
-        return false;
-    }
-    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const OVERRIDE
-    {
-        return PassRefPtr<AnimatableValue>(m_value);
-    }
-private:
-    ReplaceCompositableValue(const AnimatableValue* value)
-        : m_value(const_cast<AnimatableValue*>(value))
-    {
-    }
-    RefPtr<AnimatableValue> m_value;
-};
-
 class AddCompositableValue FINAL : public AnimationEffect::CompositableValue {
 public:
     static PassRefPtr<AddCompositableValue> create(const AnimatableValue* value)
@@ -290,7 +268,7 @@ void KeyframeEffectModel::ensureKeyframeGroups() const
 KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, const AnimatableValue* value, CompositeOperation composite)
     : m_offset(offset)
     , m_value(composite == AnimationEffect::CompositeReplace ?
-        static_cast<PassRefPtr<CompositableValue> >(ReplaceCompositableValue::create(value)) :
+        AnimatableValue::takeConstRef(value) :
         static_cast<PassRefPtr<CompositableValue> >(AddCompositableValue::create(value)))
 {
 }
