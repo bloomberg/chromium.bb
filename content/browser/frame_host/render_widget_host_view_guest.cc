@@ -22,6 +22,10 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 #if defined(OS_WIN) || defined(USE_AURA)
 #include "content/browser/renderer_host/ui_events_helper.h"
 #endif
@@ -32,7 +36,12 @@ namespace {
 
 #if defined(OS_WIN) || defined(USE_AURA)
 bool ShouldSendPinchGesture() {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return true;
+#endif
   static bool pinch_allowed =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViewport) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
   return pinch_allowed;
 }

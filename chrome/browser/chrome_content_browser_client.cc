@@ -151,6 +151,7 @@
 #include "webkit/common/webpreferences.h"
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
@@ -1447,6 +1448,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (!login_profile.empty())
       command_line->AppendSwitchASCII(
           chromeos::switches::kLoginProfile, login_profile);
+#endif
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    command_line->AppendSwitch(switches::kEnablePinch);
 #endif
 
 #if defined(ENABLE_WEBRTC)
