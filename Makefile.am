@@ -7,7 +7,6 @@ SUBDIRS =					\
 	shared					\
 	src					\
 	clients					\
-	protocol				\
 	tests					\
 	man
 
@@ -22,7 +21,7 @@ weston.ini : $(srcdir)/weston.ini.in
 		-e 's|@libexecdir[@]|$(libexecdir)|g' \
 		$< > $@
 
-all-local : weston.ini
+all-local : weston.ini validate-protocol-xml
 
 CLEANFILES = weston.ini $(BUILT_SOURCES)
 
@@ -127,6 +126,33 @@ BUILT_SOURCES +=				\
 	xwayland/xserver-protocol.c		\
 	xwayland/xserver-server-protocol.h
 endif
+
+
+protocol_sources =				\
+	protocol/desktop-shell.xml		\
+	protocol/screenshooter.xml		\
+	protocol/xserver.xml			\
+	protocol/text.xml			\
+	protocol/input-method.xml		\
+	protocol/workspaces.xml			\
+	protocol/text-cursor-position.xml	\
+	protocol/wayland-test.xml		\
+	protocol/xdg-shell.xml			\
+	protocol/scaler.xml
+
+if HAVE_XMLLINT
+.PHONY : validate-protocol-xml
+
+.%.xml.valid : $(top_srcdir)/protocol/%.xml
+	$(AM_V_GEN)$(XMLLINT) --noout --dtdvalid $(dtddir)/wayland.dtd $^ > $@
+
+validate-protocol-xml : $(protocol_sources:protocol/%.xml=.%.xml.valid)
+
+CLEANFILES += $(protocol_sources:protocol/%.xml=.%.xml.valid)
+EXTRA_DIST += $(protocol_sources)
+
+endif
+
 
 wayland_protocoldir = $(top_srcdir)/protocol
 include $(top_srcdir)/wayland-scanner.mk

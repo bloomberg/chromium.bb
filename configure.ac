@@ -490,7 +490,6 @@ AC_CONFIG_FILES([Makefile
 		 src/version.h
 		 src/weston.pc
 		 clients/Makefile
-		 protocol/Makefile
 		 man/Makefile
 		 tests/Makefile])
 AC_OUTPUT
