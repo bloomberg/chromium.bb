@@ -76,7 +76,6 @@ class ContentSettingsObserver
   virtual bool allowMutationEvents(blink::WebFrame* frame,
                                    bool default_value);
   virtual bool allowPushState(blink::WebFrame* frame);
-  virtual bool allowWebGLDebugRendererInfo(blink::WebFrame* frame);
   virtual void didNotAllowPlugins(blink::WebFrame* frame);
   virtual void didNotAllowScript(blink::WebFrame* frame);
   virtual bool allowDisplayingInsecureContent(

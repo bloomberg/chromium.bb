@@ -641,12 +641,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardWrite,
                             GURL /* origin */,
                             bool /* allowed */)
 
-// Sent by the renderer to check if a URL has permission to access WebGL
-// extension WEBGL_debug_renderer_info.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_IsWebGLDebugRendererInfoAllowed,
-                            GURL /* origin */,
-                            bool /* allowed */)
-
 // Sent when the renderer was prevented from displaying insecure content in
 // a secure page by a security policy.  The page may appear incomplete.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
