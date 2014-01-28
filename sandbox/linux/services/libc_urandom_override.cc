@@ -25,9 +25,9 @@ namespace sandbox {
 static bool g_override_urandom = false;
 
 // TODO(sergeyu): Currently InitLibcUrandomOverrides() doesn't work properly
-// under ASAN - it crashes content_unittests. Make sure it works properly and
-// enable it here. http://crbug.com/123263
-#if !defined(ADDRESS_SANITIZER)
+// under ASan or MSan - it crashes content_unittests. Make sure it works
+// properly and enable it here. http://crbug.com/123263
+#if !(defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER))
 static void InitLibcFileIOFunctions();
 static pthread_once_t g_libc_file_io_funcs_guard = PTHREAD_ONCE_INIT;
 #endif
@@ -37,13 +37,13 @@ void InitLibcUrandomOverrides() {
   base::GetUrandomFD();
   g_override_urandom = true;
 
-#if !defined(ADDRESS_SANITIZER)
+#if !(defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER))
   CHECK_EQ(0, pthread_once(&g_libc_file_io_funcs_guard,
                            InitLibcFileIOFunctions));
 #endif
 }
 
-#if !defined(ADDRESS_SANITIZER)
+#if !(defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER))
 
 static const char kUrandomDevPath[] = "/dev/urandom";
 
@@ -231,6 +231,6 @@ int stat64_override(const char *path, struct stat64 *buf) {
 
 #endif  // HAVE_XSTAT
 
-#endif  // !defined(ADDRESS_SANITIZER)
+#endif  // !(defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER))
 
 }  // namespace content
