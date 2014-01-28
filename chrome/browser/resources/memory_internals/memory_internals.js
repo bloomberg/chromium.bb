@@ -25,16 +25,16 @@ var MainView = (function() {
      * @param {Object}  Information about memory in JSON format.
      */
     onSetSnapshot: function(browser) {
-      this.updateSnapshot(browser['processes']);
-      this.updateExtensions(browser['extensions']);
+      $('json').textContent = JSON.stringify(browser);
+      $('json').style.display = 'block';
 
       $('os-value').textContent = browser['os'] + ' (' +
           browser['os_version'] + ')';
       $('uptime-value').textContent = Math.floor(browser['uptime'] / 1000) +
           ' sec';
 
-      $('json').textContent = JSON.stringify(browser);
-      $('json').style.display = 'block';
+      this.updateSnapshot(browser['processes']);
+      this.updateExtensions(browser['extensions']);
     },
 
     /**
@@ -63,7 +63,7 @@ var MainView = (function() {
             break;
           case 'process-info':
             value = process['type'];
-            if (process['type'].match(/^Tab/)) {
+            if (process['type'].match(/^Tab/) && 'history' in process) {
               // Append each tab's history.
               for (var j = 0; j < process['history'].length; ++j) {
                 value += '<dl><dt>History ' + j + ':' +
