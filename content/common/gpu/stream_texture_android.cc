@@ -102,8 +102,7 @@ void StreamTexture::WillUseTexImage() {
 
   // TODO(sievers): Update also when used in a different context.
   //                Also see crbug.com/309162.
-  if (surface_texture_.get() &&
-      owner_stub_->decoder()->GetGLContext()->IsCurrent(NULL)) {
+  if (surface_texture_.get()) {
     surface_texture_->UpdateTexImage();
   }
 
