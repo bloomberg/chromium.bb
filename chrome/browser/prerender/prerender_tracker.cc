@@ -6,29 +6,12 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_pending_swap_throttle.h"
-#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
-#include "net/base/load_flags.h"
 
 using content::BrowserThread;
 
 namespace prerender {
-
-struct RenderViewInfo {
-  explicit RenderViewInfo(PrerenderManager* prerender_manager)
-      : final_status(FINAL_STATUS_MAX),
-        prerender_manager(prerender_manager->AsWeakPtr()) {
-  }
-  ~RenderViewInfo() {}
-
-  FinalStatus final_status;
-  base::WeakPtr<PrerenderManager> prerender_manager;
-};
 
 PrerenderTracker::PrerenderTracker() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -118,11 +101,6 @@ PrerenderTracker::PendingSwapThrottleData::PendingSwapThrottleData(
 }
 
 PrerenderTracker::PendingSwapThrottleData::~PendingSwapThrottleData() {
-}
-
-// static
-PrerenderTracker* PrerenderTracker::GetDefault() {
-  return g_browser_process->prerender_tracker();
 }
 
 }  // namespace prerender
