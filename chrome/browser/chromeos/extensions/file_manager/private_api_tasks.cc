@@ -62,9 +62,6 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // TODO(kaznacheev): Crack the task_id here, store it in the Executor
-  // and avoid passing it around.
-
   file_manager::file_tasks::TaskDescriptor task;
   if (!file_manager::file_tasks::ParseTaskID(params->task_id, &task)) {
     LOG(WARNING) << "Invalid task " << params->task_id;
@@ -92,7 +89,6 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
   return file_manager::file_tasks::ExecuteFileTask(
       GetProfile(),
       source_url(),
-      extension_->id(),
       task,
       file_urls,
       base::Bind(&FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted, this));

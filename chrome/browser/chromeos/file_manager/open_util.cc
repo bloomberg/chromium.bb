@@ -19,14 +19,12 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
@@ -38,8 +36,6 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-using base::UserMetricsAction;
-using content::BrowserContext;
 using content::BrowserThread;
 using extensions::Extension;
 using extensions::app_file_handler_util::FindFileHandlersForFiles;
@@ -58,7 +54,7 @@ void ShowWarningMessageBox(Profile* profile, const base::FilePath& file_path) {
       browser ? browser->window()->GetNativeWindow() : NULL,
       l10n_util::GetStringFUTF16(
           IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
-          base::UTF8ToUTF16(file_path.BaseName().value())),
+          base::UTF8ToUTF16(file_path.BaseName().AsUTF8Unsafe())),
       l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE),
       chrome::MESSAGE_BOX_TYPE_WARNING);
 }
@@ -80,26 +76,14 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
 void ExecuteFileTaskForUrl(Profile* profile,
                            const file_tasks::TaskDescriptor& task,
                            const GURL& url) {
-  // If the file manager has not been open yet then it did not request access
-  // to the file system. Do it now.
-  if (!GrantFileSystemAccessToFileBrowser(profile))
-    return;
-
   fileapi::FileSystemContext* file_system_context =
-      GetFileSystemContextForExtensionId(
-          profile, kFileManagerAppId);
-
-  // We are executing the task on behalf of the file manager.
-  const GURL source_url = GetFileManagerMainPageUrl();
-  std::vector<FileSystemURL> urls;
-  urls.push_back(file_system_context->CrackURL(url));
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
 
   file_tasks::ExecuteFileTask(
       profile,
-      source_url,
-      kFileManagerAppId,
+      GetFileManagerMainPageUrl(), // Executing the task on behalf of Files.app.
       task,
-      urls,
+      std::vector<FileSystemURL>(1, file_system_context->CrackURL(url)),
       file_tasks::FileTaskFinishedCallback());
 }
 
@@ -118,7 +102,7 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
          action_id == "open" ||
          action_id == "select");
 
-  content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
+  content::RecordAction(base::UserMetricsAction("ShowFileBrowserFullTab"));
 
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(

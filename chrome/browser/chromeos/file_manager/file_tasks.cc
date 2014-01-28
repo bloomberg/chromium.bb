@@ -83,33 +83,6 @@ const char kDriveTaskExtensionPrefix[] = "drive-app:";
 const size_t kDriveTaskExtensionPrefixLength =
     arraysize(kDriveTaskExtensionPrefix) - 1;
 
-// Checks if the file browser extension has permissions for the files in its
-// file system context.
-bool FileBrowserHasAccessPermissionForFiles(
-    Profile* profile,
-    const GURL& source_url,
-    const std::string& file_browser_id,
-    const std::vector<FileSystemURL>& files) {
-  fileapi::ExternalFileSystemBackend* backend =
-      util::GetFileSystemContextForExtensionId(
-          profile, file_browser_id)->external_backend();
-  if (!backend)
-    return false;
-
-  for (size_t i = 0; i < files.size(); ++i) {
-    // Make sure this url really being used by the right caller extension.
-    if (source_url.GetOrigin() != files[i].origin())
-      return false;
-
-    if (!chromeos::FileSystemBackend::CanHandleURL(files[i]) ||
-        !backend->IsAccessAllowed(files[i])) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 // Returns true if path_mime_set contains a Google document.
 bool ContainsGoogleDocument(const PathAndMimeTypeSet& path_mime_set) {
   for (PathAndMimeTypeSet::const_iterator iter = path_mime_set.begin();
@@ -264,14 +237,9 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
 
 bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
-                     const std::string& app_id,
                      const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done) {
-  if (!FileBrowserHasAccessPermissionForFiles(profile, source_url,
-                                              app_id, file_urls))
-    return false;
-
   // drive::FileTaskExecutor is responsible to handle drive tasks.
   if (task.task_type == TASK_TYPE_DRIVE_APP) {
     DCHECK_EQ(kDriveAppActionID, task.action_id);

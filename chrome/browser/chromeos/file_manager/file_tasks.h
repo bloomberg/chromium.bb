@@ -235,7 +235,6 @@ typedef base::Callback<void(bool success)> FileTaskFinishedCallback;
 //
 // Parameters:
 // profile    - The profile used for making this function call.
-// app_id     - The ID of the app requesting the file task execution.
 // source_url - The source URL which originates this function call.
 // task       - See the comment at TaskDescriptor struct.
 // file_urls  - URLs of the target files.
@@ -244,7 +243,6 @@ typedef base::Callback<void(bool success)> FileTaskFinishedCallback;
 //              false.
 bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
-                     const std::string& app_id,
                      const TaskDescriptor& task,
                      const std::vector<fileapi::FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done);
