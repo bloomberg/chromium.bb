@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/time_util.h"
@@ -131,11 +133,13 @@ void GoogleContactStore::Init() {
 
     ProfileOAuth2TokenService* oauth2_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(profile_);
     gdata_service_.reset(new GDataContactsService(
         url_request_context_getter_,
         new google_apis::AuthService(
             oauth2_service,
-            oauth2_service->GetPrimaryAccountId(),
+            signin_manager->GetAuthenticatedAccountId(),
             url_request_context_getter_, scopes)));
   }
 

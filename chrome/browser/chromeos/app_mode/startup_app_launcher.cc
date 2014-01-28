@@ -22,6 +22,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -265,8 +267,10 @@ void StartupAppLauncher::InitializeTokenService() {
 
   ProfileOAuth2TokenService* profile_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
   if (profile_token_service->RefreshTokenIsAvailable(
-          profile_token_service->GetPrimaryAccountId()) ||
+          signin_manager->GetAuthenticatedAccountId()) ||
       auth_params_.refresh_token.empty()) {
     InitializeNetwork();
   } else {

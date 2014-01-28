@@ -14,6 +14,8 @@
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -105,8 +107,10 @@ void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken(Profile* profile) {
   scopes.insert(GaiaUrls::GetInstance()->oauth1_login_scope());
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
   login_token_request_ = token_service->StartRequestWithContext(
-      token_service->GetPrimaryAccountId(),
+      signin_manager->GetAuthenticatedAccountId(),
       system_request_context_.get(),
       scopes,
       this);

@@ -172,6 +172,9 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // Retrieves ProfileOAuth2TokenService for |user_profile_|.
   ProfileOAuth2TokenService* GetTokenService();
 
+  // Retrieves the primary account for |user_profile_|.
+  const std::string& GetPrimaryAccountId();
+
   // Records |refresh_token_| to token service. The associated account id is
   // assumed to be the primary account id of the user profile. If the primary
   // account id is not present, GetAccountIdOfRefreshToken will be called to

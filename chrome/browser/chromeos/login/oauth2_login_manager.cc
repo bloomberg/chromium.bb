@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -94,7 +96,7 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
   ProfileOAuth2TokenService* token_service = GetTokenService();
-  const std::string& primary_account_id = token_service->GetPrimaryAccountId();
+  const std::string& primary_account_id = GetPrimaryAccountId();
   if (token_service->RefreshTokenIsAvailable(primary_account_id)) {
     LOG(WARNING) << "OAuth2 refresh token is already loaded.";
     RestoreSessionCookies();
@@ -139,7 +141,7 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
     return;
   }
   // Only restore session cookies for the primary account in the profile.
-  if (GetTokenService()->GetPrimaryAccountId() == account_id) {
+  if (GetPrimaryAccountId() == account_id) {
     // Token is loaded. Undo the flagging before token loading.
     UserManager::Get()->SaveUserOAuthStatus(account_id,
                                             User::OAUTH2_TOKEN_STATUS_VALID);
@@ -148,14 +150,17 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
 }
 
 ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_);
-  return token_service;
+  return ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_);
+}
+
+const std::string& OAuth2LoginManager::GetPrimaryAccountId() {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(user_profile_);
+  return signin_manager->GetAuthenticatedAccountId();
 }
 
 void OAuth2LoginManager::StoreOAuth2Token() {
-  ProfileOAuth2TokenService* token_service = GetTokenService();
-  std::string primary_account_id = token_service->GetPrimaryAccountId();
+  const std::string& primary_account_id = GetPrimaryAccountId();
   if (primary_account_id.empty()) {
     GetAccountIdOfRefreshToken(refresh_token_);
     return;
@@ -284,8 +289,7 @@ void OAuth2LoginManager::OnListAccountsSuccess(const std::string& data) {
   PostMergeVerificationOutcome outcome = POST_MERGE_SUCCESS;
   // Let's analyze which accounts we see logged in here:
   std::vector<std::string> accounts = gaia::ParseListAccountsData(data);
-  std::string user_email = gaia::CanonicalizeEmail(
-      GetTokenService()->GetPrimaryAccountId());
+  std::string user_email = gaia::CanonicalizeEmail(GetPrimaryAccountId());
   if (!accounts.empty()) {
     bool found = false;
     bool first = true;

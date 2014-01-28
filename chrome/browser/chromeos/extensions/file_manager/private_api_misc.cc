@@ -22,6 +22,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
@@ -313,9 +315,11 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
     return false;
   }
 
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(GetProfile());
   auth_service_.reset(new google_apis::AuthService(
       oauth_service,
-      oauth_service->GetPrimaryAccountId(),
+      signin_manager->GetAuthenticatedAccountId(),
       url_request_context_getter,
       scopes));
   auth_service_->StartAuthentication(base::Bind(
