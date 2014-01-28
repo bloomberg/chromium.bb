@@ -360,6 +360,10 @@ void SaveAs(PP_Instance instance_id) {
 PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
   switch (feature) {
     case PP_PDFFEATURE_HIDPI:
+#if defined(OS_WIN)
+      // Disable this for Windows until scaled resources become available.
+      return PP_FALSE;
+#endif
       return PP_TRUE;
     case PP_PDFFEATURE_PRINTING:
       return IsPrintingEnabled(instance) ? PP_TRUE : PP_FALSE;
