@@ -76,28 +76,33 @@ void AddArmTegraGpuWhitelist(std::vector<std::string>* read_whitelist,
                              std::vector<std::string>* write_whitelist) {
   // Device files needed by the Tegra GPU userspace.
   static const char kDevNvhostCtrlPath[] = "/dev/nvhost-ctrl";
-  static const char kDevNvhostGr2dPath[] = "/dev/nvhost-gr2d";
-  static const char kDevNvhostGr3dPath[] = "/dev/nvhost-gr3d";
   static const char kDevNvhostIspPath[] = "/dev/nvhost-isp";
   static const char kDevNvhostViPath[] = "/dev/nvhost-vi";
   static const char kDevNvmapPath[] = "/dev/nvmap";
-  static const char kDevTegraSemaPath[] = "/dev/tegra_sema";
+  static const char kDevNvhostGpuPath[] = "/dev/nvhost-gpu";
+  static const char kDevNvhostAsGpuPath[] = "/dev/nvhost-as-gpu";
+  static const char kDevNvhostCtrlGpuPath[] = "/dev/nvhost-ctrl-gpu";
+  static const char kSysDevicesSocIDPath[] = "/sys/devices/soc0/soc_id";
+  static const char kSysDevicesSocRevPath[] = "/sys/devices/soc0/revision";
+  // TODO(davidung): remove these device nodes before nyan launch.
 
   read_whitelist->push_back(kDevNvhostCtrlPath);
-  read_whitelist->push_back(kDevNvhostGr2dPath);
-  read_whitelist->push_back(kDevNvhostGr3dPath);
   read_whitelist->push_back(kDevNvhostIspPath);
   read_whitelist->push_back(kDevNvhostViPath);
   read_whitelist->push_back(kDevNvmapPath);
-  read_whitelist->push_back(kDevTegraSemaPath);
+  read_whitelist->push_back(kDevNvhostGpuPath);
+  read_whitelist->push_back(kDevNvhostAsGpuPath);
+  read_whitelist->push_back(kDevNvhostCtrlGpuPath);
+  read_whitelist->push_back(kSysDevicesSocIDPath);
+  read_whitelist->push_back(kSysDevicesSocRevPath);
 
   write_whitelist->push_back(kDevNvhostCtrlPath);
-  write_whitelist->push_back(kDevNvhostGr2dPath);
-  write_whitelist->push_back(kDevNvhostGr3dPath);
   write_whitelist->push_back(kDevNvhostIspPath);
   write_whitelist->push_back(kDevNvhostViPath);
   write_whitelist->push_back(kDevNvmapPath);
-  write_whitelist->push_back(kDevTegraSemaPath);
+  write_whitelist->push_back(kDevNvhostGpuPath);
+  write_whitelist->push_back(kDevNvhostAsGpuPath);
+  write_whitelist->push_back(kDevNvhostCtrlGpuPath);
 }
 
 void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
@@ -214,12 +219,10 @@ bool CrosArmGpuProcessPolicy::PreSandboxHook() {
   // Preload the Tegra libraries.
   dlopen("/usr/lib/libnvrm.so", dlopen_flag);
   dlopen("/usr/lib/libnvrm_graphics.so", dlopen_flag);
-  dlopen("/usr/lib/libnvos.so", dlopen_flag);
-  dlopen("/usr/lib/libnvddk_2d.so", dlopen_flag);
-  dlopen("/usr/lib/libardrv_dynamic.so", dlopen_flag);
-  dlopen("/usr/lib/libnvwsi.so", dlopen_flag);
-  dlopen("/usr/lib/libnvglsi.so", dlopen_flag);
-  dlopen("/usr/lib/libcgdrv.so", dlopen_flag);
+  dlopen("/usr/lib/libnvidia-glsi.so", dlopen_flag);
+  dlopen("/usr/lib/libnvidia-rmapi-tegra.so", dlopen_flag);
+  dlopen("/usr/lib/libnvidia-eglcore.so", dlopen_flag);
+  // TODO(davidung): remove these libraries before nyan launch.
 
   return true;
 }
