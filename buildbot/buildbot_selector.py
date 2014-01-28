@@ -160,6 +160,10 @@ BOT_ASSIGNMENT = {
     'precise64-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
 
+    # BIONIC toolchain builders.
+    'precise64-toolchain_bionic':
+        python + ' buildbot/buildbot_toolchain_build_bionic.py --buildbot',
+
     # Pnacl toolchain builders.
     'linux-armtools-x86_32':
         bash + ' buildbot/buildbot_toolchain_arm_trusted.sh',
