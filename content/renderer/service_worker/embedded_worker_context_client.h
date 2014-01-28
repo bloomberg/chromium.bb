@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_SERVICE_WORKER_EMBEDDED_WORKER_CLIENT_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
@@ -13,6 +14,7 @@
 
 namespace base {
 class MessageLoopProxy;
+class TaskRunner;
 }
 
 namespace content {
@@ -60,14 +62,18 @@ class EmbeddedWorkerContextClient
   void OnSendMessageToWorker(int thread_id,
                              int embedded_worker_id,
                              const IPC::Message& message);
+  void SendWorkerStarted();
 
   const int embedded_worker_id_;
   const int64 service_worker_version_id_;
   const GURL script_url_;
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::MessageLoopProxy> main_thread_proxy_;
+  scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   scoped_ptr<ServiceWorkerScriptContext> script_context_;
+
+  base::WeakPtrFactory<EmbeddedWorkerContextClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerContextClient);
 };
