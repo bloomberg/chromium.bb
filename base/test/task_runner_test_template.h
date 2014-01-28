@@ -30,11 +30,6 @@
 //     void StopTaskRunner() {
 //       ...
 //     }
-//
-//     // Returns whether or not the task runner obeys non-zero delays.
-//     bool TaskRunnerHandlesNonZeroDelays() const {
-//       return true;
-//     }
 //   };
 //
 // The TaskRunnerTest test harness will have a member variable of
@@ -141,11 +136,6 @@ TYPED_TEST_P(TaskRunnerTest, Basic) {
 // Post a bunch of delayed tasks to the task runner.  They should all
 // complete.
 TYPED_TEST_P(TaskRunnerTest, Delayed) {
-  if (!this->delegate_.TaskRunnerHandlesNonZeroDelays()) {
-    DLOG(INFO) << "This TaskRunner doesn't handle non-zero delays; skipping";
-    return;
-  }
-
   std::map<int, int> expected_task_run_counts;
   int expected_total_tasks = 0;
 

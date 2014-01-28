@@ -832,10 +832,6 @@ class SequencedWorkerPoolTaskRunnerTestDelegate {
     // reference to the pool.
   }
 
-  bool TaskRunnerHandlesNonZeroDelays() const {
-    return true;
-  }
-
  private:
   MessageLoop message_loop_;
   scoped_ptr<SequencedWorkerPoolOwner> pool_owner_;
@@ -870,10 +866,6 @@ class SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate {
     pool_owner_->pool()->Shutdown();
     // Don't reset |pool_owner_| here, as the test may still hold a
     // reference to the pool.
-  }
-
-  bool TaskRunnerHandlesNonZeroDelays() const {
-    return true;
   }
 
  private:
@@ -911,10 +903,6 @@ class SequencedWorkerPoolSequencedTaskRunnerTestDelegate {
     pool_owner_->pool()->Shutdown();
     // Don't reset |pool_owner_| here, as the test may still hold a
     // reference to the pool.
-  }
-
-  bool TaskRunnerHandlesNonZeroDelays() const {
-    return true;
   }
 
  private:

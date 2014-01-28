@@ -178,13 +178,6 @@ TYPED_TEST_P(SequencedTaskRunnerTest, SequentialNestable) {
 // that that the tasks are run in FIFO order and that there is no execution
 // overlap whatsoever between any two tasks.
 TYPED_TEST_P(SequencedTaskRunnerTest, SequentialDelayedNonNestable) {
-  // TODO(akalin): Remove this check (http://crbug.com/149144).
-  if (!this->delegate_.TaskRunnerHandlesNonZeroDelays()) {
-    DLOG(INFO) << "This SequencedTaskRunner doesn't handle "
-        "non-zero delays; skipping";
-    return;
-  }
-
   const int kTaskCount = 20;
   const int kDelayIncrementMs = 50;
 
@@ -236,13 +229,6 @@ TYPED_TEST_P(SequencedTaskRunnerTest, NonNestablePostFromNonNestableTask) {
 // This test posts a delayed task, and checks that the task is run later than
 // the specified time.
 TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskBasic) {
-  // TODO(akalin): Remove this check (http://crbug.com/149144).
-  if (!this->delegate_.TaskRunnerHandlesNonZeroDelays()) {
-    DLOG(INFO) << "This SequencedTaskRunner doesn't handle "
-        "non-zero delays; skipping";
-    return;
-  }
-
   const int kTaskCount = 1;
   const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
 
@@ -270,13 +256,6 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskBasic) {
 // posted at the exact same time. It would be nice if the API allowed us to
 // specify the desired run time.
 TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTasksSameDelay) {
-  // TODO(akalin): Remove this check (http://crbug.com/149144).
-  if (!this->delegate_.TaskRunnerHandlesNonZeroDelays()) {
-    DLOG(INFO) << "This SequencedTaskRunner doesn't handle "
-        "non-zero delays; skipping";
-    return;
-  }
-
   const int kTaskCount = 2;
   const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
 
@@ -299,13 +278,6 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTasksSameDelay) {
 // delayed task runs after the normal task even if the normal task takes
 // a long time to run.
 TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterLongTask) {
-  // TODO(akalin): Remove this check (http://crbug.com/149144).
-  if (!this->delegate_.TaskRunnerHandlesNonZeroDelays()) {
-    DLOG(INFO) << "This SequencedTaskRunner doesn't handle "
-        "non-zero delays; skipping";
-    return;
-  }
-
   const int kTaskCount = 2;
 
   this->delegate_.StartTaskRunner();
@@ -327,13 +299,6 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterLongTask) {
 // Test that a pile of normal tasks and a delayed task run in the
 // time-to-run order.
 TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterManyLongTasks) {
-  // TODO(akalin): Remove this check (http://crbug.com/149144).
-  if (!this->delegate_.TaskRunnerHandlesNonZeroDelays()) {
-    DLOG(INFO) << "This SequencedTaskRunner doesn't handle "
-        "non-zero delays; skipping";
-    return;
-  }
-
   const int kTaskCount = 11;
 
   this->delegate_.StartTaskRunner();
