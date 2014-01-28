@@ -3623,12 +3623,6 @@ bool RenderLayer::isVisuallyNonEmpty() const
     return false;
 }
 
-void RenderLayer::updateVisibilityAfterStyleChange(const RenderStyle* oldStyle)
-{
-    if (!oldStyle || (oldStyle->visibility() != renderer()->style()->visibility()))
-        compositor()->setNeedsUpdateCompositingRequirementsState();
-}
-
 void RenderLayer::updateOutOfFlowPositioned(const RenderStyle* oldStyle)
 {
     if (oldStyle && (renderer()->style()->position() == oldStyle->position()))
@@ -3746,14 +3740,19 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
     updateOrRemoveFilterEffectRenderer();
 }
 
-void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
+void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle)
 {
     m_stackingNode->updateIsNormalFlowOnly();
 
     if (m_scrollableArea)
         m_scrollableArea->updateAfterStyleChange(oldStyle);
     m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
-    updateVisibilityAfterStyleChange(oldStyle);
+
+    if (!oldStyle || (oldStyle->visibility() != renderer()->style()->visibility())) {
+        ASSERT(!oldStyle || diff >= StyleDifferenceRepaint);
+        compositor()->setNeedsUpdateCompositingRequirementsState();
+    }
+
     // Overlay scrollbars can make this layer self-painting so we need
     // to recompute the bit once scrollbars have been updated.
     updateSelfPaintingLayer();

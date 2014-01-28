@@ -460,7 +460,6 @@ private:
     void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
 
     void updateSelfPaintingLayer();
-    void updateVisibilityAfterStyleChange(const RenderStyle* oldStyle);
 
     void updateOutOfFlowPositioned(const RenderStyle* oldStyle);
 
