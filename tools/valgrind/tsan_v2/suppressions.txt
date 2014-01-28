@@ -195,3 +195,7 @@ race:v8::internal::HValue::LoopWeight
 race:CommandLine::HasSwitch
 race:CommandLine::current_process_commandline_
 race:CommandLine::GetSwitchValueASCII
+
+# http://crbug.com/338675
+race:blink::s_platform
+race:content::RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl
