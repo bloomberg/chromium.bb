@@ -106,19 +106,18 @@ LayoutRect RenderRegion::overflowRectForFlowThreadPortion(const LayoutRect& flow
     // Only clip along the flow thread axis.
     LayoutUnit outlineSize = maximalOutlineSize(PaintPhaseOutline);
     LayoutRect clipRect;
+    bool shouldApplyClip = !style()->isOverflowVisible();
     if (m_flowThread->isHorizontalWritingMode()) {
         LayoutUnit minY = isFirstPortion ? (flowThreadOverflow.y() - outlineSize) : flowThreadPortionRect.y();
         LayoutUnit maxY = isLastPortion ? max(flowThreadPortionRect.maxY(), flowThreadOverflow.maxY()) + outlineSize : flowThreadPortionRect.maxY();
-        bool clipX = style()->overflowX() != OVISIBLE;
-        LayoutUnit minX = clipX ? flowThreadPortionRect.x() : min(flowThreadPortionRect.x(), flowThreadOverflow.x() - outlineSize);
-        LayoutUnit maxX = clipX ? flowThreadPortionRect.maxX() : max(flowThreadPortionRect.maxX(), (flowThreadOverflow.maxX() + outlineSize));
+        LayoutUnit minX = shouldApplyClip ? flowThreadPortionRect.x() : min(flowThreadPortionRect.x(), flowThreadOverflow.x() - outlineSize);
+        LayoutUnit maxX = shouldApplyClip ? flowThreadPortionRect.maxX() : max(flowThreadPortionRect.maxX(), (flowThreadOverflow.maxX() + outlineSize));
         clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
     } else {
         LayoutUnit minX = isFirstPortion ? (flowThreadOverflow.x() - outlineSize) : flowThreadPortionRect.x();
         LayoutUnit maxX = isLastPortion ? max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX()) + outlineSize : flowThreadPortionRect.maxX();
-        bool clipY = style()->overflowY() != OVISIBLE;
-        LayoutUnit minY = clipY ? flowThreadPortionRect.y() : min(flowThreadPortionRect.y(), (flowThreadOverflow.y() - outlineSize));
-        LayoutUnit maxY = clipY ? flowThreadPortionRect.maxY() : max(flowThreadPortionRect.y(), (flowThreadOverflow.maxY() + outlineSize));
+        LayoutUnit minY = shouldApplyClip ? flowThreadPortionRect.y() : min(flowThreadPortionRect.y(), (flowThreadOverflow.y() - outlineSize));
+        LayoutUnit maxY = shouldApplyClip ? flowThreadPortionRect.maxY() : max(flowThreadPortionRect.y(), (flowThreadOverflow.maxY() + outlineSize));
         clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
     }
 

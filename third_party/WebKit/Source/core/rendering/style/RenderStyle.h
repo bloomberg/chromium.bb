@@ -535,6 +535,8 @@ public:
 
     EOverflow overflowX() const { return static_cast<EOverflow>(noninherited_flags._overflowX); }
     EOverflow overflowY() const { return static_cast<EOverflow>(noninherited_flags._overflowY); }
+    // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
+    bool isOverflowVisible() const { ASSERT(overflowX() != OVISIBLE || overflowX() == overflowY()); return overflowX() == OVISIBLE; }
 
     EVisibility visibility() const { return static_cast<EVisibility>(inherited_flags._visibility); }
     EVerticalAlign verticalAlign() const { return static_cast<EVerticalAlign>(noninherited_flags._vertical_align); }

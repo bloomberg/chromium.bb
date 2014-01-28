@@ -4459,7 +4459,7 @@ int RenderBlock::firstLineBoxBaseline() const
 
 int RenderBlock::inlineBlockBaseline(LineDirectionMode direction) const
 {
-    if (style()->overflowY() != OVISIBLE) {
+    if (!style()->isOverflowVisible()) {
         // We are not calling RenderBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
         return direction == HorizontalLine ? height() + m_marginBox.bottom() : width() + m_marginBox.left();
     }
