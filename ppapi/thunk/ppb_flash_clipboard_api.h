@@ -29,6 +29,10 @@ class PPB_Flash_Clipboard_API {
                             uint32_t data_item_count,
                             const uint32_t formats[],
                             const PP_Var data_items[]) = 0;
+  virtual PP_Bool GetSequenceNumber(
+      PP_Instance instance,
+      PP_Flash_Clipboard_Type clipboard_type,
+      uint64_t* sequence_number) = 0;
 
   static const SingletonResourceID kSingletonResourceID =
       FLASH_CLIPBOARD_SINGLETON_ID;

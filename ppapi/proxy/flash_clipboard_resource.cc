@@ -152,5 +152,17 @@ int32_t FlashClipboardResource::WriteData(
   return PP_OK;
 }
 
+PP_Bool FlashClipboardResource::GetSequenceNumber(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    uint64_t* sequence_number) {
+  int32_t result =
+      SyncCall<PpapiPluginMsg_FlashClipboard_GetSequenceNumberReply>(
+          BROWSER,
+          PpapiHostMsg_FlashClipboard_GetSequenceNumber(clipboard_type),
+          sequence_number);
+  return PP_FromBool(result == PP_OK);
+}
+
 }  // namespace proxy
 }  // namespace ppapi

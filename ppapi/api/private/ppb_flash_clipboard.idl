@@ -10,7 +10,8 @@
 
 label Chrome {
   M19 = 4.0,
-  M24 = 5.0
+  M24 = 5.0,
+  M34 = 5.1
 };
 
 /**
@@ -142,4 +143,15 @@ interface PPB_Flash_Clipboard {
       [in] uint32_t data_item_count,
       [in, size_is(data_item_count)] uint32_t[] formats,
       [in, size_is(data_item_count)] PP_Var[] data_items);
+
+  /**
+   * Gets a sequence number which uniquely identifies clipboard state. This can
+   * be used to version the data on the clipboard and determine whether it has
+   * changed. The sequence number will be placed in |sequence_number| and
+   * PP_TRUE returned if the sequence number was retrieved successfully.
+   */
+  [version=5.1]
+  PP_Bool GetSequenceNumber([in] PP_Instance instance_id,
+                            [in] PP_Flash_Clipboard_Type clipboard_type,
+                            [out] uint64_t sequence_number);
 };

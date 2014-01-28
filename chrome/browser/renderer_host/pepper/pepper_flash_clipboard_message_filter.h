@@ -61,6 +61,8 @@ class PepperFlashClipboardMessageFilter
                          uint32_t clipboard_type,
                          const std::vector<uint32_t>& formats,
                          const std::vector<std::string>& data);
+  int32_t OnMsgGetSequenceNumber(ppapi::host::HostMessageContext* host_context,
+                                 uint32_t clipboard_type);
 
   int32_t WriteClipboardDataItem(uint32_t format,
                                  const std::string& data,

@@ -45,6 +45,12 @@ class Clipboard {
                         PP_Flash_Clipboard_Type clipboard_type,
                         const std::vector<uint32_t>& formats,
                         const std::vector<Var>& data_items);
+
+  // Outputs a sequence number that uniquely identifies the clipboard state in
+  // |sequence_number| and returns true if successful.
+  static bool GetSequenceNumber(const InstanceHandle& instance,
+                                PP_Flash_Clipboard_Type clipboard_type,
+                                uint64_t* sequence_number);
 };
 
 }  // namespace flash

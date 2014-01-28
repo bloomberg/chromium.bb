@@ -77,6 +77,16 @@ int32_t WriteData_4_0(PP_Instance instance,
                    new_formats.get(), data_items);
 }
 
+PP_Bool GetSequenceNumber(PP_Instance instance,
+                          PP_Flash_Clipboard_Type clipboard_type,
+                          uint64_t* sequence_number) {
+  EnterInstanceAPI<PPB_Flash_Clipboard_API> enter(instance);
+  if (enter.failed())
+    return PP_FALSE;
+  return enter.functions()->GetSequenceNumber(instance, clipboard_type,
+                                              sequence_number);
+}
+
 const PPB_Flash_Clipboard_4_0 g_ppb_flash_clipboard_thunk_4_0 = {
   &IsFormatAvailable_4_0,
   &ReadData_4_0,
@@ -90,6 +100,14 @@ const PPB_Flash_Clipboard_5_0 g_ppb_flash_clipboard_thunk_5_0 = {
   &WriteData
 };
 
+const PPB_Flash_Clipboard_5_1 g_ppb_flash_clipboard_thunk_5_1 = {
+  &RegisterCustomFormat,
+  &IsFormatAvailable,
+  &ReadData,
+  &WriteData,
+  &GetSequenceNumber
+};
+
 }  // namespace
 
 const PPB_Flash_Clipboard_4_0* GetPPB_Flash_Clipboard_4_0_Thunk() {
@@ -98,6 +116,10 @@ const PPB_Flash_Clipboard_4_0* GetPPB_Flash_Clipboard_4_0_Thunk() {
 
 const PPB_Flash_Clipboard_5_0* GetPPB_Flash_Clipboard_5_0_Thunk() {
   return &g_ppb_flash_clipboard_thunk_5_0;
+}
+
+const PPB_Flash_Clipboard_5_1* GetPPB_Flash_Clipboard_5_1_Thunk() {
+  return &g_ppb_flash_clipboard_thunk_5_1;
 }
 
 }  // namespace thunk

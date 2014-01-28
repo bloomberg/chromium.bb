@@ -137,6 +137,9 @@ int32_t PepperFlashClipboardMessageFilter::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
         PpapiHostMsg_FlashClipboard_WriteData,
         OnMsgWriteData);
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FlashClipboard_GetSequenceNumber,
+        OnMsgGetSequenceNumber);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -357,6 +360,22 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
   }
 
   return res;
+}
+
+int32_t PepperFlashClipboardMessageFilter::OnMsgGetSequenceNumber(
+    ppapi::host::HostMessageContext* host_context,
+    uint32_t clipboard_type) {
+  if (clipboard_type != PP_FLASH_CLIPBOARD_TYPE_STANDARD) {
+    NOTIMPLEMENTED();
+    return PP_ERROR_FAILED;
+  }
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::ClipboardType type = ConvertClipboardType(clipboard_type);
+  int64_t sequence_number = clipboard->GetSequenceNumber(type);
+  host_context->reply_msg =
+      PpapiPluginMsg_FlashClipboard_GetSequenceNumberReply(sequence_number);
+  return PP_OK;
 }
 
 }  // namespace chrome

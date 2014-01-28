@@ -208,6 +208,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_12_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_13_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_4_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DeviceID_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_1;
@@ -2900,6 +2901,35 @@ static int32_t Pnacl_M24_PPB_Flash_Clipboard_WriteData(PP_Instance instance_id, 
 
 /* End wrapper methods for PPB_Flash_Clipboard_5_0 */
 
+/* Begin wrapper methods for PPB_Flash_Clipboard_5_1 */
+
+static uint32_t Pnacl_M34_PPB_Flash_Clipboard_RegisterCustomFormat(PP_Instance instance_id, const char* format_name) {
+  const struct PPB_Flash_Clipboard_5_1 *iface = Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1.real_iface;
+  return iface->RegisterCustomFormat(instance_id, format_name);
+}
+
+static PP_Bool Pnacl_M34_PPB_Flash_Clipboard_IsFormatAvailable(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint32_t format) {
+  const struct PPB_Flash_Clipboard_5_1 *iface = Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1.real_iface;
+  return iface->IsFormatAvailable(instance_id, clipboard_type, format);
+}
+
+static void Pnacl_M34_PPB_Flash_Clipboard_ReadData(struct PP_Var* _struct_result, PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint32_t format) {
+  const struct PPB_Flash_Clipboard_5_1 *iface = Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1.real_iface;
+  *_struct_result = iface->ReadData(instance_id, clipboard_type, format);
+}
+
+static int32_t Pnacl_M34_PPB_Flash_Clipboard_WriteData(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint32_t data_item_count, const uint32_t formats[], const struct PP_Var data_items[]) {
+  const struct PPB_Flash_Clipboard_5_1 *iface = Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1.real_iface;
+  return iface->WriteData(instance_id, clipboard_type, data_item_count, formats, data_items);
+}
+
+static PP_Bool Pnacl_M34_PPB_Flash_Clipboard_GetSequenceNumber(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint64_t* sequence_number) {
+  const struct PPB_Flash_Clipboard_5_1 *iface = Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1.real_iface;
+  return iface->GetSequenceNumber(instance_id, clipboard_type, sequence_number);
+}
+
+/* End wrapper methods for PPB_Flash_Clipboard_5_1 */
+
 /* Begin wrapper methods for PPB_Flash_DeviceID_1_0 */
 
 static PP_Resource Pnacl_M21_PPB_Flash_DeviceID_Create(PP_Instance instance) {
@@ -4914,6 +4944,14 @@ static struct PPB_Flash_Clipboard_5_0 Pnacl_Wrappers_PPB_Flash_Clipboard_5_0 = {
     .WriteData = (int32_t (*)(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint32_t data_item_count, const uint32_t formats[], const struct PP_Var data_items[]))&Pnacl_M24_PPB_Flash_Clipboard_WriteData
 };
 
+static struct PPB_Flash_Clipboard_5_1 Pnacl_Wrappers_PPB_Flash_Clipboard_5_1 = {
+    .RegisterCustomFormat = (uint32_t (*)(PP_Instance instance_id, const char* format_name))&Pnacl_M34_PPB_Flash_Clipboard_RegisterCustomFormat,
+    .IsFormatAvailable = (PP_Bool (*)(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint32_t format))&Pnacl_M34_PPB_Flash_Clipboard_IsFormatAvailable,
+    .ReadData = (struct PP_Var (*)(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint32_t format))&Pnacl_M34_PPB_Flash_Clipboard_ReadData,
+    .WriteData = (int32_t (*)(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint32_t data_item_count, const uint32_t formats[], const struct PP_Var data_items[]))&Pnacl_M34_PPB_Flash_Clipboard_WriteData,
+    .GetSequenceNumber = (PP_Bool (*)(PP_Instance instance_id, PP_Flash_Clipboard_Type clipboard_type, uint64_t* sequence_number))&Pnacl_M34_PPB_Flash_Clipboard_GetSequenceNumber
+};
+
 static struct PPB_Flash_DeviceID_1_0 Pnacl_Wrappers_PPB_Flash_DeviceID_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M21_PPB_Flash_DeviceID_Create,
     .GetDeviceID = (int32_t (*)(PP_Resource device_id, struct PP_Var* id, struct PP_CompletionCallback callback))&Pnacl_M21_PPB_Flash_DeviceID_GetDeviceID
@@ -5662,6 +5700,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1 = {
+  .iface_macro = PPB_FLASH_CLIPBOARD_INTERFACE_5_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Flash_Clipboard_5_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DeviceID_1_0 = {
   .iface_macro = PPB_FLASH_DEVICEID_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Flash_DeviceID_1_0,
@@ -5923,6 +5967,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_13_0,
   &Pnacl_WrapperInfo_PPB_Flash_Clipboard_4_0,
   &Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_0,
+  &Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_1,
   &Pnacl_WrapperInfo_PPB_Flash_DeviceID_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_DRM_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_DRM_1_1,

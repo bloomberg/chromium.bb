@@ -25,6 +25,7 @@ class TestFlashClipboard : public TestCase {
   bool IsFormatAvailableMatches(uint32_t format, bool expected);
   bool ReadPlainTextMatches(const std::string& expected);
   bool ReadHTMLMatches(const std::string& expected);
+  uint64_t GetSequenceNumber(uint64_t last_sequence_number);
 
   // Tests.
   std::string TestReadWritePlainText();
@@ -35,6 +36,7 @@ class TestFlashClipboard : public TestCase {
   std::string TestClear();
   std::string TestInvalidFormat();
   std::string TestRegisterCustomFormat();
+  std::string TestGetSequenceNumber();
 };
 
 #endif  // PAPPI_TESTS_TEST_FLASH_FULLSCREEN_H_
