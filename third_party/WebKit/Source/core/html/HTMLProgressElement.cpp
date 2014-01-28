@@ -101,7 +101,7 @@ double HTMLProgressElement::value() const
 void HTMLProgressElement::setValue(double value, ExceptionState& exceptionState)
 {
     if (!std::isfinite(value)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(value));
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(value));
         return;
     }
     setFloatingPointAttribute(valueAttr, std::max(value, 0.));
@@ -116,7 +116,7 @@ double HTMLProgressElement::max() const
 void HTMLProgressElement::setMax(double max, ExceptionState& exceptionState)
 {
     if (!std::isfinite(max)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(max));
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(max));
         return;
     }
     // FIXME: The specification says we should ignore the input value if it is inferior or equal to 0.

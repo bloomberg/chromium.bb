@@ -27,16 +27,16 @@ shouldBe('p.value', '0');
 shouldBe('p.position', '0');
 
 debug("Set invalid value, should throw");
-shouldThrow('p.value = "200A";', '"NotSupportedError: Failed to set the \'value\' property on \'HTMLProgressElement\': The value provided is not a number."');
+shouldThrow('p.value = "200A";', '"TypeError: Failed to set the \'value\' property on \'HTMLProgressElement\': The value provided is not a number."');
 
 debug("Set invalid max, should throw");
-shouldThrow('p.max = "max";', '"NotSupportedError: Failed to set the \'max\' property on \'HTMLProgressElement\': The value provided is not a number."');
+shouldThrow('p.max = "max";', '"TypeError: Failed to set the \'max\' property on \'HTMLProgressElement\': The value provided is not a number."');
 
 debug("Set max to Infinity, should throw");
-shouldThrow('p.max = Infinity;', '"NotSupportedError: Failed to set the \'max\' property on \'HTMLProgressElement\': The value provided is infinite."');
+shouldThrow('p.max = Infinity;', '"TypeError: Failed to set the \'max\' property on \'HTMLProgressElement\': The value provided is infinite."');
 
 debug("Set value to NaN, should throw");
-shouldThrow('p.value = NaN;', '"NotSupportedError: Failed to set the \'value\' property on \'HTMLProgressElement\': The value provided is not a number."');
+shouldThrow('p.value = NaN;', '"TypeError: Failed to set the \'value\' property on \'HTMLProgressElement\': The value provided is not a number."');
 
 debug("Set value to null and max to 0");
 p.value = null;
