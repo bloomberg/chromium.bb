@@ -6,7 +6,7 @@
 #define MOJO_EXAMPLES_AURA_DEMO_ROOT_WINDOW_HOST_MOJO_H_
 
 #include "base/bind.h"
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojom/native_viewport.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/rect.h"

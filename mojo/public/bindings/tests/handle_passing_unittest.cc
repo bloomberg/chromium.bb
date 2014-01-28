@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/allocation_scope.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/tests/test_support.h"
 #include "mojo/public/utility/run_loop.h"

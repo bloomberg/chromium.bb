@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/common/common_type_converters.h"
+#include "mojo/public/bindings/allocation_scope.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

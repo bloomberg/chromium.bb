@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojom/native_viewport.h"
 #include "ui/gfx/size.h"

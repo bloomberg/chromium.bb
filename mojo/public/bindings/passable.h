@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_LIB_PASSABLE_H_
-#define MOJO_PUBLIC_BINDINGS_LIB_PASSABLE_H_
+#ifndef MOJO_PUBLIC_BINDINGS_PASSABLE_H_
+#define MOJO_PUBLIC_BINDINGS_PASSABLE_H_
 
+#include "mojo/public/bindings/lib/bindings_internal.h"
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
@@ -69,4 +70,4 @@ inline AssignableAndPassable<HandleType> MakeAssignableAndPassable(
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_LIB_PASSABLE_H_
+#endif  // MOJO_PUBLIC_BINDINGS_PASSABLE_H_

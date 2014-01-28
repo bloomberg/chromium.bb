@@ -5,7 +5,7 @@
 #include "mojo/shell/service_manager.h"
 
 #include "base/logging.h"
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojom/shell.h"
 
 namespace mojo {

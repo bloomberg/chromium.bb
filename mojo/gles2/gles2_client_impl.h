@@ -6,7 +6,7 @@
 #define MOJO_GLES2_GLES2_CLIENT_IMPL_H_
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojom/gles2.h"
 

@@ -28,7 +28,6 @@ template<>
 class TypeConverter<Size, gfx::Size> {
 public:
   static Size ConvertFrom(const gfx::Size& input, Buffer* buf) {
-    mojo::AllocationScope scope;
     Size::Builder size(buf);
     size.set_width(input.width());
     size.set_height(input.height());

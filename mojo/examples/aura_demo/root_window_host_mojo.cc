@@ -6,6 +6,7 @@
 
 #include "mojo/examples/aura_demo/demo_context_factory.h"
 #include "mojo/examples/compositor_app/gles2_client_impl.h"
+#include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"
 #include "ui/aura/env.h"

@@ -1,71 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_LIB_BUFFER_H_
-#define MOJO_PUBLIC_BINDINGS_LIB_BUFFER_H_
+#ifndef MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_
+#define MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_
 
-#include <stddef.h>
-
-#include <deque>
-
+#include "mojo/public/bindings/buffer.h"
 #include "mojo/public/system/macros.h"
 
 namespace mojo {
-
-// Buffer provides a way to allocate memory. Allocations are 8-byte aligned and
-// zero-initialized. Allocations remain valid for the lifetime of the Buffer.
-class Buffer {
- public:
-  typedef void (*Destructor)(void* address);
-
-  Buffer();
-  virtual ~Buffer();
-
-  virtual void* Allocate(size_t num_bytes, Destructor func = NULL) = 0;
-
-  static Buffer* current();
-
- private:
-  Buffer* previous_;
-};
-
 namespace internal {
-
-// The following class is designed to be allocated on the stack.  If necessary,
-// it will failover to allocating objects on the heap.
-class ScratchBuffer : public Buffer {
- public:
-  ScratchBuffer();
-  virtual ~ScratchBuffer();
-
-  virtual void* Allocate(size_t num_bytes, Destructor func = NULL)
-      MOJO_OVERRIDE;
-
- private:
-  enum { kMinSegmentSize = 512 };
-
-  struct Segment {
-    Segment* next;
-    char* cursor;
-    char* end;
-  };
-
-  void* AllocateInSegment(Segment* segment, size_t num_bytes);
-  void AddOverflowSegment(size_t delta);
-
-  char fixed_data_[kMinSegmentSize];
-  Segment fixed_;
-  Segment* overflow_;
-
-  struct PendingDestructor {
-    Destructor func;
-    void* address;
-  };
-  std::deque<PendingDestructor> pending_dtors_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScratchBuffer);
-};
 
 // FixedBuffer provides a simple way to allocate objects within a fixed chunk
 // of memory. Objects are allocated by calling the |Allocate| method, which
@@ -119,20 +63,6 @@ class FixedBuffer : public Buffer {
 };
 
 }  // namespace internal
-
-class AllocationScope {
- public:
-  AllocationScope() {}
-  ~AllocationScope() {}
-
-  Buffer* buffer() { return &buffer_; }
-
- private:
-  internal::ScratchBuffer buffer_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(AllocationScope);
-};
-
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_LIB_BUFFER_H_
+#endif  // MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_

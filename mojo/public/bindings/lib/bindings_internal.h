@@ -8,8 +8,6 @@
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
-template <typename T, typename U> class TypeConverter {};
-
 namespace internal {
 template <typename T> class Array_Data;
 

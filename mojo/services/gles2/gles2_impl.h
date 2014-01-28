@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojom/gles2.h"
 #include "ui/gfx/native_widget_types.h"

@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "mojo/public/bindings/lib/buffer.h"
+#include "mojo/public/bindings/lib/fixed_buffer.h"
 
 namespace mojo {
 struct MessageData;

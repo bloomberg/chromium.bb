@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/allocation_scope.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/shell/service_manager.h"
 #include "mojom/shell.h"
 #include "mojom/test.h"

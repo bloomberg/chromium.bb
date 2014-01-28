@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/lib/array.h"
+#include "mojo/public/bindings/array.h"
 
 namespace mojo {
 

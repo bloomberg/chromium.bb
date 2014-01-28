@@ -6,7 +6,7 @@
 #define MOJO_EXAMPLES_SAMPLE_APP_GLES2_CLIENT_IMPL_H_
 
 #include "mojo/examples/sample_app/spinning_cube.h"
-#include "mojo/public/bindings/lib/remote_ptr.h"
+#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojom/native_viewport.h"
 #include "ui/gfx/point_f.h"

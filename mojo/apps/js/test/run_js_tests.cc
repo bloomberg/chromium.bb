@@ -55,15 +55,7 @@ TEST(JSTest, codec) {
 }
 
 TEST(JSTest, sample_test) {
-  base::FilePath path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  path = path.AppendASCII("mojo")
-             .AppendASCII("public")
-             .AppendASCII("bindings")
-             .AppendASCII("sample")
-             .AppendASCII("sample_service_unittests.js");
-  TestRunnerDelegate delegate;
-  gin::RunTestFromFile(path, &delegate);
+  RunTest("sample_service_unittests.js", true);
 }
 
 TEST(JSTest, connector) {

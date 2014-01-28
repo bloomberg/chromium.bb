@@ -1,9 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/bindings/buffer.h"
 #include "mojo/public/bindings/lib/bindings_serialization.h"
-#include "mojo/public/bindings/lib/buffer.h"
+#include "mojo/public/bindings/lib/fixed_buffer.h"
+#include "mojo/public/bindings/lib/scratch_buffer.h"
 #include "mojo/public/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

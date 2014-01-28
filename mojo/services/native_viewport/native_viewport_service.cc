@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/services/gles2/gles2_impl.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"
 #include "mojo/services/native_viewport/native_viewport.h"
