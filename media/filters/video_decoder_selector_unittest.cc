@@ -9,8 +9,8 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/filters/decoder_selector.h"
 #include "media/filters/decrypting_demuxer_stream.h"
-#include "media/filters/video_decoder_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -115,8 +115,9 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   }
 
   void SelectDecoder() {
-    decoder_selector_->SelectVideoDecoder(
+    decoder_selector_->SelectDecoder(
         demuxer_stream_.get(),
+        StatisticsCB(),
         base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)));
     message_loop_.RunUntilIdle();

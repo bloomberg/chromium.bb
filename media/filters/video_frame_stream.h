@@ -16,6 +16,7 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
+#include "media/filters/decoder_selector.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -24,7 +25,6 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class DecryptingDemuxerStream;
-class VideoDecoderSelector;
 
 // Wraps a DemuxerStream and a list of VideoDecoders and provides decoded
 // VideoFrames to its client (e.g. VideoRendererImpl).

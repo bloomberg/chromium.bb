@@ -18,7 +18,6 @@
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
-#include "media/filters/audio_decoder_selector.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 
 namespace media {
@@ -274,7 +273,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   disabled_cb_ = disabled_cb;
   error_cb_ = error_cb;
 
-  decoder_selector_->SelectAudioDecoder(
+  decoder_selector_->SelectDecoder(
       stream,
       statistics_cb,
       base::Bind(&AudioRendererImpl::OnDecoderSelected, weak_this_));

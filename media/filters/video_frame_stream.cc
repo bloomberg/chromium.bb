@@ -15,7 +15,6 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/decrypting_demuxer_stream.h"
-#include "media/filters/video_decoder_selector.h"
 
 namespace media {
 
@@ -51,8 +50,9 @@ void VideoFrameStream::Initialize(DemuxerStream* stream,
 
   state_ = STATE_INITIALIZING;
   // TODO(xhwang): VideoDecoderSelector only needs a config to select a decoder.
-  decoder_selector_->SelectVideoDecoder(
+  decoder_selector_->SelectDecoder(
       stream,
+      StatisticsCB(),
       base::Bind(&VideoFrameStream::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()));
 }

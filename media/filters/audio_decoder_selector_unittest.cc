@@ -9,7 +9,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
-#include "media/filters/audio_decoder_selector.h"
+#include "media/filters/decoder_selector.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,7 +122,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   }
 
   void SelectDecoder() {
-    decoder_selector_->SelectAudioDecoder(
+    decoder_selector_->SelectDecoder(
         demuxer_stream_.get(),
         base::Bind(&AudioDecoderSelectorTest::OnStatistics,
                    base::Unretained(this)),

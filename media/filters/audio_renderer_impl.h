@@ -29,6 +29,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/filters/audio_renderer_algorithm.h"
+#include "media/filters/decoder_selector.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -37,7 +38,6 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class AudioBus;
-class AudioDecoderSelector;
 class AudioSplicer;
 class DecryptingDemuxerStream;
 
