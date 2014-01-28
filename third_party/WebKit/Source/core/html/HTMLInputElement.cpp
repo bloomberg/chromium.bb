@@ -840,8 +840,10 @@ String HTMLInputElement::resultForDialogSubmit()
 
 void HTMLInputElement::resetImpl()
 {
-    if (m_inputType->storesValueSeparateFromAttribute())
+    if (m_inputType->storesValueSeparateFromAttribute()) {
         setValue(String());
+        setNeedsValidityCheck();
+    }
 
     setChecked(hasAttribute(checkedAttr));
     m_reflectsCheckedAttribute = true;

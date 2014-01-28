@@ -457,7 +457,7 @@ void HTMLFormControlElement::setNeedsValidityCheck()
     }
     m_isValid = newIsValid;
 
-    // Updates only if this control already has a validtion message.
+    // Updates only if this control already has a validation message.
     if (m_validationMessage && m_validationMessage->isVisible()) {
         // Calls updateVisibleValidationMessage() even if m_isValid is not
         // changed because a validation message can be chagned.
