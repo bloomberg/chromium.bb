@@ -78,6 +78,10 @@ public class ContentViewRenderView extends FrameLayout {
             public void surfaceCreated(SurfaceHolder holder) {
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceCreated(mNativeContentViewRenderView, holder.getSurface());
+
+                mPendingSwapBuffers = 0;
+                mPendingRenders = 0;
+
                 onReadyToRender();
             }
 
@@ -207,8 +211,6 @@ public class ContentViewRenderView extends FrameLayout {
      * render.
      */
     protected void onReadyToRender() {
-        mPendingSwapBuffers = 0;
-        mPendingRenders = 0;
     }
 
     /**
