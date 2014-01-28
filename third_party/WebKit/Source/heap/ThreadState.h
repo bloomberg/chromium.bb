@@ -371,7 +371,7 @@ public:
     // can provide an interruptor object which would allow GC
     // to temporarily interrupt and pause this long running loop at
     // an arbitrary moment creating a safepoint for a GC.
-    class Interruptor {
+    class HEAP_EXPORT Interruptor {
     public:
         virtual ~Interruptor() { }
 

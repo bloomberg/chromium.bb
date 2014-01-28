@@ -71,17 +71,13 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
     V8PerIsolateData* data = V8PerIsolateData::create(isolate);
     m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
     data->setWorkerDOMDataStore(m_domDataStore.get());
-#if ENABLE(OILPAN)
     m_interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
     ThreadState::current()->addInterruptor(m_interruptor.get());
-#endif
 }
 
 WorkerScriptController::~WorkerScriptController()
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->removeInterruptor(m_interruptor.get());
-#endif
 
     m_domDataStore.clear();
 
