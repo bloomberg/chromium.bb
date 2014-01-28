@@ -180,7 +180,7 @@ fileOperationUtil.copyTo = function(
         case 'end_copy_entry':
           // TODO(mtomasz): Convert URL to Entry in custom bindings.
           util.URLsToEntries(
-              [source.destinationUrl], function(destinationEntries) {
+              [status.destinationUrl], function(destinationEntries) {
             entryChangedCallback(source, destinationEntries[0] || null);
             callback();
           });
