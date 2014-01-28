@@ -861,4 +861,4 @@ crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shad
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Failure ]
 
 crbug.com/338752  inspector/extensions/extensions-sidebar.html [ Failure ]
-
+crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
