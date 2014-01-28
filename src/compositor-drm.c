@@ -41,9 +41,9 @@
 #include <drm_fourcc.h>
 
 #include <gbm.h>
-#include <libbacklight.h>
 #include <libudev.h>
 
+#include "libbacklight.h"
 #include "compositor.h"
 #include "gl-renderer.h"
 #include "pixman-renderer.h"

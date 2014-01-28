@@ -23,7 +23,6 @@
 #include "config.h"
 
 #include <errno.h>
-#include <dbus.h>
 #include <fcntl.h>
 #include <linux/vt.h>
 #include <linux/kd.h>
