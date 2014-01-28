@@ -58,10 +58,6 @@ FakeGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator(
       static_cast<media::VideoDecodeAccelerator*>(NULL));
 }
 
-bool FakeGpuVideoAcceleratorFactories::IsAborted() {
-  return false;
-}
-
 }  // namespace test
 }  // namespace cast
 }  // namespace media

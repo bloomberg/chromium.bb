@@ -44,12 +44,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD1(WaitSyncPoint, void(uint32 sync_point));
   MOCK_METHOD3(ReadPixels,
                void(uint32 texture_id,
-                    const gfx::Size& size,
+                    const gfx::Rect& visible_rect,
                     const SkBitmap& pixels));
   MOCK_METHOD1(CreateSharedMemory, base::SharedMemory*(size_t size));
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
-  MOCK_METHOD0(Abort, void());
-  MOCK_METHOD0(IsAborted, bool());
 
   virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator(
       VideoCodecProfile profile,

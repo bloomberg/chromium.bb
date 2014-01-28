@@ -895,6 +895,8 @@ RenderThreadImpl::GetGpuFactories() {
   scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories;
+  scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
+      GetMediaThreadMessageLoopProxy();
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
     if (!gpu_va_context_provider_ ||
         gpu_va_context_provider_->DestroyedOnMainThread()) {
@@ -910,11 +912,16 @@ RenderThreadImpl::GetGpuFactories() {
                   GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"),
                   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits())),
           "GPU-VideoAccelerator-Offscreen");
+      media_loop_proxy->PostTask(
+          FROM_HERE,
+          base::Bind(
+              base::IgnoreResult(&cc::ContextProvider::BindToCurrentThread),
+              gpu_va_context_provider_));
     }
   }
   if (gpu_channel_host) {
     gpu_factories = new RendererGpuVideoAcceleratorFactories(
-        gpu_channel_host.get(), gpu_va_context_provider_);
+        gpu_channel_host, media_loop_proxy, gpu_va_context_provider_);
   }
   return gpu_factories;
 }

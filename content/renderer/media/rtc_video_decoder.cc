@@ -11,11 +11,13 @@
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
 #include "content/child/child_thread.h"
 #include "content/renderer/media/native_handle_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/common_video/interface/texture_video_frame.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"
 
@@ -85,28 +87,12 @@ RTCVideoDecoder::RTCVideoDecoder(
       weak_factory_(this) {
   DCHECK(!vda_task_runner_->BelongsToCurrentThread());
   weak_this_ = weak_factory_.GetWeakPtr();
-
-  base::WaitableEvent message_loop_async_waiter(false, false);
-  // Waiting here is safe. The media thread is stopped in the child thread and
-  // the child thread is blocked when VideoDecoderFactory::CreateVideoDecoder
-  // runs.
-  vda_task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&RTCVideoDecoder::Initialize,
-                                        base::Unretained(this),
-                                        &message_loop_async_waiter));
-  message_loop_async_waiter.Wait();
 }
 
 RTCVideoDecoder::~RTCVideoDecoder() {
   DVLOG(2) << "~RTCVideoDecoder";
-  // Destroy VDA and remove |this| from the observer if this is vda thread.
-  if (vda_task_runner_->BelongsToCurrentThread()) {
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
-    DestroyVDA();
-  } else {
-    // VDA should have been destroyed in WillDestroyCurrentMessageLoop.
-    DCHECK(!vda_);
-  }
+  DCHECK(vda_task_runner_->BelongsToCurrentThread());
+  DestroyVDA();
 
   // Delete all shared memories.
   STLDeleteElements(&available_shm_segments_);
@@ -124,6 +110,7 @@ RTCVideoDecoder::~RTCVideoDecoder() {
   }
 }
 
+// static
 scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     webrtc::VideoCodecType type,
     const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories) {
@@ -139,9 +126,15 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
       return decoder.Pass();
   }
 
+  base::WaitableEvent waiter(true, false);
   decoder.reset(new RTCVideoDecoder(factories));
-  decoder->vda_ =
-      factories->CreateVideoDecodeAccelerator(profile, decoder.get()).Pass();
+  decoder->vda_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RTCVideoDecoder::CreateVDA,
+                 base::Unretained(decoder.get()),
+                 profile,
+                 &waiter));
+  waiter.Wait();
   // vda can be NULL if VP8 is not supported.
   if (decoder->vda_ != NULL) {
     decoder->state_ = INITIALIZED;
@@ -406,6 +399,33 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   }
 }
 
+static void ReadPixelsSyncInner(
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
+    uint32 texture_id,
+    const gfx::Rect& visible_rect,
+    const SkBitmap& pixels,
+    base::WaitableEvent* event) {
+  factories->ReadPixels(texture_id, visible_rect, pixels);
+  event->Signal();
+}
+
+static void ReadPixelsSync(
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
+    uint32 texture_id,
+    const gfx::Rect& visible_rect,
+    const SkBitmap& pixels) {
+  base::WaitableEvent event(true, false);
+  if (!factories->GetTaskRunner()->PostTask(FROM_HERE,
+                                            base::Bind(&ReadPixelsSyncInner,
+                                                       factories,
+                                                       texture_id,
+                                                       visible_rect,
+                                                       pixels,
+                                                       &event)))
+    return;
+  event.Wait();
+}
+
 scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
     const media::Picture& picture,
     const media::PictureBuffer& pb,
@@ -414,7 +434,6 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
     uint32_t height,
     size_t size) {
   gfx::Rect visible_rect(width, height);
-  gfx::Size natural_size(width, height);
   DCHECK(decoder_texture_target_);
   // Convert timestamp from 90KHz to ms.
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
@@ -430,12 +449,9 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
       decoder_texture_target_,
       pb.size(),
       visible_rect,
-      natural_size,
+      visible_rect.size(),
       timestamp_ms,
-      base::Bind(&media::GpuVideoAcceleratorFactories::ReadPixels,
-                 factories_,
-                 pb.texture_id(),
-                 natural_size),
+      base::Bind(&ReadPixelsSync, factories_, pb.texture_id(), visible_rect),
       base::Closure());
 }
 
@@ -494,21 +510,6 @@ void RTCVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
 
   base::AutoLock auto_lock(lock_);
   state_ = DECODE_ERROR;
-}
-
-void RTCVideoDecoder::WillDestroyCurrentMessageLoop() {
-  DVLOG(2) << "WillDestroyCurrentMessageLoop";
-  DCHECK(vda_task_runner_->BelongsToCurrentThread());
-  factories_->Abort();
-  weak_factory_.InvalidateWeakPtrs();
-  DestroyVDA();
-}
-
-void RTCVideoDecoder::Initialize(base::WaitableEvent* waiter) {
-  DVLOG(2) << "Initialize";
-  DCHECK(vda_task_runner_->BelongsToCurrentThread());
-  base::MessageLoop::current()->AddDestructionObserver(this);
-  waiter->Signal();
 }
 
 void RTCVideoDecoder::RequestBufferDecode() {
@@ -668,6 +669,13 @@ void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id,
   factories_->WaitSyncPoint(sync_point);
 
   vda_->ReusePictureBuffer(picture_buffer_id);
+}
+
+void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
+                                base::WaitableEvent* waiter) {
+  DCHECK(vda_task_runner_->BelongsToCurrentThread());
+  vda_ = factories_->CreateVideoDecodeAccelerator(profile, this);
+  waiter->Signal();
 }
 
 void RTCVideoDecoder::DestroyTextures() {
