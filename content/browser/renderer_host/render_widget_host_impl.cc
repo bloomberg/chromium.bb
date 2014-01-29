@@ -798,6 +798,9 @@ bool RenderWidgetHostImpl::TryGetBackingStore(const gfx::Size& desired_size,
 }
 
 BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
+  TRACE_EVENT1("browser", "RenderWidgetHostImpl::GetBackingStore",
+               "force_create", force_create);
+
   if (!view_)
     return NULL;
 

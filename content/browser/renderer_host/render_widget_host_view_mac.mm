@@ -322,15 +322,35 @@ void DisablePasswordInput() {
   TSMRemoveDocumentProperty(0, kTSMDocumentEnabledInputSourcesPropertyTag);
 }
 
+// Calls to [NSScreen screens], required by FlipYFromRectToScreen and
+// FlipNSRectToRectScreen, can take several milliseconds. Only re-compute this
+// value when screen info changes.
+// TODO(ccameron): An observer on every RWHVCocoa will set this to false
+// on NSApplicationDidChangeScreenParametersNotification. Only one observer
+// is necessary.
+bool g_screen_info_up_to_date = false;
+
+float FlipYFromRectToScreen(float y, float rect_height) {
+  TRACE_EVENT0("browser", "FlipYFromRectToScreen");
+  static CGFloat screen_zero_height = 0;
+  if (!g_screen_info_up_to_date) {
+    if ([[NSScreen screens] count] > 0) {
+      screen_zero_height =
+          [[[NSScreen screens] objectAtIndex:0] frame].size.height;
+      g_screen_info_up_to_date = true;
+    } else {
+      return y;
+    }
+  }
+  return screen_zero_height - y - rect_height;
+}
+
 // Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
 // left of the primary screen (Carbon coordinates), and stuffs it into a
 // gfx::Rect.
 gfx::Rect FlipNSRectToRectScreen(const NSRect& rect) {
   gfx::Rect new_rect(NSRectToCGRect(rect));
-  if ([[NSScreen screens] count] > 0) {
-    new_rect.set_y([[[NSScreen screens] objectAtIndex:0] frame].size.height -
-                   new_rect.y() - new_rect.height());
-  }
+  new_rect.set_y(FlipYFromRectToScreen(new_rect.y(), new_rect.height()));
   return new_rect;
 }
 
@@ -492,7 +512,9 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
 }
 
 bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
-  int current_window_number = window_number();
+  int current_window_number = use_core_animation_ ?
+      CompositingIOSurfaceContext::kOffscreenContextWindowNumber :
+      window_number();
   bool new_surface_needed = !compositing_iosurface_;
   bool new_context_needed =
     !compositing_iosurface_context_ ||
@@ -617,10 +639,7 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [cocoa_view_ setCanBeKeyView:activatable ? YES : NO];
 
   NSPoint origin_global = NSPointFromCGPoint(pos.origin().ToCGPoint());
-  if ([[NSScreen screens] count] > 0) {
-    origin_global.y = [[[NSScreen screens] objectAtIndex:0] frame].size.height -
-        pos.height() - origin_global.y;
-  }
+  origin_global.y = FlipYFromRectToScreen(origin_global.y, pos.height());
 
   popup_window_.reset([[RenderWidgetPopupWindow alloc]
       initWithContentRect:NSMakeRect(origin_global.x, origin_global.y,
@@ -782,12 +801,7 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
     NSPoint origin_global = NSPointFromCGPoint(rect.origin().ToCGPoint());
     NSSize size = NSMakeSize(rect.width(), rect.height());
     size = [cocoa_view_ convertSize:size toView:nil];
-    if ([[NSScreen screens] count] > 0) {
-      NSScreen* screen =
-          static_cast<NSScreen*>([[NSScreen screens] objectAtIndex:0]);
-      origin_global.y =
-          NSHeight([screen frame]) - size.height - origin_global.y;
-    }
+    origin_global.y = FlipYFromRectToScreen(origin_global.y, size.height);
     [popup_window_ setFrame:NSMakeRect(origin_global.x, origin_global.y,
                                        size.width, size.height)
                     display:YES];
@@ -2011,6 +2025,11 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
            selector:@selector(globalFrameDidChange:)
                name:NSViewGlobalFrameDidChangeNotification
              object:self];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(didChangeScreenParameters:)
+               name:NSApplicationDidChangeScreenParametersNotification
+             object:nil];
   }
   return self;
 }
@@ -2031,6 +2050,10 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [super dealloc];
+}
+
+- (void)didChangeScreenParameters:(NSNotification*)notify {
+  g_screen_info_up_to_date = false;
 }
 
 - (void)setResponderDelegate:

@@ -630,6 +630,8 @@ void CompositingIOSurfaceMac::UnrefIOSurface() {
 }
 
 void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
+  TRACE_EVENT0("gpu", "CompositingIOSurfaceMac::DrawQuad");
+
   glEnableClientState(GL_VERTEX_ARRAY); CHECK_AND_SAVE_GL_ERROR();
   glEnableClientState(GL_TEXTURE_COORD_ARRAY); CHECK_AND_SAVE_GL_ERROR();
 
