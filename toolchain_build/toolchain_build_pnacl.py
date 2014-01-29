@@ -72,6 +72,7 @@ MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
 MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 
 ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32')
+BITCODE_BIASES = ('portable', 'x86-64')
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
@@ -461,7 +462,8 @@ if __name__ == '__main__':
   if not platform_tools.IsWindows():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdCallback(revisions)))
-    packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0]))
+    for bias in BITCODE_BIASES:
+      packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
     for arch in ALL_ARCHES:
       packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
 

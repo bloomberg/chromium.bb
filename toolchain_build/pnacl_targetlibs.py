@@ -36,16 +36,6 @@ TOOL_ENV_NAMES = { 'CC': 'clang', 'CXX': 'clang++', 'AR': 'ar', 'NM': 'nm',
 TARGET_TOOLS = [ tool + '_FOR_TARGET=' + PnaclTool(name)
                  for tool, name in TOOL_ENV_NAMES.iteritems() ]
 
-TARGET_BCLIB_CFLAGS = '-g -O2 -mllvm -inline-threshold=5'
-NEWLIB_ISYSTEM_CFLAGS = ' '.join([
-    '-isystem',
-    command.path.join('%(abs_newlib)s', 'include')])
-# HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
-# pthread otherwise.
-LIBCXX_CFLAGS = ' '.join([TARGET_BCLIB_CFLAGS, NEWLIB_ISYSTEM_CFLAGS,
-                         '-DHAS_THREAD_LOCAL=1'])
-LIBSTDCXX_CFLAGS = ' '.join([TARGET_BCLIB_CFLAGS, NEWLIB_ISYSTEM_CFLAGS])
-
 def MakeCommand():
   make_command = ['make']
   if not platform_tools.IsWindows() and not command.Runnable.use_cygwin:
@@ -82,11 +72,45 @@ def CopyDriverForTargetLib(host):
       ]
 
 
+def BiasedBitcodeTargetFlag(arch):
+  flagmap = {'x86-64': 'x86_64-nacl',
+             'x86-32': 'i686-nacl',
+             'arm': 'armv7-nacl'}
+  return '--target=%s' % flagmap[arch]
+
+
+def TargetBCLibCflags(bias_arch):
+  flags = '-g -O2 -mllvm -inline-threshold=5'
+  if bias_arch != 'portable':
+    flags += ' ' + BiasedBitcodeTargetFlag(bias_arch)
+  return flags
+
+def NewlibIsystemCflags(bias_arch):
+  return ' '.join([
+    '-isystem',
+    command.path.join('%(' + Mangle('abs_newlib', bias_arch) +')s', 'include')])
+
+def LibCxxCflags(bias_arch):
+  # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
+  # pthread otherwise.
+  return ' '.join([TargetBCLibCflags(bias_arch), NewlibIsystemCflags(bias_arch),
+                   '-DHAS_THREAD_LOCAL=1'])
+
+
+def LibStdcxxCflags(bias_arch):
+  return ' '.join([TargetBCLibCflags(bias_arch),
+                   NewlibIsystemCflags(bias_arch)])
+
+
 # Build a single object file as bitcode.
-def BuildTargetBitcodeCmd(source, output):
+def BuildTargetBitcodeCmd(source, output, bias_arch):
+  flags = ['-Wall', '-Werror', '-O2', '-c']
+  if bias_arch != 'portable':
+    flags.append(BiasedBitcodeTargetFlag(bias_arch))
+  sysinclude = Mangle('newlib', bias_arch)
   return command.Command(
-    [PnaclTool('clang', msys=False),
-     '-Wall', '-Werror', '-O2', '-c', '-isystem', '%(newlib)s/include',
+    [PnaclTool('clang', msys=False)] + flags + [
+        '-isystem', '%(' + sysinclude + ')s/include',
      command.path.join('%(src)s', source),
      '-o', command.path.join('%(output)s', output)])
 
@@ -100,7 +124,7 @@ def BuildTargetNativeCmd(sourcefile, output, arch, extra_flags=[],
      '-arch', arch, '--pnacl-bias=' + arch, '-O3',
      # TODO(dschuff): this include breaks the input encapsulation for build
      # rules.
-     '-I%(top_srcdir)s/..', '-isystem', '%(newlib)s/include', '-c'] +
+     '-I%(top_srcdir)s/..', '-isystem', '%(newlib_portable)s/include', '-c'] +
     extra_flags +
     [command.path.join(source_dir, sourcefile),
      '-o', command.path.join(output_dir, output)])
@@ -220,21 +244,23 @@ def TargetLibsSrc(GitSyncCmd):
   return source
 
 
-def BitcodeLibs(host):
-  def H(name):
-    return Mangle(name, host)
+def BitcodeLibs(host, bias_arch):
+  def H(component_name):
+    return Mangle(component_name, host)
+  def B(component_name):
+    return Mangle(component_name, bias_arch)
   libs = {
-      'newlib': {
+      B('newlib'): {
           'type': 'build',
-          'dependencies': [ 'newlib_src', H('llvm'),
-                            H('binutils_pnacl'),],
+          'dependencies': [ 'newlib_src', H('llvm'), H('binutils_pnacl')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands' :
               CopyDriverForTargetLib(host) + [
               command.SkipForIncrementalCommand(
                   ['sh', '%(newlib_src)s/configure'] +
                   TARGET_TOOLS +
-                  ['CFLAGS_FOR_TARGET=' + TARGET_BCLIB_CFLAGS + ' -allow-asm',
+                  ['CFLAGS_FOR_TARGET=' + TargetBCLibCflags(bias_arch) +
+                   ' -allow-asm',
                   '--disable-multilib',
                   '--prefix=',
                   '--disable-newlib-supplied-syscalls',
@@ -270,10 +296,10 @@ def BitcodeLibs(host):
                                         'nacl_random.h')),
           ],
       },
-      'libcxx': {
+      B('libcxx'): {
           'type': 'build',
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
-                           H('llvm'), H('binutils_pnacl'), 'newlib'],
+                           H('llvm'), H('binutils_pnacl'), B('newlib')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands' :
               CopyDriverForTargetLib(host) + [
@@ -291,8 +317,8 @@ def BitcodeLibs(host):
                    '-DCMAKE_LD=' + PnaclTool('illegal'),
                    '-DCMAKE_AS=' + PnaclTool('illegal'),
                    '-DCMAKE_OBJDUMP=' + PnaclTool('illegal'),
-                   '-DCMAKE_C_FLAGS=-std=gnu11 ' + LIBCXX_CFLAGS,
-                   '-DCMAKE_CXX_FLAGS=-std=gnu++11 ' + LIBCXX_CFLAGS,
+                   '-DCMAKE_C_FLAGS=-std=gnu11 ' + LibCxxCflags(bias_arch),
+                   '-DCMAKE_CXX_FLAGS=-std=gnu++11 ' + LibCxxCflags(bias_arch),
                    '-DLIT_EXECUTABLE=' + command.path.join(
                        '%(llvm_src)s', 'utils', 'lit', 'lit.py'),
                    '-DLLVM_LIT_ARGS=--verbose  --param shell_prefix="' +
@@ -313,10 +339,10 @@ def BitcodeLibs(host):
                                'install']),
           ],
       },
-      'libstdcxx': {
+      B('libstdcxx'): {
           'type': 'build',
           'dependencies': ['gcc_src', 'gcc_src', H('llvm'), H('binutils_pnacl'),
-                           'newlib'],
+                           B('newlib')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands' :
               CopyDriverForTargetLib(host) + [
@@ -333,11 +359,11 @@ def BitcodeLibs(host):
                   'RAW_CXX_FOR_TARGET=' + PnaclTool('clang++'),
                   'LD=' + PnaclTool('illegal'),
                   'RANLIB=' + PnaclTool('ranlib'),
-                  'CFLAGS=' + LIBSTDCXX_CFLAGS,
-                  'CXXFLAGS=' + LIBSTDCXX_CFLAGS,
-                  'CPPFLAGS=' + NEWLIB_ISYSTEM_CFLAGS,
-                  'CFLAGS_FOR_TARGET=' + LIBSTDCXX_CFLAGS,
-                  'CXXFLAGS_FOR_TARGET=' + LIBSTDCXX_CFLAGS,
+                  'CFLAGS=' + LibStdcxxCflags(bias_arch),
+                  'CXXFLAGS=' + LibStdcxxCflags(bias_arch),
+                  'CPPFLAGS=' + NewlibIsystemCflags(bias_arch),
+                  'CFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
+                  'CXXFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
                   '--host=arm-none-linux-gnueabi',
                   '--prefix=',
                   '--enable-cxx-flags=-D__SIZE_MAX__=4294967295',
@@ -362,9 +388,9 @@ def BitcodeLibs(host):
                            os.path.join('%(output)s', 'lib', 'libstdc++.a')),
           ],
       },
-      'libs_support_bitcode': {
+      B('libs_support_bitcode'): {
           'type': 'build',
-          'dependencies': [ 'newlib', H('llvm'), H('binutils_pnacl')],
+          'dependencies': [ B('newlib'), H('llvm'), H('binutils_pnacl')],
           'inputs': { 'src': os.path.join(NACL_DIR,
                                           'pnacl', 'support', 'bitcode'),
                       'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
@@ -378,16 +404,17 @@ def BitcodeLibs(host):
               command.Copy(command.path.join('%(src)s', 'crt1_for_eh.x'),
                            command.path.join('%(output)s', 'crt1_for_eh.x')),
               # Install crti.bc (empty _init/_fini)
-              BuildTargetBitcodeCmd('crti.c', 'crti.bc'),
+              BuildTargetBitcodeCmd('crti.c', 'crti.bc', bias_arch),
               # Install crtbegin bitcode (__cxa_finalize for C++)
-              BuildTargetBitcodeCmd('crtbegin.c', 'crtbegin.bc'),
+              BuildTargetBitcodeCmd('crtbegin.c', 'crtbegin.bc', bias_arch),
               # Stubs for _Unwind_* functions when libgcc_eh is not included in
               # the native link).
-              BuildTargetBitcodeCmd('unwind_stubs.c', 'unwind_stubs.bc'),
+              BuildTargetBitcodeCmd('unwind_stubs.c', 'unwind_stubs.bc',
+                                    bias_arch),
               BuildTargetBitcodeCmd('sjlj_eh_redirect.c',
-                                    'sjlj_eh_redirect.bc'),
+                                    'sjlj_eh_redirect.bc', bias_arch),
               # libpnaclmm.a (__atomic_* library functions).
-              BuildTargetBitcodeCmd('pnaclmm.c', 'pnaclmm.bc'),
+              BuildTargetBitcodeCmd('pnaclmm.c', 'pnaclmm.bc', bias_arch),
               command.Command([
                   PnaclTool('ar'), 'rc',
                   command.path.join('%(output)s', 'libpnaclmm.a'),
@@ -411,7 +438,7 @@ def NativeLibs(host, arch):
   libs = {
       Mangle('libs_support_native', arch): {
           'type': 'build',
-          'dependencies': [ 'newlib', H('llvm'), H('binutils_pnacl')],
+          'dependencies': [ 'newlib_portable', H('llvm'), H('binutils_pnacl')],
           # These libs include
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
