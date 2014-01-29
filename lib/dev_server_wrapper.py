@@ -16,6 +16,7 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import timeout_util
+from chromite.lib import remote_access
 
 
 def GenerateUpdateId(target, src, key, for_vm):
@@ -143,7 +144,8 @@ class DevServerWrapper(multiprocessing.Process):
     if not self.is_alive():
       raise DevServerException('Devserver terminated unexpectedly!')
 
-    url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
+    url = os.path.join('http://%s:%d' % (remote_access.LOCALHOST_IP, self.port),
+                       'check_health')
     if self.OpenURL(url, ignore_url_error=True, timeout=2):
       return True
 

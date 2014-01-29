@@ -282,7 +282,8 @@ using-the-dev-server/xbuddy-for-devserver
       logging.info('Updating rootfs partition')
       ds.Start()
 
-      omaha_url = ds.GetDevServerURL(ip=ds.device.hostname, port=ds.port,
+      omaha_url = ds.GetDevServerURL(ip=remote_access.LOCALHOST_IP,
+                                     port=ds.port,
                                      sub_dir='update/pregenerated')
       cmd = [self.UPDATE_ENGINE_BIN, '-check_for_update',
              '-omaha_url=%s' % omaha_url]

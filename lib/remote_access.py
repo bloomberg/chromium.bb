@@ -23,6 +23,8 @@ TEST_PRIVATE_KEY = os.path.normpath(
     os.path.join(_path, '../ssh_keys/testing_rsa'))
 del _path
 
+LOCALHOST_IP = '127.0.0.1'
+
 REBOOT_MARKER = '/tmp/awaiting_reboot'
 REBOOT_MAX_WAIT = 120
 REBOOT_SSH_CONNECT_TIMEOUT = 2
