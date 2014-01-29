@@ -49,6 +49,10 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/scroll/FramelessScrollView.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebContentLayer.h"
+#include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
 #include <skia/ext/platform_canvas.h>
 
@@ -68,6 +72,8 @@ WebPopupMenu* WebPopupMenu::create(WebWidgetClient* client)
 
 WebPopupMenuImpl::WebPopupMenuImpl(WebWidgetClient* client)
     : m_client(client)
+    , m_layerTreeView(0)
+    , m_isAcceleratedCompositingActive(false)
     // Set to impossible point so we always get the first mouse position.
     , m_lastMousePosition(WebPoint(-1, -1))
     , m_widget(0)
@@ -78,6 +84,12 @@ WebPopupMenuImpl::~WebPopupMenuImpl()
 {
     if (m_widget)
         m_widget->setClient(0);
+}
+
+void WebPopupMenuImpl::willCloseLayerTreeView()
+{
+    enterForceCompositingMode(false);
+    m_layerTreeView = 0;
 }
 
 void WebPopupMenuImpl::initialize(FramelessScrollView* widget, const WebRect& bounds)
@@ -174,6 +186,9 @@ void WebPopupMenuImpl::resize(const WebSize& newSize)
         WebRect damagedRect(0, 0, m_size.width, m_size.height);
         m_client->didInvalidateRect(damagedRect);
     }
+
+    if (m_rootLayer)
+        m_rootLayer->layer()->setBounds(newSize);
 }
 
 void WebPopupMenuImpl::willEndLiveResize()
@@ -186,6 +201,54 @@ void WebPopupMenuImpl::animate(double)
 
 void WebPopupMenuImpl::layout()
 {
+}
+
+void WebPopupMenuImpl::enterForceCompositingMode(bool enter)
+{
+    if (m_isAcceleratedCompositingActive == enter)
+        return;
+
+    if (!enter) {
+        m_isAcceleratedCompositingActive = false;
+        m_client->didDeactivateCompositor();
+    } else if (m_layerTreeView) {
+        m_isAcceleratedCompositingActive = true;
+        m_client->didActivateCompositor(0);
+    } else {
+        TRACE_EVENT0("webkit", "WebPopupMenuImpl::enterForceCompositingMode(true)");
+
+        m_client->initializeLayerTreeView();
+        m_layerTreeView = m_client->layerTreeView();
+        if (m_layerTreeView) {
+            m_layerTreeView->setVisible(true);
+            m_client->didActivateCompositor(0);
+            m_isAcceleratedCompositingActive = true;
+            m_layerTreeView->setDeviceScaleFactor(m_client->deviceScaleFactor());
+            m_rootLayer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(this));
+            m_rootLayer->layer()->setBounds(m_size);
+            m_layerTreeView->setRootLayer(*m_rootLayer->layer());
+        } else {
+            m_isAcceleratedCompositingActive = false;
+            m_client->didDeactivateCompositor();
+        }
+    }
+}
+
+void WebPopupMenuImpl::didExitCompositingMode()
+{
+    enterForceCompositingMode(false);
+    m_client->didInvalidateRect(IntRect(0, 0, m_size.width, m_size.height));
+}
+
+void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, bool, WebFloatRect&)
+{
+    if (!m_widget)
+        return;
+
+    if (!rect.isEmpty()) {
+        GraphicsContext context(canvas);
+        m_widget->paint(&context, rect);
+    }
 }
 
 void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect, PaintOptions)
@@ -343,6 +406,8 @@ void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect)
         return;
     if (m_client)
         m_client->didInvalidateRect(paintRect);
+    if (m_rootLayer)
+        m_rootLayer->layer()->invalidateRect(FloatRect(paintRect));
 }
 
 void WebPopupMenuImpl::invalidateContentsForSlowScroll(const IntRect& updateRect)
@@ -361,6 +426,8 @@ void WebPopupMenuImpl::scroll(const IntSize& scrollDelta, const IntRect& scrollR
         int dy = scrollDelta.height();
         m_client->didScrollRect(dx, dy, clipRect);
     }
+    if (m_rootLayer)
+        m_rootLayer->layer()->invalidateRect(FloatRect(clipRect));
 }
 
 IntPoint WebPopupMenuImpl::screenToRootView(const IntPoint& point) const

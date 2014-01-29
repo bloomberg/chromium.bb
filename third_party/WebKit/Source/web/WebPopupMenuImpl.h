@@ -33,6 +33,7 @@
 
 #include "WebPopupMenu.h"
 #include "platform/scroll/FramelessScrollViewClient.h"
+#include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
 #include "wtf/OwnPtr.h"
@@ -49,17 +50,17 @@ class Widget;
 }
 
 namespace blink {
+class WebContentLayer;
 class WebGestureEvent;
 class WebKeyboardEvent;
+class WebLayerTreeView;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebRange;
 struct WebRect;
 class WebTouchEvent;
 
-class WebPopupMenuImpl : public WebPopupMenu,
-                         public WebCore::FramelessScrollViewClient,
-                         public RefCounted<WebPopupMenuImpl> {
+class WebPopupMenuImpl : public WebPopupMenu, public WebCore::FramelessScrollViewClient, public WebContentLayerClient, public RefCounted<WebPopupMenuImpl> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // WebWidget functions:
@@ -70,6 +71,8 @@ public:
     virtual void willEndLiveResize() OVERRIDE FINAL;
     virtual void animate(double frameBeginTime) OVERRIDE FINAL;
     virtual void layout() OVERRIDE FINAL;
+    virtual void enterForceCompositingMode(bool enable) OVERRIDE FINAL;
+    virtual void didExitCompositingMode() OVERRIDE FINAL;
     virtual void paint(WebCanvas*, const WebRect&, PaintOptions = ReadbackFromCompositorIfAvailable) OVERRIDE FINAL;
     virtual void themeChanged() OVERRIDE FINAL;
     virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE FINAL;
@@ -87,6 +90,10 @@ public:
     virtual void setTextDirection(WebTextDirection) OVERRIDE FINAL;
     virtual bool isAcceleratedCompositingActive() const OVERRIDE FINAL { return false; }
     virtual bool isPopupMenu() const OVERRIDE FINAL { return true; }
+    virtual void willCloseLayerTreeView() OVERRIDE FINAL;
+
+    // WebContentLayerClient
+    virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebFloatRect& opaque) OVERRIDE FINAL;
 
     // WebPopupMenuImpl
     void initialize(WebCore::FramelessScrollView* widget, const WebRect& bounds);
@@ -126,6 +133,10 @@ public:
 
     WebWidgetClient* m_client;
     WebSize m_size;
+
+    WebLayerTreeView* m_layerTreeView;
+    OwnPtr<WebContentLayer> m_rootLayer;
+    bool m_isAcceleratedCompositingActive;
 
     WebPoint m_lastMousePosition;
 
