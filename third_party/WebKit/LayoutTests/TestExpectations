@@ -788,7 +788,7 @@ crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Time
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-narrow-in-wide.html [ ImageOnlyFailure ]
+crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/nested-child.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-sufficient-text-except-in-root.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-numbered-with-autosizing.html [ ImageOnlyFailure ]

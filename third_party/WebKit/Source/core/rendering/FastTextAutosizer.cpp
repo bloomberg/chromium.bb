@@ -229,7 +229,7 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeGetOrCreateCluster(const Ren
     // Create clusters to suppress / unsuppress autosizing based on containerShouldBeAutosized.
     bool containerCanAutosize = TextAutosizer::containerShouldBeAutosized(block);
     bool parentClusterCanAutosize = parentCluster && parentCluster->m_autosize;
-    bool createClusterThatMightAutosize = mightBeWiderDescendant(block) || TextAutosizer::isIndependentDescendant(block);
+    bool createClusterThatMightAutosize = mightBeWiderOrNarrowerDescendant(block) || TextAutosizer::isIndependentDescendant(block);
 
     // If the container would not alter the m_autosize bit, it doesn't need to be a cluster.
     if (!createClusterThatMightAutosize && containerCanAutosize == parentClusterCanAutosize)
@@ -284,7 +284,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 {
     ASSERT(m_renderViewInfoPrepared);
     if (!cluster->m_multiplier) {
-        if (TextAutosizer::isIndependentDescendant(cluster->m_root) || isWiderDescendant(cluster)) {
+        if (TextAutosizer::isIndependentDescendant(cluster->m_root) || isWiderDescendant(cluster) || isNarrowerDescendant(cluster)) {
             if (clusterHasEnoughTextToAutosize(cluster)) {
                 const RenderBlock* deepestBlockWithAllText = deepestBlockContainingAllText(cluster);
 
@@ -387,16 +387,16 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     renderer->setStyleInternal(style.release());
 }
 
-bool FastTextAutosizer::mightBeWiderDescendant(const RenderBlock* block)
+bool FastTextAutosizer::mightBeWiderOrNarrowerDescendant(const RenderBlock* block)
 {
-    // FIXME: This heuristic may need to be expanded to other ways a block can be wider
+    // FIXME: This heuristic may need to be expanded to other ways a block can be wider or narrower
     //        than its parent containing block.
     return block->style() && block->style()->width().isSpecified();
 }
 
 bool FastTextAutosizer::isWiderDescendant(Cluster* cluster)
 {
-    if (!cluster->m_parent || !mightBeWiderDescendant(cluster->m_root))
+    if (!cluster->m_parent || !mightBeWiderOrNarrowerDescendant(cluster->m_root))
         return true;
     const RenderBlock* parentDeepestBlockContainingAllText = deepestBlockContainingAllText(cluster->m_parent);
     ASSERT(m_blocksThatHaveBegunLayout.contains(cluster->m_root));
@@ -407,6 +407,27 @@ bool FastTextAutosizer::isWiderDescendant(Cluster* cluster)
     float contentWidth = cluster->m_root->contentLogicalWidth();
     float clusterTextWidth = parentDeepestBlockContainingAllText->contentLogicalWidth();
     return contentWidth > clusterTextWidth;
+}
+
+bool FastTextAutosizer::isNarrowerDescendant(Cluster* cluster)
+{
+    static float narrowWidthDifference = 200;
+
+    if (!cluster->m_parent || !mightBeWiderOrNarrowerDescendant(cluster->m_root))
+        return true;
+
+    const RenderBlock* parentDeepestBlockContainingAllText = deepestBlockContainingAllText(cluster->m_parent);
+    ASSERT(m_blocksThatHaveBegunLayout.contains(cluster->m_root));
+    ASSERT(m_blocksThatHaveBegunLayout.contains(parentDeepestBlockContainingAllText));
+
+    // Clusters with a root that is significantly narrower than the deepestBlockContainingAllText of
+    // their parent autosize independently of their parent. Otherwise, they fall back to their
+    // parent's multiplier.
+    float contentWidth = cluster->m_root->contentLogicalWidth();
+    float clusterTextWidth = parentDeepestBlockContainingAllText->contentLogicalWidth();
+    float widthDifference = clusterTextWidth - contentWidth;
+
+    return widthDifference > narrowWidthDifference;
 }
 
 FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const

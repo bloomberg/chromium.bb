@@ -132,8 +132,9 @@ private:
     const RenderBlock* deepestCommonAncestor(BlockSet&);
     float clusterMultiplier(Cluster*);
     void applyMultiplier(RenderObject*, float);
-    bool mightBeWiderDescendant(const RenderBlock*);
+    bool mightBeWiderOrNarrowerDescendant(const RenderBlock*);
     bool isWiderDescendant(Cluster*);
+    bool isNarrowerDescendant(Cluster*);
 
     Cluster* currentCluster() const;
 
