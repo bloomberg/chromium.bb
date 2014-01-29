@@ -32,6 +32,10 @@
     # If set to 1, doesn't compile debug symbols into webcore reducing the
     # size of the binary and increasing the speed of gdb.  gcc only.
     'remove_webcore_debug_symbols%': 0,
+    # Set to 1 to enable the clang plugin that checks the usage of the Blink
+    # garbage-collection infrastructure during compilation.
+    # Requires building locally since GOMA doesn't yet support the plugin.
+    'blink_gc_plugin%': 0,
   },
   'targets': [
   {
@@ -97,6 +101,10 @@
           'xcode_settings': {
             'WARNING_CFLAGS': ['-Wglobal-constructors'],
           },
+        }],
+        # Only enable the blink_gc_plugin when using clang and chrome plugins.
+        ['blink_gc_plugin==1 and clang==1 and clang_use_chrome_plugins==1', {
+          'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh)'],
         }],
       ],
     },
