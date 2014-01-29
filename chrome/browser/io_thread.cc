@@ -562,19 +562,26 @@ void IOThread::InitAsync() {
   if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {
     std::string switch_value = command_line.GetSwitchValueASCII(
         switches::kCertificateTransparencyLog);
-    size_t delim_pos = switch_value.find(":");
-    CHECK(delim_pos != std::string::npos)
-        << "CT log description not provided (switch format"
-           " is 'description:base64_key')";
-    std::string log_description(switch_value.substr(0, delim_pos));
-    std::string ct_public_key_data;
-    CHECK(base::Base64Decode(
-          switch_value.substr(delim_pos + 1),
-          &ct_public_key_data)) << "Unable to decode CT public key.";
-    scoped_ptr<net::CTLogVerifier> external_log_verifier(
-        net::CTLogVerifier::Create(ct_public_key_data, log_description));
-    CHECK(external_log_verifier) << "Unable to parse CT public key.";
-    ct_verifier->AddLog(external_log_verifier.Pass());
+    std::vector<std::string> logs;
+    base::SplitString(switch_value, ',', &logs);
+    for (std::vector<std::string>::iterator it = logs.begin(); it != logs.end();
+         ++it) {
+      const std::string& curr_log = *it;
+      size_t delim_pos = curr_log.find(":");
+      CHECK(delim_pos != std::string::npos)
+          << "CT log description not provided (switch format"
+             " is 'description:base64_key')";
+      std::string log_description(curr_log.substr(0, delim_pos));
+      std::string ct_public_key_data;
+      CHECK(base::Base64Decode(curr_log.substr(delim_pos + 1),
+                               &ct_public_key_data))
+          << "Unable to decode CT public key.";
+      scoped_ptr<net::CTLogVerifier> external_log_verifier(
+          net::CTLogVerifier::Create(ct_public_key_data, log_description));
+      CHECK(external_log_verifier) << "Unable to parse CT public key.";
+      VLOG(1) << "Adding log with description " << log_description;
+      ct_verifier->AddLog(external_log_verifier.Pass());
+    }
   }
 #else
   if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {

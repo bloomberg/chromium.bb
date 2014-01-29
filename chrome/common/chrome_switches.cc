@@ -143,14 +143,16 @@ const char kAutomationReinitializeOnChannelError[] =
 // will not occur in subsequent runs either.
 const char kCancelFirstRun[]                = "cancel-first-run";
 
-// Certificate Transparency: Uses the provided log for checking Signed
+// Certificate Transparency: Uses the provided log(s) for checking Signed
 // Certificate Timestamps provided with certificates.
 // The switch's value is:
-//   log_description:log_key
-// where:
-//   log_description is a textual description of the log
+//   log_description:log_key,log_description:log_key,...
+// where
+//   log_description is a textual description of the log.
 //   log_key is a Base64'd DER-encoded SubjectPublicKeyInfo of the log's
 //   public key.
+// Multiple logs can be specified by repeating description:key pairs,
+// separated by a comma.
 const char kCertificateTransparencyLog[] =
     "certificate-transparency-log";
 
