@@ -49,8 +49,9 @@ class GCMProfileService::DelayedTaskController {
   // Adds a task that will be invoked once we're ready.
   void AddTask(const std::string& app_id, base::Closure task);
 
-  // Marks that GCMClient is ready.
-  void SetGCMClientReady();
+  // Marks that GCM is ready. GCM is ready only when GCMClient is ready and
+  // the user check-in is completed.
+  void SetGCMReady();
 
   // Marks that the app is ready to have operations performed.
   void SetAppReady(const std::string& app_id);
@@ -76,10 +77,11 @@ class GCMProfileService::DelayedTaskController {
 
   void RunTasks(AppTaskQueue* task_queue);
 
-  // Flag that indicates that GCMClient is ready.
-  bool gcm_client_ready_;
+  // Flag that indicates that GCM is done.
+  bool gcm_ready_;
 
-  // Map from app_id to callbacks.
+  // Map from app_id to AppTaskQueue storing the tasks that will be invoked
+  // when both GCM and the app get ready.
   typedef std::map<std::string, AppTaskQueue*> DelayedTaskMap;
   DelayedTaskMap delayed_task_map_;
 };
@@ -92,7 +94,7 @@ GCMProfileService::DelayedTaskController::AppTaskQueue::~AppTaskQueue() {
 }
 
 GCMProfileService::DelayedTaskController::DelayedTaskController()
-    : gcm_client_ready_(false) {
+    : gcm_ready_(false) {
 }
 
 GCMProfileService::DelayedTaskController::~DelayedTaskController() {
@@ -110,7 +112,11 @@ void GCMProfileService::DelayedTaskController::AddApp(
 
 void GCMProfileService::DelayedTaskController::RemoveApp(
     const std::string& app_id) {
-  delayed_task_map_.erase(app_id);
+  DelayedTaskMap::iterator iter = delayed_task_map_.find(app_id);
+  if (iter == delayed_task_map_.end())
+    return;
+  delete iter->second;
+  delayed_task_map_.erase(iter);
 }
 
 void GCMProfileService::DelayedTaskController::AddTask(
@@ -120,19 +126,13 @@ void GCMProfileService::DelayedTaskController::AddTask(
   iter->second->tasks.push_back(task);
 }
 
-void GCMProfileService::DelayedTaskController::SetGCMClientReady() {
-  gcm_client_ready_ = true;
+void GCMProfileService::DelayedTaskController::SetGCMReady() {
+  gcm_ready_ = true;
 
   for (DelayedTaskMap::iterator iter = delayed_task_map_.begin();
-       iter != delayed_task_map_.end();) {
-    if (iter->second->ready) {
-      AppTaskQueue* task_queue = iter->second;
-      RunTasks(task_queue);
-      delete task_queue;
-      delayed_task_map_.erase(iter++);
-    } else {
-      ++iter;
-    }
+       iter != delayed_task_map_.end(); ++iter) {
+    if (iter->second->ready)
+      RunTasks(iter->second);
   }
 }
 
@@ -145,16 +145,13 @@ void GCMProfileService::DelayedTaskController::SetAppReady(
   DCHECK(task_queue);
   task_queue->ready = true;
 
-  if (gcm_client_ready_) {
+  if (gcm_ready_)
     RunTasks(task_queue);
-    delete task_queue;
-    delayed_task_map_.erase(iter);
-  }
 }
 
 bool GCMProfileService::DelayedTaskController::CanRunTaskWithoutDelay(
     const std::string& app_id) const {
-  if (!gcm_client_ready_)
+  if (!gcm_ready_)
     return false;
   DelayedTaskMap::const_iterator iter = delayed_task_map_.find(app_id);
   if (iter == delayed_task_map_.end())
@@ -169,7 +166,7 @@ bool GCMProfileService::DelayedTaskController::IsAppTracked(
 
 void GCMProfileService::DelayedTaskController::RunTasks(
     AppTaskQueue* task_queue) {
-  DCHECK(gcm_client_ready_ && task_queue->ready);
+  DCHECK(gcm_ready_ && task_queue->ready);
 
   for (size_t i = 0; i < task_queue->tasks.size(); ++i)
     task_queue->tasks[i].Run();
@@ -466,6 +463,8 @@ void GCMProfileService::RegisterProfilePrefs(
 
 GCMProfileService::GCMProfileService(Profile* profile)
     : profile_(profile),
+      gcm_client_ready_(false),
+      checkin_info_read_(false),
       testing_delegate_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(!profile->IsOffTheRecord());
@@ -534,6 +533,10 @@ void GCMProfileService::Register(const std::string& app_id,
     return;
   }
 
+  register_callbacks_[app_id] = callback;
+
+  EnsureAppReady(app_id);
+
   // Delay the register operation until the loading is done.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay(app_id)) {
     delayed_task_controller_->AddTask(
@@ -542,18 +545,36 @@ void GCMProfileService::Register(const std::string& app_id,
                    weak_ptr_factory_.GetWeakPtr(),
                    app_id,
                    sender_ids,
-                   cert,
-                   callback));
+                   cert));
     return;
   }
 
-  DoRegister(app_id, sender_ids, cert, callback);
+  DoRegister(app_id, sender_ids, cert);
+}
+
+void GCMProfileService::DoCheckIn() {
+  // No need to do check-in if the info has been read from prefs store.
+  if (checkin_info_read_) {
+    delayed_task_controller_->SetGCMReady();
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GCMProfileService::IOWorker::CheckIn, io_worker_));
 }
 
 void GCMProfileService::DoRegister(const std::string& app_id,
                                    const std::vector<std::string>& sender_ids,
-                                   const std::string& cert,
-                                   RegisterCallback callback) {
+                                   const std::string& cert) {
+  std::map<std::string, RegisterCallback>::iterator callback_iter =
+      register_callbacks_.find(app_id);
+  if (callback_iter == register_callbacks_.end()) {
+    // The callback could have been removed when the app is uninstalled.
+    return;
+  }
+
   // Normalize the sender IDs by making them sorted.
   std::vector<std::string> normalized_sender_ids = sender_ids;
   std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
@@ -564,6 +585,8 @@ void GCMProfileService::DoRegister(const std::string& app_id,
       registration_info_map_.find(app_id);
   if (registration_info_iter != registration_info_map_.end() &&
       registration_info_iter->second.sender_ids == normalized_sender_ids) {
+    RegisterCallback callback = callback_iter->second;
+    register_callbacks_.erase(callback_iter);
     callback.Run(registration_info_iter->second.registration_id,
                  GCMClient::SUCCESS);
     return;
@@ -574,8 +597,6 @@ void GCMProfileService::DoRegister(const std::string& app_id,
   RegistrationInfo registration_info;
   registration_info.sender_ids = normalized_sender_ids;
   registration_info_map_[app_id] = registration_info;
-
-  register_callbacks_[app_id] = callback;
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
@@ -607,6 +628,8 @@ void GCMProfileService::Send(const std::string& app_id,
     return;
   }
   send_callbacks_[key] = callback;
+
+  EnsureAppReady(app_id);
 
   // Delay the send operation until all the loadings are done.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay(app_id)) {
@@ -658,7 +681,7 @@ void GCMProfileService::Observe(int type,
       // No need to load the persisted registration info if the extension does
       // not have the GCM permission.
       if (extension->HasAPIPermission(extensions::APIPermission::kGcm))
-        ReadRegistrationInfo(extension->id());
+        EnsureAppReady(extension->id());
       break;
     }
     case chrome:: NOTIFICATION_EXTENSION_UNINSTALLED: {
@@ -699,6 +722,7 @@ void GCMProfileService::AddUser(const std::string& username) {
     Encryptor::DecryptString(encrypted_secret, &decrypted_secret);
     uint64 secret = 0;
     if (base::StringToUint64(decrypted_secret, &secret) && secret) {
+      checkin_info_read_ = true;
       GCMClient::CheckinInfo checkin_info;
       checkin_info.android_id = android_id;
       checkin_info.secret = secret;
@@ -716,10 +740,9 @@ void GCMProfileService::AddUser(const std::string& username) {
     }
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GCMProfileService::IOWorker::CheckIn, io_worker_));
+  // Check-in could only be initiated after GCMClient gets ready.
+  if (gcm_client_ready_)
+    DoCheckIn();
 }
 
 void GCMProfileService::RemoveUser() {
@@ -733,6 +756,13 @@ void GCMProfileService::RemoveUser() {
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&GCMProfileService::IOWorker::CheckOut, io_worker_));
+}
+
+void GCMProfileService::EnsureAppReady(const std::string& app_id) {
+  if (delayed_task_controller_->IsAppTracked(app_id))
+    return;
+
+  ReadRegistrationInfo(app_id);
 }
 
 void GCMProfileService::Unregister(const std::string& app_id) {
@@ -770,6 +800,8 @@ void GCMProfileService::Unregister(const std::string& app_id) {
 void GCMProfileService::CheckInFinished(
     const GCMClient::CheckinInfo& checkin_info, GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  delayed_task_controller_->SetGCMReady();
 
   // Save the check-in info into the profile's prefs store.
   PrefService* pref_service = profile_->GetPrefs();
@@ -875,14 +907,19 @@ void GCMProfileService::MessageSendError(const std::string& app_id,
 void GCMProfileService::CheckGCMClientLoadingFinished(bool is_loading) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (!is_loading)
-    delayed_task_controller_->SetGCMClientReady();
+  gcm_client_ready_ = !is_loading;
+  if (gcm_client_ready_)
+    DoCheckIn();
 }
 
 void GCMProfileService::GCMClientLoadingFinished() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  delayed_task_controller_->SetGCMClientReady();
+  if (gcm_client_ready_)
+    return;
+  gcm_client_ready_ = true;
+
+  DoCheckIn();
 }
 
 GCMEventRouter* GCMProfileService::GetEventRouter(const std::string& app_id) {
@@ -930,11 +967,6 @@ void GCMProfileService::WriteRegistrationInfo(const std::string& app_id) {
 }
 
 void GCMProfileService::ReadRegistrationInfo(const std::string& app_id) {
-  // This function can be called more than once when the app is allowed in
-  // incognito and the extension service reloads the app.
-  if (delayed_task_controller_->IsAppTracked(app_id))
-    return;
-
   delayed_task_controller_->AddApp(app_id);
 
   extensions::StateStore* storage =

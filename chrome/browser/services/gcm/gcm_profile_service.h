@@ -127,13 +127,16 @@ class GCMProfileService : public BrowserContextKeyedService,
   // removes the cached and persisted check-in info.
   void RemoveUser();
 
+  // Ensures that the app is ready for GCM functions and events.
+  void EnsureAppReady(const std::string& app_id);
+
   // Unregisters an app from using the GCM after it has been uninstalled.
   void Unregister(const std::string& app_id);
 
+  void DoCheckIn();
   void DoRegister(const std::string& app_id,
                   const std::vector<std::string>& sender_ids,
-                  const std::string& cert,
-                  RegisterCallback callback);
+                  const std::string& cert);
   void DoSend(const std::string& app_id,
               const std::string& receiver_id,
               const GCMClient::OutgoingMessage& message);
@@ -174,6 +177,13 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   // The profile which owns this object.
   Profile* profile_;
+
+  // Flag to indicate if GCMClient is ready.
+  bool gcm_client_ready_;
+
+  // Flag to indicate if the user check-in info has been read from the prefs
+  // store.
+  bool checkin_info_read_;
 
   // The username of the signed-in profile.
   std::string username_;
