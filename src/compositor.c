@@ -3170,19 +3170,6 @@ weston_compositor_remove_output(struct weston_compositor *compositor,
 	}
 }
 
-static void
-weston_compositor_verify_pointers(struct weston_compositor *ec)
-{
-	struct weston_seat *seat;
-
-	wl_list_for_each(seat, &ec->seat_list, link) {
-		if (!seat->pointer)
-			continue;
-
-		weston_pointer_verify(seat->pointer);
-	}
-}
-
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
@@ -3191,8 +3178,7 @@ weston_output_destroy(struct weston_output *output)
 	weston_compositor_remove_output(output->compositor, output);
 	wl_list_remove(&output->link);
 
-	weston_compositor_verify_pointers(output->compositor);
-
+	wl_signal_emit(&output->compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
 
 	free(output->name);
@@ -3654,6 +3640,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_signal_init(&ec->update_input_panel_signal);
 	wl_signal_init(&ec->seat_created_signal);
 	wl_signal_init(&ec->output_created_signal);
+	wl_signal_init(&ec->output_destroyed_signal);
 	wl_signal_init(&ec->session_signal);
 	ec->session_active = 1;
 

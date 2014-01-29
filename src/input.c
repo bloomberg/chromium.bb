@@ -438,6 +438,9 @@ weston_pointer_reset_state(struct weston_pointer *pointer)
 	pointer->button_count = 0;
 }
 
+static void
+weston_pointer_handle_output_destroy(struct wl_listener *listener, void *data);
+
 WL_EXPORT struct weston_pointer *
 weston_pointer_create(struct weston_seat *seat)
 {
@@ -465,6 +468,11 @@ weston_pointer_create(struct weston_seat *seat)
 	pointer->x = wl_fixed_from_int(100);
 	pointer->y = wl_fixed_from_int(100);
 
+	pointer->output_destroy_listener.notify =
+		weston_pointer_handle_output_destroy;
+	wl_signal_add(&seat->compositor->output_destroyed_signal,
+		      &pointer->output_destroy_listener);
+
 	return pointer;
 }
 
@@ -478,6 +486,7 @@ weston_pointer_destroy(struct weston_pointer *pointer)
 
 	wl_list_remove(&pointer->focus_resource_listener.link);
 	wl_list_remove(&pointer->focus_view_listener.link);
+	wl_list_remove(&pointer->output_destroy_listener.link);
 	free(pointer);
 }
 
@@ -871,13 +880,18 @@ weston_pointer_move(struct weston_pointer *pointer, wl_fixed_t x, wl_fixed_t y)
 
 /** Verify if the pointer is in a valid position and move it if it isn't.
  */
-WL_EXPORT void
-weston_pointer_verify(struct weston_pointer *pointer)
+static void
+weston_pointer_handle_output_destroy(struct wl_listener *listener, void *data)
 {
-	struct weston_compositor *ec = pointer->seat->compositor;
+	struct weston_pointer *pointer;
+	struct weston_compositor *ec;
 	struct weston_output *output, *closest = NULL;
 	int x, y, distance, min = INT_MAX;
 	wl_fixed_t fx, fy;
+
+	pointer = container_of(listener, struct weston_pointer,
+			       output_destroy_listener);
+	ec = pointer->seat->compositor;
 
 	x = wl_fixed_to_int(pointer->x);
 	y = wl_fixed_to_int(pointer->y);

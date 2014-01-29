@@ -329,6 +329,8 @@ struct weston_pointer {
 
 	wl_fixed_t x, y;
 	uint32_t button_count;
+
+	struct wl_listener output_destroy_listener;
 };
 
 
@@ -375,8 +377,6 @@ weston_pointer_move(struct weston_pointer *pointer,
 void
 weston_pointer_set_default_grab(struct weston_pointer *pointer,
 		const struct weston_pointer_grab_interface *interface);
-void
-weston_pointer_verify(struct weston_pointer *pointer);
 
 struct weston_keyboard *
 weston_keyboard_create(void);
@@ -579,6 +579,7 @@ struct weston_compositor {
 
 	struct wl_signal seat_created_signal;
 	struct wl_signal output_created_signal;
+	struct wl_signal output_destroyed_signal;
 
 	struct wl_event_loop *input_loop;
 	struct wl_event_source *input_loop_source;
