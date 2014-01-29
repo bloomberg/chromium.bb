@@ -11,6 +11,7 @@ namespace app_list {
 
 AppListItem::AppListItem(const std::string& id)
     : id_(id),
+      has_shadow_(false),
       highlighted_(false),
       is_installing_(false),
       percent_downloaded_(-1) {
