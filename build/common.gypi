@@ -4770,12 +4770,18 @@
         ],
       },
     }],
-    ['clang==1', {
+    ['clang==1 and OS!="win"', {
       'make_global_settings': [
         ['CC', '<(make_clang_dir)/bin/clang'],
         ['CXX', '<(make_clang_dir)/bin/clang++'],
         ['CC.host', '$(CC)'],
         ['CXX.host', '$(CXX)'],
+      ],
+    }],
+    ['clang==1 and OS=="win"', {
+      'make_global_settings': [
+        # On Windows, gyp's ninja generator only looks at CC.
+        ['CC', '<(make_clang_dir)/bin/clang-cl'],
       ],
     }],
     ['OS=="android" and clang==0', {
