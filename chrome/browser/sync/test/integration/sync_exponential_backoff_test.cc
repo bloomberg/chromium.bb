@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
 
   // Add an item and ensure that sync is successful.
   ASSERT_TRUE(AddFolder(0, 0, L"folder1"));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   // Trigger a network error at the client side.
   DisableNetwork(GetProfile(0));
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   EnableNetwork(GetProfile(0));
 
   // Verify that sync was able to recover.
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_TRUE(ModelMatchesVerifier(0));
 }
 
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
 
   // Add an item and ensure that sync is successful.
   ASSERT_TRUE(AddFolder(0, 0, L"folder1"));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   // Trigger a transient error on the server.
   TriggerTransientError();

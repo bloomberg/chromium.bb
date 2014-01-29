@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, InstallSomeExtensions) {
     InstallExtension(verifier(), i);
   }
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }

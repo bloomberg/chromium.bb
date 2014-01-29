@@ -1567,7 +1567,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(AddFolder(0, IndexedFolderName(0)) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
   ASSERT_FALSE(AllModelsMatch());
 
   ASSERT_TRUE(AddFolder(1, IndexedFolderName(1)) != NULL);
@@ -1613,7 +1613,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, L"bar", bar_url) != NULL);
   ASSERT_TRUE(AddURL(0, GetOtherNode(0), 0, L"other", other_url) != NULL);
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   ASSERT_TRUE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
@@ -1621,7 +1621,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_FALSE(HasNodeWithURL(1, other_url));
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));

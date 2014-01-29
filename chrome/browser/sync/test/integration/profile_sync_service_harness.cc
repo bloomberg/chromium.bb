@@ -49,6 +49,9 @@ using syncer::sessions::SyncSessionSnapshot;
 using invalidation::P2PInvalidationService;
 
 // The amount of time for which we wait for a sync operation to complete.
+// TODO(sync): This timeout must eventually be made less than the default 45
+// second timeout for integration tests so that in case a sync operation times
+// out, it is able to log a useful failure message before the test is killed.
 static const int kSyncOperationTimeoutMs = 45000;
 
 namespace {
@@ -96,39 +99,22 @@ bool DoneWaitingForBackendInitialization(
   return false;
 }
 
-// Helper function which returns true if initial sync is complete, or if the
-// initial sync is blocked for some reason.
-bool DoneWaitingForInitialSync(const ProfileSyncServiceHarness* harness) {
+// Helper function which returns true if sync setup is complete, or in case
+// it is blocked for some reason.
+bool DoneWaitingForSyncSetup(const ProfileSyncServiceHarness* harness) {
   DCHECK(harness);
-  // Initial sync is complete.
-  if (harness->IsFullySynced())
+  // Sync setup is complete, and the client is ready to sync new changes.
+  if (harness->ServiceIsPushingChanges())
     return true;
-  // Initial sync is blocked because custom passphrase is required.
+  // Sync is blocked because a custom passphrase is required.
   if (harness->service()->passphrase_required_reason() ==
       syncer::REASON_DECRYPTION) {
     return true;
   }
-  // Initial sync is blocked by an auth error.
-  if (harness->HasAuthError())
-    return true;
-  // Still waiting on initial sync.
-  return false;
-}
-
-// Helper function which returns true if the sync client is fully synced, or if
-// sync is blocked for some reason.
-bool DoneWaitingForFullSync(const ProfileSyncServiceHarness* harness) {
-  DCHECK(harness);
-  // Sync is complete.
-  if (harness->IsFullySynced())
-    return true;
   // Sync is blocked by an auth error.
   if (harness->HasAuthError())
     return true;
-  // Sync is blocked by a failure to fetch Oauth2 tokens.
-  if (harness->service()->IsRetryingAccessTokenFetchForTest())
-    return true;
-  // Still waiting on sync.
+  // Still waiting on sync setup.
   return false;
 }
 
@@ -287,10 +273,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Wait for initial sync cycle to be completed.
   DCHECK(service()->sync_initialized());
-  CallbackStatusChecker initial_sync_checker(
-      base::Bind(&DoneWaitingForInitialSync, base::Unretained(this)),
-      "DoneWaitingForInitialSync");
-  if (!AwaitStatusChange(&initial_sync_checker, "SetupSync")) {
+  if (!AwaitSyncSetupCompletion()) {
     LOG(ERROR) << "Initial sync cycle did not complete after "
                << kSyncOperationTimeoutMs / 1000
                << " seconds.";
@@ -343,16 +326,6 @@ void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
 
 bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
   DVLOG(1) << GetClientInfoString("AwaitPassphraseRequired");
-  if (IsSyncDisabled()) {
-    LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
-    return false;
-  }
-
-  if (service()->IsPassphraseRequired()) {
-    // It's already true that a passphrase is required; don't wait.
-    return true;
-  }
-
   CallbackStatusChecker passphrase_required_checker(
       base::Bind(&::IsPassphraseRequired, base::Unretained(this)),
       "IsPassphraseRequired");
@@ -361,19 +334,6 @@ bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
 }
 
 bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
-  DVLOG(1) << GetClientInfoString("AwaitPassphraseAccepted");
-  if (IsSyncDisabled()) {
-    LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
-    return false;
-  }
-
-  if (!service()->IsPassphraseRequired() &&
-      service()->IsUsingSecondaryPassphrase()) {
-    // Passphrase is already accepted; don't wait.
-    FinishSyncSetup();
-    return true;
-  }
-
   CallbackStatusChecker passphrase_accepted_checker(
       base::Bind(&::IsPassphraseAccepted, base::Unretained(this)),
       "IsPassphraseAccepted");
@@ -386,11 +346,6 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
 
 bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
   DVLOG(1) << GetClientInfoString("AwaitBackendInitialized");
-  if (service()->sync_initialized()) {
-    // The sync backend host has already been initialized; don't wait.
-    return true;
-  }
-
   CallbackStatusChecker backend_initialized_checker(
       base::Bind(&DoneWaitingForBackendInitialization,
                  base::Unretained(this)),
@@ -399,42 +354,19 @@ bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
   return service()->sync_initialized();
 }
 
-bool ProfileSyncServiceHarness::AwaitDataSyncCompletion() {
-  DVLOG(1) << GetClientInfoString("AwaitDataSyncCompletion");
-
-  DCHECK(service()->sync_initialized());
-  DCHECK(!IsSyncDisabled());
-
-  if (IsDataSynced()) {
-    // Client is already synced; don't wait.
-    return true;
-  }
-
-  CallbackStatusChecker data_synced_checker(
-      base::Bind(&ProfileSyncServiceHarness::IsDataSynced,
+// TODO(sync): As of today, we wait for a client to finish its commit activity
+// by checking if its progress markers are up to date. In future, once we have
+// an in-process C++ server, this function can be reimplemented without relying
+// on progress markers.
+bool ProfileSyncServiceHarness::AwaitCommitActivityCompletion() {
+  DVLOG(1) << GetClientInfoString("AwaitCommitActivityCompletion");
+  CallbackStatusChecker latest_progress_markers_checker(
+      base::Bind(&ProfileSyncServiceHarness::HasLatestProgressMarkers,
                  base::Unretained(this)),
-      "IsDataSynced");
-  return AwaitStatusChange(&data_synced_checker, "AwaitDataSyncCompletion");
-}
-
-bool ProfileSyncServiceHarness::AwaitFullSyncCompletion() {
-  DVLOG(1) << GetClientInfoString("AwaitFullSyncCompletion");
-  if (IsSyncDisabled()) {
-    LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
-    return false;
-  }
-
-  if (IsFullySynced()) {
-    // Client is already synced; don't wait.
-    return true;
-  }
-
-  DCHECK(service()->sync_initialized());
-  CallbackStatusChecker fully_synced_checker(
-      base::Bind(&DoneWaitingForFullSync, base::Unretained(this)),
-      "DoneWaitingForFullSync");
-  AwaitStatusChange(&fully_synced_checker, "AwaitFullSyncCompletion");
-  return IsFullySynced();
+      "HasLatestProgressMarkers");
+  AwaitStatusChange(&latest_progress_markers_checker,
+                    "AwaitCommitActivityCompletion");
+  return HasLatestProgressMarkers();
 }
 
 bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
@@ -447,10 +379,18 @@ bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
   return AwaitStatusChange(&sync_disabled_checker, "AwaitSyncDisabled");
 }
 
+bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion() {
+  CallbackStatusChecker sync_setup_complete_checker(
+      base::Bind(&DoneWaitingForSyncSetup, base::Unretained(this)),
+      "DoneWaitingForSyncSetup");
+  return AwaitStatusChange(&sync_setup_complete_checker,
+                           "AwaitSyncSetupCompletion");
+}
+
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
     ProfileSyncServiceHarness* partner) {
   DVLOG(1) << GetClientInfoString("AwaitMutualSyncCycleCompletion");
-  if (!AwaitFullSyncCompletion())
+  if (!AwaitCommitActivityCompletion())
     return false;
   return partner->WaitUntilProgressMarkersMatch(this);
 }
@@ -458,7 +398,7 @@ bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
 bool ProfileSyncServiceHarness::AwaitGroupSyncCycleCompletion(
     std::vector<ProfileSyncServiceHarness*>& partners) {
   DVLOG(1) << GetClientInfoString("AwaitGroupSyncCycleCompletion");
-  if (!AwaitFullSyncCompletion())
+  if (!AwaitCommitActivityCompletion())
     return false;
   bool return_value = true;
   for (std::vector<ProfileSyncServiceHarness*>::iterator it =
@@ -489,10 +429,6 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
 bool ProfileSyncServiceHarness::WaitUntilProgressMarkersMatch(
     ProfileSyncServiceHarness* partner) {
   DVLOG(1) << GetClientInfoString("WaitUntilProgressMarkersMatch");
-  if (IsSyncDisabled()) {
-    LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
-    return false;
-  }
 
   // TODO(rsimha): Replace the mechanism of matching up progress markers with
   // one that doesn't require every client to have the same progress markers.
@@ -523,6 +459,13 @@ bool ProfileSyncServiceHarness::AwaitStatusChange(
   if (IsSyncDisabled()) {
     LOG(ERROR) << "Sync disabled for " << profile_debug_name_ << ".";
     return false;
+  }
+
+  DCHECK(checker);
+  if (checker->IsExitConditionSatisfied()) {
+    DVLOG(1) << GetClientInfoString("AwaitStatusChange exiting early because "
+                                    "condition is already satisfied");
+    return true;
   }
 
   DCHECK(status_change_checker_ == NULL);
@@ -577,43 +520,12 @@ bool ProfileSyncServiceHarness::HasAuthError() const {
              GoogleServiceAuthError::REQUEST_CANCELED;
 }
 
-// We use this function to share code between IsFullySynced and IsDataSynced.
-bool ProfileSyncServiceHarness::IsDataSyncedImpl() const {
-  return ServiceIsPushingChanges() &&
-         GetStatus().notifications_enabled &&
-         !service()->HasUnsyncedItems() &&
-         !HasPendingBackendMigration();
-}
-
-bool ProfileSyncServiceHarness::IsDataSynced() const {
-  if (service() == NULL) {
-    DVLOG(1) << GetClientInfoString("IsDataSynced(): false");
-    return false;
-  }
-
-  bool is_data_synced = IsDataSyncedImpl();
-
-  DVLOG(1) << GetClientInfoString(
-      is_data_synced ? "IsDataSynced: true" : "IsDataSynced: false");
-  return is_data_synced;
-}
-
-bool ProfileSyncServiceHarness::IsFullySynced() const {
-  if (service() == NULL) {
-    DVLOG(1) << GetClientInfoString("IsFullySynced: false");
-    return false;
-  }
-  // If we didn't try to commit anything in the previous cycle, there's a
-  // good chance that we're now fully up to date.
+// TODO(sync): Remove this method once we stop relying on self notifications and
+// comparing progress markers.
+bool ProfileSyncServiceHarness::HasLatestProgressMarkers() const {
   const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
-  bool is_fully_synced =
-      snap.model_neutral_state().num_successful_commits == 0
-      && snap.model_neutral_state().commit_result == syncer::SYNCER_OK
-      && IsDataSyncedImpl();
-
-  DVLOG(1) << GetClientInfoString(
-      is_fully_synced ? "IsFullySynced: true" : "IsFullySynced: false");
-  return is_fully_synced;
+  return snap.model_neutral_state().num_successful_commits == 0 &&
+         !service()->HasUnsyncedItems();
 }
 
 void ProfileSyncServiceHarness::FinishSyncSetup() {
@@ -621,24 +533,12 @@ void ProfileSyncServiceHarness::FinishSyncSetup() {
   service()->SetSyncSetupCompleted();
 }
 
-bool ProfileSyncServiceHarness::HasPendingBackendMigration() const {
-  browser_sync::BackendMigrator* migrator =
-      service()->GetBackendMigratorForTest();
-  return migrator && migrator->state() != browser_sync::BackendMigrator::IDLE;
-}
-
 bool ProfileSyncServiceHarness::AutoStartEnabled() {
   return service()->auto_start_enabled();
 }
 
 bool ProfileSyncServiceHarness::MatchesPartnerClient() const {
-  // TODO(akalin): Shouldn't this belong with the intersection check?
-  // Otherwise, this function isn't symmetric.
   DCHECK(progress_marker_partner_);
-  if (!IsFullySynced()) {
-    DVLOG(2) << profile_debug_name_ << ": not synced, assuming doesn't match";
-    return false;
-  }
 
   // Only look for a match if we have at least one enabled datatype in
   // common with the partner client.
@@ -650,13 +550,6 @@ bool ProfileSyncServiceHarness::MatchesPartnerClient() const {
            << progress_marker_partner_->profile_debug_name_
            << ": common types are "
            << syncer::ModelTypeSetToString(common_types);
-
-  if (!common_types.Empty() && !progress_marker_partner_->IsFullySynced()) {
-    DVLOG(2) << "non-empty common types and "
-             << progress_marker_partner_->profile_debug_name_
-             << " isn't synced";
-    return false;
-  }
 
   for (syncer::ModelTypeSet::Iterator i = common_types.First();
        i.Good(); i.Inc()) {
@@ -713,7 +606,7 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
 
   synced_datatypes.Put(syncer::ModelTypeFromInt(datatype));
   service()->OnUserChoseDatatypes(false, synced_datatypes);
-  if (AwaitDataSyncCompletion()) {
+  if (AwaitSyncSetupCompletion()) {
     DVLOG(1) << "EnableSyncForDatatype(): Enabled sync for datatype "
              << syncer::ModelTypeToString(datatype)
              << " on " << profile_debug_name_ << ".";
@@ -746,7 +639,7 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
   synced_datatypes.RetainAll(syncer::UserSelectableTypes());
   synced_datatypes.Remove(datatype);
   service()->OnUserChoseDatatypes(false, synced_datatypes);
-  if (AwaitFullSyncCompletion()) {
+  if (AwaitSyncSetupCompletion()) {
     DVLOG(1) << "DisableSyncForDatatype(): Disabled sync for datatype "
              << syncer::ModelTypeToString(datatype)
              << " on " << profile_debug_name_ << ".";
@@ -769,7 +662,7 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
   }
 
   service()->OnUserChoseDatatypes(true, syncer::ModelTypeSet::All());
-  if (AwaitFullSyncCompletion()) {
+  if (AwaitSyncSetupCompletion()) {
     DVLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes "
              << "on " << profile_debug_name_ << ".";
     return true;
@@ -805,6 +698,8 @@ std::string ProfileSyncServiceHarness::GetSerializedProgressMarker(
   return (it != markers_map.end()) ? it->second : std::string();
 }
 
+// TODO(sync): Clean up this method in a separate CL. Remove all snapshot fields
+// and log shorter, more meaningful messages.
 std::string ProfileSyncServiceHarness::GetClientInfoString(
     const std::string& message) const {
   std::stringstream os;
@@ -813,8 +708,6 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
     const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
     const ProfileSyncService::Status& status = GetStatus();
     // Capture select info from the sync session snapshot and syncer status.
-    // TODO(rsimha): Audit the list of fields below, and eventually eliminate
-    // the use of the sync session snapshot. See crbug.com/323380.
     os << ", has_unsynced_items: "
        << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
        << ", did_commit: "
@@ -834,9 +727,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << ", notifications_enabled: "
        << status.notifications_enabled
        << ", service_is_pushing_changes: "
-       << ServiceIsPushingChanges()
-       << ", has_pending_backend_migration: "
-       << HasPendingBackendMigration();
+       << ServiceIsPushingChanges();
   } else {
     os << "Sync service not available";
   }

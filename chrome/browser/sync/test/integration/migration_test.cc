@@ -95,7 +95,13 @@ class MigrationChecker : public StatusChangeChecker,
                                                " does not contain ")
              << syncer::ModelTypeSetToString(expected_types_);
     return all_expected_types_migrated &&
-           !harness_->HasPendingBackendMigration();
+           !HasPendingBackendMigration();
+  }
+
+  bool HasPendingBackendMigration() const {
+    browser_sync::BackendMigrator* migrator =
+        harness_->service()->GetBackendMigratorForTest();
+    return migrator && migrator->state() != browser_sync::BackendMigrator::IDLE;
   }
 
   void set_expected_types(syncer::ModelTypeSet expected_types) {
@@ -107,7 +113,7 @@ class MigrationChecker : public StatusChangeChecker,
   }
 
   virtual void OnMigrationStateChange() OVERRIDE {
-    if (harness_->HasPendingBackendMigration()) {
+    if (HasPendingBackendMigration()) {
       // A new bunch of data types are in the process of being migrated. Merge
       // them into |pending_types_|.
       pending_types_.PutAll(
@@ -229,14 +235,6 @@ class MigrationTest : public SyncTest  {
       checker->set_expected_types(migrate_types);
       if (!checker->IsExitConditionSatisfied())
         ASSERT_TRUE(GetClient(i)->AwaitStatusChange(checker, "AwaitMigration"));
-      // We must use AwaitDataSyncCompletion rather than the more common
-      // AwaitFullSyncCompletion. As long as crbug.com/97780 is open, we will
-      // rely on self-notifications to ensure that progress markers are updated,
-      // which allows AwaitFullSyncCompletion to return. However, in some
-      // migration tests these notifications are completely disabled, so the
-      // progress markers do not get updated.  This is why we must use the less
-      // strict condition, AwaitDataSyncCompletion.
-      ASSERT_TRUE(GetClient(i)->AwaitDataSyncCompletion());
     }
   }
 

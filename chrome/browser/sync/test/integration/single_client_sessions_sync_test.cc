@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_Sanity) {
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0,
                                         GURL("http://127.0.0.1/bubba"),
                                         old_windows.GetMutable()));
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   // Get foreign session data from client 0.
   SyncedSessionVector sessions;

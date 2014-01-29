@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
       app_list::AppListSyncableServiceFactory::GetForProfile(verifier());
   ASSERT_EQ(kNumApps + kNumDefaultApps, service->GetNumSyncItemsForTest());
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
 

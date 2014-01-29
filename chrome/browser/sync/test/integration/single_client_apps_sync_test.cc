@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
     InstallApp(verifier(), i);
   }
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
     InstallPlatformApp(verifier(), i);
   }
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
     InstallPlatformApp(verifier(), i);
   }
 
-  ASSERT_TRUE(GetClient(0)->AwaitFullSyncCompletion());
+  ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
 
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }

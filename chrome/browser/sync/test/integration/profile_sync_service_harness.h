@@ -75,23 +75,17 @@ class ProfileSyncServiceHarness
   // has been initialized.  Returns true if the wait was successful.
   bool AwaitBackendInitialized();
 
-  // Blocks the caller until this harness has completed a single sync cycle
-  // since the previous one.  Returns true if a sync cycle has completed.
-  bool AwaitDataSyncCompletion();
-
-  // Blocks the caller until this harness has completed as many sync cycles as
-  // are required to ensure its progress marker matches the latest available on
-  // the server.
-  //
-  // Note: When other clients are committing changes this will not be reliable.
-  // If your test involves changes to multiple clients, you should use one of
-  // the other Await* functions, such as AwaitMutualSyncCycleComplete.  Refer to
-  // the documentation of those functions for more details.
-  bool AwaitFullSyncCompletion();
+  // Blocks the caller until the client has nothing left to commit and its
+  // progress markers are up to date. Returns true if successful.
+  bool AwaitCommitActivityCompletion();
 
   // Blocks the caller until sync has been disabled for this client. Returns
   // true if sync is disabled.
   bool AwaitSyncDisabled();
+
+  // Blocks the caller until sync setup is complete for this client. Returns
+  // true if sync setup is complete.
+  bool AwaitSyncSetupCompletion();
 
   // Blocks the caller until this harness has observed that the sync engine
   // has downloaded all the changes seen by the |partner| harness's client.
@@ -173,18 +167,6 @@ class ProfileSyncServiceHarness
   // Check if |type| is being synced.
   bool IsTypePreferred(syncer::ModelType type);
 
-  // Returns true if the sync client has no unsynced items.
-  bool IsDataSynced() const;
-
-  // Returns true if the sync client has no unsynced items and its progress
-  // markers are believed to be up to date.
-  //
-  // Although we can't detect when commits from other clients invalidate our
-  // local progress markers, we do know when our own commits have invalidated
-  // our timestmaps.  This check returns true when this client has, to the best
-  // of its knowledge, downloaded the latest progress markers.
-  bool IsFullySynced() const;
-
   // Get the number of sync entries this client has. This includes all top
   // level or permanent items, and can include recently deleted entries.
   size_t GetNumEntries() const;
@@ -217,9 +199,6 @@ class ProfileSyncServiceHarness
   // other client has.
   bool MatchesPartnerClient() const;
 
-  // Returns true if there is a backend migration in progress.
-  bool HasPendingBackendMigration() const;
-
  private:
   ProfileSyncServiceHarness(
       Profile* profile,
@@ -231,9 +210,6 @@ class ProfileSyncServiceHarness
   // on has occurred, or in the event of a timeout.
   void QuitMessageLoop();
 
-  // A helper for implementing IsDataSynced() and IsFullySynced().
-  bool IsDataSyncedImpl() const;
-
   // Signals that sync setup is complete, and that PSS may begin syncing.
   void FinishSyncSetup();
 
@@ -241,6 +217,10 @@ class ProfileSyncServiceHarness
   // particular datatype. Returns an empty string if the progress marker isn't
   // found.
   std::string GetSerializedProgressMarker(syncer::ModelType model_type) const;
+
+  // Returns true if a client has nothing left to commit and its progress
+  // markers are up to date.
+  bool HasLatestProgressMarkers() const;
 
   // Gets detailed status from |service_| in pretty-printable form.
   std::string GetServiceStatus();
