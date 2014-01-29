@@ -109,13 +109,6 @@ void NativeThemeAuraWin::PaintArrowButton(
                    scrollbar_arrow_button_painters_),
                gc, rect);
 
-  // The arrow is slightly offset to better balance with the thumb.
-  gfx::Rect arrow_rect(rect);
-  if (direction == kScrollbarDownArrow || direction == kScrollbarUpArrow)
-    arrow_rect.Offset(1, 0);
-  else
-    arrow_rect.Offset(0, 1);
-
   // Aura-win uses slightly different arrow colors.
   SkColor arrow_color = GetArrowColor(state);
   switch (state) {
@@ -128,7 +121,7 @@ void NativeThemeAuraWin::PaintArrowButton(
     default:
       break;
   }
-  PaintArrow(gc, arrow_rect, direction, arrow_color);
+  PaintArrow(gc, rect, direction, arrow_color);
 }
 
 void NativeThemeAuraWin::PaintScrollbarTrack(
@@ -148,9 +141,9 @@ void NativeThemeAuraWin::PaintScrollbarThumb(SkCanvas* sk_canvas,
                                              const gfx::Rect& rect) const {
   gfx::Rect thumb_rect(rect);
   if (part == NativeTheme::kScrollbarVerticalThumb)
-    thumb_rect.Inset(3, 0, 1, 0);
+    thumb_rect.Inset(2, 0, 2, 0);
   else
-    thumb_rect.Inset(0, 3, 0, 1);
+    thumb_rect.Inset(0, 2, 0, 2);
   PaintPainter(GetOrCreatePainter(
                    kScrollbarThumbImages, state, scrollbar_thumb_painters_),
                sk_canvas, thumb_rect);
