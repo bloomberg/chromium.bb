@@ -16,7 +16,7 @@
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/glue/webkit_glue.h"
+#include "v8/include/v8.h"
 
 using blink::WebFrame;
 using blink::WebRuntimeFeatures;
@@ -66,7 +66,8 @@ void ShellRenderProcessObserver::WebKitInitialized() {
     return;
 
   // We always expose GC to layout tests.
-  webkit_glue::SetJavaScriptFlags(" --expose-gc");
+  std::string flags("--expose-gc");
+  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
     switches::kStableReleaseMode)) {

@@ -26,7 +26,7 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/glue/webkit_glue.h"
+#include "v8/include/v8.h"
 
 using blink::WebFrame;
 using blink::WebInputEvent;
@@ -150,7 +150,8 @@ void RenderViewTest::SetUp() {
 
   // Setting flags and really doing anything with WebKit is fairly fragile and
   // hacky, but this is the world we live in...
-  webkit_glue::SetJavaScriptFlags(" --expose-gc");
+  std::string flags("--expose-gc");
+  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   blink::initialize(webkit_platform_support_.Get());
 
   // Ensure that we register any necessary schemes when initializing WebKit,

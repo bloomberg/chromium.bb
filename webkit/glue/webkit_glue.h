@@ -5,8 +5,6 @@
 #ifndef WEBKIT_GLUE_WEBKIT_GLUE_H_
 #define WEBKIT_GLUE_WEBKIT_GLUE_H_
 
-#include <string>
-
 #include "base/files/file.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -15,8 +13,6 @@ struct WebFileInfo;
 }
 
 namespace webkit_glue {
-
-WEBKIT_GLUE_EXPORT void SetJavaScriptFlags(const std::string& flags);
 
 // File info conversion
 WEBKIT_GLUE_EXPORT void FileInfoToWebFileInfo(

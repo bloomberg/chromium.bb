@@ -6,13 +6,8 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
-#include "v8/include/v8.h"
 
 namespace webkit_glue {
-
-void SetJavaScriptFlags(const std::string& str) {
-  v8::V8::SetFlagsFromString(str.data(), static_cast<int>(str.size()));
-}
 
 void FileInfoToWebFileInfo(
     const base::File::Info& file_info,

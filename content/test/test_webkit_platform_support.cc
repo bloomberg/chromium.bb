@@ -35,7 +35,6 @@
 #include "webkit/browser/database/vfs_backend.h"
 #include "webkit/child/webkitplatformsupport_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 #if defined(OS_WIN)
@@ -104,7 +103,8 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableFileCookies);
 
   // Test shell always exposes the GC.
-  webkit_glue::SetJavaScriptFlags(" --expose-gc");
+  std::string flags("--expose-gc");
+  v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
 }
 
 TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {

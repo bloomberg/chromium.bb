@@ -1,6 +1,7 @@
 include_rules = [
   "-content",
   "+content/public",
+  "+v8/include/v8.h",
 ]
 
 # Ensure we don't leak internal content headers through public headers.

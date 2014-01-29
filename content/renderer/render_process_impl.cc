@@ -30,7 +30,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/glue/webkit_glue.h"
+#include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -69,17 +69,23 @@ RenderProcessImpl::RenderProcessImpl()
 #endif
 
   // Out of process dev tools rely upon auto break behavior.
-  webkit_glue::SetJavaScriptFlags("--debugger-auto-break");
+  std::string auto_break_flag("--debugger-auto-break");
+  v8::V8::SetFlagsFromString(auto_break_flag.c_str(),
+                             static_cast<int>(auto_break_flag.size()));
 
 #if defined(OS_ANDROID)
-  if (base::android::SysUtils::IsLowEndDevice())
-    webkit_glue::SetJavaScriptFlags("--optimize-for-size");
+  if (base::android::SysUtils::IsLowEndDevice()) {
+    std::string optimize_flag("--optimize-for-size");
+    v8::V8::SetFlagsFromString(optimize_flag.c_str(),
+                               static_cast<int>(optimize_flag.size()));
+  }
 #endif
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
-    webkit_glue::SetJavaScriptFlags(
+    std::string flags(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
+    v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   }
 
   // Turn on cross-site document blocking for renderer processes.
