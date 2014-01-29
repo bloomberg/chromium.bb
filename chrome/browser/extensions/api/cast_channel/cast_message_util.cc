@@ -26,6 +26,9 @@ namespace cast_channel {
 bool MessageInfoToCastMessage(const MessageInfo& message,
                               CastMessage* message_proto) {
   DCHECK(message_proto);
+  if (!message.data)
+    return false;
+
   message_proto->set_protocol_version(CastMessage_ProtocolVersion_CASTV2_1_0);
   message_proto->set_source_id(message.source_id);
   message_proto->set_destination_id(message.destination_id);
@@ -35,26 +38,26 @@ bool MessageInfoToCastMessage(const MessageInfo& message,
   std::string data;
   base::BinaryValue* real_value;
   switch (message.data->GetType()) {
-  // JS string
-  case base::Value::TYPE_STRING:
-    if (message.data->GetAsString(&data)) {
-      message_proto->set_payload_type(CastMessage_PayloadType_STRING);
-      message_proto->set_payload_utf8(data);
-    }
-    break;
-  // JS ArrayBuffer
-  case base::Value::TYPE_BINARY:
-    real_value = static_cast<base::BinaryValue*>(message.data.get());
-    if (real_value->GetBuffer()) {
-      message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
-      message_proto->set_payload_binary(real_value->GetBuffer(),
-                                        real_value->GetSize());
-    }
-    break;
-  default:
-    // Unknown value type.  message_proto will remain uninitialized because
-    // payload_type is unset.
-    break;
+    // JS string
+    case base::Value::TYPE_STRING:
+      if (message.data->GetAsString(&data)) {
+        message_proto->set_payload_type(CastMessage_PayloadType_STRING);
+        message_proto->set_payload_utf8(data);
+      }
+      break;
+    // JS ArrayBuffer
+    case base::Value::TYPE_BINARY:
+      real_value = static_cast<base::BinaryValue*>(message.data.get());
+      if (real_value->GetBuffer()) {
+        message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
+        message_proto->set_payload_binary(real_value->GetBuffer(),
+                                          real_value->GetSize());
+      }
+      break;
+    default:
+      // Unknown value type.  message_proto will remain uninitialized because
+      // payload_type is unset.
+      break;
   }
   return message_proto->IsInitialized();
 }
