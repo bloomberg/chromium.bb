@@ -79,7 +79,7 @@ void WebFormElement::submit()
 void WebFormElement::getNamedElements(const WebString& name,
                                       WebVector<WebNode>& result)
 {
-    Vector<RefPtr<Node> > tempVector;
+    Vector<RefPtr<Element> > tempVector;
     unwrap<HTMLFormElement>()->getNamedElements(name, tempVector);
     result.assign(tempVector);
 }

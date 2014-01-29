@@ -219,10 +219,10 @@ void HTMLFrameSetElement::willRecalcStyle(StyleRecalcChange)
 
 DOMWindow* HTMLFrameSetElement::anonymousNamedGetter(const AtomicString& name)
 {
-    Node* frameNode = children()->namedItem(name);
-    if (!frameNode || !frameNode->hasTagName(HTMLNames::frameTag))
+    Element* frameElement = children()->namedItem(name);
+    if (!frameElement || !frameElement->hasTagName(HTMLNames::frameTag))
         return 0;
-    Document* document = toHTMLFrameElement(frameNode)->contentDocument();
+    Document* document = toHTMLFrameElement(frameElement)->contentDocument();
     if (!document || !document->frame())
         return 0;
     return document->domWindow();

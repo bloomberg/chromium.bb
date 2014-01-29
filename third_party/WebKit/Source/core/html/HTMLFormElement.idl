@@ -32,7 +32,7 @@ interface HTMLFormElement : HTMLElement {
     readonly attribute HTMLCollection elements;
     readonly attribute long length;
     [ImplementedAs=item] getter Node (unsigned long index);
-    [NotEnumerable, OverrideBuiltins] getter (RadioNodeList or Node) (DOMString name);
+    [NotEnumerable, OverrideBuiltins] getter (RadioNodeList or Element) (DOMString name);
 
     [ImplementedAs=submitFromJavaScript, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] void submit();
     [CustomElementCallbacks] void reset();

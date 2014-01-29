@@ -31,7 +31,7 @@
 #include "config.h"
 #include "V8HTMLAllCollection.h"
 
-#include "V8Node.h"
+#include "V8Element.h"
 #include "V8NodeList.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/NamedNodesCollection.h"
@@ -43,7 +43,7 @@ namespace WebCore {
 template<class CallbackInfo>
 static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& info)
 {
-    Vector<RefPtr<Node> > namedItems;
+    Vector<RefPtr<Element> > namedItems;
     collection->namedItems(name, namedItems);
 
     if (!namedItems.size())

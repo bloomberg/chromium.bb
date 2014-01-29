@@ -713,27 +713,27 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     return hasInvalidControls;
 }
 
-Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName)
+Element* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName)
 {
     if (pastName.isEmpty() || !m_pastNamesMap)
         return 0;
-    Node* node = m_pastNamesMap->get(pastName);
+    Element* element = m_pastNamesMap->get(pastName);
 #if !ASSERT_DISABLED
-    if (!node)
+    if (!element)
         return 0;
-    ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(node)->formOwner() == this);
-    if (node->hasTagName(imgTag)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(imageElements().find(node) != kNotFound);
-    } else if (node->hasTagName(objectTag)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLObjectElement(node)) != kNotFound);
+    ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(element)->formOwner() == this);
+    if (element->hasTagName(imgTag)) {
+        ASSERT_WITH_SECURITY_IMPLICATION(imageElements().find(element) != kNotFound);
+    } else if (element->hasTagName(objectTag)) {
+        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLObjectElement(element)) != kNotFound);
     } else {
-        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLFormControlElement(node)) != kNotFound);
+        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLFormControlElement(element)) != kNotFound);
     }
 #endif
-    return node;
+    return element;
 }
 
-void HTMLFormElement::addToPastNamesMap(Node* element, const AtomicString& pastName)
+void HTMLFormElement::addToPastNamesMap(Element* element, const AtomicString& pastName)
 {
     if (pastName.isEmpty())
         return;
@@ -755,12 +755,12 @@ void HTMLFormElement::removeFromPastNamesMap(HTMLElement& element)
     }
 }
 
-void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<Node> >& namedItems)
+void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<Element> >& namedItems)
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#dom-form-nameditem
     elements()->namedItems(name, namedItems);
 
-    Node* elementFromPast = elementFromPastNamesMap(name);
+    Element* elementFromPast = elementFromPastNamesMap(name);
     if (namedItems.size() && namedItems.first() != elementFromPast) {
         addToPastNamesMap(namedItems.first().get(), name);
     } else if (elementFromPast && namedItems.isEmpty()) {
@@ -787,13 +787,13 @@ void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& sourc
     HTMLElement::copyNonAttributePropertiesFromElement(source);
 }
 
-void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
+void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
 {
     // Call getNamedElements twice, first time check if it has a value
     // and let HTMLFormElement update its cache.
     // See issue: 867404
     {
-        Vector<RefPtr<Node> > elements;
+        Vector<RefPtr<Element> > elements;
         getNamedElements(name, elements);
         if (elements.isEmpty())
             return;
@@ -801,7 +801,7 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
 
     // Second call may return different results from the first call,
     // but if the first the size cannot be zero.
-    Vector<RefPtr<Node> > elements;
+    Vector<RefPtr<Element> > elements;
     getNamedElements(name, elements);
     ASSERT(!elements.isEmpty());
 

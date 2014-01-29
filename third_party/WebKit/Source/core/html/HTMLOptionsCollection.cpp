@@ -96,9 +96,9 @@ void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& exception
     toHTMLSelectElement(ownerNode())->setLength(length, exceptionState);
 }
 
-void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
+void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
 {
-    Vector<RefPtr<Node> > namedItems;
+    Vector<RefPtr<Element> > namedItems;
     this->namedItems(name, namedItems);
 
     if (!namedItems.size())

@@ -27,9 +27,9 @@
     [Custom=Setter, RaisesException=Setter] attribute unsigned long length;
     [ImplementedAs=item] getter Node (unsigned long index);
     [RaisesException] setter HTMLOptionElement (unsigned long index, [TreatNullAs=anonymousIndexedSetterRemove, TreatUndefinedAs=anonymousIndexedSetterRemove] HTMLOptionElement value);
-    [NotEnumerable] getter (NodeList or Node) (DOMString name);
+    [NotEnumerable] getter (NodeList or Element) (DOMString name);
 
-    [Custom] Node namedItem([Default=Undefined] optional DOMString name);
+    [Custom] Element namedItem([Default=Undefined] optional DOMString name);
 
     [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option, optional unsigned long index);
     void remove(unsigned long index);

@@ -578,7 +578,7 @@ inline Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element
     return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset, root);
 }
 
-Node* HTMLCollection::namedItem(const AtomicString& name) const
+Element* HTMLCollection::namedItem(const AtomicString& name) const
 {
     // http://msdn.microsoft.com/workshop/author/dhtml/reference/methods/nameditem.asp
     // This method first searches for an object with a matching id
@@ -628,7 +628,7 @@ void HTMLCollection::updateNameCache() const
     setHasNameCache();
 }
 
-void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Node> >& result) const
+void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element> >& result) const
 {
     ASSERT(result.isEmpty());
     if (name.isEmpty())

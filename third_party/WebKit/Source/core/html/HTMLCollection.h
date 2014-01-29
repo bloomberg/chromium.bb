@@ -38,10 +38,10 @@ public:
     virtual void invalidateCache() const OVERRIDE;
 
     // DOM API
-    virtual Node* namedItem(const AtomicString& name) const;
+    virtual Element* namedItem(const AtomicString& name) const;
 
     // Non-DOM API
-    void namedItems(const AtomicString& name, Vector<RefPtr<Node> >&) const;
+    void namedItems(const AtomicString& name, Vector<RefPtr<Element> >&) const;
     bool isEmpty() const
     {
         if (isLengthCacheValid())

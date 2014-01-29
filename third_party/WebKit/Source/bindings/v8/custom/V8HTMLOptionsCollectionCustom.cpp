@@ -47,7 +47,7 @@ namespace WebCore {
 template<typename CallbackInfo>
 static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const CallbackInfo& info)
 {
-    Vector<RefPtr<Node> > namedItems;
+    Vector<RefPtr<Element> > namedItems;
     collection->namedItems(name, namedItems);
 
     if (!namedItems.size()) {

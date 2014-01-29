@@ -51,7 +51,7 @@ public:
     virtual ~HTMLFormElement();
 
     PassRefPtr<HTMLCollection> elements();
-    void getNamedElements(const AtomicString&, Vector<RefPtr<Node> >&);
+    void getNamedElements(const AtomicString&, Vector<RefPtr<Element> >&);
 
     unsigned length() const;
     Node* item(unsigned index);
@@ -115,7 +115,7 @@ public:
     const Vector<HTMLImageElement*>& imageElements();
 
     void getTextFieldValues(StringPairVector& fieldNamesAndValues) const;
-    void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Node>&);
+    void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Element>&);
 
 private:
     explicit HTMLFormElement(Document&);
@@ -150,11 +150,11 @@ private:
     // are any invalid controls in this form.
     bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*, HTMLFormControlElement::CheckValidityDispatchEvents = HTMLFormControlElement::CheckValidityDispatchEventsAllowed);
 
-    Node* elementFromPastNamesMap(const AtomicString&);
-    void addToPastNamesMap(Node*, const AtomicString& pastName);
+    Element* elementFromPastNamesMap(const AtomicString&);
+    void addToPastNamesMap(Element*, const AtomicString& pastName);
     void removeFromPastNamesMap(HTMLElement&);
 
-    typedef HashMap<AtomicString, Node*> PastNamesMap;
+    typedef HashMap<AtomicString, Element*> PastNamesMap;
 
     FormSubmission::Attributes m_attributes;
     OwnPtr<PastNamesMap> m_pastNamesMap;

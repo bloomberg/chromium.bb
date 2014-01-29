@@ -134,7 +134,7 @@ static HTMLElement* firstNamedItem(const Vector<FormAssociatedElement*>& element
     return 0;
 }
 
-Node* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
+Element* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
 {
     // http://msdn.microsoft.com/workshop/author/dhtml/reference/methods/nameditem.asp
     // This method first searches for an object with a matching id
@@ -190,9 +190,9 @@ void HTMLFormControlsCollection::updateNameCache() const
     setHasNameCache();
 }
 
-void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Node>& returnValue1)
+void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<RadioNodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
 {
-    Vector<RefPtr<Node> > namedItems;
+    Vector<RefPtr<Element> > namedItems;
     this->namedItems(name, namedItems);
 
     if (!namedItems.size())

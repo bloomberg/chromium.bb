@@ -31,7 +31,7 @@
 #include "config.h"
 #include "V8HTMLFormControlsCollection.h"
 
-#include "V8Node.h"
+#include "V8Element.h"
 #include "V8RadioNodeList.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCollection.h"
@@ -42,7 +42,7 @@ namespace WebCore {
 template<typename CallbackInfo>
 static v8::Handle<v8::Value> getNamedItems(HTMLFormControlsCollection* collection, const AtomicString& name, const CallbackInfo& info)
 {
-    Vector<RefPtr<Node> > namedItems;
+    Vector<RefPtr<Element> > namedItems;
     collection->namedItems(name, namedItems);
 
     if (!namedItems.size())
