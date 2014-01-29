@@ -31,6 +31,7 @@ namespace views {
 namespace corewm {
 class CompoundEventFilter;
 class CursorManager;
+class FocusController;
 class InputMethodEventFilter;
 class ShadowController;
 class TooltipController;
@@ -268,7 +269,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  scoped_ptr<aura::client::FocusClient> focus_client_;
+  scoped_ptr<corewm::FocusController> focus_client_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
   scoped_ptr<aura::client::DragDropClient> drag_drop_client_;

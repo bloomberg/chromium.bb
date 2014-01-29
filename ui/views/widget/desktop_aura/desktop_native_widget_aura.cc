@@ -286,6 +286,15 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 
   capture_client_.reset();  // Uses root_window_ at destruction.
 
+  // FocusController uses |content_window_|. Destroy it now so that we don't
+  // have to worry about the possibility of FocusController attempting to use
+  // |content_window_| after it's been destroyed but before all child windows
+  // have been destroyed.
+  root_window_->window()->RemovePreTargetHandler(focus_client_.get());
+  aura::client::SetFocusClient(root_window_->window(), NULL);
+  aura::client::SetActivationClient(root_window_->window(), NULL);
+  focus_client_.reset();
+
   root_window_->RemoveRootWindowObserver(this);
   root_window_.reset();  // Uses input_method_event_filter_ at destruction.
   // RootWindow owns |desktop_root_window_host_|.
@@ -301,10 +310,6 @@ void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
     aura::RootWindow* root) {
   // |root_window_| is still valid, but DesktopWindowTreeHost is nearly
   // destroyed. Do cleanup here of members DesktopWindowTreeHost may also use.
-  aura::client::SetFocusClient(root->window(), NULL);
-  aura::client::SetActivationClient(root->window(), NULL);
-  focus_client_.reset();
-
   aura::client::SetDispatcherClient(root->window(), NULL);
   dispatcher_client_.reset();
 
@@ -457,7 +462,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   aura::client::SetDragDropClient(root_window_->window(),
                                   drag_drop_client_.get());
 
-  focus_client_->FocusWindow(content_window_);
+  static_cast<aura::client::FocusClient*>(focus_client_.get())->
+      FocusWindow(content_window_);
 
   OnWindowTreeHostResized(root_window_.get());
 
