@@ -184,7 +184,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     switch (type) {
       case CLIPBOARD_TYPE_COPY_PASTE:
         return true;
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
       case CLIPBOARD_TYPE_SELECTION:
         return true;
 #endif
