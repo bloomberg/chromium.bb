@@ -971,6 +971,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       path,
       "dummy title",
       "plain/plain",
+      DriveUploader::UploadNewFileOptions(),
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&upload_error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -1003,6 +1004,7 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
       upload_path,
       "dummy title 1",
       "text/plain",
+      DriveUploader::UploadNewFileOptions(),
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error1, &entry));
 
@@ -1019,6 +1021,7 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
       upload_path,
       "dummy title 2",
       "text/plain",
+      DriveUploader::UploadNewFileOptions(),
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error2, &entry));
 
@@ -1051,6 +1054,7 @@ TEST_F(JobSchedulerTest, CancelRunningJob) {
       upload_path,
       "dummy title 1",
       "text/plain",
+      DriveUploader::UploadNewFileOptions(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error1, &entry));
 
@@ -1068,6 +1072,7 @@ TEST_F(JobSchedulerTest, CancelRunningJob) {
       upload_path,
       "dummy title 2",
       "text/plain",
+      DriveUploader::UploadNewFileOptions(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error2, &entry));
 

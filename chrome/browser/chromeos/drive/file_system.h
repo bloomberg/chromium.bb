@@ -255,10 +255,10 @@ class FileSystem : public FileSystemInterface,
   // Error of the last update check.
   FileError last_update_check_error_;
 
-  scoped_ptr<internal::SyncClient> sync_client_;
-
   // The loader is used to load the change lists.
   scoped_ptr<internal::ChangeListLoader> change_list_loader_;
+
+  scoped_ptr<internal::SyncClient> sync_client_;
 
   ObserverList<FileSystemObserver> observers_;
 

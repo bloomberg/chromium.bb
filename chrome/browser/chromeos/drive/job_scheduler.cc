@@ -73,6 +73,7 @@ struct UploadNewFileParams {
   base::FilePath local_file_path;
   std::string title;
   std::string content_type;
+  drive::DriveUploader::UploadNewFileOptions options;
   UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
 };
@@ -85,7 +86,7 @@ google_apis::CancelCallback RunUploadNewFile(
                                  params.local_file_path,
                                  params.title,
                                  params.content_type,
-                                 DriveUploader::UploadNewFileOptions(),
+                                 params.options,
                                  params.callback,
                                  params.progress_callback);
 }
@@ -618,6 +619,7 @@ void JobScheduler::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
+    const drive::DriveUploader::UploadNewFileOptions& options,
     const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -631,6 +633,7 @@ void JobScheduler::UploadNewFile(
   params.local_file_path = local_file_path;
   params.title = title;
   params.content_type = content_type;
+  params.options = options;
 
   ResumeUploadParams resume_params;
   resume_params.local_file_path = params.local_file_path;

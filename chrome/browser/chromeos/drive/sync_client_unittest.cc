@@ -135,6 +135,11 @@ class SyncClientTest : public testing::Test {
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
 
+    change_list_loader_.reset(new ChangeListLoader(
+        base::MessageLoopProxy::current().get(),
+        metadata_.get(),
+        scheduler_.get(),
+        drive_service_.get()));
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 
     sync_client_.reset(new SyncClient(base::MessageLoopProxy::current().get(),
@@ -142,6 +147,7 @@ class SyncClientTest : public testing::Test {
                                       scheduler_.get(),
                                       metadata_.get(),
                                       cache_.get(),
+                                      change_list_loader_.get(),
                                       temp_dir_.path()));
 
     // Disable delaying so that DoSyncLoop() starts immediately.
@@ -184,12 +190,7 @@ class SyncClientTest : public testing::Test {
 
     // Load data from the service to the metadata.
     FileError error = FILE_ERROR_FAILED;
-    internal::ChangeListLoader change_list_loader(
-        base::MessageLoopProxy::current().get(),
-        metadata_.get(),
-        scheduler_.get(),
-        drive_service_.get());
-    change_list_loader.LoadForTesting(
+    change_list_loader_->LoadForTesting(
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, error);
@@ -256,6 +257,7 @@ class SyncClientTest : public testing::Test {
              test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<ChangeListLoader> change_list_loader_;
   scoped_ptr<SyncClient> sync_client_;
 
   std::map<std::string, std::string> resource_ids_;  // Name-to-id map.

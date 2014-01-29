@@ -13,6 +13,7 @@
 #include "google_apis/drive/gdata_errorcode.h"
 
 namespace base {
+class ScopedClosureRunner;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -32,6 +33,7 @@ class OperationObserver;
 
 namespace internal {
 
+class ChangeListLoader;
 class EntryRevertPerformer;
 class FileCache;
 class RemovePerformer;
@@ -44,7 +46,8 @@ class EntryUpdatePerformer {
                        file_system::OperationObserver* observer,
                        JobScheduler* scheduler,
                        ResourceMetadata* metadata,
-                       FileCache* cache);
+                       FileCache* cache,
+                       ChangeListLoader* change_list_loader);
   ~EntryUpdatePerformer();
 
   // Requests the server to update the metadata of the entry specified by
@@ -69,6 +72,7 @@ class EntryUpdatePerformer {
       const ClientContext& context,
       const FileOperationCallback& callback,
       const std::string& local_id,
+      scoped_ptr<base::ScopedClosureRunner> change_list_loader_lock,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
@@ -76,6 +80,7 @@ class EntryUpdatePerformer {
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
   FileCache* cache_;
+  ChangeListLoader* change_list_loader_;
   scoped_ptr<RemovePerformer> remove_performer_;
   scoped_ptr<EntryRevertPerformer> entry_revert_performer_;
 

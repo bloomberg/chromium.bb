@@ -117,6 +117,9 @@ class OperationTestBase : public testing::Test {
     return fake_free_disk_space_getter_.get();
   }
   internal::FileCache* cache() { return cache_.get(); }
+  internal::ChangeListLoader* change_list_loader() {
+    return change_list_loader_.get();
+  }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

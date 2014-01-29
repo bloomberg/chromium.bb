@@ -307,19 +307,20 @@ void FileSystem::ResetComponents() {
                                                  cache_,
                                                  temporary_file_directory_));
 
-  sync_client_.reset(new internal::SyncClient(blocking_task_runner_.get(),
-                                              observer,
-                                              scheduler_,
-                                              resource_metadata_,
-                                              cache_,
-                                              temporary_file_directory_));
-
   change_list_loader_.reset(new internal::ChangeListLoader(
       blocking_task_runner_.get(),
       resource_metadata_,
       scheduler_,
       drive_service_));
   change_list_loader_->AddObserver(this);
+
+  sync_client_.reset(new internal::SyncClient(blocking_task_runner_.get(),
+                                              observer,
+                                              scheduler_,
+                                              resource_metadata_,
+                                              cache_,
+                                              change_list_loader_.get(),
+                                              temporary_file_directory_));
 }
 
 void FileSystem::CheckForUpdates() {

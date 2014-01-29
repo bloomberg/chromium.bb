@@ -25,12 +25,13 @@ namespace internal {
 class EntryUpdatePerformerTest : public file_system::OperationTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
-   OperationTestBase::SetUp();
-   performer_.reset(new EntryUpdatePerformer(blocking_task_runner(),
-                                             observer(),
-                                             scheduler(),
-                                             metadata(),
-                                             cache()));
+    OperationTestBase::SetUp();
+    performer_.reset(new EntryUpdatePerformer(blocking_task_runner(),
+                                              observer(),
+                                              scheduler(),
+                                              metadata(),
+                                              cache(),
+                                              change_list_loader()));
   }
 
   // Stores |content| to the cache and mark it as dirty.
@@ -347,6 +348,62 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_OpenedForWrite) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Make sure that the cache is no longer dirty.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&FileCache::GetCacheEntry,
+                 base::Unretained(cache()),
+                 local_id,
+                 &cache_entry),
+      google_apis::test_util::CreateCopyResultCallback(&success));
+  test_util::RunBlockingPoolTask();
+  EXPECT_TRUE(success);
+  EXPECT_FALSE(cache_entry.is_dirty());
+}
+
+TEST_F(EntryUpdatePerformerTest, UpdateEntry_UploadNewFile) {
+  // Create a new file locally.
+  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/New File.txt"));
+
+  ResourceEntry parent;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath.DirName(), &parent));
+
+  ResourceEntry entry;
+  entry.set_parent_local_id(parent.local_id());
+  entry.set_title(kFilePath.BaseName().AsUTF8Unsafe());
+  entry.mutable_file_specific_info()->set_content_mime_type("text/plain");
+  entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+
+  FileError error = FILE_ERROR_FAILED;
+  std::string local_id;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::AddEntry,
+                 base::Unretained(metadata()),
+                 entry,
+                 &local_id),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Update. This should result in creating a new file on the server.
+  error = FILE_ERROR_FAILED;
+  performer_->UpdateEntry(
+      local_id,
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // The entry got a resource ID.
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_FALSE(entry.resource_id().empty());
+  EXPECT_EQ(ResourceEntry::CLEAN, entry.metadata_edit_state());
+
+  // Make sure that the cache is no longer dirty.
+  bool success = false;
+  FileCacheEntry cache_entry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,

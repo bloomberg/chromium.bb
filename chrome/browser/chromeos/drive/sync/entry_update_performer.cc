@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
 
+#include "base/callback_helpers.h"
+#include "base/file_util.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -50,11 +53,23 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
   if (local_state->drive_file_path.empty())
     return FILE_ERROR_NOT_FOUND;
 
-  // Check if content update is needed or not.
   FileCacheEntry cache_entry;
-  if (cache->GetCacheEntry(local_id, &cache_entry) &&
-      cache_entry.is_dirty() &&
-      !cache->IsOpenedForWrite(local_id)) {
+  cache->GetCacheEntry(local_id, &cache_entry);
+  if (!cache_entry.is_present() && local_state->entry.resource_id().empty()) {
+    // Locally created file with no cache file, store an empty file.
+    base::FilePath empty_file;
+    if (!base::CreateTemporaryFile(&empty_file))
+      return FILE_ERROR_FAILED;
+    error = cache->Store(local_id, std::string(), empty_file,
+                         FileCache::FILE_OPERATION_MOVE);
+    if (error != FILE_ERROR_OK)
+      return error;
+    if (!cache->GetCacheEntry(local_id, &cache_entry))
+      return FILE_ERROR_NOT_FOUND;
+  }
+
+  // Check if content update is needed or not.
+  if (cache_entry.is_dirty() && !cache->IsOpenedForWrite(local_id)) {
     // Update cache entry's MD5 if needed.
     if (cache_entry.md5().empty()) {
       error = cache->UpdateMd5(local_id);
@@ -114,6 +129,7 @@ FileError FinishUpdate(ResourceMetadata* metadata,
   }
   if (!entry.file_info().is_directory())
     entry.mutable_file_specific_info()->set_md5(resource_entry->file_md5());
+  entry.set_resource_id(resource_entry->resource_id());
   error = metadata->RefreshEntry(entry);
   if (error != FILE_ERROR_OK)
     return error;
@@ -136,11 +152,13 @@ EntryUpdatePerformer::EntryUpdatePerformer(
     file_system::OperationObserver* observer,
     JobScheduler* scheduler,
     ResourceMetadata* metadata,
-    FileCache* cache)
+    FileCache* cache,
+    ChangeListLoader* change_list_loader)
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
+      change_list_loader_(change_list_loader),
       remove_performer_(new RemovePerformer(blocking_task_runner,
                                             observer,
                                             scheduler,
@@ -200,23 +218,44 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
 
   // Perform content update.
   if (local_state->should_content_update) {
-    drive::DriveUploader::UploadExistingFileOptions options;
-    options.title = local_state->entry.title();
-    options.parent_resource_id = local_state->parent_entry.resource_id();
-    options.modified_date = last_modified;
-    options.last_viewed_by_me_date = last_accessed;
-    scheduler_->UploadExistingFile(
-        local_state->entry.resource_id(),
-        local_state->drive_file_path,
-        local_state->cache_file_path,
-        local_state->entry.file_specific_info().content_mime_type(),
-        options,
-        context,
-        base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   context,
-                   callback,
-                   local_state->entry.local_id()));
+    if (local_state->entry.resource_id().empty()) {
+      drive::DriveUploader::UploadNewFileOptions options;
+      options.modified_date = last_modified;
+      options.last_viewed_by_me_date = last_accessed;
+      scheduler_->UploadNewFile(
+          local_state->parent_entry.resource_id(),
+          local_state->drive_file_path,
+          local_state->cache_file_path,
+          local_state->entry.title(),
+          local_state->entry.file_specific_info().content_mime_type(),
+          options,
+          context,
+          base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     context,
+                     callback,
+                     local_state->entry.local_id(),
+                     base::Passed(change_list_loader_->GetLock())));
+    } else {
+      drive::DriveUploader::UploadExistingFileOptions options;
+      options.title = local_state->entry.title();
+      options.parent_resource_id = local_state->parent_entry.resource_id();
+      options.modified_date = last_modified;
+      options.last_viewed_by_me_date = last_accessed;
+      scheduler_->UploadExistingFile(
+          local_state->entry.resource_id(),
+          local_state->drive_file_path,
+          local_state->cache_file_path,
+          local_state->entry.file_specific_info().content_mime_type(),
+          options,
+          context,
+          base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     context,
+                     callback,
+                     local_state->entry.local_id(),
+                     base::Passed(scoped_ptr<base::ScopedClosureRunner>())));
+    }
     return;
   }
 
@@ -233,13 +272,15 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       context,
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                  weak_ptr_factory_.GetWeakPtr(),
-                 context, callback, local_state->entry.local_id()));
+                 context, callback, local_state->entry.local_id(),
+                 base::Passed(scoped_ptr<base::ScopedClosureRunner>())));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     const ClientContext& context,
     const FileOperationCallback& callback,
     const std::string& local_id,
+    scoped_ptr<base::ScopedClosureRunner> change_list_loader_lock,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
