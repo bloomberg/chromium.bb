@@ -383,6 +383,12 @@ void ChromeContentRendererClient::RenderFrameCreated(
       new prerender::PrerenderHelper(render_frame);
     }
   }
+
+  if (render_frame->GetRenderView()->GetMainRenderFrame() == render_frame) {
+    // Only attach NetErrorHelper to the main frame, since only the main frame
+    // should get error pages.
+    new NetErrorHelper(render_frame);
+  }
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
@@ -411,8 +417,6 @@ void ChromeContentRendererClient::RenderViewCreated(
     new SearchBox(render_view);
 
   new ChromeRenderViewObserver(render_view, chrome_observer_.get());
-
-  new NetErrorHelper(render_view);
 }
 
 void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {
@@ -1005,7 +1009,14 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
                                               "t");
       }
     } else {
-      NetErrorHelper* helper = NetErrorHelper::Get(render_view);
+      // TODO(ellyjones): change GetNavigationErrorStrings to take a RenderFrame
+      // instead of a RenderView, then pass that in.
+      // This is safe for now because we only install the NetErrorHelper on the
+      // main render frame anyway; see the TODO(ellyjones) in
+      // RenderFrameCreated.
+      content::RenderFrame* main_render_frame =
+          render_view->GetMainRenderFrame();
+      NetErrorHelper* helper = NetErrorHelper::Get(main_render_frame);
       helper->GetErrorHTML(frame, error, is_post, error_html);
     }
   }

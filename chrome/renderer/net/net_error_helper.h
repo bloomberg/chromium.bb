@@ -9,8 +9,8 @@
 
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 
 class GURL;
 
@@ -28,18 +28,17 @@ struct WebURLError;
 // browser side and updates the error page with more details (currently, just
 // DNS probe results) if/when available.
 class NetErrorHelper
-    : public content::RenderViewObserver,
-      public content::RenderViewObserverTracker<NetErrorHelper>,
+    : public content::RenderFrameObserver,
+      public content::RenderFrameObserverTracker<NetErrorHelper>,
       public NetErrorHelperCore::Delegate {
  public:
-  explicit NetErrorHelper(content::RenderView* render_view);
+  explicit NetErrorHelper(content::RenderFrame* render_view);
   virtual ~NetErrorHelper();
 
-  // RenderViewObserver implementation.
-  virtual void DidStartProvisionalLoad(blink::WebFrame* frame) OVERRIDE;
-  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
-                                        bool is_new_navigation) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  // RenderFrameObserver implementation.
+  virtual void DidStartProvisionalLoad() OVERRIDE;
+  virtual void DidCommitProvisionalLoad(bool is_new_navigation) OVERRIDE;
+  virtual void DidFinishLoad() OVERRIDE;
   virtual void OnStop() OVERRIDE;
 
   // IPC::Listener implementation.

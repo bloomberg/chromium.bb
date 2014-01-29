@@ -14,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "net/base/net_errors.h"
 
 using chrome_common_net::DnsProbeStatus;
@@ -215,7 +216,9 @@ void NetErrorTabHelper::SendInfo() {
   DCHECK(dns_error_page_committed_);
 
   DVLOG(1) << "Sending status " << DnsProbeStatusToString(dns_probe_status_);
-  Send(new ChromeViewMsg_NetErrorInfo(routing_id(), dns_probe_status_));
+  content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
+  rfh->Send(new ChromeViewMsg_NetErrorInfo(rfh->GetRoutingID(),
+                                           dns_probe_status_));
 
   if (!dns_probe_status_snoop_callback_.is_null())
     dns_probe_status_snoop_callback_.Run(dns_probe_status_);

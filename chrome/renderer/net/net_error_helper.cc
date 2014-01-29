@@ -16,6 +16,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/resource_fetcher.h"
@@ -27,6 +28,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,9 +38,9 @@
 using base::JSONWriter;
 using chrome_common_net::DnsProbeStatus;
 using chrome_common_net::DnsProbeStatusToString;
+using content::RenderFrame;
+using content::RenderFrameObserver;
 using content::RenderThread;
-using content::RenderView;
-using content::RenderViewObserver;
 using content::kUnreachableWebDataURL;
 
 namespace {
@@ -62,25 +64,27 @@ NetErrorHelperCore::FrameType GetFrameType(const blink::WebFrame* frame) {
 
 }  // namespace
 
-NetErrorHelper::NetErrorHelper(RenderView* render_view)
-    : RenderViewObserver(render_view),
-      content::RenderViewObserverTracker<NetErrorHelper>(render_view),
+NetErrorHelper::NetErrorHelper(RenderFrame* render_view)
+    : RenderFrameObserver(render_view),
+      content::RenderFrameObserverTracker<NetErrorHelper>(render_view),
       core_(this) {
 }
 
 NetErrorHelper::~NetErrorHelper() {
 }
 
-void NetErrorHelper::DidStartProvisionalLoad(blink::WebFrame* frame) {
+void NetErrorHelper::DidStartProvisionalLoad() {
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_.OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
 }
 
-void NetErrorHelper::DidCommitProvisionalLoad(blink::WebFrame* frame,
-                                              bool is_new_navigation) {
+void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_.OnCommitLoad(GetFrameType(frame));
 }
 
-void NetErrorHelper::DidFinishLoad(blink::WebFrame* frame) {
+void NetErrorHelper::DidFinishLoad() {
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_.OnFinishLoad(GetFrameType(frame));
 }
 
@@ -123,7 +127,8 @@ void NetErrorHelper::GenerateLocalizedErrorPage(const blink::WebURLError& error,
     LocalizedError::GetStrings(error.reason, error.domain.utf8(),
                                error.unreachableURL, is_failed_post,
                                RenderThread::Get()->GetLocale(),
-                               render_view()->GetAcceptLanguages(),
+                               render_frame()->GetRenderView()->
+                                   GetAcceptLanguages(),
                                &error_strings);
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
@@ -132,7 +137,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(const blink::WebURLError& error,
 
 void NetErrorHelper::LoadErrorPageInMainFrame(const std::string& html,
                                               const GURL& failed_url) {
-  blink::WebView* web_view = render_view()->GetWebView();
+  blink::WebView* web_view = render_frame()->GetRenderView()->GetWebView();
   if (!web_view)
     return;
   blink::WebFrame* frame = web_view->mainFrame();
@@ -147,7 +152,8 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                              error.unreachableURL,
                              is_failed_post,
                              RenderThread::Get()->GetLocale(),
-                             render_view()->GetAcceptLanguages(),
+                             render_frame()->GetRenderView()->
+                                 GetAcceptLanguages(),
                              &error_strings);
 
   std::string json;
@@ -162,13 +168,13 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
   }
 
   base::string16 frame_xpath;
-  render_view()->EvaluateScript(frame_xpath, js16, 0, false);
+  render_frame()->GetRenderView()->EvaluateScript(frame_xpath, js16, 0, false);
 }
 
 void NetErrorHelper::FetchErrorPage(const GURL& url) {
   DCHECK(!alt_error_page_fetcher_.get());
 
-  blink::WebView* web_view = render_view()->GetWebView();
+  blink::WebView* web_view = render_frame()->GetRenderView()->GetWebView();
   if (!web_view)
     return;
   blink::WebFrame* frame = web_view->mainFrame();

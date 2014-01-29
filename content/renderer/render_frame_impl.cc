@@ -862,6 +862,10 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebFrame* frame) {
       RenderViewObserver, render_view_->observers(),
       DidStartProvisionalLoad(frame));
 
+  FOR_EACH_OBSERVER(
+      RenderFrameObserver, observers_,
+      DidStartProvisionalLoad());
+
   Send(new FrameHostMsg_DidStartProvisionalLoadForFrame(
        routing_id_, frame->identifier(),
        frame->parent() ? frame->parent()->identifier() : -1,
@@ -900,6 +904,9 @@ void RenderFrameImpl::didFailProvisionalLoad(
 
   // Call out to RenderViewImpl, so observers are notified.
   render_view_->didFailProvisionalLoad(frame, error);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidFailProvisionalLoad(error));
 
   bool show_repost_interstitial =
       (error.reason == net::ERR_CACHE_MISS &&
@@ -1067,6 +1074,8 @@ void RenderFrameImpl::didFinishLoad(blink::WebFrame* frame) {
   // TODO(nasko): Move implementation here. No state needed, just observers
   // notification before sending message to the browser process.
   render_view_->didFinishLoad(frame);
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidFinishLoad());
 }
 
 void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,
@@ -1500,6 +1509,10 @@ void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
 void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
   observer->RenderFrameGone();
   observers_.RemoveObserver(observer);
+}
+
+void RenderFrameImpl::OnStop() {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnStop());
 }
 
 }  // namespace content

@@ -1583,6 +1583,7 @@ void RenderViewImpl::OnStop() {
   if (webview())
     webview()->mainFrame()->stopLoading();
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnStop());
+  main_render_frame_->OnStop();
 }
 
 // Reload current focused frame.

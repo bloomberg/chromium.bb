@@ -13,6 +13,7 @@
 
 namespace blink {
 class WebFrame;
+struct WebURLError;
 }
 
 namespace content {
@@ -33,8 +34,14 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when a Pepper plugin is created.
   virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
 
+  // Called when a load is explicitly stopped by the user or browser.
+  virtual void OnStop() {}
+
   // These match the Blink API notifications
   virtual void DidCommitProvisionalLoad(bool is_new_navigation) {}
+  virtual void DidStartProvisionalLoad() {}
+  virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
+  virtual void DidFinishLoad() {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

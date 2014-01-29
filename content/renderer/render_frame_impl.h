@@ -87,6 +87,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // This is called right after creation with the WebFrame for this RenderFrame.
   void SetWebFrame(blink::WebFrame* web_frame);
 
+  // Notification from RenderView.
+  virtual void OnStop();
+
 #if defined(ENABLE_PLUGINS)
   // Notification that a PPAPI plugin has been created.
   void PepperPluginCreated(RendererPpapiHost* host);
