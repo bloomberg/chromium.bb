@@ -89,4 +89,17 @@ void UsbMidiInputStream::ProcessOnePacket(UsbMidiDevice* device,
     delegate_->OnReceivedData(it->second, &packet[1], packet_size, timestamp);
 }
 
+std::vector<UsbMidiInputStream::JackUniqueKey>
+UsbMidiInputStream::RegisteredJackKeysForTesting() const {
+  std::vector<JackUniqueKey> result(jack_dictionary_.size(),
+                                    JackUniqueKey(0, 0, 0));
+  for (std::map<JackUniqueKey, size_t>::const_iterator it =
+           jack_dictionary_.begin();
+       it != jack_dictionary_.end(); ++it) {
+    DCHECK_LT(it->second, result.size());
+    result[it->second] = it->first;
+  }
+  return result;
+}
+
 }  // namespace media

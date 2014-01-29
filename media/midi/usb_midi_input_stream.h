@@ -22,7 +22,7 @@ class UsbMidiDevice;
 // Section 4 "USB-MIDI Event Packets" for details.
 class MEDIA_EXPORT UsbMidiInputStream {
  public:
-  class Delegate {
+  class MEDIA_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
     // This function is called when some data arrives to a USB-MIDI jack.
@@ -31,6 +31,17 @@ class MEDIA_EXPORT UsbMidiInputStream {
                                 const uint8* data,
                                 size_t size,
                                 double timestamp) = 0;
+  };
+
+  // This is public for testing.
+  struct JackUniqueKey {
+    JackUniqueKey(UsbMidiDevice* device, int endpoint_number, int cable_number);
+    bool operator==(const JackUniqueKey& that) const;
+    bool operator<(const JackUniqueKey& that) const;
+
+    UsbMidiDevice* device;
+    int endpoint_number;
+    int cable_number;
   };
 
   UsbMidiInputStream(const std::vector<UsbMidiJack>& jacks,
@@ -47,18 +58,10 @@ class MEDIA_EXPORT UsbMidiInputStream {
                       size_t size,
                       double timestamp);
 
+  std::vector<JackUniqueKey> RegisteredJackKeysForTesting() const;
+
  private:
   static const size_t kPacketSize = 4;
-  struct JackUniqueKey {
-    JackUniqueKey(UsbMidiDevice* device, int endpoint_number, int cable_number);
-    bool operator==(const JackUniqueKey& that) const;
-    bool operator<(const JackUniqueKey& that) const;
-
-    UsbMidiDevice* device;
-    int endpoint_number;
-    int cable_number;
-  };
-
   // Processes a USB-MIDI Event Packet.
   // The first |kPacketSize| bytes of |packet| must be accessible.
   void ProcessOnePacket(UsbMidiDevice* device,

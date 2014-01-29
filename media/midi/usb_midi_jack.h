@@ -16,10 +16,10 @@ class UsbMidiDevice;
 struct MEDIA_EXPORT UsbMidiJack {
   // The direction of the endpoint associated with an EMBEDDED MIDI jack.
   // Note that an IN MIDI jack associated with an OUT endpoint has
-  // ***OUT*** direction.
+  // ***DIRECTION_OUT*** direction.
   enum Direction {
-    IN,
-    OUT,
+    DIRECTION_IN,
+    DIRECTION_OUT,
   };
   UsbMidiJack(UsbMidiDevice* device,
               uint8 jack_id,
@@ -39,7 +39,7 @@ struct MEDIA_EXPORT UsbMidiJack {
   uint8 endpoint_address;
 
   Direction direction() const {
-    return (endpoint_address & 0x80) ? IN : OUT;
+    return (endpoint_address & 0x80) ? DIRECTION_IN : DIRECTION_OUT;
   }
   uint8 endpoint_number() const {
     return (endpoint_address & 0xf);

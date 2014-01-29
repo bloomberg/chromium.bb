@@ -23,6 +23,8 @@ class MEDIA_EXPORT UsbMidiOutputStream {
   // Converts |data| to USB-MIDI data and send it to the jack.
   void Send(const std::vector<uint8>& data);
 
+  const UsbMidiJack& jack() const { return jack_; }
+
  private:
   size_t GetSize(const std::vector<uint8>& data) const;
   uint8_t Get(const std::vector<uint8>& data, size_t index) const;
