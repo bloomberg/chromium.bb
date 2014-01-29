@@ -122,8 +122,11 @@ bool DeviceRequestMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void DeviceRequestMessageFilter::OnChannelClosing() {
   // Since the IPC channel is gone, cancel outstanding device requests.
-  media_stream_manager_->CancelAllRequests(peer_pid());
-
+  for (DeviceRequestList::iterator request_it = requests_.begin();
+       request_it != requests_.end(); ++request_it) {
+    media_stream_manager_->CancelRequest(request_it->audio_devices_label);
+    media_stream_manager_->CancelRequest(request_it->video_devices_label);
+  }
   requests_.clear();
 }
 
