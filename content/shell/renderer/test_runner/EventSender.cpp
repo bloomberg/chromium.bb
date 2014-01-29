@@ -967,7 +967,8 @@ void EventSender::addTouchPoint(const CppArgumentList& arguments, CppVariant* re
 
     WebTouchPoint touchPoint;
     touchPoint.state = WebTouchPoint::StatePressed;
-    touchPoint.position = WebPoint(arguments[0].toInt32(), arguments[1].toInt32());
+    touchPoint.position.x = arguments[0].toInt32();
+    touchPoint.position.y = arguments[1].toInt32();
     touchPoint.screenPosition = touchPoint.position;
 
     if (arguments.size() > 2) {
@@ -1034,11 +1035,11 @@ void EventSender::updateTouchPoint(const CppArgumentList& arguments, CppVariant*
     const unsigned index = arguments[0].toInt32();
     BLINK_ASSERT(index < touchPoints.size());
 
-    WebPoint position(arguments[1].toInt32(), arguments[2].toInt32());
     WebTouchPoint* touchPoint = &touchPoints[index];
     touchPoint->state = WebTouchPoint::StateMoved;
-    touchPoint->position = position;
-    touchPoint->screenPosition = position;
+    touchPoint->position.x = arguments[1].toInt32();
+    touchPoint->position.y = arguments[2].toInt32();
+    touchPoint->screenPosition = touchPoint->position;
 }
 
 void EventSender::cancelTouchPoint(const CppArgumentList& arguments, CppVariant* result)

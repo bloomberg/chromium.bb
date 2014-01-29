@@ -222,9 +222,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     for (size_t i = 0; i < touch_event.touchesLength; ++i) {
       if (touch_event.touches[i].state != WebTouchPoint::StatePressed)
         continue;
-      if (input_handler_->HaveTouchEventHandlersAt(touch_event.touches[i]
-                                                       .position))
+      if (input_handler_->HaveTouchEventHandlersAt(
+              blink::WebPoint(touch_event.touches[i].position.x,
+                              touch_event.touches[i].position.y))) {
         return DID_NOT_HANDLE;
+      }
     }
     return DROP_EVENT;
   } else if (WebInputEvent::isKeyboardEventType(event.type)) {

@@ -1140,7 +1140,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     ack_result = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
     for (size_t i = 0; i < touch_event.touchesLength; ++i) {
       if (touch_event.touches[i].state == WebTouchPoint::StatePressed &&
-          HasTouchEventHandlersAt(touch_event.touches[i].position)) {
+          HasTouchEventHandlersAt(
+              blink::WebPoint(touch_event.touches[i].position.x,
+                              touch_event.touches[i].position.y))) {
         ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
         break;
       }
