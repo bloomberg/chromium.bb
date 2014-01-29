@@ -48,4 +48,9 @@
 #
 # START OVERRIDES HERE
 
+# The Skia roll to r13227 introduced some minor pixel differences in 
+# the quad curves in the following two tests (Windows only)
+crbug.com/339090 svg/W3C-SVG-1.1/paths-data-02-t.svg [ ImageOnlyFailure ]
+crbug.com/339090 svg/W3C-SVG-1.1/text-path-01-b.svg [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
