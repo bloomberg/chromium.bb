@@ -700,22 +700,12 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
             transformOrigin.z());
         m_graphicsLayer->setAnchorPoint(anchor);
 
-        RenderStyle* style = renderer()->style();
-        GraphicsLayer* clipLayer = clippingLayer();
-        if (style->hasPerspective()) {
-            TransformationMatrix t = owningLayer()->perspectiveTransform();
-
-            if (clipLayer) {
-                clipLayer->setChildrenTransform(t);
-                m_graphicsLayer->setChildrenTransform(TransformationMatrix());
-            } else {
-                m_graphicsLayer->setChildrenTransform(t);
-            }
+        TransformationMatrix perspective = m_owningLayer->perspectiveTransform(); // Identity if style has no perspective.
+        if (GraphicsLayer* clipLayer = clippingLayer()) {
+            clipLayer->setChildrenTransform(perspective);
+            m_graphicsLayer->setChildrenTransform(TransformationMatrix());
         } else {
-            if (clipLayer)
-                clipLayer->setChildrenTransform(TransformationMatrix());
-            else
-                m_graphicsLayer->setChildrenTransform(TransformationMatrix());
+            m_graphicsLayer->setChildrenTransform(perspective);
         }
     } else {
         m_graphicsLayer->setAnchorPoint(FloatPoint3D(0.5f, 0.5f, 0));
