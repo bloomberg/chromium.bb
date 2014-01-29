@@ -1,0 +1,9 @@
+CONSOLE ERROR: line 52: Uncaught RangeError: Maximum call stack size exceeded.
+CONSOLE ERROR: line 65: Uncaught RangeError: Maximum call stack size exceeded.
+CONSOLE ERROR: line 69: Uncaught RangeError: Maximum call stack size exceeded.
+
+
+
+Test for crbug.com/338982. Passes if it does not crash
+
+PASS
