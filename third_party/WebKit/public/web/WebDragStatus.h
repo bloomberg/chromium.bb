@@ -38,7 +38,8 @@ enum WebDragStatus {
     WebDragStatusEnter,
     WebDragStatusOver,
     WebDragStatusLeave,
-    WebDragStatusDrop
+    WebDragStatusDrop,
+    WebDragStatusLast = WebDragStatusDrop
 };
 
 } // namespace blink

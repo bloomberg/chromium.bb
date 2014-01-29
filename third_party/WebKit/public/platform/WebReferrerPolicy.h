@@ -38,6 +38,7 @@ enum WebReferrerPolicy {
     WebReferrerPolicyDefault,
     WebReferrerPolicyNever,
     WebReferrerPolicyOrigin,
+    WebReferrerPolicyLast = WebReferrerPolicyOrigin
 };
 
 } // namespace blink

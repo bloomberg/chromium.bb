@@ -59,6 +59,7 @@ struct WebContextMenuData {
         MediaTypeFile,
         // A plugin node is selected.
         MediaTypePlugin,
+        MediaTypeLast = MediaTypePlugin
     };
     // The type of media the context menu is being invoked on.
     MediaType mediaType;

@@ -39,7 +39,8 @@ struct WebMediaPlayerAction {
         Play,
         Mute,
         Loop,
-        Controls
+        Controls,
+        TypeLast = Controls
     };
 
     Type type;

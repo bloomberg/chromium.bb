@@ -39,6 +39,7 @@ enum WebPageVisibilityState {
     WebPageVisibilityStateVisible,
     WebPageVisibilityStateHidden,
     WebPageVisibilityStatePrerender,
+    WebPageVisibilityStateLast = WebPageVisibilityStatePrerender
 };
 
 } // namespace blink

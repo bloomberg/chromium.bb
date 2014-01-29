@@ -58,13 +58,15 @@ public:
 
     enum TaskType {
         NormalTask = 0,
-        PreemptiveTask
+        PreemptiveTask,
+        TaskTypeLast = PreemptiveTask
     };
 
     enum PutMode {
         AddOrUpdate,
         AddOnly,
-        CursorUpdate
+        CursorUpdate,
+        PutModeLast = CursorUpdate
     };
 
     static const long long minimumIndexId = 30;

@@ -41,7 +41,8 @@ struct WebServiceWorkerError {
         SecurityError,
         InstallError,
         ActivateError,
-        UnknownError
+        UnknownError,
+        ErrorTypeLast = UnknownError
     };
 
     WebServiceWorkerError(ErrorType errorType, const WebString& message)

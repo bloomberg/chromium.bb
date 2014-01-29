@@ -39,6 +39,7 @@ enum WebPopupType {
     WebPopupTypeSuggestion, // An autofill/autocomplete popup.
     WebPopupTypePage, // An HTML-capable popup.
     WebPopupTypeHelperPlugin, // An off-screen helper plugin.
+    WebPopupTypeLast = WebPopupTypeHelperPlugin
 };
 
 } // namespace blink

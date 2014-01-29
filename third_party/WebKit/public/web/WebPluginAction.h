@@ -37,7 +37,8 @@ struct WebPluginAction {
     enum Type {
         Unknown,
         Rotate90Clockwise,
-        Rotate90Counterclockwise
+        Rotate90Counterclockwise,
+        TypeLast = Rotate90Counterclockwise
     };
 
     Type type;

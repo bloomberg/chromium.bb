@@ -43,6 +43,7 @@ public:
         NextNoDuplicate = 1,
         Prev = 2,
         PrevNoDuplicate = 3,
+        DirectionLast = PrevNoDuplicate
     };
 
     virtual void advance(unsigned long, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }

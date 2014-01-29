@@ -38,6 +38,7 @@ enum WebTextDirection {
     WebTextDirectionDefault,  // Natural writing direction ("inherit")
     WebTextDirectionLeftToRight,
     WebTextDirectionRightToLeft,
+    WebTextDirectionLast = WebTextDirectionRightToLeft
 };
 
 } // namespace blink

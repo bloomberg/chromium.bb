@@ -36,6 +36,7 @@ namespace blink {
 enum WebContentSecurityPolicyType {
     WebContentSecurityPolicyTypeReport,
     WebContentSecurityPolicyTypeEnforce,
+    WebContentSecurityPolicyTypeLast = WebContentSecurityPolicyTypeEnforce
 };
 
 } // namespace blink

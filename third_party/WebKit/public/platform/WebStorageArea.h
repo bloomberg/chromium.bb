@@ -44,7 +44,8 @@ public:
 
     enum Result {
         ResultOK = 0,
-        ResultBlockedByQuota
+        ResultBlockedByQuota,
+        ResultLast = ResultBlockedByQuota
     };
 
     // The number of key/value pairs in the storage area.
