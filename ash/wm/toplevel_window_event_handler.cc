@@ -464,7 +464,7 @@ void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {
 void ToplevelWindowEventHandler::HandleMousePressed(
     aura::Window* target,
     ui::MouseEvent* event) {
-  if (event->phase() != ui::EP_PRETARGET)
+  if (event->phase() != ui::EP_PRETARGET || !target->delegate())
     return;
 
   // We also update the current window component here because for the
@@ -528,7 +528,7 @@ void ToplevelWindowEventHandler::HandleMouseMoved(
   // Shadow effects are applied after target handling. Note that we don't
   // respect ER_HANDLED here right now since we have not had a reason to allow
   // the target to cancel shadow rendering.
-  if (event->phase() != ui::EP_POSTTARGET)
+  if (event->phase() != ui::EP_POSTTARGET || !target->delegate())
     return;
 
   // TODO(jamescook): Move the resize cursor update code into here from
