@@ -92,6 +92,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/three_d_api_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -546,7 +547,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       shutdown_watcher_(new ShutdownWatcherHelper()),
       startup_timer_(new performance_monitor::StartupTimer()),
       browser_field_trials_(parameters.command_line),
-      translate_manager_(NULL),
       profile_(NULL),
       run_message_loop_(true),
       notify_result_(ProcessSingleton::PROCESS_NONE),
@@ -1277,9 +1277,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS;
 #endif
 
-  // Create the TranslateManager singleton.
-  translate_manager_ = TranslateManager::GetInstance();
-  DCHECK(translate_manager_ != NULL);
+  TranslateService::Initialize();
 
   // Needs to be done before PostProfileInit, since login manager on CrOS is
   // called inside PostProfileInit.
@@ -1560,10 +1558,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
       }
 
-      if (translate_manager_ != NULL) {
-        translate_manager_->FetchLanguageListFromTranslateServer(
-            profile_->GetPrefs());
-      }
+      TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(
+          profile_->GetPrefs());
     }
 
     run_message_loop_ = true;
@@ -1660,8 +1656,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Some tests don't set parameters.ui_task, so they started translate
   // language fetch that was never completed so we need to cleanup here
   // otherwise it will be done by the destructor in a wrong thread.
-  if (parameters().ui_task == NULL && translate_manager_ != NULL)
-    translate_manager_->CleanupPendingUlrFetcher();
+  TranslateService::Shutdown(parameters().ui_task == NULL);
 
   if (notify_result_ == ProcessSingleton::PROCESS_NONE)
     process_singleton_->Cleanup();

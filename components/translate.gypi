@@ -11,6 +11,7 @@
         'language_usage_metrics',
         'translate_core_common',
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
@@ -22,7 +23,8 @@
         'translate/core/browser/page_translated_details.h',
         'translate/core/browser/translate_browser_metrics.cc',
         'translate/core/browser/translate_browser_metrics.h',
-        'translate/core/browser/translate_delegate.h',
+        'translate/core/browser/translate_download_manager.cc',
+        'translate/core/browser/translate_download_manager.h',
         'translate/core/browser/translate_driver.h',
         'translate/core/browser/translate_error_details.h',
         'translate/core/browser/translate_event_details.cc',

@@ -23,6 +23,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_script.h"
+#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -38,6 +39,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -233,6 +235,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     // WebContents second).  Also clears the translate script so it is fetched
     // everytime and sets the expiration delay to a large value by default (in
     // case it was zeroed in a previous test).
+    TranslateService::Initialize();
     TranslateManager::GetInstance()->ClearTranslateScript();
     TranslateManager::GetInstance()->
         SetTranslateScriptExpirationDelay(60 * 60 * 1000);
@@ -256,6 +259,12 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
 
     ChromeRenderViewHostTestHarness::TearDown();
     TestingBrowserProcess::DeleteInstance();
+  }
+
+  void SetApplicationLocale(const std::string& locale) {
+    g_browser_process->SetApplicationLocale(locale);
+    TranslateDownloadManager::GetInstance()->set_application_locale(
+        g_browser_process->GetApplicationLocale());
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
@@ -982,7 +991,7 @@ TEST_F(TranslateManagerBrowserTest, ServerReportsUnsupportedLanguage) {
 // Chrome is in a language that the translate server does not support.
 TEST_F(TranslateManagerBrowserTest, UnsupportedUILanguage) {
   std::string original_lang = g_browser_process->GetApplicationLocale();
-  g_browser_process->SetApplicationLocale("qbz");
+  SetApplicationLocale("qbz");
 
   // Make sure that the accept language list only contains unsupported languages
   Profile* profile =
@@ -1004,14 +1013,14 @@ TEST_F(TranslateManagerBrowserTest, UnsupportedUILanguage) {
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 
-  g_browser_process->SetApplicationLocale(original_lang);
+  SetApplicationLocale(original_lang);
 }
 
 // Tests that the first supported accept language is selected
 TEST_F(TranslateManagerBrowserTest, TranslateAcceptLanguage) {
   // Set locate to non-existant language
   std::string original_lang = g_browser_process->GetApplicationLocale();
-  g_browser_process->SetApplicationLocale("qbz");
+  SetApplicationLocale("qbz");
 
   // Set Qbz and French as the only accepted languages
   Profile* profile =

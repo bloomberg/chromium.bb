@@ -10,8 +10,8 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class TranslateDelegate;
-
+// Downloads raw Translate data such as the Translate script and the language
+// list.
 class TranslateURLFetcher : public net::URLFetcherDelegate {
  public:
   // Callback type for Request().
@@ -25,8 +25,7 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
     FAILED,      // The last fetch request was finished with a failure.
   };
 
-  // |delegate| is expected to outlive the TranslateURLFetcher.
-  explicit TranslateURLFetcher(int id, TranslateDelegate* delegate);
+  explicit TranslateURLFetcher(int id);
   virtual ~TranslateURLFetcher();
 
   int max_retry_on_5xx() {
@@ -61,9 +60,6 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
 
   // ID which is assigned to the URLFetcher.
   const int id_;
-
-  // Used to get information from the embedder of Translate.
-  TranslateDelegate* translate_delegate_;
 
   // Internal state.
   enum State state_;

@@ -11,7 +11,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/translate/chrome_translate_delegate.h"
 #include "chrome/browser/translate/translate_url_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/translate/core/browser/translate_url_fetcher.h"
@@ -105,8 +104,7 @@ void TranslateScript::Request(const Callback& callback) {
   translate_script_url =
       TranslateURLUtil::AddApiKeyToUrl(translate_script_url);
 
-  fetcher_.reset(new TranslateURLFetcher(
-      kFetcherId, ChromeTranslateDelegate::GetInstance()));
+  fetcher_.reset(new TranslateURLFetcher(kFetcherId));
   fetcher_->set_extra_request_header(kRequestHeader);
   fetcher_->Request(
       translate_script_url,

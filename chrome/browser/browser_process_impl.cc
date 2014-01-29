@@ -81,6 +81,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
@@ -636,6 +637,7 @@ void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
   locale_ = locale;
   extension_l10n_util::SetProcessLocale(locale);
   chrome::ChromeContentBrowserClient::SetApplicationLocale(locale);
+  TranslateDownloadManager::GetInstance()->set_application_locale(locale);
 }
 
 DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {

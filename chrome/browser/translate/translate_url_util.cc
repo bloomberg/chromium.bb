@@ -4,8 +4,8 @@
 
 #include "chrome/browser/translate/translate_url_util.h"
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 
@@ -31,7 +31,7 @@ GURL AddHostLocaleToUrl(const GURL& url) {
       url,
       kHostLocaleQueryName,
       TranslateManager::GetLanguageCode(
-          g_browser_process->GetApplicationLocale()));
+          TranslateDownloadManager::GetInstance()->application_locale()));
 }
 
 }  // namespace TranslateURLUtil

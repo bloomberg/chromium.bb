@@ -13,11 +13,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/translate/chrome_translate_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_url_util.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_event_details.h"
 #include "components/translate/core/browser/translate_url_fetcher.h"
 #include "net/base/url_util.h"
@@ -168,7 +167,8 @@ void SetSupportedLanguages(const std::string& language_list,
     return;
   }
 
-  const std::string& locale = g_browser_process->GetApplicationLocale();
+  const std::string& locale =
+      TranslateDownloadManager::GetInstance()->application_locale();
 
   // Now we can clear language list.
   target_language_set->clear();
@@ -227,8 +227,7 @@ TranslateLanguageList::TranslateLanguageList() {
   if (update_is_disabled)
     return;
 
-  language_list_fetcher_.reset(new TranslateURLFetcher(
-      kFetcherId, ChromeTranslateDelegate::GetInstance()));
+  language_list_fetcher_.reset(new TranslateURLFetcher(kFetcherId));
   language_list_fetcher_->set_max_retry_on_5xx(kMaxRetryOn5xx);
 }
 

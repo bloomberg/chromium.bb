@@ -28,7 +28,6 @@ class StartupBrowserCreator;
 class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class ThreeDAPIObserver;
-class TranslateManager;
 
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
@@ -169,7 +168,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Android's first run is done in Java instead of native.
   scoped_ptr<first_run::MasterPrefs> master_prefs_;
 #endif
-  TranslateManager* translate_manager_;
   Profile* profile_;
   bool run_message_loop_;
   ProcessSingleton::NotifyResult notify_result_;

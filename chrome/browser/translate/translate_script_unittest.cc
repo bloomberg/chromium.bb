@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -23,6 +24,7 @@ class TranslateScriptTest : public testing::Test {
   virtual void SetUp() {
     script_.reset(new TranslateScript);
     DCHECK(script_.get());
+    TranslateDownloadManager::GetInstance()->set_application_locale("en");
   }
 
   virtual void TearDown() {
