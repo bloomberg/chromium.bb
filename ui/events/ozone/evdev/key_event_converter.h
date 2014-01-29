@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVDEV_KEY_EVENT_CONVERTER_EVDEV_H_
 
 #include "base/files/file_path.h"
+#include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
@@ -15,7 +16,9 @@ struct input_event;
 
 namespace ui {
 
-class EVENTS_EXPORT KeyEventConverterEvdev : public EventConverterOzone {
+class EVENTS_EXPORT KeyEventConverterEvdev
+    : public EventConverterOzone,
+      base::MessagePumpLibevent::Watcher {
  public:
   KeyEventConverterEvdev(int fd,
                          base::FilePath path,
@@ -29,6 +32,10 @@ class EVENTS_EXPORT KeyEventConverterEvdev : public EventConverterOzone {
   void ProcessEvents(const struct input_event* inputs, int count);
 
  private:
+  // Start & stop watching for events.
+  void Start();
+  void Stop();
+
   // File descriptor for the /dev/input/event* instance.
   int fd_;
 
@@ -37,6 +44,9 @@ class EVENTS_EXPORT KeyEventConverterEvdev : public EventConverterOzone {
 
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
+
+  // Controller for watching the input fd.
+  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
   void ConvertKeyEvent(int key, int value);
 

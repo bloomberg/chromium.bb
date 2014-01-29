@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -13,19 +14,20 @@
 
 namespace ui {
 
-const int kInvalidFileDescriptor = -1;
 const char kTestDevicePath[] = "/dev/input/test-device";
 
 class MockKeyEventConverterEvdev : public KeyEventConverterEvdev {
  public:
-  MockKeyEventConverterEvdev(EventModifiersEvdev* modifiers)
-      : KeyEventConverterEvdev(kInvalidFileDescriptor,
-                               base::FilePath(kTestDevicePath),
-                               modifiers) {}
+  MockKeyEventConverterEvdev(int fd, EventModifiersEvdev* modifiers)
+      : KeyEventConverterEvdev(fd, base::FilePath(kTestDevicePath), modifiers) {
+  }
   virtual ~MockKeyEventConverterEvdev() {};
 
   unsigned size() { return dispatched_events_.size(); }
-  KeyEvent* event(unsigned index) { return dispatched_events_[index]; }
+  KeyEvent* event(unsigned index) {
+    CHECK_GT(dispatched_events_.size(), index);
+    return dispatched_events_[index];
+  }
 
   virtual void DispatchEvent(scoped_ptr<Event> event) OVERRIDE;
 
@@ -48,20 +50,36 @@ class KeyEventConverterEvdevTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
+
+    // Set up pipe to satisfy message pump (unused).
+    int evdev_io[2];
+    if (pipe(evdev_io))
+      PLOG(FATAL) << "failed pipe";
+    events_in_ = evdev_io[0];
+    events_out_ = evdev_io[1];
+
     modifiers_ = new ui::EventModifiersEvdev();
-    device_ = new ui::MockKeyEventConverterEvdev(modifiers_);
+    device_ = new ui::MockKeyEventConverterEvdev(events_in_, modifiers_);
   }
   virtual void TearDown() OVERRIDE {
     delete device_;
     delete modifiers_;
+    close(events_in_);
+    close(events_out_);
   }
 
   ui::MockKeyEventConverterEvdev* device() { return device_; }
   ui::EventModifiersEvdev* modifiers() { return modifiers_; }
 
  private:
+  base::MessageLoopForUI ui_loop_;
+
   ui::EventModifiersEvdev* modifiers_;
   ui::MockKeyEventConverterEvdev* device_;
+
+  int events_out_;
+  int events_in_;
+
   DISALLOW_COPY_AND_ASSIGN(KeyEventConverterEvdevTest);
 };
 

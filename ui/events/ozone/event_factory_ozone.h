@@ -38,20 +38,7 @@ class EVENTS_EXPORT EventFactoryOzone {
   // Sets the implementation delegate. Ownership is retained by the caller.
   static void SetInstance(EventFactoryOzone*);
 
-  // Add an |EventConverterOzone| instances for the given file descriptor.
-  // Transfers ownership of the |EventConverterOzone| to this class.
-  void AddEventConverter(int fd, scoped_ptr<EventConverterOzone> converter);
-
-  // Remote the |EventConverterOzone|
-  void RemoveEventConverter(int fd);
-
  private:
-  // |EventConverterOzone| for each file descriptor.
-  typedef EventConverterOzone* Converter;
-  typedef base::MessagePumpLibevent::FileDescriptorWatcher* FDWatcher;
-  std::map<int, Converter> converters_;
-  std::map<int, FDWatcher> watchers_;
-
   static EventFactoryOzone* impl_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(EventFactoryOzone);

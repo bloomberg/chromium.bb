@@ -12,6 +12,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/files/file_enumerator.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -39,7 +40,7 @@ bool IsTouchScreen(const EventDeviceInfo& devinfo) {
 
 EventFactoryEvdev::EventFactoryEvdev() {}
 
-EventFactoryEvdev::~EventFactoryEvdev() {}
+EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
 
 void EventFactoryEvdev::AttachInputDevice(const base::FilePath& path) {
   TRACE_EVENT1("ozone", "AttachInputDevice", "path", path.value());
@@ -71,7 +72,7 @@ void EventFactoryEvdev::AttachInputDevice(const base::FilePath& path) {
     converter.reset(new KeyEventConverterEvdev(fd, path, &modifiers_));
 
   if (converter) {
-    AddEventConverter(fd, converter.Pass());
+    converters_[path] = converter.release();
   } else {
     close(fd);
   }

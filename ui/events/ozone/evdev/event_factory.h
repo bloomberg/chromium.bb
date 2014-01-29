@@ -25,6 +25,9 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   // Open device at path & starting processing events.
   void AttachInputDevice(const base::FilePath& file_path);
 
+  // Owned per-device event converters (by path).
+  std::map<base::FilePath, EventConverterOzone*> converters_;
+
   EventModifiersEvdev modifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFactoryEvdev);

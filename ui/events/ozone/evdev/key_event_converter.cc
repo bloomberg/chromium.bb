@@ -6,6 +6,7 @@
 
 #include <linux/input.h>
 
+#include "base/message_loop/message_pump_ozone.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
@@ -189,11 +190,21 @@ KeyEventConverterEvdev::KeyEventConverterEvdev(int fd,
                                                EventModifiersEvdev* modifiers)
     : fd_(fd), path_(path), modifiers_(modifiers) {
   // TODO(spang): Initialize modifiers using EVIOCGKEY.
+  Start();
 }
 
 KeyEventConverterEvdev::~KeyEventConverterEvdev() {
-  if (fd_ >= 0 && close(fd_) < 0)
-    DLOG(WARNING) << "failed close on " << path_.value();
+  Stop();
+  close(fd_);
+}
+
+void KeyEventConverterEvdev::Start() {
+  base::MessagePumpOzone::Current()->WatchFileDescriptor(
+      fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
+}
+
+void KeyEventConverterEvdev::Stop() {
+  controller_.StopWatchingFileDescriptor();
 }
 
 void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {

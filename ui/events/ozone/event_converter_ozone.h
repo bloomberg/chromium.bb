@@ -6,21 +6,16 @@
 #define UI_EVENTS_OZONE_EVENT_CONVERTER_OZONE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/events_export.h"
 
 namespace ui {
 class Event;
 
-// In ozone, Chrome reads events from file descriptors created from Linux device
-// drivers. The |MessagePumpLibevent::Watcher| parent class provides the
-// functionality to watch a file descriptor for the arrival of new data and
-// notify its subclasses. Device-specific event converters turn bytes read from
-// the file descriptor into |ui::Event| instances. This class provides the
-// functionality needed in common across all converters: dispatching the
-// |ui::Event| to aura.
-class EVENTS_EXPORT EventConverterOzone
-    : public base::MessagePumpLibevent::Watcher {
+// Ozone implementations can generate input events in whatever way is
+// appropriate for the platform.
+// This class provides the functionality needed in common across all
+// converters: dispatching the |ui::Event| to aura.
+class EVENTS_EXPORT EventConverterOzone {
  public:
   EventConverterOzone();
   virtual ~EventConverterOzone();

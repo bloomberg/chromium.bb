@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/ozone/event_converter_ozone.h"
@@ -17,7 +18,9 @@ namespace ui {
 
 class TouchEvent;
 
-class EVENTS_EXPORT TouchEventConverterEvdev : public EventConverterOzone {
+class EVENTS_EXPORT TouchEventConverterEvdev
+    : public EventConverterOzone,
+      base::MessagePumpLibevent::Watcher {
  public:
   enum {
     MAX_FINGERS = 11
@@ -30,6 +33,10 @@ class EVENTS_EXPORT TouchEventConverterEvdev : public EventConverterOzone {
 
   // Unsafe part of initialization.
   void Init();
+
+  // Start & stop watching for events.
+  void Start();
+  void Stop();
 
   // Overidden from base::MessagePumpLibevent::Watcher.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
@@ -73,6 +80,9 @@ class EVENTS_EXPORT TouchEventConverterEvdev : public EventConverterOzone {
 
   // In-progress touch points.
   InProgressEvents events_[MAX_FINGERS];
+
+  // Controller for watching the input fd.
+  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };

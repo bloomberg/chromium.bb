@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_ozone.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -43,11 +42,12 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(int fd, base::FilePath path)
       fd_(fd),
       path_(path) {
   Init();
+  Start();
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
-  if (fd_ >= 0 && close(fd_) < 0)
-    DLOG(WARNING) << "failed close on " << path_.value();
+  Stop();
+  close(fd_);
 }
 
 void TouchEventConverterEvdev::Init() {
@@ -97,6 +97,15 @@ void TouchEventConverterEvdev::Init() {
                    << "SurfaceFactoryOzone::DefaultDisplaySpec";
     }
   }
+}
+
+void TouchEventConverterEvdev::Start() {
+  base::MessagePumpOzone::Current()->WatchFileDescriptor(
+      fd_, true, base::MessagePumpLibevent::WATCH_READ, &controller_, this);
+}
+
+void TouchEventConverterEvdev::Stop() {
+  controller_.StopWatchingFileDescriptor();
 }
 
 void TouchEventConverterEvdev::OnFileCanWriteWithoutBlocking(int /* fd */) {

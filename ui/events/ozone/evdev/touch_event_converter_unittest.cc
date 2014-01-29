@@ -28,7 +28,6 @@ static int SetNonBlocking(int fd) {
   return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-const int kInvalidFileDescriptor = -1;
 const char kTestDevicePath[] = "/dev/input/test-device";
 
 }  // namespace
@@ -110,9 +109,16 @@ class TouchEventConverterEvdevTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
+    // Set up pipe to satisfy message pump (unused).
+    int evdev_io[2];
+    if (pipe(evdev_io))
+      PLOG(FATAL) << "failed pipe";
+    events_in_ = evdev_io[0];
+    events_out_ = evdev_io[1];
+
     loop_ = new base::MessageLoopForUI;
     device_ = new ui::MockTouchEventConverterEvdev(
-        kInvalidFileDescriptor, base::FilePath(kTestDevicePath));
+        events_in_, base::FilePath(kTestDevicePath));
     base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(device_);
   }
   virtual void TearDown() OVERRIDE {
@@ -125,6 +131,10 @@ class TouchEventConverterEvdevTest : public testing::Test {
  private:
   base::MessageLoop* loop_;
   ui::MockTouchEventConverterEvdev* device_;
+
+  int events_out_;
+  int events_in_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdevTest);
 };
 
