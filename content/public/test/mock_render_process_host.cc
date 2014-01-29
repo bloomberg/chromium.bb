@@ -257,6 +257,10 @@ void MockRenderProcessHost::EnableAecDump(const base::FilePath& file) {
 
 void MockRenderProcessHost::DisableAecDump() {
 }
+
+void MockRenderProcessHost::SetWebRtcLogMessageCallback(
+    base::Callback<void(const std::string&)> callback) {
+}
 #endif
 
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {

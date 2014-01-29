@@ -259,7 +259,7 @@ void VideoCaptureDeviceAndroid::SetErrorState(const std::string& reason) {
     base::AutoLock lock(lock_);
     state_ = kError;
   }
-  client_->OnError();
+  client_->OnError(reason);
 }
 
 }  // namespace media

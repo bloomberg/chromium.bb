@@ -165,8 +165,9 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   capture_in_progress_ = false;
 
   if (!frame) {
-    LOG(ERROR) << "Failed to capture a frame.";
-    client_->OnError();
+    std::string log("Failed to capture a frame.");
+    LOG(ERROR) << log;
+    client_->OnError(log);
     return;
   }
 

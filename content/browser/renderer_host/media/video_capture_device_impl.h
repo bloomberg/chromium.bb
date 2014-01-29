@@ -71,7 +71,7 @@ class ThreadSafeCaptureOracle
   void Stop();
 
   // Signal an error to the client.
-  void ReportError();
+  void ReportError(const std::string& reason);
 
  private:
   friend class base::RefCountedThreadSafe<ThreadSafeCaptureOracle>;
@@ -165,7 +165,7 @@ class CONTENT_EXPORT VideoCaptureDeviceImpl
   void CaptureStarted(bool success);
 
   // Stops capturing and notifies client_ of an error state.
-  void Error();
+  void Error(const std::string& reason);
 
   // Tracks that all activity occurs on the media stream manager's thread.
   base::ThreadChecker thread_checker_;

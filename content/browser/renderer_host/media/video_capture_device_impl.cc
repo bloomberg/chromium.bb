@@ -155,10 +155,10 @@ void ThreadSafeCaptureOracle::Stop() {
   client_.reset();
 }
 
-void ThreadSafeCaptureOracle::ReportError() {
+void ThreadSafeCaptureOracle::ReportError(const std::string& reason) {
   base::AutoLock guard(lock_);
   if (client_)
-    client_->OnError();
+    client_->OnError(reason);
 }
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
@@ -196,16 +196,19 @@ void VideoCaptureDeviceImpl::AllocateAndStart(
   }
 
   if (params.requested_format.frame_rate <= 0) {
-    DVLOG(1) << "invalid frame_rate: " << params.requested_format.frame_rate;
-    client->OnError();
+    std::string error_msg = base::StringPrintf(
+        "invalid frame_rate: %d", params.requested_format.frame_rate);
+    DVLOG(1) << error_msg;
+    client->OnError(error_msg);
     return;
   }
 
   if (params.requested_format.frame_size.width() < kMinFrameWidth ||
       params.requested_format.frame_size.height() < kMinFrameHeight) {
-    DVLOG(1) << "invalid frame size: "
-             << params.requested_format.frame_size.ToString();
-    client->OnError();
+    std::string error_msg =
+        "invalid frame size: " + params.requested_format.frame_size.ToString();
+    DVLOG(1) << error_msg;
+    client->OnError(error_msg);
     return;
   }
 
@@ -252,8 +255,9 @@ void VideoCaptureDeviceImpl::StopAndDeAllocate() {
 void VideoCaptureDeviceImpl::CaptureStarted(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!success) {
-    DVLOG(1) << "Failed to start capture machine.";
-    Error();
+    std::string reason("Failed to start capture machine.");
+    DVLOG(1) << reason;
+    Error(reason);
   }
 }
 
@@ -291,14 +295,14 @@ void VideoCaptureDeviceImpl::TransitionStateTo(State next_state) {
   state_ = next_state;
 }
 
-void VideoCaptureDeviceImpl::Error() {
+void VideoCaptureDeviceImpl::Error(const std::string& reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == kIdle)
     return;
 
   if (oracle_proxy_)
-    oracle_proxy_->ReportError();
+    oracle_proxy_->ReportError(reason);
 
   StopAndDeAllocate();
   TransitionStateTo(kError);

@@ -180,8 +180,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
                                           int frame_rate) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
-    // be StopAndDeAllocate()-ed.
-    virtual void OnError() = 0;
+    // be StopAndDeAllocate()-ed. |reason| is a text description of the error.
+    virtual void OnError(const std::string& reason) = 0;
   };
 
   // Creates a VideoCaptureDevice object.

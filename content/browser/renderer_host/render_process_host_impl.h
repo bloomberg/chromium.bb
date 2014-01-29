@@ -124,6 +124,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(ENABLE_WEBRTC)
   virtual void EnableAecDump(const base::FilePath& file) OVERRIDE;
   virtual void DisableAecDump() OVERRIDE;
+  virtual void SetWebRtcLogMessageCallback(
+      base::Callback<void(const std::string&)> callback) OVERRIDE;
 #endif
 
   // IPC::Sender via RenderProcessHost.
@@ -164,6 +166,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
       geolocation_dispatcher_host() const {
     return make_scoped_refptr(geolocation_dispatcher_host_);
   }
+
+#if defined(ENABLE_WEBRTC)
+  // Fires the webrtc log message callback with |message|, if callback is set.
+  void WebRtcLogMessage(const std::string& message);
+#endif
 
   // Register/unregister the host identified by the host id in the global host
   // list.
@@ -388,6 +395,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Message filter for geolocation messages.
   GeolocationDispatcherHost* geolocation_dispatcher_host_;
+
+#if defined(ENABLE_WEBRTC)
+  base::Callback<void(const std::string&)> webrtc_log_message_callback_;
+#endif
 
   // Lives on the browser's ChildThread.
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;

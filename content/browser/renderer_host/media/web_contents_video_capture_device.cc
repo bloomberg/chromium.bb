@@ -700,7 +700,7 @@ void WebContentsCaptureMachine::WebContentsDestroyed(
 
   subscription_.reset();
   web_contents->DecrementCapturerCount();
-  oracle_proxy_->ReportError();
+  oracle_proxy_->ReportError("WebContentsDestroyed()");
 }
 
 RenderWidgetHost* WebContentsCaptureMachine::GetTarget() {
