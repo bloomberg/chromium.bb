@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -89,12 +88,9 @@ TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
 
   // Dirty and deleted (= absent in resource_metada) cache entry.
   std::string local_id_1("file:1");
-  std::string md5_1("abcdef0123456789");
   EXPECT_EQ(FILE_ERROR_OK,
-            cache_->Store(local_id_1, md5_1, dummy_file,
+            cache_->Store(local_id_1, std::string(), dummy_file,
                           FileCache::FILE_OPERATION_COPY));
-  scoped_ptr<base::ScopedClosureRunner> file_closer;
-  EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(local_id_1, &file_closer));
 
   // Dirty and mismatching-MD5 entry.
   std::string md5_2_cache("0123456789abcdef");
@@ -109,9 +105,8 @@ TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   resource_metadata_->AddEntry(entry, &local_id_2);
 
   EXPECT_EQ(FILE_ERROR_OK,
-            cache_->Store(local_id_2, md5_2_cache, dummy_file,
+            cache_->Store(local_id_2, std::string(), dummy_file,
                           FileCache::FILE_OPERATION_COPY));
-  EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(local_id_2, &file_closer));
 
   // Remove stale cache files.
   RemoveStaleCacheFiles(cache_.get(), resource_metadata_.get());

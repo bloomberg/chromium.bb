@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 
-#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -89,12 +88,8 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     base::FilePath empty_file;
     if (!base::CreateTemporaryFileInDir(temporary_file_directory, &empty_file))
       return FILE_ERROR_FAILED;
-    error = cache->Store(local_id, base::MD5String(""), empty_file,
+    error = cache->Store(local_id, std::string(), empty_file,
                          internal::FileCache::FILE_OPERATION_MOVE);
-    if (error != FILE_ERROR_OK)
-      return error;
-    scoped_ptr<base::ScopedClosureRunner> file_closer;
-    error = cache->OpenForWrite(entry->local_id(), &file_closer);
     if (error != FILE_ERROR_OK)
       return error;
 

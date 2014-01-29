@@ -48,23 +48,8 @@ class EntryUpdatePerformerTest : public file_system::OperationTestBase {
         FROM_HERE,
         base::Bind(&FileCache::Store,
                    base::Unretained(cache()),
-                   local_id, base::MD5String(content), path,
+                   local_id, std::string(), path,
                    FileCache::FILE_OPERATION_COPY),
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    test_util::RunBlockingPoolTask();
-    if (error != FILE_ERROR_OK)
-      return error;
-
-    // Add the dirty bit.
-    error = FILE_ERROR_FAILED;
-    scoped_ptr<base::ScopedClosureRunner> file_closer;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner(),
-        FROM_HERE,
-        base::Bind(&FileCache::OpenForWrite,
-                   base::Unretained(cache()),
-                   local_id,
-                   &file_closer),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
     return error;

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -110,18 +109,8 @@ FileError UpdateLocalStateForScheduleTransfer(
   if (error != FILE_ERROR_OK)
     return error;
 
-  error = cache->Store(
-      *local_id, entry.file_specific_info().md5(), local_src_path,
-      internal::FileCache::FILE_OPERATION_COPY);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  scoped_ptr<base::ScopedClosureRunner> file_closer;
-  error = cache->OpenForWrite(*local_id, &file_closer);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  return FILE_ERROR_OK;
+  return cache->Store(*local_id, std::string(), local_src_path,
+                      internal::FileCache::FILE_OPERATION_COPY);
 }
 
 // Gets the file size of the |local_path|, and the ResourceEntry for the parent

@@ -351,6 +351,10 @@ TEST_F(FileCacheTestOnUIThread, StoreToCacheSimple) {
   // Verify that there's only one file with name <id>, i.e. previously
   // cached file with the different md5 should be deleted.
   EXPECT_EQ(1U, CountCacheFiles(id, md5));
+
+  // Passing empty MD5 marks the entry as dirty.
+  TestStoreToCache(id, std::string(), dummy_file_path_, FILE_ERROR_OK,
+                   TEST_CACHE_STATE_PRESENT | TEST_CACHE_STATE_DIRTY);
 }
 
 TEST_F(FileCacheTestOnUIThread, RemoveFromCacheSimple) {

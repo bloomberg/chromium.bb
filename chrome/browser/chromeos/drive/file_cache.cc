@@ -181,7 +181,8 @@ FileError FileCache::Store(const std::string& id,
   // Now that file operations have completed, update metadata.
   cache_entry.set_md5(md5);
   cache_entry.set_is_present(true);
-  cache_entry.set_is_dirty(false);
+  if (md5.empty())
+    cache_entry.set_is_dirty(true);
   return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }

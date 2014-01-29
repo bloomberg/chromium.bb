@@ -88,6 +88,7 @@ class FileCache {
 
   // Stores |source_path| as a cache of the remote content of the file
   // with |id| and |md5|.
+  // Pass an empty string as MD5 to mark the entry as dirty.
   FileError Store(const std::string& id,
                   const std::string& md5,
                   const base::FilePath& source_path,
