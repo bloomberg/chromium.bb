@@ -1071,6 +1071,22 @@ class SignerResultsStageTest(AbstractStageTest):
           stage = self.ConstructStage()
           self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
+  def testPerformStageMissingResults(self):
+    """Test that SignerResultsStage waits when unexpecte Json is received.."""
+    insns = { 'chan1': ['chan1_uri1'] }
+
+    # In this case, we shorten the timeout to 1 second. Unexpected results
+    # should not qualify as pass or failure, and so we should run until
+    # timeout is reached.
+    with patch(stages.SignerResultsStage, 'SIGNING_TIMEOUT', return_value=1):
+      with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
+        with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+          mock_gs_ctx = mock_gs_ctx_init.return_value
+          mock_gs_ctx.Cat.side_effect = stages.gs.GSNoSuchKey
+
+          stage = self.ConstructStage()
+          self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+
   def testPerformStageMalformedJson(self):
     """Test that SignerResultsStage errors when invalid Json is received.."""
     insns = { 'chan1': ['chan1_uri1'] }

@@ -2855,7 +2855,7 @@ class SignerResultsStage(ArchivingStage):
       string with a simple status: 'passed', 'failed', 'downloading', etc,
       or '' if the json doesn't contain a status.
     """
-    return signer_json.get('status', {}).get('status', '')
+    return (signer_json or {}).get('status', {}).get('status', '')
 
   def _CheckForResults(self, gs_ctx, result_urls):
     """timeout_util.WaitForSuccess func to check a list of signer results.
