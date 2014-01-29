@@ -9852,38 +9852,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Cancel
       </message>
 
-      <!-- chrome://network -->
-      <message name="IDS_ABOUT_AUTO_REFRESH" desc="The message to indicate that the page is auto refreshing.">
-        (Auto-refreshing page every <ph name="INTERVAL_SECONDS">$1<ex>10</ex></ph> seconds.)
-      </message>
-      <message name="IDS_ABOUT_AUTO_REFRESH_INFO" desc="The message to indicate that how to auto refresh the page.">
-        (To auto-refresh this page use chrome://<ph name="PAGE_NAME">$1<ex>network</ex></ph>/&amp;lt;secs&amp;gt;)
-      </message>
-      <message name="IDS_ABOUT_NETWORK_EVENT_LOG" desc="The section title for the event log in the chrome://network page.">
-        Event Log (newest first):
-      </message>
-      <message name="IDS_ABOUT_NETWORK_NETWORKS" desc="The section title for all networks in the chrome://network page.">
-        Networks:
-      </message>
-      <message name="IDS_ABOUT_NETWORK_FAVORITES" desc="The section title for favorite networks in the chrome://network page.">
-        Favorites:
-      </message>
-      <message name="IDS_ABOUT_NETWORK_ETHERNET" desc="The section title for ethernet networks in the chrome://network page.">
-        Ethernet Networks:
-      </message>
-      <message name="IDS_ABOUT_NETWORK_WIFI" desc="The section title for wifi networks in the chrome://network page.">
-        Wi-Fi Networks:
-      </message>
-      <message name="IDS_ABOUT_NETWORK_CELLULAR" desc="The section title for cellular networks in the chrome://network page.">
-        Cellular Networks:
-      </message>
-      <message name="IDS_ABOUT_NETWORK_VIRTUAL" desc="The section title for virtual networks in the chrome://network page.">
-        Virtual Networks:
-      </message>
-      <message name="IDS_ABOUT_NETWORK_REMEMBERED_WIFI" desc="The section title for remembered wifi networks in the chrome://network page.">
-        Remembered Wi-Fi Networks:
-      </message>
-
       <!-- chrome://settings. Android uses native UI for settings -->
       <if expr="not is_android">
         <if expr="pp_ifdef('chromeos')">
