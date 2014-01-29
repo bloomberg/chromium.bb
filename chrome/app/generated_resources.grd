@@ -3317,7 +3317,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
 
       <!-- DevTools file system access -->
       <message name="IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE" desc="Message displayed in DevTools infobar when user attempts to add file system to DevTools.">
-        DevTools requests full access to $1.
+        DevTools requests full access to <ph name="FOLDER_PATH">$1<ex>C:\Projects\foo\</ex></ph>.
 Make sure you do not expose any sensitive information.
       </message>
 
