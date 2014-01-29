@@ -231,6 +231,7 @@ def generate_interface(interface):
         'anonymous_indexed_property_setter': anonymous_indexed_property_setter(interface),
         'anonymous_indexed_property_deleter': anonymous_indexed_property_deleter(interface),
         'anonymous_named_property_getter': anonymous_named_property_getter(interface),
+        'anonymous_named_property_setter': anonymous_named_property_setter(interface),
     })
 
     return template_contents
@@ -500,6 +501,16 @@ def anonymous_property_getter(getter):
     }
 
 
+def anonymous_property_setter(setter):
+    idl_type = setter.arguments[1].idl_type
+    extended_attributes = setter.extended_attributes
+    return {
+        'name': extended_attributes.get('ImplementedAs'),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
+            idl_type, extended_attributes, 'jsValue', 'propertyValue'),
+    }
+
+
 ################################################################################
 # Indexed properties
 # http://heycam.github.io/webidl/#idl-indexed-properties
@@ -536,15 +547,7 @@ def anonymous_indexed_property_setter(interface):
     except StopIteration:
         return None
 
-    idl_type = setter.idl_type
-    extended_attributes = setter.extended_attributes
-    return {
-        'cpp_type': v8_types.cpp_type(idl_type),
-        'name': extended_attributes.get('ImplementedAs',
-                                        'anonymousIndexedSetter'),
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
-            idl_type, extended_attributes, 'jsValue', 'propertyValue'),
-    }
+    return anonymous_property_setter(setter)
 
 
 def anonymous_indexed_property_deleter(interface):
@@ -593,3 +596,20 @@ def anonymous_named_property_getter(interface):
         return None
 
     return anonymous_property_getter(getter)
+
+
+def anonymous_named_property_setter(interface):
+    try:
+        # Find anonymous named property setter, if present; has form:
+        # setter RETURN_TYPE (DOMString ARG1, ARG_TYPE ARG2)
+        setter = next(
+            method
+            for method in interface.operations
+            if ('setter' in method.specials and
+                len(method.arguments) == 2 and
+                method.arguments[0].idl_type == 'unsigned long' and
+                not method.name))
+    except StopIteration:
+        return None
+
+    return anonymous_property_setter(setter)

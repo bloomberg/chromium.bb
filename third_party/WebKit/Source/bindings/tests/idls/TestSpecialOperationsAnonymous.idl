@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface TestSpecialOperations {
+interface TestSpecialOperationsAnonymous {
     // Anonymous indexed property operations
     getter DOMString (unsigned long index);
     setter DOMString (unsigned long index, DOMString value);
@@ -36,6 +36,6 @@ interface TestSpecialOperations {
 
     // Anonymous named property operations
     getter DOMString (DOMString name);
-    // setter DOMString (DOMString name, DOMString value);
+    setter DOMString (DOMString name, DOMString value);
     // deleter boolean (DOMString name);
 };

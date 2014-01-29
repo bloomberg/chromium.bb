@@ -130,7 +130,8 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
-    bool result = collection->{{setter.name}}(index, propertyValue);
+    {% set setter_name = setter.name or 'anonymousIndexedSetter' %}
+    bool result = collection->{{setter_name}}(index, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, jsValue);
@@ -196,6 +197,40 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     {{cpp_class}}V8Internal::namedPropertyGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block anonymous_named_property_setter_and_callback %}
+{% if anonymous_named_property_setter %}
+{% set setter = anonymous_named_property_setter %}
+static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return;
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return;
+    if (info.Holder()->HasRealNamedProperty(name))
+        return;
+    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
+    {{setter.v8_value_to_local_cpp_value}};
+    {% set setter_name = setter.name or 'anonymousNamedSetter' %}
+    bool result = collection->{{setter_name}}(propertyName, propertyValue);
+    if (!result)
+        return;
+    v8SetReturnValue(info, jsValue);
+}
+
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    {{cpp_class}}V8Internal::namedPropertySetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -642,11 +677,14 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {# if have named properties, MUST have a named property getter #}
     {% set named_property_getter_callback =
            '%sV8Internal::namedPropertyGetterCallback' % cpp_class %}
+    {% set named_property_setter_callback =
+           '%sV8Internal::namedPropertySetterCallback' % cpp_class
+           if anonymous_named_property_setter else '0' %}
     {% set named_property_query_callback =
            '%sV8Internal::namedPropertyQueryCallback' % cpp_class %}
     {% set named_property_enumerator_callback =
            '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class %}
-    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler({{named_property_getter_callback}}, 0, {{named_property_query_callback}}, 0, {{named_property_enumerator_callback}});
+    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, 0, {{named_property_enumerator_callback}});
     {% endif %}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);

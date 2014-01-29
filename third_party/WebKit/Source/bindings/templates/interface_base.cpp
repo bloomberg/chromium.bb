@@ -104,6 +104,7 @@ template <typename T> void V8_USE(T) { }
 {% block anonymous_indexed_property_setter_and_callback %}{% endblock %}
 {% block anonymous_indexed_property_deleter_and_callback %}{% endblock %}
 {% block anonymous_named_property_getter_and_callback %}{% endblock %}
+{% block anonymous_named_property_setter_and_callback %}{% endblock %}
 {% block named_property_query_and_callback %}{% endblock %}
 {% block named_property_enumerator_and_callback %}{% endblock %}
 {# Methods #}
