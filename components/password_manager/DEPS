@@ -1,0 +1,8 @@
+include_rules = [
+  "+components/autofill/core/common",
+  "+components/password_manager/core",
+  # PasswordManager is a layered component; subdirectories must explicitly
+  # introduce the ability to use the content layer as appropriate.
+  "-content/public/common",
+  "-ipc",
+]

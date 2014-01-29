@@ -19,6 +19,7 @@
     'language_usage_metrics.gypi',
     'navigation_metrics.gypi',
     'onc.gypi',
+    'password_manager.gypi',
     'policy.gypi',
     'precache.gypi',
     'signin.gypi',

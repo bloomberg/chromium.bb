@@ -103,6 +103,9 @@
             # Dependencies of language_usage_metrics
             'components.gyp:language_usage_metrics',
 
+            # Dependencies of password_manager
+            'components.gyp:password_manager_core_test_support',
+
             # Dependencies of precache/core
             'components.gyp:precache_core',
 

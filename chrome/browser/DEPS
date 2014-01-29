@@ -17,6 +17,7 @@ include_rules = [
   "+components/nacl/common",
   "+components/navigation_interception",
   "+components/navigation_metrics",
+  "+components/password_manager",
   "+components/policy",
   "+components/precache",
   "+components/sessions",
