@@ -262,9 +262,21 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     if (move_caret_to_end)
       username_input.setSelectionRange(username.length(), username.length());
     autofill_agent_->textFieldDidChange(username_input);
-    // Processing is delayed because of a WebKit bug, see
-    // PasswordAutocompleteManager::TextDidChangeInTextField() for details.
+    // Processing is delayed because of a Blink bug:
+    // https://bugs.webkit.org/show_bug.cgi?id=16976
+    // See PasswordAutofillAgent::TextDidChangeInTextField() for details.
+
+    // Autocomplete will trigger a style recalculation when we put up the next
+    // frame, but we don't want to wait that long. Instead, trigger a style
+    // recalcuation manually after TextFieldDidChangeImpl runs.
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &PasswordAutofillAgentTest::LayoutMainFrame, base::Unretained(this)));
+
     base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  void LayoutMainFrame() {
+    GetMainFrame()->view()->layout();
   }
 
   void SimulateUsernameChange(const std::string& username,
