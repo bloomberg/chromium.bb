@@ -39,12 +39,16 @@ class FakeGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {}
 
   virtual void ReadPixels(uint32 texture_id,
-                          const gfx::Rect& visible_rect,
+                          const gfx::Size& size,
                           const SkBitmap& pixels) OVERRIDE {};
 
   virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator(
       VideoCodecProfile profile,
       VideoDecodeAccelerator::Client* client) OVERRIDE;
+
+  virtual void Abort() OVERRIDE {}
+
+  virtual bool IsAborted() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<FakeGpuVideoAcceleratorFactories>;

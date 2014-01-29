@@ -1204,7 +1204,10 @@ void WebMediaPlayerImpl::Destroy() {
     chunk_demuxer_ = NULL;
   }
 
-  gpu_factories_ = NULL;
+  if (gpu_factories_.get()) {
+    gpu_factories_->Abort();
+    gpu_factories_ = NULL;
+  }
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.

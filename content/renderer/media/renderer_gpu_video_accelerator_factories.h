@@ -14,6 +14,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
 namespace base {
@@ -30,9 +31,12 @@ class WebGraphicsContext3DCommandBufferImpl;
 // RenderViewImpl and only has its own header to allow extraction of its
 // implementation from render_view_impl.cc which is already far too large.
 //
-// The RendererGpuVideoAcceleratorFactories can be constructed on any thread,
-// but subsequent calls to all public methods of the class must be called from
-// the |message_loop_proxy_|, as provided during construction.
+// The RendererGpuVideoAcceleratorFactories can be constructed on any thread.
+// Most public methods of the class must be called from the media thread.  The
+// exceptions (which can be called from any thread, as they are internally
+// trampolined) are:
+// * CreateVideoDecodeAccelerator()
+// * ReadPixels()
 class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
     : public media::GpuVideoAcceleratorFactories {
  public:
@@ -40,10 +44,10 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // use.  Safe to call from any thread.
   RendererGpuVideoAcceleratorFactories(
       GpuChannelHost* gpu_channel_host,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
 
   // media::GpuVideoAcceleratorFactories implementation.
+  // CreateVideoDecodeAccelerator() is safe to call from any thread.
   virtual scoped_ptr<media::VideoDecodeAccelerator>
       CreateVideoDecodeAccelerator(
           media::VideoCodecProfile profile,
@@ -60,20 +64,41 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
                                 uint32 texture_target) OVERRIDE;
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
+  // ReadPixels() is safe to call from any thread.
   virtual void ReadPixels(uint32 texture_id,
-                          const gfx::Rect& visible_rect,
+                          const gfx::Size& size,
                           const SkBitmap& pixels) OVERRIDE;
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE;
+  virtual void Abort() OVERRIDE;
+  virtual bool IsAborted() OVERRIDE;
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> Clone();
 
  protected:
   friend class base::RefCountedThreadSafe<RendererGpuVideoAcceleratorFactories>;
   virtual ~RendererGpuVideoAcceleratorFactories();
 
  private:
+  RendererGpuVideoAcceleratorFactories();
+
   // Helper to get a pointer to the WebGraphicsContext3DCommandBufferImpl,
   // if it has not been lost yet.
   WebGraphicsContext3DCommandBufferImpl* GetContext3d();
+
+  // Helper for the constructor to acquire the ContentGLContext on
+  // |task_runner_|.
+  void AsyncBindContext();
+
+  // Async versions of the public methods, run on |task_runner_|.
+  // They use output parameters instead of return values and each takes
+  // a WaitableEvent* param to signal completion (except for DeleteTexture,
+  // which is fire-and-forget).
+  // AsyncCreateVideoDecodeAccelerator returns its output in the |vda_| member.
+  void AsyncCreateVideoDecodeAccelerator(
+      media::VideoCodecProfile profile,
+      media::VideoDecodeAccelerator::Client* client);
+  void AsyncReadPixels(uint32 texture_id, const gfx::Size& size);
+  void AsyncDestroyVideoDecodeAccelerator();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
@@ -81,6 +106,20 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+
+  // This event is signaled if we have been asked to Abort().
+  base::WaitableEvent aborted_waiter_;
+
+  // This event is signaled by asynchronous tasks posted to |task_runner_| to
+  // indicate their completion.
+  // e.g. AsyncCreateVideoDecodeAccelerator()/AsyncCreateTextures() etc.
+  base::WaitableEvent task_runner_async_waiter_;
+
+  // The vda returned by the CreateVideoDecodeAccelerator function.
+  scoped_ptr<media::VideoDecodeAccelerator> vda_;
+
+  // Bitmap returned by ReadPixels().
+  SkBitmap read_pixels_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererGpuVideoAcceleratorFactories);
 };
