@@ -19,6 +19,8 @@
 namespace syncer {
 class SyncData;
 class SyncableService;
+class WriteNode;
+class WriteTransaction;
 
 typedef std::vector<syncer::SyncData> SyncDataList;
 }  // namespace syncer
@@ -89,6 +91,19 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual syncer::UserShare* share_handle() const OVERRIDE;
 
  private:
+  // Helper methods for acting on changes coming from the datatype. These are
+  // logically part of ProcessSyncChanges.
+  syncer::SyncError HandleActionAdd(const syncer::SyncChange& change,
+                                    const std::string& type_str,
+                                    const syncer::ModelType& type,
+                                    const syncer::WriteTransaction& trans,
+                                    syncer::WriteNode* sync_node);
+  syncer::SyncError HandleActionUpdate(const syncer::SyncChange& change,
+                                       const std::string& type_str,
+                                       const syncer::ModelType& type,
+                                       const syncer::WriteTransaction& trans,
+                                       syncer::WriteNode* sync_node);
+
   // The SyncableService this change processor will forward changes on to.
   const base::WeakPtr<syncer::SyncableService> local_service_;
 
