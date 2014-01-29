@@ -204,7 +204,7 @@ TEST_F(EventUnittest, DetachFilteredEvent) {
       "var filters = {url: [{hostSuffix: 'google.com'}]};"
       "e.addListener(cb1, filters);"
       "e.addListener(cb2, filters);"
-      "e.detach_();"
+      "privates(e).impl.detach_();"
       "assert.AssertFalse(bindings.HasFilteredListener('myevent'));");
   module_system_->Require("test");
 }
