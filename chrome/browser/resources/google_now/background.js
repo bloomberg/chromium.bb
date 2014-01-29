@@ -19,7 +19,6 @@
 
 // TODO(vadimt): Decide what to do in incognito mode.
 // TODO(vadimt): Figure out the final values of the constants.
-// TODO(vadimt): Remove 'console' calls.
 
 /**
  * Standard response code for successful HTTP requests. This is the only success

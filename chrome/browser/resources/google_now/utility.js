@@ -29,19 +29,39 @@
  */
 var NOTIFICATION_CARDS_URL = 'https://www.googleapis.com/chromenow/v1';
 
-var DEBUG_MODE = localStorage['debug_mode'];
+/**
+ * Returns true if debug mode is enabled.
+ * localStorage returns items as strings, which means if we store a boolean,
+ * it returns a string. Use this function to compare against true.
+ * @return {boolean} Whether debug mode is enabled.
+ */
+function isInDebugMode() {
+  return localStorage.debug_mode === 'true';
+}
 
 /**
  * Initializes for debug or release modes of operation.
  */
 function initializeDebug() {
-  if (DEBUG_MODE) {
+  if (isInDebugMode()) {
     NOTIFICATION_CARDS_URL =
         localStorage['server_url'] || NOTIFICATION_CARDS_URL;
   }
 }
 
 initializeDebug();
+
+/**
+ * Conditionally allow console.log output based off of the debug mode.
+ */
+console.log = function() {
+  var originalConsoleLog = console.log;
+  return function() {
+    if (isInDebugMode()) {
+      originalConsoleLog.apply(console, arguments);
+    }
+  };
+}();
 
 /**
  * Location Card Storage.
@@ -171,7 +191,7 @@ function reportError(error) {
     chrome.metricsPrivate.getIsCrashReportingEnabled(function(isEnabled) {
       if (isEnabled)
         sendErrorReport(error);
-      if (DEBUG_MODE)
+      if (isInDebugMode())
         alert(message);
     });
   }

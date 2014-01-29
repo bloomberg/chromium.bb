@@ -16,6 +16,7 @@ GoogleNowCardsUnitTest.prototype = {
 
   /** @override */
   extraLibraries: [
+    'common_test_util.js',
     'cards.js'
   ]
 };
@@ -118,7 +119,7 @@ TEST_F('GoogleNowCardsUnitTest', 'UpdateSimpleHideFuture', function() {
           chromeNotificationsUpdateSavedArgs.match(ANYTHING)).
       will(invokeCallback(
           chromeNotificationsUpdateSavedArgs, 2, notificationUpdateSuccessful));
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
 
   // Call tested method.
@@ -178,7 +179,7 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateSimpleHideFuture', function() {
   this.mockLocalFunctions.expects(once()).
       onCardShown(eqJSON(testUncombinedNotification.receivedNotification));
 
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
 
   // Call tested method.
@@ -220,9 +221,9 @@ TEST_F('GoogleNowCardsUnitTest', 'CreateSimpleShowFuture', function() {
 
   this.mockApis.expects(once()).
       chrome_alarms_clear(expectedAlarmId);
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       instrumented_notifications_clear(testCardId, ANYTHING);
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
 
   // Call tested method.
@@ -258,7 +259,7 @@ TEST_F('GoogleNowCardsUnitTest', 'UpdateSimpleHidePast', function() {
   var test = setUpCardManagerTest(this);
   this.mockApis.expects(once()).
       chrome_alarms_clear(expectedAlarmId);
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       instrumented_notifications_clear(testCardId, ANYTHING);
 
   var groups = {
@@ -330,7 +331,7 @@ TEST_F('GoogleNowCardsUnitTest', 'UpdateComplex', function() {
           chromeNotificationsUpdateSavedArgs.match(ANYTHING)).
       will(invokeCallback(
           chromeNotificationsUpdateSavedArgs, 2, notificationUpdateSuccessful));
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
 
   // Call tested method.
@@ -370,7 +371,7 @@ TEST_F('GoogleNowCardsUnitTest', 'DismissSimple', function() {
   var test = setUpCardManagerTest(this);
   this.mockApis.expects(once()).
       chrome_alarms_clear(expectedAlarmId);
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       instrumented_notifications_clear(testCardId, ANYTHING);
 
   var groups = {
@@ -450,9 +451,9 @@ TEST_F('GoogleNowCardsUnitTest', 'DismissComplex', function() {
   var test = setUpCardManagerTest(this);
   this.mockApis.expects(once()).
       chrome_alarms_clear(expectedAlarmId);
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       instrumented_notifications_clear(testCardId, ANYTHING);
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       chrome_alarms_create(expectedAlarmId, eqJSON({when: 300010}));
 
   // Call tested method.
@@ -610,7 +611,7 @@ TEST_F('GoogleNowCardsUnitTest', 'onAlarmUpdate', function() {
           chromeNotificationsUpdateSavedArgs.match(ANYTHING)).
       will(invokeCallback(
           chromeNotificationsUpdateSavedArgs, 2, notificationUpdateSuccessful));
-  this.mockApis.expects(once()).	
+  this.mockApis.expects(once()).
       chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
   this.mockApis.expects(once()).
       chrome_storage_local_set(eqJSON({

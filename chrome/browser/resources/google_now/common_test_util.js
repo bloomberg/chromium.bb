@@ -4,6 +4,23 @@
 
 // Common test utilities.
 
+/**
+ * Allows console.log output.
+ */
+var showConsoleLogOutput = false;
+
+/**
+ * Conditionally allow console.log output based off of showConsoleLogOutput.
+ */
+console.log = function() {
+  var originalConsoleLog = console.log;
+  return function() {
+    if (showConsoleLogOutput) {
+      originalConsoleLog.apply(console, arguments);
+    }
+  };
+}();
+
 function emptyMock() {}
 
 // Container for event handlers added by mocked 'addListener' functions.
