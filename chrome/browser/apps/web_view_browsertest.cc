@@ -633,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
 // This test ensures <webview> doesn't crash in SW rendering when autosize is
 // turned on.
 // Flaky on Windows http://crbug.com/299507
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_AutoSizeSW DISABLED_AutoSizeSW
 #else
 #define MAYBE_AutoSizeSW AutoSizeSW
