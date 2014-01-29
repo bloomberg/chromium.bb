@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BLOB_MOCK_BLOB_URL_REQUEST_CONTEXT_H_
-#define WEBKIT_BLOB_MOCK_BLOB_URL_REQUEST_CONTEXT_H_
+#ifndef CONTENT_PUBLIC_TEST_MOCK_BLOB_URL_REQUEST_CONTEXT_H_
+#define CONTENT_PUBLIC_TEST_MOCK_BLOB_URL_REQUEST_CONTEXT_H_
 
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -14,22 +14,24 @@ class FileSystemContext;
 }
 
 namespace webkit_blob {
-
 class BlobDataHandle;
 class BlobStorageContext;
+}
+
+namespace content {
 
 class MockBlobURLRequestContext : public net::URLRequestContext {
  public:
   MockBlobURLRequestContext(fileapi::FileSystemContext* file_system_context);
   virtual ~MockBlobURLRequestContext();
 
-  BlobStorageContext* blob_storage_context() const {
+  webkit_blob::BlobStorageContext* blob_storage_context() const {
     return blob_storage_context_.get();
   }
 
  private:
   net::URLRequestJobFactoryImpl job_factory_;
-  scoped_ptr<BlobStorageContext> blob_storage_context_;
+  scoped_ptr<webkit_blob::BlobStorageContext> blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBlobURLRequestContext);
 };
@@ -43,16 +45,16 @@ class ScopedTextBlob {
   ~ScopedTextBlob();
 
   // Returns a BlobDataHandle referring to the scoped blob.
-  scoped_ptr<BlobDataHandle> GetBlobDataHandle();
+  scoped_ptr<webkit_blob::BlobDataHandle> GetBlobDataHandle();
 
  private:
   const std::string blob_id_;
-  BlobStorageContext* context_;
-  scoped_ptr<BlobDataHandle> handle_;
+  webkit_blob::BlobStorageContext* context_;
+  scoped_ptr<webkit_blob::BlobDataHandle> handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTextBlob);
 };
 
-}  // namespace webkit_blob
+}  // namespace content
 
-#endif  // WEBKIT_BLOB_MOCK_BLOB_URL_REQUEST_CONTEXT_H_
+#endif  // CONTENT_PUBLIC_TEST_MOCK_BLOB_URL_REQUEST_CONTEXT_H_

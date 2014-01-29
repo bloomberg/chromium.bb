@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "content/public/test/mock_blob_url_request_context.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/url_request/url_request.h"
@@ -19,7 +20,6 @@
 #include "url/gurl.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/browser/blob/blob_url_request_job.h"
-#include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -33,8 +33,8 @@
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationRunner;
 using fileapi::FileSystemURL;
-using webkit_blob::MockBlobURLRequestContext;
-using webkit_blob::ScopedTextBlob;
+using content::MockBlobURLRequestContext;
+using content::ScopedTextBlob;
 
 namespace content {
 

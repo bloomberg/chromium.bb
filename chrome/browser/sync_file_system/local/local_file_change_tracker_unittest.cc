@@ -18,16 +18,16 @@
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "content/public/test/mock_blob_url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
-using webkit_blob::MockBlobURLRequestContext;
-using webkit_blob::ScopedTextBlob;
+using content::MockBlobURLRequestContext;
+using content::ScopedTextBlob;
 
 namespace sync_file_system {
 

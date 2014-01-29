@@ -18,16 +18,16 @@
 #include "chrome/browser/sync_file_system/local/syncable_file_operation_runner.h"
 #include "chrome/browser/sync_file_system/local/syncable_file_system_operation.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "content/public/test/mock_blob_url_request_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;
-using webkit_blob::MockBlobURLRequestContext;
-using webkit_blob::ScopedTextBlob;
+using content::MockBlobURLRequestContext;
+using content::ScopedTextBlob;
 using base::File;
 
 namespace sync_file_system {
