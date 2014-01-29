@@ -1431,10 +1431,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         ASSERT(repaintContainer == v);
         bool viewHasCompositedLayer = v->hasLayer() && v->layer()->compositingState() == PaintsIntoOwnBacking;
         if (!viewHasCompositedLayer) {
-            IntRect repaintRectangle = r;
-            if (viewHasCompositedLayer &&  v->layer()->transform())
-                repaintRectangle = v->layer()->transform()->mapRect(r);
-            v->repaintViewRectangle(repaintRectangle);
+            v->repaintViewRectangle(r);
             return;
         }
     }
