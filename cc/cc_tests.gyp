@@ -106,6 +106,9 @@
     ],
     'cc_surfaces_unit_tests_source_files': [
       'surfaces/surface_unittest.cc',
+      'surfaces/surface_aggregator_unittest.cc',
+      'surfaces/surface_aggregator_test_helpers.cc',
+      'surfaces/surface_aggregator_test_helpers.h',
     ],
     'cc_tests_support_files': [
       'test/animation_test_common.cc',

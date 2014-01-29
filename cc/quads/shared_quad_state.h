@@ -17,6 +17,11 @@ class Value;
 
 namespace cc {
 
+// SharedQuadState holds a set of properties that are common across multiple
+// DrawQuads. It's purely an optimization - the properties behave in exactly the
+// same way as if they were replicated on each DrawQuad. A given SharedQuadState
+// can only be shared by DrawQuads that are adjacent in their RenderPass'
+// QuadList.
 class CC_EXPORT SharedQuadState {
  public:
   static scoped_ptr<SharedQuadState> Create();

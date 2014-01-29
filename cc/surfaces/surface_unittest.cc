@@ -26,4 +26,3 @@ TEST(SurfaceTest, SurfaceLifetime) {
 
 }  // namespace
 }  // namespace cc
-

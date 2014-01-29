@@ -458,6 +458,7 @@
         'cc',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       ],
@@ -467,6 +468,8 @@
       'sources': [
         'surfaces/surface.cc',
         'surfaces/surface.h',
+        'surfaces/surface_aggregator.cc',
+        'surfaces/surface_aggregator.h',
         'surfaces/surface_manager.cc',
         'surfaces/surface_manager.h',
         'surfaces/surfaces_export.h',
