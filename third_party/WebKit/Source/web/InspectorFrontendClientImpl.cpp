@@ -109,6 +109,7 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "     'bringToFront',"
             "     'closeWindow',"
             "     'indexPath',"
+            "     'inspectElementCompleted',"
             "     'moveWindowBy',"
             "     'openInNewTab',"
             "     'removeFileSystem',"
