@@ -209,7 +209,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
             newHostId, hostPin, startHostWithHash.bind(
                 null, hostName, publicKey, privateKey,
                 remoting.identity.getCachedEmail(),
-                remoting.oauth2.exportRefreshToken()),
+                remoting.oauth2.getRefreshToken()),
           onError);
       }
     } else {

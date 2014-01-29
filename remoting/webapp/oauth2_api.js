@@ -24,13 +24,6 @@ remoting.OAuth2Api.getOAuth2TokenEndpoint_ = function() {
 };
 
 /** @private
- *  @return {string} OAuth token revocation URL.
- */
-remoting.OAuth2Api.getOAuth2RevokeTokenEndpoint_ = function() {
-  return remoting.settings.OAUTH2_BASE_URL + '/revoke';
-};
-
-/** @private
  *  @return {string} OAuth2 userinfo API URL.
  */
 remoting.OAuth2Api.getOAuth2ApiUserInfoEndpoint_ = function() {
@@ -189,31 +182,4 @@ remoting.OAuth2Api.getEmail = function(onDone, onError, token) {
   var headers = { 'Authorization': 'OAuth ' + token };
   remoting.xhr.get(remoting.OAuth2Api.getOAuth2ApiUserInfoEndpoint_(),
                    onResponse, '', headers);
-};
-
-/**
- * Revokes a refresh or an access token.
- *
- * @param {function():void} onDone Callback invoked when the token is
- *     revoked.
- * @param {function(remoting.Error):void} onError Callback invoked if an
- *     error occurs.
- * @param {string} token An access or refresh token.
- * @return {void} Nothing.
- */
-remoting.OAuth2Api.revokeToken = function(onDone, onError, token) {
-  /** @param {XMLHttpRequest} xhr */
-  var onResponse = function(xhr) {
-    if (xhr.status == 200) {
-      onDone();
-    } else {
-      console.error('Failed to revoke token. Status: ' + xhr.status +
-                    ' response: ' + xhr.responseText);
-      onError(remoting.OAuth2Api.interpretXhrStatus_(xhr.status));
-    }
-  };
-
-  var parameters = { 'token': token };
-  remoting.xhr.post(remoting.OAuth2Api.getOAuth2RevokeTokenEndpoint_(),
-                    onResponse, parameters);
 };

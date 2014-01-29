@@ -31,9 +31,6 @@ remoting.OAuth2 = function() {
 /** @private */
 remoting.OAuth2.prototype.KEY_REFRESH_TOKEN_ = 'oauth2-refresh-token';
 /** @private */
-remoting.OAuth2.prototype.KEY_REFRESH_TOKEN_REVOKABLE_ =
-    'oauth2-refresh-token-revokable';
-/** @private */
 remoting.OAuth2.prototype.KEY_ACCESS_TOKEN_ = 'oauth2-access-token';
 /** @private */
 remoting.OAuth2.prototype.KEY_XSRF_TOKEN_ = 'oauth2-xsrf-token';
@@ -78,7 +75,7 @@ remoting.OAuth2.prototype.getOAuth2AuthEndpoint_ = function() {
 
 /** @return {boolean} True if the app is already authenticated. */
 remoting.OAuth2.prototype.isAuthenticated = function() {
-  if (this.getRefreshToken_()) {
+  if (this.getRefreshToken()) {
     return true;
   }
   return false;
@@ -98,40 +95,20 @@ remoting.OAuth2.prototype.clear = function() {
 /**
  * Sets the refresh token.
  *
- * This method also marks the token as revokable, so that this object will
- * revoke the token when it no longer needs it.
- *
  * @param {string} token The new refresh token.
  * @return {void} Nothing.
  * @private
  */
 remoting.OAuth2.prototype.setRefreshToken_ = function(token) {
   window.localStorage.setItem(this.KEY_REFRESH_TOKEN_, escape(token));
-  window.localStorage.setItem(this.KEY_REFRESH_TOKEN_REVOKABLE_, true);
   window.localStorage.removeItem(this.KEY_EMAIL_);
   this.clearAccessToken_();
 };
 
 /**
- * Gets the refresh token.
- *
- * This method also marks the refresh token as not revokable, so that this
- * object will not revoke the token when it no longer needs it. After this
- * object has exported the token, it cannot know whether it is still in use
- * when this object no longer needs it.
- *
  * @return {?string} The refresh token, if authenticated, or NULL.
  */
-remoting.OAuth2.prototype.exportRefreshToken = function() {
-  window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_REVOKABLE_);
-  return this.getRefreshToken_();
-};
-
-/**
- * @return {?string} The refresh token, if authenticated, or NULL.
- * @private
- */
-remoting.OAuth2.prototype.getRefreshToken_ = function() {
+remoting.OAuth2.prototype.getRefreshToken = function() {
   var value = window.localStorage.getItem(this.KEY_REFRESH_TOKEN_);
   if (typeof value == 'string') {
     return unescape(value);
@@ -146,11 +123,7 @@ remoting.OAuth2.prototype.getRefreshToken_ = function() {
  * @private
  */
 remoting.OAuth2.prototype.clearRefreshToken_ = function() {
-  if (window.localStorage.getItem(this.KEY_REFRESH_TOKEN_REVOKABLE_)) {
-    this.revokeToken_(this.getRefreshToken_());
-  }
   window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_);
-  window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_REVOKABLE_);
 };
 
 /**
@@ -338,21 +311,6 @@ remoting.OAuth2.prototype.exchangeCodeForToken = function(code, state, onDone) {
 };
 
 /**
- * Revokes a refresh or an access token.
- *
- * @param {string?} token An access or refresh token.
- * @return {void} Nothing.
- * @private
- */
-remoting.OAuth2.prototype.revokeToken_ = function(token) {
-  if (!token || (token.length == 0)) {
-    return;
-  }
-
-  remoting.OAuth2Api.revokeToken(function() {}, function() {}, token);
-};
-
-/**
  * Call a function with an access token, refreshing it first if necessary.
  * The access token will remain valid for at least 2 minutes.
  *
@@ -363,7 +321,7 @@ remoting.OAuth2.prototype.revokeToken_ = function(token) {
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.callWithToken = function(onOk, onError) {
-  var refreshToken = this.getRefreshToken_();
+  var refreshToken = this.getRefreshToken();
   if (refreshToken) {
     if (this.needsNewAccessToken_()) {
       remoting.OAuth2Api.refreshAccessToken(
