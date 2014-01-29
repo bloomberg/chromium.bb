@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
@@ -105,8 +104,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // TODO(beng): This object should eventually *become* the WindowImpl.
 class VIEWS_EXPORT HWNDMessageHandler :
     public gfx::WindowImpl,
-    public internal::InputMethodDelegate,
-    public base::MessageLoopForUI::Observer {
+    public internal::InputMethodDelegate {
  public:
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
   ~HWNDMessageHandler();
@@ -206,11 +204,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
                             WPARAM w_param,
                             LPARAM l_param) OVERRIDE;
 
-  // Overridden from MessageLoopForUI::Observer:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-
   // Returns the auto-hide edges of the appbar. See Appbar::GetAutohideEdges()
   // for details. If the edges change OnAppbarAutohideEdgesChanged() is called.
   int GetAppbarAutohideEdges(HMONITOR monitor);
@@ -273,9 +266,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Stops ignoring SetWindowPos() requests (see below).
   void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }
-
-  // Synchronously paints the invalid contents of the Widget.
-  void RedrawInvalidRect();
 
   // Synchronously updates the invalid contents of the Widget. Valid for
   // layered windows only.

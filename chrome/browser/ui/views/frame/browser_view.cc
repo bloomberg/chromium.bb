@@ -148,7 +148,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/jumplist_win.h"
-#include "ui/views/widget/native_widget_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 #include "win8/util/win8_util.h"
 #endif
@@ -968,12 +967,7 @@ void BrowserView::SetMetroSnapMode(bool enable) {
 }
 
 bool BrowserView::IsInMetroSnapMode() const {
-#if defined(USE_AURA)
   return false;
-#else
-  return static_cast<views::NativeWidgetWin*>(
-      frame_->native_widget())->IsInMetroSnapMode();
-#endif
 }
 #endif  // defined(OS_WIN)
 

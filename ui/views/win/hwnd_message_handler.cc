@@ -35,7 +35,6 @@
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/monitor_win.h"
-#include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/appbar.h"
 #include "ui/views/win/fullscreen_handler.h"
@@ -943,14 +942,6 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_ && delegate_->PreHandleMSG(message, w_param, l_param, &result))
     return result;
 
-#if !defined(USE_AURA)
-  // First allow messages sent by child controls to be processed directly by
-  // their associated views. If such a view is present, it will handle the
-  // message *instead of* this NativeWidgetWin.
-  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
-    return result;
-#endif
-
   // Otherwise we handle everything else.
   // NOTE: We inline ProcessWindowMessage() as 'this' may be destroyed during
   // dispatch and ProcessWindowMessage() doesn't deal with that well.
@@ -972,9 +963,6 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_)
     delegate_->PostHandleMSG(message, w_param, l_param);
   if (message == WM_NCDESTROY) {
-#if !defined(USE_AURA)
-    base::MessageLoopForUI::current()->RemoveObserver(this);
-#endif
     if (delegate_)
       delegate_->HandleDestroyed();
   }
@@ -991,18 +979,6 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
     delegate_->RestoreFocusOnEnable();
   }
   return result;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// HWNDMessageHandler, MessageLoopForUI::Observer implementation:
-
-base::EventStatus HWNDMessageHandler::WillProcessEvent(
-      const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
-
-void HWNDMessageHandler::DidProcessEvent(const base::NativeEvent& event) {
-  RedrawInvalidRect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1243,21 +1219,6 @@ void HWNDMessageHandler::UnlockUpdates(bool force) {
   }
 }
 
-void HWNDMessageHandler::RedrawInvalidRect() {
-// TODO(cpu): Remove the caller and this class as a message loop observer
-// because we don't need agressive repaints via RDW_UPDATENOW in Aura. The
-// general tracking bug for repaint issues is 177115.
-#if !defined(USE_AURA)
-  if (!use_layered_buffer_) {
-    RECT r = { 0, 0, 0, 0 };
-    if (GetUpdateRect(hwnd(), &r, FALSE) && !IsRectEmpty(&r)) {
-      RedrawWindow(hwnd(), &r, NULL,
-                   RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
-    }
-  }
-#endif
-}
-
 void HWNDMessageHandler::RedrawLayeredWindowContents() {
   waiting_for_redraw_layered_window_contents_ = false;
   if (invalid_rect_.IsEmpty())
@@ -1391,14 +1352,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // receive a size notification when its initial bounds are specified at window
   // creation time.
   ClientAreaSizeChanged();
-
-#if !defined(USE_AURA)
-  // We need to add ourselves as a message loop observer so that we can repaint
-  // aggressively if the contents of our window become invalid. Unfortunately
-  // WM_PAINT messages are starved and we get flickery redrawing when resizing
-  // if we do not do this.
-  base::MessageLoopForUI::current()->AddObserver(this);
-#endif
 
   delegate_->HandleCreate();
 
