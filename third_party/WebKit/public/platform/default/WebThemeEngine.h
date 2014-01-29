@@ -52,6 +52,7 @@ public:
         PartScrollbarVerticalThumb,
         PartScrollbarHorizontalTrack,
         PartScrollbarVerticalTrack,
+        PartScrollbarCorner,
 
         // RenderTheme parts
         PartCheckbox,
