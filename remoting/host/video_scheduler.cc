@@ -22,7 +22,6 @@
 #include "remoting/protocol/util.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
@@ -37,7 +36,6 @@ VideoScheduler::VideoScheduler(
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_ptr<webrtc::ScreenCapturer> capturer,
-    scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
     scoped_ptr<VideoEncoder> encoder,
     protocol::CursorShapeStub* cursor_stub,
     protocol::VideoStub* video_stub)
@@ -45,7 +43,6 @@ VideoScheduler::VideoScheduler(
       encode_task_runner_(encode_task_runner),
       network_task_runner_(network_task_runner),
       capturer_(capturer.Pass()),
-      mouse_cursor_monitor_(mouse_cursor_monitor.Pass()),
       encoder_(encoder.Pass()),
       cursor_stub_(cursor_stub),
       video_stub_(video_stub),
@@ -90,10 +87,11 @@ void VideoScheduler::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   }
 }
 
-void VideoScheduler::OnMouseCursor(webrtc::MouseCursor* cursor) {
+void VideoScheduler::OnCursorShapeChanged(
+    webrtc::MouseCursorShape* cursor_shape) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
-  scoped_ptr<webrtc::MouseCursor> owned_cursor(cursor);
+  scoped_ptr<webrtc::MouseCursorShape> owned_cursor(cursor_shape);
 
   // Do nothing if the scheduler is being stopped.
   if (!capturer_)
@@ -101,31 +99,15 @@ void VideoScheduler::OnMouseCursor(webrtc::MouseCursor* cursor) {
 
   scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
       new protocol::CursorShapeInfo());
-  cursor_proto->set_width(cursor->image()->size().width());
-  cursor_proto->set_height(cursor->image()->size().height());
-  cursor_proto->set_hotspot_x(cursor->hotspot().x());
-  cursor_proto->set_hotspot_y(cursor->hotspot().y());
-
-  std::string data;
-  uint8_t* current_row = cursor->image()->data();
-  for (int y = 0; y < cursor->image()->size().height(); ++y) {
-    cursor_proto->mutable_data()->append(
-        current_row,
-        current_row + cursor->image()->size().width() *
-            webrtc::DesktopFrame::kBytesPerPixel);
-    current_row += cursor->image()->stride();
-  }
+  cursor_proto->set_width(cursor_shape->size.width());
+  cursor_proto->set_height(cursor_shape->size.height());
+  cursor_proto->set_hotspot_x(cursor_shape->hotspot.x());
+  cursor_proto->set_hotspot_y(cursor_shape->hotspot.y());
+  cursor_proto->set_data(cursor_shape->data);
 
   network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoScheduler::SendCursorShape, this,
                             base::Passed(&cursor_proto)));
-}
-
-void VideoScheduler::OnMouseCursorPosition(
-    webrtc::MouseCursorMonitor::CursorState state,
-    const webrtc::DesktopVector& position) {
-  // We're not subscribing to mouse position changes.
-  NOTREACHED();
 }
 
 void VideoScheduler::Start() {
@@ -186,10 +168,8 @@ void VideoScheduler::StartOnCaptureThread() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   DCHECK(!capture_timer_);
 
-  // Start mouse cursor monitor.
-  mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
-
-  // Start the capturer.
+  // Start the capturer and let it notify us if cursor shape changes.
+  capturer_->SetMouseShapeObserver(this);
   capturer_->Start(this);
 
   capture_timer_.reset(new base::OneShotTimer<VideoScheduler>());
@@ -243,9 +223,6 @@ void VideoScheduler::CaptureNextFrame() {
   ScheduleNextCapture();
 
   capture_pending_ = true;
-
-  // Capture the mouse shape.
-  mouse_cursor_monitor_->Capture();
 
   // And finally perform one capture.
   capturer_->Capture(webrtc::DesktopRegion());

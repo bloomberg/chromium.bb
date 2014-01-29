@@ -9,14 +9,11 @@
 #include "base/run_loop.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/video_encoder.h"
-#include "remoting/host/host_mock_objects.h"
-#include "remoting/proto/control.pb.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
 
 using ::remoting::protocol::MockClientStub;
@@ -51,10 +48,6 @@ ACTION(FinishSend) {
 
 static const int kWidth = 640;
 static const int kHeight = 480;
-static const int kCursorWidth = 64;
-static const int kCursorHeight = 32;
-static const int kHotspotX = 11;
-static const int kHotspotY = 12;
 
 class MockVideoEncoder : public VideoEncoder {
  public:
@@ -81,19 +74,12 @@ class VideoSchedulerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
-  void StartVideoScheduler(
-      scoped_ptr<webrtc::ScreenCapturer> capturer,
-      scoped_ptr<webrtc::MouseCursorMonitor> mouse_monitor);
+  void StartVideoScheduler(scoped_ptr<webrtc::ScreenCapturer> capturer);
   void StopVideoScheduler();
 
   // webrtc::ScreenCapturer mocks.
   void OnCapturerStart(webrtc::ScreenCapturer::Callback* callback);
   void OnCaptureFrame(const webrtc::DesktopRegion& region);
-  void OnMouseCursorMonitorInit(
-      webrtc::MouseCursorMonitor::Callback* callback,
-      webrtc::MouseCursorMonitor::Mode mode);
-void OnCaptureMouse();
-void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 
  protected:
   base::MessageLoop message_loop_;
@@ -108,13 +94,9 @@ void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape);
   MockVideoEncoder* encoder_;
 
   scoped_ptr<webrtc::DesktopFrame> frame_;
-  scoped_ptr<webrtc::MouseCursor> mouse_cursor_;
 
   // Points to the callback passed to webrtc::ScreenCapturer::Start().
   webrtc::ScreenCapturer::Callback* capturer_callback_;
-
-  // Points to the callback passed to webrtc::MouseCursor::Init().
-  webrtc::MouseCursorMonitor::Callback* mouse_monitor_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoSchedulerTest);
@@ -122,8 +104,7 @@ void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 
 VideoSchedulerTest::VideoSchedulerTest()
     : encoder_(NULL),
-      capturer_callback_(NULL),
-      mouse_monitor_callback_(NULL) {
+      capturer_callback_(NULL) {
 }
 
 void VideoSchedulerTest::SetUp() {
@@ -134,14 +115,12 @@ void VideoSchedulerTest::SetUp() {
 }
 
 void VideoSchedulerTest::StartVideoScheduler(
-    scoped_ptr<webrtc::ScreenCapturer> capturer,
-    scoped_ptr<webrtc::MouseCursorMonitor> mouse_monitor) {
+    scoped_ptr<webrtc::ScreenCapturer> capturer) {
   scheduler_ = new VideoScheduler(
       task_runner_, // Capture
       task_runner_, // Encode
       task_runner_, // Network
       capturer.Pass(),
-      mouse_monitor.Pass(),
       scoped_ptr<VideoEncoder>(encoder_),
       &client_stub_,
       &video_stub_);
@@ -167,35 +146,6 @@ void VideoSchedulerTest::OnCaptureFrame(const webrtc::DesktopRegion& region) {
   capturer_callback_->OnCaptureCompleted(frame_.release());
 }
 
-void VideoSchedulerTest::OnCaptureMouse() {
-  EXPECT_TRUE(mouse_monitor_callback_);
-  mouse_monitor_callback_->OnMouseCursor(mouse_cursor_.release());
-}
-
-void VideoSchedulerTest::OnMouseCursorMonitorInit(
-    webrtc::MouseCursorMonitor::Callback* callback,
-    webrtc::MouseCursorMonitor::Mode mode) {
-  EXPECT_FALSE(mouse_monitor_callback_);
-  EXPECT_TRUE(callback);
-
-  mouse_monitor_callback_ = callback;
-}
-
-void VideoSchedulerTest::SetCursorShape(
-    const protocol::CursorShapeInfo& cursor_shape) {
-  EXPECT_TRUE(cursor_shape.has_width());
-  EXPECT_EQ(kCursorWidth, cursor_shape.width());
-  EXPECT_TRUE(cursor_shape.has_height());
-  EXPECT_EQ(kCursorHeight, cursor_shape.height());
-  EXPECT_TRUE(cursor_shape.has_hotspot_x());
-  EXPECT_EQ(kHotspotX, cursor_shape.hotspot_x());
-  EXPECT_TRUE(cursor_shape.has_hotspot_y());
-  EXPECT_EQ(kHotspotY, cursor_shape.hotspot_y());
-  EXPECT_TRUE(cursor_shape.has_data());
-  EXPECT_EQ(kCursorWidth * kCursorHeight * webrtc::DesktopFrame::kBytesPerPixel,
-            static_cast<int>(cursor_shape.data().size()));
-}
-
 // This test mocks capturer, encoder and network layer to simulate one capture
 // cycle. When the first encoded packet is submitted to the network
 // VideoScheduler is instructed to come to a complete stop. We expect the stop
@@ -203,31 +153,12 @@ void VideoSchedulerTest::SetCursorShape(
 TEST_F(VideoSchedulerTest, StartAndStop) {
   scoped_ptr<webrtc::MockScreenCapturer> capturer(
       new webrtc::MockScreenCapturer());
-  scoped_ptr<MockMouseCursorMonitor> cursor_monitor(
-      new MockMouseCursorMonitor());
-
-  {
-    InSequence s;
-
-    EXPECT_CALL(*cursor_monitor, Init(_, _))
-        .WillOnce(
-            Invoke(this, &VideoSchedulerTest::OnMouseCursorMonitorInit));
-
-    EXPECT_CALL(*cursor_monitor, Capture())
-        .WillRepeatedly(Invoke(this, &VideoSchedulerTest::OnCaptureMouse));
-  }
-
   Expectation capturer_start =
       EXPECT_CALL(*capturer, Start(_))
           .WillOnce(Invoke(this, &VideoSchedulerTest::OnCapturerStart));
 
   frame_.reset(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(kWidth, kHeight)));
-
-  mouse_cursor_.reset(new webrtc::MouseCursor(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kCursorWidth,
-                                                        kCursorHeight)),
-      webrtc::DesktopVector(kHotspotX, kHotspotY)));
 
   // First the capturer is called.
   Expectation capturer_capture = EXPECT_CALL(*capturer, Capture(_))
@@ -242,9 +173,6 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillRepeatedly(FinishSend());
 
-  EXPECT_CALL(client_stub_, SetCursorShape(_))
-      .WillOnce(Invoke(this, &VideoSchedulerTest::SetCursorShape));
-
   // For the first time when ProcessVideoPacket is received we stop the
   // VideoScheduler.
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
@@ -254,8 +182,7 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  StartVideoScheduler(capturer.PassAs<webrtc::ScreenCapturer>(),
-                      cursor_monitor.PassAs<webrtc::MouseCursorMonitor>());
+  StartVideoScheduler(capturer.PassAs<webrtc::ScreenCapturer>());
 
   task_runner_ = NULL;
   run_loop_.Run();

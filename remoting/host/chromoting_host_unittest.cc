@@ -245,9 +245,6 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
         .Times(AtMost(1))
         .WillOnce(Invoke(this, &ChromotingHostTest::CreateVideoCapturer));
-    EXPECT_CALL(*desktop_environment, CreateMouseCursorMonitorPtr())
-        .Times(AtMost(1))
-        .WillOnce(Invoke(this, &ChromotingHostTest::CreateMouseCursorMonitor));
     EXPECT_CALL(*desktop_environment, GetCapabilities())
         .Times(AtMost(1));
     EXPECT_CALL(*desktop_environment, SetCapabilities(_))
@@ -268,12 +265,6 @@ class ChromotingHostTest : public testing::Test {
   // DesktopEnvironment::CreateVideoCapturer().
   webrtc::ScreenCapturer* CreateVideoCapturer() {
     return new ScreenCapturerFake();
-  }
-
-  // Creates a MockMouseCursorMonitor, to mock
-  // DesktopEnvironment::CreateMouseCursorMonitor().
-  webrtc::MouseCursorMonitor* CreateMouseCursorMonitor() {
-    return new MockMouseCursorMonitor();
   }
 
   void DisconnectAllClients() {

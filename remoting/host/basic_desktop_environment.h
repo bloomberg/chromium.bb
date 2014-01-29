@@ -13,12 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/desktop_environment.h"
 
-namespace webrtc {
-
-class DesktopCaptureOptions;
-
-}  // namespace webrtc
-
 namespace remoting {
 
 // Used to create audio/video capturers and event executor that work with
@@ -32,8 +26,6 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
   virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
-  virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
-      OVERRIDE;
   virtual std::string GetCapabilities() const OVERRIDE;
   virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
 
@@ -57,10 +49,6 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
     return ui_task_runner_;
   }
 
-  webrtc::DesktopCaptureOptions* desktop_capture_options() {
-    return desktop_capture_options_.get();
-  }
-
  private:
   // Task runner on which methods of DesktopEnvironment interface should be
   // called.
@@ -71,13 +59,6 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
 
   // Used to run UI code.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  // Options shared between |ScreenCapturer| and |MouseCursorMonitor|. It
-  // might contain expensive resources, thus justifying the sharing.
-  // Also: it's dynamically allocated to avoid having to bring in
-  // desktop_capture_options.h which brings in X11 headers which causes hard to
-  // find build errors.
-  scoped_ptr<webrtc::DesktopCaptureOptions> desktop_capture_options_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironment);
 };

@@ -23,6 +23,7 @@ AllJsLoadTest.prototype = {
     'client_session.js',
     //'clipboard_event_proto.js',  // Only used by jscompiler.
     'clipboard.js',
+    'connection_history.js',
     'connection_stats.js',
     //'cs_oauth2_trampoline.js', // Uses globals in the chrome namespace, which
                                  // give a compilation error when declared in
