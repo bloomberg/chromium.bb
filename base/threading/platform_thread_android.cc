@@ -95,7 +95,13 @@ void TerminateOnThread() {
 }
 
 size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
+#if !defined(ADDRESS_SANITIZER)
   return 0;
+#else
+  // AddressSanitizer bloats the stack approximately 2x. Default stack size of
+  // 1Mb is not enough for some tests (see http://crbug.com/263749 for example).
+  return 2 * (1 << 20);  // 2Mb
+#endif
 }
 
 bool RegisterThreadUtils(JNIEnv* env) {
