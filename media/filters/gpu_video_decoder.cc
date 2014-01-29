@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
@@ -21,7 +20,6 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace media {
 
@@ -74,7 +72,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   DVLOG(3) << "Reset()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  if (state_ == kDrainingDecoder) {
+  if (state_ == kDrainingDecoder && !factories_->IsAborted()) {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Reset, weak_this_, closure));
     // NOTE: if we're deferring Reset() until a Flush() completes, return
@@ -422,33 +420,6 @@ void GpuVideoDecoder::DismissPictureBuffer(int32 id) {
   }
 }
 
-static void ReadPixelsSyncInner(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-    uint32 texture_id,
-    const gfx::Rect& visible_rect,
-    const SkBitmap& pixels,
-    base::WaitableEvent* event) {
-  factories->ReadPixels(texture_id, visible_rect, pixels);
-  event->Signal();
-}
-
-static void ReadPixelsSync(
-    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
-    uint32 texture_id,
-    const gfx::Rect& visible_rect,
-    const SkBitmap& pixels) {
-  base::WaitableEvent event(true, false);
-  if (!factories->GetTaskRunner()->PostTask(FROM_HERE,
-                                            base::Bind(&ReadPixelsSyncInner,
-                                                       factories,
-                                                       texture_id,
-                                                       visible_rect,
-                                                       pixels,
-                                                       &event)))
-    return;
-  event.Wait();
-}
-
 void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DVLOG(3) << "PictureReady()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
@@ -482,7 +453,10 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
       visible_rect,
       natural_size,
       timestamp,
-      base::Bind(&ReadPixelsSync, factories_, pb.texture_id(), visible_rect),
+      base::Bind(&GpuVideoAcceleratorFactories::ReadPixels,
+                 factories_,
+                 pb.texture_id(),
+                 gfx::Size(visible_rect.width(), visible_rect.height())),
       base::Closure()));
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
