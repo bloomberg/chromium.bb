@@ -37,6 +37,7 @@ class CC_EXPORT FilterOperation {
     ZOOM,
     REFERENCE,
     SATURATING_BRIGHTNESS,  // Not used in CSS/SVG.
+    FILTER_TYPE_LAST = SATURATING_BRIGHTNESS
   };
 
   FilterOperation(const FilterOperation& other);

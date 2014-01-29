@@ -116,9 +116,11 @@ struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS(cc::DrawQuad::Material)
-IPC_ENUM_TRAITS(cc::IOSurfaceDrawQuad::Orientation)
-IPC_ENUM_TRAITS(cc::FilterOperation::FilterType)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::DrawQuad::Material, cc::DrawQuad::MATERIAL_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::IOSurfaceDrawQuad::Orientation,
+                          cc::IOSurfaceDrawQuad::ORIENTATION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::FilterOperation::FilterType,
+                          cc::FilterOperation::FILTER_TYPE_LAST )
 IPC_ENUM_TRAITS_MAX_VALUE(cc::ResourceFormat, cc::RESOURCE_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(SkXfermode::Mode, SkXfermode::kLastMode)
 

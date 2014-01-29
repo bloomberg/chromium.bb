@@ -43,6 +43,7 @@ class CC_EXPORT DrawQuad {
     TEXTURE_CONTENT,
     TILED_CONTENT,
     YUV_VIDEO_CONTENT,
+    MATERIAL_LAST = YUV_VIDEO_CONTENT
   };
 
   virtual ~DrawQuad();

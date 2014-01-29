@@ -16,7 +16,8 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
  public:
   enum Orientation {
     FLIPPED,
-    UNFLIPPED
+    UNFLIPPED,
+    ORIENTATION_LAST = UNFLIPPED
   };
 
   static scoped_ptr<IOSurfaceDrawQuad> Create();
