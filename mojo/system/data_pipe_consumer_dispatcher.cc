@@ -19,6 +19,10 @@ void DataPipeConsumerDispatcher::Init(scoped_refptr<DataPipe> data_pipe) {
   data_pipe_ = data_pipe;
 }
 
+Dispatcher::Type DataPipeConsumerDispatcher::GetType() {
+  return kTypeDataPipeConsumer;
+}
+
 DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
   // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
   DCHECK(!data_pipe_.get());

@@ -30,6 +30,10 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementCtorCallCount();
   }
 
+  virtual Type GetType() OVERRIDE {
+    return kTypeUnknown;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<MockDispatcher>;
   virtual ~MockDispatcher() {

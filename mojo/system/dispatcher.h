@@ -27,6 +27,14 @@ class Waiter;
 class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     public base::RefCountedThreadSafe<Dispatcher> {
  public:
+  enum Type {
+    kTypeUnknown = 0,
+    kTypeMessagePipe,
+    kTypeDataPipeProducer,
+    kTypeDataPipeConsumer
+  };
+  virtual Type GetType() = 0;
+
   // These methods implement the various primitives named |Mojo...()|. These
   // take |lock_| and handle races with |Close()|. Then they call out to
   // subclasses' |...ImplNoLock()| methods (still under |lock_|), which actually

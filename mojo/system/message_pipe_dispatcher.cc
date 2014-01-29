@@ -27,6 +27,10 @@ void MessagePipeDispatcher::Init(scoped_refptr<MessagePipe> message_pipe,
   port_ = port;
 }
 
+Dispatcher::Type MessagePipeDispatcher::GetType() {
+  return kTypeMessagePipe;
+}
+
 MessagePipeDispatcher::~MessagePipeDispatcher() {
   // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
   DCHECK(!message_pipe_.get());

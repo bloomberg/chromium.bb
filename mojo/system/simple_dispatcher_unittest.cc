@@ -57,6 +57,10 @@ class MockSimpleDispatcher : public SimpleDispatcher {
     StateChangedNoLock();
   }
 
+  virtual Type GetType() OVERRIDE {
+    return kTypeUnknown;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<MockSimpleDispatcher>;
   virtual ~MockSimpleDispatcher() {}

@@ -25,6 +25,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Must be called before any other methods. (This method is not thread-safe.)
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
+  virtual Type GetType() OVERRIDE;
+
  private:
   friend class base::RefCountedThreadSafe<MessagePipeDispatcher>;
   virtual ~MessagePipeDispatcher();

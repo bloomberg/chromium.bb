@@ -21,6 +21,10 @@ class TrivialDispatcher : public Dispatcher {
  public:
   TrivialDispatcher() {}
 
+  virtual Type GetType() OVERRIDE {
+    return kTypeUnknown;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<TrivialDispatcher>;
   virtual ~TrivialDispatcher() {}
@@ -35,6 +39,8 @@ class TrivialDispatcher : public Dispatcher {
 
 TEST(DispatcherTest, Basic) {
   scoped_refptr<Dispatcher> d(new TrivialDispatcher());
+
+  EXPECT_EQ(Dispatcher::kTypeUnknown, d->GetType());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d->WriteMessage(NULL, 0, NULL, MOJO_WRITE_MESSAGE_FLAG_NONE));
