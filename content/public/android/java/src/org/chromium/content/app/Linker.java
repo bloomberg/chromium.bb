@@ -170,7 +170,7 @@ public class Linker {
     // shared RELRO. Only change this while debugging linker-related issues.
     // NOTE: This variable's name is known and expected by the Linker test scripts.
     public static final int BROWSER_SHARED_RELRO_CONFIG =
-            BROWSER_SHARED_RELRO_CONFIG_ALWAYS;
+            BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY;
 
     // Constants used to control the value of sMemoryDeviceConfig.
     //   INIT         -> Value is undetermined (will check at runtime).
@@ -424,6 +424,7 @@ public class Linker {
                         try {
                             Linker.class.wait();
                         } catch (InterruptedException ie) {
+                            // no-op
                         }
                     }
                     useSharedRelrosLocked(sSharedRelros);
@@ -903,6 +904,7 @@ public class Linker {
                 try {
                     ParcelFileDescriptor.adoptFd(mRelroFd).close();
                 } catch (java.io.IOException e) {
+                  if (DEBUG) Log.e(TAG, "Failed to close fd: " + mRelroFd);
                 }
                 mRelroFd = -1;
             }

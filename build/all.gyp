@@ -726,6 +726,7 @@
             '../components/components_tests.gyp:components_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_gl_tests',
+            '../content/content_shell_and_tests.gyp:content_linker_test_apk',
             '../content/content_shell_and_tests.gyp:content_shell_test_apk',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../gpu/gpu.gyp:gl_tests',

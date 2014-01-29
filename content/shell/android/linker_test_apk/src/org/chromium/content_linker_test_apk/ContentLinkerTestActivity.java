@@ -25,6 +25,9 @@ import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 
+/**
+ * Test activity used for verifying the different configuration options for the ContentLinker.
+ */
 public class ContentLinkerTestActivity extends Activity {
     public static final String COMMAND_LINE_FILE =
             "/data/local/tmp/content-linker-test-command-line";
@@ -101,18 +104,23 @@ public class ContentLinkerTestActivity extends Activity {
 
         mShellManager.setStartupUrl("about:blank");
 
-        BrowserStartupController.get(this).startBrowserProcessesAsync(
-                new BrowserStartupController.StartupCallback() {
-            @Override
-            public void onSuccess(boolean alreadyStarted) {
-                finishInitialization(savedInstanceState);
-            }
+        try {
+            BrowserStartupController.get(this).startBrowserProcessesAsync(
+                    new BrowserStartupController.StartupCallback() {
+                @Override
+                public void onSuccess(boolean alreadyStarted) {
+                    finishInitialization(savedInstanceState);
+                }
 
-            @Override
-            public void onFailure() {
-                initializationFailed();
-            }
-        });
+                @Override
+                public void onFailure() {
+                    initializationFailed();
+                }
+            });
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Unable to load native library.", e);
+            finish();
+        }
 
         // TODO(digit): Ensure that after the content view is initialized,
         // the program finishes().
