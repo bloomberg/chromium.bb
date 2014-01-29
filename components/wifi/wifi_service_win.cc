@@ -213,6 +213,8 @@ class WiFiServiceImpl : public WiFiService {
       const NetworkGuidListCallback& networks_changed_observer,
       const NetworkGuidListCallback& network_list_changed_observer) OVERRIDE;
 
+  virtual void RequestConnectedNetworkUpdate() OVERRIDE {}
+
  private:
   // Static callback for Windows WLAN_NOTIFICATION. Calls OnWlanNotification
   // on WiFiServiceImpl passed back as |context|.
@@ -1076,13 +1078,11 @@ void WiFiServiceImpl::NetworkPropertiesFromAvailableNetwork(
                     bss_entry.dot11Ssid.uSSIDLength)) {
       properties->frequency = GetNormalizedFrequency(
           bss_entry.ulChCenterFrequency / 1000);
-      properties->frequency_list.push_back(properties->frequency);
+      properties->frequency_set.insert(properties->frequency);
       properties->bssid = NetworkProperties::MacAddressAsString(
           bss_entry.dot11Bssid);
     }
   }
-  properties->frequency_list.sort();
-  properties->frequency_list.unique();
   properties->security =
       SecurityFromDot11AuthAlg(wlan.dot11DefaultAuthAlgorithm);
   properties->signal_strength = wlan.wlanSignalQuality;

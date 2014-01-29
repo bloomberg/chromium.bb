@@ -1072,7 +1072,7 @@
             'browser/extensions/policy_handlers.h',
           ],
         }],
-        ['OS=="win"', {
+        ['OS=="win" or OS=="mac"', {
           'sources': [
             'browser/extensions/api/networking_private/networking_private_api.h',
             'browser/extensions/api/networking_private/networking_private_api_nonchromeos.cc',

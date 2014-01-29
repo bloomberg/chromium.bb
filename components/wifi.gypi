@@ -23,6 +23,7 @@
         'wifi/wifi_service.cc',
         'wifi/wifi_service.h',
         'wifi/fake_wifi_service.cc',
+        'wifi/wifi_service_mac.mm',
         'wifi/wifi_service_win.cc',
       ],
       'conditions': [
@@ -31,6 +32,14 @@
             'libraries': [
               '-liphlpapi.lib',
             ],
+          },
+        }],
+        ['OS == "mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/CoreWLAN.framework',
+              '$(SDKROOT)/System/Library/Frameworks/SystemConfiguration.framework',
+            ]
           },
         }],
       ],

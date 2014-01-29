@@ -1979,7 +1979,7 @@
             }],
           ],
         }],
-        ['chromeos == 1 or OS=="win"', {
+        ['chromeos == 1 or OS=="win" or OS == "mac"', {
           'sources': [
             'browser/extensions/api/networking_private/networking_private_apitest.cc',
           ],

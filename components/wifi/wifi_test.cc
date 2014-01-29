@@ -73,7 +73,7 @@ WiFiTest::Result WiFiTest::Main(int argc, const char* argv[]) {
                 " [--network_guid=<network_guid>]"
                 " [--frequency=0|2400|5000]"
                 " [--security=none|WEP-PSK|WPA-PSK|WPA2-PSK]"
-                " [--password=<wifi password>]"
+                " [--password=<wifi_password>]"
                 " [<network_guid>]\n";
     return RESULT_WRONG_USAGE;
   }
@@ -109,7 +109,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
     MessageBoxA(NULL, __FUNCTION__, "Debug Me!", MB_OK);
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<WiFiService> wifi_service(WiFiService::Create());
 #else
   scoped_ptr<WiFiService> wifi_service(WiFiService::CreateForTest());

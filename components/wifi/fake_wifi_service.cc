@@ -57,8 +57,8 @@ class FakeWiFiService : public WiFiService {
       network_properties.name = "wifi2_PSK";
       network_properties.type = onc::network_type::kWiFi;
       network_properties.frequency = 5000;
-      network_properties.frequency_list.push_back(2400);
-      network_properties.frequency_list.push_back(5000);
+      network_properties.frequency_set.insert(2400);
+      network_properties.frequency_set.insert(5000);
       network_properties.ssid = "wifi2_PSK";
       network_properties.security = onc::wifi::kWPA_PSK;
       network_properties.signal_strength = 80;
@@ -262,6 +262,8 @@ class FakeWiFiService : public WiFiService {
     networks_changed_observer_ = networks_changed_observer;
     network_list_changed_observer_ = network_list_changed_observer;
   }
+
+  virtual void RequestConnectedNetworkUpdate() OVERRIDE { }
 
  private:
   NetworkList::iterator FindNetwork(const std::string& network_guid) {

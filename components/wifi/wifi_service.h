@@ -6,6 +6,7 @@
 #define CHROME_UTILITY_WIFI_WIFI_SERVICE_H_
 
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,8 @@ namespace wifi {
 // WiFiService interface used by implementation of chrome.networkingPrivate
 // JavaScript extension API. All methods should be called on worker thread.
 // It could be created on any (including UI) thread, so nothing expensive should
-// be done in the constructor.
+// be done in the constructor. See |NetworkingPrivateService| for wrapper
+// accessible on UI thread.
 class WIFI_EXPORT WiFiService {
  public:
   typedef std::vector<std::string> NetworkGuidList;
@@ -105,6 +107,10 @@ class WIFI_EXPORT WiFiService {
       const NetworkGuidListCallback& networks_changed_observer,
       const NetworkGuidListCallback& network_list_changed_observer) = 0;
 
+  // Request update of Connected Network information. Send |NetworksChanged|
+  // event on completion.
+  virtual void RequestConnectedNetworkUpdate() = 0;
+
  protected:
   WiFiService() {}
 
@@ -116,7 +122,7 @@ class WIFI_EXPORT WiFiService {
     kFrequency5000 = 5000
   };
 
-  typedef std::list<Frequency> FrequencyList;
+  typedef std::set<Frequency> FrequencySet;
   // Network Properties, used as result of |GetProperties| and
   // |GetVisibleNetworks|.
   struct WIFI_EXPORT NetworkProperties {
@@ -138,7 +144,7 @@ class WIFI_EXPORT WiFiService {
     uint32 signal_strength;
     bool auto_connect;
     Frequency frequency;
-    FrequencyList frequency_list;
+    FrequencySet frequency_set;
 
     std::string json_extra;  // Extra JSON properties for unit tests
 

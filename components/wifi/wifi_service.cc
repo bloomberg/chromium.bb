@@ -39,8 +39,8 @@ scoped_ptr<base::DictionaryValue> WiFiService::NetworkProperties::ToValue(
       if (frequency != WiFiService::kFrequencyUnknown)
         wifi->SetInteger(onc::wifi::kFrequency, frequency);
       scoped_ptr<base::ListValue> frequency_list(new base::ListValue());
-      for (FrequencyList::const_iterator it = this->frequency_list.begin();
-           it != this->frequency_list.end();
+      for (FrequencySet::const_iterator it = this->frequency_set.begin();
+           it != this->frequency_set.end();
            ++it) {
         frequency_list->AppendInteger(*it);
       }

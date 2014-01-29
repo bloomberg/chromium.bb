@@ -23,7 +23,6 @@ namespace extensions {
 
 namespace {
 
-const char kNetworkingPrivateServiceClient[] = "NetworkingPrivateServiceClient";
 const char kNetworkingPrivateSequenceTokenName[] = "NetworkingPrivate";
 
 // Implementation of Verify* methods using NetworkingPrivateCrypto.
@@ -124,6 +123,7 @@ NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
         &WiFiService::Initialize,
         base::Unretained(wifi_service_.get()),
         task_runner_));
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 NetworkingPrivateServiceClient::~NetworkingPrivateServiceClient() {
@@ -144,6 +144,7 @@ NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {}
 
 void NetworkingPrivateServiceClient::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   // Clear callbacks map to release callbacks from UI thread.
   callbacks_map_.Clear();
   // Post ShutdownServicesOnWorkerThread task to delete services when all posted
@@ -161,6 +162,14 @@ void NetworkingPrivateServiceClient::AddObserver(Observer* observer) {
 
 void NetworkingPrivateServiceClient::RemoveObserver(Observer* observer) {
   network_events_observers_.RemoveObserver(observer);
+}
+
+void NetworkingPrivateServiceClient::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WiFiService::RequestConnectedNetworkUpdate,
+                 base::Unretained(wifi_service_.get())));
 }
 
 NetworkingPrivateServiceClient::ServiceCallbacks*

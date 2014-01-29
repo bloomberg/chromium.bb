@@ -480,7 +480,7 @@
     "contexts": ["blessed_extension"]
   },
   "networkingPrivate": {
-    "platforms": ["chromeos", "win"],
+    "platforms": ["chromeos", "mac", "win"],
     "dependencies": ["permission:networkingPrivate"],
     "contexts": ["blessed_extension"]
   },

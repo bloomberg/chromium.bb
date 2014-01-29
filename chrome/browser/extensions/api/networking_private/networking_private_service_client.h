@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "net/base/network_change_notifier.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -36,8 +37,12 @@ namespace extensions {
 using wifi::WiFiService;
 
 // The client wrapper for the WiFiService and CryptoVerify interfaces to invoke
-// them on worker thread. Always used from UI thread only.
-class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
+// them on worker thread. Observes |OnNetworkChanged| notifications and posts
+// them to WiFiService on worker thread to |UpdateConnectedNetwork|. Always used
+// from UI thread only.
+class NetworkingPrivateServiceClient
+    : public BrowserContextKeyedService,
+      net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Interface for Verify* methods implementation.
   class CryptoVerify {
@@ -187,6 +192,10 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
   // Removes observer to network events. If there is no observers,
   // then process can be shut down when there are no more calls pending return.
   void RemoveObserver(Observer* network_events_observer);
+
+  // NetworkChangeNotifier::NetworkChangeObserver implementation.
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
   // Callbacks to extension api function objects. Keep reference to API object
