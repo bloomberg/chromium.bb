@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
+#include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
@@ -391,9 +392,20 @@ Status GetElementClickableLocation(
   if (status.IsError())
     return status;
 
+  std::string tmp_element_id = element_id;
+  if (tag_name == "area" && session->chrome->GetBuildNo() < 1799 &&
+      session->chrome->GetBuildNo() >= 1666) {
+    // This is to skip clickable verification for <area>.
+    // The problem is caused by document.ElementFromPoint(crbug.com/338601).
+    // It was introduced by blink r159012, which rolled into chromium r227489.
+    // And it was fixed in blink r165426, which rolled into chromium r245994.
+    // TODO(stgao): Revert after 33 is not supported.
+    tmp_element_id = std::string();
+  }
+
   status = ScrollElementRegionIntoView(
       session, web_view, target_element_id, rect,
-      true /* center */, element_id, location);
+      true /* center */, tmp_element_id, location);
   if (status.IsError())
     return status;
   location->Offset(rect.Width() / 2, rect.Height() / 2);
