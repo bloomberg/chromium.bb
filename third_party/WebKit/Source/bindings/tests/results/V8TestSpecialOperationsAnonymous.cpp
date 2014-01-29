@@ -165,6 +165,22 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TestSpecialOperationsAnonymous* collection = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name);
+    DeleteResult result = collection->anonymousNamedDeleter(propertyName);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TestSpecialOperationsAnonymousV8Internal::namedPropertyDeleter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TestSpecialOperationsAnonymous* collection = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
@@ -221,7 +237,7 @@ static void configureV8TestSpecialOperationsAnonymousTemplate(v8::Handle<v8::Fun
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
     functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestSpecialOperationsAnonymousV8Internal::indexedPropertyGetterCallback, TestSpecialOperationsAnonymousV8Internal::indexedPropertySetterCallback, 0, TestSpecialOperationsAnonymousV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestSpecialOperationsAnonymous>);
-    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestSpecialOperationsAnonymousV8Internal::namedPropertyGetterCallback, TestSpecialOperationsAnonymousV8Internal::namedPropertySetterCallback, TestSpecialOperationsAnonymousV8Internal::namedPropertyQueryCallback, 0, TestSpecialOperationsAnonymousV8Internal::namedPropertyEnumeratorCallback);
+    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestSpecialOperationsAnonymousV8Internal::namedPropertyGetterCallback, TestSpecialOperationsAnonymousV8Internal::namedPropertySetterCallback, TestSpecialOperationsAnonymousV8Internal::namedPropertyQueryCallback, TestSpecialOperationsAnonymousV8Internal::namedPropertyDeleterCallback, TestSpecialOperationsAnonymousV8Internal::namedPropertyEnumeratorCallback);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());

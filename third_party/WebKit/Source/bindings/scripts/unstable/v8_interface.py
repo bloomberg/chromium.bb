@@ -232,6 +232,7 @@ def generate_interface(interface):
         'anonymous_indexed_property_deleter': anonymous_indexed_property_deleter(interface),
         'anonymous_named_property_getter': anonymous_named_property_getter(interface),
         'anonymous_named_property_setter': anonymous_named_property_setter(interface),
+        'anonymous_named_property_deleter': anonymous_named_property_deleter(interface),
     })
 
     return template_contents
@@ -511,6 +512,18 @@ def anonymous_property_setter(setter):
     }
 
 
+def anonymous_property_deleter(deleter):
+    idl_type = deleter.idl_type
+    if idl_type != 'boolean':
+        raise Exception(
+            'Only deleters with boolean type are allowed, but type is "%s"' %
+            idl_type)
+    extended_attributes = deleter.extended_attributes
+    return {
+        'name': extended_attributes.get('ImplementedAs'),
+    }
+
+
 ################################################################################
 # Indexed properties
 # http://heycam.github.io/webidl/#idl-indexed-properties
@@ -564,16 +577,7 @@ def anonymous_indexed_property_deleter(interface):
     except StopIteration:
         return None
 
-    idl_type = deleter.idl_type
-    if idl_type != 'boolean':
-        raise Exception(
-            'Only deleters with boolean type are allowed, but type is "%s"' %
-            idl_type)
-    extended_attributes = deleter.extended_attributes
-    return {
-        'name': extended_attributes.get('ImplementedAs',
-                                        'anonymousIndexedDeleter'),
-    }
+    return anonymous_property_deleter(deleter)
 
 
 ################################################################################
@@ -613,3 +617,20 @@ def anonymous_named_property_setter(interface):
         return None
 
     return anonymous_property_setter(setter)
+
+
+def anonymous_named_property_deleter(interface):
+    try:
+        # Find anonymous named property deleter, if present; has form:
+        # deleter TYPE (DOMString ARG)
+        deleter = next(
+            method
+            for method in interface.operations
+            if ('deleter' in method.specials and
+                len(method.arguments) == 1 and
+                method.arguments[0].idl_type == 'DOMString' and
+                not method.name))
+    except StopIteration:
+        return None
+
+    return anonymous_property_deleter(deleter)

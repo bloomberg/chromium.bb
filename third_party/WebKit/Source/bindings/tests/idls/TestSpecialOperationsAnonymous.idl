@@ -37,5 +37,5 @@ interface TestSpecialOperationsAnonymous {
     // Anonymous named property operations
     getter DOMString (DOMString name);
     setter DOMString (DOMString name, DOMString value);
-    // deleter boolean (DOMString name);
+    deleter boolean (DOMString name);
 };

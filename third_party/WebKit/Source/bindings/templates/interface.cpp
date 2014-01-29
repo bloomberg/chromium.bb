@@ -155,7 +155,8 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
-    DeleteResult result = collection->{{deleter.name}}(index);
+    {% set deleter_name = deleter.name or 'anonymousIndexedDeleter' %}
+    DeleteResult result = collection->{{deleter_name}}(index);
     if (result != DeleteUnknownProperty)
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
@@ -258,6 +259,31 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     {{cpp_class}}V8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block anonymous_named_property_deleter_and_callback %}
+{% if anonymous_named_property_deleter %}
+{% set deleter = anonymous_named_property_deleter %}
+static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name);
+    {% set deleter_name = deleter.name or 'anonymousNamedDeleter' %}
+    DeleteResult result = collection->{{deleter_name}}(propertyName);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    {{cpp_class}}V8Internal::namedPropertyDeleter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -682,9 +708,12 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
            if anonymous_named_property_setter else '0' %}
     {% set named_property_query_callback =
            '%sV8Internal::namedPropertyQueryCallback' % cpp_class %}
+    {% set named_property_deleter_callback =
+           '%sV8Internal::namedPropertyDeleterCallback' % cpp_class
+           if anonymous_named_property_deleter else '0' %}
     {% set named_property_enumerator_callback =
            '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class %}
-    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, 0, {{named_property_enumerator_callback}});
+    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
     {% endif %}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
