@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -104,6 +105,15 @@ void ExtensionCacheImpl::OnCacheInitialized() {
     it->Run();
   }
   init_callbacks_.clear();
+
+  uint64 cache_size = 0;
+  size_t extensions_count = 0;
+  if (cache_->GetStatistics(&cache_size, &extensions_count)) {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionCacheCount",
+                             extensions_count);
+    UMA_HISTOGRAM_MEMORY_MB("Extensions.ExtensionCacheSize",
+                            cache_size / (1024 * 1024));
+  }
 }
 
 void ExtensionCacheImpl::Observe(int type,
