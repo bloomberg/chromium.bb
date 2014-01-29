@@ -167,19 +167,6 @@ URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
   return static_cast<URLPattern::SchemeMasks>(0);
 }
 
-// Returns true if the data reduction proxy was used. Note, this function will
-// produce a false positive if a page is fetched using SPDY and using a proxy,
-// and |kDatReductionProxyViaValue| is added to the Via header.
-// TODO(bengr): Plumb the hostname of the proxy from |HttpNetworkTransaction|
-// and check if it matches |SPDY_PROXY_AUTH_ORIGIN|.
-bool DataReductionProxyWasUsed(WebFrame* frame) {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  const char kDatReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
-  return ViaHeaderContains(frame, kDatReductionProxyViaValue);
-#endif
-  return false;
-}
-
 // Helper function to check for string in 'via' header. Returns true if
 // |via_value| is one of the values listed in the Via header and the response
 // was fetched via a proxy.
@@ -200,6 +187,19 @@ bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
       frame->dataSource()->response().httpHeaderField(kViaHeaderName).utf8(),
       ',', &values);
   return std::find(values.begin(), values.end(), via_value) != values.end();
+}
+
+// Returns true if the data reduction proxy was used. Note, this function will
+// produce a false positive if a page is fetched using SPDY and using a proxy,
+// and |kDatReductionProxyViaValue| is added to the Via header.
+// TODO(bengr): Plumb the hostname of the proxy from |HttpNetworkTransaction|
+// and check if it matches |SPDY_PROXY_AUTH_ORIGIN|.
+bool DataReductionProxyWasUsed(WebFrame* frame) {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  const char kDatReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
+  return ViaHeaderContains(frame, kDatReductionProxyViaValue);
+#endif
+  return false;
 }
 
 // Returns true if the provided URL is a referrer string that came from
