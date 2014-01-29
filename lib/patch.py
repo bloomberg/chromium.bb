@@ -75,22 +75,43 @@ class ApplyPatchException(PatchException):
     # Reset args; else serialization can break.
     self.args = (patch, message, inflight, trivial, files)
 
-  def _stringify_inflight(self):
+  def _StringifyInflight(self):
     return 'the current patch series' if self.inflight else 'ToT'
 
+  def _StringifyFilenames(self):
+    """Stringify our list of filenames for presentation in Gerrit."""
+    # Prefix each filename with a hyphen so that Gerrit will format it as an
+    # unordered list.
+    return '\n\n'.join('- %s' % x for x in self.files)
+
   def ShortExplanation(self):
-    s = 'conflicted with %s' % (self._stringify_inflight(),)
+    s = 'conflicted with %s' % (self._StringifyInflight(),)
     if self.trivial:
       s += (' because file content merging is disabled for this '
             'project.')
     else:
       s += '.'
     if self.files:
-      s += '  The conflicting file is amongst: %s\n' % (
-           ', '.join(sorted(self.files)))
+      s += ('\n\nThe conflicting files are amongst:\n\n'
+            '%s' % (self._StringifyFilenames(),))
     if self.message:
-      s += '  %s' % (self.message,)
+      s += '\n\n%s' % (self.message,)
     return s
+
+
+class EbuildConflict(ApplyPatchException):
+  """Exception thrown if two CLs delete the same ebuild."""
+
+  def __init__(self, patch, inflight, ebuilds):
+    ApplyPatchException.__init__(self, patch, inflight=inflight, files=ebuilds)
+    self.args = (patch, inflight, ebuilds)
+
+  def ShortExplanation(self):
+    return ('deletes an ebuild that is not present anymore. For this reason, '
+            'we refuse to merge your change.\n\n'
+            'When you rebase your change, please take into account that the '
+            'following ebuilds have been uprevved or deleted:\n\n'
+            '%s' % (self._StringifyFilenames()))
 
 
 class PatchAlreadyApplied(ApplyPatchException):
@@ -98,7 +119,7 @@ class PatchAlreadyApplied(ApplyPatchException):
 
   def ShortExplanation(self):
     return 'conflicted with %s because it\'s already committed.' % (
-        self._stringify_inflight(),)
+        self._StringifyInflight(),)
 
 
 class DependencyError(PatchException):
@@ -676,13 +697,11 @@ class GitRepoPatch(object):
         # This means merge resolution was fine, but there was content conflicts.
         # If there are no conflicts, then this is caused by the change already
         # being merged.
-        result = git.RunGit(git_repo, ['status', '--porcelain'])
+        result = git.RunGit(git_repo,
+            ['diff', '--name-only', '--diff-filter=U'])
 
-        # Porcelain format is line per file, first two chars are the status
-        # code, then a space, then the filename.
-        # ?? means "untracked"; everything else is git tracked conflicts.
-        conflicts = [x[3:] for x in result.output.splitlines()
-                     if x and not x[:2] == '??']
+        # Output is one line per filename.
+        conflicts = result.output.splitlines()
         if not conflicts:
           # No conflicts means the git repo is in a pristine state.
           reset_target = None
@@ -742,8 +761,7 @@ class GitRepoPatch(object):
         for x in (upstream, 'HEAD')]
     inflight = (head != upstream)
 
-    # Run appropriate sanity checks.
-    self._SanityChecks(git_repo, upstream, inflight=inflight)
+    self._FindEbuildConflicts(git_repo, upstream, inflight=inflight)
 
     do_checkout = True
     try:
@@ -878,36 +896,55 @@ class GitRepoPatch(object):
                    self)
     return dependencies
 
-  def _SanityChecks(self, git_repo, upstream, inflight=False):
+  def _FindEbuildConflicts(self, git_repo, upstream, inflight=False):
+    """Verify that there are no ebuild conflicts in the given |git_repo|.
+
+    When an ebuild is uprevved, git treats the uprev as a "delete" and an "add".
+    If a developer writes a CL to delete an ebuild, and the CQ uprevs the ebuild
+    in the mean time, the ebuild deletion is silently lost, because git does
+    not flag the double-delete as a conflict. Instead the CQ attempts to test
+    the CL and it ends up breaking the CQ.
+
+    Args:
+      git_repo: The directory to examine.
+      upstream: The upstream git revision.
+      inflight: Whether we currently have patches applied to this repository.
+    """
     ebuilds = [path for (path, mtype) in
                self.GetDiffStatus(git_repo).iteritems()
-               if mtype == 'A' and path.endswith('.ebuild')]
+               if mtype == 'D' and path.endswith('.ebuild')]
 
-    conflicts = self._FindTrivialConflicts(git_repo, 'HEAD', ebuilds)
+    conflicts = self._FindMissingFiles(git_repo, 'HEAD', ebuilds)
     if not conflicts:
       return
 
     if inflight:
       # If we're inflight, test against ToT for an accurate error message.
-      tot_conflicts = self._FindTrivialConflicts(git_repo, upstream, ebuilds)
+      tot_conflicts = self._FindMissingFiles(git_repo, upstream, ebuilds)
       if tot_conflicts:
         inflight = False
         conflicts = tot_conflicts
 
-    raise ApplyPatchException(
-        self, inflight=inflight,
-        message="Ebuild rename conflicts detected.",
-        files=ebuilds)
+    raise EbuildConflict(self, inflight=inflight, ebuilds=conflicts)
 
-  def _FindTrivialConflicts(self, git_repo, tree_revision, targets):
-    if not targets:
+  def _FindMissingFiles(self, git_repo, tree_revision, files):
+    """Return a list of the |files| that are missing in |tree_revision|.
+
+    Args:
+      git_repo: Git repository to work in.
+      tree_revision: Revision of the tree to use.
+      files: Files to look for.
+
+    Returns:
+      A list of the |files| that are missing in |tree_revision|.
+    """
+    if not files:
       return []
 
-    # Note the output of this ls-tree invocation is filename per line;
-    # basically equivalent to ls -1.
     cmd = ['ls-tree', '--full-name', '--name-only', '-z', tree_revision, '--']
-    output = git.RunGit(git_repo, cmd + targets, error_code_ok=True).output
-    return unicode(output, 'ascii', 'ignore').split('\0')[:-1]
+    output = git.RunGit(git_repo, cmd + files, error_code_ok=True).output
+    existing_filenames = output.split('\0')[:-1]
+    return [x for x in files if x not in existing_filenames]
 
   def GetCheckout(self, manifest, strict=True):
     """Get the ProjectCheckout associated with this patch.
