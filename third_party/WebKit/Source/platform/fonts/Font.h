@@ -25,6 +25,7 @@
 #ifndef Font_h
 #define Font_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackList.h"
@@ -232,6 +233,8 @@ private:
             features &= ~(Kerning | Ligatures);
             break;
         case GeometricPrecision:
+            if (RuntimeEnabledFeatures::geometricPrecisionDisablesTypesettingFeaturesEnabled())
+                break;
         case OptimizeLegibility:
             features |= Kerning | Ligatures;
             break;

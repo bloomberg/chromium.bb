@@ -707,6 +707,9 @@ crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Fail
 crbug.com/338544 [ Win7 Release ] fast/dom/Window/open-window-min-size.html [ Failure ]
 crbug.com/231880 [ Mac XP Release ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
+crbug.com/338870 fast/css/text-rendering.html [ NeedsRebaseline ]
+crbug.com/338870 svg/W3C-SVG-1.1/filters-conv-01-f.svg [ NeedsRebaseline ]
+
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
 
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]
