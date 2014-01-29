@@ -136,14 +136,16 @@ void TabHelper::GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
   --it;
   // This is the biggest icon smaller than |output_size|.
   const SkBitmap& base_icon = it->second;
-  scoped_ptr<SkCanvas> canvas(
-      skia::CreateBitmapCanvas(output_size, output_size, false));
-  DCHECK(canvas);
 
   const size_t kBorderRadius = 5;
   const size_t kColorStripHeight = 3;
-  const size_t kColorStripRadius = 2;
   const SkColor kBorderColor = 0xFFD5D5D5;
+  const SkColor kBackgroundColor = 0xFFFFFFFF;
+
+  // Create a separate canvas for the color strip.
+  scoped_ptr<SkCanvas> color_strip_canvas(
+      skia::CreateBitmapCanvas(output_size, output_size, false));
+  DCHECK(color_strip_canvas);
 
   // Draw a rounded rect of the |base_icon|'s dominant color.
   SkPaint color_strip_paint;
@@ -153,17 +155,34 @@ void TabHelper::GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
       color_utils::CalculateKMeanColorOfPNG(
           gfx::Image::CreateFrom1xBitmap(base_icon).As1xPNGBytes(),
           100, 665, &sampler));
-  canvas->drawRoundRect(
-      SkRect::MakeXYWH(1, 0, output_size - 2, output_size - 1),
-      kColorStripRadius, kColorStripRadius, color_strip_paint);
+  color_strip_canvas->drawRoundRect(
+      SkRect::MakeWH(output_size, output_size),
+      kBorderRadius, kBorderRadius, color_strip_paint);
 
   // Erase the top of the rounded rect to leave a color strip.
   SkPaint clear_paint;
   clear_paint.setColor(SK_ColorTRANSPARENT);
   clear_paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  canvas->drawRect(
-      SkRect::MakeWH(output_size, output_size - kColorStripHeight - 1),
+  color_strip_canvas->drawRect(
+      SkRect::MakeWH(output_size, output_size - kColorStripHeight),
       clear_paint);
+
+  // Draw each element to an output canvas.
+  scoped_ptr<SkCanvas> canvas(
+      skia::CreateBitmapCanvas(output_size, output_size, false));
+  DCHECK(canvas);
+
+  // Draw the background.
+  SkPaint background_paint;
+  background_paint.setColor(kBackgroundColor);
+  background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  canvas->drawRoundRect(
+      SkRect::MakeWH(output_size, output_size),
+      kBorderRadius, kBorderRadius, background_paint);
+
+  // Draw the color strip.
+  canvas->drawBitmap(color_strip_canvas->getDevice()->accessBitmap(false),
+                     0, 0);
 
   // Draw the border.
   SkPaint border_paint;
@@ -174,7 +193,7 @@ void TabHelper::GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
       SkRect::MakeWH(output_size, output_size),
       kBorderRadius, kBorderRadius, border_paint);
 
-  // Draw the centered base icon.
+  // Draw the centered base icon to the output canvas.
   canvas->drawBitmap(base_icon,
                      (output_size - base_icon.width()) / 2,
                      (output_size - base_icon.height()) / 2);
