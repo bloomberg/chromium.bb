@@ -56,12 +56,11 @@ def Compile(options):
          '--compiler=goma',
          '--target=%s' % options.target,
          '--goma-dir=%s' % bb_utils.GOMA_DIR]
-  build_targets = options.build_targets.split(',')
   bb_annotations.PrintNamedStep('compile')
-  for build_target in build_targets:
-    RunCmd(cmd + ['--build-args=%s' % build_target],
-        halt_on_failure=True,
-        cwd=DIR_BUILD_ROOT)
+  if options.build_targets:
+    build_targets = options.build_targets.split(',')
+    cmd += ['--build-args', ' '.join(build_targets)]
+  RunCmd(cmd, halt_on_failure=True, cwd=DIR_BUILD_ROOT)
 
 
 def ZipBuild(options):
@@ -112,7 +111,7 @@ def GetHostStepCmds():
 def GetHostStepsOptParser():
   parser = bb_utils.GetParser()
   parser.add_option('--steps', help='Comma separated list of host tests.')
-  parser.add_option('--build-targets', default='All',
+  parser.add_option('--build-targets', default='',
                     help='Comma separated list of build targets.')
   parser.add_option('--experimental', action='store_true',
                     help='Indicate whether to compile experimental targets.')
