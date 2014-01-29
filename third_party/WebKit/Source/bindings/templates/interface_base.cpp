@@ -99,15 +99,6 @@ template <typename T> void V8_USE(T) { }
 {% block constructor_getter %}{% endblock %}
 {% block replaceable_attribute_setter_and_callback %}{% endblock %}
 {% block security_check_functions %}{% endblock %}
-{# Special operations (methods) #}
-{% block anonymous_indexed_property_getter_and_callback %}{% endblock %}
-{% block anonymous_indexed_property_setter_and_callback %}{% endblock %}
-{% block anonymous_indexed_property_deleter_and_callback %}{% endblock %}
-{% block anonymous_named_property_getter_and_callback %}{% endblock %}
-{% block anonymous_named_property_setter_and_callback %}{% endblock %}
-{% block anonymous_named_property_deleter_and_callback %}{% endblock %}
-{% block named_property_query_and_callback %}{% endblock %}
-{% block named_property_enumerator_and_callback %}{% endblock %}
 {# Methods #}
 {% from 'methods.cpp' import generate_method, overload_resolution_method,
        method_callback, origin_safe_method_getter, generate_constructor
@@ -136,6 +127,15 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {% block overloaded_constructor %}{% endblock %}
 {% block event_constructor %}{% endblock %}
+{# Special operations (methods) #}
+{% block indexed_property_getter_and_callback %}{% endblock %}
+{% block indexed_property_setter_and_callback %}{% endblock %}
+{% block indexed_property_deleter_and_callback %}{% endblock %}
+{% block named_property_getter_and_callback %}{% endblock %}
+{% block named_property_setter_and_callback %}{% endblock %}
+{% block named_property_deleter_and_callback %}{% endblock %}
+{% block named_property_query_and_callback %}{% endblock %}
+{% block named_property_enumerator_and_callback %}{% endblock %}
 } // namespace {{cpp_class}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}

@@ -227,12 +227,12 @@ def generate_interface(interface):
     })
 
     template_contents.update({
-        'anonymous_indexed_property_getter': anonymous_indexed_property_getter(interface),
-        'anonymous_indexed_property_setter': anonymous_indexed_property_setter(interface),
-        'anonymous_indexed_property_deleter': anonymous_indexed_property_deleter(interface),
-        'anonymous_named_property_getter': anonymous_named_property_getter(interface),
-        'anonymous_named_property_setter': anonymous_named_property_setter(interface),
-        'anonymous_named_property_deleter': anonymous_named_property_deleter(interface),
+        'indexed_property_getter': indexed_property_getter(interface),
+        'indexed_property_setter': indexed_property_setter(interface),
+        'indexed_property_deleter': indexed_property_deleter(interface),
+        'named_property_getter': named_property_getter(interface),
+        'named_property_setter': named_property_setter(interface),
+        'named_property_deleter': named_property_deleter(interface),
     })
 
     return template_contents
@@ -486,7 +486,7 @@ def interface_length(interface, constructors):
 # http://heycam.github.io/webidl/#idl-special-operations
 ################################################################################
 
-def anonymous_property_getter(getter):
+def property_getter(getter):
     def is_null_expression(idl_type):
         if idl_type == 'DOMString':
             return 'element.isNull()'
@@ -497,22 +497,22 @@ def anonymous_property_getter(getter):
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
         'is_null_expression': is_null_expression(idl_type),
-        'name': extended_attributes.get('ImplementedAs'),
+        'name': cpp_name(getter),
         'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
     }
 
 
-def anonymous_property_setter(setter):
+def property_setter(setter):
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
     return {
-        'name': extended_attributes.get('ImplementedAs'),
+        'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
             idl_type, extended_attributes, 'jsValue', 'propertyValue'),
     }
 
 
-def anonymous_property_deleter(deleter):
+def property_deleter(deleter):
     idl_type = deleter.idl_type
     if idl_type != 'boolean':
         raise Exception(
@@ -520,7 +520,7 @@ def anonymous_property_deleter(deleter):
             idl_type)
     extended_attributes = deleter.extended_attributes
     return {
-        'name': extended_attributes.get('ImplementedAs'),
+        'name': cpp_name(deleter),
     }
 
 
@@ -529,55 +529,52 @@ def anonymous_property_deleter(deleter):
 # http://heycam.github.io/webidl/#idl-indexed-properties
 ################################################################################
 
-def anonymous_indexed_property_getter(interface):
+def indexed_property_getter(interface):
     try:
-        # Find anonymous indexed property getter, if present; has form:
-        # getter TYPE (unsigned long ARG1)
+        # Find indexed property getter, if present; has form:
+        # getter TYPE [OPTIONAL_IDENTIFIER](unsigned long ARG1)
         getter = next(
             method
             for method in interface.operations
             if ('getter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'unsigned long' and
-                not method.name))
+                method.arguments[0].idl_type == 'unsigned long'))
     except StopIteration:
         return None
 
-    return anonymous_property_getter(getter)
+    return property_getter(getter)
 
 
-def anonymous_indexed_property_setter(interface):
+def indexed_property_setter(interface):
     try:
-        # Find anonymous indexed property setter, if present; has form:
-        # setter RETURN_TYPE (unsigned long ARG1, ARG_TYPE ARG2)
+        # Find indexed property setter, if present; has form:
+        # setter RETURN_TYPE [OPTIONAL_IDENTIFIER](unsigned long ARG1, ARG_TYPE ARG2)
         setter = next(
             method
             for method in interface.operations
             if ('setter' in method.specials and
                 len(method.arguments) == 2 and
-                method.arguments[0].idl_type == 'unsigned long' and
-                not method.name))
+                method.arguments[0].idl_type == 'unsigned long'))
     except StopIteration:
         return None
 
-    return anonymous_property_setter(setter)
+    return property_setter(setter)
 
 
-def anonymous_indexed_property_deleter(interface):
+def indexed_property_deleter(interface):
     try:
-        # Find anonymous indexed property deleter, if present; has form:
-        # deleter TYPE (unsigned long ARG)
+        # Find indexed property deleter, if present; has form:
+        # deleter TYPE [OPTIONAL_IDENTIFIER](unsigned long ARG)
         deleter = next(
             method
             for method in interface.operations
             if ('deleter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'unsigned long' and
-                not method.name))
+                method.arguments[0].idl_type == 'unsigned long'))
     except StopIteration:
         return None
 
-    return anonymous_property_deleter(deleter)
+    return property_deleter(deleter)
 
 
 ################################################################################
@@ -585,52 +582,49 @@ def anonymous_indexed_property_deleter(interface):
 # http://heycam.github.io/webidl/#idl-named-properties
 ################################################################################
 
-def anonymous_named_property_getter(interface):
+def named_property_getter(interface):
     try:
-        # Find anonymous named property getter, if present; has form:
-        # getter TYPE (DOMString ARG1)
+        # Find named property getter, if present; has form:
+        # getter TYPE [OPTIONAL_IDENTIFIER](DOMString ARG1)
         getter = next(
             method
             for method in interface.operations
             if ('getter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'DOMString' and
-                not method.name))
+                method.arguments[0].idl_type == 'DOMString'))
     except StopIteration:
         return None
 
-    return anonymous_property_getter(getter)
+    return property_getter(getter)
 
 
-def anonymous_named_property_setter(interface):
+def named_property_setter(interface):
     try:
-        # Find anonymous named property setter, if present; has form:
-        # setter RETURN_TYPE (DOMString ARG1, ARG_TYPE ARG2)
+        # Find named property setter, if present; has form:
+        # setter RETURN_TYPE [OPTIONAL_IDENTIFIER](DOMString ARG1, ARG_TYPE ARG2)
         setter = next(
             method
             for method in interface.operations
             if ('setter' in method.specials and
                 len(method.arguments) == 2 and
-                method.arguments[0].idl_type == 'unsigned long' and
-                not method.name))
+                method.arguments[0].idl_type == 'DOMString'))
     except StopIteration:
         return None
 
-    return anonymous_property_setter(setter)
+    return property_setter(setter)
 
 
-def anonymous_named_property_deleter(interface):
+def named_property_deleter(interface):
     try:
-        # Find anonymous named property deleter, if present; has form:
-        # deleter TYPE (DOMString ARG)
+        # Find named property deleter, if present; has form:
+        # deleter TYPE [OPTIONAL_IDENTIFIER](DOMString ARG)
         deleter = next(
             method
             for method in interface.operations
             if ('deleter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'DOMString' and
-                not method.name))
+                method.arguments[0].idl_type == 'DOMString'))
     except StopIteration:
         return None
 
-    return anonymous_property_deleter(deleter)
+    return property_deleter(deleter)

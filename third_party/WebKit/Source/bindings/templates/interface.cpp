@@ -98,9 +98,9 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 
 
 {##############################################################################}
-{% block anonymous_indexed_property_getter_and_callback %}
-{% if anonymous_indexed_property_getter %}
-{% set getter = anonymous_indexed_property_getter %}
+{% block indexed_property_getter_and_callback %}
+{% if indexed_property_getter %}
+{% set getter = indexed_property_getter %}
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
@@ -123,9 +123,9 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 
 {##############################################################################}
-{% block anonymous_indexed_property_setter_and_callback %}
-{% if anonymous_indexed_property_setter %}
-{% set setter = anonymous_indexed_property_setter %}
+{% block indexed_property_setter_and_callback %}
+{% if indexed_property_setter %}
+{% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
@@ -149,9 +149,9 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 
 
 {##############################################################################}
-{% block anonymous_indexed_property_deleter_and_callback %}
-{% if anonymous_indexed_property_deleter %}
-{% set deleter = anonymous_indexed_property_deleter %}
+{% block indexed_property_deleter_and_callback %}
+{% if indexed_property_deleter %}
+{% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
@@ -173,9 +173,9 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 
 {##############################################################################}
-{% block anonymous_named_property_getter_and_callback %}
-{% if anonymous_named_property_getter %}
-{% set getter = anonymous_named_property_getter %}
+{% block named_property_getter_and_callback %}
+{% if named_property_getter %}
+{% set getter = named_property_getter %}
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
@@ -206,9 +206,9 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 
 
 {##############################################################################}
-{% block anonymous_named_property_setter_and_callback %}
-{% if anonymous_named_property_setter %}
-{% set setter = anonymous_named_property_setter %}
+{% block named_property_setter_and_callback %}
+{% if named_property_setter %}
+{% set setter = named_property_setter %}
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
@@ -241,7 +241,7 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 {##############################################################################}
 {% block named_property_query_and_callback %}
-{% if anonymous_named_property_getter %}
+{% if named_property_getter %}
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
@@ -267,9 +267,9 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 
 {##############################################################################}
-{% block anonymous_named_property_deleter_and_callback %}
-{% if anonymous_named_property_deleter %}
-{% set deleter = anonymous_named_property_deleter %}
+{% block named_property_deleter_and_callback %}
+{% if named_property_deleter %}
+{% set deleter = named_property_deleter %}
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
@@ -293,7 +293,7 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 {##############################################################################}
 {% block named_property_enumerator_and_callback %}
-{% if anonymous_named_property_getter %}
+{% if named_property_getter %}
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
@@ -686,31 +686,31 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% if constants %}
     {{install_constants() | indent}}
     {% endif %}
-    {% if anonymous_indexed_property_getter %}
+    {% if indexed_property_getter %}
     {# if have indexed properties, MUST have an indexed property getter #}
     {% set indexed_property_getter_callback =
            '%sV8Internal::indexedPropertyGetterCallback' % cpp_class %}
     {% set indexed_property_setter_callback =
            '%sV8Internal::indexedPropertySetterCallback' % cpp_class
-           if anonymous_indexed_property_setter else '0' %}
+           if indexed_property_setter else '0' %}
     {% set indexed_property_query_callback = '0' %}{# Unused #}
     {% set indexed_property_deleter_callback =
            '%sV8Internal::indexedPropertyDeleterCallback' % cpp_class
-           if anonymous_indexed_property_deleter else '0' %}
+           if indexed_property_deleter else '0' %}
     functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, indexedPropertyEnumerator<{{cpp_class}}>);
     {% endif %}
-    {% if anonymous_named_property_getter %}
+    {% if named_property_getter %}
     {# if have named properties, MUST have a named property getter #}
     {% set named_property_getter_callback =
            '%sV8Internal::namedPropertyGetterCallback' % cpp_class %}
     {% set named_property_setter_callback =
            '%sV8Internal::namedPropertySetterCallback' % cpp_class
-           if anonymous_named_property_setter else '0' %}
+           if named_property_setter else '0' %}
     {% set named_property_query_callback =
            '%sV8Internal::namedPropertyQueryCallback' % cpp_class %}
     {% set named_property_deleter_callback =
            '%sV8Internal::namedPropertyDeleterCallback' % cpp_class
-           if anonymous_named_property_deleter else '0' %}
+           if named_property_deleter else '0' %}
     {% set named_property_enumerator_callback =
            '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class %}
     functionTemplate->InstanceTemplate()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
