@@ -184,6 +184,7 @@ struct desktop_shell {
 	enum animation_type focus_animation_type;
 
 	struct wl_listener output_create_listener;
+	struct wl_listener output_move_listener;
 	struct wl_list output_list;
 
 	char *client;

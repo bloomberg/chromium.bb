@@ -5524,6 +5524,37 @@ handle_output_create(struct wl_listener *listener, void *data)
 }
 
 static void
+handle_output_move(struct wl_listener *listener, void *data)
+{
+	struct desktop_shell *shell;
+	struct weston_output *output;
+	struct weston_layer *layer;
+	struct weston_view *view;
+	float x, y;
+
+	shell = container_of(listener, struct desktop_shell,
+			     output_move_listener);
+	output = data;
+
+	/* Move all views in the layers owned by the shell */
+	wl_list_for_each(layer, shell->fullscreen_layer.link.prev, link) {
+		wl_list_for_each(view, &layer->view_list, layer_link) {
+			if (view->output != output)
+				continue;
+
+			x = view->geometry.x + output->move_x;
+			y = view->geometry.y + output->move_y;
+			weston_view_set_position(view, x, y);
+		}
+
+		/* We don't start from the beggining of the layer list, so
+		 * make sure we don't wrap around it. */
+		if (layer == &shell->background_layer)
+			break;
+	}
+}
+
+static void
 setup_output_destroy_handler(struct weston_compositor *ec,
 							struct desktop_shell *shell)
 {
@@ -5536,6 +5567,9 @@ setup_output_destroy_handler(struct weston_compositor *ec,
 	shell->output_create_listener.notify = handle_output_create;
 	wl_signal_add(&ec->output_created_signal,
 				&shell->output_create_listener);
+
+	shell->output_move_listener.notify = handle_output_move;
+	wl_signal_add(&ec->output_moved_signal, &shell->output_move_listener);
 }
 
 static void

@@ -580,6 +580,7 @@ struct weston_compositor {
 	struct wl_signal seat_created_signal;
 	struct wl_signal output_created_signal;
 	struct wl_signal output_destroyed_signal;
+	struct wl_signal output_moved_signal;
 
 	struct wl_event_loop *input_loop;
 	struct wl_event_source *input_loop_source;
@@ -820,7 +821,6 @@ struct weston_view {
 	 */
 	uint32_t output_mask;
 
-	struct wl_listener output_move_listener;
 	struct wl_listener output_destroy_listener;
 };
 
