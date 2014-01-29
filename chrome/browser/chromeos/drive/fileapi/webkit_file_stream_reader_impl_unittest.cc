@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/webkit_file_stream_reader_impl.h"
+#include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_reader_impl.h"
 
 #include <string>
 

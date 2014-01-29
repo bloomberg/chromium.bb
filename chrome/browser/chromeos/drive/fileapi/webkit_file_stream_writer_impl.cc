@@ -1,13 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/webkit_file_stream_writer_impl.h"
+#include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_writer_impl.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/fileapi_worker.h"
+#include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
 #include "net/base/io_buffer.h"

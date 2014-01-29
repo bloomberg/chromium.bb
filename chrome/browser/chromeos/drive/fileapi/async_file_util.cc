@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/async_file_util.h"
+#include "chrome/browser/chromeos/drive/fileapi/async_file_util.h"
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -10,7 +10,7 @@
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/fileapi_worker.h"
+#include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"

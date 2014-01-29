@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_BACKEND_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_BACKEND_DELEGATE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILE_SYSTEM_BACKEND_DELEGATE_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILE_SYSTEM_BACKEND_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -50,4 +50,4 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_BACKEND_DELEGATE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILE_SYSTEM_BACKEND_DELEGATE_H_

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,8 +16,8 @@
 //   3) On UI thread, check if the instance of FileSystemInterface is alive or
 //      not. If yes, Run the callback with it.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_WORKER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_WORKER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILEAPI_WORKER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILEAPI_WORKER_H_
 
 #include <vector>
 
@@ -176,4 +176,4 @@ void TouchFile(const base::FilePath& file_path,
 }  // namespace fileapi_internal
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_WORKER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILEAPI_FILEAPI_WORKER_H_
