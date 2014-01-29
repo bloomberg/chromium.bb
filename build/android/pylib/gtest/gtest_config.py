@@ -6,6 +6,7 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
+    'content_browsertests',
     'content_gl_tests',
 ]
 
@@ -31,7 +32,6 @@ STABLE_TEST_SUITES = [
     'webkit_unit_tests',
     'breakpad_unittests',
     'sandbox_linux_unittests',
-    'content_browsertests',
 ]
 
 WEBRTC_CHROMIUM_TEST_SUITES = [
