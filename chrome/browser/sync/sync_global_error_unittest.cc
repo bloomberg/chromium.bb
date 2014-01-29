@@ -28,17 +28,6 @@ using content::BrowserThread;
 
 namespace {
 
-#if 0
-// TODO(altimofeev) See below.
-class BrowserMock: public Browser {
- public:
-  explicit BrowserMock(Type type, Profile* profile) : Browser(type, profile) {}
-
-  MOCK_METHOD2(ExecuteCommandWithDisposition,
-               void(int command_id, WindowOpenDisposition));
-};
-#endif
-
 class FakeLoginUIService: public LoginUIService {
  public:
   FakeLoginUIService() : LoginUIService(NULL) {}
@@ -73,22 +62,6 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
  public:
   SyncGlobalErrorTest() {}
   virtual ~SyncGlobalErrorTest() {}
-
-#if 0
-  // TODO(altimofeev): see below.
-  virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
-
-    set_profile(CreateProfile());
-    set_browser(new BrowserMock(Browser::TYPE_TABBED, profile()));
-    set_window(new TestBrowserWindow(browser()));
-    browser()->SetWindowForTesting(window());
-  }
-
-  virtual void TearDown() OVERRIDE {
-    testing::Test::TearDown();
-  }
-#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncGlobalErrorTest);
@@ -125,21 +98,12 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
   // We always return a hardcoded title.
   EXPECT_FALSE(error->GetBubbleViewTitle().empty());
 
-#if defined(OS_CHROMEOS)
-  // TODO(altimofeev): Implement this in a way that doesn't involve subclassing
-  //                   Browser or using GMock on browser/ui types which is
-  //                   banned. Consider observing NOTIFICATION_APP_TERMINATING
-  //                   instead.
+  // TODO(altimofeev): Implement this for ChromeOS in a way that doesn't involve
+  //                   subclassing Browser or using GMock on browser/ui types
+  //                   which is banned. Consider observing
+  //                   NOTIFICATION_APP_TERMINATING instead.
   //                   http://crbug.com/134675
-#else
-#if defined(OS_CHROMEOS)
-  if (error_state != GoogleServiceAuthError::NONE) {
-    // In CrOS sign-in/sign-out is made to fix the error.
-    EXPECT_CALL(*static_cast<BrowserMock*>(browser),
-                ExecuteCommandWithDisposition(IDC_EXIT, _));
-    error->ExecuteMenuItem(browser);
-  }
-#else
+#if !defined(OS_CHROMEOS)
   // Test message handler.
   if (is_error) {
     FakeLoginUI* login_ui = static_cast<FakeLoginUI*>(
@@ -149,7 +113,6 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
     error->BubbleViewAcceptButtonPressed(browser);
     error->BubbleViewDidClose(browser);
   }
-#endif
 #endif
 }
 
