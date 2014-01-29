@@ -7,11 +7,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/win/registry.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -36,14 +34,19 @@ const int kMessageWidth = 400;
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
-  std::wstring command =
-      ExternalProtocolDialog::GetApplicationForProtocol(url);
-  if (command.empty()) {
+  scoped_ptr<ExternalProtocolDialogDelegate> delegate(
+      new ExternalProtocolDialogDelegate(url,
+                                         render_process_host_id,
+                                         routing_id));
+  if (delegate->command().empty()) {
     // ShellExecute won't do anything. Don't bother warning the user.
     return;
   }
+
   // Windowing system takes ownership.
-  new ExternalProtocolDialog(url, render_process_host_id, routing_id, command);
+  new ExternalProtocolDialog(delegate.PassAs<const ProtocolDialogDelegate>(),
+                             render_process_host_id,
+                             routing_id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +71,7 @@ base::string16 ExternalProtocolDialog::GetDialogButtonLabel(
 }
 
 base::string16 ExternalProtocolDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE);
+  return delegate_->GetTitleText();
 }
 
 void ExternalProtocolDialog::DeleteDelegate() {
@@ -80,10 +83,8 @@ bool ExternalProtocolDialog::Cancel() {
   // escape. In these cases it would be preferable to ignore the state of the
   // check box but MessageBox doesn't distinguish this from pressing the cancel
   // button.
-  if (message_box_view_->IsCheckBoxSelected()) {
-    ExternalProtocolHandler::SetBlockState(
-        url_.scheme(), ExternalProtocolHandler::BLOCK);
-  }
+  delegate_->DoCancel(delegate_->url(),
+                      message_box_view_->IsCheckBoxSelected());
 
   // Returning true closes the dialog.
   return true;
@@ -96,13 +97,9 @@ bool ExternalProtocolDialog::Accept() {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                            base::TimeTicks::Now() - creation_time_);
 
-  if (message_box_view_->IsCheckBoxSelected()) {
-    ExternalProtocolHandler::SetBlockState(
-        url_.scheme(), ExternalProtocolHandler::DONT_BLOCK);
-  }
+  delegate_->DoAccept(delegate_->url(),
+                      message_box_view_->IsCheckBoxSelected());
 
-  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
-      url_, render_process_host_id_, routing_id_);
   // Returning true closes the dialog.
   return true;
 }
@@ -122,39 +119,18 @@ const views::Widget* ExternalProtocolDialog::GetWidget() const {
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialog, private:
 
-ExternalProtocolDialog::ExternalProtocolDialog(const GURL& url,
-                                               int render_process_host_id,
-                                               int routing_id,
-                                               const std::wstring& command)
-    : url_(url),
+ExternalProtocolDialog::ExternalProtocolDialog(
+    scoped_ptr<const ProtocolDialogDelegate> delegate,
+    int render_process_host_id,
+    int routing_id)
+    : delegate_(delegate.Pass()),
       render_process_host_id_(render_process_host_id),
       routing_id_(routing_id),
       creation_time_(base::TimeTicks::Now()) {
-  const int kMaxUrlWithoutSchemeSize = 256;
-  const int kMaxCommandSize = 256;
-  base::string16 elided_url_without_scheme;
-  base::string16 elided_command;
-  gfx::ElideString(base::ASCIIToUTF16(url.possibly_invalid_spec()),
-                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  gfx::ElideString(base::WideToUTF16Hack(command),
-                   kMaxCommandSize, &elided_command);
-
-  base::string16 message_text = l10n_util::GetStringFUTF16(
-      IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      base::ASCIIToUTF16(url.scheme() + ":"),
-      elided_url_without_scheme) + base::ASCIIToUTF16("\n\n");
-
-  message_text += l10n_util::GetStringFUTF16(
-      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
-      elided_command) + base::ASCIIToUTF16("\n\n");
-
-  message_text += l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING);
-
-  views::MessageBoxView::InitParams params(message_text);
+  views::MessageBoxView::InitParams params(delegate_->GetMessageText());
   params.message_width = kMessageWidth;
   message_box_view_ = new views::MessageBoxView(params);
-  message_box_view_->SetCheckBoxLabel(
-      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
+  message_box_view_->SetCheckBoxLabel(delegate_->GetCheckboxText());
 
   // Dialog is top level if we don't have a web_contents associated with us.
   WebContents* web_contents = tab_util::GetWebContentsByID(
@@ -163,29 +139,4 @@ ExternalProtocolDialog::ExternalProtocolDialog(const GURL& url,
   if (web_contents)
     parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
   CreateBrowserModalDialogViews(this, parent_window)->Show();
-}
-
-// static
-std::wstring ExternalProtocolDialog::GetApplicationForProtocol(
-    const GURL& url) {
-  // We shouldn't be accessing the registry from the UI thread, since it can go
-  // to disk.  http://crbug.com/61996
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-  std::wstring url_spec = base::ASCIIToWide(url.possibly_invalid_spec());
-  std::wstring cmd_key_path =
-      base::ASCIIToWide(url.scheme() + "\\shell\\open\\command");
-  base::win::RegKey cmd_key(HKEY_CLASSES_ROOT, cmd_key_path.c_str(), KEY_READ);
-  size_t split_offset = url_spec.find(L':');
-  if (split_offset == std::wstring::npos)
-    return std::wstring();
-  std::wstring parameters = url_spec.substr(split_offset + 1,
-                                            url_spec.length() - 1);
-  std::wstring application_to_launch;
-  if (cmd_key.ReadValue(NULL, &application_to_launch) == ERROR_SUCCESS) {
-    ReplaceSubstringsAfterOffset(&application_to_launch, 0, L"%1", parameters);
-    return application_to_launch;
-  } else {
-    return std::wstring();
-  }
 }

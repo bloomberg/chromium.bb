@@ -21,7 +21,8 @@ ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
     int tab_contents_id)
     : ProtocolDialogDelegate(url),
       render_process_host_id_(render_process_host_id),
-      tab_contents_id_(tab_contents_id) {
+      tab_contents_id_(tab_contents_id),
+      command_(ShellIntegration::GetApplicationForProtocol(url)) {
 }
 
 ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
@@ -30,16 +31,11 @@ ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
 base::string16 ExternalProtocolDialogDelegate::GetMessageText() const {
   const int kMaxUrlWithoutSchemeSize = 256;
   const int kMaxCommandSize = 256;
-  // TODO(calamity): Look up the command in ExternalProtocolHandler and pass it
-  // into the constructor. Will require simultaneous change of
-  // ExternalProtocolHandler::RunExternalProtocolDialog across all platforms.
-  base::string16 command =
-    base::UTF8ToUTF16(ShellIntegration::GetApplicationForProtocol(url()));
   base::string16 elided_url_without_scheme;
   base::string16 elided_command;
   gfx::ElideString(base::ASCIIToUTF16(url().possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  gfx::ElideString(command, kMaxCommandSize, &elided_command);
+  gfx::ElideString(command_, kMaxCommandSize, &elided_command);
 
   base::string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,

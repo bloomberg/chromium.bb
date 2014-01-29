@@ -509,8 +509,8 @@ ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
 }
 
 // static
-std::string ShellIntegration::GetApplicationForProtocol(const GURL& url) {
-  return std::string("xdg-open");
+base::string16 ShellIntegration::GetApplicationForProtocol(const GURL& url) {
+  return base::ASCIIToUTF16("xdg-open");
 }
 
 // static

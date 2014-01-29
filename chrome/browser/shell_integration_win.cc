@@ -296,11 +296,23 @@ ShellIntegration::DefaultWebClientState
           base::UTF8ToUTF16(protocol)));
 }
 
-std::string ShellIntegration::GetApplicationForProtocol(const GURL& url) {
-  // TODO(calamity): this will be implemented when external_protocol_dialog is
-  // refactored on windows.
-  NOTREACHED();
-  return std::string();
+base::string16 ShellIntegration::GetApplicationForProtocol(const GURL& url) {
+  std::wstring url_spec = base::ASCIIToWide(url.possibly_invalid_spec());
+  std::wstring cmd_key_path =
+      base::ASCIIToWide(url.scheme() + "\\shell\\open\\command");
+  base::win::RegKey cmd_key(HKEY_CLASSES_ROOT, cmd_key_path.c_str(), KEY_READ);
+  size_t split_offset = url_spec.find(L':');
+  if (split_offset == std::wstring::npos)
+    return std::wstring();
+  std::wstring parameters = url_spec.substr(split_offset + 1,
+                                            url_spec.length() - 1);
+  std::wstring application_to_launch;
+  if (cmd_key.ReadValue(NULL, &application_to_launch) == ERROR_SUCCESS) {
+    ReplaceSubstringsAfterOffset(&application_to_launch, 0, L"%1", parameters);
+    return application_to_launch;
+  }
+
+  return std::wstring();
 }
 
 // There is no reliable way to say which browser is default on a machine (each

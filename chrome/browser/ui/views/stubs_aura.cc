@@ -14,12 +14,3 @@ void ShowAboutIPCDialog() {
 }
 
 }  // namespace chrome
-
-#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
-// static
-void ExternalProtocolHandler::RunExternalProtocolDialog(
-    const GURL& url,
-    int render_process_host_id,
-    int routing_id) {
-}
-#endif
