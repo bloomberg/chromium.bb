@@ -476,7 +476,7 @@ bool canScrollInDirection(const Frame* frame, FocusDirection direction)
         return false;
     ScrollbarMode verticalMode;
     ScrollbarMode horizontalMode;
-    frame->view()->calculateScrollbarModesForLayout(horizontalMode, verticalMode);
+    frame->view()->calculateScrollbarModesForLayoutAndSetViewportRenderer(horizontalMode, verticalMode);
     if ((direction == FocusDirectionLeft || direction == FocusDirectionRight) && ScrollbarAlwaysOff == horizontalMode)
         return false;
     if ((direction == FocusDirectionUp || direction == FocusDirectionDown) &&  ScrollbarAlwaysOff == verticalMode)

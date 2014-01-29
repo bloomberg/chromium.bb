@@ -497,7 +497,7 @@ void FrameView::adjustViewSize()
     setContentsSize(size);
 }
 
-void FrameView::applyOverflowToViewport(RenderObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
+void FrameView::applyOverflowToViewportAndSetRenderer(RenderObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
 {
     // Handle the overflow:hidden/scroll case for the body/html elements.  WinIE treats
     // overflow:hidden and overflow:scroll on <body> as applying to the document's
@@ -582,7 +582,7 @@ void FrameView::applyPaginationToViewport()
     setPagination(pagination);
 }
 
-void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
+void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
 {
     m_viewportRenderer = 0;
 
@@ -615,10 +615,11 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
                 // since it's illegal to have visible in only one direction.
                 RenderObject* o = rootRenderer->style()->overflowX() == OVISIBLE && document->documentElement()->hasTagName(htmlTag) ? body->renderer() : rootRenderer;
                 if (o->style())
-                    applyOverflowToViewport(o, hMode, vMode);
+                    applyOverflowToViewportAndSetRenderer(o, hMode, vMode);
             }
-        } else if (rootRenderer)
-            applyOverflowToViewport(rootRenderer, hMode, vMode);
+        } else if (rootRenderer) {
+            applyOverflowToViewportAndSetRenderer(rootRenderer, hMode, vMode);
+        }
     }
 }
 
@@ -968,7 +969,7 @@ void FrameView::layout(bool allowSubtree)
 
         ScrollbarMode hMode;
         ScrollbarMode vMode;
-        calculateScrollbarModesForLayout(hMode, vMode);
+        calculateScrollbarModesForLayoutAndSetViewportRenderer(hMode, vMode);
 
         m_doFullRepaint = !inSubtreeLayout && !isPartialLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
 
@@ -2399,7 +2400,7 @@ bool FrameView::isScrollable()
     // Cover #3 and #4.
     ScrollbarMode horizontalMode;
     ScrollbarMode verticalMode;
-    calculateScrollbarModesForLayout(horizontalMode, verticalMode, RulesFromWebContentOnly);
+    calculateScrollbarModesForLayoutAndSetViewportRenderer(horizontalMode, verticalMode, RulesFromWebContentOnly);
     if (horizontalMode == ScrollbarAlwaysOff && verticalMode == ScrollbarAlwaysOff)
         return false;
 
