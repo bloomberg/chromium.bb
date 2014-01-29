@@ -826,7 +826,8 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "user=sample%40gmail.com&jobname=Sample+job+name"),
+           "client_name=Chrome&user_name=sample%40gmail.com&"
+           "job_name=Sample+job+name"),
       "Sample print data",
       kSampleLocalPrintResponse));
 };
@@ -851,7 +852,8 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "user=sample%40gmail.com&jobname=Sample+job+name"),
+           "client_name=Chrome&user_name=sample%40gmail.com&"
+           "job_name=Sample+job+name"),
       "Sample print data",
       kSampleLocalPrintResponse));
 };
@@ -876,7 +878,8 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "user=sample%40gmail.com&jobname=Sample+job+name"),
+           "client_name=Chrome&user_name=sample%40gmail.com"
+           "&job_name=Sample+job+name"),
       base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
       kSampleLocalPrintResponse));
 };
@@ -907,7 +910,8 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+           "client_name=Chrome&user_name=sample%40gmail.com&"
+           "job_name=Sample+job+name&job_id=1234"),
       "Sample print data",
       kSampleLocalPrintResponse));
 };
@@ -936,7 +940,8 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+           "client_name=Chrome&user_name=sample%40gmail.com&"
+           "job_name=Sample+job+name&job_id=1234"),
       "sample/path/",
       kSampleInvalidDocumentTypeResponse));
 
@@ -944,7 +949,8 @@ TEST_F(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
 
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+           "client_name=Chrome&user_name=sample%40gmail.com&"
+           "job_name=Sample+job+name&job_id=1234"),
       base::FilePath(FILE_PATH_LITERAL("sample/path/test.pdf")),
       kSampleLocalPrintResponse));
 };
@@ -972,7 +978,8 @@ TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
 
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
-           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+           "client_name=Chrome&user_name=sample%40gmail.com&"
+           "job_name=Sample+job+name&job_id=1234"),
       "Sample print data",
       kSampleErrorResponsePrinterBusy));
 
