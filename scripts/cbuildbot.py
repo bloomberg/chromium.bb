@@ -168,10 +168,12 @@ class Builder(object):
   def _SetReleaseTag(self):
     """Sets the release tag from the manifest manager.
 
-    Must be run after sync stage as syncing enables us to have a release tag.
+    Must be run after sync stage as syncing enables us to have a release tag,
+    and must be run before any usage of attrs.release_tag.
 
     TODO(mtennant): Find a bottleneck place in syncing that can set this
-    directly.  Be careful, as there are several kinds of syncing stages.
+    directly.  Be careful, as there are several kinds of syncing stages, and
+    sync stages have been known to abort with sys.exit calls.
     """
     manifest_manager = getattr(self._run.attrs, 'manifest_manager', None)
     if manifest_manager:
@@ -192,6 +194,14 @@ class Builder(object):
     """
     stage_instance = self._GetStageInstance(stage, *args, **kwargs)
     return stage_instance.Run()
+
+  def _RunSyncStage(self, sync_instance):
+    """Run given |sync_instance| stage and be sure attrs.release_tag set."""
+    try:
+      sync_instance.Run()
+    finally:
+      self._SetReleaseTag()
+
 
   def GetSyncInstance(self):
     """Returns an instance of a SyncStage that should be run.
@@ -314,8 +324,7 @@ class Builder(object):
     try:
       self.Initialize()
       sync_instance = self.GetSyncInstance()
-      sync_instance.Run()
-      self._SetReleaseTag()
+      self._RunSyncStage(sync_instance)
 
       if self._run.ShouldPatchAfterSync():
         # Filter out patches to manifest, since PatchChangesStage can't handle
