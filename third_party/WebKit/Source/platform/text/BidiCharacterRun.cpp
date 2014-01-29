@@ -22,7 +22,8 @@
  */
 
 #include "config.h"
-#include "core/rendering/BidiRun.h"
+#include "platform/text/BidiCharacterRun.h"
+
 #include "platform/Partitions.h"
 #include "wtf/RefCountedLeakCounter.h"
 
@@ -30,9 +31,9 @@ using namespace WTF;
 
 namespace WebCore {
 
-DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, bidiRunCounter, ("BidiRun"));
+DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, bidiRunCounter, ("BidiCharacterRun"));
 
-void* BidiRun::operator new(size_t sz)
+void* BidiCharacterRun::operator new(size_t sz)
 {
 #ifndef NDEBUG
     bidiRunCounter.increment();
@@ -40,7 +41,7 @@ void* BidiRun::operator new(size_t sz)
     return partitionAlloc(Partitions::getRenderingPartition(), sz);
 }
 
-void BidiRun::operator delete(void* ptr)
+void BidiCharacterRun::operator delete(void* ptr)
 {
 #ifndef NDEBUG
     bidiRunCounter.decrement();

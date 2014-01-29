@@ -1361,7 +1361,6 @@
             'rendering/AbstractInlineTextBox.h',
             'rendering/AutoTableLayout.cpp',
             'rendering/AutoTableLayout.h',
-            'rendering/BidiRun.cpp',
             'rendering/BidiRun.h',
             'rendering/ClipRect.cpp',
             'rendering/ClipRect.h',

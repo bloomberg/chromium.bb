@@ -44,10 +44,6 @@ struct BidiRun : BidiCharacterRun {
         m_startsSegment = false;
     }
 
-    // BidiRuns are allocated out of the rendering partition.
-    void* operator new(size_t);
-    void operator delete(void*);
-
     BidiRun* next() { return static_cast<BidiRun*>(m_next); }
     RenderObject* object() { return m_object; }
 

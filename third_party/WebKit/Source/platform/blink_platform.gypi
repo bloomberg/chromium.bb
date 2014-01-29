@@ -763,6 +763,8 @@
       'speech/PlatformSpeechSynthesisVoice.h',
       'speech/PlatformSpeechSynthesizer.cpp',
       'speech/PlatformSpeechSynthesizer.h',
+      'text/BidiCharacterRun.cpp',
+      'text/BidiCharacterRun.h',
       'text/BidiContext.cpp',
       'text/BidiContext.h',
       'text/BidiResolver.h',
