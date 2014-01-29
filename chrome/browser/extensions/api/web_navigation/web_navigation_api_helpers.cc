@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/event_filtering_info.h"
 #include "net/base/net_errors.h"
@@ -99,9 +100,14 @@ void DispatchOnCommitted(const std::string& event_name,
   dict->SetInteger(keys::kProcessIdKey,
                    web_contents->GetRenderViewHost()->GetProcess()->GetID());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
-  dict->SetString(
-      keys::kTransitionTypeKey,
-      content::PageTransitionGetCoreTransitionString(transition_type));
+  std::string transition_type_string =
+      content::PageTransitionGetCoreTransitionString(transition_type);
+  // For webNavigation API backward compatibility, keep "start_page" even after
+  // renamed to "auto_toplevel".
+  if (PageTransitionStripQualifier(transition_type) ==
+          content::PAGE_TRANSITION_AUTO_TOPLEVEL)
+    transition_type_string = "start_page";
+  dict->SetString(keys::kTransitionTypeKey, transition_type_string);
   base::ListValue* qualifiers = new base::ListValue();
   if (transition_type & content::PAGE_TRANSITION_CLIENT_REDIRECT)
     qualifiers->Append(new base::StringValue("client_redirect"));
