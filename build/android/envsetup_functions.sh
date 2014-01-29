@@ -128,9 +128,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
 common_gyp_vars() {
   export GYP_DEFINES="${DEFINES}"
 
-  # Use our All target as the default
-  export GYP_GENERATOR_FLAGS="${GYP_GENERATOR_FLAGS} default_target=All"
-
   # TODO(thakis): Remove this after a week or two. Sourcing envsetup.sh used to
   # set this variable, but now that all_android.gyp is gone having it set will
   # lead to errors, so explicitly unset it to remove it from the environment of
