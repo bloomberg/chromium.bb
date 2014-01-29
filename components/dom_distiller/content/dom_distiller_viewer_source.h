@@ -11,14 +11,16 @@
 
 namespace dom_distiller {
 
+class DomDistillerService;
+
 // Serves HTML and resources for viewing distilled articles.
 class DomDistillerViewerSource : public content::URLDataSource {
  public:
-  DomDistillerViewerSource(const std::string& scheme);
-
- private:
+  DomDistillerViewerSource(DomDistillerService* dom_distiller_service,
+                           const std::string& scheme);
   virtual ~DomDistillerViewerSource();
 
+ private:
   // Overridden from content::URLDataSource:
   virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
@@ -27,11 +29,17 @@ class DomDistillerViewerSource : public content::URLDataSource {
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual bool ShouldServiceRequest(
-      const net::URLRequest* request) const OVERRIDE;
+  virtual bool ShouldServiceRequest(const net::URLRequest* request)
+      const OVERRIDE;
+  virtual void WillServiceRequest(const net::URLRequest* request,
+                                  std::string* path) const OVERRIDE;
 
   // The scheme this URLDataSource is hosted under.
   std::string scheme_;
+
+  // The service which contains all the functionality needed to interact with
+  // the list of articles.
+  DomDistillerService* dom_distiller_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerViewerSource);
 };

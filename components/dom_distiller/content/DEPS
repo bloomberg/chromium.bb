@@ -3,5 +3,7 @@ include_rules = [
   "+content/public",
   "+content/shell",
   "+content/test",
+  "+net/base",
   "+net/test",
+  "+ui/base/l10n",
 ]

@@ -44,12 +44,9 @@ DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 
 BrowserContextKeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  content::URLDataSource::Add(
-      profile, new DomDistillerViewerSource(chrome::kDomDistillerScheme));
-
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-          content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
-              content::BrowserThread::GetBlockingPool()->GetSequenceToken());
+      content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+          content::BrowserThread::GetBlockingPool()->GetSequenceToken());
 
   scoped_ptr<DomDistillerDatabase> db(
       new DomDistillerDatabase(background_task_runner));
@@ -57,21 +54,27 @@ BrowserContextKeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   base::FilePath database_dir(
       profile->GetPath().Append(FILE_PATH_LITERAL("Articles")));
 
-  scoped_ptr<DomDistillerStore> dom_distiller_store(
-      new DomDistillerStore(db.PassAs<DomDistillerDatabaseInterface>(),
-                            database_dir));
+  scoped_ptr<DomDistillerStore> dom_distiller_store(new DomDistillerStore(
+      db.PassAs<DomDistillerDatabaseInterface>(), database_dir));
 
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(profile));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(profile->GetRequestContext()));
-  scoped_ptr<DistillerFactory> distiller_factory(
-      new DistillerFactoryImpl(distiller_page_factory.Pass(),
-                               distiller_url_fetcher_factory.Pass()));
-  return new DomDistillerContextKeyedService(
-      dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
-            distiller_factory.Pass());
+  scoped_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
+      distiller_page_factory.Pass(), distiller_url_fetcher_factory.Pass()));
 
+  DomDistillerContextKeyedService* service =
+      new DomDistillerContextKeyedService(
+          dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
+          distiller_factory.Pass());
+
+  // Set up URL data source for the chrome-distiller:// scheme.
+  content::URLDataSource::Add(
+      profile,
+      new DomDistillerViewerSource(service, chrome::kDomDistillerScheme));
+
+  return service;
 }
 
 content::BrowserContext* DomDistillerServiceFactory::GetBrowserContextToUse(

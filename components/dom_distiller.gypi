@@ -128,7 +128,10 @@
               'target_name': 'dom_distiller_content',
               'type': 'static_library',
               'dependencies': [
+                'component_strings.gyp:component_strings',
                 'dom_distiller_core',
+                'dom_distiller_resources',
+                '../net/net.gyp:net',
                 '../skia/skia.gyp:skia',
                 '../sync/sync.gyp:sync',
               ],
