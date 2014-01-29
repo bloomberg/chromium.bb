@@ -30,6 +30,5 @@
 
 interface HTMLShadowElement : HTMLElement {
     attribute boolean resetStyleInheritance;
-    [DeprecateAs=HTMLShadowElementOlderShadowRoot] readonly attribute ShadowRoot olderShadowRoot;
     [RuntimeEnabled=ShadowDOM] NodeList getDistributedNodes();
 };
