@@ -3010,8 +3010,6 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 
 static void
 shell_surface_configure(struct weston_surface *, int32_t, int32_t);
-static void
-shell_surface_output_destroyed(struct weston_surface *);
 
 struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
@@ -3048,7 +3046,6 @@ create_common_surface(void *shell, struct weston_surface *surface,
 
 	surface->configure = shell_surface_configure;
 	surface->configure_private = shsurf;
-	surface->output_destroyed = shell_surface_output_destroyed;
 
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
@@ -4853,19 +4850,6 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	}
 }
 
-static void
-shell_surface_output_destroyed(struct weston_surface *es)
-{
-	struct shell_surface *shsurf = get_shell_surface(es);
-
-	assert(shsurf);
-
-	shsurf->saved_position_valid = false;
-	shsurf->next_state.maximized = false;
-	shsurf->next_state.fullscreen = false;
-	shsurf->state_changed = true;
-}
-
 static void launch_desktop_shell_process(void *data);
 
 static void
@@ -5485,10 +5469,80 @@ workspace_move_surface_down_binding(struct weston_seat *seat, uint32_t time,
 }
 
 static void
+shell_reposition_view_on_output_destroy(struct weston_view *view)
+{
+	struct weston_output *output, *first_output;
+	struct weston_compositor *ec = view->surface->compositor;
+	struct shell_surface *shsurf;
+	float x, y;
+	int visible;
+
+	x = view->geometry.x;
+	y = view->geometry.y;
+
+	/* At this point the destroyed output is not in the list anymore.
+	 * If the view is still visible somewhere, we leave where it is,
+	 * otherwise, move it to the first output. */
+	visible = 0;
+	wl_list_for_each(output, &ec->output_list, link) {
+		if (pixman_region32_contains_point(&output->region,
+						   x, y, NULL)) {
+			visible = 1;
+			break;
+		}
+	}
+
+	if (!visible) {
+		first_output = container_of(ec->output_list.next,
+					    struct weston_output, link);
+
+		x = first_output->x + first_output->width / 4;
+		y = first_output->y + first_output->height / 4;
+	}
+
+	weston_view_set_position(view, x, y);
+
+	shsurf = get_shell_surface(view->surface);
+
+	if (shsurf) {
+		shsurf->saved_position_valid = false;
+		shsurf->next_state.maximized = false;
+		shsurf->next_state.fullscreen = false;
+		shsurf->state_changed = true;
+	}
+}
+
+static void
+shell_reposition_views_on_output_destroy(struct shell_output *shell_output)
+{
+	struct desktop_shell *shell = shell_output->shell;
+	struct weston_output *output = shell_output->output;
+	struct weston_layer *layer;
+	struct weston_view *view;
+
+	/* Move all views in the layers owned by the shell */
+	wl_list_for_each(layer, shell->fullscreen_layer.link.prev, link) {
+		wl_list_for_each(view, &layer->view_list, layer_link) {
+			if (view->output != output)
+				continue;
+
+			shell_reposition_view_on_output_destroy(view);
+		}
+
+		/* We don't start from the beggining of the layer list, so
+		 * make sure we don't wrap around it. */
+		if (layer == &shell->background_layer)
+			break;
+	}
+}
+
+static void
 handle_output_destroy(struct wl_listener *listener, void *data)
 {
 	struct shell_output *output_listener =
 		container_of(listener, struct shell_output, destroy_listener);
+
+	shell_reposition_views_on_output_destroy(output_listener);
 
 	wl_list_remove(&output_listener->destroy_listener.link);
 	wl_list_remove(&output_listener->link);
