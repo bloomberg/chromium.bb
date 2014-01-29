@@ -411,6 +411,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
     signin_allowed_.MoveToThread(io_message_loop_proxy);
+
+    network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled,
+                                     pref_service);
+    network_prediction_enabled_.MoveToThread(io_message_loop_proxy);
   }
 
   quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
@@ -1075,6 +1079,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
+  network_prediction_enabled_.Destroy();
   quick_check_enabled_.Destroy();
   if (media_device_id_salt_)
     media_device_id_salt_->ShutdownOnUIThread();

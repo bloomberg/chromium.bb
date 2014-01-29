@@ -529,8 +529,8 @@ const char kMultipleProfilePrefMigration[] =
     "local_state.multiple_profile_prefs_version";
 
 // A boolean pref set to true if prediction of network actions is allowed.
-// Actions include DNS prefetching, TCP and SSL preconnection, and prerendering
-// of web pages.
+// Actions include DNS prefetching, TCP and SSL preconnection, prerendering
+// of web pages, and resource prefetching.
 // NOTE: The "dns_prefetching.enabled" value is used so that historical user
 // preferences are not lost.
 const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";

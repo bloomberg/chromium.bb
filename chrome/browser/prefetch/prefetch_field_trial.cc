@@ -11,7 +11,7 @@
 
 namespace prefetch {
 
-bool IsPrefetchEnabled() {
+bool IsPrefetchFieldTrialEnabled() {
   std::string experiment = base::FieldTrialList::FindFullName("Prefetch");
   if (StartsWithASCII(experiment, "ExperimentYes", false))
     return true;

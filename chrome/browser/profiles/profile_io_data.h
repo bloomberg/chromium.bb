@@ -171,6 +171,10 @@ class ProfileIOData {
     return &signin_allowed_;
   }
 
+  BooleanPrefMember* network_prediction_enabled() const {
+    return &network_prediction_enabled_;
+  }
+
   std::string GetMediaDeviceIDSalt() const;
 
   net::TransportSecurityState* transport_security_state() const {
@@ -482,6 +486,7 @@ class ProfileIOData {
   mutable BooleanPrefMember printing_enabled_;
   mutable BooleanPrefMember sync_disabled_;
   mutable BooleanPrefMember signin_allowed_;
+  mutable BooleanPrefMember network_prediction_enabled_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
   mutable BooleanPrefMember quick_check_enabled_;

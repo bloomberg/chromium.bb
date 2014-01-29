@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
-#include "chrome/browser/prefetch/prefetch_field_trial.h"
+#include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_pending_swap_throttle.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
@@ -242,7 +242,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
       return false;
 
     // If prefetch is disabled, kill the request.
-    if (!prefetch::IsPrefetchEnabled())
+    if (!prefetch::IsPrefetchEnabled(resource_context))
       return false;
   }
 

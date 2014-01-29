@@ -1569,6 +1569,8 @@
         'browser/predictors/predictor_table_base.h',
         'browser/pref_service_flags_storage.cc',
         'browser/pref_service_flags_storage.h',
+        'browser/prefetch/prefetch.cc',
+        'browser/prefetch/prefetch.h',
         'browser/prefetch/prefetch_field_trial.cc',
         'browser/prefetch/prefetch_field_trial.h',
         'browser/prefs/browser_prefs.cc',
