@@ -52,8 +52,9 @@ function loadTypeSchema(typeName, defaultSchema) {
 }
 
 // expose takes a private class implementation |cls| and exposes a subset of its
-// methods |funcs| in a public wrapper class that it returns.
-function expose(cls, funcs) {
+// methods |funcs| and properties |props| in a public wrapper class that it
+// returns.
+function expose(cls, funcs, props) {
   function publicClass() {
     var privateObj = $Object.create(cls.prototype);
     $Function.apply(cls, privateObj, arguments);
@@ -61,12 +62,30 @@ function expose(cls, funcs) {
     privates(this).impl = privateObj;
   }
 
-  $Array.forEach(funcs, function(func) {
-    publicClass.prototype[func] = function() {
-      var impl = privates(this).impl;
-      return $Function.apply(impl[func], impl, arguments);
-    };
-  });
+  if (funcs) {
+    $Array.forEach(funcs, function(func) {
+      publicClass.prototype[func] = function() {
+        var impl = privates(this).impl;
+        return $Function.apply(impl[func], impl, arguments);
+      };
+    });
+  }
+
+  if (props) {
+    $Array.forEach(props, function(prop) {
+      $Object.defineProperty(publicClass.prototype, prop, {
+        enumerable: true,
+        get: function() {
+          return privates(this).impl[prop];
+        },
+        set: function(value) {
+          var impl = privates(this).impl;
+          delete impl[prop];
+          impl[prop] = value;
+        }
+      });
+    });
+  }
 
   return publicClass;
 }

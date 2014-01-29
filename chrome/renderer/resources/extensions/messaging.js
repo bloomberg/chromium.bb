@@ -15,6 +15,7 @@
   var messagingNatives = requireNative('messaging_natives');
   var processNatives = requireNative('process');
   var unloadEvent = require('unload_event');
+  var utils = require('utils');
   var messagingUtils = require('messaging_utils');
 
   // The reserved channel name for the sendRequest/send(Native)Message APIs.
@@ -36,7 +37,7 @@
 
   // Port object.  Represents a connection to another script context through
   // which messages can be passed.
-  function Port(portId, opt_name) {
+  function PortImpl(portId, opt_name) {
     this.portId_ = portId;
     this.name = opt_name;
 
@@ -52,7 +53,7 @@
 
   // Sends a message asynchronously to the context on the other end of this
   // port.
-  Port.prototype.postMessage = function(msg) {
+  PortImpl.prototype.postMessage = function(msg) {
     // JSON.stringify doesn't support a root object which is undefined.
     if (msg === undefined)
       msg = null;
@@ -72,12 +73,12 @@
   };
 
   // Disconnects the port from the other end.
-  Port.prototype.disconnect = function() {
+  PortImpl.prototype.disconnect = function() {
     messagingNatives.CloseChannel(this.portId_, true);
     this.destroy_();
   };
 
-  Port.prototype.destroy_ = function() {
+  PortImpl.prototype.destroy_ = function() {
     var portId = this.portId_;
 
     if (this.onDestroy_)
@@ -167,7 +168,7 @@
       var responseCallback = function(response) {
         if (port) {
           port.postMessage(response);
-          port.destroy_();
+          privates(port).impl.destroy_();
           port = null;
         } else {
           // We nulled out port when sending the response, and now the page
@@ -182,7 +183,7 @@
       // using some native hackery.
       messagingNatives.BindToGC(responseCallback, function() {
         if (port) {
-          port.destroy_();
+          privates(port).impl.destroy_();
           port = null;
         }
       });
@@ -193,13 +194,13 @@
         if (!responseCallbackPreserved && port) {
           // If they didn't access the response callback, they're not
           // going to send a response, so clean up the port immediately.
-          port.destroy_();
+          privates(port).impl.destroy_();
           port = null;
         }
       }
     }
 
-    port.onDestroy_ = function() {
+    privates(port).impl.onDestroy_ = function() {
       port.onMessage.removeListener(messageListener);
     };
     port.onMessage.addListener(messageListener);
@@ -288,7 +289,7 @@
       try {
         port.onDisconnect.dispatch(port);
       } finally {
-        port.destroy_();
+        privates(port).impl.destroy_();
         lastError.clear(chrome);
       }
     }
@@ -342,7 +343,7 @@
       }
     }
 
-    port.onDestroy_ = function() {
+    privates(port).impl.onDestroy_ = function() {
       port.onDisconnect.removeListener(disconnectListener);
       port.onMessage.removeListener(messageListener);
     };
@@ -359,6 +360,16 @@
       throw new Error('Invalid arguments to ' + functionName + '.');
     return alignedArgs;
   }
+
+var Port = utils.expose(PortImpl, [
+    'disconnect',
+    'postMessage'
+  ],
+  [
+    'name',
+    'onDisconnect',
+    'onMessage'
+  ]);
 
 exports.kRequestChannel = kRequestChannel;
 exports.kMessageChannel = kMessageChannel;
