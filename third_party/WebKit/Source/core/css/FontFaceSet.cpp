@@ -35,7 +35,7 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/CSSSegmentedFontFaceCache.h"
+#include "core/css/FontFaceCache.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -136,10 +136,10 @@ Document* FontFaceSet::document() const
     return toDocument(executionContext());
 }
 
-void FontFaceSet::addFontFacesToCSSSegmentedFontFaceCache(CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache, CSSFontSelector* fontSelector)
+void FontFaceSet::addFontFacesToFontFaceCache(FontFaceCache* fontFaceCache, CSSFontSelector* fontSelector)
 {
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
-        cssSegmentedFontFaceCache->addFontFace(fontSelector, *it, false);
+        fontFaceCache->addFontFace(fontSelector, *it, false);
 }
 
 const AtomicString& FontFaceSet::interfaceName() const
@@ -272,9 +272,9 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
 
 void FontFaceSet::clear()
 {
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
-        cssSegmentedFontFaceCache->removeFontFace(it->get(), false);
+        fontFaceCache->removeFontFace(it->get(), false);
     m_nonCSSConnectedFaces.clear();
 }
 
@@ -402,9 +402,9 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
         return matchedFonts;
     }
 
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
         if (face)
             matchedFonts.append(face->fontFaces(nullToSpace(text)));
     }
@@ -419,11 +419,11 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
         return ScriptPromise();
     }
 
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     ScriptPromise promise = ScriptPromise::createPending(executionContext());
     RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.fontDescription().family(), promise, executionContext());
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
         if (!face) {
             resolver->error();
             continue;
@@ -441,9 +441,9 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
         return false;
     }
 
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
+        CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
         if (!face || !face->checkFont(nullToSpace(text)))
             return false;
     }

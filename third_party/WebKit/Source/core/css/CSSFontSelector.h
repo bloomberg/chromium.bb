@@ -26,7 +26,7 @@
 #ifndef CSSFontSelector_h
 #define CSSFontSelector_h
 
-#include "core/css/CSSSegmentedFontFaceCache.h"
+#include "core/css/FontFaceCache.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/Timer.h"
 #include "platform/fonts/FontSelector.h"
@@ -71,7 +71,7 @@ public:
     }
     virtual ~CSSFontSelector();
 
-    virtual unsigned version() const OVERRIDE { return m_cssSegmentedFontFaceCache.version(); }
+    virtual unsigned version() const OVERRIDE { return m_fontFaceCache.version(); }
 
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) OVERRIDE;
     virtual void willUseFontData(const FontDescription&, const AtomicString& family) OVERRIDE;
@@ -87,7 +87,7 @@ public:
     void unregisterForInvalidationCallbacks(CSSFontSelectorClient*);
 
     Document* document() const { return m_document; }
-    CSSSegmentedFontFaceCache* fontFaceCache() { return &m_cssSegmentedFontFaceCache; }
+    FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
 
     const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
 
@@ -101,7 +101,7 @@ private:
 
     Document* m_document;
     // FIXME: Move to Document or StyleEngine.
-    CSSSegmentedFontFaceCache m_cssSegmentedFontFaceCache;
+    FontFaceCache m_fontFaceCache;
     HashSet<CSSFontSelectorClient*> m_clients;
 
     FontLoader m_fontLoader;

@@ -49,11 +49,11 @@ namespace WebCore {
 class CSSFontFace;
 class CSSFontFaceSource;
 class CSSFontSelector;
-class CSSSegmentedFontFaceCache;
 class Dictionary;
 class Document;
 class ExceptionState;
 class Font;
+class FontFaceCache;
 class FontResource;
 class FontsReadyPromiseResolver;
 class ExecutionContext;
@@ -100,7 +100,7 @@ public:
     static PassRefPtr<FontFaceSet> from(Document*);
     static void didLayout(Document*);
 
-    void addFontFacesToCSSSegmentedFontFaceCache(CSSSegmentedFontFaceCache*, CSSFontSelector*);
+    void addFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
 
 private:
     typedef RefCountedSupplement<Document, FontFaceSet> SupplementType;

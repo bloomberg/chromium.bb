@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSSegmentedFontFaceCache_h
-#define CSSSegmentedFontFaceCache_h
+#ifndef FontFaceCache_h
+#define FontFaceCache_h
 
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -40,9 +40,9 @@ class CSSSegmentedFontFace;
 class FontDescription;
 class StyleRuleFontFace;
 
-class CSSSegmentedFontFaceCache {
+class FontFaceCache {
 public:
-    CSSSegmentedFontFaceCache();
+    FontFaceCache();
 
     // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
     // a result of egregious spaghettification in FontFace/FontFaceSet.

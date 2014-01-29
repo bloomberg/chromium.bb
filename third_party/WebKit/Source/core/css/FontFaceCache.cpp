@@ -26,7 +26,7 @@
 
 
 #include "config.h"
-#include "CSSSegmentedFontFaceCache.h"
+#include "FontFaceCache.h"
 
 #include "FontFamilyNames.h"
 #include "core/css/CSSFontSelector.h"
@@ -41,12 +41,12 @@
 
 namespace WebCore {
 
-CSSSegmentedFontFaceCache::CSSSegmentedFontFaceCache()
+FontFaceCache::FontFaceCache()
     : m_version(0)
 {
 }
 
-void CSSSegmentedFontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, PassRefPtr<FontFace> prpFontFace)
+void FontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, PassRefPtr<FontFace> prpFontFace)
 {
     RefPtr<FontFace> fontFace = prpFontFace;
     if (!m_styleRuleToFontFace.add(fontFaceRule, fontFace).isNewEntry)
@@ -54,7 +54,7 @@ void CSSSegmentedFontFaceCache::add(CSSFontSelector* cssFontSelector, const Styl
     addFontFace(cssFontSelector, fontFace, true);
 }
 
-void CSSSegmentedFontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, PassRefPtr<FontFace> prpFontFace, bool cssConnected)
+void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, PassRefPtr<FontFace> prpFontFace, bool cssConnected)
 {
     RefPtr<FontFace> fontFace = prpFontFace;
 
@@ -73,7 +73,7 @@ void CSSSegmentedFontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, Pa
     ++m_version;
 }
 
-void CSSSegmentedFontFaceCache::remove(const StyleRuleFontFace* fontFaceRule)
+void FontFaceCache::remove(const StyleRuleFontFace* fontFaceRule)
 {
     StyleRuleToFontFace::iterator it = m_styleRuleToFontFace.find(fontFaceRule);
     if (it != m_styleRuleToFontFace.end()) {
@@ -82,7 +82,7 @@ void CSSSegmentedFontFaceCache::remove(const StyleRuleFontFace* fontFaceRule)
     }
 }
 
-void CSSSegmentedFontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected)
+void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected)
 {
     FamilyToTraitsMap::iterator fontFacesIter = m_fontFaces.find(fontFace->family());
     if (fontFacesIter == m_fontFaces.end())
@@ -187,7 +187,7 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
     return false;
 }
 
-CSSSegmentedFontFace* CSSSegmentedFontFaceCache::get(const FontDescription& fontDescription, const AtomicString& family)
+CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription, const AtomicString& family)
 {
     TraitsMap* familyFontFaces = m_fontFaces.get(family);
     if (!familyFontFaces || familyFontFaces->isEmpty())
