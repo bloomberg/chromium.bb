@@ -13,6 +13,7 @@
     'autofill.gypi',
     'auto_login_parser.gypi',
     'breakpad.gypi',
+    'cloud_devices.gypi',
     'dom_distiller.gypi',
     'json_schema.gypi',
     'language_usage_metrics.gypi',

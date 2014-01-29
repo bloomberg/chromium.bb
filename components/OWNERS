@@ -9,6 +9,10 @@ per-file breakpad.gypi=jochen@chromium.org
 per-file breakpad.gypi=rsesek@chromium.org
 per-file breakpad.gypi=thestig@chromium.org
 
+per-file cloud_devices*=gene@chromium.org
+per-file cloud_devices*=noamsml@chromium.org
+per-file cloud_devices*=vitalybuka@chromium.org 
+
 per-file dom_distiller*=bengr@chromium.org
 per-file dom_distiller*=cjhopman@chromium.org
 per-file dom_distiller*=nyquist@chromium.org
