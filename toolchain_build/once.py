@@ -187,7 +187,7 @@ class Once(object):
     return False
 
   def Run(self, package, inputs, output, commands,
-          working_dir=None, memoize=True, signature_file=None):
+          working_dir=None, memoize=True, signature_file=None, subdir=None):
     """Run an operation once, possibly hitting cache.
 
     Args:
@@ -198,6 +198,8 @@ class Once(object):
       working_dir: Working directory to use, or None for a temp dir.
       memoize: Boolean indicating the the result should be memoized.
       signature_file: File to write human readable build signatures to or None.
+      subdir: If not None, use this directory instead of the output dir as the
+              substituter's output path. Must be a subdirectory of output.
     """
     if working_dir is None:
       wdm = working_directory.TemporaryWorkingDirectory()
@@ -224,9 +226,12 @@ class Once(object):
           self.ReadMemoizedResultFromCache(package, build_signature, output)):
         return
 
+      if subdir:
+        assert subdir.startswith(output)
+
       for command in commands:
         paths = inputs.copy()
-        paths['output'] = output
+        paths['output'] = subdir if subdir else output
         nonpath_subst['build_signature'] = build_signature
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)
         command.Invoke(subst)

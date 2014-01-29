@@ -249,9 +249,15 @@ def BitcodeLibs(host, bias_arch):
     return Mangle(component_name, host)
   def B(component_name):
     return Mangle(component_name, bias_arch)
+  def BcSubdir(subdir, bias_arch):
+    if bias_arch == 'portable':
+      return subdir
+    else:
+      return subdir + '-bc-' + bias_arch
   libs = {
       B('newlib'): {
           'type': 'build',
+          'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': [ 'newlib_src', H('llvm'), H('binutils_pnacl')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands' :
@@ -298,6 +304,7 @@ def BitcodeLibs(host, bias_arch):
       },
       B('libcxx'): {
           'type': 'build',
+          'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
                            H('llvm'), H('binutils_pnacl'), B('newlib')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
@@ -341,6 +348,7 @@ def BitcodeLibs(host, bias_arch):
       },
       B('libstdcxx'): {
           'type': 'build',
+          'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': ['gcc_src', 'gcc_src', H('llvm'), H('binutils_pnacl'),
                            B('newlib')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
@@ -390,6 +398,7 @@ def BitcodeLibs(host, bias_arch):
       },
       B('libs_support_bitcode'): {
           'type': 'build',
+          'output_subdir': BcSubdir('lib', bias_arch),
           'dependencies': [ B('newlib'), H('llvm'), H('binutils_pnacl')],
           'inputs': { 'src': os.path.join(NACL_DIR,
                                           'pnacl', 'support', 'bitcode'),
@@ -438,6 +447,7 @@ def NativeLibs(host, arch):
   libs = {
       Mangle('libs_support_native', arch): {
           'type': 'build',
+          'output_subdir': 'lib-' + arch,
           'dependencies': [ 'newlib_portable', H('llvm'), H('binutils_pnacl')],
           # These libs include
           # arbitrary stuff from native_client/src/{include,untrusted,trusted}
@@ -479,6 +489,7 @@ def NativeLibs(host, arch):
       },
       Mangle('compiler_rt', arch): {
           'type': 'build',
+          'output_subdir': 'lib-' + arch,
           'dependencies': [ 'compiler_rt_src', H('llvm'), H('binutils_pnacl')],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands':
@@ -498,6 +509,7 @@ def NativeLibs(host, arch):
       },
       Mangle('libgcc_eh', arch): {
           'type': 'build',
+          'output_subdir': 'lib-' + arch,
           'dependencies': [ 'gcc_src', H('llvm'), H('binutils_pnacl')],
           'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts'),
                       'driver': os.path.join(NACL_DIR, 'pnacl', 'driver') },

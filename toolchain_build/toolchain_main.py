@@ -94,6 +94,10 @@ class PackageBuilder(object):
             'inputs': # optional
               {<mapping whose keys are names, and whose values are files or
                 directories (e.g. checked-in tarballs) used as input>},
+            'output_subdir': # optional
+              '<directory name>', # Name of a subdir to be created in the output
+               # directory, into which all output will be placed. If not present
+               # output will go into the root of the output directory.
             'commands':
               [<list of command.Command objects to run>],
               # Objects that have a 'skip_for_incremental' attribute that
@@ -126,13 +130,17 @@ class PackageBuilder(object):
                                              'toolchain_build.log'), 'w'))
     self.BuildAll()
 
-  def GetOutputDir(self, package):
+  def GetOutputDir(self, package, use_subdir):
     # The output dir of source packages is in the source directory, and can be
     # overridden.
     if self._packages[package]['type'] == 'source':
       dirname = self._packages[package].get('output_dirname', package)
       return os.path.join(self._options.source, dirname)
-    return os.path.join(self._options.output, package + '_install')
+    else:
+       root = os.path.join(self._options.output, package + '_install')
+       if use_subdir and 'output_subdir' in self._packages[package]:
+         return os.path.join(root, self._packages[package]['output_subdir'])
+       return root
 
   def BuildPackage(self, package):
     """Build a single package.
@@ -179,7 +187,7 @@ class PackageBuilder(object):
       inputs['src'] = os.path.join(self._options.source, package)
     # Add in each dependency by package name.
     for dependency in dependencies:
-      inputs[dependency] = self.GetOutputDir(dependency)
+      inputs[dependency] = self.GetOutputDir(dependency, True)
 
     # Each package generates intermediate into output/<PACKAGE>_work.
     # Clobbered here explicitly.
@@ -189,12 +197,13 @@ class PackageBuilder(object):
       file_tools.RemoveDirectoryIfPresent(work_dir)
     file_tools.MakeDirectoryIfAbsent(work_dir)
 
-    output = self.GetOutputDir(package)
+    output = self.GetOutputDir(package, False)
+    output_subdir = self.GetOutputDir(package, True)
 
     if not is_source_target or self._options.clobber_source:
       logging.debug('Clobbering output directory %s' % output)
       file_tools.RemoveDirectoryIfPresent(output)
-      os.mkdir(output)
+      os.makedirs(output_subdir)
 
     commands = package_info.get('commands', [])
     if not self._options.clobber and len(os.listdir(work_dir)) > 0:
@@ -207,7 +216,8 @@ class PackageBuilder(object):
         commands=commands,
         working_dir=work_dir,
         memoize=not is_source_target,
-        signature_file=self._signature_file)
+        signature_file=self._signature_file,
+        subdir=output_subdir)
 
   def BuildOrder(self, targets):
     """Find what needs to be built in what order to build all targets.

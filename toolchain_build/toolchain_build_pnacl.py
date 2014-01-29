@@ -258,10 +258,15 @@ def HostTools(host):
   def H(component_name):
     # Return a package name for a component name with a host triple.
     return component_name + '_' + gsd_storage.LegalizeName(host)
+  def IsHost64(host):
+    return fnmatch.fnmatch(host, 'x86_64*')
+  def HostSubdir(host):
+    return 'host_x86_64' if IsHost64(host) else 'host_x86_32'
   tools = {
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'],
           'type': 'build',
+          'output_subdir': HostSubdir(host),
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
@@ -290,6 +295,7 @@ def HostTools(host):
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
           'type': 'build',
+          'output_subdir': HostSubdir(host),
           'commands': [
               command.SkipForIncrementalCommand([
                   'sh',
@@ -313,12 +319,13 @@ def HostTools(host):
       },
       H('driver'): {
         'type': 'build',
+        'output_subdir': 'bin64' if IsHost64(host) else 'bin',
         'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
         'commands': [
             command.Runnable(pnacl_commands.InstallDriverScripts,
                              '%(src)s', '%(output)s',
                              host_windows=TripleIsWindows(host),
-                             host_64bit=fnmatch.fnmatch(host, 'x86_64*'))
+                             host_64bit=IsHost64(host))
         ],
       },
   }
