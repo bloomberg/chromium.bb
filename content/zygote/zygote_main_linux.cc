@@ -332,7 +332,9 @@ static bool EnterSuidSandbox(LinuxSandbox* linux_sandbox,
   PreSandboxInit();
 
   // Check that the pre-sandbox initialization didn't spawn threads.
+#if !defined(THREAD_SANITIZER)
   DCHECK(linux_sandbox->IsSingleThreaded());
+#endif
 
   if (setuid_sandbox->IsSuidSandboxChild()) {
     // Use the SUID sandbox.  This still allows the seccomp sandbox to
