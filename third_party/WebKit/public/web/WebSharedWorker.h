@@ -56,6 +56,12 @@ public:
     virtual void startWorkerContext(
         const WebURL& scriptURL,
         const WebString& name,
+        const WebString& contentSecurityPolicy,
+        WebContentSecurityPolicyType) = 0;
+    // FIXME(horo): Remove this
+    virtual void startWorkerContext(
+        const WebURL& scriptURL,
+        const WebString& name,
         const WebString& userAgent,
         const WebString& sourceCode,
         const WebString& contentSecurityPolicy,

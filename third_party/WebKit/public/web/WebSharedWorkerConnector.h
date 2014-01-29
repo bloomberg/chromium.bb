@@ -47,8 +47,9 @@ public:
 
     // Returns false if the thread hasn't been started yet (script loading has not taken place).
     // FIXME(atwilson): Remove this when we move the initial script loading into the worker process.
-    virtual bool isStarted() = 0;
+    virtual bool isStarted() { return true; };
 
+    // FIXME(horo): remove this.
     virtual void startWorkerContext(
         const WebURL& scriptURL,
         const WebString& name,
@@ -56,12 +57,13 @@ public:
         const WebString& sourceCode,
         const WebString& contentSecurityPolicy,
         WebContentSecurityPolicyType,
-        long long scriptResourceAppCacheID) = 0;
+        long long scriptResourceAppCacheID) { };
 
     class ConnectListener {
     public:
         // Invoked once the connect event has been sent so the caller can free this object.
         virtual void connected() = 0;
+        virtual void scriptLoadFailed() = 0;
     };
 
     // Sends a connect event to the SharedWorker context. The listener is invoked when this async operation completes.

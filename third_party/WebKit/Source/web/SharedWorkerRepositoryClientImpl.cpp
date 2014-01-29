@@ -78,9 +78,12 @@ public:
 
 private:
     // WorkerScriptLoaderClient callbacks
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&);
-    virtual void notifyFinished();
-    virtual void connected();
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
+    virtual void notifyFinished() OVERRIDE;
+
+    // WebSharedWorkerConnector::ConnectListener overrides.
+    virtual void connected() OVERRIDE;
+    virtual void scriptLoadFailed() OVERRIDE;
 
     void sendConnect();
 
@@ -143,6 +146,13 @@ void SharedWorkerScriptLoader::sendConnect()
 void SharedWorkerScriptLoader::connected()
 {
     // Connect event has been sent, so free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
+    delete this;
+}
+
+void SharedWorkerScriptLoader::scriptLoadFailed()
+{
+    m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
+    // Free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
     delete this;
 }
 

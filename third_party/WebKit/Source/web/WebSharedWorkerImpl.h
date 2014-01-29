@@ -39,6 +39,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
+#include "core/workers/WorkerScriptLoaderClient.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -86,8 +87,11 @@ public:
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*) OVERRIDE;
+    virtual void didFinishDocumentLoad(WebFrame*) OVERRIDE;
 
     // WebSharedWorker methods:
+    virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType) OVERRIDE;
+    // FIXME(horo): Remove this
     virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& userAgent, const WebString& sourceCode, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, long long cacheId) OVERRIDE;
     virtual void connect(WebMessagePortChannel*) OVERRIDE;
     virtual void terminateWorkerContext() OVERRIDE;
@@ -101,6 +105,8 @@ public:
     virtual void dispatchDevToolsMessage(const WebString&) OVERRIDE;
 
 private:
+    class Loader;
+
     virtual ~WebSharedWorkerImpl();
 
     WebSharedWorkerClient* client() { return m_client->get(); }
@@ -114,6 +120,8 @@ private:
     // Creates the shadow loader used for worker network requests.
     void initializeLoader(const WebURL&);
 
+    void didReceiveScriptLoaderResponse();
+    void onScriptLoaderFinished();
 
     static void connectTask(WebCore::ExecutionContext*, PassOwnPtr<WebMessagePortChannel>);
     // Tasks that are run on the main thread.
@@ -121,6 +129,7 @@ private:
     void workerGlobalScopeDestroyedOnMainThread();
 
     // 'shadow page' - created to proxy loading requests from the worker.
+    RefPtr<WebCore::ExecutionContext> m_loadingDocument;
     WebView* m_webView;
     WebFrame* m_mainFrame;
     bool m_askedToTerminate;
@@ -136,6 +145,14 @@ private:
     WeakPtr<WebSharedWorkerClient> m_clientWeakPtr;
 
     bool m_pauseWorkerContextOnStart;
+    bool m_attachDevToolsOnStart;
+
+    // Kept around only while main script loading is ongoing.
+    OwnPtr<Loader> m_mainScriptLoader;
+    WebURL m_url;
+    WebString m_name;
+    WebString m_contentSecurityPolicy;
+    WebContentSecurityPolicyType m_policyType;
 };
 
 } // namespace blink
