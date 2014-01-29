@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -173,19 +174,32 @@ URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
 // and check if it matches |SPDY_PROXY_AUTH_ORIGIN|.
 bool DataReductionProxyWasUsed(WebFrame* frame) {
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-  const char kViaHeaderName[] = "Via";
   const char kDatReductionProxyViaValue[] = "1.1 Chrome Compression Proxy";
+  return ViaHeaderContains(frame, kDatReductionProxyViaValue);
+#endif
+  return false;
+}
+
+// Helper function to check for string in 'via' header. Returns true if
+// |via_value| is one of the values listed in the Via header and the response
+// was fetched via a proxy.
+bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
+  const char kViaHeaderName[] = "Via";
 
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
   if (!document_state->was_fetched_via_proxy())
     return false;
 
-  std::string via_header(base::UTF16ToUTF8(
-      frame->dataSource()->response().httpHeaderField(kViaHeaderName)));
-  return via_header.find(kDatReductionProxyViaValue) != std::string::npos;
-#endif
-  return false;
+  std::vector<std::string> values;
+  // Multiple via headers have already been coalesced and hence each value
+  // separated by a comma corresponds to a proxy. The value added by a proxy is
+  // not expected to contain any commas.
+  // Example., Via: 1.0 Compression proxy, 1.1 Google promise preview
+  base::SplitString(
+      frame->dataSource()->response().httpHeaderField(kViaHeaderName).utf8(),
+      ',', &values);
+  return std::find(values.begin(), values.end(), via_value) != values.end();
 }
 
 // Returns true if the provided URL is a referrer string that came from
@@ -229,56 +243,24 @@ int GetQueryStringBasedExperiment(const GURL& referrer) {
   return kNoExperiment;
 }
 
-// Appends "cerivrj_*" and "gcjeid" query parameters from preview_url to url.
-// Returns true if "cerivrj_*" query is found.
-// This will be used only for search results URLs.
-bool AppendPreviewQueryFromURL(const GURL& preview_url, GURL* url) {
-  bool preview_query_found = false;
-  for (net::QueryIterator it(preview_url); !it.IsAtEnd(); it.Advance()) {
-    const std::string param_name = it.GetKey();
-    bool is_preview = StartsWithASCII(param_name, "cerivrj_", true);
-    if (url && (is_preview || param_name == "gcjeid"))
-      net::AppendQueryParameter(*url, param_name, it.GetValue());
-    preview_query_found = preview_query_found || is_preview;
-  }
-  return preview_query_found;
-}
-
-// Returns true if the provided referrer URL is the preview URL of the current
-// URL. Preview URL differs from original only with "cerivrj_*", "gcjeid" query
-// parameters.
-bool IsReferrerPreviewOfURL(const GURL& url,
-                            const base::string16& referrer_str) {
-  GURL referrer(referrer_str);
-  if (referrer.is_valid()) {
-    GURL generated_preview_url(url);
-    // Now try to copy "cerivrj_*" and "gcjeid" paramters to url and check if
-    // they exactly match.
-    if (AppendPreviewQueryFromURL(referrer, &generated_preview_url))
-      return generated_preview_url == referrer;
-  }
-  return false;
-}
-
 // Returns preview state by looking at url and referer url.
-void GetPreviewState(const GURL& url,
-                     const base::string16& referrer,
+void GetPreviewState(WebFrame* frame,
                      bool came_from_websearch,
                      bool data_reduction_proxy_was_used,
                      GwsPreviewState* preview_state,
                      int* preview_experiment_id) {
   // Conditions for GWS preview are,
   // 1. Data reduction proxy was used.
-  // 2. URL is loaded from web search.
-  // If the URL contains "cerivrj_*' query parameter record under
-  // "Preview".
+  // Determine the preview state (PREVIEW, PREVIEW_WAS_SHOWN, PREVIEW_NOT_USED)
+  // by inspecting the Via header.
   if (data_reduction_proxy_was_used) {
     if (came_from_websearch) {
-      *preview_state =
-          AppendPreviewQueryFromURL(url, NULL) ? PREVIEW : PREVIEW_NOT_USED;
-    } else if (IsReferrerPreviewOfURL(url, referrer)) {
+      *preview_state = ViaHeaderContains(
+          frame, "1.1 Google Promise Preview") ? PREVIEW : PREVIEW_NOT_USED;
+    } else if (ViaHeaderContains(frame, "1.1 Google Promise Original")) {
       *preview_state = PREVIEW_WAS_SHOWN;
-      *preview_experiment_id = GetQueryStringBasedExperiment(GURL(referrer));
+      *preview_experiment_id = GetQueryStringBasedExperiment(
+          GURL(frame->document().referrer()));
     }
   }
 }
@@ -560,8 +542,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   GwsPreviewState preview_state = PREVIEW_NONE;
   int preview_experiment_id = websearch_chrome_joint_experiment_id;
-  GetPreviewState(frame->document().url(), frame->document().referrer(),
-                  came_from_websearch, data_reduction_proxy_was_used,
+  GetPreviewState(frame, came_from_websearch, data_reduction_proxy_was_used,
                   &preview_state, &preview_experiment_id);
 
   // Times based on the Web Timing metrics.
