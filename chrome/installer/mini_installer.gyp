@@ -261,7 +261,6 @@
                 #'--diff_algorithm=COURGETTE',
               ],
               'message': 'Create installer archive',
-              'msvs_cygwin_shell': 1,
             },
           ],
           # TODO(mark):  <(branding_dir) should be defined by the
