@@ -37,21 +37,19 @@ class SimpleAPIPermission : public APIPermission {
   }
 
   virtual bool Contains(const APIPermission* rhs) const OVERRIDE {
-    CHECK(info() == rhs->info());
+    CHECK_EQ(info(), rhs->info());
     return true;
   }
 
   virtual bool Equal(const APIPermission* rhs) const OVERRIDE {
-    if (this == rhs)
-      return true;
-    CHECK(info() == rhs->info());
+    if (this != rhs)
+      CHECK_EQ(info(), rhs->info());
     return true;
   }
 
-  virtual bool FromValue(const base::Value* value) OVERRIDE {
-    if (value)
-      return false;
-    return true;
+  virtual bool FromValue(const base::Value* value,
+                         std::string* /*error*/) OVERRIDE {
+    return (value == NULL);
   }
 
   virtual scoped_ptr<base::Value> ToValue() const OVERRIDE {
@@ -63,17 +61,17 @@ class SimpleAPIPermission : public APIPermission {
   }
 
   virtual APIPermission* Diff(const APIPermission* rhs) const OVERRIDE {
-    CHECK(info() == rhs->info());
+    CHECK_EQ(info(), rhs->info());
     return NULL;
   }
 
   virtual APIPermission* Union(const APIPermission* rhs) const OVERRIDE {
-    CHECK(info() == rhs->info());
+    CHECK_EQ(info(), rhs->info());
     return new SimpleAPIPermission(info());
   }
 
   virtual APIPermission* Intersect(const APIPermission* rhs) const OVERRIDE {
-    CHECK(info() == rhs->info());
+    CHECK_EQ(info(), rhs->info());
     return new SimpleAPIPermission(info());
   }
 

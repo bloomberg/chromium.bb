@@ -32,7 +32,8 @@ class BluetoothPermission
   // SetDisjunctionPermission overrides.
   // BluetoothPermission permits an empty list for gaining permission to the
   // Bluetooth APIs without implementing a profile.
-  virtual bool FromValue(const base::Value* value) OVERRIDE;
+  virtual bool FromValue(const base::Value* value,
+                         std::string* error) OVERRIDE;
 
   // APIPermission overrides
   virtual PermissionMessages GetMessages() const OVERRIDE;

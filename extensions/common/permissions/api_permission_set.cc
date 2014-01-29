@@ -41,10 +41,19 @@ bool CreateAPIPermission(
       return false;
     }
 
-    if (!permission->FromValue(permission_value)) {
+    std::string error_details;
+    if (!permission->FromValue(permission_value, &error_details)) {
       if (error) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPermission, permission_info->name());
+        if (error_details.empty()) {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidPermission,
+              permission_info->name());
+        } else {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidPermissionWithDetail,
+              permission_info->name(),
+              error_details);
+        }
         return false;
       }
       LOG(WARNING) << "Parse permission failed.";

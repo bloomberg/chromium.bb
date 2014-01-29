@@ -131,9 +131,11 @@ TEST(ExtensionPermissionsTest, SocketPermissions) {
                                     Manifest::INTERNAL, Extension::NO_FLAGS,
                                     &error);
   EXPECT_TRUE(extension.get() == NULL);
-  ASSERT_EQ(ErrorUtils::FormatErrorMessage(
-                manifest_errors::kInvalidPermission, "socket"),
-            error);
+  std::string expected_error_msg_header = ErrorUtils::FormatErrorMessage(
+      manifest_errors::kInvalidPermissionWithDetail,
+      "socket",
+      "NULL or empty permission list");
+  EXPECT_EQ(expected_error_msg_header, error);
 
   extension = LoadManifest("socket_permissions", "socket2.json");
   EXPECT_TRUE(CheckSocketPermission(extension,

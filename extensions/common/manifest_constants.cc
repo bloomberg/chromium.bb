@@ -522,6 +522,8 @@ const char kInvalidPageActionsListSize[] =
     "Invalid value for 'page_actions'. There can be at most one page action.";
 const char kInvalidPageActionTypeValue[] =
     "Invalid value for 'page_actions[*].type', expected 'tab' or 'permanent'.";
+const char kInvalidPermissionWithDetail[] =
+    "Invalid value for 'permissions[*]': *.";
 const char kInvalidPermission[] =
     "Invalid value for 'permissions[*]'.";
 const char kInvalidPermissions[] =

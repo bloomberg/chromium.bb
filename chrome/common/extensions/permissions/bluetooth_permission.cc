@@ -25,7 +25,8 @@ BluetoothPermission::BluetoothPermission(const APIPermissionInfo* info)
 BluetoothPermission::~BluetoothPermission() {
 }
 
-bool BluetoothPermission::FromValue(const base::Value* value) {
+bool BluetoothPermission::FromValue(const base::Value* value,
+                                    std::string* error) {
   // Value may be omitted to gain access to non-profile functions.
   if (!value)
     return true;
@@ -36,7 +37,7 @@ bool BluetoothPermission::FromValue(const base::Value* value) {
     return true;
 
   if (!SetDisjunctionPermission<BluetoothPermissionData,
-                                BluetoothPermission>::FromValue(value)) {
+                                BluetoothPermission>::FromValue(value, error)) {
     return false;
   }
 

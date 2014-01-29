@@ -110,24 +110,29 @@ class SetDisjunctionPermission : public APIPermission {
     return result->data_set_.empty() ? NULL : result.release();
   }
 
-  virtual bool FromValue(const base::Value* value) OVERRIDE {
+  virtual bool FromValue(const base::Value* value,
+                         std::string* error) OVERRIDE {
     data_set_.clear();
     const base::ListValue* list = NULL;
 
-    if (!value)
+    if (!value || !value->GetAsList(&list) || list->GetSize() == 0) {
+      if (error)
+        *error = "NULL or empty permission list";
       return false;
-
-    if (!value->GetAsList(&list) || list->GetSize() == 0)
-      return false;
+    }
 
     for (size_t i = 0; i < list->GetSize(); ++i) {
-      const base::Value* item_value;
-      if (!list->Get(i, &item_value))
-        return false;
+      const base::Value* item_value = NULL;
+      bool got_item = list->Get(i, &item_value);
+      DCHECK(got_item);
+      DCHECK(item_value);
 
       PermissionDataType data;
-      if (!data.FromValue(item_value))
+      if (!data.FromValue(item_value)) {
+        if (error)
+          *error = "Cannot parse an item from the permission list";
         return false;
+      }
 
       data_set_.insert(data);
     }

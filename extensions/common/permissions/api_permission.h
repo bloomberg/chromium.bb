@@ -204,8 +204,9 @@ class APIPermission {
   // Returns true if |rhs| is equal to this.
   virtual bool Equal(const APIPermission* rhs) const = 0;
 
-  // Parses the APIPermission from |value|. Returns false if error happens.
-  virtual bool FromValue(const base::Value* value) = 0;
+  // Parses the APIPermission from |value|. Returns false if an error happens
+  // and optionally set |error| if |error| is not NULL.
+  virtual bool FromValue(const base::Value* value, std::string* error) = 0;
 
   // Stores this into a new created |value|.
   virtual scoped_ptr<base::Value> ToValue() const = 0;

@@ -48,9 +48,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
 
   // Union with an empty set.
@@ -83,9 +81,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
     scoped_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-send-to::8899"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   apis2.insert(permission);
 
@@ -101,9 +97,7 @@ TEST(APIPermissionSetTest, CreateUnion) {
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
     value->Append(new base::StringValue("udp-send-to::8899"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   // Insert a new socket permission which will replace the old one.
   expected_apis.insert(permission);
@@ -140,9 +134,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   apis1.insert(permission);
 
@@ -168,9 +160,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
     value->Append(new base::StringValue("udp-send-to::8899"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   apis2.insert(permission);
 
@@ -180,9 +170,7 @@ TEST(APIPermissionSetTest, CreateIntersection) {
     scoped_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   expected_apis.insert(permission);
 
@@ -218,9 +206,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   apis1.insert(permission);
 
@@ -238,9 +224,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
     scoped_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-send-to::8899"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   apis2.insert(permission);
 
@@ -250,9 +234,7 @@ TEST(APIPermissionSetTest, CreateDifference) {
     scoped_ptr<base::ListValue> value(new base::ListValue());
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   expected_apis.insert(permission);
 
@@ -286,9 +268,7 @@ TEST(APIPermissionSetTest, IPC) {
     value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
     value->Append(new base::StringValue("udp-bind::8080"));
     value->Append(new base::StringValue("udp-send-to::8888"));
-    if (!permission->FromValue(value.get())) {
-      NOTREACHED();
-    }
+    ASSERT_TRUE(permission->FromValue(value.get(), NULL));
   }
   apis.insert(permission);
 

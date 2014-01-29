@@ -71,6 +71,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
     const Permissions& permissions,
     bool allow_file_access,
     std::string* error) {
+  DCHECK(error);
   APIPermissionSet apis;
   std::vector<std::string>* permissions_list = permissions.permissions.get();
   if (permissions_list) {
@@ -107,7 +108,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
         }
 
         CHECK(permission);
-        if (!permission->FromValue(permission_json.get())) {
+        if (!permission->FromValue(permission_json.get(), NULL)) {
           *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
           return NULL;
         }

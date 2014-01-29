@@ -222,7 +222,7 @@ extern const char kRunAtDocumentEnd[];
 extern const char kRunAtDocumentIdle[];
 extern const char kRunAtDocumentStart[];
 
-}  // manifest_values
+}  // namespace manifest_values
 
 // Error messages returned from extension installation.
 namespace manifest_errors {
@@ -375,6 +375,7 @@ extern const char kInvalidPageActionPopupPath[];
 extern const char kInvalidPageActionsList[];
 extern const char kInvalidPageActionsListSize[];
 extern const char kInvalidPageActionTypeValue[];
+extern const char kInvalidPermissionWithDetail[];
 extern const char kInvalidPermission[];
 extern const char kInvalidPermissions[];
 extern const char kInvalidPermissionScheme[];

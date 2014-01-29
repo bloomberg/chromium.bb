@@ -200,8 +200,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
       value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
       value->Append(new base::StringValue("udp-bind::8080"));
       value->Append(new base::StringValue("udp-send-to::8888"));
-      if (!permission->FromValue(value.get()))
-        NOTREACHED();
+      ASSERT_TRUE(permission->FromValue(value.get(), NULL));
     }
     api_perm_set1_.insert(permission.release());
 
