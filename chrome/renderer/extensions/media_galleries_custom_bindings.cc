@@ -19,20 +19,11 @@ namespace {
 // FileSystemObject GetMediaFileSystem(string file_system_url): construct
 // a file system object from a file system url.
 void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() != 1) {
-    NOTREACHED();
-    return;
-  }
-  if (!args[0]->IsString()) {
-    NOTREACHED();
-    return;
-  }
+  CHECK_EQ(1, args.Length());
+  CHECK(args[0]->IsString());
 
   std::string fsid(*v8::String::Utf8Value(args[0]));
-  if (fsid.empty()) {
-    NOTREACHED();
-    return;
-  }
+  CHECK(!fsid.empty());
 
   blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
   const GURL origin = GURL(webframe->document().securityOrigin().toString());

@@ -869,7 +869,6 @@ void ExtensionPrefs::MigratePermissions(const ExtensionIdList& extension_ids) {
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   for (ExtensionIdList::const_iterator ext_id =
        extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
-
     // An extension's granted permissions need to be migrated if the
     // full_access bit is present. This bit was always present in the previous
     // scheme and is never present now.
@@ -887,15 +886,13 @@ void ExtensionPrefs::MigratePermissions(const ExtensionIdList& extension_ids) {
       const base::ListValue* apis = NULL;
       base::ListValue* new_apis = NULL;
 
-      std::string granted_apis =
-          JoinPrefs(kPrefGrantedPermissions, kPrefAPIs);
+      std::string granted_apis = JoinPrefs(kPrefGrantedPermissions, kPrefAPIs);
       if (ext->GetList(kPrefOldGrantedAPIs, &apis))
         new_apis = apis->DeepCopy();
       else
         new_apis = new base::ListValue();
 
-      std::string plugin_name = info->GetByID(
-          APIPermission::kPlugin)->name();
+      std::string plugin_name = info->GetByID(APIPermission::kPlugin)->name();
       new_apis->Append(new base::StringValue(plugin_name));
       UpdateExtensionPref(*ext_id, granted_apis, new_apis);
     }
@@ -1671,7 +1668,7 @@ void ExtensionPrefs::SetGeometryCache(
 }
 
 const base::DictionaryValue* ExtensionPrefs::GetInstallSignature() {
- return prefs_->GetDictionary(kInstallSignature);
+  return prefs_->GetDictionary(kInstallSignature);
 }
 
 void ExtensionPrefs::SetInstallSignature(

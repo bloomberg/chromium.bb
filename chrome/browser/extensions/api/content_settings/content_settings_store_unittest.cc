@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using ::testing::Mock;
 
@@ -51,7 +52,7 @@ ContentSetting GetContentSettingFromStore(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     bool incognito) {
-  scoped_ptr<content_settings::RuleIterator> rule_iterator (
+  scoped_ptr<content_settings::RuleIterator> rule_iterator(
       store->GetRuleIterator(content_type, resource_identifier, incognito));
   scoped_ptr<base::Value> setting(
       content_settings::GetContentSettingValueAndPatterns(

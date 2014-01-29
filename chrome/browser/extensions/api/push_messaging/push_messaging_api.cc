@@ -32,7 +32,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "url/gurl.h"
 
 using content::BrowserThread;
 

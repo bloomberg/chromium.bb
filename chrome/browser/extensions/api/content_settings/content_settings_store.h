@@ -18,7 +18,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "extensions/browser/extension_prefs_scope.h"
-#include "url/gurl.h"
 
 namespace base {
 class ListValue;

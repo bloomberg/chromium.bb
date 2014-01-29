@@ -5,9 +5,8 @@
 // Custom binding for the Media Gallery API.
 
 var binding = require('binding').Binding.create('mediaGalleries');
-
-var mediaGalleriesNatives = requireNative('mediaGalleries');
 var blobNatives = requireNative('blob_natives');
+var mediaGalleriesNatives = requireNative('mediaGalleries');
 
 var mediaGalleriesMetadata = {};
 

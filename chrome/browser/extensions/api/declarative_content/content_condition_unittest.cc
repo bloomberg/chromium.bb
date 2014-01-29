@@ -13,6 +13,7 @@
 #include "components/url_matcher/url_matcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using testing::ElementsAre;
 using testing::HasSubstr;

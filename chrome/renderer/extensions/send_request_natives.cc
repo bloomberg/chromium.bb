@@ -38,6 +38,7 @@ void SendRequestNatives::GetNextRequestId(
 // callback will be dispatched to EventBindings::HandleResponse.
 void SendRequestNatives::StartRequest(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(6, args.Length());
   std::string name = *v8::String::Utf8Value(args[0]);
   int request_id = args[2]->Int32Value();
   bool has_callback = args[3]->BooleanValue();

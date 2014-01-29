@@ -7,7 +7,6 @@
 var binding = require('binding').Binding.create('permissions');
 
 var Event = require('event_bindings').Event;
-var sendRequest = require('sendRequest').sendRequest;
 
 // These custom binding are only necessary because it is not currently
 // possible to have a union of types as the type of the items in an array.

@@ -52,8 +52,8 @@ WindowController* GetShellWindowController(const WebContents* contents) {
       registry->GetShellWindowForRenderViewHost(contents->GetRenderViewHost());
   if (!shell_window)
     return NULL;
-  return WindowControllerList::GetInstance()->
-      FindWindowById(shell_window->session_id().id());
+  return WindowControllerList::GetInstance()->FindWindowById(
+      shell_window->session_id().id());
 }
 
 }  // namespace
@@ -95,7 +95,7 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
       (!extension || controller->IsVisibleToExtension(extension))) {
     return controller->CreateTabValue(extension, tab_index);
   }
-  base::DictionaryValue *result =
+  base::DictionaryValue* result =
       CreateTabValue(contents, tab_strip, tab_index);
   ScrubTabValueForExtension(contents, extension, result);
   return result;

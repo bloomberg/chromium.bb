@@ -10,7 +10,6 @@ var Binding = require('binding').Binding;
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var renderViewObserverNatives = requireNative('renderViewObserverNatives');
-var sendRequest = require('sendRequest').sendRequest;
 
 var appWindowData = null;
 var currentAppWindow = null;

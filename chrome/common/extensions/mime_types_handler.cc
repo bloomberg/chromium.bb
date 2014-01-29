@@ -5,18 +5,13 @@
 #include "chrome/common/extensions/mime_types_handler.h"
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/url_pattern.h"
-#include "url/gurl.h"
-#include "url/url_util.h"
 
 namespace keys = extensions::manifest_keys;
 namespace errors = extensions::manifest_errors;

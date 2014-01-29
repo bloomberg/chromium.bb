@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "components/url_matcher/url_matcher.h"
-#include "url/gurl.h"
 
 namespace extensions {
 
