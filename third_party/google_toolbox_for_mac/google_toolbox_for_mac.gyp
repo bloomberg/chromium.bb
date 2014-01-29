@@ -23,15 +23,6 @@
           'src/Foundation',
         ],
       },
-      'link_settings': {
-        'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',
-          '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
-          '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-          '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
-          '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-        ],
-      },
       'sources': [
         'src/AddressBook/GTMABAddressBook.h',
         'src/AddressBook/GTMABAddressBook.m',
@@ -186,6 +177,14 @@
         'src/Foundation/GTMServiceManagement.c',
         'src/Foundation/GTMServiceManagement.h',
         'src/GTMDefines.h',
+        'src/iPhone/GTMFadeTruncatingLabel.h',
+        'src/iPhone/GTMFadeTruncatingLabel.m',
+        'src/iPhone/GTMRoundedRectPath.h',
+        'src/iPhone/GTMRoundedRectPath.m',
+        'src/iPhone/GTMUIImage+Resize.h',
+        'src/iPhone/GTMUIImage+Resize.m',
+        'src/iPhone/GTMUILocalizer.h',
+        'src/iPhone/GTMUILocalizer.m',
       ],
       'conditions': [
         ['component=="shared_library"',
@@ -201,6 +200,35 @@
             },
           }
         ],
+        ['OS!="ios"', {
+          'sources/': [
+            ['exclude', '^src/iPhone/'],
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',
+              '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ],
+          },
+        }, {  # OS=="ios"
+          'sources/': [
+            # Exclude everything except what's needed for iOS.
+            ['exclude', '\\.(c|m)$'],
+            ['include', '^src/DebugUtils/GTMMethodCheck\\.m$'],
+            ['include', '^src/Foundation/GTMLightweightProxy\\.m$'],
+            ['include', '^src/Foundation/GTMLogger\\.m$'],
+            ['include', '^src/Foundation/GTMNSDictionary\\+URLArguments\\.m$'],
+            ['include', '^src/Foundation/GTMNSObject\\+KeyValueObserving\\.m$'],
+            ['include', '^src/Foundation/GTMNSString\\+HTML\\.m$'],
+            ['include', '^src/Foundation/GTMNSString\\+URLArguments\\.m$'],
+            ['include', '^src/Foundation/GTMRegex\\.m$'],
+            ['include', '^src/Foundation/GTMStringEncoding\\.m$'],
+            ['include', '^src/iPhone/'],
+          ],
+        }],
       ],
     },
   ],
