@@ -367,7 +367,7 @@ using-the-dev-server/xbuddy-for-devserver
     """Add parser arguments."""
     super(FlashCommand, cls).AddParser(parser)
     parser.add_argument(
-        'device', help='The hostname/IP address of the device.')
+        'device', help='The hostname/IP[:port] address of the device.')
     parser.add_argument(
         'image', nargs='?', default='latest', help="Image to install; "
         "can be a local path, a xbuddy path "
@@ -418,6 +418,9 @@ using-the-dev-server/xbuddy-for-devserver
     self.wipe = True
     self.yes = False
     self.tempdir = tempfile.mkdtemp(prefix='cros-flash')
+    self.ssh = False
+    self.ssh_hostname = None
+    self.ssh_port = None
 
   def Cleanup(self):
     """Cleans up the temporary directory."""
@@ -438,12 +441,29 @@ using-the-dev-server/xbuddy-for-devserver
       if not os.path.exists(payload):
         cros_build_lib.Die('Payload %s does not exist!' % payload)
 
+  def _ParseDevice(self, device):
+    """Parse |device| and set corresponding variables ."""
+    # pylint: disable=E1101
+    if urlparse.urlparse(device).scheme == '':
+      # For backward compatibility, prepend ssh:// ourselves.
+      device = 'ssh://%s' % device
+
+    parsed = urlparse.urlparse(device)
+
+    if parsed.scheme == 'ssh':
+      self.ssh = True
+      self.ssh_hostname = parsed.hostname
+      self.ssh_port = parsed.port
+    else:
+      cros_build_lib.Die('Does not support device %s' % device)
+
   def _ReadOptions(self):
     """Check and read optoins."""
     options = self.options
     if not options.stateful_update and not options.rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
 
+    self._ParseDevice(options.device)
     # If the given path is a directory, we use the pre-generated
     # update payload(s) in the directory.
     if os.path.isdir(options.image):
@@ -464,7 +484,8 @@ using-the-dev-server/xbuddy-for-devserver
 
     try:
       with remote_access.ChromiumOSDeviceHandler(
-          self.options.device, work_dir=self.DEVICE_WORK_DIR) as device:
+          self.ssh_hostname, port=self.ssh_port,
+          work_dir=self.DEVICE_WORK_DIR) as device:
 
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.options.board,

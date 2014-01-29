@@ -6,6 +6,7 @@
 
 import os
 import logging
+import urlparse
 
 from chromite import cros
 from chromite.buildbot import portage_utilities
@@ -46,13 +47,15 @@ For more information of cros build usage:
     """Initializes DeployCommand."""
     cros.CrosCommand.__init__(self, options)
     self.emerge = True
+    self.ssh_hostname = None
+    self.ssh_port = None
 
   @classmethod
   def AddParser(cls, parser):
     """Add a parser."""
     super(cls, DeployCommand).AddParser(parser)
     parser.add_argument(
-        'device', help='IP address of the target device.')
+        'device', help='IP[:port] address of the target device.')
     parser.add_argument(
         'packages', help='Packages to install.', nargs='+')
     parser.add_argument(
@@ -163,6 +166,19 @@ For more information of cros build usage:
   def _ReadOptions(self):
     """Processes options and set variables."""
     self.emerge = self.options.emerge
+    device = self.options.device
+    # pylint: disable=E1101
+    if urlparse.urlparse(device).scheme == '':
+      # For backward compatibility, prepend ssh:// ourselves.
+      device = 'ssh://%s' % device
+
+    parsed = urlparse.urlparse(device)
+
+    if parsed.scheme == 'ssh':
+      self.ssh_hostname = parsed.hostname
+      self.ssh_port = parsed.port
+    else:
+      cros_build_lib.Die('Does not support device %s' % self.options.device)
 
   def Run(self):
     """Run cros deploy."""
@@ -171,7 +187,8 @@ For more information of cros build usage:
 
     try:
       with remote_access.ChromiumOSDeviceHandler(
-          self.options.device, work_dir=self.DEVICE_WORK_DIR) as device:
+          self.ssh_hostname, port=self.ssh_port,
+          work_dir=self.DEVICE_WORK_DIR) as device:
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.options.board)
         logging.info('Board is %s', board)

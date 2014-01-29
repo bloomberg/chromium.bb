@@ -80,7 +80,7 @@ class SSHConnectionError(Exception):
 class RemoteAccess(object):
   """Provides access to a remote test machine."""
 
-  def __init__(self, remote_host, tempdir, port=DEFAULT_SSH_PORT,
+  def __init__(self, remote_host, tempdir, port=None,
                debug_level=logging.DEBUG, interactive=True):
     """Construct the object.
 
@@ -95,7 +95,7 @@ class RemoteAccess(object):
     """
     self.tempdir = tempdir
     self.remote_host = remote_host
-    self.port = port
+    self.port = port if port else DEFAULT_SSH_PORT
     self.debug_level = debug_level
     self.private_key = os.path.join(tempdir, os.path.basename(TEST_PRIVATE_KEY))
     self.interactive = interactive
@@ -345,15 +345,18 @@ class RemoteDevice(object):
 
   DEFAULT_WORK_DIR = '/tmp/remote-access'
 
-  def __init__(self, hostname, debug_level=logging.DEBUG, work_dir=None):
+  def __init__(self, hostname, port=None, work_dir=None,
+               debug_level=logging.DEBUG):
     """Initializes a RemoteDevice object.
 
     Args:
       hostname: The hostname of the device.
+      port: The ssh port of the device.
       debug_level: Setting debug level for logging.
       work_dir: The default working directory on the device.
     """
     self.hostname = hostname
+    self.port = port
     # The tempdir is for storing the rsa key and/or some temp files.
     self.tempdir = osutils.TempDir(prefix='ssh-tmp')
     self.agent = self._SetupSSH()
@@ -367,7 +370,7 @@ class RemoteDevice(object):
 
   def _SetupSSH(self):
     """Setup the ssh connection with device."""
-    return RemoteAccess(self.hostname, self.tempdir.tempdir)
+    return RemoteAccess(self.hostname, self.tempdir.tempdir, port=self.port)
 
   def RegisterCleanupCmd(self, cmd, **kwargs):
     """Register a cleanup command to be run on the device in Cleanup().
