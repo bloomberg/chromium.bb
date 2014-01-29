@@ -177,9 +177,7 @@ ARM_HOST_TUPLE = 'arm-linux-gnueabihf'
 EXTRA_HOSTS_MAP = {
     'i686-linux': [
         ARM_HOST_TUPLE,
-        # TODO(mcgrathr): Enable this if the binaries are proven to
-        # actually work, and bots get needed mingw* packages installed.
-        #WINDOWS_HOST_TUPLE,
+        WINDOWS_HOST_TUPLE,
         ],
     }
 
