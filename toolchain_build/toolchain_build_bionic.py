@@ -16,20 +16,23 @@ import os
 import optparse
 import process
 import repo_tools
+import stat
 import shutil
 import StringIO
 import sys
 import toolchain_build
 import toolchain_main
 
-from file_update import Mkdir, Rmdir, Symlink, UpdateFromTo, UpdateText
+from file_update import Mkdir, Rmdir, Symlink
+from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 BIONIC_VERSION = '76467758214629be526a023720c9f81a1208d30e'
 
 
 ARCHES = ['arm']
 
-TOOLCHAIN_BUILD = os.path.dirname(os.path.abspath(__file__))
+BUILD_SCRIPT = os.path.abspath(__file__)
+TOOLCHAIN_BUILD = os.path.dirname(BUILD_SCRIPT)
 TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
 
@@ -192,32 +195,40 @@ def CreateBasicToolchain():
 
 
 def ConfigureAndInstallForGCC(arch, project, cfg, workpath, inspath):
+  # configure does not always have +x
+  filepath = os.path.abspath(os.path.join(workpath, cfg[0]))
+  st_info  = os.stat(filepath)
+  os.chmod(filepath, st_info.st_mode | stat.S_IEXEC)
+
   env = os.environ
   if arch == 'arm':
-    env['PATH'] = env['PATH'] + ':' + os.path.join(ARM_BIONIC, 'bin')
+    newpath = os.path.join(ARM_BIONIC, 'bin') + ':' + env['PATH']
   else:
-    env['PATH'] = env['PATH'] + ':' + os.path.join(X86_BIONIC, 'bin')
+    newpath = os.path.join(X86_BIONIC, 'bin') + ':' + env['PATH']
   proj = '%s %s' % (project, arch)
+  setpath = ['/usr/bin/env', 'PATH=' + newpath]
 
-  # Check if config changed
-  updated = UpdateText(os.path.join(workpath, 'config.info'), ' '.join(cfg))
+  # Check if config changed or script is new
+  config_path = os.path.join(workpath, 'config.info')
+  updated = UpdateText(config_path, ' '.join(cfg))
+  updated |= NeedsUpdate(config_path, BUILD_SCRIPT)
+
   if updated:
     print 'Configure ' + proj
-    if process.Run(cfg, cwd=workpath, env=env, outfile=sys.stdout):
+    if process.Run(setpath + cfg, cwd=workpath, env=env, outfile=sys.stdout):
       raise RuntimeError('Failed to configure %s.\n' % proj)
   else:
     print 'Reusing config for %s.' % proj
 
   print 'Make ' + proj
-  if process.Run(['make', '-j16', 'V=1'],
-                  shell=True, cwd=workpath, outfile=sys.stdout):
+  if process.Run(setpath + ['make', '-j16', 'V=1'],
+                  cwd=workpath, outfile=sys.stdout):
     raise RuntimeError('Failed to build %s.\n' % proj)
   print 'Install ' + proj
-  if process.Run(['make', '-j16', 'install', 'V=1'],
-                  shell=True, cwd=workpath, outfile=sys.stdout):
+  if process.Run(setpath + ['make', '-j16', 'install', 'V=1'],
+                 cwd=workpath, outfile=sys.stdout):
     raise RuntimeError('Failed to install %s.\n' % proj)
   print 'Done ' + proj
-
 
 
 def ConfigureAndBuildArmGCC(config=False):
@@ -251,7 +262,8 @@ def ConfigureAndBuildArmGCC(config=False):
   ]
   ConfigureAndInstallForGCC(arch, project, cfg, dstpath, inspath)
   UpdateFromTo(os.path.join(inspath, 'lib', 'gcc'),
-               os.path.join(tcpath, 'lib', 'gcc'))
+               os.path.join(tcpath, 'lib', 'gcc'),
+               filters=['*.o'])
   UpdateFromTo(os.path.join(inspath, 'lib', 'libgcc_s.so.1'),
                os.path.join(tcpath, 'arm-nacl', 'lib', 'libgcc_s.so.1'))
   UpdateFromTo(os.path.join(inspath, 'lib', 'libgcc_s.so'),
@@ -475,17 +487,26 @@ def main(argv):
       default=False, action='store_true',
       help='Running on the buildbot.')
 
+  parser.add_option(
+      '-e', '--empty', dest='empty',
+      default=False, action='store_true',
+      help='Only create empty toolchain')
+
   options, args = parser.parse_args(argv)
-  if options.clobber:
+  if options.clobber or options.empty:
     Clobber()
 
-  FetchAndBuildGCC()
   if options.sync:
     FetchBionicSources()
 
-  ConfigureAndBuildGCC(options.clobber)
-  ConfigureAndBuildCXX(options.clobber)
-  ConfigureAndBuildTests(clobber=False)
+  CreateBasicToolchain()
+  if not options.empty:
+    FetchAndBuildGCC()
+    ConfigureAndBuildGCC(options.clobber)
+    ConfigureAndBuildCXX(options.clobber)
+    ConfigureAndBuildTests(clobber=False)
+
+
 
 
 if __name__ == '__main__':
