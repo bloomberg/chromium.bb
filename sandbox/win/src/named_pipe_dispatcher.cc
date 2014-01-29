@@ -55,9 +55,9 @@ bool NamedPipeDispatcher::CreateNamedPipe(
        iter != paths.end(); ++iter) {
     base::SplitString(*iter, '\\', &innerpaths);
     for (std::vector<base::string16>::const_iterator iter2 = innerpaths.begin();
-          iter2 != innerpaths.end(); ++iter2) {
+         iter2 != innerpaths.end(); ++iter2) {
       if (*iter2 == L"..")
-          return true;
+        return true;
     }
   }
 
