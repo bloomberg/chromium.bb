@@ -134,6 +134,14 @@ class StatisticsUnitTest(unittest.TestCase):
     self.assertTrue(d_rel_d < d_rel_c)
     self.assertEquals(round(d_abs_d, 2), round(d_abs_c, 2))
 
+  def testDiscrepancyMultipleRanges(self):
+    samples = [[0.0, 1.2, 2.3, 3.3], [6.3, 7.5, 8.4], [4.2, 5.4, 5.9]]
+    d_0 = statistics.Discrepancy(samples[0])
+    d_1 = statistics.Discrepancy(samples[1])
+    d_2 = statistics.Discrepancy(samples[2])
+    d = statistics.Discrepancy(samples)
+    self.assertEquals(d, max(d_0, d_1, d_2))
+
   def testPercentile(self):
     # The 50th percentile is the median value.
     self.assertEquals(3, statistics.Percentile([4, 5, 1, 3, 2], 50))

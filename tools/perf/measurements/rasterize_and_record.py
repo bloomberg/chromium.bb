@@ -8,6 +8,7 @@ import time
 
 from metrics import rendering_stats
 from telemetry.page import page_measurement
+from telemetry.page.perf_tests_helper import FlattenList
 import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline.model import MarkerMismatchError
 from telemetry.core.timeline.model import MarkerOverlapError
@@ -112,11 +113,9 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     renderer_process = timeline.GetRendererProcessFromTab(tab)
     stats = rendering_stats.RenderingStats(renderer_process, timeline_ranges)
 
-    results.Add('rasterize_time', 'ms',
-                max(stats.rasterize_time))
-    results.Add('record_time', 'ms',
-                max(stats.record_time))
+    results.Add('rasterize_time', 'ms', max(FlattenList(stats.rasterize_times)))
+    results.Add('record_time', 'ms', max(FlattenList(stats.record_times)))
     results.Add('rasterized_pixels', 'pixels',
-                max(stats.rasterized_pixel_count))
+                max(FlattenList(stats.rasterized_pixel_counts)))
     results.Add('recorded_pixels', 'pixels',
-                max(stats.recorded_pixel_count))
+                max(FlattenList(stats.recorded_pixel_counts)))

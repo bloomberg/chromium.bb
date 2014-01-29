@@ -6,6 +6,7 @@ from metrics import Metric
 from metrics import rendering_stats
 from metrics import statistics
 from telemetry.page import page_measurement
+from telemetry.page.perf_tests_helper import FlattenList
 
 TIMELINE_MARKER = 'Smoothness'
 
@@ -78,11 +79,12 @@ class SmoothnessMetric(Metric):
 
   def AddResults(self, tab, results):
     # List of raw frame times.
-    results.Add('frame_times', 'ms', self._stats.frame_times)
+    frame_times = FlattenList(self._stats.frame_times)
+    results.Add('frame_times', 'ms', frame_times)
 
     # Arithmetic mean of frame times.
-    mean_frame_time = statistics.ArithmeticMean(self._stats.frame_times,
-                                                len(self._stats.frame_times))
+    mean_frame_time = statistics.ArithmeticMean(frame_times,
+                                                len(frame_times))
     results.Add('mean_frame_time', 'ms', round(mean_frame_time, 3))
 
     # Absolute discrepancy of frame time stamps.
@@ -91,7 +93,7 @@ class SmoothnessMetric(Metric):
 
     # Are we hitting 60 fps for 95 percent of all frames?
     # We use 19ms as a somewhat looser threshold, instead of 1000.0/60.0.
-    percentile_95 = statistics.Percentile(self._stats.frame_times, 95.0)
+    percentile_95 = statistics.Percentile(frame_times, 95.0)
     results.Add('mostly_smooth', 'score', 1.0 if percentile_95 < 19.0 else 0.0)
 
     if tab.browser.platform.IsRawDisplayFrameRateSupported():

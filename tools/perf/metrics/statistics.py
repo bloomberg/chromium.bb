@@ -113,9 +113,18 @@ def FrameDiscrepancy(frame_timestamps, absolute=True,
 
   The time stamp series C = [0,2,3,4] and D = [0,2,3,4,5] have the same
   absolute discrepancy, but D has lower relative discrepancy than C.
+
+  frame_timestamps may be a list of lists S = [S_1, S_2, ..., S_N], where each
+  S_i is a time stamp series. In that case, the discrepancy D(S) is:
+  D(S) = max(D(S_1), D(S_2), ..., D(S_N))
   """
   if not frame_timestamps:
     return 1.0
+
+  if isinstance(frame_timestamps[0], list):
+    range_discrepancies = [FrameDiscrepancy(r) for r in frame_timestamps]
+    return max(range_discrepancies)
+
   samples, sample_scale = NormalizeSamples(frame_timestamps)
   discrepancy = Discrepancy(samples, interval_multiplier)
   inv_sample_count = 1.0 / len(samples)

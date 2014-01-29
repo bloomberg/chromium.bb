@@ -34,12 +34,22 @@ class ReferenceRenderingStats(object):
   def __init__(self):
     self.frame_timestamps = []
     self.frame_times = []
-    self.paint_time = []
-    self.painted_pixel_count = []
-    self.record_time = []
-    self.recorded_pixel_count = []
-    self.rasterize_time = []
-    self.rasterized_pixel_count = []
+    self.paint_times = []
+    self.painted_pixel_counts = []
+    self.record_times = []
+    self.recorded_pixel_counts = []
+    self.rasterize_times = []
+    self.rasterized_pixel_counts = []
+
+  def AppendNewRange(self):
+    self.frame_timestamps.append([])
+    self.frame_times.append([])
+    self.paint_times.append([])
+    self.painted_pixel_counts.append([])
+    self.record_times.append([])
+    self.recorded_pixel_counts.append([])
+    self.rasterize_times.append([])
+    self.rasterized_pixel_counts.append([])
 
 
 def AddMainThreadRenderingStats(mock_timer, thread, first_frame,
@@ -72,14 +82,14 @@ def AddMainThreadRenderingStats(mock_timer, thread, first_frame,
     if not first_frame:
       # Add frame_time if this is not the first frame in within the bounds of an
       # action.
-      prev_timestamp = ref_stats.frame_timestamps[-1]
-      ref_stats.frame_times.append(round(timestamp - prev_timestamp, 2))
-    ref_stats.frame_timestamps.append(timestamp)
+      prev_timestamp = ref_stats.frame_timestamps[-1][-1]
+      ref_stats.frame_times[-1].append(round(timestamp - prev_timestamp, 2))
+    ref_stats.frame_timestamps[-1].append(timestamp)
 
-  ref_stats.paint_time.append(data['paint_time'] * 1000.0)
-  ref_stats.painted_pixel_count.append(data['painted_pixel_count'])
-  ref_stats.record_time.append(data['record_time'] * 1000.0)
-  ref_stats.recorded_pixel_count.append(data['recorded_pixel_count'])
+  ref_stats.paint_times[-1].append(data['paint_time'] * 1000.0)
+  ref_stats.painted_pixel_counts[-1].append(data['painted_pixel_count'])
+  ref_stats.record_times[-1].append(data['record_time'] * 1000.0)
+  ref_stats.recorded_pixel_counts[-1].append(data['recorded_pixel_count'])
 
 
 def AddImplThreadRenderingStats(mock_timer, thread, first_frame,
@@ -110,12 +120,12 @@ def AddImplThreadRenderingStats(mock_timer, thread, first_frame,
     if not first_frame:
       # Add frame_time if this is not the first frame in within the bounds of an
       # action.
-      prev_timestamp = ref_stats.frame_timestamps[-1]
-      ref_stats.frame_times.append(round(timestamp - prev_timestamp, 2))
-    ref_stats.frame_timestamps.append(timestamp)
+      prev_timestamp = ref_stats.frame_timestamps[-1][-1]
+      ref_stats.frame_times[-1].append(round(timestamp - prev_timestamp, 2))
+    ref_stats.frame_timestamps[-1].append(timestamp)
 
-  ref_stats.rasterize_time.append(data['rasterize_time'] * 1000.0)
-  ref_stats.rasterized_pixel_count.append(data['rasterized_pixel_count'])
+  ref_stats.rasterize_times[-1].append(data['rasterize_time'] * 1000.0)
+  ref_stats.rasterized_pixel_counts[-1].append(data['rasterized_pixel_count'])
 
 
 class RenderingStatsUnitTest(unittest.TestCase):
@@ -137,6 +147,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
     # Create 10 main and impl rendering stats events for Action A.
     timer.Advance()
     renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
+    ref_stats.AppendNewRange()
     for i in xrange(0, 10):
       first = (i == 0)
       AddMainThreadRenderingStats(timer, renderer_main, first, ref_stats)
@@ -156,6 +167,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
     # Create 10 main and impl rendering stats events for Action B.
     timer.Advance()
     renderer_main.BeginSlice('webkit.console', 'ActionB', timer.Get(), '')
+    ref_stats.AppendNewRange()
     for i in xrange(0, 10):
       first = (i == 0)
       AddMainThreadRenderingStats(timer, renderer_main, first, ref_stats)
@@ -167,6 +179,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
     # Create 10 main and impl rendering stats events for Action A.
     timer.Advance()
     renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
+    ref_stats.AppendNewRange()
     for i in xrange(0, 10):
       first = (i == 0)
       AddMainThreadRenderingStats(timer, renderer_main, first, ref_stats)
@@ -187,11 +200,12 @@ class RenderingStatsUnitTest(unittest.TestCase):
     # Compare rendering stats to reference.
     self.assertEquals(stats.frame_timestamps, ref_stats.frame_timestamps)
     self.assertEquals(stats.frame_times, ref_stats.frame_times)
-    self.assertEquals(stats.rasterize_time, ref_stats.rasterize_time)
-    self.assertEquals(stats.rasterized_pixel_count,
-                      ref_stats.rasterized_pixel_count)
-    self.assertEquals(stats.paint_time, ref_stats.paint_time)
-    self.assertEquals(stats.painted_pixel_count, ref_stats.painted_pixel_count)
-    self.assertEquals(stats.record_time, ref_stats.record_time)
-    self.assertEquals(stats.recorded_pixel_count,
-                      ref_stats.recorded_pixel_count)
+    self.assertEquals(stats.rasterize_times, ref_stats.rasterize_times)
+    self.assertEquals(stats.rasterized_pixel_counts,
+                      ref_stats.rasterized_pixel_counts)
+    self.assertEquals(stats.paint_times, ref_stats.paint_times)
+    self.assertEquals(stats.painted_pixel_counts,
+                      ref_stats.painted_pixel_counts)
+    self.assertEquals(stats.record_times, ref_stats.record_times)
+    self.assertEquals(stats.recorded_pixel_counts,
+                      ref_stats.recorded_pixel_counts)
