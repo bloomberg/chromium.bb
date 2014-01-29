@@ -45,7 +45,7 @@ InspectorTest.showProfileWhenAdded = function(title)
 InspectorTest._profileHeaderAdded = function(profile)
 {
     if (InspectorTest._showProfileWhenAdded === profile.title)
-        WebInspector.panels.profiles._showProfile(profile);
+        WebInspector.panels.profiles.showProfile(profile);
 };
 
 InspectorTest.waitUntilProfileViewIsShown = function(title, callback)

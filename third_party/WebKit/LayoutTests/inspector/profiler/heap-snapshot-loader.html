@@ -16,7 +16,7 @@ function test()
         var panel = WebInspector.panels.profiles;
         panel._reset();
 
-        var profileType = panel.getProfileType("HEAP");
+        var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
 
         InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
         function getHeapSnapshotMock(uid, callback) {

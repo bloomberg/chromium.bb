@@ -697,7 +697,7 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
     callback = InspectorTest.safeWrap(callback);
     var uid = InspectorTest._nextUid++;
     var snapshot = generator();
-    var profileType = WebInspector.panels.profiles.getProfileType(WebInspector.HeapSnapshotProfileType.TypeId);
+    var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
     var profile = new WebInspector.HeapProfileHeader(profileType, "Mock snapshot #" + uid, uid);
     function pushGeneratedSnapshot(uid, callback)
     {
@@ -710,7 +710,7 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
     InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", pushGeneratedSnapshot);
     InspectorTest._takeAndOpenSnapshotCallback = callback;
     profileType.addProfile(profile);
-    WebInspector.panels.profiles._showProfile(profile);
+    WebInspector.panels.profiles.showProfile(profile);
 };
 
 InspectorTest.viewColumns = function()

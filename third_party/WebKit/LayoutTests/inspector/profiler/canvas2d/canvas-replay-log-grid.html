@@ -41,13 +41,16 @@ function test()
 
     WebInspector.showPanel("profiles");
     var profilesPanel = WebInspector.panels.profiles;
-    var profileType = profilesPanel.getProfileType(WebInspector.CanvasProfileType.TypeId);
+    var typeRegistry = WebInspector.ProfileTypeRegistry.instance;
+    var profileType = typeRegistry.canvasProfileType;
 
     // FIXME: This hack is added because ProfilesPanel might have been already created before experiment was enabled.
     // This could be removed once canvas inspection is out of experiments.
     if (!profileType) {
-        profilesPanel._registerProfileType(new WebInspector.CanvasProfileType());
-        profileType = profilesPanel.getProfileType(WebInspector.CanvasProfileType.TypeId);
+        profileType = new WebInspector.CanvasProfileType();
+        typeRegistry.canvasProfileType = profileType;
+        typeRegistry._addProfileType(profileType);
+        profilesPanel._registerProfileType(profileType);
     }
 
     profilesPanel._onProfileTypeSelected({data: profileType});
@@ -65,7 +68,7 @@ function test()
     function didStartCapturingFrame(frameId, error, traceLogId)
     {
         profileHeader = profileType.getProfiles()[0]
-        profilesPanel._showProfile(profileHeader);
+        profilesPanel.showProfile(profileHeader);
         InspectorTest.addSniffer(profileHeader, "_updateCapturingStatus", didReceiveFirstFrame);
         InspectorTest.evaluateInConsole("doSomeCanvasCalls(2)");
     }
