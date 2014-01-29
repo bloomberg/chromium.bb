@@ -30,6 +30,14 @@ def CheckGitOutput(args):
   return log_tools.CheckOutput(GitCmd() + args)
 
 
+def SvnCmd():
+  """Return the svn command to execute for the host platform."""
+  if platform_tools.IsWindows():
+    return ['cmd.exe', '/c', 'svn.bat']
+  else:
+    return ['svn']
+
+
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
                 pathspec=None):
   """Sync an individual git repo.
@@ -73,3 +81,25 @@ def CleanGitWorkingDir(directory, path):
      path: path to clean, relative to the repo directory
   """
   log_tools.CheckCall(GitCmd() + ['clean', '-f', path], cwd=directory)
+
+
+def SvnRevInfo(directory):
+  """Get the SVN revision information of an existing svn/gclient checkout.
+
+  Args:
+     directory: Directory where the svn repo is currently checked out
+  """
+  info = log_tools.CheckOutput(SvnCmd() + ['info'], cwd=directory)
+  url = ''
+  rev = ''
+  for line in info.splitlines():
+    pieces = line.split(':', 1)
+    if len(pieces) != 2:
+      continue
+    if pieces[0] == 'URL':
+      url = pieces[1].strip()
+    elif pieces[0] == 'Revision':
+      rev = pieces[1].strip()
+  if not url or not rev:
+    raise RuntimeError('Missing svn info url: %s and rev: %s' % (url, rev))
+  return url, rev

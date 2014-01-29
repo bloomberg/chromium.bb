@@ -14,6 +14,7 @@ import stat
 
 import file_tools
 import platform_tools
+import repo_tools
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -55,3 +56,7 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
     print >> f, 'HOST_ARCH=x86_64' if host_64bit else 'HOST_ARCH=x86_32'
     for line in extra_config:
       print >> f, subst.Substitute(line)
+  # Install the REV file
+  with open(os.path.join(dstdir, 'REV'), 'w') as f:
+    url, rev = repo_tools.SvnRevInfo(NACL_DIR)
+    print >> f, '[SVN] %s: %s' % (url, rev)
