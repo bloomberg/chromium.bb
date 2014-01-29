@@ -22,6 +22,8 @@ class HttpResponseHeaders;
 class HttpResponseInfo;
 class HttpStreamParser;
 
+struct WebSocketExtensionParams;
+
 class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
     : public WebSocketHandshakeStreamBase {
  public:
@@ -126,6 +128,10 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
 
   // The extension(s) selected by the server.
   std::string extensions_;
+
+  // The extension parameters. The class is defined in the implementation file
+  // to avoid including extension-related header files here.
+  scoped_ptr<WebSocketExtensionParams> extension_params_;
 
   std::string failure_message_;
 

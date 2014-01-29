@@ -4,6 +4,9 @@
 
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
 
+#include <string>
+#include <vector>
+
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -146,14 +149,47 @@ TEST_F(WebSocketHandshakeStreamCreateHelperTest, SubProtocols) {
   sub_protocols.push_back("chat");
   sub_protocols.push_back("superchat");
   scoped_ptr<WebSocketStream> stream =
-      CreateAndInitializeStream("ws://localhost/", "/",
-                                sub_protocols, "http://localhost/",
+      CreateAndInitializeStream("ws://localhost/",
+                                "/",
+                                sub_protocols,
+                                "http://localhost/",
                                 "Sec-WebSocket-Protocol: chat, superchat\r\n",
                                 "Sec-WebSocket-Protocol: superchat\r\n");
   EXPECT_EQ("superchat", stream->GetSubProtocol());
 }
 
-// TODO(ricea): Test extensions once they are implemented.
+// Verify that extension name is available. Bad extension names are tested in
+// websocket_stream_test.cc.
+TEST_F(WebSocketHandshakeStreamCreateHelperTest, Extensions) {
+  scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
+      "ws://localhost/",
+      "/",
+      std::vector<std::string>(),
+      "http://localhost/",
+      "",
+      "Sec-WebSocket-Extensions: permessage-deflate\r\n");
+  EXPECT_EQ("permessage-deflate", stream->GetExtensions());
+}
+
+// Verify that extension parameters are available. Bad parameters are tested in
+// websocket_stream_test.cc.
+TEST_F(WebSocketHandshakeStreamCreateHelperTest, ExtensionParameters) {
+  scoped_ptr<WebSocketStream> stream = CreateAndInitializeStream(
+      "ws://localhost/",
+      "/",
+      std::vector<std::string>(),
+      "http://localhost/",
+      "",
+      "Sec-WebSocket-Extensions: permessage-deflate;"
+      " client_max_window_bits=14; server_max_window_bits=14;"
+      " server_no_context_takeover; client_no_context_takeover\r\n");
+
+  EXPECT_EQ(
+      "permessage-deflate;"
+      " client_max_window_bits=14; server_max_window_bits=14;"
+      " server_no_context_takeover; client_no_context_takeover",
+      stream->GetExtensions());
+}
 
 }  // namespace
 }  // namespace net

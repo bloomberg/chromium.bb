@@ -26,12 +26,17 @@ WebSocketHandshakeStreamBase*
 WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
     scoped_ptr<ClientSocketHandle> connection,
     bool using_proxy) {
+  // The list of supported extensions and parameters is hard-coded.
+  // TODO(ricea): If more extensions are added, consider a more flexible
+  // method.
+  std::vector<std::string> extensions(
+      1, "permessage-deflate; client_max_window_bits");
   return stream_ =
       new WebSocketBasicHandshakeStream(connection.Pass(),
                                         connect_delegate_,
                                         using_proxy,
                                         requested_subprotocols_,
-                                        std::vector<std::string>());
+                                        extensions);
 }
 
 // TODO(ricea): Create a WebSocketSpdyHandshakeStream. crbug.com/323852

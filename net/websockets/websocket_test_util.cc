@@ -44,6 +44,7 @@ std::string WebSocketStandardRequest(const std::string& path,
       "Accept-Encoding: gzip,deflate\r\n"
       "Accept-Language: en-us,fr\r\n"
       "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+      "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits\r\n"
       "%s\r\n",
       path.c_str(),
       origin.c_str(),
@@ -87,8 +88,14 @@ void WebSocketDeterministicMockClientSocketFactoryMaker::SetExpectations(
   // We need to extend the lifetime of these strings.
   detail_->expect_written = expect_written;
   detail_->return_to_read = return_to_read;
-  detail_->write = MockWrite(SYNCHRONOUS, 0, detail_->expect_written.c_str());
-  detail_->read = MockRead(SYNCHRONOUS, 1, detail_->return_to_read.c_str());
+  detail_->write = MockWrite(SYNCHRONOUS,
+                             detail_->expect_written.data(),
+                             detail_->expect_written.size(),
+                             0);
+  detail_->read = MockRead(SYNCHRONOUS,
+                           detail_->return_to_read.data(),
+                           detail_->return_to_read.size(),
+                           1);
   scoped_ptr<DeterministicSocketData> socket_data(
       new DeterministicSocketData(&detail_->read, 1, &detail_->write, 1));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));

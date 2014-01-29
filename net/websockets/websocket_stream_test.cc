@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -17,6 +18,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
+#include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
@@ -184,6 +186,26 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   scoped_ptr<WebSocketHandshakeResponseInfo> response_info_;
 };
 
+// There are enough tests of the Sec-WebSocket-Extensions header that they
+// deserve their own test fixture.
+class WebSocketStreamCreateExtensionTest : public WebSocketStreamCreateTest {
+ public:
+  // Performs a standard connect, with the value of the Sec-WebSocket-Extensions
+  // header in the response set to |extensions_header_value|. Runs the event
+  // loop to allow the connect to complete.
+  void CreateAndConnectWithExtensions(
+      const std::string& extensions_header_value) {
+    CreateAndConnectStandard(
+        "ws://localhost/testing_path",
+        "/testing_path",
+        NoSubProtocols(),
+        "http://localhost/",
+        "",
+        "Sec-WebSocket-Extensions: " + extensions_header_value + "\r\n");
+    RunUntilIdle();
+  }
+};
+
 // Confirm that the basic case works as expected.
 TEST_F(WebSocketStreamCreateTest, SimpleSuccess) {
   CreateAndConnectStandard(
@@ -229,7 +251,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
   EXPECT_EQ(GURL("ws://localhost/"), response_info_->url);
   EXPECT_EQ(101, response_info_->status_code);
   EXPECT_EQ("Switching Protocols", response_info_->status_text);
-  EXPECT_EQ(9u, request_headers.size());
+  EXPECT_EQ(10u, request_headers.size());
   EXPECT_EQ(HeaderKeyValuePair("Host", "localhost"), request_headers[0]);
   EXPECT_EQ(HeaderKeyValuePair("Connection", "Upgrade"), request_headers[1]);
   EXPECT_EQ(HeaderKeyValuePair("Upgrade", "websocket"), request_headers[2]);
@@ -243,6 +265,9 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
   EXPECT_EQ(HeaderKeyValuePair("Accept-Language", "en-us,fr"),
             request_headers[7]);
   EXPECT_EQ("Sec-WebSocket-Key",  request_headers[8].first);
+  EXPECT_EQ(HeaderKeyValuePair("Sec-WebSocket-Extensions",
+                               "permessage-deflate; client_max_window_bits"),
+            request_headers[9]);
 
   std::vector<HeaderKeyValuePair> response_headers =
       ToVector(*response_info_->headers);
@@ -389,15 +414,52 @@ TEST_F(WebSocketStreamCreateTest, UnmatchedSubProtocolInResponse) {
             failure_message());
 }
 
-// Unknown extension in the response is rejected
-TEST_F(WebSocketStreamCreateTest, UnknownExtension) {
-  CreateAndConnectStandard("ws://localhost/testing_path",
-                           "/testing_path",
-                           NoSubProtocols(),
-                           "http://localhost/",
-                           "",
-                           "Sec-WebSocket-Extensions: x-unknown-extension\r\n");
+// permessage-deflate extension basic success case.
+TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateSuccess) {
+  CreateAndConnectWithExtensions("permessage-deflate");
+  EXPECT_TRUE(stream_);
+  EXPECT_FALSE(has_failed());
+}
+
+// permessage-deflate extensions success with all parameters.
+TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateParamsSuccess) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; client_no_context_takeover; "
+      "server_max_window_bits=11; client_max_window_bits=13; "
+      "server_no_context_takeover");
+  EXPECT_TRUE(stream_);
+  EXPECT_FALSE(has_failed());
+}
+
+// Verify that incoming messages are actually decompressed with
+// permessage-deflate enabled.
+TEST_F(WebSocketStreamCreateExtensionTest, PerMessageDeflateInflates) {
+  CreateAndConnectCustomResponse(
+      "ws://localhost/testing_path",
+      "/testing_path",
+      NoSubProtocols(),
+      "http://localhost/",
+      "",
+      WebSocketStandardResponse(
+          "Sec-WebSocket-Extensions: permessage-deflate\r\n") +
+          std::string(
+              "\xc1\x07"  // WebSocket header (FIN + RSV1, Text payload 7 bytes)
+              "\xf2\x48\xcd\xc9\xc9\x07\x00",  // "Hello" DEFLATE compressed
+              9));
   RunUntilIdle();
+
+  ASSERT_TRUE(stream_);
+  ScopedVector<WebSocketFrame> frames;
+  CompletionCallback callback;
+  ASSERT_EQ(OK, stream_->ReadFrames(&frames, callback));
+  ASSERT_EQ(1U, frames.size());
+  ASSERT_EQ(5U, frames[0]->header.payload_length);
+  EXPECT_EQ("Hello", std::string(frames[0]->data->data(), 5));
+}
+
+// Unknown extension in the response is rejected
+TEST_F(WebSocketStreamCreateExtensionTest, UnknownExtension) {
+  CreateAndConnectWithExtensions("x-unknown-extension");
   EXPECT_FALSE(stream_);
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error during WebSocket handshake: "
@@ -405,6 +467,155 @@ TEST_F(WebSocketStreamCreateTest, UnknownExtension) {
             "in 'Sec-WebSocket-Extensions' header",
             failure_message());
 }
+
+// Malformed extensions are rejected (this file does not cover all possible
+// parse failures, as the parser is covered thoroughly by its own unit tests).
+TEST_F(WebSocketStreamCreateExtensionTest, MalformedExtension) {
+  CreateAndConnectWithExtensions(";");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: 'Sec-WebSocket-Extensions' header "
+      "value is rejected by the parser: ;",
+      failure_message());
+}
+
+// The permessage-deflate extension may only be specified once.
+TEST_F(WebSocketStreamCreateExtensionTest, OnlyOnePerMessageDeflateAllowed) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate, permessage-deflate; client_max_window_bits=10");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received duplicate permessage-deflate "
+      "response",
+      failure_message());
+}
+
+// permessage-deflate parameters may not be duplicated.
+TEST_F(WebSocketStreamCreateExtensionTest, NoDuplicateParameters) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; client_no_context_takeover; "
+      "client_no_context_takeover");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received duplicate permessage-deflate "
+      "extension parameter client_no_context_takeover",
+      failure_message());
+}
+
+// permessage-deflate parameters must start with "client_" or "server_"
+TEST_F(WebSocketStreamCreateExtensionTest, BadParameterPrefix) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; absurd_no_context_takeover");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received an unexpected "
+      "permessage-deflate extension parameter",
+      failure_message());
+}
+
+// permessage-deflate parameters must be either *_no_context_takeover or
+// *_max_window_bits
+TEST_F(WebSocketStreamCreateExtensionTest, BadParameterSuffix) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; client_max_content_bits=5");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received an unexpected "
+      "permessage-deflate extension parameter",
+      failure_message());
+}
+
+// *_no_context_takeover parameters must not have an argument
+TEST_F(WebSocketStreamCreateExtensionTest, BadParameterValue) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; client_no_context_takeover=true");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received invalid "
+      "client_no_context_takeover parameter",
+      failure_message());
+}
+
+// *_max_window_bits must have an argument
+TEST_F(WebSocketStreamCreateExtensionTest, NoMaxWindowBitsArgument) {
+  CreateAndConnectWithExtensions("permessage-deflate; client_max_window_bits");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: client_max_window_bits must have "
+      "value",
+      failure_message());
+}
+
+// *_max_window_bits must be an integer
+TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueInteger) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; server_max_window_bits=banana");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received invalid "
+      "server_max_window_bits parameter",
+      failure_message());
+}
+
+// *_max_window_bits must be >= 8
+TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueTooSmall) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; server_max_window_bits=7");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received invalid "
+      "server_max_window_bits parameter",
+      failure_message());
+}
+
+// *_max_window_bits must be <= 15
+TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueTooBig) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; client_max_window_bits=16");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received invalid "
+      "client_max_window_bits parameter",
+      failure_message());
+}
+
+// *_max_window_bits must not start with 0
+TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueStartsWithZero) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; client_max_window_bits=08");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received invalid "
+      "client_max_window_bits parameter",
+      failure_message());
+}
+
+// *_max_window_bits must not start with +
+TEST_F(WebSocketStreamCreateExtensionTest, MaxWindowBitsValueStartsWithPlus) {
+  CreateAndConnectWithExtensions(
+      "permessage-deflate; server_max_window_bits=+9");
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ(
+      "Error during WebSocket handshake: Received invalid "
+      "server_max_window_bits parameter",
+      failure_message());
+}
+
+// TODO(ricea): Check that WebSocketDeflateStream is initialised with the
+// arguments from the server. This is difficult because the data written to the
+// socket is randomly masked.
 
 // Additional Sec-WebSocket-Accept headers should be rejected.
 TEST_F(WebSocketStreamCreateTest, DoubleAccept) {
