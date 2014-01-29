@@ -59,8 +59,7 @@ DragDetails::DragDetails(aura::Window* window,
       is_resizable(bounds_change != WindowResizer::kBoundsChangeDirection_None),
       source(source),
       should_attach_to_shelf(window->type() == ui::wm::WINDOW_TYPE_PANEL &&
-                             wm::GetWindowState(window)->panel_attached()),
-      window_resizer(NULL) {
+                             wm::GetWindowState(window)->panel_attached()) {
   wm::WindowState* window_state = wm::GetWindowState(window);
   if (window_state->IsNormalShowState() &&
       window_state->HasRestoreBounds() &&

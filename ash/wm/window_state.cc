@@ -250,16 +250,12 @@ void WindowState::RemoveObserver(WindowStateObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool WindowState::CreateDragDetails(aura::Window* window,
+void WindowState::CreateDragDetails(aura::Window* window,
                                     const gfx::Point& point_in_parent,
                                     int window_component,
                                     aura::client::WindowMoveSource source) {
-  scoped_ptr<DragDetails> details(new DragDetails(
-        window, point_in_parent, window_component, source));
-  if (!details->is_resizable)
-    return false;
-  drag_details_ = details.Pass();
-  return true;
+  drag_details_.reset(
+      new DragDetails(window, point_in_parent, window_component, source));
 }
 
 void WindowState::DeleteDragDetails() {

@@ -52,7 +52,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   // No need to return a resizer when the window cannot get resized or when a
   // resizer already exists for this window.
   if ((!window_state->CanResize() && window_component != HTCAPTION) ||
-      window_state->window_resizer()) {
+      window_state->drag_details()) {
     return scoped_ptr<WindowResizer>();
   }
 
@@ -69,23 +69,16 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   // It may be possible to refactor and eliminate chaining.
   WindowResizer* window_resizer = NULL;
 
-  if (!window_state->IsNormalShowState()) {
-    if (window->parent() &&
-        (window->parent()->id() == internal::kShellWindowId_DefaultContainer ||
-         window->parent()->id() == internal::kShellWindowId_DockedContainer ||
-         window->parent()->id() == internal::kShellWindowId_PanelContainer)) {
-      // Allow dragging maximized windows only when dragged by a tab.
-      if (window_component != HTCAPTION || !window_state->is_dragged())
-        return scoped_ptr<WindowResizer>();
-    } else {
-      return scoped_ptr<WindowResizer>();
-    }
-  }
-
-  if (!window_state->CreateDragDetails(
-      window, point_in_parent, window_component, source)) {
+  if (!window_state->IsNormalShowState())
     return scoped_ptr<WindowResizer>();
-  }
+
+  int bounds_change = WindowResizer::GetBoundsChangeForWindowComponent(
+      window_component);
+  if (bounds_change == WindowResizer::kBoundsChangeDirection_None)
+    return scoped_ptr<WindowResizer>();
+
+  window_state->CreateDragDetails(window, point_in_parent, window_component,
+      source);
   if (window->parent() &&
       (window->parent()->id() == internal::kShellWindowId_DefaultContainer ||
        window->parent()->id() == internal::kShellWindowId_DockedContainer ||
@@ -96,11 +89,9 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   } else {
     window_resizer = DefaultWindowResizer::Create(window_state);
   }
-  if (window_resizer) {
-    window_resizer = internal::DragWindowResizer::Create(window_resizer,
-                                                         window_state);
-  }
-  if (window_resizer && window->type() == ui::wm::WINDOW_TYPE_PANEL)
+  window_resizer = internal::DragWindowResizer::Create(window_resizer,
+                                                       window_state);
+  if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     window_resizer = PanelWindowResizer::Create(window_resizer, window_state);
   if (switches::UseDockedWindows() &&
       window_resizer && window->parent() &&
@@ -111,7 +102,6 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     window_resizer = internal::DockedWindowResizer::Create(window_resizer,
                                                            window_state);
   }
-  window_state->drag_details()->window_resizer = window_resizer;
   return make_scoped_ptr<WindowResizer>(window_resizer);
 }
 
@@ -384,8 +374,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
   // |bounds| is in |GetTarget()->parent()|'s coordinates.
   gfx::Rect bounds = CalculateBoundsForDrag(location_in_parent);
-  if (window_state()->IsNormalShowState())
-    AdjustBoundsForMainWindow(sticky_size, &bounds);
+  AdjustBoundsForMainWindow(sticky_size, &bounds);
 
   if (bounds != GetTarget()->bounds()) {
     if (!did_move_or_resize_) {

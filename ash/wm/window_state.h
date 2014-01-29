@@ -23,7 +23,6 @@ class Rect;
 }
 
 namespace ash {
-class WindowResizer;
 
 namespace wm {
 class WindowStateDelegate;
@@ -175,7 +174,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Whether the window is being dragged.
   bool is_dragged() const {
-    return drag_details_ && drag_details_->window_resizer;
+    return drag_details_;
   }
 
   // Whether or not the window's position can be managed by the
@@ -233,9 +232,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   }
 
   // Creates and takes ownership of a pointer to DragDetails when resizing is
-  // active. This should be done before a resizer gets created. Returns true
-  // if |window| is resizable based on |window_component|, false otherwise.
-  bool CreateDragDetails(aura::Window* window,
+  // active. This should be done before a resizer gets created.
+  void CreateDragDetails(aura::Window* window,
                          const gfx::Point& point_in_parent,
                          int window_component,
                          aura::client::WindowMoveSource source);
@@ -247,13 +245,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Returns a pointer to DragDetails during drag operations.
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
-
-  // Returns a pointer to WindowResizer when resizing is active.
-  // It can be used to avoid creating multiple instances of a WindowResizer for
-  // the same window.
-  WindowResizer* window_resizer() {
-    return drag_details_ ? drag_details_->window_resizer : NULL;
-  }
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,

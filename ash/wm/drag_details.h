@@ -16,7 +16,6 @@ class Window;
 }
 
 namespace ash {
-class WindowResizer;
 
 namespace wm {
 class WindowState;
@@ -62,9 +61,6 @@ struct ASH_EXPORT DragDetails {
 
   // True if the window should attach to the shelf after releasing.
   bool should_attach_to_shelf;
-
-  // WindowResizer that is controlling the drag.
-  WindowResizer* window_resizer;
 };
 
 }  // namespace ash
