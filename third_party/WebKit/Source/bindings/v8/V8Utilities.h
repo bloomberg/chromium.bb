@@ -53,8 +53,6 @@ namespace WebCore {
     // Combo create/remove, for EventHandler setters in generated bindings:
     void transferHiddenDependency(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
 
-    ExecutionContext* getExecutionContext();
-
     typedef WTF::Vector<RefPtr<MessagePort>, 1> MessagePortArray;
     typedef WTF::Vector<RefPtr<ArrayBuffer>, 1> ArrayBufferArray;
 

@@ -150,7 +150,7 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
         ASSERT(!info[i].IsEmpty());
     }
 
-    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, getExecutionContext(), thisObject, m_arguments.size(), info.get(), m_scriptState->isolate());
+    v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, currentExecutionContext(), thisObject, m_arguments.size(), info.get(), m_scriptState->isolate());
     if (!scope.success()) {
         hadException = true;
         return ScriptValue();

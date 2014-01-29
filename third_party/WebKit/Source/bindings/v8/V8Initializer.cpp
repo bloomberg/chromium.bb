@@ -197,7 +197,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     isReportingException = true;
 
     // During the frame teardown, there may not be a valid context.
-    if (ExecutionContext* context = getExecutionContext()) {
+    if (ExecutionContext* context = currentExecutionContext()) {
         String errorMessage = toCoreString(message->Get());
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, sourceURL, message->GetScriptResourceName());
 

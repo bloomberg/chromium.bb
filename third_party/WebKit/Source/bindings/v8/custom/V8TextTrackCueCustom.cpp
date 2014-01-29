@@ -57,7 +57,7 @@ void V8TextTrackCue::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>
     V8TRYCATCH_VOID(double, endTime, static_cast<double>(info[1]->NumberValue()));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, text, info[2]);
 
-    Document& document = *toDocument(getExecutionContext());
+    Document& document = *toDocument(currentExecutionContext());
     UseCounter::countDeprecation(document, UseCounter::TextTrackCueConstructor);
 
     RefPtr<VTTCue> impl = VTTCue::create(document, startTime, endTime, text);

@@ -558,6 +558,13 @@ Document* currentDocument()
     return toDOMWindow(v8::Isolate::GetCurrent()->GetCurrentContext())->document();
 }
 
+ExecutionContext* currentExecutionContext()
+{
+    if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
+        return &controller->workerGlobalScope();
+    return currentDocument();
+}
+
 Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 {
     DOMWindow* window = toDOMWindow(context);

@@ -75,8 +75,8 @@ template <typename T> void V8_USE(T) { }
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
-    ExecutionContext* context = getExecutionContext();
-    Document& document = *toDocument(getExecutionContext());
+    ExecutionContext* context = currentExecutionContext();
+    Document& document = *toDocument(currentExecutionContext());
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
@@ -106,8 +106,8 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[6])) : 0);
-    ExecutionContext* context = getExecutionContext();
-    Document& document = *toDocument(getExecutionContext());
+    ExecutionContext* context = currentExecutionContext();
+    Document& document = *toDocument(currentExecutionContext());
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())

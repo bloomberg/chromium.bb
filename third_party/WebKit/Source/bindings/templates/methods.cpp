@@ -105,7 +105,7 @@ if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.ind
                   (argument.index + 1)) | indent(8)}}
         return;
     }
-    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), getExecutionContext());
+    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext());
 }
 {% else %}
 if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{{argument.index}}]->IsFunction() || info[{{argument.index}}]->IsNull()){% else %}info[{{argument.index}}]->IsFunction(){% endif %}) {
@@ -114,7 +114,7 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
               (argument.index + 1)) | indent }}
     return;
 }
-OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), getExecutionContext());
+OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext());
 {% endif %}{# argument.is_optional #}
 {% elif argument.is_clamp %}{# argument.is_callback_interface #}
 {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
@@ -170,7 +170,7 @@ if (!currentState)
 ScriptState& state = *currentState;
 {% endif %}
 {% if method.is_call_with_execution_context %}
-ExecutionContext* scriptContext = getExecutionContext();
+ExecutionContext* scriptContext = currentExecutionContext();
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.number_of_arguments}}));
@@ -331,10 +331,10 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {{generate_argument(constructor, argument) | indent}}
     {% endfor %}
     {% if is_constructor_call_with_execution_context %}
-    ExecutionContext* context = getExecutionContext();
+    ExecutionContext* context = currentExecutionContext();
     {% endif %}
     {% if is_constructor_call_with_document %}
-    Document& document = *toDocument(getExecutionContext());
+    Document& document = *toDocument(currentExecutionContext());
     {% endif %}
     RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();

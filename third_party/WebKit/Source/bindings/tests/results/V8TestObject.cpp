@@ -1627,7 +1627,7 @@ static void withScriptStateAttributeAttributeSetterCallback(v8::Local<v8::String
 static void withExecutionContextAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     v8SetReturnValueFast(info, imp->withExecutionContextAttribute(scriptContext), imp);
 }
 
@@ -1642,7 +1642,7 @@ static void withExecutionContextAttributeAttributeSetter(v8::Local<v8::Value> js
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->setWithExecutionContextAttribute(scriptContext, WTF::getPtr(cppValue));
 }
 
@@ -1729,7 +1729,7 @@ static void withExecutionContextAttributeRaisesAttributeGetter(const v8::Propert
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "withExecutionContextAttributeRaises", "TestObject", info.Holder(), info.GetIsolate());
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     RefPtr<TestObj> jsValue = imp->withExecutionContextAttributeRaises(scriptContext, exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -1747,7 +1747,7 @@ static void withExecutionContextAttributeRaisesAttributeSetter(v8::Local<v8::Val
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->setWithExecutionContextAttributeRaises(scriptContext, WTF::getPtr(cppValue));
 }
 
@@ -1765,7 +1765,7 @@ static void withExecutionContextAndScriptStateAttributeAttributeGetter(const v8:
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     v8SetReturnValueFast(info, imp->withExecutionContextAndScriptStateAttribute(&state, scriptContext), imp);
 }
 
@@ -1784,7 +1784,7 @@ static void withExecutionContextAndScriptStateAttributeAttributeSetter(v8::Local
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->setWithExecutionContextAndScriptStateAttribute(&state, scriptContext, WTF::getPtr(cppValue));
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
@@ -1805,7 +1805,7 @@ static void withExecutionContextAndScriptStateAttributeRaisesAttributeGetter(con
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     RefPtr<TestObj> jsValue = imp->withExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -1831,7 +1831,7 @@ static void withExecutionContextAndScriptStateAttributeRaisesAttributeSetter(v8:
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->setWithExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, WTF::getPtr(cppValue));
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
@@ -1851,7 +1851,7 @@ static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeGetter
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     v8SetReturnValueFast(info, imp->withExecutionContextAndScriptStateWithSpacesAttribute(&state, scriptContext), imp);
 }
 
@@ -1870,7 +1870,7 @@ static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeSetter
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->setWithExecutionContextAndScriptStateWithSpacesAttribute(&state, scriptContext, WTF::getPtr(cppValue));
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
@@ -3924,7 +3924,7 @@ static void withScriptStateObjExceptionMethodCallback(const v8::FunctionCallback
 static void withExecutionContextMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->withExecutionContext(scriptContext);
 }
 
@@ -3942,7 +3942,7 @@ static void withExecutionContextAndScriptStateMethod(const v8::FunctionCallbackI
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->withExecutionContextAndScriptState(&state, scriptContext);
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
@@ -3967,7 +3967,7 @@ static void withExecutionContextAndScriptStateObjExceptionMethod(const v8::Funct
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     RefPtr<TestObj> result = imp->withExecutionContextAndScriptStateObjException(&state, scriptContext, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -3994,7 +3994,7 @@ static void withExecutionContextAndScriptStateWithSpacesMethod(const v8::Functio
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     RefPtr<TestObj> result = imp->withExecutionContextAndScriptStateWithSpaces(&state, scriptContext);
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
@@ -4156,7 +4156,7 @@ static void methodWithCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<
         throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     imp->methodWithCallbackInterfaceArg(callbackInterface.release());
 }
 
@@ -4182,7 +4182,7 @@ static void methodWithNonCallbackArgAndCallbackInterfaceArgMethod(const v8::Func
         exceptionState.throwIfNeeded();
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[1]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[1]), currentExecutionContext());
     imp->methodWithNonCallbackArgAndCallbackInterfaceArg(nonCallback, callbackInterface.release());
 }
 
@@ -4202,7 +4202,7 @@ static void methodWithCallbackInterfaceAndOptionalArgMethod(const v8::FunctionCa
             throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     }
     imp->methodWithCallbackInterfaceAndOptionalArg(callbackInterface.release());
 }
@@ -4225,7 +4225,7 @@ static void methodWithNullableCallbackInterfaceArgMethod(const v8::FunctionCallb
         throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     imp->methodWithNullableCallbackInterfaceArg(callbackInterface.release());
 }
 
@@ -4244,7 +4244,7 @@ static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallb
             throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     }
     TestObj::staticMethodWithCallbackAndOptionalArg(callbackInterface.release());
 }
@@ -4266,7 +4266,7 @@ static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8:
         throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     TestObj::staticMethodWithCallbackArg(callbackInterface.release());
 }
 
@@ -4543,7 +4543,7 @@ static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     imp->overloadedMethod(callbackInterfaceArg.release());
 }
 

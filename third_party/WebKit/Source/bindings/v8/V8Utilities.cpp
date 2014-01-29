@@ -167,14 +167,6 @@ void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldV
         createHiddenDependency(object, newValue, cacheIndex, isolate);
 }
 
-ExecutionContext* getExecutionContext()
-{
-    if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
-        return &controller->workerGlobalScope();
-
-    return currentDocument();
-}
-
 v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)
 {
     v8::Handle<v8::Value> boundFunction = function->GetBoundFunction();

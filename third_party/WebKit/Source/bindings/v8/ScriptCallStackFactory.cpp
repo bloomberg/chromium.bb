@@ -114,7 +114,7 @@ PassRefPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize)
 {
     size_t stackSize = 1;
     if (InspectorInstrumentation::hasFrontends()) {
-        ExecutionContext* executionContext = getExecutionContext();
+        ExecutionContext* executionContext = currentExecutionContext();
         if (InspectorInstrumentation::consoleAgentEnabled(executionContext))
             stackSize = maxStackSize;
     }

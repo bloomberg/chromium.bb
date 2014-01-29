@@ -33,7 +33,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     {% endif %}
     {# Special cases #}
     {% if attribute.is_check_security_for_node or
@@ -174,7 +174,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     {% endif %}
     {{attribute.cpp_setter}};
     {% if attribute.is_setter_raises_exception %}

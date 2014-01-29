@@ -635,6 +635,7 @@ namespace WebCore {
     ExecutionContext* activeExecutionContext();
     DOMWindow* firstDOMWindow();
     Document* currentDocument();
+    ExecutionContext* currentExecutionContext();
 
     // Returns the context associated with a ExecutionContext.
     v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld*);

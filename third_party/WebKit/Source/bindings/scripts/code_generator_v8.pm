@@ -2530,7 +2530,7 @@ sub GenerateCallWith
         AddToImplIncludes("bindings/v8/ScriptState.h");
     }
     if (ExtendedAttributeContains($callWith, "ExecutionContext")) {
-        $code .= $indent . "ExecutionContext* scriptContext = getExecutionContext();\n";
+        $code .= $indent . "ExecutionContext* scriptContext = currentExecutionContext();\n";
         push(@callWithArgs, "scriptContext");
     }
     if ($function and ExtendedAttributeContains($callWith, "ScriptArguments")) {
@@ -2635,7 +2635,7 @@ END
                 }
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
-                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), getExecutionContext());\n";
+                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), currentExecutionContext());\n";
                 $parameterCheckString .= "    }\n";
             } else {
                 $parameterCheckString .= "    if (info.Length() <= $paramIndex || ";
@@ -2655,7 +2655,7 @@ END
                 $parameterCheckString .= "    }\n";
                 $parameterCheckString .= "    OwnPtr<" . $parameter->type . "> $parameterName = ";
                 $parameterCheckString .= "info[$paramIndex]->IsNull() ? nullptr : " if $parameter->isNullable;
-                $parameterCheckString .= "${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), getExecutionContext());\n";
+                $parameterCheckString .= "${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), currentExecutionContext());\n";
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
                 my $nativeValue = "${parameterName}NativeValue";
@@ -2848,11 +2848,11 @@ END
     if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
         if (ExtendedAttributeContains($interface->extendedAttributes->{"ConstructorCallWith"}, "ExecutionContext")) {
             push(@beforeArgumentList, "context");
-            $code .= "    ExecutionContext* context = getExecutionContext();\n";
+            $code .= "    ExecutionContext* context = currentExecutionContext();\n";
         }
         if (ExtendedAttributeContains($interface->extendedAttributes->{"ConstructorCallWith"}, "Document")) {
             push(@beforeArgumentList, "document");
-            $code .= "    Document& document = *toDocument(getExecutionContext());\n";
+            $code .= "    Document& document = *toDocument(currentExecutionContext());\n";
         }
     }
 

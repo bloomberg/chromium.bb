@@ -1624,7 +1624,7 @@ static void cachedAttributeAnyAttributeAttributeSetterCallback(v8::Local<v8::Str
 static void callWithExecutionContextAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     v8SetReturnValue(info, imp->callWithExecutionContextAnyAttribute(scriptContext).v8Value());
 }
 
@@ -1639,7 +1639,7 @@ static void callWithExecutionContextAnyAttributeAttributeSetter(v8::Local<v8::Va
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->setCallWithExecutionContextAnyAttribute(scriptContext, cppValue);
 }
 
@@ -4493,7 +4493,7 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     imp->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release());
 }
 
@@ -4513,7 +4513,7 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     }
     imp->voidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release());
 }
@@ -4536,7 +4536,7 @@ static void voidMethodNullableTestCallbackInterfaceArgMethod(const v8::FunctionC
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodNullableTestCallbackInterfaceArg", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     imp->voidMethodNullableTestCallbackInterfaceArg(testCallbackInterfaceArg.release());
 }
 
@@ -5477,7 +5477,7 @@ static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     imp->overloadedMethodH(testCallbackInterfaceArg.release());
 }
 
@@ -5914,7 +5914,7 @@ static void callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallba
 static void callWithExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->callWithExecutionContextVoidMethod(scriptContext);
 }
 
@@ -5932,7 +5932,7 @@ static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::Functi
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = getExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext();
     imp->callWithScriptStateExecutionContextVoidMethod(&state, scriptContext);
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
@@ -6416,7 +6416,7 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
         exceptionState.throwIfNeeded();
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     imp->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -6440,7 +6440,7 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
             exceptionState.throwIfNeeded();
             return;
         }
-        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
     }
     imp->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
