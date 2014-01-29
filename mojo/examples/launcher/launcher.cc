@@ -237,7 +237,7 @@ class LauncherImpl : public ShellClient,
   }
 
   // Overridden from URLReceiver:
-  virtual void OnURLEntered(const std::string& url_text) {
+  virtual void OnURLEntered(const std::string& url_text) OVERRIDE {
     AllocationScope scope;
     launcher_client_->OnURLEntered(url_text);
   }

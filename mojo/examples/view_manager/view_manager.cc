@@ -112,6 +112,7 @@ class ViewImpl : public View {
   explicit ViewImpl(ScopedMessagePipeHandle handle)
       : id_(-1),
         client_(handle.Pass()) {}
+  virtual ~ViewImpl() {}
 
  private:
   // Overridden from View:
