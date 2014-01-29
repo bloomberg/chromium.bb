@@ -39,12 +39,19 @@ namespace WebCore {
 
 class HTMLParserThread {
 public:
+    static void init();
+    static void shutdown();
+
+    // It is an error to call shared() before init() or after shutdown();
     static HTMLParserThread* shared();
+
     void postTask(const Closure&);
 
 private:
     HTMLParserThread();
     ~HTMLParserThread();
+
+    blink::WebThread& ensureThread();
 
     OwnPtr<blink::WebThread> m_thread;
 };

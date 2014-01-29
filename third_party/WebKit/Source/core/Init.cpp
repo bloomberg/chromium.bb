@@ -44,6 +44,7 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "core/css/MediaFeatureNames.h"
+#include "core/html/parser/HTMLParserThread.h"
 #include "heap/Heap.h"
 #include "platform/EventTracer.h"
 #include "platform/Partitions.h"
@@ -85,10 +86,16 @@ void init()
     PlatformThreadData::current();
 
     StringImpl::freezeStaticStrings();
+
+    // Creates HTMLParserThread::shared, but does not start the thread.
+    HTMLParserThread::init();
 }
 
 void shutdown()
 {
+    // Make sure we stop the HTMLParserThread before Platform::current() is cleared.
+    HTMLParserThread::shutdown();
+
     Partitions::shutdown();
 }
 

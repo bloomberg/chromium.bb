@@ -37,8 +37,9 @@
 
 namespace WebCore {
 
+static HTMLParserThread* s_sharedThread = 0;
+
 HTMLParserThread::HTMLParserThread()
-    : m_thread(adoptPtr(blink::Platform::current()->createThread("HTMLParserThread")))
 {
 }
 
@@ -46,17 +47,34 @@ HTMLParserThread::~HTMLParserThread()
 {
 }
 
+void HTMLParserThread::init()
+{
+    ASSERT(!s_sharedThread);
+    s_sharedThread = new HTMLParserThread;
+}
+
+void HTMLParserThread::shutdown()
+{
+    ASSERT(s_sharedThread);
+    delete s_sharedThread;
+    s_sharedThread = 0;
+}
+
 HTMLParserThread* HTMLParserThread::shared()
 {
-    static HTMLParserThread* thread;
-    if (!thread)
-        thread = new HTMLParserThread;
-    return thread;
+    return s_sharedThread;
+}
+
+blink::WebThread& HTMLParserThread::ensureThread()
+{
+    if (!m_thread)
+        m_thread = adoptPtr(blink::Platform::current()->createThread("HTMLParserThread"));
+    return *m_thread;
 }
 
 void HTMLParserThread::postTask(const Closure& closure)
 {
-    m_thread->postTask(new Task(closure));
+    ensureThread().postTask(new Task(closure));
 }
 
 } // namespace WebCore
