@@ -82,6 +82,11 @@ void PanelStackWindowCocoa::AddPanel(Panel* panel) {
 }
 
 void PanelStackWindowCocoa::RemovePanel(Panel* panel) {
+  if (IsAnimatingPanelBounds()) {
+    // This panel is gone. We should not perform any update to it.
+    bounds_updates_.erase(panel);
+  }
+
   panels_.remove(panel);
 
   // If the native panel is closed, the native window should already be gone.
