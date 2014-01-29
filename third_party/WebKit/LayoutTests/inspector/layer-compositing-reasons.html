@@ -26,7 +26,8 @@ function test()
             var node = WebInspector.domAgent.nodeForId(layer.nodeIdForSelfOrAncestor());
             var label = WebInspector.DOMPresentationUtils.appropriateSelectorFor(node, false);
             InspectorTest.addResult("Compositing reasons for " + label + ": " + reasons.sort().join(","));
-            callback();
+            if (callback)
+                callback();
         });
     }
 
@@ -42,17 +43,12 @@ function test()
         "preserve3d"
     ];
 
-    function iterateThroughLayers(nextLayerId)
-    {
-        if (nextLayerId >= idsToTest.length) {
-            InspectorTest.completeTest();
-            return;
-        }
-        dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[nextLayerId]), iterateThroughLayers.bind(this, nextLayerId + 1));
-    }
     function onGotLayers()
     {
-        dumpCompositingReasons(InspectorTest._layerTreeModel.contentRoot(), iterateThroughLayers.bind(this, 0));
+        dumpCompositingReasons(InspectorTest._layerTreeModel.contentRoot());
+        for (var i = 0; i < idsToTest.length - 1; ++i)
+            dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[i]));
+        dumpCompositingReasons(InspectorTest.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]), InspectorTest.completeTest.bind(InspectorTest));
     }
     InspectorTest.requestLayers(onGotLayers);
 }

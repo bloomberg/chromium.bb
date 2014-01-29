@@ -67,8 +67,9 @@ function initialize_LayerTreeTests()
             InspectorTest._layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
             callback();
         }
-        InspectorTest._layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
-        InspectorTest.evaluateInPage(expression, function() {});
+        InspectorTest.evaluateInPage(expression, function() {
+            InspectorTest._layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
+        });
     }
 
     InspectorTest.findLayerByNodeIdAttribute = function(nodeIdAttribute)
@@ -100,5 +101,4 @@ function initialize_LayerTreeTests()
             callback();
         }
     }
-
 }

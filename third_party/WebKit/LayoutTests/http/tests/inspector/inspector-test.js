@@ -649,6 +649,8 @@ function didEvaluateForTestInFrontend(callId)
     if (callId !== completeTestCallId)
         return;
     delete window.completeTestCallId;
+    if (outputElement && window.quietUntilDone)
+        outputElementParent.appendChild(outputElement);
     // Close inspector asynchrously to allow caller of this
     // function send response before backend dispatcher and frontend are destroyed.
     setTimeout(closeInspectorAndNotifyDone, 0);
@@ -666,6 +668,7 @@ function closeInspectorAndNotifyDone()
 }
 
 var outputElement;
+var outputElementParent;
 
 function output(text)
 {
@@ -673,14 +676,15 @@ function output(text)
         var intermediate = document.createElement("div");
         document.body.appendChild(intermediate);
 
-        var intermediate2 = document.createElement("div");
-        intermediate.appendChild(intermediate2);
+        outputElementParent = document.createElement("div");
+        intermediate.appendChild(outputElementParent);
 
         outputElement = document.createElement("div");
         outputElement.className = "output";
         outputElement.id = "output";
         outputElement.style.whiteSpace = "pre";
-        intermediate2.appendChild(outputElement);
+        if (!window.quietUntilDone)
+            outputElementParent.appendChild(outputElement);
     }
     outputElement.appendChild(document.createTextNode(text));
     outputElement.appendChild(document.createElement("br"));
@@ -689,7 +693,7 @@ function output(text)
 function clearOutput()
 {
     if (outputElement) {
-        outputElement.parentNode.removeChild(outputElement);
+        outputElement.remove();
         outputElement = null;
     }
 }

@@ -29,9 +29,6 @@ crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 
-# This test is sensitive to the number of compositing updates between portions of the test.
-crbug.com/313922 [ Mac ] inspector/layer-tree-model.html [ Failure ]
-
 crbug.com/336925 inspector/styles/styles-add-blank-property.html [ Pass Failure ]
 
 # -----------------------------------------------------------------
@@ -839,8 +836,6 @@ crbug.com/337735 [ Linux ] virtual/gpu/compositedscrolling/overflow/iframe-scrol
 crbug.com/337735 [ Linux ] virtual/softwarecompositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 
 crbug.com/334225 virtual/legacy-animations-engine/animations/compositor-start-event-timing.html [ Pass Failure ]
-
-crbug.com/337944 inspector/layer-compositing-reasons.html [ Pass Timeout ]
 
 crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]
