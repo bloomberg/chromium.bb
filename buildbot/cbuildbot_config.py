@@ -851,6 +851,10 @@ internal = _config(
 # consistent. Currently sonic and other brillo builds differ too much.
 sonic = _config(
   manifest='official.xml',
+  # TODO(gauravsh): crbug.com/330225 - remove this when all canaries and
+  # paladins start using the official.xml manifest. See crbug.com/320913
+  # for the why (see comment #4).
+  manifest_version=False,
   boards=['sonic'],
   # Until these are configured and ready, disable them.
   images=['base', 'dev'],
