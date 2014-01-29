@@ -641,6 +641,9 @@ class AndroidCommands(object):
     if "'" in command: logging.warning(command + " contains ' quotes")
     result = self._adb.SendShellCommand(
         "'%s'" % command, timeout_time).splitlines()
+    # TODO(b.kelemen): we should really be able to drop the stderr of the
+    # command or raise an exception based on what the caller wants.
+    result = [ l for l in result if not l.startswith('WARNING') ]
     if ['error: device not found'] == result:
       raise errors.DeviceUnresponsiveError('device not found')
     if log_result:
