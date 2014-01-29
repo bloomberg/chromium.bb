@@ -59,12 +59,9 @@ PassOwnPtr<HistoryNode> HistoryNode::cloneAndReplace(HistoryEntry* newEntry, His
 
     if (!clipAtTarget || !isNodeBeingNavigated) {
         for (Frame* child = currentFrame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-            HistoryNode* childHistoryNode = m_entry->m_framesToItems.get(child->frameID());
-            if (!childHistoryNode) {
-                if (targetFrame == child)
-                    newHistoryNode->m_children.append(create(newEntry, newItem));
+            HistoryNode* childHistoryNode = m_entry->historyNodeForFrame(child);
+            if (!childHistoryNode)
                 continue;
-            }
             newHistoryNode->m_children.append(childHistoryNode->cloneAndReplace(newEntry, newItem, clipAtTarget, targetFrame, child));
         }
     }
