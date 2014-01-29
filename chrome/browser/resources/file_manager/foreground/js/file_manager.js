@@ -2283,6 +2283,21 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
+    var newCurrentVolumeInfo = this.volumeManager_.getVolumeInfo(
+        event.newDirEntry);
+
+    // If volume has changed, then update the gear menu.
+    if (this.currentVolumeInfo_ !== newCurrentVolumeInfo) {
+      this.updateGearMenu_();
+      // If the volume has changed, and it was previously set, then do not
+      // close on unmount anymore.
+      if (this.currentVolumeInfo_)
+        this.closeOnUnmount_ = false;
+    }
+
+    // Remember the current volume info.
+    this.currentVolumeInfo_ = newCurrentVolumeInfo;
+
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.searchBox.clear();
     // TODO(mtomasz): Use Entry.toURL() instead of fullPath.
@@ -2298,24 +2313,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
-    var newCurrentVolumeInfo = this.volumeManager_.getVolumeInfo(
-        event.newDirEntry);
-
-    // If volume has changed, then update the gear menu.
-    if (this.currentVolumeInfo_ !== newCurrentVolumeInfo) {
-      this.updateGearMenu_();
-      // If the volume has changed, and it was previously set, then do not
-      // close on unmount anymore.
-      if (this.currentVolumeInfo_)
-        this.closeOnUnmount_ = false;
-    }
 
     var currentEntry = this.getCurrentDirectoryEntry();
     this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
         null : currentEntry;
-
-    // Remember the current volume info.
-    this.currentVolumeInfo_ = newCurrentVolumeInfo;
   };
 
   FileManager.prototype.updateUnformattedVolumeStatus_ = function() {
