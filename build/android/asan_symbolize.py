@@ -20,16 +20,17 @@ sys.path.insert(0,
 import symbol
 
 
-_RE_ASAN = re.compile(r'I/asanwrapper\.sh.*?(#\S*?) (\S*?) \((.*?)\+(.*?)\)')
+_RE_ASAN = re.compile(r'(.*?)(#\S*?) (\S*?) \((.*?)\+(.*?)\)')
 
 def _ParseAsanLogLine(line):
   m = re.match(_RE_ASAN, line)
   if not m:
     return None
   return {
-      'library': m.group(3),
-      'pos': m.group(1),
-      'rel_address': '%08x' % int(m.group(4), 16),
+      'prefix': m.group(1),
+      'library': m.group(4),
+      'pos': m.group(2),
+      'rel_address': '%08x' % int(m.group(5), 16),
   }
 
 
@@ -56,7 +57,7 @@ def _Symbolize(input):
   asan_libs = _FindASanLibraries()
   libraries = collections.defaultdict(list)
   asan_lines = []
-  for asan_log_line in [a.strip() for a in input]:
+  for asan_log_line in [a.rstrip() for a in input]:
     m = _ParseAsanLogLine(asan_log_line)
     if m:
       libraries[m['library']].append(m)
@@ -81,7 +82,7 @@ def _Symbolize(input):
     if (m['library'] in all_symbols and
         m['rel_address'] in all_symbols[m['library']]['symbols']):
       s = all_symbols[m['library']]['symbols'][m['rel_address']][0]
-      print s[0], s[1], s[2]
+      print '%s%s %s %s' %(m['prefix'], m['pos'], s[0], s[1])
     else:
       print asan_log_line['raw_log']
 
