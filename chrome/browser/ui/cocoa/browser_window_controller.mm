@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/bundle_locations.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
@@ -1096,28 +1097,28 @@ enum {
           // We simply check whether the item has a keyboard shortcut set here;
           // app_controller_mac.mm actually determines whether the item should
           // be enabled.
-          if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]])
-            enable &= !![[static_cast<NSMenuItem*>(item) keyEquivalent] length];
+          if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item))
+            enable &= !![[menuItem keyEquivalent] length];
           break;
         case IDC_FULLSCREEN: {
-          if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]]) {
+          if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
             NSString* menuTitle = l10n_util::GetNSString(
                 [self isFullscreen] && ![self inPresentationMode] ?
                     IDS_EXIT_FULLSCREEN_MAC :
                     IDS_ENTER_FULLSCREEN_MAC);
-            [static_cast<NSMenuItem*>(item) setTitle:menuTitle];
+            [menuItem setTitle:menuTitle];
 
             if (!chrome::mac::SupportsSystemFullscreen())
-              [static_cast<NSMenuItem*>(item) setHidden:YES];
+              [menuItem setHidden:YES];
           }
           break;
         }
         case IDC_PRESENTATION_MODE: {
-          if ([static_cast<NSObject*>(item) isKindOfClass:[NSMenuItem class]]) {
+          if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
             NSString* menuTitle = l10n_util::GetNSString(
                 [self inPresentationMode] ? IDS_EXIT_PRESENTATION_MAC :
                                             IDS_ENTER_PRESENTATION_MAC);
-            [static_cast<NSMenuItem*>(item) setTitle:menuTitle];
+            [menuItem setTitle:menuTitle];
           }
           break;
         }
@@ -1269,13 +1270,9 @@ enum {
 
 // Accept tabs from a BrowserWindowController with the same Profile.
 - (BOOL)canReceiveFrom:(TabWindowController*)source {
-  if (![source isKindOfClass:[BrowserWindowController class]]) {
-    return NO;
-  }
-
   BrowserWindowController* realSource =
-      static_cast<BrowserWindowController*>(source);
-  if (browser_->profile() != realSource->browser_->profile()) {
+      base::mac::ObjCCast<BrowserWindowController>(source);
+  if (!realSource || browser_->profile() != realSource->browser_->profile()) {
     return NO;
   }
 
@@ -1299,11 +1296,8 @@ enum {
   if (dragController) {
     // Moving between windows. Figure out the WebContents to drop into our tab
     // model from the source window's model.
-    BOOL isBrowser =
-        [dragController isKindOfClass:[BrowserWindowController class]];
-    DCHECK(isBrowser);
-    if (!isBrowser) return;
-    BrowserWindowController* dragBWC = (BrowserWindowController*)dragController;
+    BrowserWindowController* dragBWC =
+        base::mac::ObjCCastStrict<BrowserWindowController>(dragController);
     int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
     WebContents* contents =
         dragBWC->browser_->tab_strip_model()->GetWebContentsAt(index);
@@ -1826,14 +1820,14 @@ enum {
 // "Learn more" link in "Aw snap" page (i.e. crash page or sad tab) is
 // clicked. Decoupling the action from its target makes unit testing possible.
 - (void)openLearnMoreAboutCrashLink:(id)sender {
-  if ([sender isKindOfClass:[SadTabController class]]) {
-    SadTabController* sad_tab = static_cast<SadTabController*>(sender);
-    WebContents* web_contents = [sad_tab webContents];
-    if (web_contents) {
+  if (SadTabController* sadTab =
+          base::mac::ObjCCast<SadTabController>(sender)) {
+    WebContents* webContents = [sadTab webContents];
+    if (webContents) {
       OpenURLParams params(
           GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
           content::PAGE_TRANSITION_LINK, false);
-      web_contents->OpenURL(params);
+      webContents->OpenURL(params);
     }
   }
 }
@@ -1995,8 +1989,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   if (chrome::mac::SupportsSystemFullscreen() && !fullscreenWindow_) {
     enteredPresentationModeFromFullscreen_ = YES;
-    if ([[self window] isKindOfClass:[FramedBrowserWindow class]])
-      [static_cast<FramedBrowserWindow*>([self window]) toggleSystemFullScreen];
+    if (FramedBrowserWindow* framedBrowserWindow =
+            base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+      [framedBrowserWindow toggleSystemFullScreen];
+    }
   } else {
     if (fullscreen)
       [self enterFullscreenForSnowLeopard];
@@ -2071,9 +2067,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
       // If not in fullscreen mode, trigger the Lion fullscreen mode machinery.
       // Presentation mode will automatically be enabled in
       // |-windowWillEnterFullScreen:|.
-      NSWindow* window = [self window];
-      if ([window isKindOfClass:[FramedBrowserWindow class]])
-        [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
+      if (FramedBrowserWindow* window =
+              base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+        [window toggleSystemFullScreen];
+      }
     }
   } else {
     // Exiting presentation mode does not exit system fullscreen; it merely
