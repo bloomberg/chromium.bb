@@ -373,6 +373,7 @@
             'host/username.h',
             'host/video_scheduler.cc',
             'host/video_scheduler.h',
+            'host/win/com_imported_mstscax.tlh',
             'host/win/com_security.cc',
             'host/win/com_security.h',
             'host/win/launch_process_with_token.cc',
