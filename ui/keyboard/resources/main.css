@@ -6,7 +6,8 @@
 
 body {
   -webkit-user-select: none;
-  background-color: #151515;
+  background-image: -webkit-linear-gradient(#282828, #000000);
+  background-size: cover;
   margin: 0;
   overflow: hidden;
   padding: 0;
@@ -25,25 +26,33 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
   color: #d5d5d5;
 }
 
-*.dark {
+.dark {
+  font-size: 70%;
+}
+
+.dark:not(.active) {
   -webkit-box-shadow: inset 0px 1px #313131, inset 0px -1px #202020;
   background-color: #222222;
   border-bottom-color: #1c1c1c;
   border-top-color: #4f4f4f;
-  font-size: 70%;
 }
 
+.caps-locked kb-shift-key.dark,
+.active {
+  -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f;
+  border-bottom-color: #5b5b5b;
+  border-top-color: #a4a4a4;
+}
+
+.caps-locked kb-shift-key.dark,
+.active:not(.dark) {
+  background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
+  background-size: cover;
+}
 
 .caps-locked kb-shift-key,
-.active {
-  -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f !important;
-  /**
-   * TODO(rsadam): Make active keys have a linear gradient once we figure out
-   * how to handle keys that already have background images.
-   */
+.active.dark {
   background-color: #8b8b8b;
-  border-bottom-color: #5b5b5b !important;
-  border-top-color: #a4a4a4 !important;
 }
 
 /**
