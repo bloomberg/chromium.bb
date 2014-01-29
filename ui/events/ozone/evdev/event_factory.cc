@@ -80,8 +80,10 @@ void EventFactoryEvdev::AttachInputDevice(const base::FilePath& path) {
 void EventFactoryEvdev::StartProcessingEvents() {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  base::FileEnumerator file_enum(
-      base::FilePath("/dev/input"), false, base::FileEnumerator::FILES);
+  base::FileEnumerator file_enum(base::FilePath("/dev/input"),
+                                 false,
+                                 base::FileEnumerator::FILES,
+                                 "event*[0-9]");
   for (base::FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next())
     AttachInputDevice(path);
