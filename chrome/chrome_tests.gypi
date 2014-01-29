@@ -187,6 +187,8 @@
         'browser/notifications/desktop_notifications_unittest.cc',
         'browser/notifications/desktop_notifications_unittest.h',
         'browser/notifications/notification_browsertest.cc',
+        'browser/tab_contents/render_view_context_menu_browsertest_util.cc',
+        'browser/tab_contents/render_view_context_menu_browsertest_util.h',
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/ui/app_list/app_list_service_interactive_uitest.cc',
         'browser/ui/app_list/app_list_service_mac_interactive_uitest.mm',

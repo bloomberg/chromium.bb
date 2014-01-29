@@ -161,6 +161,10 @@ gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
   return RenderWidgetHostViewBase::GetPhysicalBackingSize();
 }
 
+base::string16 RenderWidgetHostViewGuest::GetSelectedText() const {
+  return platform_view_->GetSelectedText();
+}
+
 void RenderWidgetHostViewGuest::SetTooltipText(
     const base::string16& tooltip_text) {
   platform_view_->SetTooltipText(tooltip_text);
@@ -332,12 +336,7 @@ void RenderWidgetHostViewGuest::DidUpdateBackingStore(
 void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
                                                  size_t offset,
                                                  const gfx::Range& range) {
-  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
-      guest_->GetEmbedderRenderWidgetHostView());
-  if (!rwhv)
-    return;
-  // Forward the information to embedding RWHV.
-  rwhv->SelectionChanged(text, offset, range);
+  platform_view_->SelectionChanged(text, offset, range);
 }
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(

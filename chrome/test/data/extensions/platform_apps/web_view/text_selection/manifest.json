@@ -1,0 +1,13 @@
+{
+  "name": "Packaged App Test: <webview> text selection",
+  "description": "Verifies that selecting text in <webview> works properly, particularly for Speak and Dictionary commands.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
