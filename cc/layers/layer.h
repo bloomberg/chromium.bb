@@ -269,10 +269,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
   void SetScrollOffsetFromImplSide(gfx::Vector2d scroll_offset);
 
-  gfx::Vector2d MaxScrollOffset() const;
+  void SetMaxScrollOffset(gfx::Vector2d max_scroll_offset);
+  gfx::Vector2d max_scroll_offset() const { return max_scroll_offset_; }
 
-  void SetScrollClipLayer(Layer* clip_layer);
-  bool scrollable() const { return !!scroll_clip_layer_; }
+  void SetScrollable(bool scrollable);
+  bool scrollable() const { return scrollable_; }
 
   void SetUserScrollable(bool horizontal, bool vertical);
   bool user_scrollable_horizontal() const {
@@ -564,10 +565,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   gfx::Size bounds_;
 
   gfx::Vector2d scroll_offset_;
-  // This variable indicates which ancestor layer (if any) whose size,
-  // transformed relative to this layer, defines the maximum scroll offset for
-  // this layer.
-  Layer* scroll_clip_layer_;
+  gfx::Vector2d max_scroll_offset_;
   bool scrollable_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;

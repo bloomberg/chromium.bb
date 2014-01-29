@@ -18,28 +18,20 @@ class ScrollbarAnimationControllerThinningTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    scoped_ptr<LayerImpl> scroll_layer =
-        LayerImpl::Create(host_impl_.active_tree(), 1);
-    clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);
-    scroll_layer->SetScrollClipLayer(clip_layer_->id());
-    LayerImpl* scroll_layer_ptr = scroll_layer.get();
-    clip_layer_->AddChild(scroll_layer.Pass());
-
+    scroll_layer_ = LayerImpl::Create(host_impl_.active_tree(), 1);
     const int kId = 2;
     const int kThumbThickness = 10;
     const bool kIsLeftSideVerticalScrollbar = false;
-    const bool kIsOverlayScrollbar = true;
     scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
         host_impl_.active_tree(), kId, HORIZONTAL, kThumbThickness,
-        kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+        kIsLeftSideVerticalScrollbar);
 
-    scrollbar_layer_->SetClipLayerById(clip_layer_->id());
-    scrollbar_layer_->SetScrollLayerById(scroll_layer_ptr->id());
-    clip_layer_->SetBounds(gfx::Size(100, 100));
-    scroll_layer_ptr->SetBounds(gfx::Size(50, 50));
+    scroll_layer_->SetMaxScrollOffset(gfx::Vector2d(50, 50));
+    scroll_layer_->SetBounds(gfx::Size(50, 50));
+    scroll_layer_->SetHorizontalScrollbarLayer(scrollbar_layer_.get());
 
     scrollbar_controller_ = ScrollbarAnimationControllerThinning::CreateForTest(
-        scroll_layer_ptr,
+        scroll_layer_.get(),
         base::TimeDelta::FromSeconds(2),
         base::TimeDelta::FromSeconds(3));
   }
@@ -47,7 +39,7 @@ class ScrollbarAnimationControllerThinningTest : public testing::Test {
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
   scoped_ptr<ScrollbarAnimationControllerThinning> scrollbar_controller_;
-  scoped_ptr<LayerImpl> clip_layer_;
+  scoped_ptr<LayerImpl> scroll_layer_;
   scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
 };
 

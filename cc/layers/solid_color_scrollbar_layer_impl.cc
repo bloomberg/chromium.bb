@@ -15,24 +15,19 @@ scoped_ptr<SolidColorScrollbarLayerImpl> SolidColorScrollbarLayerImpl::Create(
     int id,
     ScrollbarOrientation orientation,
     int thumb_thickness,
-    bool is_left_side_vertical_scrollbar,
-    bool is_overlay) {
+    bool is_left_side_vertical_scrollbar) {
   return make_scoped_ptr(new SolidColorScrollbarLayerImpl(
       tree_impl, id, orientation, thumb_thickness,
-      is_left_side_vertical_scrollbar, is_overlay));
+      is_left_side_vertical_scrollbar));
 }
 
 SolidColorScrollbarLayerImpl::~SolidColorScrollbarLayerImpl() {}
 
 scoped_ptr<LayerImpl> SolidColorScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return SolidColorScrollbarLayerImpl::Create(tree_impl,
-                                              id(),
-                                              orientation(),
-                                              thumb_thickness_,
-                                              is_left_side_vertical_scrollbar(),
-                                              is_overlay_scrollbar())
-      .PassAs<LayerImpl>();
+  return SolidColorScrollbarLayerImpl::Create(
+      tree_impl, id(), orientation(), thumb_thickness_,
+      is_left_side_vertical_scrollbar()).PassAs<LayerImpl>();
 }
 
 SolidColorScrollbarLayerImpl::SolidColorScrollbarLayerImpl(
@@ -40,10 +35,9 @@ SolidColorScrollbarLayerImpl::SolidColorScrollbarLayerImpl(
     int id,
     ScrollbarOrientation orientation,
     int thumb_thickness,
-    bool is_left_side_vertical_scrollbar,
-    bool is_overlay)
+    bool is_left_side_vertical_scrollbar)
     : ScrollbarLayerImplBase(tree_impl, id, orientation,
-          is_left_side_vertical_scrollbar, is_overlay),
+          is_left_side_vertical_scrollbar),
       thumb_thickness_(thumb_thickness),
       color_(tree_impl->settings().solid_color_scrollbar_color) {}
 

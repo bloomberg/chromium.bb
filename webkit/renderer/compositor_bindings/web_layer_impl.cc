@@ -14,7 +14,6 @@
 #include "cc/base/switches.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
-#include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGraphicsLayerDebugInfo.h"
@@ -261,14 +260,16 @@ blink::WebPoint WebLayerImpl::scrollPosition() const {
   return gfx::PointAtOffsetFromOrigin(layer_->scroll_offset());
 }
 
-WebSize WebLayerImpl::maxScrollPosition() const {
-  return layer_->MaxScrollOffset();
+void WebLayerImpl::setMaxScrollPosition(WebSize max_scroll_position) {
+  layer_->SetMaxScrollOffset(max_scroll_position);
 }
 
-void WebLayerImpl::setScrollClipLayer(WebLayer* clip_layer) {
-  cc::Layer* cc_clip_layer =
-      clip_layer ? static_cast<WebLayerImpl*>(clip_layer)->layer() : 0;
-  layer_->SetScrollClipLayer(cc_clip_layer);
+WebSize WebLayerImpl::maxScrollPosition() const {
+  return layer_->max_scroll_offset();
+}
+
+void WebLayerImpl::setScrollable(bool scrollable) {
+  layer_->SetScrollable(scrollable);
 }
 
 bool WebLayerImpl::scrollable() const { return layer_->scrollable(); }
