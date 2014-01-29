@@ -26,8 +26,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = '76467758214629be526a023720c9f81a1208d30e'
-
+BIONIC_VERSION = '2124cf8f8d052809a546e80d1795ba119e591765'
 
 ARCHES = ['arm']
 
@@ -106,10 +105,10 @@ def FetchAndBuildGCC():
 
 
 def FetchBionicSources():
-  project = bionic
+  project = 'bionic'
   url = '%s/nacl-%s.git' % (toolchain_build.GIT_BASE_URL, project)
   repo_tools.SyncGitRepo(url,
-                         os.path.join(TOOLCHAIN_BUILD_OUT, project),
+                         os.path.join(TOOLCHAIN_BUILD_SRC, project),
                          BIONIC_VERSION)
 
 
@@ -496,7 +495,7 @@ def main(argv):
   if options.clobber or options.empty:
     Clobber()
 
-  if options.sync:
+  if options.sync or options.buildbot:
     FetchBionicSources()
 
   CreateBasicToolchain()
@@ -504,6 +503,9 @@ def main(argv):
     FetchAndBuildGCC()
     ConfigureAndBuildGCC(options.clobber)
     ConfigureAndBuildCXX(options.clobber)
+
+  # Can not test on buildot until sel_ldr, irt, etc.. are built
+  if not options.buildbot:
     ConfigureAndBuildTests(clobber=False)
 
 
