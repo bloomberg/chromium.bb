@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "google_apis/gcm/engine/gcm_store.h"
@@ -44,6 +45,9 @@ class GCM_EXPORT UserList {
   // Returns a delegate for the user identified by |username| or NULL, if a
   // matching delegate was not found.
   GCMClient::Delegate* GetDelegateByUsername(const std::string& username) const;
+
+  // Returns all delegates.
+  std::vector<GCMClient::Delegate*> GetAllDelegates() const;
 
   // Gets the serial number assigned to a specified |username|, if one is
   // assigned, the value will be positive. If there is no matching delegate or

@@ -71,7 +71,9 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetResponseCode() != net::HTTP_OK ||
       !source->GetResponseAsString(&response_string) ||
       !response_proto.ParseFromString(response_string)) {
-    LOG(ERROR) << "Failed to get checkin response.";
+    LOG(ERROR) << "Failed to get checkin response: "
+               << source->GetStatus().is_success() << " "
+               << source->GetResponseCode();
     // TODO(fgorski): Handle retry logic for certain responses.
     callback_.Run(0, 0);
     return;

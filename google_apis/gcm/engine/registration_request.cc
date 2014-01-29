@@ -118,7 +118,7 @@ void RegistrationRequest::Start() {
   if (request_info_.user_serial_number != 0) {
     DCHECK(request_info_.user_android_id != 0);
     BuildFormEncoding(kUserSerialNumberKey,
-                      base::IntToString(request_info_.user_serial_number),
+                      base::Int64ToString(request_info_.user_serial_number),
                       &body);
     BuildFormEncoding(kUserAndroidIdKey,
                       base::Uint64ToString(request_info_.user_android_id),
@@ -138,7 +138,10 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetResponseCode() != net::HTTP_OK ||
       !source->GetResponseAsString(&response)) {
     // TODO(fgoski): Introduce retry logic.
-    LOG(ERROR) << "Failed to get registration response.";
+    // TODO(jianli): Handle "Error=INVALID_SENDER".
+    LOG(ERROR) << "Failed to get registration response: "
+               << source->GetStatus().is_success() << " "
+               << source->GetResponseCode();
     callback_.Run("");
     return;
   }

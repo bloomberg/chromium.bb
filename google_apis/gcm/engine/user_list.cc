@@ -182,6 +182,16 @@ GCMClient::Delegate* UserList::GetDelegateBySerialNumber(int64 serial_number)
   return NULL;
 }
 
+std::vector<GCMClient::Delegate*> UserList::GetAllDelegates() const {
+  std::vector<GCMClient::Delegate*> delegates;
+  for (UserInfoMap::const_iterator iter = delegates_.begin();
+       iter != delegates_.end(); ++iter) {
+    if (iter->second.delegate)
+      delegates.push_back(iter->second.delegate);
+  }
+  return delegates;
+}
+
 GCMClient::Delegate* UserList::GetDelegateByUsername(
     const std::string& username) const {
   UserInfoMap::const_iterator iter = delegates_.find(username);

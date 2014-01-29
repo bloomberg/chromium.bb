@@ -19,6 +19,7 @@
 #include "google_apis/gcm/engine/user_list.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
+#include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -52,6 +53,11 @@ void GCMClientImpl::Initialize(
   gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
                               base::Unretained(this)));
   user_list_.reset(new UserList(gcm_store_.get()));
+  const net::HttpNetworkSession::Params* network_session_params =
+      url_request_context_getter->GetURLRequestContext()->
+          GetNetworkSessionParams();
+  DCHECK(network_session_params);
+  network_session_ = new net::HttpNetworkSession(*network_session_params);
   connection_factory_.reset(new ConnectionFactoryImpl(GURL(kMCSEndpoint),
                                                       network_session_,
                                                       net_log_.net_log()));
@@ -78,10 +84,15 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
     device_checkin_info_.Reset();
     state_ = INITIAL_DEVICE_CHECKIN;
     StartCheckin(0, device_checkin_info_);
-  } else {
-    state_ = READY;
-    StartMCSLogin();
+    return;
   }
+
+  state_ = READY;
+  StartMCSLogin();
+
+  std::vector<Delegate*> delegates = user_list_->GetAllDelegates();
+  for (size_t i = 0; i < delegates.size(); ++i)
+    delegates[i]->OnLoadingCompleted();
 }
 
 void GCMClientImpl::InitializeMCSClient(
