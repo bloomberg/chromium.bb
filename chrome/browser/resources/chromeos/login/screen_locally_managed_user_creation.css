@@ -42,6 +42,18 @@
   position: absolute;
 }
 
+.below-marketing::-webkit-scrollbar {
+  width: 8px;
+}
+
+.below-marketing::-webkit-scrollbar-track-piece {
+  background: #eee;
+}
+
+.below-marketing::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
 #managed-user-creation .page-no-marketing {
   height: 470px;
   padding: 70px 17px 0;
