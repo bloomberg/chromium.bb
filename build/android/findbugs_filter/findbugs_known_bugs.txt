@@ -40,3 +40,7 @@ M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_DEFAULT should be p
 M V MS: org.chromium.content.browser.LoadUrlParams.UA_OVERRIDE_INHERIT should be package protected  In LoadUrlParams.java
 M V MS: org.chromium.content.browser.LoadUrlParams.UA_OVERRIDE_TRUE isn't final and can't be protected from malicious code   In LoadUrlParams.java
 M M LI: Incorrect lazy initialization of static field org.chromium.chrome.browser.sync.ProfileSyncService.sSyncSetupManager in org.chromium.chrome.browser.sync.ProfileSyncService.get(Context)  At ProfileSyncService.java
+M B OS: org.chromium.tools.binary_size.Addr2LineWorkerPool$Addr2LineWorker$Addr2LineTask.run() may fail to close stream  At Addr2LineWorkerPool.java
+M B RV: Exceptional return value of java.io.File.mkdirs() ignored in new org.chromium.tools.binary_size.NmDumper$Output(NmDumper)  At NmDumper.java
+M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At NmDumper.java
+M D REC: Exception is caught when Exception is not thrown in org.chromium.tools.binary_size.Addr2LineWorkerPool$Addr2LineWorker$Addr2LineTask.run()  At Addr2LineWorkerPool.java
