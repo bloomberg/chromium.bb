@@ -44,16 +44,14 @@ class BASE_EXPORT JSONWriter {
                                std::string* json);
 
  private:
-  JSONWriter(bool omit_binary_values,
-             bool omit_double_type_preservation, bool pretty_print,
-             std::string* json);
+  JSONWriter(int options, std::string* json);
 
   // Called recursively to build the JSON string.  Whe completed, value is
   // json_string_ will contain the JSON.
-  void BuildJSONString(const Value* const node, int depth);
+  void BuildJSONString(const Value* const node, size_t depth);
 
   // Adds space to json_string_ for the indent level.
-  void IndentLine(int depth);
+  void IndentLine(size_t depth);
 
   bool omit_binary_values_;
   bool omit_double_type_preservation_;

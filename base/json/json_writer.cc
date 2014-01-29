@@ -9,16 +9,15 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace base {
 
 #if defined(OS_WIN)
-static const char kPrettyPrintLineEnding[] = "\r\n";
+const char kPrettyPrintLineEnding[] = "\r\n";
 #else
-static const char kPrettyPrintLineEnding[] = "\n";
+const char kPrettyPrintLineEnding[] = "\n";
 #endif
 
 // static
@@ -33,30 +32,23 @@ void JSONWriter::WriteWithOptions(const Value* const node, int options,
   // Is there a better way to estimate the size of the output?
   json->reserve(1024);
 
-  bool omit_binary_values = !!(options & OPTIONS_OMIT_BINARY_VALUES);
-  bool omit_double_type_preservation =
-      !!(options & OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION);
-  bool pretty_print = !!(options & OPTIONS_PRETTY_PRINT);
+  JSONWriter writer(options, json);
+  writer.BuildJSONString(node, 0U);
 
-  JSONWriter writer(omit_binary_values, omit_double_type_preservation,
-                    pretty_print, json);
-  writer.BuildJSONString(node, 0);
-
-  if (pretty_print)
+  if (options & OPTIONS_PRETTY_PRINT)
     json->append(kPrettyPrintLineEnding);
 }
 
-JSONWriter::JSONWriter(bool omit_binary_values,
-                       bool omit_double_type_preservation, bool pretty_print,
-                       std::string* json)
-    : omit_binary_values_(omit_binary_values),
-      omit_double_type_preservation_(omit_double_type_preservation),
-      pretty_print_(pretty_print),
+JSONWriter::JSONWriter(int options, std::string* json)
+    : omit_binary_values_((options & OPTIONS_OMIT_BINARY_VALUES) != 0),
+      omit_double_type_preservation_(
+          (options & OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION) != 0),
+      pretty_print_((options & OPTIONS_PRETTY_PRINT) != 0),
       json_string_(json) {
   DCHECK(json);
 }
 
-void JSONWriter::BuildJSONString(const Value* const node, int depth) {
+void JSONWriter::BuildJSONString(const Value* const node, size_t depth) {
   switch (node->GetType()) {
     case Value::TYPE_NULL:
       json_string_->append("null");
@@ -76,7 +68,7 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
         int value;
         bool result = node->GetAsInteger(&value);
         DCHECK(result);
-        base::StringAppendF(json_string_, "%d", value);
+        json_string_->append(IntToString(value));
         break;
       }
 
@@ -104,10 +96,10 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
         // The JSON spec requires that non-integer values in the range (-1,1)
         // have a zero before the decimal point - ".52" is not valid, "0.52" is.
         if (real[0] == '.') {
-          real.insert(0, "0");
+          real.insert(0U, 1U, '0');
         } else if (real.length() > 1 && real[0] == '-' && real[1] == '.') {
           // "-.1" bad "-0.1" good
-          real.insert(1, "0");
+          real.insert(1U, 1U, '0');
         }
         json_string_->append(real);
         break;
@@ -124,38 +116,36 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
 
     case Value::TYPE_LIST:
       {
-        json_string_->append("[");
+        json_string_->push_back('[');
         if (pretty_print_)
-          json_string_->append(" ");
+          json_string_->push_back(' ');
 
         const ListValue* list = static_cast<const ListValue*>(node);
-        for (size_t i = 0; i < list->GetSize(); ++i) {
-          const Value* value = NULL;
-          bool result = list->Get(i, &value);
-          DCHECK(result);
+        for (ListValue::const_iterator it = list->begin(); it != list->end();
+             ++it) {
+          const Value* value = *it;
 
-          if (omit_binary_values_ && value->GetType() == Value::TYPE_BINARY) {
+          if (omit_binary_values_ && value->GetType() == Value::TYPE_BINARY)
             continue;
-          }
 
-          if (i != 0) {
-            json_string_->append(",");
+          if (it != list->begin()) {
+            json_string_->push_back(',');
             if (pretty_print_)
-              json_string_->append(" ");
+              json_string_->push_back(' ');
           }
 
           BuildJSONString(value, depth);
         }
 
         if (pretty_print_)
-          json_string_->append(" ");
-        json_string_->append("]");
+          json_string_->push_back(' ');
+        json_string_->push_back(']');
         break;
       }
 
     case Value::TYPE_DICTIONARY:
       {
-        json_string_->append("{");
+        json_string_->push_back('{');
         if (pretty_print_)
           json_string_->append(kPrettyPrintLineEnding);
 
@@ -170,29 +160,28 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
           }
 
           if (!first_entry) {
-            json_string_->append(",");
+            json_string_->push_back(',');
             if (pretty_print_)
               json_string_->append(kPrettyPrintLineEnding);
           }
 
           if (pretty_print_)
-            IndentLine(depth + 1);
+            IndentLine(depth + 1U);
 
           EscapeJSONString(itr.key(), true, json_string_);
-          if (pretty_print_) {
-            json_string_->append(": ");
-          } else {
-            json_string_->append(":");
-          }
-          BuildJSONString(&itr.value(), depth + 1);
+
+          json_string_->push_back(':');
+          if (pretty_print_)
+            json_string_->push_back(' ');
+          BuildJSONString(&itr.value(), depth + 1U);
         }
 
         if (pretty_print_) {
           json_string_->append(kPrettyPrintLineEnding);
           IndentLine(depth);
-          json_string_->append("}");
+          json_string_->push_back('}');
         } else {
-          json_string_->append("}");
+          json_string_->push_back('}');
         }
         break;
       }
@@ -210,10 +199,8 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
   }
 }
 
-void JSONWriter::IndentLine(int depth) {
-  // It may be faster to keep an indent string so we don't have to keep
-  // reallocating.
-  json_string_->append(std::string(depth * 3, ' '));
+void JSONWriter::IndentLine(size_t depth) {
+  json_string_->append(depth * 3U, ' ');
 }
 
 }  // namespace base
