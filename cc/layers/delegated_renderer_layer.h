@@ -33,7 +33,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   // layer's origin. This must always contain at least the layer's bounds. A
   // value of (0, 0) implies that the frame should be displayed to fit exactly
   // in the layer's bounds.
-  void SetDisplaySize(gfx::Size size);
+  void SetDisplaySize(const gfx::Size& size);
 
   // Called by the DelegatedFrameProvider when a new frame is available to be
   // picked up.

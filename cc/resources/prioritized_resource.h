@@ -25,7 +25,7 @@ class CC_EXPORT PrioritizedResource {
  public:
   static scoped_ptr<PrioritizedResource> Create(
       PrioritizedResourceManager* manager,
-      gfx::Size size,
+      const gfx::Size& size,
       ResourceFormat format) {
     return make_scoped_ptr(new PrioritizedResource(manager, size, format));
   }
@@ -40,7 +40,7 @@ class CC_EXPORT PrioritizedResource {
   // Setting these to the same value is a no-op.
   void SetTextureManager(PrioritizedResourceManager* manager);
   PrioritizedResourceManager* resource_manager() { return manager_; }
-  void SetDimensions(gfx::Size size, ResourceFormat format);
+  void SetDimensions(const gfx::Size& size, ResourceFormat format);
   ResourceFormat format() const { return format_; }
   gfx::Size size() const { return size_; }
   size_t bytes() const { return bytes_; }
@@ -107,7 +107,7 @@ class CC_EXPORT PrioritizedResource {
    public:
     Backing(unsigned id,
             ResourceProvider* resource_provider,
-            gfx::Size size,
+            const gfx::Size& size,
             ResourceFormat format);
     ~Backing();
     void UpdatePriority();
@@ -150,7 +150,7 @@ class CC_EXPORT PrioritizedResource {
   };
 
   PrioritizedResource(PrioritizedResourceManager* resource_manager,
-                      gfx::Size size,
+                      const gfx::Size& size,
                       ResourceFormat format);
 
   bool is_above_priority_cutoff() { return is_above_priority_cutoff_; }

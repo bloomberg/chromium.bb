@@ -19,7 +19,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               const gfx::Rect& opaque_rect,
               unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
-              gfx::Size texture_size,
+              const gfx::Size& texture_size,
               bool swizzle_contents);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -29,7 +29,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               bool needs_blending,
               unsigned resource_id,
               const gfx::RectF& tex_coord_rect,
-              gfx::Size texture_size,
+              const gfx::Size& texture_size,
               bool swizzle_contents);
 
   unsigned resource_id;

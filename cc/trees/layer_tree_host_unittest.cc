@@ -1594,7 +1594,7 @@ static void SetLayerPropertiesForTesting(Layer* layer,
                                          const gfx::Transform& transform,
                                          const gfx::PointF& anchor,
                                          const gfx::PointF& position,
-                                         gfx::Size bounds,
+                                         const gfx::Size& bounds,
                                          bool opaque) {
   layer->RemoveAllChildren();
   if (parent)

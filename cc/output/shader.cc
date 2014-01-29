@@ -146,7 +146,7 @@ TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
 TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int *highp_threshold_cache,
                                             int highp_threshold_min,
-                                            gfx::Size max_size) {
+                                            const gfx::Size& max_size) {
   return TexCoordPrecisionRequired(context,
                                    highp_threshold_cache, highp_threshold_min,
                                    max_size.width(), max_size.height());

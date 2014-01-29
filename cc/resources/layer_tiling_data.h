@@ -27,7 +27,7 @@ class CC_EXPORT LayerTilingData {
 
   ~LayerTilingData();
 
-  static scoped_ptr<LayerTilingData> Create(gfx::Size tile_size,
+  static scoped_ptr<LayerTilingData> Create(const gfx::Size& tile_size,
                                             BorderTexelOption option);
 
   bool has_empty_bounds() const { return tiling_data_.has_empty_bounds(); }
@@ -41,7 +41,7 @@ class CC_EXPORT LayerTilingData {
   }
 
   // Change the tile size. This may invalidate all the existing tiles.
-  void SetTileSize(gfx::Size size);
+  void SetTileSize(const gfx::Size& size);
   gfx::Size tile_size() const;
   // Change the border texel setting. This may invalidate all existing tiles.
   void SetBorderTexelOption(BorderTexelOption option);
@@ -81,7 +81,7 @@ class CC_EXPORT LayerTilingData {
   Tile* TileAt(int i, int j) const;
   const TileMap& tiles() const { return tiles_; }
 
-  void SetBounds(gfx::Size size);
+  void SetBounds(const gfx::Size& size);
   gfx::Size bounds() const { return tiling_data_.total_size(); }
 
   void ContentRectToTileIndices(const gfx::Rect& rect,
@@ -96,7 +96,7 @@ class CC_EXPORT LayerTilingData {
   void reset() { tiles_.clear(); }
 
  protected:
-  LayerTilingData(gfx::Size tile_size, BorderTexelOption option);
+  LayerTilingData(const gfx::Size& tile_size, BorderTexelOption option);
 
   TileMap tiles_;
   TilingData tiling_data_;

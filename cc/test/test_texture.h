@@ -14,12 +14,12 @@
 
 namespace cc {
 
-size_t TextureSizeBytes(gfx::Size size, ResourceFormat format);
+size_t TextureSizeBytes(const gfx::Size& size, ResourceFormat format);
 
 struct TestTexture : public base::RefCounted<TestTexture> {
   TestTexture();
 
-  void Reallocate(gfx::Size size, ResourceFormat format);
+  void Reallocate(const gfx::Size& size, ResourceFormat format);
   bool IsValidParameter(GLenum pname);
 
   gfx::Size size;

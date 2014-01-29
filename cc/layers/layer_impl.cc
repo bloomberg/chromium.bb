@@ -751,7 +751,7 @@ bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }
 
-void LayerImpl::SetBounds(gfx::Size bounds) {
+void LayerImpl::SetBounds(const gfx::Size& bounds) {
   if (bounds_ == bounds)
     return;
 
@@ -996,7 +996,7 @@ void LayerImpl::SetUpdateRect(const gfx::RectF& update_rect) {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::SetContentBounds(gfx::Size content_bounds) {
+void LayerImpl::SetContentBounds(const gfx::Size& content_bounds) {
   if (this->content_bounds() == content_bounds)
     return;
 

@@ -25,7 +25,7 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
-              gfx::Size io_surface_size,
+              const gfx::Size& io_surface_size,
               unsigned io_surface_resource_id,
               Orientation orientation);
 
@@ -34,7 +34,7 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              gfx::Size io_surface_size,
+              const gfx::Size& io_surface_size,
               unsigned io_surface_resource_id,
               Orientation orientation);
 

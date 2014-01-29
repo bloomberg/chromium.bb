@@ -16,10 +16,10 @@ class PixelTestOutputSurface : public OutputSurface {
   explicit PixelTestOutputSurface(
       scoped_ptr<SoftwareOutputDevice> software_device);
 
-  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
+  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE;
   virtual bool HasExternalStencilTest() const OVERRIDE;
 
-  void set_surface_expansion_size(gfx::Size surface_expansion_size) {
+  void set_surface_expansion_size(const gfx::Size& surface_expansion_size) {
     surface_expansion_size_ = surface_expansion_size;
   }
   void set_has_external_stencil_test(bool has_test) {

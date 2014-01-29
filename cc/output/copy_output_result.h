@@ -26,7 +26,7 @@ class CC_EXPORT CopyOutputResult {
     return make_scoped_ptr(new CopyOutputResult(bitmap.Pass()));
   }
   static scoped_ptr<CopyOutputResult> CreateTextureResult(
-      gfx::Size size,
+      const gfx::Size& size,
       const TextureMailbox& texture_mailbox,
       scoped_ptr<SingleReleaseCallback> release_callback) {
     return make_scoped_ptr(
@@ -47,7 +47,7 @@ class CC_EXPORT CopyOutputResult {
  private:
   CopyOutputResult();
   explicit CopyOutputResult(scoped_ptr<SkBitmap> bitmap);
-  explicit CopyOutputResult(gfx::Size size,
+  explicit CopyOutputResult(const gfx::Size& size,
                             const TextureMailbox& texture_mailbox,
                             scoped_ptr<SingleReleaseCallback> release_callback);
 

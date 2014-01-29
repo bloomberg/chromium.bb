@@ -324,7 +324,7 @@ int Layer::IndexOfChild(const Layer* reference) {
   return -1;
 }
 
-void Layer::SetBounds(gfx::Size size) {
+void Layer::SetBounds(const gfx::Size& size) {
   DCHECK(IsPropertyChangeAllowed());
   if (bounds() == size)
     return;

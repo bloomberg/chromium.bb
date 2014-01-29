@@ -35,7 +35,8 @@ ResourcePool::~ResourcePool() {
   DCHECK_EQ(0u, resource_count_);
 }
 
-scoped_ptr<ScopedResource> ResourcePool::AcquireResource(gfx::Size size) {
+scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
+    const gfx::Size& size) {
   for (ResourceList::iterator it = unused_resources_.begin();
        it != unused_resources_.end();
        ++it) {

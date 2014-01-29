@@ -13,8 +13,8 @@ namespace cc {
 namespace {
 
 int NumTiles(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
   int num_tiles = tiling.num_tiles_x() * tiling.num_tiles_y();
@@ -28,8 +28,8 @@ int NumTiles(
 }
 
 int XIndex(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int x_coord) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -37,8 +37,8 @@ int XIndex(
 }
 
 int YIndex(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int y_coord) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -46,8 +46,8 @@ int YIndex(
 }
 
 int MinBorderXIndex(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int x_coord) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -55,8 +55,8 @@ int MinBorderXIndex(
 }
 
 int MinBorderYIndex(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int y_coord) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -64,8 +64,8 @@ int MinBorderYIndex(
 }
 
 int MaxBorderXIndex(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int x_coord) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -73,8 +73,8 @@ int MaxBorderXIndex(
 }
 
 int MaxBorderYIndex(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int y_coord) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -82,8 +82,8 @@ int MaxBorderYIndex(
 }
 
 int PosX(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int x_index) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -91,8 +91,8 @@ int PosX(
 }
 
 int PosY(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int y_index) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -100,8 +100,8 @@ int PosY(
 }
 
 int SizeX(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int x_index) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);
@@ -109,8 +109,8 @@ int SizeX(
 }
 
 int SizeY(
-    gfx::Size max_texture_size,
-    gfx::Size total_size,
+    const gfx::Size& max_texture_size,
+    const gfx::Size& total_size,
     bool has_border_texels,
     int y_index) {
   TilingData tiling(max_texture_size, total_size, has_border_texels);

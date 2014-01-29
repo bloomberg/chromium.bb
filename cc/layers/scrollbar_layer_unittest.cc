@@ -453,7 +453,7 @@ class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {
  public:
   ScrollbarLayerTestMaxTextureSize() {}
 
-  void SetScrollbarBounds(gfx::Size bounds) { bounds_ = bounds; }
+  void SetScrollbarBounds(const gfx::Size& bounds) { bounds_ = bounds; }
 
   virtual void BeginTest() OVERRIDE {
     scoped_ptr<Scrollbar> scrollbar(new FakeScrollbar);

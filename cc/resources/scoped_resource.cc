@@ -15,7 +15,7 @@ ScopedResource::~ScopedResource() {
   Free();
 }
 
-void ScopedResource::Allocate(gfx::Size size,
+void ScopedResource::Allocate(const gfx::Size& size,
                               ResourceProvider::TextureUsageHint hint,
                               ResourceFormat format) {
   DCHECK(!id());
@@ -30,7 +30,7 @@ void ScopedResource::Allocate(gfx::Size size,
 #endif
 }
 
-void ScopedResource::AllocateManaged(gfx::Size size,
+void ScopedResource::AllocateManaged(const gfx::Size& size,
                                      GLenum target,
                                      ResourceFormat format) {
   DCHECK(!id());

@@ -155,7 +155,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
   have_render_passes_to_push_ = true;
 }
 
-void DelegatedRendererLayerImpl::SetDisplaySize(gfx::Size size) {
+void DelegatedRendererLayerImpl::SetDisplaySize(const gfx::Size& size) {
   if (display_size_ == size)
     return;
   display_size_ = size;
@@ -197,7 +197,7 @@ void DelegatedRendererLayerImpl::ReleaseResources() {
 }
 
 gfx::Transform DelegatedRendererLayerImpl::DelegatedFrameToLayerSpaceTransform(
-    gfx::Size frame_size) const {
+    const gfx::Size& frame_size) const {
   gfx::Size display_size = display_size_.IsEmpty() ? bounds() : display_size_;
 
   gfx::Transform delegated_frame_to_layer_space_transform;
@@ -394,7 +394,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     QuadSink* quad_sink,
     AppendQuadsData* append_quads_data,
     const RenderPass* delegated_render_pass,
-    gfx::Size frame_size) const {
+    const gfx::Size& frame_size) const {
 
   const SharedQuadState* delegated_shared_quad_state = NULL;
   SharedQuadState* output_shared_quad_state = NULL;

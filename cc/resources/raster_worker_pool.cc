@@ -123,7 +123,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
   void RunRasterOnThread(unsigned thread_index,
                          void* buffer,
-                         gfx::Size size,
+                         const gfx::Size& size,
                          int stride) {
     TRACE_EVENT2(
         "cc",

@@ -48,7 +48,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* manager) OVERRIDE;
   virtual void PrepareToUpdate(const gfx::Rect& content_rect,
-                               gfx::Size tile_size,
+                               const gfx::Size& tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
                                gfx::Rect* resulting_opaque_rect) OVERRIDE;

@@ -21,7 +21,7 @@ HeadsUpDisplayLayer::HeadsUpDisplayLayer() {}
 HeadsUpDisplayLayer::~HeadsUpDisplayLayer() {}
 
 void HeadsUpDisplayLayer::PrepareForCalculateDrawProperties(
-    gfx::Size device_viewport, float device_scale_factor) {
+    const gfx::Size& device_viewport, float device_scale_factor) {
   gfx::Size device_viewport_in_layout_pixels = gfx::Size(
       device_viewport.width() / device_scale_factor,
       device_viewport.height() / device_scale_factor);

@@ -66,7 +66,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   bool UpdateVisibleTiles();
 
   scoped_refptr<Tile> CreateTile(PicturePileImpl* picture_pile,
-                                 gfx::Size tile_size,
+                                 const gfx::Size& tile_size,
                                  const gfx::Rect& content_rect,
                                  const gfx::Rect& opaque_rect,
                                  float contents_scale,

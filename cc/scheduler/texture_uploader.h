@@ -47,7 +47,7 @@ class CC_EXPORT TextureUploader {
               const gfx::Rect& source_rect,
               gfx::Vector2d dest_offset,
               ResourceFormat format,
-              gfx::Size size);
+              const gfx::Size& size);
 
   void Flush();
   void ReleaseCachedQueries();
@@ -101,7 +101,7 @@ class CC_EXPORT TextureUploader {
                                 const gfx::Rect& source_rect,
                                 gfx::Vector2d dest_offset,
                                 ResourceFormat format);
-  void UploadWithTexImageETC1(const uint8* image, gfx::Size size);
+  void UploadWithTexImageETC1(const uint8* image, const gfx::Size& size);
 
   gpu::gles2::GLES2Interface* gl_;
   ScopedPtrDeque<Query> pending_queries_;

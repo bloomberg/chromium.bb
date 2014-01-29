@@ -137,7 +137,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
                                  0).PassAs<DirectRenderer>();
 }
 
-void PixelTest::ForceExpandedViewport(gfx::Size surface_expansion) {
+void PixelTest::ForceExpandedViewport(const gfx::Size& surface_expansion) {
   static_cast<PixelTestOutputSurface*>(output_surface_.get())
       ->set_surface_expansion_size(surface_expansion);
   SoftwareOutputDevice* device = output_surface_->software_device();

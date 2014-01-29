@@ -35,7 +35,7 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   // cc::OutputSurface implementation.
   virtual void EnsureBackbuffer() OVERRIDE;
   virtual void DiscardBackbuffer() OVERRIDE;
-  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
+  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE;
   virtual void BindFramebuffer() OVERRIDE;
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
 

@@ -75,7 +75,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
       null_device_(SkBitmap::kARGB_8888_Config, 1, 1),
       null_canvas_(&null_device_) {
   }
-  virtual void Resize(gfx::Size size) OVERRIDE {
+  virtual void Resize(const gfx::Size& size) OVERRIDE {
     // Intentional no-op: canvas size is controlled by the embedder.
   }
   virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE {
@@ -156,7 +156,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
 }
 
 void SynchronousCompositorOutputSurface::Reshape(
-    gfx::Size size, float scale_factor) {
+    const gfx::Size& size, float scale_factor) {
   // Intentional no-op: surface size is controlled by the embedder.
 }
 

@@ -57,7 +57,7 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.InitializeRenderer(CreateFakeOutputSurface());
   }
 
-  void SetupDefaultTrees(gfx::Size layer_bounds) {
+  void SetupDefaultTrees(const gfx::Size& layer_bounds) {
     gfx::Size tile_size(100, 100);
 
     scoped_refptr<FakePicturePileImpl> pending_pile =
@@ -76,8 +76,8 @@ class PictureLayerImplTest : public testing::Test {
         host_impl_.active_tree()->LayerById(id_));
   }
 
-  void SetupDefaultTreesWithFixedTileSize(gfx::Size layer_bounds,
-                                          gfx::Size tile_size) {
+  void SetupDefaultTreesWithFixedTileSize(const gfx::Size& layer_bounds,
+                                          const gfx::Size& tile_size) {
     SetupDefaultTrees(layer_bounds);
     pending_layer_->set_fixed_tile_size(tile_size);
     active_layer_->set_fixed_tile_size(tile_size);

@@ -6,7 +6,7 @@
 
 namespace cc {
 
-void PixelTestSoftwareOutputDevice::Resize(gfx::Size size) {
+void PixelTestSoftwareOutputDevice::Resize(const gfx::Size& size) {
   gfx::Size expanded_size(size.width() + surface_expansion_size_.width(),
                           size.height() + surface_expansion_size_.height());
   SoftwareOutputDevice::Resize(expanded_size);

@@ -46,7 +46,7 @@ class FakeLayerUpdater : public LayerUpdater {
       PrioritizedResourceManager* resource) OVERRIDE;
 
   virtual void PrepareToUpdate(const gfx::Rect& content_rect,
-                               gfx::Size tile_size,
+                               const gfx::Size& tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
                                gfx::Rect* resulting_opaque_rect) OVERRIDE;
@@ -139,7 +139,7 @@ class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
   explicit FakeTiledLayerWithScaledBounds(
       PrioritizedResourceManager* resource_manager);
 
-  void SetContentBounds(gfx::Size content_bounds);
+  void SetContentBounds(const gfx::Size& content_bounds);
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,
                                       float page_scale_factor,

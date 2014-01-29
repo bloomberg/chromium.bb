@@ -355,7 +355,7 @@ void OutputSurface::DiscardBackbuffer() {
     software_device_->DiscardBackbuffer();
 }
 
-void OutputSurface::Reshape(gfx::Size size, float scale_factor) {
+void OutputSurface::Reshape(const gfx::Size& size, float scale_factor) {
   if (size == surface_size_ && scale_factor == device_scale_factor_)
     return;
 

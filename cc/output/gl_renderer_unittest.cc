@@ -1059,8 +1059,8 @@ class NonReshapableOutputSurface : public FakeOutputSurface {
                           false) {
     surface_size_ = gfx::Size(500, 500);
   }
-  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {}
-  void set_fixed_size(gfx::Size size) { surface_size_ = size; }
+  virtual void Reshape(const gfx::Size& size, float scale_factor) OVERRIDE {}
+  void set_fixed_size(const gfx::Size& size) { surface_size_ = size; }
 };
 
 TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
@@ -1674,7 +1674,7 @@ class MockOutputSurface : public OutputSurface {
 
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());
-  MOCK_METHOD2(Reshape, void(gfx::Size size, float scale_factor));
+  MOCK_METHOD2(Reshape, void(const gfx::Size& size, float scale_factor));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD1(SwapBuffers, void(CompositorFrame* frame));
 };
