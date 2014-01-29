@@ -309,6 +309,7 @@ int SyncClientMain(int argc, char* argv[]) {
   model_types.Put(APP_NOTIFICATIONS);
   model_types.Put(HISTORY_DELETE_DIRECTIVES);
   model_types.Put(SYNCED_NOTIFICATIONS);
+  model_types.Put(SYNCED_NOTIFICATION_APP_INFO);
   model_types.Put(DEVICE_INFO);
   model_types.Put(EXPERIMENTS);
   model_types.Put(PRIORITY_PREFERENCES);

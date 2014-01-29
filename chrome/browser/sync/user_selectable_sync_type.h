@@ -31,6 +31,8 @@ enum UserSelectableSyncType {
   EXTENSIONS = 6,
   PROXY_TABS = 7,
   APPS = 8,
+  // TODO(petewil): There was talk of removing this from user selectable sync
+  // types.  Should we?
   SYNCED_NOTIFICATIONS = 9,
 
   // The datatypes below are implicitly synced, and are not exposed via user
@@ -52,6 +54,7 @@ enum UserSelectableSyncType {
   // FAVICON_IMAGES,
   // FAVICON_TRACKING,
   // ARTICLE,
+  // SYNCED_NOTIFICATION_APP_INFO
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
   SELECTABLE_DATATYPE_COUNT = 10,

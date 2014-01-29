@@ -1811,6 +1811,8 @@ const char kSyncPreferences[] = "sync.preferences";
 const char kSyncPriorityPreferences[] = "sync.priority_preferences";
 const char kSyncSearchEngines[] = "sync.search_engines";
 const char kSyncSessions[] = "sync.sessions";
+const char kSyncSyncedNotificationAppInfo[] =
+    "sync.synced_notification_app_info";
 const char kSyncSyncedNotifications[] = "sync.synced_notifications";
 const char kSyncTabs[] = "sync.tabs";
 const char kSyncThemes[] = "sync.themes";

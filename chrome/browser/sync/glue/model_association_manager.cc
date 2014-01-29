@@ -36,6 +36,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::TYPED_URLS,
   syncer::HISTORY_DELETE_DIRECTIVES,
   syncer::SYNCED_NOTIFICATIONS,
+  syncer::SYNCED_NOTIFICATION_APP_INFO,
 
   // UI thread data types.
   syncer::BOOKMARKS,

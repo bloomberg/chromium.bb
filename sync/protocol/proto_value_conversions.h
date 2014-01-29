@@ -64,6 +64,8 @@ class SyncAttachmentId;
 class SyncCycleCompletedEventInfo;
 class SyncedNotification;
 class SyncedNotificationAction;
+class SyncedNotificationAppInfo;
+class SyncedNotificationAppInfoSpecifics;
 class SyncedNotificationDestination;
 class SyncedNotificationImage;
 class SyncedNotificationProfileImage;
@@ -248,6 +250,11 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* PasswordSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue*
+    SyncedNotificationAppInfoSpecificsToValue(
+        const sync_pb::SyncedNotificationAppInfoSpecifics&
+        synced_notification_specifics);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* SyncedNotificationSpecificsToValue(
     const sync_pb::SyncedNotificationSpecifics&

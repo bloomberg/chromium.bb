@@ -317,6 +317,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
       new UIDataTypeController(
           syncer::SYNCED_NOTIFICATIONS, this, profile_, pss));
 
+  // TODO(petewil): Enable the data type controller once we have a handler.
+
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
   if (!command_line_->HasSwitch(switches::kDisableSyncDictionary)) {

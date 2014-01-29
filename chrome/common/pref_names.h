@@ -614,6 +614,7 @@ extern const char kSyncPreferences[];
 extern const char kSyncPriorityPreferences[];
 extern const char kSyncSearchEngines[];
 extern const char kSyncSessions[];
+extern const char kSyncSyncedNotificationAppInfo[];
 extern const char kSyncSyncedNotifications[];
 extern const char kSyncTabs[];
 extern const char kSyncThemes[];

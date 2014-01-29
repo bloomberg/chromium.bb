@@ -86,6 +86,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case SYNCED_NOTIFICATIONS:
       specifics->mutable_synced_notification();
       break;
+    case SYNCED_NOTIFICATION_APP_INFO:
+      specifics->mutable_synced_notification_app_info();
+      break;
     case DEVICE_INFO:
       specifics->mutable_device_info();
       break;
@@ -189,6 +192,8 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber;
     case SYNCED_NOTIFICATIONS:
       return sync_pb::EntitySpecifics::kSyncedNotificationFieldNumber;
+    case SYNCED_NOTIFICATION_APP_INFO:
+      return sync_pb::EntitySpecifics::kSyncedNotificationAppInfoFieldNumber;
     case DEVICE_INFO:
       return sync_pb::EntitySpecifics::kDeviceInfoFieldNumber;
       break;
@@ -311,6 +316,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_synced_notification())
     return SYNCED_NOTIFICATIONS;
 
+  if (specifics.has_synced_notification_app_info())
+    return SYNCED_NOTIFICATION_APP_INFO;
+
   if (specifics.has_device_info())
     return DEVICE_INFO;
 
@@ -387,6 +395,9 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
   // Synced notifications are not encrypted since the server must see changes.
   encryptable_user_types.Remove(SYNCED_NOTIFICATIONS);
+  // Synced Notification App Info does not have private data, so it is not
+  // encrypted.
+  encryptable_user_types.Remove(SYNCED_NOTIFICATION_APP_INFO);
   // Priority preferences are not encrypted because they might be synced before
   // encryption is ready.
   encryptable_user_types.Remove(PRIORITY_PREFERENCES);
@@ -436,6 +447,7 @@ ModelTypeSet CoreTypes() {
 
   // The following are low priority core types.
   result.Put(SYNCED_NOTIFICATIONS);
+  result.Put(SYNCED_NOTIFICATION_APP_INFO);
 
   return result;
 }
@@ -495,6 +507,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "History Delete Directives";
     case SYNCED_NOTIFICATIONS:
       return "Synced Notifications";
+    case SYNCED_NOTIFICATION_APP_INFO:
+      return "Synced Notification App Info";
     case DEVICE_INFO:
       return "Device Info";
     case EXPERIMENTS:
@@ -592,6 +606,8 @@ int ModelTypeToHistogramInt(ModelType model_type) {
       return 29;
     case MANAGED_USER_SHARED_SETTINGS:
       return 30;
+    case SYNCED_NOTIFICATION_APP_INFO:
+      return 31;
     // Silence a compiler warning.
     case MODEL_TYPE_COUNT:
       return 0;
@@ -663,6 +679,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return HISTORY_DELETE_DIRECTIVES;
   else if (model_type_string == "Synced Notifications")
     return SYNCED_NOTIFICATIONS;
+  else if (model_type_string == "Synced Notification App Info")
+    return SYNCED_NOTIFICATION_APP_INFO;
   else if (model_type_string == "Device Info")
     return DEVICE_INFO;
   else if (model_type_string == "Experiments")
@@ -761,6 +779,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_history_delete_directives";
     case SYNCED_NOTIFICATIONS:
       return "google_chrome_synced_notifications";
+    case SYNCED_NOTIFICATION_APP_INFO:
+      return "google_chrome_synced_notification_app_info";
     case DEVICE_INFO:
       return "google_chrome_device_info";
     case EXPERIMENTS:
@@ -813,6 +833,7 @@ const char kAppNotificationNotificationType[] = "APP_NOTIFICATION";
 const char kHistoryDeleteDirectiveNotificationType[] =
     "HISTORY_DELETE_DIRECTIVE";
 const char kSyncedNotificationType[] = "SYNCED_NOTIFICATION";
+const char kSyncedNotificationAppInfoType[] = "SYNCED_NOTIFICATION_APP_INFO";
 const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
 const char kExperimentsNotificationType[] = "EXPERIMENTS";
 const char kPriorityPreferenceNotificationType[] = "PRIORITY_PREFERENCE";
@@ -882,6 +903,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case SYNCED_NOTIFICATIONS:
       *notification_type = kSyncedNotificationType;
+      return true;
+    case SYNCED_NOTIFICATION_APP_INFO:
+      *notification_type = kSyncedNotificationAppInfoType;
       return true;
     case DEVICE_INFO:
       *notification_type = kDeviceInfoNotificationType;
@@ -975,6 +999,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kSyncedNotificationType) {
     *model_type = SYNCED_NOTIFICATIONS;
+    return true;
+  } else if (notification_type == kSyncedNotificationAppInfoType) {
+    *model_type = SYNCED_NOTIFICATION_APP_INFO;
     return true;
   } else if (notification_type == kDeviceInfoNotificationType) {
     *model_type = DEVICE_INFO;

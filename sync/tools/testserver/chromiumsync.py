@@ -49,6 +49,7 @@ import search_engine_specifics_pb2
 import session_specifics_pb2
 import sync_pb2
 import sync_enums_pb2
+import synced_notification_app_info_specifics_pb2
 import synced_notification_data_pb2
 import synced_notification_render_pb2
 import synced_notification_specifics_pb2
@@ -84,11 +85,12 @@ ALL_TYPES = (
     SEARCH_ENGINE,
     SESSION,
     SYNCED_NOTIFICATION,
+    SYNCED_NOTIFICATION_APP_INFO,
     THEME,
     TYPED_URL,
     EXTENSION_SETTINGS,
     FAVICON_IMAGES,
-    FAVICON_TRACKING) = range(29)
+    FAVICON_TRACKING) = range(30)
 
 # An enumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -132,6 +134,8 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     SEARCH_ENGINE: SYNC_TYPE_FIELDS['search_engine'],
     SESSION: SYNC_TYPE_FIELDS['session'],
     SYNCED_NOTIFICATION: SYNC_TYPE_FIELDS["synced_notification"],
+    SYNCED_NOTIFICATION_APP_INFO:
+        SYNC_TYPE_FIELDS["synced_notification_app_info"],
     THEME: SYNC_TYPE_FIELDS['theme'],
     TYPED_URL: SYNC_TYPE_FIELDS['typed_url'],
     }
@@ -545,6 +549,9 @@ class SyncDataModel(object):
       PermanentItem('google_chrome_synced_notifications',
                     name='Synced Notifications',
                     parent_tag=ROOT_ID, sync_type=SYNCED_NOTIFICATION),
+      PermanentItem('google_chrome_synced_notification_app_info',
+                    name='Synced Notification App Info',
+                    parent_tag=ROOT_ID, sync_type=SYNCED_NOTIFICATION_APP_INFO),
       PermanentItem('google_chrome_search_engines', name='Search Engines',
                     parent_tag=ROOT_ID, sync_type=SEARCH_ENGINE),
       PermanentItem('google_chrome_sessions', name='Sessions',
@@ -1224,7 +1231,6 @@ class SyncDataModel(object):
 
     return specifics
 
-
   def _CreateSyncedNotificationClientTag(self, key):
     """Create the client_defined_unique_tag value for a SyncedNotification.
 
@@ -1239,7 +1245,6 @@ class SyncDataModel(object):
     serialized_type.synced_notification.CopyFrom(specifics)
     hash_input = serialized_type.SerializeToString() + key
     return base64.b64encode(hashlib.sha1(hash_input).digest())
-
 
 class TestServer(object):
   """An object to handle requests for one (and only one) Chrome Sync account.

@@ -55,6 +55,8 @@ message NigoriSpecifics {
   // thus can't be encrypted.
   // Synced Notifications need to be consumed by the server (the read flag)
   // and thus can't be encrypted.
+  // Synced Notification App Info is set by the server, and thus cannot be
+  // encrypted.
   optional bool encrypt_bookmarks = 13;
   optional bool encrypt_preferences = 14;
   optional bool encrypt_autofill_profile = 15;

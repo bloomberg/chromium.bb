@@ -84,6 +84,8 @@ enum ModelType {
   HISTORY_DELETE_DIRECTIVES,
   // Synced push notifications.
   SYNCED_NOTIFICATIONS,
+  // Synced Notification app info.
+  SYNCED_NOTIFICATION_APP_INFO,
   // Custom spelling dictionary.
   DICTIONARY,
   // Favicon images.

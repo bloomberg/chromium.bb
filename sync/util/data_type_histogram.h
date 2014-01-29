@@ -90,6 +90,9 @@
       case ::syncer::SYNCED_NOTIFICATIONS: \
         PER_DATA_TYPE_MACRO("SyncedNotifications"); \
         break; \
+      case ::syncer::SYNCED_NOTIFICATION_APP_INFO: \
+        PER_DATA_TYPE_MACRO("SyncedNotificationAppInfo"); \
+        break; \
       case ::syncer::DEVICE_INFO: \
         PER_DATA_TYPE_MACRO("DeviceInfo"); \
         break; \

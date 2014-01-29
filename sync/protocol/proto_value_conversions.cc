@@ -36,6 +36,7 @@
 #include "sync/protocol/search_engine_specifics.pb.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/protocol/synced_notification_app_info_specifics.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
@@ -238,6 +239,16 @@ base::DictionaryValue* TimeRangeDirectiveToValue(
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_INT64(start_time_usec);
   SET_INT64(end_time_usec);
+  return value;
+}
+
+base::DictionaryValue* SyncedNotificationAppInfoToValue(
+    const sync_pb::SyncedNotificationAppInfo& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR_REP(app_id);
+  SET_STR(settings_display_name);
+  SET(icon, SyncedNotificationImageToValue);
+  // TODO(petewil): Add fields for the monochrome icon when it is available.
   return value;
 }
 
@@ -650,6 +661,13 @@ base::DictionaryValue* PriorityPreferenceSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* SyncedNotificationAppInfoSpecificsToValue(
+    const sync_pb::SyncedNotificationAppInfoSpecifics& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_REP(synced_notification_app_info, SyncedNotificationAppInfoToValue);
+  return value;
+}
+
 base::DictionaryValue* SyncedNotificationSpecificsToValue(
     const sync_pb::SyncedNotificationSpecifics& proto) {
   // There is a lot of data, for now just use heading, description, key, and
@@ -751,6 +769,8 @@ base::DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(search_engine, SearchEngineSpecificsToValue);
   SET_FIELD(session, SessionSpecificsToValue);
   SET_FIELD(synced_notification, SyncedNotificationSpecificsToValue);
+  SET_FIELD(synced_notification_app_info,
+            SyncedNotificationAppInfoSpecificsToValue);
   SET_FIELD(theme, ThemeSpecificsToValue);
   SET_FIELD(typed_url, TypedUrlSpecificsToValue);
   return value;

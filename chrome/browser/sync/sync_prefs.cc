@@ -325,6 +325,8 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
       return prefs::kSyncHistoryDeleteDirectives;
     case syncer::SYNCED_NOTIFICATIONS:
       return prefs::kSyncSyncedNotifications;
+    case syncer::SYNCED_NOTIFICATION_APP_INFO:
+      return prefs::kSyncSyncedNotificationAppInfo;
     case syncer::DICTIONARY:
       return prefs::kSyncDictionary;
     case syncer::FAVICON_IMAGES:
