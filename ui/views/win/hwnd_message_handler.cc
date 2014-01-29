@@ -1905,16 +1905,49 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const CPoint& point) {
 #if defined(USE_AURA)
   LRESULT hit_test_code = DefWindowProc(hwnd(), WM_NCHITTEST, 0,
                                         MAKELPARAM(point.x, point.y));
-  // If we faked the WS_VSCROLL and WS_HSCROLL styles for this window, then
-  // Windows returns the HTVSCROLL or HTHSCROLL hit test codes if we hover or
-  // click on the non client portions of the window where the OS scrollbars
-  // would be drawn. These hittest codes are returned even when the scrollbars
-  // are hidden, which is the case in Aura. We fake the hittest code as
-  // HTCLIENT in this case to ensure that we receive client mouse messages as
-  // opposed to non client mouse messages.
-  if (needs_scroll_styles_ && (hit_test_code == HTVSCROLL ||
-      hit_test_code == HTHSCROLL))
-    hit_test_code = HTCLIENT;
+  if (needs_scroll_styles_) {
+    switch (hit_test_code) {
+      // If we faked the WS_VSCROLL and WS_HSCROLL styles for this window, then
+      // Windows returns the HTVSCROLL or HTHSCROLL hit test codes if we hover
+      // or click on the non client portions of the window where the OS
+      // scrollbars would be drawn. These hittest codes are returned even when
+      // the scrollbars are hidden, which is the case in Aura. We fake the
+      // hittest code as HTCLIENT in this case to ensure that we receive client
+      // mouse messages as opposed to non client mouse messages.
+      case HTVSCROLL:
+      case HTHSCROLL:
+        hit_test_code = HTCLIENT;
+        break;
+
+      case HTBOTTOMRIGHT: {
+        // Normally the HTBOTTOMRIGHT hittest code is received when we hover
+        // near the bottom right of the window. However due to our fake scroll
+        // styles, we get this code even when we hover around the area where
+        // the vertical scrollar down arrow would be drawn.
+        // We check if the hittest coordinates lie in this region and if yes
+        // we return HTCLIENT.
+        int border_width = ::GetSystemMetrics(SM_CXSIZEFRAME);
+        int border_height = ::GetSystemMetrics(SM_CYSIZEFRAME);
+        int scroll_width = ::GetSystemMetrics(SM_CXVSCROLL);
+        int scroll_height = ::GetSystemMetrics(SM_CYVSCROLL);
+        RECT window_rect;
+        ::GetWindowRect(hwnd(), &window_rect);
+        window_rect.bottom -= border_height;
+        window_rect.right -= border_width;
+        window_rect.left = window_rect.right - scroll_width;
+        window_rect.top = window_rect.bottom - scroll_height;
+        POINT pt;
+        pt.x = point.x;
+        pt.y = point.y;
+        if (::PtInRect(&window_rect, pt))
+          hit_test_code = HTCLIENT;
+        break;
+      }
+
+      default:
+        break;
+    }
+  }
   return hit_test_code;
 #else
   SetMsgHandled(FALSE);
