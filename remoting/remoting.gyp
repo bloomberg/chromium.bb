@@ -6,6 +6,9 @@
   'variables': {
     'chromium_code': 1,
 
+    # Set this to run the jscompile checks after building the webapp.
+    'run_jscompile%': 0,
+
     'variables': {
       'conditions': [
         # Enable the multi-process host on Windows by default.
@@ -178,6 +181,8 @@
         'remoting_webapp_apps_v2_js_files': [
           'webapp/background.js',
         ],
+        'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
+        'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
       },
       'dependencies': [
         'remoting_resources',
@@ -202,12 +207,36 @@
             'remoting_host_plugin',
           ],
         }],
+        ['run_jscompile != 0', {
+          'variables': {
+            'success_stamp': '<(PRODUCT_DIR)/remoting_webapp_jscompile.stamp',
+          },
+          'actions': [
+            {
+              'action_name': 'Verify remoting webapp',
+              'inputs': [
+                '<@(remoting_webapp_js_files)',
+                '<@(remoting_webapp_js_proto_files)',
+                # Include zip as input so that this action is run after the build.
+                '<(zip_path)',
+              ],
+              'outputs': [
+                '<(success_stamp)',
+              ],
+              'action': [
+                'python', 'tools/htmlcompile.py',
+                '<(output_dir)/main.html',
+                '<@(remoting_webapp_js_proto_files)',
+                '--success-stamp',
+                '<(success_stamp)'
+              ],
+            },
+          ],  # actions
+        }],
       ],
       'actions': [
         {
           'action_name': 'Build Remoting WebApp',
-          'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
-          'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
           'inputs': [
             'webapp/build-webapp.py',
             '<(chrome_version_path)',
@@ -223,16 +252,16 @@
             }],
           ],
           'outputs': [
-            '<(_output_dir)',
-            '<(_zip_path)',
+            '<(output_dir)',
+            '<(zip_path)',
           ],
           'action': [
             'python', 'webapp/build-webapp.py',
             '<(buildtype)',
             '<(version_full)',
             '<(host_plugin_mime_type)',
-            '<(_output_dir)',
-            '<(_zip_path)',
+            '<(output_dir)',
+            '<(zip_path)',
             '<(plugin_path)',
             '<@(remoting_webapp_files)',
             '--locales',
