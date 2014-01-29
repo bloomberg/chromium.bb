@@ -14,9 +14,7 @@ const int kDefaultRtpMaxDelayMs = 100;
 }  // namespace
 
 CastTransportConfig::CastTransportConfig()
-    : receive_port(0),
-      send_port(0),
-      audio_ssrc(0),
+    : audio_ssrc(0),
       video_ssrc(0),
       video_codec(kVp8),
       audio_codec(kOpus),

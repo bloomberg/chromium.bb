@@ -301,7 +301,14 @@ void InitializationResult(media::cast::CastInitializationStatus result)  {
   CHECK_EQ(result, media::cast::STATUS_INITIALIZED);
   VLOG(1) << "Cast Sender initialized";
 }
+
+net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
+  net::IPAddressNumber ip_number;
+  CHECK(net::ParseIPLiteralToNumber(ip_str, &ip_number));
+  return net::IPEndPoint(ip_number, port);
 }
+
+}  // namespace
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
@@ -330,10 +337,10 @@ int main(int argc, char** argv) {
 
   // Setting up transport config.
   media::cast::transport::CastTransportConfig config;
-  config.receiver_ip_address = remote_ip_address;
-  config.local_ip_address = local_ip_address;
-  config.receive_port = local_port;
-  config.send_port = remote_port;
+  config.receiver_endpoint = CreateUDPAddress(remote_ip_address,
+                                              remote_port);
+  config.local_endpoint = CreateUDPAddress(local_ip_address,
+                                           local_port);
   config.audio_ssrc = audio_config.sender_ssrc;
   config.video_ssrc = video_config.sender_ssrc;
   config.audio_rtp_payload_type = audio_config.rtp_payload_type;

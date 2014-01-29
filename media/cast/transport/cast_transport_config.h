@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/cast/transport/cast_transport_defines.h"
+#include "net/base/ip_endpoint.h"
 
 namespace media {
 namespace cast {
@@ -38,10 +39,8 @@ struct CastTransportConfig {
   ~CastTransportConfig();
 
   // Transport: Local receiver.
-  std::string receiver_ip_address;
-  std::string local_ip_address;
-  int receive_port;
-  int send_port;
+  net::IPEndPoint receiver_endpoint;
+  net::IPEndPoint local_endpoint;
 
   uint32 audio_ssrc;
   uint32 video_ssrc;

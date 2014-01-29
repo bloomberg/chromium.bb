@@ -17,13 +17,6 @@ static const int64 kPacingIntervalMs = 10;
 // bursts of packets.
 static const size_t kPacingMaxBurstsPerFrame = 3;
 
-void CreateUDPAddress(std::string ip_str, int port, net::IPEndPoint* address) {
-  net::IPAddressNumber ip_number;
-  bool rv = net::ParseIPLiteralToNumber(ip_str, &ip_number);
-  if (!rv)
-    return;
-  *address = net::IPEndPoint(ip_number, port);
-}
 }  // namespace
 
 PacedSender::PacedSender(
@@ -42,14 +35,10 @@ PacedSender::PacedSender(
   if (!external_transport) {
     net::IPEndPoint local_end_point;
     net::IPEndPoint receiver_end_point;
-    CreateUDPAddress(config_->local_ip_address, config_->receive_port,
-                     &local_end_point);
-    CreateUDPAddress(config_->receiver_ip_address, config_->send_port,
-                     &receiver_end_point);
     // Set up transport in the absence of an external transport.
     transport_.reset(new UdpTransport(transport_task_runner,
-                                      local_end_point,
-                                      receiver_end_point,
+                                      config_->local_endpoint,
+                                      config_->receiver_endpoint,
                                       status_callback));
   }
   ScheduleNextSend();
