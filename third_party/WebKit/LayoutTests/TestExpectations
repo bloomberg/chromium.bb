@@ -872,3 +872,4 @@ crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Ti
 crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
 
 crbug.com/339174 fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Failure ]
+crbug.com/339252 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
