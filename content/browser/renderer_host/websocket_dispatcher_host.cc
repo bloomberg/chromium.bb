@@ -83,10 +83,13 @@ WebSocketHost* WebSocketDispatcherHost::GetHost(int routing_id) const {
 }
 
 WebSocketHostState WebSocketDispatcherHost::SendOrDrop(IPC::Message* message) {
+  const uint32 message_type = message->type();
+  const int32 message_routing_id = message->routing_id();
   if (!Send(message)) {
-    DVLOG(1) << "Sending of message type " << message->type()
+    message = NULL;
+    DVLOG(1) << "Sending of message type " << message_type
              << " failed. Dropping channel.";
-    DeleteWebSocketHost(message->routing_id());
+    DeleteWebSocketHost(message_routing_id);
     return WEBSOCKET_HOST_DELETED;
   }
   return WEBSOCKET_HOST_ALIVE;
