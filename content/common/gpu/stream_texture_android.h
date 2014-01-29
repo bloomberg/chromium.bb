@@ -59,8 +59,11 @@ class StreamTexture : public gfx::GLImage,
   // Current size of the surface texture.
   gfx::Size size_;
 
-  // Whether the surface texture has been updated.
-  bool has_updated_;
+  // Whether we ever bound a valid frame.
+  bool has_valid_frame_;
+
+  // Whether a new frame is available that we should update to.
+  bool has_pending_frame_;
 
   GpuCommandBufferStub* owner_stub_;
   int32 route_id_;

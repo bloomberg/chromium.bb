@@ -299,17 +299,18 @@ class ScopedGLErrorSuppressor {
   DISALLOW_COPY_AND_ASSIGN(ScopedGLErrorSuppressor);
 };
 
-// Temporarily changes a decoder's bound 2D texture and restore it when this
+// Temporarily changes a decoder's bound texture and restore it when this
 // object goes out of scope. Also temporarily switches to using active texture
 // unit zero in case the client has changed that to something invalid.
-class ScopedTexture2DBinder {
+class ScopedTextureBinder {
  public:
-  ScopedTexture2DBinder(ContextState* state, GLuint id);
-  ~ScopedTexture2DBinder();
+  ScopedTextureBinder(ContextState* state, GLuint id, GLenum target);
+  ~ScopedTextureBinder();
 
  private:
   ContextState* state_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedTexture2DBinder);
+  GLenum target_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedTextureBinder);
 };
 
 // Temporarily changes a decoder's bound render buffer and restore it when this
@@ -1717,35 +1718,55 @@ ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
   ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_, function_name_);
 }
 
-static void RestoreCurrentTexture2DBindings(ContextState* state) {
+static void RestoreCurrentTextureBindings(ContextState* state, GLenum target) {
   TextureUnit& info = state->texture_units[0];
   GLuint last_id;
-  if (info.bound_texture_2d.get()) {
-    last_id = info.bound_texture_2d->service_id();
+  scoped_refptr<TextureRef> texture_ref;
+  switch (target) {
+    case GL_TEXTURE_2D:
+      texture_ref = info.bound_texture_2d;
+      break;
+    case GL_TEXTURE_CUBE_MAP:
+      texture_ref = info.bound_texture_cube_map;
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      texture_ref = info.bound_texture_external_oes;
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      texture_ref = info.bound_texture_rectangle_arb;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  if (texture_ref.get()) {
+    last_id = texture_ref->service_id();
   } else {
     last_id = 0;
   }
 
-  glBindTexture(GL_TEXTURE_2D, last_id);
+  glBindTexture(target, last_id);
   glActiveTexture(GL_TEXTURE0 + state->active_texture_unit);
 }
 
-ScopedTexture2DBinder::ScopedTexture2DBinder(ContextState* state,
-                                             GLuint id)
-    : state_(state) {
+ScopedTextureBinder::ScopedTextureBinder(ContextState* state,
+                                         GLuint id,
+                                         GLenum target)
+    : state_(state),
+      target_(target) {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedTexture2DBinder::ctor", state_->GetErrorState());
+      "ScopedTextureBinder::ctor", state_->GetErrorState());
 
   // TODO(apatrick): Check if there are any other states that need to be reset
   // before binding a new texture.
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, id);
+  glBindTexture(target, id);
 }
 
-ScopedTexture2DBinder::~ScopedTexture2DBinder() {
+ScopedTextureBinder::~ScopedTextureBinder() {
   ScopedGLErrorSuppressor suppressor(
-      "ScopedTexture2DBinder::dtor", state_->GetErrorState());
-  RestoreCurrentTexture2DBindings(state_);
+      "ScopedTextureBinder::dtor", state_->GetErrorState());
+  RestoreCurrentTextureBindings(state_, target_);
 }
 
 ScopedRenderBufferBinder::ScopedRenderBufferBinder(ContextState* state,
@@ -1869,7 +1890,7 @@ void BackTexture::Create() {
                                      state_->GetErrorState());
   Destroy();
   glGenTextures(1, &id_);
-  ScopedTexture2DBinder binder(state_, id_);
+  ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1893,7 +1914,7 @@ bool BackTexture::AllocateStorage(
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::AllocateStorage",
                                      state_->GetErrorState());
-  ScopedTexture2DBinder binder(state_, id_);
+  ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
   uint32 image_size = 0;
   GLES2Util::ComputeImageDataSizes(
       size.width(), size.height(), format, GL_UNSIGNED_BYTE, 8, &image_size,
@@ -1934,7 +1955,7 @@ void BackTexture::Copy(const gfx::Size& size, GLenum format) {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::Copy",
                                      state_->GetErrorState());
-  ScopedTexture2DBinder binder(state_, id_);
+  ScopedTextureBinder binder(state_, id_, GL_TEXTURE_2D);
   glCopyTexImage2D(GL_TEXTURE_2D,
                    0,  // level
                    format,
@@ -5884,9 +5905,6 @@ void GLES2DecoderImpl::PerformanceWarning(
 
 void GLES2DecoderImpl::DoWillUseTexImageIfNeeded(
     Texture* texture, GLenum textarget) {
-  // This might be supported in the future.
-  if (textarget != GL_TEXTURE_2D)
-    return;
   // Image is already in use if texture is attached to a framebuffer.
   if (texture && !texture->IsAttachedToFramebuffer()) {
     gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
@@ -5896,16 +5914,13 @@ void GLES2DecoderImpl::DoWillUseTexImageIfNeeded(
           GetErrorState());
       glBindTexture(textarget, texture->service_id());
       image->WillUseTexImage();
-      RestoreCurrentTexture2DBindings(&state_);
+      RestoreCurrentTextureBindings(&state_, textarget);
     }
   }
 }
 
 void GLES2DecoderImpl::DoDidUseTexImageIfNeeded(
     Texture* texture, GLenum textarget) {
-  // This might be supported in the future.
-  if (textarget != GL_TEXTURE_2D)
-    return;
   // Image is still in use if texture is attached to a framebuffer.
   if (texture && !texture->IsAttachedToFramebuffer()) {
     gfx::GLImage* image = texture->GetLevelImage(textarget, 0);
@@ -5915,7 +5930,7 @@ void GLES2DecoderImpl::DoDidUseTexImageIfNeeded(
           GetErrorState());
       glBindTexture(textarget, texture->service_id());
       image->DidUseTexImage();
-      RestoreCurrentTexture2DBindings(&state_);
+      RestoreCurrentTextureBindings(&state_, textarget);
     }
   }
 }
@@ -9787,7 +9802,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
         0, internal_format, dest_type, NULL);
     GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTextureCHROMIUM");
     if (error != GL_NO_ERROR) {
-      RestoreCurrentTexture2DBindings(&state_);
+      RestoreCurrentTextureBindings(&state_, GL_TEXTURE_2D);
       return;
     }
 

@@ -9,9 +9,11 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/scoped_make_current.h"
 
 namespace content {
 
@@ -65,7 +67,8 @@ StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
                              uint32 texture_id)
     : surface_texture_(new gfx::SurfaceTexture(texture_id)),
       size_(0, 0),
-      has_updated_(false),
+      has_valid_frame_(false),
+      has_pending_frame_(false),
       owner_stub_(owner_stub),
       route_id_(route_id),
       has_listener_(false),
@@ -100,18 +103,44 @@ void StreamTexture::WillUseTexImage() {
   if (!owner_stub_)
     return;
 
-  // TODO(sievers): Update also when used in a different context.
-  //                Also see crbug.com/309162.
-  if (surface_texture_.get()) {
+  if (surface_texture_.get() && has_pending_frame_) {
+    scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+    bool needs_make_current =
+        !owner_stub_->decoder()->GetGLContext()->IsCurrent(NULL);
+    // On Android we should not have to perform a real context switch here when
+    // using virtual contexts.
+    DCHECK(!needs_make_current || !owner_stub_->decoder()
+                                       ->GetContextGroup()
+                                       ->feature_info()
+                                       ->workarounds()
+                                       .use_virtualized_gl_contexts);
+    if (needs_make_current) {
+      scoped_make_current.reset(new ui::ScopedMakeCurrent(
+          owner_stub_->decoder()->GetGLContext(), owner_stub_->surface()));
+    }
     surface_texture_->UpdateTexImage();
+    has_valid_frame_ = true;
+    has_pending_frame_ = false;
+    if (scoped_make_current.get()) {
+      // UpdateTexImage() implies glBindTexture().
+      // The cmd decoder takes care of restoring the binding for this GLImage as
+      // far as the current context is concerned, but if we temporarily change
+      // it, we have to keep the state intact in *that* context also.
+      const gpu::gles2::ContextState* state =
+          owner_stub_->decoder()->GetContextState();
+      const gpu::gles2::TextureUnit& active_unit =
+          state->texture_units[state->active_texture_unit];
+      glBindTexture(GL_TEXTURE_EXTERNAL_OES,
+                    active_unit.bound_texture_external_oes->service_id());
+    }
   }
 
-  if (has_listener_) {
+  if (has_listener_ && has_valid_frame_) {
     float mtx[16];
     surface_texture_->GetTransformMatrix(mtx);
 
     // Only query the matrix once we have bound a valid frame.
-    if (has_updated_ && memcmp(current_matrix_, mtx, sizeof(mtx)) != 0) {
+    if (memcmp(current_matrix_, mtx, sizeof(mtx)) != 0) {
       memcpy(current_matrix_, mtx, sizeof(mtx));
 
       GpuStreamTextureMsg_MatrixChanged_Params params;
@@ -123,7 +152,7 @@ void StreamTexture::WillUseTexImage() {
 }
 
 void StreamTexture::OnFrameAvailable() {
-  has_updated_ = true;
+  has_pending_frame_ = true;
   DCHECK(has_listener_);
   if (owner_stub_) {
     owner_stub_->channel()->Send(
