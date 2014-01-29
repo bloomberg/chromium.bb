@@ -174,7 +174,6 @@
         'sandbox_windows_target': 1,
       },
       'dependencies': [
-        '../testing/gtest.gyp:gtest',
         '../base/base.gyp:base',
         '../base/base.gyp:base_static',
       ],
