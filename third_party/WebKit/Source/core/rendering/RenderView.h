@@ -198,8 +198,6 @@ public:
     double layoutViewportWidth() const;
     double layoutViewportHeight() const;
 
-    void viewResized();
-
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
@@ -262,8 +260,6 @@ private:
     friend class LayoutStateDisabler;
 
     bool shouldUsePrintingLayout() const;
-
-    bool needsLayoutOnLogicalHeightChange() const;
 
     FrameView* m_frameView;
 

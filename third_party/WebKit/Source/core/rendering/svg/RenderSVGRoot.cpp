@@ -174,9 +174,10 @@ LayoutUnit RenderSVGRoot::computeReplacedLogicalHeight() const
         if (height.isPercent()) {
             RenderBlock* cb = containingBlock();
             ASSERT(cb);
-            while (cb->isAnonymous())
+            while (cb->isAnonymous()) {
                 cb = cb->containingBlock();
-            cb->addPercentHeightDescendant(const_cast<RenderSVGRoot*>(this));
+                cb->addPercentHeightDescendant(const_cast<RenderSVGRoot*>(this));
+            }
         } else
             RenderBlock::removePercentHeightDescendant(const_cast<RenderSVGRoot*>(this));
 

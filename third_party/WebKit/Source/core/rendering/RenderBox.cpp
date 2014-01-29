@@ -2858,8 +2858,8 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
         skippedAutoHeightContainingBlock = true;
         containingBlockChild = cb;
         cb = cb->containingBlock();
+        cb->addPercentHeightDescendant(const_cast<RenderBox*>(this));
     }
-    cb->addPercentHeightDescendant(const_cast<RenderBox*>(this));
 
     RenderStyle* cbstyle = cb->style();
 
@@ -3011,10 +3011,10 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(Length logicalHeight) co
         case Calculated:
         {
             RenderObject* cb = isOutOfFlowPositioned() ? container() : containingBlock();
-            while (cb->isAnonymous())
+            while (cb->isAnonymous()) {
                 cb = cb->containingBlock();
-            if (cb->isRenderBlock())
                 toRenderBlock(cb)->addPercentHeightDescendant(const_cast<RenderBox*>(this));
+            }
 
             // FIXME: This calculation is not patched for block-flow yet.
             // https://bugs.webkit.org/show_bug.cgi?id=46500
