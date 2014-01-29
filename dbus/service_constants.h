@@ -690,10 +690,48 @@ const char kErrorPinMissing[] = "pin-missing";
 const char kErrorPppAuthFailed[] = "ppp-auth-failed";
 
 // Flimflam error messages.
-const char kErrorPassphraseRequiredMsg[] = "Passphrase required";
+const char kErrorSuccessMsg[] = "org.chromium.flimflam.Error.Success";
+const char kErrorFailureMsg[] = "org.chromium.flimflam.Error.Failure";
+const char kErrorAlreadyConnectedMsg[] =
+    "org.chromium.flimflam.Error.AlreadyConnected";
+const char kErrorAlreadyExistsMsg[] =
+    "org.chromium.flimflam.Error.AlreadyExists";
 const char kErrorIncorrectPinMsg[] = "org.chromium.flimflam.Error.IncorrectPin";
+const char kErrorInProgressMsg[] = "org.chromium.flimflam.Error.InProgress";
+const char kErrorInternalErrorMsg[] =
+    "org.chromium.flimflam.Error.InternalError";
+const char kErrorInvalidApnMsg[] = "org.chromium.flimflam.Error.InvalidApn";
+const char kErrorInvalidArgumentsMsg[] =
+    "org.chromium.flimflam.Error.InvalidArguments";
+const char kErrorInvalidNetworkNameMsg[] =
+    "org.chromium.flimflam.Error.InvalidNetworkName";
+const char kErrorInvalidPassphraseMsg[] =
+    "org.chromium.flimflam.Error.InvalidPassphrase";
+const char kErrorInvalidPropertyMsg[] =
+    "org.chromium.flimflam.Error.InvalidProperty";
+const char kErrorNoCarrierMsg[] = "org.chromium.flimflam.Error.NoCarrier";
+const char kErrorNotConnectedMsg[] = "org.chromium.flimflam.Error.NotConnected";
+const char kErrorNotFoundMsg[] = "org.chromium.flimflam.Error.NotFound";
+const char kErrorNotImplementedMsg[] =
+    "org.chromium.flimflam.Error.NotImplemented";
+const char kErrorNotOnHomeNetworkMsg[] =
+    "org.chromium.flimflam.Error.NotOnHomeNetwork";
+const char kErrorNotRegisteredMsg[] =
+    "org.chromium.flimflam.Error.NotRegistered";
+const char kErrorNotSupportedMsg[] = "org.chromium.flimflam.Error.NotSupported";
+const char kErrorOperationAbortedMsg[] =
+    "org.chromium.flimflam.Error.OperationAborted";
+const char kErrorOperationInitiatedMsg[] =
+    "org.chromium.flimflam.Error.OperationInitiated";
+const char kErrorOperationTimeoutMsg[] =
+    "org.chromium.flimflam.Error.OperationTimeout";
+const char kErrorPassphraseRequiredMsg[] =
+    "org.chromium.flimflam.Error.PassphraseRequired";
+const char kErrorPermissionDeniedMsg[] =
+    "org.chromium.flimflam.Error.PermissionDenied";
 const char kErrorPinBlockedMsg[] = "org.chromium.flimflam.Error.PinBlocked";
 const char kErrorPinRequiredMsg[] = "org.chromium.flimflam.Error.PinRequired";
+const char kErrorWrongStateMsg[] = "org.chromium.flimflam.Error.WrongState";
 
 const char kUnknownString[] = "UNKNOWN";
 
