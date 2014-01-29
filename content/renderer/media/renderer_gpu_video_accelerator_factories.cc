@@ -14,6 +14,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace content {
@@ -21,37 +22,12 @@ namespace content {
 RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider)
-    : task_runner_(
-          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
+    : task_runner_(message_loop_proxy),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
-      thread_safe_sender_(ChildThread::current()->thread_safe_sender()),
-      aborted_waiter_(true, false),
-      task_runner_async_waiter_(false, false) {
-  // |context_provider_| is only required to support HW-accelerated decode.
-  if (!context_provider_)
-    return;
-
-  if (task_runner_->BelongsToCurrentThread()) {
-    AsyncBindContext();
-    task_runner_async_waiter_.Reset();
-    return;
-  }
-  // Wait for the context to be acquired.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncBindContext,
-                 // Unretained to avoid ref/deref'ing |*this|, which is not yet
-                 // stored in a scoped_refptr.  Safe because the Wait() below
-                 // keeps us alive until this task completes.
-                 base::Unretained(this)));
-  task_runner_async_waiter_.Wait();
-}
-
-RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories()
-    : aborted_waiter_(true, false),
-      task_runner_async_waiter_(false, false) {}
+      thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {}
 
 WebGraphicsContext3DCommandBufferImpl*
 RendererGpuVideoAcceleratorFactories::GetContext3d() {
@@ -66,44 +42,19 @@ RendererGpuVideoAcceleratorFactories::GetContext3d() {
   return context_provider_->WebContext3D();
 }
 
-void RendererGpuVideoAcceleratorFactories::AsyncBindContext() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!context_provider_->BindToCurrentThread())
-    context_provider_ = NULL;
-  task_runner_async_waiter_.Signal();
-}
-
 scoped_ptr<media::VideoDecodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator(
     media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Client* client) {
-  if (task_runner_->BelongsToCurrentThread()) {
-    AsyncCreateVideoDecodeAccelerator(profile, client);
-    task_runner_async_waiter_.Reset();
-    return vda_.Pass();
-  }
-  // The VDA is returned in the vda_ member variable by the
-  // AsyncCreateVideoDecodeAccelerator() function.
-  task_runner_->PostTask(FROM_HERE,
-                          base::Bind(&RendererGpuVideoAcceleratorFactories::
-                                         AsyncCreateVideoDecodeAccelerator,
-                                     this,
-                                     profile,
-                                     client));
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
-  base::WaitableEvent* objects[] = {&aborted_waiter_,
-                                    &task_runner_async_waiter_};
-  if (base::WaitableEvent::WaitMany(objects, arraysize(objects)) == 0) {
-    // If we are aborting and the VDA is created by the
-    // AsyncCreateVideoDecodeAccelerator() function later we need to ensure
-    // that it is destroyed on the same thread.
-    task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&RendererGpuVideoAcceleratorFactories::
-                                           AsyncDestroyVideoDecodeAccelerator,
-                                       this));
-    return scoped_ptr<media::VideoDecodeAccelerator>();
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (context && context->GetCommandBufferProxy()) {
+    return gpu_channel_host_->CreateVideoDecoder(
+        context->GetCommandBufferProxy()->GetRouteID(), profile, client);
   }
-  return vda_.Pass();
+
+  return scoped_ptr<media::VideoDecodeAccelerator>();
 }
 
 scoped_ptr<media::VideoEncodeAccelerator>
@@ -112,19 +63,6 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator(
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   return gpu_channel_host_->CreateVideoEncoder(client);
-}
-
-void RendererGpuVideoAcceleratorFactories::AsyncCreateVideoDecodeAccelerator(
-    media::VideoCodecProfile profile,
-    media::VideoDecodeAccelerator::Client* client) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (context && context->GetCommandBufferProxy()) {
-    vda_ = gpu_channel_host_->CreateVideoDecoder(
-        context->GetCommandBufferProxy()->GetRouteID(), profile, client);
-  }
-  task_runner_async_waiter_.Signal();
 }
 
 uint32 RendererGpuVideoAcceleratorFactories::CreateTextures(
@@ -204,42 +142,15 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncPoint(uint32 sync_point) {
   gles2->ShallowFlushCHROMIUM();
 }
 
-void RendererGpuVideoAcceleratorFactories::ReadPixels(uint32 texture_id,
-                                                      const gfx::Size& size,
-                                                      const SkBitmap& pixels) {
-  // SkBitmaps use the SkPixelRef object to refcount the underlying pixels.
-  // Multiple SkBitmaps can share a SkPixelRef instance. We use this to
-  // ensure that the underlying pixels in the SkBitmap passed in remain valid
-  // until the AsyncReadPixels() call completes.
-  read_pixels_bitmap_.setPixelRef(pixels.pixelRef());
-
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&RendererGpuVideoAcceleratorFactories::AsyncReadPixels,
-                   this,
-                   texture_id,
-                   size));
-    base::WaitableEvent* objects[] = {&aborted_waiter_,
-                                      &task_runner_async_waiter_};
-    if (base::WaitableEvent::WaitMany(objects, arraysize(objects)) == 0)
-      return;
-  } else {
-    AsyncReadPixels(texture_id, size);
-    task_runner_async_waiter_.Reset();
-  }
-  read_pixels_bitmap_.setPixelRef(NULL);
-}
-
-void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
+void RendererGpuVideoAcceleratorFactories::ReadPixels(
     uint32 texture_id,
-    const gfx::Size& size) {
+    const gfx::Rect& visible_rect,
+    const SkBitmap& pixels) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context) {
-    task_runner_async_waiter_.Signal();
+  if (!context)
     return;
-  }
 
   gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
 
@@ -268,17 +179,16 @@ void RendererGpuVideoAcceleratorFactories::AsyncReadPixels(
 #else
 #error Unexpected Skia ARGB_8888 layout!
 #endif
-  gles2->ReadPixels(0,
-                    0,
-                    size.width(),
-                    size.height(),
+  gles2->ReadPixels(visible_rect.x(),
+                    visible_rect.y(),
+                    visible_rect.width(),
+                    visible_rect.height(),
                     skia_format,
                     GL_UNSIGNED_BYTE,
-                    read_pixels_bitmap_.pixelRef()->pixels());
+                    pixels.pixelRef()->pixels());
   gles2->DeleteFramebuffers(1, &fb);
   gles2->DeleteTextures(1, &tmp_texture);
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
-  task_runner_async_waiter_.Signal();
 }
 
 base::SharedMemory* RendererGpuVideoAcceleratorFactories::CreateSharedMemory(
@@ -290,30 +200,6 @@ base::SharedMemory* RendererGpuVideoAcceleratorFactories::CreateSharedMemory(
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererGpuVideoAcceleratorFactories::GetTaskRunner() {
   return task_runner_;
-}
-
-void RendererGpuVideoAcceleratorFactories::Abort() { aborted_waiter_.Signal(); }
-
-bool RendererGpuVideoAcceleratorFactories::IsAborted() {
-  return aborted_waiter_.IsSignaled();
-}
-
-scoped_refptr<RendererGpuVideoAcceleratorFactories>
-RendererGpuVideoAcceleratorFactories::Clone() {
-  scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
-      new RendererGpuVideoAcceleratorFactories();
-  factories->task_runner_ = task_runner_;
-  factories->gpu_channel_host_ = gpu_channel_host_;
-  factories->context_provider_ = context_provider_;
-  factories->thread_safe_sender_ = thread_safe_sender_;
-  return factories;
-}
-
-void
-RendererGpuVideoAcceleratorFactories::AsyncDestroyVideoDecodeAccelerator() {
-  // OK to release because Destroy() will delete the VDA instance.
-  if (vda_)
-    vda_.release()->Destroy();
 }
 
 }  // namespace content
