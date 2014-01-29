@@ -870,3 +870,5 @@ crbug.com/338475 crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html
 crbug.com/338475 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
+
+crbug.com/339174 fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Failure ]
