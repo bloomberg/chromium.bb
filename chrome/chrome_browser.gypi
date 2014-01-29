@@ -3291,6 +3291,7 @@
             'browser/custom_home_pages_table_model.cc',
             'browser/download/download_danger_prompt.cc',
             'browser/download/download_shelf.cc',
+            'browser/download/download_shelf_context_menu.cc',
             'browser/drive/drive_switches.cc',
             'browser/external_protocol/external_protocol_observer.cc',
             'browser/feedback/proto/annotations.proto',

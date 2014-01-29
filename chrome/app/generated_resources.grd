@@ -1983,143 +1983,135 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Download Context Menu Items -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
-                 desc="Download context menu: Open when download is finished">
-          Open when &amp;done
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_OPEN"
-                 desc="Download context menu: Open download">
-          &amp;Open
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
-                 desc="Download context menu: Open when download is finished">
-          &amp;Always open files of this type
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_PLATFORM_OPEN"
-        desc="Download context menu: Open the download using the default handler for the platform.">
-          Open with system viewer
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_CANCEL"
-                 desc="Download context menu: Cancel">
-          &amp;Cancel
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
-                 desc="Download context menu: Pause download">
-          &amp;Pause
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
-                 desc="Download context menu: Resume download">
-          &amp;Resume
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_DISCARD"
-                 desc="Download context menu: Discard malicious download">
-          &amp;Discard
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_REPORT"
-                 desc="Download context menu: option to upload a malicious file to Google for analysis">
-          &amp;Report to Google
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_KEEP"
-                 desc="Download context menu: Keep malicious download">
-          &amp;Keep
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
-                 desc="Download context menu: Show information about download scanning">
-          &amp;Learn more
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
-                 desc="Download context menu: Show information about interrupted downloads">
-          &amp;More information
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
-                 desc="In Title Case: Download context menu: Open when download is finished">
-          Open When &amp;Done
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_OPEN"
-                 desc="In Title Case: Download context menu: Open download">
-          &amp;Open
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
-                 desc="In Title Case: Download context menu: Open when download is finished">
-          &amp;Always Open Files of This Type
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_PLATFORM_OPEN"
-                 desc="In Title Case: Download context menu: Open the download using the default handler for the platform.">
-          Open With System Viewer
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_CANCEL"
-                 desc="In Title Case: Download context menu: Cancel">
-          &amp;Cancel
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
-                 desc="In Title Case: Download context menu: Pause download">
-          &amp;Pause
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
-                 desc="In Title Case: Download context menu: Resume download">
-          &amp;Resume
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_DISCARD"
-                 desc="In Title Case: Download context menu: Discard malicious download">
-          &amp;Discard
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_KEEP"
-                 desc="In Title Case: Download context menu: Keep malicious download">
-          &amp;Keep
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_REPORT"
-                 desc="In Title Case: Download context menu: option to upload a malicious file to Google for analysis">
-          &amp;Report to Google
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
-                 desc="In Title Case: Download context menu: Show information about download scanning">
-          &amp;Learn More
-        </message>
-        <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
-                 desc="In Title Case: Download context menu: Show information about interrupted downloads">
-          &amp;More Information
-        </message>
-      </if>
-      <!-- GRIT doesn't support nesting <if>...</if> blocks, so these can't -->
-      <!-- go within the above titlecase checks, instead markup must use    -->
-      <!-- combined tests for all cases.                                    -->
-      <!-- NOTE: the last two (OSX cases) are the same English values,      -->
-      <!--       but two strings are needed in case some other language     -->
-      <!--       needs a difference for Title Case support.                 -->
-      <if expr="not is_macosx and not pp_ifdef('use_titlecase')">
-        <!-- !Mac & Sentence case -->
-        <message name="IDS_DOWNLOAD_MENU_SHOW"
-                 desc="Show the file in file explorer, 'Show in folder' item"
-              meaning="'show in folder' on non Mac in Sentence case">
-          &amp;Show in folder
-        </message>
-      </if>
-      <if expr="not is_macosx and pp_ifdef('use_titlecase')">
-        <!-- !Mac & Title Case -->
-        <message name="IDS_DOWNLOAD_MENU_SHOW"
-                 desc="In Title Case: Show the file in file explorer, 'Show in folder' item"
-              meaning="'show in folder' on non Mac in Title Case">
-          &amp;Show in Folder
-        </message>
-      </if>
-      <if expr="is_macosx and not pp_ifdef('use_titlecase')">
-        <!-- Mac & Sentence case -->
-        <message name="IDS_DOWNLOAD_MENU_SHOW"
-                 desc="Mac: Show the file in the Finder, 'Show in Finder' item"
-              meaning="'show in Finder' on Mac in Sentence case">
-          &amp;Show in Finder
-        </message>
-      </if>
-      <if expr="is_macosx and pp_ifdef('use_titlecase')">
-        <!-- Mac & Title Case -->
-        <message name="IDS_DOWNLOAD_MENU_SHOW"
-                 desc="In Title Case: Mac: Show the file in the Finder, 'Show in Finder' item"
-              meaning="'show in Finder' on Mac in Title Case">
-          &amp;Show in Finder
-        </message>
+      <if expr="not is_android">
+        <if expr="not pp_ifdef('use_titlecase')">
+          <if expr="is_macosx">
+            <message name="IDS_DOWNLOAD_MENU_SHOW"
+                  desc="Mac: Show the file in the Finder, 'Show in Finder' item"
+                  meaning="'show in Finder' on Mac in Sentence case">
+              &amp;Show in Finder
+            </message>
+          </if>
+          <if expr="not is_macosx">
+            <message name="IDS_DOWNLOAD_MENU_SHOW"
+                     desc="Show the file in file explorer, 'Show in folder' item"
+                  meaning="'show in folder' on non Mac in Sentence case">
+              &amp;Show in folder
+            </message>
+          </if>
+          <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
+                   desc="Download context menu: Open when download is finished">
+            Open when &amp;done
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_OPEN"
+                   desc="Download context menu: Open download">
+            &amp;Open
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
+                   desc="Download context menu: Open when download is finished">
+            &amp;Always open files of this type
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_PLATFORM_OPEN"
+          desc="Download context menu: Open the download using the default handler for the platform.">
+            Open with system viewer
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_CANCEL"
+                   desc="Download context menu: Cancel">
+            &amp;Cancel
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
+                   desc="Download context menu: Pause download">
+            &amp;Pause
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
+                   desc="Download context menu: Resume download">
+            &amp;Resume
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_DISCARD"
+                   desc="Download context menu: Discard malicious download">
+            &amp;Discard
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_REPORT"
+                   desc="Download context menu: option to upload a malicious file to Google for analysis">
+            &amp;Report to Google
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_KEEP"
+                   desc="Download context menu: Keep malicious download">
+            &amp;Keep
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
+                   desc="Download context menu: Show information about download scanning">
+            &amp;Learn more
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
+                   desc="Download context menu: Show information about interrupted downloads">
+            &amp;More information
+          </message>
+        </if>
+        <if expr="pp_ifdef('use_titlecase')">
+           <if expr="is_macosx">
+            <message name="IDS_DOWNLOAD_MENU_SHOW"
+                     desc="In Title Case: Mac: Show the file in the Finder, 'Show in Finder' item"
+                  meaning="'show in Finder' on Mac in Title Case">
+              &amp;Show in Finder
+            </message>
+          </if>
+           <if expr="not is_macosx">
+            <message name="IDS_DOWNLOAD_MENU_SHOW"
+                     desc="In Title Case: Show the file in file explorer, 'Show in folder' item"
+                  meaning="'show in folder' on non Mac in Title Case">
+              &amp;Show in Folder
+            </message>
+          </if>
+          <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
+                   desc="In Title Case: Download context menu: Open when download is finished">
+            Open When &amp;Done
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_OPEN"
+                   desc="In Title Case: Download context menu: Open download">
+            &amp;Open
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
+                   desc="In Title Case: Download context menu: Open when download is finished">
+            &amp;Always Open Files of This Type
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_PLATFORM_OPEN"
+                   desc="In Title Case: Download context menu: Open the download using the default handler for the platform.">
+            Open With System Viewer
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_CANCEL"
+                   desc="In Title Case: Download context menu: Cancel">
+            &amp;Cancel
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
+                   desc="In Title Case: Download context menu: Pause download">
+            &amp;Pause
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
+                   desc="In Title Case: Download context menu: Resume download">
+            &amp;Resume
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_DISCARD"
+                   desc="In Title Case: Download context menu: Discard malicious download">
+            &amp;Discard
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_KEEP"
+                   desc="In Title Case: Download context menu: Keep malicious download">
+            &amp;Keep
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_REPORT"
+                   desc="In Title Case: Download context menu: option to upload a malicious file to Google for analysis">
+            &amp;Report to Google
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_SCANNING"
+                   desc="In Title Case: Download context menu: Show information about download scanning">
+            &amp;Learn More
+          </message>
+          <message name="IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED"
+                   desc="In Title Case: Download context menu: Show information about interrupted downloads">
+            &amp;More Information
+          </message>
+        </if>
       </if>
 
       <!-- Remove in-progress downloads confirmation dialog -->
