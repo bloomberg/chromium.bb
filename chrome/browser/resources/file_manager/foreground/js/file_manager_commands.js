@@ -377,10 +377,12 @@ CommandHandler.COMMANDS_['unmount'] = {
    * @param {Event} event Command event.
    */
   canExecute: function(event, fileManager) {
-    var root = CommandUtil.getCommandEntry(this.fileManager_.navigationList);
-    var location =
-        root && this.fileManager_.volumeManager.getLocationInfo(root);
-    var rootType = location && location.isRootEntry && location.rootType;
+    var root = CommandUtil.getCommandEntry(event.target);
+    if (!root)
+      return;
+    var locationInfo = this.fileManager_.volumeManager.getLocationInfo(root);
+    var rootType =
+        locationInfo && locationInfo.isRootEntry && locationInfo.rootType;
 
     event.canExecute = (rootType == RootType.ARCHIVE ||
                         rootType == RootType.REMOVABLE);
