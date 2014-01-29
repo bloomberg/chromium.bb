@@ -188,7 +188,7 @@ void ImageDocument::createDocumentStructure()
     RefPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
     RefPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
     meta->setAttribute(nameAttr, "viewport");
-    meta->setAttribute(contentAttr, "width=device-width");
+    meta->setAttribute(contentAttr, "width=device-width, minimum-scale=0.1");
     head->appendChild(meta);
 
     RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);

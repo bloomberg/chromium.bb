@@ -12,7 +12,7 @@
                 var metaElement = standaloneImageDocument.querySelector("meta");
 
                 if (metaElement && metaElement.name == "viewport" &&
-                    metaElement.content == "width=device-width") {
+                    metaElement.content == "width=device-width, minimum-scale=0.1") {
                     document.getElementById("log").textContent = "PASS";
                 }
             }
