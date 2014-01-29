@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -135,6 +137,19 @@ class FormStructure {
   // at least one field.
   void ParseFieldTypesFromAutocompleteAttributes(bool* found_types,
                                                  bool* found_sections);
+
+  // Determines whether |type| and |field| match.
+  typedef base::Callback<bool(ServerFieldType type,
+                              const AutofillField& field)>
+      InputFieldComparator;
+
+  // Fills in |fields_| that match |types| (via |matches|) with info from
+  // |get_info|.
+  bool FillFields(
+      const std::vector<ServerFieldType>& types,
+      const InputFieldComparator& matches,
+      const base::Callback<base::string16(const AutofillType&)>& get_info,
+      const std::string& app_locale);
 
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);

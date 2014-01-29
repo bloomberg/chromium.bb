@@ -3353,8 +3353,6 @@
           'sources!': [
             'browser/ui/autofill/autofill_dialog_common.cc',
             'browser/ui/autofill/autofill_dialog_common.h',
-            'browser/ui/autofill/data_model_wrapper.cc',
-            'browser/ui/autofill/data_model_wrapper.h',
           ],
         }],
         ['enable_autofill_dialog==1 and OS!="android" and OS!="ios"', {
@@ -3371,6 +3369,8 @@
             'browser/ui/autofill/autofill_dialog_view.h',
             'browser/ui/autofill/autofill_dialog_view.cc',
             'browser/ui/autofill/autofill_dialog_view_delegate.h',
+            'browser/ui/autofill/data_model_wrapper.cc',
+            'browser/ui/autofill/data_model_wrapper.h',
           ],
         }],
         ['enable_google_now==0', {

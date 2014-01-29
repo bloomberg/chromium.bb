@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,13 +20,10 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
-
-#if !defined(OS_ANDROID)
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
-#endif
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 namespace autofill {
 
@@ -52,7 +50,6 @@ gfx::Image DataModelWrapper::GetIcon() {
   return gfx::Image();
 }
 
-#if !defined(OS_ANDROID)
 bool DataModelWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -103,38 +100,19 @@ bool DataModelWrapper::GetDisplayText(
 
   return true;
 }
-#endif
 
 bool DataModelWrapper::FillFormStructure(
-    const DetailInputs& inputs,
-    const InputFieldComparator& compare,
+    const std::vector<ServerFieldType>& types,
+    const FormStructure::InputFieldComparator& compare,
     FormStructure* form_structure) const {
-  bool filled_something = false;
-  for (size_t i = 0; i < form_structure->field_count(); ++i) {
-    AutofillField* field = form_structure->field(i);
-    for (size_t j = 0; j < inputs.size(); ++j) {
-      if (compare.Run(inputs[j].type, *field)) {
-        AutofillField::FillFormField(*field, GetInfo(field->Type()),
-                                     g_browser_process->GetApplicationLocale(),
-                                     field);
-        filled_something = true;
-        break;
-      }
-    }
-  }
-  return filled_something;
+  return form_structure->FillFields(
+      types,
+      compare,
+      base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)),
+      g_browser_process->GetApplicationLocale());
 }
 
 DataModelWrapper::DataModelWrapper() {}
-
-// EmptyDataModelWrapper
-
-EmptyDataModelWrapper::EmptyDataModelWrapper() {}
-EmptyDataModelWrapper::~EmptyDataModelWrapper() {}
-
-base::string16 EmptyDataModelWrapper::GetInfo(const AutofillType& type) const {
-  return base::string16();
-}
 
 // AutofillProfileWrapper
 
@@ -237,7 +215,6 @@ gfx::Image AutofillCreditCardWrapper::GetIcon() {
   return rb.GetImageNamed(CreditCard::IconResourceId(card_->type()));
 }
 
-#if !defined(OS_ANDROID)
 bool AutofillCreditCardWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -247,7 +224,6 @@ bool AutofillCreditCardWrapper::GetDisplayText(
   *vertically_compact = *horizontally_compact = card_->TypeAndLastFourDigits();
   return true;
 }
-#endif
 
 // WalletAddressWrapper
 
@@ -272,7 +248,6 @@ base::string16 WalletAddressWrapper::GetInfoForDisplay(const AutofillType& type)
   return DataModelWrapper::GetInfoForDisplay(type);
 }
 
-#if !defined(OS_ANDROID)
 bool WalletAddressWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -284,7 +259,6 @@ bool WalletAddressWrapper::GetDisplayText(
   return DataModelWrapper::GetDisplayText(vertically_compact,
                                           horizontally_compact);
 }
-#endif
 
 // WalletInstrumentWrapper
 
@@ -318,7 +292,6 @@ gfx::Image WalletInstrumentWrapper::GetIcon() {
   return instrument_->CardIcon();
 }
 
-#if !defined(OS_ANDROID)
 bool WalletInstrumentWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -337,7 +310,6 @@ bool WalletInstrumentWrapper::GetDisplayText(
   *horizontally_compact = line1 + *horizontally_compact;
   return true;
 }
-#endif
 
 // FullWalletBillingWrapper
 
@@ -351,17 +323,12 @@ FullWalletBillingWrapper::~FullWalletBillingWrapper() {}
 
 base::string16 FullWalletBillingWrapper::GetInfo(const AutofillType& type)
     const {
-  if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
-    return MonthComboboxModel::FormatMonth(full_wallet_->expiration_month());
-
-  if (type.group() == CREDIT_CARD)
-    return full_wallet_->GetInfo(type);
-
-  return full_wallet_->billing_address()->GetInfo(
-      type, g_browser_process->GetApplicationLocale());
+  return full_wallet_->GetInfo(
+      g_browser_process->GetApplicationLocale(),
+      AutofillType(AutofillType::GetEquivalentBillingFieldType(
+          type.GetStorableType())));
 }
 
-#if !defined(OS_ANDROID)
 bool FullWalletBillingWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -372,7 +339,6 @@ bool FullWalletBillingWrapper::GetDisplayText(
   return DataModelWrapper::GetDisplayText(vertically_compact,
                                           horizontally_compact);
 }
-#endif
 
 // FullWalletShippingWrapper
 

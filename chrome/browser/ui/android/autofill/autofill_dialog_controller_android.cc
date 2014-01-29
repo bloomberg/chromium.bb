@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/android/autofill/autofill_dialog_result.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
-#include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
@@ -49,6 +48,8 @@ namespace autofill {
 
 namespace {
 
+using wallet::FullWallet;
+
 // Keys in kAutofillDialogDefaults pref dictionary (do not change these values).
 const char kLastUsedAccountName[] = "last_used_account_name";
 const char kLastUsedChoiceIsAutofill[] = "last_used_choice_is_autofill";
@@ -56,42 +57,38 @@ const char kLastUsedBillingAddressGuid[] = "last_used_billing";
 const char kLastUsedShippingAddressGuid[] = "last_used_shipping";
 const char kLastUsedCreditCardGuid[] = "last_used_card";
 
-scoped_ptr<DataModelWrapper> CreateWrapper(
-    DialogSection section, wallet::FullWallet* full_wallet) {
-  if (section == SECTION_CC_BILLING) {
-    if (!full_wallet->billing_address())
-      return scoped_ptr<DataModelWrapper>();
-
-    return scoped_ptr<DataModelWrapper>(
-        new FullWalletBillingWrapper(full_wallet));
-  }
-  if (section == SECTION_SHIPPING) {
-    if (!full_wallet->shipping_address())
-      return scoped_ptr<DataModelWrapper>();
-
-    return scoped_ptr<DataModelWrapper>(
-        new FullWalletShippingWrapper(full_wallet));
-  }
-  NOTREACHED();
-  return scoped_ptr<DataModelWrapper>();
+base::string16 NullGetInfo(const AutofillType& type) {
+  return base::string16();
 }
 
 void FillOutputForSectionWithComparator(
     DialogSection section,
     const DetailInputs& inputs,
-    const InputFieldComparator& compare,
+    const FormStructure::InputFieldComparator& compare,
     FormStructure& form_structure,
-    wallet::FullWallet* full_wallet,
+    FullWallet* full_wallet,
     const base::string16& email_address) {
-  scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section, full_wallet);
-  if (wrapper)
-    wrapper->FillFormStructure(inputs, compare, &form_structure);
+  if ((section == SECTION_CC_BILLING && !full_wallet->billing_address()) ||
+      (section == SECTION_SHIPPING && !full_wallet->shipping_address())) {
+    return;
+  }
+
+  base::Callback<base::string16(const AutofillType&)> get_info =
+      base::Bind(&FullWallet::GetInfo,
+                 base::Unretained(full_wallet),
+                 g_browser_process->GetApplicationLocale());
+
+  std::vector<ServerFieldType> types = common::TypesFromInputs(inputs);
+  form_structure.FillFields(types,
+                            compare,
+                            get_info,
+                            g_browser_process->GetApplicationLocale());
 }
 
 void FillOutputForSection(
     DialogSection section,
     FormStructure& form_structure,
-    wallet::FullWallet* full_wallet,
+    FullWallet* full_wallet,
     const base::string16& email_address) {
   DetailInputs inputs;
   common::BuildInputsForSection(section, "US", &inputs);
@@ -252,11 +249,11 @@ void AutofillDialogControllerAndroid::Show() {
   {
     DetailInputs inputs;
     common::BuildInputsForSection(SECTION_SHIPPING, "US", &inputs);
-    EmptyDataModelWrapper empty_wrapper;
-    request_shipping_address = empty_wrapper.FillFormStructure(
-        inputs,
+    request_shipping_address = form_structure_.FillFields(
+        common::TypesFromInputs(inputs),
         base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
-        &form_structure_);
+        base::Bind(NullGetInfo),
+        g_browser_process->GetApplicationLocale());
   }
 
   const bool incognito_mode = profile_->IsOffTheRecord();
@@ -353,7 +350,7 @@ void AutofillDialogControllerAndroid::DialogContinue(
   const std::string last_used_card =
       base::android::ConvertJavaStringToUTF8(env, jlast_used_card);
 
-  scoped_ptr<wallet::FullWallet> full_wallet =
+  scoped_ptr<FullWallet> full_wallet =
       AutofillDialogResult::ConvertFromJava(env, wallet);
   FillOutputForSection(
       SECTION_CC_BILLING, form_structure_, full_wallet.get(), email);

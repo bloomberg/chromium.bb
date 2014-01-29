@@ -141,6 +141,10 @@ class ScopedViewUpdates {
   DISALLOW_COPY_AND_ASSIGN(ScopedViewUpdates);
 };
 
+base::string16 NullGetInfo(const AutofillType& type) {
+  return base::string16();
+}
+
 // Returns true if |input| should be used to fill a site-requested |field| which
 // is notated with a "shipping" tag, for use when the user has decided to use
 // the billing address as the shipping address.
@@ -599,11 +603,11 @@ void AutofillDialogControllerImpl::Show() {
 
   // Test whether we need to show the shipping section. If filling that section
   // would be a no-op, don't show it.
-  const DetailInputs& inputs = RequestedFieldsForSection(SECTION_SHIPPING);
-  cares_about_shipping_ = EmptyDataModelWrapper().FillFormStructure(
-      inputs,
+  cares_about_shipping_ = form_structure_.FillFields(
+      RequestedTypesForSection(SECTION_SHIPPING),
       base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
-      &form_structure_);
+      base::Bind(NullGetInfo),
+      g_browser_process->GetApplicationLocale());
 
   account_chooser_model_.reset(
       new AccountChooserModel(this,
@@ -787,8 +791,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
     card_scrambling_delay_.Stop();
     card_scrambling_refresher_.Stop();
 
-    base::string16 cc_number =
-        full_wallet_->GetInfo(AutofillType(CREDIT_CARD_NUMBER));
+    base::string16 cc_number = base::ASCIIToUTF16(full_wallet_->GetPan());
     DCHECK_GE(cc_number.size(), 4U);
     state.image = GetGeneratedCardImage(
         base::ASCIIToUTF16("XXXX XXXX XXXX ") +
@@ -1888,12 +1891,8 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
                                            &popup_icons,
                                            &popup_guids_);
   } else {
-    std::vector<ServerFieldType> field_types;
-    const DetailInputs& inputs = RequestedFieldsForSection(section);
-    for (DetailInputs::const_iterator iter = inputs.begin();
-         iter != inputs.end(); ++iter) {
-      field_types.push_back(iter->type);
-    }
+    std::vector<ServerFieldType> field_types =
+        RequestedTypesForSection(section);
     GetManager()->GetProfileSuggestions(AutofillType(type),
                                         field_contents,
                                         false,
@@ -2906,18 +2905,19 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
 void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     DialogSection section,
-    const InputFieldComparator& compare) {
+    const FormStructure::InputFieldComparator& compare) {
   if (!SectionIsActive(section))
     return;
 
   DetailInputs inputs;
   std::string country_code = CountryCodeForSection(section);
   common::BuildInputsForSection(section, country_code, &inputs);
+  std::vector<ServerFieldType> types = common::TypesFromInputs(inputs);
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper) {
     // Only fill in data that is associated with this section.
-    wrapper->FillFormStructure(inputs, compare, &form_structure_);
+    wrapper->FillFormStructure(types, compare, &form_structure_);
 
     // CVC needs special-casing because the CreditCard class doesn't store or
     // handle them. This isn't necessary when filling the combined CC and
@@ -2955,7 +2955,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       }
 
       AutofillCreditCardWrapper card_wrapper(&card);
-      card_wrapper.FillFormStructure(inputs, compare, &form_structure_);
+      card_wrapper.FillFormStructure(types, compare, &form_structure_);
 
       // Again, CVC needs special-casing. Fill it in directly from |output|.
       SetOutputForFieldsOfType(
@@ -2972,7 +2972,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       }
 
       AutofillProfileWrapper profile_wrapper(&profile);
-      profile_wrapper.FillFormStructure(inputs, compare, &form_structure_);
+      profile_wrapper.FillFormStructure(types, compare, &form_structure_);
     }
   }
 }
@@ -3068,6 +3068,11 @@ CountryComboboxModel* AutofillDialogControllerImpl::
 DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
     DialogSection section) {
   return const_cast<DetailInputs*>(&RequestedFieldsForSection(section));
+}
+
+std::vector<ServerFieldType> AutofillDialogControllerImpl::
+    RequestedTypesForSection(DialogSection section) const {
+  return common::TypesFromInputs(RequestedFieldsForSection(section));
 }
 
 std::string AutofillDialogControllerImpl::CountryCodeForSection(

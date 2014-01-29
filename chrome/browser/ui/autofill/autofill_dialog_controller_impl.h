@@ -401,8 +401,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   void FillOutputForSection(DialogSection section);
   // As above, but uses |compare| to determine whether a DetailInput matches
   // a field. Saves any new Autofill data to the PersonalDataManager.
-  void FillOutputForSectionWithComparator(DialogSection section,
-                                          const InputFieldComparator& compare);
+  void FillOutputForSectionWithComparator(
+      DialogSection section,
+      const FormStructure::InputFieldComparator& compare);
 
   // Returns whether |form_structure|_| has any fields that match the fieldset
   // represented by |section|.
@@ -460,6 +461,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
+
+  // Returns just the |type| attributes of RequestedFieldsForSection(section).
+  std::vector<ServerFieldType> RequestedTypesForSection(DialogSection section)
+      const;
 
   // Returns the country code (e.g. "US") for |section|.
   std::string CountryCodeForSection(DialogSection section);

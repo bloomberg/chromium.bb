@@ -1150,6 +1150,27 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
   }
 }
 
+bool FormStructure::FillFields(
+    const std::vector<ServerFieldType>& types,
+    const InputFieldComparator& matches,
+    const base::Callback<base::string16(const AutofillType&)>& get_info,
+    const std::string& app_locale) {
+  bool filled_something = false;
+  for (size_t i = 0; i < field_count(); ++i) {
+    for (size_t j = 0; j < types.size(); ++j) {
+      if (matches.Run(types[j], *field(i))) {
+        AutofillField::FillFormField(*field(i),
+                                     get_info.Run(field(i)->Type()),
+                                     app_locale,
+                                     field(i));
+        filled_something = true;
+        break;
+      }
+    }
+  }
+  return filled_something;
+}
+
 void FormStructure::IdentifySections(bool has_author_specified_sections) {
   if (fields_.empty())
     return;

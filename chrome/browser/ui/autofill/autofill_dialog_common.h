@@ -60,6 +60,9 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
 // the country: http://crbug.com/247518
 base::string16 GetHardcodedValueForType(ServerFieldType type);
 
+// Gets just the |type| attributes from each DetailInput.
+std::vector<ServerFieldType> TypesFromInputs(const DetailInputs& inputs);
+
 }  // namespace common
 }  // namespace autofill
 

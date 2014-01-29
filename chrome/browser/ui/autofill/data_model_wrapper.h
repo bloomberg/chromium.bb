@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_DATA_MODEL_WRAPPER_H_
 #define CHROME_BROWSER_UI_AUTOFILL_DATA_MODEL_WRAPPER_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_structure.h"
 
 namespace gfx {
 class Image;
@@ -50,7 +53,6 @@ class DataModelWrapper {
   // Returns the icon, if any, that represents this model.
   virtual gfx::Image GetIcon();
 
-#if !defined(OS_ANDROID)
   // Gets text to display to the user to summarize this data source. The
   // default implementation assumes this is an address. Both params are required
   // to be non-NULL and will be filled in with text that is vertically compact
@@ -60,15 +62,14 @@ class DataModelWrapper {
   // complete and valid.
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact);
-#endif
 
   // Fills in |form_structure| with the data that this model contains. |inputs|
   // and |comparator| are used to determine whether each field in the
   // FormStructure should be filled in or left alone. Returns whether any fields
   // in |form_structure| were found to be matching.
   bool FillFormStructure(
-      const DetailInputs& inputs,
-      const InputFieldComparator& compare,
+      const std::vector<ServerFieldType>& types,
+      const FormStructure::InputFieldComparator& compare,
       FormStructure* form_structure) const;
 
  protected:
@@ -76,19 +77,6 @@ class DataModelWrapper {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataModelWrapper);
-};
-
-// A DataModelWrapper that does not hold data and does nothing when told to
-// fill in a form.
-class EmptyDataModelWrapper : public DataModelWrapper {
- public:
-  EmptyDataModelWrapper();
-  virtual ~EmptyDataModelWrapper();
-
-  virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
-
- protected:
-  DISALLOW_COPY_AND_ASSIGN(EmptyDataModelWrapper);
 };
 
 // A DataModelWrapper for Autofill profiles.
@@ -140,10 +128,8 @@ class AutofillCreditCardWrapper : public DataModelWrapper {
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
-#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
-#endif
 
  private:
   const CreditCard* card_;
@@ -160,10 +146,8 @@ class WalletAddressWrapper : public DataModelWrapper {
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
       OVERRIDE;
-#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
-#endif
 
  private:
   const wallet::Address* address_;
@@ -182,10 +166,8 @@ class WalletInstrumentWrapper : public DataModelWrapper {
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
       OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
-#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
-#endif
 
  private:
   const wallet::WalletItems::MaskedInstrument* instrument_;
@@ -200,10 +182,8 @@ class FullWalletBillingWrapper : public DataModelWrapper {
   virtual ~FullWalletBillingWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
-#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
-#endif
 
  private:
   wallet::FullWallet* full_wallet_;

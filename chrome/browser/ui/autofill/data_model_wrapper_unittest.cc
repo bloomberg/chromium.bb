@@ -30,7 +30,6 @@ TEST(AutofillCreditCardWrapperTest, GetInfoCreditCardExpMonth) {
   }
 }
 
-#if !defined(OS_ANDROID)
 TEST(AutofillCreditCardWrapperTest, GetDisplayTextEmptyWhenExpired) {
   CreditCard card;
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
@@ -92,7 +91,6 @@ TEST(DataModelWrapperTest, GetDisplayTextEmptyWithoutPhone) {
             address_wrapper.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
   EXPECT_FALSE(address_wrapper.GetDisplayText(&unused, &unused2));
 }
-#endif
 
 TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth) {
   scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument(

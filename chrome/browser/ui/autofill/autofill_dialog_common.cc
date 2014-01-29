@@ -276,5 +276,13 @@ base::string16 GetHardcodedValueForType(ServerFieldType type) {
   return base::string16();
 }
 
+std::vector<ServerFieldType> TypesFromInputs(const DetailInputs& inputs) {
+  std::vector<ServerFieldType> types;
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    types.push_back(inputs[i].type);
+  }
+  return types;
+}
+
 }  // namespace common
 }  // namespace autofill

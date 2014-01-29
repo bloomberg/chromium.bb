@@ -52,11 +52,6 @@ struct DetailInput {
   base::string16 initial_value;
 };
 
-// Determines whether |type| and |field| match.
-typedef base::Callback<bool(ServerFieldType type,
-                            const AutofillField& field)>
-    InputFieldComparator;
-
 // Sections of the dialog --- all fields that may be shown to the user fit under
 // one of these sections.
 enum DialogSection {
