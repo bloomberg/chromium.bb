@@ -65,6 +65,9 @@ public:
     static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, WebCore::ExecutionContext&, PassOwnPtr<WebServiceWorkerContextClient>);
     virtual ~ServiceWorkerGlobalScopeProxy();
 
+    // WebServiceWorkerContextProxy overrides:
+    virtual void dispatchInstallEvent() OVERRIDE;
+
     // WorkerReportingProxy overrides:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
     virtual void reportConsoleMessage(WebCore::MessageSource, WebCore::MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;

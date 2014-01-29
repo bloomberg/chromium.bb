@@ -33,7 +33,11 @@
 
 #include "WebEmbeddedWorkerImpl.h"
 #include "WebServiceWorkerContextClient.h"
+#include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/events/ThreadLocalEventNames.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "modules/serviceworkers/InstallEvent.h"
 #include "platform/NotImplemented.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
@@ -49,6 +53,14 @@ PassOwnPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 {
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent()
+{
+    ASSERT(m_workerGlobalScope);
+    // FIXME: We need to asynchronously call back to the client when all
+    // waitUntil is resolved in the event handler.
+    m_workerGlobalScope->dispatchEvent(InstallEvent::create(EventTypeNames::install, EventInit()));
 }
 
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)

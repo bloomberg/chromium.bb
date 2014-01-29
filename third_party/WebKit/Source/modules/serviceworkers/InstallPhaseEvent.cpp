@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerContextProxy_h
-#define WebServiceWorkerContextProxy_h
+#include "config.h"
+#include "InstallPhaseEvent.h"
 
-namespace blink {
+#include "platform/NotImplemented.h"
 
-class WebString;
+namespace WebCore {
 
-// A proxy interface to talk to the worker's GlobalScope implementation.
-// All methods of this class must be called on the worker thread.
-class WebServiceWorkerContextProxy {
-public:
-    virtual ~WebServiceWorkerContextProxy() { }
+PassRefPtr<InstallPhaseEvent> InstallPhaseEvent::create()
+{
+    return adoptRef(new InstallPhaseEvent());
+}
 
-    // FIXME: This needs to pass the active service worker info.
-    virtual void dispatchInstallEvent() = 0;
+void InstallPhaseEvent::waitUntil(const ScriptValue&)
+{
+    // FIXME: implement.
+    notImplemented();
+}
 
-    virtual void resumeWorkerContext() { }
-    virtual void attachDevTools() { }
-    virtual void reattachDevTools(const WebString& savedState) { }
-    virtual void detachDevTools() { }
-    virtual void dispatchDevToolsMessage(const WebString&) { }
-};
+InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer)
+    : Event(type, initializer)
+{
+}
 
-} // namespace blink
-
-#endif // WebServiceWorkerContextProxy_h
+} // namespace WebCore

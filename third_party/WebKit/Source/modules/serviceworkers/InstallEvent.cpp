@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerContextProxy_h
-#define WebServiceWorkerContextProxy_h
+#include "config.h"
+#include "InstallEvent.h"
 
-namespace blink {
+#include "bindings/v8/ScriptPromiseResolver.h"
+#include "core/events/ThreadLocalEventNames.h"
+#include "platform/NotImplemented.h"
+#include "wtf/RefPtr.h"
 
-class WebString;
+namespace WebCore {
 
-// A proxy interface to talk to the worker's GlobalScope implementation.
-// All methods of this class must be called on the worker thread.
-class WebServiceWorkerContextProxy {
-public:
-    virtual ~WebServiceWorkerContextProxy() { }
+PassRefPtr<InstallEvent> InstallEvent::create()
+{
+    return adoptRef(new InstallEvent());
+}
 
-    // FIXME: This needs to pass the active service worker info.
-    virtual void dispatchInstallEvent() = 0;
+PassRefPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer)
+{
+    return adoptRef(new InstallEvent(type, initializer));
+}
 
-    virtual void resumeWorkerContext() { }
-    virtual void attachDevTools() { }
-    virtual void reattachDevTools(const WebString& savedState) { }
-    virtual void detachDevTools() { }
-    virtual void dispatchDevToolsMessage(const WebString&) { }
-};
+void InstallEvent::replace()
+{
+    // FIXME: implement.
+    notImplemented();
+}
 
-} // namespace blink
+ScriptPromise InstallEvent::reloadAll(ExecutionContext* context)
+{
+    // FIXME: implement.
+    notImplemented();
 
-#endif // WebServiceWorkerContextProxy_h
+    // For now this just returns a promise which is already rejected.
+    ScriptPromise promise = ScriptPromise::createPending(context);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, context);
+    resolver->reject(ScriptValue::createNull());
+    return promise;
+}
+
+const AtomicString& InstallEvent::interfaceName() const
+{
+    return EventNames::InstallEvent;
+}
+
+InstallEvent::InstallEvent()
+{
+    ScriptWrappable::init(this);
+}
+
+InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer)
+    : InstallPhaseEvent(type, initializer)
+{
+    ScriptWrappable::init(this);
+}
+
+} // namespace WebCore
