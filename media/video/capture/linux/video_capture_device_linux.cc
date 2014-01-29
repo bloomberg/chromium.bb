@@ -607,7 +607,7 @@ void VideoCaptureDeviceLinux::SetErrorState(const std::string& reason) {
          v4l2_thread_.message_loop() == base::MessageLoop::current());
   DVLOG(1) << reason;
   state_ = kError;
-  client_->OnError(reason);
+  client_->OnError();
 }
 
 }  // namespace media

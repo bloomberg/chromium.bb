@@ -590,10 +590,10 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   return !capabilities_.empty();
 }
 
-void VideoCaptureDeviceWin::SetErrorState(const std::string& reason) {
+void VideoCaptureDeviceWin::SetErrorState(const char* reason) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << reason;
   state_ = kError;
-  client_->OnError(reason);
+  client_->OnError();
 }
 }  // namespace media

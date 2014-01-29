@@ -9,7 +9,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_co_mem.h"
@@ -433,10 +432,9 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
 }
 
 void VideoCaptureDeviceMFWin::OnError(HRESULT hr) {
-  std::string log_msg = base::StringPrintf("VideoCaptureDeviceMFWin: %x", hr);
-  DLOG(ERROR) << log_msg;
+  DLOG(ERROR) << "VideoCaptureDeviceMFWin: " << std::hex << hr;
   if (client_.get())
-    client_->OnError(log_msg);
+    client_->OnError();
 }
 
 }  // namespace media

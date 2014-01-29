@@ -923,8 +923,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(ENABLE_WEBRTC)
   WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
       new WebRtcLoggingHandlerHost(profile);
-  host->SetWebRtcLogMessageCallback(base::Bind(
-      &WebRtcLoggingHandlerHost::LogMessage, webrtc_logging_handler_host));
   host->AddFilter(webrtc_logging_handler_host);
   host->SetUserData(host, new base::UserDataAdapter<WebRtcLoggingHandlerHost>(
       webrtc_logging_handler_host));

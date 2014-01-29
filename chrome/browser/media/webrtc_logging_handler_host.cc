@@ -203,14 +203,6 @@ void WebRtcLoggingHandlerHost::DiscardLog(const GenericDoneCallback& callback) {
   FireGenericDoneCallback(&discard_callback, true, "");
 }
 
-void WebRtcLoggingHandlerHost::LogMessage(const std::string& message) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &WebRtcLoggingHandlerHost::AddLogMessageFromBrowser, this, message));
-}
-
 void WebRtcLoggingHandlerHost::OnChannelClosing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (logging_state_ == STARTED || logging_state_ == STOPPED) {
@@ -240,13 +232,6 @@ bool WebRtcLoggingHandlerHost::OnMessageReceived(const IPC::Message& message,
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
-}
-
-void WebRtcLoggingHandlerHost::AddLogMessageFromBrowser(
-    const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (logging_state_ == STARTED)
-    LogToCircularBuffer(message);
 }
 
 void WebRtcLoggingHandlerHost::OnAddLogMessage(const std::string& message) {

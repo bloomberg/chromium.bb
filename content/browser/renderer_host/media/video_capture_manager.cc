@@ -213,7 +213,7 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
   }
 
   if (!video_capture_device) {
-    device_client->OnError("Could not create capture device");
+    device_client->OnError();
     return;
   }
 

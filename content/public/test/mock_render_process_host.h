@@ -78,8 +78,6 @@ class MockRenderProcessHost : public RenderProcessHost {
 #if defined(ENABLE_WEBRTC)
   virtual void EnableAecDump(const base::FilePath& file) OVERRIDE;
   virtual void DisableAecDump() OVERRIDE;
-  virtual void SetWebRtcLogMessageCallback(
-      base::Callback<void(const std::string&)> callback) OVERRIDE;
 #endif
 
   // IPC::Sender via RenderProcessHost.

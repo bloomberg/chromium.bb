@@ -176,8 +176,6 @@ void AudioInputRendererHost::DoSendRecordingMessage(
 void AudioInputRendererHost::DoHandleError(
     media::AudioInputController* controller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  MediaStreamManager::SendMessageToNativeLog(
-      "The AudioInputController signalled an error.");
 
   AudioEntry* entry = LookupByController(controller);
   if (!entry)
@@ -312,8 +310,6 @@ void AudioInputRendererHost::OnCreateStream(
   entry->stream_id = stream_id;
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
 
-  MediaStreamManager::SendMessageToNativeLog(
-      "Audio input stream created successfully.");
   audio_log_->OnCreated(stream_id, audio_params, device_id, std::string());
 }
 
@@ -353,8 +349,6 @@ void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
 }
 
 void AudioInputRendererHost::SendErrorMessage(int stream_id) {
-  MediaStreamManager::SendMessageToNativeLog(
-      "An error occurred in AudioInputRendererHost.");
   Send(new AudioInputMsg_NotifyStreamStateChanged(
       stream_id, media::AudioInputIPCDelegate::kError));
 }

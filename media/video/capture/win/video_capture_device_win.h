@@ -59,7 +59,7 @@ class VideoCaptureDeviceWin
   virtual void FrameReceived(const uint8* buffer, int length);
 
   bool CreateCapabilityMap();
-  void SetErrorState(const std::string& reason);
+  void SetErrorState(const char* reason);
 
   Name device_name_;
   InternalState state_;

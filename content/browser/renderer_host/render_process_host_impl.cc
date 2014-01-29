@@ -1516,11 +1516,6 @@ void RenderProcessHostImpl::DisableAecDump() {
       base::Bind(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
                  weak_factory_.GetWeakPtr()));
 }
-
-void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
-    base::Callback<void(const std::string&)> callback) {
-  webrtc_log_message_callback_ = callback;
-}
 #endif
 
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
@@ -1886,14 +1881,6 @@ void RenderProcessHostImpl::EndFrameSubscription(int route_id) {
       gpu_message_filter_,
       route_id));
 }
-
-#if defined(ENABLE_WEBRTC)
-void RenderProcessHostImpl::WebRtcLogMessage(const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!webrtc_log_message_callback_.is_null())
-    webrtc_log_message_callback_.Run(message);
-}
-#endif
 
 void RenderProcessHostImpl::OnShutdownRequest() {
   // Don't shut down if there are active RenderViews, or if there are pending

@@ -32,7 +32,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD2(ReserveOutputBuffer,
                scoped_refptr<Buffer>(media::VideoFrame::Format format,
                                      const gfx::Size& dimensions));
-  MOCK_METHOD1(OnError, void(const std::string& reason));
+  MOCK_METHOD0(OnError, void());
   MOCK_METHOD5(OnIncomingCapturedFrame,
                void(const uint8* data,
                     int length,
@@ -99,7 +99,7 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
           content::DesktopMediaID::RegisterAuraWindow(root_window())));
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
-  EXPECT_CALL(*client, OnError(_)).Times(0);
+  EXPECT_CALL(*client, OnError()).Times(0);
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
