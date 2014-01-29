@@ -140,7 +140,7 @@ TEST_F(RegistrationRequestTest, RequestDataPassedToFetcher) {
 }
 
 TEST_F(RegistrationRequestTest, RequestRegistrationWithMultipleSenderIds) {
-  CreateRequest("sender1,sender2");
+  CreateRequest("sender1,sender2@gmail.com");
   request_->Start();
 
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
@@ -155,12 +155,13 @@ TEST_F(RegistrationRequestTest, RequestRegistrationWithMultipleSenderIds) {
     continue;
 
   ASSERT_TRUE(data_tokenizer.GetNext());
-  std::string senders(data_tokenizer.token());
+  std::string senders(net::UnescapeURLComponent(data_tokenizer.token(),
+      net::UnescapeRule::URL_SPECIAL_CHARS));
   base::StringTokenizer sender_tokenizer(senders, ",");
   ASSERT_TRUE(sender_tokenizer.GetNext());
   EXPECT_EQ("sender1", sender_tokenizer.token());
   ASSERT_TRUE(sender_tokenizer.GetNext());
-  EXPECT_EQ("sender2", sender_tokenizer.token());
+  EXPECT_EQ("sender2@gmail.com", sender_tokenizer.token());
 }
 
 TEST_F(RegistrationRequestTest, ResponseParsing) {

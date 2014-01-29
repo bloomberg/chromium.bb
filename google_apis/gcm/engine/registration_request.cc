@@ -111,7 +111,7 @@ void RegistrationRequest::Start() {
     DCHECK(!iter->empty());
     if (!senders.empty())
       senders.append(",");
-    senders.append(net::EscapeUrlEncodedData(*iter, true));
+    senders.append(*iter);
   }
   BuildFormEncoding(kSenderKey, senders, &body);
 
