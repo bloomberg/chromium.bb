@@ -194,7 +194,8 @@ public class AwSettings {
     }
 
     interface ZoomSupportChangeListener {
-        public void onGestureZoomSupportChanged(boolean supportsGestureZoom);
+        public void onGestureZoomSupportChanged(
+                boolean supportsDoubleTapZoom, boolean supportsMultiTouchZoom);
     }
 
     public AwSettings(Context context,
@@ -265,7 +266,8 @@ public class AwSettings {
                 mEventHandler.bindUiThread();
                 mNativeAwSettings = nativeInit(nativeWebContents);
                 nativeUpdateEverythingLocked(mNativeAwSettings);
-                onGestureZoomSupportChanged(supportsGestureZoomLocked());
+                onGestureZoomSupportChanged(
+                        supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
             }
         }
     }
@@ -1120,6 +1122,8 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             if (mUseWideViewport != use) {
                 mUseWideViewport = use;
+                onGestureZoomSupportChanged(
+                        supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
                 mEventHandler.updateWebkitPreferencesLocked();
             }
         }
@@ -1325,14 +1329,16 @@ public class AwSettings {
         return mDefaultVideoPosterURL;
     }
 
-    private void onGestureZoomSupportChanged(final boolean supportsGestureZoom) {
+    private void onGestureZoomSupportChanged(
+            final boolean supportsDoubleTapZoom, final boolean supportsMultiTouchZoom) {
         // Always post asynchronously here, to avoid doubling back onto the caller.
         mEventHandler.maybePostOnUiThread(new Runnable() {
             @Override
             public void run() {
                 synchronized (mAwSettingsLock) {
                     if (mZoomChangeListener != null) {
-                        mZoomChangeListener.onGestureZoomSupportChanged(supportsGestureZoom);
+                        mZoomChangeListener.onGestureZoomSupportChanged(
+                                supportsDoubleTapZoom, supportsMultiTouchZoom);
                     }
                 }
             }
@@ -1346,7 +1352,8 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             if (mSupportZoom != support) {
                 mSupportZoom = support;
-                onGestureZoomSupportChanged(supportsGestureZoomLocked());
+                onGestureZoomSupportChanged(
+                        supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
             }
         }
     }
@@ -1367,7 +1374,8 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             if (mBuiltInZoomControls != enabled) {
                 mBuiltInZoomControls = enabled;
-                onGestureZoomSupportChanged(supportsGestureZoomLocked());
+                onGestureZoomSupportChanged(
+                        supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
             }
         }
     }
@@ -1399,20 +1407,25 @@ public class AwSettings {
         }
     }
 
-    private boolean supportsGestureZoomLocked() {
+    @CalledByNative
+    private boolean supportsDoubleTapZoomLocked() {
+        return mSupportZoom && mBuiltInZoomControls && mUseWideViewport;
+    }
+
+    private boolean supportsMultiTouchZoomLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mSupportZoom && mBuiltInZoomControls;
     }
 
-    boolean supportsGestureZoom() {
+    boolean supportsMultiTouchZoom() {
         synchronized (mAwSettingsLock) {
-            return supportsGestureZoomLocked();
+            return supportsMultiTouchZoomLocked();
         }
     }
 
     boolean shouldDisplayZoomControls() {
         synchronized (mAwSettingsLock) {
-            return supportsGestureZoomLocked() && mDisplayZoomControls;
+            return supportsMultiTouchZoomLocked() && mDisplayZoomControls;
         }
     }
 

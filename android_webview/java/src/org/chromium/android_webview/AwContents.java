@@ -489,9 +489,10 @@ public class AwContents {
         AwSettings.ZoomSupportChangeListener zoomListener =
                 new AwSettings.ZoomSupportChangeListener() {
                     @Override
-                    public void onGestureZoomSupportChanged(boolean supportsGestureZoom) {
-                        mContentViewCore.updateMultiTouchZoomSupport(supportsGestureZoom);
-                        mContentViewCore.updateDoubleTapSupport(supportsGestureZoom);
+                    public void onGestureZoomSupportChanged(
+                            boolean supportsDoubleTapZoom, boolean supportsMultiTouchZoom) {
+                        mContentViewCore.updateDoubleTapSupport(supportsDoubleTapZoom);
+                        mContentViewCore.updateMultiTouchZoomSupport(supportsMultiTouchZoom);
                     }
 
                 };
@@ -945,7 +946,7 @@ public class AwContents {
     }
 
     public boolean isMultiTouchZoomSupported() {
-        return mSettings.supportsGestureZoom();
+        return mSettings.supportsMultiTouchZoom();
     }
 
     public View getZoomControlsForTest() {

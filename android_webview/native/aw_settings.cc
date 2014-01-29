@@ -287,8 +287,11 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
       Java_AwSettings_getDatabaseEnabledLocked(env, obj);
 
   web_prefs->wide_viewport_quirk = true;
-  web_prefs->double_tap_to_zoom_enabled = web_prefs->use_wide_viewport =
+  web_prefs->use_wide_viewport =
       Java_AwSettings_getUseWideViewportLocked(env, obj);
+
+  web_prefs->double_tap_to_zoom_enabled =
+      Java_AwSettings_supportsDoubleTapZoomLocked(env, obj);
 
   web_prefs->initialize_at_minimum_page_scale =
       Java_AwSettings_getLoadWithOverviewModeLocked(env, obj);
