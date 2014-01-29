@@ -15283,8 +15283,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Profile.AddNewUser" enum="ProfileAddNewUser">
+  <summary>The frequency of ways that new user profiles are added.</summary>
+</histogram>
+
 <histogram name="Profile.AppCount">
   <summary>The number of installed apps when a profile is opened.</summary>
+</histogram>
+
+<histogram name="Profile.Avatar" enum="ProfileAvatar">
+  <summary>The frequency of selection of each avatar.</summary>
+</histogram>
+
+<histogram name="Profile.BookmarksSize" units="MB">
+  <summary>Size of the bookmarks database.</summary>
+</histogram>
+
+<histogram name="Profile.CookiesSize" units="MB">
+  <summary>Size of the cookies database.</summary>
 </histogram>
 
 <histogram name="Profile.CreateResult" enum="ProfileCreateResult">
@@ -15331,6 +15347,108 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Profile.ExtensionSize" units="MB">
+  <summary>Size of the extension cookies database.</summary>
+</histogram>
+
+<histogram name="Profile.FaviconsSize" units="MB">
+  <summary>Size of the favicons database.</summary>
+</histogram>
+
+<histogram name="Profile.HistorySize" units="MB">
+  <summary>Size of the history database.</summary>
+</histogram>
+
+<histogram name="Profile.LaunchBrowser" enum="ProfileType">
+  <summary>
+    Number of times users launch a browser window from either a primary or
+    secondary profile (i.e., each time a browser window is opened we log which
+    type of profile it belongs to).
+  </summary>
+</histogram>
+
+<histogram name="Profile.NetUserCount" enum="ProfileNetUserCount">
+  <summary>
+    Counts of users added and deleted. Percentages are not meaningful. Please
+    look at the ratio of the counts/percentages.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NumberOfManagedProfiles">
+  <summary>
+    Counts the number of locally managed profiles on a user's machine when
+    Chrome starts up, among cases with at least one profile.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NumberOfProfiles">
+  <summary>
+    Counts the number of profiles on a user's machine when Chrome starts up.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NumberOfProfilesAfterAddOrDelete">
+  <obsolete>
+    Deprecated 2013-04-09. No longer tracked. See Profile.NumberOfProfiles.
+  </obsolete>
+  <summary>
+    Counts the number of profiles on a user's machine whenever a profile is
+    added or deleted.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NumberOfProfilesOnStartup">
+  <obsolete>
+    Deprecated; replaced by Profile.NumberOfProfiles on 2013-04-09. Data are
+    suspect, especially after 2012-02-24: see https://crbug.com/189213.
+  </obsolete>
+  <summary>
+    Counts the number of profiles on a user's machine when Chrome starts up.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NumberOfSignedInProfiles">
+  <summary>
+    Counts the number of signed-in profiles on a user's machine when Chrome
+    starts up, among cases with at least one profile.
+  </summary>
+</histogram>
+
+<histogram name="Profile.NumberOfSignedInProfilesOnStartup">
+  <obsolete>
+    Deprecated; replaced by Profile.NumberOfSignedInProfiles on 2013-04-09.
+  </obsolete>
+  <summary>
+    Counts the number of profiles that are signed in to Chrome when Chrome
+    starts up.
+  </summary>
+</histogram>
+
+<histogram name="Profile.Opening" enum="ProfileOpen">
+  <obsolete>
+    Deprecated because it did not present the information clearly.
+  </obsolete>
+  <summary>The frequency of ways that the profiles are opened.</summary>
+</histogram>
+
+<histogram name="Profile.OpenMethod" enum="ProfileOpenMethod">
+  <summary>
+    The frequency with which the user opens the different profile menus or
+    switches profiles. For the open statistics, this does not mean the user
+    necessarily opened a profile after clicking. The switch statistics indicate
+    how often and how the user switches profiles. They are provided together for
+    comparison of how often the user actually switches after opening the avatar
+    bubble menu.
+  </summary>
+</histogram>
+
+<histogram name="Profile.PercentageOfManagedProfiles">
+  <summary>
+    Tracks the percentage (0-100) of profiles that are locally managed, recorded
+    when Chrome starts up.
+  </summary>
+</histogram>
+
 <histogram name="Profile.ProfileError" enum="ProfileErrorType">
   <summary>
     The error with the current user profile that caused an error dialog to be
@@ -15370,6 +15488,65 @@ other types of suffix sets.
     'Import supervised user' until the registration ends either successfully or
     with a failure (both recorded in Profile.SupervisedProfileImportResult).
   </summary>
+</histogram>
+
+<histogram name="Profile.SwitchGaiaPhotoSettings"
+    enum="ProfileGaiaPhotoOptions">
+  <summary>
+    Counts of when users switch to using their GAIA photo instead of an avatar
+    icon or the opposite when they switch back to an avatar icon instead of
+    their GAIA photo.
+  </summary>
+</histogram>
+
+<histogram name="Profile.Sync" enum="ProfileSync">
+  <obsolete>
+    Deprecated because it did not present the information clearly.
+  </obsolete>
+  <summary>Activity of the user with regards to sync.</summary>
+</histogram>
+
+<histogram name="Profile.SyncCustomize" enum="ProfileSyncCustomize">
+  <summary>
+    Number of times and ways the user customized the sync options of their
+    profile. Percentages are not meaningful. To determine percentages, take the
+    count of a given action over the count of number of customizations.
+  </summary>
+</histogram>
+
+<histogram name="Profile.SyncSignIn" enum="ProfileType">
+  <summary>
+    Number of times the user signed into sync from original or secondary
+    profile.
+  </summary>
+</histogram>
+
+<histogram name="Profile.ThumbnailsSize" units="MB">
+  <summary>Size of the thumbnails database.</summary>
+</histogram>
+
+<histogram name="Profile.TopSitesSize" units="MB">
+  <summary>Size of the top sites database.</summary>
+</histogram>
+
+<histogram name="Profile.TotalHistorySize" units="MB">
+  <summary>Total size of all history databases.</summary>
+</histogram>
+
+<histogram name="Profile.TotalSize" units="MB">
+  <summary>Total size of the profile data (excluding sub-folders).</summary>
+</histogram>
+
+<histogram name="Profile.Update" enum="ProfileType">
+  <summary>Times a profile name and/or avatar was updated.</summary>
+</histogram>
+
+<histogram name="Profile.VisitedLinksSize" units="MB">
+  <summary>Size of the visited links database.</summary>
+</histogram>
+
+<histogram name="Profile.WebDataSize" units="MB">
+  <summary>Size of the web data database.</summary>
 </histogram>
 
 <histogram name="ProfileReset.SendFeedback" enum="Boolean">
@@ -29287,6 +29464,43 @@ other types of suffix sets.
   <int value="3" label="tapdown + tapunconfirmed"/>
 </enum>
 
+<enum name="ProfileAddNewUser" type="int">
+  <int value="0" label="Add new user from icon menu"/>
+  <int value="1" label="Add new user from title bar menu"/>
+  <int value="2" label="Add new user from settings dialog"/>
+</enum>
+
+<enum name="ProfileAvatar" type="int">
+  <int value="0" label="Generic"/>
+  <int value="1" label="Generic Aqua"/>
+  <int value="2" label="Generic Blue"/>
+  <int value="3" label="Generic Green"/>
+  <int value="4" label="Generic Orange"/>
+  <int value="5" label="Generic Purple"/>
+  <int value="6" label="Generic Red"/>
+  <int value="7" label="Generic Yellow"/>
+  <int value="8" label="Secret Agent"/>
+  <int value="9" label="Superhero"/>
+  <int value="10" label="Volleyball"/>
+  <int value="11" label="Businessman"/>
+  <int value="12" label="Ninja"/>
+  <int value="13" label="Alien"/>
+  <int value="14" label="Super Awesome Cool Smiley Face"/>
+  <int value="15" label="Flower"/>
+  <int value="16" label="Pizza"/>
+  <int value="17" label="Soccer"/>
+  <int value="18" label="Burger"/>
+  <int value="19" label="Cat"/>
+  <int value="20" label="Cupcake"/>
+  <int value="21" label="Dog"/>
+  <int value="22" label="Horse"/>
+  <int value="23" label="Margarita"/>
+  <int value="24" label="Note"/>
+  <int value="25" label="Sun And Cloud"/>
+  <int value="26" label="Unknown"/>
+  <int value="27" label="GAIA"/>
+</enum>
+
 <enum name="ProfileCreateResult" type="int">
   <int value="0" label="Failed locally"/>
   <int value="1" label="Failed remotely"/>
@@ -29301,6 +29515,11 @@ other types of suffix sets.
   <int value="2" label="Webdata autofill DB error"/>
   <int value="3" label="Webdata token DB error"/>
   <int value="4" label="Webdata DB error"/>
+</enum>
+
+<enum name="ProfileGaiaPhotoOptions" type="int">
+  <int value="0" label="User opted to use GAIA photo"/>
+  <int value="1" label="User opted not to use GAIA photo"/>
 </enum>
 
 <enum name="ProfileImageDownloadResult" type="int">
@@ -29321,6 +29540,52 @@ other types of suffix sets.
       We didn't download the image because it's the default one.
     </summary>
   </int>
+</enum>
+
+<enum name="ProfileNetUserCount" type="int">
+  <int value="0" label="Added new user"/>
+  <int value="1" label="Deleted a profile"/>
+</enum>
+
+<enum name="ProfileOpen" type="int">
+  <int value="0" label="Add new user"/>
+  <int value="1" label="Add new user from icon menu"/>
+  <int value="2" label="Add new user from title bar menu"/>
+  <int value="3" label="Switch profile from icon menu"/>
+  <int value="4" label="Switch profile from title bar menu"/>
+  <int value="5" label="Opened the avatar bubble menu from NTP"/>
+  <int value="6" label="Opened the avatar bubble menu from icon"/>
+  <int value="7" label="Deleted a profile"/>
+</enum>
+
+<enum name="ProfileOpenMethod" type="int">
+  <int value="0" label="Opened the avatar bubble menu from NTP"/>
+  <int value="1" label="Opened the avatar bubble menu from icon"/>
+  <int value="2" label="Switch profile from icon menu"/>
+  <int value="3" label="Switch profile from title bar menu"/>
+  <int value="4" label="Switch profile from Mac OS X Dock menu"/>
+</enum>
+
+<enum name="ProfileSync" type="int">
+  <int value="0" label="Signed in to sync"/>
+  <int value="1" label="Signed in to sync from original profile"/>
+  <int value="2" label="Signed in to sync from secondary profile"/>
+  <int value="3" label="Customized sync options"/>
+  <int value="4" label="Chose what to sync"/>
+  <int value="5" label="Encrypted all data"/>
+  <int value="6" label="Selected a passphrase"/>
+</enum>
+
+<enum name="ProfileSyncCustomize" type="int">
+  <int value="0" label="Customized sync options"/>
+  <int value="1" label="Chose what to sync"/>
+  <int value="2" label="Encrypted all data"/>
+  <int value="3" label="Selected a passphrase"/>
+</enum>
+
+<enum name="ProfileType" type="int">
+  <int value="0" label="Original (default) profile"/>
+  <int value="1" label="Secondary (user-created) profile"/>
 </enum>
 
 <enum name="ProtectorError" type="int">
