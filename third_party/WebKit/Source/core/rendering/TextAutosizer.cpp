@@ -39,6 +39,8 @@
 
 namespace WebCore {
 
+#define AUTOSIZING_CLUSTER_HASH
+
 using namespace HTMLNames;
 
 struct TextAutosizingWindowInfo {
