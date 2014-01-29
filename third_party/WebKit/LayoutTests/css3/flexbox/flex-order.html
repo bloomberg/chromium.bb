@@ -30,10 +30,6 @@ body {
     background-color: #030;
 }
 </style>
-<script>
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults();
-</script>
 <body>
 
 <div class="horizontal-box">
@@ -107,6 +103,13 @@ if (window.testRunner)
   <div class="third"  style="-webkit-order: -2147483645"></div>
   <div class="first"  style="-webkit-order: -2147483646"></div>
   <div class="second" style="-webkit-order: -2147483647"></div>
+  <div class="fourth" style=""></div>
+</div>
+
+<div class="horizontal-box">
+  <div class="third"  style="-webkit-order: calc(-2147483640 - 5)"></div>
+  <div class="first"  style="-webkit-order: calc(-2147483640 - 6)"></div>
+  <div class="second" style="-webkit-order: calc(-2147483640 - 7)"></div>
   <div class="fourth" style=""></div>
 </div>
 

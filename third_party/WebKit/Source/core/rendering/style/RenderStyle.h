@@ -1242,7 +1242,8 @@ public:
     void setFlexGrow(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexGrow, f); }
     void setFlexShrink(float f) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexShrink, f); }
     void setFlexBasis(Length length) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexBasis, length); }
-    void setOrder(int o) { SET_VAR(rareNonInheritedData, m_order, o); }
+    // We restrict the smallest value to int min + 2 because we use int min and int min + 1 as special values in a hash set.
+    void setOrder(int o) { SET_VAR(rareNonInheritedData, m_order, max(std::numeric_limits<int>::min() + 2, o)); }
     void addCallbackSelector(const String& selector);
     void setAlignContent(EAlignContent p) { SET_VAR(rareNonInheritedData, m_alignContent, p); }
     void setAlignItems(ItemPosition a) { SET_VAR(rareNonInheritedData, m_alignItems, a); }
