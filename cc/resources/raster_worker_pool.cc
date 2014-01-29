@@ -196,6 +196,10 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::RasterWorkerPoolTask:
   virtual void RunOnOriginThread(ResourceProvider* resource_provider,
                                  ContextProvider* context_provider) OVERRIDE {
+    TRACE_EVENT1("cc",
+                 "RasterWorkerPoolTaskImpl::RunOnOriginThread",
+                 "data",
+                 TracedValue::FromValue(DataAsValue().release()));
     // TODO(alokp): For now run-on-origin-thread implies gpu rasterization.
     DCHECK(use_gpu_rasterization());
     ResourceProvider::ScopedWriteLockGL lock(resource_provider,
