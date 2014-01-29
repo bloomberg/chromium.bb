@@ -40,7 +40,7 @@ class Text;
 
 enum EAnnotateForInterchange { DoNotAnnotateForInterchange, AnnotateForInterchange };
 
-String convertHTMLTextToInterchangeFormat(const String&, const Text*);
+String convertHTMLTextToInterchangeFormat(const String&, const Text&);
 
 }
 

@@ -81,8 +81,8 @@ private:
     void addImageToResources(ImageResource*, RenderObject*, const KURL&);
     void addFontToResources(FontResource*);
 
-    void retrieveResourcesForProperties(const StylePropertySet*, Document*);
-    void retrieveResourcesForCSSValue(CSSValue*, Document*);
+    void retrieveResourcesForProperties(const StylePropertySet*, Document&);
+    void retrieveResourcesForCSSValue(CSSValue*, Document&);
 
     Vector<SerializedResource>* m_resources;
     ListHashSet<KURL> m_resourceURLs;
