@@ -22,6 +22,7 @@
 #define LengthSize_h
 
 #include "platform/Length.h"
+#include "platform/geometry/FloatSize.h"
 
 namespace WebCore {
 
@@ -48,6 +49,10 @@ public:
     void setHeight(Length height) { m_height = height; }
     Length height() const { return m_height; }
 
+    FloatSize floatSize() const
+    {
+        return FloatSize(m_width.value(), m_height.value());
+    }
 private:
     Length m_width;
     Length m_height;

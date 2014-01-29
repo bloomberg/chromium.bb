@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-static PassOwnPtr<Shape> createBoxShape(const FloatRoundedRect& bounds)
+static PassOwnPtr<Shape> createInsetShape(const FloatRoundedRect& bounds)
 {
     ASSERT(bounds.rect().width() >= 0 && bounds.rect().height() >= 0);
     return adoptPtr(new BoxShape(bounds));
@@ -223,6 +223,23 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         break;
     }
 
+    case BasicShape::BasicShapeInsetType: {
+        const BasicShapeInset& inset = *static_cast<const BasicShapeInset*>(basicShape);
+        float left = floatValueForLength(inset.left(), boxWidth);
+        float top = floatValueForLength(inset.top(), boxHeight);
+        float right = floatValueForLength(inset.right(), boxWidth);
+        float bottom = floatValueForLength(inset.bottom(), boxHeight);
+        FloatRect rect(left, top, boxWidth - left - right, boxHeight - top - bottom);
+        FloatRect logicalRect = physicalRectToLogical(rect, logicalBoxSize.height(), writingMode);
+
+        shape = createInsetShape(FloatRoundedRect(logicalRect,
+            inset.topLeftRadius().floatSize(),
+            inset.topRightRadius().floatSize(),
+            inset.bottomLeftRadius().floatSize(),
+            inset.bottomRightRadius().floatSize()));
+        break;
+    }
+
     default:
         ASSERT_NOT_REACHED();
     }
@@ -281,7 +298,7 @@ PassOwnPtr<Shape> Shape::createLayoutBoxShape(const RoundedRect& roundedRect, Wr
 {
     FloatRect rect(0, 0, roundedRect.rect().width(), roundedRect.rect().height());
     FloatRoundedRect bounds(rect, roundedRect.radii());
-    OwnPtr<Shape> shape = createBoxShape(bounds);
+    OwnPtr<Shape> shape = createInsetShape(bounds);
     shape->m_writingMode = writingMode;
     shape->m_margin = floatValueForLength(margin, 0);
     shape->m_padding = floatValueForLength(padding, 0);
