@@ -157,7 +157,7 @@ layer at (0,0) size 785x658
                             text run at (1,1) width 110: "display: table-cell"
       RenderBlock {DIV} at (0,566) size 769x76
         RenderTable at (0,0) size 55x76
-          RenderBlock {DIV} at (0,0) size 55x60
+          RenderBlock {DIV} at (0,0) size 55x76
             RenderBlock {FORM} at (0,0) size 55x60
               RenderTable {TABLE} at (0,0) size 55x60
                 RenderTableSection {TBODY} at (0,0) size 55x60
