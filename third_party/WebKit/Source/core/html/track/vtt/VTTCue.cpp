@@ -54,6 +54,7 @@
 namespace WebCore {
 
 static const int undefinedPosition = -1;
+static const int undefinedSize = -1;
 
 static const CSSValueID displayWritingModeMap[] = {
     CSSValueHorizontalTb, CSSValueVerticalRl, CSSValueVerticalLr
@@ -212,6 +213,7 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_vttNodeTree(0)
     , m_cueBackgroundBox(HTMLDivElement::create(document))
     , m_displayDirection(CSSValueLtr)
+    , m_displaySize(undefinedSize)
     , m_snapToLines(true)
     , m_displayTreeShouldChange(true)
     , m_notifyRegion(true)
@@ -1045,6 +1047,7 @@ CSSValueID VTTCue::getCSSWritingMode() const
 
 int VTTCue::getCSSSize() const
 {
+    ASSERT(m_displaySize != undefinedSize);
     return m_displaySize;
 }
 
