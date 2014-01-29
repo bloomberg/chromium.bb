@@ -15,6 +15,11 @@ namespace keyboard {
 // virtual keyboard. This becomes a no-op after the first call.
 KEYBOARD_EXPORT void InitializeKeyboard();
 
+// Resets the keyboard to an uninitialized state. Required for
+// BrowserWithTestWindowTest tests as they tear down the controller factory
+// after each test yet resume testing in the same process.
+KEYBOARD_EXPORT void ResetKeyboardForTesting();
+
 }  // namespace keyboard
 
 #endif  //  UI_KEYBOARD_KEYBOARD_H_

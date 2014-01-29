@@ -106,6 +106,7 @@ class Preferences : public PrefServiceSyncableObserver,
   BooleanPrefMember a11y_screen_magnifier_enabled_;
   IntegerPrefMember a11y_screen_magnifier_type_;
   DoublePrefMember a11y_screen_magnifier_scale_;
+  BooleanPrefMember a11y_virtual_keyboard_enabled_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember mouse_sensitivity_;
   IntegerPrefMember touchpad_sensitivity_;

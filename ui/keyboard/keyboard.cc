@@ -65,8 +65,15 @@ class KeyboardWebUIControllerFactory : public content::WebUIControllerFactory {
 
 namespace keyboard {
 
+static bool initialized = false;
+
+void ResetKeyboardForTesting() {
+  content::WebUIControllerFactory::UnregisterFactoryForTesting(
+      KeyboardWebUIControllerFactory::GetInstance());
+  initialized = false;
+}
+
 void InitializeKeyboard() {
-  static bool initialized = false;
   if (initialized)
     return;
   initialized = true;

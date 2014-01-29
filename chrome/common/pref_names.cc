@@ -684,6 +684,7 @@ const char kLanguageXkbAutoRepeatInterval[] =
 
 // A boolean pref which determines whether the large cursor feature is enabled.
 const char kLargeCursorEnabled[] = "settings.a11y.large_cursor_enabled";
+
 // A boolean pref which determines whether the sticky keys feature is enabled.
 const char kStickyKeysEnabled[] = "settings.a11y.sticky_keys_enabled";
 // A boolean pref which determines whether spoken feedback is enabled.
@@ -698,8 +699,9 @@ const char kScreenMagnifierEnabled[] = "settings.a11y.screen_magnifier";
 const char kScreenMagnifierType[] = "settings.a11y.screen_magnifier_type2";
 // A double pref which determines a zooming scale of the screen magnifier.
 const char kScreenMagnifierScale[] = "settings.a11y.screen_magnifier_scale";
-// A boolean pref which determines whether virtual keyboard is enabled.
-// TODO(hashimoto): Remove this pref.
+// A boolean pref which determines whether the virtual keyboard is enabled for
+// accessibility.  This feature is separate from displaying an onscreen keyboard
+// due to lack of a physical keyboard.
 const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";
 // A boolean pref which determines whether autoclick is enabled.
 const char kAutoclickEnabled[] = "settings.a11y.autoclick";

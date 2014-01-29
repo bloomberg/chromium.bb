@@ -416,6 +416,17 @@ void Shell::CreateKeyboard() {
   }
 }
 
+void Shell::DeactivateKeyboard() {
+  if (keyboard_controller_.get()) {
+    RootWindowControllerList controllers = GetAllRootWindowControllers();
+    for (RootWindowControllerList::iterator iter = controllers.begin();
+        iter != controllers.end(); ++iter) {
+      (*iter)->DeactivateKeyboard(keyboard_controller_.get());
+    }
+  }
+  keyboard_controller_.reset();
+}
+
 void Shell::ShowShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
@@ -860,8 +871,9 @@ void Shell::Init() {
 
   // The keyboard system must be initialized before the RootWindowController is
   // created.
-  if (keyboard::IsKeyboardEnabled())
+#if defined(OS_CHROMEOS)
     keyboard::InitializeKeyboard();
+#endif
 
   lock_state_controller_.reset(new LockStateController);
   power_button_controller_.reset(new PowerButtonController(

@@ -299,6 +299,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         this,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
         content::NotificationService::AllSources());
+    registrar_->Add(
+        this,
+        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+        content::NotificationService::AllSources());
   }
 
   virtual void Initialize() OVERRIDE {
@@ -1171,7 +1175,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       }
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
       case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE:
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER: {
+      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER:
+      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD: {
         AccessibilityStatusEventDetails* accessibility_status =
             content::Details<AccessibilityStatusEventDetails>(details).ptr();
         OnAccessibilityModeChanged(accessibility_status->notify);

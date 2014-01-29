@@ -65,6 +65,10 @@ bool DefaultAccessibilityDelegate::IsAutoclickEnabled() const {
   return autoclick_enabled_;
 }
 
+bool DefaultAccessibilityDelegate::IsVirtualKeyboardEnabled() const {
+  return false;
+}
+
 bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
   return spoken_feedback_enabled_ ||
          high_contrast_enabled_ ||

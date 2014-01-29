@@ -866,6 +866,9 @@ enum NotificationType {
   // Sent when spoken feedback is toggled.
   NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
 
+  // Sent when a11y on-screen keyboard is toggled.
+  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+
 #endif
 
 #if defined(TOOLKIT_VIEWS)
