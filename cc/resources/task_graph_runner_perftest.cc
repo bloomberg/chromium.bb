@@ -4,6 +4,8 @@
 
 #include "cc/resources/task_graph_runner.h"
 
+#include <vector>
+
 #include "base/time/time.h"
 #include "cc/base/completion_event.h"
 #include "cc/test/lap_timer.h"
@@ -19,38 +21,22 @@ static const int kTimeCheckInterval = 10;
 
 class PerfTaskImpl : public internal::Task {
  public:
+  typedef std::vector<scoped_refptr<PerfTaskImpl> > Vector;
+
   PerfTaskImpl() {}
 
   // Overridden from internal::Task:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
 
+  void Reset() {
+    did_schedule_ = false;
+    did_run_ = false;
+  }
+
  private:
   virtual ~PerfTaskImpl() {}
 
   DISALLOW_COPY_AND_ASSIGN(PerfTaskImpl);
-};
-
-class PerfControlTaskImpl : public internal::Task {
- public:
-  PerfControlTaskImpl() {}
-
-  // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
-    did_start_.Signal();
-    can_finish_.Wait();
-  }
-
-  void WaitForTaskToStartRunning() { did_start_.Wait(); }
-
-  void AllowTaskToFinish() { can_finish_.Signal(); }
-
- private:
-  virtual ~PerfControlTaskImpl() {}
-
-  CompletionEvent did_start_;
-  CompletionEvent can_finish_;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfControlTaskImpl);
 };
 
 class TaskGraphRunnerPerfTest : public testing::Test {
@@ -63,7 +49,8 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     task_graph_runner_ =
-        make_scoped_ptr(new internal::TaskGraphRunner(1, "PerfTest"));
+        make_scoped_ptr(new internal::TaskGraphRunner(0,  // 0 worker threads
+                                                      "PerfTest"));
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
   virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
@@ -74,22 +61,57 @@ class TaskGraphRunnerPerfTest : public testing::Test {
         "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
   }
 
-  void RunScheduleTasksTest(const std::string& test_name,
-                            unsigned max_depth,
-                            unsigned num_children_per_node) {
+  void RunBuildTaskGraphTest(const std::string& test_name,
+                             int num_top_level_tasks,
+                             int num_tasks,
+                             int num_leaf_tasks) {
+    PerfTaskImpl::Vector top_level_tasks;
+    PerfTaskImpl::Vector tasks;
+    PerfTaskImpl::Vector leaf_tasks;
+    CreateTasks(num_top_level_tasks, &top_level_tasks);
+    CreateTasks(num_tasks, &tasks);
+    CreateTasks(num_leaf_tasks, &leaf_tasks);
+
     timer_.Reset();
     do {
-      scoped_refptr<PerfControlTaskImpl> leaf_task(new PerfControlTaskImpl);
-      ScheduleTasks(NULL, leaf_task.get(), max_depth, num_children_per_node);
-      leaf_task->WaitForTaskToStartRunning();
-      ScheduleTasks(NULL, NULL, 0, 0);
-      leaf_task->AllowTaskToFinish();
-      task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
-      internal::Task::Vector completed_tasks;
-      task_graph_runner_->CollectCompletedTasks(namespace_token_,
-                                                &completed_tasks);
+      internal::GraphNode::Map graph;
+      BuildTaskGraph(top_level_tasks, tasks, leaf_tasks, &graph);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
+
+    perf_test::PrintResult("build_task_graph",
+                           "",
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
+  }
+
+  void RunScheduleTasksTest(const std::string& test_name,
+                            int num_top_level_tasks,
+                            int num_tasks,
+                            int num_leaf_tasks) {
+    PerfTaskImpl::Vector top_level_tasks;
+    PerfTaskImpl::Vector tasks;
+    PerfTaskImpl::Vector leaf_tasks;
+    CreateTasks(num_top_level_tasks, &top_level_tasks);
+    CreateTasks(num_tasks, &tasks);
+    CreateTasks(num_leaf_tasks, &leaf_tasks);
+
+    timer_.Reset();
+    do {
+      internal::GraphNode::Map graph;
+      BuildTaskGraph(top_level_tasks, tasks, leaf_tasks, &graph);
+      task_graph_runner_->SetTaskGraph(namespace_token_, &graph);
+      // Shouldn't be any tasks to collect as we reschedule the same set
+      // of tasks.
+      DCHECK_EQ(0u, CollectCompletedTasks());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+
+    internal::GraphNode::Map empty;
+    task_graph_runner_->SetTaskGraph(namespace_token_, &empty);
+    CollectCompletedTasks();
 
     perf_test::PrintResult("schedule_tasks",
                            "",
@@ -99,16 +121,68 @@ class TaskGraphRunnerPerfTest : public testing::Test {
                            true);
   }
 
-  void RunExecuteTasksTest(const std::string& test_name,
-                           unsigned max_depth,
-                           unsigned num_children_per_node) {
+  void RunScheduleAlternateTasksTest(const std::string& test_name,
+                                     int num_top_level_tasks,
+                                     int num_tasks,
+                                     int num_leaf_tasks) {
+    const int kNumVersions = 2;
+    PerfTaskImpl::Vector top_level_tasks[kNumVersions];
+    PerfTaskImpl::Vector tasks[kNumVersions];
+    PerfTaskImpl::Vector leaf_tasks[kNumVersions];
+    for (int i = 0; i < kNumVersions; ++i) {
+      CreateTasks(num_top_level_tasks, &top_level_tasks[i]);
+      CreateTasks(num_tasks, &tasks[i]);
+      CreateTasks(num_leaf_tasks, &leaf_tasks[i]);
+    }
+
+    int count = 0;
     timer_.Reset();
     do {
-      ScheduleTasks(NULL, NULL, max_depth, num_children_per_node);
-      task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
-      internal::Task::Vector completed_tasks;
-      task_graph_runner_->CollectCompletedTasks(namespace_token_,
-                                                &completed_tasks);
+      internal::GraphNode::Map graph;
+      BuildTaskGraph(top_level_tasks[count % kNumVersions],
+                     tasks[count % kNumVersions],
+                     leaf_tasks[count % kNumVersions],
+                     &graph);
+      task_graph_runner_->SetTaskGraph(namespace_token_, &graph);
+      CollectCompletedTasks();
+      ++count;
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+
+    internal::GraphNode::Map empty;
+    task_graph_runner_->SetTaskGraph(namespace_token_, &empty);
+    CollectCompletedTasks();
+
+    perf_test::PrintResult("schedule_alternate_tasks",
+                           "",
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
+  }
+
+  void RunScheduleAndExecuteTasksTest(const std::string& test_name,
+                                      int num_top_level_tasks,
+                                      int num_tasks,
+                                      int num_leaf_tasks) {
+    PerfTaskImpl::Vector top_level_tasks;
+    PerfTaskImpl::Vector tasks;
+    PerfTaskImpl::Vector leaf_tasks;
+    CreateTasks(num_top_level_tasks, &top_level_tasks);
+    CreateTasks(num_tasks, &tasks);
+    CreateTasks(num_leaf_tasks, &leaf_tasks);
+
+    timer_.Reset();
+    do {
+      internal::GraphNode::Map graph;
+      BuildTaskGraph(top_level_tasks, tasks, leaf_tasks, &graph);
+      task_graph_runner_->SetTaskGraph(namespace_token_, &graph);
+      while (task_graph_runner_->RunTaskForTesting())
+        continue;
+      CollectCompletedTasks();
+      ResetTasks(&top_level_tasks);
+      ResetTasks(&tasks);
+      ResetTasks(&leaf_tasks);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -117,100 +191,123 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   }
 
  private:
-  void ScheduleTasks(internal::Task* root_task,
-                     internal::Task* leaf_task,
-                     unsigned max_depth,
-                     unsigned num_children_per_node) {
-    internal::Task::Vector tasks;
-    internal::GraphNode::Map graph;
-
-    scoped_ptr<internal::GraphNode> root_node;
-    if (root_task)
-      root_node = make_scoped_ptr(new internal::GraphNode(root_task, 0u));
-
-    scoped_ptr<internal::GraphNode> leaf_node;
-    if (leaf_task)
-      leaf_node = make_scoped_ptr(new internal::GraphNode(leaf_task, 0u));
-
-    if (max_depth) {
-      BuildTaskGraph(&tasks,
-                     &graph,
-                     root_node.get(),
-                     leaf_node.get(),
-                     0,
-                     max_depth,
-                     num_children_per_node);
-    }
-
-    if (leaf_node)
-      graph.set(leaf_task, leaf_node.Pass());
-
-    if (root_node)
-      graph.set(root_task, root_node.Pass());
-
-    task_graph_runner_->SetTaskGraph(namespace_token_, &graph);
-
-    tasks_.swap(tasks);
+  void CreateTasks(int num_tasks, PerfTaskImpl::Vector* tasks) {
+    for (int i = 0; i < num_tasks; ++i)
+      tasks->push_back(make_scoped_refptr(new PerfTaskImpl));
   }
 
-  void BuildTaskGraph(internal::Task::Vector* tasks,
-                      internal::GraphNode::Map* graph,
-                      internal::GraphNode* dependent_node,
-                      internal::GraphNode* leaf_node,
-                      unsigned current_depth,
-                      unsigned max_depth,
-                      unsigned num_children_per_node) {
-    scoped_refptr<PerfTaskImpl> task(new PerfTaskImpl);
-    scoped_ptr<internal::GraphNode> node(
-        new internal::GraphNode(task.get(), 0u));
+  void ResetTasks(PerfTaskImpl::Vector* tasks) {
+    for (PerfTaskImpl::Vector::iterator it = tasks->begin(); it != tasks->end();
+         ++it) {
+      PerfTaskImpl* task = it->get();
+      task->Reset();
+    }
+  }
 
-    if (current_depth < max_depth) {
-      for (unsigned i = 0; i < num_children_per_node; ++i) {
-        BuildTaskGraph(tasks,
-                       graph,
-                       node.get(),
-                       leaf_node,
-                       current_depth + 1,
-                       max_depth,
-                       num_children_per_node);
+  void BuildTaskGraph(const PerfTaskImpl::Vector& top_level_tasks,
+                      const PerfTaskImpl::Vector& tasks,
+                      const PerfTaskImpl::Vector& leaf_tasks,
+                      internal::GraphNode::Map* graph) {
+    typedef std::vector<internal::GraphNode*> NodeVector;
+
+    NodeVector top_level_nodes;
+    top_level_nodes.reserve(top_level_tasks.size());
+    for (PerfTaskImpl::Vector::const_iterator it = top_level_tasks.begin();
+         it != top_level_tasks.end();
+         ++it) {
+      internal::Task* top_level_task = it->get();
+      scoped_ptr<internal::GraphNode> top_level_node(
+          new internal::GraphNode(top_level_task, 0u));
+
+      top_level_nodes.push_back(top_level_node.get());
+      graph->set(top_level_task, top_level_node.Pass());
+    }
+
+    NodeVector leaf_nodes;
+    leaf_nodes.reserve(leaf_tasks.size());
+    for (PerfTaskImpl::Vector::const_iterator it = leaf_tasks.begin();
+         it != leaf_tasks.end();
+         ++it) {
+      internal::Task* leaf_task = it->get();
+      scoped_ptr<internal::GraphNode> leaf_node(
+          new internal::GraphNode(leaf_task, 0u));
+
+      leaf_nodes.push_back(leaf_node.get());
+      graph->set(leaf_task, leaf_node.Pass());
+    }
+
+    for (PerfTaskImpl::Vector::const_iterator it = tasks.begin();
+         it != tasks.end();
+         ++it) {
+      internal::Task* task = it->get();
+      scoped_ptr<internal::GraphNode> node(new internal::GraphNode(task, 0u));
+
+      for (NodeVector::iterator node_it = top_level_nodes.begin();
+           node_it != top_level_nodes.end();
+           ++node_it) {
+        internal::GraphNode* top_level_node = *node_it;
+        node->add_dependent(top_level_node);
+        top_level_node->add_dependency();
       }
-    } else if (leaf_node) {
-      leaf_node->add_dependent(node.get());
-      node->add_dependency();
-    }
 
-    if (dependent_node) {
-      node->add_dependent(dependent_node);
-      dependent_node->add_dependency();
+      for (NodeVector::iterator node_it = leaf_nodes.begin();
+           node_it != leaf_nodes.end();
+           ++node_it) {
+        internal::GraphNode* leaf_node = *node_it;
+        leaf_node->add_dependent(node.get());
+        node->add_dependency();
+      }
+
+      graph->set(task, node.Pass());
     }
-    graph->set(task.get(), node.Pass());
-    tasks->push_back(task.get());
+  }
+
+  size_t CollectCompletedTasks() {
+    internal::Task::Vector completed_tasks;
+    task_graph_runner_->CollectCompletedTasks(namespace_token_,
+                                              &completed_tasks);
+    return completed_tasks.size();
   }
 
   scoped_ptr<internal::TaskGraphRunner> task_graph_runner_;
   internal::NamespaceToken namespace_token_;
-  internal::Task::Vector tasks_;
   LapTimer timer_;
 };
 
-TEST_F(TaskGraphRunnerPerfTest, ScheduleTasks) {
-  RunScheduleTasksTest("1_10", 1, 10);
-  RunScheduleTasksTest("1_1000", 1, 1000);
-  RunScheduleTasksTest("2_10", 2, 10);
-  RunScheduleTasksTest("5_5", 5, 5);
-  RunScheduleTasksTest("10_2", 10, 2);
-  RunScheduleTasksTest("1000_1", 1000, 1);
-  RunScheduleTasksTest("10_1", 10, 1);
+TEST_F(TaskGraphRunnerPerfTest, BuildTaskGraph) {
+  RunBuildTaskGraphTest("0_1_0", 0, 1, 0);
+  RunBuildTaskGraphTest("0_32_0", 0, 32, 0);
+  RunBuildTaskGraphTest("2_1_0", 2, 1, 0);
+  RunBuildTaskGraphTest("2_32_0", 2, 32, 0);
+  RunBuildTaskGraphTest("2_1_1", 2, 1, 1);
+  RunBuildTaskGraphTest("2_32_1", 2, 32, 1);
 }
 
-TEST_F(TaskGraphRunnerPerfTest, ExecuteTasks) {
-  RunExecuteTasksTest("1_10", 1, 10);
-  RunExecuteTasksTest("1_1000", 1, 1000);
-  RunExecuteTasksTest("2_10", 2, 10);
-  RunExecuteTasksTest("5_5", 5, 5);
-  RunExecuteTasksTest("10_2", 10, 2);
-  RunExecuteTasksTest("1000_1", 1000, 1);
-  RunExecuteTasksTest("10_1", 10, 1);
+TEST_F(TaskGraphRunnerPerfTest, ScheduleTasks) {
+  RunScheduleTasksTest("0_1_0", 0, 1, 0);
+  RunScheduleTasksTest("0_32_0", 0, 32, 0);
+  RunScheduleTasksTest("2_1_0", 2, 1, 0);
+  RunScheduleTasksTest("2_32_0", 2, 32, 0);
+  RunScheduleTasksTest("2_1_1", 2, 1, 1);
+  RunScheduleTasksTest("2_32_1", 2, 32, 1);
+}
+
+TEST_F(TaskGraphRunnerPerfTest, ScheduleAlternateTasks) {
+  RunScheduleAlternateTasksTest("0_1_0", 0, 1, 0);
+  RunScheduleAlternateTasksTest("0_32_0", 0, 32, 0);
+  RunScheduleAlternateTasksTest("2_1_0", 2, 1, 0);
+  RunScheduleAlternateTasksTest("2_32_0", 2, 32, 0);
+  RunScheduleAlternateTasksTest("2_1_1", 2, 1, 1);
+  RunScheduleAlternateTasksTest("2_32_1", 2, 32, 1);
+}
+
+TEST_F(TaskGraphRunnerPerfTest, ScheduleAndExecuteTasks) {
+  RunScheduleAndExecuteTasksTest("0_1_0", 0, 1, 0);
+  RunScheduleAndExecuteTasksTest("0_32_0", 0, 32, 0);
+  RunScheduleAndExecuteTasksTest("2_1_0", 2, 1, 0);
+  RunScheduleAndExecuteTasksTest("2_32_0", 2, 32, 0);
+  RunScheduleAndExecuteTasksTest("2_1_1", 2, 1, 1);
+  RunScheduleAndExecuteTasksTest("2_32_1", 2, 32, 1);
 }
 
 }  // namespace

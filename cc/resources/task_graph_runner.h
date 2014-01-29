@@ -142,6 +142,10 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
   void CollectCompletedTasks(NamespaceToken token,
                              Task::Vector* completed_tasks);
 
+  // Run one task on current thread. Returns false if no tasks are ready
+  // to run. This should only be used by tests.
+  bool RunTaskForTesting();
+
  private:
   struct TaskNamespace {
     typedef std::vector<TaskNamespace*> Vector;
@@ -191,6 +195,10 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
 
   // Overridden from base::DelegateSimpleThread:
   virtual void Run() OVERRIDE;
+
+  // Run next task. Caller must acquire |lock_| prior to calling this
+  // function and make sure at least one task is ready to run.
+  void RunTaskWithLockAcquired(int thread_index);
 
   // This lock protects all members of this class. Do not read or modify
   // anything without holding this lock. Do not block while holding this

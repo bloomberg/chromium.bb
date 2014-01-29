@@ -265,6 +265,16 @@ void TaskGraphRunner::CollectCompletedTasks(NamespaceToken token,
   namespaces_.erase(it);
 }
 
+bool TaskGraphRunner::RunTaskForTesting() {
+  base::AutoLock lock(lock_);
+
+  if (ready_to_run_namespaces_.empty())
+    return false;
+
+  RunTaskWithLockAcquired(0);
+  return true;
+}
+
 void TaskGraphRunner::Run() {
   base::AutoLock lock(lock_);
 
@@ -282,105 +292,112 @@ void TaskGraphRunner::Run() {
       continue;
     }
 
-    // Take top priority TaskNamespace from |ready_to_run_namespaces_|.
-    std::pop_heap(ready_to_run_namespaces_.begin(),
-                  ready_to_run_namespaces_.end(),
-                  CompareTaskNamespacePriority);
-    TaskNamespace* task_namespace = ready_to_run_namespaces_.back();
-    ready_to_run_namespaces_.pop_back();
-    DCHECK(!task_namespace->ready_to_run_tasks.empty());
-
-    // Take top priority task from |ready_to_run_tasks|.
-    std::pop_heap(task_namespace->ready_to_run_tasks.begin(),
-                  task_namespace->ready_to_run_tasks.end(),
-                  CompareTaskPriority);
-    scoped_refptr<Task> task(task_namespace->ready_to_run_tasks.back()->task());
-    task_namespace->ready_to_run_tasks.pop_back();
-
-    // Add task namespace back to |ready_to_run_namespaces_| if not
-    // empty after taking top priority task.
-    if (!task_namespace->ready_to_run_tasks.empty()) {
-      ready_to_run_namespaces_.push_back(task_namespace);
-      std::push_heap(ready_to_run_namespaces_.begin(),
-                     ready_to_run_namespaces_.end(),
-                     CompareTaskNamespacePriority);
-    }
-
-    // Move task from |pending_tasks| to |running_tasks|.
-    DCHECK(task_namespace->pending_tasks.contains(task.get()));
-    DCHECK(!task_namespace->running_tasks.contains(task.get()));
-    task_namespace->running_tasks.set(
-        task.get(), task_namespace->pending_tasks.take_and_erase(task.get()));
-
-    // There may be more work available, so wake up another worker thread.
-    has_ready_to_run_tasks_cv_.Signal();
-
-    // Call WillRun() before releasing |lock_| and running task.
-    task->WillRun();
-
-    {
-      base::AutoUnlock unlock(lock_);
-
-      task->RunOnWorkerThread(thread_index);
-    }
-
-    // This will mark task as finished running.
-    task->DidRun();
-
-    // Now iterate over all dependents to remove dependency and check
-    // if they are ready to run.
-    scoped_ptr<GraphNode> node =
-        task_namespace->running_tasks.take_and_erase(task.get());
-    if (node) {
-      bool ready_to_run_namespaces_has_heap_properties = true;
-
-      for (GraphNode::Vector::const_iterator it = node->dependents().begin();
-           it != node->dependents().end();
-           ++it) {
-        GraphNode* dependent_node = *it;
-
-        dependent_node->remove_dependency();
-        // Task is ready if it has no dependencies. Add it to
-        // |ready_to_run_tasks_|.
-        if (!dependent_node->num_dependencies()) {
-          bool was_empty = task_namespace->ready_to_run_tasks.empty();
-          task_namespace->ready_to_run_tasks.push_back(dependent_node);
-          std::push_heap(task_namespace->ready_to_run_tasks.begin(),
-                         task_namespace->ready_to_run_tasks.end(),
-                         CompareTaskPriority);
-          // Task namespace is ready if it has at least one ready
-          // to run task. Add it to |ready_to_run_namespaces_| if
-          // it just become ready.
-          if (was_empty) {
-            DCHECK(std::find(ready_to_run_namespaces_.begin(),
-                             ready_to_run_namespaces_.end(),
-                             task_namespace) == ready_to_run_namespaces_.end());
-            ready_to_run_namespaces_.push_back(task_namespace);
-          }
-          ready_to_run_namespaces_has_heap_properties = false;
-        }
-      }
-
-      // Rearrange the task namespaces in |ready_to_run_namespaces_|
-      // in such a way that they yet again form a heap.
-      if (!ready_to_run_namespaces_has_heap_properties) {
-        std::make_heap(ready_to_run_namespaces_.begin(),
-                       ready_to_run_namespaces_.end(),
-                       CompareTaskNamespacePriority);
-      }
-    }
-
-    // Finally add task to |completed_tasks_|.
-    task_namespace->completed_tasks.push_back(task);
-
-    // If namespace has finished running all tasks, wake up origin thread.
-    if (HasFinishedRunningTasksInNamespace(task_namespace))
-      has_namespaces_with_finished_running_tasks_cv_.Signal();
+    RunTaskWithLockAcquired(thread_index);
   }
 
   // We noticed we should exit. Wake up the next worker so it knows it should
   // exit as well (because the Shutdown() code only signals once).
   has_ready_to_run_tasks_cv_.Signal();
+}
+
+void TaskGraphRunner::RunTaskWithLockAcquired(int thread_index) {
+  lock_.AssertAcquired();
+  DCHECK(!ready_to_run_namespaces_.empty());
+
+  // Take top priority TaskNamespace from |ready_to_run_namespaces_|.
+  std::pop_heap(ready_to_run_namespaces_.begin(),
+                ready_to_run_namespaces_.end(),
+                CompareTaskNamespacePriority);
+  TaskNamespace* task_namespace = ready_to_run_namespaces_.back();
+  ready_to_run_namespaces_.pop_back();
+  DCHECK(!task_namespace->ready_to_run_tasks.empty());
+
+  // Take top priority task from |ready_to_run_tasks|.
+  std::pop_heap(task_namespace->ready_to_run_tasks.begin(),
+                task_namespace->ready_to_run_tasks.end(),
+                CompareTaskPriority);
+  scoped_refptr<Task> task(task_namespace->ready_to_run_tasks.back()->task());
+  task_namespace->ready_to_run_tasks.pop_back();
+
+  // Add task namespace back to |ready_to_run_namespaces_| if not
+  // empty after taking top priority task.
+  if (!task_namespace->ready_to_run_tasks.empty()) {
+    ready_to_run_namespaces_.push_back(task_namespace);
+    std::push_heap(ready_to_run_namespaces_.begin(),
+                   ready_to_run_namespaces_.end(),
+                   CompareTaskNamespacePriority);
+  }
+
+  // Move task from |pending_tasks| to |running_tasks|.
+  DCHECK(task_namespace->pending_tasks.contains(task.get()));
+  DCHECK(!task_namespace->running_tasks.contains(task.get()));
+  task_namespace->running_tasks.set(
+      task.get(), task_namespace->pending_tasks.take_and_erase(task.get()));
+
+  // There may be more work available, so wake up another worker thread.
+  has_ready_to_run_tasks_cv_.Signal();
+
+  // Call WillRun() before releasing |lock_| and running task.
+  task->WillRun();
+
+  {
+    base::AutoUnlock unlock(lock_);
+
+    task->RunOnWorkerThread(thread_index);
+  }
+
+  // This will mark task as finished running.
+  task->DidRun();
+
+  // Now iterate over all dependents to remove dependency and check
+  // if they are ready to run.
+  scoped_ptr<GraphNode> node =
+      task_namespace->running_tasks.take_and_erase(task.get());
+  if (node) {
+    bool ready_to_run_namespaces_has_heap_properties = true;
+
+    for (GraphNode::Vector::const_iterator it = node->dependents().begin();
+         it != node->dependents().end();
+         ++it) {
+      GraphNode* dependent_node = *it;
+
+      dependent_node->remove_dependency();
+      // Task is ready if it has no dependencies. Add it to
+      // |ready_to_run_tasks_|.
+      if (!dependent_node->num_dependencies()) {
+        bool was_empty = task_namespace->ready_to_run_tasks.empty();
+        task_namespace->ready_to_run_tasks.push_back(dependent_node);
+        std::push_heap(task_namespace->ready_to_run_tasks.begin(),
+                       task_namespace->ready_to_run_tasks.end(),
+                       CompareTaskPriority);
+        // Task namespace is ready if it has at least one ready
+        // to run task. Add it to |ready_to_run_namespaces_| if
+        // it just become ready.
+        if (was_empty) {
+          DCHECK(std::find(ready_to_run_namespaces_.begin(),
+                           ready_to_run_namespaces_.end(),
+                           task_namespace) == ready_to_run_namespaces_.end());
+          ready_to_run_namespaces_.push_back(task_namespace);
+        }
+        ready_to_run_namespaces_has_heap_properties = false;
+      }
+    }
+
+    // Rearrange the task namespaces in |ready_to_run_namespaces_|
+    // in such a way that they yet again form a heap.
+    if (!ready_to_run_namespaces_has_heap_properties) {
+      std::make_heap(ready_to_run_namespaces_.begin(),
+                     ready_to_run_namespaces_.end(),
+                     CompareTaskNamespacePriority);
+    }
+  }
+
+  // Finally add task to |completed_tasks_|.
+  task_namespace->completed_tasks.push_back(task);
+
+  // If namespace has finished running all tasks, wake up origin thread.
+  if (HasFinishedRunningTasksInNamespace(task_namespace))
+    has_namespaces_with_finished_running_tasks_cv_.Signal();
 }
 
 }  // namespace internal
