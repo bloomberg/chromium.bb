@@ -39,13 +39,17 @@ class NativeViewportWin : public gfx::WindowImpl,
   // Overridden from NativeViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
     gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
-        window_style(), window_ex_style(), bounds);
+        WS_OVERLAPPEDWINDOW, window_ex_style(), bounds);
     gfx::WindowImpl::Init(NULL, window_bounds);
     SetWindowText(hwnd(), L"native_viewport::NativeViewportWin!");
   }
 
   virtual void Show() OVERRIDE {
     ShowWindow(hwnd(), SW_SHOWNORMAL);
+  }
+
+  virtual void Hide() OVERRIDE {
+    ShowWindow(hwnd(), SW_HIDE);
   }
 
   virtual void Close() OVERRIDE {

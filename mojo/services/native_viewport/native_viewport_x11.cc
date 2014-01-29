@@ -59,6 +59,10 @@ class NativeViewportX11 : public NativeViewport,
     XFlush(display);
   }
 
+  virtual void Hide() OVERRIDE {
+    XWithdrawWindow(gfx::GetXDisplay(), window_, 0);
+  }
+
   virtual void Close() OVERRIDE {
     // TODO(beng): perform this in response to XWindow destruction.
     delegate_->OnDestroyed();

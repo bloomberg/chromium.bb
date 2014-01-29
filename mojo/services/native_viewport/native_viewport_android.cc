@@ -105,6 +105,10 @@ void NativeViewportAndroid::Show() {
   // Nothing to do. View is created visible.
 }
 
+void NativeViewportAndroid::Hide() {
+  // Nothing to do. View is always visible.
+}
+
 void NativeViewportAndroid::Close() {
   // TODO(beng): close activity containing MojoView?
 

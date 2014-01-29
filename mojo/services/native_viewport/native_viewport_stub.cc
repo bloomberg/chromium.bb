@@ -23,6 +23,8 @@ class NativeViewportStub : public NativeViewport {
   }
   virtual void Show() OVERRIDE {
   }
+  virtual void Hide() OVERRIDE {
+  }
   virtual void Close() OVERRIDE {
     delegate_->OnDestroyed();
   }

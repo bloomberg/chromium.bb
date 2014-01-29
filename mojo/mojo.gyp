@@ -54,6 +54,7 @@
           'dependencies': [
             'mojo_aura_demo',
             'mojo_launcher',
+            'mojo_view_manager',
           ],
         }],
       ]

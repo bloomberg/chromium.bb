@@ -44,6 +44,7 @@ class MOJO_NATIVE_VIEWPORT_EXPORT NativeViewportAndroid
   // Overridden from NativeViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE;
   virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;

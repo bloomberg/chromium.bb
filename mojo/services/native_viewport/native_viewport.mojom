@@ -41,6 +41,7 @@ struct Event {
 interface NativeViewport {
   void Create(Rect bounds);
   void Show();
+  void Hide();
   void Close();
   void SetBounds(Rect bounds);
   void CreateGLES2Context(handle<message_pipe> gles2_client);

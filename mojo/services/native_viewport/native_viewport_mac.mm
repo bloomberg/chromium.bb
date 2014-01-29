@@ -45,6 +45,10 @@ class NativeViewportMac : public NativeViewport {
     [window_ orderFront:nil];
   }
 
+  virtual void Hide() OVERRIDE {
+    [window_ orderOut:nil];
+  }
+
   virtual void Close() OVERRIDE {
     // TODO(beng): perform this in response to NSWindow destruction.
     delegate_->OnDestroyed();

@@ -51,6 +51,10 @@ class NativeViewportService::NativeViewportImpl
     native_viewport_->Show();
   }
 
+  virtual void Hide() MOJO_OVERRIDE {
+    native_viewport_->Hide();
+  }
+
   virtual void Close() MOJO_OVERRIDE {
     gles2_.reset();
     DCHECK(native_viewport_);
@@ -147,7 +151,7 @@ class NativeViewportService::NativeViewportImpl
 
   virtual void OnBoundsChanged(const gfx::Rect& bounds) MOJO_OVERRIDE {
     CreateGLES2ContextIfNeeded();
-    AllocationScope allocation;
+    AllocationScope scope;
     client_->OnBoundsChanged(bounds);
   }
 

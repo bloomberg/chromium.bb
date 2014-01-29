@@ -1,0 +1,28 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+[Peer=ViewClient]
+interface View {
+  void SetId(int32 id);
+  void GetId();
+};
+
+[Peer=View]
+interface ViewClient {
+  void OnGotId(int32 id);
+};
+
+[Peer=ViewManagerClient]
+interface ViewManager {
+  void CreateView();
+};
+
+[Peer=ViewManager]
+interface ViewManagerClient {
+  void OnViewCreated(handle<message_pipe> view);
+};
+
+}

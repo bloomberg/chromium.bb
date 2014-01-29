@@ -117,6 +117,18 @@
           'includes': [ 'build/package_app.gypi' ],
         },
         {
+          'target_name': 'mojo_launcher_bindings',
+          'type': 'static_library',
+          'sources': [
+            'examples/launcher/launcher.mojom',
+          ],
+          'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+          'export_dependent_settings': [
+            'mojo_bindings',
+            'mojo_system',
+          ],
+        },
+        {
           'target_name': 'mojo_launcher',
           'type': 'shared_library',
           'dependencies': [
@@ -143,6 +155,7 @@
             'mojo_environment_chromium',
             'mojo_gles2',
             'mojo_gles2_bindings',
+            'mojo_launcher_bindings',
             'mojo_native_viewport_bindings',
             'mojo_shell_bindings',
             'mojo_system',
@@ -163,6 +176,43 @@
           'target_name': 'package_mojo_launcher',
           'variables': {
             'app_name': 'mojo_launcher',
+          },
+          'includes': [ 'build/package_app.gypi' ],
+        },
+        {
+          'target_name': 'mojo_view_manager_bindings',
+          'type': 'static_library',
+          'sources': [
+            'examples/view_manager/view_manager.mojom',
+          ],
+          'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+          'export_dependent_settings': [
+            'mojo_bindings',
+            'mojo_system',
+          ],
+        },
+        {
+          'target_name': 'mojo_view_manager',
+          'type': 'shared_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            'mojo_common_lib',
+            'mojo_environment_chromium',
+            'mojo_launcher_bindings',
+            'mojo_native_viewport_bindings',
+            'mojo_shell_bindings',
+            'mojo_system',
+            'mojo_view_manager_bindings',
+          ],
+          'sources': [
+            'examples/view_manager/view_manager.cc',
+          ],
+        },
+        {
+          'target_name': 'package_mojo_view_manager',
+          'variables': {
+            'app_name': 'mojo_view_manager',
           },
           'includes': [ 'build/package_app.gypi' ],
         },

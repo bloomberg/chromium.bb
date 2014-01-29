@@ -43,6 +43,7 @@ class NativeViewport {
 
   virtual void Init(const gfx::Rect& bounds) = 0;
   virtual void Show() = 0;
+  virtual void Hide() = 0;
   virtual void Close() = 0;
   virtual gfx::Size GetSize() = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;

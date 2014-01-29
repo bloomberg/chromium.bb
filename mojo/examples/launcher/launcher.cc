@@ -20,6 +20,7 @@
 #include "mojo/public/gles2/gles2_cpp.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
+#include "mojom/launcher.h"
 #include "mojom/native_viewport.h"
 #include "mojom/shell.h"
 #include "ui/aura/client/aura_constants.h"
@@ -140,9 +141,19 @@ class LauncherWindowTreeClient : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(LauncherWindowTreeClient);
 };
 
+// Called when the user has submitted a URL by pressing Enter.
+class URLReceiver {
+ public:
+  virtual void OnURLEntered(const std::string& url_text) = 0;
+
+ protected:
+  virtual ~URLReceiver() {}
+};
+
 class LauncherController : public views::TextfieldController {
  public:
-  LauncherController() {}
+  explicit LauncherController(URLReceiver* url_receiver)
+      : url_receiver_(url_receiver) {}
 
   void InitInWindow(aura::Window* parent) {
     views::Widget* widget = new views::Widget;
@@ -163,6 +174,7 @@ class LauncherController : public views::TextfieldController {
     views::Textfield* textfield = new views::Textfield;
     textfield->set_controller(this);
     container->AddChildView(textfield);
+    textfield->RequestFocus();
 
     container->Layout();
 
@@ -175,18 +187,25 @@ class LauncherController : public views::TextfieldController {
                               const ui::KeyEvent& key_event) OVERRIDE {
     if (key_event.key_code() == ui::VKEY_RETURN) {
       GURL url(sender->text());
-      printf("URL: %s\n", url.spec().c_str());
+      printf("Enter pressed with URL: %s\n", url.spec().c_str());
+      url_receiver_->OnURLEntered(url.spec());
     }
     return false;
   }
 
+  URLReceiver* url_receiver_;
+
   DISALLOW_COPY_AND_ASSIGN(LauncherController);
 };
 
-class Launcher : public ShellClient {
+class LauncherImpl : public ShellClient,
+                     public Launcher,
+                     public URLReceiver {
  public:
-  explicit Launcher(ScopedMessagePipeHandle shell_handle)
-      : shell_(shell_handle.Pass(), this) {
+  explicit LauncherImpl(ScopedMessagePipeHandle shell_handle)
+      : launcher_controller_(this),
+        shell_(shell_handle.Pass(), this),
+        pending_show_(false) {
     screen_.reset(DemoScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
@@ -194,16 +213,35 @@ class Launcher : public ShellClient {
     CreateMessagePipe(&client_handle, &native_viewport_handle);
     root_window_host_.reset(new WindowTreeHostMojo(
         native_viewport_handle.Pass(), gfx::Rect(50, 50, 450, 60),
-        base::Bind(&Launcher::HostContextCreated, base::Unretained(this))));
+        base::Bind(&LauncherImpl::HostContextCreated, base::Unretained(this))));
     AllocationScope scope;
     shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
   }
 
+ private:
+  // Overridden from ShellClient:
   virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
-    NOTREACHED() << "Launcher can't be connected to.";
+    launcher_client_.reset(handle.Pass(), this);
   }
 
- private:
+  // Overridden from Launcher:
+  virtual void Show() OVERRIDE {
+    if (!root_window_.get()) {
+      pending_show_ = true;
+      return;
+    }
+    root_window_->host()->Show();
+  }
+  virtual void Hide() OVERRIDE {
+    root_window_->host()->Hide();
+  }
+
+  // Overridden from URLReceiver:
+  virtual void OnURLEntered(const std::string& url_text) {
+    AllocationScope scope;
+    launcher_client_->OnURLEntered(url_text);
+  }
+
   void HostContextCreated() {
     aura::RootWindow::CreateParams params(gfx::Rect(450, 60));
     params.host = root_window_host_.get();
@@ -225,7 +263,10 @@ class Launcher : public ShellClient {
 
     launcher_controller_.InitInWindow(root_window_->window());
 
-    root_window_->host()->Show();
+    if (pending_show_) {
+      pending_show_ = false;
+      Show();
+    }
   }
 
   scoped_ptr<DemoScreen> screen_;
@@ -238,8 +279,11 @@ class Launcher : public ShellClient {
   LauncherController launcher_controller_;
 
   RemotePtr<Shell> shell_;
+  RemotePtr<LauncherClient> launcher_client_;
   scoped_ptr<WindowTreeHostMojo> root_window_host_;
   scoped_ptr<aura::RootWindow> root_window_;
+
+  bool pending_show_;
 };
 
 }  // namespace examples
@@ -264,7 +308,7 @@ extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
   //             MessageLoop is not of TYPE_UI. I think we need a way to build
   //             Aura that doesn't define platform-specific stuff.
   aura::Env::CreateInstance();
-  mojo::examples::Launcher launcher(
+  mojo::examples::LauncherImpl launcher(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
   loop.Run();
 

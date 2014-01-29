@@ -72,11 +72,13 @@ gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
 }
 
 void WindowTreeHostMojo::Show() {
+  window()->Show();
   native_viewport_->Show();
 }
 
 void WindowTreeHostMojo::Hide() {
-  NOTIMPLEMENTED();
+  native_viewport_->Hide();
+  window()->Hide();
 }
 
 void WindowTreeHostMojo::ToggleFullScreen() {
