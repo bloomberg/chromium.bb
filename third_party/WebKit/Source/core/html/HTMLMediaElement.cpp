@@ -34,7 +34,6 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/MediaList.h"
-#include "core/css/MediaQueryEvaluator.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -2911,7 +2910,6 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
         if (node->parentNode() != this)
             continue;
 
-        UseCounter::count(document(), UseCounter::SourceElementCandidate);
         source = toHTMLSourceElement(node);
 
         // If candidate does not have a src attribute, or if its src attribute's value is the empty string ... jump down to the failed step below
@@ -2922,19 +2920,6 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
 #endif
         if (mediaURL.isEmpty())
             goto check_again;
-
-        if (source->fastHasAttribute(mediaAttr)) {
-            MediaQueryEvaluator screenEval("screen", document().frame(), renderer() ? renderer()->style() : 0);
-            RefPtr<MediaQuerySet> media = MediaQuerySet::create(source->media());
-#if !LOG_DISABLED
-            if (shouldLog)
-                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'media' is %s", source->media().utf8().data());
-#endif
-            if (!screenEval.eval(media.get())) {
-                UseCounter::count(document(), UseCounter::SourceElementNonMatchingMedia);
-                goto check_again;
-            }
-        }
 
         type = source->type();
         // FIXME(82965): Add support for keySystem in <source> and set system from source.

@@ -8,9 +8,6 @@ EXPECTED (video.error == 'null') OK
 EVENT(error) from <source id='bogus-type' src='content/test.mp4'> OK
 EXPECTED (video.error == 'null') OK
 
-EVENT(error) from <source id='unsupported-media-query' src='content/test.mp4'> OK
-EXPECTED (video.error == 'null') OK
-
 EVENT(error) from <source id='missing-file' src='content/error2.mpeg'> OK
 EXPECTED (video.error == 'null') OK
 
