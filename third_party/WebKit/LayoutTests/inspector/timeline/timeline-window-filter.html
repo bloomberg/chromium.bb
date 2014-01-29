@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="resources/timeline-data.js"></script>
+<script>
+
+function test()
+{
+    var timelineData = InspectorTest.timelineData();
+
+    WebInspector.showPanel("timeline");
+    var timeline = WebInspector.panels.timeline;
+
+    var model = timeline._model;
+
+    function createFileReader(file, delegate)
+    {
+        return new InspectorTest.FakeFileReader(timelineData, delegate, model.saveToFile.bind(model));
+    }
+
+    InspectorTest.override(model, "_createFileReader", createFileReader);
+
+    model.loadFromFile({}, new WebInspector.Progress());
+    function dumpRecordsCountForRange(windowLeft, windowRight)
+    {
+        timeline._overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
+        timeline._currentView._refresh();
+        InspectorTest.addResult("mode = " + timeline._currentView._currentMode);
+        InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
+        InspectorTest.addResult("time range = " + timeline._currentView._windowFilter._windowStartTime + " - " + timeline._currentView._windowFilter._windowEndTime);
+        InspectorTest.addResult("records count: " + timeline._currentView._presentationModel.filteredRecords().length);
+        InspectorTest.addResult("");
+    }
+
+    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Events);
+    dumpRecordsCountForRange(0, 1);
+    dumpRecordsCountForRange(0.25, 0.75);
+    dumpRecordsCountForRange(0.33, 0.66);
+
+    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Memory);
+    dumpRecordsCountForRange(0, 1);
+    dumpRecordsCountForRange(0.25, 0.75);
+    dumpRecordsCountForRange(0.33, 0.66);
+
+    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Frames);
+    dumpRecordsCountForRange(0, 1);
+    dumpRecordsCountForRange(0.25, 0.75);
+    dumpRecordsCountForRange(0.33, 0.66);
+
+    timeline._overviewPane._overviewGrid.setWindow(0.1, 0.9);
+
+    InspectorTest.addResult("--------------------------------------------------------");
+    InspectorTest.addResult("mode = " + timeline._currentView._currentMode);
+    InspectorTest.addResult("time range = " + timeline._currentView._windowFilter._windowStartTime + " - " + timeline._currentView._windowFilter._windowEndTime);
+    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Events);
+    InspectorTest.addResult("");
+
+    InspectorTest.addResult("mode = " + timeline._currentView._currentMode);
+    InspectorTest.addResult("time range = " + timeline._currentView._windowFilter._windowStartTime + " - " + timeline._currentView._windowFilter._windowEndTime);
+    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Memory);
+    InspectorTest.addResult("");
+
+    InspectorTest.addResult("mode = " + timeline._currentView._currentMode);
+    InspectorTest.addResult("time range = " + timeline._currentView._windowFilter._windowStartTime + " - " + timeline._currentView._windowFilter._windowEndTime);
+    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Frames);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline window filter.
+</p>
+
+<p>
+It applies different ranges to the OverviewGrid and expects that current view reflects the change.
+</p>
+<p>
+Also it detects that after switching to another view it gets the proper time range.
+</p>
+
+</body>
+</html>

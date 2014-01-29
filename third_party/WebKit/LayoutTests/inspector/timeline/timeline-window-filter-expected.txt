@@ -1,0 +1,61 @@
+Tests the Timeline window filter.
+
+It applies different ranges to the OverviewGrid and expects that current view reflects the change.
+
+Also it detects that after switching to another view it gets the proper time range.
+
+mode = Events
+range = 0 - 1
+time range = 1390988669.115434 - 1390988669.27943
+records count: 80
+
+mode = Events
+range = 0.25 - 0.75
+time range = 1390988669.3658047 - 1390988669.8665462
+records count: 49
+
+mode = Events
+range = 0.33 - 0.66
+time range = 1390988669.4459233 - 1390988669.7764127
+records count: 34
+
+mode = Memory
+range = 0 - 1
+time range = 1390988669.115434 - 1390988670.116917
+records count: 80
+
+mode = Memory
+range = 0.25 - 0.75
+time range = 1390988669.3658047 - 1390988669.8665462
+records count: 49
+
+mode = Memory
+range = 0.33 - 0.66
+time range = 1390988669.4459233 - 1390988669.7764127
+records count: 34
+
+mode = Frames
+range = 0 - 1
+time range = 1390988669.1625888 - 1390988670.111423
+records count: 77
+
+mode = Frames
+range = 0.25 - 0.75
+time range = 1390988669.4765599 - 1390988670.044563
+records count: 44
+
+mode = Frames
+range = 0.33 - 0.66
+time range = 1390988669.560015 - 1390988669.99458
+records count: 35
+
+--------------------------------------------------------
+mode = Frames
+time range = 1390988669.309568 - 1390988670.111423
+
+mode = Events
+time range = 1390988669.309568 - 1390988670.111423
+
+mode = Memory
+time range = 1390988669.309568 - 1390988670.111423
+
