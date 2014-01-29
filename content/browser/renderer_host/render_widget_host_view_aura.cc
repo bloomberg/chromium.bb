@@ -2559,11 +2559,12 @@ gfx::Size RenderWidgetHostViewAura::GetMaximumSize() const {
 void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
   base::AutoReset<bool> in_bounds_changed(&in_bounds_changed_, true);
-  // We care about this only in fullscreen mode, where there is no
-  // WebContentsViewAura. We are sized via SetSize() or SetBounds() by
-  // WebContentsViewAura in other cases.
-  if (is_fullscreen_)
-    SetSize(new_bounds.size());
+  // We care about this whenever RenderWidgetHostViewAura is not owned by a
+  // WebContentsViewAura since changes to the Window's bounds need to be
+  // messaged to the renderer.  WebContentsViewAura invokes SetSize() or
+  // SetBounds() itself.  No matter how we got here, any redundant calls are
+  // harmless.
+  SetSize(new_bounds.size());
 }
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
@@ -2910,14 +2911,17 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       break;
   }
 
-  // Needed to propagate mouse event to native_tab_contents_view_aura.
+  // Needed to propagate mouse event to |window_->parent()->delegate()|, but
+  // note that it might be something other than a WebContentsViewAura instance.
   // TODO(pkotwicz): Find a better way of doing this.
   // In fullscreen mode which is typically used by flash, don't forward
   // the mouse events to the parent. The renderer and the plugin process
   // handle these events.
   if (!is_fullscreen_ && window_->parent()->delegate() &&
-      !(event->flags() & ui::EF_FROM_TOUCH))
+      !(event->flags() & ui::EF_FROM_TOUCH)) {
+    event->ConvertLocationToTarget(window_, window_->parent());
     window_->parent()->delegate()->OnMouseEvent(event);
+  }
 
   if (!IsXButtonUpEvent(event))
     event->SetHandled();
