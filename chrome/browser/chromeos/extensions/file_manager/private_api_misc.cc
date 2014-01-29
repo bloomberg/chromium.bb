@@ -263,7 +263,7 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunImpl() {
 
   scoped_refptr<file_manager::AppInstaller> installer(
       new file_manager::AppInstaller(
-          GetAssociatedWebContents(),  // web_contents(),
+          GetAssociatedWebContents(),
           params->item_id,
           GetProfile(),
           callback));
@@ -284,7 +284,7 @@ void FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete(
                      "App install failed. (item id: %s, reason: %s)",
                      webstore_item_id_.c_str(),
                      error.c_str());
-    error_ = error;
+    SetError(error);
   }
 
   SendResponse(success);

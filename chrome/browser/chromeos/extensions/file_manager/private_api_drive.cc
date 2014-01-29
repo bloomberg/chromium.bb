@@ -228,7 +228,7 @@ void FileBrowserPrivatePinDriveFileFunction::
   if (error == drive::FILE_ERROR_OK) {
     SendResponse(true);
   } else {
-    error_ = drive::FileErrorToString(error);
+    SetError(drive::FileErrorToString(error));
     SendResponse(false);
   }
 }
@@ -295,12 +295,6 @@ void FileBrowserPrivateGetDriveFilesFunction::OnFileReady(
   if (error == drive::FILE_ERROR_OK) {
     local_paths_.push_back(local_path.AsUTF8Unsafe());
     DVLOG(1) << "Got " << drive_path.value() << " as " << local_path.value();
-
-    // TODO(benchan): If the file is a hosted document, a temporary JSON file
-    // is created to represent the document. The JSON file is not cached and
-    // should be deleted after use. We need to somehow communicate with
-    // file_manager.js to manage the lifetime of the temporary file.
-    // See crosbug.com/28058.
   } else {
     local_paths_.push_back("");
     DVLOG(1) << "Failed to get " << drive_path.value()
@@ -604,7 +598,7 @@ void FileBrowserPrivateGetShareUrlFunction::OnGetShareUrl(
     drive::FileError error,
     const GURL& share_url) {
   if (error != drive::FILE_ERROR_OK) {
-    error_ = "Share Url for this item is not available.";
+    SetError("Share Url for this item is not available.");
     SendResponse(false);
     return;
   }

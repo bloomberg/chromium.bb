@@ -182,7 +182,7 @@ void VolumeManager::Initialize() {
   // the old preferences on paths to the new format when needed. For the detail,
   // see the comments in file_manager::util::MigratePathFromOldFormat,
   // Note: Preferences related to downloads are handled in download_prefs.cc.
-  // TODO(kinaba): Remove this are several rounds of releases.
+  // TODO(kinaba): Remove this after several rounds of releases.
   const base::FilePath old_path =
       profile_->GetPrefs()->GetFilePath(prefs::kSelectFileLastDirectory);
   base::FilePath new_path;

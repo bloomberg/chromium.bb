@@ -41,8 +41,8 @@ FileBrowserPrivateAPIFactory::~FileBrowserPrivateAPIFactory() {
 
 BrowserContextKeyedService*
 FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new FileBrowserPrivateAPI(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return new FileBrowserPrivateAPI(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* FileBrowserPrivateAPIFactory::GetBrowserContextToUse(

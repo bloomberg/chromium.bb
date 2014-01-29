@@ -38,7 +38,7 @@ class FileBrowserPrivateAPIFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
 };
 
 }  // namespace file_manager

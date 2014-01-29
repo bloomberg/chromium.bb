@@ -34,9 +34,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -46,14 +44,12 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using extensions::api::file_browser_handler_internal::FileEntryInfo;
 using file_manager::FileSelector;
@@ -295,7 +291,7 @@ bool FileBrowserHandlerInternalSelectFileFunction::RunImpl() {
     allowed_extensions = *params->selection_params.allowed_file_extensions;
 
   if (!user_gesture() && user_gesture_check_enabled_) {
-    error_ = kNoUserGestureError;
+    SetError(kNoUserGestureError);
     return false;
   }
 

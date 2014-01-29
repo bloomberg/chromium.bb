@@ -6,15 +6,6 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_dialog.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_file_system.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_mount.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/extensions/extension_function_registry.h"
 
 namespace file_manager {
 

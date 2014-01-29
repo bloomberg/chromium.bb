@@ -231,7 +231,7 @@ void FileBrowserPrivateRequestFileSystemFunction::DidFail(
     base::File::Error error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  error_ = base::StringPrintf("File error %d", static_cast<int>(error_code));
+  SetError(base::StringPrintf("File error %d", static_cast<int>(error_code)));
   SendResponse(false);
 }
 
@@ -521,7 +521,7 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
   if (params->source_url.empty() || params->parent.empty() ||
       params->new_name.empty()) {
     // Error code in format of DOMError.name.
-    error_ = "EncodingError";
+    SetError("EncodingError");
     return false;
   }
 
@@ -536,7 +536,7 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
 
   if (!source_url.is_valid() || !destination_url.is_valid()) {
     // Error code in format of DOMError.name.
-    error_ = "EncodingError";
+    SetError("EncodingError");
     return false;
   }
 

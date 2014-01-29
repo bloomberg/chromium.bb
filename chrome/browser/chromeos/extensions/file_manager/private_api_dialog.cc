@@ -5,11 +5,9 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_dialog.h"
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 using content::BrowserThread;
@@ -18,39 +16,18 @@ namespace extensions {
 
 namespace {
 
-// Returns the WebContents of the tab associated with the dispatcher. Returns
-// NULL on error.
-content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher) {
-  if (!dispatcher) {
-    LOG(WARNING) << "No dispatcher";
-    return NULL;
-  }
-  if (!dispatcher->delegate()) {
-    LOG(WARNING) << "No delegate";
-    return NULL;
-  }
-  content::WebContents* web_contents =
-      dispatcher->delegate()->GetAssociatedWebContents();
-  if (!web_contents) {
-    LOG(WARNING) << "No associated tab contents";
-    return NULL;
-  }
-  return web_contents;
-}
-
-// Computes the routing ID for SelectFileDialogExtension from the |dispatcher|.
+// Computes the routing ID for SelectFileDialogExtension from the |function|.
 SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
-    ExtensionFunctionDispatcher* dispatcher) {
+    ChromeAsyncExtensionFunction* function) {
   return SelectFileDialogExtension::GetRoutingIDFromWebContents(
-      GetWebContents(dispatcher));
+      function->GetAssociatedWebContents());
 }
 
 }  // namespace
 
 bool FileBrowserPrivateCancelDialogFunction::RunImpl() {
-  const SelectFileDialogExtension::RoutingID routing_id =
-      GetFileDialogRoutingID(dispatcher());
-  SelectFileDialogExtension::OnFileSelectionCanceled(routing_id);
+  SelectFileDialogExtension::OnFileSelectionCanceled(
+      GetFileDialogRoutingID(this));
   SendResponse(true);
   return true;
 }
@@ -91,9 +68,8 @@ void FileBrowserPrivateSelectFileFunction::GetSelectedFileInfoResponse(
     SendResponse(false);
     return;
   }
-  const SelectFileDialogExtension::RoutingID routing_id =
-      GetFileDialogRoutingID(dispatcher());
-  SelectFileDialogExtension::OnFileSelected(routing_id, files[0], index);
+  SelectFileDialogExtension::OnFileSelected(GetFileDialogRoutingID(this),
+                                            files[0], index);
   SendResponse(true);
 }
 
@@ -102,12 +78,9 @@ bool FileBrowserPrivateSelectFilesFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const size_t len = params->selected_paths.size();
   std::vector<GURL> file_urls;
-  file_urls.reserve(len);
-  for (size_t i = 0; i < len; ++i) {
+  for (size_t i = 0; i < params->selected_paths.size(); ++i)
     file_urls.push_back(GURL(params->selected_paths[i]));
-  }
 
   file_manager::util::GetSelectedFileInfo(
       render_view_host(),
@@ -125,9 +98,8 @@ bool FileBrowserPrivateSelectFilesFunction::RunImpl() {
 void FileBrowserPrivateSelectFilesFunction::GetSelectedFileInfoResponse(
     const std::vector<ui::SelectedFileInfo>& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const SelectFileDialogExtension::RoutingID routing_id =
-      GetFileDialogRoutingID(dispatcher());
-  SelectFileDialogExtension::OnMultiFilesSelected(routing_id, files);
+  SelectFileDialogExtension::OnMultiFilesSelected(GetFileDialogRoutingID(this),
+                                                  files);
   SendResponse(true);
 }
 

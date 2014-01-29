@@ -80,7 +80,7 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
     const FileSystemURL url =
         file_system_context->CrackURL(GURL(params->file_urls[i]));
     if (!chromeos::FileSystemBackend::CanHandleURL(url)) {
-      error_ = kInvalidFileUrl;
+      SetError(kInvalidFileUrl);
       return false;
     }
     file_urls.push_back(url);

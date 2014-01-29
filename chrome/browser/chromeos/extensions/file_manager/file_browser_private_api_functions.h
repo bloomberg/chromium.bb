@@ -16,6 +16,5 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_mount.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_tasks.h"
-#include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_FUNCTIONS_H_
