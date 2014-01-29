@@ -3832,7 +3832,7 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 static void
 maximize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *focus = seat->pointer->focus->surface;
+	struct weston_surface *focus = seat->keyboard->focus;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 
@@ -3856,7 +3856,7 @@ maximize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void 
 static void
 fullscreen_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *focus = seat->pointer->focus->surface;
+	struct weston_surface *focus = seat->keyboard->focus;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 
