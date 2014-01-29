@@ -200,8 +200,13 @@ def GitTry():
 
 
 def FindCommitWithGitSvnId(git_svn_id):
-  out = ExecCommand(['git', 'svn', 'find-rev', 'r' + git_svn_id]).strip()
-  assert out
+  while True:
+    # This command needs to retry because git-svn partially rebuild its
+    # revision map for every commit. Asking it a second time fixes the
+    # issue.
+    out = ExecCommand(['git', 'svn', 'find-rev', 'r' + git_svn_id]).strip()
+    if not re.match('^Partial-rebuilding ', out):
+      break
   return out
 
 
