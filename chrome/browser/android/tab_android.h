@@ -104,8 +104,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   // of service and the privacy notice.
   virtual bool ShouldWelcomePageLinkToTermsOfService();
 
-  static void InitTabHelpers(content::WebContents* web_contents);
-
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 

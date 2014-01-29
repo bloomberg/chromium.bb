@@ -23,7 +23,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tab_contents.h"
+#include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -346,7 +346,7 @@ void PrerenderContents::StartPrerendering(
   alias_session_storage_namespace = session_storage_namespace->CreateAlias();
   prerender_contents_.reset(
       CreateWebContents(alias_session_storage_namespace.get()));
-  BrowserTabContents::AttachTabHelpers(prerender_contents_.get());
+  TabHelpers::AttachTabHelpers(prerender_contents_.get());
 #if defined(OS_ANDROID)
   // Delay icon fetching until the contents are getting swapped in
   // to conserve network usage in mobile devices.
