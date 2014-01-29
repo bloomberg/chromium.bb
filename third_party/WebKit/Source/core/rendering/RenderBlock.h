@@ -506,8 +506,6 @@ private:
     virtual void calcColumnWidth();
     void makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlockFlow* newBlockBox, RenderObject* newChild);
 
-    bool expandsToEncloseOverhangingFloats() const;
-
     void splitBlocks(RenderBlock* fromBlock, RenderBlock* toBlock, RenderBlock* middleBlock,
                      RenderObject* beforeChild, RenderBoxModelObject* oldCont);
     void splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox,
@@ -535,6 +533,8 @@ protected:
     bool hasNextPage(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
 
     virtual ColumnInfo::PaginationUnit paginationUnit() const;
+
+    bool createsBlockFormattingContext() const;
 
 public:
     LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;

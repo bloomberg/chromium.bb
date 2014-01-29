@@ -367,7 +367,7 @@ inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit p
     }
 
     // Expand our intrinsic height to encompass floats.
-    if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && expandsToEncloseOverhangingFloats())
+    if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsBlockFormattingContext())
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
 
     if (relayoutForPagination(hasSpecifiedPageLogicalHeight, pageLogicalHeight, statePusher) || relayoutToAvoidWidows(statePusher)) {
@@ -897,10 +897,7 @@ MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
 {
     RenderStyle* blockStyle = blockFlow->style();
     ASSERT(blockFlow->isRenderView() || blockFlow->parent());
-    m_canCollapseWithChildren = !blockFlow->isRenderView() && !blockFlow->isRoot() && !blockFlow->isOutOfFlowPositioned()
-        && !blockFlow->isFloating() && !blockFlow->isTableCell() && !blockFlow->hasOverflowClip() && !blockFlow->isInlineBlockOrInlineTable()
-        && !blockFlow->isRenderFlowThread() && !blockFlow->isWritingModeRoot() && !blockFlow->parent()->isFlexibleBox()
-        && blockStyle->hasAutoColumnCount() && blockStyle->hasAutoColumnWidth() && !blockStyle->columnSpan();
+    m_canCollapseWithChildren = !blockFlow->createsBlockFormattingContext() && !blockFlow->isRenderFlowThread() && !blockStyle->columnSpan() && !blockFlow->isRenderView();
 
     m_canCollapseMarginBeforeWithChildren = m_canCollapseWithChildren && !beforeBorderPadding && blockStyle->marginBeforeCollapse() != MSEPARATE;
 
@@ -1625,7 +1622,7 @@ void RenderBlockFlow::addOverflowFromFloats()
 void RenderBlockFlow::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats)
 {
     RenderBlock::computeOverflow(oldClientAfterEdge, recomputeFloats);
-    if (!hasColumns() && (recomputeFloats || isRoot() || expandsToEncloseOverhangingFloats() || hasSelfPaintingLayer()))
+    if (!hasColumns() && (recomputeFloats || createsBlockFormattingContext() || hasSelfPaintingLayer()))
         addOverflowFromFloats();
 }
 
