@@ -1656,6 +1656,7 @@ void RenderLayer::didUpdateNeedsCompositedScrolling()
 
 void RenderLayer::updateReflectionInfo(const RenderStyle* oldStyle)
 {
+    ASSERT(!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle));
     if (renderer()->hasReflection()) {
         if (!m_reflectionInfo)
             m_reflectionInfo = adoptPtr(new RenderLayerReflectionInfo(toRenderBox(renderer())));
@@ -3758,7 +3759,10 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     updateSelfPaintingLayer();
     updateOutOfFlowPositioned(oldStyle);
 
-    updateReflectionInfo(oldStyle);
+    if (!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle)) {
+        ASSERT(!oldStyle || diff >= StyleDifferenceLayout);
+        updateReflectionInfo(oldStyle);
+    }
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
         m_blendInfo.updateBlendMode();
