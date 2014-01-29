@@ -99,7 +99,7 @@ def GenerateXbuddyRequest(path, static_dir, board, board_mismatch_ok=False):
     if os.path.basename(path) not in IMAGE_NAME_TO_TYPE:
       raise ValueError('Unknown image name %s' % os.path.basename(path))
 
-    chroot_path = ds_wrapper.ToChrootPath(path)
+    chroot_path = cros_build_lib.ToChrootPath(path)
     # Create and link static_dir/DEVSERVER_LOCAL_IMAGE_SYMLINK_DIR/hashed_path
     # to the image folder, so that xbuddy/devserver can understand the path.
     # Alternatively, we can to pass '--image' at devserver startup, but this
@@ -159,7 +159,7 @@ using-the-dev-server/xbuddy-for-devserver
 
   ROOTFS_FILENAME = 'update.gz'
   STATEFUL_FILENAME = 'stateful.tgz'
-  DEVSERVER_STATIC_DIR = ds_wrapper.FromChrootPath(
+  DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
       os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
   DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
@@ -217,7 +217,8 @@ using-the-dev-server/xbuddy-for-devserver
       clobber: Clobber stateful partition (defaults to False).
     """
     # Copy latest stateful_update to device.
-    stateful_update_bin = ds_wrapper.FromChrootPath(self.STATEFUL_UPDATE_BIN)
+    stateful_update_bin = cros_build_lib.FromChrootPath(
+        self.STATEFUL_UPDATE_BIN)
     device.CopyToWorkDir(stateful_update_bin)
 
     msg = 'Updating stateful partition'

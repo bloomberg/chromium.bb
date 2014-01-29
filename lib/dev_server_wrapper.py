@@ -14,7 +14,6 @@ import urllib2
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
@@ -39,49 +38,6 @@ def GenerateUpdateId(target, src, key, for_vm):
     update_id = '+'.join([update_id, 'patched_kernel'])
 
   return update_id
-
-
-# Chroot helper methods. Devserver needs to run inside chroot to
-# generate full/delta payloads from image(s). Since we may call a
-# script into chroot with paths created outside the chroot,
-# translation back and forth is needed. These methods all assume the
-# default chroot dir.
-def ToChrootPath(path):
-  """Reinterprets |path| to be used inside of chroot.
-
-  Returns:
-    A reinterpreted path if currently outside chroot or |path| if
-    inside chroot.
-  """
-  full_path = osutils.ExpandPath(path)
-  if cros_build_lib.IsInsideChroot():
-    return full_path
-
-  try:
-    return git.ReinterpretPathForChroot(full_path)
-  except Exception:
-    raise ValueError('path %s is outside of your source tree' % path)
-
-
-def FromChrootPath(path):
-  """Interprets a chroot |path| to be used inside or outside chroot.
-
-  Returns:
-    If currently outside chroot, returns the reinterpreted |path| to
-    be used outside chroot. Otherwise, returns |path|.
-  """
-  full_path = osutils.ExpandPath(path)
-  if cros_build_lib.IsInsideChroot():
-    return full_path
-
-  # Replace chroot source root with current source root, if applicable.
-  if full_path.startswith(constants.CHROOT_SOURCE_ROOT):
-    return os.path.join(
-        constants.SOURCE_ROOT,
-        full_path[len(constants.CHROOT_SOURCE_ROOT):].strip(os.path.sep))
-  else:
-    return os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR,
-                        path.strip(os.path.sep))
 
 
 class DevServerException(Exception):
@@ -113,9 +69,10 @@ class DevServerWrapper(multiprocessing.Process):
     self.tempdir = None
     self.log_dir = log_dir
     if not self.log_dir:
-      self.tempdir = osutils.TempDir(base_dir=FromChrootPath('/tmp'),
-                                     prefix='devserver_wrapper',
-                                     sudo_rm=True)
+      self.tempdir = osutils.TempDir(
+          base_dir=cros_build_lib.FromChrootPath('/tmp'),
+          prefix='devserver_wrapper',
+          sudo_rm=True)
       self.log_dir = self.tempdir.tempdir
     self.static_dir = static_dir
     self.log_filename = os.path.join(self.log_dir, 'dev_server.log')
@@ -221,14 +178,15 @@ class DevServerWrapper(multiprocessing.Process):
 
     cmd = [self.devserver_bin,
            '--port', str(self.port),
-           '--pidfile', ToChrootPath(self._pid_file),
-           '--logfile', ToChrootPath(self.log_filename)]
+           '--pidfile', cros_build_lib.ToChrootPath(self._pid_file),
+           '--logfile', cros_build_lib.ToChrootPath(self.log_filename)]
 
     if self.static_dir:
-      cmd.append('--static_dir=%s' % ToChrootPath(self.static_dir))
+      cmd.append(
+          '--static_dir=%s' % cros_build_lib.ToChrootPath(self.static_dir))
 
     if self.src_image:
-      cmd.append('--src_image=%s' % ToChrootPath(self.src_image))
+      cmd.append('--src_image=%s' % cros_build_lib.ToChrootPath(self.src_image))
 
     result = self._RunCommand(
         cmd, enter_chroot=True,

@@ -1552,3 +1552,45 @@ def GetIPv4Address(dev=None, global_ip=True):
 def GetSysroot(board=None):
   """Returns the sysroot for |board| or '/' if |board| is None."""
   return '/' if board is None else os.path.join('/build', board)
+
+
+# Chroot helper methods; assume default 'chroot' directory name.
+def ToChrootPath(path):
+  """Reinterprets |path| to be used inside of chroot.
+
+  Returns:
+    A reinterpreted path if currently outside chroot or |path| if
+    inside chroot.
+  """
+  from chromite.lib import osutils
+  from chromite.lib import git
+  full_path = osutils.ExpandPath(path)
+  if IsInsideChroot():
+    return full_path
+
+  try:
+    return git.ReinterpretPathForChroot(full_path)
+  except Exception:
+    raise ValueError('path %s is outside of your source tree' % path)
+
+
+def FromChrootPath(path):
+  """Interprets a chroot |path| to be used inside or outside chroot.
+
+  Returns:
+    If currently outside chroot, returns the reinterpreted |path| to
+    be used outside chroot. Otherwise, returns |path|.
+  """
+  from chromite.lib import osutils
+  full_path = osutils.ExpandPath(path)
+  if IsInsideChroot():
+    return full_path
+
+  # Replace chroot source root with current source root, if applicable.
+  if full_path.startswith(constants.CHROOT_SOURCE_ROOT):
+    return os.path.join(
+        constants.SOURCE_ROOT,
+        full_path[len(constants.CHROOT_SOURCE_ROOT):].strip(os.path.sep))
+  else:
+    return os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR,
+                        path.strip(os.path.sep))
