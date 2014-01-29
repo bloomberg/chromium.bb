@@ -129,17 +129,17 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
-    V8TestCustomAccessors::namedPropertyEnumeratorCustom(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     V8TestCustomAccessors::namedPropertyQueryCustom(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    V8TestCustomAccessors::namedPropertyEnumeratorCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 

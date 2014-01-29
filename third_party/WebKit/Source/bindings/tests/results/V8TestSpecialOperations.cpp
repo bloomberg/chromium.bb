@@ -117,6 +117,71 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return;
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return;
+    if (info.Holder()->HasRealNamedProperty(name))
+        return;
+
+    TestSpecialOperations* collection = V8TestSpecialOperations::toNative(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name);
+    String element = collection->anonymousNamedGetter(propertyName);
+    if (element.isNull())
+        return;
+    v8SetReturnValueString(info, element, info.GetIsolate());
+}
+
+static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TestSpecialOperationsV8Internal::namedPropertyGetter(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TestSpecialOperations* collection = V8TestSpecialOperations::toNative(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name);
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, v8::None);
+}
+
+static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TestSpecialOperationsV8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    TestSpecialOperations* collection = V8TestSpecialOperations::toNative(info.Holder());
+    Vector<String> names;
+    collection->namedPropertyEnumerator(names, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), names[i]));
+    v8SetReturnValue(info, v8names);
+}
+
+static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TestSpecialOperationsV8Internal::namedPropertyEnumerator(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 } // namespace TestSpecialOperationsV8Internal
 
 static void configureV8TestSpecialOperationsTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -132,6 +197,7 @@ static void configureV8TestSpecialOperationsTemplate(v8::Handle<v8::FunctionTemp
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
     functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestSpecialOperationsV8Internal::indexedPropertyGetterCallback, TestSpecialOperationsV8Internal::indexedPropertySetterCallback, 0, TestSpecialOperationsV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestSpecialOperations>);
+    functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestSpecialOperationsV8Internal::namedPropertyGetterCallback, 0, TestSpecialOperationsV8Internal::namedPropertyQueryCallback, 0, TestSpecialOperationsV8Internal::namedPropertyEnumeratorCallback);
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());

@@ -230,6 +230,7 @@ def generate_interface(interface):
         'anonymous_indexed_property_getter': anonymous_indexed_property_getter(interface),
         'anonymous_indexed_property_setter': anonymous_indexed_property_setter(interface),
         'anonymous_indexed_property_deleter': anonymous_indexed_property_deleter(interface),
+        'anonymous_named_property_getter': anonymous_named_property_getter(interface),
     })
 
     return template_contents
@@ -483,6 +484,27 @@ def interface_length(interface, constructors):
 # http://heycam.github.io/webidl/#idl-special-operations
 ################################################################################
 
+def anonymous_property_getter(getter):
+    def is_null_expression(idl_type):
+        if idl_type == 'DOMString':
+            return 'element.isNull()'
+        return None
+
+    idl_type = getter.idl_type
+    extended_attributes = getter.extended_attributes
+    return {
+        'cpp_type': v8_types.cpp_type(idl_type),
+        'is_null_expression': is_null_expression(idl_type),
+        'name': extended_attributes.get('ImplementedAs'),
+        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
+    }
+
+
+################################################################################
+# Indexed properties
+# http://heycam.github.io/webidl/#idl-indexed-properties
+################################################################################
+
 def anonymous_indexed_property_getter(interface):
     try:
         # Find anonymous indexed property getter, if present; has form:
@@ -497,21 +519,7 @@ def anonymous_indexed_property_getter(interface):
     except StopIteration:
         return None
 
-    idl_type = getter.idl_type
-    extended_attributes = getter.extended_attributes
-    return {
-        'cpp_type': v8_types.cpp_type(idl_type),
-        'is_null_expression': getter_is_null_expression(idl_type),
-        'name': extended_attributes.get('ImplementedAs',
-                                        'anonymousIndexedGetter'),
-        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
-    }
-
-
-def getter_is_null_expression(idl_type):
-    if idl_type == 'DOMString':
-        return 'element.isNull()'
-    return None
+    return anonymous_property_getter(getter)
 
 
 def anonymous_indexed_property_setter(interface):
@@ -563,3 +571,25 @@ def anonymous_indexed_property_deleter(interface):
         'name': extended_attributes.get('ImplementedAs',
                                         'anonymousIndexedDeleter'),
     }
+
+
+################################################################################
+# Named properties
+# http://heycam.github.io/webidl/#idl-named-properties
+################################################################################
+
+def anonymous_named_property_getter(interface):
+    try:
+        # Find anonymous named property getter, if present; has form:
+        # getter TYPE (DOMString ARG1)
+        getter = next(
+            method
+            for method in interface.operations
+            if ('getter' in method.specials and
+                len(method.arguments) == 1 and
+                method.arguments[0].idl_type == 'DOMString' and
+                not method.name))
+    except StopIteration:
+        return None
+
+    return anonymous_property_getter(getter)

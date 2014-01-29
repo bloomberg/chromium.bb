@@ -229,6 +229,26 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name);
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, v8::None);
+}
+
+static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TestEventTargetV8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
@@ -243,30 +263,10 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     v8SetReturnValue(info, v8names);
 }
 
-static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    if (!result)
-        return;
-    v8SetReturnValueInt(info, v8::None);
-}
-
 static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     TestEventTargetV8Internal::namedPropertyEnumerator(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
-    TestEventTargetV8Internal::namedPropertyQuery(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 

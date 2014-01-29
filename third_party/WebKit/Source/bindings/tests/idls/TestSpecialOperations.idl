@@ -29,7 +29,13 @@
  */
 
 interface TestSpecialOperations {
+    // Anonymous indexed property operations
     getter DOMString (unsigned long index);
     setter DOMString (unsigned long index, DOMString value);
     deleter boolean (unsigned long index);
+
+    // Anonymous named property operations
+    getter DOMString (DOMString name);
+    // setter DOMString (DOMString name, DOMString value);
+    // deleter boolean (DOMString name);
 };

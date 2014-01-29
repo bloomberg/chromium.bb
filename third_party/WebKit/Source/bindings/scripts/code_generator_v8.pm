@@ -3830,11 +3830,13 @@ sub GenerateImplementationNamedPropertyAccessors
     if ($namedEnumeratorFunction) {
         my $hasCustomNamedEnumerator = $namedGetterFunction->extendedAttributes->{"CustomEnumerateProperty"};
         if (!$hasCustomNamedEnumerator) {
-            GenerateImplementationNamedPropertyEnumerator($interface);
             GenerateImplementationNamedPropertyQuery($interface);
         }
-        GenerateImplementationNamedPropertyEnumeratorCallback($interface, $hasCustomNamedEnumerator);
         GenerateImplementationNamedPropertyQueryCallback($interface, $hasCustomNamedEnumerator);
+        if (!$hasCustomNamedEnumerator) {
+            GenerateImplementationNamedPropertyEnumerator($interface);
+        }
+        GenerateImplementationNamedPropertyEnumeratorCallback($interface, $hasCustomNamedEnumerator);
     }
 
     my $subCode = "";
