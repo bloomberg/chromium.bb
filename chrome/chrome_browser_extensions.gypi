@@ -893,6 +893,7 @@
         'browser/extensions/user_script_master.h',
         'browser/extensions/webstore_data_fetcher.cc',
         'browser/extensions/webstore_data_fetcher.h',
+        'browser/extensions/webstore_data_fetcher_delegate.cc',
         'browser/extensions/webstore_data_fetcher_delegate.h',
         'browser/extensions/webstore_inline_installer.cc',
         'browser/extensions/webstore_inline_installer.h',

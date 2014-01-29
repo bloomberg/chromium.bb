@@ -211,7 +211,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
   // No warnings should trigger skinny prompt.
   ExtensionInstallPrompt::Prompt inline_prompt(
       ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
-  inline_prompt.SetInlineInstallWebstoreData("1,000", true, 3.5, 200);
+  inline_prompt.SetWebstoreData("1,000", true, 3.5, 200);
   inline_prompt.set_extension(extension_.get());
   inline_prompt.set_icon(chrome::LoadInstallPromptIcon());
 
@@ -223,7 +223,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
   [controller view];  // Force nib load.
 
   // Test the right nib loaded.
-  EXPECT_NSEQ(@"ExtensionInstallPromptInline", [controller nibName]);
+  EXPECT_NSEQ(@"ExtensionInstallPromptWebstoreData", [controller nibName]);
 
   // Check all the controls.
   EXPECT_TRUE([controller iconView]);

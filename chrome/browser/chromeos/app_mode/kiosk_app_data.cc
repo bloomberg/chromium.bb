@@ -42,11 +42,6 @@ namespace {
 const char kKeyName[] = "name";
 const char kKeyIcon[] = "icon";
 
-// Web store data keys.
-const char kManifestKey[] = "manifest";
-const char kIconUrlKey[] = "icon_url";
-const char kLocalizedNameKey[] = "localized_name";
-
 const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
 
 // Icon file extension.

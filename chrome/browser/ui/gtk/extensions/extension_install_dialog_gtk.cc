@@ -116,6 +116,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
   bool show_retained_files = prompt.GetRetainedFileCount() > 0;
   bool is_inline_install =
       prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
+  bool has_webstore_data = prompt.has_webstore_data();
   bool is_bundle_install =
       prompt.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
   bool is_external_install =
@@ -198,7 +199,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
   gtk_box_pack_start(GTK_BOX(heading_vbox), heading_label, center_heading,
                      center_heading, 0);
 
-  if (is_inline_install) {
+  if (has_webstore_data) {
     // Average rating (as stars) and number of ratings.
     GtkWidget* stars_hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(heading_vbox), stars_hbox, FALSE, FALSE, 0);

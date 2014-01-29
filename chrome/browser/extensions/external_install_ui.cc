@@ -19,6 +19,8 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/webstore_data_fetcher.h"
+#include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -56,11 +58,10 @@ static const int kMenuCommandId = IDC_EXTERNAL_EXTENSION_ALERT;
 
 class ExternalInstallGlobalError;
 
-// TODO(mpcomplete): Get rid of the refcounting on this class, or document
-// why it's necessary. Will do after refactoring to merge back with
-// ExtensionDisabledDialogDelegate.
+// This class is refcounted to stay alive while we try and pull webstore data.
 class ExternalInstallDialogDelegate
     : public ExtensionInstallPrompt::Delegate,
+      public WebstoreDataFetcherDelegate,
       public base::RefCountedThreadSafe<ExternalInstallDialogDelegate> {
  public:
   ExternalInstallDialogDelegate(Browser* browser,
@@ -80,12 +81,27 @@ class ExternalInstallDialogDelegate
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
+  // WebstoreDataFetcherDelegate:
+  virtual void OnWebstoreRequestFailure() OVERRIDE;
+  virtual void OnWebstoreResponseParseSuccess(
+      scoped_ptr<base::DictionaryValue> webstore_data) OVERRIDE;
+  virtual void OnWebstoreResponseParseFailure(
+      const std::string& error) OVERRIDE;
+
+  // Show the install dialog to the user.
+  void ShowInstallUI();
+
   // The UI for showing the install dialog when enabling.
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
+  scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
 
   Browser* browser_;
   base::WeakPtr<ExtensionService> service_weak_;
-  const std::string extension_id_;
+  scoped_ptr<WebstoreDataFetcher> webstore_data_fetcher_;
+  std::string extension_id_;
+  bool use_global_error_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalInstallDialogDelegate);
 };
 
 // Only shows a menu item, no bubble. Clicking the menu item shows
@@ -96,8 +112,6 @@ class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
   ExternalInstallMenuAlert(ExtensionService* service,
                            const Extension* extension);
   virtual ~ExternalInstallMenuAlert();
-
-  const Extension* extension() const { return extension_; }
 
   // GlobalError implementation.
   virtual Severity GetSeverity() OVERRIDE;
@@ -123,6 +137,9 @@ class ExternalInstallMenuAlert : public GlobalErrorWithStandardBubble,
   ExtensionService* service_;
   const Extension* extension_;
   content::NotificationRegistrar registrar_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExternalInstallMenuAlert);
 };
 
 // Shows a menu item and a global error bubble, replacing the install dialog.
@@ -151,6 +168,9 @@ class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
   // manually).
   ExternalInstallDialogDelegate* delegate_;
   const ExtensionInstallPrompt::Prompt* prompt_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExternalInstallGlobalError);
 };
 
 static void CreateExternalInstallGlobalError(
@@ -196,41 +216,100 @@ ExternalInstallDialogDelegate::ExternalInstallDialogDelegate(
     bool use_global_error)
     : browser_(browser),
       service_weak_(service->AsWeakPtr()),
-      extension_id_(extension->id()) {
+      extension_id_(extension->id()),
+      use_global_error_(use_global_error) {
   AddRef();  // Balanced in Proceed or Abort.
 
+  prompt_.reset(new ExtensionInstallPrompt::Prompt(
+      ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT));
+
+  // If we don't have a browser, we can't go to the webstore to fetch data.
+  // This should only happen in tests.
+  if (!browser) {
+    ShowInstallUI();
+    return;
+  }
+
+  webstore_data_fetcher_.reset(new WebstoreDataFetcher(
+      this,
+      browser->profile()->GetRequestContext(),
+      GURL::EmptyGURL(),
+      extension->id()));
+  webstore_data_fetcher_->Start();
+}
+
+void ExternalInstallDialogDelegate::OnWebstoreRequestFailure() {
+  ShowInstallUI();
+}
+
+void ExternalInstallDialogDelegate::OnWebstoreResponseParseSuccess(
+    scoped_ptr<base::DictionaryValue> webstore_data) {
+  std::string localized_user_count;
+  double average_rating;
+  int rating_count;
+  if (!webstore_data->GetString(kUsersKey, &localized_user_count) ||
+      !webstore_data->GetDouble(kAverageRatingKey, &average_rating) ||
+      !webstore_data->GetInteger(kRatingCountKey, &rating_count)) {
+    // If we don't get a valid webstore response, short circuit, and continue
+    // to show a prompt without webstore data.
+    ShowInstallUI();
+    return;
+  }
+
+  bool show_user_count = true;
+  webstore_data->GetBoolean(kShowUserCountKey, &show_user_count);
+
+  prompt_->SetWebstoreData(localized_user_count,
+                           show_user_count,
+                           average_rating,
+                           rating_count);
+
+  ShowInstallUI();
+}
+
+void ExternalInstallDialogDelegate::OnWebstoreResponseParseFailure(
+    const std::string& error) {
+  ShowInstallUI();
+}
+
+void ExternalInstallDialogDelegate::ShowInstallUI() {
+  const Extension* extension = NULL;
+  if (!service_weak_.get() ||
+      !(extension = service_weak_->GetInstalledExtension(extension_id_))) {
+    return;
+  }
   install_ui_.reset(
-      ExtensionInstallUI::CreateInstallPromptWithBrowser(browser));
+      ExtensionInstallUI::CreateInstallPromptWithBrowser(browser_));
 
   const ExtensionInstallPrompt::ShowDialogCallback callback =
-      use_global_error ?
-      base::Bind(&CreateExternalInstallGlobalError,
-                 service_weak_, extension_id_) :
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback();
-  install_ui_->ConfirmExternalInstall(this, extension, callback);
+      use_global_error_ ?
+          base::Bind(&CreateExternalInstallGlobalError,
+                     service_weak_,
+                     extension_id_) :
+          ExtensionInstallPrompt::GetDefaultShowDialogCallback();
+
+  install_ui_->ConfirmExternalInstall(this, extension, callback, *prompt_);
 }
 
 ExternalInstallDialogDelegate::~ExternalInstallDialogDelegate() {
 }
 
 void ExternalInstallDialogDelegate::InstallUIProceed() {
-  if (!service_weak_.get())
+  const Extension* extension = NULL;
+  if (!service_weak_.get() ||
+      !(extension = service_weak_->GetInstalledExtension(extension_id_))) {
     return;
-  const Extension* extension =
-      service_weak_->GetInstalledExtension(extension_id_);
-  if (!extension)
-    return;
+  }
   service_weak_->GrantPermissionsAndEnableExtension(extension);
   Release();
 }
 
 void ExternalInstallDialogDelegate::InstallUIAbort(bool user_initiated) {
-  if (!service_weak_.get())
+  const Extension* extension = NULL;
+  if (!service_weak_.get() ||
+      !(extension = service_weak_->GetInstalledExtension(extension_id_))) {
     return;
-  const Extension* extension =
-      service_weak_->GetInstalledExtension(extension_id_);
-  if (!extension)
-    return;
+  }
   service_weak_->UninstallExtension(extension_id_, false, NULL);
   Release();
 }

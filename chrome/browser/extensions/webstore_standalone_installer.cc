@@ -21,15 +21,6 @@ using content::WebContents;
 
 namespace extensions {
 
-const char kManifestKey[] = "manifest";
-const char kIconUrlKey[] = "icon_url";
-const char kLocalizedNameKey[] = "localized_name";
-const char kLocalizedDescriptionKey[] = "localized_description";
-const char kUsersKey[] = "users";
-const char kShowUserCountKey[] = "show_user_count";
-const char kAverageRatingKey[] = "average_rating";
-const char kRatingCountKey[] = "rating_count";
-
 const char kInvalidWebstoreItemId[] = "Invalid Chrome Web Store item ID";
 const char kWebstoreRequestError[] =
     "Could not fetch data from the Chrome Web Store";

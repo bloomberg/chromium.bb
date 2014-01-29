@@ -89,10 +89,10 @@ class ExtensionInstallPrompt
     void SetIsShowingDetails(DetailsType type,
                              size_t index,
                              bool is_showing_details);
-    void SetInlineInstallWebstoreData(const std::string& localized_user_count,
-                                      bool show_user_count,
-                                      double average_rating,
-                                      int rating_count);
+    void SetWebstoreData(const std::string& localized_user_count,
+                         bool show_user_count,
+                         double average_rating,
+                         int rating_count);
     void SetOAuthIssueAdvice(const IssueAdviceInfo& issue_advice);
     void SetUserNameFromProfile(Profile* profile);
 
@@ -155,10 +155,11 @@ class ExtensionInstallPrompt
     const gfx::Image& icon() const { return icon_; }
     void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
+    bool has_webstore_data() const { return has_webstore_data_; }
+
     const ExtensionInstallPromptExperiment* experiment() const {
       return experiment_;
     }
-
     void set_experiment(ExtensionInstallPromptExperiment* experiment) {
       experiment_ = experiment;
     }
@@ -201,6 +202,10 @@ class ExtensionInstallPrompt
     // Whether we should display the user count (we anticipate this will be
     // false if localized_user_count_ represents the number zero).
     bool show_user_count_;
+
+    // Whether or not this prompt has been populated with data from the
+    // webstore.
+    bool has_webstore_data_;
 
     std::vector<base::FilePath> retained_files_;
 
@@ -327,7 +332,8 @@ class ExtensionInstallPrompt
   virtual void ConfirmExternalInstall(
       Delegate* delegate,
       const extensions::Extension* extension,
-      const ShowDialogCallback& show_dialog_callback);
+      const ShowDialogCallback& show_dialog_callback,
+      const Prompt& prompt);
 
   // This is called by the extension permissions API to verify whether an
   // extension may be granted additional permissions.

@@ -554,7 +554,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   if (prompt.experiment()->show_checkboxes())
     dialog_width += 4 * views::kPanelHorizMargin;
 
-  if (is_inline_install()) {
+  if (prompt.has_webstore_data()) {
     layout->StartRow(0, column_set_id);
     views::View* rating = new views::View();
     rating->SetLayoutManager(new views::BoxLayout(

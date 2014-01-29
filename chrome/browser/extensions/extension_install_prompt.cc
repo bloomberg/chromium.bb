@@ -198,7 +198,8 @@ ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
       bundle_(NULL),
       average_rating_(0.0),
       rating_count_(0),
-      show_user_count_(false) {
+      show_user_count_(false),
+      has_webstore_data_(false) {
 }
 
 ExtensionInstallPrompt::Prompt::~Prompt() {
@@ -253,16 +254,17 @@ void ExtensionInstallPrompt::Prompt::SetUserNameFromProfile(Profile* profile) {
   }
 }
 
-void ExtensionInstallPrompt::Prompt::SetInlineInstallWebstoreData(
+void ExtensionInstallPrompt::Prompt::SetWebstoreData(
     const std::string& localized_user_count,
     bool show_user_count,
     double average_rating,
     int rating_count) {
-  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
   localized_user_count_ = localized_user_count;
   show_user_count_ = show_user_count;
   average_rating_ = average_rating;
   rating_count_ = rating_count;
+  has_webstore_data_ = true;
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
@@ -387,7 +389,7 @@ bool ExtensionInstallPrompt::Prompt::ShouldShowPermissions() const {
 void ExtensionInstallPrompt::Prompt::AppendRatingStars(
     StarAppender appender, void* data) const {
   CHECK(appender);
-  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
   int rating_integer = floor(average_rating_);
   double rating_fractional = average_rating_ - rating_integer;
 
@@ -414,13 +416,13 @@ void ExtensionInstallPrompt::Prompt::AppendRatingStars(
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetRatingCount() const {
-  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_RATING_COUNT,
                                     base::IntToString16(rating_count_));
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetUserCount() const {
-  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  CHECK(type_ == INLINE_INSTALL_PROMPT || type_ == EXTERNAL_INSTALL_PROMPT);
 
   if (show_user_count_) {
     return l10n_util::GetStringFUTF16(IDS_EXTENSION_USER_COUNT,
@@ -647,12 +649,13 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
 void ExtensionInstallPrompt::ConfirmExternalInstall(
     Delegate* delegate,
     const Extension* extension,
-    const ShowDialogCallback& show_dialog_callback) {
+    const ShowDialogCallback& show_dialog_callback,
+    const Prompt& prompt) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
-  prompt_.set_type(EXTERNAL_INSTALL_PROMPT);
+  prompt_ = prompt;
   show_dialog_callback_ = show_dialog_callback;
 
   LoadImageIfNeeded();

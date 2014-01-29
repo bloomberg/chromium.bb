@@ -12,11 +12,6 @@ using content::WebContents;
 
 namespace extensions {
 
-const char kVerifiedSiteKey[] = "verified_site";
-const char kVerifiedSitesKey[] = "verified_sites";
-const char kInlineInstallNotSupportedKey[] = "inline_install_not_supported";
-const char kRedirectUrlKey[] = "redirect_url";
-
 const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
 const char kNoVerifiedSitesError[] =
     "Inline installs can only be initiated for Chrome Web Store items that "
@@ -61,10 +56,10 @@ WebstoreInlineInstaller::CreateInstallPrompt() const {
   // crbug.com/260742: Don't display the user count if it's zero. The reason
   // it's zero is very often that the number isn't actually being counted
   // (intentionally), which means that it's unlikely to be correct.
-  prompt->SetInlineInstallWebstoreData(localized_user_count(),
-                                       show_user_count(),
-                                       average_rating(),
-                                       rating_count());
+  prompt->SetWebstoreData(localized_user_count(),
+                          show_user_count(),
+                          average_rating(),
+                          rating_count());
   return prompt.Pass();
 }
 

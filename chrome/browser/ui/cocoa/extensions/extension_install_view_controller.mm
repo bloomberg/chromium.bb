@@ -47,7 +47,7 @@ typedef NSUInteger CellAttributes;
 
 @interface ExtensionInstallViewController ()
 - (BOOL)isBundleInstall;
-- (BOOL)isInlineInstall;
+- (BOOL)hasWebstoreData;
 - (void)appendRatingStar:(const gfx::ImageSkia*)skiaImage;
 - (void)onOutlineViewRowCountDidChange;
 - (NSDictionary*)buildItemWithTitle:(NSString*)title
@@ -181,14 +181,14 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 - (id)initWithNavigator:(content::PageNavigator*)navigator
                delegate:(ExtensionInstallPrompt::Delegate*)delegate
                  prompt:(const ExtensionInstallPrompt::Prompt&)prompt {
-  // We use a different XIB in the case of bundle installs, inline installs or
-  // no permission warnings. These are laid out nicely for the data they
-  // display.
+  // We use a different XIB in the case of bundle installs, installs with
+  // webstore data, or no permission warnings. These are laid out nicely for
+  // the data they display.
   NSString* nibName = nil;
   if (prompt.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT) {
     nibName = @"ExtensionInstallPromptBundle";
-  } else if (prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT) {
-    nibName = @"ExtensionInstallPromptInline";
+  } else if (prompt.has_webstore_data()) {
+    nibName = @"ExtensionInstallPromptWebstoreData";
   } else if (!prompt.ShouldShowPermissions() &&
              prompt.GetOAuthIssueCount() == 0 &&
              prompt.GetRetainedFileCount() == 0) {
@@ -240,7 +240,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   [cancelButton_ setTitle:prompt_->HasAbortButtonLabel() ?
       base::SysUTF16ToNSString(prompt_->GetAbortButtonLabel()) :
       l10n_util::GetNSString(IDS_CANCEL)];
-  if ([self isInlineInstall]) {
+  if ([self hasWebstoreData]) {
     prompt_->AppendRatingStars(AppendRatingStarsShim, self);
     [ratingCountField_ setStringValue:base::SysUTF16ToNSString(
         prompt_->GetRatingCount())];
@@ -322,10 +322,10 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 
     // Adjust the outline view to fit the warnings.
     OffsetOutlineViewVerticallyToFitContent(outlineView_, &totalOffset);
-  } else if ([self isInlineInstall] || [self isBundleInstall]) {
-    // Inline and bundle installs that don't have a permissions section need to
-    // hide controls related to that and shrink the window by the space they
-    // take up.
+  } else if ([self hasWebstoreData] || [self isBundleInstall]) {
+    // Installs with webstore data and bundle installs that don't have a
+    // permissions section need to hide controls related to that and shrink the
+    // window by the space they take up.
     NSRect hiddenRect = NSUnionRect([warningsSeparator_ frame],
                                     [[outlineView_ enclosingScrollView] frame]);
     [warningsSeparator_ setHidden:YES];
@@ -345,8 +345,8 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
 }
 
-- (BOOL)isInlineInstall {
-  return prompt_->type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
+- (BOOL)hasWebstoreData {
+  return prompt_->has_webstore_data();
 }
 
 - (void)appendRatingStar:(const gfx::ImageSkia*)skiaImage {

@@ -69,10 +69,10 @@ AppInstaller::CreateInstallPrompt() const {
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
 
-  prompt->SetInlineInstallWebstoreData(localized_user_count(),
-                                       show_user_count(),
-                                       average_rating(),
-                                       rating_count());
+  prompt->SetWebstoreData(localized_user_count(),
+                          show_user_count(),
+                          average_rating(),
+                          rating_count());
   return prompt.Pass();
 }
 

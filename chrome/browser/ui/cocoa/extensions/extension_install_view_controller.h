@@ -34,7 +34,8 @@ class PageNavigator;
   // display.
   IBOutlet NSOutlineView* outlineView_;
 
-  // Present only in the inline install dialog.
+  // Present only in the install dialogs with webstore data (inline and
+  // external).
   IBOutlet NSBox* warningsSeparator_; // Only when there are permissions.
   IBOutlet NSView* ratingStars_;
   IBOutlet NSTextField* ratingCountField_;
