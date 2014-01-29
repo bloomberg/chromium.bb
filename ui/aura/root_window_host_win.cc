@@ -251,7 +251,7 @@ LRESULT WindowTreeHostWin::OnMouseRange(UINT message,
                                         WPARAM w_param,
                                         LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param, 0,
-              { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
+              { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
   ui::MouseEvent event(msg);
   bool handled = false;
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
@@ -278,9 +278,9 @@ LRESULT WindowTreeHostWin::OnNCActivate(UINT message,
   return DefWindowProc(hwnd(), message, w_param, l_param);
 }
 
-void WindowTreeHostWin::OnMove(const CPoint& point) {
+void WindowTreeHostWin::OnMove(const gfx::Point& point) {
   if (delegate_)
-    delegate_->OnHostMoved(gfx::Point(point.x, point.y));
+    delegate_->OnHostMoved(point);
 }
 
 void WindowTreeHostWin::OnPaint(HDC dc) {
@@ -292,11 +292,11 @@ void WindowTreeHostWin::OnPaint(HDC dc) {
   ValidateRect(hwnd(), NULL);
 }
 
-void WindowTreeHostWin::OnSize(UINT param, const CSize& size) {
+void WindowTreeHostWin::OnSize(UINT param, const gfx::Size& size) {
   // Minimizing resizes the window to 0x0 which causes our layout to go all
   // screwy, so we just ignore it.
   if (delegate_ && param != SIZE_MINIMIZED)
-    NotifyHostResized(gfx::Size(size.cx, size.cy));
+    NotifyHostResized(size);
 }
 
 namespace test {

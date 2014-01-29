@@ -5,17 +5,13 @@
 #ifndef UI_GFX_WIN_WINDOW_IMPL_H_
 #define UI_GFX_WIN_WINDOW_IMPL_H_
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <atlmisc.h>
-#include <atlcrack.h>
-
 #include <string>
 
 #include "base/logging.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/win/msg_util.h"
 
 namespace gfx {
 

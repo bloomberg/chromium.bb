@@ -6,6 +6,7 @@
 #define TOOLS_MEMORY_WATCHER_HOTKEY_H_
 
 #include "ui/gfx/rect.h"
+#include "ui/gfx/win/msg_util.h"
 #include "ui/gfx/win/window_impl.h"
 
 // HotKey handler.
@@ -19,9 +20,9 @@ class HotKeyHandler : public gfx::WindowImpl {
   }
   ~HotKeyHandler() { Stop(); }
 
-  BEGIN_MSG_MAP_EX(HotKeyHandler)
-    MESSAGE_HANDLER(WM_HOTKEY, OnHotKey)
-  END_MSG_MAP()
+  CR_BEGIN_MSG_MAP_EX(HotKeyHandler)
+    CR_MSG_WM_HOTKEY(OnHotKey)
+  CR_END_MSG_MAP()
 
  private:
   static const int hotkey_id = 0x0000baba;
@@ -38,8 +39,9 @@ class HotKeyHandler : public gfx::WindowImpl {
   }
 
   // Handle the registered Hotkey being pressed.
-  virtual LRESULT OnHotKey(UINT /*uMsg*/, WPARAM /*wParam*/,
-                           LPARAM /*lParam*/, BOOL& bHandled) = 0;
+  virtual void OnHotKey(UINT /*uMsg*/,
+                        WPARAM /*wParam*/,
+                        LPARAM /*lParam*/) = 0;
 
   UINT modifiers_;
   UINT vkey_;

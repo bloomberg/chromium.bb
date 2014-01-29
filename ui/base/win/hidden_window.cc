@@ -42,9 +42,9 @@ class TempParent : public gfx::WindowImpl {
   void OnClose() {
   }
 
-  BEGIN_MSG_MAP_EX(WebContentsViewWin)
-    MSG_WM_CLOSE(OnClose)
-  END_MSG_MAP()
+  CR_BEGIN_MSG_MAP_EX(WebContentsViewWin)
+    CR_MSG_WM_CLOSE(OnClose)
+  CR_END_MSG_MAP()
 };
 
 }  // namespace

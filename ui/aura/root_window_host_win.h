@@ -40,38 +40,40 @@ class WindowTreeHostWin : public WindowTreeHost, public gfx::WindowImpl {
   virtual void PrepareForShutdown() OVERRIDE;
 
  private:
-  BEGIN_MSG_MAP_EX(WindowTreeHostWin)
+  CR_BEGIN_MSG_MAP_EX(WindowTreeHostWin)
     // Range handlers must go first!
-    MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
-    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
+    CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
+    CR_MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE,
+                                WM_NCXBUTTONDBLCLK,
+                                OnMouseRange)
 
     // Mouse capture events.
-    MESSAGE_HANDLER_EX(WM_CAPTURECHANGED, OnCaptureChanged)
+    CR_MESSAGE_HANDLER_EX(WM_CAPTURECHANGED, OnCaptureChanged)
 
     // Key events.
-    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_NCACTIVATE, OnNCActivate)
+    CR_MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_NCACTIVATE, OnNCActivate)
 
-    MSG_WM_CLOSE(OnClose)
-    MSG_WM_MOVE(OnMove)
-    MSG_WM_PAINT(OnPaint)
-    MSG_WM_SIZE(OnSize)
-  END_MSG_MAP()
+    CR_MSG_WM_CLOSE(OnClose)
+    CR_MSG_WM_MOVE(OnMove)
+    CR_MSG_WM_PAINT(OnPaint)
+    CR_MSG_WM_SIZE(OnSize)
+  CR_END_MSG_MAP()
 
   void OnClose();
   LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnCaptureChanged(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCActivate(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnMove(const CPoint& point);
+  void OnMove(const gfx::Point& point);
   void OnPaint(HDC dc);
-  void OnSize(UINT param, const CSize& size);
+  void OnSize(UINT param, const gfx::Size& size);
 
   bool fullscreen_;
   bool has_capture_;

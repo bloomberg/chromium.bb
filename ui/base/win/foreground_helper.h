@@ -22,9 +22,9 @@ class UI_BASE_EXPORT ForegroundHelper : public gfx::WindowImpl {
  public:
   ForegroundHelper() : window_(NULL) { }
 
-  BEGIN_MSG_MAP_EX(ForegroundHelper)
-    MESSAGE_HANDLER(WM_HOTKEY, OnHotKey)
-  END_MSG_MAP()
+  CR_BEGIN_MSG_MAP_EX(ForegroundHelper)
+    CR_MSG_WM_HOTKEY(OnHotKey)
+  CR_END_MSG_MAP()
 
   // Brings a window into the foreground.
   // Can be called from any window, even if the caller is not the
@@ -35,7 +35,7 @@ class UI_BASE_EXPORT ForegroundHelper : public gfx::WindowImpl {
   HRESULT ForegroundHotKey(HWND window);
 
   // Handle the registered Hotkey being pressed.
-  LRESULT OnHotKey(UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  void OnHotKey(int id, UINT vcode, UINT modifiers);
 
   HWND window_;
 

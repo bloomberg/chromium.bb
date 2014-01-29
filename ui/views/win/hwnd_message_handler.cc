@@ -5,6 +5,7 @@
 #include "ui/views/win/hwnd_message_handler.h"
 
 #include <dwmapi.h>
+#include <oleacc.h>
 #include <shellapi.h>
 #include <wtsapi32.h>
 #pragma comment(lib, "wtsapi32.lib")
@@ -1158,7 +1159,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
   int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
 
-  CRect window_rect;
+  RECT window_rect;
   GetWindowRect(hwnd(), &window_rect);
   HRGN new_region;
   if (custom_window_region_) {
@@ -1169,13 +1170,14 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
     MONITORINFO mi;
     mi.cbSize = sizeof mi;
     GetMonitorInfo(monitor, &mi);
-    CRect work_rect = mi.rcWork;
-    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
+    RECT work_rect = mi.rcWork;
+    OffsetRect(&work_rect, -window_rect.left, -window_rect.top);
     new_region = CreateRectRgnIndirect(&work_rect);
   } else {
     gfx::Path window_mask;
-    delegate_->GetWindowMask(
-        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    delegate_->GetWindowMask(gfx::Size(window_rect.right - window_rect.left,
+                                       window_rect.bottom - window_rect.top),
+                             &window_mask);
     new_region = gfx::CreateHRGNFromSkPath(window_mask);
   }
 
@@ -1412,7 +1414,7 @@ void HWNDMessageHandler::OnDestroy() {
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
-                                         const CSize& screen_size) {
+                                         const gfx::Size& screen_size) {
   delegate_->HandleDisplayChange();
 }
 
@@ -1476,13 +1478,16 @@ void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
   // Add the native frame border size to the minimum and maximum size if the
   // view reports its size as the client size.
   if (delegate_->WidgetSizeIsClientSize()) {
-    CRect client_rect, window_rect;
+    RECT client_rect, window_rect;
     GetClientRect(hwnd(), &client_rect);
     GetWindowRect(hwnd(), &window_rect);
-    window_rect -= client_rect;
-    min_window_size.Enlarge(window_rect.Width(), window_rect.Height());
-    if (!max_window_size.IsEmpty())
-      max_window_size.Enlarge(window_rect.Width(), window_rect.Height());
+    CR_DEFLATE_RECT(&window_rect, &client_rect);
+    min_window_size.Enlarge(window_rect.right - window_rect.left,
+                            window_rect.bottom - window_rect.top);
+    if (!max_window_size.IsEmpty()) {
+      max_window_size.Enlarge(window_rect.right - window_rect.left,
+                              window_rect.bottom - window_rect.top);
+    }
   }
   minmax_info->ptMinTrackSize.x = min_window_size.width();
   minmax_info->ptMinTrackSize.y = min_window_size.height();
@@ -1615,7 +1620,7 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     // For mouse events (except wheel events), location is in window coordinates
     // and should be converted to screen coordinates for WM_NCHITTEST.
     if (message != WM_MOUSEWHEEL && message != WM_MOUSEHWHEEL) {
-      CPoint screen_point(l_param_ht);
+      POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param_ht);
       MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
       l_param_ht = MAKELPARAM(screen_point.x, screen_point.y);
     }
@@ -1629,7 +1634,7 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
     ReleaseCapture();
     // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
     // expect screen coordinates.
-    CPoint screen_point(l_param);
+    POINT screen_point = CR_POINT_INITIALIZER_FROM_LPARAM(l_param);
     MapWindowPoints(hwnd(), HWND_DESKTOP, &screen_point, 1);
     w_param = SendMessage(hwnd(), WM_NCHITTEST, 0,
                           MAKELPARAM(screen_point.x, screen_point.y));
@@ -1669,7 +1674,7 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
   }
 
   MSG msg = { hwnd(), message, w_param, l_param, GetMessageTime(),
-              { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
+              { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
   ui::MouseEvent event(msg);
   if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
     event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
@@ -1715,7 +1720,7 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
   return 0;
 }
 
-void HWNDMessageHandler::OnMove(const CPoint& point) {
+void HWNDMessageHandler::OnMove(const gfx::Point& point) {
   delegate_->HandleMove();
   SetMsgHandled(FALSE);
 }
@@ -1876,7 +1881,7 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   return mode ? WVR_REDRAW : 0;
 }
 
-LRESULT HWNDMessageHandler::OnNCHitTest(const CPoint& point) {
+LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
   if (!delegate_->IsWidgetWindow()) {
     SetMsgHandled(FALSE);
     return 0;
@@ -1887,14 +1892,14 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const CPoint& point) {
   if (!remove_standard_frame_ && !delegate_->IsUsingCustomFrame()) {
     LRESULT result;
     if (DwmDefWindowProc(hwnd(), WM_NCHITTEST, 0,
-                         MAKELPARAM(point.x, point.y), &result)) {
+                         MAKELPARAM(point.x(), point.y()), &result)) {
       return result;
     }
   }
 
   // First, give the NonClientView a chance to test the point to see if it
   // provides any of the non-client area.
-  POINT temp = point;
+  POINT temp = { point.x(), point.y() };
   MapWindowPoints(HWND_DESKTOP, hwnd(), &temp, 1);
   int component = delegate_->GetNonClientComponent(gfx::Point(temp));
   if (component != HTNOWHERE)
@@ -1904,7 +1909,7 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const CPoint& point) {
   // us.
 #if defined(USE_AURA)
   LRESULT hit_test_code = DefWindowProc(hwnd(), WM_NCHITTEST, 0,
-                                        MAKELPARAM(point.x, point.y));
+                                        MAKELPARAM(point.x(), point.y()));
   if (needs_scroll_styles_) {
     switch (hit_test_code) {
       // If we faked the WS_VSCROLL and WS_HSCROLL styles for this window, then
@@ -1937,8 +1942,8 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const CPoint& point) {
         window_rect.left = window_rect.right - scroll_width;
         window_rect.top = window_rect.bottom - scroll_height;
         POINT pt;
-        pt.x = point.x;
-        pt.y = point.y;
+        pt.x = point.x();
+        pt.y = point.y();
         if (::PtInRect(&window_rect, pt))
           hit_test_code = HTCLIENT;
         break;
@@ -1966,11 +1971,12 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
   // We have an NC region and need to paint it. We expand the NC region to
   // include the dirty region of the root view. This is done to minimize
   // paints.
-  CRect window_rect;
+  RECT window_rect;
   GetWindowRect(hwnd(), &window_rect);
 
   gfx::Size root_view_size = delegate_->GetRootViewSize();
-  if (gfx::Size(window_rect.Width(), window_rect.Height()) != root_view_size) {
+  if (gfx::Size(window_rect.right - window_rect.left,
+                window_rect.bottom - window_rect.top) != root_view_size) {
     // If the size of the window differs from the size of the root view it
     // means we're being asked to paint before we've gotten a WM_SIZE. This can
     // happen when the user is interactively resizing the window. To avoid
@@ -1980,10 +1986,13 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
     return;
   }
 
-  CRect dirty_region;
+  RECT dirty_region;
   // A value of 1 indicates paint all.
   if (!rgn || rgn == reinterpret_cast<HRGN>(1)) {
-    dirty_region = CRect(0, 0, window_rect.Width(), window_rect.Height());
+    dirty_region.left = 0;
+    dirty_region.top = 0;
+    dirty_region.right = window_rect.right - window_rect.left;
+    dirty_region.bottom = window_rect.bottom - window_rect.top;
   } else {
     RECT rgn_bounding_box;
     GetRgnBox(rgn, &rgn_bounding_box);
@@ -2012,8 +2021,8 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
     // The root view has a region that needs to be painted. Include it in the
     // region we're going to paint.
 
-    CRect old_paint_region_crect = old_paint_region.ToRECT();
-    CRect tmp = dirty_region;
+    RECT old_paint_region_crect = old_paint_region.ToRECT();
+    RECT tmp = dirty_region;
     UnionRect(&dirty_region, &tmp, &old_paint_region_crect);
   }
 
@@ -2023,9 +2032,12 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
   // the following in a block to force paint to occur so that we can release
   // the dc.
   if (!delegate_->HandlePaintAccelerated(gfx::Rect(dirty_region))) {
-    gfx::CanvasSkiaPaint canvas(dc, true, dirty_region.left,
-                                dirty_region.top, dirty_region.Width(),
-                                dirty_region.Height());
+    gfx::CanvasSkiaPaint canvas(dc,
+                                true,
+                                dirty_region.left,
+                                dirty_region.top,
+                                dirty_region.right - dirty_region.left,
+                                dirty_region.bottom - dirty_region.top);
     delegate_->HandlePaint(&canvas);
   }
 
@@ -2181,7 +2193,7 @@ void HWNDMessageHandler::OnSettingChange(UINT flags, const wchar_t* section) {
   }
 }
 
-void HWNDMessageHandler::OnSize(UINT param, const CSize& size) {
+void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
   RedrawWindow(hwnd(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
   // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
   // invoked OnSize we ensure the RootView has been laid out.
@@ -2204,7 +2216,7 @@ void HWNDMessageHandler::OnSize(UINT param, const CSize& size) {
 }
 
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,
-                                      const CPoint& point) {
+                                      const gfx::Point& point) {
   if (!delegate_->ShouldHandleSystemCommands())
     return;
 
@@ -2235,7 +2247,7 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
 
   // Handle SC_KEYMENU, which means that the user has pressed the ALT
   // key and released it, so we should focus the menu bar.
-  if ((notification_code & sc_mask) == SC_KEYMENU && point.x == 0) {
+  if ((notification_code & sc_mask) == SC_KEYMENU && point.x() == 0) {
     int modifiers = ui::EF_NONE;
     if (base::win::IsShiftPressed())
       modifiers |= ui::EF_SHIFT_DOWN;
@@ -2256,7 +2268,7 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
     if ((notification_code & sc_mask) == SC_SIZE)
       in_size_loop_ = true;
     DefWindowProc(hwnd(), WM_SYSCOMMAND, notification_code,
-                  MAKELPARAM(point.x, point.y));
+                  MAKELPARAM(point.x(), point.y()));
     in_size_loop_ = false;
   }
 }
@@ -2337,7 +2349,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
       window_pos->flags &= ~(SWP_SHOWWINDOW | SWP_HIDEWINDOW);
     }
   } else if (!GetParent(hwnd())) {
-    CRect window_rect;
+    RECT window_rect;
     HMONITOR monitor;
     gfx::Rect monitor_rect, work_area;
     if (GetWindowRect(hwnd(), &window_rect) &&

@@ -33,9 +33,9 @@ class TestCompositorHostWin : public TestCompositorHost,
   }
 
  private:
-  BEGIN_MSG_MAP_EX(TestCompositorHostWin)
-    MSG_WM_PAINT(OnPaint)
-  END_MSG_MAP()
+  CR_BEGIN_MSG_MAP_EX(TestCompositorHostWin)
+    CR_MSG_WM_PAINT(OnPaint)
+  CR_END_MSG_MAP()
 
   void OnPaint(HDC dc) {
     compositor_->Draw();

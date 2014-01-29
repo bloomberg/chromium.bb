@@ -35,9 +35,8 @@ class MemoryWatcherDumpKey : public HotKeyHandler {
   MemoryWatcherDumpKey(UINT modifiers, UINT vkey)
     : HotKeyHandler(modifiers, vkey) {}
 
-  virtual LRESULT OnHotKey(UINT, WPARAM, LPARAM, BOOL& bHandled) {
+  virtual void OnHotKey(UINT, WPARAM, LPARAM) {
     SetEvent(g_dump_event);
-    return 1;
   }
 };
 

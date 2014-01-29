@@ -5,6 +5,7 @@
 #include "mojo/services/native_viewport/native_viewport.h"
 
 #include "ui/events/event.h"
+#include "ui/gfx/win/msg_util.h"
 #include "ui/gfx/win/window_impl.h"
 
 namespace mojo {
@@ -82,26 +83,26 @@ class NativeViewportWin : public gfx::WindowImpl,
       ::ReleaseCapture();
   }
 
-  BEGIN_MSG_MAP_EX(NativeViewportWin)
-    MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
+  CR_BEGIN_MSG_MAP_EX(NativeViewportWin)
+    CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
 
-    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
-    MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
+    CR_MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
 
-    MSG_WM_CREATE(OnCreate)
-    MSG_WM_DESTROY(OnDestroy)
-    MSG_WM_PAINT(OnPaint)
-    MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
-  END_MSG_MAP()
+    CR_MSG_WM_CREATE(OnCreate)
+    CR_MSG_WM_DESTROY(OnDestroy)
+    CR_MSG_WM_PAINT(OnPaint)
+    CR_MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
+  CR_END_MSG_MAP()
 
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
     MSG msg = { hwnd(), message, w_param, l_param, 0,
-                { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
+                { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
     ui::MouseEvent event(msg);
     SetMsgHandled(delegate_->OnEvent(&event));
     return 0;
