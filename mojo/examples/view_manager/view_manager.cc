@@ -33,35 +33,52 @@
 namespace mojo {
 namespace examples {
 
-// Convenience interface to connect to a service. Necessary because all code for
-// this app lives in one .cc file.
-class Connector {
+class ViewImpl : public View {
  public:
-  virtual void Connect(const String& url,
-                       ScopedMessagePipeHandle client_handle) = 0;
-
- protected:
-  virtual ~Connector() {}
-};
-
-class NativeViewportClientImpl : public NativeViewportClient,
-                                 public LauncherClient {
- public:
-  explicit NativeViewportClientImpl(Connector* connector)
-      : connector_(connector) {
-    AllocationScope scope;
-    ScopedMessagePipeHandle client_handle, native_viewport_handle;
-    CreateMessagePipe(&client_handle, &native_viewport_handle);
-    connector_->Connect("mojo:mojo_native_viewport_service",
-                        client_handle.Pass());
-    native_viewport_.reset(native_viewport_handle.Pass(), this);
-
-    native_viewport_->Create(gfx::Rect(50, 50, 800, 600));
-    native_viewport_->Show();
-  }
-  virtual ~NativeViewportClientImpl() {}
+  explicit ViewImpl(ScopedMessagePipeHandle handle)
+      : id_(-1),
+        client_(handle.Pass()) {}
+  virtual ~ViewImpl() {}
 
  private:
+  // Overridden from View:
+  virtual void SetId(int view_id) MOJO_OVERRIDE {
+    id_ = view_id;
+  }
+  virtual void GetId() MOJO_OVERRIDE {
+    client_->OnGotId(id_);
+  }
+
+  int id_;
+  RemotePtr<ViewClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewImpl);
+};
+
+class ViewManagerImpl : public ViewManager,
+                        public ShellClient,
+                        public NativeViewportClient,
+                        public LauncherClient {
+ public:
+  explicit ViewManagerImpl(ScopedMessagePipeHandle shell_handle)
+      : shell_(shell_handle.Pass(), this) {
+    InitNativeViewport();
+  }
+
+ private:
+  // Overridden from ViewManager:
+  virtual void CreateView() MOJO_OVERRIDE {
+    ScopedMessagePipeHandle server_handle, client_handle;
+    CreateMessagePipe(&server_handle, &client_handle);
+    views_.push_back(new ViewImpl(server_handle.Pass()));
+    client_->OnViewCreated(client_handle.Pass());
+  }
+
+  // Overridden from ShellClient:
+  virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+    client_.reset(handle.Pass(), this);
+  }
+
   // Overridden from NativeViewportClient:
   virtual void OnCreated() OVERRIDE {
   }
@@ -90,92 +107,38 @@ class NativeViewportClientImpl : public NativeViewportClient,
     launcher_->Hide();
   }
 
+  void InitNativeViewport() {
+    AllocationScope scope;
+    ScopedMessagePipeHandle client_handle, native_viewport_handle;
+    CreateMessagePipe(&client_handle, &native_viewport_handle);
+    shell_->Connect("mojo:mojo_native_viewport_service",
+                    client_handle.Pass());
+    native_viewport_.reset(native_viewport_handle.Pass(), this);
+
+    native_viewport_->Create(gfx::Rect(50, 50, 800, 600));
+    native_viewport_->Show();
+  }
+
   void InitLauncher() {
     if (!launcher_.is_null())
       return;
     AllocationScope scope;
     ScopedMessagePipeHandle client_handle, native_viewport_handle;
     CreateMessagePipe(&client_handle, &native_viewport_handle);
-    connector_->Connect("mojo:mojo_launcher", client_handle.Pass());
+    shell_->Connect("mojo:mojo_launcher", client_handle.Pass());
     launcher_.reset(native_viewport_handle.Pass(), this);
   }
 
-  Connector* connector_;
-  RemotePtr<NativeViewport> native_viewport_;
-  RemotePtr<Launcher> launcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeViewportClientImpl);
-};
-
-class ViewImpl : public View {
- public:
-  explicit ViewImpl(ScopedMessagePipeHandle handle)
-      : id_(-1),
-        client_(handle.Pass()) {}
-  virtual ~ViewImpl() {}
-
- private:
-  // Overridden from View:
-  virtual void SetId(int view_id) MOJO_OVERRIDE {
-    id_ = view_id;
-  }
-  virtual void GetId() MOJO_OVERRIDE {
-    client_->OnGotId(id_);
-  }
-
-  int id_;
-  RemotePtr<ViewClient> client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewImpl);
-};
-
-class ViewManagerImpl : public ViewManager {
- public:
-  explicit ViewManagerImpl(ScopedMessagePipeHandle handle)
-      : client_(handle.Pass()) {
-  }
-  virtual ~ViewManagerImpl() {}
-
- private:
-  // Overridden from ViewManager:
-  virtual void CreateView() MOJO_OVERRIDE {
-    ScopedMessagePipeHandle server_handle, client_handle;
-    CreateMessagePipe(&server_handle, &client_handle);
-    views_.push_back(new ViewImpl(server_handle.Pass()));
-    client_->OnViewCreated(client_handle.Pass());
-  }
-
-  RemotePtr<ViewManagerClient> client_;
-  ScopedVector<ViewImpl> views_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewManagerImpl);
-};
-
-class ViewManager : public ShellClient,
-                    public Connector {
- public:
-  explicit ViewManager(ScopedMessagePipeHandle shell_handle)
-      : shell_(shell_handle.Pass(), this) {
-    nvc_.reset(new NativeViewportClientImpl(this));
-  }
-
- private:
-  // Overridden from ShellClient:
-  virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
-    view_managers_.push_back(new ViewManagerImpl(handle.Pass()));
-  }
-
-  // Overridden from Connector:
-  virtual void Connect(const String& url,
-                       ScopedMessagePipeHandle client_handle) OVERRIDE {
-    shell_->Connect(url, client_handle.Pass());
+  void DidCreateContext() {
   }
 
   RemotePtr<Shell> shell_;
-  scoped_ptr<NativeViewportClientImpl> nvc_;
-  ScopedVector<ViewManagerImpl> view_managers_;
+  RemotePtr<ViewManagerClient> client_;
+  ScopedVector<ViewImpl> views_;
+  RemotePtr<NativeViewport> native_viewport_;
+  RemotePtr<Launcher> launcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewManager);
+  DISALLOW_COPY_AND_ASSIGN(ViewManagerImpl);
 };
 
 }  // namespace examples
@@ -184,7 +147,7 @@ class ViewManager : public ShellClient,
 extern "C" VIEW_MANAGER_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   base::MessageLoop loop;
-  mojo::examples::ViewManager view_manager(
+  mojo::examples::ViewManagerImpl view_manager(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
   loop.Run();
 
