@@ -659,7 +659,9 @@ Gallery.prototype.updateSelectionAndState_ = function() {
                                     selectedItems.length);
   }
 
-  window.top.util.updateAppState(path,
+  window.top.util.updateAppState(
+      null,  // Keep the current directory.
+      path,  // Update the selection.
       {gallery: (this.currentMode_ === this.mosaicMode_ ? 'mosaic' : 'slide')});
 
   // We can't rename files in readonly directory.

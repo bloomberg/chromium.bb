@@ -295,10 +295,7 @@ void SelectFileDialogExtension::SelectFileImpl(
   }
 
   if (shell_window) {
-    if (shell_window->window_type_is_panel()) {
-      NOTREACHED() << "File dialog opened by panel.";
-      return;
-    }
+    DCHECK(!shell_window->window_type_is_panel());
     base_window = shell_window->GetBaseWindow();
     web_contents = shell_window->web_contents();
   } else {
@@ -309,10 +306,6 @@ void SelectFileDialogExtension::SelectFileImpl(
           chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
     }
     DCHECK(owner_browser);
-    if (!owner_browser) {
-      LOG(ERROR) << "Could not find browser or shell window for popup.";
-      return;
-    }
     base_window = owner_browser->window();
     web_contents = owner_browser->tab_strip_model()->GetActiveWebContents();
   }
@@ -323,50 +316,81 @@ void SelectFileDialogExtension::SelectFileImpl(
   DCHECK(profile_);
 
   // Check if we have another dialog opened for the contents. It's unlikely, but
-  // possible.
+  // possible. In such situation, discard this request.
   RoutingID routing_id = GetRoutingIDFromWebContents(web_contents);
-  if (PendingExists(routing_id)) {
-    DLOG(WARNING) << "Pending dialog exists with id " << routing_id;
+  if (PendingExists(routing_id))
     return;
-  }
-
-  base::FilePath default_dialog_path;
 
   const PrefService* pref_service = profile_->GetPrefs();
+  DCHECK(pref_service);
 
-  if (default_path.empty() && pref_service) {
-    default_dialog_path =
-        pref_service->GetFilePath(prefs::kDownloadDefaultDirectory);
-  } else {
-    default_dialog_path = default_path;
-  }
+  base::FilePath download_default_path(
+      pref_service->GetFilePath(prefs::kDownloadDefaultDirectory));
 
-  base::FilePath virtual_path;
-  base::FilePath fallback_path = profile_->last_selected_directory().Append(
-      default_dialog_path.BaseName());
-  // If an absolute path is specified as the default path, convert it to the
-  // virtual path in the file browser extension. Due to the current design,
-  // an invalid temporal cache file path may passed as |default_dialog_path|
-  // (crbug.com/178013 #9-#11). In such a case, we use the last selected
-  // directory as a workaround. Real fix is tracked at crbug.com/110119.
-  using file_manager::kFileManagerAppId;
-  if (default_dialog_path.IsAbsolute() &&
-      (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-           profile_, kFileManagerAppId, default_dialog_path, &virtual_path) ||
-       file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-           profile_, kFileManagerAppId, fallback_path, &virtual_path))) {
-    virtual_path = base::FilePath("/").Append(virtual_path);
-  } else {
-    // If the path was relative, or failed to convert, just use the base name,
-    virtual_path = default_dialog_path.BaseName();
+  base::FilePath selection_path = default_path.IsAbsolute() ?
+      default_path : download_default_path.Append(default_path.BaseName());
+
+  base::FilePath fallback_path = profile_->last_selected_directory().empty() ?
+      download_default_path : profile_->last_selected_directory();
+
+  // Convert the above absolute paths to virtual paths.
+  // TODO(mtomasz): Use URLs instead of paths.
+  base::FilePath selection_virtual_path;
+  if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+      profile_,
+      file_manager::kFileManagerAppId,
+      selection_path,
+      &selection_virtual_path)) {
+    // Due to the current design, an invalid temporal cache file path may passed
+    // as |default_path| (crbug.com/178013 #9-#11). In such a case, we use the
+    // last selected directory as a workaround. Real fix is tracked at
+    // crbug.com/110119.
+    if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+        profile_,
+        file_manager::kFileManagerAppId,
+        fallback_path.Append(default_path.BaseName()),
+        &selection_virtual_path)) {
+      LOG(ERROR) << "Unable to resolve the selection path.";
+      return;
+    }
   }
+  // TODO(mtomasz): Adding a leading separator works, because this code is
+  // executed on Chrome OS only. This trick will be removed, once migration to
+  // URLs is finished.
+  selection_virtual_path = base::FilePath("/").Append(selection_virtual_path);
+
+  base::FilePath current_directory_virtual_path;
+  base::FilePath current_directory_path = selection_path.DirName();
+  if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+      profile_,
+      file_manager::kFileManagerAppId,
+      current_directory_path,
+      &current_directory_virtual_path)) {
+    // Fallback if necessary, see the comment above.
+    if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+            profile_,
+            file_manager::kFileManagerAppId,
+            fallback_path,
+            &current_directory_virtual_path)) {
+      LOG(ERROR) << "Unable to resolve the current directory path: "
+                 << fallback_path.value();
+      return;
+    }
+  }
+  current_directory_virtual_path = base::FilePath("/").Append(
+      current_directory_virtual_path);
 
   has_multiple_file_type_choices_ =
-      file_types ? file_types->extensions.size() > 1 : true;
+      !file_types || (file_types->extensions.size() > 1);
 
   GURL file_manager_url =
       file_manager::util::GetFileManagerMainPageUrlWithParams(
-          type, title, virtual_path, file_types, file_type_index,
+          type,
+          title,
+          current_directory_virtual_path,
+          selection_virtual_path,
+          file_types,
+          file_type_index,
           default_extension);
 
   ExtensionDialog* dialog = ExtensionDialog::Show(file_manager_url,

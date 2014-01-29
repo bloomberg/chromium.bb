@@ -46,17 +46,6 @@ function FileManager() {
   this.currentVolumeInfo_ = null;
 }
 
-/**
- * Maximum delay in milliseconds for updating thumbnails in the bottom panel
- * to mitigate flickering. If images load faster then the delay they replace
- * old images smoothly. On the other hand we don't want to keep old images
- * too long.
- *
- * @type {number}
- * @const
- */
-FileManager.THUMBNAIL_SHOW_DELAY = 100;
-
 FileManager.prototype = {
   __proto__: cr.EventTarget.prototype,
   get directoryModel() {
@@ -586,14 +575,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initGeneral_ = function(callback) {
     // Initialize the application state.
+    // TODO(mtomasz): Unify window.appState with location.search format.
     if (window.appState) {
       this.params_ = window.appState.params || {};
-      this.defaultPath = window.appState.defaultPath;
+      this.initCurrentDirectoryPath_ = window.appState.currentDirectoryPath;
+      this.initSelectionPath_ = window.appState.selectionPath;
+      this.initTargetName_ = window.appState.targetName;
     } else {
+      // Used by the select dialog only.
       this.params_ = location.search ?
                      JSON.parse(decodeURIComponent(location.search.substr(1))) :
                      {};
-      this.defaultPath = this.params_.defaultPath;
+      this.initCurrentDirectoryPath_ = this.params_.currentDirectoryPath;
+      this.initSelectionPath_ = this.params_.selectionPath;
+      this.initTargetName_ = this.params_.targetName;
     }
 
     // Initialize the member variables that depend this.params_.
@@ -1396,12 +1391,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Restores current directory and may be a selected item after page load (or
-   * reload) or popping a state (after click on back/forward). defaultPath
-   * primarily is used with save/open dialogs.
-   * Default path may also contain a file name. Freshly opened file manager
-   * window has neither.
-   *
+   * Sets up the current directory during initialization.
    * @private
    */
   FileManager.prototype.setupCurrentDirectory_ = function() {
@@ -1414,138 +1404,108 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.volumeManager_.ensureInitialized(callback);
     }.bind(this));
 
-    // Obtains the fallback path.
-    var defaultDisplayRoot;
+    var nextCurrentDirEntry;
+    var selectionEntry;
+
+    // Resolve the selectionPath to selectionEntry or to currentDirectoryEntry
+    // in case of being a display root.
     queue.run(function(callback) {
-      this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
-        defaultDisplayRoot = displayRoot;
+      // TODO(mtomasz): Migrate to URLs, and stop calling resolveAbsolutePath.
+      if (!this.initSelectionPath_) {
+        callback();
+        return;
+      }
+      this.volumeManager_.resolveAbsolutePath(
+          this.initSelectionPath_,
+          function(inEntry) {
+            var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
+            // If the selection is root, then use it as a current directory
+            // instead. This is because, selecting a root entry is done as
+            // opening it.
+            if (locationInfo && locationInfo.isRootEntry)
+              nextCurrentDirEntry = inEntry;
+            else
+              selectionEntry = inEntry;
+            callback();
+          }.bind(this), callback);
+    }.bind(this));
+    // Resolve the currentDirectoryPath to currentDirectoryEntry (if not done
+    // by the previous step).
+    queue.run(function(callback) {
+      if (nextCurrentDirEntry || !this.initCurrentDirectoryPath_) {
+        callback();
+        return;
+      }
+      // TODO(mtomasz): Migrate to URLs, and stop calling resolveAbsolutePath.
+      this.volumeManager_.resolveAbsolutePath(
+          this.initCurrentDirectoryPath_,
+          function(inEntry) {
+            nextCurrentDirEntry = inEntry;
+            callback();
+          }, callback);
+      // TODO(mtomasz): Implement reopening on special search, when fake
+      // entries are converted to directory providers.
+    }.bind(this));
+
+    // If the directory to be changed to is not available, then first fallback
+    // to the parent of the selection entry.
+    queue.run(function(callback) {
+      if (nextCurrentDirEntry || !selectionEntry) {
+        callback();
+        return;
+      }
+      selectionEntry.getParent(function(inEntry) {
+        nextCurrentDirEntry = inEntry;
         callback();
       }.bind(this));
     }.bind(this));
 
-    // Resolve the default path.
-    var defaultFullPath;
-    var candidateFullPath;
-    var candidateEntry;
+    // If the directory to be changed to is still not resolved, then fallback
+    // to the default display root.
     queue.run(function(callback) {
-      // Cancel this sequence if the current directory has already changed.
-      if (tracker.hasChanged) {
+      if (nextCurrentDirEntry) {
         callback();
         return;
       }
-
-      // Resolve the absolute path in case only the file name or an empty string
-      // is passed.
-      if (!this.defaultPath) {
-        // TODO(mtomasz): that in this case we can directly jump to #1540
-        // and avoid fullPath conversion -> Entry.
-        defaultFullPath = defaultDisplayRoot.fullPath;
-      } else if (this.defaultPath.indexOf('/') === -1) {
-        // Path is a file name.
-        defaultFullPath = defaultDisplayRoot.fullPath + '/' + this.defaultPath;
-      } else {
-        defaultFullPath = this.defaultPath;
-      }
-
-      // If Drive is disabled but the path points to Drive's entry, fallback to
-      // defaultDisplayRootPath.
-      if (PathUtil.isDriveBasedPath(defaultFullPath) &&
-          !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
-        candidateFullPath = defaultDisplayRoot.fullPath + '/' +
-            PathUtil.basename(defaultFullPath);
-      } else {
-        candidateFullPath = defaultFullPath;
-      }
-
-      // If the path points a fake entry, use the entry directly.
-      // TODO(hirono): Obtains proper volume.
-      var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
-          util.VolumeType.DRIVE);
-      if (volumeInfo) {
-        for (var name in volumeInfo.fakeEntries) {
-          var fakeEntry = volumeInfo.fakeEntries[name];
-          // Skip the drive root fake entry, because we can need actual drive
-          // root to list its files.
-          if (fakeEntry.rootType === RootType.DRIVE)
-            continue;
-          if (candidateFullPath === fakeEntry.fullPath) {
-            candidateEntry = fakeEntry;
-            callback();
-            return;
-          }
-        }
-      }
-
-      // Convert the path to the directory entry and an optional selection
-      // entry.
-      // TODO(hirono): There may be a race here. The path on Drive, may not
-      // be available yet.
-      this.volumeManager_.resolveAbsolutePath(candidateFullPath,
-                                              function(inEntry) {
-        candidateEntry = inEntry;
+      this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
+        nextCurrentDirEntry = displayRoot;
         callback();
-      }, function() {
-        callback();
-      });
+      }.bind(this));
     }.bind(this));
 
-    // Check the obtained entry.
-    var nextCurrentDirEntry;
-    var selectionEntry = null;
-    var suggestedName = null;
-    var error = null;
+    // If selection failed to be resolved (eg. didn't exist, in case of saving
+    // a file, or in case of a fallback of the current directory, then try to
+    // resolve again using the target name.
     queue.run(function(callback) {
-      // Cancel this sequence if the current directory has already changed.
-      if (tracker.hasChanged) {
+      if (selectionEntry || !nextCurrentDirEntry || !this.initTargetName_) {
         callback();
         return;
       }
-
-      if (candidateEntry) {
-        // The entry is directory. Use it.
-        if (candidateEntry.isDirectory) {
-          nextCurrentDirEntry = candidateEntry;
-          callback();
-          return;
-        }
-        // The entry exists, but it is not a directory. Therefore use a
-        // parent.
-        candidateEntry.getParent(function(parentEntry) {
-          nextCurrentDirEntry = parentEntry;
-          selectionEntry = candidateEntry;
-          callback();
-        }, function() {
-          error = new Error('Unable to resolve parent for: ' +
-              candidateEntry.fullPath);
-          callback();
-        });
-        return;
-      }
-
-      // If the entry doesn't exist, most probably because the path contains a
-      // suggested name. Therefore try to open its parent. However, the parent
-      // may also not exist. In such situation, fallback.
-      var pathNodes = candidateFullPath.split('/');
-      var baseName = pathNodes.pop();
-      var parentPath = pathNodes.join('/');
-      this.volumeManager_.resolveAbsolutePath(
-          parentPath,
-          function(parentEntry) {
-            nextCurrentDirEntry = parentEntry;
-            suggestedName = baseName;
+      // Try to resolve as a file first. If it fails, then as a directory.
+      nextCurrentDirEntry.getFile(
+          this.initTargetName_,
+          {},
+          function(targetEntry) {
+            selectionEntry = targetEntry;
             callback();
-          },
-          callback);  // In case of an error, continue.
+          }, function() {
+            // Failed to resolve as a file
+            nextCurrentDirEntry.getDirectory(
+              this.initTargetName_,
+              {},
+              function(targetEntry) {
+                selectionEntry = targetEntry;
+                callback();
+              }, function() {
+                // Failed to resolve as either file or directory.
+                callback();
+              });
+          }.bind(this));
     }.bind(this));
 
-    // If the directory is not set at this stage, fallback to the default
-    // mount point.
+
+    // Finalize.
     queue.run(function(callback) {
-      // Check error.
-      if (error) {
-        callback();
-        throw error;
-      }
       // Check directory change.
       tracker.stop();
       if (tracker.hasChanged) {
@@ -1554,9 +1514,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
       // Finish setup current directory.
       this.finishSetupCurrentDirectory_(
-          nextCurrentDirEntry || defaultDisplayRoot,
+          nextCurrentDirEntry,
           selectionEntry,
-          suggestedName);
+          this.initTargetName_);
       callback();
     }.bind(this));
   };
@@ -1588,6 +1548,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       var task = null;
       // Handle restoring after crash, or the gallery action.
+      // TODO(mtomasz): Use the gallery action instead of just the gallery
+      //     field.
       if (this.params_.gallery || this.params_.action === 'gallery') {
         if (!opt_selectionEntry) {
           // Non-existent file or a directory.
@@ -1599,7 +1561,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         } else {
           // The file or the directory exists.
           task = function() {
-            // TODO(mtomasz): Replace the url with an entry.
             new FileTasks(this, this.params_).openGallery([opt_selectionEntry]);
           }.bind(this);
         }
@@ -1611,6 +1572,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // If there is a task to be run, run it after the scan is completed.
       if (task) {
         var listener = function() {
+          if (!util.isSameEntry(this.directoryModel_.getCurrentDirEntry(),
+                               directoryEntry)) {
+            // Opened on a different path. Probably fallbacked. Therefore,
+            // do not invoke a task.
+            return;
+          }
           this.directoryModel_.removeEventListener(
               'scan-completed', listener);
           task();
@@ -1619,7 +1586,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
     } else if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
       this.filenameInput_.value = opt_suggestedName || '';
-      this.selectDefaultPathInFilenameInput_();
+      this.selectTargetNameInFilenameInput_();
     }
   };
 
@@ -2046,7 +2013,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * @private
    */
-  FileManager.prototype.selectDefaultPathInFilenameInput_ = function() {
+  FileManager.prototype.selectTargetNameInFilenameInput_ = function() {
     var input = this.filenameInput_;
     input.focus();
     var selectionEnd = input.value.lastIndexOf('.');
@@ -2056,8 +2023,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       input.selectionStart = 0;
       input.selectionEnd = selectionEnd;
     }
-    // Clear, so we never do this again.
-    this.defaultPath = '';
   };
 
   /**
@@ -2321,9 +2286,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.searchBox.clear();
     // TODO(mtomasz): Use Entry.toURL() instead of fullPath.
+    // TODO(mtomasz): Consider remembering the selection.
     util.updateAppState(
-        this.getCurrentDirectoryEntry() &&
-        this.getCurrentDirectoryEntry().fullPath, '' /* opt_param */);
+        this.getCurrentDirectoryEntry() ?
+        this.getCurrentDirectoryEntry().fullPath : '',
+        '' /* selectionPath */,
+        '' /* opt_param */);
 
     if (this.commandHandler)
       this.commandHandler.updateAvailability();

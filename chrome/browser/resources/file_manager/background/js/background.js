@@ -522,20 +522,33 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
     // reuse it instead of opening a new one.
     if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
         type == LaunchType.FOCUS_ANY_OR_CREATE) {
-      if (opt_appState && opt_appState.defaultPath) {
+      if (opt_appState) {
         for (var key in background.appWindows) {
           if (!key.match(FILES_ID_PATTERN))
             continue;
 
           var contentWindow = background.appWindows[key].contentWindow;
-          if (contentWindow.appState &&
-              opt_appState.defaultPath == contentWindow.appState.defaultPath) {
-            background.appWindows[key].focus();
-            if (opt_callback)
-              opt_callback(key);
-            onTaskCompleted();
-            return;
+          if (!contentWindow.appState)
+            continue;
+
+          // Different current directories.
+          if (opt_appState.currentDirectoryPath !==
+                  contentWindow.appState.currentDirectoryPath) {
+            continue;
           }
+
+          // Selection path specified, and it is different.
+          if (opt_appState.selectionPath &&
+                  opt_appState.selectionPath !==
+                  contentWindow.appState.selectionPath) {
+            continue;
+          }
+
+          background.appWindows[key].focus();
+          if (opt_callback)
+            opt_callback(key);
+          onTaskCompleted();
+          return;
         }
       }
     }
@@ -654,7 +667,11 @@ Background.prototype.onExecute_ = function(action, details) {
           params: {
             action: action
           },
-          defaultPath: details.entries[0].fullPath
+          // It is not allowed to call getParent() here, since there may be
+          // no permissions to access it at this stage. Therefore we are passing
+          // the selectionPath only, and the currentDirectory will be resolved
+          // later.
+          selectionPath: details.entries[0].fullPath
         };
         // For mounted devices just focus any Files.app window. The mounted
         // volume will appear on the navigation list.
@@ -763,8 +780,9 @@ Background.prototype.onContextMenuClicked_ = function(info) {
       try {
         if (background.appWindows[key].contentWindow.isFocused()) {
           var appState = {
-            defaultPath: background.appWindows[key].contentWindow.
-                appState.defaultPath
+            // Do not clone the selection path, only the current directory.
+            currentDirectoryPath: background.appWindows[key].contentWindow.
+                appState.currentDirectoryPath
           };
           launchFileManager(appState);
           return;

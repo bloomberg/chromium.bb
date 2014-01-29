@@ -683,27 +683,29 @@ util.createChild = function(parent, opt_className, opt_tag) {
 };
 
 /**
- * Update the app state.
+ * Updates the app state.
+ * TODO(mtomasz): Migrate to URLs.
  *
- * @param {string} path Path to be put in the address bar after the hash.
- *   If null the hash is left unchanged.
- * @param {string|Object=} opt_param Search parameter. Used directly if string,
- *   stringified if object. If omitted the search query is left unchanged.
+ * @param {string} currentDirectoryPath Currently opened path. If null the path
+ *     is left unchanged.
+ * @param {string} selectionPath Currently selected path. If null the path is
+*      left unchanged.
+ * @param {string|Object=} opt_param Additional parameters, to be stored. If
+ *     null, then left unchanged.
  */
-util.updateAppState = function(path, opt_param) {
+util.updateAppState = function(currentDirectoryPath, selectionPath, opt_param) {
   window.appState = window.appState || {};
-  if (typeof opt_param == 'string')
-    window.appState.params = {};
-  else if (typeof opt_param == 'object')
+  if (opt_param !== undefined && opt_param !== null)
     window.appState.params = opt_param;
-  if (path)
-    window.appState.defaultPath = path;
+  if (currentDirectoryPath !== null)
+    window.appState.currentDirectoryPath = currentDirectoryPath;
+  if (selectionPath !== null)
+    window.appState.selectionPath = selectionPath;
   util.saveAppState();
-  return;
 };
 
 /**
- * Return a translated string.
+ * Returns a translated string.
  *
  * Wrapper function to make dealing with translated strings more concise.
  * Equivalent to loadTimeData.getString(id).
@@ -716,7 +718,7 @@ function str(id) {
 }
 
 /**
- * Return a translated string with arguments replaced.
+ * Returns a translated string with arguments replaced.
  *
  * Wrapper function to make dealing with translated strings more concise.
  * Equivalent to loadTimeData.getStringF(id, ...).

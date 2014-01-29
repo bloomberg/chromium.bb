@@ -642,10 +642,14 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
 
   if (this.params_ && this.params_.gallery) {
     // Remove the Gallery state from the location, we do not need it any more.
-    util.updateAppState(null /* keep path */, '' /* remove search. */);
+    // TODO(mtomasz): Consider keeping the selection path.
+    util.updateAppState(
+        null, /* keep current directory */
+        '', /* remove current selection */
+        '' /* remove search. */);
   }
 
-  var savedAppState = window.appState;
+  var savedAppState = JSON.parse(JSON.stringify(window.appState));
   var savedTitle = document.title;
 
   // Push a temporary state which will be replaced every time the selection

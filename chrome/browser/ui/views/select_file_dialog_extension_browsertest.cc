@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
@@ -115,6 +117,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
   void AddMountPoint(const base::FilePath& path) {
     EXPECT_TRUE(file_manager::util::RegisterDownloadsMountPoint(
         browser()->profile(), path));
+    browser()->profile()->GetPrefs()->SetFilePath(
+        prefs::kDownloadDefaultDirectory, downloads_dir_);
   }
 
   void CheckJavascriptErrors() {
