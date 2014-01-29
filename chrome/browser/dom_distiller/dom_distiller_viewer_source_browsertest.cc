@@ -198,8 +198,40 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage() {
   // Ensure no bindings.
   const content::RenderViewHost* render_view_host = observer.render_view_host();
   ASSERT_EQ(0, render_view_host->GetEnabledBindings());
-  // The MIME-type should always be text/html.
+  // The MIME-type should always be text/html for the distilled articles.
   EXPECT_EQ("text/html", observer.web_contents()->GetContentsMimeType());
+}
+
+// The DomDistillerViewerSource renders untrusted content, so ensure no bindings
+// are enabled when the CSS resource is loaded. This CSS might be bundle with
+// Chrome or provided by an extension.
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       NoWebUIBindingsDisplayCSS) {
+  // Ensure the source is registered.
+  // TODO(nyquist): Remove when the source is always registered on startup.
+  DomDistillerViewerSource* source =
+      new DomDistillerViewerSource(NULL, chrome::kDomDistillerScheme);
+  content::URLDataSource::Add(browser()->profile(), source);
+
+  // Setup observer to inspect the RenderViewHost after committed navigation.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  LoadSuccessObserver observer(contents);
+
+  // Navigate to a URL which the source should respond to with CSS.
+  std::string url_without_scheme = "://foobar/readability.css";
+  GURL url(chrome::kDomDistillerScheme + url_without_scheme);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // A navigation should have succeeded to the correct URL.
+  ASSERT_FALSE(observer.load_failed());
+  ASSERT_TRUE(observer.finished_load());
+  ASSERT_EQ(url, observer.validated_url());
+  // Ensure no bindings.
+  const content::RenderViewHost* render_view_host = observer.render_view_host();
+  ASSERT_EQ(0, render_view_host->GetEnabledBindings());
+  // The MIME-type should always be text/css for the CSS resources.
+  EXPECT_EQ("text/css", observer.web_contents()->GetContentsMimeType());
 }
 
 }  // namespace dom_distiller

@@ -6,7 +6,7 @@ Security Critical: yes
 
 Description:
 Readability operates on the DOM of a Web page to extract article content and
-present it in an easy-to-read form.
+present it in an easy-to-read form. The CSS of readability is unchanged.
 
 Local Modifications:
 - Removed all writes to innerHTML in the JavaScript.

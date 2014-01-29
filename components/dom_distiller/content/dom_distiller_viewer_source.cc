@@ -26,14 +26,17 @@
 
 namespace {
 
+const char kCssPath[] = "readability.css";
+
 std::string ReplaceHtmlTemplateValues(std::string title, std::string content) {
   base::StringPiece html_template =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
   std::vector<std::string> substitutions;
-  substitutions.push_back(title);    // $1
-  substitutions.push_back(title);    // $2
-  substitutions.push_back(content);  // $3
+  substitutions.push_back(title);     // $1
+  substitutions.push_back(kCssPath);  // $2
+  substitutions.push_back(title);     // $3
+  substitutions.push_back(content);   // $4
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
 
@@ -114,6 +117,14 @@ void DomDistillerViewerSource::StartDataRequest(
   DCHECK(render_view_host);
   CHECK_EQ(0, render_view_host->GetEnabledBindings());
 
+  if (kCssPath == path) {
+    std::string css = ResourceBundle::GetSharedInstance()
+                          .GetRawDataResource(IDR_DISTILLER_CSS)
+                          .as_string();
+    callback.Run(base::RefCountedString::TakeString(&css));
+    return;
+  }
+
   RequestViewerHandle* request_viewer_handle =
       new RequestViewerHandle(callback);
   std::string entry_id = StringToUpperASCII(path);
@@ -141,6 +152,8 @@ void DomDistillerViewerSource::StartDataRequest(
 
 std::string DomDistillerViewerSource::GetMimeType(const std::string& path)
     const {
+  if (path == kCssPath)
+    return "text/css";
   return "text/html";
 }
 
@@ -152,9 +165,16 @@ bool DomDistillerViewerSource::ShouldServiceRequest(
 void DomDistillerViewerSource::WillServiceRequest(
     const net::URLRequest* request,
     std::string* path) const {
-  // Since the full request is not available to StartDataRequest, replace the
-  // path to contain the data needed.
-  *path = request->url().host();
+  if (*path != kCssPath) {
+    // Since the full request is not available to StartDataRequest, replace the
+    // path to contain the data needed.
+    *path = request->url().host();
+  }
 };
+
+std::string DomDistillerViewerSource::GetContentSecurityPolicyObjectSrc()
+    const {
+  return "object-src 'none'; style-src 'self'";
+}
 
 }  // namespace dom_distiller

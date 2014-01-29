@@ -33,6 +33,7 @@ class DomDistillerViewerSource : public content::URLDataSource {
       const OVERRIDE;
   virtual void WillServiceRequest(const net::URLRequest* request,
                                   std::string* path) const OVERRIDE;
+  virtual std::string GetContentSecurityPolicyObjectSrc() const OVERRIDE;
 
   // The scheme this URLDataSource is hosted under.
   std::string scheme_;
