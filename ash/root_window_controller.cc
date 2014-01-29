@@ -43,6 +43,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
@@ -707,8 +708,8 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* always_on_top_container =
       GetContainer(kShellWindowId_AlwaysOnTopContainer);
   always_on_top_container->SetLayoutManager(
-      new BaseLayoutManager(
-          always_on_top_container->GetRootWindow()));
+      new internal::WorkspaceLayoutManager(
+          always_on_top_container));
   always_on_top_controller_.reset(new internal::AlwaysOnTopController);
   always_on_top_controller_->SetAlwaysOnTopContainer(always_on_top_container);
 
@@ -902,7 +903,7 @@ void RootWindowController::CreateContainersInRootWindow(
       "LockScreenContainer",
       lock_screen_containers);
   lock_container->SetLayoutManager(
-      new BaseLayoutManager(root_window));
+      new internal::WorkspaceLayoutManager(lock_container));
   SetUsesScreenCoordinates(lock_container);
   // TODO(beng): stopsevents
 
