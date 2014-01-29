@@ -3137,6 +3137,8 @@
             'browser/ui/webui/performance_monitor/performance_monitor_l10n.cc',
             'browser/ui/webui/performance_monitor/performance_monitor_ui.cc',
             'browser/ui/webui/performance_monitor/performance_monitor_ui_constants.cc',
+            'browser/ui/webui/system_info_ui.cc',
+            'browser/ui/webui/system_info_ui.h',
             'browser/ui/webui/theme_handler.cc',
           ],
           'sources/': [

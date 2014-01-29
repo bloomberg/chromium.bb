@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
-#include "chrome/browser/ui/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/browser/ui/webui/version_ui.h"
@@ -92,6 +91,7 @@
 #else
 #include "chrome/browser/ui/webui/suggestions_internals/suggestions_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
+#include "chrome/browser/ui/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 #endif
 
