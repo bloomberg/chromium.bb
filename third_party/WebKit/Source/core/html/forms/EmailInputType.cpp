@@ -45,7 +45,8 @@ static const char localPartCharacters[] = "abcdefghijklmnopqrstuvwxyz0123456789!
 static const char emailPattern[] =
     "[a-z0-9!#$%&'*+/=?^_`{|}~.-]+" // local part
     "@"
-    "[a-z0-9-]+(\\.[a-z0-9-]+)*"; // domain part
+    "[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?" // domain part
+    "(?:\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*";
 
 // RFC5321 says the maximum total length of a domain name is 255 octets.
 static const size_t maximumDomainNameLength = 255;
