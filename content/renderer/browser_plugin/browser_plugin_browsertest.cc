@@ -319,11 +319,17 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   browser_plugin_manager()->sink().ClearMessages();
 
   // Resize the browser plugin three times.
+
   ExecuteJavaScript("document.getElementById('browserplugin').width = '641px'");
+  GetMainFrame()->view()->layout();
   ProcessPendingMessages();
+
   ExecuteJavaScript("document.getElementById('browserplugin').width = '642px'");
+  GetMainFrame()->view()->layout();
   ProcessPendingMessages();
+
   ExecuteJavaScript("document.getElementById('browserplugin').width = '643px'");
+  GetMainFrame()->view()->layout();
   ProcessPendingMessages();
 
   // Expect to see one resize messsage in the sink. BrowserPlugin will not issue
