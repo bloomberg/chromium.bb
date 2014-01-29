@@ -1,9 +1,14 @@
 #!/bin/bash -e
-# Copyright (c) 2014 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-# Prepare Android device to run ASan application.
+#===- lib/asan/scripts/asan_device_setup.py -----------------------------------===#
+#
+#                     The LLVM Compiler Infrastructure
+#
+# This file is distributed under the University of Illinois Open Source
+# License. See LICENSE.TXT for details.
+#
+# Prepare Android device to run ASan applications.
+#
+#===------------------------------------------------------------------------===#
 
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -11,10 +16,12 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 revert=no
 extra_options=
 device=
+lib=
 
 function usage {
-    echo "usage: $0 [--revert] [--device device-id]"
+    echo "usage: $0 [--revert] [--device device-id] [--lib path] [--extra_options options]"
     echo "  --revert: Uninstall ASan from the device."
+    echo "  --lib: Path to ASan runtime library."
     echo "  --extra_options: Extra ASAN_OPTIONS."
     echo "  --device: Install to the given device. Use 'adb devices' to find"
     echo "            device-id."
@@ -34,6 +41,14 @@ while [[ $# > 0 ]]; do
         exit 1
       fi
       extra_options="$1"
+      ;;
+    --lib)
+      shift
+      if [[ $# == 0 ]]; then
+        echo "--lib requires an argument."
+        exit 1
+      fi
+      lib="$1"
       ;;
     --device)
       shift
@@ -55,11 +70,12 @@ if [[ x$device != x ]]; then
     ADB="adb -s $device"
 fi
 
-ASAN_RT_PATH="$HERE"
 ASAN_RT="libclang_rt.asan-arm-android.so"
 
 if [[ x$revert == xyes ]]; then
     echo '>> Uninstalling ASan'
+    $ADB root
+    $ADB wait-for-device
     $ADB remount
     $ADB shell mv /system/bin/app_process.real /system/bin/app_process
     $ADB shell rm /system/bin/asanwrapper
@@ -73,18 +89,34 @@ if [[ x$revert == xyes ]]; then
     exit 0
 fi
 
-if ! [[ -f "$ASAN_RT_PATH/$ASAN_RT" ]]; then
-    echo "ASan runtime library not found at $ASAN_RT"
+if [[ -d "$lib" ]]; then
+    ASAN_RT_PATH="$lib"
+elif [[ -f "$lib" && "$lib" == *"$ASAN_RT" ]]; then
+    ASAN_RT_PATH=$(dirname "$lib")
+elif [[ -f "$HERE/$ASAN_RT" ]]; then
+    ASAN_RT_PATH="$HERE"
+elif [[ $(basename "$HERE") == "bin" ]]; then
+    # We could be in the toolchain's base directory.
+    # Consider ../lib and ../lib/clang/$VERSION/lib/linux.
+    P=$(ls "$HERE"/../lib/"$ASAN_RT" "$HERE"/../lib/clang/*/lib/linux/"$ASAN_RT" 2>/dev/null | sort | tail -1)
+    if [[ -n "$P" ]]; then
+        ASAN_RT_PATH="$(dirname "$P")"
+    fi
+fi
+
+if [[ -z "$ASAN_RT_PATH" || ! -f "$ASAN_RT_PATH/$ASAN_RT" ]]; then
+    echo "ASan runtime library not found"
     exit 1
 fi
 
 TMPDIRBASE=$(mktemp -d)
-echo $TMPDIRBASE
 TMPDIROLD="$TMPDIRBASE/old"
 TMPDIR="$TMPDIRBASE/new"
 mkdir "$TMPDIROLD"
 
 echo '>> Remounting /system rw'
+$ADB root
+$ADB wait-for-device
 $ADB remount
 
 echo '>> Copying files from the device'
