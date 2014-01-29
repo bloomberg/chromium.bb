@@ -437,6 +437,7 @@ public:
     bool hasPseudoStyle(PseudoId pseudo) const;
     void setHasPseudoStyle(PseudoId pseudo);
     bool hasUniquePseudoStyle() const;
+    bool hasPseudoElementStyle() const;
 
     // attribute getter methods
 
@@ -1890,6 +1891,11 @@ inline void RenderStyle::setHasPseudoStyle(PseudoId pseudo)
     ASSERT(pseudo > NOPSEUDO);
     ASSERT(pseudo < FIRST_INTERNAL_PSEUDOID);
     noninherited_flags._pseudoBits |= 1 << (pseudo - 1);
+}
+
+inline bool RenderStyle::hasPseudoElementStyle() const
+{
+    return noninherited_flags._pseudoBits & PSEUDO_ELEMENT_MASK;
 }
 
 } // namespace WebCore

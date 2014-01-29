@@ -1590,9 +1590,10 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
     }
 
     // If we reattached we don't need to recalc the style of our descendants anymore.
-    if ((change >= Inherit && change < Reattach) || childNeedsStyleRecalc())
+    if ((change >= UpdatePseudoElements && change < Reattach) || childNeedsStyleRecalc()) {
         recalcChildStyle(change);
-    clearChildNeedsStyleRecalc();
+        clearChildNeedsStyleRecalc();
+    }
 
     if (hasCustomStyleCallbacks())
         didRecalcStyle(change);
@@ -1643,60 +1644,64 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (styleChangeType() >= SubtreeStyleChange)
         return Force;
 
-    if (change <= Inherit)
-        return localChange;
+    if (change > Inherit || localChange > Inherit)
+        return max(localChange, change);
 
-    return max(localChange, change);
+    if (localChange < Inherit && (oldStyle->hasPseudoElementStyle() || newStyle->hasPseudoElementStyle()))
+        return UpdatePseudoElements;
+
+    return localChange;
 }
 
 void Element::recalcChildStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
-    ASSERT(change >= Inherit || childNeedsStyleRecalc());
+    ASSERT(change >= UpdatePseudoElements || childNeedsStyleRecalc());
     ASSERT(!needsStyleRecalc());
 
     StyleResolverParentPusher parentPusher(*this);
 
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (root->shouldCallRecalcStyle(change)) {
-            parentPusher.push();
-            root->recalcStyle(change);
+    if (change > UpdatePseudoElements || childNeedsStyleRecalc()) {
+        for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+            if (root->shouldCallRecalcStyle(change)) {
+                parentPusher.push();
+                root->recalcStyle(change);
+            }
         }
     }
 
-    if (shouldCallRecalcStyle(change))
-        updatePseudoElement(BEFORE, change);
+    updatePseudoElement(BEFORE, change);
 
     if (change < Force && hasRareData() && childNeedsStyleRecalc())
         checkForChildrenAdjacentRuleChanges();
 
-    // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
-    // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
-    // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
-    // See crbug.com/288225
-    StyleResolver& styleResolver = document().ensureStyleResolver();
-    Text* lastTextNode = 0;
-    for (Node* child = lastChild(); child; child = child->previousSibling()) {
-        if (child->isTextNode()) {
-            toText(child)->recalcTextStyle(change, lastTextNode);
-            lastTextNode = toText(child);
-        } else if (child->isElementNode()) {
-            Element* element = toElement(child);
-            if (element->shouldCallRecalcStyle(change)) {
-                parentPusher.push();
-                element->recalcStyle(change, lastTextNode);
-            } else if (element->supportsStyleSharing()) {
-                styleResolver.addToStyleSharingList(*element);
+    if (change > UpdatePseudoElements || childNeedsStyleRecalc()) {
+        // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
+        // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
+        // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
+        // See crbug.com/288225
+        StyleResolver& styleResolver = document().ensureStyleResolver();
+        Text* lastTextNode = 0;
+        for (Node* child = lastChild(); child; child = child->previousSibling()) {
+            if (child->isTextNode()) {
+                toText(child)->recalcTextStyle(change, lastTextNode);
+                lastTextNode = toText(child);
+            } else if (child->isElementNode()) {
+                Element* element = toElement(child);
+                if (element->shouldCallRecalcStyle(change)) {
+                    parentPusher.push();
+                    element->recalcStyle(change, lastTextNode);
+                } else if (element->supportsStyleSharing()) {
+                    styleResolver.addToStyleSharingList(*element);
+                }
+                if (element->renderer())
+                    lastTextNode = 0;
             }
-            if (element->renderer())
-                lastTextNode = 0;
         }
     }
 
-    if (shouldCallRecalcStyle(change)) {
-        updatePseudoElement(AFTER, change);
-        updatePseudoElement(BACKDROP, change);
-    }
+    updatePseudoElement(AFTER, change);
+    updatePseudoElement(BACKDROP, change);
 }
 
 void Element::checkForChildrenAdjacentRuleChanges()
@@ -2758,8 +2763,10 @@ void Element::normalizeAttributes()
 
 void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 {
+    ASSERT(!needsStyleRecalc());
     PseudoElement* element = pseudoElement(pseudoId);
-    if (element && (needsStyleRecalc() || element->shouldCallRecalcStyle(change))) {
+    if (element && (change == UpdatePseudoElements || element->shouldCallRecalcStyle(change))) {
+
         // Need to clear the cached style if the PseudoElement wants a recalc so it
         // computes a new style.
         if (element->needsStyleRecalc())
@@ -2768,7 +2775,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // PseudoElement styles hang off their parent element's style so if we needed
         // a style recalc we should Force one on the pseudo.
         // FIXME: We should figure out the right text sibling to pass.
-        element->recalcStyle(needsStyleRecalc() ? Force : change);
+        element->recalcStyle(change == UpdatePseudoElements ? Force : change);
 
         // Wait until our parent is not displayed or pseudoElementRendererIsNeeded
         // is false, otherwise we could continously create and destroy PseudoElements
@@ -2776,8 +2783,9 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // PseudoElement's renderer for each style recalc.
         if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
             elementRareData()->setPseudoElement(pseudoId, 0);
-    } else if (change >= Inherit || needsStyleRecalc())
+    } else if (change >= UpdatePseudoElements) {
         createPseudoElementIfNeeded(pseudoId);
+    }
 }
 
 void Element::createPseudoElementIfNeeded(PseudoId pseudoId)

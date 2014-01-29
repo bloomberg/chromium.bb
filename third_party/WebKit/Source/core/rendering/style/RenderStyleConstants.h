@@ -31,6 +31,7 @@ namespace WebCore {
 enum StyleRecalcChange {
     NoChange,
     NoInherit,
+    UpdatePseudoElements,
     Inherit,
     Force,
     Reattach,
@@ -86,7 +87,8 @@ enum PseudoId {
     AFTER_LAST_INTERNAL_PSEUDOID,
     FIRST_PUBLIC_PSEUDOID = FIRST_LINE,
     FIRST_INTERNAL_PSEUDOID = SCROLLBAR_THUMB,
-    PUBLIC_PSEUDOID_MASK = ((1 << FIRST_INTERNAL_PSEUDOID) - 1) & ~((1 << FIRST_PUBLIC_PSEUDOID) - 1)
+    PUBLIC_PSEUDOID_MASK = ((1 << FIRST_INTERNAL_PSEUDOID) - 1) & ~((1 << FIRST_PUBLIC_PSEUDOID) - 1),
+    PSEUDO_ELEMENT_MASK = (1 << (BEFORE - 1)) | (1 << (AFTER - 1)) | (1 << (BACKDROP - 1))
 };
 
 enum ColumnFill { ColumnFillBalance, ColumnFillAuto };
