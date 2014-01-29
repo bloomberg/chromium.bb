@@ -18,12 +18,9 @@ function test()
     // tests, we need to reset size limits to default ones.
     InspectorTest.resetInspectorResourcesData(function() {
         InspectorTest.recordNetwork();
-        var withoutCacheControl = 'resources/empty.html?without-cache-control';
         var withCacheControl = 'resources/empty.html?with-cache-control';
         var cacheControl = [['Cache-Control', 'no-cache']];
-        Promise.all([makeXHR(withoutCacheControl, []), makeXHR(withoutCacheControl, [])]).then(function() {
-            return Promise.all([makeXHR(withCacheControl, cacheControl), makeXHR(withCacheControl, cacheControl)]);
-        }).then(function() {
+        Promise.all([makeXHR(withCacheControl, cacheControl), makeXHR(withCacheControl, cacheControl)]).then(function() {
             var requests = WebInspector.panel('network').requests;
             for (var i = 0; i < requests.length; ++i) {
                 InspectorTest.addResult(requests[i].url);
