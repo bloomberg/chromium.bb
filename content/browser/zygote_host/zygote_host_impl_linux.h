@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
 #define CONTENT_BROWSER_ZYGOTE_HOST_ZYGOTE_HOST_IMPL_LINUX_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,9 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   static ZygoteHostImpl* GetInstance();
 
   void Init(const std::string& sandbox_cmd);
+
+  // After the last known Zygote child exits, notify the Zygote to exit.
+  void TearDownAfterLastChild();
 
   // Tries to start a process of type indicated by process_type.
   // Returns its pid on success, otherwise
@@ -62,6 +66,16 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   ZygoteHostImpl();
   virtual ~ZygoteHostImpl();
 
+  // Notify the Zygote to exit immediately. This object should not be
+  // used afterwards.
+  void TearDown();
+
+  // Should be called every time a Zygote child is born.
+  void ZygoteChildBorn(pid_t process);
+
+  // Should be called every time a Zygote child died.
+  void ZygoteChildDied(pid_t process);
+
   // Sends |data| to the zygote via |control_fd_|.  If |fds| is non-NULL, the
   // included file descriptors will also be passed.  The caller is responsible
   // for acquiring |control_lock_|.
@@ -80,6 +94,11 @@ class CONTENT_EXPORT ZygoteHostImpl : public ZygoteHost {
   std::string sandbox_binary_;
   bool have_read_sandbox_status_word_;
   int sandbox_status_;
+  // A lock protecting list_of_running_zygote_children_ and
+  // should_teardown_after_last_child_exits_.
+  base::Lock child_tracking_lock_;
+  std::set<pid_t> list_of_running_zygote_children_;
+  bool should_teardown_after_last_child_exits_;
 };
 
 }  // namespace content
