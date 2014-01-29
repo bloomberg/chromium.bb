@@ -385,6 +385,40 @@ bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
     return false;
 }
 
+bool RenderThemeChromiumDefault::paintMenuListButton(RenderObject* o, const PaintInfo& i, const IntRect& rect)
+{
+    if (!o->isBox())
+        return false;
+
+    const int right = rect.x() + rect.width();
+    const int middle = rect.y() + rect.height() / 2;
+
+    blink::WebThemeEngine::ExtraParams extraParams;
+    extraParams.menuList.arrowY = middle;
+    extraParams.menuList.hasBorder = false;
+    extraParams.menuList.hasBorderRadius = o->style()->hasBorderRadius();
+    extraParams.menuList.backgroundColor = Color::transparent;
+    extraParams.menuList.fillContentArea = false;
+
+    if (useMockTheme()) {
+        const RenderBox* box = toRenderBox(o);
+        // The size and position of the drop-down button is different between
+        // the mock theme and the regular aura theme.
+        int spacingTop = box->borderTop() + box->paddingTop();
+        int spacingBottom = box->borderBottom() + box->paddingBottom();
+        int spacingRight = box->borderRight() + box->paddingRight();
+        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
+        extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
+    } else {
+        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
+    }
+
+    blink::WebCanvas* canvas = i.context->canvas();
+
+    blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartMenuList, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);
+    return false;
+}
+
 bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintInfo& i, const IntRect& rect)
 {
     blink::WebThemeEngine::ExtraParams extraParams;

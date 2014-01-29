@@ -72,6 +72,7 @@ public:
     virtual bool paintButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
+    virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 

@@ -4,6 +4,15 @@
 select {
     margin: 4px;
 }
+.wrapper {
+    background: #dbb102;
+    padding: 8px;
+    display: inline-block;
+}
+.wrapper select {
+    background: #dbb102;
+    border: transparent;
+}
 </style>
 <script>
 if (window.testRunner)
@@ -13,12 +22,22 @@ if (window.testRunner)
 <!-- no style for reference -->
 <select><option>foo</option></select> <br>
 
+<!-- padding -->
+<select style="padding-top: 8px;"><option>foo</option></select>
+<select style="padding-right: 6px;"><option>foo</option></select>
+<select style="padding-bottom: 8px;"><option>foo</option></select>
+<select style="padding-left: 6px;"><option>foo</option></select>
+<br>
+
+
 <!-- border -->
 <select style="border: 3px solid lime;"><option>foo</option></select>
 <select style="border-radius: 6px;"><option>foo</option></select> <br>
 
 <!-- background -->
-<select style="background: linear-gradient(to bottom, #dea 0%,#9c7 44%,#494 100%);"><option>foo</option></select> <br>
+<select style="background: linear-gradient(to bottom, #dea 0%,#9c7 44%,#494 100%);"><option>foo</option></select>
+<div class="wrapper"><select><option>bar</option></select></div>
+<br>
 
 <!-- shadow -->
 <select style="box-shadow: 4px 4px 10px rgba(255,0,0,0.5), inset 4px 4px 4px rgba(0,255,0,0.5);"><option>foo</option></select> <br>
