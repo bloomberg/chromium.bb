@@ -349,7 +349,7 @@ class UserManagerImpl
                                   RemoveUserDelegate* delegate);
 
   // MultiProfileUserControllerDelegate implementation:
-  virtual void OnUserNotAllowed() OVERRIDE;
+  virtual void OnUserNotAllowed(const std::string& user_email) OVERRIDE;
 
   // Sets account locale for user with id |user_id|.
   virtual void UpdateUserAccountLocale(const std::string& user_id,

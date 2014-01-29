@@ -41,9 +41,9 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -1930,10 +1930,10 @@ void UserManagerImpl::SendRegularUserLoginMetrics(const std::string& user_id) {
   }
 }
 
-void UserManagerImpl::OnUserNotAllowed() {
+void UserManagerImpl::OnUserNotAllowed(const std::string& user_email) {
   LOG(ERROR) << "Shutdown session because a user is not allowed to be in the "
                 "current session";
-  chrome::AttemptUserExit();
+  chromeos::ShowMultiprofilesSessionAbortedDialog(user_email);
 }
 
 void UserManagerImpl::UpdateUserAccountLocale(const std::string& user_id,

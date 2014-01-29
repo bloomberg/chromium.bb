@@ -10,7 +10,7 @@ namespace chromeos {
 class MultiProfileUserControllerDelegate {
  public:
   // Invoked when the first user that is not allowed in the session is detected.
-  virtual void OnUserNotAllowed() = 0;
+  virtual void OnUserNotAllowed(const std::string& user_email) = 0;
 
  protected:
   virtual ~MultiProfileUserControllerDelegate() {}

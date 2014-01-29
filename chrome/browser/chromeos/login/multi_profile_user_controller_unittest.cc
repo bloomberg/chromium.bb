@@ -176,7 +176,7 @@ class MultiProfileUserControllerTest
   }
 
   // MultiProfileUserControllerDeleagte overrides:
-  virtual void OnUserNotAllowed() OVERRIDE {
+  virtual void OnUserNotAllowed(const std::string& user_email) OVERRIDE {
     ++user_not_allowed_count_;
   }
 

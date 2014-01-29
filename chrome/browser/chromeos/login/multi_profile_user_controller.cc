@@ -182,7 +182,7 @@ void MultiProfileUserController::CheckSessionUsers() {
   const UserList& users = UserManager::Get()->GetLoggedInUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     if (!IsUserAllowedInSession((*it)->email())) {
-      delegate_->OnUserNotAllowed();
+      delegate_->OnUserNotAllowed((*it)->email());
       return;
     }
   }

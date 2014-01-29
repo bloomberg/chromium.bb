@@ -767,6 +767,8 @@
         'browser/chromeos/profiles/avatar_menu_chromeos.cc',
         'browser/chromeos/profiles/multiprofiles_intro_dialog.cc',
         'browser/chromeos/profiles/multiprofiles_intro_dialog.h',
+        'browser/chromeos/profiles/multiprofiles_session_aborted_dialog.cc',
+        'browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h',
         'browser/chromeos/profiles/profile_helper.cc',
         'browser/chromeos/profiles/profile_helper.h',
         'browser/chromeos/profiles/profile_list_chromeos.cc',
