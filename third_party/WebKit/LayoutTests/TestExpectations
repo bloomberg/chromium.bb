@@ -70,7 +70,7 @@ crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-t
 crbug.com/310882 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html [ Pass Timeout ]
 crbug.com/327877 [ Win ] http/tests/xmlhttprequest/sync-repeated-and-caching.html [ Pass Failure Timeout ]
 
-crbug.com/299177 [ Release ] perf/compositor-touch-hit-rects.html [ Failure Pass Timeout ]
+crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 
 # Vertical text needs to be implemented in platforms other than OS X.
 crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure Pass ]
