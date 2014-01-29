@@ -205,9 +205,23 @@
         <include name="IDR_SETTINGS_APP_JS" file="settings_app/settings_app.js" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('enable_plugins')">
-        <include name="IDR_PDF_HTML" file="pdf/pdf.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_PDF_INDEX_JS" file="pdf/index.js" type="BINDATA" />
         <include name="IDR_PDF_BACKGROUND_JS" file="pdf/background.js" type="BINDATA" />
         <include name="IDR_PDF_JS" file="pdf/pdf.js" type="BINDATA" />
+        <include name="IDR_PDF_POLYMER_JS" file="pdf/polymer_loader.js" type="BINDATA" flattenhtml="true" />
+        <include name="IDR_PDF_BUTTON_LOW_1" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_fit_page.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_LOW_2" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_fit_width.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_LOW_3" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_zoom_out.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_LOW_4" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_zoom_in.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_LOW_5" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_save.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_LOW_6" file="pdf/html_office/elements/viewer-button/img/lowDPI/button_print.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_HIGH_1" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_fit_page.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_HIGH_2" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_fit_width.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_HIGH_3" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_zoom_out.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_HIGH_4" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_zoom_in.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_HIGH_5" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_save.png" type="BINDATA" />
+        <include name="IDR_PDF_BUTTON_HIGH_6" file="pdf/html_office/elements/viewer-button/img/hiDPI/button_print.png" type="BINDATA" />
       </if>
     </includes>
   </release>

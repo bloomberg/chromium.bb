@@ -7,6 +7,6 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
     // TODO(raymes): Currently this doesn't work with embedded PDFs (it
     // causes the entire frame to navigate). Also work out how we can
     // mask the URL with the URL of the PDF.
-    chrome.tabs.update(tab_id, { url: 'pdf.html?' + content_url });
+    chrome.tabs.update(tab_id, { url: 'index.html?' + content_url });
   }
 );
