@@ -9017,6 +9017,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.Ping_ResponseStartedTime" units="milliseconds">
+  <summary>
+    How long it took for an &lt;a ping&gt; request to receive a response. Only
+    recorded if a response was received.
+  </summary>
+</histogram>
+
+<histogram name="Net.Ping_Result" enum="PingResult">
+  <summary>
+    The result of an &lt;a ping&gt; request, whether it received a response or
+    timed out or failed for some other reason.
+  </summary>
+</histogram>
+
 <histogram name="Net.PreconnectedLinkNavigations" enum="PreconnectedNavigation">
   <summary>
     Indicate whether a link navigation was preceded by a recent pre-connect
@@ -29057,6 +29071,15 @@ other types of suffix sets.
   <int value="6" label="Rotate redo"/>
   <int value="7" label="Share"/>
   <int value="8" label="Other"/>
+</enum>
+
+<enum name="PingResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Response started"/>
+  <int value="2" label="Timed out"/>
+  <int value="3" label="Canceled"/>
+  <int value="4" label="Failed"/>
+  <int value="5" label="Uncompleted"/>
 </enum>
 
 <enum name="PipelineStatus" type="int">
