@@ -35,7 +35,6 @@
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "platform/Logging.h"
 #include "public/platform/Platform.h"
-#include "wtf/AutodrainedPool.h"
 
 namespace WebCore {
 

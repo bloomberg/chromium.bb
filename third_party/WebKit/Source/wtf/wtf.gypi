@@ -15,8 +15,6 @@
             'Assertions.cpp',
             'Assertions.h',
             'Atomics.h',
-            'AutodrainedPool.h',
-            'AutodrainedPoolMac.mm',
             'BitArray.h',
             'BitVector.cpp',
             'BitVector.h',
