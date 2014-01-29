@@ -12,8 +12,8 @@ class MusicManagerPrivateTest : public extensions::PlatformAppBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MusicManagerPrivateTest, DeviceIdValueReturned) {
-#if defined(OS_MACOSX)
-  // Note: Some MacOS trybots seem to run under VMware, which assigns
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+  // Note: Some MacOS/Linux trybots seem to run under VMware, which assigns
   //       MAC addresses that are blacklisted. We still want the test
   //       to succeed in that case.
   const char* custom_arg = "device_id_may_be_undefined";
