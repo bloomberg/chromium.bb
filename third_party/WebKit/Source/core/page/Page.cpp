@@ -63,20 +63,22 @@
 
 namespace WebCore {
 
-static HashSet<Page*>* allPages;
-
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, pageCounter, ("Page"));
+
+// static
+HashSet<Page*>& Page::allPages()
+{
+    DEFINE_STATIC_LOCAL(HashSet<Page*>, allPages, ());
+    return allPages;
+}
 
 void Page::networkStateChanged(bool online)
 {
-    if (!allPages)
-        return;
-
     Vector<RefPtr<Frame> > frames;
 
     // Get all the frames of all the pages in all the page groups
-    HashSet<Page*>::iterator end = allPages->end();
-    for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it) {
+    HashSet<Page*>::iterator end = allPages().end();
+    for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it) {
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
             frames.append(frame);
         InspectorInstrumentation::networkStateChanged(*it, online);
@@ -131,11 +133,8 @@ Page::Page(PageClients& pageClients)
 {
     ASSERT(m_editorClient);
 
-    if (!allPages)
-        allPages = new HashSet<Page*>;
-
-    ASSERT(!allPages->contains(this));
-    allPages->add(this);
+    ASSERT(!allPages().contains(this));
+    allPages().add(this);
 
 #ifndef NDEBUG
     pageCounter.increment();
@@ -146,7 +145,7 @@ Page::~Page()
 {
     m_mainFrame->setView(0);
     clearPageGroup();
-    allPages->remove(this);
+    allPages().remove(this);
 
     for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
         frame->willDetachFrameHost();
@@ -249,10 +248,8 @@ void Page::setGroupType(PageGroupType type)
 
 void Page::scheduleForcedStyleRecalcForAllPages()
 {
-    if (!allPages)
-        return;
-    HashSet<Page*>::iterator end = allPages->end();
-    for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it)
+    HashSet<Page*>::iterator end = allPages().end();
+    for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it)
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
             frame->document()->setNeedsStyleRecalc();
 }
@@ -265,15 +262,15 @@ void Page::setNeedsRecalcStyleInAllFrames()
 
 void Page::refreshPlugins(bool reload)
 {
-    if (!allPages)
+    if (allPages().isEmpty())
         return;
 
     PluginData::refresh();
 
     Vector<RefPtr<Frame> > framesNeedingReload;
 
-    HashSet<Page*>::iterator end = allPages->end();
-    for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it) {
+    HashSet<Page*>::iterator end = allPages().end();
+    for (HashSet<Page*>::iterator it = allPages().begin(); it != end; ++it) {
         Page* page = *it;
 
         // Clear out the page's plug-in data.
@@ -379,11 +376,8 @@ void Page::setPagination(const Pagination& pagination)
 
 void Page::allVisitedStateChanged()
 {
-    if (!allPages)
-        return;
-
-    HashSet<Page*>::iterator pagesEnd = allPages->end();
-    for (HashSet<Page*>::iterator it = allPages->begin(); it != pagesEnd; ++it) {
+    HashSet<Page*>::iterator pagesEnd = allPages().end();
+    for (HashSet<Page*>::iterator it = allPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
         if (page->m_group != PageGroup::sharedGroup())
             continue;
@@ -394,11 +388,8 @@ void Page::allVisitedStateChanged()
 
 void Page::visitedStateChanged(LinkHash linkHash)
 {
-    if (!allPages)
-        return;
-
-    HashSet<Page*>::iterator pagesEnd = allPages->end();
-    for (HashSet<Page*>::iterator it = allPages->begin(); it != pagesEnd; ++it) {
+    HashSet<Page*>::iterator pagesEnd = allPages().end();
+    for (HashSet<Page*>::iterator it = allPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
         if (page->m_group != PageGroup::sharedGroup())
             continue;

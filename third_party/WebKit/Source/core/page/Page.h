@@ -107,6 +107,10 @@ public:
     explicit Page(PageClients&);
     virtual ~Page();
 
+    // This method returns all pages, incl. private ones associated with
+    // inspector overlay, popups, SVGImage, etc.
+    static HashSet<Page*>& allPages();
+
     FrameHost& frameHost() { return *m_frameHost; }
 
     void setNeedsRecalcStyleInAllFrames();
