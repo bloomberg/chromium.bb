@@ -42,6 +42,7 @@ class IdTargetObserverRegistry {
 public:
     static PassOwnPtr<IdTargetObserverRegistry> create();
     void notifyObservers(const AtomicString& id);
+    bool hasObservers(const AtomicString& id) const;
 
 private:
     IdTargetObserverRegistry() : m_notifyingObserversInSet(0) { }

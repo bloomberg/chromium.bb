@@ -32,6 +32,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/IdTargetObserverRegistry.h"
 #include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
 #include "core/events/ScopedEventQueue.h"
@@ -60,9 +61,8 @@ using namespace HTMLNames;
 
 HTMLFormElement::HTMLFormElement(Document& document)
     : HTMLElement(formTag, document)
-    , m_associatedElementsBeforeIndex(0)
-    , m_associatedElementsAfterIndex(0)
     , m_weakPtrFactory(this)
+    , m_associatedElementsAreDirty(false)
     , m_imageElementsAreDirty(false)
     , m_hasElementsAssociatedByParser(false)
     , m_didFinishParsingChildren(false)
@@ -128,19 +128,26 @@ void notifyFormRemovedFromTree(const Vector<T*>& elements, Node* root)
     size_t size = elements.size();
     for (size_t i = 0; i < size; ++i)
         elements[i]->formRemovedFromTree(root);
+    ASSERT(elements.size() == size);
 }
 
 void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
 {
-    // FIXME: We don't need to notify formRemovedFromTree to associated elements
-    // which are descendants of this form. We can skip this process if we know
-    // that this form doesn't have elements associated by parser or associated
-    // with 'form' content attribute.
-    Node* root = highestAncestor();
-    Vector<FormAssociatedElement*> elements(associatedElements());
-    notifyFormRemovedFromTree(elements, root);
-
+    // We don't need to take care of form association by 'form' content
+    // attribute becuse IdTargetObserver handles it.
     if (m_hasElementsAssociatedByParser) {
+        Node* root = highestAncestor();
+        if (!m_associatedElementsAreDirty) {
+            Vector<FormAssociatedElement*> elements(associatedElements());
+            notifyFormRemovedFromTree(elements, root);
+        } else {
+            Vector<FormAssociatedElement*> elements;
+            collectAssociatedElements(insertionPoint->highestAncestor(), elements);
+            notifyFormRemovedFromTree(elements, root);
+            collectAssociatedElements(root, elements);
+            notifyFormRemovedFromTree(elements, root);
+        }
+
         if (!m_imageElementsAreDirty) {
             Vector<HTMLImageElement*> images(imageElements());
             notifyFormRemovedFromTree(images, root);
@@ -520,105 +527,17 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         HTMLElement::parseAttribute(name, value);
 }
 
-template<class T, size_t n> static void removeFromVector(Vector<T*, n> & vec, T* item)
-{
-    size_t size = vec.size();
-    for (size_t i = 0; i != size; ++i)
-        if (vec[i] == item) {
-            vec.remove(i);
-            break;
-        }
-}
-
-unsigned HTMLFormElement::formElementIndexWithFormAttribute(Element* element, unsigned rangeStart, unsigned rangeEnd)
-{
-    if (m_associatedElements.isEmpty())
-        return 0;
-
-    ASSERT(rangeStart <= rangeEnd);
-
-    if (rangeStart == rangeEnd)
-        return rangeStart;
-
-    unsigned left = rangeStart;
-    unsigned right = rangeEnd - 1;
-    unsigned short position;
-
-    // Does binary search on m_associatedElements in order to find the index
-    // to be inserted.
-    while (left != right) {
-        unsigned middle = left + ((right - left) / 2);
-        ASSERT(middle < m_associatedElementsBeforeIndex || middle >= m_associatedElementsAfterIndex);
-        position = element->compareDocumentPosition(toHTMLElement(m_associatedElements[middle]));
-        if (position & DOCUMENT_POSITION_FOLLOWING)
-            right = middle;
-        else
-            left = middle + 1;
-    }
-
-    ASSERT(left < m_associatedElementsBeforeIndex || left >= m_associatedElementsAfterIndex);
-    position = element->compareDocumentPosition(toHTMLElement(m_associatedElements[left]));
-    if (position & DOCUMENT_POSITION_FOLLOWING)
-        return left;
-    return left + 1;
-}
-
-unsigned HTMLFormElement::formElementIndex(FormAssociatedElement& associatedElement)
-{
-    HTMLElement& associatedHTMLElement = toHTMLElement(associatedElement);
-    // Treats separately the case where this element has the form attribute
-    // for performance consideration.
-    if (associatedHTMLElement.fastHasAttribute(formAttr)) {
-        unsigned short position = compareDocumentPosition(&associatedHTMLElement);
-        if (position & DOCUMENT_POSITION_PRECEDING) {
-            ++m_associatedElementsBeforeIndex;
-            ++m_associatedElementsAfterIndex;
-            return HTMLFormElement::formElementIndexWithFormAttribute(&associatedHTMLElement, 0, m_associatedElementsBeforeIndex - 1);
-        }
-        if (position & DOCUMENT_POSITION_FOLLOWING && !(position & DOCUMENT_POSITION_CONTAINED_BY))
-            return HTMLFormElement::formElementIndexWithFormAttribute(&associatedHTMLElement, m_associatedElementsAfterIndex, m_associatedElements.size());
-    }
-
-    // Check for the special case where this element is the very last thing in
-    // the form's tree of children; we don't want to walk the entire tree in that
-    // common case that occurs during parsing; instead we'll just return a value
-    // that says "add this form element to the end of the array".
-    if (ElementTraversal::next(associatedHTMLElement, this)) {
-        unsigned i = m_associatedElementsBeforeIndex;
-        for (Element* element = this; element; element = ElementTraversal::next(*element, this)) {
-            if (element == associatedHTMLElement) {
-                ++m_associatedElementsAfterIndex;
-                return i;
-            }
-            if (!element->isFormControlElement() && !element->hasTagName(objectTag))
-                continue;
-            if (!element->isHTMLElement() || toHTMLElement(element)->formOwner() != this)
-                continue;
-            ++i;
-        }
-    }
-    return m_associatedElementsAfterIndex++;
-}
-
 void HTMLFormElement::associate(FormAssociatedElement& e)
 {
-    m_associatedElements.insert(formElementIndex(e), &e);
+    m_associatedElementsAreDirty = true;
+    m_associatedElements.clear();
 }
 
 void HTMLFormElement::disassociate(FormAssociatedElement& e)
 {
-    unsigned index;
-    for (index = 0; index < m_associatedElements.size(); ++index) {
-        if (m_associatedElements[index] == &e)
-            break;
-    }
-    ASSERT_WITH_SECURITY_IMPLICATION(index < m_associatedElements.size());
-    if (index < m_associatedElementsBeforeIndex)
-        --m_associatedElementsBeforeIndex;
-    if (index < m_associatedElementsAfterIndex)
-        --m_associatedElementsAfterIndex;
+    m_associatedElementsAreDirty = true;
+    m_associatedElements.clear();
     removeFromPastNamesMap(toHTMLElement(e));
-    removeFromVector(m_associatedElements, &e);
 }
 
 bool HTMLFormElement::isURLAttribute(const Attribute& attribute) const
@@ -655,6 +574,41 @@ void HTMLFormElement::didAssociateByParser()
 PassRefPtr<HTMLCollection> HTMLFormElement::elements()
 {
     return ensureCachedHTMLCollection(FormControls);
+}
+
+void HTMLFormElement::collectAssociatedElements(Node* root, Vector<FormAssociatedElement*>& elements) const
+{
+    elements.clear();
+    for (Node* node = root; node; node = NodeTraversal::next(*node)) {
+        if (!node->isHTMLElement())
+            continue;
+        FormAssociatedElement* element = 0;
+        if (toElement(node)->isFormControlElement())
+            element = toHTMLFormControlElement(node);
+        else if (node->hasTagName(objectTag))
+            element = toHTMLObjectElement(node);
+        else
+            continue;
+        if (element->form()== this)
+            elements.append(element);
+    }
+}
+
+// This function should be const conceptually. However we update some fields
+// because of lazy evaluation.
+const Vector<FormAssociatedElement*>& HTMLFormElement::associatedElements() const
+{
+    if (!m_associatedElementsAreDirty)
+        return m_associatedElements;
+    HTMLFormElement* mutableThis = const_cast<HTMLFormElement*>(this);
+    Node* scope = mutableThis;
+    if (m_hasElementsAssociatedByParser)
+        scope = highestAncestor();
+    if (inDocument() && treeScope().idTargetObserverRegistry().hasObservers(fastGetAttribute(idAttr)))
+        scope = &treeScope().rootNode();
+    collectAssociatedElements(scope, mutableThis->m_associatedElements);
+    mutableThis->m_associatedElementsAreDirty = false;
+    return m_associatedElements;
 }
 
 void HTMLFormElement::collectImageElements(Node* root, Vector<HTMLImageElement*>& elements)
