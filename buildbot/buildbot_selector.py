@@ -320,6 +320,8 @@ def Main():
     if tempdrive != filedrive:
       env['TEMP'] = filedrive + '\\temp'
       env['TMP'] = env['TEMP']
+      if not os.path.exists(env['TEMP']):
+        os.mkdir(env['TEMP'])
 
   # Run through runtest.py to get upload of perf data.
   build_properties = {
