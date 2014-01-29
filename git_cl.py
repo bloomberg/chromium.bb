@@ -2303,6 +2303,7 @@ def CMDowners(parser, args):
       disable_color=options.no_color).run()
 
 
+@subcommand.usage('[files or directories to diff]')
 def CMDformat(parser, args):
   """Runs clang-format on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h']
@@ -2311,8 +2312,6 @@ def CMDformat(parser, args):
   parser.add_option('--dry-run', action='store_true',
                     help='Don\'t modify any file on disk.')
   opts, args = parser.parse_args(args)
-  if args:
-    parser.error('Unrecognized args: %s' % ' '.join(args))
 
   # git diff generates paths against the root of the repository.  Change
   # to that directory so clang-format can find files even within subdirs.
@@ -2348,7 +2347,16 @@ def CMDformat(parser, args):
 
   # Handle source file filtering.
   diff_cmd.append('--')
-  diff_cmd += ['*' + ext for ext in CLANG_EXTS]
+  if args:
+    for arg in args:
+      if os.path.isdir(arg):
+        diff_cmd += [os.path.join(arg, '*' + ext) for ext in CLANG_EXTS]
+      elif os.path.isfile(arg):
+        diff_cmd.append(arg)
+      else:
+        DieWithError('Argument "%s" is not a file or a directory' % arg)
+  else:
+    diff_cmd += ['*' + ext for ext in CLANG_EXTS]
   diff_output = RunGit(diff_cmd)
 
   top_dir = os.path.normpath(
