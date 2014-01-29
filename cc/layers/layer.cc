@@ -16,11 +16,13 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -39,7 +41,7 @@ Layer::Layer()
       ignore_set_needs_commit_(false),
       parent_(NULL),
       layer_tree_host_(NULL),
-      scrollable_(false),
+      scroll_clip_layer_(NULL),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
       user_scrollable_horizontal_(true),
@@ -679,6 +681,12 @@ void Layer::RemoveClipChild(Layer* child) {
 
 void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
+
+  if (layer_tree_host()) {
+    scroll_offset = layer_tree_host()->DistributeScrollOffsetToViewports(
+        scroll_offset, this);
+  }
+
   if (scroll_offset_ == scroll_offset)
     return;
   scroll_offset_ = scroll_offset;
@@ -700,19 +708,44 @@ void Layer::SetScrollOffsetFromImplSide(gfx::Vector2d scroll_offset) {
   // "this" may have been destroyed during the process.
 }
 
-void Layer::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (max_scroll_offset_ == max_scroll_offset)
-    return;
-  max_scroll_offset_ = max_scroll_offset;
-  SetNeedsCommit();
+// TODO(wjmaclean) We should template this and put it into LayerTreeHostCommon
+// so that both Layer and LayerImpl are using the same code. In order
+// to template it we should avoid calling layer_tree_host() by giving
+// Layer/LayerImpl local accessors for page_scale_layer() and
+// page_scale_factor().
+gfx::Vector2d Layer::MaxScrollOffset() const {
+  if (!scroll_clip_layer_)
+    return gfx::Vector2d();
+
+  gfx::Size scaled_scroll_bounds(bounds());
+  Layer const* current_layer = this;
+  Layer const* page_scale_layer = layer_tree_host()->page_scale_layer();
+  float scale_factor = 1.f;
+  do {
+    if (current_layer == page_scale_layer) {
+      scale_factor = layer_tree_host()->page_scale_factor();
+      scaled_scroll_bounds.SetSize(
+          scale_factor * scaled_scroll_bounds.width(),
+          scale_factor * scaled_scroll_bounds.height());
+    }
+    current_layer = current_layer->parent();
+  } while (current_layer && current_layer != scroll_clip_layer_);
+  DCHECK(current_layer == scroll_clip_layer_);
+
+  gfx::Vector2dF max_offset(
+      scaled_scroll_bounds.width() - scroll_clip_layer_->bounds().width(),
+      scaled_scroll_bounds.height() - scroll_clip_layer_->bounds().height());
+  // We need the final scroll offset to be in CSS coords.
+  max_offset.Scale(1.f / scale_factor);
+  max_offset.SetToMax(gfx::Vector2dF());
+  return gfx::ToFlooredVector2d(max_offset);
 }
 
-void Layer::SetScrollable(bool scrollable) {
+void Layer::SetScrollClipLayer(Layer* clip_layer) {
   DCHECK(IsPropertyChangeAllowed());
-  if (scrollable_ == scrollable)
+  if (scroll_clip_layer_ == clip_layer)
     return;
-  scrollable_ = scrollable;
+  scroll_clip_layer_ = clip_layer;
   SetNeedsCommit();
 }
 
@@ -911,10 +944,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetTransform(transform_);
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
 
-  layer->SetScrollable(scrollable_);
+  layer->SetScrollClipLayer(scroll_clip_layer_ ? scroll_clip_layer_->id()
+                                        : Layer::INVALID_ID);
   layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
   layer->set_user_scrollable_vertical(user_scrollable_vertical_);
-  layer->SetMaxScrollOffset(max_scroll_offset_);
 
   LayerImpl* scroll_parent = NULL;
   if (scroll_parent_)

@@ -972,7 +972,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     LayerTreeHostAnimationTest::SetupTree();
 
     scroll_layer_ = FakeContentLayer::Create(&client_);
-    scroll_layer_->SetScrollable(true);
+    scroll_layer_->SetScrollClipLayer(layer_tree_host()->root_layer());
     scroll_layer_->SetBounds(gfx::Size(1000, 1000));
     scroll_layer_->SetScrollOffset(gfx::Vector2d(10, 20));
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);

@@ -277,7 +277,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Shortcuts to layers on the active tree.
   LayerImpl* RootLayer() const;
-  LayerImpl* RootScrollLayer() const;
+  LayerImpl* InnerViewportScrollLayer() const;
+  LayerImpl* OuterViewportScrollLayer() const;
   LayerImpl* CurrentlyScrollingLayer() const;
 
   int scroll_layer_id_when_mouse_over_scrollbar() {
@@ -464,6 +465,7 @@ class CC_EXPORT LayerTreeHostImpl
   void ReleaseTreeResources();
   void EnforceZeroBudget(bool zero_budget);
 
+  void ScrollViewportBy(gfx::Vector2dF scroll_delta);
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
   void AnimateTopControls(base::TimeTicks monotonic_time);
@@ -474,7 +476,6 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::PointF& viewport_point,
       const gfx::Vector2dF& viewport_delta);
 
-  void UpdateMaxScrollOffset();
   void TrackDamageForAllSurfaces(
       LayerImpl* root_draw_layer,
       const LayerImplList& render_surface_layer_list);

@@ -338,6 +338,21 @@ class PageScaleImplSidePaintingPerfTest
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, min_scale_, max_scale_);
   }
 
+  virtual void BuildTree() OVERRIDE {
+    LayerTreeHostPerfTestJsonReader::BuildTree();
+
+    // TODO(wjmaclean) The JSON tree reader should be able to mark inner/out
+    // viewport scroll layers as part of its tree setup. The code below is
+    // matched to the tree specified in the data file heavy_layer_tree.
+    Layer* root = layer_tree_host()->root_layer();
+    Layer* clip_layer = root->children()[0];
+    Layer* inner_viewport_scroll_layer = clip_layer->children()[0];
+    inner_viewport_scroll_layer->SetScrollClipLayer(root);
+    inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+    layer_tree_host()->RegisterViewportLayers(
+        root, inner_viewport_scroll_layer, 0);
+  }
+
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                    float scale_delta) OVERRIDE {
     float page_scale_factor = layer_tree_host()->page_scale_factor();

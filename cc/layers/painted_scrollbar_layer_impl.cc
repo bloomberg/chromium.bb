@@ -29,7 +29,7 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
     ScrollbarOrientation orientation)
-    : ScrollbarLayerImplBase(tree_impl, id, orientation, false),
+    : ScrollbarLayerImplBase(tree_impl, id, orientation, false, false),
       track_ui_resource_id_(0),
       thumb_ui_resource_id_(0),
       thumb_thickness_(0),

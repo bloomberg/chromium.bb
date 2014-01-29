@@ -367,8 +367,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
                                const gfx::Vector2dF& scroll_delta);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
 
-  void SetMaxScrollOffset(gfx::Vector2d max_scroll_offset);
-  gfx::Vector2d max_scroll_offset() const { return max_scroll_offset_; }
+  gfx::Vector2d MaxScrollOffset() const;
+  gfx::Vector2dF ClampScrollToMaxScrollOffset();
+  void SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
+                            LayerImpl* scrollbar_clip_layer) const;
 
   void SetScrollDelta(const gfx::Vector2dF& scroll_delta);
   gfx::Vector2dF ScrollDelta() const;
@@ -382,8 +384,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // initial scroll
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
 
-  void SetScrollable(bool scrollable) { scrollable_ = scrollable; }
-  bool scrollable() const { return scrollable_; }
+  void SetScrollClipLayer(int scroll_clip_layer_id);
+  bool scrollable() const { return !!scroll_clip_layer_; }
 
   void set_user_scrollable_horizontal(bool scrollable) {
     user_scrollable_horizontal_ = scrollable;
@@ -477,14 +479,15 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return scrollbar_animation_controller_.get();
   }
 
-  void SetHorizontalScrollbarLayer(ScrollbarLayerImplBase* scrollbar_layer);
-  ScrollbarLayerImplBase* horizontal_scrollbar_layer() {
-    return horizontal_scrollbar_layer_;
-  }
-
-  void SetVerticalScrollbarLayer(ScrollbarLayerImplBase* scrollbar_layer);
-  ScrollbarLayerImplBase* vertical_scrollbar_layer() {
-    return vertical_scrollbar_layer_;
+  typedef std::set<ScrollbarLayerImplBase*> ScrollbarSet;
+  ScrollbarSet* scrollbars() { return scrollbars_.get(); }
+  void ClearScrollbars();
+  void AddScrollbar(ScrollbarLayerImplBase* layer);
+  void RemoveScrollbar(ScrollbarLayerImplBase* layer);
+  bool HasScrollbar(ScrollbarOrientation orientation) const;
+  void ScrollbarParametersDidChange();
+  int clip_height() {
+    return scroll_clip_layer_ ? scroll_clip_layer_->bounds().height() : 0;
   }
 
   gfx::Rect LayerRectToContentRect(const gfx::RectF& layer_rect) const;
@@ -542,8 +545,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
  private:
   void NoteLayerPropertyChangedForDescendantsInternal();
 
-  void UpdateScrollbarPositions();
-
   virtual const char* LayerTypeAsString() const;
 
   // Properties internal to LayerImpl
@@ -576,6 +577,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Size bounds_;
   gfx::Vector2d scroll_offset_;
   LayerScrollOffsetDelegate* scroll_offset_delegate_;
+  LayerImpl* scroll_clip_layer_;
   bool scrollable_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
@@ -618,7 +620,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   gfx::Vector2dF scroll_delta_;
   gfx::Vector2d sent_scroll_delta_;
-  gfx::Vector2d max_scroll_offset_;
   gfx::Vector2dF last_scroll_offset_;
 
   // The global depth value of the center of the layer. This value is used
@@ -654,10 +655,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Manages scrollbars for this layer
   scoped_ptr<ScrollbarAnimationController> scrollbar_animation_controller_;
 
-  // Weak pointers to this layer's scrollbars, if it has them. Updated during
-  // tree synchronization.
-  ScrollbarLayerImplBase* horizontal_scrollbar_layer_;
-  ScrollbarLayerImplBase* vertical_scrollbar_layer_;
+  scoped_ptr<ScrollbarSet> scrollbars_;
 
   ScopedPtrVector<CopyOutputRequest> copy_requests_;
 

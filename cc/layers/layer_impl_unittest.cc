@@ -94,28 +94,32 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
   EXPECT_TRUE(host_impl.InitializeRenderer(CreateFakeOutputSurface()));
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
-
-  scoped_ptr<LayerImpl> scroll_parent =
+  scoped_ptr<LayerImpl> root_clip =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
-  LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 3).get();
+  LayerImpl* root = root_ptr.get();
+  root_clip->AddChild(root_ptr.Pass());
+  scoped_ptr<LayerImpl> scroll_parent =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+  LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 4).get();
   std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>();
   scroll_children->insert(scroll_child);
-  scroll_children->insert(root.get());
+  scroll_children->insert(root);
 
   scoped_ptr<LayerImpl> clip_parent =
-      LayerImpl::Create(host_impl.active_tree(), 4);
-  LayerImpl* clip_child = LayerImpl::Create(host_impl.active_tree(), 5).get();
+      LayerImpl::Create(host_impl.active_tree(), 5);
+  LayerImpl* clip_child = LayerImpl::Create(host_impl.active_tree(), 6).get();
   std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>();
   clip_children->insert(clip_child);
-  clip_children->insert(root.get());
+  clip_children->insert(root);
 
-  root->AddChild(LayerImpl::Create(host_impl.active_tree(), 6));
+  root->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
   LayerImpl* child = root->children()[0];
-  child->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
+  child->AddChild(LayerImpl::Create(host_impl.active_tree(), 8));
   LayerImpl* grand_child = child->children()[0];
 
-  root->SetScrollable(true);
+  root->SetScrollClipLayer(root_clip->id());
 
   // Adding children is an internal operation and should not mark layers as
   // changed.
@@ -142,8 +146,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // they are used.
   EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetUpdateRect(arbitrary_rect_f));
-  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
-      root->SetMaxScrollOffset(arbitrary_vector2d));
+  EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(arbitrary_size));
 
   // Changing these properties affects the entire subtree of layers.
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetAnchorPoint(arbitrary_point_f));
@@ -151,11 +154,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(FilterOperations()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 8)));
+      root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 9)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMasksToBounds(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetContentsOpaque(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 9)));
+      root->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 10)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetPosition(arbitrary_point_f));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetPreserves3d(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
@@ -257,15 +260,18 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
   EXPECT_TRUE(host_impl.InitializeRenderer(CreateFakeOutputSurface()));
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
-  root->SetScrollable(true);
+  scoped_ptr<LayerImpl> root_clip =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  root_clip->AddChild(LayerImpl::Create(host_impl.active_tree(), 2));
+  LayerImpl* root = root_clip->children()[0];
+  root->SetScrollClipLayer(root_clip->id());
 
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   float arbitrary_number = 0.352f;
   gfx::Size arbitrary_size = gfx::Size(111, 222);
   gfx::Point arbitrary_point = gfx::Point(333, 444);
   gfx::Vector2d arbitrary_vector2d = gfx::Vector2d(111, 222);
-  gfx::Vector2d large_vector2d = gfx::Vector2d(1000, 1000);
+  gfx::Size large_size = gfx::Size(1000, 1000);
   gfx::Rect arbitrary_rect = gfx::Rect(arbitrary_point, arbitrary_size);
   gfx::RectF arbitrary_rect_f =
       gfx::RectF(arbitrary_point_f, gfx::SizeF(1.234f, 5.678f));
@@ -283,9 +289,9 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
 
   // Related scrolling functions.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetMaxScrollOffset(large_vector2d));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetBounds(large_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetMaxScrollOffset(large_vector2d));
+      root->SetBounds(large_size));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->ScrollBy(arbitrary_vector2d));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->ScrollBy(gfx::Vector2d()));
   root->SetScrollDelta(gfx::Vector2d(0, 0));
@@ -391,10 +397,20 @@ class LayerImplScrollTest : public testing::Test {
   LayerImplScrollTest() : host_impl_(&proxy_), root_id_(7) {
     host_impl_.active_tree()
         ->SetRootLayer(LayerImpl::Create(host_impl_.active_tree(), root_id_));
-    host_impl_.active_tree()->root_layer()->SetScrollable(true);
+    host_impl_.active_tree()->root_layer()->AddChild(
+        LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
+    layer()->SetScrollClipLayer(root_id_);
+    // Set the max scroll offset by noting that the root layer has bounds (1,1),
+    // thus whatever bounds are set for the layer will be the max scroll
+    // offset plus 1 in each direction.
+    host_impl_.active_tree()->root_layer()->SetBounds(gfx::Size(1, 1));
+    gfx::Vector2d max_scroll_offset(51, 81);
+    layer()->SetBounds(gfx::Size(max_scroll_offset.x(), max_scroll_offset.y()));
   }
 
-  LayerImpl* layer() { return host_impl_.active_tree()->root_layer(); }
+  LayerImpl* layer() {
+    return host_impl_.active_tree()->root_layer()->children()[0];
+  }
 
  private:
   FakeImplProxy proxy_;
@@ -405,8 +421,6 @@ class LayerImplScrollTest : public testing::Test {
 TEST_F(LayerImplScrollTest, ScrollByWithZeroOffset) {
   // Test that LayerImpl::ScrollBy only affects ScrollDelta and total scroll
   // offset is bounded by the range [0, max scroll offset].
-  gfx::Vector2d max_scroll_offset(50, 80);
-  layer()->SetMaxScrollOffset(max_scroll_offset);
 
   EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(), layer()->scroll_offset());
@@ -426,9 +440,7 @@ TEST_F(LayerImplScrollTest, ScrollByWithZeroOffset) {
 }
 
 TEST_F(LayerImplScrollTest, ScrollByWithNonZeroOffset) {
-  gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
-  layer()->SetMaxScrollOffset(max_scroll_offset);
   layer()->SetScrollOffset(scroll_offset);
 
   EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
@@ -472,9 +484,7 @@ class ScrollDelegateIgnore : public LayerScrollOffsetDelegate {
 };
 
 TEST_F(LayerImplScrollTest, ScrollByWithIgnoringDelegate) {
-  gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
-  layer()->SetMaxScrollOffset(max_scroll_offset);
   layer()->SetScrollOffset(scroll_offset);
 
   EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
@@ -525,9 +535,7 @@ class ScrollDelegateAccept : public LayerScrollOffsetDelegate {
 };
 
 TEST_F(LayerImplScrollTest, ScrollByWithAcceptingDelegate) {
-  gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
-  layer()->SetMaxScrollOffset(max_scroll_offset);
   layer()->SetScrollOffset(scroll_offset);
 
   EXPECT_VECTOR_EQ(scroll_offset, layer()->TotalScrollOffset());
@@ -559,12 +567,10 @@ TEST_F(LayerImplScrollTest, ScrollByWithAcceptingDelegate) {
 }
 
 TEST_F(LayerImplScrollTest, ApplySentScrollsNoDelegate) {
-  gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
   gfx::Vector2d sent_scroll_delta(12, -3);
 
-  layer()->SetMaxScrollOffset(max_scroll_offset);
   layer()->SetScrollOffset(scroll_offset);
   layer()->ScrollBy(scroll_delta);
   layer()->SetSentScrollDelta(sent_scroll_delta);
@@ -583,12 +589,10 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoDelegate) {
 }
 
 TEST_F(LayerImplScrollTest, ApplySentScrollsWithIgnoringDelegate) {
-  gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
   gfx::Vector2d sent_scroll_delta(12, -3);
   gfx::Vector2dF fixed_offset(32, 12);
 
-  layer()->SetMaxScrollOffset(max_scroll_offset);
   layer()->SetScrollOffset(scroll_offset);
   ScrollDelegateIgnore delegate;
   delegate.set_fixed_offset(fixed_offset);
@@ -607,12 +611,10 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithIgnoringDelegate) {
 }
 
 TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
-  gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
   gfx::Vector2d sent_scroll_delta(12, -3);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
 
-  layer()->SetMaxScrollOffset(max_scroll_offset);
   layer()->SetScrollOffset(scroll_offset);
   ScrollDelegateAccept delegate;
   layer()->SetScrollOffsetDelegate(&delegate);
@@ -633,12 +635,10 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
 // The user-scrollability breaks for zoomed-in pages. So disable this.
 // http://crbug.com/322223
 TEST_F(LayerImplScrollTest, DISABLED_ScrollUserUnscrollableLayer) {
-  gfx::Vector2d max_scroll_offset(50, 80);
   gfx::Vector2d scroll_offset(10, 5);
   gfx::Vector2dF scroll_delta(20.5f, 8.5f);
 
   layer()->set_user_scrollable_vertical(false);
-  layer()->SetMaxScrollOffset(max_scroll_offset);
   layer()->SetScrollOffset(scroll_offset);
   gfx::Vector2dF unscrolled = layer()->ScrollBy(scroll_delta);
 

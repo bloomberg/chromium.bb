@@ -5,7 +5,7 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 
 #include <algorithm>
-#include "cc/layers/layer.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -14,10 +14,12 @@ ScrollbarLayerImplBase::ScrollbarLayerImplBase(
     LayerTreeImpl* tree_impl,
     int id,
     ScrollbarOrientation orientation,
-    bool is_left_side_vertical_scrollbar)
+    bool is_left_side_vertical_scrollbar,
+    bool is_overlay)
     : LayerImpl(tree_impl, id),
-      scroll_layer_id_(Layer::INVALID_ID),
-      is_overlay_scrollbar_(false),
+      scroll_layer_(NULL),
+      clip_layer_(NULL),
+      is_overlay_scrollbar_(is_overlay),
       thumb_thickness_scale_factor_(1.f),
       current_pos_(0.f),
       maximum_(0),
@@ -26,12 +28,48 @@ ScrollbarLayerImplBase::ScrollbarLayerImplBase(
       vertical_adjust_(0.f),
       visible_to_total_length_ratio_(1.f) {}
 
+ScrollbarLayerImplBase::~ScrollbarLayerImplBase() {
+}
+
 void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
+  DCHECK(layer->ToScrollbarLayer());
+  layer->ToScrollbarLayer()->set_is_overlay_scrollbar(is_overlay_scrollbar_);
+  PushScrollClipPropertiesTo(layer);
+}
+
+void ScrollbarLayerImplBase::PushScrollClipPropertiesTo(LayerImpl* layer) {
+  DCHECK(layer->ToScrollbarLayer());
+  layer->ToScrollbarLayer()->SetScrollLayerById(ScrollLayerId());
+  layer->ToScrollbarLayer()->SetClipLayerById(ClipLayerId());
 }
 
 ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
   return this;
+}
+
+void ScrollbarLayerImplBase::SetScrollLayerById(int id) {
+  LayerImpl* scroll_layer = layer_tree_impl()->LayerById(id);
+  if (scroll_layer_ == scroll_layer)
+    return;
+
+  if (scroll_layer_)
+    scroll_layer_->RemoveScrollbar(this);
+  scroll_layer_ = scroll_layer;
+  if (scroll_layer_)
+    scroll_layer_->AddScrollbar(this);
+}
+
+void ScrollbarLayerImplBase::SetClipLayerById(int id) {
+  LayerImpl* clip_layer = layer_tree_impl()->LayerById(id);
+  if (clip_layer_ == clip_layer)
+    return;
+
+  if (clip_layer_)
+    clip_layer_->RemoveScrollbar(this);
+  clip_layer_ = clip_layer;
+  if (clip_layer_)
+    clip_layer_->AddScrollbar(this);
 }
 
 gfx::Rect ScrollbarLayerImplBase::ScrollbarLayerRectToContentRect(
@@ -175,6 +213,13 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   }
 
   return ScrollbarLayerRectToContentRect(thumb_rect);
+}
+
+void ScrollbarLayerImplBase::ScrollbarParametersDidChange() {
+  if (!clip_layer_ || !scroll_layer_)
+    return;
+
+  scroll_layer_->SetScrollbarPosition(this, clip_layer_);
 }
 
 }  // namespace cc
