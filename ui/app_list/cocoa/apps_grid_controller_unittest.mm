@@ -486,7 +486,7 @@ TEST_F(AppsGridControllerTest, ModelAdd) {
   app_list::AppListItem* item1 = item_list->item_at(1);
   app_list::AppListItem* item3 =
       model()->CreateItem("Item Three", "Item Three");
-  item_list->AddItem(item3);
+  model()->AddItem(item3);
   item_list->SetItemPosition(
       item3, item0->position().CreateBetween(item1->position()));
   EXPECT_EQ(4u, [apps_grid_controller_ itemCount]);
@@ -509,7 +509,7 @@ TEST_F(AppsGridControllerTest, ModelRemove) {
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Test removing an item at the end.
-  model()->item_list()->DeleteItem("Item 2");
+  model()->DeleteItem("Item 2");
   EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
 
@@ -517,18 +517,20 @@ TEST_F(AppsGridControllerTest, ModelRemove) {
   model()->CreateAndAddItem("Item 2");
   EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
-  model()->item_list()->DeleteItem("Item 1");
+  model()->DeleteItem("Item 1");
   EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 2|"), GetViewContent());
 }
 
-TEST_F(AppsGridControllerTest, ModelRemoveAlll) {
+TEST_F(AppsGridControllerTest, ModelRemoveSeveral) {
   model()->PopulateApps(3);
   EXPECT_EQ(3u, [[GetPageAt(0) content] count]);
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Test removing multiple items via the model.
-  model()->item_list()->DeleteItemsByType(NULL /* all items */);
+  model()->DeleteItem("Item 0");
+  model()->DeleteItem("Item 1");
+  model()->DeleteItem("Item 2");
   EXPECT_EQ(0u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("||"), GetViewContent());
 }
@@ -543,7 +545,7 @@ TEST_F(AppsGridControllerTest, ModelRemovePage) {
 
   // Test removing the last item when there is one item on the second page.
   app_list::AppListItem* last_item = item_list->item_at(kItemsPerPage);
-  item_list->DeleteItem(last_item->id());
+  model()->DeleteItem(last_item->id());
   EXPECT_EQ(kItemsPerPage, item_list->item_count());
   EXPECT_EQ(kItemsPerPage, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
@@ -962,8 +964,8 @@ TEST_F(AppsGridControllerTest, ScrollingWhileDragging) {
 
 TEST_F(AppsGridControllerTest, ContextMenus) {
   AppListItemWithMenu* item_two_model = new AppListItemWithMenu("Item Two");
-  model()->item_list()->AddItem(new AppListItemWithMenu("Item One"));
-  model()->item_list()->AddItem(item_two_model);
+  model()->AddItem(new AppListItemWithMenu("Item One"));
+  model()->AddItem(item_two_model);
   EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
 
   NSCollectionView* page = [apps_grid_controller_ collectionViewAtPageIndex:0];

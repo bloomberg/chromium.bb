@@ -122,19 +122,30 @@ class ExtensionAppModelBuilderTest : public ExtensionServiceTestBase {
     const extensions::ExtensionSet* extensions = service_->extensions();
     ASSERT_EQ(static_cast<size_t>(4),  extensions->size());
 
+    CreateBuilder();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ResetBuilder();
+  }
+
+ protected:
+  // Creates a new builder, destroying any existing one.
+  void CreateBuilder() {
+    ResetBuilder();  // Destroy any existing builder in the correct order.
+
     model_.reset(new app_list::AppListModel);
     controller_.reset(new TestAppListControllerDelegate);
     builder_.reset(new ExtensionAppModelBuilder(controller_.get()));
     builder_->InitializeWithProfile(profile_.get(), model_.get());
   }
 
-  virtual void TearDown() OVERRIDE {
+  void ResetBuilder() {
     builder_.reset();
     controller_.reset();
     model_.reset();
   }
 
- protected:
   scoped_ptr<app_list::AppListModel> model_;
   scoped_ptr<TestAppListControllerDelegate> controller_;
   scoped_ptr<ExtensionAppModelBuilder> builder_;
@@ -281,7 +292,7 @@ TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
   extensions::AppSorting* sorting = service_->extension_prefs()->app_sorting();
   sorting->ClearOrdinals(kPackagedApp1Id);
 
-  // Creates an corrupted ordinal case.
+  // Creates a corrupted ordinal case.
   extensions::ExtensionScopedPrefs* scoped_prefs = service_->extension_prefs();
   scoped_prefs->UpdateExtensionPref(
       kHostedAppId,
@@ -289,8 +300,7 @@ TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
       base::Value::CreateStringValue("a corrupted ordinal"));
 
   // This should not assert or crash.
-  ExtensionAppModelBuilder builder1(controller_.get());
-  builder1.InitializeWithProfile(profile_.get(), model_.get());
+  CreateBuilder();
 }
 
 TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
@@ -309,8 +319,7 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
   sorting->SetAppLaunchOrdinal(kPackagedApp2Id, conflict_ordinal);
 
   // This should not assert or crash.
-  ExtensionAppModelBuilder builder1(controller_.get());
-  builder1.InitializeWithProfile(profile_.get(), model_.get());
+  CreateBuilder();
 
   // By default, conflicted items are sorted by their app ids (= order added).
   EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),

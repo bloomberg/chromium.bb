@@ -84,7 +84,7 @@ AppListTestModel::AppListTestItemModel* AppListTestModel::CreateItem(
 
 void AppListTestModel::CreateAndAddItem(const std::string& title,
                                         const std::string& full_name) {
-  item_list()->AddItem(CreateItem(title, full_name));
+  AddItem(CreateItem(title, full_name));
 }
 
 void AppListTestModel::CreateAndAddItem(const std::string& title) {

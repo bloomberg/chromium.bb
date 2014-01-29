@@ -88,6 +88,7 @@ ui::MenuModel* AppListItem::GetContextMenuModel() {
 bool AppListItem::CompareForTest(const AppListItem* other) const {
   return id_ == other->id_ &&
       title_ == other->title_ &&
+      GetItemType() == other->GetItemType() &&
       position_.Equals(other->position_);
 }
 

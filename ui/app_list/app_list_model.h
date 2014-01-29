@@ -10,10 +10,12 @@
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_list.h"
+#include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/base/models/list_model.h"
 
 namespace app_list {
 
+class AppListFolderItem;
 class AppListItem;
 class AppListItemList;
 class AppListModelObserver;
@@ -24,7 +26,11 @@ class SearchResult;
 // SearchBoxModel and SearchResults. The AppListItemList sub model owns a list
 // of AppListItems and is displayed in the grid view. SearchBoxModel is
 // the model for SearchBoxView. SearchResults owns a list of SearchResult.
-class APP_LIST_EXPORT AppListModel {
+// NOTE: Currently this class observes |item_list_|. The View code may
+// move entries in the item list directly (but can not add or remove them) and
+// the model needs to notify its observers when this occurs.
+
+class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
  public:
   enum Status {
     STATUS_NORMAL,
@@ -34,12 +40,31 @@ class APP_LIST_EXPORT AppListModel {
   typedef ui::ListModel<SearchResult> SearchResults;
 
   AppListModel();
-  ~AppListModel();
+  virtual ~AppListModel();
 
   void AddObserver(AppListModelObserver* observer);
   void RemoveObserver(AppListModelObserver* observer);
 
   void SetStatus(Status status);
+
+  // Finds the item matching |id|.
+  AppListItem* FindItem(const std::string& id);
+
+  // Adds |item| to the model. The model takes ownership of the item.
+  void AddItem(AppListItem* item);
+
+  // Merges two items. If the target item is a folder, the source item is added
+  // to that folder, otherwise a new folder is created in the same position as
+  // the target item.  Returns the id of the target folder.
+  const std::string& MergeItems(const std::string& target_item_id,
+                                const std::string& source_item_id);
+
+  // Sets the position of |item| in |item_list_|.
+  void SetItemPosition(AppListItem* item,
+                       const syncer::StringOrdinal& new_position);
+
+  // Deletes the item matching |id| from |item_list_|.
+  void DeleteItem(const std::string& id);
 
   AppListItemList* item_list() { return item_list_.get(); }
   SearchBoxModel* search_box() { return search_box_.get(); }
@@ -47,6 +72,20 @@ class APP_LIST_EXPORT AppListModel {
   Status status() const { return status_; }
 
  private:
+  // AppListItemListObserver
+  virtual void OnListItemMoved(size_t from_index,
+                               size_t to_index,
+                               AppListItem* item) OVERRIDE;
+
+  // Returns the position of the last item in |item_list_| or an initial one.
+  syncer::StringOrdinal GetLastItemPosition();
+
+  // Adds |item| to |item_list_| and notifies observers.
+  void AddItemToItemList(AppListItem* item);
+
+  // Adds |item| to |folder|.
+  void AddItemToFolder(AppListFolderItem* folder, AppListItem* item);
+
   scoped_ptr<AppListItemList> item_list_;
   scoped_ptr<SearchBoxModel> search_box_;
   scoped_ptr<SearchResults> results_;

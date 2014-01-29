@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_folder_item.h"
 
+#include "base/guid.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/gfx/canvas.h"
@@ -142,6 +143,10 @@ Rects AppListFolderItem::GetTopIconsBounds(
   top_icon_bounds.push_back(bottom_right);
 
   return top_icon_bounds;
+}
+
+std::string AppListFolderItem::GenerateId() {
+  return base::GenerateGUID();
 }
 
 const char* AppListFolderItem::GetItemType() const {

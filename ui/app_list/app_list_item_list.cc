@@ -42,80 +42,6 @@ bool AppListItemList::FindItemIndex(const std::string& id, size_t* index) {
   return false;
 }
 
-size_t AppListItemList::AddItem(AppListItem* item) {
-  CHECK(std::find(app_list_items_.begin(), app_list_items_.end(), item)
-        == app_list_items_.end());
-  EnsureValidItemPosition(item);
-  size_t index = GetItemSortOrderIndex(item->position(), item->id());
-  app_list_items_.insert(app_list_items_.begin() + index, item);
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemAdded(index, item));
-  return index;
-}
-
-void AppListItemList::InsertItemAt(AppListItem* item, size_t index) {
-  DCHECK_LE(index, item_count());
-  if (item_count() == 0) {
-    AddItem(item);
-    return;
-  }
-
-  AppListItem* prev = index > 0 ? app_list_items_[index - 1] : NULL;
-  AppListItem* next = index <= app_list_items_.size() - 1 ?
-      app_list_items_[index] : NULL;
-  CHECK_NE(prev, next);
-
-  if (prev && next && prev->position().Equals(next->position()))
-    prev = NULL;
-
-  if (!prev)
-    item->set_position(next->position().CreateBefore());
-  else if (!next)
-    item->set_position(prev->position().CreateAfter());
-  else
-    item->set_position(prev->position().CreateBetween(next->position()));
-
-  app_list_items_.insert(app_list_items_.begin() + index, item);
-
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemAdded(index, item));
-}
-
-void AppListItemList::DeleteItem(const std::string& id) {
-  scoped_ptr<AppListItem> item = RemoveItem(id);
-  // |item| will be deleted on destruction.
-}
-
-void AppListItemList::DeleteItemsByType(const char* type) {
-  for (int i = static_cast<int>(app_list_items_.size()) - 1;
-       i >= 0; --i) {
-    AppListItem* item = app_list_items_[i];
-    if (!type || item->GetItemType() == type)
-      DeleteItemAt(i);
-  }
-}
-
-scoped_ptr<AppListItem> AppListItemList::RemoveItem(
-    const std::string& id) {
-  size_t index;
-  if (FindItemIndex(id, &index))
-    return RemoveItemAt(index);
-
-  return scoped_ptr<AppListItem>();
-}
-
-scoped_ptr<AppListItem> AppListItemList::RemoveItemAt(size_t index) {
-  DCHECK_LT(index, item_count());
-  AppListItem* item = app_list_items_[index];
-  app_list_items_.weak_erase(app_list_items_.begin() + index);
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemRemoved(index, item));
-  return make_scoped_ptr<AppListItem>(item);
-}
-
 void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
   DCHECK_LT(from_index, item_count());
   DCHECK_LT(to_index, item_count());
@@ -184,6 +110,44 @@ void AppListItemList::SetItemPosition(
   FOR_EACH_OBSERVER(AppListItemListObserver,
                     observers_,
                     OnListItemMoved(from_index, to_index, item));
+}
+
+// AppListItemList protected
+
+size_t AppListItemList::AddItem(AppListItem* item) {
+  CHECK(std::find(app_list_items_.begin(), app_list_items_.end(), item)
+        == app_list_items_.end());
+  EnsureValidItemPosition(item);
+  size_t index = GetItemSortOrderIndex(item->position(), item->id());
+  app_list_items_.insert(app_list_items_.begin() + index, item);
+  FOR_EACH_OBSERVER(AppListItemListObserver,
+                    observers_,
+                    OnListItemAdded(index, item));
+  return index;
+}
+
+void AppListItemList::DeleteItem(const std::string& id) {
+  scoped_ptr<AppListItem> item = RemoveItem(id);
+  // |item| will be deleted on destruction.
+}
+
+scoped_ptr<AppListItem> AppListItemList::RemoveItem(
+    const std::string& id) {
+  size_t index;
+  if (FindItemIndex(id, &index))
+    return RemoveItemAt(index);
+
+  return scoped_ptr<AppListItem>();
+}
+
+scoped_ptr<AppListItem> AppListItemList::RemoveItemAt(size_t index) {
+  DCHECK_LT(index, item_count());
+  AppListItem* item = app_list_items_[index];
+  app_list_items_.weak_erase(app_list_items_.begin() + index);
+  FOR_EACH_OBSERVER(AppListItemListObserver,
+                    observers_,
+                    OnListItemRemoved(index, item));
+  return make_scoped_ptr<AppListItem>(item);
 }
 
 // AppListItemList private

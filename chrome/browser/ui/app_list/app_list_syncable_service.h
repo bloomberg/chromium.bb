@@ -88,7 +88,7 @@ class AppListSyncableService : public syncer::SyncableService,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
  private:
-  class ItemListObserver;
+  class ModelObserver;
   typedef std::map<std::string, SyncItem*> SyncItemMap;
 
   // content::NotificationObserver
@@ -102,10 +102,10 @@ class AppListSyncableService : public syncer::SyncableService,
   // Returns true if sync has restarted, otherwise runs |flare_|.
   bool SyncStarted();
 
-  // If |app_item| matches an existing sync item, updates the sync item and
-  // returns it. Otherwise adds |app_item| to |sync_items_| and returns the new
-  // item. If |app_item| is invalid returns NULL.
-  SyncItem* AddOrUpdateSyncItem(AppListItem* app_item);
+  // If |app_item| matches an existing sync item, returns it. Otherwise adds
+  // |app_item| to |sync_items_| and returns the new item. If |app_item| is
+  // invalid returns NULL.
+  SyncItem* FindOrAddSyncItem(AppListItem* app_item);
 
   // Creates a sync item for |app_item| and sends an ADD SyncChange event.
   SyncItem* CreateSyncItemFromAppItem(AppListItem* app_item);
@@ -162,7 +162,7 @@ class AppListSyncableService : public syncer::SyncableService,
   extensions::ExtensionSystem* extension_system_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<AppListModel> model_;
-  scoped_ptr<ItemListObserver> item_list_observer_;
+  scoped_ptr<ModelObserver> model_observer_;
   scoped_ptr<ExtensionAppModelBuilder> apps_builder_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;

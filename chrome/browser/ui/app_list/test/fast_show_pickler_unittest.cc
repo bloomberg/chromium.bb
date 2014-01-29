@@ -78,7 +78,7 @@ TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
   AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
-  model.item_list()->AddItem(app1);
+  model.AddItem(app1);
 
   DoConsistencyChecks(&model);
 }
@@ -87,11 +87,11 @@ TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
   AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
-  model.item_list()->AddItem(app1);
+  model.AddItem(app1);
 
   AppListItem* app2 = new AppListItem("abc2");
   app2->SetTitleAndFullName("ht2", "hello, there 2");
-  model.item_list()->AddItem(app2);
+  model.AddItem(app2);
 
   DoConsistencyChecks(&model);
 }
@@ -101,11 +101,11 @@ TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(MakeImage(), true);
-  model.item_list()->AddItem(app1);
+  model.AddItem(app1);
 
   AppListItem* app2 = new AppListItem("abc2");
   app2->SetTitleAndFullName("ht2", "hello, there 2");
-  model.item_list()->AddItem(app2);
+  model.AddItem(app2);
 
   DoConsistencyChecks(&model);
 }
@@ -115,7 +115,7 @@ TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(gfx::ImageSkia(), true);
-  model.item_list()->AddItem(app1);
+  model.AddItem(app1);
 
   DoConsistencyChecks(&model);
 }

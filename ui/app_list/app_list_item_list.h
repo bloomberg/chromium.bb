@@ -37,33 +37,6 @@ class APP_LIST_EXPORT AppListItemList {
   // Note: Requires a linear search.
   bool FindItemIndex(const std::string& id, size_t* index);
 
-  // Adds |item| to the end of |app_list_items_|. Takes ownership of |item|.
-  // Triggers observers_.OnListItemAdded(). Returns the index of the added item.
-  size_t AddItem(AppListItem* item);
-
-  // Inserts |item| at the |index| into |app_list_items_|. Takes ownership of
-  // |item|. Triggers observers_.OnListItemAdded().
-  void InsertItemAt(AppListItem* item, size_t index);
-
-  // Finds item matching |id| in |app_list_items_| (linear search) and deletes
-  // it. Triggers observers_.OnListItemRemoved() after removing the item from
-  // the list and before deleting it.
-  void DeleteItem(const std::string& id);
-
-  // Deletes all items matching |type| which must be a statically defined
-  // type descriptor, e.g. AppListFolderItem::kItemType. If |type| is NULL,
-  // deletes all items. Triggers observers_.OnListItemRemoved() for each item
-  // as for DeleteItem.
-  void DeleteItemsByType(const char* type);
-
-  // Removes the item with matching |id| in |app_list_items_| without deleting
-  // it. Returns a scoped pointer containing the removed item.
-  scoped_ptr<AppListItem> RemoveItem(const std::string& id);
-
-  // Removes the item at |index| from |app_list_items_| without deleting it.
-  // Returns a scoped pointer containing the removed item.
-  scoped_ptr<AppListItem> RemoveItemAt(size_t index);
-
   // Moves item at |from_index| to |to_index|.
   // Triggers observers_.OnListItemMoved().
   void MoveItem(size_t from_index, size_t to_index);
@@ -77,9 +50,34 @@ class APP_LIST_EXPORT AppListItemList {
     DCHECK_LT(index, app_list_items_.size());
     return app_list_items_[index];
   }
+  const AppListItem* item_at(size_t index) const {
+    DCHECK_LT(index, app_list_items_.size());
+    return app_list_items_[index];
+  }
   size_t item_count() const { return app_list_items_.size(); }
 
  private:
+  friend class AppListItemListTest;
+  friend class AppListModel;
+  friend class AppListModelTest;  // TODO(stevenjb): Remove dependency
+
+  // Adds |item| to the end of |app_list_items_|. Takes ownership of |item|.
+  // Triggers observers_.OnListItemAdded(). Returns the index of the added item.
+  size_t AddItem(AppListItem* item);
+
+  // Finds item matching |id| in |app_list_items_| (linear search) and deletes
+  // it. Triggers observers_.OnListItemRemoved() after removing the item from
+  // the list and before deleting it.
+  void DeleteItem(const std::string& id);
+
+  // Removes the item with matching |id| in |app_list_items_| without deleting
+  // it. Returns a scoped pointer containing the removed item.
+  scoped_ptr<AppListItem> RemoveItem(const std::string& id);
+
+  // Removes the item at |index| from |app_list_items_| without deleting it.
+  // Returns a scoped pointer containing the removed item.
+  scoped_ptr<AppListItem> RemoveItemAt(size_t index);
+
   // Deletes item at |index| and signals observers.
   void DeleteItemAt(size_t index);
 

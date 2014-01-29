@@ -23,6 +23,8 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_model_observer.h"
+#include "ui/app_list/app_list_switches.h"
 
 using syncer::SyncChange;
 
@@ -32,7 +34,7 @@ namespace {
 
 bool SyncAppListEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncAppList);
+      ::switches::kEnableSyncAppList);
 }
 
 void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
@@ -123,38 +125,41 @@ AppListSyncableService::SyncItem::SyncItem(
 AppListSyncableService::SyncItem::~SyncItem() {
 }
 
-// AppListSyncableService::ItemListObserver
+// AppListSyncableService::ModelObserver
 
-class AppListSyncableService::ItemListObserver
-    : public AppListItemListObserver {
+class AppListSyncableService::ModelObserver : public AppListModelObserver {
  public:
-  explicit ItemListObserver(AppListSyncableService* owner) : owner_(owner) {
-    owner_->model()->item_list()->AddObserver(this);
+  explicit ModelObserver(AppListSyncableService* owner)
+      : owner_(owner) {
+    DVLOG(2) << owner_ << ": ModelObserver Added";
+    owner_->model()->AddObserver(this);
   }
 
-  virtual ~ItemListObserver() {
-    owner_->model()->item_list()->RemoveObserver(this);
+  virtual ~ModelObserver() {
+    owner_->model()->RemoveObserver(this);
+    DVLOG(2) << owner_ << ": ModelObserver Removed";
   }
 
  private:
-  // AppListItemListObserver
-  virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE {
+  // AppListModelObserver
+  virtual void OnAppListItemAdded(AppListItem* item) OVERRIDE {
+    DVLOG(2) << owner_ << " OnAppListItemAdded: " << item->ToDebugString();
     owner_->AddOrUpdateFromSyncItem(item);
   }
 
-  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemWillBeDeleted(AppListItem* item) OVERRIDE {
+    DVLOG(2) << owner_ << " OnAppListItemDeleted: " << item->ToDebugString();
     owner_->RemoveSyncItem(item->id());
   }
 
-  virtual void OnListItemMoved(size_t from_index,
-                               size_t to_index,
-                               AppListItem* item) OVERRIDE {
+  virtual void OnAppListItemUpdated(AppListItem* item) OVERRIDE {
+    DVLOG(2) << owner_ << " OnAppListItemUpdated: " << item->ToDebugString();
     owner_->UpdateSyncItem(item);
   }
 
   AppListSyncableService* owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(ItemListObserver);
+  DISALLOW_COPY_AND_ASSIGN(ModelObserver);
 };
 
 // AppListSyncableService
@@ -170,9 +175,9 @@ AppListSyncableService::AppListSyncableService(
     return;
   }
 
-  if (SyncAppListEnabled())
-    item_list_observer_.reset(new ItemListObserver(this));
-
+  // Note: model_observer_ is constructed after the initial sync changes are
+  // received in MergeDataAndStartSyncing(). Changes to the model before that
+  // will be synced after the initial sync occurs.
   if (extension_system->extension_service()->is_ready()) {
     BuildModel();
     return;
@@ -185,7 +190,7 @@ AppListSyncableService::AppListSyncableService(
 
 AppListSyncableService::~AppListSyncableService() {
   // Remove observers.
-  item_list_observer_.reset();
+  model_observer_.reset();
 
   STLDeleteContainerPairSecondPointers(sync_items_.begin(), sync_items_.end());
 }
@@ -232,20 +237,15 @@ AppListSyncableService::GetSyncItem(const std::string& id) const {
 }
 
 void AppListSyncableService::AddItem(AppListItem* app_item) {
-  SyncItem* sync_item = AddOrUpdateSyncItem(app_item);
+  SyncItem* sync_item = FindOrAddSyncItem(app_item);
   if (!sync_item)
     return;  // Item is not valid.
 
   DVLOG(1) << this << ": AddItem: " << sync_item->ToString();
-
-  // Add the item to the model if necessary.
-  if (!model_->item_list()->FindItem(app_item->id()))
-    model_->item_list()->AddItem(app_item);
-  else
-    model_->item_list()->SetItemPosition(app_item, sync_item->item_ordinal);
+  model_->AddItem(app_item);
 }
 
-AppListSyncableService::SyncItem* AppListSyncableService::AddOrUpdateSyncItem(
+AppListSyncableService::SyncItem* AppListSyncableService::FindOrAddSyncItem(
     AppListItem* app_item) {
   const std::string& item_id = app_item->id();
   if (item_id.empty()) {
@@ -254,11 +254,10 @@ AppListSyncableService::SyncItem* AppListSyncableService::AddOrUpdateSyncItem(
   }
   SyncItem* sync_item = FindSyncItem(item_id);
   if (sync_item) {
-    // If there is an existing, non-REMOVE_DEFAULT entry, update it.
+    // If there is an existing, non-REMOVE_DEFAULT entry, return it.
     if (sync_item->item_type !=
         sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
       DVLOG(2) << this << ": AddItem already exists: " << sync_item->ToString();
-      UpdateSyncItem(app_item);
       return sync_item;
     }
 
@@ -343,7 +342,7 @@ void AppListSyncableService::UpdateSyncItem(AppListItem* app_item) {
 
 void AppListSyncableService::RemoveItem(const std::string& id) {
   RemoveSyncItem(id);
-  model_->item_list()->DeleteItem(id);
+  model_->DeleteItem(id);
 }
 
 void AppListSyncableService::RemoveSyncItem(const std::string& id) {
@@ -435,6 +434,9 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
 
+  // Start observing app list model changes.
+  model_observer_.reset(new ModelObserver(this));
+
   return result;
 }
 
@@ -469,6 +471,9 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
                              syncer::APP_LIST);
   }
 
+  // Don't observe the model while processing incoming sync changes.
+  model_observer_.reset();
+
   DVLOG(1) << this << ": ProcessSyncChanges: " << change_list.size();
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
@@ -485,6 +490,10 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
       LOG(ERROR) << "Invalid sync change";
     }
   }
+
+  // Continue observing app list model changes.
+  model_observer_.reset(new ModelObserver(this));
+
   return syncer::SyncError();
 }
 
@@ -514,7 +523,7 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
       LOG(ERROR) << "Synced item type: " << specifics.item_type()
                  << " != existing sync item type: " << sync_item->item_type
                  << " Deleting item from model!";
-      model_->item_list()->DeleteItem(item_id);
+      model_->DeleteItem(item_id);
     }
     DVLOG(2) << this << " - ProcessSyncItem: Delete existing entry: "
              << sync_item->ToString();
@@ -555,7 +564,7 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
       return;
     }
   }
-  NOTREACHED() << "Unrecoginized sync item type: " << sync_item->ToString();
+  NOTREACHED() << "Unrecognized sync item type: " << sync_item->ToString();
 }
 
 void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
@@ -564,7 +573,8 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
     return;
   }
   DVLOG(2) << "ProcessExistingSyncItem: " << sync_item->ToString();
-  AppListItem* app_item = model_->item_list()->FindItem(sync_item->item_id);
+  AppListItem* app_item = model_->FindItem(sync_item->item_id);
+  DVLOG(2) << " AppItem: " << app_item->ToDebugString();
   if (!app_item) {
     LOG(ERROR) << "Item not found in model: " << sync_item->ToString();
     return;
@@ -576,7 +586,7 @@ void AppListSyncableService::UpdateAppItemFromSyncItem(
     const AppListSyncableService::SyncItem* sync_item,
     AppListItem* app_item) {
   if (!app_item->position().Equals(sync_item->item_ordinal))
-    model_->item_list()->SetItemPosition(app_item, sync_item->item_ordinal);
+    model_->SetItemPosition(app_item, sync_item->item_ordinal);
 }
 
 bool AppListSyncableService::SyncStarted() {
@@ -643,7 +653,7 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   delete iter->second;
   sync_items_.erase(iter);
   if (item_type != sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP)
-    model_->item_list()->DeleteItem(item_id);
+    model_->DeleteItem(item_id);
 }
 
 std::string AppListSyncableService::SyncItem::ToString() const {
@@ -653,6 +663,8 @@ std::string AppListSyncableService::SyncItem::ToString() const {
   } else {
     res += " { " + item_name + " }";
     res += " [" + item_ordinal.ToDebugString() + "]";
+    if (!parent_id.empty())
+      res += " <" + parent_id.substr(0, 8) + ">";
   }
   return res;
 }

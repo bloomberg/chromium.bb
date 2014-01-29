@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,11 +13,13 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 
-using app_list::AppListItemList;
+using app_list::AppListFolderItem;
 using app_list::AppListItem;
+using app_list::AppListItemList;
 using app_list::AppListSyncableService;
 using app_list::AppListSyncableServiceFactory;
 
@@ -98,11 +101,15 @@ bool SyncAppListHelper::AllProfilesHaveSameAppListAsVerifier() {
     }
   }
   if (!res) {
-    VLOG(1) << "Verifier:";
+    Profile* verifier = test_->verifier();
+    VLOG(1) << "Verifier: "
+            << AppListSyncableServiceFactory::GetForProfile(verifier);
     PrintAppList(test_->verifier());
     for (int i = 0; i < test_->num_clients(); ++i) {
-      VLOG(1) << "Profile: " << i;
-      PrintAppList(test_->GetProfile(i));
+      Profile* profile = test_->GetProfile(i);
+      VLOG(1) << "Profile: " << i << ": "
+              << AppListSyncableServiceFactory::GetForProfile(profile);
+      PrintAppList(profile);
     }
   }
   return res;
@@ -130,13 +137,32 @@ void SyncAppListHelper::PrintAppList(Profile* profile) {
       AppListSyncableServiceFactory::GetForProfile(profile);
   for (size_t i = 0; i < service->model()->item_list()->item_count(); ++i) {
     AppListItem* item = service->model()->item_list()->item_at(i);
-    extensions::AppSorting* s =
-        extensions::ExtensionSystem::Get(profile)->extension_service()->
-        extension_prefs()->app_sorting();
-    std::string id = item->id();
-    VLOG(1)
-        << "Item(" << i << "): " << item->ToDebugString()
-        << " Page: " << s->GetPageOrdinal(id).ToDebugString().substr(0, 8)
-        << " Item: " << s->GetAppLaunchOrdinal(id).ToDebugString().substr(0, 8);
+    std::string label =
+        base::StringPrintf("Item(%d): ", static_cast<int>(i));
+    PrintItem(profile, item, label);
   }
+}
+
+void SyncAppListHelper::PrintItem(Profile* profile,
+                                  AppListItem* item,
+                                  const std::string& label) {
+  extensions::AppSorting* s =
+      extensions::ExtensionSystem::Get(profile)->extension_service()->
+      extension_prefs()->app_sorting();
+  std::string id = item->id();
+  if (item->GetItemType() == AppListFolderItem::kItemType) {
+    VLOG(1) << label << item->ToDebugString();
+    AppListFolderItem* folder = static_cast<AppListFolderItem*>(item);
+    for (size_t i = 0; i < folder->item_list()->item_count(); ++i) {
+      AppListItem* child = folder->item_list()->item_at(i);
+      std::string child_label =
+          base::StringPrintf(" Folder Item(%d): ", static_cast<int>(i));
+      PrintItem(profile, child, child_label);
+    }
+    return;
+  }
+  VLOG(1)
+      << label << item->ToDebugString()
+      << " Page: " << s->GetPageOrdinal(id).ToDebugString().substr(0, 8)
+      << " Item: " << s->GetAppLaunchOrdinal(id).ToDebugString().substr(0, 8);
 }

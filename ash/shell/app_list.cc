@@ -198,19 +198,19 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
  public:
   ExampleAppListViewDelegate()
       : model_(new app_list::AppListModel) {
-    PopulateApps(model_->item_list());
+    PopulateApps();
     DecorateSearchBox(model_->search_box());
   }
 
  private:
-  void PopulateApps(app_list::AppListItemList* item_list) {
+  void PopulateApps() {
     for (int i = 0;
          i < static_cast<int>(WindowTypeLauncherItem::LAST_TYPE);
          ++i) {
       WindowTypeLauncherItem::Type type =
           static_cast<WindowTypeLauncherItem::Type>(i);
       std::string id = base::StringPrintf("%d", i);
-      item_list->AddItem(new WindowTypeLauncherItem(id, type));
+      model_->AddItem(new WindowTypeLauncherItem(id, type));
     }
   }
 

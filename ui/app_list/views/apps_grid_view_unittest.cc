@@ -218,7 +218,7 @@ TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
 
   AppListItemView* last_view = GetItemViewAt(kLastItemIndex);
   apps_grid_view_->SetSelectedView(last_view);
-  model_->item_list()->DeleteItem(model_->GetItemName(kLastItemIndex));
+  model_->DeleteItem(model_->GetItemName(kLastItemIndex));
 
   EXPECT_FALSE(apps_grid_view_->IsSelectedView(last_view));
 
@@ -253,7 +253,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
 
   // Deleting an item keeps remaining intact.
   SimulateDrag(AppsGridView::MOUSE, from, to);
-  model_->item_list()->DeleteItem(model_->GetItemName(0));
+  model_->DeleteItem(model_->GetItemName(0));
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3"),
             model_->GetModelContent());

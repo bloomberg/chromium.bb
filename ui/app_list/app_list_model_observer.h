@@ -9,10 +9,21 @@
 
 namespace app_list {
 
+class AppListItem;
+
 class APP_LIST_EXPORT AppListModelObserver {
  public:
   // Invoked when AppListModel's status has changed.
   virtual void OnAppListModelStatusChanged() {}
+
+  // Triggered after |item| has been added to the model.
+  virtual void OnAppListItemAdded(AppListItem* item) {}
+
+  // Triggered just before an item is deleted from the model.
+  virtual void OnAppListItemWillBeDeleted(AppListItem* item) {}
+
+  // Triggered after |item| has moved or changed folders.
+  virtual void OnAppListItemUpdated(AppListItem* item) {}
 
  protected:
   virtual ~AppListModelObserver() {}

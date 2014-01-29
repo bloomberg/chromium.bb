@@ -59,6 +59,7 @@ ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
 
 void ExtensionAppModelBuilder::InitializeWithService(
     app_list::AppListSyncableService* service) {
+  DCHECK(!service_ && !profile_);
   model_ = service->model();
   model_->item_list()->AddObserver(this);
   service_ = service;
@@ -69,6 +70,7 @@ void ExtensionAppModelBuilder::InitializeWithService(
 void ExtensionAppModelBuilder::InitializeWithProfile(
     Profile* profile,
     app_list::AppListModel* model) {
+  DCHECK(!service_ && !profile_);
   model_ = model;
   model_->item_list()->AddObserver(this);
   profile_ = profile;
@@ -105,7 +107,7 @@ void ExtensionAppModelBuilder::OnDownloadProgress(
 
 void ExtensionAppModelBuilder::OnInstallFailure(
     const std::string& extension_id) {
-  model_->item_list()->DeleteItem(extension_id);
+  model_->DeleteItem(extension_id);
 }
 
 void ExtensionAppModelBuilder::OnExtensionLoaded(const Extension* extension) {
@@ -142,7 +144,7 @@ void ExtensionAppModelBuilder::OnExtensionUninstalled(
     service_->RemoveItem(extension->id());
     return;
   }
-  model_->item_list()->DeleteItem(extension->id());
+  model_->DeleteItem(extension->id());
 }
 
 void ExtensionAppModelBuilder::OnAppsReordered() {
@@ -191,12 +193,7 @@ void ExtensionAppModelBuilder::AddApps(
 }
 
 void ExtensionAppModelBuilder::BuildModel() {
-  // Delete any extension apps.
-  model_->item_list()->DeleteItemsByType(ExtensionAppItem::kItemType);
-
-  if (tracker_)
-    tracker_->RemoveObserver(this);
-
+  DCHECK(!tracker_);
   tracker_ = controller_->GetInstallTrackerFor(profile_);
 
   PopulateApps();
@@ -225,7 +222,7 @@ void ExtensionAppModelBuilder::InsertApp(ExtensionAppItem* app) {
     service_->AddItem(app);
     return;
   }
-  model_->item_list()->AddItem(app);
+  model_->AddItem(app);
 }
 
 void ExtensionAppModelBuilder::SetHighlightedApp(

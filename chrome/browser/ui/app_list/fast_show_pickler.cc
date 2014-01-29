@@ -208,12 +208,12 @@ scoped_ptr<Pickle> FastShowPickler::PickleAppListModelForFastShow(
 }
 
 void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
-  dest->item_list()->DeleteItemsByType(NULL /* all items */);
+  DCHECK_EQ(0u, dest->item_list()->item_count());
   for (size_t i = 0; i < src->item_list()->item_count(); i++) {
     AppListItem* src_item = src->item_list()->item_at(i);
     AppListItem* dest_item = new AppListItem(src_item->id());
     CopyOverItem(src_item, dest_item);
-    dest->item_list()->AddItem(dest_item);
+    dest->AddItem(dest_item);
   }
 }
 
@@ -234,7 +234,7 @@ FastShowPickler::UnpickleAppListModelForFastShow(Pickle* pickle) {
     scoped_ptr<AppListItem> item(UnpickleAppListItem(&it).Pass());
     if (!item)
       return scoped_ptr<AppListModel>();
-    model->item_list()->AddItem(item.release());
+    model->AddItem(item.release());
   }
 
   return model.Pass();

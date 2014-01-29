@@ -86,6 +86,14 @@ class AppListItemListTest : public testing::Test {
     return item;
   }
 
+  scoped_ptr<AppListItem> RemoveItem(const std::string& id) {
+    return item_list_.RemoveItem(id);
+  }
+
+  scoped_ptr<AppListItem> RemoveItemAt(size_t index) {
+    return item_list_.RemoveItemAt(index);
+  }
+
   bool VerifyItemListOrdinals() {
     bool res = true;
     for (size_t i = 1; i < item_list_.item_count(); ++i) {
@@ -155,7 +163,7 @@ TEST_F(AppListItemListTest, RemoveItemAt) {
   EXPECT_EQ(index, 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
 
-  scoped_ptr<AppListItem> item_removed = item_list_.RemoveItemAt(1);
+  scoped_ptr<AppListItem> item_removed = RemoveItemAt(1);
   EXPECT_EQ(item_removed, item_1);
   EXPECT_FALSE(item_list_.FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
@@ -180,69 +188,15 @@ TEST_F(AppListItemListTest, RemoveItem) {
   EXPECT_TRUE(item_list_.FindItemIndex(item_1->id(), &index));
   EXPECT_EQ(index, 1u);
 
-  scoped_ptr<AppListItem> item_removed =
-      item_list_.RemoveItem(item_1->id());
+  scoped_ptr<AppListItem> item_removed = RemoveItem(item_1->id());
   EXPECT_EQ(item_removed, item_1);
   EXPECT_FALSE(item_list_.FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
   EXPECT_EQ(observer_.items_removed(), 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
 
-  scoped_ptr<AppListItem> not_found_item = item_list_.RemoveItem("Bogus");
+  scoped_ptr<AppListItem> not_found_item = RemoveItem("Bogus");
   EXPECT_FALSE(not_found_item.get());
-}
-
-TEST_F(AppListItemListTest, InsertItemAt) {
-  AppListItem* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
-  AppListItem* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
-  EXPECT_EQ(item_list_.item_count(), 2u);
-  EXPECT_EQ(observer_.items_added(), 2u);
-  EXPECT_EQ(item_list_.item_at(0), item_0);
-  EXPECT_EQ(item_list_.item_at(1), item_1);
-  EXPECT_TRUE(VerifyItemListOrdinals());
-
-  // Insert an item at the beginning of the item_list_.
-  AppListItem* item_2 = CreateItem(GetItemName(2), GetItemName(2));
-  item_list_.InsertItemAt(item_2, 0);
-  EXPECT_EQ(item_list_.item_count(), 3u);
-  EXPECT_EQ(observer_.items_added(), 3u);
-  EXPECT_EQ(item_list_.item_at(0), item_2);
-  EXPECT_EQ(item_list_.item_at(1), item_0);
-  EXPECT_EQ(item_list_.item_at(2), item_1);
-  EXPECT_TRUE(VerifyItemListOrdinals());
-
-  // Insert an item at the end of the item_list_.
-  AppListItem* item_3 = CreateItem(GetItemName(3), GetItemName(3));
-  item_list_.InsertItemAt(item_3, item_list_.item_count());
-  EXPECT_EQ(item_list_.item_count(), 4u);
-  EXPECT_EQ(observer_.items_added(), 4u);
-  EXPECT_EQ(item_list_.item_at(0), item_2);
-  EXPECT_EQ(item_list_.item_at(1), item_0);
-  EXPECT_EQ(item_list_.item_at(2), item_1);
-  EXPECT_EQ(item_list_.item_at(3), item_3);
-  EXPECT_TRUE(VerifyItemListOrdinals());
-
-  // Insert an item at the 2nd item of the item_list_.
-  AppListItem* item_4 = CreateItem(GetItemName(4), GetItemName(4));
-  item_list_.InsertItemAt(item_4, 1);
-  EXPECT_EQ(item_list_.item_count(), 5u);
-  EXPECT_EQ(observer_.items_added(), 5u);
-  EXPECT_EQ(item_list_.item_at(0), item_2);
-  EXPECT_EQ(item_list_.item_at(1), item_4);
-  EXPECT_EQ(item_list_.item_at(2), item_0);
-  EXPECT_EQ(item_list_.item_at(3), item_1);
-  EXPECT_EQ(item_list_.item_at(4), item_3);
-  EXPECT_TRUE(VerifyItemListOrdinals());
-}
-
-TEST_F(AppListItemListTest, InsertItemAtEmptyList) {
-  AppListItem* item_0 = CreateItem(GetItemName(0), GetItemName(0));
-  EXPECT_EQ(item_list_.item_count(), 0u);
-  item_list_.InsertItemAt(item_0, 0);
-  EXPECT_EQ(item_list_.item_count(), 1u);
-  EXPECT_EQ(observer_.items_added(), 1u);
-  EXPECT_EQ(item_list_.item_at(0), item_0);
-  EXPECT_TRUE(VerifyItemListOrdinals());
 }
 
 TEST_F(AppListItemListTest, MoveItem) {

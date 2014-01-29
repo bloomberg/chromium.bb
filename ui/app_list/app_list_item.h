@@ -22,6 +22,7 @@ namespace app_list {
 class AppListItemList;
 class AppListItemListTest;
 class AppListItemObserver;
+class AppListModel;
 
 // AppListItem provides icon and title to be shown in a AppListItemView
 // and action to be executed when the AppListItemView is activated.
@@ -73,6 +74,7 @@ class APP_LIST_EXPORT AppListItem {
  protected:
   friend class AppListItemList;
   friend class AppListItemListTest;
+  friend class AppListModel;
 
   void set_position(const syncer::StringOrdinal& new_position) {
     DCHECK(new_position.IsValid());

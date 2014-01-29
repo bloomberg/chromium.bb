@@ -43,6 +43,9 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   // bottom left, bottom right.
   static Rects GetTopIconsBounds(const gfx::Rect& folder_icon_bounds);
 
+  // Returns an id for a new folder.
+  static std::string GenerateId();
+
  private:
   // AppListItem
   virtual void Activate(int event_flags) OVERRIDE;

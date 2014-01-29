@@ -14,6 +14,10 @@
 class Profile;
 class SyncTest;
 
+namespace app_list {
+class AppListItem;
+}
+
 class SyncAppListHelper {
  public:
   // Singleton implementation.
@@ -45,6 +49,11 @@ class SyncAppListHelper {
   // Returns true iff |profile| has the same app list as |test_|->verifier()
   // and the app list entries all have the same state.
   bool AppListMatchesVerifier(Profile* profile);
+
+  // Helper function for debugging, logs info for an item.
+  void PrintItem(Profile* profile,
+                 app_list::AppListItem* item,
+                 const std::string& label);
 
   SyncTest* test_;
   bool setup_completed_;

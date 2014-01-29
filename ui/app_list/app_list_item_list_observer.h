@@ -6,6 +6,7 @@
 #define UI_APP_LIST_APP_LIST_ITEM_LIST_OBSERVER_H_
 
 #include "base/basictypes.h"
+#include "ui/app_list/app_list_export.h"
 
 namespace app_list {
 

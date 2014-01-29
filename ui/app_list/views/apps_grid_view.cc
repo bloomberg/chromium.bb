@@ -182,39 +182,6 @@ bool IsFolderItem(AppListItem* item) {
   return (item->GetItemType() == AppListFolderItem::kItemType);
 }
 
-// Merges |source_item| into the folder containing the target item specified
-// by |target_item_id|. Both |source_item| and target item belongs to
-// |item_list|.
-// Returns the index of the target folder.
-size_t MergeItems(AppListItemList* item_list,
-                  const std::string& target_item_id,
-                  AppListItem* source_item) {
-  scoped_ptr<AppListItem> source_item_ptr =
-      item_list->RemoveItem(source_item->id());
-  DCHECK_EQ(source_item, source_item_ptr.get());
-  size_t target_index;
-  bool found_target_item = item_list->FindItemIndex(target_item_id,
-                                                    &target_index);
-  DCHECK(found_target_item);
-  AppListItem* target_item = item_list->item_at(target_index);
-  if (IsFolderItem(target_item)) {
-    AppListFolderItem* target_folder =
-        static_cast<AppListFolderItem*>(target_item);
-    target_folder->item_list()->AddItem(source_item_ptr.release());
-  } else {
-    scoped_ptr<AppListItem> target_item_ptr =
-        item_list->RemoveItemAt(target_index);
-    DCHECK_EQ(target_item, target_item_ptr.get());
-    AppListFolderItem* new_folder =
-        new AppListFolderItem(base::GenerateGUID());
-    new_folder->item_list()->AddItem(target_item_ptr.release());
-    new_folder->item_list()->AddItem(source_item_ptr.release());
-    item_list->InsertItemAt(new_folder, target_index);
-  }
-
-  return target_index;
-}
-
 }  // namespace
 
 #if defined(OS_WIN)
@@ -1367,28 +1334,31 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
 
 void AppsGridView::MoveItemToFolder(views::View* item_view,
                                     const Index& target) {
-  AppListItem* source_item =
-      static_cast<AppListItemView*>(item_view)->item();
+  const std::string& source_id =
+      static_cast<AppListItemView*>(item_view)->item()->id();
   AppListItemView* target_view =
       static_cast<AppListItemView*>(GetViewAtSlotOnCurrentPage(target.slot));
-  AppListItem* target_item = target_view->item();
-  bool target_is_folder = IsFolderItem(target_item);
+  const std::string&  target_id = target_view->item()->id();
 
   // Make change to data model.
   item_list_->RemoveObserver(this);
-  int folder_index = MergeItems(item_list_, target_item->id(), source_item);
+  std::string folder_id = model_->MergeItems(target_id, source_id);
   item_list_->AddObserver(this);
 
-  if (!target_is_folder) {
-    // Change view_model_ to replace the old target view with new folder
-    // item view.
-    int target_index = view_model_.GetIndexOfView(target_view);
-    view_model_.Remove(target_index);
-    delete target_view;
-
-    views::View* target_folder_view = CreateViewForItemAtIndex(folder_index);
-    view_model_.Add(target_folder_view, target_index);
-    AddChildView(target_folder_view);
+  if (folder_id != target_id) {
+    // New folder was created, change the view model to replace the old target
+    // view with the new folder item view.
+    size_t folder_index;
+    if (item_list_->FindItemIndex(folder_id, &folder_index)) {
+      int target_index = view_model_.GetIndexOfView(target_view);
+      view_model_.Remove(target_index);
+      delete target_view;
+      views::View* target_folder_view = CreateViewForItemAtIndex(folder_index);
+      view_model_.Add(target_folder_view, target_index);
+      AddChildView(target_folder_view);
+    } else {
+      LOG(ERROR) << "Folder no longer in item_list: " << folder_id;
+    }
   }
 
   // Fade out the drag_view_ and delete it when animation ends.
