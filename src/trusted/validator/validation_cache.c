@@ -125,7 +125,7 @@ int NaClSerializeNaClDescMetadata(
 
   /* Allocate the buffer. */
   *buffer = malloc(*buffer_length);
-  if (NULL == buffer)
+  if (NULL == *buffer)
     return 1;
 
   /* Fill the buffer. */
