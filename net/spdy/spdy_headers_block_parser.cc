@@ -64,10 +64,9 @@ std::vector<char> SpdyHeadersBlockParserReader::Remainder() {
   return remainder;
 }
 
-SpdyHeadersBlockParser::SpdyHeadersBlockParser(KeyValueHandler* handler) :
-    state_(READING_HEADER_BLOCK_LEN),
-    remaining_key_value_pairs_for_frame_(0),
-    next_field_len_(0),
+SpdyHeadersBlockParser::SpdyHeadersBlockParser(
+    SpdyHeadersHandlerInterface* handler) : state_(READING_HEADER_BLOCK_LEN),
+    remaining_key_value_pairs_for_frame_(0), next_field_len_(0),
     handler_(handler) {
 }
 
@@ -112,6 +111,7 @@ void SpdyHeadersBlockParser::HandleControlFrameHeadersData(
   // headers block, try to do it now (succeeds if we received enough bytes).
   if (state_ == READING_HEADER_BLOCK_LEN) {
     if (ParseUInt32(&reader, &remaining_key_value_pairs_for_frame_)) {
+      handler_->OnHeaderBlock(remaining_key_value_pairs_for_frame_);
       state_ = READING_KEY_LEN;
     } else {
       headers_block_prefix_ = reader.Remainder();
@@ -174,6 +174,7 @@ void SpdyHeadersBlockParser::HandleControlFrameHeadersData(
 
   // Did we finish handling the current block?
   if (remaining_key_value_pairs_for_frame_ == 0) {
+    handler_->OnHeaderBlockEnd();
     Reset();
   }
 }

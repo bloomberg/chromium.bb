@@ -15,12 +15,21 @@
 
 namespace net {
 
-// A handler class for SPDY headers block key/value pairs.
-// TODO(ygi) Modify this stub handler to pass the key-value pair
-// through the spdy logic.
-class KeyValueHandler {
+// A handler class for SPDY headers.
+class SpdyHeadersHandlerInterface {
  public:
-  virtual ~KeyValueHandler() {}
+  virtual ~SpdyHeadersHandlerInterface() {}
+
+  // A callback method which notifies when the parser starts handling a new
+  // SPDY headers block, this method also notifies on the number of headers in
+  // the block.
+  virtual void OnHeaderBlock(uint32_t num_of_headers) = 0;
+
+  // A callback method which notifies when the parser finishes handling a SPDY
+  // headers block.
+  virtual void OnHeaderBlockEnd() = 0;
+
+  // A callback method which notifies on a SPDY header key value pair.
   virtual void OnKeyValuePair(const base::StringPiece& key,
                               const base::StringPiece& value) = 0;
 };
@@ -57,7 +66,7 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
  public:
   // Costructor. The handler's OnKeyValuePair will be called for every key
   // value pair that we parsed from the headers block.
-  explicit SpdyHeadersBlockParser(KeyValueHandler* handler);
+  explicit SpdyHeadersBlockParser(SpdyHeadersHandlerInterface* handler);
 
   virtual ~SpdyHeadersBlockParser();
 
@@ -102,7 +111,7 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
   std::vector<char> headers_block_prefix_;
 
   // Handles key-value pairs as we parse them.
-  KeyValueHandler* handler_;
+  SpdyHeadersHandlerInterface* handler_;
 
   // Points to the current key.
   scoped_ptr<char[]> current_key;
