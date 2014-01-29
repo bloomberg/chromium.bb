@@ -141,6 +141,10 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // DesktopEnvironment::CreateVideoCapturer().
   webrtc::ScreenCapturer* CreateVideoCapturer();
 
+  // Creates a MockMouseCursorMonitor, to mock
+  // DesktopEnvironment::CreateMouseCursorMonitor
+  webrtc::MouseCursorMonitor* CreateMouseCursorMonitor();
+
   void DeleteDesktopEnvironment();
 
   // Forwards |event| to |clipboard_stub_|.
@@ -324,6 +328,10 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
       .Times(AtMost(1))
       .WillOnce(Invoke(
           this, &IpcDesktopEnvironmentTest::CreateVideoCapturer));
+  EXPECT_CALL(*desktop_environment, CreateMouseCursorMonitorPtr())
+      .Times(AtMost(1))
+      .WillOnce(Invoke(
+          this, &IpcDesktopEnvironmentTest::CreateMouseCursorMonitor));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, SetCapabilities(_))
@@ -345,6 +353,11 @@ InputInjector* IpcDesktopEnvironmentTest::CreateInputInjector() {
 
 webrtc::ScreenCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
   return new ScreenCapturerFake();
+}
+
+webrtc::MouseCursorMonitor*
+IpcDesktopEnvironmentTest::CreateMouseCursorMonitor() {
+  return new MockMouseCursorMonitor();
 }
 
 void IpcDesktopEnvironmentTest::DeleteDesktopEnvironment() {
