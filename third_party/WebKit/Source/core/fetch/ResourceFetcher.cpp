@@ -177,7 +177,7 @@ static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDo
 {
     if (initiatorDocument && isMainResource)
         initiatorDocument = initiatorDocument->parentDocument();
-    if (!initiatorDocument)
+    if (!initiatorDocument || !initiatorDocument->loader())
         return;
     if (DOMWindow* initiatorWindow = initiatorDocument->domWindow()) {
         if (Performance* performance = initiatorWindow->performance())
