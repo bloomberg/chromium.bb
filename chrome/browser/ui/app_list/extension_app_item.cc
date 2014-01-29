@@ -66,6 +66,36 @@ extensions::AppSorting* GetAppSorting(Profile* profile) {
   return service->extension_prefs()->app_sorting();
 }
 
+// Returns the given |icon| with rounded corners.
+gfx::ImageSkia GetRoundedIcon(gfx::ImageSkia icon) {
+  // The radius used to round the app icon.
+  const size_t kRoundingRadius = 2;
+
+  scoped_ptr<SkCanvas> canvas(
+      skia::CreateBitmapCanvas(icon.width(), icon.height(), false));
+  DCHECK(canvas);
+  canvas->drawBitmap(*icon.bitmap(), 0, 0);
+
+  scoped_ptr<SkCanvas> masking_canvas(
+      skia::CreateBitmapCanvas(icon.width(), icon.height(), false));
+  DCHECK(masking_canvas);
+
+  SkPaint opaque_paint;
+  opaque_paint.setColor(SK_ColorWHITE);
+  opaque_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  masking_canvas->drawRoundRect(
+    SkRect::MakeWH(icon.width(), icon.height()),
+    kRoundingRadius, kRoundingRadius, opaque_paint);
+
+  SkPaint masking_paint;
+  masking_paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+  canvas->drawBitmap(
+      masking_canvas->getDevice()->accessBitmap(false), 0, 0, &masking_paint);
+
+  return gfx::ImageSkia::CreateFrom1xBitmap(
+      canvas->getDevice()->accessBitmap(false));
+}
+
 const color_utils::HSL shift = {-1, 0, 0.6};
 
 }  // namespace
@@ -137,6 +167,9 @@ void ExtensionAppItem::UpdateIcon() {
     const color_utils::HSL shift = {-1, 0, 0.6};
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
   }
+
+  if (GetExtension()->from_bookmark())
+    icon = GetRoundedIcon(icon);
 
   if (HasOverlay())
     icon = gfx::ImageSkia(new ShortcutOverlayImageSource(icon), icon.size());
