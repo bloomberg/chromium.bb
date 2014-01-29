@@ -216,6 +216,9 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
       // Invoked by views scrollbar code, don't care about for non-win
       // implementations, so no NOTIMPLEMENTED.
       break;
+    case kScrollbarCorner:
+      PaintScrollbarCorner(canvas, state, rect);
+      break;
     case kSliderTrack:
       PaintSliderTrack(canvas, state, rect, extra.slider);
       break;
@@ -486,6 +489,12 @@ void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
                    paint);
     }
   }
+}
+
+void NativeThemeBase::PaintScrollbarCorner(SkCanvas* canvas,
+                                           State state,
+                                           const gfx::Rect& rect) const {
+  canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
 }
 
 void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,

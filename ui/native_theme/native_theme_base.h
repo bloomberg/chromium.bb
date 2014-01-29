@@ -61,6 +61,10 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       State state,
       const gfx::Rect& rect) const;
 
+  virtual void PaintScrollbarCorner(SkCanvas* canvas,
+                                    State state,
+                                    const gfx::Rect& rect) const;
+
   virtual void PaintCheckbox(
       SkCanvas* canvas,
       State state,

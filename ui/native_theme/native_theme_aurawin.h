@@ -42,6 +42,9 @@ class NATIVE_THEME_EXPORT NativeThemeAuraWin : public NativeThemeAura {
                                    Part part,
                                    State state,
                                    const gfx::Rect& rect) const OVERRIDE;
+  virtual void PaintScrollbarCorner(SkCanvas* canvas,
+                                    State state,
+                                    const gfx::Rect& rect) const OVERRIDE;
 
   // Returns the NineImagePainter used to paint the specified state, creating if
   // necessary. If no image is provided for the specified state the normal state

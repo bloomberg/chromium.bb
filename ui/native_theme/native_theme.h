@@ -66,6 +66,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kScrollbarVerticalTrack,
     kScrollbarHorizontalGripper,
     kScrollbarVerticalGripper,
+    // The corner is drawn when there is both a horizontal and vertical
+    // scrollbar.
+    kScrollbarCorner,
     kSliderTrack,
     kSliderThumb,
     kTabPanelBackground,

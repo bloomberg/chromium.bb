@@ -156,6 +156,12 @@ void NativeThemeAuraWin::PaintScrollbarThumb(SkCanvas* sk_canvas,
                sk_canvas, thumb_rect);
 }
 
+void NativeThemeAuraWin::PaintScrollbarCorner(SkCanvas* canvas,
+                                              State state,
+                                              const gfx::Rect& rect) const {
+  canvas->drawColor(SkColorSetRGB(0xF1, 0xF1, 0xF1), SkXfermode::kSrc_Mode);
+}
+
 NineImagePainter* NativeThemeAuraWin::GetOrCreatePainter(
     const int images[kMaxState][9],
     State state,

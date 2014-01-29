@@ -454,6 +454,9 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
       PaintScrollbarTrack(canvas, hdc, part, state, rect,
                           extra.scrollbar_track);
       break;
+    case kScrollbarCorner:
+      canvas->drawColor(SK_ColorWHITE, SkXfermode::kSrc_Mode);
+      break;
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:
     case kScrollbarHorizontalGripper:
