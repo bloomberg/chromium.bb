@@ -161,7 +161,9 @@ void WorkerRunLoop::run(WorkerGlobalScope* context)
     ModePredicate modePredicate(defaultMode());
     MessageQueueWaitResult result;
     do {
+#if ENABLE(OILPAN)
         ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+#endif
         result = runInMode(context, modePredicate, WaitForMessage);
     } while (result != MessageQueueTerminated);
     runCleanupTasks(context);
@@ -208,7 +210,9 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
         }
 
         {
+#if ENABLE(OILPAN)
             ThreadState::SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
+#endif
             task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
         }
     } while (result == MessageQueueTimeout && nextTimeoutEventIsIdleWatchdog);

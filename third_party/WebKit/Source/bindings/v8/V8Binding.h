@@ -716,6 +716,7 @@ namespace WebCore {
         DeleteUnknownProperty
     };
 
+#if ENABLE(OILPAN)
     class V8IsolateInterruptor : public ThreadState::Interruptor {
     public:
         explicit V8IsolateInterruptor(v8::Isolate* isolate) : m_isolate(isolate) { }
@@ -738,6 +739,7 @@ namespace WebCore {
     private:
         v8::Isolate* m_isolate;
     };
+#endif
 
 } // namespace WebCore
 
