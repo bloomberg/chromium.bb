@@ -447,7 +447,8 @@ ModelTypeSet CoreTypes() {
 
   // The following are low priority core types.
   result.Put(SYNCED_NOTIFICATIONS);
-  result.Put(SYNCED_NOTIFICATION_APP_INFO);
+  // TODO(petewil): Add synced notification app info once crbug.com/339094 is
+  // fixed.
 
   return result;
 }
