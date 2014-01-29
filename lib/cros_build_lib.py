@@ -639,6 +639,11 @@ def PrintBuildbotStepFailure(handle=None):
   (handle or sys.stderr).write('\n@@@STEP_FAILURE@@@\n')
 
 
+def PrintBuildbotStepName(name, handle=None):
+  """Marks a step name for buildbot to display."""
+  (handle or sys.stderr).write('\n@@@BUILD_STEP %s@@@\n' % name)
+
+
 def ListFiles(base_dir):
   """Recursively list files in a directory.
 

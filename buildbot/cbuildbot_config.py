@@ -261,6 +261,12 @@ _settings = dict(
 #                 really needed to build this config.
   dev_manifest=constants.DEFAULT_MANIFEST,
 
+# build_before_patching -- Applies only to paladin builders. If true, Sync to
+#                          the manifest without applying any test patches, then
+#                          do a fresh build in a new chroot. Then, apply the
+#                          patches and build in the existing chroot.
+  build_before_patching=False,
+
 # do_not_apply_cq_patches -- Applies only to paladin builders. If True, Sync to
 #                            the master manifest without applying any of the
 #                            test patches, rather than running CommitQueueSync.
@@ -1474,7 +1480,11 @@ internal_paladin.add_config('lumpy-paladin',
 internal_paladin.add_config('lumpy-incremental-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy incremental paladin',
+  build_before_patching=True,
+  chroot_replace=False,
+  compilecheck=True,
   important=False,
+  unittests=False,
 )
 
 internal_paladin.add_config('parrot-paladin',

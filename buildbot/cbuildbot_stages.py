@@ -1167,10 +1167,41 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
     else:
       manifest = self.manifest_manager.GetLatestCandidate()
       if manifest:
+        if self._run.config.build_before_patching:
+          pre_build_passed = self._RunPrePatchBuild()
+          cros_build_lib.PrintBuildbotStepName(
+              'CommitQueueSync : Apply Patches')
+          if not pre_build_passed:
+            cros_build_lib.PrintBuildbotStepText('Pre-patch build failed.')
+
         self._SetPoolFromManifest(manifest)
         self.pool.ApplyPoolIntoRepo()
 
       return manifest
+
+  def _RunPrePatchBuild(self):
+    """Run through a pre-patch build to prepare for incremental build.
+
+    This function runs though the InitSDKStage, SetupBoardStage, and
+    BuildPackagesStage. It is intended to be called before applying
+    any patches under test, to prepare the chroot and sysroot in a state
+    corresponding to ToT prior to an incremental build.
+
+    Returns:
+      True if all stages were successful, False if any of them failed.
+    """
+    suffix = ' (pre-Patch)'
+    try:
+      InitSDKStage(self._run, chroot_replace=True, suffix=suffix).Run()
+      SetupBoardStage(self._run, boards=self._run.config.boards,
+                      suffix=suffix).Run()
+      for board in self._run.config.boards:
+        BuildPackagesStage(self._run, board=board, archive_stage=None,
+                           suffix=suffix).Run()
+    except results_lib.StepFailure:
+      return False
+
+    return True
 
   def PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
@@ -2183,9 +2214,16 @@ class InitSDKStage(bs.BuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, builder_run, **kwargs):
+  def __init__(self, builder_run, chroot_replace=False, **kwargs):
+    """InitSDK constructor.
+
+    Args:
+      builder_run: Builder run instance for this run.
+      chroot_replace: If True, force the chroot to be replaced.
+    """
     super(InitSDKStage, self).__init__(builder_run, **kwargs)
     self._env = {}
+    self.force_chroot_replace = chroot_replace
     if self._run.options.clobber:
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
@@ -2197,7 +2235,7 @@ class InitSDKStage(bs.BuilderStage):
 
   def PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    replace = self._run.config.chroot_replace
+    replace = self._run.config.chroot_replace or self.force_chroot_replace
     pre_ver = post_ver = None
     if os.path.isdir(self._build_root) and not replace:
       try:

@@ -227,7 +227,7 @@ class BuilderStage(object):
     """Can be overridden.  Called before a stage is performed."""
 
     # Tell the buildbot we are starting a new step for the waterfall
-    self._Print('\n@@@BUILD_STEP %s@@@\n' % self.name)
+    cros_build_lib.PrintBuildbotStepName(self.name)
 
     self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
         self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
