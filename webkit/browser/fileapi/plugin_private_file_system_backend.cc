@@ -98,7 +98,7 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
   file_util_.reset(
       new AsyncFileUtilAdapter(new ObfuscatedFileUtil(
           special_storage_policy,
-          base_path_,
+          base_path_, file_system_options.env_override(),
           file_task_runner,
           base::Bind(&FileSystemIDToPluginMap::GetPluginIDForURL,
                      base::Owned(plugin_map_)),

@@ -20,6 +20,7 @@ class Location;
 
 namespace leveldb {
 class DB;
+class Env;
 class Status;
 class WriteBatch;
 }
@@ -56,8 +57,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
     base::Time modification_time;
   };
 
-  explicit SandboxDirectoryDatabase(
-      const base::FilePath& filesystem_data_directory);
+  SandboxDirectoryDatabase(
+      const base::FilePath& filesystem_data_directory,
+      leveldb::Env* env_override);
   ~SandboxDirectoryDatabase();
 
   bool GetChildWithName(
@@ -93,7 +95,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
   // Returns true if the database looks consistent with local filesystem.
   bool IsFileSystemConsistent();
 
-  static bool DestroyDatabase(const base::FilePath& path);
+  static bool DestroyDatabase(const base::FilePath& path,
+                              leveldb::Env* env_override);
 
  private:
   enum RecoveryOption {
@@ -117,6 +120,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
                    const leveldb::Status& status);
 
   const base::FilePath filesystem_data_directory_;
+  leveldb::Env* env_override_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(SandboxDirectoryDatabase);

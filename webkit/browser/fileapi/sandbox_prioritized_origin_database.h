@@ -11,6 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/sandbox_origin_database_interface.h"
 
+namespace leveldb {
+class Env;
+}
+
 namespace fileapi {
 
 class ObfuscatedFileUtil;
@@ -20,8 +24,8 @@ class SandboxOriginDatabase;
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
-  explicit SandboxPrioritizedOriginDatabase(
-      const base::FilePath& file_system_directory);
+  SandboxPrioritizedOriginDatabase(const base::FilePath& file_system_directory,
+                                   leveldb::Env* env_override);
   virtual ~SandboxPrioritizedOriginDatabase();
 
   // Sets |origin| as primary origin in this database (e.g. may
@@ -55,6 +59,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
   SandboxOriginDatabase* GetSandboxOriginDatabase();
 
   const base::FilePath file_system_directory_;
+  leveldb::Env* env_override_;
   const base::FilePath primary_origin_file_;
   scoped_ptr<SandboxOriginDatabase> origin_database_;
   scoped_ptr<SandboxIsolatedOriginDatabase> primary_origin_database_;

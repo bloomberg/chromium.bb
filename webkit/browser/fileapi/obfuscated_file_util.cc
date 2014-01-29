@@ -254,12 +254,14 @@ class ObfuscatedOriginEnumerator
 ObfuscatedFileUtil::ObfuscatedFileUtil(
     quota::SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
+    leveldb::Env* env_override,
     base::SequencedTaskRunner* file_task_runner,
     const GetTypeStringForURLCallback& get_type_string_for_url,
     const std::set<std::string>& known_type_strings,
     SandboxFileSystemBackendDelegate* sandbox_delegate)
     : special_storage_policy_(special_storage_policy),
       file_system_directory_(file_system_directory),
+      env_override_(env_override),
       db_flush_delay_seconds_(10 * 60),  // 10 mins.
       file_task_runner_(file_task_runner),
       get_type_string_for_url_(get_type_string_for_url),
@@ -944,7 +946,7 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
       origin, type_string, false, &error);
   if (path.empty() || error == base::File::FILE_ERROR_NOT_FOUND)
     return true;
-  return SandboxDirectoryDatabase::DestroyDatabase(path);
+  return SandboxDirectoryDatabase::DestroyDatabase(path, env_override_);
 }
 
 // static
@@ -954,7 +956,8 @@ int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
 
 void ObfuscatedFileUtil::MaybePrepopulateDatabase(
     const std::vector<std::string>& type_strings_to_prepopulate) {
-  SandboxPrioritizedOriginDatabase database(file_system_directory_);
+  SandboxPrioritizedOriginDatabase database(file_system_directory_,
+                                            env_override_);
   std::string origin_string = database.GetPrimaryOrigin();
   if (origin_string.empty() || !database.HasOriginPath(origin_string))
     return;
@@ -972,7 +975,8 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
         origin, type_string, false, &error);
     if (error != base::File::FILE_OK)
       continue;
-    scoped_ptr<SandboxDirectoryDatabase> db(new SandboxDirectoryDatabase(path));
+    scoped_ptr<SandboxDirectoryDatabase> db(
+        new SandboxDirectoryDatabase(path, env_override_));
     if (db->Init(SandboxDirectoryDatabase::FAIL_ON_CORRUPTION)) {
       directories_[GetDirectoryDatabaseKey(origin, type_string)] = db.release();
       MarkUsed();
@@ -1173,7 +1177,8 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     return NULL;
   }
   MarkUsed();
-  SandboxDirectoryDatabase* database = new SandboxDirectoryDatabase(path);
+  SandboxDirectoryDatabase* database =
+      new SandboxDirectoryDatabase(path, env_override_);
   directories_[key] = database;
   return database;
 }
@@ -1274,7 +1279,8 @@ bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
   }
 
   SandboxPrioritizedOriginDatabase* prioritized_origin_database =
-      new SandboxPrioritizedOriginDatabase(file_system_directory_);
+      new SandboxPrioritizedOriginDatabase(file_system_directory_,
+                                           env_override_);
   origin_database_.reset(prioritized_origin_database);
 
   if (origin_hint.is_empty() || !HasIsolatedStorage(origin_hint))

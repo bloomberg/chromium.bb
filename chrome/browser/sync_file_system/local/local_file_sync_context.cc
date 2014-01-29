@@ -47,9 +47,11 @@ const base::FilePath::CharType kSnapshotDir[] = FILE_PATH_LITERAL("snapshots");
 
 LocalFileSyncContext::LocalFileSyncContext(
     const base::FilePath& base_path,
+    leveldb::Env* env_override,
     base::SingleThreadTaskRunner* ui_task_runner,
     base::SingleThreadTaskRunner* io_task_runner)
     : local_base_path_(base_path.Append(FILE_PATH_LITERAL("local"))),
+      env_override_(env_override),
       ui_task_runner_(ui_task_runner),
       io_task_runner_(io_task_runner),
       shutdown_on_ui_(false),
@@ -679,6 +681,7 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
   DCHECK(origins_with_changes);
   tracker_ptr->reset(new LocalFileChangeTracker(
           file_system_context->partition_path(),
+          env_override_,
           file_system_context->default_file_task_runner()));
   const SyncStatusCode status = (*tracker_ptr)->Initialize(file_system_context);
   if (status != SYNC_STATUS_OK)

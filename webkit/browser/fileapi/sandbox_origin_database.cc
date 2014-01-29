@@ -58,8 +58,10 @@ const char* LastPathKey() {
 namespace fileapi {
 
 SandboxOriginDatabase::SandboxOriginDatabase(
-    const base::FilePath& file_system_directory)
-    : file_system_directory_(file_system_directory) {
+    const base::FilePath& file_system_directory,
+    leveldb::Env* env_override)
+    : file_system_directory_(file_system_directory),
+      env_override_(env_override) {
 }
 
 SandboxOriginDatabase::~SandboxOriginDatabase() {
@@ -78,6 +80,8 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  if (env_override_)
+    options.env = env_override_;
   leveldb::DB* db;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
   ReportInitStatus(status);
@@ -123,6 +127,8 @@ bool SandboxOriginDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
+  if (env_override_)
+    options.env = env_override_;
   if (!leveldb::RepairDB(db_path, options).ok() ||
       !Init(FAIL_IF_NONEXISTENT, FAIL_ON_CORRUPTION)) {
     LOG(WARNING) << "Failed to repair SandboxOriginDatabase.";

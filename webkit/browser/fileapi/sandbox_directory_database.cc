@@ -410,8 +410,10 @@ SandboxDirectoryDatabase::FileInfo::~FileInfo() {
 }
 
 SandboxDirectoryDatabase::SandboxDirectoryDatabase(
-    const base::FilePath& filesystem_data_directory)
-    : filesystem_data_directory_(filesystem_data_directory) {
+    const base::FilePath& filesystem_data_directory,
+    leveldb::Env* env_override)
+    : filesystem_data_directory_(filesystem_data_directory),
+      env_override_(env_override) {
 }
 
 SandboxDirectoryDatabase::~SandboxDirectoryDatabase() {
@@ -699,9 +701,13 @@ bool SandboxDirectoryDatabase::GetNextInteger(int64* next) {
 }
 
 // static
-bool SandboxDirectoryDatabase::DestroyDatabase(const base::FilePath& path) {
+bool SandboxDirectoryDatabase::DestroyDatabase(const base::FilePath& path,
+                                               leveldb::Env* env_override) {
   std::string name  = FilePathToString(path.Append(kDirectoryDatabaseName));
-  leveldb::Status status = leveldb::DestroyDB(name, leveldb::Options());
+  leveldb::Options options;
+  if (env_override)
+    options.env = env_override;
+  leveldb::Status status = leveldb::DestroyDB(name, options);
   if (status.ok())
     return true;
   LOG(WARNING) << "Failed to destroy a database with status " <<
@@ -719,6 +725,8 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  if (env_override_)
+    options.env = env_override_;
   leveldb::DB* db;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
   ReportInitStatus(status);
@@ -766,6 +774,8 @@ bool SandboxDirectoryDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
+  if (env_override_)
+    options.env = env_override_;
   if (!leveldb::RepairDB(db_path, options).ok())
     return false;
   if (!Init(FAIL_ON_CORRUPTION))

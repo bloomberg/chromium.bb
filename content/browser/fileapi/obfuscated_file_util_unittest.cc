@@ -236,7 +236,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       quota::SpecialStoragePolicy* storage_policy) {
     return scoped_ptr<ObfuscatedFileUtil>(
       ObfuscatedFileUtil::CreateForTesting(
-          storage_policy, data_dir_path(),
+          storage_policy, data_dir_path(), NULL,
           base::MessageLoopProxy::current().get()));
   }
 

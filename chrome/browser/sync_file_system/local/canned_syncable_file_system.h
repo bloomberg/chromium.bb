@@ -35,6 +35,10 @@ class FileSystemOperationRunner;
 class FileSystemURL;
 }
 
+namespace leveldb {
+class Env;
+}
+
 namespace net {
 class URLRequestContext;
 }
@@ -64,6 +68,7 @@ class CannedSyncableFileSystem
   typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
   CannedSyncableFileSystem(const GURL& origin,
+                           leveldb::Env* env_override,
                            base::SingleThreadTaskRunner* io_task_runner,
                            base::SingleThreadTaskRunner* file_task_runner);
   virtual ~CannedSyncableFileSystem();
@@ -225,6 +230,7 @@ class CannedSyncableFileSystem
   base::File::Error result_;
   sync_file_system::SyncStatusCode sync_status_;
 
+  leveldb::Env* env_override_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 

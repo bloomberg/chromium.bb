@@ -14,6 +14,7 @@
 
 namespace leveldb {
 class DB;
+class Env;
 class Status;
 }
 
@@ -30,7 +31,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxOriginDatabase
  public:
   // Only one instance of SandboxOriginDatabase should exist for a given path
   // at a given time.
-  explicit SandboxOriginDatabase(const base::FilePath& file_system_directory);
+  SandboxOriginDatabase(const base::FilePath& file_system_directory,
+                        leveldb::Env* env_override);
   virtual ~SandboxOriginDatabase();
 
   // SandboxOriginDatabaseInterface overrides.
@@ -64,6 +66,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxOriginDatabase
   bool GetLastPathNumber(int* number);
 
   base::FilePath file_system_directory_;
+  leveldb::Env* env_override_;
   scoped_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(SandboxOriginDatabase);

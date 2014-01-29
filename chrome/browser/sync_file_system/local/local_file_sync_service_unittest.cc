@@ -31,6 +31,8 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
 using content::BrowserThread;
@@ -109,13 +111,16 @@ class LocalFileSyncServiceTest
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin),
+        in_memory_env_.get(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
-    local_service_.reset(new LocalFileSyncService(&profile_));
+    local_service_ = LocalFileSyncService::CreateForTesting(
+        &profile_, in_memory_env_.get());
 
     file_system_->SetUp();
 
@@ -192,9 +197,9 @@ class LocalFileSyncServiceTest
   content::TestBrowserThreadBundle thread_bundle_;
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
-  TestingProfile profile_;
-
   base::ScopedTempDir temp_dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
+  TestingProfile profile_;
 
   scoped_ptr<CannedSyncableFileSystem> file_system_;
   scoped_ptr<LocalFileSyncService> local_service_;
@@ -294,6 +299,7 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   CannedSyncableFileSystem file_system2(
       GURL(kOrigin2),
+      in_memory_env_.get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   file_system2.SetUp();

@@ -104,6 +104,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   ObfuscatedFileUtil(
       quota::SpecialStoragePolicy* special_storage_policy,
       const base::FilePath& file_system_directory,
+      leveldb::Env* env_override,
       base::SequencedTaskRunner* file_task_runner,
       const GetTypeStringForURLCallback& get_type_string_for_url,
       const std::set<std::string>& known_type_strings,
@@ -243,6 +244,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   static ObfuscatedFileUtil* CreateForTesting(
       quota::SpecialStoragePolicy* special_storage_policy,
       const base::FilePath& file_system_directory,
+      leveldb::Env* env_override,
       base::SequencedTaskRunner* file_task_runner);
 
   base::FilePath GetDirectoryForURL(
@@ -334,6 +336,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   scoped_ptr<SandboxOriginDatabaseInterface> origin_database_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   base::FilePath file_system_directory_;
+  leveldb::Env* env_override_;
 
   // Used to delete database after a certain period of inactivity.
   int64 db_flush_delay_seconds_;

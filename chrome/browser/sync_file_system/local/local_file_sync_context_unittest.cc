@@ -23,6 +23,8 @@
 #include "content/public/test/mock_blob_url_request_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/isolated_context.h"
@@ -62,6 +64,7 @@ class LocalFileSyncContextTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     RegisterSyncableFileSystem();
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     ui_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
     io_task_runner_ = BrowserThread::GetMessageLoopProxyForThread(
@@ -228,11 +231,13 @@ class LocalFileSyncContextTest : public testing::Test {
   void PrepareForSync_Basic(LocalFileSyncContext::SyncMode sync_mode,
                             SyncStatusCode simulate_sync_finish_status) {
     CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                         in_memory_env_.get(),
                                          io_task_runner_.get(),
                                          file_task_runner_.get());
     file_system.SetUp();
     sync_context_ = new LocalFileSyncContext(
-        dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+        dir_.path(), in_memory_env_.get(),
+        ui_task_runner_.get(), io_task_runner_.get());
     ASSERT_EQ(SYNC_STATUS_OK,
               file_system.MaybeInitializeFileSystemContext(
                   sync_context_.get()));
@@ -278,11 +283,13 @@ class LocalFileSyncContextTest : public testing::Test {
   void PrepareForSync_WriteDuringSync(
       LocalFileSyncContext::SyncMode sync_mode) {
     CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                         in_memory_env_.get(),
                                          io_task_runner_.get(),
                                          file_task_runner_.get());
     file_system.SetUp();
     sync_context_ = new LocalFileSyncContext(
-        dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+        dir_.path(), in_memory_env_.get(),
+        ui_task_runner_.get(), io_task_runner_.get());
     ASSERT_EQ(SYNC_STATUS_OK,
               file_system.MaybeInitializeFileSystemContext(
                   sync_context_.get()));
@@ -341,6 +348,7 @@ class LocalFileSyncContextTest : public testing::Test {
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
 
   base::ScopedTempDir dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
 
   // These need to remain until the very end.
   content::TestBrowserThreadBundle thread_bundle_;
@@ -360,18 +368,21 @@ class LocalFileSyncContextTest : public testing::Test {
 TEST_F(LocalFileSyncContextTest, ConstructAndDestruct) {
   sync_context_ =
       new LocalFileSyncContext(
-          dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+          dir_.path(), in_memory_env_.get(),
+          ui_task_runner_.get(), io_task_runner_.get());
   sync_context_->ShutdownOnUIThread();
 }
 
 TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                       in_memory_env_.get(),
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
 
   sync_context_ = new LocalFileSyncContext(
-      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+      dir_.path(), in_memory_env_.get(),
+      ui_task_runner_.get(), io_task_runner_.get());
 
   // Initializes file_system using |sync_context_|.
   EXPECT_EQ(SYNC_STATUS_OK,
@@ -407,16 +418,19 @@ TEST_F(LocalFileSyncContextTest, InitializeFileSystemContext) {
 
 TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   CannedSyncableFileSystem file_system1(GURL(kOrigin1),
+                                        in_memory_env_.get(),
                                         io_task_runner_.get(),
                                         file_task_runner_.get());
   CannedSyncableFileSystem file_system2(GURL(kOrigin2),
+                                        in_memory_env_.get(),
                                         io_task_runner_.get(),
                                         file_task_runner_.get());
   file_system1.SetUp();
   file_system2.SetUp();
 
   sync_context_ = new LocalFileSyncContext(
-      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+      dir_.path(), in_memory_env_.get(),
+      ui_task_runner_.get(), io_task_runner_.get());
 
   // Initializes file_system1 and file_system2.
   EXPECT_EQ(SYNC_STATUS_OK,
@@ -523,11 +537,13 @@ TEST_F(LocalFileSyncContextTest, PrepareSync_WriteDuringSync_Snapshot) {
 // http://crbug.com/305905.
 TEST_F(LocalFileSyncContextTest, DISABLED_PrepareSyncWhileWriting) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                       in_memory_env_.get(),
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
   sync_context_ = new LocalFileSyncContext(
-      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+      dir_.path(), in_memory_env_.get(),
+      ui_task_runner_.get(), io_task_runner_.get());
   EXPECT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
 
@@ -584,12 +600,14 @@ TEST_F(LocalFileSyncContextTest, DISABLED_PrepareSyncWhileWriting) {
 
 TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                       in_memory_env_.get(),
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
 
   sync_context_ = new LocalFileSyncContext(
-      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+      dir_.path(), in_memory_env_.get(),
+      ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
   ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
@@ -670,12 +688,14 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
 
 TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                       in_memory_env_.get(),
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
 
   sync_context_ = new LocalFileSyncContext(
-      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+      dir_.path(), in_memory_env_.get(),
+      ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
   ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
@@ -738,12 +758,14 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                       in_memory_env_.get(),
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
 
   sync_context_ = new LocalFileSyncContext(
-      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+      dir_.path(), in_memory_env_.get(),
+      ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
   ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());
@@ -887,12 +909,14 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate_NoParent) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                       in_memory_env_.get(),
                                        io_task_runner_.get(),
                                        file_task_runner_.get());
   file_system.SetUp();
 
   sync_context_ = new LocalFileSyncContext(
-      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+      dir_.path(), in_memory_env_.get(),
+      ui_task_runner_.get(), io_task_runner_.get());
   ASSERT_EQ(SYNC_STATUS_OK,
             file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
   ASSERT_EQ(base::File::FILE_OK, file_system.OpenFileSystem());

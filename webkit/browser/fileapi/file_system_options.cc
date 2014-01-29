@@ -8,9 +8,11 @@ namespace fileapi {
 
 FileSystemOptions::FileSystemOptions(
       ProfileMode profile_mode,
-      const std::vector<std::string>& additional_allowed_schemes)
+      const std::vector<std::string>& additional_allowed_schemes,
+      leveldb::Env* env_override)
       : profile_mode_(profile_mode),
-        additional_allowed_schemes_(additional_allowed_schemes) {
+        additional_allowed_schemes_(additional_allowed_schemes),
+        env_override_(env_override) {
 }
 
 FileSystemOptions::~FileSystemOptions() {

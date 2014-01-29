@@ -180,6 +180,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
           new ObfuscatedFileUtil(
               special_storage_policy,
               profile_path.Append(kFileSystemDirectory),
+              file_system_options.env_override(),
               file_task_runner,
               base::Bind(&GetTypeStringForURL),
               GetKnownTypeStrings(),
@@ -660,9 +661,11 @@ ObfuscatedFileUtil* SandboxFileSystemBackendDelegate::obfuscated_file_util() {
 ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
     quota::SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
+    leveldb::Env* env_override,
     base::SequencedTaskRunner* file_task_runner) {
   return new ObfuscatedFileUtil(special_storage_policy,
                                 file_system_directory,
+                                env_override,
                                 file_task_runner,
                                 base::Bind(&GetTypeStringForURL),
                                 GetKnownTypeStrings(),

@@ -20,6 +20,8 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/test/mock_blob_url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/quota/quota_manager.h"
 
@@ -34,7 +36,9 @@ namespace sync_file_system {
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-      : file_system_(GURL("http://example.com"),
+      : in_memory_env_(leveldb::NewMemEnv(leveldb::Env::Default())),
+        file_system_(GURL("http://example.com"),
+                     in_memory_env_.get(),
                      base::MessageLoopProxy::current().get(),
                      base::MessageLoopProxy::current().get()) {}
 
@@ -43,6 +47,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
 
     sync_context_ =
         new LocalFileSyncContext(base::FilePath(),
+                                 in_memory_env_.get(),
                                  base::MessageLoopProxy::current().get(),
                                  base::MessageLoopProxy::current().get());
     ASSERT_EQ(
@@ -106,6 +111,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   base::MessageLoopForIO message_loop_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;
 
  private:

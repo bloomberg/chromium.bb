@@ -36,7 +36,7 @@ TEST(SandboxOriginDatabaseTest, BasicTest) {
   EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(base::CreateDirectory(kFSDir));
 
-  SandboxOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir, NULL);
   std::string origin("origin");
 
   EXPECT_FALSE(database.HasOriginPath(origin));
@@ -66,7 +66,7 @@ TEST(SandboxOriginDatabaseTest, TwoPathTest) {
   EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(base::CreateDirectory(kFSDir));
 
-  SandboxOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir, NULL);
   std::string origin0("origin0");
   std::string origin1("origin1");
 
@@ -94,7 +94,7 @@ TEST(SandboxOriginDatabaseTest, DropDatabaseTest) {
   EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(base::CreateDirectory(kFSDir));
 
-  SandboxOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir, NULL);
   std::string origin("origin");
 
   EXPECT_FALSE(database.HasOriginPath(origin));
@@ -122,7 +122,7 @@ TEST(SandboxOriginDatabaseTest, DeleteOriginTest) {
   EXPECT_FALSE(base::PathExists(kFSDir));
   EXPECT_TRUE(base::CreateDirectory(kFSDir));
 
-  SandboxOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir, NULL);
   std::string origin("origin");
 
   EXPECT_FALSE(database.HasOriginPath(origin));
@@ -151,7 +151,7 @@ TEST(SandboxOriginDatabaseTest, ListOriginsTest) {
 
   std::vector<SandboxOriginDatabase::OriginRecord> origins;
 
-  SandboxOriginDatabase database(kFSDir);
+  SandboxOriginDatabase database(kFSDir, NULL);
   EXPECT_TRUE(database.ListAllOrigins(&origins));
   EXPECT_TRUE(origins.empty());
   origins.clear();
@@ -208,7 +208,7 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryTest) {
   };
 
   scoped_ptr<SandboxOriginDatabase> database(
-      new SandboxOriginDatabase(kFSDir));
+      new SandboxOriginDatabase(kFSDir, NULL));
   for (size_t i = 0; i < arraysize(kOrigins); ++i) {
     base::FilePath path;
     EXPECT_FALSE(database->HasOriginPath(kOrigins[i]));
@@ -242,7 +242,7 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryTest) {
   CorruptDatabase(kDBDir, leveldb::kLogFile, -1, 1);
 
   base::FilePath path;
-  database.reset(new SandboxOriginDatabase(kFSDir));
+  database.reset(new SandboxOriginDatabase(kFSDir, NULL));
   std::vector<SandboxOriginDatabase::OriginRecord> origins_in_db;
   EXPECT_TRUE(database->ListAllOrigins(&origins_in_db));
 
@@ -283,7 +283,7 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
     base::FilePath path;
 
     scoped_ptr<SandboxOriginDatabase> database(
-        new SandboxOriginDatabase(kFSDir));
+        new SandboxOriginDatabase(kFSDir, NULL));
     EXPECT_FALSE(database->HasOriginPath(kOrigin));
     EXPECT_TRUE(database->GetPathForOrigin(kOrigin, &path));
     EXPECT_FALSE(path.empty());
@@ -293,7 +293,7 @@ TEST(SandboxOriginDatabaseTest, DatabaseRecoveryForMissingDBFileTest) {
 
     DeleteDatabaseFile(kDBDir, kLevelDBFileTypes[i]);
 
-    database.reset(new SandboxOriginDatabase(kFSDir));
+    database.reset(new SandboxOriginDatabase(kFSDir, NULL));
     std::vector<SandboxOriginDatabase::OriginRecord> origins_in_db;
     EXPECT_TRUE(database->ListAllOrigins(&origins_in_db));
 

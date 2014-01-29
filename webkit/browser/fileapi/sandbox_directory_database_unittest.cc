@@ -44,7 +44,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
     // Call CloseDatabase() to avoid having multiple database instances for
     // single directory at once.
     CloseDatabase();
-    db_.reset(new SandboxDirectoryDatabase(path()));
+    db_.reset(new SandboxDirectoryDatabase(path(), NULL));
   }
 
   void CloseDatabase() {
@@ -98,7 +98,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
     db_.reset();
     ASSERT_TRUE(base::DeleteFile(path(), true /* recursive */));
     ASSERT_TRUE(base::CreateDirectory(path()));
-    db_.reset(new SandboxDirectoryDatabase(path()));
+    db_.reset(new SandboxDirectoryDatabase(path(), NULL));
   }
 
   bool RepairDatabase() {

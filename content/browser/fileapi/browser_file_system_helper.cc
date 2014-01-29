@@ -42,7 +42,7 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
           switches::kAllowFileAccessFromFiles)) {
     additional_allowed_schemes.push_back(kFileScheme);
   }
-  return FileSystemOptions(profile_mode, additional_allowed_schemes);
+  return FileSystemOptions(profile_mode, additional_allowed_schemes, NULL);
 }
 
 }  // namespace

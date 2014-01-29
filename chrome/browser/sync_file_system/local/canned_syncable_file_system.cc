@@ -205,12 +205,14 @@ void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
 
 CannedSyncableFileSystem::CannedSyncableFileSystem(
     const GURL& origin,
+    leveldb::Env* env_override,
     base::SingleThreadTaskRunner* io_task_runner,
     base::SingleThreadTaskRunner* file_task_runner)
     : origin_(origin),
       type_(fileapi::kFileSystemTypeSyncable),
       result_(base::File::FILE_OK),
       sync_status_(sync_file_system::SYNC_STATUS_OK),
+      env_override_(env_override),
       io_task_runner_(io_task_runner),
       file_task_runner_(file_task_runner),
       is_filesystem_set_up_(false),
@@ -237,7 +239,8 @@ void CannedSyncableFileSystem::SetUp() {
   additional_allowed_schemes.push_back(origin_.scheme());
   fileapi::FileSystemOptions options(
       fileapi::FileSystemOptions::PROFILE_MODE_NORMAL,
-      additional_allowed_schemes);
+      additional_allowed_schemes,
+      env_override_);
 
   ScopedVector<fileapi::FileSystemBackend> additional_backends;
   additional_backends.push_back(SyncFileSystemBackend::CreateForTesting());

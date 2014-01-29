@@ -12,7 +12,9 @@
 #include "base/stl_util.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
@@ -37,7 +39,8 @@ const char kMark[] = "d";
 // object must be destructed on file_task_runner.
 class LocalFileChangeTracker::TrackerDB {
  public:
-  explicit TrackerDB(const base::FilePath& base_path);
+  TrackerDB(const base::FilePath& base_path,
+            leveldb::Env* env_override);
 
   SyncStatusCode MarkDirty(const std::string& url);
   SyncStatusCode ClearDirty(const std::string& url);
@@ -57,6 +60,7 @@ class LocalFileChangeTracker::TrackerDB {
                    const leveldb::Status& status);
 
   const base::FilePath base_path_;
+  leveldb::Env* env_override_;
   scoped_ptr<leveldb::DB> db_;
   SyncStatusCode db_status_;
 
@@ -70,10 +74,11 @@ LocalFileChangeTracker::ChangeInfo::~ChangeInfo() {}
 
 LocalFileChangeTracker::LocalFileChangeTracker(
     const base::FilePath& base_path,
+    leveldb::Env* env_override,
     base::SequencedTaskRunner* file_task_runner)
     : initialized_(false),
       file_task_runner_(file_task_runner),
-      tracker_db_(new TrackerDB(base_path)),
+      tracker_db_(new TrackerDB(base_path, env_override)),
       current_change_seq_(0),
       num_changes_(0) {
 }
@@ -423,8 +428,10 @@ void LocalFileChangeTracker::RecordChangeToChangeMaps(
 
 // TrackerDB -------------------------------------------------------------------
 
-LocalFileChangeTracker::TrackerDB::TrackerDB(const base::FilePath& base_path)
+LocalFileChangeTracker::TrackerDB::TrackerDB(const base::FilePath& base_path,
+                                             leveldb::Env* env_override)
   : base_path_(base_path),
+    env_override_(env_override),
     db_status_(SYNC_STATUS_OK) {}
 
 SyncStatusCode LocalFileChangeTracker::TrackerDB::Init(
@@ -437,6 +444,8 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::Init(
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
+  if (env_override_)
+    options.env = env_override_;
   leveldb::DB* db;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
   if (status.ok()) {

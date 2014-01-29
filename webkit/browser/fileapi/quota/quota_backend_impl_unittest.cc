@@ -9,6 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
@@ -86,8 +88,9 @@ class QuotaBackendImplTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
-        NULL, data_dir_.path(), file_task_runner()));
+        NULL, data_dir_.path(), in_memory_env_.get(), file_task_runner()));
     backend_.reset(new QuotaBackendImpl(file_task_runner(),
                                         file_util_.get(),
                                         &file_system_usage_cache_,
@@ -132,6 +135,7 @@ class QuotaBackendImplTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
   scoped_ptr<ObfuscatedFileUtil> file_util_;
   FileSystemUsageCache file_system_usage_cache_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;

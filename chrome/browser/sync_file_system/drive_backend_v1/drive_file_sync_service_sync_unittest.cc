@@ -28,6 +28,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
 #define FPL(path) FILE_PATH_LITERAL(path)
@@ -53,9 +55,11 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // TODO(tzik): Set up TestExtensionSystem to support simulated relaunch.
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     RegisterSyncableFileSystem();
-    local_sync_service_.reset(new LocalFileSyncService(&profile_));
+    local_sync_service_ = LocalFileSyncService::CreateForTesting(
+        &profile_, in_memory_env_.get());
 
     fake_drive_service_ = new drive::FakeDriveService();
     fake_drive_service_->Initialize("test_user@gmail.com");
@@ -120,6 +124,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     if (!ContainsKey(file_systems_, origin)) {
       CannedSyncableFileSystem* file_system = new CannedSyncableFileSystem(
           origin,
+          in_memory_env_.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
               .get());
@@ -357,6 +362,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
+  scoped_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;
 
   drive::FakeDriveService* fake_drive_service_;

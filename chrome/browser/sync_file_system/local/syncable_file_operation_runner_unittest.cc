@@ -21,6 +21,8 @@
 #include "content/public/test/mock_blob_url_request_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
@@ -48,7 +50,9 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // operations in the tests.
   SyncableFileOperationRunnerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        in_memory_env_(leveldb::NewMemEnv(leveldb::Env::Default())),
         file_system_(GURL("http://example.com"),
+                     in_memory_env_.get(),
                      base::MessageLoopProxy::current().get(),
                      base::MessageLoopProxy::current().get()),
         callback_count_(0),
@@ -60,9 +64,11 @@ class SyncableFileOperationRunnerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
+
     file_system_.SetUp();
     sync_context_ = new LocalFileSyncContext(
         dir_.path(),
+        in_memory_env_.get(),
         base::MessageLoopProxy::current().get(),
         base::MessageLoopProxy::current().get());
     ASSERT_EQ(
@@ -131,9 +137,11 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
-  base::ScopedTempDir dir_;
-
   content::TestBrowserThreadBundle thread_bundle_;
+
+  base::ScopedTempDir dir_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
+
   CannedSyncableFileSystem file_system_;
   scoped_refptr<LocalFileSyncContext> sync_context_;
 

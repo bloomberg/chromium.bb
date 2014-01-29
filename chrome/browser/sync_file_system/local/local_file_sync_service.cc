@@ -96,16 +96,15 @@ void LocalFileSyncService::OriginChangeMap::SetOriginEnabled(
 
 // LocalFileSyncService -------------------------------------------------------
 
-LocalFileSyncService::LocalFileSyncService(Profile* profile)
-    : profile_(profile),
-      sync_context_(new LocalFileSyncContext(
-          profile_->GetPath(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
-              .get())),
-      local_change_processor_(NULL) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sync_context_->AddOriginChangeObserver(this);
+scoped_ptr<LocalFileSyncService> LocalFileSyncService::Create(
+    Profile* profile) {
+  return make_scoped_ptr(new LocalFileSyncService(profile, NULL));
+}
+
+scoped_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
+    Profile* profile,
+    leveldb::Env* env) {
+  return make_scoped_ptr(new LocalFileSyncService(profile, env));
 }
 
 LocalFileSyncService::~LocalFileSyncService() {
@@ -318,6 +317,20 @@ void LocalFileSyncService::SetOriginEnabled(const GURL& origin, bool enabled) {
   if (!ContainsKey(origin_to_contexts_, origin))
     return;
   origin_change_map_.SetOriginEnabled(origin, enabled);
+}
+
+LocalFileSyncService::LocalFileSyncService(Profile* profile,
+                                           leveldb::Env* env_override)
+    : profile_(profile),
+      sync_context_(new LocalFileSyncContext(
+          profile_->GetPath(),
+          env_override,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
+              .get())),
+      local_change_processor_(NULL) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  sync_context_->AddOriginChangeObserver(this);
 }
 
 void LocalFileSyncService::DidInitializeFileSystemContext(

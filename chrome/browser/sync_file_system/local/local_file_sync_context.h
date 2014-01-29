@@ -34,6 +34,10 @@ class FileSystemContext;
 class FileSystemURL;
 }
 
+namespace leveldb {
+class Env;
+}
+
 namespace webkit_blob {
 class ScopedFile;
 }
@@ -72,6 +76,7 @@ class LocalFileSyncContext
       HasPendingLocalChangeCallback;
 
   LocalFileSyncContext(const base::FilePath& base_path,
+                       leveldb::Env* env_override,
                        base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);
 
@@ -325,6 +330,7 @@ class LocalFileSyncContext
       base::File::Error error);
 
   const base::FilePath local_base_path_;
+  leveldb::Env* env_override_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

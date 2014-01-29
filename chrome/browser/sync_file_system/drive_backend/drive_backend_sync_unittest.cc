@@ -53,7 +53,8 @@ class DriveBackendSyncTest : public testing::Test {
         content::BrowserThread::FILE);
 
     RegisterSyncableFileSystem();
-    local_sync_service_.reset(new LocalFileSyncService(&profile_));
+    local_sync_service_ = LocalFileSyncService::CreateForTesting(
+        &profile_, in_memory_env_.get());
 
     scoped_ptr<drive::FakeDriveService> drive_service(
         new drive::FakeDriveService());
@@ -143,7 +144,8 @@ class DriveBackendSyncTest : public testing::Test {
     GURL origin = extensions::Extension::GetBaseURLFromExtensionId(app_id);
     if (!ContainsKey(file_systems_, app_id)) {
       CannedSyncableFileSystem* file_system = new CannedSyncableFileSystem(
-          origin, io_task_runner_.get(), file_task_runner_.get());
+          origin, in_memory_env_.get(),
+          io_task_runner_.get(), file_task_runner_.get());
       file_system->SetUp();
 
       SyncStatusCode status = SYNC_STATUS_UNKNOWN;

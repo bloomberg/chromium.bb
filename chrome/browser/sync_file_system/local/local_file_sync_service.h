@@ -26,6 +26,10 @@ namespace fileapi {
 class FileSystemContext;
 }
 
+namespace leveldb {
+class Env;
+}
+
 namespace webkit_blob {
 class ScopedFile;
 }
@@ -66,7 +70,10 @@ class LocalFileSyncService
                               bool has_pending_changes)>
       HasPendingLocalChangeCallback;
 
-  explicit LocalFileSyncService(Profile* profile);
+  static scoped_ptr<LocalFileSyncService> Create(Profile* profile);
+  static scoped_ptr<LocalFileSyncService> CreateForTesting(
+      Profile* profile,
+      leveldb::Env* env_override);
   virtual ~LocalFileSyncService();
 
   void Shutdown();
@@ -181,6 +188,8 @@ class LocalFileSyncService
     // Holds a set of disabled (but initialized) origins.
     std::set<GURL> disabled_origins_;
   };
+
+  LocalFileSyncService(Profile* profile, leveldb::Env* env_override);
 
   void DidInitializeFileSystemContext(
       const GURL& app_origin,

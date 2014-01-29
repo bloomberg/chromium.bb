@@ -27,6 +27,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
 using content::BrowserThread;
@@ -122,12 +124,15 @@ class SyncFileSystemServiceTest : public testing::Test {
                        content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   virtual void SetUp() OVERRIDE {
+    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin),
+        in_memory_env_.get(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
-    local_service_ = new LocalFileSyncService(&profile_);
+    scoped_ptr<LocalFileSyncService> local_service =
+        LocalFileSyncService::CreateForTesting(&profile_, in_memory_env_.get());
     remote_service_ = new StrictMock<MockRemoteFileSyncService>;
     sync_service_.reset(new SyncFileSystemService(&profile_));
 
@@ -139,10 +144,10 @@ class SyncFileSystemServiceTest : public testing::Test {
                 GetLocalChangeProcessor())
         .WillRepeatedly(Return(&local_change_processor_));
     EXPECT_CALL(*mock_remote_service(),
-                SetRemoteChangeProcessor(local_service_)).Times(1);
+                SetRemoteChangeProcessor(local_service.get())).Times(1);
 
     sync_service_->Initialize(
-        make_scoped_ptr(local_service_),
+        local_service.Pass(),
         scoped_ptr<RemoteFileSyncService>(remote_service_));
 
     // Disable auto sync by default.
@@ -251,11 +256,11 @@ class SyncFileSystemServiceTest : public testing::Test {
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
 
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
   TestingProfile profile_;
   scoped_ptr<CannedSyncableFileSystem> file_system_;
 
   // Their ownerships are transferred to SyncFileSystemService.
-  LocalFileSyncService* local_service_;
   StrictMock<MockRemoteFileSyncService>* remote_service_;
   StrictMock<MockLocalChangeProcessor> local_change_processor_;
 

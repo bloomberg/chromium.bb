@@ -11,6 +11,8 @@
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -33,18 +35,20 @@ namespace sync_file_system {
 class SyncableFileSystemTest : public testing::Test {
  public:
   SyncableFileSystemTest()
-      : file_system_(GURL("http://example.com/"),
+      : in_memory_env_(leveldb::NewMemEnv(leveldb::Env::Default())),
+        file_system_(GURL("http://example.com/"),
+                     in_memory_env_.get(),
                      base::MessageLoopProxy::current().get(),
                      base::MessageLoopProxy::current().get()),
         weak_factory_(this) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-
     file_system_.SetUp();
 
     sync_context_ =
         new LocalFileSyncContext(data_dir_.path(),
+                                 in_memory_env_.get(),
                                  base::MessageLoopProxy::current().get(),
                                  base::MessageLoopProxy::current().get());
     ASSERT_EQ(
@@ -98,6 +102,7 @@ class SyncableFileSystemTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<leveldb::Env> in_memory_env_;
   CannedSyncableFileSystem file_system_;
 
  private:

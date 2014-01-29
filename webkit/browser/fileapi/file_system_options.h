@@ -10,6 +10,10 @@
 
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace leveldb {
+class Env;
+}
+
 namespace fileapi {
 
 // Provides runtime options that may change FileSystem API behavior.
@@ -26,9 +30,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOptions {
   // (PROFILE_MODE_NORMAL).
   // |additional_allowed_schemes| specifies schemes that are allowed
   // to access FileSystem API in addition to "http" and "https".
+  // Non-NULL |env_override| overrides internal LevelDB environment.
   FileSystemOptions(
       ProfileMode profile_mode,
-      const std::vector<std::string>& additional_allowed_schemes);
+      const std::vector<std::string>& additional_allowed_schemes,
+      leveldb::Env* env_override);
 
   ~FileSystemOptions();
 
@@ -43,9 +49,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOptions {
     return additional_allowed_schemes_;
   }
 
+  leveldb::Env* env_override() const { return env_override_; }
+
  private:
   const ProfileMode profile_mode_;
   const std::vector<std::string> additional_allowed_schemes_;
+  leveldb::Env* env_override_;
 };
 
 }  // namespace fileapi

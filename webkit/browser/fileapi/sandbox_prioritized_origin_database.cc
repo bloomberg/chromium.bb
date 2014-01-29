@@ -57,8 +57,10 @@ bool ReadPrimaryOriginFile(const base::FilePath& path,
 }  // namespace
 
 SandboxPrioritizedOriginDatabase::SandboxPrioritizedOriginDatabase(
-    const base::FilePath& file_system_directory)
+    const base::FilePath& file_system_directory,
+    leveldb::Env* env_override)
     : file_system_directory_(file_system_directory),
+      env_override_(env_override),
       primary_origin_file_(
           file_system_directory_.Append(kPrimaryOriginFile)) {
 }
@@ -213,7 +215,8 @@ void SandboxPrioritizedOriginDatabase::MaybeInitializeNonPrimaryDatabase(
   if (origin_database_)
     return;
 
-  origin_database_.reset(new SandboxOriginDatabase(file_system_directory_));
+  origin_database_.reset(new SandboxOriginDatabase(file_system_directory_,
+                                                   env_override_));
   if (!create && !base::DirectoryExists(origin_database_->GetDatabasePath())) {
     origin_database_.reset();
     return;

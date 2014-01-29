@@ -29,6 +29,10 @@ class FileSystemContext;
 class FileSystemURL;
 }
 
+namespace leveldb {
+class Env;
+}
+
 namespace sync_file_system {
 
 // Tracks local file changes for cloud-backed file systems.
@@ -42,6 +46,7 @@ class LocalFileChangeTracker
   // (So that we can make sure DB operations are done before actual update
   // happens)
   LocalFileChangeTracker(const base::FilePath& base_path,
+                         leveldb::Env* env_override,
                          base::SequencedTaskRunner* file_task_runner);
   virtual ~LocalFileChangeTracker();
 
