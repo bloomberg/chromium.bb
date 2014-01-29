@@ -23,6 +23,8 @@ class PipeNotifier {
 
   int receiver_fd() const { return receiver_fd_; }
 
+  void Reset();
+
  private:
   int sender_fd_;
   int receiver_fd_;

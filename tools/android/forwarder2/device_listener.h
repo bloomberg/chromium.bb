@@ -95,8 +95,6 @@ class DeviceListener {
   // Task runner used for deletion set at construction time (i.e. the object is
   // deleted on the same thread it is created on).
   scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;
-  // See host_controller.h for explanations about lifetime and threading
-  // interactions between this thread and the ForwardersManager below.
   base::Thread thread_;
   ForwardersManager forwarders_manager_;
 

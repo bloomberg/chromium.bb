@@ -34,10 +34,21 @@ bool PipeNotifier::Notify() {
   errno = 0;
   int ret = HANDLE_EINTR(write(sender_fd_, "1", 1));
   if (ret < 0) {
-    LOG(WARNING) << "Error while notifying pipe. " << safe_strerror(errno);
+    PLOG(ERROR) << "write";
     return false;
   }
   return true;
+}
+
+void PipeNotifier::Reset() {
+  char c;
+  int ret = HANDLE_EINTR(read(receiver_fd_, &c, 1));
+  if (ret < 0) {
+    PLOG(ERROR) << "read";
+    return;
+  }
+  DCHECK_EQ(1, ret);
+  DCHECK_EQ('1', c);
 }
 
 }  // namespace forwarder

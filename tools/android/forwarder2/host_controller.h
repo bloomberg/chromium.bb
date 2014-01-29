@@ -85,14 +85,6 @@ class HostController {
   // Task runner used for deletion set at deletion time (i.e. the object is
   // deleted on the same thread it is created on).
   const scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;
-  // Note that this thread must outlive |forwarders_manager_| below. The
-  // ForwardersManager's internal delegate (outliving ForwardersManager) may
-  // post a task to this thread when it gets deleted. Also note that
-  // base::Thread joins on destruction which means that ~Thread() will only
-  // return after it executed all the tasks enqueued in its message loop. This
-  // also means that it is guaranteed that all the Forwarder instances owned by
-  // the ForwardersManager's internal delegate are destructed before
-  // ~HostController() returns.
   base::Thread thread_;
   ForwardersManager forwarders_manager_;
 

@@ -5,18 +5,17 @@
 #include "tools/android/forwarder2/forwarder.h"
 
 #include "base/basictypes.h"
-#include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread.h"
-#include "tools/android/forwarder2/pipe_notifier.h"
 #include "tools/android/forwarder2/socket.h"
 
 namespace forwarder2 {
 namespace {
+
+const int kBufferSize = 32 * 1024;
+
+}  // namespace
+
 
 // Helper class to buffer reads and writes from one socket to another.
 // Each implements a small buffer connected two one input socket, and
@@ -37,7 +36,7 @@ namespace {
 // disconnects. To work around this, its peer will call its Close() method
 // when that happens.
 
-class BufferedCopier {
+class Forwarder::BufferedCopier {
  public:
   // Possible states:
   //    READING - Empty buffer and Waiting for input.
@@ -82,6 +81,8 @@ class BufferedCopier {
     DCHECK(!peer_);
     peer_ = peer;
   }
+
+  bool is_closed() const { return state_ == STATE_CLOSED; }
 
   // Gently asks to close a buffer. Called either by the peer or the forwarder.
   void Close() {
@@ -205,8 +206,6 @@ class BufferedCopier {
   Socket* socket_from_;
   Socket* socket_to_;
 
-  // A big buffer to let the file-over-http bridge work more like real file.
-  static const int kBufferSize = 1024 * 128;
   int bytes_read_;
   int write_offset_;
   BufferedCopier* peer_;
@@ -216,82 +215,41 @@ class BufferedCopier {
   DISALLOW_COPY_AND_ASSIGN(BufferedCopier);
 };
 
-}  // namespace
-
 Forwarder::Forwarder(scoped_ptr<Socket> socket1,
-                     scoped_ptr<Socket> socket2,
-                     PipeNotifier* deletion_notifier,
-                     const ErrorCallback& error_callback)
-    : self_deleter_helper_(this, error_callback),
-      deletion_notifier_(deletion_notifier),
-      socket1_(socket1.Pass()),
+                     scoped_ptr<Socket> socket2)
+    : socket1_(socket1.Pass()),
       socket2_(socket2.Pass()),
-      thread_("ForwarderThread") {
-  DCHECK(deletion_notifier_);
+      buffer1_(new BufferedCopier(socket1_.get(), socket2_.get())),
+      buffer2_(new BufferedCopier(socket2_.get(), socket1_.get())) {
+  buffer1_->SetPeer(buffer2_.get());
+  buffer2_->SetPeer(buffer1_.get());
 }
 
-Forwarder::~Forwarder() {}
-
-void Forwarder::Start() {
-  thread_.Start();
-  thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&Forwarder::ThreadHandler, base::Unretained(this)));
+Forwarder::~Forwarder() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void Forwarder::ThreadHandler() {
-  fd_set read_fds;
-  fd_set write_fds;
+void Forwarder::RegisterFDs(fd_set* read_fds, fd_set* write_fds, int* max_fd) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  buffer1_->PrepareSelect(read_fds, write_fds, max_fd);
+  buffer2_->PrepareSelect(read_fds, write_fds, max_fd);
+}
 
-  // Copy from socket1 to socket2
-  BufferedCopier buffer1(socket1_.get(), socket2_.get());
-  // Copy from socket2 to socket1
-  BufferedCopier buffer2(socket2_.get(), socket1_.get());
+void Forwarder::ProcessEvents(const fd_set& read_fds, const fd_set& write_fds) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  buffer1_->ProcessSelect(read_fds, write_fds);
+  buffer2_->ProcessSelect(read_fds, write_fds);
+}
 
-  buffer1.SetPeer(&buffer2);
-  buffer2.SetPeer(&buffer1);
+bool Forwarder::IsClosed() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return buffer1_->is_closed() && buffer2_->is_closed();
+}
 
-  for (;;) {
-    FD_ZERO(&read_fds);
-    FD_ZERO(&write_fds);
-
-    int max_fd = -1;
-    buffer1.PrepareSelect(&read_fds, &write_fds, &max_fd);
-    buffer2.PrepareSelect(&read_fds, &write_fds, &max_fd);
-
-    if (max_fd < 0) {
-      // Both buffers are closed. Exit immediately.
-      break;
-    }
-
-    const int deletion_fd = deletion_notifier_->receiver_fd();
-    if (deletion_fd >= 0) {
-      FD_SET(deletion_fd, &read_fds);
-      max_fd = std::max(max_fd, deletion_fd);
-    }
-
-    if (HANDLE_EINTR(select(max_fd + 1, &read_fds, &write_fds, NULL, NULL)) <=
-        0) {
-      PLOG(ERROR) << "select";
-      break;
-    }
-
-    buffer1.ProcessSelect(read_fds, write_fds);
-    buffer2.ProcessSelect(read_fds, write_fds);
-
-    if (deletion_fd >= 0 && FD_ISSET(deletion_fd, &read_fds)) {
-      buffer1.Close();
-      buffer2.Close();
-    }
-  }
-
-  // Note that the thread that the destructor will run on could be temporarily
-  // blocked on I/O (e.g. select()) therefore it is safer to close the sockets
-  // now rather than relying on the destructor.
-  socket1_.reset();
-  socket2_.reset();
-
-  self_deleter_helper_.MaybeSelfDeleteSoon();
+void Forwarder::Shutdown() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  buffer1_->Close();
+  buffer2_->Close();
 }
 
 }  // namespace forwarder2
