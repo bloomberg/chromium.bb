@@ -702,8 +702,8 @@ void WallpaperManager::SetUserWallpaperNow(const std::string& email) {
 void WallpaperManager::ScheduleSetUserWallpaper(const std::string& email,
                                                 bool delayed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Some unit tests come here without a UserManager.
-  if (!UserManager::IsInitialized())
+  // Some unit tests come here without a UserManager or without a pref system.
+  if (!UserManager::IsInitialized() || !g_browser_process->local_state())
     return;
   // There is no visible background in  kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
@@ -1036,9 +1036,7 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
                                             WallpaperInfo* info){
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Some unit tests come here with no browser local state attached.
-  if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(email) ||
-      !g_browser_process->local_state()) {
+  if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(email)) {
     // Default to the values cached in memory.
     *info = current_user_wallpaper_info_;
 
