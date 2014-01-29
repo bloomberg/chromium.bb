@@ -13,6 +13,22 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace {
+
+void InitLogging() {
+  base::FilePath log_filename;
+  PathService::Get(base::DIR_EXE, &log_filename);
+  log_filename = log_filename.AppendASCII("app_shell.log");
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_ALL;
+  settings.log_file = log_filename.value().c_str();
+  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  logging::InitLogging(settings);
+  logging::SetLogItems(true, true, true, true);
+}
+
+}  // namespace
+
 namespace apps {
 
 ShellMainDelegate::ShellMainDelegate() {
@@ -22,7 +38,7 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  // TODO(jamescook): Initialize logging here.
+  InitLogging();
   content_client_.reset(new ShellContentClient);
   SetContentClient(content_client_.get());
   return false;
