@@ -272,6 +272,12 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
             responseObject->setRequestHeadersText(response.resourceLoadInfo()->requestHeadersText);
     }
 
+    AtomicString remoteIPAddress = response.remoteIPAddress();
+    if (!remoteIPAddress.isEmpty()) {
+        responseObject->setRemoteIPAddress(remoteIPAddress);
+        responseObject->setRemotePort(response.remotePort());
+    }
+
     return responseObject;
 }
 
