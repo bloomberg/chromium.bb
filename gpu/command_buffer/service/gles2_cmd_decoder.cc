@@ -10088,6 +10088,13 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
     GLenum target, GLint image_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM");
 
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_ENUM,
+        "glBindTexImage2DCHROMIUM", "invalid target");
+    return;
+  }
+
   // Default target might be conceptually valid, but disallow it to avoid
   // accidents.
   TextureRef* texture_ref =
