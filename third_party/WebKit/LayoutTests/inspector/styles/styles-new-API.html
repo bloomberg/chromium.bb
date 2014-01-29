@@ -188,12 +188,12 @@ function test()
             "    text-align: justify;" +
             "}";
 
-        function patchStyleSheet(styleSheet)
+        function patchStyleSheet(styleSheetId, styleSheet)
         {
             InspectorTest.addResult("");
             InspectorTest.addResult("=== Last stylesheet patched ===");
-            CSSAgent.setStyleSheetText(styleSheet.styleSheetId, newStyleSheetText,
-                loadAndDumpStyleSheet.bind(null, styleSheet.styleSheetId, test_changeSelector));
+            CSSAgent.setStyleSheetText(styleSheetId, newStyleSheetText,
+                loadAndDumpStyleSheet.bind(null, styleSheetId, test_changeSelector));
         }
 
         function styleSheetInfosLoaded(error, infos)
@@ -205,7 +205,7 @@ function test()
             InspectorTest.addResult("");
             InspectorTest.addResult("=== All stylesheets ===");
             for (var i = 0; i < infos.length; ++i)
-                loadAndDumpStyleSheet(infos[i].styleSheetId, (i < infos.length - 1) ? null : patchStyleSheet);
+                loadAndDumpStyleSheet(infos[i].styleSheetId, (i < infos.length - 1) ? null : patchStyleSheet.bind(null, infos[i].styleSheetId));
         }
         CSSAgent.getAllStyleSheets(styleSheetInfosLoaded);
     }

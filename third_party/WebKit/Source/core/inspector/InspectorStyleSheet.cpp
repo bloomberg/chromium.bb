@@ -503,9 +503,6 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::buildObjectForStyle() con
     if (!m_styleId.isEmpty())
         result->setStyleId(m_styleId.asProtocolValue<TypeBuilder::CSS::CSSStyleId>());
 
-    result->setWidth(m_style->getPropertyValue("width"));
-    result->setHeight(m_style->getPropertyValue("height"));
-
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
     if (sourceData)
         result->setRange(buildSourceRangeObject(sourceData->ruleBodyRange, m_parentStyleSheet->lineEndings().get()));

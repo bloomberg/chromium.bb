@@ -1103,7 +1103,6 @@ void InspectorCSSAgent::getStyleSheet(ErrorString* errorString, const String& st
         return;
 
     RefPtr<TypeBuilder::CSS::CSSStyleSheetBody> result = TypeBuilder::CSS::CSSStyleSheetBody::create()
-        .setStyleSheetId(styleSheetId)
         .setRules(buildArrayForRuleList(inspectorStyleSheet->pageStyleSheet()->rules().get()));
 
     bool success = inspectorStyleSheet->fillObjectForStyleSheet(result);
