@@ -2319,6 +2319,9 @@ void TabStrip::SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds) {
   DCHECK_EQ(tab_count(), static_cast<int>(tab_bounds.size()));
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->SetBoundsRect(tab_bounds[i]);
+  // Reset the layout size as we've effectively layed out a different size.
+  // This ensures a layout happens after the drag is done.
+  last_layout_size_ = gfx::Size();
 }
 
 void TabStrip::AddMessageLoopObserver() {
