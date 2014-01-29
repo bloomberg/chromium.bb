@@ -23,6 +23,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 # See command.GenerateGitPatches for the schema of entries in this dict.
+# Additionally, each may contain a 'repo' key whose value is the name
+# to use in place of the package name when calling GitUrl (below).
 GIT_REVISIONS = {
     'binutils': {
         'rev': '38dbda270a4248ab5b7facc012b9c8d8527f6fb2',
@@ -46,6 +48,14 @@ GIT_REVISIONS = {
         # Upstream tag newlib_2_0_0:
         'upstream-base': 'c3fc84e062cacc2b3e13c1f6b9151d0cc85392ba',
         },
+    'gdb': {
+        'rev': '526703e8c4a92c0d13ac48f97e79afebbb4d3cc4',
+        'repo': 'binutils',
+        'upstream-branch': 'upstream/gdb-7.7-branch',
+        'upstream-name': 'gdb-7.6.90',
+        # No upstream tag, but matches 7.6.90 tarball:
+        'upstream-base': '05baa5c341872225b02c0b370724ac0d043f3e0e',
+        },
     }
 
 TAR_FILES = {
@@ -54,13 +64,15 @@ TAR_FILES = {
     'mpc': command.path.join('mpc', 'mpc-1.0.2.tar.gz'),
     'isl': command.path.join('cloog', 'isl-0.12.1.tar.bz2'),
     'cloog': command.path.join('cloog', 'cloog-0.18.1.tar.gz'),
+    'expat': command.path.join('expat', 'expat-2.0.1.tar.gz'),
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client'
 
 
 def GitUrl(package):
-  return '%s/nacl-%s.git' % (GIT_BASE_URL, package)
+  repo = GIT_REVISIONS[package].get('repo', package)
+  return '%s/nacl-%s.git' % (GIT_BASE_URL, repo)
 
 
 def CollectSources():
@@ -156,13 +168,18 @@ def CollectSources():
   return sources
 
 
+# Canonical tuples we use for hosts other than Linux/x86.
+WINDOWS_HOST_TUPLE = 'i686-w64-mingw32'
+MAC_HOST_TUPLE = 'x86_64-apple-darwin'
+ARM_HOST_TUPLE = 'arm-linux-gnueabihf'
+
 # Map of native host tuple to extra tuples that it cross-builds for.
 EXTRA_HOSTS_MAP = {
     'i686-linux': [
-        'arm-linux-gnueabihf',
+        ARM_HOST_TUPLE,
         # TODO(mcgrathr): Enable this if the binaries are proven to
         # actually work, and bots get needed mingw* packages installed.
-        #'i686-w64-mingw32',
+        #WINDOWS_HOST_TUPLE,
         ],
     }
 
@@ -501,6 +518,22 @@ def HostGccLibs(host):
                   '%(output)s', 'lib', 'pkgconfig')),
               ],
           },
+      H('expat'): {
+          'type': 'build',
+          'dependencies': ['expat'],
+          'commands': [
+              command.Command(ConfigureCommand('expat') +
+                              ConfigureHostLib(host)),
+              command.Command(MakeCommand(host)),
+              command.Command(MakeCheckCommand(host)),
+              command.Command(MAKE_DESTDIR_CMD + [
+                  # expat does not support the install-strip target.
+                  'installlib',
+                  'INSTALL=%(expat)s/conftools/install-sh -c -s',
+                  'INSTALL_DATA=%(expat)s/conftools/install-sh -c -m 644',
+                  ]),
+              ],
+          },
       }
   return host_gcc_libs
 
@@ -637,7 +670,47 @@ def HostTools(host, target):
               # Note we include COPYING.RUNTIME here and not with gcc_libs.
               ] + InstallDocFiles('gcc', ['COPYING3', 'COPYING.RUNTIME']),
           },
+
+      # GDB can support all the targets in one host tool.
+      H('gdb'): {
+          'type': 'build',
+          'dependencies': ['gdb', H('expat')],
+          'commands': [
+              command.Command(
+                  ConfigureCommand('gdb') +
+                  ConfigureHostTool(host) + [
+                      '--target=x86_64-nacl',
+                      '--enable-targets=arm-none-eabi-nacl',
+                      '--with-expat',
+                      'CPPFLAGS=-I%(abs_' + H('expat') + ')s/include',
+                      'LDFLAGS=-L%(abs_' + H('expat') + ')s/lib',
+                      ] +
+                  (['--without-python'] if HostIsWindows(host) else []) +
+                  # TODO(mcgrathr): The default -Werror only breaks because
+                  # the OSX default compiler is an old front-end that does
+                  # not understand all the GCC options.  Maybe switch to
+                  # using clang (system or Chromium-supplied) on Mac.
+                  (['--disable-werror'] if HostIsMac(host) else [])),
+              command.Command(MakeCommand(host) + ['all-gdb']),
+              command.Command(MAKE_DESTDIR_CMD + [
+                  '-C', 'gdb', 'install-strip',
+                  ]),
+              REMOVE_INFO_DIR,
+              ] + InstallDocFiles('gdb', [
+                  'COPYING3',
+                  command.path.join('gdb', 'NEWS'),
+                  ]),
+          },
       }
+
+  # TODO(mcgrathr): The ARM cross environment does not supply a termcap
+  # library, so it cannot build GDB.
+  if host.startswith('arm'):
+    native, _ = NativeTuple()
+    is_cross = host != native
+    if is_cross:
+      del tools[H('gdb')]
+
   return tools
 
 
@@ -760,7 +833,7 @@ def NativeTuple():
   if sys.platform.startswith('linux'):
     machine = platform.machine().lower()
     if machine.startswith('arm'):
-      return ('arm-linux-gnueabihf', [])
+      return (ARM_HOST_TUPLE, [])
     if any(fnmatch.fnmatch(machine, pattern) for pattern in
            ['x86_64*', 'amd64*', 'x64*', 'i?86*']):
       # We build the tools for x86-32 hosts so they will run on either x86-32
@@ -769,14 +842,18 @@ def NativeTuple():
       return ('i686-linux', ['-m32'])
     raise Exception('Machine %s not recognized' % machine)
   elif sys.platform.startswith('win'):
-    return ('i686-w64-mingw32', [])
+    return (WINDOWS_HOST_TUPLE, [])
   elif sys.platform.startswith('darwin'):
-    return ('x86_64-apple-darwin', [])
+    return (MAC_HOST_TUPLE, [])
   raise Exception('Platform %s not recognized' % sys.platform)
 
 
 def HostIsWindows(host):
-  return host == 'i686-w64-mingw32'
+  return host == WINDOWS_HOST_TUPLE
+
+
+def HostIsMac(host):
+  return host == MAC_HOST_TUPLE
 
 
 # We build target libraries only on Linux for two reasons:
