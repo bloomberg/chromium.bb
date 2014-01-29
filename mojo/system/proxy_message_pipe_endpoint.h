@@ -46,12 +46,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   // |MessagePipeEndpoint| implementation:
   virtual void Close() OVERRIDE;
   virtual void OnPeerClose() OVERRIDE;
-  virtual MojoResult CanEnqueueMessage(
-      const MessageInTransit* message,
-      const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
-  virtual void EnqueueMessage(
+  virtual MojoResult EnqueueMessage(
       MessageInTransit* message,
-      std::vector<scoped_refptr<Dispatcher> >* dispatchers) OVERRIDE;
+      const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
   virtual void Attach(scoped_refptr<Channel> channel,
                       MessageInTransit::EndpointId local_id) OVERRIDE;
   virtual void Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
@@ -64,6 +61,12 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   bool is_running() const {
     return remote_id_ != MessageInTransit::kInvalidEndpointId;
   }
+
+  MojoResult CanEnqueueDispatchers(const std::vector<Dispatcher*>* dispatchers);
+  // |dispatchers| should be non-null only if it's nonempty, in which case the
+  // dispatchers should have been preflighted by |CanEnqueueDispatchers()|.
+  void EnqueueMessageInternal(MessageInTransit* message,
+                              const std::vector<Dispatcher*>* dispatchers);
 
 #ifdef NDEBUG
   void AssertConsistentState() const {}

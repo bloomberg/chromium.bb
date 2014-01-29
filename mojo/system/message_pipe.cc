@@ -114,6 +114,7 @@ MojoResult MessagePipe::EnqueueMessage(
     const std::vector<Dispatcher*>* dispatchers) {
   DCHECK(port == 0 || port == 1);
   DCHECK(message);
+  DCHECK(!dispatchers || !dispatchers->empty());
 
   if (message->type() == MessageInTransit::kTypeMessagePipe) {
     DCHECK(!dispatchers);
@@ -131,27 +132,7 @@ MojoResult MessagePipe::EnqueueMessage(
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  MojoResult result = endpoints_[port]->CanEnqueueMessage(message, dispatchers);
-  if (result != MOJO_RESULT_OK) {
-    message->Destroy();
-    return result;
-  }
-
-  if (dispatchers) {
-    DCHECK(!dispatchers->empty());
-
-    std::vector<scoped_refptr<Dispatcher> > replacement_dispatchers;
-    for (size_t i = 0; i < dispatchers->size(); i++) {
-      replacement_dispatchers.push_back(
-          (*dispatchers)[i]->CreateEquivalentDispatcherAndCloseNoLock());
-    }
-
-    endpoints_[port]->EnqueueMessage(message, &replacement_dispatchers);
-  } else {
-    endpoints_[port]->EnqueueMessage(message, NULL);
-  }
-
-  return MOJO_RESULT_OK;
+  return endpoints_[port]->EnqueueMessage(message, dispatchers);
 }
 
 void MessagePipe::Attach(unsigned port,

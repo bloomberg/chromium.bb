@@ -66,7 +66,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
   // This is used internally by |WriteMessage()| and by |Channel| to enqueue
   // messages (typically to a |LocalMessagePipeEndpoint|). Unlike
   // |WriteMessage()|, |port| is the *destination* port. Takes ownership of
-  // |message|.
+  // |message|. |dispatchers| should be non-null only if it's nonempty.
   MojoResult EnqueueMessage(unsigned port,
                             MessageInTransit* message,
                             const std::vector<Dispatcher*>* dispatchers);

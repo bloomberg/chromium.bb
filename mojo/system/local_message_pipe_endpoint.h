@@ -27,12 +27,9 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   // |MessagePipeEndpoint| implementation:
   virtual void Close() OVERRIDE;
   virtual void OnPeerClose() OVERRIDE;
-  virtual MojoResult CanEnqueueMessage(
-      const MessageInTransit* message,
-      const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
-  virtual void EnqueueMessage(
+  virtual MojoResult EnqueueMessage(
       MessageInTransit* message,
-      std::vector<scoped_refptr<Dispatcher> >* dispatchers) OVERRIDE;
+      const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
 
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
   // implement/override these:
@@ -48,7 +45,8 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   virtual void RemoveWaiter(Waiter* waiter) OVERRIDE;
 
  private:
-  struct MessageQueueEntry {
+  class MessageQueueEntry {
+   public:
     MessageQueueEntry();
     // Provide an explicit copy constructor, so that we can use this directly in
     // a (C++03) STL container. However, we only allow the case where |other| is
@@ -57,10 +55,25 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
     MessageQueueEntry(const MessageQueueEntry& other);
     ~MessageQueueEntry();
 
-    MessageInTransit* message;
-    std::vector<scoped_refptr<Dispatcher> > dispatchers;
+    // Initialize, taking ownership of |message| and creating equivalent
+    // "duplicate" |dispatchers|. |dispatchers| should be non-null only if
+    // nonempty.
+    // TODO(vtl): This would simply be a constructor, but we don't have C++11's
+    // emplace operations yet, and I don't want to copy |dispatchers_|.
+    void Init(MessageInTransit* message,
+              const std::vector<Dispatcher*>* dispatchers);
+
+    MessageInTransit* message() {
+      return message_;
+    }
+    std::vector<scoped_refptr<Dispatcher> >* dispatchers() {
+      return &dispatchers_;
+    }
 
    private:
+    MessageInTransit* message_;
+    std::vector<scoped_refptr<Dispatcher> > dispatchers_;
+
     // We don't need assignment, however.
     DISALLOW_ASSIGN(MessageQueueEntry);
   };
