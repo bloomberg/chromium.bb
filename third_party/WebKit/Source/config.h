@@ -98,13 +98,14 @@
 #if OS(MACOSX)
 #define WTF_USE_CF 1
 #define WTF_USE_RUBBER_BANDING 1
-#endif /* OS(MACOSX) */
 
-#if !OS(MACOSX) && !OS(ANDROID)
-/* On other platforms the "system malloc" is TCMalloc, so there's
+/* We can't override the global operator new and delete on OS(MACOSX) because
+ * some object are allocated by WebKit and deallocated by the embedder. */
+#else /* !OS(MACOSX) */
+/* On non-OS(MACOSX), the "system malloc" is actually TCMalloc anyway, so there's
  * no need to use Blink's fast PartitionAlloc allocator. */
 #define WTF_USE_SYSTEM_MALLOC 1
-#endif /* !OS(MACOSX) && !OS(ANDROID) */
+#endif /* OS(MACOSX) */
 
 #if OS(POSIX)
 #define HAVE_MMAP 1
