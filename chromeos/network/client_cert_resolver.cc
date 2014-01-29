@@ -30,6 +30,7 @@
 #include "chromeos/tpm_token_loader.h"
 #include "components/onc/onc_constants.h"
 #include "dbus/object_path.h"
+#include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {
@@ -147,15 +148,15 @@ void FindCertificateMatches(const net::CertificateList& certs,
         !HasPrivateKey(cert)) {
       continue;
     }
-    net::X509Certificate::OSCertHandle issuer_handle =
-        CERT_FindCertIssuer(cert.os_cert_handle(), PR_Now(), certUsageAnyCA);
+    net::ScopedCERTCertificate issuer_handle(
+        CERT_FindCertIssuer(cert.os_cert_handle(), PR_Now(), certUsageAnyCA));
     if (!issuer_handle) {
       LOG(ERROR) << "Couldn't find an issuer.";
       continue;
     }
     scoped_refptr<net::X509Certificate> issuer =
         net::X509Certificate::CreateFromHandle(
-            issuer_handle,
+            issuer_handle.get(),
             net::X509Certificate::OSCertHandles() /* no intermediate certs */);
     if (!issuer) {
       LOG(ERROR) << "Couldn't create issuer cert.";

@@ -5886,18 +5886,6 @@
    fun:_ZN4base11MessageLoop8PostTaskERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEE
 }
 {
-   bug_272596
-   Memcheck:Leak
-   ...
-   fun:nssPKIObjectCollection_AddInstanceAsObject
-   fun:nssToken_TraverseCertificates
-   fun:NSSTrustDomain_TraverseCertificates
-   fun:PK11_ListCerts
-   fun:_ZN3net15NSSCertDatabase9ListCertsEPSt6vectorI13scoped_refptrINS_15X509CertificateEESaIS4_EE
-   fun:_ZN3net23NSSCertDatabaseChromeOS9ListCertsEPSt6vectorI13scoped_refptrINS_15X509CertificateEESaIS4_EE
-   fun:_ZN8chromeos12_GLOBAL__N_119LoadNSSCertificatesEPN3net15NSSCertDatabaseEPSt6vectorI13scoped_refptrINS1_15X509CertificateEESaIS7_EE
-}
-{
    bug_273398
    Memcheck:Leak
    ...

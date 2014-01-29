@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -71,14 +72,15 @@ class IssuerCaFilter {
     // Find the certificate issuer for each certificate.
     // TODO(gspencer): this functionality should be available from
     // X509Certificate or NSSCertDatabase.
-    CERTCertificate* issuer_cert = CERT_FindCertIssuer(
-        cert.get()->os_cert_handle(), PR_Now(), certUsageAnyCA);
+    net::ScopedCERTCertificate issuer_cert(CERT_FindCertIssuer(
+        cert.get()->os_cert_handle(), PR_Now(), certUsageAnyCA));
 
     if (!issuer_cert)
       return true;
 
     std::string pem_encoded;
-    if (!net::X509Certificate::GetPEMEncoded(issuer_cert, &pem_encoded)) {
+    if (!net::X509Certificate::GetPEMEncoded(issuer_cert.get(),
+                                             &pem_encoded)) {
       LOG(ERROR) << "Couldn't PEM-encode certificate.";
       return true;
     }
