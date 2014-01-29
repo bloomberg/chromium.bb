@@ -924,7 +924,12 @@ void RenderGrid::layoutGridItems()
         // now, just size as if we were a regular child.
         child->layoutIfNeeded();
 
-        child->setLogicalLocation(findChildLogicalPosition(child, sizingData));
+#ifndef NDEBUG
+        const GridCoordinate& coordinate = cachedGridCoordinate(child);
+        ASSERT(coordinate.columns.initialPositionIndex < sizingData.columnTracks.size());
+        ASSERT(coordinate.rows.initialPositionIndex < sizingData.rowTracks.size());
+#endif
+        child->setLogicalLocation(findChildLogicalPosition(child));
 
         // For correctness, we disable some painting optimizations if we have a child overflowing its grid area.
         m_gridItemOverflowGridArea = child->logicalHeight() > overrideContainingBlockContentLogicalHeight
@@ -1127,14 +1132,127 @@ void RenderGrid::populateGridPositions(const GridSizingData& sizingData)
         m_rowPositions[i + 1] = m_rowPositions[i] + sizingData.rowTracks[i].m_usedBreadth;
 }
 
-LayoutPoint RenderGrid::findChildLogicalPosition(RenderBox* child, const GridSizingData& sizingData)
+LayoutUnit RenderGrid::startOfColumnForChild(const RenderBox* child) const
 {
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
-    ASSERT(coordinate.columns.initialPositionIndex < sizingData.columnTracks.size());
-    ASSERT(coordinate.rows.initialPositionIndex < sizingData.rowTracks.size());
+    LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.initialPositionIndex];
+    // The grid items should be inside the grid container's border box, that's why they need to be shifted.
+    // FIXME: This should account for the grid item's <overflow-position>.
+    return startOfColumn + marginStartForChild(child);
+}
+
+LayoutUnit RenderGrid::endOfColumnForChild(const RenderBox* child) const
+{
+    const GridCoordinate& coordinate = cachedGridCoordinate(child);
+    LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.initialPositionIndex];
+    // The grid items should be inside the grid container's border box, that's why they need to be shifted.
+    LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
+
+    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.finalPositionIndex + 1];
+    // FIXME: This should account for the grid item's <overflow-position>.
+    return columnPosition + std::max<LayoutUnit>(0, endOfColumn - m_columnPositions[coordinate.columns.initialPositionIndex] - child->logicalWidth());
+}
+
+LayoutUnit RenderGrid::columnPositionAlignedWithGridContainerStart(const RenderBox* child) const
+{
+    if (style()->isLeftToRightDirection())
+        return startOfColumnForChild(child);
+
+    return endOfColumnForChild(child);
+}
+
+LayoutUnit RenderGrid::columnPositionAlignedWithGridContainerEnd(const RenderBox* child) const
+{
+    if (!style()->isLeftToRightDirection())
+        return startOfColumnForChild(child);
+
+    return endOfColumnForChild(child);
+}
+
+LayoutUnit RenderGrid::centeredColumnPositionForChild(const RenderBox* child) const
+{
+    const GridCoordinate& coordinate = cachedGridCoordinate(child);
+    LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.initialPositionIndex];
+    LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.finalPositionIndex + 1];
+    LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
+    return columnPosition + std::max<LayoutUnit>(0, endOfColumn - startOfColumn - child->logicalWidth()) / 2;
+}
+
+LayoutUnit RenderGrid::columnPositionForChild(const RenderBox* child) const
+{
+    ItemPosition childJustifySelf = child->style()->justifySelf();
+    switch (childJustifySelf) {
+    case ItemPositionSelfStart:
+        // self-start is based on the child's direction. That's why we need to check against the grid container's direction.
+        if (child->style()->direction() != style()->direction())
+            return columnPositionAlignedWithGridContainerEnd(child);
+
+        return columnPositionAlignedWithGridContainerStart(child);
+    case ItemPositionSelfEnd:
+        // self-end is based on the child's direction. That's why we need to check against the grid container's direction.
+        if (child->style()->direction() != style()->direction())
+            return columnPositionAlignedWithGridContainerStart(child);
+
+        return columnPositionAlignedWithGridContainerEnd(child);
+
+    case ItemPositionFlexStart:
+    case ItemPositionFlexEnd:
+        // Only used in flex layout, for other layout, it's equivalent to 'start'.
+        return columnPositionAlignedWithGridContainerStart(child);
+
+    case ItemPositionLeft:
+        // If the property's axis is not parallel with the inline axis, this is equivalent to ‘start’.
+        if (!isHorizontalWritingMode())
+            return columnPositionAlignedWithGridContainerStart(child);
+
+        if (style()->isLeftToRightDirection())
+            return columnPositionAlignedWithGridContainerStart(child);
+
+        return columnPositionAlignedWithGridContainerEnd(child);
+    case ItemPositionRight:
+        // If the property's axis is not parallel with the inline axis, this is equivalent to ‘start’.
+        if (!isHorizontalWritingMode())
+            return columnPositionAlignedWithGridContainerStart(child);
+
+        if (style()->isLeftToRightDirection())
+            return columnPositionAlignedWithGridContainerEnd(child);
+
+        return columnPositionAlignedWithGridContainerStart(child);
+
+    case ItemPositionCenter:
+        return centeredColumnPositionForChild(child);
+    case ItemPositionStart:
+        return columnPositionAlignedWithGridContainerStart(child);
+    case ItemPositionEnd:
+        return columnPositionAlignedWithGridContainerEnd(child);
+
+    case ItemPositionAuto:
+    case ItemPositionStretch:
+    case ItemPositionBaseline:
+        // FIXME: Implement the previous values. For now, we always start align the child.
+        return startOfColumnForChild(child);
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+LayoutUnit RenderGrid::rowPositionForChild(const RenderBox* child) const
+{
+    const GridCoordinate& coordinate = cachedGridCoordinate(child);
 
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    return LayoutPoint(m_columnPositions[coordinate.columns.initialPositionIndex] + marginStartForChild(child), m_rowPositions[coordinate.rows.initialPositionIndex] + marginBeforeForChild(child));
+    LayoutUnit startOfRow = m_rowPositions[coordinate.rows.initialPositionIndex];
+    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(child);
+
+    // FIXME: This function should account for 'align-self'.
+
+    return rowPosition;
+}
+
+LayoutPoint RenderGrid::findChildLogicalPosition(const RenderBox* child) const
+{
+    return LayoutPoint(columnPositionForChild(child), rowPositionForChild(child));
 }
 
 static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUnit start, LayoutUnit end)

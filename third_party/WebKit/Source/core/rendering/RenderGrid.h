@@ -112,7 +112,14 @@ private:
     LayoutUnit logicalContentHeightForChild(RenderBox*, Vector<GridTrack>&);
     LayoutUnit minContentForChild(RenderBox*, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     LayoutUnit maxContentForChild(RenderBox*, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
-    LayoutPoint findChildLogicalPosition(RenderBox*, const GridSizingData&);
+    LayoutUnit startOfColumnForChild(const RenderBox* child) const;
+    LayoutUnit endOfColumnForChild(const RenderBox* child) const;
+    LayoutUnit columnPositionAlignedWithGridContainerStart(const RenderBox*) const;
+    LayoutUnit columnPositionAlignedWithGridContainerEnd(const RenderBox*) const;
+    LayoutUnit centeredColumnPositionForChild(const RenderBox*) const;
+    LayoutUnit columnPositionForChild(const RenderBox*) const;
+    LayoutUnit rowPositionForChild(const RenderBox*) const;
+    LayoutPoint findChildLogicalPosition(const RenderBox*) const;
     GridCoordinate cachedGridCoordinate(const RenderBox*) const;
 
     GridSpan resolveGridPositionsFromAutoPlacementPosition(const RenderBox*, GridTrackSizingDirection, size_t) const;
