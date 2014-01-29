@@ -163,6 +163,8 @@ bool Args::VerifyAllOverridesUsed(Err* err) const {
 }
 
 void Args::SetSystemVars(Scope* dest) const {
+  base::AutoLock lock(lock_);
+
   // Host OS.
   const char* os = NULL;
 #if defined(OS_WIN)
