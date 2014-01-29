@@ -92,6 +92,7 @@ bool IsUploadJob(drive::JobType type) {
 
 // Converts the job info to a IDL generated type.
 void JobInfoToTransferStatus(
+    Profile* profile,
     const std::string& extension_id,
     const std::string& job_status,
     const drive::JobInfo& job_info,
@@ -99,8 +100,8 @@ void JobInfoToTransferStatus(
   DCHECK(IsActiveFileTransferJobInfo(job_info));
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  GURL url = util::ConvertRelativeFilePathToFileSystemUrl(
-      job_info.file_path, extension_id);
+  GURL url = util::ConvertDrivePathToFileSystemUrl(
+      profile, job_info.file_path, extension_id);
   status->file_url = url.spec();
   status->transfer_state = file_browser_private::ParseTransferState(job_status);
   status->transfer_type =
@@ -547,7 +548,8 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
            iter = drive_jobs_.begin(); iter != drive_jobs_.end(); ++iter) {
     linked_ptr<file_browser_private::FileTransferStatus> status(
         new file_browser_private::FileTransferStatus());
-    JobInfoToTransferStatus(kFileManagerAppId,
+    JobInfoToTransferStatus(profile_,
+                            kFileManagerAppId,
                             iter->second.status,
                             iter->second.job_info,
                             status.get());
@@ -560,13 +562,12 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
   last_file_transfer_event_ = now;
 }
 
-void EventRouter::OnDirectoryChanged(const base::FilePath& directory_path) {
-  HandleFileWatchNotification(directory_path, false);
+void EventRouter::OnDirectoryChanged(const base::FilePath& drive_path) {
+  HandleFileWatchNotification(drive_path, false);
 }
 
-void EventRouter::OnDriveSyncError(
-    drive::file_system::DriveSyncErrorType type,
-    const base::FilePath& file_path) {
+void EventRouter::OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
+                                   const base::FilePath& drive_path) {
   file_browser_private::DriveSyncErrorEvent event;
   switch (type) {
     case drive::file_system::DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION:
@@ -582,8 +583,8 @@ void EventRouter::OnDriveSyncError(
           file_browser_private::DRIVE_SYNC_ERROR_TYPE_MISC;
       break;
   }
-  event.file_url = util::ConvertRelativeFilePathToFileSystemUrl(
-      file_path, kFileManagerAppId).spec();
+  event.file_url = util::ConvertDrivePathToFileSystemUrl(
+      profile_, drive_path, kFileManagerAppId).spec();
   BroadcastEvent(
       profile_,
       file_browser_private::OnDriveSyncError::kEventName,

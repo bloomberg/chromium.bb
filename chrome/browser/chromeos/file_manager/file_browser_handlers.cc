@@ -260,8 +260,7 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
-    backend->GrantFileAccessToExtension(
-        handler_extension->id(), virtual_path);
+    backend->GrantFileAccessToExtension(handler_extension->id(), virtual_path);
 
     // Output values.
     FileDefinition file;
@@ -395,9 +394,8 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     file_entries->Append(file_def);
     file_def->SetString("fileSystemName", file_system_name);
     file_def->SetString("fileSystemRoot", file_system_root.spec());
-    base::FilePath root(FILE_PATH_LITERAL("/"));
-    base::FilePath full_path = root.Append(iter->virtual_path);
-    file_def->SetString("fileFullPath", full_path.value());
+    file_def->SetString("fileFullPath",
+                        "/" + iter->virtual_path.AsUTF8Unsafe());
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
 

@@ -39,23 +39,31 @@ fileapi::FileSystemContext* GetFileSystemContextForRenderViewHost(
     Profile* profile,
     content::RenderViewHost* render_view_host);
 
-// Converts |relative_path| (e.g., "drive/root" or "Downloads") into external
-// filesystem URL (e.g., filesystem://id/external/drive/root).
-GURL ConvertRelativeFilePathToFileSystemUrl(const base::FilePath& relative_path,
-                                            const std::string& extension_id);
-
-// Converts |absolute_path| (e.g., "/special/drive/root" or
-// "/home/chronos/user/Downloads") into external filesystem URL. Returns false
-// if |absolute_path| is not managed by the external filesystem provider.
-bool ConvertAbsoluteFilePathToFileSystemUrl(
+// Converts DrivePath (e.g., "drive/root", which always starts with the fixed
+// "drive" directory) to a RelativeFileSystemPathrelative (e.g.,
+// "drive-xxx/root/foo". which starts from the "mount point" in the FileSystem
+// API that may be distinguished for each profile by the appended "xxx" part.)
+base::FilePath ConvertDrivePathToRelativeFileSystemPath(
     Profile* profile,
-    const base::FilePath& absolute_path,
-    const std::string& extension_id,
-    GURL* url);
+    const base::FilePath& drive_path);
 
-// Converts |absolute_path| into |relative_path| within the external
-// provider in File API. Returns false if |absolute_path| is not managed
-// by the external filesystem provider.
+// Converts DrivePath to FileSystem URL.
+// E.g., "drive/root" to filesystem://id/external/drive-xxx/root.
+GURL ConvertDrivePathToFileSystemUrl(Profile* profile,
+                                     const base::FilePath& drive_path,
+                                     const std::string& extension_id);
+
+// Converts AbsolutePath (e.g., "/special/drive-xxx/root" or
+// "/home/chronos/u-xxx/Downloads") into filesystem URL. Returns false
+// if |absolute_path| is not managed by the external filesystem provider.
+bool ConvertAbsoluteFilePathToFileSystemUrl(Profile* profile,
+                                            const base::FilePath& absolute_path,
+                                            const std::string& extension_id,
+                                            GURL* url);
+
+// Converts AbsolutePath into RelativeFileSystemPath (e.g.,
+// "/special/drive-xxx/root/foo" => "drive-xxx/root/foo".) Returns false if
+// |absolute_path| is not managed by the external filesystem provider.
 bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
     Profile* profile,
     const std::string& extension_id,

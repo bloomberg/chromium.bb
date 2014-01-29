@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/drive/drive_app_registry.h"
@@ -404,7 +405,9 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
     base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("fileSystemName", info.name);
     entry->SetString("fileSystemRoot", info.root_url.spec());
-    entry->SetString("fileFullPath", "/" + results->at(i).path.value());
+    entry->SetString("fileFullPath",
+        "/" + file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
+            GetProfile(), results->at(i).path).AsUTF8Unsafe());
     entry->SetBoolean("fileIsDirectory", results->at(i).is_directory);
     entries->Append(entry);
   }
@@ -491,7 +494,9 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
     base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("fileSystemName", info.name);
     entry->SetString("fileSystemRoot", info.root_url.spec());
-    entry->SetString("fileFullPath", "/" + results->at(i).path.value());
+    entry->SetString("fileFullPath",
+        "/" + file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
+            GetProfile(), results->at(i).path).AsUTF8Unsafe());
     entry->SetBoolean("fileIsDirectory",
                       results->at(i).entry.file_info().is_directory());
 

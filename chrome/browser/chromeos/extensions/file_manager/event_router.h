@@ -96,11 +96,9 @@ class EventRouter
   virtual void OnRefreshTokenInvalid() OVERRIDE;
 
   // drive::FileSystemObserver overrides.
-  virtual void OnDirectoryChanged(
-      const base::FilePath& directory_path) OVERRIDE;
-  virtual void OnDriveSyncError(
-      drive::file_system::DriveSyncErrorType type,
-      const base::FilePath& file_path) OVERRIDE;
+  virtual void OnDirectoryChanged(const base::FilePath& drive_path) OVERRIDE;
+  virtual void OnDriveSyncError(drive::file_system::DriveSyncErrorType type,
+                                const base::FilePath& drive_path) OVERRIDE;
 
   // VolumeManagerObserver overrides.
   virtual void OnDiskAdded(
