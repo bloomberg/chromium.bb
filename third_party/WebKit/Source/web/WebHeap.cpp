@@ -31,38 +31,28 @@
 #include "config.h"
 #include "WebHeap.h"
 
-#if ENABLE(OILPAN)
 #include "heap/ThreadState.h"
-#endif
 
 namespace blink {
 
 void WebHeap::enterSafePoint()
 {
-#if ENABLE(OILPAN)
     WebCore::ThreadState::current()->enterSafePointWithoutPointers();
-#endif
 }
 
 void WebHeap::leaveSafePoint()
 {
-#if ENABLE(OILPAN)
     WebCore::ThreadState::current()->leaveSafePoint();
-#endif
 }
 
 void WebHeap::attachThread()
 {
-#if ENABLE(OILPAN)
     WebCore::ThreadState::attach();
-#endif
 }
 
 void WebHeap::detachThread()
 {
-#if ENABLE(OILPAN)
     WebCore::ThreadState::detach();
-#endif
 }
 
 } // namespace blink

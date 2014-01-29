@@ -123,9 +123,7 @@ namespace WebCore {
         bool m_executionScheduledToTerminate;
         mutable Mutex m_scheduledTerminationMutex;
         RefPtr<ErrorEvent> m_errorEventFromImportedScript;
-#if ENABLE(OILPAN)
         OwnPtr<V8IsolateInterruptor> m_interruptor;
-#endif
     };
 
 } // namespace WebCore

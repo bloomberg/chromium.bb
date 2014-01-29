@@ -31,6 +31,7 @@
 #ifndef Heap_h
 #define Heap_h
 
+#include "heap/AddressSanitizer.h"
 #include "heap/HeapExport.h"
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
@@ -41,51 +42,6 @@
 #include <stdint.h>
 
 namespace WebCore {
-
-// ASAN integration defintions
-#if COMPILER(CLANG)
-#define USE_ASAN (__has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__))
-#else
-#define USE_ASAN 0
-#endif
-
-#if USE_ASAN
-extern "C" {
-    // Marks memory region [addr, addr+size) as unaddressable.
-    // This memory must be previously allocated by the user program. Accessing
-    // addresses in this region from instrumented code is forbidden until
-    // this region is unpoisoned. This function is not guaranteed to poison
-    // the whole region - it may poison only subregion of [addr, addr+size) due
-    // to ASan alignment restrictions.
-    // Method is NOT thread-safe in the sense that no two threads can
-    // (un)poison memory in the same memory region simultaneously.
-    void __asan_poison_memory_region(void const volatile*, size_t);
-    // Marks memory region [addr, addr+size) as addressable.
-    // This memory must be previously allocated by the user program. Accessing
-    // addresses in this region is allowed until this region is poisoned again.
-    // This function may unpoison a superregion of [addr, addr+size) due to
-    // ASan alignment restrictions.
-    // Method is NOT thread-safe in the sense that no two threads can
-    // (un)poison memory in the same memory region simultaneously.
-    void __asan_unpoison_memory_region(void const volatile*, size_t);
-
-    // User code should use macros instead of functions.
-#define ASAN_POISON_MEMORY_REGION(addr, size)   \
-    __asan_poison_memory_region((addr), (size))
-#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
-    __asan_unpoison_memory_region((addr), (size))
-#define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
-    const size_t asanMagic = 0xabefeed0;
-    const size_t asanDeferMemoryReuseCount = 2;
-    const size_t asanDeferMemoryReuseMask = 0x3;
-}
-#else
-#define ASAN_POISON_MEMORY_REGION(addr, size)   \
-    ((void)(addr), (void)(size))
-#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
-    ((void)(addr), (void)(size))
-#define NO_SANITIZE_ADDRESS
-#endif
 
 const size_t blinkPageSizeLog2 = 17;
 const size_t blinkPageSize = 1 << blinkPageSizeLog2;
@@ -414,7 +370,7 @@ public:
         *prevNext = this;
     }
 
-#if USE_ASAN
+#ifdef ADDRESS_SANITIZER
     NO_SANITIZE_ADDRESS
     bool shouldAddToFreeList()
     {
@@ -432,7 +388,7 @@ public:
 
 private:
     FreeListEntry* m_next;
-#if USE_ASAN
+#ifdef ADDRESS_SANITIZER
     unsigned m_asanMagic;
 #endif
 };
@@ -482,7 +438,7 @@ public:
     void finalize(Header*);
     virtual bool checkAndMarkPointer(Visitor*, Address);
     ThreadHeap<Header>* heap() { return m_heap; }
-#if USE_ASAN
+#ifdef ADDRESS_SANITIZER
     void poisonUnmarkedObjects();
 #endif
 

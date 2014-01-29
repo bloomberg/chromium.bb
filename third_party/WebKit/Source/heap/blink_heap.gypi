@@ -31,6 +31,7 @@
 {
   'variables': {
     'heap_files': [
+      'AddressSanitizer.h',
       'Handle.h',
       'Heap.cpp',
       'Heap.h',

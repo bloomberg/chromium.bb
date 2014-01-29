@@ -546,7 +546,10 @@ void ThreadState::copyStackUntilSafePointScope()
     ASSERT(slotCount < 1024); // Catch potential performance issues.
 
     ASSERT(!m_safePointStackCopy.size());
-    m_safePointStackCopy.append(reinterpret_cast<Address*>(from), slotCount);
+    m_safePointStackCopy.resize(slotCount);
+    for (size_t i = 0; i < slotCount; ++i) {
+        m_safePointStackCopy[i] = from[i];
+    }
 }
 
 void ThreadState::performPendingSweep()
