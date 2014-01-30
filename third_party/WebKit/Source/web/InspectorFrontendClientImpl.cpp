@@ -119,14 +119,13 @@ void InspectorFrontendClientImpl::windowObjectCleared()
             "     'setContentsInsets',"
             "     'setIsDocked',"
             "     'stopIndexing']);"
-            "" // FIXME: we should check for |InspectorFrontendHost.isStub| instead of this.
-            "InspectorFrontendHost.supportsFileSystems = function() { return true; };"
             ""
             "" // Support for legacy front-ends (<M34). Do not add items here.
             "InspectorFrontendHost.requestSetDockSide = function(dockSide)"
             "{"
             "    InspectorFrontendHost.setIsDocked(dockSide !== \"undocked\");"
             "};"
+            "InspectorFrontendHost.supportsFileSystems = function() { return true; };"
             ""
             "" // Support for legacy front-ends (<M28). Do not add items here.
             "InspectorFrontendHost.canInspectWorkers = function() { return true; };"
