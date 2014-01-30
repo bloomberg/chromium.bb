@@ -781,7 +781,7 @@ std::string ModelTypeToRootTag(ModelType type) {
     case SYNCED_NOTIFICATIONS:
       return "google_chrome_synced_notifications";
     case SYNCED_NOTIFICATION_APP_INFO:
-      return "google_chrome_synced_notification_app_info";
+      return "google_chrome_app_info";
     case DEVICE_INFO:
       return "google_chrome_device_info";
     case EXPERIMENTS:
