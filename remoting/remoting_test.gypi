@@ -225,24 +225,11 @@
             ['exclude', '^base/resources_unittest\\.cc$'],
           ]
         }],
-        ['toolkit_uses_gtk == 1', {
+        [ 'OS == "linux" and linux_use_tcmalloc==1', {
           'dependencies': [
-            # Needed for the following #include chain:
-            #   base/run_all_unittests.cc
-            #   ../base/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-            '../build/linux/system.gyp:ssl',
+            '../base/allocator/allocator.gyp:allocator',
           ],
-          'conditions': [
-            [ 'linux_use_tcmalloc==1', {
-                'dependencies': [
-                  '../base/allocator/allocator.gyp:allocator',
-                ],
-              },
-            ],
-          ],
-        }],  # end of 'toolkit_uses_gtk == 1'
+        }],
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
   ],  # end of targets
