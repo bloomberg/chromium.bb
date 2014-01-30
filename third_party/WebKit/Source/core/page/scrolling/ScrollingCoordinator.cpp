@@ -504,10 +504,12 @@ static void convertLayerRectsToEnclosingCompositedLayer(Frame* mainFrame, const 
     MapCoordinatesFlags flags = UseTransforms;
     if (touchHandlerInChildFrame)
         flags |= TraverseDocumentBoundaries;
+    RenderLayer* rootLayer = mainFrame->contentRenderer()->layer();
     RenderGeometryMap geometryMap(flags);
+    geometryMap.pushMappingsToAncestor(rootLayer, 0);
     LayerFrameMap layerChildFrameMap;
     makeLayerChildFrameMap(mainFrame, &layerChildFrameMap);
-    convertLayerRectsToEnclosingCompositedLayerRecursive(mainFrame->contentRenderer()->layer(), layerRects, compositorRects, geometryMap, layersWithRects, layerChildFrameMap);
+    convertLayerRectsToEnclosingCompositedLayerRecursive(rootLayer, layerRects, compositorRects, geometryMap, layersWithRects, layerChildFrameMap);
 }
 
 void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded()

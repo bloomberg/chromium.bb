@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+/* By applying a transform to the html element, we ensure that
+RenderGeometryMap::pushMappingsToAncestor takes the slow bath (which doesn't push
+the RenderView */
+html {
+  -webkit-transform: scale(1.1);
+}
+</style>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<div id="touchtarget" ontouchstart="foo()">Foo</div>
+<script>
+    description("Make sure we don't ASSERT when the first layer is special and can't use the RenderGeometryMap fast path - crbug.com/339141.");
+
+    if (window.internals)
+        window.internals.settings.setForceCompositingMode(true);
+
+    var rects;
+    // Verify we actually have a hit rect in the document.
+    if (window.internals) {
+      rects = window.internals.touchEventTargetLayerRects(document);
+      shouldBe("rects.length", "1");
+      shouldBeEqualToString("rects[0].layerRootNode.nodeName", "#document");
+    }
+</script>
+</body>
+</html>
