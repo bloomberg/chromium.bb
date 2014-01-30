@@ -1633,14 +1633,12 @@ class ValidationPool(object):
     # Completely fill the status cache in parallel.
     cls.FillCLStatusCache(CQ, changes)
 
-    failure_stats = {}
-    for change in changes:
-      failure_stats[change] = ValidationPool.GetCLStatusCount(
-          CQ, change, ValidationPool.STATUS_FAILED)
-
     def SortKeyForChanges(change):
-      return (-failure_stats[change], os.path.basename(change.project),
-              change.gerrit_number)
+      all_failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED,
+                                          latest_patchset_only=False)
+      failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED)
+      return (-all_failures, -failures,
+              os.path.basename(change.project), change.gerrit_number)
 
     # Now, sort and print the changes.
     for change in sorted(changes, key=SortKeyForChanges):
@@ -1649,13 +1647,17 @@ class ValidationPool(object):
           change.gerrit_number, force_internal=change.internal)
       s = '%s | %s | %s' % (project, change.owner, gerrit_number)
 
-      # Print a count of how many times a given CL has passed or failed the
-      # CQ.
-      failures = failure_stats[change]
-      if failures > 0:
-        s += ' | fails:%d' % failures
-      passed = ValidationPool.GetCLStatusCount(
-          CQ, change, ValidationPool.STATUS_PASSED)
+      # Print a count of how many times a given CL has failed the CQ.
+      all_failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED,
+                                          latest_patchset_only=False)
+      failures = cls.GetCLStatusCount(CQ, change, cls.STATUS_FAILED)
+      if all_failures:
+        s += ' | fails:%d' % (failures,)
+        if all_failures > failures:
+          s += '(%d)' % (all_failures,)
+
+      # Add a note if the latest patchset has already passed the CQ.
+      passed = cls.GetCLStatusCount(CQ, change, cls.STATUS_PASSED)
       if passed > 0:
         s += ' | passed:%d' % passed
 
