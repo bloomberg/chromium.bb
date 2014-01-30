@@ -477,8 +477,12 @@ void RenderSVGText::paint(PaintInfo& paintInfo, const LayoutPoint&)
          return;
 
     PaintInfo blockInfo(paintInfo);
-    GraphicsContextStateSaver stateSaver(*blockInfo.context);
-    blockInfo.applyTransform(localToParentTransform());
+    GraphicsContextStateSaver stateSaver(*blockInfo.context, false);
+    const AffineTransform& localTransform = localToParentTransform();
+    if (!localTransform.isIdentity()) {
+        stateSaver.save();
+        blockInfo.applyTransform(localTransform, false);
+    }
     RenderBlock::paint(blockInfo, LayoutPoint());
 }
 

@@ -136,9 +136,11 @@ void RenderSVGImage::paint(PaintInfo& paintInfo, const LayoutPoint&)
     PaintInfo childPaintInfo(paintInfo);
     bool drawsOutline = style()->outlineWidth() && (childPaintInfo.phase == PaintPhaseOutline || childPaintInfo.phase == PaintPhaseSelfOutline);
     if (drawsOutline || childPaintInfo.phase == PaintPhaseForeground) {
-        GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-        childPaintInfo.applyTransform(m_localTransform);
-
+        GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
+        if (!m_localTransform.isIdentity()) {
+            stateSaver.save();
+            childPaintInfo.applyTransform(m_localTransform, false);
+        }
         if (childPaintInfo.phase == PaintPhaseForeground && !m_objectBoundingBox.isEmpty()) {
             SVGRenderingContext renderingContext(this, childPaintInfo);
 

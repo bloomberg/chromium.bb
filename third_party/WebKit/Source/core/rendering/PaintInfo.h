@@ -87,9 +87,9 @@ struct PaintInfo {
     bool skipRootBackground() const { return paintBehavior & PaintBehaviorSkipRootBackground; }
     bool paintRootBackgroundOnly() const { return paintBehavior & PaintBehaviorRootBackgroundOnly; }
 
-    void applyTransform(const AffineTransform& localToAncestorTransform)
+    void applyTransform(const AffineTransform& localToAncestorTransform, bool identityStatusUnknown = true)
     {
-        if (localToAncestorTransform.isIdentity())
+        if (identityStatusUnknown && localToAncestorTransform.isIdentity())
             return;
 
         context->concatCTM(localToAncestorTransform);

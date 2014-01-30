@@ -308,10 +308,12 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint&, LayoutUni
         SVGTextFragment& fragment = m_textFragments.at(i);
         ASSERT(!m_paintingResource);
 
-        GraphicsContextStateSaver stateSaver(*paintInfo.context);
+        GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
         fragment.buildFragmentTransform(fragmentTransform);
-        if (!fragmentTransform.isIdentity())
+        if (!fragmentTransform.isIdentity()) {
+            stateSaver.save();
             paintInfo.context->concatCTM(fragmentTransform);
+        }
 
         // Spec: All text decorations except line-through should be drawn before the text is filled and stroked; thus, the text is rendered on top of these decorations.
         unsigned decorations = style->textDecorationsInEffect();
@@ -357,6 +359,7 @@ void SVGInlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint&, LayoutUni
 
 bool SVGInlineTextBox::acquirePaintingResource(GraphicsContext*& context, float scalingFactor, RenderObject* renderer, RenderStyle* style)
 {
+    // Callers must save the context state before calling when scalingFactor is not 1.
     ASSERT(scalingFactor);
     ASSERT(renderer);
     ASSERT(style);
@@ -586,8 +589,9 @@ void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDe
     float width = fragment.width;
     const FontMetrics& scaledFontMetrics = scaledFont.fontMetrics();
 
-    GraphicsContextStateSaver stateSaver(*context);
+    GraphicsContextStateSaver stateSaver(*context, false);
     if (scalingFactor != 1) {
+        stateSaver.save();
         width *= scalingFactor;
         decorationOrigin.scale(scalingFactor, scalingFactor);
         context->scale(FloatSize(1 / scalingFactor, 1 / scalingFactor));
@@ -598,6 +602,8 @@ void SVGInlineTextBox::paintDecorationWithStyle(GraphicsContext* context, TextDe
     Path path;
     path.addRect(FloatRect(decorationOrigin, FloatSize(width, thickness)));
 
+    // acquirePaintingResource also modifies state if the scalingFactor is non-identity.
+    // Above we have saved the state for this case.
     if (acquirePaintingResource(context, scalingFactor, decorationRenderer, decorationStyle))
         releasePaintingResource(context, &path);
 }
