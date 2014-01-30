@@ -130,6 +130,7 @@ enum MarginType {
   NO_MARGINS,
   PRINTABLE_AREA_MARGINS,
   CUSTOM_MARGINS,
+  MARGIN_TYPE_LAST = CUSTOM_MARGINS
 };
 
 }  // namespace printing
