@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
@@ -129,7 +130,16 @@ class Observer : public chrome::BrowserListObserver,
     if (dock) {
       [item setIndentationLevel:1];
     } else {
-      [item setImage:itemData.icon.ToNSImage()];
+      gfx::Image itemIcon = itemData.icon;
+      // The image might be too large and need to be resized (i.e. if this is
+      // a signed-in user using the GAIA profile photo).
+      if (itemIcon.Width() > profiles::kAvatarIconWidth ||
+          itemIcon.Height() > profiles::kAvatarIconHeight) {
+        itemIcon = profiles::GetAvatarIconForWebUI(itemIcon, true);
+      }
+      DCHECK(itemIcon.Width() <= profiles::kAvatarIconWidth);
+      DCHECK(itemIcon.Height() <= profiles::kAvatarIconHeight);
+      [item setImage:itemIcon.ToNSImage()];
       [item setState:itemData.active ? NSOnState : NSOffState];
     }
     [menu insertItem:item atIndex:i + offset];
