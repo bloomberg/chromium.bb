@@ -68,3 +68,7 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
 .audio .microphone {
   background-image: url('images/microphone-green.svg');
 }
+
+.search {
+  background-position: 4%;
+}
