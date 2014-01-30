@@ -519,7 +519,6 @@
     'getRules',
     // TODO(fsamuel): We really shouldn't be exposing these private methods
     // but certain tests rely on them.
-    'attach_',
     'dispatch_'
   ]);
 
