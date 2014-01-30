@@ -25,31 +25,100 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
+struct CopyOperation::CopyParams {
+  base::FilePath src_file_path;
+  base::FilePath dest_file_path;
+  bool preserve_last_modified;
+  FileOperationCallback callback;
+  ResourceEntry src_entry;
+  ResourceEntry parent_entry;
+};
+
 namespace {
 
-FileError PrepareCopy(internal::ResourceMetadata* metadata,
-                      const base::FilePath& src_path,
-                      const base::FilePath& dest_path,
-                      ResourceEntry* src_entry,
-                      std::string* parent_resource_id) {
-  FileError error = metadata->GetResourceEntryByPath(src_path, src_entry);
+FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
+                           internal::FileCache* cache,
+                           CopyOperation::CopyParams* params,
+                           std::vector<std::string>* updated_local_ids,
+                           bool* directory_changed,
+                           bool* should_copy_on_server) {
+  FileError error = metadata->GetResourceEntryByPath(params->src_file_path,
+                                                     &params->src_entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  ResourceEntry parent_entry;
-  error = metadata->GetResourceEntryByPath(dest_path.DirName(), &parent_entry);
+  error = metadata->GetResourceEntryByPath(params->dest_file_path.DirName(),
+                                           &params->parent_entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  if (!parent_entry.file_info().is_directory())
+  if (!params->parent_entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   // Drive File System doesn't support recursive copy.
-  if (src_entry->file_info().is_directory())
+  if (params->src_entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_FILE;
 
-  *parent_resource_id = parent_entry.resource_id();
-  return FILE_ERROR_OK;
+  // Check destination.
+  ResourceEntry dest_entry;
+  error = metadata->GetResourceEntryByPath(params->dest_file_path, &dest_entry);
+  switch (error) {
+    case FILE_ERROR_OK:
+      // File API spec says it is an error to try to "copy a file to a path
+      // occupied by a directory".
+      if (dest_entry.file_info().is_directory())
+        return FILE_ERROR_INVALID_OPERATION;
+
+      // Move the existing entry to the trash.
+      dest_entry.set_parent_local_id(util::kDriveTrashDirLocalId);
+      error = metadata->RefreshEntry(dest_entry);
+      if (error != FILE_ERROR_OK)
+        return error;
+      updated_local_ids->push_back(dest_entry.local_id());
+      *directory_changed = true;
+      break;
+    case FILE_ERROR_NOT_FOUND:
+      break;
+    default:
+      return error;
+  }
+
+  // If the entry exists on the server and the cache file is not dirty,
+  // server side copy can be used.
+  FileCacheEntry cache_entry;
+  cache->GetCacheEntry(params->src_entry.local_id(), &cache_entry);
+  if (!params->src_entry.resource_id().empty() && !cache_entry.is_dirty()) {
+    *should_copy_on_server = true;
+    return FILE_ERROR_OK;
+  }
+
+  // Copy locally.
+  ResourceEntry entry;
+  const int64 now = base::Time::Now().ToInternalValue();
+  entry.set_title(params->dest_file_path.BaseName().AsUTF8Unsafe());
+  entry.set_parent_local_id(params->parent_entry.local_id());
+  entry.mutable_file_specific_info()->set_content_mime_type(
+      params->src_entry.file_specific_info().content_mime_type());
+  entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+  entry.mutable_file_info()->set_last_modified(
+      params->preserve_last_modified ?
+      params->src_entry.file_info().last_modified() : now);
+  entry.mutable_file_info()->set_last_accessed(now);
+
+  std::string local_id;
+  error = metadata->AddEntry(entry, &local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
+  updated_local_ids->push_back(local_id);
+  *directory_changed = true;
+
+  base::FilePath cache_file_path;
+  error = cache->GetFile(params->src_entry.local_id(), &cache_file_path);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  return cache->Store(local_id, std::string(), cache_file_path,
+                      internal::FileCache::FILE_OPERATION_COPY);
 }
 
 int64 GetFileSize(const base::FilePath& file_path) {
@@ -143,12 +212,6 @@ FileError PrepareTransferFileFromLocalToRemote(
 
 }  // namespace
 
-struct CopyOperation::CopyParams {
-  base::FilePath dest_file_path;
-  bool preserve_last_modified;
-  FileOperationCallback callback;
-};
-
 CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                              OperationObserver* observer,
                              JobScheduler* scheduler,
@@ -181,51 +244,61 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  CopyParams params;
-  params.dest_file_path = dest_file_path;
-  params.preserve_last_modified = preserve_last_modified;
-  params.callback = callback;
+  CopyParams* params = new CopyParams;
+  params->src_file_path = src_file_path;
+  params->dest_file_path = dest_file_path;
+  params->preserve_last_modified = preserve_last_modified;
+  params->callback = callback;
 
-  ResourceEntry* src_entry = new ResourceEntry;
-  std::string* parent_resource_id = new std::string;
+  std::vector<std::string>* updated_local_ids = new std::vector<std::string>;
+  bool* directory_changed = new bool(false);
+  bool* should_copy_on_server = new bool(false);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&PrepareCopy,
-                 metadata_, src_file_path, dest_file_path,
-                 src_entry, parent_resource_id),
-      base::Bind(&CopyOperation::CopyAfterPrepare,
-                 weak_ptr_factory_.GetWeakPtr(), params,
-                 base::Owned(src_entry), base::Owned(parent_resource_id)));
+      base::Bind(&TryToCopyLocally, metadata_, cache_, params,
+                 updated_local_ids, directory_changed, should_copy_on_server),
+      base::Bind(&CopyOperation::CopyAfterTryToCopyLocally,
+                 weak_ptr_factory_.GetWeakPtr(), base::Owned(params),
+                 base::Owned(updated_local_ids), base::Owned(directory_changed),
+                 base::Owned(should_copy_on_server)));
 }
 
-void CopyOperation::CopyAfterPrepare(const CopyParams& params,
-                                     ResourceEntry* src_entry,
-                                     std::string* parent_resource_id,
-                                     FileError error) {
+void CopyOperation::CopyAfterTryToCopyLocally(
+    const CopyParams* params,
+    const std::vector<std::string>* updated_local_ids,
+    const bool* directory_changed,
+    const bool* should_copy_on_server,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!params.callback.is_null());
+  DCHECK(!params->callback.is_null());
 
-  if (error != FILE_ERROR_OK) {
-    params.callback.Run(error);
+  for (size_t i = 0; i < updated_local_ids->size(); ++i)
+    observer_->OnEntryUpdatedByOperation((*updated_local_ids)[i]);
+
+  if (*directory_changed)
+    observer_->OnDirectoryChangedByOperation(params->dest_file_path.DirName());
+
+  if (error != FILE_ERROR_OK || !*should_copy_on_server) {
+    params->callback.Run(error);
     return;
   }
 
-  base::FilePath new_title = params.dest_file_path.BaseName();
-  if (src_entry->file_specific_info().is_hosted_document()) {
+  base::FilePath new_title = params->dest_file_path.BaseName();
+  if (params->src_entry.file_specific_info().is_hosted_document()) {
     // Drop the document extension, which should not be in the title.
     // TODO(yoshiki): Remove this code with crbug.com/223304.
     new_title = new_title.RemoveExtension();
   }
 
   base::Time last_modified =
-      params.preserve_last_modified ?
-      base::Time::FromInternalValue(src_entry->file_info().last_modified()) :
-      base::Time();
+      params->preserve_last_modified ?
+      base::Time::FromInternalValue(
+          params->src_entry.file_info().last_modified()) : base::Time();
 
   CopyResourceOnServer(
-      src_entry->resource_id(), *parent_resource_id,
-      new_title.AsUTF8Unsafe(), last_modified, params.callback);
+      params->src_entry.resource_id(), params->parent_entry.resource_id(),
+      new_title.AsUTF8Unsafe(), last_modified, params->callback);
 }
 
 void CopyOperation::TransferFileFromLocalToRemote(
