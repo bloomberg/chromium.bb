@@ -231,7 +231,8 @@ class SparseArray {
 
 template<typename Value>
 SparseArray<Value>::SparseArray()
-    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_(), valgrind_(RunningOnValgrind()) {}
+    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_(),
+      valgrind_(RunningOnValgrindOrMemorySanitizer()) {}
 
 // IndexValue pairs: exposed in SparseArray::iterator.
 template<typename Value>
@@ -418,7 +419,7 @@ void SparseArray<Value>::create_index(int i) {
 template<typename Value> SparseArray<Value>::SparseArray(int max_size) {
   max_size_ = max_size;
   sparse_to_dense_ = new int[max_size];
-  valgrind_ = RunningOnValgrind();
+  valgrind_ = RunningOnValgrindOrMemorySanitizer();
   dense_.resize(max_size);
   // Don't need to zero the new memory, but appease Valgrind.
   if (valgrind_) {

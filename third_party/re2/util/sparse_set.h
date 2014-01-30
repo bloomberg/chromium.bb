@@ -54,13 +54,14 @@ namespace re2 {
 class SparseSet {
  public:
   SparseSet()
-    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_(NULL), valgrind_(RunningOnValgrind()) {}
+    : size_(0), max_size_(0), sparse_to_dense_(NULL), dense_(NULL),
+      valgrind_(RunningOnValgrindOrMemorySanitizer()) {}
 
   SparseSet(int max_size) {
     max_size_ = max_size;
     sparse_to_dense_ = new int[max_size];
     dense_ = new int[max_size];
-    valgrind_ = RunningOnValgrind();
+    valgrind_ = RunningOnValgrindOrMemorySanitizer();
     // Don't need to zero the memory, but do so anyway
     // to appease Valgrind.
     if (valgrind_) {

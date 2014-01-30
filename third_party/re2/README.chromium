@@ -23,3 +23,7 @@ Local Modifications (to be applied in this order):
   https://code.google.com/p/re2/issues/detail?id=76
 - Memory optimization for filtered trees
   (patches/re2-memory-optimization.patch)
+- Prevent unwanted reports from MemorySanitizer. Note: there's an upstream fix
+  for this (https://code.google.com/p/re2/issues/detail?id=77) which is rendered
+  ineffective by patches/remove-valgrind-code.patch
+  (patches/re2-msan.patch)

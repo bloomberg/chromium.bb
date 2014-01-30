@@ -129,6 +129,14 @@ static inline uint64 Hash64StringWithSeed(const char* s, int len, uint32 seed) {
   return ((uint64)x << 32) | y;
 }
 
+inline bool RunningOnValgrindOrMemorySanitizer() {
+#if defined(MEMORY_SANITIZER)
+  return true;
+#else
+  return RunningOnValgrind();
+#endif
+}
+
 }  // namespace re2
 
 #include "util/arena.h"
