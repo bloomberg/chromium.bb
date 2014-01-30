@@ -2,32 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gfx/canvas.h"
+
 #include <limits>
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 
 namespace gfx {
 
 class CanvasTest : public testing::Test {
  protected:
   int GetStringWidth(const char *text) {
-    return Canvas::GetStringWidth(base::UTF8ToUTF16(text), font_);
+    return Canvas::GetStringWidth(base::UTF8ToUTF16(text), font_list_);
   }
 
   gfx::Size SizeStringInt(const char *text, int width, int line_height) {
     base::string16 text16 = base::UTF8ToUTF16(text);
     int height = 0;
     int flags =
-      (text16.find('\n') != base::string16::npos) ? Canvas::MULTI_LINE : 0;
-    Canvas::SizeStringInt(text16, font_, &width, &height, line_height, flags);
+        (text16.find('\n') != base::string16::npos) ? Canvas::MULTI_LINE : 0;
+    Canvas::SizeStringInt(text16, font_list_, &width, &height, line_height,
+                          flags);
     return gfx::Size(width, height);
   }
 
  private:
-  gfx::Font font_;
+  FontList font_list_;
 };
 
 TEST_F(CanvasTest, StringWidth) {

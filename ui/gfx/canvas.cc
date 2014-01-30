@@ -98,16 +98,6 @@ void Canvas::SizeStringInt(const base::string16& text,
 }
 
 // static
-void Canvas::SizeStringInt(const base::string16& text,
-                           const Font& font,
-                           int* width,
-                           int* height,
-                           int line_height,
-                           int flags) {
-  SizeStringInt(text, FontList(font), width, height, line_height, flags);
-}
-
-// static
 int Canvas::GetStringWidth(const base::string16& text,
                            const FontList& font_list) {
   int width = 0, height = 0;
@@ -133,19 +123,6 @@ int Canvas::GetStringWidth(const base::string16& text, const Font& font) {
 // static
 int Canvas::DefaultCanvasTextAlignment() {
   return base::i18n::IsRTL() ? TEXT_ALIGN_RIGHT : TEXT_ALIGN_LEFT;
-}
-
-void Canvas::DrawStringWithHalo(const base::string16& text,
-                                const Font& font,
-                                SkColor text_color,
-                                SkColor halo_color_in,
-                                int x,
-                                int y,
-                                int w,
-                                int h,
-                                int flags) {
-  DrawStringRectWithHalo(text, FontList(font), text_color, halo_color_in,
-                         Rect(x, y, w, h), flags);
 }
 
 ImageSkiaRep Canvas::ExtractImageRep() const {
@@ -499,47 +476,6 @@ void Canvas::DrawStringRectWithFlags(const base::string16& text,
                                      int flags) {
   DrawStringRectWithShadows(text, font_list, color, display_rect, 0, flags,
                             ShadowValues());
-}
-
-void Canvas::DrawStringInt(const base::string16& text,
-                           const Font& font,
-                           SkColor color,
-                           int x,
-                           int y,
-                           int w,
-                           int h) {
-  DrawStringInt(text, font, color, x, y, w, h, DefaultCanvasTextAlignment());
-}
-
-void Canvas::DrawStringInt(const base::string16& text,
-                           const Font& font,
-                           SkColor color,
-                           const Rect& display_rect) {
-  DrawStringInt(text, font, color, display_rect.x(), display_rect.y(),
-                display_rect.width(), display_rect.height());
-}
-
-void Canvas::DrawStringInt(const base::string16& text,
-                           const Font& font,
-                           SkColor color,
-                           int x,
-                           int y,
-                           int w,
-                           int h,
-                           int flags) {
-  DrawStringWithShadows(text, font, color, Rect(x, y, w, h), 0, flags,
-                        ShadowValues());
-}
-
-void Canvas::DrawStringWithShadows(const base::string16& text,
-                                   const Font& font,
-                                   SkColor color,
-                                   const Rect& text_bounds,
-                                   int line_height,
-                                   int flags,
-                                   const ShadowValues& shadows) {
-  DrawStringRectWithShadows(text, FontList(font), color, text_bounds,
-                            line_height, flags, shadows);
 }
 
 void Canvas::TileImageInt(const ImageSkia& image,
