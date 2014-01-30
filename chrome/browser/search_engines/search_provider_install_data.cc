@@ -146,6 +146,7 @@ void GoogleURLObserver::Observe(int type,
 
 void GoogleURLObserver::RenderProcessHostDestroyed(
     content::RenderProcessHost* host) {
+  host->RemoveObserver(this);
   delete this;
 }
 
