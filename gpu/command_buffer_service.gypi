@@ -19,6 +19,7 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gl/gl.gyp:gl',
+    '../ui/ui.gyp:ui',
     '<(angle_path)/src/build_angle.gyp:translator',
     '../third_party/khronos/khronos.gyp:khronos_headers',
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
