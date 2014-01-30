@@ -3,7 +3,6 @@ var initialize_ConsoleTest = function() {
 InspectorTest.showConsolePanel = function()
 {
     WebInspector.showPanel("console");
-    WebInspector.inspectorView._drawer._immediatelyFinishAnimation();
 }
 
 InspectorTest.prepareConsoleMessageText = function(messageElement)
