@@ -146,6 +146,11 @@
         ['use_ozone_evdev==1', {
           'defines': ['USE_OZONE_EVDEV=1'],
         }],
+        ['use_ozone_evdev==1 and use_udev==1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:udev',
+          ],
+        }],
       ],
     },
     {

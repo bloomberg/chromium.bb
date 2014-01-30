@@ -12,6 +12,10 @@
 #include "ui/events/ozone/evdev/event_modifiers.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
+#if defined(USE_UDEV)
+#include "ui/events/ozone/evdev/scoped_udev.h"
+#endif
+
 namespace ui {
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
@@ -26,8 +30,21 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   // Open device at path & starting processing events.
   void AttachInputDevice(const base::FilePath& file_path);
 
+  // Scan & open devices in /dev/input (without udev).
+  void StartProcessingEventsManual();
+
+#if defined(USE_UDEV)
+  // Scan & open devices using udev.
+  void StartProcessingEventsUdev();
+#endif
+
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
+
+#if defined(USE_UDEV)
+  // Udev daemon connection.
+  scoped_udev udev_;
+#endif
 
   EventModifiersEvdev modifiers_;
 
