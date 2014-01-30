@@ -26,7 +26,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
 
@@ -151,11 +152,9 @@ gboolean OnDragIconExpose(GtkWidget* sender,
   gfx::CanvasSkiaPaint canvas(event, false);
   int text_x = gdk_pixbuf_get_width(data->favicon) + kBarButtonPadding;
   int text_width = allocation.width - text_x;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::Font& base_font = rb.GetFont(ui::ResourceBundle::BaseFont);
-  canvas.DrawStringInt(data->text, base_font, data->text_color,
-                       text_x, 0, text_width, allocation.height,
-                       gfx::Canvas::NO_SUBPIXEL_RENDERING);
+  const gfx::Rect rect(text_x, 0, text_width, allocation.height);
+  canvas.DrawStringRectWithFlags(data->text, gfx::FontList(), data->text_color,
+                                 rect, gfx::Canvas::NO_SUBPIXEL_RENDERING);
 
   return TRUE;
 }
@@ -205,10 +204,8 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
     g_object_ref(window);
     g_signal_connect(window, "destroy", G_CALLBACK(OnDragIconDestroy), data);
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::Font& base_font = rb.GetFont(ui::ResourceBundle::BaseFont);
     gtk_widget_set_size_request(window, kDragRepresentationWidth,
-                                base_font.GetHeight());
+                                gfx::FontList().GetHeight());
   } else {
     if (!provider->UsingNativeTheme()) {
       GdkColor color = provider->GetGdkColor(

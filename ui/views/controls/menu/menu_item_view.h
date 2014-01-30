@@ -372,7 +372,7 @@ class VIEWS_EXPORT MenuItemView : public View {
                      bool has_mnemonics,
                      bool show_mnemonics);
 
-  // Returns the flags passed to DrawStringInt.
+  // Returns the flags passed to DrawStringRect.
   int GetDrawStringFlags();
 
   // Returns the font list to use for menu text.

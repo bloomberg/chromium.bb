@@ -25,9 +25,9 @@
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/rect.h"
 #include "ui/views/examples/examples_window_with_content.h"
 
 namespace ash {
@@ -219,12 +219,12 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     const gfx::Size icon_size(32, 32);
 
     gfx::Canvas canvas(icon_size, 1.0f, false /* is_opaque */);
-    canvas.DrawStringInt(icon_text,
-                         gfx::Font(),
-                         SK_ColorBLACK,
-                         0, 0, icon_size.width(), icon_size.height(),
-                         gfx::Canvas::TEXT_ALIGN_CENTER |
-                             gfx::Canvas::NO_SUBPIXEL_RENDERING);
+    canvas.DrawStringRectWithFlags(
+        icon_text,
+        gfx::FontList(),
+        SK_ColorBLACK,
+        gfx::Rect(icon_size),
+        gfx::Canvas::TEXT_ALIGN_CENTER | gfx::Canvas::NO_SUBPIXEL_RENDERING);
 
     return gfx::ImageSkia(canvas.ExtractImageRep());
   }

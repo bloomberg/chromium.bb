@@ -136,15 +136,15 @@ class TextExample::TextExampleView : public View {
   // The text to draw.
   base::string16 text_;
 
-  // Text flags for passing to |DrawStringInt()|.
+  // Text flags for passing to |DrawStringRect()|.
   int text_flags_;
 
   // If |true|, specifies to call |DrawStringWithHalo()| instead of
-  // |DrawStringInt()|.
+  // |DrawStringRect()|.
   bool halo_;
 
   // If |true|, specifies to call |DrawFadeTruncatingString()| instead of
-  // |DrawStringInt()|.
+  // |DrawStringRect()|.
   bool fade_;
 
   // If |fade_| is |true|, fade mode parameter to |DrawFadeTruncatingString()|.
