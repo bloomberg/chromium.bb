@@ -10,7 +10,6 @@ for more details about the presubmit API built into gcl.
 
 
 import re
-import subprocess
 import sys
 
 
@@ -526,14 +525,13 @@ def _CheckFilePermissions(input_api, output_api):
           input_api.change.RepositoryRoot()]
   for f in input_api.AffectedFiles():
     args += ['--file', f.LocalPath()]
-  errors = []
-  (errors, stderrdata) = subprocess.Popen(args).communicate()
-
-  results = []
+  checkperms = input_api.subprocess.Popen(args,
+                                          stdout=input_api.subprocess.PIPE)
+  errors = checkperms.communicate()[0].strip()
   if errors:
-    results.append(output_api.PresubmitError('checkperms.py failed.',
-                                             errors))
-  return results
+    return [output_api.PresubmitError('checkperms.py failed.',
+                                      errors.splitlines())]
+  return []
 
 
 def _CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
