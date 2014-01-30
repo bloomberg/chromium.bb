@@ -234,6 +234,7 @@ TEST_F(AnimationPlayerTest, SetStartTimeLimitsPlayer)
     player->setPlaybackRate(-1);
     player->setStartTime(-100);
     EXPECT_EQ(0, player->currentTime());
+    EXPECT_TRUE(player->finished());
 }
 
 TEST_F(AnimationPlayerTest, SetStartTimeOnLimitedPlayer)
@@ -244,6 +245,7 @@ TEST_F(AnimationPlayerTest, SetStartTimeOnLimitedPlayer)
     player->setCurrentTime(50);
     player->setStartTime(-40);
     EXPECT_EQ(50, player->currentTime());
+    EXPECT_TRUE(player->finished());
 }
 
 TEST_F(AnimationPlayerTest, SetStartTimeWhilePaused)
@@ -308,6 +310,7 @@ TEST_F(AnimationPlayerTest, LimitingAtSourceEnd)
 {
     updateTimeline(30);
     EXPECT_EQ(30, player->currentTime());
+    EXPECT_TRUE(player->finished());
     updateTimeline(40);
     EXPECT_EQ(30, player->currentTime());
     EXPECT_FALSE(player->paused());
@@ -319,6 +322,7 @@ TEST_F(AnimationPlayerTest, LimitingAtStart)
     player->setPlaybackRate(-2);
     updateTimeline(45);
     EXPECT_EQ(0, player->currentTime());
+    EXPECT_TRUE(player->finished());
     updateTimeline(60);
     EXPECT_EQ(0, player->currentTime());
     EXPECT_FALSE(player->paused());
@@ -327,6 +331,7 @@ TEST_F(AnimationPlayerTest, LimitingAtStart)
 TEST_F(AnimationPlayerTest, LimitingWithNoSource)
 {
     player->setSource(0);
+    EXPECT_TRUE(player->finished());
     updateTimeline(30);
     EXPECT_EQ(0, player->currentTime());
 }
@@ -372,6 +377,7 @@ TEST_F(AnimationPlayerTest, SetPlaybackRateWhileLimited)
     updateTimeline(50);
     EXPECT_EQ(30, player->currentTime());
     player->setPlaybackRate(-2);
+    EXPECT_FALSE(player->finished());
     updateTimeline(60);
     EXPECT_EQ(10, player->currentTime());
 }
@@ -419,6 +425,7 @@ TEST_F(AnimationPlayerTest, SetSourceLimitsPlayer)
     player->setCurrentTime(20);
     player->setSource(makeAnimation(10).get());
     EXPECT_EQ(20, player->currentTime());
+    EXPECT_TRUE(player->finished());
     updateTimeline(10);
     EXPECT_EQ(20, player->currentTime());
 }
@@ -427,6 +434,7 @@ TEST_F(AnimationPlayerTest, SetSourceUnlimitsPlayer)
 {
     player->setCurrentTime(40);
     player->setSource(makeAnimation(60).get());
+    EXPECT_FALSE(player->finished());
     EXPECT_EQ(40, player->currentTime());
     updateTimeline(10);
     EXPECT_EQ(50, player->currentTime());

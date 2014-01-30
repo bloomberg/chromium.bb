@@ -60,6 +60,8 @@ public:
     void setPaused(bool);
     void pause() { setPaused(true); }
 
+    bool finished() { return limited(currentTime()); }
+
     double playbackRate() const { return m_playbackRate; }
     void setPlaybackRate(double);
     const DocumentTimeline& timeline() const { return m_timeline; }
