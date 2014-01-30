@@ -1227,6 +1227,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
   size_t non_owner_count = 0;
 
   base::ListValue users_list;
+  size_t first_non_public_account_index  = 0;
   const UserList& users = delegate_->GetUsers();
 
   // TODO(nkostylev): Move to a separate method in UserManager.
@@ -1235,11 +1236,10 @@ void SigninScreenHandler::SendUserList(bool animated) {
       UserManager::Get()->IsUserLoggedIn();
 
   bool single_user = users.size() == 1;
+  std::string owner;
+  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& email = (*it)->email();
-
-    std::string owner;
-    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
     bool is_owner = (email == owner);
 
     if (non_owner_count < max_non_owner_users || is_owner) {
@@ -1259,7 +1259,11 @@ void SigninScreenHandler::SendUserList(bool animated) {
                             !signed_in &&
                             !is_signin_to_add);
 
-      users_list.Append(user_dict);
+      // public accounts come first in the list
+      if (is_public_account)
+        users_list.Insert(first_non_public_account_index++, user_dict);
+      else
+        users_list.Append(user_dict);
       if (!is_owner)
         ++non_owner_count;
     }
