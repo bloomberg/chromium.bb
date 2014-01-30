@@ -188,6 +188,7 @@ void ResourceRequest::clearHTTPContentType()
 void ResourceRequest::clearHTTPReferrer()
 {
     m_httpHeaderFields.remove("Referer");
+    m_referrerPolicy = ReferrerPolicyDefault;
 }
 
 void ResourceRequest::clearHTTPOrigin()

@@ -787,9 +787,8 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     request.setCachePolicy(UseProtocolCachePolicy);
     if (!overrideURL.isEmpty()) {
         request.setURL(overrideURL);
-        request.setHTTPReferrer(Referrer());
-    }
-    else if (!m_documentLoader->unreachableURL().isEmpty())
+        request.clearHTTPReferrer();
+    } else if (!m_documentLoader->unreachableURL().isEmpty())
         request.setURL(m_documentLoader->unreachableURL());
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
