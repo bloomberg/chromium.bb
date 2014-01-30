@@ -867,6 +867,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (!existingResource->canReuse(request))
         return Reload;
 
+    // Never use cache entries for downloadToFile requests. The caller expects the resource in a file.
+    if (request.downloadToFile())
+        return Reload;
+
     // Certain requests (e.g., XHRs) might have manually set headers that require revalidation.
     // FIXME: In theory, this should be a Revalidate case. In practice, the MemoryCache revalidation path assumes a whole bunch
     // of things about how revalidation works that manual headers violate, so punt to Reload instead.
@@ -877,7 +881,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (m_allowStaleResources)
         return Use;
 
-    // Alwaus use preloads.
+    // Always use preloads.
     if (existingResource->isPreloaded())
         return Use;
 
