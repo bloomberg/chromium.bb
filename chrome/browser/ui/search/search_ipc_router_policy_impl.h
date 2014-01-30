@@ -33,6 +33,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   virtual bool ShouldSendSetPromoInformation() OVERRIDE;
   virtual bool ShouldSendSetDisplayInstantResults() OVERRIDE;
   virtual bool ShouldSendSetSuggestionToPrefetch() OVERRIDE;
+  virtual bool ShouldSendSetOmniboxStartMargin() OVERRIDE;
   virtual bool ShouldSendMostVisitedItems() OVERRIDE;
   virtual bool ShouldSendThemeBackgroundInfo() OVERRIDE;
   virtual bool ShouldSendToggleVoiceSearch() OVERRIDE;

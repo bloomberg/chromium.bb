@@ -74,6 +74,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSendSetPromoInformation, bool());
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
+  MOCK_METHOD0(ShouldSendSetOmniboxStartMargin, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
   MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
   MOCK_METHOD0(ShouldSendToggleVoiceSearch, bool());
@@ -727,6 +728,32 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetSuggestionToPrefetch) {
   GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
   EXPECT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SendSetOmniboxStartMargin) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendSetOmniboxStartMargin()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  process()->sink().ClearMessages();
+  content::WebContents* contents = web_contents();
+  GetSearchTabHelper(contents)->SetOmniboxStartMargin(92);
+  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendSetOmniboxStartMargin) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendSetOmniboxStartMargin()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  process()->sink().ClearMessages();
+  content::WebContents* contents = web_contents();
+  GetSearchTabHelper(contents)->SetOmniboxStartMargin(92);
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
 }
 
 TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {

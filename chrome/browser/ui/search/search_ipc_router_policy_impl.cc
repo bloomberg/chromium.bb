@@ -71,6 +71,10 @@ bool SearchIPCRouterPolicyImpl::ShouldSendSetSuggestionToPrefetch() {
   return !is_incognito_;
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldSendSetOmniboxStartMargin() {
+  return true;
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }

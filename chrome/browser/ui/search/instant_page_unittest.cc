@@ -159,10 +159,6 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   process()->sink().ClearMessages();
 
-  // Incognito pages should get these messages.
-  page->sender()->SetOmniboxBounds(gfx::Rect());
-  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
-
   // Incognito pages should not get any others.
   page->sender()->FocusChanged(
       OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);

@@ -158,6 +158,11 @@ TEST_F(SearchIPCRouterPolicyTest, SendSetSuggestionToPrefetch) {
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendSetSuggestionToPrefetch());
 }
 
+TEST_F(SearchIPCRouterPolicyTest, SendSetOmniboxStartMargin) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendSetOmniboxStartMargin());
+}
+
 TEST_F(SearchIPCRouterPolicyTest,
        DoNotSendSetMessagesForIncognitoPage) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
@@ -179,6 +184,7 @@ TEST_F(SearchIPCRouterPolicyTest,
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
   EXPECT_TRUE(router_policy->ShouldSubmitQuery());
   EXPECT_TRUE(router_policy->ShouldSendToggleVoiceSearch());
+  EXPECT_TRUE(router_policy->ShouldSendSetOmniboxStartMargin());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedItems) {

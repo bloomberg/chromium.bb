@@ -97,6 +97,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldSendSetPromoInformation() = 0;
     virtual bool ShouldSendSetDisplayInstantResults() = 0;
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
+    virtual bool ShouldSendSetOmniboxStartMargin() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
     virtual bool ShouldSendToggleVoiceSearch() = 0;
@@ -124,6 +125,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   // Tells the page the suggestion to be prefetched if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+
+  // Tells the page the left margin of the omnibox. This is used by the page to
+  // align text or assets properly with the omnibox.
+  void SetOmniboxStartMargin(int start_margin);
 
   // Tells the renderer about the most visited items.
   void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);

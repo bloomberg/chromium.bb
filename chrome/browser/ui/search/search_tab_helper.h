@@ -71,6 +71,10 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Sends the current SearchProvider suggestion to the Instant page if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
+  // Sends the omnibox start margin value to the Instant page. This is used by
+  // the page to align text or assets properly with the omnibox.
+  void SetOmniboxStartMargin(int start_margin);
+
   // Tells the page that the user pressed Enter in the omnibox.
   void Submit(const base::string16& text);
 

@@ -63,6 +63,13 @@ void SearchIPCRouter::SetSuggestionToPrefetch(
                                                           suggestion));
 }
 
+void SearchIPCRouter::SetOmniboxStartMargin(int start_margin) {
+  if (!policy_->ShouldSendSetOmniboxStartMargin())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxMarginChange(routing_id(), start_margin));
+}
+
 void SearchIPCRouter::SendMostVisitedItems(
     const std::vector<InstantMostVisitedItem>& items) {
   if (!policy_->ShouldSendMostVisitedItems())

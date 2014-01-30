@@ -93,8 +93,10 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
     return;
 
   omnibox_bounds_ = bounds;
-  if (instant_tab_)
-    instant_tab_->sender()->SetOmniboxBounds(omnibox_bounds_);
+  if (instant_tab_) {
+    SearchTabHelper::FromWebContents(instant_tab_->contents())->
+        SetOmniboxStartMargin(omnibox_bounds_.x());
+  }
 }
 
 void InstantController::SetSuggestionToPrefetch(
@@ -253,7 +255,8 @@ void InstantController::ResetInstantTab() {
 
 void InstantController::UpdateInfoForInstantTab() {
   if (instant_tab_) {
-    instant_tab_->sender()->SetOmniboxBounds(omnibox_bounds_);
+    SearchTabHelper::FromWebContents(instant_tab_->contents())->
+        SetOmniboxStartMargin(omnibox_bounds_.x());
 
     // Update theme details.
     InstantService* instant_service = GetInstantService();

@@ -213,6 +213,10 @@ void SearchTabHelper::SetSuggestionToPrefetch(
   ipc_router_.SetSuggestionToPrefetch(suggestion);
 }
 
+void SearchTabHelper::SetOmniboxStartMargin(int start_margin) {
+  ipc_router_.SetOmniboxStartMargin(start_margin);
+}
+
 void SearchTabHelper::Submit(const base::string16& text) {
   ipc_router_.Submit(text);
 }

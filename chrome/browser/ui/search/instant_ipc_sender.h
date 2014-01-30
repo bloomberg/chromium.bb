@@ -9,10 +9,6 @@
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace IPC {
 class Sender;
 }
@@ -27,11 +23,6 @@ class InstantIPCSender : public content::WebContentsObserver {
 
   // Sets |web_contents| as the receiver of IPCs.
   void SetContents(content::WebContents* web_contents);
-
-
-  // Tells the page the left and right margins of the omnibox. This is used by
-  // the page to align text or assets properly with the omnibox.
-  virtual void SetOmniboxBounds(const gfx::Rect& bounds) {}
 
   // Tells the page that the omnibox focus has changed.
   virtual void FocusChanged(OmniboxFocusState state,
