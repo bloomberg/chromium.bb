@@ -570,6 +570,7 @@ void SyncEngine::MaybeStartFetchChanges() {
   base::TimeTicks now = base::TimeTicks::Now();
   if (!should_check_remote_change_ && now < time_to_check_changes_) {
     if (!metadata_database_->HasDirtyTracker() && should_check_conflict_) {
+      should_check_conflict_ = false;
       task_manager_->ScheduleSyncTaskIfIdle(
           scoped_ptr<SyncTask>(new ConflictResolver(this)),
           base::Bind(&SyncEngine::DidResolveConflict,
@@ -590,8 +591,8 @@ void SyncEngine::MaybeStartFetchChanges() {
 }
 
 void SyncEngine::DidResolveConflict(SyncStatusCode status) {
-  if (status == SYNC_STATUS_NO_CONFLICT)
-    should_check_conflict_ = false;
+  if (status == SYNC_STATUS_OK)
+    should_check_conflict_ = true;
 }
 
 void SyncEngine::DidFetchChanges(SyncStatusCode status) {
