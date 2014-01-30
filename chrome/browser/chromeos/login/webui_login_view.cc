@@ -36,6 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/webview/webview.h"
@@ -399,6 +400,15 @@ void WebUILoginView::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   if (MediaStreamInfoBarDelegate::Create(web_contents, request, callback))
     NOTREACHED() << "Media stream not allowed for WebUI";
+}
+
+bool WebUILoginView::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  // Disable pinch zooming.
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 void WebUILoginView::DidFailProvisionalLoad(

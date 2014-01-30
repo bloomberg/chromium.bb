@@ -55,6 +55,7 @@ class Size;
 }
 
 namespace blink {
+class WebGestureEvent;
 class WebLayer;
 struct WebWindowFeatures;
 }
@@ -257,6 +258,15 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Handles activation resulting from a pointer event (e.g. when mouse is
   // pressed, or a touch-gesture begins).
   virtual void HandlePointerActivate() {}
+
+  // Allows delegates to handle gesture events before sending to the renderer.
+  // Returns true if the |event| was handled and thus shouldn't be processed
+  // by the renderer's event handler. Note that the touch events that create
+  // the gesture are always passed to the renderer since the gesture is created
+  // and dispatched after the touches return without being "preventDefault()"ed.
+  virtual bool PreHandleGestureEvent(
+      WebContents* source,
+      const blink::WebGestureEvent& event);
 
   virtual void HandleGestureBegin() {}
   virtual void HandleGestureEnd() {}

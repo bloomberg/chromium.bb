@@ -67,6 +67,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::DictionaryValue;
@@ -931,6 +932,15 @@ void DevToolsWindow::WebContentsFocused(content::WebContents* contents) {
                                                     &inspected_browser,
                                                     &inspected_tab_index))
     inspected_browser->window()->WebContentsFocused(contents);
+}
+
+bool DevToolsWindow::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  // Disable pinch zooming.
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 void DevToolsWindow::DispatchOnEmbedder(const std::string& message) {

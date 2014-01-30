@@ -1718,6 +1718,13 @@ void BrowserPluginGuest::RequestMediaAccessPermission(
                     request_info);
 }
 
+bool BrowserPluginGuest::PreHandleGestureEvent(
+    WebContents* source, const blink::WebGestureEvent& event) {
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
+}
+
 void BrowserPluginGuest::RunJavaScriptDialog(
     WebContents* web_contents,
     const GURL& origin_url,

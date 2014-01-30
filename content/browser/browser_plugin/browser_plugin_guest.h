@@ -218,6 +218,9 @@ class CONTENT_EXPORT BrowserPluginGuest
       WebContents* web_contents,
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
   // JavaScriptDialogManager implementation.
   virtual void RunJavaScriptDialog(

@@ -10,6 +10,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/controls/webview/webview.h"
 #include "url/gurl.h"
@@ -58,6 +59,15 @@ bool FirstRunView::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Discards context menu.
   return true;
+}
+
+bool FirstRunView::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  // Disable pinch zooming.
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 }  // namespace chromeos

@@ -347,6 +347,15 @@ void ShellWindow::RequestToLockMouse(WebContents* web_contents,
   web_contents->GotResponseToLockMouseRequest(has_permission);
 }
 
+bool ShellWindow::PreHandleGestureEvent(
+    WebContents* source,
+    const blink::WebGestureEvent& event) {
+  // Disable pinch zooming in shell windows.
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
+}
+
 void ShellWindow::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
   first_paint_complete_ = true;
   if (show_on_first_paint_) {

@@ -108,6 +108,12 @@ bool WebContentsDelegate::PreHandleKeyboardEvent(
   return false;
 }
 
+bool WebContentsDelegate::PreHandleGestureEvent(
+    WebContents* source,
+    const blink::WebGestureEvent& event) {
+  return false;
+}
+
 bool WebContentsDelegate::CanDragEnter(
     WebContents* source,
     const DropData& data,

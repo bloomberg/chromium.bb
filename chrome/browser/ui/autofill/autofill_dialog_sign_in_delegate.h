@@ -41,6 +41,9 @@ class AutofillDialogSignInDelegate: public content::WebContentsDelegate,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(

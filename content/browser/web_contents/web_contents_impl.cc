@@ -1156,6 +1156,11 @@ bool WebContentsImpl::PreHandleWheelEvent(
   return false;
 }
 
+bool WebContentsImpl::PreHandleGestureEvent(
+    const blink::WebGestureEvent& event) {
+  return delegate_->PreHandleGestureEvent(this, event);
+}
+
 #if defined(OS_WIN)
 gfx::NativeViewAccessible WebContentsImpl::GetParentNativeViewAccessible() {
   return accessible_parent_;

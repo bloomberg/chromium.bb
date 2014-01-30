@@ -136,6 +136,9 @@ class WebUILoginView : public views::View,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
   // Overridden from content::WebContentsObserver.
   virtual void DidFailProvisionalLoad(

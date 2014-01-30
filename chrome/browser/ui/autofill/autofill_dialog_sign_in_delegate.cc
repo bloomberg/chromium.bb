@@ -11,6 +11,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace autofill {
@@ -95,6 +96,15 @@ void AutofillDialogSignInDelegate::AddNewContents(
       chrome::FindBrowserWithWebContents(originating_web_contents_),
       source, new_contents, disposition, initial_pos, user_gesture,
       was_blocked);
+}
+
+bool AutofillDialogSignInDelegate::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  // Disable pinch zooming.
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 void AutofillDialogSignInDelegate::RenderViewCreated(

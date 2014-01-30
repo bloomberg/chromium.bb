@@ -1002,6 +1002,9 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (IgnoreInputEvents())
     return;
 
+  if (delegate_->PreHandleGestureEvent(gesture_event))
+    return;
+
   ui::LatencyInfo latency_info =
       CreateRWHLatencyInfoIfNotExist(&ui_latency, gesture_event.type);
 

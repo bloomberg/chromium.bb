@@ -17,6 +17,11 @@ bool RenderWidgetHostDelegate::PreHandleWheelEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::PreHandleGestureEvent(
+    const blink::WebGestureEvent& event) {
+  return false;
+}
+
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
 RenderWidgetHostDelegate::GetParentNativeViewAccessible() {

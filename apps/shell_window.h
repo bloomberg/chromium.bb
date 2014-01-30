@@ -394,6 +394,9 @@ class ShellWindow : public content::NotificationObserver,
   virtual void RequestToLockMouse(content::WebContents* web_contents,
                                   bool user_gesture,
                                   bool last_unlocked_by_target) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE;

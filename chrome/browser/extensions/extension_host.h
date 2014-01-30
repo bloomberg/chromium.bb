@@ -98,6 +98,9 @@ class ExtensionHost : public content::WebContentsDelegate,
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,

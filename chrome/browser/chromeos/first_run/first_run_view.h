@@ -42,6 +42,9 @@ class FirstRunView : public views::View,
   // Overriden from content::WebContentsDelegate.
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
   views::WebView* web_view_;
 

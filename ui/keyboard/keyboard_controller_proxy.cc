@@ -96,7 +96,6 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
     proxy_->RequestAudioInput(web_contents, request, callback);
   }
 
-
   // Overridden from content::WebContentsObserver:
   virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE {
     delete this;

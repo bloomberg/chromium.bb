@@ -288,6 +288,9 @@ class DevToolsWindow : private content::NotificationObserver,
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
+  virtual bool PreHandleGestureEvent(
+      content::WebContents* source,
+      const blink::WebGestureEvent& event) OVERRIDE;
 
   // content::DevToolsFrontendHostDelegate override:
   virtual void DispatchOnEmbedder(const std::string& message) OVERRIDE;

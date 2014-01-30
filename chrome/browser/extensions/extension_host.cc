@@ -47,6 +47,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -473,6 +474,15 @@ void ExtensionHost::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
       web_contents, request, callback, extension());
+}
+
+bool ExtensionHost::PreHandleGestureEvent(
+    content::WebContents* source,
+    const blink::WebGestureEvent& event) {
+  // Disable pinch zooming.
+  return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+      event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+      event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
 }  // namespace extensions
