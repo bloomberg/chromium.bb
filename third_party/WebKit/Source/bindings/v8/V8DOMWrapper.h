@@ -42,11 +42,6 @@ struct WrapperTypeInfo;
 
     class V8DOMWrapper {
     public:
-#ifndef NDEBUG
-        // Checks if a v8 value can be a DOM wrapper
-        static bool maybeDOMWrapper(v8::Handle<v8::Value>);
-#endif
-
         static v8::Local<v8::Object> createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, void*, v8::Isolate*);
 
         template<typename V8T, typename T>
@@ -79,7 +74,7 @@ struct WrapperTypeInfo;
     inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(PassRefPtr<T> object, const WrapperTypeInfo* type, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, WrapperConfiguration::Lifetime lifetime)
     {
         setNativeInfo(wrapper, type, V8T::toInternalPointer(object.get()));
-        ASSERT(maybeDOMWrapper(wrapper));
+        ASSERT(isDOMWrapper(wrapper));
         WrapperConfiguration configuration = buildWrapperConfiguration(object.get(), lifetime);
         DOMDataStore::setWrapper<V8T>(object.leakRef(), wrapper, isolate, configuration);
         return wrapper;

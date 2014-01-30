@@ -90,38 +90,21 @@ static bool hasInternalField(v8::Handle<v8::Value> value)
     return v8::Handle<v8::Object>::Cast(value)->InternalFieldCount();
 }
 
-#ifndef NDEBUG
-bool V8DOMWrapper::maybeDOMWrapper(v8::Handle<v8::Value> value)
-{
-    if (!hasInternalField(value))
-        return false;
-
-    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-    ASSERT(object->InternalFieldCount() >= v8DefaultWrapperInternalFieldCount);
-
-    v8::HandleScope scope(v8::Isolate::GetCurrent());
-    ASSERT(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
-
-    const WrapperTypeInfo* typeInfo = static_cast<const WrapperTypeInfo*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
-
-    return typeInfo->ginEmbedder == gin::kEmbedderBlink;
-}
-#endif
-
 bool V8DOMWrapper::isDOMWrapper(v8::Handle<v8::Value> value)
 {
     if (value.IsEmpty() || !value->IsObject())
         return false;
 
-    v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(value);
-    if (wrapper->InternalFieldCount() < v8DefaultWrapperInternalFieldCount)
+    if (v8::Handle<v8::Object>::Cast(value)->InternalFieldCount() < v8DefaultWrapperInternalFieldCount)
         return false;
+
+    v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(value);
     ASSERT(wrapper->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     ASSERT(wrapper->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
 
     const WrapperTypeInfo* typeInfo = static_cast<const WrapperTypeInfo*>(wrapper->GetAlignedPointerFromInternalField(v8DOMWrapperTypeIndex));
-
-    // FIXME: Add class id checks.
+    // FIXME: We should add a more strict way to check if the typeInfo is a typeInfo of some DOM wrapper.
+    // Even if it's a typeInfo of Blink, it's not guaranteed that it's a typeInfo of a DOM wrapper.
     return typeInfo->ginEmbedder == gin::kEmbedderBlink;
 }
 

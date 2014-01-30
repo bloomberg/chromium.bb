@@ -121,7 +121,7 @@ public:
         // during the GC prologue.
         ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-        ASSERT(V8DOMWrapper::maybeDOMWrapper(*wrapper));
+        ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
         ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
         Node* node = V8Node::toNative(*wrapper);
         // A minor DOM GC can handle only node wrappers in the main world.
@@ -253,7 +253,7 @@ public:
             return;
 
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-        ASSERT(V8DOMWrapper::maybeDOMWrapper(*wrapper));
+        ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
 
         if (value->IsIndependent())
             return;
