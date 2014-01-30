@@ -177,6 +177,8 @@ public:
 
     BLINK_EXPORT static void enableExperimentalWebSocket(bool);
 
+    BLINK_EXPORT static void enableTargetedStyleRecalc(bool);
+
 private:
     WebRuntimeFeatures();
 };

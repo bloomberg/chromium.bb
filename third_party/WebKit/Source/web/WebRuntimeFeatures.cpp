@@ -490,4 +490,9 @@ void WebRuntimeFeatures::enableExperimentalWebSocket(bool enable)
     RuntimeEnabledFeatures::setExperimentalWebSocketEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableTargetedStyleRecalc(bool enable)
+{
+    RuntimeEnabledFeatures::setTargetedStyleRecalcEnabled(enable);
+}
+
 } // namespace blink
