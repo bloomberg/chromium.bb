@@ -38,16 +38,6 @@ scoped_ptr<ScreenControls> Me2MeDesktopEnvironment::CreateScreenControls() {
       new ResizingHostObserver(DesktopResizer::Create()));
 }
 
-scoped_ptr<webrtc::ScreenCapturer>
-Me2MeDesktopEnvironment::CreateVideoCapturer() {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-  webrtc::DesktopCaptureOptions options =
-      webrtc::DesktopCaptureOptions::CreateDefault();
-  options.set_use_update_notifications(true);
-  return scoped_ptr<webrtc::ScreenCapturer>(
-      webrtc::ScreenCapturer::Create(options));
-}
-
 std::string Me2MeDesktopEnvironment::GetCapabilities() const {
   return kRateLimitResizeRequests;
 }
@@ -60,6 +50,7 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
                               input_task_runner,
                               ui_task_runner) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
+  desktop_capture_options()->set_use_update_notifications(true);
 }
 
 bool Me2MeDesktopEnvironment::InitializeSecurity(

@@ -83,6 +83,10 @@ class ClientSessionTest : public testing::Test {
   // DesktopEnvironment::CreateVideoCapturer().
   webrtc::ScreenCapturer* CreateVideoCapturer();
 
+  // Creates a MockMouseCursorMonitor, to mock
+  // DesktopEnvironment::CreateMouseCursorMonitor
+  webrtc::MouseCursorMonitor* CreateMouseCursorMonitor();
+
   // Notifies the client session that the client connection has been
   // authenticated and channels have been connected. This effectively enables
   // the input pipe line and starts video capturing.
@@ -198,6 +202,8 @@ DesktopEnvironment* ClientSessionTest::CreateDesktopEnvironment() {
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, CreateVideoCapturerPtr())
       .WillOnce(Invoke(this, &ClientSessionTest::CreateVideoCapturer));
+  EXPECT_CALL(*desktop_environment, CreateMouseCursorMonitorPtr())
+      .WillOnce(Invoke(this, &ClientSessionTest::CreateMouseCursorMonitor));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1));
   EXPECT_CALL(*desktop_environment, SetCapabilities(_))
@@ -213,6 +219,10 @@ InputInjector* ClientSessionTest::CreateInputInjector() {
 
 webrtc::ScreenCapturer* ClientSessionTest::CreateVideoCapturer() {
   return new ScreenCapturerFake();
+}
+
+webrtc::MouseCursorMonitor* ClientSessionTest::CreateMouseCursorMonitor() {
+  return new MockMouseCursorMonitor();
 }
 
 void ClientSessionTest::ConnectClientSession() {
