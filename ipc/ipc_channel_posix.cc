@@ -31,7 +31,6 @@
 #include "base/posix/global_descriptors.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
-#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
@@ -328,7 +327,7 @@ bool Channel::ChannelImpl::CreatePipe(
 
 bool Channel::ChannelImpl::Connect() {
   if (server_listen_pipe_ == -1 && pipe_ == -1) {
-    DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
+    DLOG(INFO) << "Channel creation failed: " << pipe_name_;
     return false;
   }
 
@@ -516,9 +515,6 @@ bool Channel::ChannelImpl::Send(Message* message) {
            << " with type " << message->type()
            << " (" << output_queue_.size() << " in queue)";
 
-  if (!waiting_connect_ && pipe_ == -1)
-    return false;
-
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::GetInstance()->OnSendMessage(message, "");
 #endif  // IPC_MESSAGE_LOG_ENABLED
@@ -526,10 +522,7 @@ bool Channel::ChannelImpl::Send(Message* message) {
   message->TraceMessageBegin();
   output_queue_.push(message);
   if (!is_blocked_on_write_ && !waiting_connect_) {
-    if (!ProcessOutgoingMessages()) {
-      ClosePipeOnError();
-      return false;
-    }
+    return ProcessOutgoingMessages();
   }
 
   return true;
@@ -714,11 +707,7 @@ bool Channel::ChannelImpl::AcceptConnection() {
     // In server mode we will send a hello message when we receive one from a
     // client.
     waiting_connect_ = false;
-    if (!ProcessOutgoingMessages()) {
-      ClosePipeOnError();
-      return false;
-    }
-    return true;
+    return ProcessOutgoingMessages();
   } else if (mode_ & MODE_SERVER_FLAG) {
     waiting_connect_ = true;
     return true;
