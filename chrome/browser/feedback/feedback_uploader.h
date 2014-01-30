@@ -22,7 +22,7 @@ class BrowserContext;
 
 namespace feedback {
 
-class FeedbackReport;
+struct FeedbackReport;
 
 // FeedbackUploader is used to add a feedback report to the queue of reports
 // being uploaded. In case uploading a report fails, it is written to disk and
@@ -33,27 +33,22 @@ class FeedbackUploader : public BrowserContextKeyedService,
   explicit FeedbackUploader(content::BrowserContext* context);
   virtual ~FeedbackUploader();
 
-  // Queues a report for uploading.
-  void QueueReport(const std::string& data);
+  void QueueReport(scoped_ptr<std::string> data);
 
  private:
   friend class FeedbackUploaderTest;
   struct ReportsUploadTimeComparator {
-    bool operator()(FeedbackReport* a, FeedbackReport* b) const;
+    bool operator()(const FeedbackReport& a, const FeedbackReport& b) const;
   };
 
   // Dispatches the report to be uploaded.
-  void DispatchReport(const std::string& data);
-
-  // Loads any unsent reports from disk and queues them to be uploaded in
-  // the given browser context.
-  void QueueUnsentReports(content::BrowserContext* context);
+  void DispatchReport(scoped_ptr<std::string> data);
 
   // Update our timer for uploading the next report.
   void UpdateUploadTimer();
 
   // Requeue this report with a delay.
-  void RetryReport(const std::string& data);
+  void RetryReport(scoped_ptr<std::string> data);
 
   void setup_for_test(const ReportDataCallback& dispatch_callback,
                       const base::TimeDelta& retry_delay);
@@ -64,9 +59,11 @@ class FeedbackUploader : public BrowserContextKeyedService,
   base::OneShotTimer<FeedbackUploader> upload_timer_;
   // Priority queue of reports prioritized by the time the report is supposed
   // to be uploaded at.
-  std::priority_queue<scoped_refptr<FeedbackReport>,
-                      std::vector<scoped_refptr<FeedbackReport> >,
+  std::priority_queue<FeedbackReport,
+                      std::vector<FeedbackReport>,
                       ReportsUploadTimeComparator> reports_queue_;
+
+  std::vector<FeedbackReport> loaded_reports_;
 
   ReportDataCallback dispatch_callback_;
   base::TimeDelta retry_delay_;

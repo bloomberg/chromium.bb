@@ -54,15 +54,15 @@ class FeedbackUploaderTest : public testing::Test {
   }
 
   void QueueReport(const std::string& data) {
-    uploader_->QueueReport(data);
+    uploader_->QueueReport(make_scoped_ptr(new std::string(data)));
   }
 
   void ReportFailure(const std::string& data) {
-    uploader_->RetryReport(data);
+    uploader_->RetryReport(make_scoped_ptr(new std::string(data)));
   }
 
-  void MockDispatchReport(const std::string& report_data) {
-    dispatched_reports_.push_back(report_data);
+  void MockDispatchReport(scoped_ptr<std::string> report_data) {
+    dispatched_reports_.push_back(*report_data.get());
 
     // Dispatch will always update the timer, whether successful or not,
     // simulate the same behavior.
@@ -90,13 +90,7 @@ class FeedbackUploaderTest : public testing::Test {
   size_t expected_reports_;
 };
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_QueueMultiple QueueMultiple
-#else
-// crbug.com/330547
-#define MAYBE_QueueMultiple DISABLED_QueueMultiple
-#endif
-TEST_F(FeedbackUploaderTest, MAYBE_QueueMultiple) {
+TEST_F(FeedbackUploaderTest, QueueMultiple) {
   dispatched_reports_.clear();
   QueueReport(kReportOne);
   QueueReport(kReportTwo);
@@ -110,11 +104,11 @@ TEST_F(FeedbackUploaderTest, MAYBE_QueueMultiple) {
   EXPECT_EQ(dispatched_reports_[3], kReportFour);
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_QueueMultipleWithFailures QueueMultipleWithFailures
-#else
+#if defined(OS_WIN)
 // crbug.com/330547
 #define MAYBE_QueueMultipleWithFailures DISABLED_QueueMultipleWithFailures
+#else
+#define MAYBE_QueueMultipleWithFailures QueueMultipleWithFailures
 #endif
 TEST_F(FeedbackUploaderTest, MAYBE_QueueMultipleWithFailures) {
   dispatched_reports_.clear();
