@@ -56,7 +56,17 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   // Check for newly-opened web views.
   for (size_t i = 0; i < views_info.GetSize(); ++i) {
     const WebViewInfo& view = views_info.Get(i);
-    if (view.type != WebViewInfo::kPage)
+    if (view.type != WebViewInfo::kPage && view.type != WebViewInfo::kApp)
+      continue;
+
+    // Workaround to ignore generated background pages that are
+    // being returned as active windows for some builds of Chrome.
+    // TODO(bustamante): Once Chrome builds < 1755 are no longer
+    //   supported this check can be removed.
+    int kBuildNumber = GetBuildNo();
+    if (kBuildNumber > 1704 && kBuildNumber < 1755 &&
+        view.type == WebViewInfo::kApp &&
+        view.url.find("_generated_background") != std::string::npos)
       continue;
 
     bool found = false;
