@@ -241,6 +241,25 @@ const uint8 kQueryPacketPrivet[] = {
   0x00, 0x01,        // CLASS is IN.
 };
 
+const uint8 kQueryPacketPrivetA[] = {
+  // Header
+  0x00, 0x00,               // ID is zeroed out
+  0x00, 0x00,               // No flags.
+  0x00, 0x01,               // One question.
+  0x00, 0x00,               // 0 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
+
+  // Question
+  // This part is echoed back from the respective query.
+  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
+  0x04, '_', 't', 'c', 'p',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is A.
+  0x00, 0x01,        // CLASS is IN.
+};
+
 const uint8 kSamplePacketAdditionalOnly[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
@@ -303,8 +322,8 @@ const uint8 kSamplePacketAPrivet[] = {
   0x00,
   0x00, 0x01,        // TYPE is A.
   0x00, 0x01,        // CLASS is IN.
-  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
-  0x24, 0x74,
+  0x00, 0x00,        // TTL (4 bytes) is 5 seconds
+  0x00, 0x05,
   0x00, 0x04,        // RDLENGTH is 4 bytes.
   0xc0, 0x0c,
   0x00, 0x02,
@@ -1007,6 +1026,31 @@ TEST_F(MDnsTest, NsecConflictRemoval) {
   EXPECT_EQ(record1, record2);
 }
 
+
+TEST_F(MDnsTest, RefreshQuery) {
+  StrictMock<MockListenerDelegate> delegate_privet;
+  scoped_ptr<MDnsListener> listener_privet =
+      test_client_.CreateListener(dns_protocol::kTypeA, "_privet._tcp.local",
+                                  &delegate_privet);
+
+  listener_privet->SetActiveRefresh(true);
+  ASSERT_TRUE(listener_privet->Start());
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _));
+
+  SimulatePacketReceive(kSamplePacketAPrivet,
+                        sizeof(kSamplePacketAPrivet));
+
+  // Expecting 2 calls (one for ipv4 and one for ipv6) for each of the 2
+  // scheduled refresh queries.
+  EXPECT_CALL(socket_factory_, OnSendTo(
+      MakeString(kQueryPacketPrivetA, sizeof(kQueryPacketPrivetA))))
+      .Times(4);
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_REMOVED, _));
+
+  RunFor(base::TimeDelta::FromSeconds(6));
+}
 
 // Note: These tests assume that the ipv4 socket will always be created first.
 // This is a simplifying assumption based on the way the code works now.

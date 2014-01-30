@@ -55,6 +55,7 @@ class NET_EXPORT_PRIVATE MDnsCache {
   enum UpdateType {
     RecordAdded,
     RecordChanged,
+    RecordRemoved,
     NoChange
   };
 

@@ -26,6 +26,13 @@ namespace net {
 namespace {
 
 const unsigned MDnsTransactionTimeoutSeconds = 3;
+// The fractions of the record's original TTL after which an active listener
+// (one that had |SetActiveRefresh(true)| called) will send a query to refresh
+// its cache. This happens both at 85% of the original TTL and again at 95% of
+// the original TTL.
+const double kListenerRefreshRatio1 = 0.85;
+const double kListenerRefreshRatio2 = 0.95;
+const unsigned kMillisecondsPerSecond = 1000;
 
 }  // namespace
 
@@ -192,7 +199,7 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
   // Note: We store cache keys rather than record pointers to avoid
   // erroneous behavior in case a packet contains multiple exclusive
   // records with the same type and name.
-  std::map<MDnsCache::Key, MDnsListener::UpdateType> update_keys;
+  std::map<MDnsCache::Key, MDnsCache::UpdateType> update_keys;
 
   if (!response->InitParseWithoutQuery(bytes_read)) {
     LOG(WARNING) << "Could not understand an mDNS packet.";
@@ -235,29 +242,10 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
     // Cleanup time may have changed.
     ScheduleCleanup(cache_.next_expiration());
 
-    if (update != MDnsCache::NoChange) {
-      MDnsListener::UpdateType update_external;
-
-      switch (update) {
-        case MDnsCache::RecordAdded:
-          update_external = MDnsListener::RECORD_ADDED;
-          break;
-        case MDnsCache::RecordChanged:
-          update_external = MDnsListener::RECORD_CHANGED;
-          break;
-        case MDnsCache::NoChange:
-        default:
-          NOTREACHED();
-          // Dummy assignment to suppress compiler warning.
-          update_external = MDnsListener::RECORD_CHANGED;
-          break;
-      }
-
-      update_keys.insert(std::make_pair(update_key, update_external));
-    }
+    update_keys.insert(std::make_pair(update_key, update));
   }
 
-  for (std::map<MDnsCache::Key, MDnsListener::UpdateType>::iterator i =
+  for (std::map<MDnsCache::Key, MDnsCache::UpdateType>::iterator i =
            update_keys.begin(); i != update_keys.end(); i++) {
     const RecordParsed* record = cache_.LookupKey(i->first);
     if (!record)
@@ -311,14 +299,14 @@ void MDnsClientImpl::Core::OnConnectionError(int error) {
 }
 
 void MDnsClientImpl::Core::AlertListeners(
-    MDnsListener::UpdateType update_type,
+    MDnsCache::UpdateType update_type,
     const ListenerKey& key,
     const RecordParsed* record) {
   ListenerMap::iterator listener_map_iterator = listeners_.find(key);
   if (listener_map_iterator == listeners_.end()) return;
 
   FOR_EACH_OBSERVER(MDnsListenerImpl, *listener_map_iterator->second,
-                    AlertDelegate(update_type, record));
+                    HandleRecordUpdate(update_type, record));
 }
 
 void MDnsClientImpl::Core::AddListener(
@@ -392,7 +380,7 @@ void MDnsClientImpl::Core::DoCleanup() {
 
 void MDnsClientImpl::Core::OnRecordRemoved(
     const RecordParsed* record) {
-  AlertListeners(MDnsListener::RECORD_REMOVED,
+  AlertListeners(MDnsCache::RecordRemoved,
                  ListenerKey(record->name(), record->type()), record);
 }
 
@@ -449,7 +437,14 @@ MDnsListenerImpl::MDnsListenerImpl(
     MDnsListener::Delegate* delegate,
     MDnsClientImpl* client)
     : rrtype_(rrtype), name_(name), client_(client), delegate_(delegate),
-      started_(false) {
+      started_(false), active_refresh_(false) {
+}
+
+MDnsListenerImpl::~MDnsListenerImpl() {
+  if (started_) {
+    DCHECK(client_->core());
+    client_->core()->RemoveListener(this);
+  }
 }
 
 bool MDnsListenerImpl::Start() {
@@ -463,10 +458,15 @@ bool MDnsListenerImpl::Start() {
   return true;
 }
 
-MDnsListenerImpl::~MDnsListenerImpl() {
+void MDnsListenerImpl::SetActiveRefresh(bool active_refresh) {
+  active_refresh_ = active_refresh;
+
   if (started_) {
-    DCHECK(client_->core());
-    client_->core()->RemoveListener(this);
+    if (!active_refresh_) {
+      next_refresh_.Cancel();
+    } else if (last_update_ != base::Time()) {
+      ScheduleNextRefresh();
+    }
   }
 }
 
@@ -478,15 +478,86 @@ uint16 MDnsListenerImpl::GetType() const {
   return rrtype_;
 }
 
-void MDnsListenerImpl::AlertDelegate(MDnsListener::UpdateType update_type,
-                                     const RecordParsed* record) {
+void MDnsListenerImpl::HandleRecordUpdate(MDnsCache::UpdateType update_type,
+                                          const RecordParsed* record) {
   DCHECK(started_);
-  delegate_->OnRecordUpdate(update_type, record);
+
+  if (update_type != MDnsCache::RecordRemoved) {
+    ttl_ = record->ttl();
+    last_update_ = record->time_created();
+
+    ScheduleNextRefresh();
+  }
+
+  if (update_type != MDnsCache::NoChange) {
+    MDnsListener::UpdateType update_external;
+
+    switch (update_type) {
+      case MDnsCache::RecordAdded:
+        update_external = MDnsListener::RECORD_ADDED;
+        break;
+      case MDnsCache::RecordChanged:
+        update_external = MDnsListener::RECORD_CHANGED;
+        break;
+      case MDnsCache::RecordRemoved:
+        update_external = MDnsListener::RECORD_REMOVED;
+        break;
+      case MDnsCache::NoChange:
+      default:
+        NOTREACHED();
+        // Dummy assignment to suppress compiler warning.
+        update_external = MDnsListener::RECORD_CHANGED;
+        break;
+    }
+
+    delegate_->OnRecordUpdate(update_external, record);
+  }
 }
 
 void MDnsListenerImpl::AlertNsecRecord() {
   DCHECK(started_);
   delegate_->OnNsecRecord(name_, rrtype_);
+}
+
+void MDnsListenerImpl::ScheduleNextRefresh() {
+  DCHECK(last_update_ != base::Time());
+
+  if (!active_refresh_)
+    return;
+
+  // A zero TTL is a goodbye packet and should not be refreshed.
+  if (ttl_ == 0) {
+    next_refresh_.Cancel();
+    return;
+  }
+
+  next_refresh_.Reset(base::Bind(&MDnsListenerImpl::DoRefresh,
+                                 AsWeakPtr()));
+
+  // Schedule refreshes at both 85% and 95% of the original TTL. These will both
+  // be canceled and rescheduled if the record's TTL is updated due to a
+  // response being received.
+  base::Time next_refresh1 = last_update_ + base::TimeDelta::FromMilliseconds(
+      static_cast<int>(kMillisecondsPerSecond *
+                       kListenerRefreshRatio1 * ttl_));
+
+  base::Time next_refresh2 = last_update_ + base::TimeDelta::FromMilliseconds(
+      static_cast<int>(kMillisecondsPerSecond *
+                       kListenerRefreshRatio2 * ttl_));
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      next_refresh_.callback(),
+      next_refresh1 - base::Time::Now());
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      next_refresh_.callback(),
+      next_refresh2 - base::Time::Now());
+}
+
+void MDnsListenerImpl::DoRefresh() {
+  client_->core()->SendQuery(rrtype_, name_);
 }
 
 MDnsTransactionImpl::MDnsTransactionImpl(

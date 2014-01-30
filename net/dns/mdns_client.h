@@ -113,6 +113,9 @@ class NET_EXPORT MDnsListener {
   // Start the listener. Return true on success.
   virtual bool Start() = 0;
 
+  // Actively refresh any received records.
+  virtual void SetActiveRefresh(bool active_refresh) = 0;
+
   // Get the host or service name for this query.
   // Return an empty string for no name.
   virtual const std::string& GetName() const = 0;

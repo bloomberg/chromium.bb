@@ -133,7 +133,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
     ListenerMap;
 
     // Alert listeners of an update to the cache.
-    void AlertListeners(MDnsListener::UpdateType update_type,
+    void AlertListeners(MDnsCache::UpdateType update_type,
                         const ListenerKey& key, const RecordParsed* record);
 
     // Schedule a cache cleanup to a specific time, cancelling other cleanups.
@@ -156,7 +156,7 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
     MDnsClientImpl* client_;
     MDnsCache cache_;
 
-    base::CancelableCallback<void()> cleanup_callback_;
+    base::CancelableClosure cleanup_callback_;
     base::Time scheduled_cleanup_;
 
     scoped_ptr<MDnsConnection> connection_;
@@ -204,6 +204,9 @@ class MDnsListenerImpl : public MDnsListener,
   // MDnsListener implementation:
   virtual bool Start() OVERRIDE;
 
+  // Actively refresh any received records.
+  virtual void SetActiveRefresh(bool active_refresh) OVERRIDE;
+
   virtual const std::string& GetName() const OVERRIDE;
 
   virtual uint16 GetType() const OVERRIDE;
@@ -211,19 +214,27 @@ class MDnsListenerImpl : public MDnsListener,
   MDnsListener::Delegate* delegate() { return delegate_; }
 
   // Alert the delegate of a record update.
-  void AlertDelegate(MDnsListener::UpdateType update_type,
-                     const RecordParsed* record_parsed);
+  void HandleRecordUpdate(MDnsCache::UpdateType update_type,
+                          const RecordParsed* record_parsed);
 
   // Alert the delegate of the existence of an Nsec record.
   void AlertNsecRecord();
 
  private:
+  void ScheduleNextRefresh();
+  void DoRefresh();
+
   uint16 rrtype_;
   std::string name_;
   MDnsClientImpl* client_;
   MDnsListener::Delegate* delegate_;
 
+  base::Time last_update_;
+  uint32 ttl_;
   bool started_;
+  bool active_refresh_;
+
+  base::CancelableClosure next_refresh_;
   DISALLOW_COPY_AND_ASSIGN(MDnsListenerImpl);
 };
 
