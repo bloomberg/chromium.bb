@@ -105,9 +105,9 @@ double RangeInputType::valueAsDouble() const
     return parseToDoubleForNumberType(element().value());
 }
 
-void RangeInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState&) const
+void RangeInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
 {
-    element().setValue(serialize(newValue), eventBehavior);
+    setValueAsDecimal(Decimal::fromDouble(newValue), eventBehavior, exceptionState);
 }
 
 bool RangeInputType::typeMismatchFor(const String& value) const

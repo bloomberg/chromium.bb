@@ -47,12 +47,12 @@ PASS setValueAsNumberAndGetValue("3.40282346e+38") is "3.40282346e+38"
 PASS setValueAsNumberAndGetValue("3.40282348e+38") threw exception InvalidStateError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided (3.40282e+38) is outside the range (-3.40282e+38, 3.40282e+38)..
 Tests to set invalid values to valueAsNumber:
 PASS setValueAsNumberAndGetValue(null) is "0"
-PASS setValueAsNumberAndGetValue("foo") threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is not a number..
-PASS setValueAsNumberAndGetValue(NaN) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is not a number..
-PASS setValueAsNumberAndGetValue(Number.NaN) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is not a number..
-PASS setValueAsNumberAndGetValue(Infinity) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
-PASS setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
-PASS setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
+PASS setValueAsNumberAndGetValue("foo") is ""
+PASS setValueAsNumberAndGetValue(NaN) is ""
+PASS setValueAsNumberAndGetValue(Number.NaN) is ""
+PASS setValueAsNumberAndGetValue(Infinity) threw exception TypeError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
+PASS setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY) threw exception TypeError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
+PASS setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY) threw exception TypeError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
 PASS successfullyParsed is true
 
 TEST COMPLETE

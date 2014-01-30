@@ -124,6 +124,7 @@ double NumberInputType::valueAsDouble() const
 void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
 {
     // FIXME: We should use numeric_limits<double>::max for number input type.
+    // (NOTE: the range check will not be true for NaN.)
     const double floatMax = numeric_limits<float>::max();
     if (newValue < -floatMax || newValue > floatMax) {
         exceptionState.throwDOMException(InvalidStateError, "The value provided (" + String::number(newValue) + ") is outside the range (" + String::number(-floatMax) + ", " + String::number(floatMax) + ").");

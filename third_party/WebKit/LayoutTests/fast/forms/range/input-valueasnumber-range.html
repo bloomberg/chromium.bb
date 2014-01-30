@@ -15,13 +15,11 @@ document.body.appendChild(input);
 
 function valueAsNumberFor(stringValue) {
     input.value = stringValue;
-    input.offsetWidth; // Force to make a renderer work.
     return input.valueAsNumber;
 }
 
 function setValueAsNumberAndGetValue(num) {
     input.valueAsNumber = num;
-    input.offsetWidth; // Force to make a renderer work.
     return input.value;
 }
 
@@ -59,23 +57,29 @@ debug('Too huge exponent to support');
 shouldBe('valueAsNumberFor("1.2E65535")', '50');
 
 debug('Tests for the valueAsNumber setter:');
-shouldBe('setValueAsNumberAndGetValue(0)', '"0"');
-shouldBe('setValueAsNumberAndGetValue(10)', '"10"');
-shouldBe('setValueAsNumberAndGetValue(01)', '"1"');
-shouldBe('setValueAsNumberAndGetValue(-0)', '"0"');
-shouldBe('setValueAsNumberAndGetValue(-1.2)', '"0"');
-shouldBe('setValueAsNumberAndGetValue(1.2e10)', '"100"');
-shouldBe('setValueAsNumberAndGetValue(1.2e-10)', '"0"');
-shouldBe('setValueAsNumberAndGetValue(1.2345678901234567e+38)', '"100"');
+shouldBeEqualToString('setValueAsNumberAndGetValue(0)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue(10)', '10');
+shouldBeEqualToString('setValueAsNumberAndGetValue(01)', '1');
+shouldBeEqualToString('setValueAsNumberAndGetValue(-0)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue(-1.2)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1.2e10)', '100');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1.2e-10)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1.2345678901234567e+38)', '100');
 
 debug('Tests to set invalid values to valueAsNumber:');
-shouldBe('setValueAsNumberAndGetValue(null)', '"0"');
-shouldThrow('setValueAsNumberAndGetValue("foo")', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('setValueAsNumberAndGetValue(NaN)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('setValueAsNumberAndGetValue(Number.NaN)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('setValueAsNumberAndGetValue(Infinity)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldBeEqualToString('setValueAsNumberAndGetValue(null)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue(0)', '0');
+
+// if .valueAsNumber is passed a NaN, the value is set as the empty string. Which resets the range value to its default.
+var minValue = Number(input.min) || 0;
+var maxValue = Number(input.max) || 100;
+var defaultValue = String(minValue > maxValue ? minValue : (minValue + (maxValue - minValue) / 2.0));
+shouldBeEqualToString('setValueAsNumberAndGetValue("foo")', defaultValue);
+shouldBeEqualToString('setValueAsNumberAndGetValue(NaN)', defaultValue);
+shouldBeEqualToString('setValueAsNumberAndGetValue(Number.NaN)', defaultValue);
+shouldThrow('setValueAsNumberAndGetValue(Infinity)', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY)', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY)', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
 </script>
 </body>
 </html>

@@ -31,26 +31,30 @@ shouldBe('valueAsNumberFor("1969-12-31T12:34:56.789")', 'Date.UTC(1969, 11, 31, 
 shouldBe('valueAsNumberFor("1970-01-01T00:00:00.000")', 'Date.UTC(1970, 0, 1, 0, 0, 0)');
 shouldBe('valueAsNumberFor("2009-12-22T11:32:11")', 'Date.UTC(2009, 11, 22, 11, 32, 11)');
 
-shouldBe('setValueAsNumberAndGetValue(1969, 11, 1, 0, 0, 0, 0)', '"1969-12-01T00:00"');
-shouldBe('setValueAsNumberAndGetValue(1970, 0, 1, 10, 1, 0, 100)', '"1970-01-01T10:01:00.100"');
-shouldBe('setValueAsNumberAndGetValue(2009, 11, 31, 23, 59, 59, 999)', '"2009-12-31T23:59:59.999"');
-shouldBe('setValueAsNumberAndGetValue(10000, 0, 1, 12, 0, 1, 0)', '"10000-01-01T12:00:01"');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1969, 11, 1, 0, 0, 0, 0)', '1969-12-01T00:00');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1970, 0, 1, 10, 1, 0, 100)', '1970-01-01T10:01:00.100');
+shouldBeEqualToString('setValueAsNumberAndGetValue(2009, 11, 31, 23, 59, 59, 999)', '2009-12-31T23:59:59.999');
+shouldBeEqualToString('setValueAsNumberAndGetValue(10000, 0, 1, 12, 0, 1, 0)', '10000-01-01T12:00:01');
 
-shouldBe('setValueAsNumberAndGetValue(-1, 0, 1, 0, 0, 0, 0)', '""');
-shouldBe('setValueAsNumberAndGetValue(0, 11, 31, 23, 59, 59, 999)', '""');
-shouldBe('setValueAsNumberAndGetValue(1, 0, 1, 0, 0, 0, 0)', '"0001-01-01T00:00"');
-shouldBe('setValueAsNumberAndGetValue(275760, 8, 12, 0, 0, 0, 1)', '"275760-09-12T00:00:00.001"');
-shouldBe('setValueAsNumberAndGetValue(275760, 8, 13, 0, 0, 0, 0)', '"275760-09-13T00:00"');
+shouldBeEqualToString('setValueAsNumberAndGetValue(-1, 0, 1, 0, 0, 0, 0)', '');
+shouldBeEqualToString('setValueAsNumberAndGetValue(0, 11, 31, 23, 59, 59, 999)', '');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1, 0, 1, 0, 0, 0, 0)', '0001-01-01T00:00');
+shouldBeEqualToString('setValueAsNumberAndGetValue(275760, 8, 12, 0, 0, 0, 1)', '275760-09-12T00:00:00.001');
+shouldBeEqualToString('setValueAsNumberAndGetValue(275760, 8, 13, 0, 0, 0, 0)', '275760-09-13T00:00');
 
 debug('Tests to set invalid values to valueAsNumber:');
 shouldBe('input.value = ""; input.valueAsNumber = null; input.value', '"1970-01-01T00:00"');
-shouldThrow('input.valueAsNumber = "foo"', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('input.valueAsNumber = NaN', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('input.valueAsNumber = Number.NaN', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('input.valueAsNumber = Infinity', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('input.valueAsNumber = Number.POSITIVE_INFINITY', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('input.valueAsNumber = Number.NEGATIVE_INFINITY', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('input.valueAsNumber = Date.UTC(275760, 8, 13, 0, 0, 0, 1)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
+shouldBeNaN('input.valueAsNumber = "foo"; input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = "foo"; input.value', '');
+shouldBeNaN('input.valueAsNumber = NaN; input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = NaN; input.value', '');
+shouldBeNaN('input.valueAsNumber = Number.NaN; input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = Number.NaN; input.value', '');
+shouldThrow('input.valueAsNumber = Infinity', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('input.valueAsNumber = Number.POSITIVE_INFINITY', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('input.valueAsNumber = Number.NEGATIVE_INFINITY', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldBeNaN('input.valueAsNumber = Date.UTC(275760, 8, 13, 0, 0, 0, 1); input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = Date.UTC(275760, 8, 13, 0, 0, 0, 1); input.value', '');
 
 debug('Step attribute value and string representation:');
 // If the step attribute value is 1 second and the second part is 0, we should show the second part.

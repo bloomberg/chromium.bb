@@ -53,27 +53,27 @@ debug('Too huge exponent to support');
 shouldBeTrue('isNaN(valueAsNumberFor("1.2E65535"))');
 
 debug('Tests for the valueAsNumber setter:');
-shouldBe('setValueAsNumberAndGetValue(0)', '"0"');
-shouldBe('setValueAsNumberAndGetValue(10)', '"10"');
-shouldBe('setValueAsNumberAndGetValue(01)', '"1"');
-shouldBe('setValueAsNumberAndGetValue(-0)', '"0"');
-shouldBe('setValueAsNumberAndGetValue(-1.2)', '"-1.2"');
-shouldBe('setValueAsNumberAndGetValue(1.2e10)', '"12000000000"');
-shouldBe('setValueAsNumberAndGetValue(1.2e-10)', '"1.2e-10"');
-shouldBe('setValueAsNumberAndGetValue(1.2345678901234567e+38)', '"1.2345678901234567e+38"');
-shouldBe('setValueAsNumberAndGetValue("-3.40282346e+38")', '"-3.40282346e+38"');
+shouldBeEqualToString('setValueAsNumberAndGetValue(0)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue(10)', '10');
+shouldBeEqualToString('setValueAsNumberAndGetValue(01)', '1');
+shouldBeEqualToString('setValueAsNumberAndGetValue(-0)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue(-1.2)', '-1.2');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1.2e10)', '12000000000');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1.2e-10)', '1.2e-10');
+shouldBeEqualToString('setValueAsNumberAndGetValue(1.2345678901234567e+38)', '1.2345678901234567e+38');
+shouldBeEqualToString('setValueAsNumberAndGetValue("-3.40282346e+38")', '-3.40282346e+38');
 shouldThrow('setValueAsNumberAndGetValue("-3.40282348e+38")', '"InvalidStateError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided (-3.40282e+38) is outside the range (-3.40282e+38, 3.40282e+38)."');
 shouldBe('setValueAsNumberAndGetValue("3.40282346e+38")', '"3.40282346e+38"');
 shouldThrow('setValueAsNumberAndGetValue("3.40282348e+38")', '"InvalidStateError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided (3.40282e+38) is outside the range (-3.40282e+38, 3.40282e+38)."');
 
 debug('Tests to set invalid values to valueAsNumber:');
-shouldBe('setValueAsNumberAndGetValue(null)', '"0"');
-shouldThrow('setValueAsNumberAndGetValue("foo")', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('setValueAsNumberAndGetValue(NaN)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('setValueAsNumberAndGetValue(Number.NaN)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('setValueAsNumberAndGetValue(Infinity)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldBeEqualToString('setValueAsNumberAndGetValue(null)', '0');
+shouldBeEqualToString('setValueAsNumberAndGetValue("foo")', '');
+shouldBeEqualToString('setValueAsNumberAndGetValue(NaN)', '');
+shouldBeEqualToString('setValueAsNumberAndGetValue(Number.NaN)', '');
+shouldThrow('setValueAsNumberAndGetValue(Infinity)', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY)', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY)', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
 </script>
 </body>
 </html>

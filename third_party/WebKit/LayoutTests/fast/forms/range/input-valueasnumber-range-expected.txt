@@ -42,12 +42,13 @@ PASS setValueAsNumberAndGetValue(1.2e-10) is "0"
 PASS setValueAsNumberAndGetValue(1.2345678901234567e+38) is "100"
 Tests to set invalid values to valueAsNumber:
 PASS setValueAsNumberAndGetValue(null) is "0"
-PASS setValueAsNumberAndGetValue("foo") threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is not a number..
-PASS setValueAsNumberAndGetValue(NaN) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is not a number..
-PASS setValueAsNumberAndGetValue(Number.NaN) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is not a number..
-PASS setValueAsNumberAndGetValue(Infinity) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
-PASS setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
-PASS setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY) threw exception NotSupportedError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
+PASS setValueAsNumberAndGetValue(0) is "0"
+PASS setValueAsNumberAndGetValue("foo") is "50"
+PASS setValueAsNumberAndGetValue(NaN) is "50"
+PASS setValueAsNumberAndGetValue(Number.NaN) is "50"
+PASS setValueAsNumberAndGetValue(Infinity) threw exception TypeError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
+PASS setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY) threw exception TypeError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
+PASS setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY) threw exception TypeError: Failed to set the 'valueAsNumber' property on 'HTMLInputElement': The value provided is infinite..
 PASS successfullyParsed is true
 
 TEST COMPLETE

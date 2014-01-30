@@ -18,7 +18,7 @@ function checkValueAsNumber(type) {
     input.value = '0';
     input.type = type;
     shouldBe('input.valueAsNumber', 'Number.NaN');
-    shouldThrow('input.valueAsNumber = 0', '"InvalidStateError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': This input element does not support Decimal values."');
+    shouldThrow('input.valueAsNumber = 0', '"InvalidStateError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': This input element does not support Number values."');
 }
 
 checkValueAsNumber('button');

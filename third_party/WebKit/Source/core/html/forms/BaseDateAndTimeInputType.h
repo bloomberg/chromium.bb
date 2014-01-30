@@ -59,7 +59,7 @@ private:
     virtual double valueAsDate() const OVERRIDE;
     virtual void setValueAsDate(double, ExceptionState&) const OVERRIDE;
     virtual double valueAsDouble() const OVERRIDE;
-    virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;
+    virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const OVERRIDE;
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
     virtual bool typeMismatch() const OVERRIDE;
     virtual bool valueMissing(const String&) const OVERRIDE;

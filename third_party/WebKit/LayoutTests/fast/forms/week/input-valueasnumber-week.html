@@ -67,13 +67,17 @@ shouldBe('setValueAsNumberAndGetValue(275760, 8, 13)', '"275760-W37"');
 
 debug('Tests to set invalid values to valueAsNumber:');
 shouldBe('input.value = ""; input.valueAsNumber = null; input.value', '"1970-W01"');
-shouldThrow('input.valueAsNumber = "foo"', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('input.valueAsNumber = NaN', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('input.valueAsNumber = Number.NaN', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
-shouldThrow('input.valueAsNumber = Infinity', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('input.valueAsNumber = Number.POSITIVE_INFINITY', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('input.valueAsNumber = Number.NEGATIVE_INFINITY', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
-shouldThrow('input.valueAsNumber = Date.UTC(275760, 8, 14)', '"NotSupportedError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is not a number."');
+shouldBeNaN('input.valueAsNumber = "foo"; input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = "foo"; input.value', '');
+shouldBeNaN('input.valueAsNumber = NaN; input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = NaN; input.value', '');
+shouldBeNaN('input.valueAsNumber = Number.NaN; input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = Number.NaN; input.value', '');
+shouldThrow('input.valueAsNumber = Infinity', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('input.valueAsNumber = Number.POSITIVE_INFINITY', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldThrow('input.valueAsNumber = Number.NEGATIVE_INFINITY', '"TypeError: Failed to set the \'valueAsNumber\' property on \'HTMLInputElement\': The value provided is infinite."');
+shouldBeNaN('input.valueAsNumber = Date.UTC(275760, 8, 14); input.valueAsNumber');
+shouldBeEqualToString('input.valueAsNumber = Date.UTC(275760, 8, 14); input.value', '');
 </script>
 </body>
 </html>

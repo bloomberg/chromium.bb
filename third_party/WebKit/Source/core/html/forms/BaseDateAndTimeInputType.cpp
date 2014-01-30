@@ -64,9 +64,9 @@ double BaseDateAndTimeInputType::valueAsDouble() const
     return value.isFinite() ? value.toDouble() : DateComponents::invalidMilliseconds();
 }
 
-void BaseDateAndTimeInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState&) const
+void BaseDateAndTimeInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
 {
-    element().setValue(serialize(newValue), eventBehavior);
+    setValueAsDecimal(Decimal::fromDouble(newValue), eventBehavior, exceptionState);
 }
 
 bool BaseDateAndTimeInputType::typeMismatchFor(const String& value) const

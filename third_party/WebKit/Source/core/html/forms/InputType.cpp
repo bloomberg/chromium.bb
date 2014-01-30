@@ -222,12 +222,12 @@ double InputType::valueAsDouble() const
 
 void InputType::setValueAsDouble(double doubleValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
 {
-    setValueAsDecimal(Decimal::fromDouble(doubleValue), eventBehavior, exceptionState);
+    exceptionState.throwDOMException(InvalidStateError, "This input element does not support Number values.");
 }
 
-void InputType::setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState& exceptionState) const
+void InputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavior eventBehavior, ExceptionState&) const
 {
-    exceptionState.throwDOMException(InvalidStateError, "This input element does not support Decimal values.");
+    element().setValue(serialize(newValue), eventBehavior);
 }
 
 bool InputType::supportsValidation() const
