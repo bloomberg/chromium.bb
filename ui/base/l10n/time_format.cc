@@ -282,41 +282,48 @@ icu::PluralFormat* TimeFormatter::createFallbackFormat(
 }
 
 base::string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
-  if (delta.ToInternalValue() < 0) {
+  if (delta < TimeDelta::FromSeconds(0)) {
     NOTREACHED() << "Negative duration";
     return base::string16();
   }
-
-  int number;
 
   const std::vector<icu::PluralFormat*>& formatters =
     g_time_formatter.Get().formatter(format_type);
 
   UErrorCode error = U_ZERO_ERROR;
   icu::UnicodeString time_string;
-  // Less than a minute gets "X seconds left"
-  if (delta.ToInternalValue() < Time::kMicrosecondsPerMinute) {
-    number = static_cast<int>(delta.ToInternalValue() /
-                              Time::kMicrosecondsPerSecond);
-    time_string = formatters[0]->format(number, error);
 
-  // Less than 1 hour gets "X minutes left".
-  } else if (delta.ToInternalValue() < Time::kMicrosecondsPerHour) {
-    number = static_cast<int>(delta.ToInternalValue() /
-                              Time::kMicrosecondsPerMinute);
-    time_string = formatters[1]->format(number, error);
+  const TimeDelta one_minute(TimeDelta::FromMinutes(1));
+  const TimeDelta one_hour(TimeDelta::FromHours(1));
+  const TimeDelta one_day(TimeDelta::FromDays(1));
 
-  // Less than 1 day remaining gets "X hours left"
-  } else if (delta.ToInternalValue() < Time::kMicrosecondsPerDay) {
-    number = static_cast<int>(delta.ToInternalValue() /
-                              Time::kMicrosecondsPerHour);
-    time_string = formatters[2]->format(number, error);
+  const TimeDelta half_second(TimeDelta::FromMilliseconds(500));
+  const TimeDelta half_minute(TimeDelta::FromSeconds(30));
+  const TimeDelta half_hour(TimeDelta::FromMinutes(30));
+  const TimeDelta half_day(TimeDelta::FromHours(12));
 
-  // Anything bigger gets "X days left"
+  // Less than 59.5 seconds gets "X seconds left", anything larger is
+  // rounded to minutes.
+  if (delta < one_minute - half_second) {
+    const int seconds = static_cast<int>((delta + half_second).InSeconds());
+    time_string = formatters[0]->format(seconds, error);
+
+  // Less than 59.5 minutes gets "X minutes left", anything larger is
+  // rounded to hours.
+  } else if (delta < one_hour - half_minute) {
+    const int minutes = (delta + half_minute).InMinutes();
+    time_string = formatters[1]->format(minutes, error);
+
+  // Less than 23.5 hours gets "X hours left", anything larger is
+  // rounded to days.
+  } else if (delta < one_day - half_hour) {
+    const int hours = (delta + half_hour).InHours();
+    time_string = formatters[2]->format(hours, error);
+
+  // Anything bigger gets "X days left".
   } else {
-    number = static_cast<int>(delta.ToInternalValue() /
-                              Time::kMicrosecondsPerDay);
-    time_string = formatters[3]->format(number, error);
+    const int days = (delta + half_day).InDays();
+    time_string = formatters[3]->format(days, error);
   }
 
   // With the fallback added, this should never fail.

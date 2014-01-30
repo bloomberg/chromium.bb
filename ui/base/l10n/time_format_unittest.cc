@@ -28,28 +28,31 @@ void TestTimeFormats(const TimeDelta& delta, const char* expected_ascii) {
 
 TEST(TimeFormat, FormatTime) {
   const TimeDelta one_day = TimeDelta::FromDays(1);
-  const TimeDelta three_days = TimeDelta::FromDays(3);
   const TimeDelta one_hour = TimeDelta::FromHours(1);
-  const TimeDelta four_hours = TimeDelta::FromHours(4);
   const TimeDelta one_min = TimeDelta::FromMinutes(1);
-  const TimeDelta three_mins = TimeDelta::FromMinutes(3);
-  const TimeDelta one_sec = TimeDelta::FromSeconds(1);
-  const TimeDelta five_secs = TimeDelta::FromSeconds(5);
-  const TimeDelta twohundred_millisecs = TimeDelta::FromMilliseconds(200);
+  const TimeDelta one_second = TimeDelta::FromSeconds(1);
+  const TimeDelta one_millisecond = TimeDelta::FromMilliseconds(1);
+  const TimeDelta zero = TimeDelta::FromMilliseconds(0);
 
   // TODO(jungshik) : These test only pass when the OS locale is 'en'.
   // We need to add SetUp() and TearDown() to set the locale to 'en'.
-  TestTimeFormats(twohundred_millisecs, "0 secs");
-  TestTimeFormats(one_sec - twohundred_millisecs, "0 secs");
-  TestTimeFormats(one_sec + twohundred_millisecs, "1 sec");
-  TestTimeFormats(five_secs + twohundred_millisecs, "5 secs");
-  TestTimeFormats(one_min + five_secs, "1 min");
-  TestTimeFormats(three_mins + twohundred_millisecs, "3 mins");
-  TestTimeFormats(one_hour + five_secs, "1 hour");
-  TestTimeFormats(four_hours + five_secs, "4 hours");
-  TestTimeFormats(one_day + five_secs, "1 day");
-  TestTimeFormats(three_days, "3 days");
-  TestTimeFormats(three_days + four_hours, "3 days");
+  TestTimeFormats(zero, "0 secs");
+  TestTimeFormats(499 * one_millisecond, "0 secs");
+  TestTimeFormats(500 * one_millisecond, "1 sec");
+  TestTimeFormats(1 * one_second + 499 * one_millisecond, "1 sec");
+  TestTimeFormats(1 * one_second + 500 * one_millisecond, "2 secs");
+  TestTimeFormats(59 * one_second + 499 * one_millisecond, "59 secs");
+  TestTimeFormats(59 * one_second + 500 * one_millisecond, "1 min");
+  TestTimeFormats(1 * one_min + 30 * one_second - one_millisecond, "1 min");
+  TestTimeFormats(1 * one_min + 30 * one_second, "2 mins");
+  TestTimeFormats(59 * one_min + 30 * one_second - one_millisecond, "59 mins");
+  TestTimeFormats(59 * one_min + 30 * one_second, "1 hour");
+  TestTimeFormats(1 * one_hour + 30 * one_min - one_millisecond, "1 hour");
+  TestTimeFormats(1 * one_hour + 30 * one_min, "2 hours");
+  TestTimeFormats(23 * one_hour + 30 * one_min - one_millisecond, "23 hours");
+  TestTimeFormats(23 * one_hour + 30 * one_min, "1 day");
+  TestTimeFormats(1 * one_day + 12 * one_hour - one_millisecond, "1 day");
+  TestTimeFormats(1 * one_day + 12 * one_hour, "2 days");
 }
 
 // crbug.com/159388: This test fails when daylight savings time ends.
