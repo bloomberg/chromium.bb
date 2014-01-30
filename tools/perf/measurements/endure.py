@@ -202,10 +202,6 @@ class Endure(page_measurement.PageMeasurement):
       units = self._y_values[trace_name]['units']
       chart_name = self._y_values[trace_name]['chart_name']
       values = self._y_values[trace_name]['values']
-      value_max = max(values)
-      value_range = value_max - min(values)
-      results.AddSummary(trace_name + '_max', units, value_max,
-                         chart_name=chart_name)
-      results.AddSummary(trace_name + '_range', units, value_range,
+      results.AddSummary(trace_name + '_max', units, max(values),
                          chart_name=chart_name)
 
