@@ -29,7 +29,7 @@ const char LocalExtensionCache::kCacheReadyFlagFileName[] = ".initialized";
 
 LocalExtensionCache::LocalExtensionCache(
     const base::FilePath& cache_dir,
-    size_t max_cache_size,
+    uint64 max_cache_size,
     const base::TimeDelta& max_cache_age,
     const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner)
     : cache_dir_(cache_dir),
@@ -148,6 +148,21 @@ bool LocalExtensionCache::RemoveExtension(const std::string& id) {
                  it->second.file_path));
 
   cached_extensions_.erase(it);
+  return true;
+}
+
+bool LocalExtensionCache::GetStatistics(uint64* cache_size,
+                                        size_t* extensions_count) {
+  if (state_ != kReady)
+    return false;
+
+  *cache_size = 0;
+  for (CacheMap::iterator it = cached_extensions_.begin();
+       it != cached_extensions_.end(); ++it) {
+    *cache_size += it->second.size;
+  }
+  *extensions_count = cached_extensions_.size();
+
   return true;
 }
 
@@ -425,7 +440,7 @@ void LocalExtensionCache::CleanUp() {
 
   std::vector<CacheMap::iterator> items;
   items.reserve(cached_extensions_.size());
-  size_t total_size = 0;
+  uint64_t total_size = 0;
   for (CacheMap::iterator it = cached_extensions_.begin();
        it != cached_extensions_.end(); ++it) {
     items.push_back(it);
@@ -447,7 +462,7 @@ void LocalExtensionCache::CleanUp() {
 LocalExtensionCache::CacheItemInfo::CacheItemInfo(
     const std::string& version,
     const base::Time& last_used,
-    const size_t size,
+    uint64 size,
     const base::FilePath& file_path)
     : version(version), last_used(last_used), size(size), file_path(file_path) {
 }
