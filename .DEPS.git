@@ -90,7 +90,7 @@ deps = {
     'src/third_party/libsrtp':
         Var('git_url') + '/chromium/deps/libsrtp.git@c3261b9d0df2c7371f4acc28008ec0c891e44faf',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@0771875c2b3bb2f589165a93e6e4d07db2a01ef7',
+        Var('git_url') + '/chromium/deps/libvpx.git@8cb45ec8e34edd74146639fc35d70b0e381cdf32',
     'src/third_party/libwebm/source':
         Var('git_url') + '/webm/libwebm.git@0f7815b036651e242ec8c2fcfb59fe54f69be1a8',
     'src/third_party/libyuv':
