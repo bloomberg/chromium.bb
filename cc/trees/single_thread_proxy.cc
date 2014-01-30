@@ -82,6 +82,7 @@ bool SingleThreadProxy::CompositeAndReadback(void* pixels,
 }
 
 void SingleThreadProxy::FinishAllRendering() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::FinishAllRendering");
   DCHECK(Proxy::IsMainThread());
   {
     DebugScopedSetImplThread impl(this);
@@ -95,11 +96,13 @@ bool SingleThreadProxy::IsStarted() const {
 }
 
 void SingleThreadProxy::SetLayerTreeHostClientReady() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::SetLayerTreeHostClientReady");
   // Scheduling is controlled by the embedder in the single thread case, so
   // nothing to do.
 }
 
 void SingleThreadProxy::SetVisible(bool visible) {
+  TRACE_EVENT0("cc", "SingleThreadProxy::SetVisible");
   DebugScopedSetImplThread impl(this);
   layer_tree_host_impl_->SetVisible(visible);
 
@@ -176,16 +179,19 @@ const RendererCapabilities& SingleThreadProxy::GetRendererCapabilities() const {
 }
 
 void SingleThreadProxy::SetNeedsAnimate() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsAnimate");
   DCHECK(Proxy::IsMainThread());
   client_->ScheduleAnimation();
 }
 
 void SingleThreadProxy::SetNeedsUpdateLayers() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsUpdateLayers");
   DCHECK(Proxy::IsMainThread());
   client_->ScheduleComposite();
 }
 
 void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
+  TRACE_EVENT0("cc", "SingleThreadProxy::DoCommit");
   DCHECK(Proxy::IsMainThread());
   // Commit immediately.
   {
@@ -245,6 +251,7 @@ void SingleThreadProxy::SetNeedsCommit() {
 }
 
 void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
+  TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsRedraw");
   SetNeedsRedrawRectOnImplThread(damage_rect);
   client_->ScheduleComposite();
 }
@@ -281,6 +288,8 @@ void SingleThreadProxy::Stop() {
 }
 
 void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
+  TRACE_EVENT1(
+      "cc", "SingleThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);
   DCHECK(Proxy::IsImplThread());
   UpdateBackgroundAnimateTicking();
 }
@@ -320,6 +329,8 @@ void SingleThreadProxy::SetNeedsCommitOnImplThread() {
 void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
     scoped_ptr<AnimationEventsVector> events,
     base::Time wall_clock_time) {
+  TRACE_EVENT0(
+      "cc", "SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(Proxy::IsImplThread());
   DebugScopedSetMainThread main(this);
   layer_tree_host_->SetAnimationEvents(events.Pass(), wall_clock_time);
@@ -360,6 +371,7 @@ void SingleThreadProxy::SendManagedMemoryStats() {
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 
 void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::DidLoseOutputSurfaceOnImplThread");
   // Cause a commit so we can notice the lost context.
   SetNeedsCommitOnImplThread();
   client_->DidAbortSwapBuffers();
@@ -370,12 +382,14 @@ void SingleThreadProxy::DidSwapBuffersOnImplThread() {
 }
 
 void SingleThreadProxy::OnSwapBuffersCompleteOnImplThread() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::OnSwapBuffersCompleteOnImplThread");
   client_->DidCompleteSwapBuffers();
 }
 
 // Called by the legacy scheduling path (e.g. where render_widget does the
 // scheduling)
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
+  TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
   gfx::Rect device_viewport_damage_rect;
 
   LayerTreeHostImpl::FrameData frame;
@@ -431,6 +445,7 @@ bool SingleThreadProxy::CommitAndComposite(
     const gfx::Rect& device_viewport_damage_rect,
     bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
+  TRACE_EVENT0("cc", "SingleThreadProxy::CommitAndComposite");
   DCHECK(Proxy::IsMainThread());
 
   if (!layer_tree_host_->InitializeOutputSurfaceIfNeeded())
@@ -494,6 +509,7 @@ bool SingleThreadProxy::DoComposite(
     const gfx::Rect& device_viewport_damage_rect,
     bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
+  TRACE_EVENT0("cc", "SingleThreadProxy::DoComposite");
   DCHECK(!layer_tree_host_->output_surface_lost());
 
   bool lost_output_surface = false;
