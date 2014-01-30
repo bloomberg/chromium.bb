@@ -165,7 +165,7 @@
 </polymer-element>
 
 <polymer-element name="kb-hide-keyboard-key" class="hide-keyboard dark"
-    char="Invalid" extends="kb-key">
+    align="right" char="Invalid" extends="kb-key">
   <script>
     Polymer('kb-hide-keyboard-key', {
       /**
@@ -188,12 +188,6 @@
              this.fire('show-options', details);
            }
          }, null, LONGPRESS_DELAY_MSEC);
-      },
-
-      /** @override */
-      ready: function() {
-        this.super();
-        this.image = "keyboard";
       },
 
       up: function(event) {
