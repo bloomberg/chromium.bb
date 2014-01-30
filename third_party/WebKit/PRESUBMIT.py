@@ -81,6 +81,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckUnwantedDependencies(input_api, output_api))
     results.extend(_CheckChromiumPlatformMacros(input_api, output_api))
     results.extend(_CheckWatchlist(input_api, output_api))
+    results.extend(_CheckFilePermissions(input_api, output_api))
     return results
 
 
@@ -269,6 +270,22 @@ def _CheckForFailInFile(input_api, f):
         if pattern.match(line):
             errors.append('    %s:%d %s' % (f.LocalPath(), line_num, line))
     return errors
+
+
+def _CheckFilePermissions(input_api, output_api):
+    """Check that all files have their permissions properly set."""
+    path = input_api.os_path.join(
+        '..', '..', 'tools', 'checkperms', 'checkperms.py')
+    args = [sys.executable, path, '--root', input_api.change.RepositoryRoot()]
+    for f in input_api.AffectedFiles():
+        args += ['--file', f.LocalPath()]
+    checkperms = input_api.subprocess.Popen(
+        args, stdout=input_api.subprocess.PIPE)
+    errors = checkperms.communicate()[0].strip()
+    if errors:
+        return [output_api.PresubmitError(
+            'checkperms.py failed.', errors.splitlines())]
+    return []
 
 
 def CheckChangeOnUpload(input_api, output_api):
