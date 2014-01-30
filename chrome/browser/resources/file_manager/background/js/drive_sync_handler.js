@@ -26,12 +26,18 @@ function DriveSyncHandler(progressCenter) {
   this.idCounter_ = 0;
 
   /**
-   * Progressing file names.
-   * @type {Object.<string, ProgressCenterItem>} Map a file URL and a progress
-   *     center item.
+   * Map of file urls and progress center items.
+   * @type {Object.<string, ProgressCenterItem>}
    * @private
    */
   this.items_ = {};
+
+  /**
+   * Async queue.
+   * @type {AsyncUtil.Queue}
+   * @private
+   */
+  this.queue_ = new AsyncUtil.Queue();
 
   // Register events.
   chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
@@ -102,25 +108,35 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(statusList) {
  * @private
  */
 DriveSyncHandler.prototype.updateItem_ = function(status) {
-  webkitResolveLocalFileSystemURL(status.fileUrl, function(entry) {
-    var item;
+  this.queue_.run(function(callback) {
     if (!this.items_[status.fileUrl]) {
-      item = new ProgressCenterItem();
-      item.id = DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX + (this.idCounter_++);
-      item.type = ProgressItemType.SYNC;
-      item.quiet = true;
-      item.message = strf('SYNC_FILE_NAME', entry.name);
-      item.cancelCallback = this.requestCancel_.bind(this, entry);
-      this.items_[status.fileUrl] = item;
-    } else {
-      item = this.items_[status.fileUrl];
+      webkitResolveLocalFileSystemURL(status.fileUrl, function(entry) {
+        var item = new ProgressCenterItem();
+        item.id =
+            DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX + (this.idCounter_++);
+        item.type = ProgressItemType.SYNC;
+        item.quiet = true;
+        item.message = strf('SYNC_FILE_NAME', entry.name);
+        item.cancelCallback = this.requestCancel_.bind(this, entry);
+        this.items_[status.fileUrl] = item;
+        callback();
+      }.bind(this), function(error) {
+        console.warn('Resolving URL ' + status.fileUrl + ' is failed: ', error);
+        callback();
+      });
+    }
+  }.bind(this));
+  this.queue_.run(function(callback) {
+    var item = this.items_[status.fileUrl];
+    if (!item) {
+      callback();
+      return;
     }
     item.progressValue = status.processed || 0;
     item.progressMax = status.total || 1;
     this.progressCenter_.updateItem(item);
-  }.bind(this), function() {
-    console.error('Cannot resolve the URL: ' + status.fileUrl);
-  });
+    callback();
+  }.bind(this));
 };
 
 /**
@@ -129,13 +145,18 @@ DriveSyncHandler.prototype.updateItem_ = function(status) {
  * @private
  */
 DriveSyncHandler.prototype.removeItem_ = function(status) {
-  var item = this.items_[status.fileUrl];
-  delete this.items_[status.fileUrl];
-  if (item) {
+  this.queue_.run(function(callback) {
+    var item = this.items_[status.fileUrl];
+    if (!item) {
+      callback();
+      return;
+    }
     item.state = status.transferState === 'completed' ?
         ProgressItemState.COMPLETED : ProgressItemState.CANCELED;
     this.progressCenter_.updateItem(item);
-  }
+    delete this.items_[status.fileUrl];
+    callback();
+  }.bind(this));
 };
 
 /**
