@@ -620,6 +620,7 @@
           'native_discardable_memory%': 1,
           'native_memory_pressure_signals%': 1,
           'enable_printing%': 2,
+          'enable_task_manager%':0,
         }],
 
         # Android OS includes support for proprietary codecs regardless of
@@ -666,6 +667,7 @@
           'remoting%': 0,
           'safe_browsing%': 0,
           'enable_managed_users%': 0,
+          'enable_task_manager%': 0,
         }],
 
         # Use GPU accelerated cross process image transport by default
@@ -1319,7 +1321,6 @@
       ['OS=="ios"', {
         'disable_nacl%': 1,
         'enable_background%': 0,
-        'enable_task_manager%': 0,
         'icu_use_data_file_flag%': 1,
         'use_system_libxml%': 1,
         'use_system_sqlite%': 1,
@@ -1448,7 +1449,6 @@
         'use_openssl%': 1,
 
         'proprietary_codecs%': '<(proprietary_codecs)',
-        'enable_task_manager%': 0,
         'safe_browsing%': 2,
         'input_speech%': 0,
         'enable_automation%': 0,
@@ -1735,7 +1735,6 @@
         'grit_defines': ['-D', 'enable_extensions'],
       }],
       ['enable_plugins!=0', {
-
         'grit_defines': ['-D', 'enable_plugins'],
       }],
       ['enable_printing!=0', {
@@ -1767,6 +1766,9 @@
       }],
       ['enable_enhanced_bookmarks==1', {
         'grit_defines': ['-D', 'enable_enhanced_bookmarks'],
+      }],
+      ['enable_task_manager==1', {
+        'grit_defines': ['-D', 'enable_task_manager'],
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
         'clang_chrome_plugins_flags': [

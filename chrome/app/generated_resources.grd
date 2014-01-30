@@ -3385,226 +3385,228 @@ Make sure you do not expose any sensitive information.
       </if>
 
       <!-- Task Manager Window -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
-          End process
+      <if expr="pp_ifdef('enable_task_manager')">
+        <if expr="not pp_ifdef('use_titlecase')">
+          <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
+            End process
+          </message>
+          <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
+            Purge memory
+          </message>
+          <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
+            Process ID
+          </message>
+          <message name="IDS_TASK_MANAGER_GDI_HANDLES_COLUMN" desc="The title for Task Manager GDI handles column.">
+            GDI handles
+          </message>
+          <message name="IDS_TASK_MANAGER_USER_HANDLES_COLUMN" desc="The title for Task Manager USER handles column.">
+            USER handles
+          </message>
+          <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
+            Task
+          </message>
+          <message name="IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN" desc="The text of the NativeClient debug stub port column">
+            NaCl debug port
+          </message>
+          <message name="IDS_TASK_MANAGER_NET_COLUMN" desc="The text of the network usage column">
+            Network
+          </message>
+          <message name="IDS_TASK_MANAGER_CPU_COLUMN" desc="The text of the CPU usage column">
+            CPU
+          </message>
+          <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
+            Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN" desc="Task manager process private memory column. This is the allocated size that cannot be shared with other processes">
+            Private memory
+          </message>
+          <message name="IDS_TASK_MANAGER_SHARED_MEM_COLUMN" desc="Task manager process shared memory column. Shows the size of the memory used by the process which is shared with other processes">
+            Shared memory
+          </message>
+          <message name="IDS_TASK_MANAGER_PROFILE_NAME_COLUMN" desc="The name of the column with the name of the profile in which the page is running, if any.">
+            Profile
+          </message>
+          <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
+            Idle wake ups
+          </message>
+          <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
+            Goats teleported
+          </message>
+          <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
+            Image cache
+          </message>
+          <message name="IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN" desc="Task manager WebCore scripts cache size column.">
+            Script cache
+          </message>
+          <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
+            CSS cache
+          </message>
+          <message name="IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN" desc="The text of the video memory usage column">
+            GPU memory
+          </message>
+          <message name="IDS_TASK_MANAGER_FPS_COLUMN" desc="The text of the FPS column">
+            FPS
+          </message>
+          <message name="IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN" desc="Amount of memory used by SQLite.">
+            SQLite memory
+          </message>
+          <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
+            JavaScript memory
+          </message>
+          <message name="IDS_TASK_MANAGER_INSPECT" desc="Menu item initiating resource inspection">
+            Inspect
+          </message>
+          <message name="IDS_TASK_MANAGER_ACTIVATE" desc="Menu item initiating page activation">
+            Activate
+          </message>
+        </if>
+        <if expr="pp_ifdef('use_titlecase')">
+          <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
+            End Process
+          </message>
+          <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
+            Purge Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
+            Process ID
+          </message>
+          <message name="IDS_TASK_MANAGER_GDI_HANDLES_COLUMN" desc="The title for Task Manager GDI handles column.">
+            GDI Handles
+          </message>
+          <message name="IDS_TASK_MANAGER_USER_HANDLES_COLUMN" desc="The title for Task Manager USER handles column.">
+            USER Handles
+          </message>
+          <message name="IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN" desc="The text of the NativeClient debug stub port column">
+            NaCl Debug Port
+          </message>
+          <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
+            Task
+          </message>
+          <message name="IDS_TASK_MANAGER_NET_COLUMN" desc="The text of the network usage column">
+            Network
+          </message>
+          <message name="IDS_TASK_MANAGER_CPU_COLUMN" desc="The text of the CPU usage column">
+            CPU
+          </message>
+          <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
+            Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN" desc="Task manager process private memory column. This is the allocated size that cannot be shared with other processes">
+            Private Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_SHARED_MEM_COLUMN" desc="Task manager process shared memory column. Shows the size of the memory used by the process which is shared with other processes">
+            Shared Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_PROFILE_NAME_COLUMN" desc="The name of the column with the name of the profile in which the page is running, if any.">
+            Profile
+          </message>
+          <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
+            Idle Wake Ups
+          </message>
+          <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
+            Goats Teleported
+          </message>
+          <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
+            Image Cache
+          </message>
+          <message name="IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN" desc="Task manager WebCore scripts cache size column.">
+            Script Cache
+          </message>
+          <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
+            CSS Cache
+          </message>
+          <message name="IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN" desc="The text of the video memory usage column">
+            GPU Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_FPS_COLUMN" desc="The text of the FPS column">
+            FPS
+          </message>
+          <message name="IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN" desc="Amount of memory used by SQLite.">
+            SQLite Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
+            JavaScript Memory
+          </message>
+          <message name="IDS_TASK_MANAGER_INSPECT" desc="Menu item initiating resource inspection">
+            Inspect
+          </message>
+          <message name="IDS_TASK_MANAGER_ACTIVATE" desc="Menu item initiating page activation">
+            Activate
+          </message>
+        </if>
+        <message name="IDS_TASK_MANAGER_ABOUT_MEMORY_LINK" desc="The caption of the Task Manager link to about:memory">
+          Stats for nerds
         </message>
-        <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
-          Purge memory
+        <message name="IDS_TASK_MANAGER_MEM_CELL_TEXT" desc="The value displayed in the memory usage cells.">
+          <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K
         </message>
-        <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
-          Process ID
+        <message name="IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT" desc="The value displayed in the cache size cells.">
+          <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K (<ph name="NUM_KILOBYTES_LIVE">$2<ex>5,000</ex></ph>K live)
         </message>
-        <message name="IDS_TASK_MANAGER_GDI_HANDLES_COLUMN" desc="The title for Task Manager GDI handles column.">
-          GDI Handles
+        <message name="IDS_TASK_MANAGER_NA_CELL_TEXT" desc="The value displayed for network / webcache usage when the information is not available (Not Applicable).">
+          N/A
         </message>
-        <message name="IDS_TASK_MANAGER_USER_HANDLES_COLUMN" desc="The title for Task Manager USER handles column.">
-          USER Handles
+        <message name="IDS_TASK_MANAGER_HANDLES_CELL_TEXT" desc="The value displayed in the user/gdi cells.">
+          <ph name="NUM_HANDLES">$1<ex>300</ex></ph> (<ph name="NUM_KILOBYTES_LIVE">$2<ex>500</ex></ph> peak)
         </message>
-        <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
-          Task
+        <message name="IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT" desc="The text of the web browser process row">
+          Browser
         </message>
-        <message name="IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN" desc="The text of the NativeClient debug stub port column">
-          NaCl Debug Port
+        <message name="IDS_TASK_MANAGER_EXTENSION_PREFIX" desc="The prefix for a Task Manager extension row (always visible if the extension has a view)">
+          Extension: <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_NET_COLUMN" desc="The text of the network usage column">
-          Network
+        <message name="IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito extension row (may not be visible if incognito is not open)">
+          Incognito Extension: <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_CPU_COLUMN" desc="The text of the CPU usage column">
-          CPU
+        <message name="IDS_TASK_MANAGER_APP_PREFIX" desc="The prefix for a Task Manager app row (always visible if the app has a view)">
+          App: <ph name="APP_NAME">$1<ex>Sample App</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
-          Memory
+        <message name="IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito app row (may not be visible if the app is not open in incognito)">
+          Incognito App: <ph name="APP_NAME">$1<ex>Sample App</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN" desc="Task manager process private memory column. This is the allocated size that cannot be shared with other processes">
-          Private memory
+        <message name="IDS_TASK_MANAGER_TAB_PREFIX" desc="The prefix for a Task Manager Tab row">
+          Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_SHARED_MEM_COLUMN" desc="Task manager process shared memory column. Shows the size of the memory used by the process which is shared with other processes">
-          Shared memory
+        <message name="IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito Tab row (may not be visible if incognito is not open)">
+          Incognito Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_PROFILE_NAME_COLUMN" desc="The name of the column with the name of the profile in which the page is running, if any.">
-          Profile
+        <message name="IDS_TASK_MANAGER_BACKGROUND_PREFIX" desc="The prefix for a Task Manager background page row">
+          Background Page: <ph name="BACKGROUND_PAGE_URL">$1<ex>http://www.google.com</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
-          Idle wake ups
+        <message name="IDS_TASK_MANAGER_PLUGIN_PREFIX" desc="The prefix for a Task Manager plugin row">
+          Plug-in: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
-          Goats teleported
+        <message name="IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX" desc="Task Manager row for PPAPI plugin broker, which provides additional access for PPAPI plugins">
+          Plug-in Broker: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
-          Image cache
+        <message name="IDS_TASK_MANAGER_PRERENDER_PREFIX" desc="The prefix for a Task Manager prerender row">
+          Prerender: <ph name="PRERENDER_CONTENTS_NAME">$1<ex>http://www.google.com</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN" desc="Task manager WebCore scripts cache size column.">
-          Script cache
+        <message name="IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME" desc="The prefix for a Task Manager plugin row">
+          Unknown plug-in
         </message>
-        <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
-          CSS cache
+        <message name="IDS_TASK_MANAGER_WORKER_PREFIX" desc="The prefix for a Task Manager HTML5 Web Worker process row">
+          Web Worker: <ph name="WORKER_NAME">$1<ex>http://www.domain.com</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN" desc="The text of the video memory usage column">
-          GPU Memory
+        <message name="IDS_TASK_MANAGER_UTILITY_PREFIX" desc="The prefix for a utility process row">
+          Utility:
         </message>
-        <message name="IDS_TASK_MANAGER_FPS_COLUMN" desc="The text of the FPS column">
-          FPS
+        <message name="IDS_TASK_MANAGER_NACL_PREFIX" desc="The prefix for a Task Manager Native Client module row">
+          Native Client module: <ph name="NEXE_NAME">$1<ex>Unknown Native Client module</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN" desc="Amount of memory used by SQLite.">
-          SQLite memory
+        <message name="IDS_TASK_MANAGER_NACL_BROKER_PREFIX" desc="Task Manager row for Native Client broker, which acts as the sanbox manager for NaCl processes">
+          Native Client security manager
         </message>
-        <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
-          JavaScript memory
+        <message name="IDS_TASK_MANAGER_GPU_PREFIX" desc="Task Manager row for the GPU process, which is the process doing all accelerated graphics rendering">
+          GPU Process
         </message>
-        <message name="IDS_TASK_MANAGER_INSPECT" desc="Menu item initiating resource inspection">
-          Inspect
+        <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
+          Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
         </message>
-        <message name="IDS_TASK_MANAGER_ACTIVATE" desc="Menu item initiating page activation">
-          Activate
+        <message name="IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in webview tag in the Task Manager">
+          Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
-          End Process
-        </message>
-        <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
-          Purge Memory
-        </message>
-        <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
-          Process ID
-        </message>
-        <message name="IDS_TASK_MANAGER_GDI_HANDLES_COLUMN" desc="The title for Task Manager GDI handles column.">
-          GDI Handles
-        </message>
-        <message name="IDS_TASK_MANAGER_USER_HANDLES_COLUMN" desc="The title for Task Manager USER handles column.">
-          USER Handles
-        </message>
-        <message name="IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN" desc="The text of the NativeClient debug stub port column">
-          NaCl Debug Port
-        </message>
-        <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
-          Task
-        </message>
-        <message name="IDS_TASK_MANAGER_NET_COLUMN" desc="The text of the network usage column">
-          Network
-        </message>
-        <message name="IDS_TASK_MANAGER_CPU_COLUMN" desc="The text of the CPU usage column">
-          CPU
-        </message>
-        <message name="IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN" desc="Task manager process memory column. This is the similar to the process 'working set' reported by the Windows Task Manager">
-          Memory
-        </message>
-        <message name="IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN" desc="Task manager process private memory column. This is the allocated size that cannot be shared with other processes">
-          Private Memory
-        </message>
-        <message name="IDS_TASK_MANAGER_SHARED_MEM_COLUMN" desc="Task manager process shared memory column. Shows the size of the memory used by the process which is shared with other processes">
-          Shared Memory
-        </message>
-        <message name="IDS_TASK_MANAGER_PROFILE_NAME_COLUMN" desc="The name of the column with the name of the profile in which the page is running, if any.">
-          Profile
-        </message>
-        <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
-          Idle Wake Ups
-        </message>
-        <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
-          Goats Teleported
-        </message>
-        <message name="IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN" desc="Task manager WebCore image cache size column.">
-          Image Cache
-        </message>
-        <message name="IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN" desc="Task manager WebCore scripts cache size column.">
-          Script Cache
-        </message>
-        <message name="IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN" desc="Task manager WebCore CSS cache size column.">
-          CSS Cache
-        </message>
-        <message name="IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN" desc="The text of the video memory usage column">
-          GPU Memory
-        </message>
-        <message name="IDS_TASK_MANAGER_FPS_COLUMN" desc="The text of the FPS column">
-          FPS
-        </message>
-        <message name="IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN" desc="Amount of memory used by SQLite.">
-          SQLite Memory
-        </message>
-        <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
-          JavaScript Memory
-        </message>
-        <message name="IDS_TASK_MANAGER_INSPECT" desc="Menu item initiating resource inspection">
-          Inspect
-        </message>
-        <message name="IDS_TASK_MANAGER_ACTIVATE" desc="Menu item initiating page activation">
-          Activate
-        </message>
-      </if>
-      <message name="IDS_TASK_MANAGER_ABOUT_MEMORY_LINK" desc="The caption of the Task Manager link to about:memory">
-        Stats for nerds
-      </message>
-      <message name="IDS_TASK_MANAGER_MEM_CELL_TEXT" desc="The value displayed in the memory usage cells.">
-        <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K
-      </message>
-      <message name="IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT" desc="The value displayed in the cache size cells.">
-        <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K (<ph name="NUM_KILOBYTES_LIVE">$2<ex>5,000</ex></ph>K live)
-      </message>
-      <message name="IDS_TASK_MANAGER_NA_CELL_TEXT" desc="The value displayed for network / webcache usage when the information is not available (Not Applicable).">
-        N/A
-      </message>
-      <message name="IDS_TASK_MANAGER_HANDLES_CELL_TEXT" desc="The value displayed in the user/gdi cells.">
-        <ph name="NUM_HANDLES">$1<ex>300</ex></ph> (<ph name="NUM_KILOBYTES_LIVE">$2<ex>500</ex></ph> peak)
-      </message>
-      <message name="IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT" desc="The text of the web browser process row">
-        Browser
-      </message>
-      <message name="IDS_TASK_MANAGER_EXTENSION_PREFIX" desc="The prefix for a Task Manager extension row (always visible if the extension has a view)">
-        Extension: <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito extension row (may not be visible if incognito is not open)">
-        Incognito Extension: <ph name="EXTENSION_NAME">$1<ex>Sample Extension</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_APP_PREFIX" desc="The prefix for a Task Manager app row (always visible if the app has a view)">
-        App: <ph name="APP_NAME">$1<ex>Sample App</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito app row (may not be visible if the app is not open in incognito)">
-        Incognito App: <ph name="APP_NAME">$1<ex>Sample App</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_TAB_PREFIX" desc="The prefix for a Task Manager Tab row">
-        Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX" desc="The prefix for a Task Manager incognito Tab row (may not be visible if incognito is not open)">
-        Incognito Tab: <ph name="TAB_NAME">$1<ex>Google</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_BACKGROUND_PREFIX" desc="The prefix for a Task Manager background page row">
-        Background Page: <ph name="BACKGROUND_PAGE_URL">$1<ex>http://www.google.com</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_PLUGIN_PREFIX" desc="The prefix for a Task Manager plugin row">
-        Plug-in: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX" desc="Task Manager row for PPAPI plugin broker, which provides additional access for PPAPI plugins">
-        Plug-in Broker: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_PRERENDER_PREFIX" desc="The prefix for a Task Manager prerender row">
-        Prerender: <ph name="PRERENDER_CONTENTS_NAME">$1<ex>http://www.google.com</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME" desc="The prefix for a Task Manager plugin row">
-        Unknown plug-in
-      </message>
-      <message name="IDS_TASK_MANAGER_WORKER_PREFIX" desc="The prefix for a Task Manager HTML5 Web Worker process row">
-        Web Worker: <ph name="WORKER_NAME">$1<ex>http://www.domain.com</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_UTILITY_PREFIX" desc="The prefix for a utility process row">
-        Utility:
-      </message>
-      <message name="IDS_TASK_MANAGER_NACL_PREFIX" desc="The prefix for a Task Manager Native Client module row">
-        Native Client module: <ph name="NEXE_NAME">$1<ex>Unknown Native Client module</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_NACL_BROKER_PREFIX" desc="Task Manager row for Native Client broker, which acts as the sanbox manager for NaCl processes">
-        Native Client security manager
-      </message>
-      <message name="IDS_TASK_MANAGER_GPU_PREFIX" desc="Task Manager row for the GPU process, which is the process doing all accelerated graphics rendering">
-        GPU Process
-      </message>
-      <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
-        Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
-      </message>
-      <message name="IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in webview tag in the Task Manager">
-        Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
-      </message>
 
       <if expr="not is_android">
         <!-- Performance Monitor page -->
