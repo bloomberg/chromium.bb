@@ -105,21 +105,12 @@
             '--extra-variable', 'mac_product_name', '<(mac_product_name)',
           ],
         }],
-        ["test_isolation_outdir==''", {
-          # GYP will eliminate duplicate arguments so '<(PRODUCT_DIR)' cannot
-          # be provided twice. To work around this behavior, append '/'.
-          #
-          # Also have a space after <(PRODUCT_DIR) or visual studio will
-          # escape the argument wrappping " with the \ and merge it into
-          # the following arguments.
-          'action': [ '--outdir', '<(PRODUCT_DIR)/ ' ],
-        }, {
-          'action': [ '--outdir', '<(test_isolation_outdir)' ],
+        ["test_isolation_outdir!=''", {
+          'action': [ '--isolate-server', '<(test_isolation_outdir)' ],
         }],
         ['test_isolation_fail_on_missing == 0', {
-            'action': ['--ignore_broken_items'],
-          },
-        ],
+          'action': ['--ignore_broken_items'],
+        }],
       ],
     },
   ],
