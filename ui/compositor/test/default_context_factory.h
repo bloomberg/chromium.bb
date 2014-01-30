@@ -37,8 +37,6 @@ class DefaultContextFactory : public ContextFactory {
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
 
-  bool Initialize();
-
  private:
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       offscreen_compositor_contexts_;

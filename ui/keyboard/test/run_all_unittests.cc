@@ -10,6 +10,7 @@
 #include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gl/gl_surface.h"
 
 namespace {
 
@@ -20,6 +21,7 @@ class KeyboardTestSuite : public base::TestSuite {
  protected:
   virtual void Initialize() OVERRIDE {
     base::TestSuite::Initialize();
+    gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
 
     base::FilePath pak_dir;

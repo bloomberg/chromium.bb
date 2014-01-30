@@ -148,16 +148,31 @@ static void GL_BINDING_CALL CustomRenderbufferStorageMultisampleEXT(
 
 void DriverGL::InitializeCustomDynamicBindings(GLContext* context) {
   InitializeDynamicBindings(context);
-  orig_fn = fn;
+
+  DCHECK(orig_fn.glTexImage2DFn == NULL);
+  orig_fn.glTexImage2DFn = fn.glTexImage2DFn;
   fn.glTexImage2DFn =
       reinterpret_cast<glTexImage2DProc>(CustomTexImage2D);
+
+  DCHECK(orig_fn.glTexSubImage2DFn == NULL);
+  orig_fn.glTexSubImage2DFn = fn.glTexSubImage2DFn;
   fn.glTexSubImage2DFn =
       reinterpret_cast<glTexSubImage2DProc>(CustomTexSubImage2D);
+
+  DCHECK(orig_fn.glTexStorage2DEXTFn == NULL);
+  orig_fn.glTexStorage2DEXTFn = fn.glTexStorage2DEXTFn;
   fn.glTexStorage2DEXTFn =
       reinterpret_cast<glTexStorage2DEXTProc>(CustomTexStorage2DEXT);
+
+  DCHECK(orig_fn.glRenderbufferStorageEXTFn == NULL);
+  orig_fn.glRenderbufferStorageEXTFn = fn.glRenderbufferStorageEXTFn;
   fn.glRenderbufferStorageEXTFn =
       reinterpret_cast<glRenderbufferStorageEXTProc>(
       CustomRenderbufferStorageEXT);
+
+  DCHECK(orig_fn.glRenderbufferStorageMultisampleEXTFn == NULL);
+  orig_fn.glRenderbufferStorageMultisampleEXTFn =
+      fn.glRenderbufferStorageMultisampleEXTFn;
   fn.glRenderbufferStorageMultisampleEXTFn =
       reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
       CustomRenderbufferStorageMultisampleEXT);
