@@ -30,11 +30,6 @@ enum VerifyStatus {
   NONE = 0,   // Do not request install signatures, and do not enforce them.
   BOOTSTRAP,  // Request install signatures, but do not enforce them.
   ENFORCE,    // Request install signatures, and enforce them.
-
-  // This is used in histograms - do not remove or reorder entries above! Also
-  // the "MAX" item below should always be the last element.
-
-  VERIFY_STATUS_MAX
 };
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -54,7 +49,7 @@ VerifyStatus GetExperimentStatus() {
     return ENFORCE;
   }
 
-  VerifyStatus default_status = NONE;
+  VerifyStatus default_status = BOOTSTRAP;
 
   if (group == "Enforce")
     return ENFORCE;
@@ -146,11 +141,6 @@ bool InstallVerifier::NeedsVerification(const Extension& extension) {
 }
 
 void InstallVerifier::Init() {
-  UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.ExperimentStatus",
-                            GetExperimentStatus(), VERIFY_STATUS_MAX);
-  UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.ActualStatus",
-                            GetStatus(), VERIFY_STATUS_MAX);
-
   const base::DictionaryValue* pref = prefs_->GetInstallSignature();
   if (pref) {
     scoped_ptr<InstallSignature> signature_from_prefs =

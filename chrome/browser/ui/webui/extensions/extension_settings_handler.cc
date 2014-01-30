@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -759,11 +758,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       "extensions.ExtensionSettings.returnExtensionsData", results);
 
   MaybeRegisterForNotifications();
-  UMA_HISTOGRAM_BOOLEAN("ExtensionSettings.ShouldDoVerificationCheck",
-                        should_do_verification_check_);
   if (should_do_verification_check_) {
     should_do_verification_check_ = false;
-    extension_service_->VerifyAllExtensions(false);  // bootstrap=false.
+    extension_service_->VerifyAllExtensions();
   }
 }
 
