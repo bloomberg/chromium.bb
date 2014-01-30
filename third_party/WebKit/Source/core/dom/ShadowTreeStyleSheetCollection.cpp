@@ -34,18 +34,17 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
-#include "core/frame/Settings.h"
 
 namespace WebCore {
 
 using namespace HTMLNames;
 
 ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot& shadowRoot)
-    : StyleSheetCollection(shadowRoot)
+    : TreeScopeStyleSheetCollection(shadowRoot)
 {
 }
 
-void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollectionBase& collection)
+void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollection& collection)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
@@ -92,7 +91,7 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Sty
 
 bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
-    StyleSheetCollectionBase collection;
+    StyleSheetCollection collection;
     collectStyleSheets(engine, collection);
 
     StyleSheetChange change;

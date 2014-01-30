@@ -141,23 +141,23 @@ void StyleEngine::insertTreeScopeInDocumentOrder(TreeScopeSet& treeScopes, TreeS
     treeScopes.insertBefore(followingTreeScope, treeScope);
 }
 
-StyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeScope& treeScope)
+TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeScope& treeScope)
 {
     if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
-    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
+    HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
     if (result.isNewEntry)
         result.iterator->value = adoptPtr(new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope)));
     return result.iterator->value.get();
 }
 
-StyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& treeScope)
+TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& treeScope)
 {
     if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
-    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(&treeScope);
+    HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(&treeScope);
     if (it == m_styleSheetCollectionMap.end())
         return 0;
     return it->value.get();
@@ -300,7 +300,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
     TreeScope& treeScope = node->hasTagName(styleTag) ? node->treeScope() : m_document;
     ASSERT(node->hasTagName(styleTag) || treeScope == m_document);
 
-    StyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
+    TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->addStyleSheetCandidateNode(node, createdByParser);
 
@@ -314,7 +314,7 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopi
     TreeScope& treeScope = scopingNode ? scopingNode->treeScope() : m_document;
     ASSERT(node->hasTagName(styleTag) || treeScope == m_document);
 
-    StyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
+    TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
     collection->removeStyleSheetCandidateNode(node, scopingNode);
 
@@ -415,7 +415,7 @@ const Vector<RefPtr<StyleSheet> > StyleEngine::activeStyleSheetsForInspector() c
     TreeScopeSet::const_iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::const_iterator end = m_activeTreeScopes.end();
     for (TreeScopeSet::const_iterator it = begin; it != end; ++it) {
-        if (StyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it))
+        if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it))
             activeStyleSheets.append(collection->styleSheetsForStyleSheetList());
     }
 
@@ -440,7 +440,7 @@ void StyleEngine::appendActiveAuthorStyleSheets()
     TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::iterator end = m_activeTreeScopes.end();
     for (TreeScopeSet::iterator it = begin; it != end; ++it) {
-        if (StyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it)) {
+        if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it)) {
             m_resolver->setBuildScopedStyleTreeInDocumentOrder(!collection->scopingNodesForStyleScoped());
             m_resolver->appendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
         }

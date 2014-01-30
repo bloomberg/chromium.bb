@@ -49,7 +49,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
-    : StyleSheetCollection(treeScope)
+    : TreeScopeStyleSheetCollection(treeScope)
 {
     ASSERT(treeScope.rootNode() == treeScope.rootNode().document());
 }
@@ -114,7 +114,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Docum
 
 bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
-    StyleSheetCollectionBase collection;
+    StyleSheetCollection collection;
     ActiveDocumentStyleSheetCollector collector(collection);
     collectStyleSheets(engine, collector);
 

@@ -58,7 +58,7 @@ void DocumentStyleSheetCollector::appendSheetForList(StyleSheet* sheet)
     m_styleSheetsForStyleSheetList.append(sheet);
 }
 
-ActiveDocumentStyleSheetCollector::ActiveDocumentStyleSheetCollector(StyleSheetCollectionBase& collection)
+ActiveDocumentStyleSheetCollector::ActiveDocumentStyleSheetCollector(StyleSheetCollection& collection)
     : DocumentStyleSheetCollector(collection.m_styleSheetsForStyleSheetList, collection.m_activeAuthorStyleSheets)
 {
 }

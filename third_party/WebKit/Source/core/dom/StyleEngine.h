@@ -184,8 +184,8 @@ public:
 private:
     StyleEngine(Document&);
 
-    StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
-    StyleSheetCollection* styleSheetCollectionFor(TreeScope&);
+    TreeScopeStyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
+    TreeScopeStyleSheetCollection* styleSheetCollectionFor(TreeScope&);
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
     void resolverThrowawayTimerFired(Timer<StyleEngine>*);
 
@@ -220,7 +220,7 @@ private:
     Vector<RefPtr<CSSStyleSheet> > m_authorStyleSheets;
 
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
-    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> > m_styleSheetCollectionMap;
+    HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> > m_styleSheetCollectionMap;
 
     bool m_documentScopeDirty;
     TreeScopeSet m_dirtyTreeScopes;

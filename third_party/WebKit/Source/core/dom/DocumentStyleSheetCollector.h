@@ -33,8 +33,8 @@
 namespace WebCore {
 
 class CSSStyleSheet;
-class StyleSheetCollectionBase;
 class StyleSheet;
+class StyleSheetCollection;
 
 class DocumentStyleSheetCollector {
 public:
@@ -54,7 +54,7 @@ private:
 
 class ActiveDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {
 public:
-    ActiveDocumentStyleSheetCollector(StyleSheetCollectionBase&);
+    ActiveDocumentStyleSheetCollector(StyleSheetCollection&);
 };
 
 class ImportedDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {
