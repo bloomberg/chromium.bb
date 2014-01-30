@@ -144,8 +144,6 @@
   function negotiateUnsupportedVideoCodec() {
     createConnections(null);
     transformSdp = removeVideoCodec;
-    navigator.webkitGetUserMedia({audio: true, video: true},
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     onLocalDescriptionError = function(error) {
       var expectedMsg = 'Failed to set local offer sdp:' +
           ' Session error code: ERROR_CONTENT. Session error description:' +
@@ -155,14 +153,14 @@
       // Got the right message, test succeeded.
       document.title = 'OK';
     };
+    navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
   }
 
   // Test that we can't setup a call if one peer does not support encryption
   function negotiateNonCryptoCall() {
     createConnections(null);
     transformSdp = removeCrypto;
-    navigator.webkitGetUserMedia({audio: true, video: true},
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     onLocalDescriptionError = function(error) {
       var expectedMsg = 'Failed to set local offer sdp:' +
           ' Called with a SDP without crypto enabled.';
@@ -171,6 +169,8 @@
       // Got the right message, test succeeded.
       document.title = 'OK';
     };
+    navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
   }
 
   // Test that we can negotiate a call with an SDP offer that includes a
