@@ -17343,6 +17343,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.FilterOnLoadTime" units="milliseconds">
+  <summary>
+    The amount of time it took to run PrefHashFilter::FilterOnLoad on startup.
+  </summary>
+</histogram>
+
+<histogram name="Settings.FilterSerializeDataTime" units="milliseconds">
+  <summary>
+    The amount of time it took to run PrefHashFilter::FilterSerializeData on the
+    UI thread prior to writing the Preferences file to disk.
+  </summary>
+</histogram>
+
 <histogram name="Settings.GivenShowHomeButton_HomePageIsNewTabPage"
     enum="Boolean">
   <summary>

@@ -13,9 +13,11 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_filter.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time/time.h"
 #include "base/values.h"
 
 namespace {
@@ -314,8 +316,15 @@ void JsonPrefStore::OnFileRead(base::Value* value_owned,
       NOTREACHED() << "Unknown error: " << error;
   }
 
-  if (pref_filter_)
+  if (pref_filter_) {
+    // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
+    // data has been gathered from the wild to be confident this doesn't
+    // significantly affect startup.
+    base::TimeTicks checkpoint = base::TimeTicks::Now();
     pref_filter_->FilterOnLoad(prefs_.get());
+    UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
+                        base::TimeTicks::Now() - checkpoint);
+  }
 
   if (error_delegate_.get() && error != PREF_READ_ERROR_NONE)
     error_delegate_->OnError(error);
@@ -330,8 +339,15 @@ JsonPrefStore::~JsonPrefStore() {
 }
 
 bool JsonPrefStore::SerializeData(std::string* output) {
-  if (pref_filter_)
+  if (pref_filter_) {
+    // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
+    // data has been gathered from the wild to be confident this doesn't
+    // significantly affect performance on the UI thread.
+    base::TimeTicks checkpoint = base::TimeTicks::Now();
     pref_filter_->FilterSerializeData(prefs_.get());
+    UMA_HISTOGRAM_TIMES("Settings.FilterSerializeDataTime",
+                        base::TimeTicks::Now() - checkpoint);
+  }
 
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
