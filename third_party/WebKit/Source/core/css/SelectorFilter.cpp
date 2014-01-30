@@ -108,41 +108,41 @@ void SelectorFilter::pushParent(Element& parent)
     pushParentStackFrame(parent);
 }
 
-static inline void collectDescendantSelectorIdentifierHashes(const CSSSelector* selector, unsigned*& hash)
+static inline void collectDescendantSelectorIdentifierHashes(const CSSSelector& selector, unsigned*& hash)
 {
-    switch (selector->m_match) {
+    switch (selector.m_match) {
     case CSSSelector::Id:
-        if (!selector->value().isEmpty())
-            (*hash++) = selector->value().impl()->existingHash() * IdAttributeSalt;
+        if (!selector.value().isEmpty())
+            (*hash++) = selector.value().impl()->existingHash() * IdAttributeSalt;
         break;
     case CSSSelector::Class:
-        if (!selector->value().isEmpty())
-            (*hash++) = selector->value().impl()->existingHash() * ClassAttributeSalt;
+        if (!selector.value().isEmpty())
+            (*hash++) = selector.value().impl()->existingHash() * ClassAttributeSalt;
         break;
     case CSSSelector::Tag:
-        if (selector->tagQName().localName() != starAtom)
-            (*hash++) = selector->tagQName().localName().impl()->existingHash() * TagNameSalt;
+        if (selector.tagQName().localName() != starAtom)
+            (*hash++) = selector.tagQName().localName().impl()->existingHash() * TagNameSalt;
         break;
     default:
         break;
     }
 }
 
-void SelectorFilter::collectIdentifierHashes(const CSSSelector* selector, unsigned* identifierHashes, unsigned maximumIdentifierCount)
+void SelectorFilter::collectIdentifierHashes(const CSSSelector& selector, unsigned* identifierHashes, unsigned maximumIdentifierCount)
 {
     unsigned* hash = identifierHashes;
     unsigned* end = identifierHashes + maximumIdentifierCount;
-    CSSSelector::Relation relation = selector->relation();
-    bool relationIsAffectedByPseudoContent = selector->relationIsAffectedByPseudoContent();
+    CSSSelector::Relation relation = selector.relation();
+    bool relationIsAffectedByPseudoContent = selector.relationIsAffectedByPseudoContent();
 
     // Skip the topmost selector. It is handled quickly by the rule hashes.
     bool skipOverSubselectors = true;
-    for (selector = selector->tagHistory(); selector; selector = selector->tagHistory()) {
+    for (const CSSSelector* current = selector.tagHistory(); current; current = current->tagHistory()) {
         // Only collect identifiers that match ancestors.
         switch (relation) {
         case CSSSelector::SubSelector:
             if (!skipOverSubselectors)
-                collectDescendantSelectorIdentifierHashes(selector, hash);
+                collectDescendantSelectorIdentifierHashes(*current, hash);
             break;
         case CSSSelector::DirectAdjacent:
         case CSSSelector::IndirectAdjacent:
@@ -160,13 +160,13 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector* selector, unsign
         case CSSSelector::ChildTree:
         case CSSSelector::DescendantTree:
             skipOverSubselectors = false;
-            collectDescendantSelectorIdentifierHashes(selector, hash);
+            collectDescendantSelectorIdentifierHashes(*current, hash);
             break;
         }
         if (hash == end)
             return;
-        relation = selector->relation();
-        relationIsAffectedByPseudoContent = selector->relationIsAffectedByPseudoContent();
+        relation = current->relation();
+        relationIsAffectedByPseudoContent = current->relationIsAffectedByPseudoContent();
     }
     *hash = 0;
 }

@@ -53,8 +53,8 @@ public:
 
 private:
     struct SelectorData {
-        SelectorData(const CSSSelector* selector, bool isFastCheckable) : selector(selector), isFastCheckable(isFastCheckable) { }
-        const CSSSelector* selector;
+        SelectorData(const CSSSelector& selector, bool isFastCheckable) : selector(selector), isFastCheckable(isFastCheckable) { }
+        const CSSSelector& selector;
         bool isFastCheckable;
     };
 
@@ -79,7 +79,7 @@ private:
     void executeSlow(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     template <typename SelectorQueryTrait>
     void execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
-    const CSSSelector* selectorForIdLookup(const CSSSelector*) const;
+    const CSSSelector* selectorForIdLookup(const CSSSelector&) const;
 
     Vector<SelectorData> m_selectors;
 };

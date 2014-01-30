@@ -52,11 +52,11 @@ void SelectRuleFeatureSet::clear()
     m_featureFlags = 0;
 }
 
-void SelectRuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
+void SelectRuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
 {
     m_cssRuleFeatureSet.collectFeaturesFromSelector(selector);
 
-    switch (selector->pseudoType()) {
+    switch (selector.pseudoType()) {
     case CSSSelector::PseudoChecked:
         setSelectRuleFeature(AffectedSelectorChecked);
         break;

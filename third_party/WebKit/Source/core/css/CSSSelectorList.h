@@ -45,17 +45,17 @@ public:
 
     bool isValid() const { return !!m_selectorArray; }
     const CSSSelector* first() const { return m_selectorArray; }
-    static const CSSSelector* next(const CSSSelector*);
-    bool hasOneSelector() const { return m_selectorArray && !next(m_selectorArray); }
-    const CSSSelector* selectorAt(size_t index) const { return &m_selectorArray[index]; }
+    static const CSSSelector* next(const CSSSelector&);
+    bool hasOneSelector() const { return m_selectorArray && !next(*m_selectorArray); }
+    const CSSSelector& selectorAt(size_t index) const { return m_selectorArray[index]; }
 
     size_t indexOfNextSelectorAfter(size_t index) const
     {
-        const CSSSelector* current = selectorAt(index);
-        current = next(current);
-        if (!current)
+        const CSSSelector& current = selectorAt(index);
+        const CSSSelector* next = this->next(current);
+        if (!next)
             return kNotFound;
-        return current - m_selectorArray;
+        return next - m_selectorArray;
     }
 
     bool selectorsNeedNamespaceResolution();
@@ -77,12 +77,13 @@ private:
     CSSSelector* m_selectorArray;
 };
 
-inline const CSSSelector* CSSSelectorList::next(const CSSSelector* current)
+inline const CSSSelector* CSSSelectorList::next(const CSSSelector& current)
 {
     // Skip subparts of compound selectors.
-    while (!current->isLastInTagHistory())
-        current++;
-    return current->isLastInSelectorList() ? 0 : current + 1;
+    const CSSSelector* last = &current;
+    while (!last->isLastInTagHistory())
+        last++;
+    return last->isLastInSelectorList() ? 0 : last + 1;
 }
 
 } // namespace WebCore

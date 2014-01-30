@@ -66,8 +66,8 @@ public:
 
     struct SelectorCheckingContext {
         // Initial selector constructor
-        SelectorCheckingContext(const CSSSelector* selector, Element* element, VisitedMatchType visitedMatchType)
-            : selector(selector)
+        SelectorCheckingContext(const CSSSelector& selector, Element* element, VisitedMatchType visitedMatchType)
+            : selector(&selector)
             , element(element)
             , scope(0)
             , visitedMatchType(visitedMatchType)
@@ -115,12 +115,12 @@ public:
     Mode mode() const { return m_mode; }
 
     static bool tagMatches(const Element&, const QualifiedName&, MatchingTagType = MatchingElement);
-    static bool isCommonPseudoClassSelector(const CSSSelector*);
+    static bool isCommonPseudoClassSelector(const CSSSelector&);
     static bool matchesFocusPseudoClass(const Element&);
     static bool checkExactAttribute(const Element&, const QualifiedName& selectorAttributeName, const StringImpl* value);
 
     enum LinkMatchMask { MatchLink = 1, MatchVisited = 2, MatchAll = MatchLink | MatchVisited };
-    static unsigned determineLinkMatchType(const CSSSelector*);
+    static unsigned determineLinkMatchType(const CSSSelector&);
 
     static bool isHostInItsShadowTree(const Element&, BehaviorAtBoundary, const ContainerNode* scope);
 
@@ -132,7 +132,7 @@ private:
     template<typename SiblingTraversalStrategy>
     Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
 
-    bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector*) const;
+    bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector&) const;
     Element* parentElement(const SelectorCheckingContext&, bool allowToCrossBoundary = false) const;
     bool scopeContainsLastMatchedElement(const SelectorCheckingContext&) const;
 
@@ -143,11 +143,11 @@ private:
     Mode m_mode;
 };
 
-inline bool SelectorChecker::isCommonPseudoClassSelector(const CSSSelector* selector)
+inline bool SelectorChecker::isCommonPseudoClassSelector(const CSSSelector& selector)
 {
-    if (selector->m_match != CSSSelector::PseudoClass)
+    if (selector.m_match != CSSSelector::PseudoClass)
         return false;
-    CSSSelector::PseudoType pseudoType = selector->pseudoType();
+    CSSSelector::PseudoType pseudoType = selector.pseudoType();
     return pseudoType == CSSSelector::PseudoLink
         || pseudoType == CSSSelector::PseudoAnyLink
         || pseudoType == CSSSelector::PseudoVisited

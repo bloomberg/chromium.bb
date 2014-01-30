@@ -47,7 +47,7 @@ WebString canonicalizeSelector(WebString webSelector, WebSelectorType restrictio
     parser.parseSelector(webSelector, selectorList);
 
     if (restriction == WebSelectorTypeCompound) {
-        for (const CSSSelector* selector = selectorList.first(); selector; selector = selectorList.next(selector)) {
+        for (const CSSSelector* selector = selectorList.first(); selector; selector = selectorList.next(*selector)) {
             if (!selector->isCompound())
                 return WebString();
         }

@@ -286,7 +286,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
             if (!ruleData.hasMultipartSelector())
                 return true;
         }
-        if (ruleData.selector()->m_match == CSSSelector::Tag && !SelectorChecker::tagMatches(*m_context.element(), ruleData.selector()->tagQName()))
+        if (ruleData.selector().m_match == CSSSelector::Tag && !SelectorChecker::tagMatches(*m_context.element(), ruleData.selector().tagQName()))
             return false;
         SelectorCheckerFastPath selectorCheckerFastPath(ruleData.selector(), *m_context.element());
         if (!selectorCheckerFastPath.matchesRightmostAttributeSelector())

@@ -39,11 +39,11 @@ using namespace HTMLNames;
 
 namespace {
 
-template <bool checkValue(const Element&, const CSSSelector*)>
+template <bool checkValue(const Element&, const CSSSelector&)>
 inline bool fastCheckSingleSelector(const CSSSelector*& selector, const Element*& element, const CSSSelector*& topChildOrSubselector, const Element*& topChildOrSubselectorMatchElement)
 {
     for (; element; element = element->parentElement()) {
-        if (checkValue(*element, selector)) {
+        if (checkValue(*element, *selector)) {
             if (selector->relation() == CSSSelector::Descendant)
                 topChildOrSubselector = 0;
             else if (!topChildOrSubselector) {
@@ -73,29 +73,29 @@ inline bool fastCheckSingleSelector(const CSSSelector*& selector, const Element*
     return false;
 }
 
-inline bool checkClassValue(const Element& element, const CSSSelector* selector)
+inline bool checkClassValue(const Element& element, const CSSSelector& selector)
 {
-    return element.hasClass() && element.classNames().contains(selector->value());
+    return element.hasClass() && element.classNames().contains(selector.value());
 }
 
-inline bool checkIDValue(const Element& element, const CSSSelector* selector)
+inline bool checkIDValue(const Element& element, const CSSSelector& selector)
 {
-    return element.hasID() && element.idForStyleResolution() == selector->value();
+    return element.hasID() && element.idForStyleResolution() == selector.value();
 }
 
-inline bool checkExactAttributeValue(const Element& element, const CSSSelector* selector)
+inline bool checkExactAttributeValue(const Element& element, const CSSSelector& selector)
 {
-    return SelectorChecker::checkExactAttribute(element, selector->attribute(), selector->value().impl());
+    return SelectorChecker::checkExactAttribute(element, selector.attribute(), selector.value().impl());
 }
 
-inline bool checkTagValue(const Element& element, const CSSSelector* selector)
+inline bool checkTagValue(const Element& element, const CSSSelector& selector)
 {
-    return SelectorChecker::tagMatches(element, selector->tagQName());
+    return SelectorChecker::tagMatches(element, selector.tagQName());
 }
 
 }
 
-SelectorCheckerFastPath::SelectorCheckerFastPath(const CSSSelector* selector, const Element& element)
+SelectorCheckerFastPath::SelectorCheckerFastPath(const CSSSelector& selector, const Element& element)
     : m_selector(selector)
     , m_element(element)
 {
@@ -105,7 +105,7 @@ bool SelectorCheckerFastPath::matchesRightmostSelector(SelectorChecker::VisitedM
 {
     ASSERT(SelectorCheckerFastPath::canUse(m_selector));
 
-    switch (m_selector->m_match) {
+    switch (m_selector.m_match) {
     case CSSSelector::Tag:
         return checkTagValue(m_element, m_selector);
     case CSSSelector::Class:
@@ -126,7 +126,7 @@ bool SelectorCheckerFastPath::matchesRightmostSelector(SelectorChecker::VisitedM
 bool SelectorCheckerFastPath::matches() const
 {
     ASSERT(matchesRightmostSelector(SelectorChecker::VisitedMatchEnabled));
-    const CSSSelector* selector = m_selector;
+    const CSSSelector* selector = &m_selector;
     const Element* element = &m_element;
 
     const CSSSelector* topChildOrSubselector = 0;
@@ -171,33 +171,33 @@ static inline bool isFastCheckableRelation(CSSSelector::Relation relation)
     return relation == CSSSelector::Descendant || relation == CSSSelector::Child || relation == CSSSelector::SubSelector;
 }
 
-static inline bool isFastCheckableMatch(const CSSSelector* selector)
+static inline bool isFastCheckableMatch(const CSSSelector& selector)
 {
-    if (selector->m_match == CSSSelector::Set) {
+    if (selector.m_match == CSSSelector::Set) {
         // Style attribute is generated lazily but the fast path doesn't trigger it.
         // Disallow them here rather than making the fast path more branchy.
-        return selector->attribute() != styleAttr;
+        return selector.attribute() != styleAttr;
     }
-    if (selector->m_match == CSSSelector::Exact)
-        return selector->attribute() != styleAttr && HTMLDocument::isCaseSensitiveAttribute(selector->attribute());
-    return selector->m_match == CSSSelector::Tag || selector->m_match == CSSSelector::Id || selector->m_match == CSSSelector::Class;
+    if (selector.m_match == CSSSelector::Exact)
+        return selector.attribute() != styleAttr && HTMLDocument::isCaseSensitiveAttribute(selector.attribute());
+    return selector.m_match == CSSSelector::Tag || selector.m_match == CSSSelector::Id || selector.m_match == CSSSelector::Class;
 }
 
-static inline bool isFastCheckableRightmostSelector(const CSSSelector* selector)
+static inline bool isFastCheckableRightmostSelector(const CSSSelector& selector)
 {
-    if (!isFastCheckableRelation(selector->relation()))
+    if (!isFastCheckableRelation(selector.relation()))
         return false;
     return isFastCheckableMatch(selector) || SelectorChecker::isCommonPseudoClassSelector(selector);
 }
 
-bool SelectorCheckerFastPath::canUse(const CSSSelector* selector)
+bool SelectorCheckerFastPath::canUse(const CSSSelector& selector)
 {
     if (!isFastCheckableRightmostSelector(selector))
         return false;
-    for (selector = selector->tagHistory(); selector; selector = selector->tagHistory()) {
-        if (!isFastCheckableRelation(selector->relation()))
+    for (const CSSSelector* current = selector.tagHistory(); current; current = current->tagHistory()) {
+        if (!isFastCheckableRelation(current->relation()))
             return false;
-        if (!isFastCheckableMatch(selector))
+        if (!isFastCheckableMatch(*current))
             return false;
     }
     return true;
@@ -206,7 +206,7 @@ bool SelectorCheckerFastPath::canUse(const CSSSelector* selector)
 bool SelectorCheckerFastPath::commonPseudoClassSelectorMatches(SelectorChecker::VisitedMatchType visitedMatchType) const
 {
     ASSERT(SelectorChecker::isCommonPseudoClassSelector(m_selector));
-    switch (m_selector->pseudoType()) {
+    switch (m_selector.pseudoType()) {
     case CSSSelector::PseudoLink:
     case CSSSelector::PseudoAnyLink:
         return m_element.isLink();

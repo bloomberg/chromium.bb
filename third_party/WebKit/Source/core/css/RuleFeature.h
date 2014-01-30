@@ -53,7 +53,7 @@ public:
     void add(const RuleFeatureSet&);
     void clear();
 
-    void collectFeaturesFromSelector(const CSSSelector*);
+    void collectFeaturesFromSelector(const CSSSelector&);
     void collectFeaturesFromRuleData(const RuleData&);
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
@@ -110,10 +110,10 @@ private:
         HashSet<AtomicString> attrsInRules;
     };
 
-    void collectFeaturesFromSelector(const CSSSelector*, FeatureMetadata&);
+    void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
     void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&);
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
-    bool updateClassInvalidationSets(const CSSSelector*);
+    bool updateClassInvalidationSets(const CSSSelector&);
 
     InvalidationSetMap m_classInvalidationSets;
     FeatureMetadata m_metadata;

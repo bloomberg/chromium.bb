@@ -36,26 +36,26 @@ namespace WebCore {
 
 class SelectorCheckerFastPath {
 public:
-    SelectorCheckerFastPath(const CSSSelector*, const Element&);
+    SelectorCheckerFastPath(const CSSSelector&, const Element&);
 
     bool matches() const;
     bool matchesRightmostSelector(SelectorChecker::VisitedMatchType) const;
     bool matchesRightmostAttributeSelector() const;
 
-    static bool canUse(const CSSSelector*);
+    static bool canUse(const CSSSelector&);
 
 private:
     bool commonPseudoClassSelectorMatches(SelectorChecker::VisitedMatchType) const;
 
-    const CSSSelector* m_selector;
+    const CSSSelector& m_selector;
     const Element& m_element;
 };
 
 inline bool SelectorCheckerFastPath::matchesRightmostAttributeSelector() const
 {
-    if (m_selector->m_match == CSSSelector::Exact || m_selector->m_match == CSSSelector::Set)
-        return SelectorChecker::checkExactAttribute(m_element, m_selector->attribute(), m_selector->value().impl());
-    ASSERT(!m_selector->isAttributeSelector());
+    if (m_selector.m_match == CSSSelector::Exact || m_selector.m_match == CSSSelector::Set)
+        return SelectorChecker::checkExactAttribute(m_element, m_selector.attribute(), m_selector.value().impl());
+    ASSERT(!m_selector.isAttributeSelector());
     return true;
 }
 

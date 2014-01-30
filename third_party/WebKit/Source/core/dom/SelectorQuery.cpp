@@ -101,12 +101,12 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
     ASSERT(m_selectors.isEmpty());
 
     unsigned selectorCount = 0;
-    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector))
+    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector))
         selectorCount++;
 
     m_selectors.reserveInitialCapacity(selectorCount);
-    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector))
-        m_selectors.uncheckedAppend(SelectorData(selector, SelectorCheckerFastPath::canUse(selector)));
+    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector))
+        m_selectors.uncheckedAppend(SelectorData(*selector, SelectorCheckerFastPath::canUse(*selector)));
 }
 
 inline bool SelectorDataList::selectorMatches(const SelectorData& selectorData, Element& element, const ContainerNode& rootNode) const
@@ -205,12 +205,11 @@ void SelectorDataList::findTraverseRootsAndExecute(ContainerNode& rootNode, type
     // We need to return the matches in document order. To use id lookup while there is possiblity of multiple matches
     // we would need to sort the results. For now, just traverse the document in that case.
     ASSERT(m_selectors.size() == 1);
-    ASSERT(m_selectors[0].selector);
 
     bool isRightmostSelector = true;
     bool startFromParent = false;
 
-    for (const CSSSelector* selector = m_selectors[0].selector; selector; selector = selector->tagHistory()) {
+    for (const CSSSelector* selector = &m_selectors[0].selector; selector; selector = selector->tagHistory()) {
         if (selector->m_match == CSSSelector::Id && !rootNode.document().containsMultipleElementsWithId(selector->value())) {
             Element* element = rootNode.treeScope().getElementById(selector->value());
             ContainerNode* adjustedNode = &rootNode;
@@ -329,9 +328,9 @@ void SelectorDataList::executeSlow(ContainerNode& rootNode, typename SelectorQue
     }
 }
 
-const CSSSelector* SelectorDataList::selectorForIdLookup(const CSSSelector* firstSelector) const
+const CSSSelector* SelectorDataList::selectorForIdLookup(const CSSSelector& firstSelector) const
 {
-    for (const CSSSelector* selector = firstSelector; selector; selector = selector->tagHistory()) {
+    for (const CSSSelector* selector = &firstSelector; selector; selector = selector->tagHistory()) {
         if (selector->m_match == CSSSelector::Id)
             return selector;
         if (selector->relation() != CSSSelector::SubSelector)
@@ -349,10 +348,9 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
     }
 
     ASSERT(m_selectors.size() == 1);
-    ASSERT(m_selectors[0].selector);
 
     const SelectorData& selector = m_selectors[0];
-    const CSSSelector* firstSelector = selector.selector;
+    const CSSSelector& firstSelector = selector.selector;
 
     // Fast path for querySelector*('#id'), querySelector*('tag#id').
     if (const CSSSelector* idSelector = selectorForIdLookup(firstSelector)) {
@@ -380,14 +378,14 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
         return;
     }
 
-    if (!firstSelector->tagHistory()) {
+    if (!firstSelector.tagHistory()) {
         // Fast path for querySelector*('.foo'), and querySelector*('div').
-        switch (firstSelector->m_match) {
+        switch (firstSelector.m_match) {
         case CSSSelector::Class:
-            collectElementsByClassName<SelectorQueryTrait>(rootNode, firstSelector->value(), output);
+            collectElementsByClassName<SelectorQueryTrait>(rootNode, firstSelector.value(), output);
             return;
         case CSSSelector::Tag:
-            collectElementsByTagName<SelectorQueryTrait>(rootNode, firstSelector->tagQName(), output);
+            collectElementsByTagName<SelectorQueryTrait>(rootNode, firstSelector.tagQName(), output);
             return;
         default:
             break; // If we need another fast path, add here.

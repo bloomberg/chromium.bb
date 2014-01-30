@@ -50,7 +50,7 @@ public:
 
     template <unsigned maximumIdentifierCount>
     inline bool fastRejectSelector(const unsigned* identifierHashes) const;
-    static void collectIdentifierHashes(const CSSSelector*, unsigned* identifierHashes, unsigned maximumIdentifierCount);
+    static void collectIdentifierHashes(const CSSSelector&, unsigned* identifierHashes, unsigned maximumIdentifierCount);
 
 private:
     struct ParentStackFrame {

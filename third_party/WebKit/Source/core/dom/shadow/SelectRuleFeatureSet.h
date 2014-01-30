@@ -42,7 +42,7 @@ public:
 
     void add(const SelectRuleFeatureSet&);
     void clear();
-    void collectFeaturesFromSelector(const CSSSelector*);
+    void collectFeaturesFromSelector(const CSSSelector&);
 
     bool hasSelectorForId(const AtomicString&) const;
     bool hasSelectorForClass(const AtomicString&) const;

@@ -131,7 +131,7 @@ void CSSSelectorWatch::updateSelectorMatches(const Vector<String>& removedSelect
 
 static bool allCompound(const CSSSelectorList& selectorList)
 {
-    for (const CSSSelector* selector = selectorList.first(); selector; selector = selectorList.next(selector)) {
+    for (const CSSSelector* selector = selectorList.first(); selector; selector = selectorList.next(*selector)) {
         if (!selector->isCompound())
             return false;
     }

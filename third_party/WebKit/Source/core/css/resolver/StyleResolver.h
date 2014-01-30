@@ -339,8 +339,8 @@ inline bool checkRegionSelector(const CSSSelector* regionSelector, Element* regi
         return false;
 
     SelectorChecker selectorChecker(regionElement->document(), SelectorChecker::QueryingRules);
-    for (const CSSSelector* s = regionSelector; s; s = CSSSelectorList::next(s)) {
-        SelectorChecker::SelectorCheckingContext selectorCheckingContext(s, regionElement, SelectorChecker::VisitedMatchDisabled);
+    for (const CSSSelector* s = regionSelector; s; s = CSSSelectorList::next(*s)) {
+        SelectorChecker::SelectorCheckingContext selectorCheckingContext(*s, regionElement, SelectorChecker::VisitedMatchDisabled);
         if (selectorChecker.match(selectorCheckingContext, DOMSiblingTraversalStrategy()) == SelectorChecker::SelectorMatches)
             return true;
     }

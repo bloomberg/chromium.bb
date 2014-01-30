@@ -71,7 +71,7 @@ public:
 
     unsigned position() const { return m_position; }
     StyleRule* rule() const { return m_rule; }
-    const CSSSelector* selector() const { return m_rule->selectorList().selectorAt(m_selectorIndex); }
+    const CSSSelector& selector() const { return m_rule->selectorList().selectorAt(m_selectorIndex); }
     unsigned selectorIndex() const { return m_selectorIndex; }
 
     bool isLastInArray() const { return m_isLastInArray; }
@@ -180,7 +180,7 @@ private:
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, AddRuleFlags);
-    bool findBestRuleSetAndAdd(const CSSSelector*, RuleData&);
+    bool findBestRuleSetAndAdd(const CSSSelector&, RuleData&);
 
     void compactRules();
     static void compactPendingRules(PendingRuleMap&, CompactRuleMap&);

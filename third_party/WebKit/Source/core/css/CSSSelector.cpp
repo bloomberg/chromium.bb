@@ -641,7 +641,7 @@ String CSSSelector::selectorText(const String& rightSide) const
                 break;
             case PseudoAny: {
                 const CSSSelector* firstSubSelector = cs->selectorList()->first();
-                for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(subSelector)) {
+                for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
                     if (subSelector != firstSubSelector)
                         str.append(',');
                     str.append(subSelector->selectorText());
@@ -653,7 +653,7 @@ String CSSSelector::selectorText(const String& rightSide) const
             case PseudoAncestor: {
                 if (cs->selectorList()) {
                     const CSSSelector* firstSubSelector = cs->selectorList()->first();
-                    for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(subSelector)) {
+                    for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
                         if (subSelector != firstSubSelector)
                             str.append(',');
                         str.append(subSelector->selectorText());

@@ -46,7 +46,7 @@ StyleInvalidationAnalysis::StyleInvalidationAnalysis(const Vector<StyleSheetCont
 
 static bool determineSelectorScopes(const CSSSelectorList& selectorList, HashSet<StringImpl*>& idScopes, HashSet<StringImpl*>& classScopes)
 {
-    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(selector)) {
+    for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector)) {
         const CSSSelector* scopeSelector = 0;
         // This picks the widest scope, not the narrowest, to minimize the number of found scopes.
         for (const CSSSelector* current = selector; current; current = current->tagHistory()) {

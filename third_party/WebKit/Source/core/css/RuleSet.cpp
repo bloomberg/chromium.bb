@@ -48,20 +48,21 @@ using namespace HTMLNames;
 
 // -----------------------------------------------------------------
 
-static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector* selector)
+static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector& selector)
 {
-    ASSERT(selector);
-    if (selector->m_match == CSSSelector::Tag) {
-        const AtomicString& selectorNamespace = selector->tagQName().namespaceURI();
+    if (selector.m_match == CSSSelector::Tag) {
+        const AtomicString& selectorNamespace = selector.tagQName().namespaceURI();
         if (selectorNamespace != starAtom && selectorNamespace != xhtmlNamespaceURI)
             return false;
-        if (selector->relation() == CSSSelector::SubSelector)
-            return isSelectorMatchingHTMLBasedOnRuleHash(selector->tagHistory());
+        if (selector.relation() == CSSSelector::SubSelector) {
+            ASSERT(selector.tagHistory());
+            return isSelectorMatchingHTMLBasedOnRuleHash(*selector.tagHistory());
+        }
         return true;
     }
     if (SelectorChecker::isCommonPseudoClassSelector(selector))
         return true;
-    return selector->m_match == CSSSelector::Id || selector->m_match == CSSSelector::Class;
+    return selector.m_match == CSSSelector::Id || selector.m_match == CSSSelector::Class;
 }
 
 static inline bool selectorListContainsUncommonAttributeSelector(const CSSSelector* selector)
@@ -69,7 +70,7 @@ static inline bool selectorListContainsUncommonAttributeSelector(const CSSSelect
     const CSSSelectorList* selectorList = selector->selectorList();
     if (!selectorList)
         return false;
-    for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(selector)) {
+    for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
         for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
             if (component->isAttributeSelector())
                 return true;
@@ -84,34 +85,35 @@ static inline bool isCommonAttributeSelectorAttribute(const QualifiedName& attri
     return attribute == typeAttr || attribute == readonlyAttr;
 }
 
-static inline bool containsUncommonAttributeSelector(const CSSSelector* selector)
+static inline bool containsUncommonAttributeSelector(const CSSSelector& selector)
 {
-    for (; selector; selector = selector->tagHistory()) {
+    const CSSSelector* current = &selector;
+    for (; current; current = current->tagHistory()) {
         // Allow certain common attributes (used in the default style) in the selectors that match the current element.
-        if (selector->isAttributeSelector() && !isCommonAttributeSelectorAttribute(selector->attribute()))
+        if (current->isAttributeSelector() && !isCommonAttributeSelectorAttribute(current->attribute()))
             return true;
-        if (selectorListContainsUncommonAttributeSelector(selector))
+        if (selectorListContainsUncommonAttributeSelector(current))
             return true;
-        if (selector->relation() != CSSSelector::SubSelector) {
-            selector = selector->tagHistory();
+        if (current->relation() != CSSSelector::SubSelector) {
+            current = current->tagHistory();
             break;
         }
     }
 
-    for (; selector; selector = selector->tagHistory()) {
-        if (selector->isAttributeSelector())
+    for (; current; current = current->tagHistory()) {
+        if (current->isAttributeSelector())
             return true;
-        if (selectorListContainsUncommonAttributeSelector(selector))
+        if (selectorListContainsUncommonAttributeSelector(current))
             return true;
     }
     return false;
 }
 
-static inline PropertyWhitelistType determinePropertyWhitelistType(const AddRuleFlags addRuleFlags, const CSSSelector* selector)
+static inline PropertyWhitelistType determinePropertyWhitelistType(const AddRuleFlags addRuleFlags, const CSSSelector& selector)
 {
     if (addRuleFlags & RuleIsInRegionRule)
         return PropertyWhitelistRegion;
-    for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
+    for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
         if (component->pseudoType() == CSSSelector::PseudoCue || (component->m_match == CSSSelector::PseudoElement && component->value() == TextTrackCue::cueShadowPseudoId()))
             return PropertyWhitelistCue;
     }
@@ -194,8 +196,8 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
     , m_isLastInArray(false)
     , m_position(position)
     , m_hasFastCheckableSelector((addRuleFlags & RuleCanUseFastCheckSelector) && SelectorCheckerFastPath::canUse(selector()))
-    , m_specificity(selector()->specificity())
-    , m_hasMultipartSelector(!!selector()->tagHistory())
+    , m_specificity(selector().specificity())
+    , m_hasMultipartSelector(!!selector().tagHistory())
     , m_hasRightmostSelectorMatchingHTMLBasedOnRuleHash(isSelectorMatchingHTMLBasedOnRuleHash(selector()))
     , m_containsUncommonAttributeSelector(WebCore::containsUncommonAttributeSelector(selector()))
     , m_linkMatchType(SelectorChecker::determineLinkMatchType(selector()))
@@ -217,26 +219,26 @@ void RuleSet::addToRuleSet(StringImpl* key, PendingRuleMap& map, const RuleData&
     rules->push(ruleData);
 }
 
-bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& ruleData)
+bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& ruleData)
 {
-    if (component->m_match == CSSSelector::Id) {
-        addToRuleSet(component->value().impl(), ensurePendingRules()->idRules, ruleData);
+    if (component.m_match == CSSSelector::Id) {
+        addToRuleSet(component.value().impl(), ensurePendingRules()->idRules, ruleData);
         return true;
     }
-    if (component->m_match == CSSSelector::Class) {
-        addToRuleSet(component->value().impl(), ensurePendingRules()->classRules, ruleData);
+    if (component.m_match == CSSSelector::Class) {
+        addToRuleSet(component.value().impl(), ensurePendingRules()->classRules, ruleData);
         return true;
     }
-    if (component->isCustomPseudoElement()) {
-        addToRuleSet(component->value().impl(), ensurePendingRules()->shadowPseudoElementRules, ruleData);
+    if (component.isCustomPseudoElement()) {
+        addToRuleSet(component.value().impl(), ensurePendingRules()->shadowPseudoElementRules, ruleData);
         return true;
     }
-    if (component->pseudoType() == CSSSelector::PseudoCue) {
+    if (component.pseudoType() == CSSSelector::PseudoCue) {
         m_cuePseudoRules.append(ruleData);
         return true;
     }
     if (SelectorChecker::isCommonPseudoClassSelector(component)) {
-        switch (component->pseudoType()) {
+        switch (component.pseudoType()) {
         case CSSSelector::PseudoLink:
         case CSSSelector::PseudoVisited:
         case CSSSelector::PseudoAnyLink:
@@ -251,15 +253,15 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& rule
         }
     }
 
-    if (component->m_match == CSSSelector::Tag) {
-        if (component->tagQName().localName() != starAtom) {
+    if (component.m_match == CSSSelector::Tag) {
+        if (component.tagQName().localName() != starAtom) {
             // If this is part of a subselector chain, recurse ahead to find a narrower set (ID/class.)
-            if (component->relation() == CSSSelector::SubSelector
-                && (component->tagHistory()->m_match == CSSSelector::Class || component->tagHistory()->m_match == CSSSelector::Id || SelectorChecker::isCommonPseudoClassSelector(component->tagHistory()))
-                && findBestRuleSetAndAdd(component->tagHistory(), ruleData))
+            if (component.relation() == CSSSelector::SubSelector
+                && (component.tagHistory()->m_match == CSSSelector::Class || component.tagHistory()->m_match == CSSSelector::Id || SelectorChecker::isCommonPseudoClassSelector(*component.tagHistory()))
+                && findBestRuleSetAndAdd(*component.tagHistory(), ruleData))
                 return true;
 
-            addToRuleSet(component->tagQName().localName().impl(), ensurePendingRules()->tagRules, ruleData);
+            addToRuleSet(component.tagQName().localName().impl(), ensurePendingRules()->tagRules, ruleData);
             return true;
         }
     }

@@ -112,7 +112,7 @@ String CSSSelectorList::selectorsText() const
 {
     StringBuilder result;
 
-    for (const CSSSelector* s = first(); s; s = next(s)) {
+    for (const CSSSelector* s = first(); s; s = next(*s)) {
         if (s != first())
             result.append(", ");
         result.append(s->selectorText());
@@ -122,20 +122,19 @@ String CSSSelectorList::selectorsText() const
 }
 
 template <typename Functor>
-static bool forEachTagSelector(Functor& functor, const CSSSelector* selector)
+static bool forEachTagSelector(Functor& functor, const CSSSelector& selector)
 {
-    ASSERT(selector);
-
+    const CSSSelector* current = &selector;
     do {
-        if (functor(selector))
+        if (functor(*current))
             return true;
-        if (const CSSSelectorList* selectorList = selector->selectorList()) {
-            for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(subSelector)) {
-                if (forEachTagSelector(functor, subSelector))
+        if (const CSSSelectorList* selectorList = current->selectorList()) {
+            for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector)) {
+                if (forEachTagSelector(functor, *subSelector))
                     return true;
             }
         }
-    } while ((selector = selector->tagHistory()));
+    } while ((current = current->tagHistory()));
 
     return false;
 }
@@ -143,8 +142,8 @@ static bool forEachTagSelector(Functor& functor, const CSSSelector* selector)
 template <typename Functor>
 static bool forEachSelector(Functor& functor, const CSSSelectorList* selectorList)
 {
-    for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(selector)) {
-        if (forEachTagSelector(functor, selector))
+    for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
+        if (forEachTagSelector(functor, *selector))
             return true;
     }
 
@@ -153,11 +152,11 @@ static bool forEachSelector(Functor& functor, const CSSSelectorList* selectorLis
 
 class SelectorNeedsNamespaceResolutionFunctor {
 public:
-    bool operator()(const CSSSelector* selector)
+    bool operator()(const CSSSelector& selector)
     {
-        if (selector->m_match == CSSSelector::Tag && selector->tagQName().prefix() != nullAtom && selector->tagQName().prefix() != starAtom)
+        if (selector.m_match == CSSSelector::Tag && selector.tagQName().prefix() != nullAtom && selector.tagQName().prefix() != starAtom)
             return true;
-        if (selector->isAttributeSelector() && selector->attribute().prefix() != nullAtom && selector->attribute().prefix() != starAtom)
+        if (selector.isAttributeSelector() && selector.attribute().prefix() != nullAtom && selector.attribute().prefix() != starAtom)
             return true;
         return false;
     }
@@ -171,9 +170,9 @@ bool CSSSelectorList::selectorsNeedNamespaceResolution()
 
 class SelectorHasShadowDistributed {
 public:
-    bool operator()(const CSSSelector* selector)
+    bool operator()(const CSSSelector& selector)
     {
-        return selector->relationIsAffectedByPseudoContent();
+        return selector.relationIsAffectedByPseudoContent();
     }
 };
 
@@ -185,9 +184,9 @@ bool CSSSelectorList::hasShadowDistributedAt(size_t index) const
 
 class SelectorHasCombinatorCrossingTreeBoundary {
 public:
-    bool operator()(const CSSSelector* selector)
+    bool operator()(const CSSSelector& selector)
     {
-        return selector->relation() == CSSSelector::ChildTree || selector->relation() == CSSSelector::DescendantTree;
+        return selector.relation() == CSSSelector::ChildTree || selector.relation() == CSSSelector::DescendantTree;
     }
 };
 

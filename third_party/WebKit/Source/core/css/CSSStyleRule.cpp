@@ -67,7 +67,7 @@ CSSStyleDeclaration* CSSStyleRule::style() const
 String CSSStyleRule::generateSelectorText() const
 {
     StringBuilder builder;
-    for (const CSSSelector* selector = m_styleRule->selectorList().first(); selector; selector = CSSSelectorList::next(selector)) {
+    for (const CSSSelector* selector = m_styleRule->selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
         if (selector != m_styleRule->selectorList().first())
             builder.append(", ");
         builder.append(selector->selectorText());
