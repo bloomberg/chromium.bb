@@ -33,6 +33,7 @@
 
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/CompositorAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/animation/Player.h"
 #include "core/dom/Element.h"
 
@@ -139,6 +140,8 @@ double Animation::calculateTimeToEffectChange(double localTime, double timeToNex
         // that will be, however, so the parent will need to supply it.
         return std::numeric_limits<double>::infinity();
     case PhaseNone:
+        ASSERT(player() && !player()->timeline().hasStarted());
+        return std::numeric_limits<double>::infinity();
     default:
         ASSERT_NOT_REACHED();
         return 0;

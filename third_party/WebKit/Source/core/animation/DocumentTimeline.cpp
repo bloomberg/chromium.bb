@@ -116,6 +116,7 @@ void DocumentTimeline::setZeroTime(double zeroTime)
     ASSERT(isNull(m_zeroTime));
     m_zeroTime = zeroTime;
     ASSERT(!isNull(m_zeroTime));
+    serviceAnimations();
 }
 
 void DocumentTimeline::DocumentTimelineTiming::wakeAfter(double duration)
@@ -141,10 +142,9 @@ double DocumentTimeline::currentTime()
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
 {
-    for (size_t i = 0; i < m_players.size(); i++) {
-        m_players[i]->pauseForTesting();
-        m_players[i]->setCurrentTime(pauseTime);
-    }
+    for (size_t i = 0; i < m_players.size(); i++)
+        m_players[i]->pauseForTesting(pauseTime);
+    serviceAnimations();
 }
 
 void DocumentTimeline::dispatchEvents()

@@ -177,6 +177,8 @@ TEST_F(AnimationDocumentTimelineTest, EmptyEffectDoesNotTriggerStyleRecalc)
 
 TEST_F(AnimationDocumentTimelineTest, TriggerStyleRecalc)
 {
+    timing.iterationDuration = 200;
+    timing.hasIterationDuration = true;
     timeline->play(Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing).get());
     document->animationClock().updateTime(100);
     EXPECT_TRUE(timeline->serviceAnimations());

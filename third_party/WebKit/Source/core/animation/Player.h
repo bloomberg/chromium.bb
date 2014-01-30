@@ -50,17 +50,19 @@ public:
     //  0         - if this player requires an update on the next frame
     //  n         - if this player requires an update after 'n' units of time
     bool update(double* timeToEffectChange = 0, bool* didTriggerStyleRecalc = 0);
+
     void cancel();
 
-    double currentTime() const;
-    void setCurrentTime(double);
+    double currentTime();
+    void setCurrentTime(double newCurrentTime);
 
-    bool paused() const { return !m_isPausedForTesting && pausedInternal(); }
+    bool paused() const { return m_paused && !m_isPausedForTesting; }
     void setPaused(bool);
+    void pause() { setPaused(true); }
 
     double playbackRate() const { return m_playbackRate; }
     void setPlaybackRate(double);
-    double timeDrift() const;
+    const DocumentTimeline& timeline() const { return m_timeline; }
     DocumentTimeline& timeline() { return m_timeline; }
 
     bool hasStartTime() const { return !isNull(m_startTime); }
@@ -69,10 +71,13 @@ public:
 
     TimedItem* source() { return m_content.get(); }
     TimedItem* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
+    void setSource(TimedItem*);
+
+    double timeLag() { return currentTimeWithoutLag() - currentTime(); }
 
     // Pausing via this method is not reflected in the value returned by
     // paused() and must never overlap with pausing via setPaused().
-    void pauseForTesting();
+    void pauseForTesting(double pauseTime);
 
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
@@ -80,21 +85,25 @@ public:
 
 private:
     Player(DocumentTimeline&, TimedItem*);
-    inline double pausedTimeDrift() const;
-    inline double currentTimeBeforeDrift() const;
+    double sourceEnd() const;
+    bool limited(double currentTime) const;
+    double currentTimeWithoutLag() const;
+    double currentTimeWithLag() const;
+    void updateTimingState(double newCurrentTime);
+    void updateCurrentTimingState();
 
-
-    void setPausedImpl(bool);
     // Reflects all pausing, including via pauseForTesting().
-    bool pausedInternal() const { return !isNull(m_pauseStartTime); }
+    bool pausedInternal() const { return m_paused; }
 
-    double m_pauseStartTime;
     double m_playbackRate;
-    double m_timeDrift;
     double m_startTime;
+    double m_holdTime;
+    double m_storedTimeLag;
 
     RefPtr<TimedItem> m_content;
     DocumentTimeline& m_timeline;
+    bool m_paused;
+    bool m_held;
     bool m_isPausedForTesting;
 };
 
