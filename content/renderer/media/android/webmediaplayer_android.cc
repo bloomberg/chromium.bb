@@ -219,8 +219,8 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
   manager_->Initialize(
       player_type_, player_id_, url, first_party_url, demuxer_client_id);
 
-  if (manager_->IsInFullscreen(frame_))
-    manager_->EnterFullscreen(player_id_);
+  if (manager_->ShouldEnterFullscreen(frame_))
+    manager_->EnterFullscreen(player_id_, frame_);
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -1404,7 +1404,7 @@ void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(uint32 sync_point) {
 
 void WebMediaPlayerAndroid::enterFullscreen() {
   if (manager_->CanEnterFullscreen(frame_)) {
-    manager_->EnterFullscreen(player_id_);
+    manager_->EnterFullscreen(player_id_, frame_);
     SetNeedsEstablishPeer(false);
   }
 }

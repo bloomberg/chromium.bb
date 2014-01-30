@@ -71,7 +71,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void DestroyPlayer(int player_id);
 
   // Requests the player to enter fullscreen.
-  void EnterFullscreen(int player_id);
+  void EnterFullscreen(int player_id, blink::WebFrame* frame);
 
   // Requests the player to exit fullscreen.
   void ExitFullscreen(int player_id);
@@ -122,6 +122,9 @@ class RendererMediaPlayerManager : public RenderViewObserver {
 
   // Checks whether the Webframe is in fullscreen.
   bool IsInFullscreen(blink::WebFrame* frame);
+
+  // True if a newly created media player should enter fullscreen.
+  bool ShouldEnterFullscreen(blink::WebFrame* frame);
 
   // Gets the pointer to WebMediaPlayerAndroid given the |player_id|.
   WebMediaPlayerAndroid* GetMediaPlayer(int player_id);
@@ -182,6 +185,9 @@ class RendererMediaPlayerManager : public RenderViewObserver {
 
   // WebFrame of the fullscreen video.
   blink::WebFrame* fullscreen_frame_;
+
+  // WebFrame of pending fullscreen request.
+  blink::WebFrame* pending_fullscreen_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererMediaPlayerManager);
 };
