@@ -1435,6 +1435,8 @@
             'rendering/RenderFrame.h',
             'rendering/RenderFrameSet.cpp',
             'rendering/RenderFrameSet.h',
+            'rendering/RenderFullScreen.cpp',
+            'rendering/RenderFullScreen.h',
             'rendering/RenderGeometryMap.cpp',
             'rendering/RenderGeometryMap.h',
             'rendering/RenderGrid.cpp',

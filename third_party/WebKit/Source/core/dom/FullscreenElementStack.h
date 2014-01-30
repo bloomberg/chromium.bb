@@ -42,6 +42,7 @@ namespace WebCore {
 class Document;
 class Element;
 class Node;
+class RenderFullScreen;
 class RenderStyle;
 class ExecutionContext;
 
@@ -70,6 +71,10 @@ public:
     void webkitDidEnterFullScreenForElement(Element*);
     void webkitWillExitFullScreenForElement(Element*);
     void webkitDidExitFullScreenForElement(Element*);
+
+    void setFullScreenRenderer(RenderFullScreen*);
+    RenderFullScreen* fullScreenRenderer() const { return m_fullScreenRenderer; }
+    void fullScreenRendererDestroyed();
 
     void clearFullscreenElementStack();
     void popFullscreenElementStack();
@@ -103,6 +108,7 @@ private:
     bool m_areKeysEnabledInFullScreen;
     RefPtr<Element> m_fullScreenElement;
     Vector<RefPtr<Element> > m_fullScreenElementStack;
+    RenderFullScreen* m_fullScreenRenderer;
     Timer<FullscreenElementStack> m_fullScreenChangeDelayTimer;
     Deque<RefPtr<Node> > m_fullScreenChangeEventTargetQueue;
     Deque<RefPtr<Node> > m_fullScreenErrorEventTargetQueue;
