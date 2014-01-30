@@ -257,6 +257,27 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
   EXPECT_TRUE(DictionaryValue().Equals(result));
 }
 
+// This test is just documenting some potentially non-obvious behavior. It
+// shouldn't be taken as normative.
+TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
+  FilePath pref_file = temp_dir_.path().AppendASCII("empty_values.json");
+
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      pref_file,
+      message_loop_.message_loop_proxy(),
+      scoped_ptr<PrefFilter>());
+
+  base::DictionaryValue* dict = new base::DictionaryValue;
+  dict->SetString("key", "value");
+  pref_store->SetValue("dict", dict);
+
+  pref_store->RemoveValue("dict.key");
+
+  const base::Value* retrieved_dict = NULL;
+  bool has_dict = pref_store->GetValue("dict", &retrieved_dict);
+  EXPECT_FALSE(has_dict);
+}
+
 // Tests asynchronous reading of the file when there is no file.
 TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
   base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
