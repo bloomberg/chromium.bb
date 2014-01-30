@@ -37,9 +37,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedAngle:
         delete m_data.angleAndEnumeration;
         break;
-    case AnimatedColor:
-        delete m_data.color;
-        break;
     case AnimatedEnumeration:
         delete m_data.enumeration;
         break;
@@ -60,6 +57,7 @@ SVGAnimatedType::~SVGAnimatedType()
         break;
     // Below properties are migrated to new property implementation.
     case AnimatedBoolean:
+    case AnimatedColor:
     case AnimatedNumber:
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:
@@ -87,14 +85,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createAngleAndEnumeration(std::pair
     ASSERT(angleAndEnumeration);
     OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedAngle));
     animatedType->m_data.angleAndEnumeration = angleAndEnumeration;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createColor(StyleColor* color)
-{
-    ASSERT(color);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedColor));
-    animatedType->m_data.color = color;
     return animatedType.release();
 }
 
@@ -157,14 +147,12 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createNewProperty(PassRefPtr<NewSVG
 String SVGAnimatedType::valueAsString()
 {
     switch (m_type) {
-    case AnimatedColor:
-        ASSERT(m_data.color);
-        return m_data.color->isCurrentColor() ? "currentColor" : m_data.color->color().serializedAsCSSComponentValue();
     case AnimatedString:
         ASSERT(m_data.string);
         return *m_data.string;
 
     // Below properties have migrated to new property implementation.
+    case AnimatedColor:
     case AnimatedNumber:
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:
@@ -196,16 +184,13 @@ String SVGAnimatedType::valueAsString()
 bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const String& value)
 {
     switch (m_type) {
-    case AnimatedColor:
-        ASSERT(m_data.color);
-        *m_data.color = value.isEmpty() ? StyleColor::currentColor() : SVGColor::colorFromRGBColorString(value);
-        break;
     case AnimatedString:
         ASSERT(m_data.string);
         *m_data.string = value;
         break;
 
     // Below properties have migrated to new property implementation.
+    case AnimatedColor:
     case AnimatedNumber:
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:

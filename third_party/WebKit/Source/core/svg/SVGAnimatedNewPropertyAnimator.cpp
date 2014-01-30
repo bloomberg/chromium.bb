@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/svg/SVGAnimatedNewPropertyAnimator.h"
 
+#include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
@@ -72,6 +73,8 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     // The instance will not have full context info. (e.g. SVGLengthMode)
 
     switch (m_type) {
+    case AnimatedColor:
+        return SVGColorProperty::create(value.isEmpty() ? StyleColor::currentColor() : SVGColor::colorFromRGBColorString(value));
     case AnimatedNumber: {
         RefPtr<SVGNumber> property = SVGNumber::create();
         property->setValueAsString(value, IGNORE_EXCEPTION);
@@ -99,7 +102,6 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
 
     // These properties are not yet migrated to NewProperty implementation. see http://crbug.com/308818
     case AnimatedAngle:
-    case AnimatedColor:
     case AnimatedEnumeration:
     case AnimatedInteger:
     case AnimatedIntegerOptionalInteger:
