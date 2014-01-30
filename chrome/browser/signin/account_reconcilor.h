@@ -115,7 +115,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
       const std::string& account_id,
       const GoogleServiceAuthError& error,
       const std::vector<std::string>& accounts);
-  virtual void PerformAddToChromeAction(const std::string& account_id);
+  virtual void PerformAddToChromeAction(const std::string& account_id,
+                                        int session_index);
   virtual void PerformLogoutAllAccountsAction();
 
   // Used during period reconciliation.

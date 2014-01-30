@@ -6,6 +6,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
@@ -21,6 +23,69 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
+
+namespace {
+
+// Fetches a refresh token from the given session in the GAIA cookie.  This is
+// a best effort only.  If it should fail, another reconcile action will occur
+// shortly anyway.
+class RefreshTokenFetcher : public GaiaAuthConsumer {
+ public:
+  RefreshTokenFetcher(Profile* profile,
+                      const std::string& account_id,
+                      int session_index);
+  virtual ~RefreshTokenFetcher() {}
+
+ private:
+  // Overridden from GaiaAuthConsumer:
+  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
+  virtual void OnClientOAuthFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+
+  Profile* profile_;
+  GaiaAuthFetcher fetcher_;
+  const std::string account_id_;
+  int session_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(RefreshTokenFetcher);
+};
+
+RefreshTokenFetcher::RefreshTokenFetcher(
+    Profile* profile,
+    const std::string& account_id,
+    int session_index)
+    : profile_(profile),
+      fetcher_(this, GaiaConstants::kChromeSource,
+               profile_->GetRequestContext()),
+      account_id_(account_id),
+      session_index_(session_index) {
+  DCHECK(profile_);
+  DCHECK(!account_id.empty());
+  fetcher_.StartCookieForOAuthLoginTokenExchange(
+      base::IntToString(session_index_));
+}
+
+void RefreshTokenFetcher::OnClientOAuthSuccess(
+    const ClientOAuthResult& result) {
+  DVLOG(1) << "RefreshTokenFetcher::OnClientOAuthSuccess:"
+           << " account=" << account_id_
+           << " session_index=" << session_index_;
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  token_service->UpdateCredentials(account_id_, result.refresh_token);
+  base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void RefreshTokenFetcher::OnClientOAuthFailure(
+    const GoogleServiceAuthError& error) {
+  DVLOG(1) << "RefreshTokenFetcher::OnClientOAuthFailure:"
+           << " account=" << account_id_
+           << " session_index=" << session_index_;
+  base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+}
+
+}  // namespace
+
 
 class AccountReconcilor::UserIdFetcher
     : public gaia::GaiaOAuthClient::Delegate {
@@ -294,10 +359,16 @@ void AccountReconcilor::FinishRemoveAction(
 }
 
 void AccountReconcilor::PerformAddToChromeAction(
-    const std::string& account_id) {
-  DVLOG(1) << "AccountReconcilor::PerformAddToChromeAction: " << account_id;
-  // TODO(rogerta): not sure if we should add the account to chrome
-  // automatically or ask the user first.
+    const std::string& account_id,
+    int session_index) {
+  DVLOG(1) << "AccountReconcilor::PerformAddToChromeAction:"
+           << " account=" << account_id
+           << " session_index=" << session_index;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // RefreshTokenFetcher deletes itself when done.
+  new RefreshTokenFetcher(profile_, account_id, session_index);
+#endif
 }
 
 void AccountReconcilor::PerformLogoutAllAccountsAction() {
@@ -467,7 +538,7 @@ void AccountReconcilor::FinishReconcile() {
   DeleteAccessTokenRequestsAndUserIdFetchers();
 
   std::vector<std::string> add_to_cookie;
-  std::vector<std::string> add_to_chrome;
+  std::vector<std::pair<std::string, int> > add_to_chrome;
   bool are_primaries_equal =
       gaia_accounts_.size() > 0 && primary_account_ == gaia_accounts_[0];
 
@@ -477,7 +548,7 @@ void AccountReconcilor::FinishReconcile() {
       const std::string& gaia_account = gaia_accounts_[i];
       if (valid_chrome_accounts_.find(gaia_account) ==
           valid_chrome_accounts_.end()) {
-        add_to_chrome.push_back(gaia_account);
+        add_to_chrome.push_back(std::make_pair(gaia_account, i));
       }
     }
 
@@ -511,11 +582,13 @@ void AccountReconcilor::FinishReconcile() {
     for (size_t i = 0; i < add_to_cookie.size(); ++i)
       PerformMergeAction(add_to_cookie[i]);
 
-    // For each account in the gaia cookie not known to chrome, warn the user
-    // by showing a signin global error.  I don't think we want automatically
-    // add the account to chrome.
-    for (size_t i = 0; i < add_to_chrome.size(); ++i)
-      PerformAddToChromeAction(add_to_chrome[i]);
+    // For each account in the gaia cookie not known to chrome,
+    // PerformAddToChromeAction.
+    for (std::vector<std::pair<std::string, int> >::const_iterator i =
+             add_to_chrome.begin();
+         i != add_to_chrome.end(); ++i) {
+      PerformAddToChromeAction(i->first, i->second);
+    }
   }
 }
 
