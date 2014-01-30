@@ -108,6 +108,10 @@ message OmniboxEventProto {
     // replacement, meaning the URL of the page should've appeared in the
     // omnibox before the user started editing it, not the search terms.
     SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT = 9;
+
+    // When adding new classifications, please consider adding them in
+    // chrome/browser/resources/omnibox/omnibox.html
+    // so that these new options are displayed on about:omnibox.
   }
   optional PageClassification current_page_classification = 10;
 

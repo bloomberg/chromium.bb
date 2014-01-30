@@ -28,6 +28,7 @@ cr.define('omniboxDebug', function() {
     $('prevent-inline-autocomplete').addEventListener(
         'change', startOmniboxQuery);
     $('prefer-keyword').addEventListener('change', startOmniboxQuery);
+    $('page-classification').addEventListener('change', startOmniboxQuery);
     $('show-details').addEventListener('change', refresh);
     $('show-incomplete-results').addEventListener('change', refresh);
     $('show-all-providers').addEventListener('change', refresh);
@@ -57,17 +58,19 @@ cr.define('omniboxDebug', function() {
   function startOmniboxQuery(event) {
     // First, clear the results of past calls (if any).
     progressiveAutocompleteResults = [];
-    // Then, call chrome with a four-element list:
+    // Then, call chrome with a five-element list:
     // - first element: the value in the text box
     // - second element: the location of the cursor in the text box
     // - third element: the value of prevent-inline-autocomplete
     // - forth element: the value of prefer-keyword
+    // - fifth element: the value of page-classification
     cursorPositionUsed = $('input-text').selectionEnd;
     chrome.send('startOmniboxQuery', [
         $('input-text').value,
         cursorPositionUsed,
         $('prevent-inline-autocomplete').checked,
-        $('prefer-keyword').checked]);
+        $('prefer-keyword').checked,
+        parseInt($('page-classification').value)]);
     // Cancel the submit action.  i.e., don't submit the form.  (We handle
     // display the results solely with Javascript.)
     event.preventDefault();

@@ -29,6 +29,20 @@
           In keyword mode
         </label>
       </p>
+      <p>
+        Current page context:
+        <select id="page-classification">
+          <option value="0">Invalid spec</option>
+          <option value="1">(OBSOLETE) new tab page</option>
+          <option value="2">about:blank</option>
+          <option value="3">user's home page</option>
+          <option value="4">arbitrary URL</option>
+          <option value="6">search result page doing search term replacement</option>
+          <option value="9">search result page not doing search term replacement</option>
+          <option value="7" selected>new tab page with focus in omnibox</option>
+          <option value="8">new tab page with focus in fakebox</option>
+        </select>
+      </p>
       <p>Display parameters:</p>
       <p>
         <label>

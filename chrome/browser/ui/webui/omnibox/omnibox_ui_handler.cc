@@ -173,7 +173,7 @@ bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
 }
 
 void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
-  DCHECK_EQ(4u, input->GetSize());
+  DCHECK_EQ(5u, input->GetSize());
   base::string16 input_string;
   bool return_val = input->GetString(0, &input_string);
   DCHECK(return_val);
@@ -185,6 +185,9 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
   DCHECK(return_val);
   bool prefer_keyword;
   return_val = input->GetBoolean(3, &prefer_keyword);
+  DCHECK(return_val);
+  int current_page_classification;
+  return_val = input->GetInteger(4, &current_page_classification);
   DCHECK(return_val);
   // Reset the controller.  If we don't do this, then the
   // AutocompleteController might inappropriately set its |minimal_changes|
@@ -198,7 +201,8 @@ void OmniboxUIHandler::StartOmniboxQuery(const base::ListValue* input) {
       cursor_position,
       base::string16(),  // user's desired tld (top-level domain)
       GURL(),
-      AutocompleteInput::INVALID_SPEC,
+      static_cast<AutocompleteInput::PageClassification>(
+          current_page_classification),
       prevent_inline_autocomplete,
       prefer_keyword,
       true,  // allow exact keyword matches
