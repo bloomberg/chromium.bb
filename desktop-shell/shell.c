@@ -166,6 +166,7 @@ struct shell_surface {
 		bool maximized;
 		bool fullscreen;
 		bool relative;
+		bool lowered;
 	} state, next_state, requested_state; /* surface states */
 	bool state_changed;
 	bool state_requested;
@@ -233,13 +234,6 @@ struct shell_client {
 	uint32_t ping_serial;
 	int unresponsive;
 };
-
-void
-set_alpha_if_fullscreen(struct shell_surface *shsurf)
-{
-	if (shsurf && shsurf->state.fullscreen)
-		shsurf->fullscreen.black_view->alpha = 0.25;
-}
 
 static struct desktop_shell *
 shell_surface_get_shell(struct shell_surface *shsurf);
@@ -630,7 +624,7 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 	shell = state->seat->compositor->shell_interface.shell;
 	if (next) {
 		state->keyboard_focus = NULL;
-		activate(shell, next, state->seat);
+		activate(shell, next, state->seat, true);
 	} else {
 		if (shell->focus_animation_type == ANIMATION_DIM_LAYER) {
 			if (state->ws->focus_animation)
@@ -1839,10 +1833,10 @@ busy_cursor_grab_button(struct weston_pointer_grab *base,
 	struct weston_seat *seat = grab->grab.pointer->seat;
 
 	if (shsurf && button == BTN_LEFT && state) {
-		activate(shsurf->shell, shsurf->surface, seat);
+		activate(shsurf->shell, shsurf->surface, seat, true);
 		surface_move(shsurf, seat, 0);
 	} else if (shsurf && button == BTN_RIGHT && state) {
-		activate(shsurf->shell, shsurf->surface, seat);
+		activate(shsurf->shell, shsurf->surface, seat, true);
 		surface_rotate(shsurf, seat);
 	}
 }
@@ -2157,7 +2151,7 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 	switch (shsurf->type) {
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_TOPLEVEL:
-		if (shsurf->state.fullscreen) {
+		if (shsurf->state.fullscreen && !shsurf->state.lowered) {
 			return &shsurf->shell->fullscreen_layer.view_list;
 		} else if (shsurf->parent) {
 			/* Move the surface to its parent layer so
@@ -2540,7 +2534,7 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
 			if (!seat->keyboard)
 				continue;
-			activate(shsurf->shell, view->surface, seat);
+			activate(shsurf->shell, view->surface, seat, true);
 		}
 	}
 
@@ -2703,6 +2697,8 @@ shell_ensure_fullscreen_black_view(struct shell_surface *shsurf)
 	               &shsurf->fullscreen.black_view->layer_link);
 	weston_view_geometry_dirty(shsurf->fullscreen.black_view);
 	weston_surface_damage(shsurf->surface);
+
+	shsurf->state.lowered = false;
 }
 
 /* Create black surface and append it to the associated fullscreen surface.
@@ -2718,6 +2714,10 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 
 	if (shsurf->fullscreen.type != WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER)
 		restore_output_mode(output);
+
+	/* Reverse the effect of lower_fullscreen_layer() */
+	wl_list_remove(&shsurf->view->layer_link);
+	wl_list_insert(&shsurf->shell->fullscreen_layer.view_list, &shsurf->view->layer_link);
 
 	shell_ensure_fullscreen_black_view(shsurf);
 
@@ -4436,8 +4436,12 @@ rotate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
 	surface_rotate(surface, seat);
 }
 
-/* Move all fullscreen layers down to the current workspace in a non-reversible
- * manner. This should be used when implementing shell-wide overlays, such as
+/* Move all fullscreen layers down to the current workspace and hide their
+ * black views. The surfaces' state is set to both fullscreen and lowered,
+ * and this is reversed when such a surface is re-configured, see
+ * shell_configure_fullscreen() and shell_ensure_fullscreen_black_view().
+ *
+ * This should be used when implementing shell-wide overlays, such as
  * the alt-tab switcher, which need to de-promote fullscreen layers. */
 void
 lower_fullscreen_layer(struct desktop_shell *shell)
@@ -4449,16 +4453,32 @@ lower_fullscreen_layer(struct desktop_shell *shell)
 	wl_list_for_each_reverse_safe(view, prev,
 				      &shell->fullscreen_layer.view_list,
 				      layer_link) {
+		struct shell_surface *shsurf = get_shell_surface(view->surface);
+
+		if (!shsurf)
+			continue;
+
+		/* We can have a non-fullscreen popup for a fullscreen surface
+		 * in the fullscreen layer. */
+		if (shsurf->state.fullscreen) {
+			/* Hide the black view */
+			wl_list_remove(&shsurf->fullscreen.black_view->layer_link);
+			wl_list_init(&shsurf->fullscreen.black_view->layer_link);
+		}
+
+		/* Lower the view to the workspace layer */
 		wl_list_remove(&view->layer_link);
 		wl_list_insert(&ws->layer.view_list, &view->layer_link);
 		weston_view_damage_below(view);
 		weston_surface_damage(view->surface);
+
+		shsurf->state.lowered = true;
 	}
 }
 
 void
 activate(struct desktop_shell *shell, struct weston_surface *es,
-	 struct weston_seat *seat)
+	 struct weston_seat *seat, bool configure)
 {
 	struct weston_surface *main_surface;
 	struct focus_state *state;
@@ -4482,7 +4502,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	shsurf = get_shell_surface(main_surface);
 	assert(shsurf);
 
-	if (shsurf->state.fullscreen)
+	if (shsurf->state.fullscreen && configure)
 		shell_configure_fullscreen(shsurf);
 	else
 		restore_all_output_modes(shell->compositor);
@@ -4531,7 +4551,7 @@ activate_binding(struct weston_seat *seat,
 	if (get_shell_surface_type(main_surface) == SHELL_SURFACE_NONE)
 		return;
 
-	activate(shell, focus, seat);
+	activate(shell, focus, seat, true);
 }
 
 static void
@@ -4951,7 +4971,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		if (shell->locked)
 			break;
 		wl_list_for_each(seat, &compositor->seat_list, link)
-			activate(shell, shsurf->surface, seat);
+			activate(shell, shsurf->surface, seat, true);
 		break;
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_NONE:
@@ -5402,7 +5422,7 @@ switcher_destroy(struct switcher *switcher)
 
 	if (switcher->current)
 		activate(switcher->shell, switcher->current,
-			 (struct weston_seat *) keyboard->seat);
+			 (struct weston_seat *) keyboard->seat, true);
 	wl_list_remove(&switcher->listener.link);
 	weston_keyboard_end_grab(keyboard);
 	if (keyboard->input_method_resource)

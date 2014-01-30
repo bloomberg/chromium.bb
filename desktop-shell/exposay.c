@@ -160,7 +160,7 @@ exposay_highlight_surface(struct desktop_shell *shell,
 	shell->exposay.column_current = esurface->column;
 	shell->exposay.cur_output = esurface->eoutput;
 
-	activate(shell, view->surface, shell->exposay.seat);
+	activate(shell, view->surface, shell->exposay.seat, false);
 	shell->exposay.focus_current = view;
 }
 
@@ -317,8 +317,6 @@ exposay_layout(struct desktop_shell *shell, struct shell_output *shell_output)
 
 		if (shell->exposay.focus_current == esurface->view)
 			highlight = esurface;
-
-		set_alpha_if_fullscreen(get_shell_surface(view->surface));
 
 		exposay_animate_in(esurface);
 
@@ -538,10 +536,10 @@ exposay_transition_inactive(struct desktop_shell *shell, int switch_focus)
 	 * to the new. */
 	if (switch_focus && shell->exposay.focus_current)
 		activate(shell, shell->exposay.focus_current->surface,
-		         shell->exposay.seat);
+		         shell->exposay.seat, true);
 	else if (shell->exposay.focus_prev)
 		activate(shell, shell->exposay.focus_prev->surface,
-		         shell->exposay.seat);
+		         shell->exposay.seat, true);
 
 	wl_list_for_each(esurface, &shell->exposay.surface_list, link)
 		exposay_animate_out(esurface);

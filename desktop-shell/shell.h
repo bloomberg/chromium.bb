@@ -206,9 +206,6 @@ struct desktop_shell {
 	char *client;
 };
 
-void
-set_alpha_if_fullscreen(struct shell_surface *shsurf);
-
 struct weston_output *
 get_default_output(struct weston_compositor *compositor);
 
@@ -226,7 +223,7 @@ lower_fullscreen_layer(struct desktop_shell *shell);
 
 void
 activate(struct desktop_shell *shell, struct weston_surface *es,
-	 struct weston_seat *seat);
+	 struct weston_seat *seat, bool configure);
 
 void
 exposay_binding(struct weston_seat *seat,
