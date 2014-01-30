@@ -648,11 +648,7 @@
             ['exclude', 'Android\\.cpp$'],
           ],
         }],
-        ['use_default_render_theme==1', {
-          'sources/': [
-            ['exclude', 'platform/chromium/PlatformThemeChromiumWin\\.(cpp|h)'],
-          ],
-        }, { # use_default_render_theme==0
+        ['use_default_render_theme==0', {
           'sources/': [
             ['exclude', 'platform/chromium/PlatformThemeChromiumDefault\\.(cpp|h)'],
           ],
@@ -687,11 +683,6 @@
         ['use_default_render_theme==0', {
           'sources/': [
             ['exclude', 'rendering/RenderThemeChromiumDefault.*'],
-          ],
-        }],
-        ['use_default_render_theme==1', {
-          'sources/': [
-            ['exclude', 'RenderThemeChromiumWin.*'],
           ],
         }],
         ['OS=="win"', {

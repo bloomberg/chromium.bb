@@ -324,10 +324,6 @@
           ['include', 'fonts/win/UniscribeHelper\\.(cpp|h)$'],
           ['include', 'fonts/win/UniscribeHelperTextRun\\.(cpp|h)$'],
 
-          ['include', 'scroll/ScrollbarThemeWin\\.(cpp|h)$'],
-
-          ['include', 'graphics/win/TransparencyWin\\.(cpp|h)$'],
-
           # SystemInfo.cpp is useful and we don't want to copy it.
           ['include', 'win/SystemInfo\\.cpp$'],
         ],
@@ -398,11 +394,7 @@
           '<(DEPTH)/build/linux/system.gyp:fontconfig',
         ],
       }],
-      ['use_default_render_theme==1', {
-        'sources/': [
-          ['exclude', 'scroll/ScrollbarThemeWin\\.(cpp|h)'],
-        ],
-      }, { # use_default_render_theme==0
+      ['use_default_render_theme==0', {
         'sources/': [
           ['exclude', 'scroll/ScrollbarThemeGtkOrAura\\.(cpp|h)'],
         ],

@@ -155,14 +155,6 @@
 #include "core/rendering/RenderThemeChromiumDefault.h"
 #endif
 
-#if OS(WIN)
-#if !USE(DEFAULT_RENDER_THEME)
-#include "core/rendering/RenderThemeChromiumWin.h"
-#endif
-#else
-#include "core/rendering/RenderTheme.h"
-#endif
-
 // Get rid of WTF's pow define so we can use std::pow.
 #undef pow
 #include <cmath> // for std::pow

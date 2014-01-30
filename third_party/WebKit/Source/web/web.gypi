@@ -330,7 +330,6 @@
         {
           'web_unittest_files': [
             'tests/LocaleWinTest.cpp',
-            'tests/TransparencyWinTest.cpp',
             'tests/WebPageNewSerializerTest.cpp',
             'tests/WebPageSerializerTest.cpp',
           ],

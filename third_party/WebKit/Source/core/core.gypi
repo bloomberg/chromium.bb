@@ -1563,8 +1563,6 @@
             'rendering/RenderThemeChromiumMac.mm',
             'rendering/RenderThemeChromiumSkia.cpp',
             'rendering/RenderThemeChromiumSkia.h',
-            'rendering/RenderThemeChromiumWin.cpp',
-            'rendering/RenderThemeChromiumWin.h',
             'rendering/RenderTreeAsText.cpp',
             'rendering/RenderVTTCue.cpp',
             'rendering/RenderVTTCue.h',
