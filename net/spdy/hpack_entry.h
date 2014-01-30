@@ -18,7 +18,7 @@
 namespace net {
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-04
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
 // .
 
 // A structure for an entry in the header table (3.1.2) and the

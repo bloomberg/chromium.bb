@@ -20,13 +20,15 @@ uint32 HpackHeaderTable::GetEntryCount() const {
 }
 
 const HpackEntry& HpackHeaderTable::GetEntry(uint32 index) const {
-  CHECK_LT(index, GetEntryCount());
-  return entries_[index];
+  CHECK_GE(index, 1u);
+  CHECK_LE(index, GetEntryCount());
+  return entries_[index-1];
 }
 
 HpackEntry* HpackHeaderTable::GetMutableEntry(uint32 index) {
-  CHECK_LT(index, GetEntryCount());
-  return &entries_[index];
+  CHECK_GE(index, 1u);
+  CHECK_LE(index, GetEntryCount());
+  return &entries_[index-1];
 }
 
 void HpackHeaderTable::SetMaxSize(uint32 max_size) {
@@ -40,9 +42,9 @@ void HpackHeaderTable::SetMaxSize(uint32 max_size) {
 
 void HpackHeaderTable::TryAddEntry(
     const HpackEntry& entry,
-    int32* index,
+    uint32* index,
     std::vector<uint32>* removed_referenced_indices) {
-  *index = -1;
+  *index = 0;
   removed_referenced_indices->clear();
 
   // The algorithm used here is described in 3.3.3. We're assuming
@@ -53,9 +55,10 @@ void HpackHeaderTable::TryAddEntry(
     // The conditional implies the difference can fit in 32 bits.
     target_size = size_t_max_size - entry.Size();
   }
-  while ((static_cast<size_t>(size_) > target_size) && !entries_.empty()) {
+  while (static_cast<size_t>(size_) > target_size) {
+    DCHECK(!entries_.empty());
     if (entries_.back().IsReferenced()) {
-      removed_referenced_indices->push_back(entries_.size() - 1);
+      removed_referenced_indices->push_back(entries_.size());
     }
     size_ -= entries_.back().Size();
     entries_.pop_back();
@@ -66,7 +69,7 @@ void HpackHeaderTable::TryAddEntry(
     // condition of the if.
     DCHECK_LE(static_cast<size_t>(size_) + entry.Size(), size_t_max_size);
     size_ += entry.Size();
-    *index = 0;
+    *index = 1;
     entries_.push_front(entry);
   }
 }

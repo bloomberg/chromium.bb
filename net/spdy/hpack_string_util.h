@@ -11,7 +11,7 @@
 namespace net {
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-04
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
 // .
 
 // A constant-time StringPiece comparison function, as suggested

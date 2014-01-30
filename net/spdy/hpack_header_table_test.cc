@@ -55,10 +55,10 @@ void AddEntriesExpectNoEviction(const HpackEntryVector& entries,
   unsigned start_entry_count = header_table->GetEntryCount();
   for (HpackEntryVector::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
-    int32 index = -1;
+    uint32 index = 0;
     std::vector<uint32> removed_referenced_indices;
     header_table->TryAddEntry(*it, &index, &removed_referenced_indices);
-    EXPECT_EQ(0, index);
+    EXPECT_EQ(1u, index);
     EXPECT_TRUE(removed_referenced_indices.empty());
     EXPECT_EQ(start_entry_count + (it - entries.begin()) + 1u,
               header_table->GetEntryCount());
@@ -66,7 +66,7 @@ void AddEntriesExpectNoEviction(const HpackEntryVector& entries,
 
   for (HpackEntryVector::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
-    uint32 index = header_table->GetEntryCount() - (it - entries.begin()) - 1;
+    uint32 index = header_table->GetEntryCount() - (it - entries.begin());
     HpackEntry entry = header_table->GetEntry(index);
     EXPECT_TRUE(it->Equals(entry))
         << "it = " << it->GetDebugString() << " != entry = "
@@ -78,7 +78,7 @@ void AddEntriesExpectNoEviction(const HpackEntryVector& entries,
 // table's reference set.
 std::set<uint32> GetReferenceSet(const HpackHeaderTable& header_table) {
   std::set<uint32> reference_set;
-  for (uint32 i = 0; i < header_table.GetEntryCount(); ++i) {
+  for (uint32 i = 1; i <= header_table.GetEntryCount(); ++i) {
     if (header_table.GetEntry(i).IsReferenced()) {
       reference_set.insert(i);
     }
@@ -136,7 +136,7 @@ TEST(HpackHeaderTableTest, SetMaxSizeZeroClearsReferenceSet) {
   AddEntriesExpectNoEviction(entries, &header_table);
 
   std::set<uint32> expected_reference_set;
-  for (uint32 i = 0; i < header_table.GetEntryCount(); ++i) {
+  for (uint32 i = 1; i <= header_table.GetEntryCount(); ++i) {
     header_table.GetMutableEntry(i)->SetReferenced(true);
     expected_reference_set.insert(i);
   }
@@ -157,7 +157,7 @@ TEST(HpackHeaderTableTest, TryAddEntryEviction) {
   AddEntriesExpectNoEviction(entries, &header_table);
 
   EXPECT_EQ(entries.size(), header_table.GetEntryCount());
-  HpackEntry first_entry = header_table.GetEntry(0);
+  HpackEntry first_entry = header_table.GetEntry(1);
   HpackEntry long_entry =
       MakeEntryOfSize(header_table.size() - first_entry.Size());
 
@@ -165,24 +165,24 @@ TEST(HpackHeaderTableTest, TryAddEntryEviction) {
   EXPECT_EQ(entries.size(), header_table.GetEntryCount());
 
   std::set<uint32> expected_reference_set;
-  for (uint32 i = 1; i < header_table.GetEntryCount(); ++i) {
+  for (uint32 i = 2; i <= header_table.GetEntryCount(); ++i) {
     header_table.GetMutableEntry(i)->SetReferenced(true);
     expected_reference_set.insert(i);
   }
   EXPECT_EQ(expected_reference_set, GetReferenceSet(header_table));
 
-  int32 index = -1;
+  uint32 index = 0;
   std::vector<uint32> removed_referenced_indices;
   header_table.TryAddEntry(long_entry, &index, &removed_referenced_indices);
 
-  EXPECT_EQ(0, index);
+  EXPECT_EQ(1u, index);
   EXPECT_EQ(expected_reference_set,
             std::set<uint32>(removed_referenced_indices.begin(),
                              removed_referenced_indices.end()));
   EXPECT_TRUE(GetReferenceSet(header_table).empty());
   EXPECT_EQ(2u, header_table.GetEntryCount());
-  EXPECT_TRUE(header_table.GetEntry(0).Equals(long_entry));
-  EXPECT_TRUE(header_table.GetEntry(1).Equals(first_entry));
+  EXPECT_TRUE(header_table.GetEntry(1).Equals(long_entry));
+  EXPECT_TRUE(header_table.GetEntry(2).Equals(first_entry));
 }
 
 // Fill a header table with entries, and then add an entry bigger than
@@ -197,17 +197,17 @@ TEST(HpackHeaderTableTest, TryAddTooLargeEntry) {
   EXPECT_EQ(entries.size(), header_table.GetEntryCount());
 
   std::set<uint32> expected_removed_referenced_indices;
-  for (uint32 i = 0; i < header_table.GetEntryCount(); ++i) {
+  for (uint32 i = 1; i <= header_table.GetEntryCount(); ++i) {
     header_table.GetMutableEntry(i)->SetReferenced(true);
     expected_removed_referenced_indices.insert(i);
   }
 
   HpackEntry long_entry = MakeEntryOfSize(header_table.size() + 1);
-  int32 index = -1;
+  uint32 index = 0;
   std::vector<uint32> removed_referenced_indices;
   header_table.TryAddEntry(long_entry, &index, &removed_referenced_indices);
 
-  EXPECT_EQ(-1, index);
+  EXPECT_EQ(0u, index);
   EXPECT_EQ(expected_removed_referenced_indices,
             std::set<uint32>(removed_referenced_indices.begin(),
                              removed_referenced_indices.end()));

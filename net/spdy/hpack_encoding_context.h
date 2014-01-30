@@ -16,7 +16,7 @@
 #include "net/spdy/hpack_header_table.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-04
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
 // .
 
 namespace net {
@@ -38,9 +38,13 @@ class NET_EXPORT_PRIVATE HpackEncodingContext {
 
   ~HpackEncodingContext();
 
+  uint32 GetMutableEntryCount() const;
+
   uint32 GetEntryCount() const;
 
-  // For all accessor below, index must be < GetEntryCount().
+  // For all read accessors below, index must be >= 1 and <=
+  // GetEntryCount().  For all mutating accessors below, index must be
+  // >= 1 and <= GetMutableEntryCount().
 
   // The StringPieces returned by Get{Name,Value}At() live as long as
   // the next call to SetMaxSize() or the Process*() functions.
@@ -74,23 +78,23 @@ class NET_EXPORT_PRIVATE HpackEncodingContext {
 
   // Tries to update the encoding context given an indexed header
   // opcode for the given index as described in 3.2.1. new_index is
-  // filled in with the index of a mutable entry, or -1 if one was not
+  // filled in with the index of a mutable entry, or 0 if one was not
   // able to be created. removed_referenced_indices is filled in with
   // the indices of all entries removed from the reference set.
   bool ProcessIndexedHeader(uint32 index,
-                            int32* new_index,
+                            uint32* new_index,
                             std::vector<uint32>* removed_referenced_indices);
 
   // Tries to update the encoding context given a literal header with
   // incremental indexing opcode for the given name and value as
   // described in 3.2.1. index is filled in with the index of the new
-  // entry if the header was successfully indexed, or -1 if
+  // entry if the header was successfully indexed, or 0 if
   // not. removed_referenced_indices is filled in with the indices of
   // all entries removed from the reference set.
   bool ProcessLiteralHeaderWithIncrementalIndexing(
       base::StringPiece name,
       base::StringPiece value,
-      int32* index,
+      uint32* index,
       std::vector<uint32>* removed_referenced_indices);
 
  private:

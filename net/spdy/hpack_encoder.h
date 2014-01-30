@@ -16,7 +16,7 @@
 namespace net {
 
 // An HpackEncoder encodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-04
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
 // .
 class NET_EXPORT_PRIVATE HpackEncoder {
  public:

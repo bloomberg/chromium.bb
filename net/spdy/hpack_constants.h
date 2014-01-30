@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-04
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
 // .
 
 namespace net {

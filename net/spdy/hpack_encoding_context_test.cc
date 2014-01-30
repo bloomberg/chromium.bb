@@ -18,7 +18,7 @@ namespace {
 TEST(HpackEncodingContextTest, IndexedHeaderInvalid) {
   HpackEncodingContext encoding_context;
 
-  int32 new_index = -1;
+  uint32 new_index = 0;
   std::vector<uint32> removed_referenced_indices;
   EXPECT_FALSE(
       encoding_context.ProcessIndexedHeader(kuint32max,
@@ -32,38 +32,42 @@ TEST(HpackEncodingContextTest, IndexedHeaderInvalid) {
 TEST(HpackEncodingContextTest, IndexedHeaderStatic) {
   HpackEncodingContext encoding_context;
 
-  std::string name = encoding_context.GetNameAt(1).as_string();
-  std::string value = encoding_context.GetValueAt(1).as_string();
-  EXPECT_NE(name, encoding_context.GetNameAt(0));
-  EXPECT_NE(value, encoding_context.GetValueAt(0));
+  std::string name = encoding_context.GetNameAt(2).as_string();
+  std::string value = encoding_context.GetValueAt(2).as_string();
+  EXPECT_EQ(0u, encoding_context.GetMutableEntryCount());
+  EXPECT_NE(name, encoding_context.GetNameAt(1));
+  EXPECT_NE(value, encoding_context.GetValueAt(1));
 
   {
-    int32 new_index = -1;
+    uint32 new_index = 0;
+    std::vector<uint32> removed_referenced_indices;
+    EXPECT_TRUE(
+        encoding_context.ProcessIndexedHeader(2,
+                                              &new_index,
+                                              &removed_referenced_indices));
+    EXPECT_EQ(1u, new_index);
+    EXPECT_TRUE(removed_referenced_indices.empty());
+  }
+  EXPECT_EQ(1u, encoding_context.GetMutableEntryCount());
+  EXPECT_EQ(name, encoding_context.GetNameAt(1));
+  EXPECT_EQ(value, encoding_context.GetValueAt(1));
+  EXPECT_TRUE(encoding_context.IsReferencedAt(1));
+
+  {
+    uint32 new_index = 0;
     std::vector<uint32> removed_referenced_indices;
     EXPECT_TRUE(
         encoding_context.ProcessIndexedHeader(1,
                                               &new_index,
                                               &removed_referenced_indices));
-    EXPECT_EQ(0, new_index);
+    EXPECT_EQ(1u, new_index);
     EXPECT_TRUE(removed_referenced_indices.empty());
   }
-  EXPECT_EQ(name, encoding_context.GetNameAt(0));
-  EXPECT_EQ(value, encoding_context.GetValueAt(0));
-  EXPECT_TRUE(encoding_context.IsReferencedAt(0));
-
-  {
-    int32 new_index = -1;
-    std::vector<uint32> removed_referenced_indices;
-    EXPECT_TRUE(
-        encoding_context.ProcessIndexedHeader(0,
-                                              &new_index,
-                                              &removed_referenced_indices));
-    EXPECT_EQ(0, new_index);
-    EXPECT_TRUE(removed_referenced_indices.empty());
-  }
-  EXPECT_EQ(name, encoding_context.GetNameAt(0));
-  EXPECT_EQ(value, encoding_context.GetValueAt(0));
-  EXPECT_FALSE(encoding_context.IsReferencedAt(0));
+  EXPECT_EQ(1u, encoding_context.GetMutableEntryCount());
+  EXPECT_EQ(name, encoding_context.GetNameAt(1));
+  EXPECT_EQ(value, encoding_context.GetValueAt(1));
+  EXPECT_LE(1u, encoding_context.GetMutableEntryCount());
+  EXPECT_FALSE(encoding_context.IsReferencedAt(1));
 }
 
 // Try to process an indexed header with an index for a static header
@@ -73,14 +77,15 @@ TEST(HpackEncodingContextTest, IndexedHeaderStaticCopyDoesNotFit) {
   HpackEncodingContext encoding_context;
   encoding_context.SetMaxSize(0);
 
-  int32 new_index = -1;
+  uint32 new_index = 0;
   std::vector<uint32> removed_referenced_indices;
   EXPECT_TRUE(
       encoding_context.ProcessIndexedHeader(1,
                                             &new_index,
                                             &removed_referenced_indices));
-  EXPECT_EQ(-1, new_index);
+  EXPECT_EQ(0u, new_index);
   EXPECT_TRUE(removed_referenced_indices.empty());
+  EXPECT_EQ(0u, encoding_context.GetMutableEntryCount());
 }
 
 // NOTE: It's too onerous to try to test invalid input to
@@ -92,16 +97,17 @@ TEST(HpackEncodingContextTest, IndexedHeaderStaticCopyDoesNotFit) {
 TEST(HpackEncodingContextTest, LiteralHeaderIncrementalIndexing) {
   HpackEncodingContext encoding_context;
 
-  int32 index = -1;
+  uint32 index = 0;
   std::vector<uint32> removed_referenced_indices;
   EXPECT_TRUE(
       encoding_context.ProcessLiteralHeaderWithIncrementalIndexing(
           "name", "value", &index, &removed_referenced_indices));
-  EXPECT_EQ(0, index);
+  EXPECT_EQ(1u, index);
   EXPECT_TRUE(removed_referenced_indices.empty());
-  EXPECT_EQ("name", encoding_context.GetNameAt(0).as_string());
-  EXPECT_EQ("value", encoding_context.GetValueAt(0).as_string());
-  EXPECT_TRUE(encoding_context.IsReferencedAt(0));
+  EXPECT_EQ("name", encoding_context.GetNameAt(1).as_string());
+  EXPECT_EQ("value", encoding_context.GetValueAt(1).as_string());
+  EXPECT_TRUE(encoding_context.IsReferencedAt(1));
+  EXPECT_EQ(1u, encoding_context.GetMutableEntryCount());
 }
 
 // Try to process a literal header with incremental indexing that is
@@ -111,13 +117,14 @@ TEST(HpackEncodingContextTest, LiteralHeaderIncrementalIndexingDoesNotFit) {
   HpackEncodingContext encoding_context;
   encoding_context.SetMaxSize(0);
 
-  int32 index = -1;
+  uint32 index = 0;
   std::vector<uint32> removed_referenced_indices;
   EXPECT_TRUE(
       encoding_context.ProcessLiteralHeaderWithIncrementalIndexing(
           "name", "value", &index, &removed_referenced_indices));
-  EXPECT_EQ(-1, index);
+  EXPECT_EQ(0u, index);
   EXPECT_TRUE(removed_referenced_indices.empty());
+  EXPECT_EQ(0u, encoding_context.GetMutableEntryCount());
 }
 
 }  // namespace

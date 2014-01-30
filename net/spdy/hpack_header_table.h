@@ -17,7 +17,7 @@
 namespace net {
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-04
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-05
 // .
 
 // A data structure for both the header table (described in 3.1.2) and
@@ -36,10 +36,10 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   // Returns the total number of entries.
   uint32 GetEntryCount() const;
 
-  // The given index must be >= 0 and < GetEntryCount().
+  // The given index must be >= 1 and <= GetEntryCount().
   const HpackEntry& GetEntry(uint32 index) const;
 
-  // The given index must be >= 0 and < GetEntryCount().
+  // The given index must be >= 1 and <= GetEntryCount().
   HpackEntry* GetMutableEntry(uint32 index);
 
   // Sets the maximum size of the header table, evicting entries if
@@ -49,12 +49,12 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   // The given entry must not be one from the header table, since it
   // may get evicted. Tries to add the given entry to the header
   // table, evicting entries if necessary as described in 3.3.3. index
-  // will be filled in with the index of the added entry, or -1 if the
+  // will be filled in with the index of the added entry, or 0 if the
   // entry could not be added. removed_referenced_indices will be
   // filled in with the indices of any removed entries that were in
   // the reference set.
   void TryAddEntry(const HpackEntry& entry,
-                   int32* index,
+                   uint32* index,
                    std::vector<uint32>* removed_referenced_indices);
 
  private:
