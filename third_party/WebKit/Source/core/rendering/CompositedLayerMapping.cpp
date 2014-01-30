@@ -564,6 +564,56 @@ void CompositedLayerMapping::adjustBoundsForSubPixelAccumulation(const RenderLay
     relativeBounds.moveBy(delta);
 }
 
+void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
+{
+    if (!m_squashingLayer)
+        return;
+
+    ASSERT(compositor()->layerSquashingEnabled());
+
+    LayoutRect totalSquashBounds;
+    for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
+        LayoutRect squashedBounds = compositor()->calculateCompositedBounds(m_squashedLayers[i].renderLayer, m_squashedLayers[i].renderLayer);
+
+        // Store the local bounds of the RenderLayer subtree before applying the offset.
+        m_squashedLayers[i].compositedBounds = squashedBounds;
+
+        squashedBounds.move(m_squashedLayers[i].offsetFromSquashingCLM);
+        totalSquashBounds.unite(squashedBounds);
+    }
+
+    // The totalSquashBounds is positioned with respect to m_owningLayer of this CompositedLayerMapping.
+    // But the squashingLayer needs to be positioned with respect to the ancestor CompositedLayerMapping.
+    // The conversion between m_owningLayer and the ancestor CLM is already computed in the caller as |delta|.
+    // FIXME: probably not the right place to round from LayoutPoint to IntPoint?
+    IntPoint squashLayerPosition = pixelSnappedIntRect(totalSquashBounds).location();
+    squashLayerPosition.moveBy(delta);
+
+    // FIXME: this could be skipped for accelerated overflow scrolling, somehow.
+    m_squashingLayer->setNeedsDisplay();
+
+    m_squashingLayer->setPosition(squashLayerPosition);
+    m_squashingLayer->setSize(totalSquashBounds.size());
+
+    // Now that the squashing bounds are known, we can convert the RenderLayer painting offsets
+    // from CLM owning layer space to the squashing layer space.
+    //
+    // The painting offset we want to compute for each squashed RenderLayer is essentially the position of
+    // the squashed RenderLayer described w.r.t. m_squashingLayer's origin. For this purpose we already cached
+    // offsetFromSquashingCLM before, which describes where the squashed RenderLayer is located w.r.t.
+    // m_owningLayer. So we just need to convert that point from m_owningLayer space to m_squashingLayer
+    // space. This is simply done by subtracing totalSquashBounds... but then the offset overall needs to be
+    // negated because that's the direction that the painting code expects the offset to be.
+    for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
+        m_squashedLayers[i].offsetFromRenderer = IntSize(-m_squashedLayers[i].offsetFromSquashingCLM.width() + totalSquashBounds.x(),
+            -m_squashedLayers[i].offsetFromSquashingCLM.height() + totalSquashBounds.y());
+
+        // FIXME: find a better design to avoid this redundant value - most likely it will make
+        // sense to move the paint task info into RenderLayer's m_compositingProperties.
+        m_squashedLayers[i].renderLayer->setOffsetFromSquashingLayerOrigin(m_squashedLayers[i].offsetFromRenderer);
+    }
+}
+
 void CompositedLayerMapping::updateGraphicsLayerGeometry()
 {
     // If we haven't built z-order lists yet, wait until later.
@@ -799,51 +849,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         }
     }
 
-    if (m_squashingLayer) {
-        ASSERT(compositor()->layerSquashingEnabled());
-
-        LayoutRect totalSquashBounds;
-        for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-            LayoutRect squashedBounds = compositor()->calculateCompositedBounds(m_squashedLayers[i].renderLayer, m_squashedLayers[i].renderLayer);
-
-            // Store the local bounds of the RenderLayer subtree before applying the offset.
-            m_squashedLayers[i].compositedBounds = squashedBounds;
-
-            squashedBounds.move(m_squashedLayers[i].offsetFromSquashingCLM);
-            totalSquashBounds.unite(squashedBounds);
-        }
-
-        // The totalSquashBounds is positioned with respect to m_owningLayer of this CompositedLayerMapping.
-        // But the squashingLayer needs to be positioned with respect to the ancestor CompositedLayerMapping.
-        // The conversion between m_owningLayer and the ancestor CLM is already computed above as |delta|.
-        // FIXME: probably not the right place to round from LayoutPoint to IntPoint?
-        IntPoint squashLayerPosition = pixelSnappedIntRect(totalSquashBounds).location();
-        squashLayerPosition.moveBy(delta);
-
-        // FIXME: this could be skipped for accelerated overflow scrolling, somehow.
-        m_squashingLayer->setNeedsDisplay();
-
-        m_squashingLayer->setPosition(squashLayerPosition);
-        m_squashingLayer->setSize(totalSquashBounds.size());
-
-        // Now that the squashing bounds are known, we can convert the RenderLayer painting offsets
-        // from CLM owning layer space to the squashing layer space.
-        //
-        // The painting offset we want to compute for each squashed RenderLayer is essentially the position of
-        // the squashed RenderLayer described w.r.t. m_squashingLayer's origin. For this purpose we already cached
-        // offsetFromSquashingCLM before, which describes where the squashed RenderLayer is located w.r.t.
-        // m_owningLayer. So we just need to convert that point from m_owningLayer space to m_squashingLayer
-        // space. This is simply done by subtracing totalSquashBounds... but then the offset overall needs to be
-        // negated because that's the direction that the painting code expects the offset to be.
-        for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-            m_squashedLayers[i].offsetFromRenderer = IntSize(-m_squashedLayers[i].offsetFromSquashingCLM.width() + totalSquashBounds.x(),
-                -m_squashedLayers[i].offsetFromSquashingCLM.height() + totalSquashBounds.y());
-
-            // FIXME: find a better design to avoid this redundant value - most likely it will make
-            // sense to move the paint task info into RenderLayer's m_compositingProperties.
-            m_squashedLayers[i].renderLayer->setOffsetFromSquashingLayerOrigin(m_squashedLayers[i].offsetFromRenderer);
-        }
-    }
+    updateSquashingLayerGeometry(delta);
 
     if (m_owningLayer->scrollableArea() && m_owningLayer->scrollableArea()->scrollsOverflow())
         m_owningLayer->scrollableArea()->positionOverflowControls();

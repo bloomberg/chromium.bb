@@ -233,6 +233,8 @@ private:
     // Result is perspective origin in pixels.
     FloatPoint computePerspectiveOrigin(const IntRect& borderBox) const;
 
+    void updateSquashingLayerGeometry(const IntPoint& delta);
+
     void updateOpacity(const RenderStyle*);
     void updateTransform(const RenderStyle*);
     void updateLayerBlendMode(const RenderStyle*);
