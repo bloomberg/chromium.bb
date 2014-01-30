@@ -1,11 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/utility/thread_local.h"
+#include "mojo/public/utility/lib/thread_local.h"
 
 #include <assert.h>
-#include <pthread.h>
 
 namespace mojo {
 namespace internal {

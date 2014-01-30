@@ -4,29 +4,32 @@
 
 #include "mojo/public/environment/buffer_tls.h"
 
-#include "mojo/public/environment/standalone/buffer_tls_setup.h"
-#include "mojo/public/utility/thread_local.h"
+#include <assert.h>
+
+#include "mojo/public/environment/lib/buffer_tls_setup.h"
+#include "mojo/public/utility/lib/thread_local.h"
 
 namespace mojo {
 namespace internal {
 
-static ThreadLocalPlatform::SlotType s_slot;
+static ThreadLocalPointer<Buffer> current_buffer;
 
 void SetUpCurrentBuffer() {
-  ThreadLocalPlatform::AllocateSlot(&s_slot);
+  current_buffer.Allocate();
 }
 
 void TearDownCurrentBuffer() {
-  ThreadLocalPlatform::FreeSlot(s_slot);
+  assert(!current_buffer.Get());
+  current_buffer.Free();
 }
 
 Buffer* GetCurrentBuffer() {
-  return static_cast<Buffer*>(ThreadLocalPlatform::GetValueFromSlot(s_slot));
+  return current_buffer.Get();
 }
 
 Buffer* SetCurrentBuffer(Buffer* buf) {
-  Buffer* old_buf = GetCurrentBuffer();
-  ThreadLocalPlatform::SetValueInSlot(s_slot, buf);
+  Buffer* old_buf = current_buffer.Get();
+  current_buffer.Set(buf);
   return old_buf;
 }
 

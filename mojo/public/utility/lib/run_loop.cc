@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "mojo/public/utility/lib/thread_local.h"
 #include "mojo/public/utility/run_loop_handler.h"
-#include "mojo/public/utility/thread_local.h"
 
 namespace mojo {
 namespace {
 
-ThreadLocalPointer<RunLoop>* tls_run_loop = NULL;
+internal::ThreadLocalPointer<RunLoop> current_run_loop;
 
 const MojoTimeTicks kInvalidTimeTicks = static_cast<MojoTimeTicks>(0);
 
@@ -37,34 +37,29 @@ struct RunLoop::RunState {
 };
 
 RunLoop::RunLoop() : run_state_(NULL), next_handler_id_(0) {
-  assert(tls_run_loop);
-  assert(!tls_run_loop->Get());
-  tls_run_loop->Set(this);
+  assert(!current());
+  current_run_loop.Set(this);
 }
 
 RunLoop::~RunLoop() {
-  assert(tls_run_loop->Get() == this);
-  tls_run_loop->Set(NULL);
+  assert(current() == this);
+  current_run_loop.Set(NULL);
 }
 
 // static
 void RunLoop::SetUp() {
-  assert(!tls_run_loop);
-  tls_run_loop = new ThreadLocalPointer<RunLoop>;
+  current_run_loop.Allocate();
 }
 
 // static
 void RunLoop::TearDown() {
   assert(!current());
-  assert(tls_run_loop);
-  delete tls_run_loop;
-  tls_run_loop = NULL;
+  current_run_loop.Free();
 }
 
 // static
 RunLoop* RunLoop::current() {
-  assert(tls_run_loop);
-  return tls_run_loop->Get();
+  return current_run_loop.Get();
 }
 
 void RunLoop::AddHandler(RunLoopHandler* handler,

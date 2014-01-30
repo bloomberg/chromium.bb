@@ -1,11 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "mojo/public/utility/run_loop.h"
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/tests/test_support.h"
 #include "mojo/public/utility/run_loop_handler.h"
@@ -32,10 +30,11 @@ class TestRunLoopHandler : public RunLoopHandler {
   MojoResult last_error_result() const { return last_error_result_; }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
     ready_count_++;
   }
-  virtual void OnHandleError(const Handle& handle, MojoResult result) OVERRIDE {
+  virtual void OnHandleError(const Handle& handle, MojoResult result)
+      MOJO_OVERRIDE {
     error_count_++;
     last_error_result_ = result;
   }
@@ -45,24 +44,24 @@ class TestRunLoopHandler : public RunLoopHandler {
   int error_count_;
   MojoResult last_error_result_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestRunLoopHandler);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TestRunLoopHandler);
 };
 
 class RunLoopTest : public testing::Test {
  public:
   RunLoopTest() {}
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() MOJO_OVERRIDE {
     Test::SetUp();
     RunLoop::SetUp();
   }
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() MOJO_OVERRIDE {
     RunLoop::TearDown();
     Test::TearDown();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RunLoopTest);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(RunLoopTest);
 };
 
 // Trivial test to verify Run() with no added handles returns.
@@ -80,7 +79,7 @@ class RemoveOnReadyRunLoopHandler : public TestRunLoopHandler {
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
     run_loop_->RemoveHandler(handle);
     TestRunLoopHandler::OnHandleReady(handle);
   }
@@ -88,7 +87,7 @@ class RemoveOnReadyRunLoopHandler : public TestRunLoopHandler {
  private:
   RunLoop* run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoveOnReadyRunLoopHandler);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoveOnReadyRunLoopHandler);
 };
 
 // Verifies RunLoop quits when no more handles (handle is removed when ready).
@@ -116,7 +115,7 @@ class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
 
   // RunLoopHandler:
-  virtual void OnHandleReady(const Handle& handle) OVERRIDE {
+  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
     run_loop_->Quit();
     TestRunLoopHandler::OnHandleReady(handle);
   }
@@ -124,7 +123,7 @@ class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
  private:
   RunLoop* run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuitOnReadyRunLoopHandler);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(QuitOnReadyRunLoopHandler);
 };
 
 // Verifies Quit() from OnHandleReady() quits the loop.
@@ -152,7 +151,8 @@ class QuitOnErrorRunLoopHandler : public TestRunLoopHandler {
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
 
   // RunLoopHandler:
-  virtual void OnHandleError(const Handle& handle, MojoResult result) OVERRIDE {
+  virtual void OnHandleError(const Handle& handle, MojoResult result)
+      MOJO_OVERRIDE {
     run_loop_->Quit();
     TestRunLoopHandler::OnHandleError(handle, result);
   }
@@ -160,7 +160,7 @@ class QuitOnErrorRunLoopHandler : public TestRunLoopHandler {
  private:
   RunLoop* run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuitOnErrorRunLoopHandler);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(QuitOnErrorRunLoopHandler);
 };
 
 // Verifies Quit() when the deadline is reached works.

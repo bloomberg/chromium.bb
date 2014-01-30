@@ -105,7 +105,7 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/tests/environment/async_waiter_unittest.cc',
+        'public/environment/tests/async_waiter_unittest.cc',
       ],
     },
     {
@@ -138,8 +138,7 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/tests/utility/run_loop_unittest.cc',
-        'public/tests/utility/thread_local_unittest.cc',
+        'public/utility/tests/run_loop_unittest.cc',
       ],
     },
     {
@@ -206,13 +205,13 @@
       'target_name': 'mojo_environment_standalone',
       'type': 'static_library',
       'sources': [
-        'public/environment/default_async_waiter.h',
         'public/environment/buffer_tls.h',
+        'public/environment/default_async_waiter.h',
         'public/environment/environment.h',
-        'public/environment/standalone/default_async_waiter.cc',
-        'public/environment/standalone/buffer_tls.cc',
-        'public/environment/standalone/buffer_tls_setup.h',
-        'public/environment/standalone/environment.cc',
+        'public/environment/lib/default_async_waiter.cc',
+        'public/environment/lib/buffer_tls.cc',
+        'public/environment/lib/buffer_tls_setup.h',
+        'public/environment/lib/environment.cc',
       ],
       'include_dirs': [
         '..',
@@ -222,12 +221,12 @@
       'target_name': 'mojo_utility',
       'type': 'static_library',
       'sources': [
-        'public/utility/run_loop.cc',
+        'public/utility/lib/run_loop.cc',
+        'public/utility/lib/thread_local.h',
+        'public/utility/lib/thread_local_posix.cc',
+        'public/utility/lib/thread_local_win.cc',
         'public/utility/run_loop.h',
         'public/utility/run_loop_handler.h',
-        'public/utility/thread_local.h',
-        'public/utility/thread_local_posix.cc',
-        'public/utility/thread_local_win.cc',
       ],
       'include_dirs': [
         '..',
