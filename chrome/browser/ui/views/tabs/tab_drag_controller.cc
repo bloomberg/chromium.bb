@@ -1429,20 +1429,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
       attached_model->SetSelectionFromModel(selection_model_before_attach_);
     } else if (attached_tabstrip_ == source_tabstrip_ &&
                !initial_selection_model_.empty()) {
-      // First time detaching from the source tabstrip. Reset selection model to
-      // initial_selection_model_. Before resetting though we have to remove all
-      // the tabs from initial_selection_model_ as it was created with the tabs
-      // still there.
-      ui::ListSelectionModel selection_model;
-      selection_model.Copy(initial_selection_model_);
-      for (DragData::const_reverse_iterator i(drag_data_.rbegin());
-           i != drag_data_.rend(); ++i) {
-        selection_model.DecrementFrom(i->source_model_index);
-      }
-      // We may have cleared out the selection model. Only reset it if it
-      // contains something.
-      if (!selection_model.empty())
-        attached_model->SetSelectionFromModel(selection_model);
+      RestoreInitialSelection();
     }
   }
 
@@ -1879,6 +1866,31 @@ void TabDragController::ResetSelection(TabStripModel* model) {
     return;
 
   model->SetSelectionFromModel(selection_model);
+}
+
+void TabDragController::RestoreInitialSelection() {
+  // First time detaching from the source tabstrip. Reset selection model to
+  // initial_selection_model_. Before resetting though we have to remove all
+  // the tabs from initial_selection_model_ as it was created with the tabs
+  // still there.
+  ui::ListSelectionModel selection_model;
+  selection_model.Copy(initial_selection_model_);
+  for (DragData::const_reverse_iterator i(drag_data_.rbegin());
+       i != drag_data_.rend(); ++i) {
+    selection_model.DecrementFrom(i->source_model_index);
+  }
+  // We may have cleared out the selection model. Only reset it if it
+  // contains something.
+  if (selection_model.empty())
+    return;
+
+  // The anchor/active may have been among the tabs that were dragged out. Force
+  // the anchor/active to be valid.
+  if (selection_model.anchor() == ui::ListSelectionModel::kUnselectedIndex)
+    selection_model.set_anchor(selection_model.selected_indices()[0]);
+  if (selection_model.active() == ui::ListSelectionModel::kUnselectedIndex)
+    selection_model.set_active(selection_model.selected_indices()[0]);
+  GetModel(source_tabstrip_)->SetSelectionFromModel(selection_model);
 }
 
 void TabDragController::RevertDragAt(size_t drag_index) {

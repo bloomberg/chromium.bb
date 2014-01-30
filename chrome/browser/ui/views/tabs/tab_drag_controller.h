@@ -411,6 +411,9 @@ class TabDragController : public content::WebContentsDelegate,
   // under us).
   void ResetSelection(TabStripModel* model);
 
+  // Restores |initial_selection_model_| to the |source_tabstrip_|.
+  void RestoreInitialSelection();
+
   // Finishes a succesful drag operation.
   void CompleteDrag();
 
