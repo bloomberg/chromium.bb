@@ -52,7 +52,8 @@ class TryChangeUnittest(TryChangeTestsBase):
       'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
       'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils', 'gen_parser',
       'getpass', 'itertools', 'json', 'logging', 'optparse', 'os', 'posixpath',
-      're', 'scm', 'shutil', 'subprocess2', 'sys', 'tempfile', 'urllib']
+      're', 'scm', 'shutil', 'subprocess2', 'sys', 'tempfile', 'urllib',
+      'urllib2']
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
 

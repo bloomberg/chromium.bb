@@ -22,6 +22,7 @@ import shutil
 import sys
 import tempfile
 import urllib
+import urllib2
 
 import breakpad  # pylint: disable=W0611
 
@@ -443,13 +444,6 @@ def _SendChangeHTTP(bot_spec, options):
   values.append(('patch', options.diff))
 
   url = 'http://%s:%s/send_try_patch' % (options.host, options.port)
-  proxies = None
-  if options.proxy:
-    if options.proxy.lower() == 'none':
-      # Effectively disable HTTP_PROXY or Internet settings proxy setup.
-      proxies = {}
-    else:
-      proxies = {'http': options.proxy, 'https': options.proxy}
 
   logging.info('Sending by HTTP')
   logging.info(''.join("%s=%s\n" % (k, v) for k, v in values))
@@ -460,7 +454,7 @@ def _SendChangeHTTP(bot_spec, options):
 
   try:
     logging.info('Opening connection...')
-    connection = urllib.urlopen(url, urllib.urlencode(values), proxies=proxies)
+    connection = urllib2.urlopen(url, urllib.urlencode(values))
     logging.info('Done')
   except IOError, e:
     logging.info(str(e))
@@ -721,8 +715,6 @@ def gen_parser(prog):
                    help="Host address")
   group.add_option("-P", "--port", type="int",
                    help="HTTP port")
-  group.add_option("--proxy",
-                   help="HTTP proxy")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server with SVN")
@@ -841,7 +833,7 @@ def TryChange(argv,
     if options.url:
       if options.files:
         parser.error('You cannot specify files and --url at the same time.')
-      options.diff = urllib.urlopen(options.url).read()
+      options.diff = urllib2.urlopen(options.url).read()
     elif options.diff:
       if options.files:
         parser.error('You cannot specify files and --diff at the same time.')
@@ -851,11 +843,11 @@ def TryChange(argv,
       # When patchset is specified, it's because it's done by gcl/git-try.
       api_url = '%s/api/%d' % (options.rietveld_url, options.issue)
       logging.debug(api_url)
-      contents = json.loads(urllib.urlopen(api_url).read())
+      contents = json.loads(urllib2.urlopen(api_url).read())
       options.patchset = contents['patchsets'][-1]
       diff_url = ('%s/download/issue%d_%d.diff' %
           (options.rietveld_url,  options.issue, options.patchset))
-      diff = GetMungedDiff('', urllib.urlopen(diff_url).readlines())
+      diff = GetMungedDiff('', urllib2.urlopen(diff_url).readlines())
       options.diff = ''.join(diff[0])
       changed_files = diff[1]
     else:
