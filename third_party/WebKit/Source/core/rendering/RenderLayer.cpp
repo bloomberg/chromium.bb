@@ -3626,8 +3626,7 @@ bool RenderLayer::isVisuallyNonEmpty() const
 
 void RenderLayer::updateOutOfFlowPositioned(const RenderStyle* oldStyle)
 {
-    if (oldStyle && (renderer()->style()->position() == oldStyle->position()))
-        return;
+    ASSERT(!oldStyle || renderer()->style()->position() != oldStyle->position());
 
     bool wasOutOfFlowPositioned = oldStyle && (oldStyle->position() == AbsolutePosition || oldStyle->position() == FixedPosition);
     bool isOutOfFlowPositioned = renderer()->isOutOfFlowPositioned();
@@ -3749,7 +3748,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
         m_scrollableArea->updateAfterStyleChange(oldStyle);
     m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
-    if (!oldStyle || (oldStyle->visibility() != renderer()->style()->visibility())) {
+    if (!oldStyle || oldStyle->visibility() != renderer()->style()->visibility()) {
         ASSERT(!oldStyle || diff >= StyleDifferenceRepaint);
         compositor()->setNeedsUpdateCompositingRequirementsState();
     }
@@ -3757,7 +3756,11 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     // Overlay scrollbars can make this layer self-painting so we need
     // to recompute the bit once scrollbars have been updated.
     updateSelfPaintingLayer();
-    updateOutOfFlowPositioned(oldStyle);
+
+    if (!oldStyle || renderer()->style()->position() != oldStyle->position()) {
+        ASSERT(!oldStyle || diff >= StyleDifferenceLayout);
+        updateOutOfFlowPositioned(oldStyle);
+    }
 
     if (!oldStyle || !renderer()->style()->reflectionDataEquivalent(oldStyle)) {
         ASSERT(!oldStyle || diff >= StyleDifferenceLayout);
