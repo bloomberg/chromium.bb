@@ -359,7 +359,9 @@
 
         # Generates localized resources for the Windows binaries.
         # The substitution strings are taken from:
-        #   - build/util/LASTCHANGE - the last source code revision.
+        #   - build/util/LASTCHANGE - the last source code revision. There is
+        #       no explicit dependency on this file to avoid rebuilding the host
+        #       after unrelated changes.
         #   - chrome/VERSION - the major, build & patch versions.
         #   - remoting/VERSION - the chromoting patch version (and overrides
         #       for chrome/VERSION).
@@ -389,7 +391,6 @@
               },
               'inputs': [
                 '<(chrome_version_path)',
-                '<(lastchange_path)',
                 '<(remoting_version_path)',
                 '<(RULE_INPUT_PATH)',
               ],
