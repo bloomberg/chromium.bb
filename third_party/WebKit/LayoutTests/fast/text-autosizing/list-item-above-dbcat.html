@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html style="font-size: 16px">
+<head>
+
+<meta name="viewport" content="width=800">
+<style>
+  body {
+    width: 800px;
+    margin: 0;
+    overflow-y: hidden;
+    overflow-x: hidden;
+  }
+</style>
+
+<script>
+if (window.internals) {
+    window.internals.settings.setTextAutosizingEnabled(true);
+    window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
+} else if (window.console && console.warn) {
+    console.warn("This test depends on the Text Autosizing setting being true, so run it in DumpRenderTree, or manually enable Text Autosizing, and either use a mobile device with 320px device-width (like Nexus S or iPhone), or define HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP.");
+}
+</script>
+
+</head>
+<body>
+
+<div>
+This test verifies that FastTextAutosizer considers a list item (LI) to be
+"text" for the purpose of determining the deepest block containing all text
+(DBCAT). If this were not the case, the cluster's DBCAT would be the DIV inside
+the LI, which hasn't entered layout yet when the list marker is autosized (causing
+the autosizer to crash).
+</div>
+<ul style="float:left">
+<li><div>List item list item list item list item list item list item list item
+list item list item list item list item list item list item list item list item
+list item list item list item list item list item list item list item list item</div></li>
+</ul>
+
+</body>
+</html>

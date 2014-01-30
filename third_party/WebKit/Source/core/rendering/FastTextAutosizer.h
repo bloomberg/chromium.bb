@@ -44,6 +44,8 @@ namespace WebCore {
 
 class Document;
 class RenderBlock;
+class RenderListItem;
+class RenderListMarker;
 
 // Single-pass text autosizer (work in progress). Works in two stages:
 // (1) record information about page elements during style recalc
@@ -64,6 +66,8 @@ public:
 
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
+
+    void inflateListItem(RenderListItem*, RenderListMarker*);
 
 private:
     struct Cluster {

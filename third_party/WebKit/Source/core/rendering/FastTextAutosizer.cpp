@@ -38,6 +38,8 @@
 #include "core/page/Page.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderListItem.h"
+#include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 
@@ -93,6 +95,28 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 
     if (block->childrenInline())
         inflate(block);
+}
+
+void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMarker* listItemMarker)
+{
+    if (!enabled())
+        return;
+#ifndef NDEBUG
+    m_blocksThatHaveBegunLayout.add(listItem);
+#endif
+
+    Cluster* cluster = currentCluster();
+    // FIXME: Why is this check needed?
+    if (!cluster)
+        return;
+
+    // Force the LI to be inside the DBCAT when computing the multiplier.
+    // This guarantees that the DBCAT has entered layout, so we can ask for its width.
+    // It also makes sense because the list marker is autosized like a text node.
+    float multiplier = clusterMultiplier(cluster);
+
+    applyMultiplier(listItem, multiplier);
+    applyMultiplier(listItemMarker, multiplier);
 }
 
 void FastTextAutosizer::endLayout(RenderBlock* block)
@@ -302,6 +326,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
             cluster->m_multiplier = cluster->m_parent ? clusterMultiplier(cluster->m_parent) : 1.0f;
         }
     }
+    ASSERT(cluster->m_multiplier);
     return cluster->m_multiplier;
 }
 
@@ -354,6 +379,11 @@ const RenderBlock* FastTextAutosizer::deepestBlockContainingAllText(Cluster* clu
 
 const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, size_t& depth, TextLeafSearch firstOrLast)
 {
+    // List items are treated as text due to the marker.
+    // The actual renderer for the marker (RenderListMarker) may not be in the tree yet since it is added during layout.
+    if (parent->isListItem())
+        return parent;
+
     if (parent->isEmpty())
         return parent->isText() ? parent : 0;
 

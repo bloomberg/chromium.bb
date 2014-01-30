@@ -791,9 +791,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-list-it
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/nested-child.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-sufficient-text-except-in-root.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-numbered-with-autosizing.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-with-images-and-forms-autosizing.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-with-links-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-descendants-combined.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/oscillation-javascript-fontsize-change.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-iframe.html [ ImageOnlyFailure ]
@@ -805,6 +802,9 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insuff
 crbug.com/332944 fast/text-autosizing/hackernews-comments.html [ Failure ]
 crbug.com/329904 [ Mac ] fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
 crbug.com/337852 [ Mac ] fast/text-autosizing/second-pass-no-wrap-container-autosizing.html [ ImageOnlyFailure ]
+
+crbug.com/302005 fast/text-autosizing/list-item-above-dbcat.html [ Missing ]
+crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/list-item-above-dbcat.html [ NeedsRebaseline ]
 
 # Started failing after r162755.
 crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-accelerated-background-color.html [ ImageOnlyFailure ]
