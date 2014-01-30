@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/spdy/hpack_constants.h"  // For HpackPrefix.
 #include "net/spdy/hpack_encoding_context.h"
 
 // All section references below are to
@@ -54,11 +55,14 @@ class NET_EXPORT_PRIVATE HpackOutputStream {
   }
 
  private:
-  // Appends the lower |size| bits of |bits| to the internal buffer.
+  // Appends the lower |bit_size| bits of |bits| to the internal buffer.
   //
-  // |size| must be > 0 and <= 8. |bits| must not have any bits set
-  // |other than the lower |size| bits.
-  void AppendBits(uint8 bits, size_t size);
+  // |bit_size| must be > 0 and <= 8. |bits| must not have any bits
+  // set other than the lower |bit_size| bits.
+  void AppendBits(uint8 bits, size_t bit_size);
+
+  // Simply forwards to AppendBits(prefix.bits, prefix.bit-size).
+  void AppendPrefix(HpackPrefix prefix);
 
   // Appends the given integer using the representation described in
   // 4.1.1. If the internal buffer ends on a byte boundary, the prefix

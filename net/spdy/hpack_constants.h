@@ -13,15 +13,20 @@
 
 namespace net {
 
+// An HpackPrefix signifies |bits| stored in the top |bit_size| bits
+// of an octet.
+struct HpackPrefix {
+  uint8 bits;
+  size_t bit_size;
+};
+
 // The marker for a string literal that is stored unmodified (i.e.,
 // without Huffman encoding) (from 4.1.2).
-const uint8 kStringLiteralIdentityEncoded = 0x0;
-const uint8 kStringLiteralIdentityEncodedSize = 1;
+const HpackPrefix kStringLiteralIdentityEncoded = { 0x0, 1 };
 
 // The opcode for a literal header field without indexing (from
 // 4.3.1).
-const uint8 kLiteralNoIndexOpcode = 0x01;
-const uint8 kLiteralNoIndexOpcodeSize = 2;
+const HpackPrefix kLiteralNoIndexOpcode = { 0x01, 2 };
 
 }  // namespace net
 

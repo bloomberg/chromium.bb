@@ -5,7 +5,8 @@
 #include "net/spdy/hpack_output_stream.h"
 
 #include "base/logging.h"
-#include "net/spdy/hpack_constants.h"
+
+using base::StringPiece;
 
 namespace net {
 
@@ -18,9 +19,9 @@ HpackOutputStream::HpackOutputStream(uint32 max_string_literal_size)
 HpackOutputStream::~HpackOutputStream() {}
 
 bool HpackOutputStream::AppendLiteralHeaderNoIndexingWithName(
-    base::StringPiece name, base::StringPiece value) {
-  AppendBits(kLiteralNoIndexOpcode, kLiteralNoIndexOpcodeSize);
-  AppendBits(0x0, 8 - kLiteralNoIndexOpcodeSize);
+    StringPiece name, StringPiece value) {
+  AppendPrefix(kLiteralNoIndexOpcode);
+  AppendBits(0x0, 8 - kLiteralNoIndexOpcode.bit_size);
   if (!AppendStringLiteral(name))
     return false;
   if (!AppendStringLiteral(value))
@@ -37,15 +38,15 @@ void HpackOutputStream::TakeString(string* output) {
   bit_offset_ = 0;
 }
 
-void HpackOutputStream::AppendBits(uint8 bits, size_t size) {
-  DCHECK_GT(size, 0u);
-  DCHECK_LE(size, 8u);
-  DCHECK_EQ(bits >> size, 0);
-  size_t new_bit_offset = bit_offset_ + size;
+void HpackOutputStream::AppendBits(uint8 bits, size_t bit_size) {
+  DCHECK_GT(bit_size, 0u);
+  DCHECK_LE(bit_size, 8u);
+  DCHECK_EQ(bits >> bit_size, 0);
+  size_t new_bit_offset = bit_offset_ + bit_size;
   if (bit_offset_ == 0) {
     // Buffer ends on a byte boundary.
-    DCHECK_LE(size, 8u);
-    buffer_.append(1, bits << (8 - size));
+    DCHECK_LE(bit_size, 8u);
+    buffer_.append(1, bits << (8 - bit_size));
   } else if (new_bit_offset <= 8) {
     // Buffer does not end on a byte boundary but the given bits fit
     // in the remainder of the last byte.
@@ -57,6 +58,10 @@ void HpackOutputStream::AppendBits(uint8 bits, size_t size) {
     buffer_.append(1, bits << (16 - new_bit_offset));
   }
   bit_offset_ = new_bit_offset % 8;
+}
+
+void HpackOutputStream::AppendPrefix(HpackPrefix prefix) {
+  AppendBits(prefix.bits, prefix.bit_size);
 }
 
 void HpackOutputStream::AppendUint32(uint32 I) {
@@ -79,7 +84,7 @@ void HpackOutputStream::AppendUint32(uint32 I) {
 bool HpackOutputStream::AppendStringLiteral(base::StringPiece str) {
   DCHECK_EQ(bit_offset_, 0u);
   // TODO(akalin): Implement Huffman encoding.
-  AppendBits(kStringLiteralIdentityEncoded, kStringLiteralIdentityEncodedSize);
+  AppendPrefix(kStringLiteralIdentityEncoded);
   if (str.size() > max_string_literal_size_)
     return false;
   AppendUint32(static_cast<uint32>(str.size()));
