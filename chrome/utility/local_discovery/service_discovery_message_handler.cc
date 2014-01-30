@@ -224,6 +224,8 @@ bool ServiceDiscoveryMessageHandler::OnMessageReceived(
 #endif  // OS_POSIX
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_StartWatcher, OnStartWatcher)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DiscoverServices, OnDiscoverServices)
+    IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_SetActivelyRefreshServices,
+                        OnSetActivelyRefreshServices)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DestroyWatcher, OnDestroyWatcher)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_ResolveService, OnResolveService)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DestroyResolver, OnDestroyResolver)
@@ -270,6 +272,14 @@ void ServiceDiscoveryMessageHandler::OnDiscoverServices(uint64 id,
   PostTask(FROM_HERE,
            base::Bind(&ServiceDiscoveryMessageHandler::DiscoverServices,
                       base::Unretained(this), id, force_update));
+}
+
+void ServiceDiscoveryMessageHandler::OnSetActivelyRefreshServices(
+    uint64 id, bool actively_refresh_services) {
+  PostTask(FROM_HERE,
+           base::Bind(
+               &ServiceDiscoveryMessageHandler::SetActivelyRefreshServices,
+               base::Unretained(this), id, actively_refresh_services));
 }
 
 void ServiceDiscoveryMessageHandler::OnDestroyWatcher(uint64 id) {
@@ -330,6 +340,16 @@ void ServiceDiscoveryMessageHandler::DiscoverServices(uint64 id,
     return;
   DCHECK(ContainsKey(service_watchers_, id));
   service_watchers_[id]->DiscoverNewServices(force_update);
+}
+
+void ServiceDiscoveryMessageHandler::SetActivelyRefreshServices(
+    uint64 id,
+    bool actively_refresh_services) {
+  VLOG(1) << "ActivelyRefreshServices, id=" << id;
+  if (!service_discovery_client_)
+    return;
+  DCHECK(ContainsKey(service_watchers_, id));
+  service_watchers_[id]->SetActivelyRefreshServices(actively_refresh_services);
 }
 
 void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64 id) {

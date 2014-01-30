@@ -164,6 +164,12 @@ void ServiceWatcherImplMac::DiscoverNewServices(bool force_update) {
             inDomain:[NSString stringWithUTF8String:domain.c_str()]];
 }
 
+void ServiceWatcherImplMac::SetActivelyRefreshServices(
+    bool actively_refresh_services) {
+  DCHECK(started_);
+  // TODO(noamsml): Implement this method.
+}
+
 std::string ServiceWatcherImplMac::GetServiceType() const {
   return service_type_;
 }

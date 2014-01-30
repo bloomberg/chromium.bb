@@ -67,6 +67,8 @@ class ServiceWatcher {
   // Probe for services of this type.
   virtual void DiscoverNewServices(bool force_update) = 0;
 
+  virtual void SetActivelyRefreshServices(bool actively_refresh_services) = 0;
+
   virtual std::string GetServiceType() const = 0;
 };
 

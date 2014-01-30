@@ -82,6 +82,14 @@ class ServiceDiscoveryHostClient::ServiceWatcherProxy : public ServiceWatcher {
     host_->Send(new LocalDiscoveryMsg_DiscoverServices(id_, force_update));
   }
 
+  virtual void SetActivelyRefreshServices(
+      bool actively_refresh_services) OVERRIDE {
+    DVLOG(1) << "ServiceWatcher::SetActivelyRefreshServices with id " << id_;
+    DCHECK(started_);
+    host_->Send(new LocalDiscoveryMsg_SetActivelyRefreshServices(
+        id_, actively_refresh_services));
+  }
+
   virtual std::string GetServiceType() const OVERRIDE {
     return service_type_;
   }

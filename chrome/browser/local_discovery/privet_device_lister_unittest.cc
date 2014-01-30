@@ -45,6 +45,9 @@ class MockServiceWatcher : public ServiceWatcher {
 
   MOCK_METHOD1(DiscoverNewServices, void(bool force_update));
 
+  MOCK_METHOD1(SetActivelyRefreshServices, void(
+      bool actively_refresh_services));
+
   virtual std::string GetServiceType() const {
     return service_type_;
   }

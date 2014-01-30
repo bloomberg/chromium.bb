@@ -80,6 +80,12 @@ void ServiceWatcherImpl::DiscoverNewServices(bool force_update) {
   SendQuery(kInitialRequeryTimeSeconds, force_update);
 }
 
+void ServiceWatcherImpl::SetActivelyRefreshServices(
+    bool actively_refresh_services) {
+  DCHECK(started_);
+  NOTIMPLEMENTED();
+}
+
 void ServiceWatcherImpl::ReadCachedServices() {
   DCHECK(started_);
   CreateTransaction(false /*network*/, true /*cache*/, false /*force refresh*/,

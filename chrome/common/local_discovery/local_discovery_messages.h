@@ -68,6 +68,11 @@ IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_DiscoverServices,
                      uint64 /* id */,
                      bool /* force_update */)
 
+// Discovers new services.
+IPC_MESSAGE_CONTROL2(LocalDiscoveryMsg_SetActivelyRefreshServices,
+                     uint64 /* id */,
+                     bool /* actively_refresh_services */)
+
 // Destroys watcher in utility process.
 IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyWatcher,
                      uint64 /* id */)

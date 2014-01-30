@@ -60,6 +60,9 @@ class ServiceWatcherImpl : public ServiceWatcher,
 
   virtual void DiscoverNewServices(bool force_update) OVERRIDE;
 
+  virtual void SetActivelyRefreshServices(
+      bool actively_refresh_services) OVERRIDE;
+
   virtual std::string GetServiceType() const OVERRIDE;
 
   virtual void OnRecordUpdate(net::MDnsListener::UpdateType update,
