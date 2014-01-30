@@ -5634,12 +5634,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ADVIEW_DESCRIPTION" desc="Description of the 'Enable 'adview' element' lab.">
         Enables using 'adview' HTML elements in packaged apps.
       </message>
-      <message name="IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_NAME" desc="Name of the 'Enable specifying 'src' attribute on 'adview' elements' lab.">
-        Enable specifying 'src' attribute on 'adview' elements
-      </message>
-      <message name="IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_DESCRIPTION" desc="Description of the 'Enable specifying 'src' attribute on 'adview' elements' element' lab.">
-        Enables specifying 'src' attribute on 'adview' elements, as well as arbitrary 'ad-network' names.
-      </message>
       <message name="IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME" desc="Name of the 'Enable 'window-controls' element' lab.">
         Enable 'window-controls' element
       </message>

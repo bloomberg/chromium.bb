@@ -545,10 +545,6 @@ const char kEnableAdview[]                  = "enable-adview";
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[]                 = "enable-app-list";
 
-// Enables specifying a "src" attribute on <adview> elements
-// (for testing purposes, to skip the whitelist).
-const char kEnableAdviewSrcAttribute[]      = "enable-adview-src-attribute";
-
 // Enables the <window-controls> tag in platform apps.
 const char kEnableAppWindowControls[]       = "enable-app-window-controls";
 

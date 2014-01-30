@@ -9,11 +9,9 @@ function runTests() {
   chrome.test.runTests([
     function test() {
       var assertInactive = function(adview) {
-        chrome.test.assertEq(undefined, adview['src']);
         chrome.test.assertEq(undefined, adview['ad-network']);
         chrome.test.assertEq(undefined, adview['name']);
 
-        chrome.test.assertEq(false, adview.hasAttribute('src'));
         // 'ad-network' is initially set in index.html.
         chrome.test.assertEq(true, adview.hasAttribute('ad-network'));
         chrome.test.assertEq(false, adview.hasAttribute('name'));

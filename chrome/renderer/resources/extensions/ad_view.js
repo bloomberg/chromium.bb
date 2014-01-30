@@ -15,14 +15,6 @@ var process = requireNative('process');
 var addTagWatcher = require('tagWatcher').addTagWatcher;
 
 /**
- * Define "allowCustomAdNetworks" function such that the
- * "kEnableAdviewSrcAttribute" flag is respected.
- */
-function allowCustomAdNetworks() {
-  return process.HasSwitch('enable-adview-src-attribute');
-}
-
-/**
  * List of attribute names to "blindly" sync between <adview> tag and internal
  * browser plugin.
  */
@@ -45,15 +37,6 @@ var AD_VIEW_CUSTOM_ATTRIBUTES = [
     },
     isProperty: function() {
       return true;
-    }
-  },
-  {
-    name: 'src',
-    onMutation: function(adview, mutation) {
-      adview.handleSrcMutation(mutation);
-    },
-    isProperty: function() {
-      return allowCustomAdNetworks();
     }
   }
 ];
@@ -79,11 +62,6 @@ var AD_VIEW_EXT_EVENTS = {
     fields: ['url', 'isTopLevel', 'reason']
   },
   'loadcommit': {
-    customHandler: function(adview, event) {
-      if (event.isTopLevel) {
-        adview.browserPluginNode_.setAttribute('src', event.url);
-      }
-    },
     evt: AdviewLoadCommitEvent,
     fields: ['url', 'isTopLevel']
   }
@@ -344,99 +322,18 @@ AdView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
 };
 
 /**
- * @private
- */
-AdView.prototype.navigateToUrl_ = function(url) {
-  var newValue = url;
-  var oldValue = this.browserPluginNode_.getAttribute('src');
-
-  if (newValue === oldValue)
-    return;
-
-  if (url != null) {
-    // Note: Setting the 'src' property directly, as calling setAttribute has no
-    // effect due to implementation details of BrowserPlugin.
-    this.browserPluginNode_['src'] = url;
-    if (allowCustomAdNetworks()) {
-      this.adviewNode_.setAttribute('src', url);
-    }
-  }
-  else {
-    // Note: Setting the 'src' property directly, as calling setAttribute has no
-    // effect due to implementation details of BrowserPlugin.
-    // TODO(rpaquay): Due to another implementation detail of BrowserPlugin,
-    // this line will leave the "src" attribute value untouched.
-    this.browserPluginNode_['src'] = null;
-    if (allowCustomAdNetworks()) {
-      this.adviewNode_.removeAttribute('src');
-    }
-  }
-}
-
-/**
  * @public
  */
 AdView.prototype.handleAdNetworkMutation = function(mutation) {
   if (this.adviewNode_.hasAttribute('ad-network')) {
     var value = this.adviewNode_.getAttribute('ad-network');
     var item = getAdNetworkInfo(value);
-    if (item) {
-      this.navigateToUrl_(item.url);
-    }
-    else if (allowCustomAdNetworks()) {
-      console.log('The ad-network "' + value + '" is not recognized, ' +
-        'but custom ad-networks are enabled.');
-
-      if (mutation) {
-        this.navigateToUrl_('');
-      }
-    }
-    else {
+    if (!item) {
       // Ignore the new attribute value and set it to empty string.
       // Avoid infinite loop by checking for empty string as new value.
       if (value != '') {
         console.error('The ad-network "' + value + '" is not recognized.');
         this.adviewNode_.setAttribute('ad-network', '');
-      }
-      this.navigateToUrl_('');
-    }
-  }
-  else {
-    this.navigateToUrl_('');
-  }
-}
-
-/**
- * @public
- */
-AdView.prototype.handleSrcMutation = function(mutation) {
-  if (allowCustomAdNetworks()) {
-    if (this.adviewNode_.hasAttribute('src')) {
-      var newValue = this.adviewNode_.getAttribute('src');
-      // Note: Setting the 'src' property directly, as calling setAttribute has
-      // no effect due to implementation details of BrowserPlugin.
-      this.browserPluginNode_['src'] = newValue;
-    }
-    else {
-      // If an attribute is removed from the <adview>, then remove it
-      // from the BrowserPlugin as well.
-      // Note: Setting the 'src' property directly, as calling setAttribute has
-      // no effect due to implementation details of BrowserPlugin.
-      // TODO(rpaquay): Due to another implementation detail of BrowserPlugin,
-      // this line will leave the "src" attribute value untouched.
-      this.browserPluginNode_['src'] = null;
-    }
-  }
-  else {
-    if (this.adviewNode_.hasAttribute('src')) {
-      var value = this.adviewNode_.getAttribute('src');
-      // Ignore the new attribute value and set it to empty string.
-      // Avoid infinite loop by checking for empty string as new value.
-      if (value != '') {
-        console.error('Setting the "src" attribute of an <adview> ' +
-          'element is not supported.  Use the "ad-network" attribute ' +
-          'instead.');
-        this.adviewNode_.setAttribute('src', '');
       }
     }
   }

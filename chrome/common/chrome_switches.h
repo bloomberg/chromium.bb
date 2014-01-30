@@ -158,7 +158,6 @@ extern const char kDnsPrefetchDisable[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEmbedFlashFullscreen[];
 extern const char kEnableAdview[];
-extern const char kEnableAdviewSrcAttribute[];
 extern const char kEnableAppList[];
 extern const char kEnableAppWindowControls[];
 extern const char kEnableAppsShowOnFirstPaint[];

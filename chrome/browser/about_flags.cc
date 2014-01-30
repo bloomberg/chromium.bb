@@ -683,13 +683,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAdview)
   },
   {
-    "enable-adview-src-attribute",
-    IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_NAME,
-    IDS_FLAGS_ENABLE_ADVIEW_SRC_ATTRIBUTE_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableAdviewSrcAttribute)
-  },
-  {
     "enable-app-window-controls",
     IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME,
     IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_DESCRIPTION,

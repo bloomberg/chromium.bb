@@ -1563,7 +1563,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisablePnacl,
       switches::kDisableScriptedPrintThrottling,
       switches::kEnableAdview,
-      switches::kEnableAdviewSrcAttribute,
       switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,
