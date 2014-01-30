@@ -32,7 +32,7 @@
         <link rel="author" title="Microsoft" href="http://www.microsoft.com/" />
         <link rel="help" href="http://dev.w3.org/csswg/css3-grid-align/#grid-declaration" />
         <meta name="flags" content="ahem invalid" />
-        <meta name="assert" content="The 'grid-definition-columns' property set to a negative length value is invalid. Value then computes to its initial value, 'auto'." />
+        <meta name="assert" content="The 'grid-template-columns' property set to a negative length value is invalid. Value then computes to its initial value, 'auto'." />
         <script src="testRunnerEnableGrid.js"></script>
         <style type="text/css">
             #parent
@@ -50,16 +50,16 @@
                 display: -webkit-grid;
                 display: grid;
                 height: 3em;
-                -ms-grid-definition-columns: -1em;
-                -moz-grid-definition-columns: -1em;
-                -o-grid-definition-columns: -1em;
-                -webkit-grid-definition-columns: -1em;
-                grid-definition-columns: -1em;
-                -ms-grid-definition-rows: auto 1fr;
-                -moz-grid-definition-rows: auto 1fr;
-                -o-grid-definition-rows: auto 1fr;
-                -webkit-grid-definition-rows: auto 1fr;
-                grid-definition-rows: auto 1fr;
+                -ms-grid-template-columns: -1em;
+                -moz-grid-template-columns: -1em;
+                -o-grid-template-columns: -1em;
+                -webkit-grid-template-columns: -1em;
+                grid-template-columns: -1em;
+                -ms-grid-template-rows: auto 1fr;
+                -moz-grid-template-rows: auto 1fr;
+                -o-grid-template-rows: auto 1fr;
+                -webkit-grid-template-rows: auto 1fr;
+                grid-template-rows: auto 1fr;
             }
             #left
             {

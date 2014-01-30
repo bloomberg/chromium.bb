@@ -238,8 +238,8 @@ void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
 
 bool RenderGrid::explicitGridDidResize(const RenderStyle* oldStyle) const
 {
-    return oldStyle->gridDefinitionColumns().size() != style()->gridDefinitionColumns().size()
-        || oldStyle->gridDefinitionRows().size() != style()->gridDefinitionRows().size();
+    return oldStyle->gridTemplateColumns().size() != style()->gridTemplateColumns().size()
+        || oldStyle->gridTemplateRows().size() != style()->gridTemplateRows().size();
 }
 
 bool RenderGrid::namedGridLinesDefinitionDidChange(const RenderStyle* oldStyle) const
@@ -528,7 +528,7 @@ double RenderGrid::computeNormalizedFractionBreadth(Vector<GridTrack>& tracks, c
 
 const GridTrackSize& RenderGrid::gridTrackSize(GridTrackSizingDirection direction, size_t i) const
 {
-    const Vector<GridTrackSize>& trackStyles = (direction == ForColumns) ? style()->gridDefinitionColumns() : style()->gridDefinitionRows();
+    const Vector<GridTrackSize>& trackStyles = (direction == ForColumns) ? style()->gridTemplateColumns() : style()->gridTemplateRows();
     if (i >= trackStyles.size())
         return (direction == ForColumns) ? style()->gridAutoColumns() : style()->gridAutoRows();
 
@@ -547,12 +547,12 @@ const GridTrackSize& RenderGrid::gridTrackSize(GridTrackSizingDirection directio
 
 size_t RenderGrid::explicitGridColumnCount() const
 {
-    return style()->gridDefinitionColumns().size();
+    return style()->gridTemplateColumns().size();
 }
 
 size_t RenderGrid::explicitGridRowCount() const
 {
-    return style()->gridDefinitionRows().size();
+    return style()->gridTemplateRows().size();
 }
 
 size_t RenderGrid::explicitGridSizeForSide(GridPositionSide side) const
@@ -772,8 +772,8 @@ void RenderGrid::placeItemsOnGrid()
         insertItemIntoGrid(child, GridCoordinate(*rowPositions, *columnPositions));
     }
 
-    ASSERT(gridRowCount() >= style()->gridDefinitionRows().size());
-    ASSERT(gridColumnCount() >= style()->gridDefinitionColumns().size());
+    ASSERT(gridRowCount() >= style()->gridTemplateRows().size());
+    ASSERT(gridColumnCount() >= style()->gridTemplateColumns().size());
 
     if (autoFlow == AutoFlowNone) {
         // If we did collect some grid items, they won't be placed thus never laid out.

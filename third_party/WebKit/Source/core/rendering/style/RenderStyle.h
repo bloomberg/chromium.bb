@@ -774,8 +774,8 @@ public:
     ItemPosition justifySelf() const { return static_cast<ItemPosition>(rareNonInheritedData->m_justifySelf); }
     OverflowAlignment justifySelfOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_justifySelfOverflowAlignment); }
 
-    const Vector<GridTrackSize>& gridDefinitionColumns() const { return rareNonInheritedData->m_grid->m_gridDefinitionColumns; }
-    const Vector<GridTrackSize>& gridDefinitionRows() const { return rareNonInheritedData->m_grid->m_gridDefinitionRows; }
+    const Vector<GridTrackSize>& gridTemplateColumns() const { return rareNonInheritedData->m_grid->m_gridTemplateColumns; }
+    const Vector<GridTrackSize>& gridTemplateRows() const { return rareNonInheritedData->m_grid->m_gridTemplateRows; }
     const NamedGridLinesMap& namedGridColumnLines() const { return rareNonInheritedData->m_grid->m_namedGridColumnLines; }
     const NamedGridLinesMap& namedGridRowLines() const { return rareNonInheritedData->m_grid->m_namedGridRowLines; }
     const OrderedNamedGridLines& orderedNamedGridColumnLines() const { return rareNonInheritedData->m_grid->m_orderedNamedGridColumnLines; }
@@ -1259,8 +1259,8 @@ public:
     void setJustifySelfOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_justifySelfOverflowAlignment, overflowAlignment); }
     void setGridAutoColumns(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoColumns, length); }
     void setGridAutoRows(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoRows, length); }
-    void setGridDefinitionColumns(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridDefinitionColumns, lengths); }
-    void setGridDefinitionRows(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridDefinitionRows, lengths); }
+    void setGridTemplateColumns(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridTemplateColumns, lengths); }
+    void setGridTemplateRows(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridTemplateRows, lengths); }
     void setNamedGridColumnLines(const NamedGridLinesMap& namedGridColumnLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridColumnLines, namedGridColumnLines); }
     void setNamedGridRowLines(const NamedGridLinesMap& namedGridRowLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_namedGridRowLines, namedGridRowLines); }
     void setOrderedNamedGridColumnLines(const OrderedNamedGridLines& orderedNamedGridColumnLines) { SET_VAR(rareNonInheritedData.access()->m_grid, m_orderedNamedGridColumnLines, orderedNamedGridColumnLines); }
@@ -1689,8 +1689,8 @@ public:
     static ScrollBehavior initialScrollBehavior() { return ScrollBehaviorInstant; }
 
     // The initial value is 'none' for grid tracks.
-    static Vector<GridTrackSize> initialGridDefinitionColumns() { return Vector<GridTrackSize>(); }
-    static Vector<GridTrackSize> initialGridDefinitionRows() { return Vector<GridTrackSize>(); }
+    static Vector<GridTrackSize> initialGridTemplateColumns() { return Vector<GridTrackSize>(); }
+    static Vector<GridTrackSize> initialGridTemplateRows() { return Vector<GridTrackSize>(); }
 
     static GridAutoFlow initialGridAutoFlow() { return AutoFlowNone; }
 

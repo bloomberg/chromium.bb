@@ -2,8 +2,8 @@ function testGridDefinitionsValues(element, columnValue, rowValue, computedColum
 {
     window.element = element;
     var elementID = element.id || "element";
-    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-definition-columns')", computedColumnValue || columnValue);
-    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-definition-rows')", computedRowValue || rowValue);
+    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-template-columns')", computedColumnValue || columnValue);
+    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-template-rows')", computedRowValue || rowValue);
 }
 
 function testGridDefinitionsSetJSValues(columnValue, rowValue, computedColumnValue, computedRowValue, jsColumnValue, jsRowValue)
@@ -26,12 +26,12 @@ function checkGridDefinitionsSetJSValues(useGrid, columnValue, rowValue, compute
         element.style.height = "600px";
     }
     element.style.font = "10px Ahem"; // Used to resolve em font consistently.
-    element.style.gridDefinitionColumns = columnValue;
-    element.style.gridDefinitionRows = rowValue;
-    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", computedColumnValue || columnValue);
-    shouldBeEqualToString("element.style.gridDefinitionColumns", jsColumnValue || columnValue);
-    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", computedRowValue || rowValue);
-    shouldBeEqualToString("element.style.gridDefinitionRows", jsRowValue || rowValue);
+    element.style.gridTemplateColumns = columnValue;
+    element.style.gridTemplateRows = rowValue;
+    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", computedColumnValue || columnValue);
+    shouldBeEqualToString("element.style.gridTemplateColumns", jsColumnValue || columnValue);
+    shouldBeEqualToString("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", computedRowValue || rowValue);
+    shouldBeEqualToString("element.style.gridTemplateRows", jsRowValue || rowValue);
     document.body.removeChild(element);
 }
 
@@ -39,9 +39,9 @@ function testGridDefinitionsSetBadJSValues(columnValue, rowValue)
 {
     window.element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridDefinitionColumns = columnValue;
-    element.style.gridDefinitionRows = rowValue;
-    // We can't use testSetJSValues as element.style.gridDefinitionRows returns "".
+    element.style.gridTemplateColumns = columnValue;
+    element.style.gridTemplateRows = rowValue;
+    // We can't use testSetJSValues as element.style.gridTemplateRows returns "".
     testGridDefinitionsValues(element, "none", "none");
     document.body.removeChild(element);
 }

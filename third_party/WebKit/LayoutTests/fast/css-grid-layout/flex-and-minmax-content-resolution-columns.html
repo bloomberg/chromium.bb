@@ -7,28 +7,28 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridMaxMaxContent {
-    grid-definition-columns: minmax(10px, max-content) minmax(10px, 1fr);
-    grid-definition-rows: 50px;
+    grid-template-columns: minmax(10px, max-content) minmax(10px, 1fr);
+    grid-template-rows: 50px;
 }
 
 .gridMinMinContent {
-    grid-definition-columns: minmax(10px, 1fr) minmax(min-content, 50px);
-    grid-definition-rows: 50px;
+    grid-template-columns: minmax(10px, 1fr) minmax(min-content, 50px);
+    grid-template-rows: 50px;
 }
 
 .gridWithIntrinsicSizeBiggerThanFlex {
-    grid-definition-columns: minmax(min-content, 0.5fr) minmax(18px, 2fr);
-    grid-definition-rows: 50px;
+    grid-template-columns: minmax(min-content, 0.5fr) minmax(18px, 2fr);
+    grid-template-rows: 50px;
 }
 
 .gridShrinkBelowItemsIntrinsicSize {
-    grid-definition-columns: minmax(0px, 1fr) minmax(0px, 2fr);
-    grid-definition-rows: 50px;
+    grid-template-columns: minmax(0px, 1fr) minmax(0px, 2fr);
+    grid-template-rows: 50px;
 }
 
 .gridWithNonFlexingItems {
-    grid-definition-columns: 40px minmax(min-content, 1fr) auto minmax(20px, 2fr);
-    grid-definition-rows: 50px;
+    grid-template-columns: 40px minmax(min-content, 1fr) auto minmax(20px, 2fr);
+    grid-template-rows: 50px;
 }
 
 .firstRowThirdColumn {

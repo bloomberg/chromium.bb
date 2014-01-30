@@ -1,6 +1,6 @@
-description('Test that setting and getting grid-definition-columns and grid-definition-rows works as expected');
+description('Test that setting and getting grid-template-columns and grid-template-rows works as expected');
 
-debug("Test getting |grid-definition-columns| and |grid-definition-rows| set through CSS");
+debug("Test getting |grid-template-columns| and |grid-template-rows| set through CSS");
 testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "7px 11px", "17px 2px");
 testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "53% 99%", "27% 52%", "424px 792px", "162px 312px");
 testGridDefinitionsValues(document.getElementById("gridWithPercentWithoutSize"), "53% 99%", "27% 52%", "7px 0px", "11px 0px");
@@ -24,11 +24,11 @@ debug("");
 debug("Test the initial value");
 var element = document.createElement("div");
 document.body.appendChild(element);
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'none'");
 
 debug("");
-debug("Test getting and setting grid-definition-rows and grid-definition-columns through JS");
+debug("Test getting and setting grid-template-rows and grid-template-columns through JS");
 testGridDefinitionsSetJSValues("18px 22px", "66px 70px");
 testGridDefinitionsSetJSValues("55% 80%", "40% 63%", "440px 640px", "240px 378px");
 testGridDefinitionsSetJSValues("auto auto", "auto auto", "0px 0px", "0px 0px");
@@ -42,12 +42,12 @@ testGridDefinitionsSetJSValues("calc(25px + 40%) minmax(min-content, calc(10% + 
 debug("");
 debug("Test getting wrong values set from CSS");
 var gridWithNoneAndAuto = document.getElementById("gridWithNoneAndAuto");
-shouldBe("getComputedStyle(gridWithNoneAndAuto, '').getPropertyValue('grid-definition-columns')", "'none'");
-shouldBe("getComputedStyle(gridWithNoneAndAuto, '').getPropertyValue('grid-definition-rows')", "'none'");
+shouldBe("getComputedStyle(gridWithNoneAndAuto, '').getPropertyValue('grid-template-columns')", "'none'");
+shouldBe("getComputedStyle(gridWithNoneAndAuto, '').getPropertyValue('grid-template-rows')", "'none'");
 
 var gridWithNoneAndFixed = document.getElementById("gridWithNoneAndFixed");
-shouldBe("getComputedStyle(gridWithNoneAndFixed, '').getPropertyValue('grid-definition-columns')", "'none'");
-shouldBe("getComputedStyle(gridWithNoneAndFixed, '').getPropertyValue('grid-definition-rows')", "'none'");
+shouldBe("getComputedStyle(gridWithNoneAndFixed, '').getPropertyValue('grid-template-columns')", "'none'");
+shouldBe("getComputedStyle(gridWithNoneAndFixed, '').getPropertyValue('grid-template-rows')", "'none'");
 
 debug("");
 debug("Test setting and getting wrong values from JS");
@@ -73,21 +73,21 @@ function testInherit()
     parentElement.style.width = "800px";
     parentElement.style.height = "600px";
     parentElement.style.font = "10px Ahem"; // Used to resolve em font consistently.
-    parentElement.style.gridDefinitionColumns = "50px 1fr (last)";
-    parentElement.style.gridDefinitionRows = "2em (middle) 45px";
+    parentElement.style.gridTemplateColumns = "50px 1fr (last)";
+    parentElement.style.gridTemplateRows = "2em (middle) 45px";
     testGridDefinitionsValues(parentElement, "50px 750px (last)", "20px (middle) 45px");
 
     element = document.createElement("div");
     parentElement.appendChild(element);
     element.style.display = "grid";
-    element.style.gridDefinitionColumns = "inherit";
-    element.style.gridDefinitionRows = "inherit";
+    element.style.gridTemplateColumns = "inherit";
+    element.style.gridTemplateRows = "inherit";
     testGridDefinitionsValues(element, "50px 0px (last)", "20px (middle) 45px");
 
     document.body.removeChild(parentElement);
 }
 debug("");
-debug("Test setting grid-definition-columns and grid-definition-rows to 'inherit' through JS");
+debug("Test setting grid-template-columns and grid-template-rows to 'inherit' through JS");
 testInherit();
 
 function testInitial()
@@ -97,17 +97,17 @@ function testInitial()
     element.style.display = "grid";
     element.style.width = "800px";
     element.style.height = "600px";
-    element.style.gridDefinitionColumns = "150% (middle) 55px";
-    element.style.gridDefinitionRows = "1fr (line) 2fr (line)";
+    element.style.gridTemplateColumns = "150% (middle) 55px";
+    element.style.gridTemplateRows = "1fr (line) 2fr (line)";
     testGridDefinitionsValues(element, "1200px (middle) 55px", "200px (line) 400px (line)");
 
-    element.style.gridDefinitionColumns = "initial";
-    element.style.gridDefinitionRows = "initial";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+    element.style.gridTemplateColumns = "initial";
+    element.style.gridTemplateRows = "initial";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'none'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'none'");
 
     document.body.removeChild(element);
 }
 debug("");
-debug("Test setting grid-definition-columns and grid-definition-rows to 'initial' through JS");
+debug("Test setting grid-template-columns and grid-template-rows to 'initial' through JS");
 testInitial();

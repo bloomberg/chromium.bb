@@ -46,7 +46,7 @@ public:
 
     bool operator==(const StyleGridData& o) const
     {
-        return m_gridDefinitionColumns == o.m_gridDefinitionColumns && m_gridDefinitionRows == o.m_gridDefinitionRows && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines && m_orderedNamedGridColumnLines == o.m_orderedNamedGridColumnLines && m_orderedNamedGridRowLines == o.m_orderedNamedGridRowLines && m_namedGridArea == o.m_namedGridArea && m_namedGridArea == o.m_namedGridArea && m_namedGridAreaRowCount == o.m_namedGridAreaRowCount && m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount;
+        return m_gridTemplateColumns == o.m_gridTemplateColumns && m_gridTemplateRows == o.m_gridTemplateRows && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines && m_orderedNamedGridColumnLines == o.m_orderedNamedGridColumnLines && m_orderedNamedGridRowLines == o.m_orderedNamedGridRowLines && m_namedGridArea == o.m_namedGridArea && m_namedGridArea == o.m_namedGridArea && m_namedGridAreaRowCount == o.m_namedGridAreaRowCount && m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount;
     }
 
     bool operator!=(const StyleGridData& o) const
@@ -54,8 +54,8 @@ public:
         return !(*this == o);
     }
 
-    Vector<GridTrackSize> m_gridDefinitionColumns;
-    Vector<GridTrackSize> m_gridDefinitionRows;
+    Vector<GridTrackSize> m_gridTemplateColumns;
+    Vector<GridTrackSize> m_gridTemplateRows;
 
     NamedGridLinesMap m_namedGridColumnLines;
     NamedGridLinesMap m_namedGridRowLines;

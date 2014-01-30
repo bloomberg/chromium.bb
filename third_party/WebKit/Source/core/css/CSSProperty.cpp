@@ -593,8 +593,8 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyGridColumn:
     case CSSPropertyGridColumnEnd:
     case CSSPropertyGridColumnStart:
-    case CSSPropertyGridDefinitionColumns:
-    case CSSPropertyGridDefinitionRows:
+    case CSSPropertyGridTemplateColumns:
+    case CSSPropertyGridTemplateRows:
     case CSSPropertyGridRow:
     case CSSPropertyGridRowEnd:
     case CSSPropertyGridRowStart:

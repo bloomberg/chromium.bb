@@ -7,8 +7,8 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
-    grid-definition-columns: 50px 100px;
-    grid-definition-rows: 70px 140px;
+    grid-template-columns: 50px 100px;
+    grid-template-rows: 70px 140px;
 }
 
 #minHeightPercent {
@@ -26,7 +26,7 @@ if (window.testRunner)
 function testLayout(gridElementID, gridTracks, size)
 {
     var gridElement = document.getElementById(gridElementID);
-    gridElement.style.gridDefinitionRows = gridTracks.rows;
+    gridElement.style.gridTemplateRows = gridTracks.rows;
     var gridItem = gridElement.firstChild.nextSibling;
     gridItem.setAttribute("data-expected-width", size.width);
     gridItem.setAttribute("data-expected-height", size.height);

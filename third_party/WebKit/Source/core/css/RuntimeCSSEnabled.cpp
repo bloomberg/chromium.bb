@@ -82,8 +82,8 @@ static void setPropertySwitchesFromRuntimeFeatures()
     CSSPropertyID cssGridLayoutProperties[] = {
         CSSPropertyGridAutoColumns,
         CSSPropertyGridAutoRows,
-        CSSPropertyGridDefinitionColumns,
-        CSSPropertyGridDefinitionRows,
+        CSSPropertyGridTemplateColumns,
+        CSSPropertyGridTemplateRows,
         CSSPropertyGridColumnStart,
         CSSPropertyGridColumnEnd,
         CSSPropertyGridRowStart,

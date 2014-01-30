@@ -294,8 +294,8 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyFlexWrap: return 239;
     case CSSPropertyJustifyContent: return 240;
     case CSSPropertyWebkitFontSizeDelta: return 241;
-    case CSSPropertyGridDefinitionColumns: return 242;
-    case CSSPropertyGridDefinitionRows: return 243;
+    case CSSPropertyGridTemplateColumns: return 242;
+    case CSSPropertyGridTemplateRows: return 243;
     case CSSPropertyGridColumnStart: return 244;
     case CSSPropertyGridColumnEnd: return 245;
     case CSSPropertyGridRowStart: return 246;

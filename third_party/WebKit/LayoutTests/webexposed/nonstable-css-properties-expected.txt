@@ -35,13 +35,13 @@ el.style.setProperty('grid-auto-rows', 'auto')
 el.style.getPropertyValue('grid-auto-rows') is auto
 getComputedStyle(el).getPropertyValue('grid-auto-rows') is auto
 
-el.style.setProperty('grid-definition-columns', 'min-content')
-el.style.getPropertyValue('grid-definition-columns') is min-content
-getComputedStyle(el).getPropertyValue('grid-definition-columns') is min-content
+el.style.setProperty('grid-template-columns', 'min-content')
+el.style.getPropertyValue('grid-template-columns') is min-content
+getComputedStyle(el).getPropertyValue('grid-template-columns') is min-content
 
-el.style.setProperty('grid-definition-rows', 'max-content')
-el.style.getPropertyValue('grid-definition-rows') is max-content
-getComputedStyle(el).getPropertyValue('grid-definition-rows') is max-content
+el.style.setProperty('grid-template-rows', 'max-content')
+el.style.getPropertyValue('grid-template-rows') is max-content
+getComputedStyle(el).getPropertyValue('grid-template-rows') is max-content
 
 el.style.setProperty('grid-column-start', 'auto')
 el.style.getPropertyValue('grid-column-start') is auto

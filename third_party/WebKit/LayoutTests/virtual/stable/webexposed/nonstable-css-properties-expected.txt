@@ -35,13 +35,13 @@ el.style.setProperty('grid-auto-rows', 'auto')
 el.style.getPropertyValue('grid-auto-rows') is null
 getComputedStyle(el).getPropertyValue('grid-auto-rows') is null
 
-el.style.setProperty('grid-definition-columns', 'min-content')
-el.style.getPropertyValue('grid-definition-columns') is null
-getComputedStyle(el).getPropertyValue('grid-definition-columns') is null
+el.style.setProperty('grid-template-columns', 'min-content')
+el.style.getPropertyValue('grid-template-columns') is null
+getComputedStyle(el).getPropertyValue('grid-template-columns') is null
 
-el.style.setProperty('grid-definition-rows', 'max-content')
-el.style.getPropertyValue('grid-definition-rows') is null
-getComputedStyle(el).getPropertyValue('grid-definition-rows') is null
+el.style.setProperty('grid-template-rows', 'max-content')
+el.style.getPropertyValue('grid-template-rows') is null
+getComputedStyle(el).getPropertyValue('grid-template-rows') is null
 
 el.style.setProperty('grid-column-start', 'auto')
 el.style.getPropertyValue('grid-column-start') is null

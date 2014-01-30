@@ -26,11 +26,11 @@ if (window.testRunner)
 }
 </style>
 <script>
-function testGridDefinitions(gridDefinitionRows, gridDefinitionColumns, firstGridItemData, secondGridItemData, thirdGridItemData)
+function testGridDefinitions(gridTemplateRows, gridTemplateColumns, firstGridItemData, secondGridItemData, thirdGridItemData)
 {
     var gridElement = document.getElementsByClassName("grid")[0];
-    gridElement.style.gridDefinitionRows = gridDefinitionRows;
-    gridElement.style.gridDefinitionColumns = gridDefinitionColumns;
+    gridElement.style.gridTemplateRows = gridTemplateRows;
+    gridElement.style.gridTemplateColumns = gridTemplateColumns;
 
     var firstGridItem = document.getElementById("firstGridItem");
     firstGridItem.setAttribute("data-expected-width", firstGridItemData.width);

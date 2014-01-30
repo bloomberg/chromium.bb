@@ -1,6 +1,6 @@
-description('Test that setting and getting grid-definition-columns and grid-definition-rows works as expected');
+description('Test that setting and getting grid-template-columns and grid-template-rows works as expected');
 
-debug("Test getting grid-definition-columns and grid-definition-rows set through CSS");
+debug("Test getting grid-template-columns and grid-template-rows set through CSS");
 testGridDefinitionsValues(document.getElementById("gridWithNoneElement"), "none", "none");
 testGridDefinitionsValues(document.getElementById("gridWithFixedElement"), "10px", "15px");
 testGridDefinitionsValues(document.getElementById("gridWithPercentElement"), "400px", "150px");
@@ -23,7 +23,7 @@ testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMaxEleme
 testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMaxElement"), "minmax(10%, 415px)", "minmax(80px, 50%)", "415px", "300px");
 
 debug("");
-debug("Test getting wrong values for grid-definition-columns and grid-definition-rows through CSS (they should resolve to the default: 'none')");
+debug("Test getting wrong values for grid-template-columns and grid-template-rows through CSS (they should resolve to the default: 'none')");
 var gridWithFitContentElement = document.getElementById("gridWithFitContentElement");
 testGridDefinitionsValues(gridWithFitContentElement, "none", "none");
 
@@ -35,11 +35,11 @@ debug("Test the initial value");
 var element = document.createElement("div");
 document.body.appendChild(element);
 testGridDefinitionsValues(element, "none", "none");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
-shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'none'");
+shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'none'");
 
 debug("");
-debug("Test getting and setting grid-definition-columns and grid-definition-rows through JS");
+debug("Test getting and setting grid-template-columns and grid-template-rows through JS");
 testGridDefinitionsSetJSValues("18px", "66px");
 testGridDefinitionsSetJSValues("55%", "40%", "440px", "240px");
 testGridDefinitionsSetJSValues("auto", "auto", "0px", "0px");
@@ -48,7 +48,7 @@ testGridDefinitionsSetJSValues("min-content", "min-content", "0px", "0px");
 testGridDefinitionsSetJSValues("max-content", "max-content", "0px", "0px");
 
 debug("");
-debug("Test getting and setting grid-definition-columns and grid-definition-rows to minmax() values through JS");
+debug("Test getting and setting grid-template-columns and grid-template-rows to minmax() values through JS");
 testGridDefinitionsSetJSValues("minmax(55%, 45px)", "minmax(30px, 40%)", "440px", "240px");
 testGridDefinitionsSetJSValues("minmax(22em, 8vh)", "minmax(10vw, 5em)", "220px", "80px");
 testGridDefinitionsSetJSValues("minmax(min-content, 8vh)", "minmax(10vw, min-content)", "48px", "80px");
@@ -62,14 +62,14 @@ testGridDefinitionsSetJSValues("3.1459fr", "2.718fr", "800px", "600px");
 testGridDefinitionsSetJSValues("+3fr", "+4fr", "800px", "600px", "3fr", "4fr");
 
 debug("");
-debug("Test getting and setting grid-definition-columns and grid-definition-rows to calc() values through JS");
+debug("Test getting and setting grid-template-columns and grid-template-rows to calc() values through JS");
 testGridDefinitionsSetJSValues("calc(150px)", "calc(75px)", "150px", "75px");
 testGridDefinitionsSetJSValues("calc(50% - 30px)", "calc(75px + 10%)", "370px", "135px");
 testGridDefinitionsSetJSValues("minmax(25%, calc(30px))", "minmax(calc(75%), 40px)", "200px", "450px", "minmax(25%, calc(30px))", "minmax(calc(75%), 40px)");
 testGridDefinitionsSetJSValues("minmax(10%, calc(30px + 10%))", "minmax(calc(25% - 50px), 200px)", "110px", "200px", "minmax(10%, calc(30px + 10%))", "minmax(calc(25% - 50px), 200px)");
 
 debug("");
-debug("Test setting grid-definition-columns and grid-definition-rows to bad values through JS");
+debug("Test setting grid-template-columns and grid-template-rows to bad values through JS");
 // No comma and only 1 argument provided.
 testGridDefinitionsSetBadJSValues("minmax(10px 20px)", "minmax(10px)")
 // Nested minmax and only 2 arguments are allowed.
@@ -92,7 +92,7 @@ testGridDefinitionsSetBadJSValues("calc(16px 30px)", "calc(25px + auto)");
 testGridDefinitionsSetBadJSValues("minmax(min-content, calc())", "calc(10%(");
 
 debug("");
-debug("Test setting grid-definition-columns and grid-definition-rows back to 'none' through JS");
+debug("Test setting grid-template-columns and grid-template-rows back to 'none' through JS");
 testGridDefinitionsSetJSValues("18px", "66px");
 testGridDefinitionsSetJSValues("none", "none");
 
@@ -100,22 +100,22 @@ function testInherit()
 {
     var parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
-    parentElement.style.gridDefinitionColumns = "50px (last)";
-    parentElement.style.gridDefinitionRows = "(first) 101%";
+    parentElement.style.gridTemplateColumns = "50px (last)";
+    parentElement.style.gridTemplateRows = "(first) 101%";
 
     element = document.createElement("div");
     parentElement.appendChild(element);
     element.style.display = "grid";
     element.style.height = "100px";
-    element.style.gridDefinitionColumns = "inherit";
-    element.style.gridDefinitionRows = "inherit";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'50px (last)'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'(first) 101px'");
+    element.style.gridTemplateColumns = "inherit";
+    element.style.gridTemplateRows = "inherit";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'50px (last)'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'(first) 101px'");
 
     document.body.removeChild(parentElement);
 }
 debug("");
-debug("Test setting grid-definition-columns and grid-definition-rows to 'inherit' through JS");
+debug("Test setting grid-template-columns and grid-template-rows to 'inherit' through JS");
 testInherit();
 
 function testInitial()
@@ -125,19 +125,19 @@ function testInitial()
     element.style.display = "grid";
     element.style.width = "300px";
     element.style.height = "150px";
-    element.style.gridDefinitionColumns = "150% (last)";
-    element.style.gridDefinitionRows = "(first) 1fr";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'450px (last)'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'(first) 150px'");
+    element.style.gridTemplateColumns = "150% (last)";
+    element.style.gridTemplateRows = "(first) 1fr";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'450px (last)'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'(first) 150px'");
 
     element.style.display = "grid";
-    element.style.gridDefinitionColumns = "initial";
-    element.style.gridDefinitionRows = "initial";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-columns')", "'none'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-definition-rows')", "'none'");
+    element.style.gridTemplateColumns = "initial";
+    element.style.gridTemplateRows = "initial";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'none'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'none'");
 
     document.body.removeChild(element);
 }
 debug("");
-debug("Test setting grid-definition-columns and grid-definition-rows to 'initial' through JS");
+debug("Test setting grid-template-columns and grid-template-rows to 'initial' through JS");
 testInitial();

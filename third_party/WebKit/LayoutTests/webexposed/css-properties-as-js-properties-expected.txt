@@ -117,12 +117,12 @@ gridAutoRows
 gridColumn
 gridColumnEnd
 gridColumnStart
-gridDefinitionColumns
-gridDefinitionRows
 gridRow
 gridRowEnd
 gridRowStart
 gridTemplateAreas
+gridTemplateColumns
+gridTemplateRows
 height
 imageRendering
 isolation

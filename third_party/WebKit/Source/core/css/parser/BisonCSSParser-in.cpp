@@ -2456,8 +2456,8 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         parsedValue = parseGridTrackSize(*m_valueList);
         break;
 
-    case CSSPropertyGridDefinitionColumns:
-    case CSSPropertyGridDefinitionRows:
+    case CSSPropertyGridTemplateColumns:
+    case CSSPropertyGridTemplateRows:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
         return parseGridTrackList(propId, important);

@@ -270,8 +270,8 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGridAutoRows,
     CSSPropertyGridColumnEnd,
     CSSPropertyGridColumnStart,
-    CSSPropertyGridDefinitionColumns,
-    CSSPropertyGridDefinitionRows,
+    CSSPropertyGridTemplateColumns,
+    CSSPropertyGridTemplateRows,
     CSSPropertyGridRowEnd,
     CSSPropertyGridRowStart,
     CSSPropertyWebkitHighlight,
@@ -894,7 +894,7 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
 
 static PassRefPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, RenderObject* renderer, const RenderStyle& style)
 {
-    const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridDefinitionColumns() : style.gridDefinitionRows();
+    const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridTemplateColumns() : style.gridTemplateRows();
     const OrderedNamedGridLines& orderedNamedGridLines = direction == ForColumns ? style.orderedNamedGridColumnLines() : style.orderedNamedGridRowLines();
 
     // Handle the 'none' case here.
@@ -1454,8 +1454,8 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> 
     // FIXME: Some of these cases could be narrowed down or optimized better.
     switch (propertyID) {
     case CSSPropertyBottom:
-    case CSSPropertyGridDefinitionColumns:
-    case CSSPropertyGridDefinitionRows:
+    case CSSPropertyGridTemplateColumns:
+    case CSSPropertyGridTemplateRows:
     case CSSPropertyHeight:
     case CSSPropertyLeft:
     case CSSPropertyRight:
@@ -1948,9 +1948,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyGridAutoRows:
             return specifiedValueForGridTrackSize(style->gridAutoRows(), *style);
 
-        case CSSPropertyGridDefinitionColumns:
+        case CSSPropertyGridTemplateColumns:
             return valueForGridTrackList(ForColumns, renderer, *style);
-        case CSSPropertyGridDefinitionRows:
+        case CSSPropertyGridTemplateRows:
             return valueForGridTrackList(ForRows, renderer, *style);
 
         case CSSPropertyGridColumnStart:

@@ -1625,15 +1625,15 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         state.style()->setGridAutoRows(createGridTrackSize(value, state));
         return;
     }
-    case CSSPropertyGridDefinitionColumns: {
+    case CSSPropertyGridTemplateColumns: {
         if (isInherit) {
-            state.style()->setGridDefinitionColumns(state.parentStyle()->gridDefinitionColumns());
+            state.style()->setGridTemplateColumns(state.parentStyle()->gridTemplateColumns());
             state.style()->setNamedGridColumnLines(state.parentStyle()->namedGridColumnLines());
             state.style()->setOrderedNamedGridColumnLines(state.parentStyle()->orderedNamedGridColumnLines());
             return;
         }
         if (isInitial) {
-            state.style()->setGridDefinitionColumns(RenderStyle::initialGridDefinitionColumns());
+            state.style()->setGridTemplateColumns(RenderStyle::initialGridTemplateColumns());
             state.style()->setNamedGridColumnLines(RenderStyle::initialNamedGridColumnLines());
             state.style()->setOrderedNamedGridColumnLines(RenderStyle::initialOrderedNamedGridColumnLines());
             return;
@@ -1644,20 +1644,20 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         OrderedNamedGridLines orderedNamedGridLines;
         if (!createGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
             return;
-        state.style()->setGridDefinitionColumns(trackSizes);
+        state.style()->setGridTemplateColumns(trackSizes);
         state.style()->setNamedGridColumnLines(namedGridLines);
         state.style()->setOrderedNamedGridColumnLines(orderedNamedGridLines);
         return;
     }
-    case CSSPropertyGridDefinitionRows: {
+    case CSSPropertyGridTemplateRows: {
         if (isInherit) {
-            state.style()->setGridDefinitionRows(state.parentStyle()->gridDefinitionRows());
+            state.style()->setGridTemplateRows(state.parentStyle()->gridTemplateRows());
             state.style()->setNamedGridRowLines(state.parentStyle()->namedGridRowLines());
             state.style()->setOrderedNamedGridRowLines(state.parentStyle()->orderedNamedGridRowLines());
             return;
         }
         if (isInitial) {
-            state.style()->setGridDefinitionRows(RenderStyle::initialGridDefinitionRows());
+            state.style()->setGridTemplateRows(RenderStyle::initialGridTemplateRows());
             state.style()->setNamedGridRowLines(RenderStyle::initialNamedGridRowLines());
             state.style()->setOrderedNamedGridRowLines(RenderStyle::initialOrderedNamedGridRowLines());
             return;
@@ -1668,7 +1668,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         OrderedNamedGridLines orderedNamedGridLines;
         if (!createGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
             return;
-        state.style()->setGridDefinitionRows(trackSizes);
+        state.style()->setGridTemplateRows(trackSizes);
         state.style()->setNamedGridRowLines(namedGridLines);
         state.style()->setOrderedNamedGridRowLines(orderedNamedGridLines);
         return;
