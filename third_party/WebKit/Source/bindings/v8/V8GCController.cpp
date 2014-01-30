@@ -372,6 +372,12 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         minorGCEpilogue(isolate);
     else if (type == v8::kGCTypeMarkSweepCompact)
         majorGCEpilogue(isolate);
+
+    // Force a Blink heap garbage collection when a garbage collection
+    // was forced from V8. This is used for tests that force GCs from
+    // JavaScript to verify that objects die when expected.
+    if (flags & v8::kGCCallbackFlagForced)
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack, Heap::ForcedForTesting);
 }
 
 void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
