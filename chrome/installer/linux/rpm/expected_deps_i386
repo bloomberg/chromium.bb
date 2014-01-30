@@ -1,4 +1,5 @@
 ld-linux.so.2
+ld-linux.so.2(GLIBC_2.1)
 ld-linux.so.2(GLIBC_2.3)
 libasound.so.2
 libcairo.so.2
@@ -51,6 +52,7 @@ libpthread.so.0
 libpthread.so.0(GLIBC_2.0)
 libpthread.so.0(GLIBC_2.1)
 libpthread.so.0(GLIBC_2.2)
+libpthread.so.0(GLIBC_2.2.3)
 libpthread.so.0(GLIBC_2.3.2)
 libpthread.so.0(GLIBC_2.3.3)
 librt.so.1
