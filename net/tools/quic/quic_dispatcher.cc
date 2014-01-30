@@ -150,38 +150,6 @@ void QuicDispatcher::Initialize(int fd) {
                                   epoll_server(), supported_versions()));
 }
 
-// TODO(fnk): remove the Writer interface implementation in favor of
-// direct requests for blocked list placement from Connection/Session.
-WriteResult QuicDispatcher::WritePacket(const char* buffer, size_t buf_len,
-                                        const IPAddressNumber& self_address,
-                                        const IPEndPoint& peer_address,
-                                        QuicBlockedWriterInterface* writer) {
-  if (IsWriteBlocked()) {
-    write_blocked_list_.insert(make_pair(writer, true));
-    return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
-  }
-
-  WriteResult result =
-      writer_->WritePacket(buffer, buf_len, self_address, peer_address, writer);
-  if (result.status == WRITE_STATUS_BLOCKED) {
-    DCHECK(IsWriteBlocked());
-    write_blocked_list_.insert(make_pair(writer, true));
-  }
-  return result;
-}
-
-bool QuicDispatcher::IsWriteBlockedDataBuffered() const {
-  return writer_->IsWriteBlockedDataBuffered();
-}
-
-bool QuicDispatcher::IsWriteBlocked() const {
-  return writer_->IsWriteBlocked();
-}
-
-void QuicDispatcher::SetWritable() {
-  writer_->SetWritable();
-}
-
 void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
                                    const QuicEncryptedPacket& packet) {
@@ -273,7 +241,7 @@ void QuicDispatcher::DeleteSessions() {
 
 bool QuicDispatcher::OnCanWrite() {
   // We got an EPOLLOUT: the socket should not be blocked.
-  SetWritable();
+  writer_->SetWritable();
 
   // Give each writer one attempt to write.
   int num_writers = write_blocked_list_.size();
@@ -284,7 +252,7 @@ bool QuicDispatcher::OnCanWrite() {
     QuicBlockedWriterInterface* writer = write_blocked_list_.begin()->first;
     write_blocked_list_.erase(write_blocked_list_.begin());
     bool can_write_more = writer->OnCanWrite();
-    if (IsWriteBlocked()) {
+    if (writer_->IsWriteBlocked()) {
       // We were unable to write.  Wait for the next EPOLLOUT.
       // In this case, the session would have been added to the blocked list
       // up in WritePacket.
@@ -336,17 +304,6 @@ void QuicDispatcher::OnWriteBlocked(QuicBlockedWriterInterface* writer) {
   write_blocked_list_.insert(make_pair(writer, true));
 }
 
-QuicSession* QuicDispatcher::CreateQuicSession(
-    QuicGuid guid,
-    const IPEndPoint& server_address,
-    const IPEndPoint& client_address) {
-  QuicServerSession* session = new QuicServerSession(
-      config_, new QuicConnection(guid, client_address, helper_.get(), this,
-                                  true, supported_versions_), this);
-  session->InitializeSession(crypto_config_);
-  return session;
-}
-
 QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {
   return new QuicDefaultPacketWriter(fd);
 }
@@ -354,6 +311,26 @@ QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {
 QuicPacketWriterWrapper* QuicDispatcher::CreateWriterWrapper(
     QuicPacketWriter* writer) {
   return new QuicPacketWriterWrapper(writer);
+}
+
+QuicSession* QuicDispatcher::CreateQuicSession(
+    QuicGuid guid,
+    const IPEndPoint& server_address,
+    const IPEndPoint& client_address) {
+  QuicServerSession* session = new QuicServerSession(
+      config_,
+      CreateQuicConnection(guid, server_address, client_address),
+      this);
+  session->InitializeSession(crypto_config_);
+  return session;
+}
+
+QuicConnection* QuicDispatcher::CreateQuicConnection(
+    QuicGuid guid,
+    const IPEndPoint& server_address,
+    const IPEndPoint& client_address) {
+  return new QuicConnection(guid, client_address, helper_.get(), writer_.get(),
+                            true, supported_versions_);
 }
 
 void QuicDispatcher::set_writer(QuicPacketWriter* writer) {

@@ -11,6 +11,12 @@
 namespace net {
 namespace test {
 
+const float kBeta = static_cast<float>(0.7);  // Default Cubic backoff factor.
+const uint32 kNumConnections = 2;
+const float kNConnectionBeta = (kNumConnections - 1 + kBeta) / kNumConnections;
+const float kNConnectionAlpha = 3 * kNumConnections * kNumConnections *
+      (1 - kNConnectionBeta) / (1 + kNConnectionBeta);
+
 class CubicTest : public ::testing::Test {
  protected:
   CubicTest()
@@ -24,7 +30,7 @@ class CubicTest : public ::testing::Test {
   Cubic cubic_;
 };
 
-TEST_F(CubicTest, AboveOrgin) {
+TEST_F(CubicTest, AboveOrigin) {
   // Convex growth.
   const QuicTime::Delta rtt_min = hundred_ms_;
   uint32 current_cwnd = 10;
@@ -36,14 +42,14 @@ TEST_F(CubicTest, AboveOrgin) {
   current_cwnd = expected_cwnd;
   // Normal TCP phase.
   for (int i = 0; i < 48; ++i) {
-    for (uint32 n = 1; n < current_cwnd; ++n) {
+    for (uint32 n = 1; n < current_cwnd / kNConnectionAlpha; ++n) {
       // Call once per ACK.
-      EXPECT_EQ(current_cwnd,
-                cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min));
+      EXPECT_NEAR(current_cwnd,
+                  cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min), 1);
     }
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
-    EXPECT_EQ(expected_cwnd, current_cwnd);
+    EXPECT_NEAR(expected_cwnd, current_cwnd, 1);
     expected_cwnd++;
   }
   // Cubic phase.
@@ -70,15 +76,15 @@ TEST_F(CubicTest, LossEvents) {
   clock_.AdvanceTime(one_ms_);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min));
-  expected_cwnd = current_cwnd * 939 / 1024;
+  expected_cwnd = static_cast<int>(current_cwnd * kNConnectionBeta);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterPacketLoss(current_cwnd));
-  expected_cwnd = current_cwnd * 939 / 1024;
+  expected_cwnd = static_cast<int>(current_cwnd * kNConnectionBeta);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterPacketLoss(current_cwnd));
 }
 
-TEST_F(CubicTest, BelowOrgin) {
+TEST_F(CubicTest, BelowOrigin) {
   // Concave growth.
   const QuicTime::Delta rtt_min = hundred_ms_;
   uint32 current_cwnd = 422;
@@ -87,23 +93,18 @@ TEST_F(CubicTest, BelowOrgin) {
   clock_.AdvanceTime(one_ms_);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min));
-  expected_cwnd = current_cwnd * 939 / 1024;
+  expected_cwnd = static_cast<int>(current_cwnd * kNConnectionBeta);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterPacketLoss(current_cwnd));
   current_cwnd = expected_cwnd;
-  // First update after epoch.
+  // First update after loss to initialize the epoch.
   current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
   // Cubic phase.
-  for (int i = 0; i < 54; ++i) {
-    for (uint32 n = 1; n < current_cwnd; ++n) {
-      // Call once per ACK.
-      EXPECT_EQ(current_cwnd,
-                cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min));
-    }
+  for (int i = 0; i < 40 ; ++i) {
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
   }
-  expected_cwnd = 440;
+  expected_cwnd = 422;
   EXPECT_EQ(expected_cwnd, current_cwnd);
 }
 

@@ -130,9 +130,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Test only.
   SequenceNumberSet GetUnackedPackets() const;
 
-  // Returns true if |sequence_number| is a previous transmission of packet.
-  bool IsPreviousTransmission(QuicPacketSequenceNumber sequence_number) const;
-
   // Called when a congestion feedback frame is received from peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame,

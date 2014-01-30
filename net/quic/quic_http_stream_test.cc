@@ -263,6 +263,13 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         sequence_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED);
   }
 
+  scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
+      QuicPacketSequenceNumber sequence_number) {
+    return maker_.MakeAckAndRstPacket(
+        sequence_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED,
+        1, 1, !kIncludeCongestionFeedback);
+  }
+
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
       QuicPacketSequenceNumber sequence_number,
       QuicPacketSequenceNumber largest_received,
@@ -611,7 +618,7 @@ TEST_P(QuicHttpStreamTest, DestroyedEarly) {
   } else {
     AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
   }
-  AddWrite(ConstructRstStreamPacket(2));
+  AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();
 
@@ -648,7 +655,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
   } else {
     AddWrite(ConstructDataPacket(1, kIncludeVersion, kFin, 0, request_data_));
   }
-  AddWrite(ConstructRstStreamPacket(2));
+  AddWrite(ConstructAckAndRstStreamPacket(2));
   use_closing_stream_ = true;
   Initialize();
 

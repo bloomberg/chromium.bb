@@ -39,6 +39,14 @@ namespace test {
 class QuicCryptoServerConfigPeer;
 }  // namespace test
 
+// Hook that allows application code to subscribe to primary config changes.
+class PrimaryConfigChangedCallback {
+ public:
+  PrimaryConfigChangedCallback();
+  virtual ~PrimaryConfigChangedCallback();
+  virtual void Run(const std::string& scid) = 0;
+};
+
 // Callback used to accept the result of the |client_hello| validation step.
 class NET_EXPORT_PRIVATE ValidateClientHelloResultCallback {
  public:
@@ -133,6 +141,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // encountered and no changes to the QuicCryptoServerConfig will occur.
   bool SetConfigs(const std::vector<QuicServerConfigProtobuf*>& protobufs,
                   QuicWallTime now);
+
+  // Get the server config ids for all known configs.
+  void GetConfigIds(std::vector<std::string>* scids) const;
 
   // Checks |client_hello| for gross errors and determines whether it
   // can be shown to be fresh (i.e. not a replay).  The result of the
@@ -253,6 +264,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // client hellos for longer and still use server nonces as proofs of
   // uniqueness.
   void set_server_nonce_strike_register_window_secs(uint32 window_secs);
+
+  // Set and take ownership of the callback to invoke on primary config changes.
+  void AcquirePrimaryConfigChangedCb(PrimaryConfigChangedCallback* cb);
 
  private:
   friend class test::QuicCryptoServerConfigPeer;
@@ -382,6 +396,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // next_config_promotion_time_ contains the nearest, future time when an
   // active config will be promoted to primary.
   mutable QuicWallTime next_config_promotion_time_;
+  // Callback to invoke when the primary config changes.
+  scoped_ptr<PrimaryConfigChangedCallback> primary_config_changed_cb_;
 
   // Protects access to the pointer held by strike_register_client_.
   mutable base::Lock strike_register_client_lock_;

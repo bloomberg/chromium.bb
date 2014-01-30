@@ -147,6 +147,11 @@ class VerifyNonceIsValidAndUniqueCallback
 // static
 const char QuicCryptoServerConfig::TESTING[] = "secret string for testing";
 
+PrimaryConfigChangedCallback::PrimaryConfigChangedCallback() {
+}
+
+PrimaryConfigChangedCallback::~PrimaryConfigChangedCallback() {
+}
 
 ValidateClientHelloResultCallback::ValidateClientHelloResultCallback() {
 }
@@ -414,6 +419,14 @@ bool QuicCryptoServerConfig::SetConfigs(
   }
 
   return ok;
+}
+
+void QuicCryptoServerConfig::GetConfigIds(vector<string>* scids) const {
+  base::AutoLock locked(configs_lock_);
+  for (ConfigMap::const_iterator it = configs_.begin();
+       it != configs_.end(); ++it) {
+    scids->push_back(it->first);
+  }
 }
 
 void QuicCryptoServerConfig::ValidateClientHello(
@@ -784,6 +797,9 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
              << base::HexEncode(
                  reinterpret_cast<const char*>(primary_config_->orbit),
                  kOrbitSize);
+    if (primary_config_changed_cb_.get() != NULL) {
+      primary_config_changed_cb_->Run(primary_config_->id);
+    }
 
     return;
   }
@@ -801,6 +817,9 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
                reinterpret_cast<const char*>(primary_config_->orbit),
                kOrbitSize);
   next_config_promotion_time_ = QuicWallTime::Zero();
+  if (primary_config_changed_cb_.get() != NULL) {
+    primary_config_changed_cb_->Run(primary_config_->id);
+  }
 }
 
 void QuicCryptoServerConfig::EvaluateClientHello(
@@ -1182,6 +1201,12 @@ void QuicCryptoServerConfig::set_server_nonce_strike_register_window_secs(
     uint32 window_secs) {
   DCHECK(!server_nonce_strike_register_.get());
   server_nonce_strike_register_window_secs_ = window_secs;
+}
+
+void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(
+    PrimaryConfigChangedCallback* cb) {
+  base::AutoLock locked(configs_lock_);
+  primary_config_changed_cb_.reset(cb);
 }
 
 string QuicCryptoServerConfig::NewSourceAddressToken(

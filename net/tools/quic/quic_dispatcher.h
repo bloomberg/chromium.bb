@@ -16,7 +16,6 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_blocked_writer_interface.h"
-#include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_server_session.h"
@@ -53,8 +52,7 @@ class QuicDispatcherPeer;
 class DeleteSessionsAlarm;
 class QuicEpollConnectionHelper;
 
-class QuicDispatcher : public QuicPacketWriter,
-                       public QuicServerSessionVisitor {
+class QuicDispatcher : public QuicServerSessionVisitor {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
@@ -70,16 +68,6 @@ class QuicDispatcher : public QuicPacketWriter,
   virtual ~QuicDispatcher();
 
   void Initialize(int fd);
-
-  // QuicPacketWriter
-  virtual WriteResult WritePacket(
-      const char* buffer, size_t buf_len,
-      const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* writer) OVERRIDE;
-  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
-  virtual bool IsWriteBlocked() const OVERRIDE;
-  virtual void SetWritable() OVERRIDE;
 
   // Process the incoming packet by creating a new session, passing it to
   // an existing session, or passing it to the TimeWaitListManager.
@@ -105,11 +93,6 @@ class QuicDispatcher : public QuicPacketWriter,
 
   typedef base::hash_map<QuicGuid, QuicSession*> SessionMap;
 
-  virtual QuicSession* CreateQuicSession(
-      QuicGuid guid,
-      const IPEndPoint& server_address,
-      const IPEndPoint& client_address);
-
   // Deletes all sessions on the closed session list and clears the list.
   void DeleteSessions();
 
@@ -126,6 +109,14 @@ class QuicDispatcher : public QuicPacketWriter,
   // Caller takes ownership of the returned object.
   virtual QuicPacketWriterWrapper* CreateWriterWrapper(
       QuicPacketWriter* writer);
+
+  virtual QuicSession* CreateQuicSession(QuicGuid guid,
+                                         const IPEndPoint& server_address,
+                                         const IPEndPoint& client_address);
+
+  QuicConnection* CreateQuicConnection(QuicGuid guid,
+                                       const IPEndPoint& server_address,
+                                       const IPEndPoint& client_address);
 
   // Replaces the packet writer with |writer|. Takes ownership of |writer|.
   void set_writer(QuicPacketWriter* writer);

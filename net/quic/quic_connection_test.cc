@@ -31,6 +31,7 @@ using std::map;
 using std::vector;
 using testing::_;
 using testing::AnyNumber;
+using testing::AtLeast;
 using testing::ContainerEq;
 using testing::Contains;
 using testing::DoAll;
@@ -274,7 +275,7 @@ class TestPacketWriter : public QuicPacketWriter {
   TestPacketWriter()
       : last_packet_size_(0),
         write_blocked_(false),
-        block_next_write_(false),
+        block_on_next_write_(false),
         is_write_blocked_data_buffered_(false),
         is_server_(true),
         final_bytes_of_last_packet_(0),
@@ -287,8 +288,7 @@ class TestPacketWriter : public QuicPacketWriter {
   virtual WriteResult WritePacket(
       const char* buffer, size_t buf_len,
       const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
+      const IPEndPoint& peer_address) OVERRIDE {
     QuicEncryptedPacket packet(buffer, buf_len);
     ++packets_write_attempts_;
 
@@ -305,9 +305,9 @@ class TestPacketWriter : public QuicPacketWriter {
     visitor_.Reset();
     framer.set_visitor(&visitor_);
     EXPECT_TRUE(framer.ProcessPacket(packet));
-    if (block_next_write_) {
+    if (block_on_next_write_) {
       write_blocked_ = true;
-      block_next_write_ = false;
+      block_on_next_write_ = false;
     }
     if (IsWriteBlocked()) {
       return WriteResult(WRITE_STATUS_BLOCKED, -1);
@@ -324,7 +324,7 @@ class TestPacketWriter : public QuicPacketWriter {
 
   virtual void SetWritable() OVERRIDE { write_blocked_ = false; }
 
-  void BlockNextWrite() { block_next_write_ = true; }
+  void BlockOnNextWrite() { block_on_next_write_ = true; }
 
   // Resets the visitor's state by clearing out the headers and frames.
   void Reset() {
@@ -380,7 +380,7 @@ class TestPacketWriter : public QuicPacketWriter {
   FramerVisitorCapturingFrames visitor_;
   size_t last_packet_size_;
   bool write_blocked_;
-  bool block_next_write_;
+  bool block_on_next_write_;
   bool is_write_blocked_data_buffered_;
   bool is_server_;
   uint32 final_bytes_of_last_packet_;
@@ -472,7 +472,7 @@ class TestConnection : public QuicConnection {
   }
 
   void set_version(QuicVersion version) {
-    framer_.set_version(version);
+    QuicConnectionPeer::GetFramer(this)->set_version(version);
   }
 
   void set_is_server(bool is_server) {
@@ -841,6 +841,11 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
         QuicConnectionPeer::GetConnectionClosePacket(&connection_) == NULL);
   }
 
+  void BlockOnNextWrite() {
+    writer_->BlockOnNextWrite();
+    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(AtLeast(1));
+  }
+
   QuicGuid guid_;
   QuicFramer framer_;
   QuicPacketCreator creator_;
@@ -1104,8 +1109,9 @@ TEST_F(QuicConnectionTest, LeastUnackedLower) {
   // This should be fine.
   creator_.set_sequence_number(1);
   QuicAckFrame frame2 = InitAckFrame(0, 1);
-  // The scheduler will not process out of order acks.
-  EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
+  // The scheduler will not process out of order acks, but all packet processing
+  // causes the connection to try to write.
+  EXPECT_CALL(visitor_, OnCanWrite()).Times(1);
   ProcessAckPacket(&frame2);
 
   // Now claim it's one, but set the ordering so it was sent "after" the first
@@ -1257,8 +1263,6 @@ TEST_F(QuicConnectionTest, SendingDifferentSequenceNumberLengthsUnackedDelta) {
 
 TEST_F(QuicConnectionTest, BasicSending) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-//  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-//  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(6);
   QuicPacketSequenceNumber last_packet;
   SendStreamDataToPeer(1, "foo", 0, !kFin, &last_packet);  // Packet 1
   EXPECT_EQ(1u, last_packet);
@@ -1340,7 +1344,7 @@ TEST_F(QuicConnectionTest, FECQueueing) {
   connection_.options()->max_packets_per_fec_group = 2;
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   const string payload(payload_length, 'a');
   connection_.SendStreamDataWithString(1, payload, 0, !kFin, NULL);
   EXPECT_FALSE(creator_.ShouldSendFec(true));
@@ -1610,7 +1614,7 @@ TEST_F(QuicConnectionTest, FramePackingSendvQueued) {
   // Try to send two stream frames in 1 packet by using writev.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, NOT_RETRANSMISSION, _));
 
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   char data[] = "ABCD";
   IOVector data_iov;
   data_iov.AppendNoCoalesce(data, 2);
@@ -1729,10 +1733,9 @@ TEST_F(QuicConnectionTest, DiscardRetransmit) {
   NackPacket(2, &nack_two);
   // The first nack should trigger a fast retransmission, but we'll be
   // write blocked, so the packet will be queued.
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _));
-
   ProcessAckPacket(&nack_two);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
@@ -1779,7 +1782,7 @@ TEST_F(QuicConnectionTest, QueueAfterTwoRTOs) {
   }
 
   // Block the congestion window and ensure they're queued.
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   clock_.AdvanceTime(DefaultRetransmissionTime());
   // Only one packet should be retransmitted.
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
@@ -1798,9 +1801,8 @@ TEST_F(QuicConnectionTest, QueueAfterTwoRTOs) {
 }
 
 TEST_F(QuicConnectionTest, WriteBlockedThenSent) {
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
-
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
 
@@ -1811,8 +1813,7 @@ TEST_F(QuicConnectionTest, WriteBlockedThenSent) {
 
 TEST_F(QuicConnectionTest, WriteBlockedAckedThenSent) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  writer_->BlockNextWrite();
-
+  BlockOnNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
@@ -1832,9 +1833,8 @@ TEST_F(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
   EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
 
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
-
   // Simulate the retransmission alarm firing.
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(_));
   clock_.AdvanceTime(DefaultRetransmissionTime());
@@ -1852,7 +1852,7 @@ TEST_F(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
 
 TEST_F(QuicConnectionTest, ResumptionAlarmWhenWriteBlocked) {
   // Block the connection.
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
   EXPECT_EQ(1u, writer_->packets_write_attempts());
   EXPECT_TRUE(writer_->IsWriteBlocked());
@@ -2255,7 +2255,7 @@ TEST_F(QuicConnectionTest, RetransmissionCountCalculation) {
 }
 
 TEST_F(QuicConnectionTest, SetRTOAfterWritingToSocket) {
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
   // Make sure that RTO is not started when the packet is queued.
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
@@ -2306,7 +2306,7 @@ TEST_F(QuicConnectionTest, DelayRTOWithAckReceipt) {
 
 TEST_F(QuicConnectionTest, TestQueued) {
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
@@ -2461,7 +2461,7 @@ TEST_F(QuicConnectionTest, SendSchedulerForce) {
 
 TEST_F(QuicConnectionTest, SendSchedulerEAGAIN) {
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   EXPECT_CALL(*send_algorithm_,
               TimeUntilSend(_, NOT_RETRANSMISSION, _, _)).WillOnce(
                   testing::Return(QuicTime::Delta::Zero()));
@@ -2936,7 +2936,7 @@ TEST_F(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
 
   framer_.set_version(QuicVersionMax());
   connection_.set_is_server(true);
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   EXPECT_EQ(0u, writer_->last_packet_size());
   EXPECT_TRUE(connection_.HasQueuedData());
@@ -2980,7 +2980,7 @@ TEST_F(QuicConnectionTest,
 
   framer_.set_version(QuicVersionMax());
   connection_.set_is_server(true);
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   EXPECT_EQ(0u, writer_->last_packet_size());
@@ -3258,14 +3258,14 @@ TEST_F(QuicConnectionTest, ConnectionCloseWhenWritable) {
 }
 
 TEST_F(QuicConnectionTest, ConnectionCloseGettingWriteBlocked) {
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   TriggerConnectionClose();
   EXPECT_EQ(1u, writer_->packets_write_attempts());
   EXPECT_TRUE(writer_->IsWriteBlocked());
 }
 
 TEST_F(QuicConnectionTest, ConnectionCloseWhenWriteBlocked) {
-  writer_->BlockNextWrite();
+  BlockOnNextWrite();
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
   EXPECT_EQ(1u, writer_->packets_write_attempts());

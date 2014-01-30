@@ -26,10 +26,26 @@ const int kCubeScale = 40;  // 1024*1024^3 (first 1024 is from 0.100^3)
 const int kCubeCongestionWindowScale = 410;
 const uint64 kCubeFactor = (GG_UINT64_C(1) << kCubeScale) /
     kCubeCongestionWindowScale;
-const uint32 kBetaSPDY = 939;  // Back off factor after loss for SPDY, reduces
-                               // the CWND by 1/12th.
-const uint32 kBetaLastMax = 871;  // Additional back off factor after loss for
-                                  // the stored max value.
+
+const uint32 kNumConnections = 2;
+const float kBeta = static_cast<float>(0.7);  // Default Cubic backoff factor.
+// Additional backoff factor when loss occurs in the concave part of the Cubic
+// curve. This additional backoff factor is expected to give up bandwidth to
+// new concurrent flows and speed up convergence.
+const float kBetaLastMax = static_cast<float>(0.85);
+
+// kNConnectionBeta is the backoff factor after loss for our N-connection
+// emulation, which emulates the effective backoff of an ensemble of N TCP-Reno
+// connections on a single loss event. The effective multiplier is computed as:
+const float kNConnectionBeta = (kNumConnections - 1 + kBeta) / kNumConnections;
+
+// TCPFriendly alpha is described in Section 3.3 of the CUBIC paper. Note that
+// kBeta here is a cwnd multiplier, and is equal to 1-beta from the CUBIC paper.
+// We derive the equivalent kNConnectionAlpha for an N-connection emulation as:
+const float kNConnectionAlpha = 3 * kNumConnections * kNumConnections *
+      (1 - kNConnectionBeta) / (1 + kNConnectionBeta);
+// TODO(jri): Compute kNConnectionBeta and kNConnectionAlpha from
+// number of active streams.
 }  // namespace
 
 Cubic::Cubic(const QuicClock* clock)
@@ -57,12 +73,12 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterPacketLoss(
     // We never reached the old max, so assume we are competing with another
     // flow. Use our extra back off factor to allow the other flow to go up.
     last_max_congestion_window_ =
-        (kBetaLastMax * current_congestion_window) >> 10;
+        static_cast<int>(kBetaLastMax * current_congestion_window);
   } else {
     last_max_congestion_window_ = current_congestion_window;
   }
   epoch_ = QuicTime::Zero();  // Reset time.
-  return (current_congestion_window * kBetaSPDY) >> 10;
+  return static_cast<int>(current_congestion_window * kNConnectionBeta);
 }
 
 QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
@@ -114,13 +130,21 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
   // We have a new cubic congestion window.
   last_target_congestion_window_ = target_congestion_window;
 
-  // Update estimated TCP congestion_window.
-  // Note: we do a normal Reno congestion avoidance calculation not the
-  // calculation described in section 3.3 TCP-friendly region of the document.
-  while (acked_packets_count_ >= estimated_tcp_congestion_window_) {
-    acked_packets_count_ -= estimated_tcp_congestion_window_;
+  DCHECK_LT(0u, estimated_tcp_congestion_window_);
+  // With dynamic beta/alpha based on number of active streams, it is possible
+  // for the required_ack_count to become much lower than acked_packets_count_
+  // suddenly, leading to more than one iteration through the following loop.
+  while (true) {
+    // Update estimated TCP congestion_window.
+    uint32 required_ack_count =
+        estimated_tcp_congestion_window_ / kNConnectionAlpha;
+    if (acked_packets_count_ < required_ack_count) {
+      break;
+    }
+    acked_packets_count_ -= required_ack_count;
     estimated_tcp_congestion_window_++;
   }
+
   // Compute target congestion_window based on cubic target and estimated TCP
   // congestion_window, use highest (fastest).
   if (target_congestion_window < estimated_tcp_congestion_window_) {

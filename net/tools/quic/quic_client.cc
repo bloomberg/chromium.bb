@@ -239,6 +239,7 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
     }
   }
   if (connected() && (event->in_events & EPOLLOUT)) {
+    writer_->SetWritable();
     session_->connection()->OnCanWrite();
   }
   if (event->in_events & EPOLLERR) {

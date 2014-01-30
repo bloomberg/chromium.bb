@@ -18,8 +18,7 @@ QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
 WriteResult QuicDefaultPacketWriter::WritePacket(
     const char* buffer, size_t buf_len,
     const net::IPAddressNumber& self_address,
-    const net::IPEndPoint& peer_address,
-    QuicBlockedWriterInterface* blocked_writer) {
+    const net::IPEndPoint& peer_address) {
   DCHECK(!IsWriteBlocked());
   WriteResult result = QuicSocketUtils::WritePacket(
       fd_, buffer, buf_len, self_address, peer_address);

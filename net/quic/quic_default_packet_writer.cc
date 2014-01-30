@@ -26,8 +26,7 @@ QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
 WriteResult QuicDefaultPacketWriter::WritePacket(
     const char* buffer, size_t buf_len,
     const net::IPAddressNumber& self_address,
-    const net::IPEndPoint& peer_address,
-    QuicBlockedWriterInterface* blocked_writer) {
+    const net::IPEndPoint& peer_address) {
   scoped_refptr<StringIOBuffer> buf(
       new StringIOBuffer(std::string(buffer, buf_len)));
   DCHECK(!IsWriteBlocked());

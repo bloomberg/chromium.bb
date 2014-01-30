@@ -28,6 +28,14 @@ class QuicTestPacketMaker {
       bool include_version,
       QuicStreamId stream_id,
       QuicRstStreamErrorCode error_code);
+  scoped_ptr<QuicEncryptedPacket> MakeAckAndRstPacket(
+      QuicPacketSequenceNumber num,
+      bool include_version,
+      QuicStreamId stream_id,
+      QuicRstStreamErrorCode error_code,
+      QuicPacketSequenceNumber largest_received,
+      QuicPacketSequenceNumber least_unacked,
+      bool send_feedback);
   scoped_ptr<QuicEncryptedPacket> MakeConnectionClosePacket(
       QuicPacketSequenceNumber num);
   scoped_ptr<QuicEncryptedPacket> MakeAckPacket(

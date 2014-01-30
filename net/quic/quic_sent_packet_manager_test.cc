@@ -191,9 +191,7 @@ TEST_F(QuicSentPacketManagerTest, IsUnacked) {
 }
 
 TEST_F(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
-  SerializedPacket serialized_packet(CreateDataPacket(1));
-
-  manager_.OnSerializedPacket(serialized_packet);
+  SendDataPacket(1);
   RetransmitPacket(1, 2);
 
   EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(&manager_, 2));
@@ -204,26 +202,26 @@ TEST_F(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
-  SerializedPacket serialized_packet(CreateDataPacket(1));
-
-  manager_.OnSerializedPacket(serialized_packet);
-  RetransmitPacket(1, 2);
+  SendDataPacket(1);
+  RetransmitAndSendPacket(1, 2);
 
   // Ack 2 but not 1.
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(1);
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _)).Times(1);
   manager_.OnIncomingAck(received_info, QuicTime::Zero());
 
-  // No unacked packets remain.
-  VerifyUnackedPackets(NULL, 0);
+  // Packet 1 is unacked, pending, but not retransmittable.
+  QuicPacketSequenceNumber unacked[] = { 1 };
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
-  SerializedPacket serialized_packet(CreateDataPacket(1));
-
-  manager_.OnSerializedPacket(serialized_packet);
+  SendDataPacket(1);
   QuicSentPacketManagerPeer::MarkForRetransmission(
       &manager_, 1, NACK_RETRANSMISSION);
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
@@ -231,6 +229,8 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   // Ack 1.
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _)).Times(1);
   manager_.OnIncomingAck(received_info, QuicTime::Zero());
 
   // There should no longer be a pending retransmission.
@@ -389,19 +389,23 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
 }
 
 TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
-  SerializedPacket serialized_packet(CreateDataPacket(1));
+  SendDataPacket(1);
+  RetransmitAndSendPacket(1, 2);
+  RetransmitAndSendPacket(2, 3);
+  RetransmitAndSendPacket(3, 4);
+  RetransmitAndSendPacket(4, 5);
 
-  manager_.OnSerializedPacket(serialized_packet);
-  RetransmitPacket(1, 2);
-  RetransmitPacket(2, 3);
-  RetransmitPacket(3, 4);
-
-  // Truncated ack with 2 NACKs
+  // Truncated ack with 4 NACKs, so the first packet is lost.
   ReceivedPacketInfo received_info;
-  received_info.largest_observed = 2;
+  received_info.largest_observed = 4;
   received_info.missing_packets.insert(1);
   received_info.missing_packets.insert(2);
+  received_info.missing_packets.insert(3);
+  received_info.missing_packets.insert(4);
   received_info.is_truncated = true;
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
   manager_.OnIncomingAck(received_info, QuicTime::Zero());
 
   // High water mark will be raised.
@@ -412,12 +416,10 @@ TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
 }
 
 TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
-  SerializedPacket serialized_packet(CreateDataPacket(1));
-
-  manager_.OnSerializedPacket(serialized_packet);
-  RetransmitPacket(1, 2);
-  RetransmitPacket(2, 3);
-  RetransmitPacket(3, 4);
+  SendDataPacket(1);
+  RetransmitAndSendPacket(1, 2);
+  RetransmitAndSendPacket(2, 3);
+  RetransmitAndSendPacket(3, 4);
   manager_.OnSerializedPacket(CreateDataPacket(5));
   manager_.OnSerializedPacket(CreateDataPacket(6));
   manager_.OnSerializedPacket(CreateDataPacket(7));
@@ -429,6 +431,8 @@ TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
     ReceivedPacketInfo received_info;
     received_info.largest_observed = 2;
     received_info.missing_packets.insert(1);
+    EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+    EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _));
     manager_.OnIncomingAck(received_info, QuicTime::Zero());
     EXPECT_TRUE(manager_.IsUnacked(4));
   }
@@ -442,6 +446,9 @@ TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
     received_info.missing_packets.insert(5);
     received_info.missing_packets.insert(6);
     received_info.is_truncated = true;
+    EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
+    EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(3, _));
+    EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(4, _));
     manager_.OnIncomingAck(received_info, QuicTime::Zero());
   }
 
@@ -450,130 +457,6 @@ TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
   VerifyUnackedPackets(unacked, arraysize(unacked));
   QuicPacketSequenceNumber retransmittable[] = { 5, 6, 7, 8, 9 };
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-}
-
-TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
-  manager_.OnSerializedPacket(CreateDataPacket(1));
-  manager_.OnSerializedPacket(CreateDataPacket(2));
-  manager_.OnSerializedPacket(CreateDataPacket(3));
-
-  {
-    // Ack packets 1 and 3.
-    ReceivedPacketInfo received_info;
-    received_info.largest_observed = 3;
-    received_info.missing_packets.insert(2);
-    manager_.OnIncomingAck(received_info, QuicTime::Zero());
-
-    QuicPacketSequenceNumber unacked[] = { 2 };
-    VerifyUnackedPackets(unacked, arraysize(unacked));
-    QuicPacketSequenceNumber retransmittable[] = { 2 };
-    VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  }
-
-  manager_.OnSerializedPacket(CreateDataPacket(4));
-  manager_.OnSerializedPacket(CreateDataPacket(5));
-
-  {
-    // Ack packets 5.
-    ReceivedPacketInfo received_info;
-    received_info.largest_observed = 5;
-    received_info.missing_packets.insert(2);
-    received_info.missing_packets.insert(4);
-    manager_.OnIncomingAck(received_info, QuicTime::Zero());
-
-    QuicPacketSequenceNumber unacked[] = { 2, 4 };
-    VerifyUnackedPackets(unacked, arraysize(unacked));
-    QuicPacketSequenceNumber retransmittable[] = { 2, 4 };
-    VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  }
-
-  manager_.OnSerializedPacket(CreateDataPacket(6));
-  manager_.OnSerializedPacket(CreateDataPacket(7));
-
-  {
-    // Ack packets 7.
-    ReceivedPacketInfo received_info;
-    received_info.largest_observed = 7;
-    received_info.missing_packets.insert(2);
-    received_info.missing_packets.insert(4);
-    received_info.missing_packets.insert(6);
-    manager_.OnIncomingAck(received_info, QuicTime::Zero());
-
-    QuicPacketSequenceNumber unacked[] = { 2, 4, 6 };
-    VerifyUnackedPackets(unacked, arraysize(unacked));
-    QuicPacketSequenceNumber retransmittable[] = { 2, 4, 6 };
-    VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  }
-
-  RetransmitPacket(2, 8);
-  manager_.OnSerializedPacket(CreateDataPacket(9));
-  manager_.OnSerializedPacket(CreateDataPacket(10));
-
-  {
-    // Ack packet 10.
-    ReceivedPacketInfo received_info;
-    received_info.largest_observed = 10;
-    received_info.missing_packets.insert(2);
-    received_info.missing_packets.insert(4);
-    received_info.missing_packets.insert(6);
-    received_info.missing_packets.insert(8);
-    received_info.missing_packets.insert(9);
-    manager_.OnIncomingAck(received_info, QuicTime::Zero());
-
-    QuicPacketSequenceNumber unacked[] = { 2, 4, 6, 8, 9 };
-    VerifyUnackedPackets(unacked, arraysize(unacked));
-    QuicPacketSequenceNumber retransmittable[] = { 4, 6, 8, 9 };
-    VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  }
-
-
-  RetransmitPacket(4, 11);
-  manager_.OnSerializedPacket(CreateDataPacket(12));
-  manager_.OnSerializedPacket(CreateDataPacket(13));
-
-  {
-    // Ack packet 13.
-    ReceivedPacketInfo received_info;
-    received_info.largest_observed = 13;
-    received_info.missing_packets.insert(2);
-    received_info.missing_packets.insert(4);
-    received_info.missing_packets.insert(6);
-    received_info.missing_packets.insert(8);
-    received_info.missing_packets.insert(9);
-    received_info.missing_packets.insert(11);
-    received_info.missing_packets.insert(12);
-    manager_.OnIncomingAck(received_info, QuicTime::Zero());
-
-    QuicPacketSequenceNumber unacked[] = { 2, 4, 6, 8, 9, 11, 12 };
-    VerifyUnackedPackets(unacked, arraysize(unacked));
-    QuicPacketSequenceNumber retransmittable[] = { 6, 8, 9, 11, 12 };
-    VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  }
-
-  RetransmitPacket(6, 14);
-  manager_.OnSerializedPacket(CreateDataPacket(15));
-  manager_.OnSerializedPacket(CreateDataPacket(16));
-
-  {
-    // Ack packet 16.
-    ReceivedPacketInfo received_info;
-    received_info.largest_observed = 13;
-    received_info.missing_packets.insert(2);
-    received_info.missing_packets.insert(4);
-    received_info.missing_packets.insert(6);
-    received_info.missing_packets.insert(8);
-    received_info.missing_packets.insert(9);
-    received_info.missing_packets.insert(11);
-    received_info.missing_packets.insert(12);
-    received_info.is_truncated = true;
-    manager_.OnIncomingAck(received_info, QuicTime::Zero());
-
-    // Truncated ack raises the high water mark by clearing out 2, 4, and 6.
-    QuicPacketSequenceNumber unacked[] = { 8, 9, 11, 12, 14, 15, 16 };
-    VerifyUnackedPackets(unacked, arraysize(unacked));
-    QuicPacketSequenceNumber retransmittable[] = { 8, 9, 11, 12, 14, 15, 16 };
-    VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
-  }
 }
 
 TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacket) {

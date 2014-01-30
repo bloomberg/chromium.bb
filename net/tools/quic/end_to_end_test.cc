@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <string>
+#include <sys/epoll.h>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -146,6 +147,28 @@ vector<TestParams> GetTestParams() {
   return params;
 }
 
+class ServerDelegate : public PacketDroppingTestWriter::Delegate {
+ public:
+  explicit ServerDelegate(QuicDispatcher* dispatcher)
+      : dispatcher_(dispatcher) {}
+  virtual ~ServerDelegate() {}
+  virtual void OnCanWrite() OVERRIDE { dispatcher_->OnCanWrite(); }
+ private:
+  QuicDispatcher* dispatcher_;
+};
+
+class ClientDelegate : public PacketDroppingTestWriter::Delegate {
+ public:
+  explicit ClientDelegate(QuicClient* client) : client_(client) {}
+  virtual ~ClientDelegate() {}
+  virtual void OnCanWrite() OVERRIDE {
+    EpollEvent event(EPOLLOUT, false);
+    client_->OnEvent(client_->fd(), &event);
+  }
+ private:
+  QuicClient* client_;
+};
+
 class EndToEndTest : public ::testing::TestWithParam<TestParams> {
  protected:
   EndToEndTest()
@@ -180,7 +203,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     QuicInMemoryCachePeer::ResetForTests();
   }
 
-  virtual QuicTestClient* CreateQuicClient(QuicPacketWriterWrapper* writer) {
+  QuicTestClient* CreateQuicClient(QuicPacketWriterWrapper* writer) {
     QuicTestClient* client = new QuicTestClient(server_address_,
                                                 server_hostname_,
                                                 false,  // not secure
@@ -191,27 +214,28 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     return client;
   }
 
-  virtual bool Initialize() {
+  bool Initialize() {
     // Start the server first, because CreateQuicClient() attempts
     // to connect to the server.
     StartServer();
     client_.reset(CreateQuicClient(client_writer_));
-    QuicEpollConnectionHelper* helper =
+    static EpollEvent event(EPOLLOUT, false);
+    client_writer_->Initialize(
         reinterpret_cast<QuicEpollConnectionHelper*>(
             QuicConnectionPeer::GetHelper(
-                client_->client()->session()->connection()));
-    client_writer_->SetConnectionHelper(helper);
+                client_->client()->session()->connection())),
+        new ClientDelegate(client_->client()));
     return client_->client()->connected();
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     // The ownership of these gets transferred to the QuicPacketWriterWrapper
     // and QuicDispatcher when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     StopServer();
   }
 
@@ -225,8 +249,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
-    server_writer_->SetConnectionHelper(
-        QuicDispatcherPeer::GetHelper(dispatcher));
+    server_writer_->Initialize(
+        QuicDispatcherPeer::GetHelper(dispatcher),
+        new ServerDelegate(dispatcher));
     server_thread_->Start();
     server_started_ = true;
   }
@@ -466,8 +491,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-// TODO(ianswett): Re-enable once b/12646613 and b/11206052 are fixed.
-TEST_P(EndToEndTest, DISABLED_LargePostWithPacketLossAndBlockedSocket) {
+TEST_P(EndToEndTest, LargePostWithPacketLossAndBlockedSocket) {
   // Connect with lower fake packet loss than we'd like to test.  Until
   // b/10126687 is fixed, losing handshake packets is pretty brutal.
   SetPacketLossPercentage(5);
@@ -475,7 +499,7 @@ TEST_P(EndToEndTest, DISABLED_LargePostWithPacketLossAndBlockedSocket) {
 
   // Wait for the server SHLO before upping the packet loss.
   client_->client()->WaitForCryptoHandshakeConfirmed();
-  SetPacketLossPercentage(30);
+  SetPacketLossPercentage(10);
   client_writer_->set_fake_blocked_socket_percentage(10);
 
   // 10 Kb body.
@@ -814,11 +838,10 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
       const char* buffer,
       size_t buf_len,
       const IPAddressNumber& real_self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
+      const IPEndPoint& peer_address) OVERRIDE {
     // Use wrong address!
     return QuicPacketWriterWrapper::WritePacket(
-        buffer, buf_len, self_address_.address(), peer_address, blocked_writer);
+        buffer, buf_len, self_address_.address(), peer_address);
   }
 
   virtual bool IsWriteBlockedDataBuffered() const OVERRIDE {

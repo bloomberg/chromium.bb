@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "net/quic/quic_alarm.h"
-#include "net/quic/quic_blocked_writer_interface.h"
 #include "net/tools/quic/quic_epoll_clock.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
@@ -27,19 +26,28 @@ namespace test {
 // the options to delay packets and reorder packets if delay is enabled.
 class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void OnCanWrite() = 0;
+  };
+
   PacketDroppingTestWriter();
 
   virtual ~PacketDroppingTestWriter();
 
-  void SetConnectionHelper(QuicEpollConnectionHelper* helper);
+  // Must be called before blocking, reordering or delaying (loss is OK). May be
+  // called after connecting if the helper is not available before.
+  // |on_can_write| will be triggered when fake-unblocking; ownership will be
+  // assumed.
+  void Initialize(QuicEpollConnectionHelper* helper, Delegate* on_can_write);
 
   // QuicPacketWriter methods:
   virtual WriteResult WritePacket(
       const char* buffer,
       size_t buf_len,
       const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
+      const IPEndPoint& peer_address) OVERRIDE;
 
   virtual bool IsWriteBlocked() const OVERRIDE;
 
@@ -50,7 +58,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   // for the next delayed packet to be written.
   QuicTime ReleaseOldPackets();
 
-  QuicBlockedWriterInterface* blocked_writer() { return blocked_writer_; }
+  void OnCanWrite();
 
   // The percent of time a packet is simulated as being lost.
   void set_fake_packet_loss_percentage(int32 fake_packet_loss_percentage) {
@@ -125,7 +133,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   const QuicClock* clock_;
   scoped_ptr<QuicAlarm> write_unblocked_alarm_;
   scoped_ptr<QuicAlarm> delay_alarm_;
-  QuicBlockedWriterInterface* blocked_writer_;
+  scoped_ptr<Delegate> on_can_write_;
   SimpleRandom simple_random_;
   // Stored packets delayed by fake packet delay or bandwidth restrictions.
   DelayedPacketList delayed_packets_;

@@ -173,8 +173,6 @@ void QuicSentPacketManager::OnRetransmittedPacket(
   previous_transmissions->insert(new_sequence_number);
   unacked_packets_[new_sequence_number].previous_transmissions =
       previous_transmissions;
-
-  DCHECK(HasRetransmittableFrames(new_sequence_number));
 }
 
 bool QuicSentPacketManager::OnIncomingAck(
@@ -265,6 +263,9 @@ void QuicSentPacketManager::ClearPreviousRetransmissions(size_t num_to_clear) {
     if (sequence_number == newest_transmission) {
       break;
     }
+    if (it->second.pending) {
+      break;
+    }
 
     DCHECK(it->second.retransmittable_frames == NULL);
     previous_transmissions->erase(sequence_number);
@@ -272,7 +273,6 @@ void QuicSentPacketManager::ClearPreviousRetransmissions(size_t num_to_clear) {
       unacked_packets_[newest_transmission].previous_transmissions = NULL;
       delete previous_transmissions;
     }
-    DCHECK(!it->second.pending);
     unacked_packets_.erase(it++);
     --num_to_clear;
   }
@@ -314,8 +314,14 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
 void QuicSentPacketManager::MarkForRetransmission(
     QuicPacketSequenceNumber sequence_number,
     TransmissionType transmission_type) {
-  DCHECK(ContainsKey(unacked_packets_, sequence_number));
-  DCHECK(HasRetransmittableFrames(sequence_number));
+  TransmissionInfo* transmission_info =
+      FindOrNull(unacked_packets_, sequence_number);
+  if (transmission_info != NULL) {
+    LOG_IF(DFATAL, transmission_info->retransmittable_frames == NULL);
+    LOG_IF(DFATAL, transmission_info->sent_time == QuicTime::Zero());
+  } else {
+    LOG(DFATAL) << "Unable to retansmit packet: " << sequence_number;
+  }
   // TODO(ianswett): Currently the RTO can fire while there are pending NACK
   // retransmissions for the same data, which is not ideal.
   if (ContainsKey(pending_retransmissions_, sequence_number)) {
@@ -343,26 +349,6 @@ QuicSentPacketManager::PendingRetransmission
                                pending_retransmissions_.begin()->second,
                                *transmission_info.retransmittable_frames,
                                transmission_info.sequence_number_length);
-}
-
-bool QuicSentPacketManager::IsPreviousTransmission(
-    QuicPacketSequenceNumber sequence_number) const {
-  DCHECK(ContainsKey(unacked_packets_, sequence_number));
-
-  UnackedPacketMap::const_iterator unacked_it =
-      unacked_packets_.find(sequence_number);
-  if (unacked_it == unacked_packets_.end()) {
-    return false;
-  }
-  const TransmissionInfo* transmission_info = &unacked_it->second;
-  if (transmission_info->previous_transmissions == NULL) {
-    return false;
-  }
-
-  SequenceNumberSet* previous_transmissions =
-      transmission_info->previous_transmissions;
-  DCHECK(!previous_transmissions->empty());
-  return *previous_transmissions->rbegin() != sequence_number;
 }
 
 // static
@@ -508,8 +494,7 @@ size_t QuicSentPacketManager::GetNumRetransmittablePackets() const {
   size_t num_unacked_packets = 0;
   for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it) {
-    QuicPacketSequenceNumber sequence_number = it->first;
-    if (HasRetransmittableFrames(sequence_number)) {
+    if (it->second.retransmittable_frames != NULL) {
       ++num_unacked_packets;
     }
   }

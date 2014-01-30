@@ -537,6 +537,9 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
                   QuicStreamOffset offset,
                   IOVector data);
 
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicStreamFrame& s);
+
   // Returns a copy of the IOVector |data| as a heap-allocated string.
   // Caller must take ownership of the returned string.
   std::string* GetDataAsString() const;
@@ -681,12 +684,18 @@ struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
     DCHECK_LE(error_code, std::numeric_limits<uint8>::max());
   }
 
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicRstStreamFrame& r);
+
   QuicStreamId stream_id;
   QuicRstStreamErrorCode error_code;
   std::string error_details;
 };
 
 struct NET_EXPORT_PRIVATE QuicConnectionCloseFrame {
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicConnectionCloseFrame& c);
+
   QuicErrorCode error_code;
   std::string error_details;
 };
@@ -696,6 +705,9 @@ struct NET_EXPORT_PRIVATE QuicGoAwayFrame {
   QuicGoAwayFrame(QuicErrorCode error_code,
                   QuicStreamId last_good_stream_id,
                   const std::string& reason);
+
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicGoAwayFrame& g);
 
   QuicErrorCode error_code;
   QuicStreamId last_good_stream_id;
@@ -744,6 +756,9 @@ struct NET_EXPORT_PRIVATE QuicFrame {
       : type(GOAWAY_FRAME),
         goaway_frame(frame) {
   }
+
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicFrame& frame);
 
   QuicFrameType type;
   union {

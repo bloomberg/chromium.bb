@@ -24,7 +24,7 @@ const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;
 // Constants used for RTT calculation.
-const int kInitialRttMs = 60;  // At a typical RTT 60 ms.
+const int kInitialRttMs = 100;  // At a typical RTT 100 ms.
 const float kAlpha = 0.125f;
 const float kOneMinusAlpha = (1 - kAlpha);
 const float kBeta = 0.25f;

@@ -311,6 +311,7 @@ SerializedPacket QuicFramer::BuildDataPacket(
   const SerializedPacket kNoPacket(
       0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL);
   if (!AppendPacketHeader(header, &writer)) {
+    LOG(DFATAL) << "AppendPacketHeader failed";
     return kNoPacket;
   }
 
@@ -319,6 +320,7 @@ SerializedPacket QuicFramer::BuildDataPacket(
 
     const bool last_frame_in_packet = i == (frames.size() - 1);
     if (!AppendTypeByte(frame, last_frame_in_packet, &writer)) {
+      LOG(DFATAL) << "AppendTypeByte failed";
       return kNoPacket;
     }
 
@@ -327,41 +329,48 @@ SerializedPacket QuicFramer::BuildDataPacket(
         writer.WritePadding();
         break;
       case STREAM_FRAME:
-        if (!AppendStreamFramePayload(
+        if (!AppendStreamFrame(
             *frame.stream_frame, last_frame_in_packet, &writer)) {
+          LOG(DFATAL) << "AppendStreamFrame failed";
           return kNoPacket;
         }
         break;
       case ACK_FRAME:
-        if (!AppendAckFramePayloadAndTypeByte(
+        if (!AppendAckFrameAndTypeByte(
                 header, *frame.ack_frame, &writer)) {
+          LOG(DFATAL) << "AppendAckFrameAndTypeByte failed";
           return kNoPacket;
         }
         break;
       case CONGESTION_FEEDBACK_FRAME:
-        if (!AppendQuicCongestionFeedbackFramePayload(
+        if (!AppendQuicCongestionFeedbackFrame(
                 *frame.congestion_feedback_frame, &writer)) {
+          LOG(DFATAL) << "AppendQuicCongestionFeedbackFrame failed";
           return kNoPacket;
         }
         break;
       case RST_STREAM_FRAME:
-        if (!AppendRstStreamFramePayload(*frame.rst_stream_frame, &writer)) {
+        if (!AppendRstStreamFrame(*frame.rst_stream_frame, &writer)) {
+          LOG(DFATAL) << "AppendRstStreamFrame failed";
           return kNoPacket;
         }
         break;
       case CONNECTION_CLOSE_FRAME:
-        if (!AppendConnectionCloseFramePayload(
+        if (!AppendConnectionCloseFrame(
                 *frame.connection_close_frame, &writer)) {
+          LOG(DFATAL) << "AppendConnectionCloseFrame failed";
           return kNoPacket;
         }
         break;
       case GOAWAY_FRAME:
-        if (!AppendGoAwayFramePayload(*frame.goaway_frame, &writer)) {
+        if (!AppendGoAwayFrame(*frame.goaway_frame, &writer)) {
+          LOG(DFATAL) << "AppendGoAwayFrame failed";
           return kNoPacket;
         }
         break;
       default:
         RaiseError(QUIC_INVALID_FRAME_DATA);
+        LOG(DFATAL) << "QUIC_INVALID_FRAME_DATA";
         return kNoPacket;
     }
   }
@@ -397,10 +406,12 @@ SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
   const SerializedPacket kNoPacket(
       0, PACKET_1BYTE_SEQUENCE_NUMBER, NULL, 0, NULL);
   if (!AppendPacketHeader(header, &writer)) {
+    LOG(DFATAL) << "AppendPacketHeader failed";
     return kNoPacket;
   }
 
   if (!writer.WriteBytes(fec.redundancy.data(), fec.redundancy.length())) {
+    LOG(DFATAL) << "Failed to add FEC";
     return kNoPacket;
   }
 
@@ -619,6 +630,7 @@ bool QuicFramer::ProcessRevivedPacket(QuicPacketHeader* header,
 
 bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
                                     QuicDataWriter* writer) {
+  DVLOG(1) << "Appending header: " << header;
   DCHECK(header.fec_group > 0 || header.is_in_fec_group == NOT_IN_FEC_GROUP);
   uint8 public_flags = 0;
   if (header.public_header.reset_flag) {
@@ -1738,7 +1750,7 @@ bool QuicFramer::AppendPacketSequenceNumber(
   }
 }
 
-bool QuicFramer::AppendStreamFramePayload(
+bool QuicFramer::AppendStreamFrame(
     const QuicStreamFrame& frame,
     bool last_frame_in_packet,
     QuicDataWriter* writer) {
@@ -1766,7 +1778,7 @@ void QuicFramer::set_version(const QuicVersion version) {
   quic_version_ = version;
 }
 
-bool QuicFramer::AppendAckFramePayloadAndTypeByte(
+bool QuicFramer::AppendAckFrameAndTypeByte(
     const QuicPacketHeader& header,
     const QuicAckFrame& frame,
     QuicDataWriter* writer) {
@@ -1901,7 +1913,7 @@ bool QuicFramer::AppendAckFramePayloadAndTypeByte(
   return true;
 }
 
-bool QuicFramer::AppendQuicCongestionFeedbackFramePayload(
+bool QuicFramer::AppendQuicCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame,
     QuicDataWriter* writer) {
   if (!writer->WriteBytes(&frame.type, 1)) {
@@ -1991,7 +2003,7 @@ bool QuicFramer::AppendQuicCongestionFeedbackFramePayload(
   return true;
 }
 
-bool QuicFramer::AppendRstStreamFramePayload(
+bool QuicFramer::AppendRstStreamFrame(
         const QuicRstStreamFrame& frame,
         QuicDataWriter* writer) {
   if (!writer->WriteUInt32(frame.stream_id)) {
@@ -2009,7 +2021,7 @@ bool QuicFramer::AppendRstStreamFramePayload(
   return true;
 }
 
-bool QuicFramer::AppendConnectionCloseFramePayload(
+bool QuicFramer::AppendConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame,
     QuicDataWriter* writer) {
   uint32 error_code = static_cast<uint32>(frame.error_code);
@@ -2022,8 +2034,8 @@ bool QuicFramer::AppendConnectionCloseFramePayload(
   return true;
 }
 
-bool QuicFramer::AppendGoAwayFramePayload(const QuicGoAwayFrame& frame,
-                                          QuicDataWriter* writer) {
+bool QuicFramer::AppendGoAwayFrame(const QuicGoAwayFrame& frame,
+                                   QuicDataWriter* writer) {
   uint32 error_code = static_cast<uint32>(frame.error_code);
   if (!writer->WriteUInt32(error_code)) {
     return false;

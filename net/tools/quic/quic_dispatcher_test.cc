@@ -284,13 +284,12 @@ class BlockingWriter : public QuicPacketWriterWrapper {
       const char* buffer,
       size_t buf_len,
       const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
+      const IPEndPoint& peer_address) OVERRIDE {
     if (write_blocked_) {
       return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
     } else {
       return QuicPacketWriterWrapper::WritePacket(
-          buffer, buf_len, self_address, peer_address, blocked_writer);
+          buffer, buf_len, self_address, peer_address);
     }
   }
 

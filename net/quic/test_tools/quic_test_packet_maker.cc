@@ -40,6 +40,47 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
   return scoped_ptr<QuicEncryptedPacket>(MakePacket(header, QuicFrame(&rst)));
 }
 
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
+    QuicPacketSequenceNumber num,
+    bool include_version,
+    QuicStreamId stream_id,
+    QuicRstStreamErrorCode error_code,
+    QuicPacketSequenceNumber largest_received,
+    QuicPacketSequenceNumber least_unacked,
+    bool send_feedback) {
+
+  QuicPacketHeader header;
+  header.public_header.guid = guid_;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = include_version;
+  header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
+  header.packet_sequence_number = num;
+  header.entropy_flag = false;
+  header.fec_flag = false;
+  header.fec_group = 0;
+
+  QuicAckFrame ack(largest_received, QuicTime::Zero(), least_unacked);
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&ack));
+  if (send_feedback) {
+    QuicCongestionFeedbackFrame feedback;
+    feedback.type = kTCP;
+    feedback.tcp.accumulated_number_of_lost_packets = 0;
+    feedback.tcp.receive_window = 256000;
+
+    frames.push_back(QuicFrame(&feedback));
+  }
+
+  QuicRstStreamFrame rst(stream_id, error_code);
+  frames.push_back(QuicFrame(&rst));
+
+  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(), false);
+  scoped_ptr<QuicPacket> packet(
+      framer.BuildUnsizedDataPacket(header, frames).packet);
+  return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
+      ENCRYPTION_NONE, header.packet_sequence_number, *packet));
+}
+
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeConnectionClosePacket(
     QuicPacketSequenceNumber num) {
   QuicPacketHeader header;

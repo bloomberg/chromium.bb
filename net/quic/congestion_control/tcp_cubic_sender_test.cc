@@ -498,7 +498,9 @@ TEST_F(TcpCubicSenderTest, TcpRenoMaxCongestionWindow) {
 
 TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
   const QuicTcpCongestionWindow kMaxCongestionWindowTCP = 50;
-  const int kNumberOfAcks = 1000;
+  // Set to 10000 to compensate for small cubic alpha.
+  const int kNumberOfAcks = 10000;
+
   sender_.reset(
       new TcpCubicSenderPeer(&clock_, false, kMaxCongestionWindowTCP));
 

@@ -167,6 +167,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       largest_seen_packet_with_ack_(0),
       pending_version_negotiation_packet_(false),
       received_packet_manager_(kTCP),
+      ack_queued_(false),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
       send_alarm_(helper->CreateAlarm(new SendAlarm(this))),
@@ -636,13 +637,7 @@ void QuicConnection::OnPacketComplete() {
              << last_stream_frames_.size()
              << " stream frames for " << last_header_.public_header.guid;
 
-  // Must called before ack processing, because processing acks removes entries
-  // from unacket_packets_, increasing the least_unacked.
-  const bool last_packet_should_instigate_ack = ShouldLastPacketInstigateAck();
-
-  // If the incoming packet was missing, send an ack immediately.
-  bool send_ack_immediately = received_packet_manager_.IsMissing(
-      last_header_.packet_sequence_number);
+  MaybeQueueAck();
 
   // Discard the packet if the visitor fails to process the stream frames.
   if (!last_stream_frames_.empty() &&
@@ -680,13 +675,34 @@ void QuicConnection::OnPacketComplete() {
 
   // If there are new missing packets to report, send an ack immediately.
   if (received_packet_manager_.HasNewMissingPackets()) {
-    send_ack_immediately = true;
+    ack_queued_ = true;
+    ack_alarm_->Cancel();
   }
 
-  MaybeSendInResponseToPacket(send_ack_immediately,
-                              last_packet_should_instigate_ack);
-
   ClearLastFrames();
+}
+
+void QuicConnection::MaybeQueueAck() {
+  // If the incoming packet was missing, send an ack immediately.
+  ack_queued_ = received_packet_manager_.IsMissing(
+      last_header_.packet_sequence_number);
+
+  // ShouldLastPacketInstigateAck must called before ack processing, because
+  // processing acks removes entries from unacket_packets_, increasing the
+  // least_unacked.
+  if (!ack_queued_ && ShouldLastPacketInstigateAck()) {
+    if (ack_alarm_->IsSet()) {
+      ack_queued_ = true;
+    } else {
+      ack_alarm_->Set(clock_->ApproximateNow().Add(
+          sent_packet_manager_.DelayedAckTime()));
+      DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
+    }
+  }
+
+  if (ack_queued_) {
+    ack_alarm_->Cancel();
+  }
 }
 
 void QuicConnection::ClearLastFrames() {
@@ -717,9 +733,8 @@ bool QuicConnection::ShouldLastPacketInstigateAck() {
     return true;
   }
 
-  // If the peer is still waiting for a packet that we are no
-  // longer planning to send, we should send an ack to raise
-  // the high water mark.
+  // If the peer is still waiting for a packet that we are no longer planning to
+  // send, send an ack to raise the high water mark.
   if (!last_ack_frames_.empty() &&
       !last_ack_frames_.back().received_info.missing_packets.empty()) {
     return sent_packet_manager_.GetLeastUnackedSentPacket() >
@@ -728,61 +743,57 @@ bool QuicConnection::ShouldLastPacketInstigateAck() {
   return false;
 }
 
-void QuicConnection::MaybeSendInResponseToPacket(
-    bool send_ack_immediately,
-    bool last_packet_should_instigate_ack) {
-  // |include_ack| is false since we decide about ack bundling below.
+void QuicConnection::MaybeSendInResponseToPacket() {
+  if (!connected_) {
+    return;
+  }
   ScopedPacketBundler bundler(this, false);
-
-  if (last_packet_should_instigate_ack) {
-    // In general, we ack every second packet.  When we don't ack the first
-    // packet, we set the delayed ack alarm.  Thus, if the ack alarm is set
-    // then we know this is the second packet, and we should send an ack.
-    if (send_ack_immediately || ack_alarm_->IsSet()) {
-      SendAck();
-      DCHECK(!ack_alarm_->IsSet());
-    } else {
-      ack_alarm_->Set(clock_->ApproximateNow().Add(
-          sent_packet_manager_.DelayedAckTime()));
-      DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
-    }
+  if (ack_queued_) {
+    SendAck();
   }
 
-  if (!last_ack_frames_.empty()) {
-    // Now the we have received an ack, we might be able to send packets which
-    // are queued locally, or drain streams which are blocked.
-    QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
-        time_of_last_received_packet_, NOT_RETRANSMISSION,
-        HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
-    if (delay.IsZero()) {
-      send_alarm_->Cancel();
-      WriteIfNotBlocked();
-    } else if (!delay.IsInfinite()) {
-      send_alarm_->Cancel();
-      send_alarm_->Set(time_of_last_received_packet_.Add(delay));
-    }
+  // Now that we have received an ack, we might be able to send packets which
+  // are queued locally, or drain streams which are blocked.
+  QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
+      time_of_last_received_packet_, NOT_RETRANSMISSION,
+      HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
+  if (delay.IsZero()) {
+    send_alarm_->Cancel();
+    WriteIfNotBlocked();
+  } else if (!delay.IsInfinite()) {
+    send_alarm_->Cancel();
+    send_alarm_->Set(time_of_last_received_packet_.Add(delay));
   }
 }
 
 void QuicConnection::SendVersionNegotiationPacket() {
+  // TODO(alyssar): implement zero server state negotiation.
+  pending_version_negotiation_packet_ = true;
+  if (writer_->IsWriteBlocked()) {
+    visitor_->OnWriteBlocked();
+    return;
+  }
   scoped_ptr<QuicEncryptedPacket> version_packet(
       packet_creator_.SerializeVersionNegotiationPacket(
           framer_.supported_versions()));
-  // TODO(satyamshekhar): implement zero server state negotiation.
-  WriteResult result =
-      writer_->WritePacket(version_packet->data(), version_packet->length(),
-                           self_address().address(), peer_address(), this);
-  if (result.status == WRITE_STATUS_OK ||
-      (result.status == WRITE_STATUS_BLOCKED &&
-       writer_->IsWriteBlockedDataBuffered())) {
-    pending_version_negotiation_packet_ = false;
-    return;
-  }
+  WriteResult result = writer_->WritePacket(
+      version_packet->data(), version_packet->length(),
+      self_address().address(), peer_address());
+
   if (result.status == WRITE_STATUS_ERROR) {
     // We can't send an error as the socket is presumably borked.
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
+    return;
   }
-  pending_version_negotiation_packet_ = true;
+  if (result.status == WRITE_STATUS_BLOCKED) {
+    visitor_->OnWriteBlocked();
+    if (writer_->IsWriteBlockedDataBuffered()) {
+      pending_version_negotiation_packet_ = false;
+    }
+    return;
+  }
+
+  pending_version_negotiation_packet_ = false;
 }
 
 QuicConsumedData QuicConnection::SendStreamData(
@@ -873,8 +884,10 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
              << last_header_.packet_sequence_number;
     return;
   }
+
   MaybeProcessUndecryptablePackets();
   MaybeProcessRevivedPacket();
+  MaybeSendInResponseToPacket();
 }
 
 bool QuicConnection::OnCanWrite() {
@@ -1027,6 +1040,7 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
                               HasRetransmittableData retransmittable,
                               IsHandshake handshake) {
   if (writer_->IsWriteBlocked()) {
+    visitor_->OnWriteBlocked();
     return false;
   }
 
@@ -1107,6 +1121,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
     if (writer_->IsWriteBlocked()) {
+      visitor_->OnWriteBlocked();
       return true;
     }
   }
@@ -1141,7 +1156,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   WriteResult result =
       writer_->WritePacket(encrypted->data(), encrypted->length(),
-                           self_address().address(), peer_address(), this);
+                           self_address().address(), peer_address());
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }
@@ -1150,6 +1165,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     debug_visitor_->OnPacketSent(sequence_number, level, *encrypted, result);
   }
   if (result.status == WRITE_STATUS_BLOCKED) {
+    visitor_->OnWriteBlocked();
     // If the socket buffers the the data, then the packet should not
     // be queued and sent again, which would result in an unnecessary
     // duplicate packet being sent.  The helper must call OnPacketSent
@@ -1195,25 +1211,12 @@ bool QuicConnection::ShouldDiscardPacket(
     return true;
   }
 
-  if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
-    if (sent_packet_manager_.IsPreviousTransmission(sequence_number)) {
-      // If somehow we have already retransmitted this packet *before*
-      // we actually send it for the first time (I think this is probably
-      // impossible in the real world), then don't bother sending it.
-      // We don't want to call DiscardUnackedPacket because in this case
-      // the peer has not yet ACK'd the data.  We need the subsequent
-      // retransmission to be sent.
-      DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
-                 << " since it has already been retransmitted.";
-      return true;
-    }
-
-    if (!sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
-      DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
-                 << " since a previous transmission has been acked.";
-      sent_packet_manager_.DiscardUnackedPacket(sequence_number);
-      return true;
-    }
+  if (retransmittable == HAS_RETRANSMITTABLE_DATA &&
+      !sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
+    DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
+             << " since a previous transmission has been acked.";
+    sent_packet_manager_.DiscardUnackedPacket(sequence_number);
+    return true;
   }
 
   return false;

@@ -117,12 +117,11 @@ class MockPacketWriter : public QuicPacketWriter {
   MockPacketWriter();
   virtual ~MockPacketWriter();
 
-  MOCK_METHOD5(WritePacket,
+  MOCK_METHOD4(WritePacket,
                WriteResult(const char* buffer,
                            size_t buf_len,
                            const IPAddressNumber& self_address,
-                           const IPEndPoint& peer_address,
-                           QuicBlockedWriterInterface* blocked_writer));
+                           const IPEndPoint& peer_address));
   MOCK_CONST_METHOD0(IsWriteBlockedDataBuffered, bool());
   MOCK_CONST_METHOD0(IsWriteBlocked, bool());
   MOCK_METHOD0(SetWritable, void());

@@ -37,8 +37,7 @@ class TestPacketWriter : public QuicDefaultPacketWriter {
   virtual WriteResult WritePacket(
       const char* buffer, size_t buf_len,
       const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
+      const IPEndPoint& peer_address) OVERRIDE {
     QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), true);
     FramerVisitorCapturingFrames visitor;
     framer.set_visitor(&visitor);

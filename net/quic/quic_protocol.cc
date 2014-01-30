@@ -162,7 +162,7 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
   }
   // Reading from the client so this should not be considered an ERROR.
   DVLOG(1) << "Unsupported QuicTag version: "
-             << QuicUtils::TagToString(version_tag);
+           << QuicUtils::TagToString(version_tag);
   return QUIC_VERSION_UNSUPPORTED;
 }
 
@@ -275,6 +275,83 @@ QuicCongestionFeedbackFrame::QuicCongestionFeedbackFrame() {
 QuicCongestionFeedbackFrame::~QuicCongestionFeedbackFrame() {
 }
 
+ostream& operator<<(ostream& os, const QuicFrame& frame) {
+  switch (frame.type) {
+  case PADDING_FRAME: {
+      os << "type { PADDING_FRAME } ";
+      break;
+    }
+    case RST_STREAM_FRAME: {
+      os << "type { " << RST_STREAM_FRAME << " } " << *(frame.rst_stream_frame);
+      break;
+    }
+    case CONNECTION_CLOSE_FRAME: {
+      os << "type { CONNECTION_CLOSE_FRAME } "
+         << *(frame.connection_close_frame);
+      break;
+    }
+    case GOAWAY_FRAME: {
+      os << "type { GOAWAY_FRAME } " << *(frame.goaway_frame);
+      break;
+    }
+    case STREAM_FRAME: {
+      os << "type { STREAM_FRAME } " << *(frame.stream_frame);
+      break;
+    }
+    case ACK_FRAME: {
+      os << "type { ACK_FRAME } " << *(frame.ack_frame);
+      break;
+    }
+    case CONGESTION_FEEDBACK_FRAME: {
+      os << "type { CONGESTION_FEEDBACK_FRAME } "
+         << *(frame.congestion_feedback_frame);
+      break;
+    }
+    default: {
+      LOG(ERROR) << "Unknown frame type: " << frame.type;
+      break;
+    }
+  }
+  return os;
+}
+
+ostream& operator<<(ostream& os, const QuicRstStreamFrame& rst_frame) {
+  os << "stream_id { " << rst_frame.stream_id << " } "
+     << "error_code { " << rst_frame.error_code << " } "
+     << "error_details { " << rst_frame.error_details << " }\n";
+  return os;
+}
+
+ostream& operator<<(ostream& os,
+                    const QuicConnectionCloseFrame& connection_close_frame) {
+  os << "error_code { " << connection_close_frame.error_code << " } "
+     << "error_details { " << connection_close_frame.error_details << " }\n";
+  return os;
+}
+
+ostream& operator<<(ostream& os, const QuicGoAwayFrame& goaway_frame) {
+  os << "error_code { " << goaway_frame.error_code << " } "
+     << "last_good_stream_id { " << goaway_frame.last_good_stream_id << " } "
+     << "reason_phrase { " << goaway_frame.reason_phrase << " }\n";
+  return os;
+}
+
+ostream& operator<<(ostream& os, const QuicStreamFrame& stream_frame) {
+  os << "stream_id { " << stream_frame.stream_id << " } "
+     << "fin { " << stream_frame.fin << " } "
+     << "offset { " << stream_frame.offset << " } "
+     << "data { "
+     << QuicUtils::StringToHexASCIIDump(*(stream_frame.GetDataAsString()))
+     << " }\n";
+  return os;
+}
+
+ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
+  os << "sent info { " << ack_frame.sent_info << " } "
+     << "received info { " << ack_frame.received_info << " }\n";
+  return os;
+}
+
 ostream& operator<<(ostream& os,
                     const QuicCongestionFeedbackFrame& congestion_frame) {
   os << "type: " << congestion_frame.type;
@@ -306,12 +383,6 @@ ostream& operator<<(ostream& os,
       break;
     }
   }
-  return os;
-}
-
-ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
-  os << "sent info { " << ack_frame.sent_info << " } "
-     << "received info { " << ack_frame.received_info << " }\n";
   return os;
 }
 

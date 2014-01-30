@@ -27,8 +27,7 @@ class QuicPacketWriterWrapper : public net::QuicPacketWriter {
       const char* buffer,
       size_t buf_len,
       const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address,
-      QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
+      const IPEndPoint& peer_address) OVERRIDE;
   virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
   virtual bool IsWriteBlocked() const OVERRIDE;
   virtual void SetWritable() OVERRIDE;

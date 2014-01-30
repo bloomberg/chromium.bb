@@ -20,6 +20,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/test/gtest_util.h"
 
 using base::hash_set;
 using base::StringPiece;
@@ -2978,8 +2979,10 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInvalidFeedback) {
   QuicFrames frames;
   frames.push_back(QuicFrame(&congestion_feedback_frame));
 
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
+  scoped_ptr<QuicPacket> data;
+  EXPECT_DFATAL(
+      data.reset(framer_.BuildUnsizedDataPacket(header, frames).packet),
+      "AppendQuicCongestionFeedbackFrame failed");
   ASSERT_TRUE(data == NULL);
 }
 

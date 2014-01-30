@@ -430,22 +430,20 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool AppendTypeByte(const QuicFrame& frame,
                       bool last_frame_in_packet,
                       QuicDataWriter* writer);
-  bool AppendStreamFramePayload(const QuicStreamFrame& frame,
-                                bool last_frame_in_packet,
-                                QuicDataWriter* builder);
-  bool AppendAckFramePayloadAndTypeByte(const QuicPacketHeader& header,
-                                        const QuicAckFrame& frame,
-                                        QuicDataWriter* builder);
-  bool AppendQuicCongestionFeedbackFramePayload(
+  bool AppendStreamFrame(const QuicStreamFrame& frame,
+                         bool last_frame_in_packet,
+                         QuicDataWriter* builder);
+  bool AppendAckFrameAndTypeByte(const QuicPacketHeader& header,
+                                 const QuicAckFrame& frame,
+                                 QuicDataWriter* builder);
+  bool AppendQuicCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame,
       QuicDataWriter* builder);
-  bool AppendRstStreamFramePayload(const QuicRstStreamFrame& frame,
-                                   QuicDataWriter* builder);
-  bool AppendConnectionCloseFramePayload(
-      const QuicConnectionCloseFrame& frame,
-      QuicDataWriter* builder);
-  bool AppendGoAwayFramePayload(const QuicGoAwayFrame& frame,
-                                QuicDataWriter* writer);
+  bool AppendRstStreamFrame(const QuicRstStreamFrame& frame,
+                            QuicDataWriter* builder);
+  bool AppendConnectionCloseFrame(const QuicConnectionCloseFrame& frame,
+                                  QuicDataWriter* builder);
+  bool AppendGoAwayFrame(const QuicGoAwayFrame& frame, QuicDataWriter* writer);
   bool RaiseError(QuicErrorCode error);
 
   void set_error(QuicErrorCode error) {

@@ -307,8 +307,8 @@ bool PacketSavingConnection::SendOrQueuePacket(
     const SerializedPacket& packet,
     TransmissionType transmission_type) {
   packets_.push_back(packet.packet);
-  QuicEncryptedPacket* encrypted =
-      framer_.EncryptPacket(level, packet.sequence_number, *packet.packet);
+  QuicEncryptedPacket* encrypted = QuicConnectionPeer::GetFramer(this)->
+      EncryptPacket(level, packet.sequence_number, *packet.packet);
   encrypted_packets_.push_back(encrypted);
   return true;
 }

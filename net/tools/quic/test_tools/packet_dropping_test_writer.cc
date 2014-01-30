@@ -22,9 +22,8 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
       : writer_(writer) { }
 
   virtual QuicTime OnAlarm() OVERRIDE {
-    DCHECK(writer_->blocked_writer());
     DVLOG(1) << "Unblocking socket.";
-    writer_->blocked_writer()->OnCanWrite();
+    writer_->OnCanWrite();
     return QuicTime::Zero();
   }
 
@@ -49,7 +48,6 @@ class DelayAlarm : public QuicAlarm::Delegate {
 
 PacketDroppingTestWriter::PacketDroppingTestWriter()
     : clock_(NULL),
-      blocked_writer_(NULL),
       cur_buffer_size_(0),
       config_mutex_(),
       fake_packet_loss_percentage_(0),
@@ -65,21 +63,22 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
 
 PacketDroppingTestWriter::~PacketDroppingTestWriter() {}
 
-void PacketDroppingTestWriter::SetConnectionHelper(
-    QuicEpollConnectionHelper* helper) {
+void PacketDroppingTestWriter::Initialize(
+    QuicEpollConnectionHelper* helper,
+    Delegate* on_can_write) {
   clock_ = helper->GetClock();
   write_unblocked_alarm_.reset(
       helper->CreateAlarm(new WriteUnblockedAlarm(this)));
   delay_alarm_.reset(
         helper->CreateAlarm(new DelayAlarm(this)));
+  on_can_write_.reset(on_can_write);
 }
 
 WriteResult PacketDroppingTestWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
     const net::IPAddressNumber& self_address,
-    const net::IPEndPoint& peer_address,
-    QuicBlockedWriterInterface* blocked_writer) {
+    const net::IPEndPoint& peer_address) {
   ReleaseOldPackets();
 
   base::AutoLock locked(config_mutex_);
@@ -92,9 +91,9 @@ WriteResult PacketDroppingTestWriter::WritePacket(
   if (fake_blocked_socket_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64>(fake_blocked_socket_percentage_)) {
+    CHECK(on_can_write_.get() != NULL);
     DVLOG(1) << "Blocking socket.";
     if (!write_unblocked_alarm_->IsSet()) {
-      blocked_writer_ = blocked_writer;
       // Set the alarm to fire immediately.
       write_unblocked_alarm_->Set(clock_->ApproximateNow());
     }
@@ -132,7 +131,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
   }
 
   return QuicPacketWriterWrapper::WritePacket(
-      buffer, buf_len, self_address, peer_address, blocked_writer);
+      buffer, buf_len, self_address, peer_address);
 }
 
 bool PacketDroppingTestWriter::IsWriteBlocked() const {
@@ -170,7 +169,7 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
   // Grab the next one off the queue and send it.
   QuicPacketWriterWrapper::WritePacket(
       iter->buffer.data(), iter->buffer.length(),
-      iter->self_address, iter->peer_address, NULL);
+      iter->self_address, iter->peer_address);
   DCHECK_GE(cur_buffer_size_, iter->buffer.length());
   cur_buffer_size_ -= iter->buffer.length();
   delayed_packets_.erase(iter);
@@ -191,6 +190,10 @@ QuicTime PacketDroppingTestWriter::ReleaseOldPackets() {
     ReleaseNextPacket();
   }
   return QuicTime::Zero();
+}
+
+void PacketDroppingTestWriter::OnCanWrite() {
+  on_can_write_->OnCanWrite();
 }
 
 PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
