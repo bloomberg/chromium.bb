@@ -1,11 +1,12 @@
-// // Copyright 2013 The Chromium Authors. All rights reserved.
+// // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
-#define WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
+#ifndef CONTENT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
+#define CONTENT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
 
 #include "base/threading/thread_local_storage.h"
+#include "content/common/content_export.h"
 #include "webkit/child/webfallbackthemeengine_impl.h"
 #include "webkit/child/webkit_child_export.h"
 #include "webkit/child/webkitplatformsupport_impl.h"
@@ -21,11 +22,13 @@
 #endif
 
 namespace webkit_glue {
-
 class FlingCurveConfiguration;
+}
 
-class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
-    public WebKitPlatformSupportImpl {
+namespace content {
+
+class CONTENT_EXPORT WebKitPlatformSupportChildImpl :
+    public webkit_glue::WebKitPlatformSupportImpl {
  public:
   WebKitPlatformSupportChildImpl();
   virtual ~WebKitPlatformSupportChildImpl();
@@ -61,12 +64,12 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
  private:
   static void DestroyCurrentThread(void*);
 
-  WebThemeEngineImpl native_theme_engine_;
-  WebFallbackThemeEngineImpl fallback_theme_engine_;
+  webkit_glue::WebThemeEngineImpl native_theme_engine_;
+  webkit_glue::WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
+  scoped_ptr<webkit_glue::FlingCurveConfiguration> fling_curve_configuration_;
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
+#endif  // CONTENT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_

@@ -6,16 +6,16 @@
 #define CONTENT_CHILD_WEBKITPLATFORMSUPPORT_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "content/child/webkitplatformsupport_child_impl.h"
 #include "content/common/content_export.h"
 #include "ui/base/layout.h"
-#include "webkit/child/webkitplatformsupport_child_impl.h"
 
 namespace content {
 
 // This is a specialization of WebKitPlatformSupportImpl that implements the
 // embedder functions in terms of ContentClient.
 class CONTENT_EXPORT WebKitPlatformSupportImpl
-    : NON_EXPORTED_BASE(public webkit_glue::WebKitPlatformSupportChildImpl) {
+    : NON_EXPORTED_BASE(public WebKitPlatformSupportChildImpl) {
  public:
   typedef blink::WebGraphicsContext3D* (OffscreenContextFactory)();
 

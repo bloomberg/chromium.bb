@@ -7,10 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "content/child/webkitplatformsupport_child_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
-#include "webkit/child/webkitplatformsupport_child_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
@@ -24,7 +24,7 @@ namespace content {
 // An implementation of WebKitPlatformSupport for tests.
 class TestWebKitPlatformSupport
     : public blink::WebUnitTestSupport,
-      public webkit_glue::WebKitPlatformSupportChildImpl {
+      public content::WebKitPlatformSupportChildImpl {
  public:
   TestWebKitPlatformSupport();
   virtual ~TestWebKitPlatformSupport();

@@ -5,8 +5,10 @@
 #ifndef WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
 #define WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebFallbackThemeEngine.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace ui {
 class FallbackTheme;
@@ -14,7 +16,8 @@ class FallbackTheme;
 
 namespace webkit_glue {
 
-class WebFallbackThemeEngineImpl : public blink::WebFallbackThemeEngine {
+class WEBKIT_CHILD_EXPORT WebFallbackThemeEngineImpl :
+    NON_EXPORTED_BASE(public blink::WebFallbackThemeEngine) {
  public:
   WebFallbackThemeEngineImpl();
   virtual ~WebFallbackThemeEngineImpl();

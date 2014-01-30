@@ -75,8 +75,6 @@
         'webkit_child_export.h',
         'webkit_child_helpers.cc',
         'webkit_child_helpers.h',
-        'webkitplatformsupport_child_impl.cc',
-        'webkitplatformsupport_child_impl.h',
         'webkitplatformsupport_impl.cc',
         'webkitplatformsupport_impl.h',
         'websocketstreamhandle_bridge.h',

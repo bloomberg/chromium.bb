@@ -5,11 +5,14 @@
 #ifndef WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_WIN_H_
 #define WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_WIN_H_
 
+#include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/win/WebThemeEngine.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace webkit_glue {
 
-class WebThemeEngineImpl : public blink::WebThemeEngine {
+class WEBKIT_CHILD_EXPORT WebThemeEngineImpl :
+    NON_EXPORTED_BASE(public blink::WebThemeEngine) {
  public:
   // WebThemeEngine methods:
   virtual void paintButton(

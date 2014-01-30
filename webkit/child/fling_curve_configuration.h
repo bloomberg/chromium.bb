@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebGestureCurve;
@@ -19,7 +20,7 @@ namespace webkit_glue {
 
 // A class to manage dynamically adjustable parameters controlling the
 // shape of the fling deacceleration function.
-class FlingCurveConfiguration {
+class WEBKIT_CHILD_EXPORT FlingCurveConfiguration {
  public:
   FlingCurveConfiguration();
   virtual ~FlingCurveConfiguration();

@@ -6,10 +6,11 @@
 #define WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_ANDROID_H_
 
 #include "third_party/WebKit/public/platform/default/WebThemeEngine.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace webkit_glue {
 
-class WebThemeEngineImpl : public blink::WebThemeEngine {
+class WEBKIT_CHILD_EXPORT WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
   virtual blink::WebSize getSize(blink::WebThemeEngine::Part);

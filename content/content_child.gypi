@@ -149,6 +149,8 @@
     'child/webblobregistry_impl.h',
     'child/webkitplatformsupport_impl.cc',
     'child/webkitplatformsupport_impl.h',
+    'child/webkitplatformsupport_child_impl.cc',
+    'child/webkitplatformsupport_child_impl.h',
     'child/webmessageportchannel_impl.cc',
     'child/webmessageportchannel_impl.h',
     'child/websocket_bridge.cc',

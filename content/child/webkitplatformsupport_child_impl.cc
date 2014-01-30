@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/webkitplatformsupport_child_impl.h"
+#include "content/child/webkitplatformsupport_child_impl.h"
 
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,7 +21,7 @@
 using blink::WebFallbackThemeEngine;
 using blink::WebThemeEngine;
 
-namespace webkit_glue {
+namespace content {
 
 namespace {
 
@@ -46,7 +46,7 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 
 WebKitPlatformSupportChildImpl::WebKitPlatformSupportChildImpl()
     : current_thread_slot_(&DestroyCurrentThread),
-      fling_curve_configuration_(new FlingCurveConfiguration) {}
+      fling_curve_configuration_(new webkit_glue::FlingCurveConfiguration) {}
 
 WebKitPlatformSupportChildImpl::~WebKitPlatformSupportChildImpl() {}
 
@@ -70,7 +70,7 @@ WebKitPlatformSupportChildImpl::createFlingAnimationCurve(
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
 #if defined(OS_ANDROID)
-  return FlingAnimatorImpl::CreateAndroidGestureCurve(velocity,
+  return webkit_glue::FlingAnimatorImpl::CreateAndroidGestureCurve(velocity,
                                                       cumulative_scroll);
 #endif
 
@@ -84,12 +84,13 @@ WebKitPlatformSupportChildImpl::createFlingAnimationCurve(
 
 blink::WebThread* WebKitPlatformSupportChildImpl::createThread(
     const char* name) {
-  return new WebThreadImpl(name);
+  return new webkit_glue::WebThreadImpl(name);
 }
 
 blink::WebThread* WebKitPlatformSupportChildImpl::currentThread() {
-  WebThreadImplForMessageLoop* thread =
-      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
+  webkit_glue::WebThreadImplForMessageLoop* thread =
+      static_cast<webkit_glue::WebThreadImplForMessageLoop*>(
+          current_thread_slot_.Get());
   if (thread)
     return (thread);
 
@@ -98,7 +99,7 @@ blink::WebThread* WebKitPlatformSupportChildImpl::currentThread() {
   if (!message_loop.get())
     return NULL;
 
-  thread = new WebThreadImplForMessageLoop(message_loop.get());
+  thread = new webkit_glue::WebThreadImplForMessageLoop(message_loop.get());
   current_thread_slot_.Set(thread);
   return thread;
 }
@@ -119,13 +120,15 @@ blink::WebWaitableEvent* WebKitPlatformSupportChildImpl::waitMultipleEvents(
 
 void WebKitPlatformSupportChildImpl::didStartWorkerRunLoop(
     const blink::WebWorkerRunLoop& runLoop) {
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
+  webkit_glue::WorkerTaskRunner* worker_task_runner =
+      webkit_glue::WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStarted(runLoop);
 }
 
 void WebKitPlatformSupportChildImpl::didStopWorkerRunLoop(
     const blink::WebWorkerRunLoop& runLoop) {
-  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
+  webkit_glue::WorkerTaskRunner* worker_task_runner =
+      webkit_glue::WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStopped(runLoop);
 }
 
@@ -135,14 +138,15 @@ WebKitPlatformSupportChildImpl::allocateAndLockDiscardableMemory(size_t bytes) {
       base::DiscardableMemory::GetPreferredType();
   if (type == base::DISCARDABLE_MEMORY_TYPE_EMULATED)
     return NULL;
-  return WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
+  return webkit_glue::WebDiscardableMemoryImpl::CreateLockedMemory(
+      bytes).release();
 }
 
 // static
 void WebKitPlatformSupportChildImpl::DestroyCurrentThread(void* thread) {
-  WebThreadImplForMessageLoop* impl =
-      static_cast<WebThreadImplForMessageLoop*>(thread);
+  webkit_glue::WebThreadImplForMessageLoop* impl =
+      static_cast<webkit_glue::WebThreadImplForMessageLoop*>(thread);
   delete impl;
 }
 
-}  // namespace webkit_glue
+}  // namespace content
