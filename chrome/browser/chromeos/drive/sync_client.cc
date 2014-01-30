@@ -399,6 +399,9 @@ void SyncClient::OnUpdateComplete(const std::string& local_id,
     DVLOG(1) << "Updated " << local_id;
   } else {
     switch (error) {
+      case FILE_ERROR_ABORT:
+        // Ignore it because this is caused by user's cancel operations.
+        break;
       case FILE_ERROR_NO_CONNECTION:
         // Add the task again so that we'll retry once the connection is back.
         AddUpdateTaskInternal(ClientContext(BACKGROUND), local_id,
