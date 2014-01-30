@@ -25,13 +25,80 @@
 namespace gcm {
 
 namespace {
+
+// Indicates a message type of the received message.
+enum MessageType {
+  UNKNOWN,           // Undetermined type.
+  DATA_MESSAGE,      // Regular data message.
+  DELETED_MESSAGES,  // Messages were deleted on the server.
+  SEND_ERROR,        // Error sending a message.
+};
+
 const char kMCSEndpoint[] = "https://mtalk.google.com:5228";
+const char kMessageTypeDataMessage[] = "gcm";
+const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
+const char kMessageTypeKey[] = "message_type";
+const char kMessageTypeSendErrorKey[] = "send_error";
+const char kSendErrorMessageIdKey[] = "google.message_id";
+const char kSendMessageFromValue[] = "gcm@chrome.com";
+
+GCMClient::Result ToGCMClientResult(MCSClient::MessageSendStatus status) {
+  switch (status) {
+    case MCSClient::SUCCESS:
+      return GCMClient::SUCCESS;
+    case MCSClient::QUEUE_SIZE_LIMIT_REACHED:
+      return GCMClient::NETWORK_ERROR;
+    case MCSClient::APP_QUEUE_SIZE_LIMIT_REACHED:
+      return GCMClient::NETWORK_ERROR;
+    case MCSClient::MESSAGE_TOO_LARGE:
+      return GCMClient::INVALID_PARAMETER;
+    case MCSClient::NO_CONNECTION_ON_ZERO_TTL:
+      return GCMClient::NETWORK_ERROR;
+    case MCSClient::TTL_EXCEEDED:
+      return GCMClient::NETWORK_ERROR;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return GCMClientImpl::UNKNOWN_ERROR;
+}
+
+MessageType DecodeMessageType(const std::string& value) {
+  if (kMessageTypeDeletedMessagesKey == value)
+    return DELETED_MESSAGES;
+  if (kMessageTypeSendErrorKey == value)
+    return SEND_ERROR;
+  if (kMessageTypeDataMessage == value)
+    return DATA_MESSAGE;
+  return UNKNOWN;
+}
+
 }  // namespace
+
+GCMClientImpl::PendingRegistrationKey::PendingRegistrationKey(
+    const std::string& username, const std::string& app_id)
+    : username(username),
+      app_id(app_id) {
+}
+
+GCMClientImpl::PendingRegistrationKey::~PendingRegistrationKey() {
+}
+
+bool GCMClientImpl::PendingRegistrationKey::operator<(
+    const PendingRegistrationKey& rhs) const {
+  if (username < rhs.username)
+    return true;
+  if (username > rhs.username)
+    return false;
+  return app_id < rhs.app_id;
+}
 
 GCMClientImpl::GCMClientImpl()
     : state_(UNINITIALIZED),
+      clock_(new base::DefaultClock()),
       url_request_context_getter_(NULL),
-      pending_checkins_deleter_(&pending_checkins_) {
+      pending_checkins_deleter_(&pending_checkins_),
+      pending_registrations_deleter_(&pending_registrations_) {
 }
 
 GCMClientImpl::~GCMClientImpl() {
@@ -53,17 +120,22 @@ void GCMClientImpl::Initialize(
   gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
                               base::Unretained(this)));
   user_list_.reset(new UserList(gcm_store_.get()));
-  const net::HttpNetworkSession::Params* network_session_params =
-      url_request_context_getter->GetURLRequestContext()->
-          GetNetworkSessionParams();
-  DCHECK(network_session_params);
-  network_session_ = new net::HttpNetworkSession(*network_session_params);
-  connection_factory_.reset(new ConnectionFactoryImpl(GURL(kMCSEndpoint),
-                                                      network_session_,
-                                                      net_log_.net_log()));
-  mcs_client_.reset(new MCSClient(&clock_,
-                                  connection_factory_.get(),
-                                  gcm_store_.get()));
+
+  // |mcs_client_| might already be set for testing at this point. No need to
+  // create a |connection_factory_|.
+  if (!mcs_client_.get()) {
+    const net::HttpNetworkSession::Params* network_session_params =
+        url_request_context_getter->GetURLRequestContext()->
+            GetNetworkSessionParams();
+    DCHECK(network_session_params);
+    network_session_ = new net::HttpNetworkSession(*network_session_params);
+    connection_factory_.reset(new ConnectionFactoryImpl(
+        GURL(kMCSEndpoint), network_session_, net_log_.net_log()));
+    mcs_client_.reset(new MCSClient(clock_.get(),
+                                    connection_factory_.get(),
+                                    gcm_store_.get()));
+  }
+
   state_ = LOADING;
 }
 
@@ -137,6 +209,7 @@ void GCMClientImpl::StartCheckin(int64 user_serial_number,
   CheckinRequest* checkin_request =
       new CheckinRequest(
           base::Bind(&GCMClientImpl::OnCheckinCompleted,
+                     // GCMClientImpl owns and outlives CheckinRequests.
                      base::Unretained(this),
                      user_serial_number),
           chrome_build_proto_,
@@ -166,8 +239,16 @@ void GCMClientImpl::OnCheckinCompleted(int64 user_serial_number,
     return;
   }
 
-  Delegate* delegate = user_list_->GetDelegateBySerialNumber(
-                                       user_serial_number);
+  Delegate* delegate =
+      user_list_->GetDelegateBySerialNumber(user_serial_number);
+
+  // Check if the user was removed while checkin was in progress.
+  if (!delegate) {
+    DVLOG(1) << "Delegate for serial number: " << user_serial_number
+             << " not found after checkin completed.";
+    return;
+  }
+
   // TODO(fgorski): Add a reasonable Result here. It is possible that we are
   // missing the right parameter on the CheckinRequest level.
   delegate->OnCheckInFinished(checkin_info, SUCCESS);
@@ -218,12 +299,78 @@ void GCMClientImpl::SetDelegateCompleted(const std::string& username,
 }
 
 void GCMClientImpl::CheckIn(const std::string& username) {
+  DCHECK_EQ(state_, READY);
+  Delegate* delegate = user_list_->GetDelegateByUsername(username);
+  DCHECK(delegate);
+  int64 serial_number = user_list_->GetSerialNumberForUsername(username);
+  DCHECK_NE(serial_number, kInvalidSerialNumber);
+  StartCheckin(serial_number, delegate->GetCheckinInfo());
 }
 
 void GCMClientImpl::Register(const std::string& username,
                              const std::string& app_id,
                              const std::string& cert,
                              const std::vector<std::string>& sender_ids) {
+  DCHECK_EQ(state_, READY);
+  Delegate* delegate = user_list_->GetDelegateByUsername(username);
+  DCHECK(delegate);
+  int64 user_serial_number = user_list_->GetSerialNumberForUsername(username);
+  DCHECK(user_serial_number);
+  RegistrationRequest::RequestInfo request_info(
+      device_checkin_info_.android_id,
+      device_checkin_info_.secret,
+      delegate->GetCheckinInfo().android_id,
+      user_serial_number,
+      app_id,
+      cert,
+      sender_ids);
+  PendingRegistrationKey registration_key(username, app_id);
+  DCHECK_EQ(0u, pending_registrations_.count(registration_key));
+
+  RegistrationRequest* registration_request =
+      new RegistrationRequest(request_info,
+                              base::Bind(&GCMClientImpl::OnRegisterCompleted,
+                                         // GCMClientImpl owns and outlives
+                                         // RegistrationRequests.
+                                         base::Unretained(this),
+                                         registration_key),
+                              url_request_context_getter_);
+  pending_registrations_[registration_key] = registration_request;
+  registration_request->Start();
+}
+
+void GCMClientImpl::OnRegisterCompleted(
+    const PendingRegistrationKey& registration_key,
+    const std::string& registration_id) {
+  Delegate* delegate = user_list_->GetDelegateByUsername(
+      registration_key.username);
+  // Check if the user was removed while registration was in progress.
+  if (!delegate) {
+    DVLOG(1) << "Delegate for username: " << registration_key.username
+             << " not found after registration completed.";
+    return;
+  }
+
+  std::string app_id = registration_key.app_id;
+
+  if (registration_id.empty()) {
+    delegate->OnRegisterFinished(
+        app_id, std::string(), GCMClient::SERVER_ERROR);
+    return;
+  }
+
+  PendingRegistrations::iterator iter =
+      pending_registrations_.find(registration_key);
+  if (iter == pending_registrations_.end()) {
+    delegate->OnRegisterFinished(
+        app_id, std::string(), GCMClient::UNKNOWN_ERROR);
+    return;
+  }
+
+  delete iter->second;
+  pending_registrations_.erase(iter);
+
+  delegate->OnRegisterFinished(app_id, registration_id, GCMClient::SUCCESS);
 }
 
 void GCMClientImpl::Unregister(const std::string& username,
@@ -234,6 +381,31 @@ void GCMClientImpl::Send(const std::string& username,
                          const std::string& app_id,
                          const std::string& receiver_id,
                          const OutgoingMessage& message) {
+  DCHECK_EQ(state_, READY);
+  int64 serial_number = user_list_->GetSerialNumberForUsername(username);
+  DCHECK_NE(serial_number, kInvalidSerialNumber);
+
+  mcs_proto::DataMessageStanza stanza;
+  stanza.set_ttl(message.time_to_live);
+  stanza.set_sent(clock_->Now().ToInternalValue() /
+                  base::Time::kMicrosecondsPerSecond);
+  stanza.set_id(message.id);
+  stanza.set_device_user_id(serial_number);
+  stanza.set_from(kSendMessageFromValue);
+  stanza.set_to(receiver_id);
+  stanza.set_category(app_id);
+
+  for (MessageData::const_iterator iter = message.data.begin();
+       iter != message.data.end();
+       ++iter) {
+    mcs_proto::AppData* app_data = stanza.add_app_data();
+    app_data->set_key(iter->first);
+    app_data->set_value(iter->second);
+  }
+
+  MCSMessage mcs_message(stanza);
+  DVLOG(1) << "MCS message size: " << mcs_message.size();
+  mcs_client_->SendMessage(mcs_message);
 }
 
 bool GCMClientImpl::IsLoading() const {
@@ -241,8 +413,6 @@ bool GCMClientImpl::IsLoading() const {
 }
 
 void GCMClientImpl::OnMessageReceivedFromMCS(const gcm::MCSMessage& message) {
-  // We need to do the message parsing here and then dispatch it to the right
-  // delegate related to that message
   switch (message.tag()) {
     case kLoginResponseTag:
       DVLOG(1) << "Login response received by GCM Client. Ignoring.";
@@ -261,8 +431,26 @@ void GCMClientImpl::OnMessageSentToMCS(int64 user_serial_number,
                                        const std::string& app_id,
                                        const std::string& message_id,
                                        MCSClient::MessageSendStatus status) {
-  // TODO(fgorski): This is only a placeholder, it likely has to change the
-  // arguments to be able to identify the user and app.
+  Delegate* delegate =
+      user_list_->GetDelegateBySerialNumber(user_serial_number);
+
+  // Check if the user was removed while message sending was in progress.
+  if (!delegate) {
+    DVLOG(1) << "Delegate for serial number: " << user_serial_number
+             << " not found after checkin completed.";
+    return;
+  }
+
+  // TTL_EXCEEDED is singled out here, because it can happen long time after the
+  // message was sent. That is why it comes as |OnMessageSendError| event rather
+  // than |OnSendFinished|. All other errors will be raised immediately, through
+  // asynchronous callback.
+  // It is expected that TTL_EXCEEDED will be issued for a message that was
+  // previously issued |OnSendFinished| with status SUCCESS.
+  if (status == MCSClient::TTL_EXCEEDED)
+    delegate->OnMessageSendError(app_id, message_id, GCMClient::TTL_EXCEEDED);
+  else
+    delegate->OnSendFinished(app_id, message_id, ToGCMClientResult(status));
 }
 
 void GCMClientImpl::OnMCSError() {
@@ -275,34 +463,60 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
       reinterpret_cast<const mcs_proto::DataMessageStanza&>(
           message.GetProtobuf());
   IncomingMessage incoming_message;
+  MessageType message_type = DATA_MESSAGE;
   for (int i = 0; i < data_message_stanza.app_data_size(); ++i) {
-    incoming_message.data[data_message_stanza.app_data(i).key()] =
-        data_message_stanza.app_data(i).value();
+    std::string key = data_message_stanza.app_data(i).key();
+    if (key == kMessageTypeKey)
+      message_type = DecodeMessageType(data_message_stanza.app_data(i).value());
+    else
+      incoming_message.data[key] = data_message_stanza.app_data(i).value();
   }
 
   int64 user_serial_number = data_message_stanza.device_user_id();
   Delegate* delegate =
       user_list_->GetDelegateBySerialNumber(user_serial_number);
-  if (delegate) {
-    DVLOG(1) << "Found delegate for serial number: " << user_serial_number;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&GCMClientImpl::NotifyDelegateOnMessageReceived,
-                   base::Unretained(this),
-                   delegate,
-                   data_message_stanza.category(),
-                   incoming_message));
-  } else {
+  if (!delegate) {
     DVLOG(1) << "Delegate for serial number: " << user_serial_number
              << " not found.";
+    return;
+  }
+
+  DVLOG(1) << "Found delegate for serial number: " << user_serial_number;
+  switch (message_type) {
+    case DATA_MESSAGE:
+      delegate->OnMessageReceived(data_message_stanza.category(),
+                                  incoming_message);
+      break;
+    case DELETED_MESSAGES:
+      delegate->OnMessagesDeleted(data_message_stanza.category());
+      break;
+    case SEND_ERROR:
+      NotifyDelegateOnMessageSendError(
+          delegate, data_message_stanza.category(), incoming_message);
+      break;
+    case UNKNOWN:
+    default:  // Treat default the same as UNKNOWN.
+      DVLOG(1) << "Unknown message_type received. Message ignored. "
+               << "App ID: " << data_message_stanza.category() << ", "
+               << "User serial number: " << user_serial_number << ".";
+      break;
   }
 }
 
-void GCMClientImpl::NotifyDelegateOnMessageReceived(
+void GCMClientImpl::NotifyDelegateOnMessageSendError(
     GCMClient::Delegate* delegate,
     const std::string& app_id,
     const IncomingMessage& incoming_message) {
-  delegate->OnMessageReceived(app_id, incoming_message);
+  MessageData::const_iterator iter =
+      incoming_message.data.find(kSendErrorMessageIdKey);
+  std::string message_id;
+  if (iter != incoming_message.data.end())
+    message_id = iter->second;
+  delegate->OnMessageSendError(app_id, message_id, SERVER_ERROR);
+}
+
+void GCMClientImpl::SetMCSClientForTesting(scoped_ptr<MCSClient> mcs_client) {
+  mcs_client_ = mcs_client.Pass();
 }
 
 }  // namespace gcm

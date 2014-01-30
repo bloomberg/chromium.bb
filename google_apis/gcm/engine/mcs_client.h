@@ -107,7 +107,7 @@ class GCM_EXPORT MCSClient {
   // with a valid LoginResponse.
   // Login failure (typically invalid id/token) will shut down the client, and
   // |initialization_callback| to be invoked with |success = false|.
-  void Login(uint64 android_id, uint64 security_token);
+  virtual void Login(uint64 android_id, uint64 security_token);
 
   // Sends a message, with or without reliable message queueing (RMQ) support.
   // Will asynchronously invoke the OnMessageSent callback regardless.
@@ -116,7 +116,7 @@ class GCM_EXPORT MCSClient {
   // open. |ttl > 0| will keep the message saved for |ttl| seconds, after which
   // it will be dropped if it was unable to be sent. When a message is dropped,
   // |message_sent_callback_| is invoked with a TTL expiration error.
-  void SendMessage(const MCSMessage& message);
+  virtual void SendMessage(const MCSMessage& message);
 
   // Disconnects the client and permanently destroys the persistent GCM store.
   // WARNING: This is permanent, and the client must be recreated with new
@@ -125,6 +125,12 @@ class GCM_EXPORT MCSClient {
 
   // Returns the current state of the client.
   State state() const { return state_; }
+
+ protected:
+  // Sets a |gcm_store| for testing. Does not take ownership.
+  // TODO(fgorski): Remove this method. Create GCMEngineFactory that will create
+  // components of the engine.
+  void SetGCMStoreForTesting(GCMStore* gcm_store);
 
  private:
   typedef uint32 StreamId;

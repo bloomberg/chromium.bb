@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +16,7 @@
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/engine/mcs_client.h"
+#include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/gcm_client.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/base/net_log.h"
@@ -87,6 +89,24 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // obtain android IDs and security tokens for the users.
   typedef std::map<int64, CheckinRequest*> PendingCheckins;
 
+  // A pair of |username| and |app_id| identifying a pending
+  // RegistrationRequest.
+  struct PendingRegistrationKey {
+    PendingRegistrationKey(const std::string& username,
+                           const std::string& app_id);
+    ~PendingRegistrationKey();
+    bool operator<(const PendingRegistrationKey& rhs) const;
+
+    std::string username;
+    std::string app_id;
+  };
+
+  // Collection of pending registration requests. Keys are pairs of |username|
+  // and |app_id|, while values are pending registration requests to obtain a
+  // registration ID for requesting application.
+  typedef std::map<PendingRegistrationKey, RegistrationRequest*>
+      PendingRegistrations;
+
   friend class GCMClientImplTest;
 
   // Callbacks for the MCSClient.
@@ -129,6 +149,10 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Callback for persisting device credentials in the |gcm_store_|.
   void SetDeviceCredentialsCallback(bool success);
 
+  // Completes the registration request.
+  void OnRegisterCompleted(const PendingRegistrationKey& registration_key,
+                           const std::string& registration_id);
+
   // Callback for setting a delegate on a |user_list_|. Informs that the
   // delegate with matching |username| was assigned a |user_serial_number|.
   void SetDelegateCompleted(const std::string& username,
@@ -138,11 +162,18 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // delegate.
   void HandleIncomingMessage(const gcm::MCSMessage& message);
 
-  // Fires OnMessageReceived event on |delegate|, with specified |app_id| and
-  // |incoming_message|.
-  void NotifyDelegateOnMessageReceived(GCMClient::Delegate* delegate,
-                                       const std::string& app_id,
-                                       const IncomingMessage& incoming_message);
+  // Fires OnMessageSendError event on |delegate|, with specified |app_id| and
+  // message ID obtained from |incoming_message| if one is available.
+  void NotifyDelegateOnMessageSendError(
+      GCMClient::Delegate* delegate,
+      const std::string& app_id,
+      const IncomingMessage& incoming_message);
+
+  // For testing purpose only.
+  // Sets an |mcs_client_| for testing. Takes the ownership of |mcs_client|.
+  // TODO(fgorski): Remove this method. Create GCMEngineFactory that will create
+  // components of the engine.
+  void SetMCSClientForTesting(scoped_ptr<MCSClient> mcs_client);
 
   // State of the GCM Client Implementation.
   State state_;
@@ -150,8 +181,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Device checkin info (android ID and security token used by device).
   CheckinInfo device_checkin_info_;
 
-  // Clock used for timing of retry logic.
-  base::DefaultClock clock_;
+  // Clock used for timing of retry logic. Passed in for testing. Owned by
+  // GCMClientImpl.
+  scoped_ptr<base::Clock> clock_;
 
   // Information about the chrome build.
   // TODO(fgorski): Check if it can be passed in constructor and made const.
@@ -176,6 +208,11 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // Currently pending checkins. GCMClientImpl owns the CheckinRequests.
   PendingCheckins pending_checkins_;
   STLValueDeleter<PendingCheckins> pending_checkins_deleter_;
+
+  // Currently pending registrations. GCMClientImpl owns the
+  // RegistrationRequests.
+  PendingRegistrations pending_registrations_;
+  STLValueDeleter<PendingRegistrations> pending_registrations_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientImpl);
 };

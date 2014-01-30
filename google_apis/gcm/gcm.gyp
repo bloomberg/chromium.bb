@@ -136,6 +136,7 @@
         'engine/mcs_client_unittest.cc',
         'engine/registration_request_unittest.cc',
         'engine/user_list_unittest.cc',
+        'gcm_client_impl_unittest.cc'
       ]
     },
   ],
