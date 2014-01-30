@@ -72,8 +72,9 @@ const InputMethodDescriptor* MockInputMethodManager::GetInputMethodFromId(
   return NULL;
 }
 
-void MockInputMethodManager::EnableLayouts(const std::string& language_code,
-                                           const std::string& initial_layout) {
+void MockInputMethodManager::EnableLoginLayouts(
+    const std::string& language_code,
+    const std::string& initial_layout) {
 }
 
 bool MockInputMethodManager::EnableInputMethods(

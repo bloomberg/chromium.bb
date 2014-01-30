@@ -43,9 +43,7 @@ bool Contains(const std::vector<std::string>& container,
 
 bool InputMethodManagerImpl::IsLoginKeyboard(
     const std::string& layout) const {
-  const InputMethodDescriptor* ime =
-      util_.GetInputMethodDescriptorFromId(layout);
-  return ime ? ime->is_login_keyboard() : false;
+  return util_.IsLoginKeyboard(layout);
 }
 
 InputMethodManagerImpl::InputMethodManagerImpl(
@@ -159,8 +157,9 @@ const InputMethodDescriptor* InputMethodManagerImpl::GetInputMethodFromId(
   return ime;
 }
 
-void InputMethodManagerImpl::EnableLayouts(const std::string& language_code,
-                                           const std::string& initial_layout) {
+void InputMethodManagerImpl::EnableLoginLayouts(
+    const std::string& language_code,
+    const std::string& initial_layout) {
   if (state_ == STATE_TERMINATING)
     return;
 
@@ -171,17 +170,22 @@ void InputMethodManagerImpl::EnableLayouts(const std::string& language_code,
                                           &candidates);
   // Add the hardware keyboard as well. We should always add this so users
   // can use the hardware keyboard on the login screen and the screen locker.
-  candidates.push_back(util_.GetHardwareInputMethodId());
+  candidates.push_back(util_.GetHardwareLoginInputMethodId());
 
   std::vector<std::string> layouts;
   // First, add the initial input method ID, if it's requested, to
   // layouts, so it appears first on the list of active input
   // methods at the input language status menu.
-  if (util_.IsValidInputMethodId(initial_layout) &&
-      IsLoginKeyboard(initial_layout)) {
-    layouts.push_back(initial_layout);
+  if (util_.IsValidInputMethodId(initial_layout)) {
+    if (!IsLoginKeyboard(initial_layout)) {
+      DVLOG(1)
+          << "EnableLoginLayouts: ignoring non-login initial keyboard layout:"
+          << initial_layout;
+    } else {
+      layouts.push_back(initial_layout);
+    }
   } else if (!initial_layout.empty()) {
-    DVLOG(1) << "EnableLayouts: ignoring non-keyboard or invalid ID: "
+    DVLOG(1) << "EnableLoginLayouts: ignoring non-keyboard or invalid ID: "
              << initial_layout;
   }
 
@@ -550,7 +554,7 @@ void InputMethodManagerImpl::SetInputMethodDefault() {
       initial_input_method_id =
           GetInputMethodUtil()->GetHardwareInputMethodId();
     }
-    EnableLayouts(locale, initial_input_method_id);
+    EnableLoginLayouts(locale, initial_input_method_id);
   }
 }
 

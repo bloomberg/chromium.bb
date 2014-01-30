@@ -33,8 +33,8 @@ class SetInputMethodListener : public content::NotificationObserver {
   explicit SetInputMethodListener(int count) : count_(count) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
-    chromeos::input_method::InputMethodManager::Get()->
-        EnableLayouts(kLoginScreenUILanguage, kInitialInputMethodOnLoginScreen);
+    chromeos::input_method::InputMethodManager::Get()->EnableLoginLayouts(
+        kLoginScreenUILanguage, kInitialInputMethodOnLoginScreen);
   }
 
   virtual ~SetInputMethodListener() {

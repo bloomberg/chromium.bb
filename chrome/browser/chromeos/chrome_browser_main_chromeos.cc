@@ -36,9 +36,11 @@
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -553,6 +555,54 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   }
 }
 
+class GuestLanguageSetCallbackData {
+ public:
+  explicit GuestLanguageSetCallbackData(Profile* profile) : profile(profile) {
+  }
+
+  // Must match SwitchLanguageCallback type.
+  static void Callback(const scoped_ptr<GuestLanguageSetCallbackData>& self,
+                       const std::string& locale,
+                       const std::string& loaded_locale,
+                       bool success);
+
+  Profile* profile;
+};
+
+// static
+void GuestLanguageSetCallbackData::Callback(
+    const scoped_ptr<GuestLanguageSetCallbackData>& self,
+    const std::string& locale,
+    const std::string& loaded_locale,
+    bool success) {
+  input_method::InputMethodManager* const ime_manager =
+      input_method::InputMethodManager::Get();
+  // Active layout must be hardware "login layout".
+  // The previous one must be "locale default layout".
+  const std::string login_input_method =
+      ime_manager->GetInputMethodUtil()->GetHardwareLoginInputMethodId();
+  ime_manager->ChangeInputMethod(login_input_method);
+
+  const std::string locale_default_input_method =
+      ime_manager->GetInputMethodUtil()->
+          GetLanguageDefaultInputMethodId(loaded_locale);
+  if (!locale_default_input_method.empty()) {
+    PrefService* user_prefs = self->profile->GetPrefs();
+    user_prefs->SetString(prefs::kLanguagePreviousInputMethod,
+                          locale_default_input_method);
+  }
+}
+
+void SetGuestLocale(UserManager* const usermanager, Profile* const profile) {
+  scoped_ptr<GuestLanguageSetCallbackData> data(
+      new GuestLanguageSetCallbackData(profile));
+  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
+      new locale_util::SwitchLanguageCallback(base::Bind(
+          &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass()))));
+  User* const user = usermanager->GetUserByProfile(profile);
+  usermanager->RespectLocalePreference(profile, user, callback.Pass());
+}
+
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
@@ -608,6 +658,12 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       parsed_command_line().HasSwitch(switches::kForceLoginManagerInTests)) {
     OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
   }
+
+  // Guest user profile is never initialized with locale settings,
+  // so we need special handling for Guest session.
+  UserManager* const usermanager = UserManager::Get();
+  if (usermanager->IsLoggedInAsGuest())
+    SetGuestLocale(usermanager, profile());
 
   // These observers must be initialized after the profile because
   // they use the profile to dispatch extension events.

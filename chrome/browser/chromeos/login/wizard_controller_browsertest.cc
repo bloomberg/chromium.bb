@@ -109,7 +109,7 @@ void RunSwitchLanguageTest(const std::string& locale,
   scoped_ptr<locale_util::SwitchLanguageCallback> callback(
       new locale_util::SwitchLanguageCallback(
           base::Bind(&OnLocaleSwitched, base::Unretained(&data))));
-  locale_util::SwitchLanguage(locale, true, callback.Pass());
+  locale_util::SwitchLanguage(locale, true, false, callback.Pass());
 
   // Token writing moves control to BlockingPool and back.
   base::RunLoop().RunUntilIdle();

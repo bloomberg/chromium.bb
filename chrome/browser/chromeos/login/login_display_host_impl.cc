@@ -1137,9 +1137,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     if (!prefs->HasPrefPath(prefs::kApplicationLocale)) {
       std::string locale = chromeos::StartupUtils::GetInitialLocale();
       prefs->SetString(prefs::kApplicationLocale, locale);
-      manager->EnableLayouts(
-          locale,
-          manager->GetInputMethodUtil()->GetHardwareInputMethodId());
+      manager->EnableLoginLayouts(
+          locale, manager->GetInputMethodUtil()->GetHardwareInputMethodId());
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       const std::string loaded_locale =
           ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
@@ -1182,10 +1181,6 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   // initial locale and save it in preferences.
   DetermineAndSaveHardwareKeyboard(locale, layout);
 
-  // Then, enable the hardware keyboard.
-  manager->EnableLayouts(
-      locale, manager->GetInputMethodUtil()->GetHardwareInputMethodId());
-
   scoped_ptr<ShowLoginWizardSwitchLanguageCallbackData> data(
       new ShowLoginWizardSwitchLanguageCallbackData(
           first_screen_name, startup_manifest, display_host));
@@ -1194,8 +1189,9 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       new locale_util::SwitchLanguageCallback(
           base::Bind(&OnLanguageSwitchedCallback, base::Passed(data.Pass()))));
 
-  // Do not load locale keyboards here.
-  locale_util::SwitchLanguage(locale, false, callback.Pass());
+  // Load locale keyboards here. Hardware layout would be automatically enabled.
+  locale_util::SwitchLanguage(
+      locale, true, true /* login_layouts_only */, callback.Pass());
 }
 
 }  // namespace chromeos

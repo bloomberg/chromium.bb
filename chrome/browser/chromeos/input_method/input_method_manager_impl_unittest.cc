@@ -237,7 +237,7 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
   InitComponentExtension();
   manager_->AddObserver(&observer);
   EXPECT_EQ(0, observer.input_method_changed_count_);
-  manager_->EnableLayouts("en-US", "xkb:us::eng");
+  manager_->EnableLoginLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(1, observer.input_method_changed_count_);
   EXPECT_EQ(1, observer.input_method_property_changed_count_);
   manager_->ChangeInputMethod("xkb:us:dvorak:eng");
@@ -284,20 +284,20 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
   // Currently 5 keyboard layouts are supported for en-US, and 1 for ja. See
   // ibus_input_method.txt.
   InitComponentExtension();
-  manager_->EnableLayouts("en-US", "");
+  manager_->EnableLoginLayouts("en-US", "");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   for (size_t i = 0; i < manager_->GetActiveInputMethodIds().size(); ++i)
     LOG(ERROR) << manager_->GetActiveInputMethodIds().at(i);
 
   // For http://crbug.com/19655#c11 - (5)
   // The hardware keyboard layout "xkb:us::eng" is always active, hence 2U.
-  manager_->EnableLayouts("ja", "");  // Japanese
+  manager_->EnableLoginLayouts("ja", "");  // Japanese
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 }
 
 TEST_F(InputMethodManagerImplTest, TestEnableLayoutsAndCurrentInputMethod) {
   // For http://crbug.com/329061
-  manager_->EnableLayouts("en-US", "xkb:se::swe");
+  manager_->EnableLoginLayouts("en-US", "xkb:se::swe");
   const std::string im_id = manager_->GetCurrentInputMethod().id();
   EXPECT_EQ("xkb:se::swe", im_id);
 }
@@ -305,17 +305,24 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutsAndCurrentInputMethod) {
 TEST_F(InputMethodManagerImplTest, TestEnableLayoutsNonUsHardwareKeyboard) {
   // The physical layout is French.
   delegate_->set_hardware_keyboard_layout("xkb:fr::fra");
-  manager_->EnableLayouts("en-US", "");
+  manager_->EnableLoginLayouts("en-US", "");
   EXPECT_EQ(6U, manager_->GetNumActiveInputMethods());  // 5 + French
   // The physical layout is Japanese.
   delegate_->set_hardware_keyboard_layout("xkb:jp::jpn");
-  manager_->EnableLayouts("ja", "");
+  manager_->EnableLoginLayouts("ja", "");
   // "xkb:us::eng" is not needed, hence 1.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
+
+  // The physical layout is Russian.
+  delegate_->set_hardware_keyboard_layout("xkb:ru::rus");
+  manager_->EnableLoginLayouts("ru", "");
+  // "xkb:us::eng" only.
+  EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
+  EXPECT_EQ("xkb:us::eng", manager_->GetActiveInputMethodIds().front());
 }
 
 TEST_F(InputMethodManagerImplTest, TestActiveInputMethods) {
-  manager_->EnableLayouts("ja", "");  // Japanese
+  manager_->EnableLoginLayouts("ja", "");  // Japanese
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   scoped_ptr<InputMethodDescriptors> methods(
       manager_->GetActiveInputMethods());
@@ -670,7 +677,7 @@ TEST_F(InputMethodManagerImplTest, TestNextInputMethod) {
   manager_->AddObserver(&observer);
   InitComponentExtension();
   // For http://crbug.com/19655#c11 - (1)
-  manager_->EnableLayouts("en-US", "xkb:us::eng");
+  manager_->EnableLoginLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
@@ -708,7 +715,7 @@ TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
   ui::Accelerator keyup_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
   keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
 
-  manager_->EnableLayouts("en-US", "xkb:us::eng");
+  manager_->EnableLoginLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
@@ -781,7 +788,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   TestObserver observer;
   manager_->AddObserver(&observer);
   InitComponentExtension();
-  manager_->EnableLayouts("en-US", "xkb:us::eng");
+  manager_->EnableLoginLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
@@ -818,7 +825,7 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
   ui::Accelerator keyup_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
   keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
 
-  manager_->EnableLayouts("ja", "xkb:us::eng");
+  manager_->EnableLoginLayouts("ja", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);

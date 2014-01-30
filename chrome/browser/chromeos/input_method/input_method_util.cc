@@ -603,6 +603,17 @@ void InputMethodUtil::GetLanguageCodesFromInputMethodIds(
   }
 }
 
+std::string InputMethodUtil::GetLanguageDefaultInputMethodId(
+    const std::string& language_code) {
+  std::vector<std::string> candidates;
+  GetInputMethodIdsFromLanguageCode(
+      language_code, input_method::kKeyboardLayoutsOnly, &candidates);
+  if (candidates.size())
+    return candidates.front();
+
+  return std::string();
+}
+
 std::string InputMethodUtil::GetHardwareInputMethodId() const {
   const std::string input_method_id = delegate_->GetHardwareKeyboardLayout();
 
@@ -613,6 +624,22 @@ std::string InputMethodUtil::GetHardwareInputMethodId() const {
     return GetFallbackInputMethodDescriptor().id();
   }
   return input_method_id;
+}
+
+std::string InputMethodUtil::GetHardwareLoginInputMethodId() const {
+  const std::string input_method_id = GetHardwareInputMethodId();
+
+  if (!IsLoginKeyboard(input_method_id))
+    return GetFallbackInputMethodDescriptor().id();
+
+  return input_method_id;
+}
+
+bool InputMethodUtil::IsLoginKeyboard(const std::string& input_method_id)
+    const {
+  const InputMethodDescriptor* ime =
+      GetInputMethodDescriptorFromId(input_method_id);
+  return ime ? ime->is_login_keyboard() : false;
 }
 
 void InputMethodUtil::SetComponentExtensions(

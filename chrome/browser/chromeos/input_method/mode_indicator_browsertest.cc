@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
   ASSERT_TRUE(imm);
 
   // Add keyboard layouts to enable the mode indicator.
-  imm->EnableLayouts("fr", "xkb:fr::fra");
+  imm->EnableLoginLayouts("fr", "xkb:fr::fra");
   ASSERT_LT(1UL, imm->GetNumActiveInputMethods());
 
   chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, NumOfWidgets) {
   ASSERT_TRUE(imm);
 
   // Add keyboard layouts to enable the mode indicator.
-  imm->EnableLayouts("fr", "xkb:fr::fra");
+  imm->EnableLoginLayouts("fr", "xkb:fr::fra");
   ASSERT_LT(1UL, imm->GetNumActiveInputMethods());
 
   chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =

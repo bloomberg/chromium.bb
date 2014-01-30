@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/base/locale_util.h"
 
+#include <vector>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -18,16 +20,19 @@ namespace {
 struct SwitchLanguageData {
   SwitchLanguageData(const std::string& locale,
                      const bool enableLocaleKeyboardLayouts,
+                     const bool login_layouts_only,
                      scoped_ptr<locale_util::SwitchLanguageCallback> callback)
       : callback(callback.Pass()),
         locale(locale),
         enableLocaleKeyboardLayouts(enableLocaleKeyboardLayouts),
+        login_layouts_only(login_layouts_only),
         success(false) {}
 
   scoped_ptr<locale_util::SwitchLanguageCallback> callback;
 
   const std::string locale;
   const bool enableLocaleKeyboardLayouts;
+  const bool login_layouts_only;
   std::string loaded_locale;
   bool success;
 };
@@ -58,9 +63,21 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
       // use may not be supported by the new locale (3rd parameter).
       input_method::InputMethodManager* manager =
           input_method::InputMethodManager::Get();
-      manager->EnableLayouts(
+      manager->EnableLoginLayouts(
           data->locale,
-          manager->GetInputMethodUtil()->GetHardwareInputMethodId());
+          manager->GetInputMethodUtil()->GetHardwareLoginInputMethodId());
+      if (!data->login_layouts_only) {
+        // Enable all the other layouts
+        std::vector<std::string> candidates;
+        input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
+        // Add input methods associated with the language.
+        util->GetInputMethodIdsFromLanguageCode(
+            data->locale, input_method::kKeyboardLayoutsOnly, &candidates);
+        for (std::vector<std::string>::const_iterator i = candidates.begin();
+             i != candidates.end();
+             ++i)
+          manager->EnableInputMethod(*i);
+      }
     }
   }
   gfx::PlatformFontPango::ReloadDefaultFont();
@@ -73,11 +90,15 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
 namespace locale_util {
 
 void SwitchLanguage(const std::string& locale,
-                    bool enableLocaleKeyboardLayouts,
+                    const bool enableLocaleKeyboardLayouts,
+                    const bool login_layouts_only,
                     scoped_ptr<SwitchLanguageCallback> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  scoped_ptr<SwitchLanguageData> data(new SwitchLanguageData(
-      locale, enableLocaleKeyboardLayouts, callback.Pass()));
+  scoped_ptr<SwitchLanguageData> data(
+      new SwitchLanguageData(locale,
+                             enableLocaleKeyboardLayouts,
+                             login_layouts_only,
+                             callback.Pass()));
   base::Closure reloader(
       base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
   content::BrowserThread::PostBlockingPoolTaskAndReply(

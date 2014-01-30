@@ -114,16 +114,16 @@ class CHROMEOS_EXPORT InputMethodManager {
   // is not active, switch to the first one in the active input method list.
   virtual void ChangeInputMethod(const std::string& input_method_id) = 0;
 
-  // Enables keyboard layouts (e.g. US Qwerty, US Dvorak, French Azerty) that
-  // are necessary for the |language_code| and then switches to |initial_layout|
-  // if the string is not empty. For example, if |language_code| is "en-US", US
-  // Qwerty, US International, US Extended, US Dvorak, and US Colemak layouts
-  // would be enabled. Likewise, for Germany locale, US Qwerty which corresponds
-  // to the hardware keyboard layout and several keyboard layouts for Germany
-  // would be enabled.
-  // This method is for setting up i18n keyboard layouts for the login screen.
-  virtual void EnableLayouts(const std::string& language_code,
-                             const std::string& initial_layout) = 0;
+  // Enables "login" keyboard layouts (e.g. US Qwerty, US Dvorak, French
+  // Azerty) that are necessary for the |language_code| and then switches to
+  // |initial_layout| if the string is not empty. For example, if
+  // |language_code| is "en-US", US Qwerty, US International, US Extended, US
+  // Dvorak, and US Colemak layouts would be enabled. Likewise, for Germany
+  // locale, US Qwerty which corresponds to the hardware keyboard layout and
+  // several keyboard layouts for Germany would be enabled.
+  //   Only layouts suitable for login screen are enabled.
+  virtual void EnableLoginLayouts(const std::string& language_code,
+                                  const std::string& initial_layout) = 0;
 
   // Activates the input method property specified by the |key|.
   virtual void ActivateInputMethodProperty(const std::string& key) = 0;

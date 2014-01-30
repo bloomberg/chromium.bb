@@ -37,8 +37,10 @@ typedef base::Callback<void(const std::string&, const std::string&, bool)>
 // method currently in use may not be supported by the new locale. (i.e.
 // using new locale with unsupported input method may lead to undefined
 // behavior; use "enableLocaleKeyboardLayouts=false" with caution)
+// Note2: login_layouts_only=true enables only login-capable layouts.
 void SwitchLanguage(const std::string& locale,
-                    bool enableLocaleKeyboardLayouts,
+                    const bool enableLocaleKeyboardLayouts,
+                    const bool login_layouts_only,
                     scoped_ptr<SwitchLanguageCallback> callback);
 
 }  // namespace locale_util

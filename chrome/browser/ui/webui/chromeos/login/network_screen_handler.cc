@@ -208,7 +208,10 @@ void NetworkScreenHandler::HandleOnLanguageChanged(const std::string& locale) {
       new locale_util::SwitchLanguageCallback(
           base::Bind(&NetworkScreenHandler::OnLanguageChangedCallback,
                      base::Passed(callback_data.Pass()))));
-  locale_util::SwitchLanguage(locale, true, callback.Pass());
+  locale_util::SwitchLanguage(locale,
+                              true /* enableLocaleKeyboardLayouts */,
+                              true /* login_layouts_only */,
+                              callback.Pass());
 }
 
 void NetworkScreenHandler::HandleOnInputMethodChanged(const std::string& id) {

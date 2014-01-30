@@ -93,9 +93,19 @@ class InputMethodUtil {
       const std::vector<std::string>& input_method_ids,
       std::vector<std::string>* out_language_codes) const;
 
+  // Gets first input method associated with the language.
+  // Returns empty string on error.
+  std::string GetLanguageDefaultInputMethodId(const std::string& language_code);
+
   // Returns the input method ID of the hardware keyboard. e.g. "xkb:us::eng"
   // for the US Qwerty keyboard.
   std::string GetHardwareInputMethodId() const;
+
+  // Returns the login-allowed input method ID of the hardware keyboard.
+  std::string GetHardwareLoginInputMethodId() const;
+
+  // Returns true if given input method can be used to input login data.
+  bool IsLoginKeyboard(const std::string& input_method_id) const;
 
   // Returns true if the given input method id is supported.
   bool IsValidInputMethodId(const std::string& input_method_id) const;
