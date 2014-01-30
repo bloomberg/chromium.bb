@@ -1410,7 +1410,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Resolve the selectionURL to selectionEntry or to currentDirectoryEntry
     // in case of being a display root.
     queue.run(function(callback) {
-      // TODO(mtomasz): Migrate to URLs, and stop calling resolveAbsoluteURL.
       if (!this.initSelectionURL_) {
         callback();
         return;
@@ -1419,10 +1418,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           this.initSelectionURL_,
           function(inEntry) {
             var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
+            // If location information is not available, then the volume is
+            // no longer (or never) available.
+            if (!locationInfo) {
+              callback();
+              return;
+            }
             // If the selection is root, then use it as a current directory
             // instead. This is because, selecting a root entry is done as
             // opening it.
-            if (locationInfo && locationInfo.isRootEntry)
+            if (locationInfo.isRootEntry)
               nextCurrentDirEntry = inEntry;
             else
               selectionEntry = inEntry;
@@ -1439,9 +1444,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       webkitResolveLocalFileSystemURL(
           this.initCurrentDirectoryURL_,
           function(inEntry) {
+            var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
+            if (!locationInfo) {
+              callback();
+              return;
+            }
             nextCurrentDirEntry = inEntry;
             callback();
-          }, callback);
+          }.bind(this), callback);
       // TODO(mtomasz): Implement reopening on special search, when fake
       // entries are converted to directory providers.
     }.bind(this));

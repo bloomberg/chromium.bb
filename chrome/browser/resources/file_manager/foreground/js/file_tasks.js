@@ -211,9 +211,10 @@ FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
   var id = chrome.runtime.id;
   var isOnDrive = false;
+  var fm = this.fileManager_;
   for (var index = 0; index < this.entries_.length; ++index) {
-    // TODO(mtomasz): Use Entry instead of paths.
-    if (PathUtil.isDriveBasedPath(this.entries_[index].fullPath)) {
+    var locationInfo = fm.volumeManager.getLocationInfo(this.entries_[index]);
+    if (locationInfo && locationInfo.isDriveBased) {
       isOnDrive = true;
       break;
     }

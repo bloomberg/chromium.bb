@@ -31,7 +31,9 @@ function FolderShortcutsDataModel(volumeManager) {
       var path = list[index];
       group.add(function(path, callback) {
         // TODO(mtomasz): Migrate to URL.
-        volumeManager.resolveAbsolutePath(path, function(entry) {
+        // TODO(mtomasz): Do not resolve, if volumeInfo for Drive is missing.
+        var url = util.makeFilesystemUrl(path);
+        webkitResolveLocalFileSystemURL(url, function(entry) {
           if (entry.fullPath in this.pendingPaths_)
             delete this.pendingPaths_[entry.fullPath];
           this.addInternal_(entry);

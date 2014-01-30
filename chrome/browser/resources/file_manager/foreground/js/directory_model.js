@@ -780,27 +780,6 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
 };
 
 /**
- * Check if the root of the given path is mountable or not.
- *
- * @param {string} path Path.
- * @return {boolean} Return true, if the given path is under mountable root.
- *     Otherwise, return false.
- */
-DirectoryModel.isMountableRoot = function(path) {
-  var rootType = PathUtil.getRootType(path);
-  switch (rootType) {
-    case RootType.DOWNLOADS:
-      return false;
-    case RootType.ARCHIVE:
-    case RootType.REMOVABLE:
-    case RootType.DRIVE:
-      return true;
-    default:
-      throw new Error('Unknown root type!');
-  }
-};
-
-/**
  * Performs search and displays results. The search type is dependent on the
  * current directory. If we are currently on drive, server side content search
  * over drive mount point. If the current directory is not on the drive, file

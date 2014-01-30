@@ -259,7 +259,13 @@ VolumeManagerWrapper.prototype.getDefaultDisplayRoot =
  * @return {EntryLocation} Location information.
  */
 VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
-  return this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
+  var locationInfo =
+      this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
+  if (!locationInfo)
+    return null;
+  if (!this.filterDisabledDriveVolume_(locationInfo.volumeInfo))
+    return null;
+  return locationInfo;
 };
 
 /**
@@ -297,31 +303,6 @@ VolumeManagerWrapper.prototype.unmount = function(
   }
 
   this.volumeManager_.unmount(volumeInfo, successCallback, errorCallback);
-};
-
-/**
- * Resolves the absolute path to an entry instance.
- * @param {string} path The path to be resolved.
- * @param {function(Entry)} successCallback Called with the resolved entry
- *     on success.
- * @param {function(FileError)} errorCallback Called with the error on error.
- */
-VolumeManagerWrapper.prototype.resolveAbsolutePath = function(
-    path, successCallback, errorCallback) {
-  if (this.pendingTasks_) {
-    this.pendingTasks_.push(this.resolveAbsolutePath.bind(
-        this, path, successCallback, errorCallback));
-    return;
-  }
-
-  // If the drive is disabled, any resolving the path under drive should be
-  // failed.
-  if (!this.driveEnabled_ && PathUtil.isDriveBasedPath(path)) {
-    errorCallback(util.createDOMError(util.FileError.NOT_FOUND_ERR));
-    return;
-  }
-
-  this.volumeManager_.resolveAbsolutePath(path, successCallback, errorCallback);
 };
 
 /**

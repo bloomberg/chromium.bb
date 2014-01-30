@@ -317,67 +317,6 @@ util.resolvePath = function(root, path, resultCallback, errorCallback) {
 };
 
 /**
- * Locate the file referred to by path, creating directories or the file
- * itself if necessary.
- * @param {DirEntry} root The root entry.
- * @param {string} path The file path.
- * @param {function(FileEntry)} successCallback The callback.
- * @param {function(FileError)} errorCallback The callback.
- */
-util.getOrCreateFile = function(root, path, successCallback, errorCallback) {
-  var dirname = null;
-  var basename = null;
-
-  var onDirFound = function(dirEntry) {
-    dirEntry.getFile(basename, { create: true },
-                     successCallback, errorCallback);
-  };
-
-  var i = path.lastIndexOf('/');
-  if (i > -1) {
-    dirname = path.substr(0, i);
-    basename = path.substr(i + 1);
-  } else {
-    basename = path;
-  }
-
-  if (!dirname) {
-    onDirFound(root);
-    return;
-  }
-
-  util.getOrCreateDirectory(root, dirname, onDirFound, errorCallback);
-};
-
-/**
- * Locate the directory referred to by path, creating directories along the
- * way.
- * @param {DirEntry} root The root entry.
- * @param {string} path The directory path.
- * @param {function(FileEntry)} successCallback The callback.
- * @param {function(FileError)} errorCallback The callback.
- */
-util.getOrCreateDirectory = function(root, path, successCallback,
-                                     errorCallback) {
-  var names = path.split('/');
-
-  var getOrCreateNextName = function(dir) {
-    if (!names.length)
-      return successCallback(dir);
-
-    var name;
-    do {
-      name = names.shift();
-    } while (!name || name == '.');
-
-    dir.getDirectory(name, { create: true }, getOrCreateNextName,
-                     errorCallback);
-  };
-
-  getOrCreateNextName(root);
-};
-
-/**
  * Renames the entry to newName.
  * @param {Entry} entry The entry to be renamed.
  * @param {string} newName The new name.

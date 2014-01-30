@@ -42,19 +42,19 @@ function VolumeInfo(
 
   if (volumeType === util.VolumeType.DRIVE) {
     this.fakeEntries[RootType.DRIVE_OFFLINE] = {
-      fullPath: RootDirectory.DRIVE_OFFLINE,
+      fullPath: '/drive_offline',
       isDirectory: true,
       rootType: RootType.DRIVE_OFFLINE,
       toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
     this.fakeEntries[RootType.DRIVE_SHARED_WITH_ME] = {
-      fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
+      fullPath: '/drive_shared_with_me',
       isDirectory: true,
       rootType: RootType.DRIVE_SHARED_WITH_ME,
       toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
     this.fakeEntries[RootType.DRIVE_RECENT] = {
-      fullPath: RootDirectory.DRIVE_RECENT,
+      fullPath: '/drive_recent',
       isDirectory: true,
       rootType: RootType.DRIVE_RECENT,
       toURL: function() { return 'fake-entry://' + this.fullPath; }
@@ -627,27 +627,6 @@ VolumeManager.prototype.unmount = function(volumeInfo,
       util.makeFilesystemUrl(volumeInfo.mountPath));
   var requestKey = this.makeRequestKey_('unmount', volumeInfo.mountPath);
   this.startRequest_(requestKey, successCallback, errorCallback);
-};
-
-/**
- * Resolves the absolute path to its entry. Shouldn't be used outside of the
- * Files app's initialization.
- * @param {string} path The path to be resolved.
- * @param {function(Entry)} successCallback Called with the resolved entry on
- *     success.
- * @param {function(FileError)} errorCallback Called on error.
- */
-VolumeManager.prototype.resolveAbsolutePath = function(
-    path, successCallback, errorCallback) {
-  // Make sure the path is in the mounted volume.
-  var volumeInfo = this.getVolumeInfo(path);
-  if (!volumeInfo || !volumeInfo.root) {
-    errorCallback(util.createDOMError(util.FileError.NOT_FOUND_ERR));
-    return;
-  }
-
-  webkitResolveLocalFileSystemURL(
-      util.makeFilesystemUrl(path), successCallback, errorCallback);
 };
 
 /**
