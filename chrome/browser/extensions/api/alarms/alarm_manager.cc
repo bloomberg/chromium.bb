@@ -236,8 +236,10 @@ void AlarmManager::RemoveAlarmIterator(const AlarmIterator& iter) {
   // Cancel the timer if there are no more alarms.
   // We don't need to reschedule the poll otherwise, because in
   // the worst case we would just poll one extra time.
-  if (alarms_.empty())
+  if (alarms_.empty()) {
     timer_.Stop();
+    next_poll_time_ = base::Time();
+  }
 }
 
 void AlarmManager::OnAlarm(AlarmIterator it) {
@@ -278,8 +280,10 @@ void AlarmManager::AddAlarmImpl(const std::string& extension_id,
     RemoveAlarmIterator(old_alarm);
 
   alarms_[extension_id].push_back(alarm);
-
-  ScheduleNextPoll();
+  base::Time alarm_time =
+      base::Time::FromJsTime(alarm.js_alarm->scheduled_time);
+  if (next_poll_time_.is_null() || alarm_time < next_poll_time_)
+    SetNextPollTime(alarm_time);
 }
 
 void AlarmManager::WriteToStorage(const std::string& extension_id) {
@@ -313,15 +317,21 @@ void AlarmManager::ReadFromStorage(const std::string& extension_id,
   ready_actions_.erase(extension_id);
 }
 
+void AlarmManager::SetNextPollTime(const base::Time& time) {
+  next_poll_time_ = time;
+  timer_.Start(FROM_HERE,
+               std::max(base::TimeDelta::FromSeconds(0), time - clock_->Now()),
+               this,
+               &AlarmManager::PollAlarms);
+}
+
 void AlarmManager::ScheduleNextPoll() {
   // If there are no alarms, stop the timer.
   if (alarms_.empty()) {
     timer_.Stop();
+    next_poll_time_ = base::Time();
     return;
   }
-
-  // TODO(yoz): Try not to reschedule every single time if we're adding
-  // a lot of alarms.
 
   // Find the soonest alarm that is scheduled to run and the smallest
   // granularity of any alarm.
@@ -356,13 +366,7 @@ void AlarmManager::ScheduleNextPoll() {
     next_poll = soonest_alarm_time;
 
   // Schedule the poll.
-  test_next_poll_time_ = next_poll;
-  base::TimeDelta delay = std::max(base::TimeDelta::FromSeconds(0),
-                                   next_poll - clock_->Now());
-  timer_.Start(FROM_HERE,
-               delay,
-               this,
-               &AlarmManager::PollAlarms);
+  SetNextPollTime(next_poll);
 }
 
 void AlarmManager::PollAlarms() {
