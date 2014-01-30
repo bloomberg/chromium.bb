@@ -97,7 +97,7 @@ def Clobber():
 
 def FetchAndBuildGCC():
   if 'arm' in ARCHES:
-    tc_args = ['-y', '--no-use-remote-cache']
+    tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
     toolchain_main.PackageBuilder(toolchain_build.PACKAGES, tc_args).Main()
 
   if 'x86' in ARCHES:
