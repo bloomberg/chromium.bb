@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_mac.h"
@@ -76,6 +77,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -187,6 +189,19 @@ void RecordLastRunAppBundlePath() {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&PrefsSyncCallback),
       base::TimeDelta::FromMilliseconds(1500));
+}
+
+bool IsProfileSignedOut(Profile* profile) {
+  // The signed out status only makes sense at the moment in the context of the
+  // --new-profile-management flag.
+  if (!switches::IsNewProfileManagement())
+    return false;
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (profile_index == std::string::npos)
+    return false;
+  return cache.ProfileIsSigninRequiredAtIndex(profile_index);
 }
 
 }  // anonymous namespace
@@ -974,6 +989,15 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     return;
 
   NSInteger tag = [sender tag];
+
+  // If there are no browser windows, and we are trying to open a browser
+  // for a locked profile, we have to show the User Manager instead as the
+  // locked profile needs authentication.
+  if (IsProfileSignedOut(lastProfile)) {
+    chrome::ShowUserManager(lastProfile->GetPath());
+    return;
+  }
+
   switch (tag) {
     case IDC_NEW_TAB:
       // Create a new tab in an existing browser window (which we activate) if
@@ -1186,7 +1210,15 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   }
 
   // Otherwise open a new window.
-  CreateBrowser([self lastProfile]);
+  // If the last profile was locked, we have to open the User Manager, as the
+  // profile requires authentication. Similarly, because guest mode is
+  // implemented as forced incognito, we can't open a new guest browser either,
+  // so we have to show the User Manager as well.
+  Profile* lastProfile = [self lastProfile];
+  if (lastProfile->IsGuestSession() || IsProfileSignedOut(lastProfile))
+    chrome::ShowUserManager(lastProfile->GetPath());
+  else
+    CreateBrowser(lastProfile);
 
   // We've handled the reopen event, so return NO to tell AppKit not
   // to do anything.
