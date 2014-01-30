@@ -84,6 +84,7 @@ bool RecursivelyGenerateFrameState(const WebHistoryItem& item,
   state->url_string = item.urlString();
   state->original_url_string = item.originalURLString();
   state->referrer = item.referrer();
+  state->referrer_policy = item.referrerPolicy();
   state->target = item.target();
   if (!item.stateObject().isNull())
     state->state_object = item.stateObject().toString();
@@ -122,7 +123,7 @@ bool RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
                                     WebHistoryItem* item) {
   item->setURLString(state.url_string);
   item->setOriginalURLString(state.original_url_string);
-  item->setReferrer(state.referrer);
+  item->setReferrer(state.referrer, state.referrer_policy);
   item->setTarget(state.target);
   if (!state.state_object.is_null()) {
     item->setStateObject(

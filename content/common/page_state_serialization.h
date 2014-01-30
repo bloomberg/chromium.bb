@@ -10,6 +10,7 @@
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
 
@@ -52,6 +53,7 @@ struct CONTENT_EXPORT ExplodedFrameState {
   int64 document_sequence_number;
   int64 target_frame_id;
   double page_scale_factor;
+  blink::WebReferrerPolicy referrer_policy;
   ExplodedHttpBody http_body;
   std::vector<ExplodedFrameState> children;
 

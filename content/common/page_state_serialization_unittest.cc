@@ -69,6 +69,7 @@ void ExpectEquality(const ExplodedFrameState& a, const ExplodedFrameState& b) {
   EXPECT_EQ(a.url_string, b.url_string);
   EXPECT_EQ(a.original_url_string, b.original_url_string);
   EXPECT_EQ(a.referrer, b.referrer);
+  EXPECT_EQ(a.referrer_policy, b.referrer_policy);
   EXPECT_EQ(a.target, b.target);
   EXPECT_EQ(a.state_object, b.state_object);
   ExpectEquality(a.document_state, b.document_state);
@@ -95,6 +96,7 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->url_string = NS16("http://dev.chromium.org/");
     frame_state->original_url_string = frame_state->url_string;
     frame_state->referrer = NS16("https://www.google.com/search?q=dev.chromium.org");
+    frame_state->referrer_policy = blink::WebReferrerPolicyAlways;
     frame_state->target = NS16("foo");
     frame_state->state_object = NS16(NULL);
     frame_state->document_state.push_back(NS16("1"));
@@ -137,6 +139,7 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->url_string = NS16("http://chromium.org/");
     frame_state->original_url_string = frame_state->url_string;
     frame_state->referrer = NS16("http://google.com/");
+    frame_state->referrer_policy = blink::WebReferrerPolicyDefault;
     if (!is_child)
       frame_state->target = NS16("target");
     frame_state->scroll_offset = gfx::Point(42, -42);
