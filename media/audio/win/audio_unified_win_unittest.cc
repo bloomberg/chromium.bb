@@ -12,6 +12,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/win/audio_unified_win.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "media/base/channel_mixer.h"
@@ -43,17 +44,6 @@ MATCHER_P(DelayGreaterThan, value, "") {
 ACTION_P(QuitLoop, loop) {
   loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
-
-class MockUnifiedSourceCallback
-    : public AudioOutputStream::AudioSourceCallback {
- public:
-  MOCK_METHOD2(OnMoreData, int(AudioBus* audio_bus,
-                               AudioBuffersState buffers_state));
-  MOCK_METHOD3(OnMoreIOData, int(AudioBus* source,
-                                 AudioBus* dest,
-                                 AudioBuffersState buffers_state));
-  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
-};
 
 // AudioOutputStream::AudioSourceCallback implementation which enables audio
 // play-through. It also creates a text file that contains times between two
@@ -295,7 +285,7 @@ TEST(WASAPIUnifiedStreamTest, OpenStartAndClose) {
   if (!CanRunUnifiedAudioTests(audio_manager.get()))
     return;
 
-  MockUnifiedSourceCallback source;
+  MockAudioSourceCallback source;
   AudioUnifiedStreamWrapper ausw(audio_manager.get());
   WASAPIUnifiedStream* wus = ausw.Create();
 
@@ -316,7 +306,7 @@ TEST(WASAPIUnifiedStreamTest, StartLoopbackAudio) {
     return;
 
   base::MessageLoopForUI loop;
-  MockUnifiedSourceCallback source;
+  MockAudioSourceCallback source;
   AudioUnifiedStreamWrapper ausw(audio_manager.get());
   WASAPIUnifiedStream* wus = ausw.Create();
 

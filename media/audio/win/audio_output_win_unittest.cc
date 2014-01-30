@@ -15,6 +15,7 @@
 #include "media/base/limits.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/simple_sources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +36,11 @@ namespace media {
 
 static const wchar_t kAudioFile1_16b_m_16K[]
     = L"media\\test\\data\\sweep02_16b_mono_16KHz.raw";
+
+static int ClearData(AudioBus* audio_bus, AudioBuffersState buffers_state) {
+  audio_bus->Zero();
+  return audio_bus->frames();
+}
 
 // This class allows to find out if the callbacks are occurring as
 // expected and if any error has been reported.
@@ -100,21 +106,6 @@ class TestSourceLaggy : public TestSourceBasic {
  private:
   int laggy_after_buffer_;
   int lag_in_ms_;
-};
-
-class MockAudioSource : public AudioOutputStream::AudioSourceCallback {
- public:
-  MOCK_METHOD2(OnMoreData, int(AudioBus* audio_bus,
-                               AudioBuffersState buffers_state));
-  MOCK_METHOD3(OnMoreIOData, int(AudioBus* source,
-                                 AudioBus* dest,
-                                 AudioBuffersState buffers_state));
-  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
-
-  static int ClearData(AudioBus* audio_bus, AudioBuffersState buffers_state) {
-    audio_bus->Zero();
-    return audio_bus->frames();
-  }
 };
 
 // Helper class to memory map an entire file. The mapping is read-only. Don't
@@ -522,7 +513,7 @@ TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
       std::string(), std::string());
   ASSERT_TRUE(NULL != oas);
 
-  NiceMock<MockAudioSource> source;
+  NiceMock<MockAudioSourceCallback> source;
   EXPECT_TRUE(oas->Open());
 
   uint32 bytes_100_ms = samples_100_ms * 2;
@@ -537,18 +528,18 @@ TEST(WinAudioTest, PCMWaveStreamPendingBytes) {
 
   EXPECT_CALL(source, OnMoreData(NotNull(),
                                  Field(&AudioBuffersState::pending_bytes, 0)))
-      .WillOnce(Invoke(MockAudioSource::ClearData));
+      .WillOnce(Invoke(ClearData));
 
   // Note: If AudioManagerWin::NumberOfWaveOutBuffers() ever changes, or if this
   // test is run on Vista, these expectations will fail.
   EXPECT_CALL(source, OnMoreData(NotNull(),
                                  Field(&AudioBuffersState::pending_bytes,
                                        bytes_100_ms)))
-      .WillOnce(Invoke(MockAudioSource::ClearData));
+      .WillOnce(Invoke(ClearData));
   EXPECT_CALL(source, OnMoreData(NotNull(),
                                  Field(&AudioBuffersState::pending_bytes,
                                        2 * bytes_100_ms)))
-      .WillOnce(Invoke(MockAudioSource::ClearData));
+      .WillOnce(Invoke(ClearData));
   EXPECT_CALL(source, OnMoreData(NotNull(),
                                  Field(&AudioBuffersState::pending_bytes,
                                        2 * bytes_100_ms)))

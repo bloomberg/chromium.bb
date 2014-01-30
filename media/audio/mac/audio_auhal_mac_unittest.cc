@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/mock_audio_source_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,16 +29,6 @@ ACTION(ZeroBuffer) {
 ACTION_P(SignalEvent, event) {
   event->Signal();
 }
-
-class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
- public:
-  MOCK_METHOD2(OnMoreData, int(AudioBus* audio_bus,
-                               AudioBuffersState buffers_state));
-  MOCK_METHOD3(OnMoreIOData, int(AudioBus* source,
-                                 AudioBus* dest,
-                                 AudioBuffersState buffers_state));
-  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
-};
 
 class AUHALStreamTest : public testing::Test {
  public:

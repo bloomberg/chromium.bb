@@ -7,6 +7,7 @@
 #include "media/audio/alsa/alsa_wrapper.h"
 #include "media/audio/alsa/audio_manager_alsa.h"
 #include "media/audio/fake_audio_log_factory.h"
+#include "media/audio/mock_audio_source_callback.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,16 +65,6 @@ class MockAlsaWrapper : public AlsaWrapper {
   MOCK_METHOD1(PcmStart, int(snd_pcm_t* handle));
 
   MOCK_METHOD1(StrError, const char*(int errnum));
-};
-
-class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
- public:
-  MOCK_METHOD2(OnMoreData, int(AudioBus* audio_bus,
-                               AudioBuffersState buffers_state));
-  MOCK_METHOD3(OnMoreIOData, int(AudioBus* source,
-                                 AudioBus* dest,
-                                 AudioBuffersState buffers_state));
-  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 };
 
 class MockAudioManagerAlsa : public AudioManagerAlsa {

@@ -1213,6 +1213,8 @@
       'sources': [
         'audio/mock_audio_manager.cc',
         'audio/mock_audio_manager.h',
+        'audio/mock_audio_source_callback.cc',
+        'audio/mock_audio_source_callback.h',
         'audio/test_audio_input_controller_factory.cc',
         'audio/test_audio_input_controller_factory.h',
         'base/fake_audio_render_callback.cc',

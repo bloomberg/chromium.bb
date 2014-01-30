@@ -17,6 +17,7 @@
 #include "media/audio/android/audio_manager_android.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/mock_audio_source_callback.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/seekable_buffer.h"
 #include "media/base/test_data_util.h"
@@ -120,6 +121,12 @@ static void CheckDeviceNames(const AudioDeviceNames& device_names) {
   }
 }
 
+// We clear the data bus to ensure that the test does not cause noise.
+static int RealOnMoreData(AudioBus* dest, AudioBuffersState buffers_state) {
+  dest->Zero();
+  return dest->frames();
+}
+
 std::ostream& operator<<(std::ostream& os, const AudioParameters& params) {
   using namespace std;
   os << endl << "format: " << FormatToString(params.format()) << endl
@@ -147,24 +154,6 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
                     uint32 hardware_delay_bytes,
                     double volume));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
-};
-
-// Gmock implementation of AudioOutputStream::AudioSourceCallback.
-class MockAudioOutputCallback : public AudioOutputStream::AudioSourceCallback {
- public:
-  MOCK_METHOD2(OnMoreData,
-               int(AudioBus* dest, AudioBuffersState buffers_state));
-  MOCK_METHOD3(OnMoreIOData,
-               int(AudioBus* source,
-                   AudioBus* dest,
-                   AudioBuffersState buffers_state));
-  MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
-
-  // We clear the data bus to ensure that the test does not cause noise.
-  int RealOnMoreData(AudioBus* dest, AudioBuffersState buffers_state) {
-    dest->Zero();
-    return dest->frames();
-  }
 };
 
 // Implements AudioOutputStream::AudioSourceCallback and provides audio data
@@ -453,13 +442,13 @@ class AudioAndroidOutputTest : public testing::Test {
     EXPECT_TRUE(stream);
 
     int count = 0;
-    MockAudioOutputCallback source;
+    MockAudioSourceCallback source;
 
     EXPECT_CALL(source, OnMoreData(NotNull(), _))
         .Times(AtLeast(num_callbacks))
         .WillRepeatedly(
              DoAll(CheckCountAndPostQuitTask(&count, num_callbacks, loop()),
-                   Invoke(&source, &MockAudioOutputCallback::RealOnMoreData)));
+                   Invoke(RealOnMoreData)));
     EXPECT_CALL(source, OnError(stream)).Times(0);
     EXPECT_CALL(source, OnMoreIOData(_, _, _)).Times(0);
 
@@ -791,10 +780,10 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
 
   base::WaitableEvent event(false, false);
   FileAudioSink sink(&event, in_params, file_name);
-  MockAudioOutputCallback source;
+  MockAudioSourceCallback source;
 
-  EXPECT_CALL(source, OnMoreData(NotNull(), _)).WillRepeatedly(
-      Invoke(&source, &MockAudioOutputCallback::RealOnMoreData));
+  EXPECT_CALL(source, OnMoreData(NotNull(), _))
+      .WillRepeatedly(Invoke(RealOnMoreData));
   EXPECT_CALL(source, OnError(aos)).Times(0);
   EXPECT_CALL(source, OnMoreIOData(_, _, _)).Times(0);
 
