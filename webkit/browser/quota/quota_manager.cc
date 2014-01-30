@@ -987,7 +987,7 @@ void QuotaManager::SetTemporaryGlobalOverrideQuota(
   }
 
   if (db_disabled_) {
-    if (callback.is_null())
+    if (!callback.is_null())
       callback.Run(kQuotaErrorInvalidAccess, -1);
     return;
   }
