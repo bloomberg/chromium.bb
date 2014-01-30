@@ -9718,130 +9718,133 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
 
       <!-- chrome://help -->
-      <message name="IDS_HELP_TITLE" desc="Label used for title of the help page.">
-        Help
-      </message>
-      <message name="IDS_WEBKIT" desc="The name of the WebKit project; should not require translation.">
-        WebKit
-      </message>
-      <message name="IDS_SHOW_MORE_INFO" desc="The label of the 'More info' link.">
-        More info...
-      </message>
-      <message name="IDS_HIDE_MORE_INFO" desc="The label of the 'Hide info' link.">
-        Hide info...
-      </message>
+      <if expr="not is_android">
+        <message name="IDS_HELP_TITLE" desc="Label used for title of the help page.">
+          Help
+        </message>
+        <message name="IDS_WEBKIT" desc="The name of the WebKit project; should not require translation.">
+          WebKit
+        </message>
+        <message name="IDS_SHOW_MORE_INFO" desc="The label of the 'More info' link.">
+          More info...
+        </message>
+        <message name="IDS_HIDE_MORE_INFO" desc="The label of the 'Hide info' link.">
+          Hide info...
+        </message>
 
-      <!-- The About page is now part of options. -->
-      <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
-        About
-      </message>
-      <if expr="not pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
-        <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
-          Relaunch
+        <!-- The About page is now part of options. -->
+        <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
+          About
+        </message>
+        <if expr="not pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
+          <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
+            Relaunch
+          </message>
+        </if>
+        <if expr="not pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
+          <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
+            Relaunch
+          </message>
+        </if>
+        <if expr="pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
+          <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
+            Restart
+          </message>
+          <message name="IDS_RELAUNCH_AND_POWERWASH_BUTTON" desc="Titlecase: The label for the  button that relaunches and powerwashes the browser once update is complete">
+            Relaunch and Powerwash
+          </message>
+        </if>
+        <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
+          <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
+            Restart
+          </message>
+          <message name="IDS_RELAUNCH_AND_POWERWASH_BUTTON" desc="Titlecase: The label for the  button that relaunches and powerwashes the browser once update is complete">
+            Relaunch and Powerwash
+          </message>
+        </if>
+        <if expr="pp_ifdef('chromeos')">
+          <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing Chrome OS">
+            The faster, simpler, and more secure computer
+          </message>
+        </if>
+        <if expr="not pp_ifdef('chromeos')">
+          <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing the Chrome browser">
+            A web browser built for speed, simplicity, and security
+          </message>
+        </if>
+        <message name="IDS_ABOUT_PRODUCT_VERSION" desc="The text label describing the version of the browser">
+          Version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph>
+        </message>
+        <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
+          Firmware
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL" desc="The channel label under _More_Info_.">
+          Channel
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_STABLE" desc="The stable option in the channel select.">
+          Stable
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_BETA" desc="The beta option in the channel select.">
+          Beta
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
+          Developer - unstable
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGED" desc="The message to confirm that channel has changed.">
+          You have switched to the <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
+        </message>
+        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE" desc="The stable label in the message about current channel.">
+          stable
+        </message>
+        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA" desc="The beta label in the message about current channel.">
+          beta
+        </message>
+        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_DEV" desc="The dev label in the message about current channel.">
+          dev
+        </message>
+        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL" desc="The message about current channel.">
+          Currently on <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_BUTTON" desc="The label for the button for channel change.">
+          Change channel...
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_TITLE" desc="The title of the window for channel change.">
+          Change channel
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_DISALLOWED_MESSAGE" desc="The error message that is displayed when non-owner tries to switch channel.">
+          This setting is enforced by your administrator.
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_TITLE" desc="The title for the message that warns user about powerwash.">
+          Powerwash required on next reboot
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_MESSAGE" desc="Message that warns user about powerwash.">
+          This will remove all local users, files, data, and other settings after your next restart. All users will need to sign in again.
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_TITLE" desc="The title for the message that notifies user that channel change will be applied later.">
+          Channel change will be applied later.
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_MESSAGE" desc="Message that notifies user that channel change will be applied later.">
+          You are changing to a channel with an older version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>. The channel change will be applied when the channel version matches the version currently installed on your device.
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_TITLE" desc="The title for the message that warns user about switching to developer (unstable) channel.">
+          Warning: you are switching to developer channel
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_MESSAGE" desc="Message that warns user about switching to developer (unstable) channel.">
+          You are updating to an unstable version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> which contains features that are in progress. Crashes and unexpected bugs will occur. Please proceed with caution.
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_BUTTON" desc="The label for the button for channel switch and powerwash.">
+          Change channel and Powerwash
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON" desc="The label for the button for channel switch.">
+          Change channel
+        </message>
+        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON" desc="The label for the button for cancelling channel change.">
+          Cancel
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
-        <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
-          Relaunch
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos') and pp_ifdef('use_titlecase')">
-        <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
-          Restart
-        </message>
-        <message name="IDS_RELAUNCH_AND_POWERWASH_BUTTON" desc="Titlecase: The label for the  button that relaunches and powerwashes the browser once update is complete">
-          Relaunch and Powerwash
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
-        <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
-          Restart
-        </message>
-        <message name="IDS_RELAUNCH_AND_POWERWASH_BUTTON" desc="Titlecase: The label for the  button that relaunches and powerwashes the browser once update is complete">
-          Relaunch and Powerwash
-        </message>
-      </if>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing Chrome OS">
-          The faster, simpler, and more secure computer
-        </message>
-      </if>
-      <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing the Chrome browser">
-          A web browser built for speed, simplicity, and security
-        </message>
-      </if>
-      <message name="IDS_ABOUT_PRODUCT_VERSION" desc="The text label describing the version of the browser">
-        Version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph>
-      </message>
-      <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
-        Firmware
-      </message>
+
       <message name="IDS_PLATFORM_LABEL" desc="Label for Platform">
         Platform
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL" desc="The channel label under _More_Info_.">
-        Channel
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_STABLE" desc="The stable option in the channel select.">
-        Stable
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_BETA" desc="The beta option in the channel select.">
-        Beta
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
-        Developer - unstable
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGED" desc="The message to confirm that channel has changed.">
-        You have switched to the <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE" desc="The stable label in the message about current channel.">
-        stable
-      </message>
-      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA" desc="The beta label in the message about current channel.">
-        beta
-      </message>
-      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_DEV" desc="The dev label in the message about current channel.">
-        dev
-      </message>
-      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL" desc="The message about current channel.">
-        Currently on <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_BUTTON" desc="The label for the button for channel change.">
-        Change channel...
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_TITLE" desc="The title of the window for channel change.">
-        Change channel
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_DISALLOWED_MESSAGE" desc="The error message that is displayed when non-owner tries to switch channel.">
-        This setting is enforced by your administrator.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_TITLE" desc="The title for the message that warns user about powerwash.">
-        Powerwash required on next reboot
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_MESSAGE" desc="Message that warns user about powerwash.">
-        This will remove all local users, files, data, and other settings after your next restart. All users will need to sign in again.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_TITLE" desc="The title for the message that notifies user that channel change will be applied later.">
-        Channel change will be applied later.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_MESSAGE" desc="Message that notifies user that channel change will be applied later.">
-        You are changing to a channel with an older version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>. The channel change will be applied when the channel version matches the version currently installed on your device.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_TITLE" desc="The title for the message that warns user about switching to developer (unstable) channel.">
-        Warning: you are switching to developer channel
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_MESSAGE" desc="Message that warns user about switching to developer (unstable) channel.">
-        You are updating to an unstable version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> which contains features that are in progress. Crashes and unexpected bugs will occur. Please proceed with caution.
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_BUTTON" desc="The label for the button for channel switch and powerwash.">
-        Change channel and Powerwash
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON" desc="The label for the button for channel switch.">
-        Change channel
-      </message>
-      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON" desc="The label for the button for cancelling channel change.">
-        Cancel
       </message>
 
       <!-- chrome://settings. Android uses native UI for settings -->
