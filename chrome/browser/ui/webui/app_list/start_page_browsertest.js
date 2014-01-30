@@ -44,7 +44,8 @@ AppListStartPageWebUITest.prototype = {
   }
 };
 
-TEST_F('AppListStartPageWebUITest', 'Basic', function() {
+// Flaky on ChromeOS. http://crbug.com/339340
+TEST_F('AppListStartPageWebUITest', 'DISABLED_Basic', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var recommendedApp = $('start-page').querySelector('.recommended-apps');
@@ -55,7 +56,8 @@ TEST_F('AppListStartPageWebUITest', 'Basic', function() {
   }
 });
 
-TEST_F('AppListStartPageWebUITest', 'ClickToLaunch', function() {
+// Flaky on ChromeOS. http://crbug.com/339340
+TEST_F('AppListStartPageWebUITest', 'DISABLED_ClickToLaunch', function() {
   var recommendedApp = $('start-page').querySelector('.recommended-apps');
   for (var i = 0; i < recommendedApp.childElementCount; ++i) {
     this.mockHandler.expects(once()).launchApp(
