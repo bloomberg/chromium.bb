@@ -1472,7 +1472,7 @@ static void eventHandlerAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    transferHiddenDependency(info.Holder(), imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
+    moveEventListenerToNewWrapper(info.Holder(), imp->eventHandlerAttribute(isolatedWorldForIsolate(info.GetIsolate())), jsValue, V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
     imp->setEventHandlerAttribute(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
 }
 
@@ -5648,7 +5648,7 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
         impl->addEventListener(eventName, listener, info[2]->BooleanValue());
         if (!impl->toNode())
-            createHiddenDependency(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
+            addHiddenValueToArray(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
     }
 }
 
@@ -5676,7 +5676,7 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
         impl->removeEventListener(eventName, listener.get(), info[2]->BooleanValue());
         if (!impl->toNode())
-            removeHiddenDependency(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
+            removeHiddenValueFromArray(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
     }
 }
 

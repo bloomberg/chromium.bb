@@ -46,13 +46,6 @@ namespace WebCore {
     class ExecutionContext;
     class ExceptionState;
 
-    // Use an array to hold dependents. It works like a ref-counted scheme. A value can be added more than once to the DOM object.
-    void createHiddenDependency(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
-    void removeHiddenDependency(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
-
-    // Combo create/remove, for EventHandler setters in generated bindings:
-    void transferHiddenDependency(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
-
     typedef WTF::Vector<RefPtr<MessagePort>, 1> MessagePortArray;
     typedef WTF::Vector<RefPtr<ArrayBuffer>, 1> ArrayBufferArray;
 

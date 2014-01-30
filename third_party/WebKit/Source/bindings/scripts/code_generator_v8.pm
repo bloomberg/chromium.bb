@@ -2101,7 +2101,7 @@ END
                 $attrImplName = "imp->${attrImplName}";
             }
             push(@arguments, "isolatedWorldForIsolate(info.GetIsolate())");
-            $code .= "    transferHiddenDependency(info.Holder(), ${attrImplName}(" . join(", ", @arguments) . "), jsValue, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
+            $code .= "    moveEventListenerToNewWrapper(info.Holder(), ${attrImplName}(" . join(", ", @arguments) . "), jsValue, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
         }
         my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
         if ($implementedBy) {
@@ -2422,7 +2422,7 @@ sub GenerateFunction
     if ($isEventListener) {
         my $lookupType = ($name eq "addEventListener") ? "OrCreate" : "Only";
         my $passRefPtrHandling = ($name eq "addEventListener") ? "" : ".get()";
-        my $hiddenDependencyAction = ($name eq "addEventListener") ? "create" : "remove";
+        my $hiddenValueAction = ($name eq "addEventListener") ? "addHiddenValueToArray" : "removeHiddenValueFromArray";
 
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         AddToImplIncludes("bindings/v8/V8EventListenerList.h");
@@ -2442,7 +2442,7 @@ sub GenerateFunction
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
         impl->${implName}(eventName, listener${passRefPtrHandling}, info[2]->BooleanValue());
         if (!impl->toNode())
-            ${hiddenDependencyAction}HiddenDependency(info.Holder(), info[1], ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());
+            ${hiddenValueAction}(info.Holder(), info[1], ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());
     }
 }
 END

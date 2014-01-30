@@ -50,9 +50,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {% macro add_remove_event_listener_method(method_name) %}
 {# Set template values for addEventListener vs. removeEventListener #}
 {% set listener_lookup_type, listener, hidden_dependency_action =
-    ('ListenerFindOrCreate', 'listener', 'createHiddenDependency')
+    ('ListenerFindOrCreate', 'listener', 'addHiddenValueToArray')
     if method_name == 'addEventListener' else
-    ('ListenerFindOnly', 'listener.get()', 'removeHiddenDependency')
+    ('ListenerFindOnly', 'listener.get()', 'removeHiddenValueFromArray')
 %}
 EventTarget* impl = {{v8_class}}::toNative(info.Holder());
 if (DOMWindow* window = impl->toDOMWindow()) {

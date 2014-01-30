@@ -37,6 +37,7 @@
 #include "V8WorkerGlobalScope.h"
 #include "V8XPathNSResolver.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8BindingMacros.h"
 #include "bindings/v8/V8NodeFilterCondition.h"
 #include "bindings/v8/V8ObjectConstructor.h"
@@ -695,6 +696,48 @@ v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, Sc
 {
     v8::Local<v8::Object> wrapper = wrappable->newLocalWrapper(isolate);
     return wrapper.IsEmpty() ? v8::Local<v8::Value>() : getHiddenValue(isolate, wrapper, key);
+}
+
+void addHiddenValueToArray(v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex, v8::Isolate* isolate)
+{
+    v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
+    if (arrayValue->IsNull() || arrayValue->IsUndefined()) {
+        arrayValue = v8::Array::New(isolate);
+        object->SetInternalField(arrayIndex, arrayValue);
+    }
+
+    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(arrayValue);
+    array->Set(v8::Integer::New(isolate, array->Length()), value);
+}
+
+void removeHiddenValueFromArray(v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int arrayIndex, v8::Isolate* isolate)
+{
+    v8::Local<v8::Value> arrayValue = object->GetInternalField(arrayIndex);
+    if (!arrayValue->IsArray())
+        return;
+    v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(arrayValue);
+    for (int i = array->Length() - 1; i >= 0; --i) {
+        v8::Local<v8::Value> item = array->Get(v8::Integer::New(isolate, i));
+        if (item->StrictEquals(value)) {
+            array->Delete(i);
+            return;
+        }
+    }
+}
+
+void moveEventListenerToNewWrapper(v8::Handle<v8::Object> object, EventListener* oldValue, v8::Local<v8::Value> newValue, int arrayIndex, v8::Isolate* isolate)
+{
+    if (oldValue) {
+        V8AbstractEventListener* oldListener = V8AbstractEventListener::cast(oldValue);
+        if (oldListener) {
+            v8::Local<v8::Object> oldListenerObject = oldListener->getExistingListenerObject();
+            if (!oldListenerObject.IsEmpty())
+                removeHiddenValueFromArray(object, oldListenerObject, arrayIndex, isolate);
+        }
+    }
+    // Non-callable input is treated as null and ignored
+    if (newValue->IsFunction())
+        addHiddenValueToArray(object, newValue, arrayIndex, isolate);
 }
 
 static gin::IsolateHolder* mainIsolateHolder = 0;

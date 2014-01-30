@@ -50,20 +50,6 @@
 
 namespace WebCore {
 
-// Use an array to hold dependents. It works like a ref-counted scheme.
-// A value can be added more than once to the DOM object.
-void createHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int cacheIndex, v8::Isolate* isolate)
-{
-    v8::Local<v8::Value> cache = object->GetInternalField(cacheIndex);
-    if (cache->IsNull() || cache->IsUndefined()) {
-        cache = v8::Array::New(isolate);
-        object->SetInternalField(cacheIndex, cache);
-    }
-
-    v8::Local<v8::Array> cacheArray = v8::Local<v8::Array>::Cast(cache);
-    cacheArray->Set(v8::Integer::New(isolate, cacheArray->Length()), value);
-}
-
 bool extractTransferables(v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, ArrayBufferArray& arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value)) {
@@ -135,36 +121,6 @@ bool getMessagePortArray(v8::Local<v8::Value> value, int argumentIndex, MessageP
     bool success = false;
     ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, argumentIndex, isolate, &success);
     return success;
-}
-
-void removeHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> value, int cacheIndex, v8::Isolate* isolate)
-{
-    v8::Local<v8::Value> cache = object->GetInternalField(cacheIndex);
-    if (!cache->IsArray())
-        return;
-    v8::Local<v8::Array> cacheArray = v8::Local<v8::Array>::Cast(cache);
-    for (int i = cacheArray->Length() - 1; i >= 0; --i) {
-        v8::Local<v8::Value> cached = cacheArray->Get(v8::Integer::New(isolate, i));
-        if (cached->StrictEquals(value)) {
-            cacheArray->Delete(i);
-            return;
-        }
-    }
-}
-
-void transferHiddenDependency(v8::Handle<v8::Object> object, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate* isolate)
-{
-    if (oldValue) {
-        V8AbstractEventListener* oldListener = V8AbstractEventListener::cast(oldValue);
-        if (oldListener) {
-            v8::Local<v8::Object> oldListenerObject = oldListener->getExistingListenerObject();
-            if (!oldListenerObject.IsEmpty())
-                removeHiddenDependency(object, oldListenerObject, cacheIndex, isolate);
-        }
-    }
-    // Non-callable input is treated as null and ignored
-    if (newValue->IsFunction())
-        createHiddenDependency(object, newValue, cacheIndex, isolate);
 }
 
 v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)

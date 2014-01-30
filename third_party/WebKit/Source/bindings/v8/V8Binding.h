@@ -48,6 +48,7 @@ namespace WebCore {
 
     class DOMWindow;
     class Document;
+    class EventListener;
     class ExceptionState;
     class Frame;
     class NodeFilter;
@@ -694,6 +695,11 @@ namespace WebCore {
     bool deleteHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
     v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, const char*);
     v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String>);
+
+    // These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
+    void addHiddenValueToArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
+    void removeHiddenValueFromArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
+    void moveEventListenerToNewWrapper(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
 
     v8::Isolate* mainThreadIsolate();
     v8::Isolate* toIsolate(ExecutionContext*);
