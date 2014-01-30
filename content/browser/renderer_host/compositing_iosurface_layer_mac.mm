@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gl/gpu_switching_manager.h"
 
 @implementation CompositingIOSurfaceLayer
 
@@ -62,13 +63,42 @@
 
 // The remaining methods implement the CAOpenGLLayer interface.
 
-- (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
-  if (!renderWidgetHostView_)
+- (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask {
+  std::vector<CGLPixelFormatAttribute> attribs;
+  attribs.push_back(kCGLPFADepthSize);
+  attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
+  if (ui::GpuSwitchingManager::GetInstance()->SupportsDualGpus()) {
+    attribs.push_back(kCGLPFAAllowOfflineRenderers);
+    attribs.push_back(static_cast<CGLPixelFormatAttribute>(1));
+  }
+  attribs.push_back(static_cast<CGLPixelFormatAttribute>(0));
+
+  GLint number_virtual_screens = 0;
+  CGLPixelFormatObj pixel_format = NULL;
+  CGLError error = CGLChoosePixelFormat(
+      &attribs.front(), &pixel_format, &number_virtual_screens);
+  if (error != kCGLNoError) {
+    LOG(ERROR) << "Failed to create pixel format for layer.";
     return nil;
+  }
+  return pixel_format;
+}
+
+- (void)releaseCGLPixelFormat:(CGLPixelFormatObj)pixelFormat {
+  CGLReleasePixelFormat(pixelFormat);
+}
+
+- (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
+  if (!renderWidgetHostView_) {
+    LOG(ERROR) << "Cannot create layer context because there is no host.";
+    return nil;
+  }
 
   context_ = renderWidgetHostView_->compositing_iosurface_context_;
-  if (!context_)
+  if (!context_) {
+    LOG(ERROR) << "Cannot create layer context because host has no context.";
     return nil;
+  }
 
   return context_->cgl_context();
 }
