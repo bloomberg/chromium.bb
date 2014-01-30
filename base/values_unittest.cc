@@ -130,7 +130,7 @@ TEST(ValuesTest, BinaryValue) {
 }
 
 TEST(ValuesTest, StringValue) {
-  // Test overloaded CreateStringValue.
+  // Test overloaded StringValue constructor.
   scoped_ptr<Value> narrow_value(new StringValue("narrow"));
   ASSERT_TRUE(narrow_value.get());
   ASSERT_TRUE(narrow_value->IsType(Value::TYPE_STRING));
@@ -325,8 +325,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
 
 TEST(ValuesTest, DictionaryRemovePath) {
   DictionaryValue dict;
-  dict.Set("a.long.way.down", Value::CreateIntegerValue(1));
-  dict.Set("a.long.key.path", Value::CreateBooleanValue(true));
+  dict.Set("a.long.way.down", new FundamentalValue(1));
+  dict.Set("a.long.key.path", new FundamentalValue(true));
 
   scoped_ptr<Value> removed_item;
   EXPECT_TRUE(dict.RemovePath("a.long.way.down", &removed_item));

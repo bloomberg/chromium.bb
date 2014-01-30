@@ -14,34 +14,34 @@ scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin) {
   switch (bin) {
     case NOW_AND_READY_TO_DRAW_BIN:
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("NOW_AND_READY_TO_DRAW_BIN"));
+          new base::StringValue("NOW_AND_READY_TO_DRAW_BIN"));
     case NOW_BIN:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue("NOW_BIN"));
+      return scoped_ptr<base::Value>(new base::StringValue("NOW_BIN"));
     case SOON_BIN:
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("SOON_BIN"));
+          new base::StringValue("SOON_BIN"));
     case EVENTUALLY_AND_ACTIVE_BIN:
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("EVENTUALLY_AND_ACTIVE_BIN"));
+          new base::StringValue("EVENTUALLY_AND_ACTIVE_BIN"));
     case EVENTUALLY_BIN:
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("EVENTUALLY_BIN"));
+          new base::StringValue("EVENTUALLY_BIN"));
     case AT_LAST_AND_ACTIVE_BIN:
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("AT_LAST_AND_ACTIVE_BIN"));
+          new base::StringValue("AT_LAST_AND_ACTIVE_BIN"));
     case AT_LAST_BIN:
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("AT_LAST_BIN"));
+          new base::StringValue("AT_LAST_BIN"));
     case NEVER_BIN:
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("NEVER_BIN"));
+          new base::StringValue("NEVER_BIN"));
     case NUM_BINS:
       NOTREACHED();
       return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("Invalid Bin (NUM_BINS)"));
+          new base::StringValue("Invalid Bin (NUM_BINS)"));
   }
   return scoped_ptr<base::Value>(
-      base::Value::CreateStringValue("Invalid Bin (UNKNOWN)"));
+      new base::StringValue("Invalid Bin (UNKNOWN)"));
 }
 
 ManagedTileState::ManagedTileState()

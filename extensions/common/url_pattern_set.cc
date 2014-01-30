@@ -186,7 +186,7 @@ scoped_ptr<base::ListValue> URLPatternSet::ToValue() const {
   scoped_ptr<base::ListValue> value(new base::ListValue);
   for (URLPatternSet::const_iterator i = patterns_.begin();
        i != patterns_.end(); ++i)
-    value->AppendIfNotPresent(base::Value::CreateStringValue(i->GetAsString()));
+    value->AppendIfNotPresent(new base::StringValue(i->GetAsString()));
   return value.Pass();
 }
 

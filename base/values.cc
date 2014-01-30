@@ -225,13 +225,13 @@ bool FundamentalValue::GetAsDouble(double* out_value) const {
 FundamentalValue* FundamentalValue::DeepCopy() const {
   switch (GetType()) {
     case TYPE_BOOLEAN:
-      return CreateBooleanValue(boolean_value_);
+      return new FundamentalValue(boolean_value_);
 
     case TYPE_INTEGER:
-      return CreateIntegerValue(integer_value_);
+      return new FundamentalValue(integer_value_);
 
     case TYPE_DOUBLE:
-      return CreateDoubleValue(double_value_);
+      return new FundamentalValue(double_value_);
 
     default:
       NOTREACHED();
@@ -291,7 +291,7 @@ bool StringValue::GetAsString(string16* out_value) const {
 }
 
 StringValue* StringValue::DeepCopy() const {
-  return CreateStringValue(value_);
+  return new StringValue(value_);
 }
 
 bool StringValue::Equals(const Value* other) const {
@@ -403,25 +403,25 @@ void DictionaryValue::Set(const std::string& path, Value* in_value) {
 }
 
 void DictionaryValue::SetBoolean(const std::string& path, bool in_value) {
-  Set(path, CreateBooleanValue(in_value));
+  Set(path, new FundamentalValue(in_value));
 }
 
 void DictionaryValue::SetInteger(const std::string& path, int in_value) {
-  Set(path, CreateIntegerValue(in_value));
+  Set(path, new FundamentalValue(in_value));
 }
 
 void DictionaryValue::SetDouble(const std::string& path, double in_value) {
-  Set(path, CreateDoubleValue(in_value));
+  Set(path, new FundamentalValue(in_value));
 }
 
 void DictionaryValue::SetString(const std::string& path,
                                 const std::string& in_value) {
-  Set(path, CreateStringValue(in_value));
+  Set(path, new StringValue(in_value));
 }
 
 void DictionaryValue::SetString(const std::string& path,
                                 const string16& in_value) {
-  Set(path, CreateStringValue(in_value));
+  Set(path, new StringValue(in_value));
 }
 
 void DictionaryValue::SetWithoutPathExpansion(const std::string& key,
@@ -439,27 +439,27 @@ void DictionaryValue::SetWithoutPathExpansion(const std::string& key,
 
 void DictionaryValue::SetBooleanWithoutPathExpansion(
     const std::string& path, bool in_value) {
-  SetWithoutPathExpansion(path, CreateBooleanValue(in_value));
+  SetWithoutPathExpansion(path, new FundamentalValue(in_value));
 }
 
 void DictionaryValue::SetIntegerWithoutPathExpansion(
     const std::string& path, int in_value) {
-  SetWithoutPathExpansion(path, CreateIntegerValue(in_value));
+  SetWithoutPathExpansion(path, new FundamentalValue(in_value));
 }
 
 void DictionaryValue::SetDoubleWithoutPathExpansion(
     const std::string& path, double in_value) {
-  SetWithoutPathExpansion(path, CreateDoubleValue(in_value));
+  SetWithoutPathExpansion(path, new FundamentalValue(in_value));
 }
 
 void DictionaryValue::SetStringWithoutPathExpansion(
     const std::string& path, const std::string& in_value) {
-  SetWithoutPathExpansion(path, CreateStringValue(in_value));
+  SetWithoutPathExpansion(path, new StringValue(in_value));
 }
 
 void DictionaryValue::SetStringWithoutPathExpansion(
     const std::string& path, const string16& in_value) {
-  SetWithoutPathExpansion(path, CreateStringValue(in_value));
+  SetWithoutPathExpansion(path, new StringValue(in_value));
 }
 
 bool DictionaryValue::Get(const std::string& path,
@@ -1025,23 +1025,23 @@ void ListValue::Append(Value* in_value) {
 }
 
 void ListValue::AppendBoolean(bool in_value) {
-  Append(CreateBooleanValue(in_value));
+  Append(new FundamentalValue(in_value));
 }
 
 void ListValue::AppendInteger(int in_value) {
-  Append(CreateIntegerValue(in_value));
+  Append(new FundamentalValue(in_value));
 }
 
 void ListValue::AppendDouble(double in_value) {
-  Append(CreateDoubleValue(in_value));
+  Append(new FundamentalValue(in_value));
 }
 
 void ListValue::AppendString(const std::string& in_value) {
-  Append(CreateStringValue(in_value));
+  Append(new StringValue(in_value));
 }
 
 void ListValue::AppendString(const string16& in_value) {
-  Append(CreateStringValue(in_value));
+  Append(new StringValue(in_value));
 }
 
 void ListValue::AppendStrings(const std::vector<std::string>& in_values) {

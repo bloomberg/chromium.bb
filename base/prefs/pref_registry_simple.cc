@@ -16,29 +16,28 @@ PrefRegistrySimple::~PrefRegistrySimple() {
 
 void PrefRegistrySimple::RegisterBooleanPref(const char* path,
                                              bool default_value) {
-  RegisterPreference(path, base::Value::CreateBooleanValue(default_value));
+  RegisterPreference(path, new base::FundamentalValue(default_value));
 }
 
 void PrefRegistrySimple::RegisterIntegerPref(const char* path,
                                              int default_value) {
-  RegisterPreference(path, base::Value::CreateIntegerValue(default_value));
+  RegisterPreference(path, new base::FundamentalValue(default_value));
 }
 
 void PrefRegistrySimple::RegisterDoublePref(const char* path,
                                             double default_value) {
-  RegisterPreference(path, base::Value::CreateDoubleValue(default_value));
+  RegisterPreference(path, new base::FundamentalValue(default_value));
 }
 
 void PrefRegistrySimple::RegisterStringPref(const char* path,
                                             const std::string& default_value) {
-  RegisterPreference(path, base::Value::CreateStringValue(default_value));
+  RegisterPreference(path, new base::StringValue(default_value));
 }
 
 void PrefRegistrySimple::RegisterFilePathPref(
     const char* path,
     const base::FilePath& default_value) {
-  RegisterPreference(path,
-                     base::Value::CreateStringValue(default_value.value()));
+  RegisterPreference(path, new base::StringValue(default_value.value()));
 }
 
 void PrefRegistrySimple::RegisterListPref(const char* path) {
@@ -63,5 +62,5 @@ void PrefRegistrySimple::RegisterDictionaryPref(
 void PrefRegistrySimple::RegisterInt64Pref(const char* path,
                                            int64 default_value) {
   RegisterPreference(
-      path, base::Value::CreateStringValue(base::Int64ToString(default_value)));
+      path, new base::StringValue(base::Int64ToString(default_value)));
 }

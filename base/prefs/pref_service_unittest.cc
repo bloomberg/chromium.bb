@@ -79,7 +79,7 @@ TEST(PrefServiceTest, Observers) {
 
   TestingPrefServiceSimple prefs;
   prefs.SetUserPref(pref_name,
-                    base::Value::CreateStringValue("http://www.cnn.com"));
+                    new base::StringValue("http://www.cnn.com"));
   prefs.registry()->RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
@@ -138,7 +138,7 @@ TEST(PrefServiceTest, GetValueChangedType) {
 
   // Check falling back to a recommended value.
   prefs.SetUserPref(kPrefName,
-                    base::Value::CreateStringValue("not an integer"));
+                    new base::StringValue("not an integer"));
   const PrefService::Preference* pref = prefs.FindPreference(kPrefName);
   ASSERT_TRUE(pref);
   const base::Value* value = pref->GetValue();
@@ -173,7 +173,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_FALSE(value);
 
   // Set a user-set value.
-  prefs.SetUserPref(kPrefName, base::Value::CreateIntegerValue(kUserValue));
+  prefs.SetUserPref(kPrefName, new base::FundamentalValue(kUserValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
@@ -189,7 +189,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
 
   // Set a recommended value.
   prefs.SetRecommendedPref(kPrefName,
-                           base::Value::CreateIntegerValue(kRecommendedValue));
+                           new base::FundamentalValue(kRecommendedValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
@@ -302,7 +302,7 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   base::ListValue new_value;
-  new_value.Append(base::Value::CreateStringValue(kValue));
+  new_value.Append(new base::StringValue(kValue));
   observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);

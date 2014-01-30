@@ -55,14 +55,12 @@ namespace cc {
 scoped_ptr<base::Value> WhichTreeAsValue(WhichTree tree) {
   switch (tree) {
   case ACTIVE_TREE:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "ACTIVE_TREE"));
+      return scoped_ptr<base::Value>(new base::StringValue("ACTIVE_TREE"));
   case PENDING_TREE:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "PENDING_TREE"));
+      return scoped_ptr<base::Value>(new base::StringValue("PENDING_TREE"));
   default:
       DCHECK(false) << "Unrecognized WhichTree value " << tree;
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "<unknown WhichTree value>"));
   }
 }
@@ -71,17 +69,15 @@ scoped_ptr<base::Value> TileResolutionAsValue(
     TileResolution resolution) {
   switch (resolution) {
   case LOW_RESOLUTION:
-    return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-        "LOW_RESOLUTION"));
+    return scoped_ptr<base::Value>(new base::StringValue("LOW_RESOLUTION"));
   case HIGH_RESOLUTION:
-    return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-        "HIGH_RESOLUTION"));
+    return scoped_ptr<base::Value>(new base::StringValue("HIGH_RESOLUTION"));
   case NON_IDEAL_RESOLUTION:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
         "NON_IDEAL_RESOLUTION"));
   }
   DCHECK(false) << "Unrecognized TileResolution value " << resolution;
-  return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+  return scoped_ptr<base::Value>(new base::StringValue(
       "<unknown TileResolution value>"));
 }
 
@@ -138,20 +134,19 @@ scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
     TileMemoryLimitPolicy policy) {
   switch (policy) {
   case ALLOW_NOTHING:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-          "ALLOW_NOTHING"));
+      return scoped_ptr<base::Value>(new base::StringValue("ALLOW_NOTHING"));
   case ALLOW_ABSOLUTE_MINIMUM:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "ALLOW_ABSOLUTE_MINIMUM"));
   case ALLOW_PREPAINT_ONLY:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "ALLOW_PREPAINT_ONLY"));
   case ALLOW_ANYTHING:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "ALLOW_ANYTHING"));
   default:
       DCHECK(false) << "Unrecognized policy value";
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "<unknown>"));
   }
 }
@@ -159,17 +154,17 @@ scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
 scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio) {
   switch (prio) {
   case SAME_PRIORITY_FOR_BOTH_TREES:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "SAME_PRIORITY_FOR_BOTH_TREES"));
   case SMOOTHNESS_TAKES_PRIORITY:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "SMOOTHNESS_TAKES_PRIORITY"));
   case NEW_CONTENT_TAKES_PRIORITY:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+      return scoped_ptr<base::Value>(new base::StringValue(
           "NEW_CONTENT_TAKES_PRIORITY"));
   }
   DCHECK(false) << "Unrecognized priority value " << prio;
-  return scoped_ptr<base::Value>(base::Value::CreateStringValue(
+  return scoped_ptr<base::Value>(new base::StringValue(
       "<unknown>"));
 }
 

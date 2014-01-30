@@ -141,7 +141,7 @@ bool RlzValueStoreChromeOS::AddProductEvent(Product product,
                                             const char* event_rlz) {
   DCHECK(CalledOnValidThread());
   return AddValueToList(GetKeyName(kProductEventKey, product),
-                        base::Value::CreateStringValue(event_rlz));
+                        new base::StringValue(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::ReadProductEvents(
@@ -178,7 +178,7 @@ bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
                                              const char* event_rlz) {
   DCHECK(CalledOnValidThread());
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
-                        base::Value::CreateStringValue(event_rlz));
+                        new base::StringValue(event_rlz));
 }
 
 bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
