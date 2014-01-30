@@ -83,6 +83,9 @@ class ShellWindowFrameView : public views::NonClientFrameView,
   // Allow resize for clicks this many pixels inside the bounds.
   int resize_inside_bounds_size_;
 
+  // Allow resize for clicks  this many pixels outside the bounds.
+  int resize_outside_bounds_size_;
+
   // Size in pixels of the lower-right corner resize handle.
   int resize_area_corner_size_;
 

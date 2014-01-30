@@ -35,7 +35,6 @@ ROW_TRANSIENTPARENT,
 ROW_USERDATA,
 ROW_IGNOREEVENTS,
 ROW_CANFOCUS,
-ROW_HITTESTBOUNDSOVERRIDEOUTER,
 ROW_HITTESTBOUNDSOVERRIDEINNER,
 ROW_COUNT
 };
@@ -145,9 +144,6 @@ base::string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
                               window_->CanReceiveEvents());
     case ROW_CANFOCUS:
       return PropertyWithBool("Can Focus: ", window_->CanFocus());
-    case ROW_HITTESTBOUNDSOVERRIDEOUTER:
-      return PropertyWithInsets("Hit test bounds override outer: ",
-          window_->hit_test_bounds_override_outer_mouse());
     case ROW_HITTESTBOUNDSOVERRIDEINNER:
       return PropertyWithInsets("Hit test bounds override inner: ",
                                 window_->hit_test_bounds_override_inner());

@@ -45,6 +45,7 @@ ShellWindowFrameView::ShellWindowFrameView(NativeAppWindow* window)
       restore_button_(NULL),
       minimize_button_(NULL),
       resize_inside_bounds_size_(0),
+      resize_outside_bounds_size_(0),
       resize_area_corner_size_(0) {
 }
 
@@ -58,6 +59,7 @@ void ShellWindowFrameView::Init(views::Widget* frame,
                                 int resize_area_corner_size) {
   frame_ = frame;
   resize_inside_bounds_size_ = resize_inside_bounds_size;
+  resize_outside_bounds_size_ = resize_outside_bounds_size;
   resize_area_corner_size_ = resize_area_corner_size;
 
   if (!window_->IsFrameless()) {
@@ -108,17 +110,6 @@ void ShellWindowFrameView::Init(views::Widget* frame,
 
 #if defined(USE_AURA)
   aura::Window* window = frame->GetNativeWindow();
-  // Some Aura implementations (Ash) allow resize handles outside the window.
-  if (resize_outside_bounds_size > 0) {
-    gfx::Insets mouse_insets = gfx::Insets(-resize_outside_bounds_size,
-                                           -resize_outside_bounds_size,
-                                           -resize_outside_bounds_size,
-                                           -resize_outside_bounds_size);
-    gfx::Insets touch_insets =
-        mouse_insets.Scale(resize_outside_scale_for_touch);
-    // Ensure we get resize cursors for a few pixels outside our bounds.
-    window->SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
-  }
   // Ensure we get resize cursors just inside our bounds as well.
   // TODO(jeremya): do we need to update these when in fullscreen/maximized?
   window->set_hit_test_bounds_override_inner(
@@ -164,15 +155,11 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTCLIENT;
 
   gfx::Rect expanded_bounds = bounds();
-#if defined(USE_AURA)
-  // Some Aura implementations (Ash) optionally allow resize handles just
-  // outside the window bounds.
-  aura::Window* window = frame_->GetNativeWindow();
-  if (aura::Env::GetInstance()->is_touch_down())
-    expanded_bounds.Inset(window->hit_test_bounds_override_outer_touch());
-  else
-    expanded_bounds.Inset(window->hit_test_bounds_override_outer_mouse());
-#endif
+  if (resize_outside_bounds_size_)
+    expanded_bounds.Inset(gfx::Insets(-resize_outside_bounds_size_,
+                                      -resize_outside_bounds_size_,
+                                      -resize_outside_bounds_size_,
+                                      -resize_outside_bounds_size_));
   // Points outside the (possibly expanded) bounds can be discarded.
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;

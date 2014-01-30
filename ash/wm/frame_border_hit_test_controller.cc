@@ -21,16 +21,6 @@ namespace ash {
 
 FrameBorderHitTestController::FrameBorderHitTestController(views::Widget* frame)
     : frame_window_(frame->GetNativeWindow()) {
-  gfx::Insets mouse_outer_insets(-kResizeOutsideBoundsSize,
-                                 -kResizeOutsideBoundsSize,
-                                 -kResizeOutsideBoundsSize,
-                                 -kResizeOutsideBoundsSize);
-  gfx::Insets touch_outer_insets = mouse_outer_insets.Scale(
-      kResizeOutsideBoundsScaleForTouch);
-  // Ensure we get resize cursors for a few pixels outside our bounds.
-  frame_window_->SetHitTestBoundsOverrideOuter(mouse_outer_insets,
-                                               touch_outer_insets);
-
   frame_window_->set_event_targeter(scoped_ptr<ui::EventTargeter>(
       new ResizeHandleWindowTargeter(frame_window_, NULL)));
 }

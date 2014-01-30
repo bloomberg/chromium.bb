@@ -706,7 +706,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
           status_bounds));
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       root_window_, target_bounds.work_area_insets);
-  UpdateHitTestBounds();
 }
 
 void ShelfLayoutManager::StopAnimating() {
@@ -1085,26 +1084,6 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   }
 
   return SHELF_AUTO_HIDE_HIDDEN;
-}
-
-void ShelfLayoutManager::UpdateHitTestBounds() {
-  gfx::Insets mouse_insets;
-  gfx::Insets touch_insets;
-  if (state_.visibility_state == SHELF_VISIBLE) {
-    // Let clicks at the very top of the shelf through so windows can be
-    // resized with the bottom-right corner and bottom edge.
-    mouse_insets = GetInsetsForAlignment(kWorkspaceAreaVisibleInset);
-  } else if (state_.visibility_state == SHELF_AUTO_HIDE) {
-    // Extend the touch hit target out a bit to allow users to drag shelf out
-    // while hidden.
-    touch_insets = GetInsetsForAlignment(-kWorkspaceAreaAutoHideInset);
-  }
-
-  if (shelf_ && shelf_->GetNativeWindow())
-    shelf_->GetNativeWindow()->SetHitTestBoundsOverrideOuter(mouse_insets,
-                                                             touch_insets);
-  shelf_->status_area_widget()->GetNativeWindow()->
-      SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
 }
 
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {

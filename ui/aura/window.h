@@ -239,24 +239,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
   bool ignore_events() const { return ignore_events_; }
 
-  // Sets the window to grab hits for mouse and touch to an area extending
-  // -|mouse_insets| and -|touch_insets| pixels outside its bounds. This can be
-  // used to create an invisible non-client area, for example if your windows
-  // have no visible frames but still need to have resize edges.
-  void SetHitTestBoundsOverrideOuter(const gfx::Insets& mouse_insets,
-                                     const gfx::Insets& touch_insets) {
-    hit_test_bounds_override_outer_mouse_ = mouse_insets;
-    hit_test_bounds_override_outer_touch_ = touch_insets;
-  }
-
-  gfx::Insets hit_test_bounds_override_outer_touch() const {
-    return hit_test_bounds_override_outer_touch_;
-  }
-
-  gfx::Insets hit_test_bounds_override_outer_mouse() const {
-    return hit_test_bounds_override_outer_mouse_;
-  }
-
   // Sets the window to grab hits for an area extending |insets| pixels inside
   // its bounds (even if that inner region overlaps a child window). This can be
   // used to create an invisible non-client area that overlaps the client area.
@@ -550,9 +532,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Makes the window pass all events through to any windows behind it.
   bool ignore_events_;
 
-  // See set_hit_test_outer_override().
-  gfx::Insets hit_test_bounds_override_outer_mouse_;
-  gfx::Insets hit_test_bounds_override_outer_touch_;
+  // See set_hit_test_bounds_override_inner().
   gfx::Insets hit_test_bounds_override_inner_;
 
   ObserverList<WindowObserver, true> observers_;
