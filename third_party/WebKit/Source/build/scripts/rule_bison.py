@@ -53,8 +53,9 @@ if len(sys.argv) > 3:
 pathToBison = os.path.split(bisonExe)[0]
 if pathToBison:
     # Make sure this path is in the path so that it can find its auxiliary
-    # binaries (in particular, m4).
-    os.environ['PATH'] += os.pathsep + pathToBison
+    # binaries (in particular, m4). To avoid other 'm4's being found, insert
+    # at head, rather than tail.
+    os.environ['PATH'] = pathToBison + os.pathsep + os.environ['PATH']
 
 inputName = os.path.basename(inputFile)
 assert inputName == 'CSSGrammar.y' or inputName == 'XPathGrammar.y'
