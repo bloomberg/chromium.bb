@@ -8,7 +8,6 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -186,7 +185,8 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
   profiles::CreateAndSwitchToNewProfile(desktop_type_,
-                                        base::Bind(&chrome::HideUserManager));
+                                        base::Bind(&chrome::HideUserManager),
+                                        ProfileMetrics::ADD_NEW_USER_MANAGER);
 }
 
 void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
@@ -234,7 +234,7 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     return;
   }
 
-  ReportAuthenticationResult(true);
+  ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
@@ -258,11 +258,13 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       profile_path,
       base::Bind(&OpenNewWindowForProfile, desktop_type_));
+  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
 }
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
   profiles::SwitchToGuestProfile(desktop_type_,
                                  base::Bind(&chrome::HideUserManager));
+  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_GUEST);
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
@@ -292,22 +294,26 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   // not needing authentication.  If it is, just ignore the "launch" request.
   if (info_cache.ProfileIsSigninRequiredAtIndex(profile_index))
     return;
+  ProfileMetrics::LogProfileAuthResult(ProfileMetrics::AUTH_UNNECESSARY);
 
   base::FilePath path = info_cache.GetPathOfProfileAtIndex(profile_index);
-  profiles::SwitchToProfile(
-      path, desktop_type_, true, base::Bind(&chrome::HideUserManager));
+  profiles::SwitchToProfile(path,
+                            desktop_type_,
+                            true,
+                            base::Bind(&chrome::HideUserManager),
+                            ProfileMetrics::SWITCH_PROFILE_MANAGER);
 }
 
 void UserManagerScreenHandler::OnClientLoginSuccess(
     const ClientLoginResult& result) {
   chrome::SetLocalAuthCredentials(authenticating_profile_index_,
                                   password_attempt_);
-  ReportAuthenticationResult(true);
+  ReportAuthenticationResult(true, ProfileMetrics::AUTH_ONLINE);
 }
 
 void UserManagerScreenHandler::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
-  ReportAuthenticationResult(false);
+  ReportAuthenticationResult(false, ProfileMetrics::AUTH_FAILED);
 }
 
 void UserManagerScreenHandler::RegisterMessages() {
@@ -441,7 +447,9 @@ void UserManagerScreenHandler::SendUserList() {
     users_list, base::FundamentalValue(false), base::FundamentalValue(true));
 }
 
-void UserManagerScreenHandler::ReportAuthenticationResult(bool success) {
+void UserManagerScreenHandler::ReportAuthenticationResult(
+    bool success,
+    ProfileMetrics::ProfileAuth auth) {
   if (success) {
     ProfileInfoCache& info_cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -450,7 +458,8 @@ void UserManagerScreenHandler::ReportAuthenticationResult(bool success) {
     base::FilePath path = info_cache.GetPathOfProfileAtIndex(
         authenticating_profile_index_);
     profiles::SwitchToProfile(path, desktop_type_, true,
-                              base::Bind(&chrome::HideUserManager));
+                              base::Bind(&chrome::HideUserManager),
+                              ProfileMetrics::SWITCH_PROFILE_UNLOCK);
   } else {
     web_ui()->CallJavascriptFunction(
         "cr.ui.Oobe.showSignInError",
@@ -461,5 +470,6 @@ void UserManagerScreenHandler::ReportAuthenticationResult(bool success) {
         base::FundamentalValue(0));
   }
 
+  ProfileMetrics::LogProfileAuthResult(auth);
   password_attempt_.clear();
 }

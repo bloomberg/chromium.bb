@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -51,7 +52,8 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void SendUserList();
 
   // Pass success/failure information back to the web page.
-  void ReportAuthenticationResult(bool success);
+  void ReportAuthenticationResult(bool success,
+                                  ProfileMetrics::ProfileAuth metric);
 
   // Observes the ProfileInfoCache and gets notified when a profile has been
   // modified, so that the displayed user pods can be updated.

@@ -116,16 +116,19 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SwitchToProfile) {
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the first profile.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
+  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1),
+                        false, ProfileMetrics::SWITCH_PROFILE_ICON);
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the second profile.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile2), false);
+  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile2),
+                        false, ProfileMetrics::SWITCH_PROFILE_ICON);
   EXPECT_EQ(2U, browser_list->size());
 
   // Switch to the first profile without opening a new window.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
+  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1),
+                        false, ProfileMetrics::SWITCH_PROFILE_ICON);
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());

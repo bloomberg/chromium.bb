@@ -24,6 +24,7 @@ class ProfileMetrics {
     ADD_NEW_USER_ICON = 0,    // User adds new user from icon menu
     ADD_NEW_USER_MENU,        // User adds new user from menu bar
     ADD_NEW_USER_DIALOG,      // User adds new user from create-profile dialog
+    ADD_NEW_USER_MANAGER,     // User adds new user from User Manager
     NUM_PROFILE_ADD_METRICS
   };
 
@@ -34,6 +35,10 @@ class ProfileMetrics {
     SWITCH_PROFILE_ICON,      // User switches profiles from icon menu
     SWITCH_PROFILE_MENU,      // User switches profiles from menu bar
     SWITCH_PROFILE_DOCK,      // User switches profiles from dock (Mac-only)
+    OPEN_USER_MANAGER,        // User opens the User Manager
+    SWITCH_PROFILE_MANAGER,   // User switches profiles from the User Manager
+    SWITCH_PROFILE_UNLOCK,    // User switches to lockd profile via User Manager
+    SWITCH_PROFILE_GUEST,     // User switches to guest profile
     NUM_PROFILE_OPEN_METRICS
   };
 
@@ -62,9 +67,17 @@ class ProfileMetrics {
   };
 
   enum ProfileGaia {
-    GAIA_OPT_IN = 0,           // User changed to GAIA photo as avatar
-    GAIA_OPT_OUT,              // User changed to not use GAIA photo as avatar
+    GAIA_OPT_IN = 0,          // User changed to GAIA photo as avatar
+    GAIA_OPT_OUT,             // User changed to not use GAIA photo as avatar
     NUM_PROFILE_GAIA_METRICS
+  };
+
+  enum ProfileAuth {
+    AUTH_UNNECESSARY,         // Profile was not locked
+    AUTH_LOCAL,               // Profile was authenticated locally
+    AUTH_ONLINE,              // Profile was authenticated on-line
+    AUTH_FAILED,              // Profile failed authentication
+    NUM_PROFILE_AUTH_METRICS
   };
 
   static void UpdateReportedProfilesStatistics(ProfileManager* manager);
@@ -77,6 +90,7 @@ class ProfileMetrics {
   static void LogProfileSwitchGaia(ProfileGaia metric);
   static void LogProfileSwitchUser(ProfileOpen metric);
   static void LogProfileSyncInfo(ProfileSync metric);
+  static void LogProfileAuthResult(ProfileAuth metric);
 
   // These functions should only be called on the UI thread because they hook
   // into g_browser_process through a helper function.

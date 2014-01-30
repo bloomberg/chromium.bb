@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -92,7 +93,8 @@ const CGFloat kManagedUserSpacing = 26.0;
   // Check the event flags to see if a new window should be crated.
   bool always_create = ui::WindowOpenDispositionFromNSEvent(
       [NSApp currentEvent]) == NEW_WINDOW;
-  menu_->SwitchToProfile([sender menuIndex], always_create);
+  menu_->SwitchToProfile([sender menuIndex], always_create,
+                         ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 
 - (IBAction)editProfile:(id)sender {

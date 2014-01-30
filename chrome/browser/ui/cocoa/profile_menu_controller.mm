@@ -83,15 +83,15 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (IBAction)switchToProfileFromMenu:(id)sender {
-  menu_->SwitchToProfile([sender tag], false);
-  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_MENU);
+  menu_->SwitchToProfile([sender tag], false,
+                         ProfileMetrics::SWITCH_PROFILE_MENU);
 }
 
 - (IBAction)switchToProfileFromDock:(id)sender {
   // Explicitly bring to the foreground when taking action from the dock.
   [NSApp activateIgnoringOtherApps:YES];
-  menu_->SwitchToProfile([sender tag], false);
-  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_DOCK);
+  menu_->SwitchToProfile([sender tag], false,
+                         ProfileMetrics::SWITCH_PROFILE_DOCK);
 }
 
 - (IBAction)editProfile:(id)sender {

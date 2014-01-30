@@ -268,6 +268,11 @@ void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
                             NUM_PROFILE_SYNC_METRICS);
 }
 
+void ProfileMetrics::LogProfileAuthResult(ProfileAuth metric) {
+  UMA_HISTOGRAM_ENUMERATION("Profile.AuthResult", metric,
+                            NUM_PROFILE_AUTH_METRICS);
+}
+
 void ProfileMetrics::LogProfileLaunch(Profile* profile) {
   base::FilePath profile_path = profile->GetPath();
   UMA_HISTOGRAM_ENUMERATION("Profile.LaunchBrowser",

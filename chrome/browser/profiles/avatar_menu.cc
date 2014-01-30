@@ -112,7 +112,9 @@ bool AvatarMenu::CompareItems(const Item* item1, const Item* item2) {
       base::i18n::ToLower(item2->name)) < 0;
 }
 
-void AvatarMenu::SwitchToProfile(size_t index, bool always_create) {
+void AvatarMenu::SwitchToProfile(size_t index,
+                                 bool always_create,
+                                 ProfileMetrics::ProfileOpen metric) {
   DCHECK(profiles::IsMultipleProfilesEnabled() ||
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
@@ -133,8 +135,8 @@ void AvatarMenu::SwitchToProfile(size_t index, bool always_create) {
     desktop_type = browser_->host_desktop_type();
 
   profiles::SwitchToProfile(path, desktop_type, always_create,
-                            profiles::ProfileSwitchingDoneCallback());
-  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
+                            profiles::ProfileSwitchingDoneCallback(),
+                            metric);
 }
 
 void AvatarMenu::AddNewProfile(ProfileMetrics::ProfileAdd type) {

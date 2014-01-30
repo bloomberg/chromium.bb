@@ -536,7 +536,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == add_user_button_) {
     profiles::CreateAndSwitchToNewProfile(
         browser_->host_desktop_type(),
-        profiles::ProfileSwitchingDoneCallback());
+        profiles::ProfileSwitchingDoneCallback(),
+        ProfileMetrics::ADD_NEW_USER_ICON);
   } else if (sender == add_account_button_) {
     ShowView(GAIA_ADD_ACCOUNT_VIEW, avatar_menu_.get());
   } else if (sender == current_profile_photo_->change_photo_button()) {
@@ -548,7 +549,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     DCHECK(match != open_other_profile_indexes_map_.end());
     avatar_menu_->SwitchToProfile(
         match->second,
-        ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
+        ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW,
+        ProfileMetrics::SWITCH_PROFILE_ICON);
   }
 }
 

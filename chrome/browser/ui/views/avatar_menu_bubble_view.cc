@@ -668,7 +668,8 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
       // Clicking on the active profile shouldn't do anything.
       if (!item_view->item().active) {
         avatar_menu_->SwitchToProfile(
-            i, ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW);
+            i, ui::DispositionFromEventFlags(event.flags()) == NEW_WINDOW,
+            ProfileMetrics::SWITCH_PROFILE_ICON);
       }
       break;
     }

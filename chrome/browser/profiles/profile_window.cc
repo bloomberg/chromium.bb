@@ -123,11 +123,11 @@ void FindOrCreateNewWindowForProfile(
 #endif  // defined(OS_IOS)
 }
 
-void SwitchToProfile(
-    const base::FilePath& path,
-    chrome::HostDesktopType desktop_type,
-    bool always_create,
-    ProfileSwitchingDoneCallback callback) {
+void SwitchToProfile(const base::FilePath& path,
+                     chrome::HostDesktopType desktop_type,
+                     bool always_create,
+                     ProfileSwitchingDoneCallback callback,
+                     ProfileMetrics::ProfileOpen metric) {
   g_browser_process->profile_manager()->CreateProfileAsync(
       path,
       base::Bind(&OpenBrowserWindowForProfile,
@@ -138,6 +138,7 @@ void SwitchToProfile(
       base::string16(),
       base::string16(),
       std::string());
+  ProfileMetrics::LogProfileSwitchUser(metric);
 }
 
 void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
@@ -152,10 +153,12 @@ void SwitchToGuestProfile(chrome::HostDesktopType desktop_type,
       base::string16(),
       base::string16(),
       std::string());
+  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_GUEST);
 }
 
 void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
-                                 ProfileSwitchingDoneCallback callback) {
+                                 ProfileSwitchingDoneCallback callback,
+                                 ProfileMetrics::ProfileAdd metric) {
   ProfileManager::CreateMultiProfileAsync(
       base::string16(),
       base::string16(),
@@ -165,6 +168,7 @@ void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
                  true,
                  desktop_type),
       std::string());
+  ProfileMetrics::LogProfileAddNewUser(metric);
 }
 
 void CloseGuestProfileWindows() {

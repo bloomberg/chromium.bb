@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
@@ -481,14 +482,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)addNewProfile:(id)sender {
   profiles::CreateAndSwitchToNewProfile(
       browser_->host_desktop_type(),
-      profiles::ProfileSwitchingDoneCallback());
+      profiles::ProfileSwitchingDoneCallback(),
+      ProfileMetrics::ADD_NEW_USER_ICON);
 }
 
 - (IBAction)switchToProfile:(id)sender {
   // Check the event flags to see if a new window should be created.
   bool always_create = ui::WindowOpenDispositionFromNSEvent(
       [NSApp currentEvent]) == NEW_WINDOW;
-  avatarMenu_->SwitchToProfile([sender tag], always_create);
+  avatarMenu_->SwitchToProfile([sender tag], always_create,
+                               ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 
 - (IBAction)showUserManager:(id)sender {
