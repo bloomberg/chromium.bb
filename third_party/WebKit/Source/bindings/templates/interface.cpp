@@ -98,8 +98,8 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 
 
 {##############################################################################}
-{% block indexed_property_getter_and_callback %}
-{% if indexed_property_getter %}
+{% block indexed_property_getter %}
+{% if indexed_property_getter and not indexed_property_getter.is_custom %}
 {% set getter = indexed_property_getter %}
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -111,10 +111,22 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     {{getter.v8_set_return_value}};
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block indexed_property_getter_callback %}
+{% if indexed_property_getter %}
+{% set getter = indexed_property_getter %}
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    {% if getter.is_custom %}
+    {{v8_class}}::indexedPropertyGetterCustom(index, info);
+    {% else %}
     {{cpp_class}}V8Internal::indexedPropertyGetter(index, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -123,8 +135,8 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 
 {##############################################################################}
-{% block indexed_property_setter_and_callback %}
-{% if indexed_property_setter %}
+{% block indexed_property_setter %}
+{% if indexed_property_setter and not indexed_property_setter.is_custom %}
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -137,10 +149,22 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
     v8SetReturnValue(info, jsValue);
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block indexed_property_setter_callback %}
+{% if indexed_property_setter %}
+{% set setter = indexed_property_setter %}
 static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    {% if setter.is_custom %}
+    {{v8_class}}::indexedPropertySetterCustom(index, jsValue, info);
+    {% else %}
     {{cpp_class}}V8Internal::indexedPropertySetter(index, jsValue, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -149,8 +173,8 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 
 
 {##############################################################################}
-{% block indexed_property_deleter_and_callback %}
-{% if indexed_property_deleter %}
+{% block indexed_property_deleter %}
+{% if indexed_property_deleter and not indexed_property_deleter.is_custom %}
 {% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
@@ -161,10 +185,22 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block indexed_property_deleter_callback %}
+{% if indexed_property_deleter %}
+{% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
+    {% if deleter.is_custom %}
+    {{v8_class}}::indexedPropertyDeleterCustom(index, info);
+    {% else %}
     {{cpp_class}}V8Internal::indexedPropertyDeleter(index, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -173,8 +209,8 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 
 {##############################################################################}
-{% block named_property_getter_and_callback %}
-{% if named_property_getter %}
+{% block named_property_getter %}
+{% if named_property_getter and not named_property_getter.is_custom %}
 {% set getter = named_property_getter %}
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -194,10 +230,22 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     {{getter.v8_set_return_value}};
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block named_property_getter_callback %}
+{% if named_property_getter %}
+{% set getter = named_property_getter %}
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    {% if getter.is_custom %}
+    {{v8_class}}::namedPropertyGetterCustom(name, info);
+    {% else %}
     {{cpp_class}}V8Internal::namedPropertyGetter(name, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -206,8 +254,8 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 
 
 {##############################################################################}
-{% block named_property_setter_and_callback %}
-{% if named_property_setter %}
+{% block named_property_setter %}
+{% if named_property_setter and not named_property_setter.is_custom %}
 {% set setter = named_property_setter %}
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -228,10 +276,22 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     v8SetReturnValue(info, jsValue);
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block named_property_setter_callback %}
+{% if named_property_setter %}
+{% set setter = named_property_setter %}
 static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    {% if setter.is_custom %}
+    {{v8_class}}::namedPropertySetterCustom(name, jsValue, info);
+    {% else %}
     {{cpp_class}}V8Internal::namedPropertySetter(name, jsValue, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -267,8 +327,8 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 
 {##############################################################################}
-{% block named_property_deleter_and_callback %}
-{% if named_property_deleter %}
+{% block named_property_deleter %}
+{% if named_property_deleter and not named_property_deleter.is_custom %}
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
@@ -280,10 +340,22 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
         return v8SetReturnValueBool(info, result == DeleteSuccess);
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block named_property_deleter_callback %}
+{% if named_property_deleter %}
+{% set deleter = named_property_deleter %}
 static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    {% if deleter.is_custom %}
+    {{v8_class}}::namedPropertyDeleterCustom(name, info);
+    {% else %}
     {{cpp_class}}V8Internal::namedPropertyDeleter(name, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 

@@ -128,12 +128,18 @@ template <typename T> void V8_USE(T) { }
 {% block overloaded_constructor %}{% endblock %}
 {% block event_constructor %}{% endblock %}
 {# Special operations (methods) #}
-{% block indexed_property_getter_and_callback %}{% endblock %}
-{% block indexed_property_setter_and_callback %}{% endblock %}
-{% block indexed_property_deleter_and_callback %}{% endblock %}
-{% block named_property_getter_and_callback %}{% endblock %}
-{% block named_property_setter_and_callback %}{% endblock %}
-{% block named_property_deleter_and_callback %}{% endblock %}
+{% block indexed_property_getter %}{% endblock %}
+{% block indexed_property_getter_callback %}{% endblock %}
+{% block indexed_property_setter %}{% endblock %}
+{% block indexed_property_setter_callback %}{% endblock %}
+{% block indexed_property_deleter %}{% endblock %}
+{% block indexed_property_deleter_callback %}{% endblock %}
+{% block named_property_getter %}{% endblock %}
+{% block named_property_getter_callback %}{% endblock %}
+{% block named_property_setter %}{% endblock %}
+{% block named_property_setter_callback %}{% endblock %}
+{% block named_property_deleter %}{% endblock %}
+{% block named_property_deleter_callback %}{% endblock %}
 {% block named_property_query_and_callback %}{% endblock %}
 {% block named_property_enumerator_and_callback %}{% endblock %}
 } // namespace {{cpp_class}}V8Internal

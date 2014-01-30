@@ -26,13 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface TestCustomAccessors {
-    void anotherFunction(DOMString str);
-    [Custom, NotEnumerable] getter boolean (unsigned long index);
+interface TestSpecialOperationsCustom {
+    [Custom/*, NotEnumerable */] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom] deleter boolean (unsigned long index);
-    [Custom, CustomEnumerateProperty] getter Node (DOMString name);
+    [Custom/*, CustomEnumerateProperty*/] getter Node (DOMString name);
     [Custom] setter Node (DOMString name, Node value);
     [Custom] deleter boolean (DOMString name);
 };
-

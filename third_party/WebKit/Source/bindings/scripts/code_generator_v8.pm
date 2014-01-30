@@ -477,6 +477,10 @@ sub AddIncludesForType
         AddToImplIncludes("bindings/v8/custom/V8${type}Custom.h");
     } elsif (my $arrayType = GetArrayType($type)) {
         AddIncludesForType($arrayType);
+    } elsif (IsUnionType($type)) {
+        for my $unionMemberType (@{$type->unionMemberTypes}) {
+            AddIncludesForType($unionMemberType);
+        }
     } else {
         AddToImplIncludes("V8${type}.h");
     }
@@ -3583,6 +3587,13 @@ sub GenerateImplementationIndexedPropertyAccessors
 
     my $indexedGetterFunction = GetIndexedGetterFunction($interface);
     if ($indexedGetterFunction) {
+        # includes for return type even if custom
+        my $returnType = $indexedGetterFunction->type;
+        AddIncludesForType($returnType);
+        if (IsRefPtrType($returnType)) {
+            AddToImplIncludes("wtf/RefPtr.h");
+            AddToImplIncludes("wtf/GetPtr.h");
+        }
         my $hasCustomIndexedGetter = $indexedGetterFunction->extendedAttributes->{"Custom"};
         if (!$hasCustomIndexedGetter) {
             GenerateImplementationIndexedPropertyGetter($interface, $indexedGetterFunction);
@@ -3592,6 +3603,7 @@ sub GenerateImplementationIndexedPropertyAccessors
 
     my $indexedSetterFunction = GetIndexedSetterFunction($interface);
     if ($indexedSetterFunction) {
+        AddIncludesForType($indexedSetterFunction->parameters->[1]->type);  # includes for argument type even if custom
         my $hasCustomIndexedSetter = $indexedSetterFunction->extendedAttributes->{"Custom"};
         if (!$hasCustomIndexedSetter) {
             GenerateImplementationIndexedPropertySetter($interface, $indexedSetterFunction);
@@ -3801,6 +3813,13 @@ sub GenerateImplementationNamedPropertyAccessors
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
     if ($namedGetterFunction) {
+        # includes for return type even if custom
+        my $returnType = $namedGetterFunction->type;
+        AddIncludesForType($returnType);
+        if (IsRefPtrType($returnType)) {
+            AddToImplIncludes("wtf/RefPtr.h");
+            AddToImplIncludes("wtf/GetPtr.h");
+        }
         my $hasCustomNamedGetter = $namedGetterFunction->extendedAttributes->{"Custom"};
         if (!$hasCustomNamedGetter) {
             GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
@@ -3810,6 +3829,7 @@ sub GenerateImplementationNamedPropertyAccessors
 
     my $namedSetterFunction = GetNamedSetterFunction($interface);
     if ($namedSetterFunction) {
+        AddIncludesForType($namedSetterFunction->parameters->[1]->type);  # includes for argument type even if custom
         my $hasCustomNamedSetter = $namedSetterFunction->extendedAttributes->{"Custom"};
         if (!$hasCustomNamedSetter) {
             GenerateImplementationNamedPropertySetter($interface, $namedSetterFunction);

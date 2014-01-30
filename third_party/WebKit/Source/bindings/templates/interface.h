@@ -95,6 +95,25 @@ public:
     {% endfilter %}
     {% endif %}
     {% endfor %}
+    {# Custom special operations #}
+    {% if indexed_property_getter and indexed_property_getter.is_custom %}
+    static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
+    {% endif %}
+    {% if indexed_property_setter and indexed_property_setter.is_custom %}
+    static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+    {% endif %}
+    {% if indexed_property_deleter and indexed_property_deleter.is_custom %}
+    static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
+    {% endif %}
+    {% if named_property_getter and named_property_getter.is_custom %}
+    static void namedPropertyGetterCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>&);
+    {% endif %}
+    {% if named_property_setter and named_property_setter.is_custom %}
+    static void namedPropertySetterCustom(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+    {% endif %}
+    {% if named_property_deleter and named_property_deleter.is_custom %}
+    static void namedPropertyDeleterCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Boolean>&);
+    {% endif %}
     {% if has_custom_legacy_call_as_function %}
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}

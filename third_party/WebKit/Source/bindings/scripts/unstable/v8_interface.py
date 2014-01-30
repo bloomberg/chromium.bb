@@ -496,6 +496,7 @@ def property_getter(getter):
     extended_attributes = getter.extended_attributes
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
+        'is_custom': 'Custom' in extended_attributes,
         'is_null_expression': is_null_expression(idl_type),
         'name': cpp_name(getter),
         'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
@@ -506,6 +507,7 @@ def property_setter(setter):
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
     return {
+        'is_custom': 'Custom' in extended_attributes,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
             idl_type, extended_attributes, 'jsValue', 'propertyValue'),
@@ -520,6 +522,7 @@ def property_deleter(deleter):
             idl_type)
     extended_attributes = deleter.extended_attributes
     return {
+        'is_custom': 'Custom' in extended_attributes,
         'name': cpp_name(deleter),
     }
 

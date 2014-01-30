@@ -54,7 +54,6 @@ DEPENDENCY_IDL_FILES = set([
 
 # Python compiler is incomplete; skip IDLs with unimplemented features
 SKIP_PYTHON = set([
-    'TestCustomAccessors.idl',
     'TestEventTarget.idl',
     'TestInterface.idl',
     'TestObject.idl',
