@@ -38,7 +38,7 @@
 
     // DOMImplementationCSS interface from DOM Level 2 CSS
 
-    [MeasureAs=DOMImplementationCreateCSSStyleSheet]
+    [DeprecateAs=DOMImplementationCreateCSSStyleSheet]
     CSSStyleSheet createCSSStyleSheet([Default=Undefined] optional DOMString title,
                                       [Default=Undefined] optional DOMString media);
 

@@ -700,6 +700,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedMediaSourceOpen:
         return "'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.";
 
+    case DOMImplementationCreateCSSStyleSheet:
+        return "'DOMImplementation.createCSSStyleSheet()' is deprecated.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
