@@ -51,7 +51,6 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderApplet.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderIFrame.h"
 #include "core/rendering/RenderLayerStackingNode.h"
