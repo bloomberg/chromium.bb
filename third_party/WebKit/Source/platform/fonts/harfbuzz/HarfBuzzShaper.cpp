@@ -737,6 +737,12 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
     hb_glyph_info_t* glyphInfos = hb_buffer_get_glyph_infos(harfBuzzBuffer, 0);
     hb_glyph_position_t* glyphPositions = hb_buffer_get_glyph_positions(harfBuzzBuffer, 0);
 
+    if (!currentRun->hasGlyphToCharacterIndexes()) {
+        // FIXME: https://crbug.com/337886
+        ASSERT_NOT_REACHED();
+        return;
+    }
+
     unsigned numGlyphs = currentRun->numGlyphs();
     uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
     float totalAdvance = 0;
