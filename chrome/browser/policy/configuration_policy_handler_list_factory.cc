@@ -620,6 +620,12 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
                                 0,
                                 INT_MAX,
                                 true)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new IntRangePolicyHandler(key::kSAMLOfflineSigninTimeLimit,
+                                prefs::kSAMLOfflineSigninTimeLimit,
+                                -1,
+                                INT_MAX,
+                                true)));
   handlers->AddHandler(
       make_scoped_ptr<ConfigurationPolicyHandler>(new IntRangePolicyHandler(
           key::kIdleActionAC,

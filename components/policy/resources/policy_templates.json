@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 253
+#   For your editing convenience: highest ID currently used: 254
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3555,6 +3555,30 @@
       If the user has enabled sync all this data is preserved in his sync profile just like with regular profiles. Incognito mode is also available if not explicitly disabled by policy.
 
       If the policy is set to disabled or left not set signing in leads to regular profiles.'''
+    },
+    {
+      'name': 'SAMLOfflineSigninTimeLimit',
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': -1 },
+      'supported_on': ['chrome_os:34-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 32,
+      'id': 254,
+      'caption': '''Limit the time for which a user authenticated via SAML can log in offline''',
+      'desc': '''Limit the time for which a user authenticated via SAML can log in offline.
+
+      During login, Chrome OS can authenticate against a server (online) or using a cached password (offline).
+
+      When this policy is set to a value of -1, the user can authenticate offline indefinitely. When this policy is set to any other value, it specifies the length of time since the last online authentication after which the user must use online authentication again.
+
+      Leaving this policy not set will make <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> use a default time limit of 14 days after which the user must use online authentication again.
+
+      This policy affects only users who authenticated using SAML.
+
+      The policy value should be specified in seconds.''',
     },
     {
       'name': 'AutoCleanUpStrategy',

@@ -43,8 +43,11 @@
 #include "chrome/browser/chromeos/login/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/profile_auth_data.h"
+#include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
+#include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -585,6 +588,13 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
     }
   }
   btl->AddLoginTimeMarker("TPMOwn-End", false);
+
+  if (UserManager::Get()->IsLoggedInAsRegularUser()) {
+    SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
+        SAMLOfflineSigninLimiterFactory::GetForProfile(user_profile);
+    if (saml_offline_signin_limiter)
+      saml_offline_signin_limiter->SignedIn(user_context_.auth_flow);
+  }
 
   user_profile->OnLogin();
 

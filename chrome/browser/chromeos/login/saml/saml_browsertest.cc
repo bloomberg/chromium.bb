@@ -1,13 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -21,6 +24,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -32,11 +39,15 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "policy/policy_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
+using testing::_;
+using testing::Return;
 
 namespace chromeos {
 
@@ -51,8 +62,9 @@ const char kTestRefreshToken[] = "fake-refresh-token";
 const char kTestSessionSIDCookie[] = "fake-session-SID-cookie";
 const char kTestSessionLSIDCookie[] = "fake-session-LSID-cookie";
 
-const char kAnotherUserEmail[] = "alice@example.com";
-const char kUserEmail[] = "bob@example.com";
+const char kFirstSAMLUserEmail[] = "bob@example.com";
+const char kSecondSAMLUserEmail[] = "alice@example.com";
+const char kNonSAMLUserEmail[] = "carol@example.com";
 
 const char kRelayState[] = "RelayState";
 
@@ -223,8 +235,8 @@ class SamlTest : public InProcessBrowserTest {
     saml_idp_url = saml_idp_url.Resolve("/SAML/SSO");
 
     fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url_);
-    fake_gaia_.RegisterSamlUser(kAnotherUserEmail, saml_idp_url);
-    fake_gaia_.RegisterSamlUser(kUserEmail, saml_idp_url);
+    fake_gaia_.RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
+    fake_gaia_.RegisterSamlUser(kSecondSAMLUserEmail, saml_idp_url);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -237,7 +249,7 @@ class SamlTest : public InProcessBrowserTest {
     params.gaia_uber_token = kTestGaiaUberToken;
     params.session_sid_cookie = kTestSessionSIDCookie;
     params.session_lsid_cookie = kTestSessionLSIDCookie;
-    params.email = kUserEmail;
+    params.email = kFirstSAMLUserEmail;
     fake_gaia_.SetMergeSessionParams(params);
 
     embedded_test_server()->RegisterRequestHandler(
@@ -247,6 +259,10 @@ class SamlTest : public InProcessBrowserTest {
 
     // Restart the thread as the sandbox host process has already been spawned.
     embedded_test_server()->RestartThreadAndListen();
+
+    login_screen_load_observer_.reset(new content::WindowedNotificationObserver(
+        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+        content::NotificationService::AllSources()));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -272,9 +288,7 @@ class SamlTest : public InProcessBrowserTest {
     CHECK(wizard_controller);
     wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
-    content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources()).Wait();
+    login_screen_load_observer_->Wait();
   }
 
   void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
@@ -346,6 +360,9 @@ class SamlTest : public InProcessBrowserTest {
 
   FakeSamlIdp* fake_saml_idp() { return &fake_saml_idp_; }
 
+ protected:
+  scoped_ptr<content::WindowedNotificationObserver> login_screen_load_observer_;
+
  private:
   GURL gaia_url_;
   FakeGaia fake_gaia_;
@@ -361,7 +378,7 @@ class SamlTest : public InProcessBrowserTest {
 // gaia on clicking.
 IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  StartSamlAndWaitForIdpPageLoad(kUserEmail);
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Saml flow UI expectations.
   JsExpect("$('gaia-signin').classList.contains('saml')");
@@ -387,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
 IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
-  StartSamlAndWaitForIdpPageLoad(kUserEmail);
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Fill-in the SAML IdP form and submit.
   SetSignFormField("Email", "fake_user");
@@ -403,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
 // Tests the single password scraped flow.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  StartSamlAndWaitForIdpPageLoad(kUserEmail);
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Fill-in the SAML IdP form and submit.
   SetSignFormField("Email", "fake_user");
@@ -428,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
 
-  StartSamlAndWaitForIdpPageLoad(kUserEmail);
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
@@ -448,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_no_passwords.html");
 
-  StartSamlAndWaitForIdpPageLoad(kUserEmail);
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   SetSignFormField("Email", "fake_user");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
@@ -459,15 +476,15 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
       "loadTimeData.getString('noPasswordWarningTitle')");
 }
 
-// Types |alice@example.com| into the GAIA login form but then authenticates as
-// |bob@example.com| via SAML. Verifies that the logged-in user is correctly
-// identified as Bob.
+// Types |bob@example.com| into the GAIA login form but then authenticates as
+// |alice@example.com| via SAML. Verifies that the logged-in user is correctly
+// identified as Alice.
 IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  // Type |alice@example.com| into the GAIA login form.
-  StartSamlAndWaitForIdpPageLoad(kAnotherUserEmail);
+  // Type |bob@example.com| into the GAIA login form.
+  StartSamlAndWaitForIdpPageLoad(kSecondSAMLUserEmail);
 
-  // Authenticate as bob@example.com via SAML (the |Email| provided here is
+  // Authenticate as alice@example.com via SAML (the |Email| provided here is
   // irrelevant - the authenticated user's e-mail address that FakeGAIA
   // reports was set via SetMergeSessionParams()).
   SetSignFormField("Email", "fake_user");
@@ -482,8 +499,138 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
       content::NotificationService::AllSources()).Wait();
   const User* user = UserManager::Get()->GetActiveUser();
   ASSERT_TRUE(user);
-  EXPECT_EQ(kUserEmail, user->email());
+  EXPECT_EQ(kFirstSAMLUserEmail, user->email());
 }
 
+class SAMLPolicyTest : public SamlTest {
+ public:
+  SAMLPolicyTest();
+  virtual ~SAMLPolicyTest();
+
+  // SamlTest:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
+
+  void SetSAMLOfflineSigninTimeLimitPolicy(int limit);
+
+ protected:
+  policy::MockConfigurationPolicyProvider provider_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SAMLPolicyTest);
+};
+
+SAMLPolicyTest::SAMLPolicyTest() {
+}
+
+SAMLPolicyTest::~SAMLPolicyTest() {
+}
+
+void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
+  SamlTest::SetUpInProcessBrowserTestFixture();
+
+  EXPECT_CALL(provider_, IsInitializationComplete(_))
+      .WillRepeatedly(Return(true));
+  policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+}
+
+void SAMLPolicyTest::SetUpOnMainThread() {
+  SamlTest::SetUpOnMainThread();
+
+  // Pretend that the test users' OAuth tokens are valid.
+  UserManager::Get()->SaveUserOAuthStatus(kFirstSAMLUserEmail,
+                                          User::OAUTH2_TOKEN_STATUS_VALID);
+  UserManager::Get()->SaveUserOAuthStatus(kNonSAMLUserEmail,
+                                          User::OAUTH2_TOKEN_STATUS_VALID);
+}
+
+void SAMLPolicyTest::SetSAMLOfflineSigninTimeLimitPolicy(int limit) {
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kSAMLOfflineSigninTimeLimit,
+             policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER,
+             new base::FundamentalValue(limit),
+             NULL);
+  provider_.UpdateChromePolicy(policy);
+  base::RunLoop().RunUntilIdle();
+}
+
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
+  // Set the offline login time limit for SAML users to zero.
+  SetSAMLOfflineSigninTimeLimitPolicy(0);
+
+  WaitForSigninScreen();
+
+  // Log in without SAML.
+  GetLoginDisplay()->ShowSigninScreenForCreds(kNonSAMLUserEmail, "password");
+
+  content::WindowedNotificationObserver(
+    chrome::NOTIFICATION_SESSION_STARTED,
+    content::NotificationService::AllSources()).Wait();
+}
+
+// Verifies that the offline login time limit does not affect a user who
+// authenticated without SAML.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, NoSAML) {
+  login_screen_load_observer_->Wait();
+  // Verify that offline login is allowed.
+  JsExpect("document.querySelector('#pod-row .signin-button').hidden");
+}
+
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLNoLimit) {
+  // Remove the offline login time limit for SAML users.
+  SetSAMLOfflineSigninTimeLimitPolicy(-1);
+
+  // Log in with SAML.
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+
+  SendConfirmPassword("fake_password");
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources()).Wait();
+}
+
+// Verifies that when no offline login time limit is set, a user who
+// authenticated with SAML is allowed to log in offline.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLNoLimit) {
+  login_screen_load_observer_->Wait();
+  // Verify that offline login is allowed.
+  JsExpect("document.querySelector('#pod-row .signin-button').hidden");
+}
+
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLZeroLimit) {
+  // Set the offline login time limit for SAML users to zero.
+  SetSAMLOfflineSigninTimeLimitPolicy(0);
+
+  // Log in with SAML.
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+
+  SendConfirmPassword("fake_password");
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources()).Wait();
+}
+
+// Verifies that when the offline login time limit is exceeded for a user who
+// authenticated via SAML, that user is forced to log in online the next time.
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLZeroLimit) {
+  login_screen_load_observer_->Wait();
+  // Verify that offline login is not allowed.
+  JsExpect("!document.querySelector('#pod-row .signin-button').hidden");
+}
 
 }  // namespace chromeos

@@ -277,6 +277,8 @@ extern const char kMultiProfileNotificationDismissed[];
 extern const char kMultiProfileUserBehavior[];
 extern const char kHighQualitySpeechSynthesisLanguages[];
 extern const char kFirstRunTutorialShown[];
+extern const char kSAMLOfflineSigninTimeLimit[];
+extern const char kSAMLLastGAIASignInTime[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

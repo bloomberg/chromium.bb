@@ -717,6 +717,7 @@
         'browser/chromeos/login/multi_profile_user_controller_unittest.cc',
         'browser/chromeos/login/online_attempt_unittest.cc',
         'browser/chromeos/login/parallel_authenticator_unittest.cc',
+        'browser/chromeos/login/saml/saml_offline_signin_limiter_unittest.cc',
         'browser/chromeos/login/screens/screen_context_unittest.cc',
         'browser/chromeos/login/user_manager_unittest.cc',
         'browser/chromeos/login/wallpaper_manager_unittest.cc',

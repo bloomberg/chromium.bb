@@ -61,7 +61,6 @@ class LoginUtils {
                                LoginDisplayHost* login_host) = 0;
 
   // Loads and prepares profile for the session. Fires |delegate| in the end.
-  // If |pending_requests| is true, there's a pending online auth request.
   // If |display_email| is not empty, user's displayed email will be set to
   // this value, shown in UI.
   // |user_context.username_hash| defines when user homedir is mounted.

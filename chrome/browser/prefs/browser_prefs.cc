@@ -144,6 +144,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/multi_profile_first_run_notification.h"
 #include "chrome/browser/chromeos/login/multi_profile_user_controller.h"
+#include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_image_sync_observer.h"
@@ -432,6 +433,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::MultiProfileUserController::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
   chromeos::proxy_config::RegisterProfilePrefs(registry);
+  chromeos::SAMLOfflineSigninLimiter::RegisterProfilePrefs(registry);
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);

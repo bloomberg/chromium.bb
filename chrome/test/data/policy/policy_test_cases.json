@@ -1595,6 +1595,14 @@
   "OpenNetworkConfiguration": {
   },
 
+  "SAMLOfflineSigninTimeLimit": {
+    "os": ["chromeos"],
+    "test_policy": { "SAMLOfflineSigninTimeLimit": 0 },
+    "pref_mappings": [
+      { "pref": "saml.offline_signin_time_limit" }
+    ]
+  },
+
   "DriveDisabled": {
     "os": ["chromeos"],
     "test_policy": { "DriveDisabled": true },

@@ -460,6 +460,10 @@ class PolicyPrefsTest : public InProcessBrowserTest {
         TemplateURLServiceFactory::GetForProfile(browser()->profile()));
   }
 
+  virtual void TearDownOnMainThread() OVERRIDE {
+    ClearProviderPolicy();
+  }
+
   void ClearProviderPolicy() {
     provider_.UpdateChromePolicy(PolicyMap());
     base::RunLoop().RunUntilIdle();
