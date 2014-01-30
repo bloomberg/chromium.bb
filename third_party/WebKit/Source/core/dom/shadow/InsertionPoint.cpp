@@ -146,7 +146,8 @@ bool InsertionPoint::isActive() const
     if (!canBeActive())
         return false;
     ShadowRoot* shadowRoot = containingShadowRoot();
-    ASSERT(shadowRoot);
+    if (!shadowRoot)
+        return false;
     if (!hasTagName(shadowTag) || shadowRoot->descendantShadowElementCount() <= 1)
         return true;
 
