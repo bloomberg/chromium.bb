@@ -177,9 +177,9 @@ class CommitAnnouncer(SingleServerIRCBot):
                 review_url = 'http://crrev.com/%s' % match.group('review_id')
         first_url = review_url if review_url else 'https://chromium.googlesource.com/chromium/blink/+/%s' % commit[:8]
 
-        red_flag_message = ' \x037%s\x03' % (' '.join(red_flags)) if red_flags else ''
+        red_flag_message = '\x037%s\x03' % (' '.join(red_flags)) if red_flags else ''
 
-        return '%s committed "%s" %s %s%s' % (email, subject, first_url, svn_revision, red_flag_message)
+        return ('%s %s %s committed "%s" %s' % (svn_revision, first_url, email, subject, red_flag_message)).strip()
 
     def _post(self, message):
         self.connection.execute_delayed(0, lambda: self.connection.privmsg(channel, self._sanitize_string(message)))
