@@ -142,7 +142,7 @@ FAIL Object.getOwnPropertyDescriptor(global, 0).configurable should be false. Th
 PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').value is 1
 PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').hasOwnProperty('set') is false
-FAIL Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').enumerable should be true. Was false.
+PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').enumerable is true
 FAIL Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').configurable should be false. Was true.
 PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 0).value is document.getElementsByTagName('div')[0]
 PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 0).hasOwnProperty('get') is false
@@ -157,7 +157,7 @@ FAIL Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 0)
 PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').value is document.getElementsByClassName('pass').length
 PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').hasOwnProperty('set') is false
-FAIL Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').enumerable should be true. Was false.
+PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').enumerable is true
 FAIL Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').configurable should be false. Was true.
 PASS Object.getOwnPropertyDescriptor(select, 'length').value is select.length
 PASS Object.getOwnPropertyDescriptor(select, 'length').hasOwnProperty('get') is false

@@ -84,7 +84,7 @@ void HTMLAllCollection::anonymousNamedGetter(const AtomicString& name, bool& ret
     returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
-PassRefPtr<NodeList> HTMLAllCollection::tags(const AtomicString& name)
+PassRefPtr<HTMLCollection> HTMLAllCollection::tags(const AtomicString& name)
 {
     return ownerNode()->getElementsByTagName(name);
 }

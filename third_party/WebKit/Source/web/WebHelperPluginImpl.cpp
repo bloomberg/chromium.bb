@@ -40,7 +40,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWidgetClient.h"
-#include "core/dom/NodeList.h"
+#include "core/html/HTMLCollection.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -180,7 +180,7 @@ WebPlugin* WebHelperPluginImpl::getPlugin()
 {
     ASSERT(m_page);
 
-    RefPtr<NodeList> objectElements = m_page->mainFrame()->document()->getElementsByTagName(WebCore::HTMLNames::objectTag.localName());
+    RefPtr<HTMLCollection> objectElements = m_page->mainFrame()->document()->getElementsByTagName(WebCore::HTMLNames::objectTag.localName());
     ASSERT(objectElements && objectElements->length() == 1);
     if (!objectElements || objectElements->length() < 1)
         return 0;

@@ -37,7 +37,7 @@ public:
 
     Node* namedItemWithIndex(const AtomicString& name, unsigned index) const;
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Element>&);
-    PassRefPtr<NodeList> tags(const AtomicString&);
+    PassRefPtr<HTMLCollection> tags(const AtomicString&);
 
 private:
     HTMLAllCollection(ContainerNode*, CollectionType);

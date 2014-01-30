@@ -32,6 +32,7 @@
 #define WebNodeList_h
 
 #include "../platform/WebCommon.h"
+#include "WebNodeCollection.h"
 
 namespace WebCore { class NodeList; }
 #if BLINK_IMPLEMENTATION
@@ -53,6 +54,10 @@ public:
         assign(n);
         return *this;
     }
+
+    // FIXME(crbug.com/235008): Remove once chromium has been updated to stop using
+    // WebCollection as a WebNodeList.
+    BLINK_EXPORT WebNodeList(const WebNodeCollection&);
 
     BLINK_EXPORT void reset();
     BLINK_EXPORT void assign(const WebNodeList&);
