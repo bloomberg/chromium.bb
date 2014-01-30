@@ -41,7 +41,9 @@ class IPCChannelPosixTestListener : public IPC::Listener {
   };
 
   IPCChannelPosixTestListener(bool quit_only_on_message)
-      : status_(DISCONNECTED), quit_only_on_message_(quit_only_on_message) {}
+      : status_(DISCONNECTED),
+        quit_only_on_message_(quit_only_on_message) {
+  }
 
   virtual ~IPCChannelPosixTestListener() {}
 
@@ -83,7 +85,13 @@ class IPCChannelPosixTestListener : public IPC::Listener {
   STATUS status() { return status_; }
 
   void QuitRunLoop() {
-    base::MessageLoopForIO::current()->QuitNow();
+    base::MessageLoopForIO* loop = base::MessageLoopForIO::current();
+    if (loop->is_running()) {
+      loop->QuitNow();
+    } else {
+      // Die as soon as Run is called.
+      loop->PostTask(FROM_HERE, loop->QuitClosure());
+    }
   }
 
  private:
@@ -186,7 +194,7 @@ void IPCChannelPosixTest::SpinRunLoop(base::TimeDelta delay) {
   // in the case of a bad test. Usually, the run loop will quit sooner than
   // that because all tests use a IPCChannelPosixTestListener which quits the
   // current run loop on any channel activity.
-  loop->PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(), delay);
+  loop->PostDelayedTask(FROM_HERE, loop->QuitClosure(), delay);
   loop->Run();
 }
 
@@ -226,6 +234,45 @@ TEST_F(IPCChannelPosixTest, BasicConnected) {
   IPC::Channel channel2(socket_name, IPC::Channel::MODE_SERVER, NULL);
   ASSERT_TRUE(channel2.Connect());
   ASSERT_FALSE(channel2.AcceptsConnections());
+}
+
+// If a connection closes right before a Send() call, we may end up closing
+// the connection without notifying the listener, which can cause hangs in
+// sync_message_filter and others. Make sure the listener is notified.
+TEST_F(IPCChannelPosixTest, SendHangTest) {
+  IPCChannelPosixTestListener out_listener(true);
+  IPCChannelPosixTestListener in_listener(true);
+  IPC::ChannelHandle in_handle("IN");
+  IPC::Channel in_chan(in_handle, IPC::Channel::MODE_SERVER, &in_listener);
+  base::FileDescriptor out_fd(in_chan.TakeClientFileDescriptor(), false);
+  IPC::ChannelHandle out_handle("OUT", out_fd);
+  IPC::Channel out_chan(out_handle, IPC::Channel::MODE_CLIENT, &out_listener);
+  ASSERT_TRUE(in_chan.Connect());
+  ASSERT_TRUE(out_chan.Connect());
+  in_chan.Close();  // simulate remote process dying at an unfortunate time.
+  // Send will fail, because it cannot write the message.
+  ASSERT_FALSE(out_chan.Send(new IPC::Message(
+      0,  // routing_id
+      kQuitMessage,  // message type
+      IPC::Message::PRIORITY_NORMAL)));
+  ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, out_listener.status());
+}
+
+// If a connection closes right before a Connect() call, we may end up closing
+// the connection without notifying the listener, which can cause hangs in
+// sync_message_filter and others. Make sure the listener is notified.
+TEST_F(IPCChannelPosixTest, AcceptHangTest) {
+  IPCChannelPosixTestListener out_listener(true);
+  IPCChannelPosixTestListener in_listener(true);
+  IPC::ChannelHandle in_handle("IN");
+  IPC::Channel in_chan(in_handle, IPC::Channel::MODE_SERVER, &in_listener);
+  base::FileDescriptor out_fd(in_chan.TakeClientFileDescriptor(), false);
+  IPC::ChannelHandle out_handle("OUT", out_fd);
+  IPC::Channel out_chan(out_handle, IPC::Channel::MODE_CLIENT, &out_listener);
+  ASSERT_TRUE(in_chan.Connect());
+  in_chan.Close();  // simulate remote process dying at an unfortunate time.
+  ASSERT_FALSE(out_chan.Connect());
+  ASSERT_EQ(IPCChannelPosixTestListener::CHANNEL_ERROR, out_listener.status());
 }
 
 TEST_F(IPCChannelPosixTest, AdvancedConnected) {
