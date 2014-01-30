@@ -1,0 +1,23 @@
+<hmtl>
+<body>
+<embed	type="application/vnd.npapi-test" 
+  height="300"
+  width="100%"
+  name="set_title_in_set_window_and_paint"
+  id="1"
+  mode="np_embed"/>
+</body>
+
+<script>
+function PluginCreated() {
+  window.document.title = "created";
+  return;
+}
+
+function PluginShown() {
+  window.document.title = "shown";
+  return;
+}
+</script>
+
+</hmtl>

@@ -588,12 +588,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Helper function to set keyboard focus to the main window.
   void SetKeyboardFocus();
 
-#if defined(OS_WIN)
-  // Updates the total list of cutout rects, which is the union of transient
-  // windows and constrained windows.
-  void UpdateCutoutRects();
-#endif
-
   // The model object.
   RenderWidgetHostImpl* host_;
 

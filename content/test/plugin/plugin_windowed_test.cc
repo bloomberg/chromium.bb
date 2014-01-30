@@ -39,7 +39,8 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
 
   if ((test_name() == "create_instance_in_paint" && test_id() == "1") ||
       test_name() == "alert_in_window_message" ||
-      test_name() == "set_title_in_paint") {
+      test_name() == "set_title_in_paint" ||
+      test_name() == "set_title_in_set_window_and_paint") {
     static ATOM window_class = 0;
     if (!window_class) {
       WNDCLASSEX wcex;
@@ -67,6 +68,9 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
     // TODO: this propery leaks.
     ::SetProp(window_, L"Plugin_Instance", this);
   }
+
+  if (test_name() == "set_title_in_set_window_and_paint")
+    CallJSFunction(this, "PluginCreated");
 
   return NPERR_NO_ERROR;
 }
@@ -122,6 +126,18 @@ LRESULT CALLBACK WindowedPluginTest::WindowProc(
       reinterpret_cast<WindowedPluginTest*>
           (::GetProp(window, L"Plugin_Instance"));
 
+  if (message == WM_PAINT) {
+    PAINTSTRUCT ps;
+    HDC hdc = BeginPaint(window, &ps);
+    HBRUSH brush = CreateSolidBrush(RGB(255, 0, 0));
+    SelectObject(hdc, brush);
+    RECT r;
+    GetClientRect(window, &r);
+    Rectangle(hdc, 0, 0, r.right, r.bottom);
+    DeleteObject(brush);
+    EndPaint(window, &ps);
+  }
+
   if (this_ptr && !this_ptr->done_) {
     if (this_ptr->test_name() == "create_instance_in_paint" &&
         message == WM_PAINT) {
@@ -138,6 +154,10 @@ LRESULT CALLBACK WindowedPluginTest::WindowProc(
                message == WM_PAINT) {
       this_ptr->done_ = true;
       CallJSFunction(this_ptr, "SetTitle");
+    } else if (this_ptr->test_name() == "set_title_in_set_window_and_paint" &&
+               message == WM_PAINT) {
+      this_ptr->done_ = true;
+      CallJSFunction(this_ptr, "PluginShown");
     }
 
     if (this_ptr->done_) {

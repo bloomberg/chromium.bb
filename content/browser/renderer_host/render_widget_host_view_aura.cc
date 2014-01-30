@@ -1362,15 +1362,16 @@ void RenderWidgetHostViewAura::DidReceiveFrameFromRenderer() {
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
     const std::vector<gfx::Rect>& rects) {
+  // Check this before setting constrained_rects_, so that next time they're set
+  // and we have a root window we don't early return.
+  if (!window_->GetDispatcher())
+    return;
+
   if (rects == constrained_rects_)
     return;
-  constrained_rects_ = rects;
-  UpdateCutoutRects();
-}
 
-void RenderWidgetHostViewAura::UpdateCutoutRects() {
-  if (!window_->GetRootWindow())
-    return;
+  constrained_rects_ = rects;
+
   HWND parent = window_->GetDispatcher()->host()->GetAcceleratedWidget();
   CutoutRectsParams params;
   params.widget = this;

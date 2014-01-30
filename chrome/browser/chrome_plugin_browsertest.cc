@@ -10,17 +10,21 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/process_type.h"
@@ -28,6 +32,12 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_util.h"
+
+#if defined(OS_WIN)
+#include "content/public/browser/web_contents_view.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
 
 using content::BrowserThread;
 
@@ -263,3 +273,67 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
     ASSERT_TRUE(j != plugins.size()) << "Didn't find " << expected[i];
   }
 }
+
+#if defined(OS_WIN)
+
+namespace {
+
+BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
+  HWND* child = reinterpret_cast<HWND*>(l_param);
+  *child = hwnd;
+  // The first child window is the plugin, then its children. So stop
+  // enumerating after the first callback.
+  return FALSE;
+}
+
+}
+
+// Test that if a background tab loads an NPAPI plugin, they are displayed after
+// switching to that page.  http://crbug.com/335900
+IN_PROC_BROWSER_TEST_F(ChromePluginTest, WindowedNPAPIPluginHidden) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
+                                               true);
+
+  // First load the page in the background and wait for the NPAPI plugin's
+  // window to be created.
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath(),
+      base::FilePath().AppendASCII("windowed_npapi_plugin.html"));
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // We create a third window just to trigger the second one to update its
+  // constrained window list. Normally this would be triggered by the status bar
+  // animation closing after the user middle clicked a link.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"), NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  base::string16 expected_title(base::ASCIIToUTF16("created"));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  if (tab->GetTitle() != expected_title) {
+    content::TitleWatcher title_watcher(tab, expected_title);
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  }
+
+  // Now activate the tab and verify that the plugin painted.
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
+
+  base::string16 expected_title2(base::ASCIIToUTF16("shown"));
+  content::TitleWatcher title_watcher2(tab, expected_title2);
+  EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
+
+  HWND child = NULL;
+  HWND hwnd = tab->GetView()->GetNativeView()->GetDispatcher()->host()->
+      GetAcceleratedWidget();
+  EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
+
+  RECT region;
+  int result = GetWindowRgnBox(child, &region);
+  ASSERT_NE(result, NULLREGION);
+}
+
+#endif

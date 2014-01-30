@@ -792,10 +792,8 @@ class WebContentsViewAura::WindowObserver
 
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE {
-    if (window == view_->window_)
-      return;
-
-    if (window->parent() == parent_ ||
+    if (window == view_->window_ ||
+        window->parent() == parent_ ||
         window->parent() == view_->window_->GetRootWindow()) {
       UpdateConstrainedWindows(NULL);
     }
