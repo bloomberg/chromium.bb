@@ -40,13 +40,6 @@
 #transform3dChild {
   -webkit-transform: rotate3d(0.2, 1, 0, 50grad);
 }
-#scrollContainer {
-  overflow-y: scroll;
-  /* Make this just big enough for clipping to occur so we can verify the 
-     hit rect is also clipped. */
-  height: 23px;
-  border: 1px solid lightgrey;
-}
 #list > li {
   /* Move the list item over to make sure it doesn't overlap with the list itself */
   -webkit-transform: translate(300px, 0);
@@ -119,11 +112,6 @@ to quickly validate graphically.</p>
   </div>
   <div class="testcase" id="styleModified">
     Style modified dynamically
-  </div>
-  <div id="scrollContainer">
-    <div style='height: 13px;'></div>
-    <div class="testcase" id="scrollContent">Scroll content</div>
-    <div style='height: 50px;'></div>
   </div>
   <div class="testcase" id="containsSvg">
     <svg id="svg1">

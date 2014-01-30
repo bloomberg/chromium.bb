@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="resources/compositor-touch-hit-rects.css">
+<style>
+.scroll {
+  overflow-y: scroll;
+  /* Make this just big enough for clipping to occur so we can verify the
+     hit rect is also clipped. */
+  height: 23px;
+  border: 1px solid lightgrey;
+}
+</style>
+</head>
+<body>
+<p id="description">
+This test verifies the hit test regions given to the compositor specifically around non-composited
+overflow scroll elements.
+</p>
+
+<div id="tests">
+  <div class="scroll" id="scrollContainer">
+    <div style='height: 13px;'></div>
+    <div class="testcase" id="scrollContent">Scroll content</div>
+    <div style='height: 50px;'></div>
+  </div>
+
+  <div class="scroll testcase" id="scrollContainerWithHandler">
+    <div style='height: 13px;'></div>
+    <div>Scroll content</div>
+    <div style='height: 50px;'></div>
+  </div>
+</div>
+
+<div id="console"></div>
+<div style="height: 1000px;"></div>
+<script src="resources/compositor-touch-hit-rects.js"></script>
+<script>
+// Make fixed-position cases slightly more interesting
+window.scrollTo(0, 13);
+
+if (window.internals) {
+  window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
+}
+</script>
+</body>

@@ -1,0 +1,7 @@
+This test verifies the hit test regions given to the compositor specifically around non-composited overflow scroll elements.
+
+scrollContent: #document (14, 94, 273, 12)
+
+scrollContainerWithHandler: #document (13, 110, 290, 25)
+
+

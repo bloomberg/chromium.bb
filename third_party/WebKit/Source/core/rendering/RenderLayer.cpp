@@ -3891,9 +3891,14 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 
         if (renderBox() && renderBox()->scrollsOverflow()) {
             // For scrolling layers, rects are taken to be in the space of the contents.
-            // We need to include both the entire contents, and also the bounding box
-            // of the layer in the space of it's parent (eg. for border / scroll bars).
-            rect.append(m_scrollableArea->overflowRect());
+            // We need to include the bounding box of the layer in the space of its parent
+            // (eg. for border / scroll bars) and if it's composited then the entire contents
+            // as well as they may be on another composited layer. Skip reporting contents
+            // for non-composited layers as they'll get projected to the same layer as the
+            // bounding box.
+            if (compositingState() != NotComposited)
+                rect.append(m_scrollableArea->overflowRect());
+
             rects.set(this, rect);
             if (const RenderLayer* parentLayer = parent()) {
                 LayerHitTestRects::iterator iter = rects.find(parentLayer);
