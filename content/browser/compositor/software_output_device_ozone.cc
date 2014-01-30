@@ -30,7 +30,7 @@ SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
 SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {
 }
 
-void SoftwareOutputDeviceOzone::Resize(gfx::Size viewport_size) {
+void SoftwareOutputDeviceOzone::Resize(const gfx::Size& viewport_size) {
   if (viewport_size_ == viewport_size)
     return;
 
