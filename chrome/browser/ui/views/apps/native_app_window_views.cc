@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -301,9 +302,13 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   views::FocusManager* focus_manager = GetFocusManager();
   const std::map<ui::Accelerator, int>& accelerator_table =
       GetAcceleratorTable();
+  const bool is_kiosk_app_mode = chrome::IsRunningInForcedAppMode();
   for (std::map<ui::Accelerator, int>::const_iterator iter =
            accelerator_table.begin();
        iter != accelerator_table.end(); ++iter) {
+    if (is_kiosk_app_mode && !chrome::IsCommandAllowedInAppMode(iter->second))
+      continue;
+
     focus_manager->RegisterAccelerator(
         iter->first, ui::AcceleratorManager::kNormalPriority, this);
   }
