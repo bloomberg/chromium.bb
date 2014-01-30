@@ -82,7 +82,7 @@
 
 - (NSMenu*)menuForEvent:(NSEvent*)theEvent {
   menu_controller_.reset(
-    [[MenuController alloc] initWithModel:dialog_->GetContextMenuModel(prefId_)
+    [[MenuController alloc] initWithModel:dialog_->GetContextMenu(prefId_)
                    useWithPopUpButtonCell:NO]);
   return [menu_controller_ menu];
 }
@@ -388,9 +388,9 @@ void MediaGalleriesDialogCocoa::OnConstrainedWindowClosed(
   controller_->DialogFinished(accepted_);
 }
 
-ui::MenuModel* MediaGalleriesDialogCocoa::GetContextMenuModel(
+ui::MenuModel* MediaGalleriesDialogCocoa::GetContextMenu(
     MediaGalleryPrefId prefid) {
-  return controller_->GetContextMenuModel(prefid);
+  return controller_->GetContextMenu(prefid);
 }
 
 // static

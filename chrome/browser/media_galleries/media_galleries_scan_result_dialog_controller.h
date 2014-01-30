@@ -23,7 +23,12 @@ namespace extensions {
 class Extension;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 class MediaGalleriesScanResultDialogController;
+class MediaGalleryContextMenu;
 class Profile;
 
 // The view.
@@ -86,6 +91,8 @@ class MediaGalleriesScanResultDialogController
   virtual void DialogFinished(bool accepted);
 
   virtual content::WebContents* web_contents();
+
+  ui::MenuModel* GetContextMenu(MediaGalleryPrefId id);
 
  private:
   friend class MediaGalleriesScanResultDialogControllerTest;
@@ -165,6 +172,8 @@ class MediaGalleriesScanResultDialogController
 
   // The view that's showing.
   scoped_ptr<MediaGalleriesScanResultDialog> dialog_;
+
+  scoped_ptr<MediaGalleryContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesScanResultDialogController);
 };

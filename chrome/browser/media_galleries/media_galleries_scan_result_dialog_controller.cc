@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
+#include "chrome/browser/media_galleries/media_gallery_context_menu.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
@@ -65,6 +66,11 @@ MediaGalleriesScanResultDialogController(
   preferences_->EnsureInitialized(base::Bind(
         &MediaGalleriesScanResultDialogController::OnPreferencesInitialized,
         base::Unretained(this)));
+
+  // Unretained is safe because |this| owns |context_menu_|.
+  context_menu_.reset(new MediaGalleryContextMenu(base::Bind(
+          &MediaGalleriesScanResultDialogController::DidForgetGallery,
+          base::Unretained(this))));
 }
 
 MediaGalleriesScanResultDialogController::
@@ -185,6 +191,12 @@ void MediaGalleriesScanResultDialogController::DialogFinished(bool accepted) {
 
 content::WebContents* MediaGalleriesScanResultDialogController::web_contents() {
   return web_contents_;
+}
+
+ui::MenuModel* MediaGalleriesScanResultDialogController::GetContextMenu(
+    MediaGalleryPrefId id) {
+  context_menu_->set_pref_id(id);
+  return context_menu_.get();
 }
 
 void MediaGalleriesScanResultDialogController::OnPreferencesInitialized() {

@@ -19,6 +19,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -183,10 +184,12 @@ bool MediaGalleriesScanResultDialogViews::AddOrUpdateScanResult(
 
   views::Checkbox* checkbox = new views::Checkbox(label);
   checkbox->set_listener(this);
+  checkbox->set_context_menu_controller(this);
   checkbox->SetTooltipText(tooltip_text);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* folder_viewer_button = new views::ImageButton(this);
+  folder_viewer_button->set_context_menu_controller(this);
   folder_viewer_button->SetImage(views::ImageButton::STATE_NORMAL,
                                  rb.GetImageSkiaNamed(IDR_OAK));
   folder_viewer_button->SetAccessibleName(l10n_util::GetStringUTF16(
@@ -195,6 +198,7 @@ bool MediaGalleriesScanResultDialogViews::AddOrUpdateScanResult(
   folder_viewer_button->SetVisible(is_attached);
 
   views::Label* secondary_text = new views::Label(details);
+  secondary_text->set_context_menu_controller(this);
   secondary_text->SetTooltipText(tooltip_text);
   secondary_text->SetEnabledColor(kDeemphasizedTextColor);
   secondary_text->SetTooltipText(tooltip_text);
@@ -207,6 +211,7 @@ bool MediaGalleriesScanResultDialogViews::AddOrUpdateScanResult(
   views::View* checkbox_view = new views::View();
   checkbox_view->SetBorder(views::Border::CreateEmptyBorder(
       0, views::kPanelHorizMargin, trailing_vertical_space, 0));
+  checkbox_view->set_context_menu_controller(this);
   checkbox_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   checkbox_view->AddChildView(checkbox);
@@ -295,6 +300,36 @@ void MediaGalleriesScanResultDialogViews::ButtonPressed(
       controller_->DidClickOpenFolderViewer(it->first);
       return;
     }
+  }
+}
+
+void MediaGalleriesScanResultDialogViews::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  for (GalleryViewMap::const_iterator it = gallery_view_map_.begin();
+       it != gallery_view_map_.end(); ++it) {
+    if (it->second.checkbox->parent()->Contains(source)) {
+      ShowContextMenu(point, source_type, it->first);
+      return;
+    }
+  }
+  NOTREACHED();
+}
+
+void MediaGalleriesScanResultDialogViews::ShowContextMenu(
+    const gfx::Point& point,
+    ui::MenuSourceType source_type,
+    MediaGalleryPrefId id) {
+  context_menu_runner_.reset(new views::MenuRunner(
+      controller_->GetContextMenu(id)));
+
+  if (context_menu_runner_->RunMenuAt(
+          GetWidget(), NULL, gfx::Rect(point.x(), point.y(), 0, 0),
+          views::MenuItemView::TOPLEFT, source_type,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED) {
+    return;
   }
 }
 

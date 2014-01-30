@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
+#include "chrome/browser/media_galleries/media_gallery_context_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -47,40 +48,6 @@ bool GalleriesVectorComparator(
 
 }  // namespace
 
-class GalleryContextMenuModel : public ui::SimpleMenuModel::Delegate {
- public:
-  explicit GalleryContextMenuModel(MediaGalleriesDialogController* controller)
-      : controller_(controller), id_(kInvalidMediaGalleryPrefId) {}
-  virtual ~GalleryContextMenuModel() {}
-
-  void set_media_gallery_pref_id(MediaGalleryPrefId id) {
-    id_ = id;
-  }
-
-  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
-    return false;
-  }
-  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
-    return true;
-  }
-  virtual bool IsCommandIdVisible(int command_id) const OVERRIDE {
-    return true;
-  }
-
-  virtual bool GetAcceleratorForCommandId(
-      int command_id, ui::Accelerator* accelerator) OVERRIDE {
-    return false;
-  }
-
-  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
-    controller_->DidForgetGallery(id_);
-  }
-
- private:
-  MediaGalleriesDialogController* controller_;
-  MediaGalleryPrefId id_;
-};
-
 MediaGalleriesDialogController::MediaGalleriesDialogController(
     content::WebContents* web_contents,
     const Extension& extension,
@@ -98,12 +65,11 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
       base::Bind(&MediaGalleriesDialogController::OnPreferencesInitialized,
                  base::Unretained(this)));
 
-  gallery_menu_model_.reset(new GalleryContextMenuModel(this));
-  ui::SimpleMenuModel* menu_model =
-      new ui::SimpleMenuModel(gallery_menu_model_.get());
-  menu_model->AddItem(
-      1, l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_DELETE));
-  context_menu_model_.reset(menu_model);
+  // Unretained is safe because |this| owns |context_menu_|.
+  context_menu_.reset(
+      new MediaGalleryContextMenu(
+          base::Bind(&MediaGalleriesDialogController::DidForgetGallery,
+                     base::Unretained(this))));
 }
 
 void MediaGalleriesDialogController::OnPreferencesInitialized() {
@@ -472,10 +438,10 @@ void MediaGalleriesDialogController::UpdateGalleriesOnDeviceEvent(
   dialog_->UpdateGalleries();
 }
 
-ui::MenuModel* MediaGalleriesDialogController::GetContextMenuModel(
+ui::MenuModel* MediaGalleriesDialogController::GetContextMenu(
     MediaGalleryPrefId id) {
-  gallery_menu_model_->set_media_gallery_pref_id(id);
-  return context_menu_model_.get();
+  context_menu_->set_pref_id(id);
+  return context_menu_.get();
 }
 
 Profile* MediaGalleriesDialogController::GetProfile() {

@@ -47,7 +47,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
-  ui::MenuModel* GetContextMenuModel(MediaGalleryPrefId prefid);
+  ui::MenuModel* GetContextMenu(MediaGalleryPrefId prefid);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);

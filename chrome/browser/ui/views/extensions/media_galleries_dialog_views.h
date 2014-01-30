@@ -13,10 +13,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace ui {
-class MenuModel;
-}
-
 namespace views {
 class Checkbox;
 class LabelButton;

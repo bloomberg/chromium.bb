@@ -369,7 +369,7 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
                                                 ui::MenuSourceType source_type,
                                                 MediaGalleryPrefId id) {
   context_menu_runner_.reset(new views::MenuRunner(
-      controller_->GetContextMenuModel(id)));
+      controller_->GetContextMenu(id)));
 
   if (context_menu_runner_->RunMenuAt(
           GetWidget(), NULL, gfx::Rect(point.x(), point.y(), 0, 0),

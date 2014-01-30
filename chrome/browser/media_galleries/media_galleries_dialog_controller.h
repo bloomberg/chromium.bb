@@ -28,8 +28,8 @@ namespace ui {
 class MenuModel;
 }
 
-class GalleryContextMenuModel;
 class MediaGalleriesDialogController;
+class MediaGalleryContextMenu;
 class Profile;
 
 // The view.
@@ -105,7 +105,7 @@ class MediaGalleriesDialogController
 
   virtual content::WebContents* web_contents();
 
-  ui::MenuModel* GetContextMenuModel(MediaGalleryPrefId id);
+  ui::MenuModel* GetContextMenu(MediaGalleryPrefId id);
 
  protected:
   // For use with tests.
@@ -200,8 +200,7 @@ class MediaGalleriesDialogController
 
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 
-  scoped_ptr<ui::MenuModel> context_menu_model_;
-  scoped_ptr<GalleryContextMenuModel> gallery_menu_model_;
+  scoped_ptr<MediaGalleryContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogController);
 };

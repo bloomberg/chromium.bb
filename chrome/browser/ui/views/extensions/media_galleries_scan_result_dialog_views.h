@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/media_galleries/media_galleries_scan_result_dialog_controller.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -16,6 +17,7 @@ namespace views {
 class Checkbox;
 class ImageButton;
 class Label;
+class MenuRunner;
 class Widget;
 }
 
@@ -24,6 +26,7 @@ class Widget;
 class MediaGalleriesScanResultDialogViews
     : public MediaGalleriesScanResultDialog,
       public views::ButtonListener,
+      public views::ContextMenuController,
       public views::DialogDelegate {
  public:
   explicit MediaGalleriesScanResultDialogViews(
@@ -51,6 +54,11 @@ class MediaGalleriesScanResultDialogViews
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // views::ContextMenuController implementation:
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
+
  private:
   struct GalleryEntry {
     views::Checkbox* checkbox;
@@ -68,6 +76,10 @@ class MediaGalleriesScanResultDialogViews
                              views::View* container,
                              int trailing_vertical_space);
 
+  void ShowContextMenu(const gfx::Point& point,
+                       ui::MenuSourceType source_type,
+                       MediaGalleryPrefId id);
+
   MediaGalleriesScanResultDialogController* controller_;
 
   // The containing window (a weak pointer).
@@ -81,6 +93,8 @@ class MediaGalleriesScanResultDialogViews
 
   // True if the user has pressed accept.
   bool accepted_;
+
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesScanResultDialogViews);
 };
