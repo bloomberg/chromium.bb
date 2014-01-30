@@ -43,7 +43,9 @@ const base::FilePath::CharType kSyncFileSystemDir[] =
 const base::FilePath::CharType kSyncFileSystemDirDev[] =
     FILE_PATH_LITERAL("Sync FileSystem Dev");
 
-bool is_directory_operation_enabled = false;
+// Flags to enable features for testing.
+bool g_is_directory_operation_enabled = false;
+bool g_is_syncfs_v2_enabled = false;
 
 }  // namespace
 
@@ -119,7 +121,7 @@ bool DeserializeSyncableFileSystemURL(
 }
 
 void SetEnableSyncFSDirectoryOperation(bool flag) {
-  is_directory_operation_enabled = flag;
+  g_is_directory_operation_enabled = flag;
 }
 
 bool IsSyncFSDirectoryOperationEnabled() {
@@ -127,14 +129,15 @@ bool IsSyncFSDirectoryOperationEnabled() {
 }
 
 bool IsSyncFSDirectoryOperationEnabled(const GURL& origin) {
-  return is_directory_operation_enabled ||
+  return g_is_directory_operation_enabled ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           kEnableSyncFSDirectoryOperation) ||
       IsV2EnabledForOrigin(origin);
 }
 
 bool IsV2Enabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncFileSystemV2);
+  return g_is_syncfs_v2_enabled ||
+        CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncFileSystemV2);
 }
 
 bool IsV2EnabledForOrigin(const GURL& origin) {
@@ -181,6 +184,16 @@ ScopedEnableSyncFSDirectoryOperation::ScopedEnableSyncFSDirectoryOperation() {
 ScopedEnableSyncFSDirectoryOperation::~ScopedEnableSyncFSDirectoryOperation() {
   DCHECK(IsSyncFSDirectoryOperationEnabled(GURL()));
   SetEnableSyncFSDirectoryOperation(was_enabled_);
+}
+
+ScopedEnableSyncFSV2::ScopedEnableSyncFSV2() {
+  was_enabled_ = IsV2Enabled();
+  g_is_syncfs_v2_enabled = true;
+}
+
+ScopedEnableSyncFSV2::~ScopedEnableSyncFSV2() {
+  DCHECK(IsV2Enabled());
+  g_is_syncfs_v2_enabled = was_enabled_;
 }
 
 void RunSoon(const tracked_objects::Location& from_here,

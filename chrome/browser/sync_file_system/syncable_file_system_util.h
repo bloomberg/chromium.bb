@@ -115,6 +115,18 @@ class ScopedEnableSyncFSDirectoryOperation {
   DISALLOW_COPY_AND_ASSIGN(ScopedEnableSyncFSDirectoryOperation);
 };
 
+// Enables V2 backend for syncable filesystems temporarily for testing.
+class ScopedEnableSyncFSV2 {
+ public:
+  ScopedEnableSyncFSV2();
+  ~ScopedEnableSyncFSV2();
+
+ private:
+  bool was_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedEnableSyncFSV2);
+};
+
 // Posts |callback| to the current thread.
 void RunSoon(const tracked_objects::Location& from_here,
              const base::Closure& callback);
