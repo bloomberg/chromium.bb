@@ -522,15 +522,6 @@ WebLayer* GraphicsLayer::contentsLayerIfRegistered()
     return m_contentsLayer;
 }
 
-double GraphicsLayer::backingStoreMemoryEstimate() const
-{
-    if (!drawsContent())
-        return 0;
-
-    // Effects of page and device scale are ignored; subclasses should override to take these into account.
-    return static_cast<double>(4 * size().width()) * size().height();
-}
-
 void GraphicsLayer::resetTrackedRepaints()
 {
     repaintRectMap().remove(this);

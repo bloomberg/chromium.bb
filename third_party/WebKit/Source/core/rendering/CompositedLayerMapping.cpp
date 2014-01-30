@@ -1710,27 +1710,30 @@ void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
     }
 }
 
+static void setCotentNeedsDisplayInLayer(const OwnPtr<GraphicsLayer>& layer)
+{
+    if (layer && layer->drawsContent())
+        layer->setNeedsDisplay();
+}
+
 void CompositedLayerMapping::setContentsNeedDisplay()
 {
     ASSERT(!paintsIntoCompositedAncestor());
+    setCotentNeedsDisplayInLayer(m_graphicsLayer);
+    setCotentNeedsDisplayInLayer(m_foregroundLayer);
+    setCotentNeedsDisplayInLayer(m_backgroundLayer);
+    setCotentNeedsDisplayInLayer(m_maskLayer);
+    setCotentNeedsDisplayInLayer(m_childClippingMaskLayer);
+    setCotentNeedsDisplayInLayer(m_scrollingContentsLayer);
+}
 
-    if (m_graphicsLayer && m_graphicsLayer->drawsContent())
-        m_graphicsLayer->setNeedsDisplay();
-
-    if (m_foregroundLayer && m_foregroundLayer->drawsContent())
-        m_foregroundLayer->setNeedsDisplay();
-
-    if (m_backgroundLayer && m_backgroundLayer->drawsContent())
-        m_backgroundLayer->setNeedsDisplay();
-
-    if (m_maskLayer && m_maskLayer->drawsContent())
-        m_maskLayer->setNeedsDisplay();
-
-    if (m_childClippingMaskLayer && m_childClippingMaskLayer->drawsContent())
-        m_childClippingMaskLayer->setNeedsDisplay();
-
-    if (m_scrollingContentsLayer && m_scrollingContentsLayer->drawsContent())
-        m_scrollingContentsLayer->setNeedsDisplay();
+static void setNeedsDisplayInRect(const OwnPtr<GraphicsLayer>& layer, const IntRect& r)
+{
+    if (layer && layer->drawsContent()) {
+        IntRect layerDirtyRect = r;
+        layerDirtyRect.move(-layer->offsetFromRenderer());
+        layer->setNeedsDisplayInRect(layerDirtyRect);
+    }
 }
 
 // r is in the coordinate space of the layer's render object
@@ -1738,42 +1741,13 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const IntRect& r)
 {
     ASSERT(!paintsIntoCompositedAncestor());
 
-    if (m_graphicsLayer && m_graphicsLayer->drawsContent()) {
-        IntRect layerDirtyRect = r;
-        layerDirtyRect.move(-m_graphicsLayer->offsetFromRenderer());
-        m_graphicsLayer->setNeedsDisplayInRect(layerDirtyRect);
-    }
-
-    if (m_foregroundLayer && m_foregroundLayer->drawsContent()) {
-        IntRect layerDirtyRect = r;
-        layerDirtyRect.move(-m_foregroundLayer->offsetFromRenderer());
-        m_foregroundLayer->setNeedsDisplayInRect(layerDirtyRect);
-    }
-
+    setNeedsDisplayInRect(m_graphicsLayer, r);
+    setNeedsDisplayInRect(m_foregroundLayer, r);
     // FIXME: need to split out repaints for the background.
-    if (m_backgroundLayer && m_backgroundLayer->drawsContent()) {
-        IntRect layerDirtyRect = r;
-        layerDirtyRect.move(-m_backgroundLayer->offsetFromRenderer());
-        m_backgroundLayer->setNeedsDisplayInRect(layerDirtyRect);
-    }
-
-    if (m_maskLayer && m_maskLayer->drawsContent()) {
-        IntRect layerDirtyRect = r;
-        layerDirtyRect.move(-m_maskLayer->offsetFromRenderer());
-        m_maskLayer->setNeedsDisplayInRect(layerDirtyRect);
-    }
-
-    if (m_childClippingMaskLayer && m_childClippingMaskLayer->drawsContent()) {
-        IntRect layerDirtyRect = r;
-        layerDirtyRect.move(-m_childClippingMaskLayer->offsetFromRenderer());
-        m_childClippingMaskLayer->setNeedsDisplayInRect(layerDirtyRect);
-    }
-
-    if (m_scrollingContentsLayer && m_scrollingContentsLayer->drawsContent()) {
-        IntRect layerDirtyRect = r;
-        layerDirtyRect.move(-m_scrollingContentsLayer->offsetFromRenderer());
-        m_scrollingContentsLayer->setNeedsDisplayInRect(layerDirtyRect);
-    }
+    setNeedsDisplayInRect(m_backgroundLayer, r);
+    setNeedsDisplayInRect(m_maskLayer, r);
+    setNeedsDisplayInRect(m_childClippingMaskLayer, r);
+    setNeedsDisplayInRect(m_scrollingContentsLayer, r);
 }
 
 void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, GraphicsContext* context,
@@ -2122,38 +2096,6 @@ CompositingLayerType CompositedLayerMapping::compositingLayerType() const
         return NormalCompositingLayer;
 
     return ContainerCompositingLayer;
-}
-
-double CompositedLayerMapping::backingStoreMemoryEstimate() const
-{
-    double backingMemory;
-
-    // m_ancestorClippingLayer and m_childContainmentLayer are just used for masking or containment, so have no backing.
-    backingMemory = m_graphicsLayer->backingStoreMemoryEstimate();
-    if (m_squashingLayer)
-        backingMemory += m_squashingLayer->backingStoreMemoryEstimate();
-    if (m_foregroundLayer)
-        backingMemory += m_foregroundLayer->backingStoreMemoryEstimate();
-    if (m_backgroundLayer)
-        backingMemory += m_backgroundLayer->backingStoreMemoryEstimate();
-    if (m_maskLayer)
-        backingMemory += m_maskLayer->backingStoreMemoryEstimate();
-    if (m_childClippingMaskLayer)
-        backingMemory += m_childClippingMaskLayer->backingStoreMemoryEstimate();
-
-    if (m_scrollingContentsLayer)
-        backingMemory += m_scrollingContentsLayer->backingStoreMemoryEstimate();
-
-    if (m_layerForHorizontalScrollbar)
-        backingMemory += m_layerForHorizontalScrollbar->backingStoreMemoryEstimate();
-
-    if (m_layerForVerticalScrollbar)
-        backingMemory += m_layerForVerticalScrollbar->backingStoreMemoryEstimate();
-
-    if (m_layerForScrollCorner)
-        backingMemory += m_layerForScrollCorner->backingStoreMemoryEstimate();
-
-    return backingMemory;
 }
 
 String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)

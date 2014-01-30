@@ -189,9 +189,6 @@ public:
     void updateFilters(const RenderStyle*);
     bool canCompositeFilters() const { return m_canCompositeFilters; }
 
-    // Return an estimate of the backing store area (in pixels) allocated by this object's GraphicsLayers.
-    double backingStoreMemoryEstimate() const;
-
     void setBlendMode(blink::WebBlendMode);
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;

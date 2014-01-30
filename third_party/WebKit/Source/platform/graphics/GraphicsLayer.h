@@ -268,9 +268,6 @@ public:
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
     String debugName(blink::WebLayer*) const;
 
-    // Return an estimate of the backing store memory cost (in bytes). May be incorrect for tiled layers.
-    double backingStoreMemoryEstimate() const;
-
     void resetTrackedRepaints();
     void addRepaintRect(const FloatRect&);
 
