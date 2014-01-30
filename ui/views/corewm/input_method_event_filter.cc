@@ -58,21 +58,12 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
 // InputMethodEventFilter, ui::InputMethodDelegate implementation:
 
 bool InputMethodEventFilter::DispatchKeyEventPostIME(
-    const base::NativeEvent& event) {
+    const ui::KeyEvent& event) {
 #if defined(OS_WIN)
-  DCHECK(event.message != WM_CHAR);
+  if (DCHECK_IS_ON() && event.HasNativeEvent())
+    DCHECK_NE(event.native_event().message, static_cast<UINT>(WM_CHAR));
 #endif
-  ui::TranslatedKeyEvent aura_event(event, false /* is_char */);
-  return target_dispatcher_->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &aura_event);
-}
-
-bool InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
-    ui::EventType type,
-    ui::KeyboardCode key_code,
-    int flags) {
-  ui::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
-                                    flags);
+  ui::TranslatedKeyEvent aura_event(event);
   return target_dispatcher_->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &aura_event);
 }

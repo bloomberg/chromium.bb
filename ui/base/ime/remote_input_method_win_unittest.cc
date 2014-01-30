@@ -159,15 +159,9 @@ class MockInputMethodDelegate : public internal::InputMethodDelegate {
   }
 
  private:
-  virtual bool DispatchKeyEventPostIME(
-      const base::NativeEvent& native_key_event) OVERRIDE {
-    EXPECT_TRUE(false) << "Not reach here";
-    return true;
-  }
-  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
-                                                 ui::KeyboardCode key_code,
-                                                 int flags) OVERRIDE {
-    fabricated_key_events_.push_back(key_code);
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
+    EXPECT_FALSE(event.HasNativeEvent());
+    fabricated_key_events_.push_back(event.key_code());
     return true;
   }
 

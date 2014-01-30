@@ -11,14 +11,7 @@ DummyInputMethodDelegate::DummyInputMethodDelegate() {}
 DummyInputMethodDelegate::~DummyInputMethodDelegate() {}
 
 bool DummyInputMethodDelegate::DispatchKeyEventPostIME(
-    const base::NativeEvent& native_key_event) {
-  return true;
-}
-
-bool DummyInputMethodDelegate::DispatchFabricatedKeyEventPostIME(
-    ui::EventType type,
-    ui::KeyboardCode key_code,
-    int flags) {
+    const ui::KeyEvent& key_event) {
   return true;
 }
 

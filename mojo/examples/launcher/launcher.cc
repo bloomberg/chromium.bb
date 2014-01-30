@@ -95,19 +95,9 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
     }
   }
 
-  // ui::InputMethodDelegate:
-  virtual bool DispatchKeyEventPostIME(
-      const base::NativeEvent& event) OVERRIDE {
-    ui::TranslatedKeyEvent aura_event(event, false /* is_char */);
-    return root_->GetDispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-        &aura_event);
-  }
-
-  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
-                                                 ui::KeyboardCode key_code,
-                                                 int flags) OVERRIDE {
-    ui::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
-                                      flags);
+  // ui::internal::InputMethodDelegate:
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
+    ui::TranslatedKeyEvent aura_event(event);
     return root_->GetDispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(
         &aura_event);
   }

@@ -5,13 +5,12 @@
 #ifndef UI_VIEWS_COREWM_INPUT_METHOD_EVENT_FILTER_H_
 #define UI_VIEWS_COREWM_INPUT_METHOD_EVENT_FILTER_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -38,11 +37,8 @@ class VIEWS_EXPORT InputMethodEventFilter
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
 
-  // Overridden from ui::internal::InputMethodDelegate.
-  virtual bool DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;
-  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
-                                                 ui::KeyboardCode key_code,
-                                                 int flags) OVERRIDE;
+  // Overridden from ui::internal::InputMethodDelegate:
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE;
 
   scoped_ptr<ui::InputMethod> input_method_;
 

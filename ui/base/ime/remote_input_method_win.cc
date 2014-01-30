@@ -204,9 +204,7 @@ class RemoteInputMethodWin : public InputMethod,
     }
     if (!delegate_)
       return false;
-    return delegate_->DispatchFabricatedKeyEventPostIME(event.type(),
-                                                        event.key_code(),
-                                                        event.flags());
+    return delegate_->DispatchKeyEventPostIME(event);
   }
 
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE {

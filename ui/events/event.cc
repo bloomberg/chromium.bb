@@ -639,6 +639,13 @@ TranslatedKeyEvent::TranslatedKeyEvent(bool is_press,
                false) {
 }
 
+TranslatedKeyEvent::TranslatedKeyEvent(const KeyEvent& key_event)
+    : KeyEvent(key_event) {
+  SetType(type() == ET_KEY_PRESSED ?
+          ET_TRANSLATED_KEY_PRESS : ET_TRANSLATED_KEY_RELEASE);
+  set_is_char(false);
+}
+
 void TranslatedKeyEvent::ConvertToKeyEvent() {
   SetType(type() == ET_TRANSLATED_KEY_PRESS ?
           ET_KEY_PRESSED : ET_KEY_RELEASED);

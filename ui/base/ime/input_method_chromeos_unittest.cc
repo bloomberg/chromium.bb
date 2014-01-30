@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/ime/input_method_chromeos.h"
+
 #include <X11/Xlib.h>
 #undef Bool
 #undef FocusIn
@@ -19,12 +21,11 @@
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
-#include "ui/base/ime/input_method_chromeos.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/test/events_test_utils_x11.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
@@ -72,7 +73,7 @@ class TestableInputMethodChromeOS : public InputMethodChromeOS {
     bool handled;
   };
 
-  // InputMethodChromeOS override.
+  // Overridden from InputMethodChromeOS:
   virtual void ProcessKeyEventPostIME(const ui::KeyEvent& key_event,
                                       bool handled) OVERRIDE {
     process_key_event_post_ime_args_.event = &key_event;
@@ -193,17 +194,17 @@ class SetSurroundingTextVerifier {
 };
 
 class InputMethodChromeOSTest : public internal::InputMethodDelegate,
-                            public testing::Test,
-                            public TextInputClient {
+                                public testing::Test,
+                                public TextInputClient {
  public:
-  InputMethodChromeOSTest() {
+  InputMethodChromeOSTest()
+      : dispatched_key_event_(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, 0, false) {
     ResetFlags();
   }
 
   virtual ~InputMethodChromeOSTest() {
   }
 
-  // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     chromeos::IMEBridge::Initialize();
 
@@ -232,22 +233,13 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     chromeos::IMEBridge::Shutdown();
   }
 
-  // ui::internal::InputMethodDelegate overrides:
-  virtual bool DispatchKeyEventPostIME(
-      const base::NativeEvent& native_key_event) OVERRIDE {
-    dispatched_native_event_ = native_key_event;
-    return false;
-  }
-  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
-                                                 ui::KeyboardCode key_code,
-                                                 int flags) OVERRIDE {
-    dispatched_fabricated_event_type_ = type;
-    dispatched_fabricated_event_key_code_ = key_code;
-    dispatched_fabricated_event_flags_ = flags;
+  // Overridden from ui::internal::InputMethodDelegate:
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
+    dispatched_key_event_ = event;
     return false;
   }
 
-  // ui::TextInputClient overrides:
+  // Overridden from ui::TextInputClient:
   virtual void SetCompositionText(
       const CompositionText& composition) OVERRIDE {
     composition_text_ = composition;
@@ -316,26 +308,19 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE { return false; }
   virtual void ExtendSelectionAndDelete(size_t before,
-                                        size_t after) OVERRIDE { }
-  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE { }
-  virtual void OnCandidateWindowShown() OVERRIDE { }
-  virtual void OnCandidateWindowUpdated() OVERRIDE { }
-  virtual void OnCandidateWindowHidden() OVERRIDE { }
+                                        size_t after) OVERRIDE {}
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE {}
+  virtual void OnCandidateWindowShown() OVERRIDE {}
+  virtual void OnCandidateWindowUpdated() OVERRIDE {}
+  virtual void OnCandidateWindowHidden() OVERRIDE {}
 
   bool HasNativeEvent() const {
-    base::NativeEvent empty;
-    std::memset(&empty, 0, sizeof(empty));
-    return !!std::memcmp(&dispatched_native_event_,
-                         &empty,
-                         sizeof(dispatched_native_event_));
+    return dispatched_key_event_.HasNativeEvent();
   }
 
   void ResetFlags() {
-    std::memset(&dispatched_native_event_, 0, sizeof(dispatched_native_event_));
-    DCHECK(!HasNativeEvent());
-    dispatched_fabricated_event_type_ = ET_UNKNOWN;
-    dispatched_fabricated_event_key_code_ = VKEY_UNKNOWN;
-    dispatched_fabricated_event_flags_ = 0;
+    dispatched_key_event_ = ui::KeyEvent(ui::ET_UNKNOWN, ui::VKEY_UNKNOWN, 0,
+                                         false);
 
     composition_text_.Clear();
     confirmed_text_.Clear();
@@ -352,12 +337,8 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
 
   scoped_ptr<TestableInputMethodChromeOS> ime_;
 
-  // Variables for remembering the parameters that are passed to
-  // ui::internal::InputMethodDelegate functions.
-  base::NativeEvent dispatched_native_event_;
-  ui::EventType dispatched_fabricated_event_type_;
-  ui::KeyboardCode dispatched_fabricated_event_key_code_;
-  int dispatched_fabricated_event_flags_;
+  // Copy of the dispatched key event.
+  ui::KeyEvent dispatched_key_event_;
 
   // Variables for remembering the parameters that are passed to
   // ui::TextInputClient functions.

@@ -5,26 +5,20 @@
 #ifndef UI_BASE_IME_DUMMY_INPUT_METHOD_DELEGATE_H_
 #define UI_BASE_IME_DUMMY_INPUT_METHOD_DELEGATE_H_
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 namespace internal {
 
-class UI_BASE_EXPORT DummyInputMethodDelegate
-    : NON_EXPORTED_BASE(public InputMethodDelegate) {
+class UI_BASE_EXPORT DummyInputMethodDelegate : public InputMethodDelegate {
  public:
   DummyInputMethodDelegate();
   virtual ~DummyInputMethodDelegate();
 
-  // InputMethodDelegate overrides:
-  virtual bool DispatchKeyEventPostIME(
-      const base::NativeEvent& native_key_event) OVERRIDE;
-  virtual bool DispatchFabricatedKeyEventPostIME(ui::EventType type,
-                                                 ui::KeyboardCode key_code,
-                                                 int flags) OVERRIDE;
+  // Overridden from InputMethodDelegate:
+  virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& key_event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethodDelegate);

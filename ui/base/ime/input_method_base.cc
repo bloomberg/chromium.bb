@@ -111,11 +111,7 @@ bool InputMethodBase::DispatchKeyEventPostIME(
   if (!delegate_)
     return false;
 
-  if (!event.HasNativeEvent())
-    return delegate_->DispatchFabricatedKeyEventPostIME(
-        event.type(), event.key_code(), event.flags());
-
-  return delegate_->DispatchKeyEventPostIME(event.native_event());
+  return delegate_->DispatchKeyEventPostIME(event);
 }
 
 void InputMethodBase::NotifyTextInputStateChanged(

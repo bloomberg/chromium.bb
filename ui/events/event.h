@@ -566,6 +566,10 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // in http://crbug.com/127142#c8, the normalization is necessary.
   void NormalizeFlags();
 
+ protected:
+  // This allows a subclass TranslatedKeyEvent to be a non character event.
+  void set_is_char(bool is_char) { is_char_ = is_char; }
+
  private:
   KeyboardCode key_code_;
 
@@ -595,6 +599,8 @@ class EVENTS_EXPORT TranslatedKeyEvent : public KeyEvent {
 
   // Used for synthetic events such as a VKEY_PROCESSKEY key event.
   TranslatedKeyEvent(bool is_press, KeyboardCode key_code, int flags);
+
+  explicit TranslatedKeyEvent(const KeyEvent& key_event);
 
   // Changes the type() of the object from ET_TRANSLATED_KEY_* to ET_KEY_* so
   // that RenderWidgetHostViewAura and NativeWidgetAura could handle the event.
