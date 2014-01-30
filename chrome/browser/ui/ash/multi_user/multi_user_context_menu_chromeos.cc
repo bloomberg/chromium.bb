@@ -79,8 +79,11 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(
   scoped_ptr<ui::MenuModel> model;
   ash::SessionStateDelegate* delegate =
       ash::Shell::GetInstance()->session_state_delegate();
+  if (!delegate)
+    return model.Pass();
+
   int logged_in_users = delegate->NumberOfLoggedInUsers();
-  if (delegate && logged_in_users > 1) {
+  if (logged_in_users > 1) {
     // If this window is not owned, we don't show the menu addition.
     chrome::MultiUserWindowManager* manager =
         chrome::MultiUserWindowManager::GetInstance();
