@@ -36,7 +36,6 @@
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
@@ -125,6 +124,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -1350,8 +1350,7 @@ void ChromeContentBrowserClient::WorkerProcessCreated(
   if (!extension)
     return;
   extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::GetForBrowserContext(
-          site_instance->GetBrowserContext());
+      extensions::ExtensionSystem::Get(site_instance->GetBrowserContext());
   extension_system->info_map()->RegisterExtensionWorkerProcess(
       extension->id(),
       worker_process_id,
@@ -1362,8 +1361,7 @@ void ChromeContentBrowserClient::WorkerProcessTerminated(
     SiteInstance* site_instance,
     int worker_process_id) {
   extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::GetForBrowserContext(
-          site_instance->GetBrowserContext());
+      extensions::ExtensionSystem::Get(site_instance->GetBrowserContext());
   extension_system->info_map()->UnregisterExtensionWorkerProcess(
       worker_process_id);
 }

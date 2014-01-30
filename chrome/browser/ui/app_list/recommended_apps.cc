@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/recommended_apps_observer.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_prefs.h"

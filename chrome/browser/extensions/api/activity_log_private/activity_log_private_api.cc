@@ -11,10 +11,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 

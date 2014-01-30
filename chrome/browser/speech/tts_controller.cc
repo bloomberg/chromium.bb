@@ -9,12 +9,12 @@
 
 #include "base/float_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 namespace {

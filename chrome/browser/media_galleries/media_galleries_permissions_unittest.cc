@@ -6,7 +6,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/./extension_prefs_unittest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
@@ -14,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

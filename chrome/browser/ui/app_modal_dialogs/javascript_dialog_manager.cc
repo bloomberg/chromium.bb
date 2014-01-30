@@ -10,7 +10,6 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/javascript_message_type.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -35,7 +35,7 @@ namespace {
 extensions::ProcessManager* GetExtensionsProcessManager(
     WebContents* web_contents) {
 #if defined(ENABLE_EXTENSIONS)
-  return extensions::ExtensionSystem::GetForBrowserContext(
+  return extensions::ExtensionSystem::Get(
       web_contents->GetBrowserContext())->process_manager();
 #else
   return NULL;

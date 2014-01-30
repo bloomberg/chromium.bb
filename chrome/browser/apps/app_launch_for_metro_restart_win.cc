@@ -15,10 +15,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/extension_system.h"
 #include "win8/util/win8_util.h"
 
 using extensions::Extension;

@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
@@ -69,8 +69,7 @@ void OnKeepaliveOnUIThread(
     return;
 
   extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::GetForBrowserContext(
-          site_instance->GetBrowserContext());
+      extensions::ExtensionSystem::Get(site_instance->GetBrowserContext());
   if (!extension_system)
     return;
 

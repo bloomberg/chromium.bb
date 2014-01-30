@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 

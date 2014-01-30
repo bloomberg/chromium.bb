@@ -15,11 +15,11 @@
 #include "chrome/browser/extensions/api/storage/sync_or_local_value_store_cache.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"

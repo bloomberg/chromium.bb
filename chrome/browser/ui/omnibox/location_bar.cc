@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -21,8 +21,7 @@ LocationBar::~LocationBar() {
 
 bool LocationBar::IsBookmarkStarHiddenByExtension() const {
   const ExtensionService* extension_service =
-      extensions::ExtensionSystem::GetForBrowserContext(
-          profile_)->extension_service();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   // Extension service may be NULL during unit test execution.
   if (!extension_service)
     return false;

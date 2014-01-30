@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 
 namespace extensions {

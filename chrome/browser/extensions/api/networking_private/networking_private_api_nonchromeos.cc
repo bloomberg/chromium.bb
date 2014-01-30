@@ -13,11 +13,11 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 
 using extensions::NetworkingPrivateServiceClient;
 using extensions::NetworkingPrivateServiceClientFactory;

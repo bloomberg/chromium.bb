@@ -9,7 +9,6 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -18,8 +17,10 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 
 #if defined(OS_CHROMEOS)
@@ -28,7 +29,11 @@
 
 namespace extensions {
 
-ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {}
+ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {
+  // Only set if it hasn't already been set (e.g. by a test).
+  if (GetCurrentChannel() == GetDefaultChannel())
+    SetCurrentChannel(chrome::VersionInfo::GetChannel());
+}
 
 ChromeExtensionsBrowserClient::~ChromeExtensionsBrowserClient() {}
 

@@ -10,12 +10,12 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "grit/sync_file_system_internals_resources.h"
 
@@ -36,7 +36,7 @@ void ExtensionStatusesHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-//static
+// static
 void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
     Profile* profile,
     base::ListValue* values) {

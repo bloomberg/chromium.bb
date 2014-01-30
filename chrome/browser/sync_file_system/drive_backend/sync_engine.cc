@@ -82,7 +82,7 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
   drive::DriveNotificationManager* notification_manager =
       drive::DriveNotificationManagerFactory::GetForBrowserContext(context);
   ExtensionService* extension_service =
-      extensions::ExtensionSystem::GetForBrowserContext(
+      extensions::ExtensionSystem::Get(
           context)->extension_service();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner(

@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -67,6 +66,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_system.h"
 #include "sync/api/syncable_service.h"
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -123,8 +123,7 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     Profile* profile, CommandLine* command_line)
     : profile_(profile),
       command_line_(command_line),
-      extension_system_(
-          extensions::ExtensionSystemFactory::GetForProfile(profile)),
+      extension_system_(extensions::ExtensionSystem::Get(profile)),
       web_data_service_(
           WebDataServiceFactory::GetAutofillWebDataForProfile(
               profile_, Profile::EXPLICIT_ACCESS)) {

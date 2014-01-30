@@ -10,13 +10,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 using extensions::Extension;
@@ -54,7 +54,7 @@ bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
                                    const CommandLine& command_line,
                                    const base::FilePath& current_dir) {
   ExtensionService* extension_service =
-      ExtensionSystem::GetForBrowserContext(profile_)->extension_service();
+      ExtensionSystem::Get(profile_)->extension_service();
   std::string extension_id;
   if (!extensions::UnpackedInstaller::Create(extension_service)->
           LoadFromCommandLine(base::FilePath(extension_path), &extension_id)) {

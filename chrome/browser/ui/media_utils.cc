@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/media_utils.h"
 
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 
 class Profile;

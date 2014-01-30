@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "extensions/browser/extension_system.h"
 
 namespace {
 
@@ -63,7 +63,7 @@ bool StartImeFunction::RunImpl() {
 
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
     : context_(context) {
-  ExtensionSystem::GetForBrowserContext(context_)->event_router()->
+  ExtensionSystem::Get(context_)->event_router()->
       RegisterObserver(this, event_names::kOnInputMethodChanged);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
@@ -84,8 +84,7 @@ std::string InputMethodAPI::GetInputMethodForXkb(const std::string& xkb_id) {
 void InputMethodAPI::Shutdown() {
   // UnregisterObserver may have already been called in OnListenerAdded,
   // but it is safe to call it more than once.
-  ExtensionSystem::GetForBrowserContext(context_)->event_router()->
-      UnregisterObserver(this);
+  ExtensionSystem::Get(context_)->event_router()->UnregisterObserver(this);
 }
 
 void InputMethodAPI::OnListenerAdded(
@@ -93,8 +92,7 @@ void InputMethodAPI::OnListenerAdded(
   DCHECK(!input_method_event_router_.get());
   input_method_event_router_.reset(
       new chromeos::ExtensionInputMethodEventRouter(context_));
-  ExtensionSystem::GetForBrowserContext(context_)->event_router()->
-      UnregisterObserver(this);
+  ExtensionSystem::Get(context_)->event_router()->UnregisterObserver(this);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<InputMethodAPI> >

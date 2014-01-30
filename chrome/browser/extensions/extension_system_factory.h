@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_impl.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "extensions/browser/extension_system.h"
 
 class BrowserContextKeyedService;
-class Profile;
 
 namespace extensions {
 class ExtensionSystem;
@@ -19,8 +19,8 @@ class ExtensionSystem;
 // Should not be used except by ExtensionSystem(Factory).
 class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ExtensionSystemImpl::Shared* GetForProfile(
-      Profile* profile);
+  static ExtensionSystemImpl::Shared* GetForBrowserContext(
+      content::BrowserContext* context);
 
   static ExtensionSystemSharedFactory* GetInstance();
 
@@ -30,8 +30,9 @@ class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
   ExtensionSystemSharedFactory();
   virtual ~ExtensionSystemSharedFactory();
 
+  // BrowserContextKeyedServiceFactory implementation:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
 };
@@ -39,8 +40,8 @@ class ExtensionSystemSharedFactory : public BrowserContextKeyedServiceFactory {
 // BrowserContextKeyedServiceFactory for ExtensionSystem.
 class ExtensionSystemFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // BrowserContextKeyedServiceFactory implementation:
-  static ExtensionSystem* GetForProfile(Profile* profile);
+  static ExtensionSystem* GetForBrowserContext(
+      content::BrowserContext* context);
 
   static ExtensionSystemFactory* GetInstance();
 
@@ -50,8 +51,9 @@ class ExtensionSystemFactory : public BrowserContextKeyedServiceFactory {
   ExtensionSystemFactory();
   virtual ~ExtensionSystemFactory();
 
+  // BrowserContextKeyedServiceFactory implementation:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;

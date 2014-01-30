@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "ipc/ipc_message_macros.h"
@@ -108,7 +108,7 @@ void AshKeyboardControllerProxy::RequestAudioInput(
   GURL origin(request.security_origin);
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
     ExtensionService* extensions_service =
-        extensions::ExtensionSystem::GetForBrowserContext(
+        extensions::ExtensionSystem::Get(
             GetBrowserContext())->extension_service();
     extension = extensions_service->extensions()->GetByID(origin.host());
     DCHECK(extension);
@@ -236,8 +236,7 @@ void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   // is supported.
   content::BrowserContext* context = GetBrowserContext();
   extensions::EventRouter* router =
-      extensions::ExtensionSystem::GetForBrowserContext(context)->
-      event_router();
+      extensions::ExtensionSystem::Get(context)->event_router();
 
   if (!router->HasEventListener(
           virtual_keyboard_private::OnTextInputBoxFocused::kEventName)) {

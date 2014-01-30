@@ -13,13 +13,13 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -81,8 +81,7 @@ void EventRouter::NotifyExtensionDispatchObserverOnUIThread(
         reinterpret_cast<BrowserContext*>(browser_context_id);
     if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
       return;
-    ExtensionSystem* extension_system =
-        ExtensionSystem::GetForBrowserContext(context);
+    ExtensionSystem* extension_system = ExtensionSystem::Get(context);
     EventRouter* event_router = extension_system->event_router();
     if (!event_router)
       return;
@@ -573,8 +572,7 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
   if (extension->is_ephemeral() && !event->can_load_ephemeral_apps) {
     // Most events can only be dispatched to ephemeral apps that are already
     // running.
-    ProcessManager* pm =
-        ExtensionSystem::GetForBrowserContext(context)->process_manager();
+    ProcessManager* pm = ExtensionSystem::Get(context)->process_manager();
     if (!pm->GetBackgroundHostForExtension(extension->id()))
       return false;
   }
@@ -582,7 +580,7 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
   if (!CanDispatchEventToBrowserContext(context, extension, event))
     return false;
 
-  LazyBackgroundTaskQueue* queue = ExtensionSystem::GetForBrowserContext(
+  LazyBackgroundTaskQueue* queue = ExtensionSystem::Get(
       context)->lazy_background_task_queue();
   if (queue->ShouldEnqueueTask(context, extension)) {
     linked_ptr<Event> dispatched_event(event);
@@ -616,8 +614,7 @@ void EventRouter::IncrementInFlightEventsOnUI(
       reinterpret_cast<BrowserContext*>(browser_context_id);
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
-  ExtensionSystem* extension_system =
-      ExtensionSystem::GetForBrowserContext(browser_context);
+  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context);
   EventRouter* event_router = extension_system->event_router();
   if (!event_router)
     return;
@@ -634,8 +631,7 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
   // Only increment in-flight events if the lazy background page is active,
   // because that's the only time we'll get an ACK.
   if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    ProcessManager* pm =
-        ExtensionSystem::GetForBrowserContext(context)->process_manager();
+    ProcessManager* pm = ExtensionSystem::Get(context)->process_manager();
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host)
       pm->IncrementLazyKeepaliveCount(extension);
@@ -644,8 +640,7 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
 
 void EventRouter::OnEventAck(BrowserContext* context,
                              const std::string& extension_id) {
-  ProcessManager* pm =
-      ExtensionSystem::GetForBrowserContext(context)->process_manager();
+  ProcessManager* pm = ExtensionSystem::Get(context)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id);
   // The event ACK is routed to the background host, so this should never be
   // NULL.
@@ -687,7 +682,7 @@ void EventRouter::Observe(int type,
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-        LazyBackgroundTaskQueue* queue = ExtensionSystem::GetForBrowserContext(
+        LazyBackgroundTaskQueue* queue = ExtensionSystem::Get(
             browser_context_)->lazy_background_task_queue();
         queue->AddPendingTask(browser_context_, extension->id(),
                               base::Bind(&DoNothing));

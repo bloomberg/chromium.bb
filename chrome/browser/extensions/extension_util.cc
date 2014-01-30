@@ -7,13 +7,13 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -43,7 +43,7 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
                            content::BrowserContext* context,
                            bool enabled) {
   ExtensionService* service =
-      ExtensionSystem::GetForBrowserContext(context)->extension_service();
+      ExtensionSystem::Get(context)->extension_service();
   CHECK(service);
   const Extension* extension = service->GetInstalledExtension(extension_id);
 
@@ -121,7 +121,7 @@ void SetAllowFileAccess(const std::string& extension_id,
                         content::BrowserContext* context,
                         bool allow) {
   ExtensionService* service =
-      ExtensionSystem::GetForBrowserContext(context)->extension_service();
+      ExtensionSystem::Get(context)->extension_service();
   CHECK(service);
 
   // Reload to update browser state. Only bother if the value changed and the
@@ -151,7 +151,7 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
 bool IsExtensionIdle(const std::string& extension_id,
                      content::BrowserContext* context) {
   ProcessManager* process_manager =
-      ExtensionSystem::GetForBrowserContext(context)->process_manager();
+      ExtensionSystem::Get(context)->process_manager();
   DCHECK(process_manager);
   ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(extension_id);

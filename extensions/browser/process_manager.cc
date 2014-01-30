@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
@@ -128,8 +128,7 @@ class RenderViewHostDestructionObserver
   explicit RenderViewHostDestructionObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {
     BrowserContext* context = web_contents->GetBrowserContext();
-    process_manager_ =
-        ExtensionSystem::GetForBrowserContext(context)->process_manager();
+    process_manager_ = ExtensionSystem::Get(context)->process_manager();
   }
 
   friend class content::WebContentsUserData<RenderViewHostDestructionObserver>;
@@ -570,7 +569,7 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
 }
 
 void ProcessManager::OnBrowserWindowReady() {
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
+  ExtensionService* service = ExtensionSystem::Get(
       GetBrowserContext())->extension_service();
   // On Chrome OS, a login screen is implemented as a browser.
   // This browser has no extension service.  In this case,
@@ -613,7 +612,7 @@ void ProcessManager::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       BrowserContext* context = content::Source<BrowserContext>(source).ptr();
-      ExtensionSystem* system = ExtensionSystem::GetForBrowserContext(context);
+      ExtensionSystem* system = ExtensionSystem::Get(context);
       if (system->ready().is_signaled()) {
         // The extension system is ready, so create the background host.
         const Extension* extension =
@@ -853,8 +852,8 @@ IncognitoProcessManager::IncognitoProcessManager(
     BrowserContext* incognito_context,
     BrowserContext* original_context)
     : ProcessManager(incognito_context, original_context),
-      original_manager_(ExtensionSystem::GetForBrowserContext(
-          original_context)->process_manager()) {
+      original_manager_(
+          ExtensionSystem::Get(original_context)->process_manager()) {
   DCHECK(incognito_context->IsOffTheRecord());
 
   // The original profile will have its own ProcessManager to

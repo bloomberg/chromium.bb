@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 ExtensionUninstaller::ExtensionUninstaller(

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "extensions/browser/extension_system.h"
 
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.

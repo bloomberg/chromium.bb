@@ -6,10 +6,10 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 #include "net/base/net_errors.h"
 
 namespace extensions {

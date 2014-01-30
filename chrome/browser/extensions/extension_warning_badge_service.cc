@@ -6,11 +6,12 @@
 
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/browser/ui/browser_commands.h"
+#include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

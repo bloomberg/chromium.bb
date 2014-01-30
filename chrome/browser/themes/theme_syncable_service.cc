@@ -6,11 +6,11 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"

@@ -13,10 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/extension_paths.h"
 #include "ui/aura/env.h"
@@ -170,7 +170,7 @@ void ShellBrowserMainParts::DestroyRootWindow() {
 void ShellBrowserMainParts::CreateExtensionSystem() {
   DCHECK(browser_context_);
   extension_system_ = static_cast<ShellExtensionSystem*>(
-      ExtensionSystem::GetForBrowserContext(browser_context_.get()));
+      ExtensionSystem::Get(browser_context_.get()));
   extension_system_->InitForRegularProfile(true);
 }
 

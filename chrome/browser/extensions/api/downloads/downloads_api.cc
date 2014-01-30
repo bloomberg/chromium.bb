@@ -40,7 +40,6 @@
 #include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/icon_loader.h"
@@ -70,6 +69,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/load_flags.h"
@@ -900,7 +900,7 @@ void OnDeterminingFilenameWillDispatchCallback(
     const extensions::Extension* extension,
     base::ListValue* event_args) {
   *any_determiners = true;
-  base::Time installed = extensions::ExtensionSystem::GetForBrowserContext(
+  base::Time installed = extensions::ExtensionSystem::Get(
       context)->extension_service()->extension_prefs()->
     GetInstallTime(extension->id());
   data->AddPendingDeterminer(extension->id(), installed);

@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/location.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/geoposition.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_set.h"
 

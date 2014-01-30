@@ -7,10 +7,10 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest.h"
 
 using extensions::PlatformAppBrowserTest;

@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/messaging/message.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
@@ -155,7 +155,7 @@ const Extension* ExtensionWebContentsObserver::GetExtension(
   //            extensions. It seems to be fast enough, but there is a race.
   //            We should delay loading until the extension has reloaded.
   if (registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED)) {
-    ExtensionSystem::GetForBrowserContext(browser_context_)->
+    ExtensionSystem::Get(browser_context_)->
         extension_service()->ReloadExtension(extension_id);
   }
 

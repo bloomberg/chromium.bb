@@ -11,10 +11,10 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/automation_messages.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 using content::WebContents;

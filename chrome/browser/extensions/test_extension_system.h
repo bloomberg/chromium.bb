@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 
-#include "chrome/browser/extensions/extension_system.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/one_shot_event.h"
 
 class CommandLine;
+class Profile;
 class TestingValueStore;
 
 namespace base {
@@ -22,6 +24,7 @@ class BrowserContext;
 namespace extensions {
 class ExtensionPrefs;
 class RuntimeData;
+class StandardManagementPolicyProvider;
 
 // Test ExtensionSystem, for use with TestingProfile.
 class TestExtensionSystem : public ExtensionSystem {

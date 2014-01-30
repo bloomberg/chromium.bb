@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 
 namespace wallpaper_manager_util {

@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
@@ -26,6 +25,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "net/url_request/url_fetcher.h"
 

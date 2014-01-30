@@ -18,7 +18,7 @@ include_rules = [
   "+chrome/browser/extensions/extension_function_histogram_value.h",
   "+chrome/browser/extensions/extension_host.h",
   "+chrome/browser/extensions/extension_service.h",
-  "+chrome/browser/extensions/extension_system.h",
+  "+chrome/browser/extensions/extension_system_factory.h",
   "+chrome/browser/extensions/extension_util.h",
   "+chrome/browser/renderer_host/chrome_render_message_filter.h",
   "+chrome/common/extensions/extension_messages.h",

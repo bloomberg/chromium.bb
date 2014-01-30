@@ -17,7 +17,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -39,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/runtime_data.h"
@@ -203,8 +203,7 @@ void ExtensionHost::CreateRenderViewNow() {
 }
 
 ExtensionService* ExtensionHost::GetExtensionService() {
-  return ExtensionSystem::GetForBrowserContext(browser_context_)
-      ->extension_service();
+  return ExtensionSystem::Get(browser_context_)->extension_service();
 }
 
 const GURL& ExtensionHost::GetURL() const {
@@ -324,7 +323,7 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
 
 void ExtensionHost::OnDocumentAvailable() {
   DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
-  ExtensionSystem::GetForBrowserContext(browser_context_)
+  ExtensionSystem::Get(browser_context_)
       ->runtime_data()
       ->SetBackgroundPageReady(extension_, true);
   content::NotificationService::current()->Notify(
@@ -358,21 +357,20 @@ void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
 }
 
 void ExtensionHost::OnEventAck() {
-  EventRouter* router =
-      ExtensionSystem::GetForBrowserContext(browser_context_)->event_router();
+  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
   if (router)
     router->OnEventAck(browser_context_, extension_id());
 }
 
 void ExtensionHost::OnIncrementLazyKeepaliveCount() {
-  ProcessManager* pm = ExtensionSystem::GetForBrowserContext(
+  ProcessManager* pm = ExtensionSystem::Get(
       browser_context_)->process_manager();
   if (pm)
     pm->IncrementLazyKeepaliveCount(extension());
 }
 
 void ExtensionHost::OnDecrementLazyKeepaliveCount() {
-  ProcessManager* pm = ExtensionSystem::GetForBrowserContext(
+  ProcessManager* pm = ExtensionSystem::Get(
       browser_context_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
@@ -394,7 +392,7 @@ void ExtensionHost::OnDetailedConsoleMessageAdded(
     context_url = host_contents_->GetLastCommittedURL();
 
   ErrorConsole* console =
-      ExtensionSystem::GetForBrowserContext(browser_context_)->error_console();
+      ExtensionSystem::Get(browser_context_)->error_console();
   if (!console)
     return;
 

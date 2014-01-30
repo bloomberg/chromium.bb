@@ -196,6 +196,8 @@
         'browser/extension_registry_factory.h',
         'browser/extension_registry_observer.h',
         'browser/extension_scoped_prefs.h',
+        'browser/extension_system.cc',
+        'browser/extension_system.h',
         'browser/extensions_browser_client.cc',
         'browser/extensions_browser_client.h',
         'browser/external_provider_interface.h',

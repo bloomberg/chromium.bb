@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_impl.h"
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -68,30 +68,6 @@
 using content::BrowserThread;
 
 namespace extensions {
-
-//
-// ExtensionSystem
-//
-
-ExtensionSystem::ExtensionSystem() {
-  // Only set if it hasn't already been set (e.g. by a test).
-  if (GetCurrentChannel() == GetDefaultChannel())
-    SetCurrentChannel(chrome::VersionInfo::GetChannel());
-}
-
-ExtensionSystem::~ExtensionSystem() {
-}
-
-// static
-ExtensionSystem* ExtensionSystem::Get(Profile* profile) {
-  return ExtensionSystemFactory::GetForProfile(profile);
-}
-
-// static
-ExtensionSystem* ExtensionSystem::GetForBrowserContext(
-    content::BrowserContext* profile) {
-  return ExtensionSystemFactory::GetForProfile(static_cast<Profile*>(profile));
-}
 
 //
 // ExtensionSystemImpl::Shared
@@ -333,7 +309,7 @@ InstallVerifier* ExtensionSystemImpl::Shared::install_verifier() {
 
 ExtensionSystemImpl::ExtensionSystemImpl(Profile* profile)
     : profile_(profile) {
-  shared_ = ExtensionSystemSharedFactory::GetForProfile(profile);
+  shared_ = ExtensionSystemSharedFactory::GetForBrowserContext(profile);
 
   if (profile->IsOffTheRecord()) {
     process_manager_.reset(ProcessManager::Create(profile));

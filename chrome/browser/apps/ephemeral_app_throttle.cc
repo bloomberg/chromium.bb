@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;

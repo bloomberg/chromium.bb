@@ -5,9 +5,9 @@
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "extensions/browser/extension_system.h"
 
 namespace browser_sync {
 

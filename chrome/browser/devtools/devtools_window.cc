@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/devtools/devtools_window.h"
+
 #include <algorithm>
 
 #include "base/command_line.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -64,6 +64,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

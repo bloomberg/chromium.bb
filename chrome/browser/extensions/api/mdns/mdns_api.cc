@@ -8,8 +8,8 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/mdns.h"
+#include "extensions/browser/extension_system.h"
 
 namespace extensions {
 

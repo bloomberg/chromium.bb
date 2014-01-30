@@ -4,7 +4,8 @@
 
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_system.h"
 
 namespace browser_sync {
 

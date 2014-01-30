@@ -4,10 +4,11 @@
 
 #include "chrome/browser/extensions/suggest_permission_util.h"
 
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/console_message_level.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_info.h"

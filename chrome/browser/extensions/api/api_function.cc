@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/api/api_function.h"
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_system.h"
 
 using content::BrowserThread;
 

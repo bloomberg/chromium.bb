@@ -62,9 +62,9 @@
 
 #if !defined(OS_IOS)
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "extensions/browser/extension_system.h"
 #endif  // !defined (OS_IOS)
 
 #if defined(OS_WIN)

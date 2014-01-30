@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -32,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/extension_api.h"
@@ -331,8 +331,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   DCHECK(render_view_host || render_frame_host);
   // TODO(yzshen): There is some shared logic between this method and
   // DispatchOnIOThread(). It is nice to deduplicate.
-  ExtensionSystem* extension_system =
-      ExtensionSystem::GetForBrowserContext(browser_context_);
+  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
   ExtensionService* service = extension_system->extension_service();
   extensions::ProcessMap* process_map =
       extensions::ProcessMap::Get(browser_context_);
@@ -408,7 +407,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
 
 void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
     const Extension* extension) {
-  ExtensionSystem::GetForBrowserContext(browser_context_)->process_manager()->
+  ExtensionSystem::Get(browser_context_)->process_manager()->
       DecrementLazyKeepaliveCount(extension);
 }
 

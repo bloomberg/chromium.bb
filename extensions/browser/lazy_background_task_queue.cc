@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -44,7 +44,7 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     const Extension* extension) {
   DCHECK(extension);
   if (BackgroundInfo::HasBackgroundPage(extension)) {
-    ProcessManager* pm = ExtensionSystem::GetForBrowserContext(
+    ProcessManager* pm = ExtensionSystem::Get(
         browser_context)->process_manager();
     DCHECK(pm);
     ExtensionHost* background_host =
@@ -79,7 +79,7 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
       // If this is the first enqueued task, and we're not waiting for the
       // background page to unload, ensure the background page is loaded.
-      ProcessManager* pm = ExtensionSystem::GetForBrowserContext(
+      ProcessManager* pm = ExtensionSystem::Get(
           browser_context)->process_manager();
       pm->IncrementLazyKeepaliveCount(extension);
       // Creating the background host may fail, e.g. if |profile| is incognito
@@ -127,7 +127,7 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
   // Balance the keepalive in AddPendingTask. Note we don't do this on a
   // failure to load, because the keepalive count is reset in that case.
   if (host && BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    ExtensionSystem::GetForBrowserContext(browser_context)->process_manager()->
+    ExtensionSystem::Get(browser_context)->process_manager()->
         DecrementLazyKeepaliveCount(extension);
   }
 }

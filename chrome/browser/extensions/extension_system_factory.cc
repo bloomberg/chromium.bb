@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/extension_system_factory.h"
 
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/renderer_startup_helper.h"
 
@@ -20,9 +20,10 @@ namespace extensions {
 
 // static
 ExtensionSystemImpl::Shared*
-ExtensionSystemSharedFactory::GetForProfile(Profile* profile) {
+ExtensionSystemSharedFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<ExtensionSystemImpl::Shared*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -47,8 +48,8 @@ ExtensionSystemSharedFactory::~ExtensionSystemSharedFactory() {
 
 BrowserContextKeyedService*
 ExtensionSystemSharedFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new ExtensionSystemImpl::Shared(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return new ExtensionSystemImpl::Shared(static_cast<Profile*>(context));
 }
 
 content::BrowserContext* ExtensionSystemSharedFactory::GetBrowserContextToUse(
@@ -60,9 +61,10 @@ content::BrowserContext* ExtensionSystemSharedFactory::GetBrowserContextToUse(
 // ExtensionSystemFactory
 
 // static
-ExtensionSystem* ExtensionSystemFactory::GetForProfile(Profile* profile) {
+ExtensionSystem* ExtensionSystemFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<ExtensionSystem*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static

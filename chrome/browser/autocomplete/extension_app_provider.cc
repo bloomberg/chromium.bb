@@ -46,8 +46,7 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
     Profile* profile,
     WindowOpenDisposition disposition) {
   ExtensionService* service =
-      extensions::ExtensionSystemFactory::GetForProfile(profile)->
-      extension_service();
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* extension =
       service->GetInstalledApp(match.destination_url);
   // While the Omnibox popup is open, the extension can be updated, changing
@@ -150,8 +149,7 @@ ExtensionAppProvider::~ExtensionAppProvider() {
 
 void ExtensionAppProvider::RefreshAppList() {
   ExtensionService* extension_service =
-      extensions::ExtensionSystemFactory::GetForProfile(profile_)->
-      extension_service();
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!extension_service)
     return;  // During testing, there is no extension service.
   const extensions::ExtensionSet* extensions = extension_service->extensions();

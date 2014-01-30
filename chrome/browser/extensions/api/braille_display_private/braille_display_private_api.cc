@@ -6,9 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "extensions/browser/extension_system.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/screen_locker.h"

@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,6 +48,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/error_utils.h"
@@ -403,7 +403,7 @@ namespace extensions {
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context) {
   EventRouter* event_router =
-      ExtensionSystem::GetForBrowserContext(browser_context_)->event_router();
+      ExtensionSystem::Get(browser_context_)->event_router();
   for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
     std::string event_name = kWebRequestEvents[i];
@@ -416,7 +416,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
 }
 
 WebRequestAPI::~WebRequestAPI() {
-  ExtensionSystem::GetForBrowserContext(browser_context_)
+  ExtensionSystem::Get(browser_context_)
       ->event_router()
       ->UnregisterObserver(this);
 }

@@ -13,7 +13,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,6 +27,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -90,8 +90,7 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
   if (ExtensionsBrowserClient::Get()->IsShuttingDown() ||
       !ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
-  ExtensionSystem* system =
-      ExtensionSystem::GetForBrowserContext(browser_context);
+  ExtensionSystem* system = ExtensionSystem::Get(browser_context);
   if (!system)
     return;
 
@@ -160,7 +159,7 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
 
 RuntimeAPI::~RuntimeAPI() {
   if (registered_for_updates_) {
-    ExtensionSystem::GetForBrowserContext(browser_context_)->
+    ExtensionSystem::Get(browser_context_)->
         extension_service()->RemoveUpdateObserver(this);
   }
 }
@@ -203,7 +202,7 @@ void RuntimeAPI::OnExtensionsReady() {
 
   registered_for_updates_ = true;
 
-  ExtensionSystem::GetForBrowserContext(browser_context_)->extension_service()->
+  ExtensionSystem::Get(browser_context_)->extension_service()->
       AddUpdateObserver(this);
 }
 
@@ -228,7 +227,7 @@ void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
     return;
 
   // Get the previous version to check if this is an upgrade.
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
+  ExtensionService* service = ExtensionSystem::Get(
       browser_context_)->extension_service();
   const Extension* old = service->GetExtensionById(extension->id(), true);
   Version old_version;
@@ -283,7 +282,7 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
     bool chrome_updated) {
   if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
-  ExtensionSystem* system = ExtensionSystem::GetForBrowserContext(context);
+  ExtensionSystem* system = ExtensionSystem::Get(context);
   if (!system)
     return;
 

@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/serial/serial_event_dispatcher.h"
 #include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 #include "chrome/common/extensions/api/serial.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_system.h"
 
 using content::BrowserThread;
 
