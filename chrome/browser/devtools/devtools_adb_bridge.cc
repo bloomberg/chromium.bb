@@ -846,7 +846,7 @@ class RemotePageTarget : public DevToolsTargetImpl {
   scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser_;
   std::string debug_url_;
   std::string frontend_url_;
-  std::string agent_id_;
+  std::string remote_id_;
   DISALLOW_COPY_AND_ASSIGN(RemotePageTarget);
 };
 
@@ -855,7 +855,7 @@ RemotePageTarget::RemotePageTarget(
     const base::DictionaryValue& value)
     : browser_(browser) {
   type_ = "adb_page";
-  value.GetString("id", &id_);
+  value.GetString("id", &remote_id_);
   std::string url;
   value.GetString("url", &url);
   url_ = GURL(url);
@@ -868,12 +868,12 @@ RemotePageTarget::RemotePageTarget(
   value.GetString("webSocketDebuggerUrl", &debug_url_);
   value.GetString("devtoolsFrontendUrl", &frontend_url_);
 
-  if (id_.empty() && !debug_url_.empty())  {
+  if (remote_id_.empty() && !debug_url_.empty())  {
     // Target id is not available until Chrome 26. Use page id at the end of
     // debug_url_ instead. For attached targets the id will remain empty.
     std::vector<std::string> parts;
     Tokenize(debug_url_, "/", &parts);
-    id_ = parts[parts.size()-1];
+    remote_id_ = parts[parts.size()-1];
   }
 
   if (debug_url_.find("ws://") == 0)
@@ -887,10 +887,10 @@ RemotePageTarget::RemotePageTarget(
   if (frontend_url_.find("http:") == 0)
     frontend_url_ = "https:" + frontend_url_.substr(5);
 
-  agent_id_ = base::StringPrintf("%s:%s:%s",
+  id_ = base::StringPrintf("%s:%s:%s",
       browser_->device()->serial().c_str(),
       browser_->socket().c_str(),
-      id_.c_str());
+      remote_id_.c_str());
 }
 
 RemotePageTarget::~RemotePageTarget() {
@@ -901,14 +901,16 @@ bool RemotePageTarget::IsAttached() const {
 }
 
 void RemotePageTarget::Inspect(Profile* profile) const {
-  std::string request = base::StringPrintf(kActivatePageRequest, id_.c_str());
+  std::string request = base::StringPrintf(kActivatePageRequest,
+                                           remote_id_.c_str());
   base::Closure inspect_callback = base::Bind(&AgentHostDelegate::Create,
       id_, browser_, debug_url_, frontend_url_, profile);
   browser_->SendJsonRequest(request, inspect_callback);
 }
 
 bool RemotePageTarget::Activate() const {
-  std::string request = base::StringPrintf(kActivatePageRequest, id_.c_str());
+  std::string request = base::StringPrintf(kActivatePageRequest,
+                                           remote_id_.c_str());
   browser_->SendJsonRequest(request, base::Closure());
   return true;
 }
@@ -916,7 +918,8 @@ bool RemotePageTarget::Activate() const {
 bool RemotePageTarget::Close() const {
   if (IsAttached())
     return false;
-  std::string request = base::StringPrintf(kClosePageRequest, id_.c_str());
+  std::string request = base::StringPrintf(kClosePageRequest,
+                                           remote_id_.c_str());
   browser_->SendJsonRequest(request, base::Closure());
   return true;
 }
