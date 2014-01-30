@@ -38,6 +38,7 @@
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderMultiColumnBlock.h"
 #include "core/rendering/RenderNamedFlowFragment.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderText.h"
@@ -219,57 +220,45 @@ void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogi
     }
 }
 
-bool RenderBlockFlow::relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer& statePusher)
+bool RenderBlockFlow::shouldRelayoutForPagination(LayoutUnit& pageLogicalHeight, LayoutUnit layoutOverflowLogicalBottom) const
 {
-    if (!hasColumns())
-        return false;
-
-    OwnPtr<RenderOverflow> savedOverflow = m_overflow.release();
-    if (childrenInline())
-        addOverflowFromInlineChildren();
-    else
-        addOverflowFromBlockChildren();
-    LayoutUnit layoutOverflowLogicalBottom = (isHorizontalWritingMode() ? layoutOverflowRect().maxY() : layoutOverflowRect().maxX()) - borderBefore() - paddingBefore();
-
     // FIXME: We don't balance properly at all in the presence of forced page breaks. We need to understand what
     // the distance between forced page breaks is so that we can avoid making the minimum column height too tall.
     ColumnInfo* colInfo = columnInfo();
-    if (!hasSpecifiedPageLogicalHeight) {
-        LayoutUnit columnHeight = pageLogicalHeight;
-        int minColumnCount = colInfo->forcedBreaks() + 1;
-        int desiredColumnCount = colInfo->desiredColumnCount();
-        if (minColumnCount >= desiredColumnCount) {
-            // The forced page breaks are in control of the balancing. Just set the column height to the
-            // maximum page break distance.
-            if (!pageLogicalHeight) {
-                LayoutUnit distanceBetweenBreaks = max<LayoutUnit>(colInfo->maximumDistanceBetweenForcedBreaks(),
-                    view()->layoutState()->pageLogicalOffset(this, borderBefore() + paddingBefore() + layoutOverflowLogicalBottom) - colInfo->forcedBreakOffset());
-                columnHeight = max(colInfo->minimumColumnHeight(), distanceBetweenBreaks);
-            }
-        } else if (layoutOverflowLogicalBottom > boundedMultiply(pageLogicalHeight, desiredColumnCount)) {
-            // Now that we know the intrinsic height of the columns, we have to rebalance them.
-            columnHeight = max<LayoutUnit>(colInfo->minimumColumnHeight(), ceilf((float)layoutOverflowLogicalBottom / desiredColumnCount));
+    LayoutUnit columnHeight = pageLogicalHeight;
+    const int minColumnCount = colInfo->forcedBreaks() + 1;
+    const int desiredColumnCount = colInfo->desiredColumnCount();
+    if (minColumnCount >= desiredColumnCount) {
+        // The forced page breaks are in control of the balancing. Just set the column height to the
+        // maximum page break distance.
+        if (!pageLogicalHeight) {
+            LayoutUnit distanceBetweenBreaks = max<LayoutUnit>(colInfo->maximumDistanceBetweenForcedBreaks(),
+                view()->layoutState()->pageLogicalOffset(this, borderBefore() + paddingBefore() + layoutOverflowLogicalBottom) - colInfo->forcedBreakOffset());
+            columnHeight = max(colInfo->minimumColumnHeight(), distanceBetweenBreaks);
         }
-
-        if (columnHeight && columnHeight != pageLogicalHeight) {
-            statePusher.pop();
-            setEverHadLayout(true);
-            layoutBlockFlow(false, columnHeight);
-            return true;
-        }
+    } else if (layoutOverflowLogicalBottom > boundedMultiply(pageLogicalHeight, desiredColumnCount)) {
+        // Now that we know the intrinsic height of the columns, we have to rebalance them.
+        columnHeight = max<LayoutUnit>(colInfo->minimumColumnHeight(), ceilf((float)layoutOverflowLogicalBottom / desiredColumnCount));
     }
 
+    if (columnHeight && columnHeight != pageLogicalHeight) {
+        pageLogicalHeight = columnHeight;
+        return true;
+    }
+
+    return false;
+}
+
+void RenderBlockFlow::setColumnCountAndHeight(unsigned count, LayoutUnit pageLogicalHeight)
+{
+    ColumnInfo* colInfo = columnInfo();
     if (pageLogicalHeight)
-        colInfo->setColumnCountAndHeight(ceilf((float)layoutOverflowLogicalBottom / pageLogicalHeight), pageLogicalHeight);
+        colInfo->setColumnCountAndHeight(count, pageLogicalHeight);
 
     if (columnCount(colInfo)) {
         setLogicalHeight(borderBefore() + paddingBefore() + colInfo->columnHeight() + borderAfter() + paddingAfter() + scrollbarLogicalHeight());
         m_overflow.clear();
-    } else {
-        m_overflow = savedOverflow.release();
     }
-
-    return false;
 }
 
 bool RenderBlockFlow::isSelfCollapsingBlock() const
@@ -279,11 +268,6 @@ bool RenderBlockFlow::isSelfCollapsingBlock() const
 }
 
 void RenderBlockFlow::layoutBlock(bool relayoutChildren)
-{
-    layoutBlockFlow(relayoutChildren);
-}
-
-inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit pageLogicalHeight)
 {
     ASSERT(needsLayout());
     ASSERT(isInlineBlockOrInlineTable() || !isInline());
@@ -296,6 +280,20 @@ inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit p
     if (!relayoutChildren && simplifiedLayout())
         return;
 
+    SubtreeLayoutScope layoutScope(this);
+
+    // Multiple passes might be required for column and pagination based layout
+    // In the case of the old column code the number of passes will only be two
+    // however, in the newer column code the number of passes could equal the
+    // number of columns.
+    bool done = false;
+    LayoutUnit pageLogicalHeight = 0;
+    while (!done)
+        done = layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
+}
+
+inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &pageLogicalHeight, SubtreeLayoutScope& layoutScope)
+{
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
 
     if (updateLogicalWidthAndColumnWidth())
@@ -336,8 +334,6 @@ inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit p
         setPaginationStrut(0);
     }
 
-    SubtreeLayoutScope layoutScope(this);
-
     LayoutUnit beforeEdge = borderBefore() + paddingBefore();
     LayoutUnit afterEdge = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
     LayoutUnit previousHeight = logicalHeight();
@@ -363,16 +359,41 @@ inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit p
 
     if (frameView()->partialLayout().isStopping()) {
         statePusher.pop();
-        return;
+        return true;
     }
 
     // Expand our intrinsic height to encompass floats.
     if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsBlockFormattingContext())
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
 
-    if (relayoutForPagination(hasSpecifiedPageLogicalHeight, pageLogicalHeight, statePusher) || relayoutToAvoidWidows(statePusher)) {
-        ASSERT(!shouldBreakAtLineToAvoidWidow());
-        return;
+    if (isRenderMultiColumnBlock()) {
+        if (toRenderMultiColumnBlock(this)->shouldRelayoutMultiColumnBlock()) {
+            setChildNeedsLayout(MarkOnlyThis);
+            statePusher.pop();
+            return false;
+        }
+    } else if (hasColumns()) {
+        OwnPtr<RenderOverflow> savedOverflow = m_overflow.release();
+        if (childrenInline())
+            addOverflowFromInlineChildren();
+        else
+            addOverflowFromBlockChildren();
+        LayoutUnit layoutOverflowLogicalBottom = (isHorizontalWritingMode() ? layoutOverflowRect().maxY() : layoutOverflowRect().maxX()) - borderBefore() - paddingBefore();
+        m_overflow = savedOverflow.release();
+
+        if (!hasSpecifiedPageLogicalHeight && shouldRelayoutForPagination(pageLogicalHeight, layoutOverflowLogicalBottom)) {
+            statePusher.pop();
+            setEverHadLayout(true);
+            return false;
+        }
+
+        setColumnCountAndHeight(ceilf((float)layoutOverflowLogicalBottom / pageLogicalHeight), pageLogicalHeight);
+    }
+
+    if (shouldBreakAtLineToAvoidWidow()) {
+        statePusher.pop();
+        setEverHadLayout(true);
+        return false;
     }
 
     // Calculate our new height.
@@ -415,7 +436,7 @@ inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit p
     fitBorderToLinesIfNeeded();
 
     if (frameView()->partialLayout().isStopping())
-        return;
+        return true;
 
     if (renderView->layoutState()->m_pageLogicalHeight)
         setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(this, logicalTop()));
@@ -436,6 +457,7 @@ inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit p
     }
 
     clearNeedsLayout();
+    return true;
 }
 
 void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo, LayoutUnit& previousFloatLogicalBottom, LayoutUnit& maxFloatLogicalBottom)

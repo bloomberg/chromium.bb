@@ -3496,17 +3496,6 @@ LayoutRect RenderBlock::columnRectAt(ColumnInfo* colInfo, unsigned index) const
     return LayoutRect(colLogicalTop, colLogicalLeft, colLogicalHeight, colLogicalWidth);
 }
 
-bool RenderBlock::relayoutToAvoidWidows(LayoutStateMaintainer& statePusher)
-{
-    if (!shouldBreakAtLineToAvoidWidow())
-        return false;
-
-    statePusher.pop();
-    setEverHadLayout(true);
-    layoutBlock(false);
-    return true;
-}
-
 void RenderBlock::adjustPointToColumnContents(LayoutPoint& point) const
 {
     // Just bail if we have no columns.

@@ -255,7 +255,7 @@ protected:
     virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeDestroyed() OVERRIDE;
 private:
-    void layoutBlockFlow(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0);
+    bool layoutBlockFlow(bool relayoutChildren, LayoutUnit& pageLogicalHeight, SubtreeLayoutScope&);
     void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&, LayoutUnit beforeEdge, LayoutUnit afterEdge);
 
     void layoutBlockChild(RenderBox* child, MarginInfo&, LayoutUnit& previousFloatLogicalBottom, LayoutUnit& maxFloatLogicalBottom);
@@ -323,7 +323,9 @@ private:
 
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount);
     virtual void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
-    virtual bool relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer&);
+    bool shouldRelayoutForPagination(LayoutUnit& pageLogicalHeight, LayoutUnit layoutOverflowLogicalBottom) const;
+    void setColumnCountAndHeight(unsigned count, LayoutUnit pageLogicalHeight);
+
 public:
     struct FloatWithRect {
         FloatWithRect(RenderBox* f)

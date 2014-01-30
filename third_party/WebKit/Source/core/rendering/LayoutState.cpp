@@ -181,7 +181,7 @@ void LayoutState::clearPaginationInformation()
     m_columnInfo = m_next->m_columnInfo;
 }
 
-LayoutUnit LayoutState::pageLogicalOffset(RenderBox* child, LayoutUnit childLogicalOffset) const
+LayoutUnit LayoutState::pageLogicalOffset(const RenderBox* child, LayoutUnit childLogicalOffset) const
 {
     if (child->isHorizontalWritingMode())
         return m_layoutOffset.height() + childLogicalOffset - m_pageOffset.height();

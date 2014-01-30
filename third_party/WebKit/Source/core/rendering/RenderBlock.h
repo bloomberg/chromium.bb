@@ -520,9 +520,6 @@ private:
 protected:
     void determineLogicalLeftPositionForChild(RenderBox* child, ApplyLayoutDeltaMode = DoNotApplyLayoutDelta);
 
-    // Pagination routines.
-    bool relayoutToAvoidWidows(LayoutStateMaintainer&);
-
     // Returns the logicalOffset at the top of the next page. If the offset passed in is already at the top of the current page,
     // then nextPageLogicalTop with ExcludePageBoundary will still move to the top of the next page. nextPageLogicalTop with
     // IncludePageBoundary set will not.

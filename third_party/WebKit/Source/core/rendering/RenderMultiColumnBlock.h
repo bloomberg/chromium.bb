@@ -46,6 +46,8 @@ public:
 
     bool requiresBalancing() const { return !m_columnHeightAvailable || style()->columnFill() == ColumnFillBalance; }
 
+    bool shouldRelayoutMultiColumnBlock() const;
+
 private:
     virtual bool isRenderMultiColumnBlock() const OVERRIDE { return true; }
 
@@ -56,8 +58,7 @@ private:
     virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
 
     virtual bool updateLogicalWidthAndColumnWidth() OVERRIDE;
-    virtual void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight) OVERRIDE;
-    virtual bool relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer&) OVERRIDE;
+    virtual void checkForPaginationLogicalHeightChange(LayoutUnit&, bool&, bool&) OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
@@ -72,7 +73,7 @@ private:
     LayoutUnit m_columnWidth; // since a multi-column block that is split across variable width pages or regions will have different column counts and widths in each.
                               // These values will be cached (eventually) for multi-column blocks.
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
-    bool m_inBalancingPass; // Set when relayouting for column balancing.
+    mutable bool m_inBalancingPass; // Set when relayouting for column balancing.
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMultiColumnBlock, isRenderMultiColumnBlock());

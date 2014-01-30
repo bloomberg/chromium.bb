@@ -95,45 +95,33 @@ void RenderMultiColumnBlock::checkForPaginationLogicalHeightChange(LayoutUnit& /
     setLogicalHeight(0);
 }
 
-bool RenderMultiColumnBlock::relayoutForPagination(bool, LayoutUnit, LayoutStateMaintainer& statePusher)
+bool RenderMultiColumnBlock::shouldRelayoutMultiColumnBlock() const
 {
-    if (m_inBalancingPass || !requiresBalancing())
+    if (!requiresBalancing())
         return false;
-    m_inBalancingPass = true; // Prevent re-entering this method (and recursion into layout).
 
-    bool needsRelayout;
-    bool neededRelayout = false;
-    bool firstPass = true;
-    do {
-        // Column heights may change here because of balancing. We may have to do multiple layout
-        // passes, depending on how the contents is fitted to the changed column heights. In most
-        // cases, laying out again twice or even just once will suffice. Sometimes we need more
-        // passes than that, though, but the number of retries should not exceed the number of
-        // columns, unless we have a bug.
-        needsRelayout = false;
-        for (RenderBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
-            if (childBox != m_flowThread && childBox->isRenderMultiColumnSet()) {
-                RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(childBox);
-                if (multicolSet->calculateBalancedHeight(firstPass)) {
-                    multicolSet->setChildNeedsLayout(MarkOnlyThis);
-                    needsRelayout = true;
-                }
+    // Column heights may change here because of balancing. We may have to do multiple layout
+    // passes, depending on how the contents is fitted to the changed column heights. In most
+    // cases, laying out again twice or even just once will suffice. Sometimes we need more
+    // passes than that, though, but the number of retries should not exceed the number of
+    // columns, unless we have a bug.
+    bool needsRelayout = false;
+    for (RenderBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
+        if (childBox != m_flowThread && childBox->isRenderMultiColumnSet()) {
+            RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(childBox);
+            if (multicolSet->calculateBalancedHeight(!m_inBalancingPass)) {
+                multicolSet->setChildNeedsLayout(MarkOnlyThis);
+                needsRelayout = true;
             }
         }
+    }
 
-        if (needsRelayout) {
-            // Layout again. Column balancing resulted in a new height.
-            neededRelayout = true;
-            m_flowThread->setChildNeedsLayout(MarkOnlyThis);
-            setChildNeedsLayout(MarkOnlyThis);
-            if (firstPass)
-                statePusher.pop();
-            layoutBlock(false);
-        }
-        firstPass = false;
-    } while (needsRelayout);
-    m_inBalancingPass = false;
-    return neededRelayout;
+    if (needsRelayout)
+        m_flowThread->setChildNeedsLayout(MarkOnlyThis);
+
+
+    m_inBalancingPass = needsRelayout;
+    return needsRelayout;
 }
 
 void RenderMultiColumnBlock::addChild(RenderObject* newChild, RenderObject* beforeChild)
