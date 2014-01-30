@@ -21,7 +21,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
-#include "ui/gl/gl_surface.h"
 
 #if defined(USE_X11)
 #include "base/message_loop/message_pump_x11.h"
@@ -108,8 +107,6 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
 int DemoMain() {
   // Create the message-loop here before creating the root window.
   base::MessageLoopForUI message_loop;
-
-  gfx::GLSurface::InitializeOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
   bool allow_test_contexts = false;

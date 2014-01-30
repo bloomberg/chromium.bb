@@ -29,8 +29,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gl/gl_surface.h"
-
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
@@ -292,8 +290,6 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
 
   base::AtExitManager exit_manager;
-
-  gfx::GLSurface::InitializeOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
   bool allow_test_contexts = false;

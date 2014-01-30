@@ -14,7 +14,6 @@
 #include "base/threading/thread_local.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_switches.h"
 
 namespace gfx {
 
@@ -25,7 +24,9 @@ base::LazyInstance<base::ThreadLocalPointer<GLSurface> >::Leaky
 
 // static
 bool GLSurface::InitializeOneOff() {
-  DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
+  static bool initialized = false;
+  if (initialized)
+    return true;
 
   TRACE_EVENT0("gpu", "GLSurface::InitializeOneOff");
 
@@ -33,14 +34,12 @@ bool GLSurface::InitializeOneOff() {
   GetAllowedGLImplementations(&allowed_impls);
   DCHECK(!allowed_impls.empty());
 
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-
   // The default implementation is always the first one in list.
   GLImplementation impl = allowed_impls[0];
   bool fallback_to_osmesa = false;
-  if (cmd->HasSwitch(switches::kUseGL)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
-        cmd->GetSwitchValueASCII(switches::kUseGL);
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
     if (requested_implementation_name == "any") {
       fallback_to_osmesa = true;
     } else if (requested_implementation_name == "swiftshader") {
@@ -56,92 +55,25 @@ bool GLSurface::InitializeOneOff() {
     }
   }
 
-  bool gpu_service_logging = cmd->HasSwitch(switches::kEnableGPUServiceLogging);
-  bool disable_gl_drawing = cmd->HasSwitch(switches::kDisableGLDrawingForTests);
-
-  return InitializeOneOffImplementation(
-      impl, fallback_to_osmesa, gpu_service_logging, disable_gl_drawing);
-}
-
-// static
-bool GLSurface::InitializeOneOffImplementation(GLImplementation impl,
-                                               bool fallback_to_osmesa,
-                                               bool gpu_service_logging,
-                                               bool disable_gl_drawing) {
-  bool initialized =
-      InitializeStaticGLBindings(impl) && InitializeOneOffInternal();
+  initialized = InitializeStaticGLBindings(impl) && InitializeOneOffInternal();
   if (!initialized && fallback_to_osmesa) {
     ClearGLBindings();
     initialized = InitializeStaticGLBindings(kGLImplementationOSMesaGL) &&
                   InitializeOneOffInternal();
   }
-  if (!initialized)
-    ClearGLBindings();
 
   if (initialized) {
     DVLOG(1) << "Using "
              << GetGLImplementationName(GetGLImplementation())
              << " GL implementation.";
-    if (gpu_service_logging)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableGPUServiceLogging))
       InitializeDebugGLBindings();
-    if (disable_gl_drawing)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableGLDrawingForTests))
       InitializeNullDrawGLBindings();
   }
   return initialized;
-}
-
-// static
-void GLSurface::InitializeOneOffForTests() {
-  bool use_osmesa = true;
-
-#if defined(OS_ANDROID)
-  // On Android we always use hardware GL.
-  use_osmesa = false;
-#endif
-
-  std::vector<GLImplementation> allowed_impls;
-  GetAllowedGLImplementations(&allowed_impls);
-  DCHECK(!allowed_impls.empty());
-
-  GLImplementation impl = allowed_impls[0];
-  if (use_osmesa)
-    impl = kGLImplementationOSMesaGL;
-
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
-      << "kUseGL has not effect in tests";
-
-  bool fallback_to_osmesa = false;
-  bool gpu_service_logging = false;
-  bool disable_gl_drawing = false;
-  // TODO(danakj): Unit tests do not produce pixel output by default.
-  // bool disable_gl_drawing = true;
-
-  CHECK(InitializeOneOffImplementation(
-      impl, fallback_to_osmesa, gpu_service_logging, disable_gl_drawing));
-}
-
-// static
-void GLSurface::InitializeOneOffWithMockBindingsForTests() {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL))
-      << "kUseGL has not effect in tests";
-
-  // This method may be called multiple times in the same process to set up
-  // mock bindings in different ways.
-  ClearGLBindings();
-
-  bool fallback_to_osmesa = false;
-  bool gpu_service_logging = false;
-  bool disable_gl_drawing = false;
-
-  CHECK(InitializeOneOffImplementation(kGLImplementationMockGL,
-                                       fallback_to_osmesa,
-                                       gpu_service_logging,
-                                       disable_gl_drawing));
-}
-
-// static
-void GLSurface::InitializeDynamicMockBindingsForTests(GLContext* context) {
-  CHECK(InitializeDynamicGLBindings(kGLImplementationMockGL, context));
 }
 
 GLSurface::GLSurface() {}

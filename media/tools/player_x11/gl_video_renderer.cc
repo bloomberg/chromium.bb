@@ -11,7 +11,7 @@
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_implementation.h"
 
 enum { kNumYUVPlanes = 3 };
 
@@ -20,8 +20,8 @@ static GLXContext InitGLContext(Display* display, Window window) {
   // dlopen/dlsym, and so linking it into chrome breaks it. So we dynamically
   // load it, and use glew to dynamically resolve symbols.
   // See http://code.google.com/p/chromium/issues/detail?id=16800
-  if (!gfx::GLSurface::InitializeOneOff()) {
-    LOG(ERROR) << "GLSurface::InitializeOneOff failed";
+  if (!InitializeStaticGLBindings(gfx::kGLImplementationDesktopGL)) {
+    LOG(ERROR) << "InitializeStaticGLBindings failed";
     return NULL;
   }
 

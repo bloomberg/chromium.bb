@@ -47,7 +47,7 @@ GL_EXPORT bool InitializeStaticGLBindings(GLImplementation implementation);
 // Initialize function bindings that depend on the context for a GL
 // implementation.
 GL_EXPORT bool InitializeDynamicGLBindings(GLImplementation implementation,
-                                           GLContext* context);
+    GLContext* context);
 
 // Initialize Debug logging wrappers for GL bindings.
 void InitializeDebugGLBindings();

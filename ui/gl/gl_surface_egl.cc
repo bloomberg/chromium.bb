@@ -784,14 +784,14 @@ GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }
 
 // static
 bool GLSurface::InitializeOneOffInternal() {
-  switch (GetGLImplementation()) {
-    case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
-        return false;
-      }
-    default:
-      break;
+  if (GetGLImplementation() == kGLImplementationOSMesaGL) {
+    return true;
+  }
+  DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
+
+  if (!GLSurfaceEGL::InitializeOneOff()) {
+    LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
+    return false;
   }
   return true;
 }

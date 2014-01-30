@@ -225,8 +225,6 @@ typedef uint64 EGLuint64CHROMIUM;
 namespace gfx {
 
 struct GL_EXPORT DriverGL {
-  DriverGL();
-
   void InitializeStaticBindings();
   void InitializeCustomDynamicBindings(GLContext* context);
   void InitializeDebugBindings();

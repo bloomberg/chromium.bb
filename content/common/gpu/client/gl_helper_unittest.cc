@@ -1571,6 +1571,7 @@ int main(int argc, char** argv) {
 #if defined(TOOLKIT_GTK)
   gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
+  gfx::GLSurface::InitializeOneOff();
   gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
 
   content::UnitTestTestSuite runner(suite);
