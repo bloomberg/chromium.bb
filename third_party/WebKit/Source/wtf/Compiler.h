@@ -257,11 +257,6 @@
 #endif
 #endif
 
-/* ABI */
-#if defined(__ARM_EABI__) || defined(__EABI__)
-#define WTF_COMPILER_SUPPORTS_EABI 1
-#endif
-
 /* WTF_PRETTY_FUNCTION */
 
 #if COMPILER(GCC)
