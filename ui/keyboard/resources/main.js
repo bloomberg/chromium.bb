@@ -118,33 +118,36 @@
       // Calculate width and height of the window.
       var bounds = exports.getKeyboardBounds();
 
-      var width;
-      var height;
-      var pixelPerWeight;
-      if (totalWeightX/bounds.width < totalWeightY/bounds.height) {
-        height = bounds.height;
-        pixelPerWeight = bounds.height/totalWeightY;
-        width = Math.floor(pixelPerWeight * totalWeightX)
-      }
-      else {
-        width = bounds.width;
-        pixelPerWeight = bounds.width/totalWeightX;
-        height = Math.floor(pixelPerWeight * totalWeightY);
+      var width = bounds.width;
+      var height = bounds.height;
+      var pixelPerWeightX = bounds.width/totalWeightX;
+      var pixelPerWeightY = bounds.height/totalWeightY;
+
+      if (keyset.align == LayoutAlignment.CENTER) {
+        if (totalWeightX/bounds.width < totalWeightY/bounds.height) {
+          pixelPerWeightY = bounds.height/totalWeightY;
+          pixelPerWeightX = pixelPerWeightY;
+          width = Math.floor(pixelPerWeightX * totalWeightX)
+        } else {
+          pixelPerWeightX = bounds.width/totalWeightX;
+          pixelPerWeightY = pixelPerWeightX;
+          height = Math.floor(pixelPerWeightY * totalWeightY);
+        }
       }
       // Calculate pitch.
-      this.pitchX = Math.floor(pitchWeightX * pixelPerWeight);
-      this.pitchY = Math.floor(pitchWeightY * pixelPerWeight);
+      this.pitchX = Math.floor(pitchWeightX * pixelPerWeightX);
+      this.pitchY = Math.floor(pitchWeightY * pixelPerWeightY);
 
       // Convert weight to pixels on x axis.
-      this.keyWidth = Math.floor(DEFAULT_KEY_WEIGHT_X * pixelPerWeight);
-      var offsetLeft = Math.floor(keyset.weightLeft * pixelPerWeight);
-      var offsetRight = Math.floor(keyset.weightRight * pixelPerWeight);
+      this.keyWidth = Math.floor(DEFAULT_KEY_WEIGHT_X * pixelPerWeightX);
+      var offsetLeft = Math.floor(keyset.weightLeft * pixelPerWeightX);
+      var offsetRight = Math.floor(keyset.weightRight * pixelPerWeightX);
       this.availableWidth = width - offsetLeft - offsetRight;
 
       // Calculates weight to pixels on the y axis.
-      this.keyHeight = Math.floor(DEFAULT_KEY_WEIGHT_Y * pixelPerWeight);
-      var offsetTop = Math.floor(keyset.weightTop * pixelPerWeight);
-      var offsetBottom = Math.floor(keyset.weightBottom * pixelPerWeight);
+      this.keyHeight = Math.floor(DEFAULT_KEY_WEIGHT_Y * pixelPerWeightY);
+      var offsetTop = Math.floor(keyset.weightTop * pixelPerWeightY);
+      var offsetBottom = Math.floor(keyset.weightBottom * pixelPerWeightY);
       this.availableHeight = height - offsetTop - offsetBottom;
 
       var dX = bounds.width - width;
@@ -165,7 +168,7 @@
   function getKeyboardBounds_() {
     return {
       "width": window.innerWidth,
-      "height": window.innerHeight
+      "height": window.innerHeight,
     };
   }
   /**

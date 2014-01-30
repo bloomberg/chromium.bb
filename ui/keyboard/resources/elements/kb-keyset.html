@@ -5,7 +5,7 @@
   -->
 
 <polymer-element name="kb-keyset"
-    attributes="nextKeyset isDefault pitch weightRight
+    attributes="align isDefault nextKeyset pitch weightRight
         weightTop weightBottom"
     on-key-up="{{keyUp}}" on-key-longpress="{{keyLongpress}}">
   <template>
@@ -23,6 +23,7 @@
   </template>
   <script>
     Polymer('kb-keyset', {
+      align: "center",
       isDefault: false,
       nextKeyset: undefined,
       // Weight offsets for positioning the keyset.

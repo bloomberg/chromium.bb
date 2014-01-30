@@ -22,6 +22,15 @@ var RowAlignment = {
 var FONT_SIZE_RATIO = 3;
 
 /**
+ * @type {enum}
+ * Possible layout alignments.
+ */
+var LayoutAlignment = {
+  CENTER: "center",
+  STRETCH: "stretch",
+}
+
+/**
  * The number of rows in each keyset.
  * @type {number}
  */
@@ -52,7 +61,7 @@ var DEFAULT_KEY_WEIGHT_X = 100;
  * The default weight of a key in the Y direction.
  * @type {number}
  */
-var DEFAULT_KEY_WEIGHT_Y = 60;
+var DEFAULT_KEY_WEIGHT_Y = 100;
 
 /**
  * The top padding on each key.
