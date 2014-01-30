@@ -34,6 +34,7 @@ std::string ConvertTimeToExtensionVersion(const base::Time& time);
 // unpacked in the system temp dir. Returns a valid extension that the caller
 // should take ownership on success, or NULL and |error| on failure.
 //
+// NOTE: The app created is always marked as a bookmark app.
 // NOTE: This function does file IO and should not be called on the UI thread.
 // NOTE: The caller takes ownership of the directory at extension->path() on the
 // returned object.

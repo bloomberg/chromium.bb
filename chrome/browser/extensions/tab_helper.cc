@@ -422,8 +422,6 @@ void TabHelper::FinishCreateHostedApp(
   if (install_info.title.empty())
     install_info.title = base::UTF8ToUTF16(install_info.app_url.spec());
 
-  install_info.is_bookmark_app = true;
-
   // Add the downloaded icons. Extensions only allow certain icon sizes. First
   // populate icons that match the allowed sizes exactly and then downscale
   // remaining icons to the closest allowed size that doesn't yet have an icon.

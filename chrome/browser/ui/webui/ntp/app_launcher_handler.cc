@@ -703,7 +703,6 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
   }
 
   scoped_ptr<AppInstallInfo> install_info(new AppInstallInfo());
-  install_info->is_bookmark_app = true;
   install_info->title = title;
   install_info->app_url = launch_url;
   install_info->page_ordinal = page_ordinal;
@@ -735,7 +734,6 @@ void AppLauncherHandler::OnFaviconForApp(
     scoped_ptr<AppInstallInfo> install_info,
     const chrome::FaviconImageResult& image_result) {
   scoped_ptr<WebApplicationInfo> web_app(new WebApplicationInfo());
-  web_app->is_bookmark_app = install_info->is_bookmark_app;
   web_app->title = install_info->title;
   web_app->app_url = install_info->app_url;
 

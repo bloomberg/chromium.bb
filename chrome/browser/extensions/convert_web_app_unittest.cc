@@ -98,14 +98,10 @@ TEST(ExtensionFromWebApp, Basic) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   WebApplicationInfo web_app;
-  web_app.manifest_url = GURL("http://aaronboodman.com/gearpad/manifest.json");
   web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.description =
       base::ASCIIToUTF16("The best text editor in the universe!");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
-  web_app.permissions.push_back("geolocation");
-  web_app.permissions.push_back("notifications");
-  web_app.urls.push_back(GURL("http://aaronboodman.com/gearpad/"));
 
   const int sizes[] = {16, 48, 128};
   for (size_t i = 0; i < arraysize(sizes); ++i) {
@@ -126,19 +122,15 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_TRUE(extension->is_hosted_app());
   EXPECT_FALSE(extension->is_legacy_packaged_app());
 
-  EXPECT_EQ("lJqm1+jncOHClAuwif1QxNJKfeV9Fbl9IBZx7FkNwkA=",
+  EXPECT_EQ("zVvdNZy3Mp7CFU8JVSyXNlDuHdVLbP7fDO3TGVzj/0w=",
             extension->public_key());
-  EXPECT_EQ("ncnbaadanljoanockmphfdkimpdedemj", extension->id());
+  EXPECT_EQ("oplhagaaipaimkjlbekcdjkffijdockj", extension->id());
   EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
   EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ(base::UTF16ToUTF8(web_app.description), extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
-  EXPECT_EQ(2u, extension->GetActivePermissions()->apis().size());
-  EXPECT_TRUE(extension->HasAPIPermission("geolocation"));
-  EXPECT_TRUE(extension->HasAPIPermission("notifications"));
-  ASSERT_EQ(1u, extension->web_extent().patterns().size());
-  EXPECT_EQ("http://aaronboodman.com/gearpad/*",
-            extension->web_extent().patterns().begin()->GetAsString());
+  EXPECT_EQ(0u, extension->GetActivePermissions()->apis().size());
+  ASSERT_EQ(0u, extension->web_extent().patterns().size());
 
   EXPECT_EQ(web_app.icons.size(),
             IconsInfo::GetIcons(extension.get()).map().size());
@@ -160,7 +152,6 @@ TEST(ExtensionFromWebApp, Minimal) {
   ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
   WebApplicationInfo web_app;
-  web_app.manifest_url = GURL("http://aaronboodman.com/gearpad/manifest.json");
   web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
@@ -176,18 +167,16 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_TRUE(extension->is_hosted_app());
   EXPECT_FALSE(extension->is_legacy_packaged_app());
 
-  EXPECT_EQ("lJqm1+jncOHClAuwif1QxNJKfeV9Fbl9IBZx7FkNwkA=",
+  EXPECT_EQ("zVvdNZy3Mp7CFU8JVSyXNlDuHdVLbP7fDO3TGVzj/0w=",
             extension->public_key());
-  EXPECT_EQ("ncnbaadanljoanockmphfdkimpdedemj", extension->id());
+  EXPECT_EQ("oplhagaaipaimkjlbekcdjkffijdockj", extension->id());
   EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
   EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ("", extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
   EXPECT_EQ(0u, IconsInfo::GetIcons(extension.get()).map().size());
   EXPECT_EQ(0u, extension->GetActivePermissions()->apis().size());
-  ASSERT_EQ(1u, extension->web_extent().patterns().size());
-  EXPECT_EQ("*://aaronboodman.com/*",
-            extension->web_extent().patterns().begin()->GetAsString());
+  ASSERT_EQ(0u, extension->web_extent().patterns().size());
 }
 
 }  // namespace extensions

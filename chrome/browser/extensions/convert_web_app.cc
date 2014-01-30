@@ -47,12 +47,11 @@ const char kIconsDirName[] = "icons";
 // its unique identity, and we need one of those. A web app's unique identity
 // is its manifest URL, so we hash that to create a public key. There will be
 // no corresponding private key, which means that these extensions cannot be
-// auto-updated using ExtensionUpdater. But Chrome does notice updates to the
-// manifest and regenerates these extensions.
-std::string GenerateKey(const GURL& manifest_url) {
+// auto-updated using ExtensionUpdater.
+std::string GenerateKey(const GURL& app_url) {
   char raw[crypto::kSHA256Length] = {0};
   std::string key;
-  crypto::SHA256HashString(manifest_url.spec().c_str(), raw,
+  crypto::SHA256HashString(app_url.spec().c_str(), raw,
                            crypto::kSHA256Length);
   base::Base64Encode(std::string(raw, crypto::kSHA256Length), &key);
   return key;
@@ -103,21 +102,11 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Create the manifest
   scoped_ptr<base::DictionaryValue> root(new base::DictionaryValue);
-  if (!web_app.is_bookmark_app)
-    root->SetString(keys::kPublicKey, GenerateKey(web_app.manifest_url));
-  else
-    root->SetString(keys::kPublicKey, GenerateKey(web_app.app_url));
-
-  if (web_app.is_offline_enabled)
-    root->SetBoolean(keys::kOfflineEnabled, true);
-
+  root->SetString(keys::kPublicKey, GenerateKey(web_app.app_url));
   root->SetString(keys::kName, base::UTF16ToUTF8(web_app.title));
   root->SetString(keys::kVersion, ConvertTimeToExtensionVersion(create_time));
   root->SetString(keys::kDescription, base::UTF16ToUTF8(web_app.description));
   root->SetString(keys::kLaunchWebURL, web_app.app_url.spec());
-
-  if (!web_app.launch_container.empty())
-    root->SetString(keys::kLaunchContainer, web_app.launch_container);
 
   // Add the icons.
   base::DictionaryValue* icons = new base::DictionaryValue();
@@ -127,20 +116,6 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     std::string icon_path = base::StringPrintf("%s/%s.png", kIconsDirName,
                                                size.c_str());
     icons->SetString(size, icon_path);
-  }
-
-  // Add the permissions.
-  base::ListValue* permissions = new base::ListValue();
-  root->Set(keys::kPermissions, permissions);
-  for (size_t i = 0; i < web_app.permissions.size(); ++i) {
-    permissions->Append(new base::StringValue(web_app.permissions[i]));
-  }
-
-  // Add the URLs.
-  base::ListValue* urls = new base::ListValue();
-  root->Set(keys::kWebURLs, urls);
-  for (size_t i = 0; i < web_app.urls.size(); ++i) {
-    urls->Append(new base::StringValue(web_app.urls[i].spec()));
   }
 
   // Write the manifest.
@@ -182,14 +157,11 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Finally, create the extension object to represent the unpacked directory.
   std::string error;
-  int extension_flags = Extension::NO_FLAGS;
-  if (web_app.is_bookmark_app)
-    extension_flags |= Extension::FROM_BOOKMARK;
   scoped_refptr<Extension> extension = Extension::Create(
       temp_dir.path(),
       Manifest::INTERNAL,
       *root,
-      extension_flags,
+      Extension::FROM_BOOKMARK,
       &error);
   if (!extension.get()) {
     LOG(ERROR) << error;

@@ -10,8 +10,7 @@ WebApplicationInfo::IconInfo::IconInfo() : width(0), height(0) {
 WebApplicationInfo::IconInfo::~IconInfo() {
 }
 
-WebApplicationInfo::WebApplicationInfo()
-    : is_bookmark_app(false), is_offline_enabled(false) {
+WebApplicationInfo::WebApplicationInfo() {
 }
 
 WebApplicationInfo::~WebApplicationInfo() {
