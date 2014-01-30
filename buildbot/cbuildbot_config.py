@@ -1568,6 +1568,15 @@ internal_paladin.add_config('x86-zgb-paladin',
   paladin_builder_name='x86-zgb paladin',
 )
 
+internal_paladin.add_config('stumpy_moblab-paladin',
+  boards=['stumpy_moblab'],
+  important=False,
+  paladin_builder_name='stumpy_moblab paladin',
+  hw_tests=[],
+  vm_tests=None,
+)
+
+
 ### Arm paladins (CQ builders).
 
 internal_arm_paladin = internal_paladin.derive(arm)
@@ -1965,7 +1974,6 @@ _arm_brillo_release.add_config('duck-release',
 _release.add_config('stumpy_moblab-release',
   boards=['stumpy_moblab'],
   hw_tests=[],
-  important=False,
   vm_tests=None,
 )
 
