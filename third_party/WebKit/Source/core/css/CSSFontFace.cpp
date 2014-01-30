@@ -67,13 +67,14 @@ void CSSFontFace::setSegmentedFontFace(CSSSegmentedFontFace* segmentedFontFace)
     m_segmentedFontFace = segmentedFontFace;
 }
 
-void CSSFontFace::beginLoadIfNeeded(CSSFontFaceSource* source)
+void CSSFontFace::beginLoadIfNeeded(CSSFontFaceSource* source, CSSFontSelector* fontSelector)
 {
-    if (!m_segmentedFontFace)
-        return;
-
     if (source->resource() && source->resource()->stillNeedsLoad()) {
-        CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
+        if (!fontSelector) {
+            if (!m_segmentedFontFace)
+                return;
+            fontSelector = m_segmentedFontFace->fontSelector();
+        }
         fontSelector->beginLoadingFontSoon(source->resource());
     }
 
@@ -87,26 +88,19 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
         return;
     m_activeSource = 0;
 
-    // FIXME: Can we assert that m_segmentedFontFace is non-null? That may
-    // require stopping in-progress font loading when the last
-    // CSSSegmentedFontFace is removed.
-    if (!m_segmentedFontFace)
-        return;
-
-    CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
-    fontSelector->fontLoaded();
-
-    if (fontSelector->document() && loadStatus() == FontFace::Loading) {
+    if (loadStatus() == FontFace::Loading) {
         if (source->ensureFontData()) {
             setLoadStatus(FontFace::Loaded);
-            if (source->isSVGFontFaceSource())
-                UseCounter::count(*fontSelector->document(), UseCounter::SVGFontInCSS);
+            Document* document = m_segmentedFontFace ? m_segmentedFontFace->fontSelector()->document() : 0;
+            if (document && source->isSVGFontFaceSource())
+                UseCounter::count(*document, UseCounter::SVGFontInCSS);
         }
         else if (!isValid())
             setLoadStatus(FontFace::Error);
     }
 
-    m_segmentedFontFace->fontLoaded(this);
+    if (m_segmentedFontFace)
+        m_segmentedFontFace->fontLoaded(this);
 }
 
 PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontDescription)
@@ -146,7 +140,7 @@ void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
         load(fontDescription);
 }
 
-void CSSFontFace::load(const FontDescription& fontDescription)
+void CSSFontFace::load(const FontDescription& fontDescription, CSSFontSelector* fontSelector)
 {
     if (loadStatus() != FontFace::Unloaded)
         return;
@@ -164,7 +158,7 @@ void CSSFontFace::load(const FontDescription& fontDescription)
         } else {
             if (!m_sources[i]->isLoaded()) {
                 m_activeSource = m_sources[i].get();
-                beginLoadIfNeeded(m_activeSource);
+                beginLoadIfNeeded(m_activeSource, fontSelector);
             } else {
                 setLoadStatus(FontFace::Loaded);
             }

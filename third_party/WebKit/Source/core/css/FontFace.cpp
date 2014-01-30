@@ -49,6 +49,7 @@
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/StyleEngine.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Settings.h"
 #include "core/svg/SVGFontFaceElement.h"
@@ -88,56 +89,56 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-static PassRefPtr<CSSValue> parseCSSValue(const String& s, CSSPropertyID propertyID)
+static PassRefPtr<CSSValue> parseCSSValue(const Document* document, const String& s, CSSPropertyID propertyID)
 {
     if (s.isEmpty())
         return 0;
     RefPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create();
-    BisonCSSParser::parseValue(parsedStyle.get(), propertyID, s, true, HTMLStandardMode, 0);
+    BisonCSSParser::parseValue(parsedStyle.get(), propertyID, s, true, *document);
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 
 PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const Dictionary& descriptors, ExceptionState& exceptionState)
 {
-    RefPtr<CSSValue> src = parseCSSValue(source, CSSPropertySrc);
+    RefPtr<CSSValue> src = parseCSSValue(toDocument(context), source, CSSPropertySrc);
     if (!src || !src->isValueList()) {
         exceptionState.throwDOMException(SyntaxError, "The source provided ('" + source + "') could not be parsed as a value list.");
         return 0;
     }
 
     RefPtr<FontFace> fontFace = adoptRef<FontFace>(new FontFace(src));
-    fontFace->setFamily(family, exceptionState);
+    fontFace->setFamily(context, family, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
     String value;
     if (descriptors.get("style", value)) {
-        fontFace->setStyle(value, exceptionState);
+        fontFace->setStyle(context, value, exceptionState);
         if (exceptionState.hadException())
             return 0;
     }
     if (descriptors.get("weight", value)) {
-        fontFace->setWeight(value, exceptionState);
+        fontFace->setWeight(context, value, exceptionState);
         if (exceptionState.hadException())
             return 0;
     }
     if (descriptors.get("stretch", value)) {
-        fontFace->setStretch(value, exceptionState);
+        fontFace->setStretch(context, value, exceptionState);
         if (exceptionState.hadException())
             return 0;
     }
     if (descriptors.get("unicodeRange", value)) {
-        fontFace->setUnicodeRange(value, exceptionState);
+        fontFace->setUnicodeRange(context, value, exceptionState);
         if (exceptionState.hadException())
             return 0;
     }
     if (descriptors.get("variant", value)) {
-        fontFace->setVariant(value, exceptionState);
+        fontFace->setVariant(context, value, exceptionState);
         if (exceptionState.hadException())
             return 0;
     }
     if (descriptors.get("featureSettings", value)) {
-        fontFace->setFeatureSettings(value, exceptionState);
+        fontFace->setFeatureSettings(context, value, exceptionState);
         if (exceptionState.hadException())
             return 0;
     }
@@ -215,39 +216,39 @@ String FontFace::featureSettings() const
     return m_featureSettings ? m_featureSettings->cssText() : "normal";
 }
 
-void FontFace::setStyle(const String& s, ExceptionState& exceptionState)
+void FontFace::setStyle(ExecutionContext* context, const String& s, ExceptionState& exceptionState)
 {
-    setPropertyFromString(s, CSSPropertyFontStyle, exceptionState);
+    setPropertyFromString(toDocument(context), s, CSSPropertyFontStyle, exceptionState);
 }
 
-void FontFace::setWeight(const String& s, ExceptionState& exceptionState)
+void FontFace::setWeight(ExecutionContext* context, const String& s, ExceptionState& exceptionState)
 {
-    setPropertyFromString(s, CSSPropertyFontWeight, exceptionState);
+    setPropertyFromString(toDocument(context), s, CSSPropertyFontWeight, exceptionState);
 }
 
-void FontFace::setStretch(const String& s, ExceptionState& exceptionState)
+void FontFace::setStretch(ExecutionContext* context, const String& s, ExceptionState& exceptionState)
 {
-    setPropertyFromString(s, CSSPropertyFontStretch, exceptionState);
+    setPropertyFromString(toDocument(context), s, CSSPropertyFontStretch, exceptionState);
 }
 
-void FontFace::setUnicodeRange(const String& s, ExceptionState& exceptionState)
+void FontFace::setUnicodeRange(ExecutionContext* context, const String& s, ExceptionState& exceptionState)
 {
-    setPropertyFromString(s, CSSPropertyUnicodeRange, exceptionState);
+    setPropertyFromString(toDocument(context), s, CSSPropertyUnicodeRange, exceptionState);
 }
 
-void FontFace::setVariant(const String& s, ExceptionState& exceptionState)
+void FontFace::setVariant(ExecutionContext* context, const String& s, ExceptionState& exceptionState)
 {
-    setPropertyFromString(s, CSSPropertyFontVariant, exceptionState);
+    setPropertyFromString(toDocument(context), s, CSSPropertyFontVariant, exceptionState);
 }
 
-void FontFace::setFeatureSettings(const String& s, ExceptionState& exceptionState)
+void FontFace::setFeatureSettings(ExecutionContext* context, const String& s, ExceptionState& exceptionState)
 {
-    setPropertyFromString(s, CSSPropertyWebkitFontFeatureSettings, exceptionState);
+    setPropertyFromString(toDocument(context), s, CSSPropertyWebkitFontFeatureSettings, exceptionState);
 }
 
-void FontFace::setPropertyFromString(const String& s, CSSPropertyID propertyID, ExceptionState& exceptionState)
+void FontFace::setPropertyFromString(const Document* document, const String& s, CSSPropertyID propertyID, ExceptionState& exceptionState)
 {
-    RefPtr<CSSValue> value = parseCSSValue(s, propertyID);
+    RefPtr<CSSValue> value = parseCSSValue(document, s, propertyID);
     if (!value || !setPropertyValue(value, propertyID))
         exceptionState.throwDOMException(SyntaxError, "Failed to set '" + s + "' as a property value.");
 }
@@ -351,7 +352,7 @@ void FontFace::setLoadStatus(LoadStatus status)
         resolveReadyPromises();
 }
 
-void FontFace::load()
+void FontFace::load(ExecutionContext* context)
 {
     if (m_status != Unloaded)
         return;
@@ -362,7 +363,7 @@ void FontFace::load()
     fontDescription.setFamily(fontFamily);
     fontDescription.setTraitsMask(static_cast<FontTraitsMask>(traitsMask()));
 
-    m_cssFontFace->load(fontDescription);
+    m_cssFontFace->load(fontDescription, toDocument(context)->styleEngine()->fontSelector());
 }
 
 ScriptPromise FontFace::ready(ExecutionContext* context)

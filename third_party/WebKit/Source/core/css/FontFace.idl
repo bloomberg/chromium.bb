@@ -42,16 +42,16 @@ enum FontFaceLoadStatus {
     RaisesException=Constructor
 ] interface FontFace {
 
-    [RaisesException=Setter] attribute DOMString family;
-    [RaisesException=Setter] attribute DOMString style;
-    [RaisesException=Setter] attribute DOMString weight;
-    [RaisesException=Setter] attribute DOMString stretch;
-    [RaisesException=Setter] attribute DOMString unicodeRange;
-    [RaisesException=Setter] attribute DOMString variant;
-    [RaisesException=Setter] attribute DOMString featureSettings;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString family;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString style;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString weight;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString stretch;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString unicodeRange;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString variant;
+    [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString featureSettings;
 
     readonly attribute FontFaceLoadStatus status;
 
-    void load();
+    [CallWith=ExecutionContext] void load();
     [CallWith=ExecutionContext] Promise ready();
 };

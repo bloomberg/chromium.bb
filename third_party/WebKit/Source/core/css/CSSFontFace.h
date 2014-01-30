@@ -34,6 +34,7 @@
 
 namespace WebCore {
 
+class CSSFontSelector;
 class CSSSegmentedFontFace;
 class Document;
 class FontDescription;
@@ -64,7 +65,7 @@ public:
 
     void addSource(PassOwnPtr<CSSFontFaceSource>);
 
-    void beginLoadIfNeeded(CSSFontFaceSource*);
+    void beginLoadIfNeeded(CSSFontFaceSource*, CSSFontSelector* = 0);
     void fontLoaded(CSSFontFaceSource*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
@@ -98,7 +99,7 @@ public:
 
     FontFace::LoadStatus loadStatus() const { return m_fontFace->loadStatus(); }
     void willUseFontData(const FontDescription&);
-    void load(const FontDescription&);
+    void load(const FontDescription&, CSSFontSelector* = 0);
 
 private:
     void setLoadStatus(FontFace::LoadStatus);

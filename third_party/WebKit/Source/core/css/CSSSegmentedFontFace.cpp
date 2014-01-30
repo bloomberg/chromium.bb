@@ -28,6 +28,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFontFace.h"
+#include "core/css/CSSFontSelector.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SegmentedFontData.h"
@@ -70,6 +71,8 @@ bool CSSSegmentedFontFace::isValid() const
 
 void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
 {
+    m_fontSelector->fontLoaded();
+
     pruneTable();
 
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && !isLoading()) {

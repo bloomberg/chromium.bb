@@ -9,6 +9,12 @@ PASS face1.status is "loaded"
 PASS face2.status is "unloaded"
 PASS face2.status is "loading"
 PASS face2.status is "error"
+PASS face3.status is "unloaded"
+PASS face3.status is "loading"
+PASS face3.status is "loaded"
+PASS face4.status is "unloaded"
+PASS face4.status is "loading"
+PASS face4.status is "error"
 PASS successfullyParsed is true
 
 TEST COMPLETE

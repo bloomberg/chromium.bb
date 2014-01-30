@@ -44,6 +44,26 @@ function testStep2() {
 
 function testStep3() {
     shouldBeEqualToString('face2.status', 'error');
+
+    face3 = new FontFace('Font3', 'url(../../resources/Ahem.ttf)', {});
+    face3.ready().then(testStep4, fail('face3.ready() rejected'));
+    shouldBeEqualToString('face3.status', 'unloaded');
+    face3.load();
+    shouldBeEqualToString('face3.status', 'loading');
+}
+
+function testStep4() {
+    shouldBeEqualToString('face3.status', 'loaded');
+
+    face4 = new FontFace('Font4', 'url(../../resources/DownLoadErrorAhem.otf)', {});
+    face4.ready().then(fail('face4.ready() fulfilled'), testStep5);
+    shouldBeEqualToString('face4.status', 'unloaded');
+    face4.load();
+    shouldBeEqualToString('face4.status', 'loading');
+}
+
+function testStep5() {
+    shouldBeEqualToString('face4.status', 'error');
     finishJSTest();
 }
 
