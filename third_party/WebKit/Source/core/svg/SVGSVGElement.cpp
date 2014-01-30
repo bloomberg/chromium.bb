@@ -516,6 +516,8 @@ RenderObject* SVGSVGElement::createRenderer(RenderStyle*)
 Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* rootParent)
 {
     if (rootParent->inDocument()) {
+        UseCounter::count(document(), UseCounter::SVGSVGElementInDocument);
+
         document().accessSVGExtensions()->addTimeContainer(this);
 
         // Animations are started at the end of document parsing and after firing the load event,
