@@ -35,6 +35,8 @@ AllJsLoadTest.prototype = {
     'host.js',
     'host_controller.js',
     'host_dispatcher.js',
+    'host_it2me_dispatcher.js',
+    'host_it2me_native_messaging.js',
     'host_list.js',
     'host_native_messaging.js',
     //'host_plugin_proto.js',  // Only used by jscompiler
