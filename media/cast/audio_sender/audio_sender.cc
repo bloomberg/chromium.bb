@@ -31,6 +31,8 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
 
  private:
   AudioSender* audio_sender_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtcpAudioSenderFeedback);
 };
 
 class LocalRtpSenderStatistics : public RtpSenderStatistics {

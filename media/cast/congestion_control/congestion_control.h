@@ -30,7 +30,6 @@ class CongestionControl {
   // Returns true if the bitrate have changed.
   bool OnNack(base::TimeDelta rtt_ms, uint32* new_bitrate);
 
-
  private:
   base::TickClock* const clock_;  // Not owned by this class.
   const float congestion_control_back_off_;

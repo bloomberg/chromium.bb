@@ -30,7 +30,8 @@ class CongestionControlTest : public ::testing::Test {
   }
 
   // Returns the last bitrate of the run.
-  uint32 RunWithOneLossEventPerSecond(int fps, int rtt_ms,
+  uint32 RunWithOneLossEventPerSecond(int fps,
+                                      int rtt_ms,
                                       int runtime_in_seconds) {
     const base::TimeDelta rtt = base::TimeDelta::FromMilliseconds(rtt_ms);
     const base::TimeDelta ack_rate =
@@ -50,6 +51,8 @@ class CongestionControlTest : public ::testing::Test {
 
   base::SimpleTestTickClock testing_clock_;
   CongestionControl congestion_control_;
+
+  DISALLOW_COPY_AND_ASSIGN(CongestionControlTest);
 };
 
 TEST_F(CongestionControlTest, Max) {
@@ -98,7 +101,7 @@ TEST_F(CongestionControlTest, Min) {
 TEST_F(CongestionControlTest, Timing) {
   const base::TimeDelta rtt = base::TimeDelta::FromMilliseconds(kRttMs);
   const base::TimeDelta ack_rate =
-     base::TimeDelta::FromMilliseconds(kAckRateMs);
+      base::TimeDelta::FromMilliseconds(kAckRateMs);
   uint32 new_bitrate = 0;
   uint32 expected_bitrate = kStartBitrate;
 
@@ -111,8 +114,8 @@ TEST_F(CongestionControlTest, Timing) {
 
   // We should back immediately.
   EXPECT_TRUE(congestion_control_.OnNack(rtt, &new_bitrate));
-  expected_bitrate = static_cast<uint32>(
-      expected_bitrate * kDefaultCongestionControlBackOff);
+  expected_bitrate =
+      static_cast<uint32>(expected_bitrate * kDefaultCongestionControlBackOff);
   EXPECT_EQ(expected_bitrate, new_bitrate);
 
   // Less than one RTT have passed don't back again.
@@ -121,8 +124,8 @@ TEST_F(CongestionControlTest, Timing) {
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
   EXPECT_TRUE(congestion_control_.OnNack(rtt, &new_bitrate));
-  expected_bitrate = static_cast<uint32>(
-      expected_bitrate * kDefaultCongestionControlBackOff);
+  expected_bitrate =
+      static_cast<uint32>(expected_bitrate * kDefaultCongestionControlBackOff);
   EXPECT_EQ(expected_bitrate, new_bitrate);
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
@@ -162,8 +165,7 @@ TEST_F(CongestionControlTest, Convergence24fps) {
 }
 
 TEST_F(CongestionControlTest, Convergence24fpsLongRtt) {
-  EXPECT_GE(RunWithOneLossEventPerSecond(24, 100, 100),
-            GG_UINT32_C(500000));
+  EXPECT_GE(RunWithOneLossEventPerSecond(24, 100, 100), GG_UINT32_C(500000));
 }
 
 TEST_F(CongestionControlTest, Convergence60fps) {
@@ -172,8 +174,7 @@ TEST_F(CongestionControlTest, Convergence60fps) {
 }
 
 TEST_F(CongestionControlTest, Convergence60fpsLongRtt) {
-  EXPECT_GE(RunWithOneLossEventPerSecond(60, 100, 100),
-            GG_UINT32_C(500000));
+  EXPECT_GE(RunWithOneLossEventPerSecond(60, 100, 100), GG_UINT32_C(500000));
 }
 
 }  // namespace cast

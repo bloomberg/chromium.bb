@@ -37,8 +37,7 @@ CongestionControl::CongestionControl(base::TickClock* clock,
   DCHECK_GE(start_bitrate, min_bitrate_configured) << "Invalid config";
 }
 
-CongestionControl::~CongestionControl() {
-}
+CongestionControl::~CongestionControl() {}
 
 bool CongestionControl::OnAck(base::TimeDelta rtt, uint32* new_bitrate) {
   base::TimeTicks now = clock_->NowTicks();
@@ -50,31 +49,36 @@ bool CongestionControl::OnAck(base::TimeDelta rtt, uint32* new_bitrate) {
     return false;
   }
   // Are we at the max bitrate?
-  if (max_bitrate_configured_ == bitrate_)  return false;
+  if (max_bitrate_configured_ == bitrate_)
+    return false;
 
   // Make sure RTT is never less than 1 ms.
   rtt = std::max(rtt, base::TimeDelta::FromMilliseconds(1));
 
-  base::TimeDelta elapsed_time = std::min(now - time_last_increase_,
-      base::TimeDelta::FromMilliseconds(kMaxElapsedTimeMs));
-  base::TimeDelta change_interval = std::max(rtt,
+  base::TimeDelta elapsed_time =
+      std::min(now - time_last_increase_,
+               base::TimeDelta::FromMilliseconds(kMaxElapsedTimeMs));
+  base::TimeDelta change_interval = std::max(
+      rtt,
       base::TimeDelta::FromMilliseconds(kCongestionControlMinChangeIntervalMs));
-  change_interval = std::min(change_interval,
+  change_interval = std::min(
+      change_interval,
       base::TimeDelta::FromMilliseconds(kCongestionControlMaxChangeIntervalMs));
 
   // Have enough time have passed?
-  if (elapsed_time < change_interval)  return false;
+  if (elapsed_time < change_interval)
+    return false;
 
   time_last_increase_ = now;
 
   // One packet per RTT multiplied by the elapsed time fraction.
   // 1500 * 8 * (1000 / rtt_ms) * (elapsed_time_ms / 1000) =>
   // 1500 * 8 * elapsed_time_ms / rtt_ms.
-  uint32 bitrate_increase = (1500 * 8 * elapsed_time.InMilliseconds()) /
-     rtt.InMilliseconds();
+  uint32 bitrate_increase =
+      (1500 * 8 * elapsed_time.InMilliseconds()) / rtt.InMilliseconds();
   uint32 max_bitrate_increase =
       kCongestionControlMaxBitrateIncreasePerMillisecond *
-          elapsed_time.InMilliseconds();
+      elapsed_time.InMilliseconds();
   bitrate_increase = std::min(max_bitrate_increase, bitrate_increase);
   *new_bitrate = std::min(bitrate_increase + bitrate_, max_bitrate_configured_);
   bitrate_ = *new_bitrate;
@@ -90,22 +94,26 @@ bool CongestionControl::OnNack(base::TimeDelta rtt, uint32* new_bitrate) {
     time_last_decrease_ = now;
     return false;
   }
-  base::TimeDelta elapsed_time = std::min(now - time_last_decrease_,
-      base::TimeDelta::FromMilliseconds(kMaxElapsedTimeMs));
-  base::TimeDelta change_interval = std::max(rtt,
+  base::TimeDelta elapsed_time =
+      std::min(now - time_last_decrease_,
+               base::TimeDelta::FromMilliseconds(kMaxElapsedTimeMs));
+  base::TimeDelta change_interval = std::max(
+      rtt,
       base::TimeDelta::FromMilliseconds(kCongestionControlMinChangeIntervalMs));
-  change_interval = std::min(change_interval,
+  change_interval = std::min(
+      change_interval,
       base::TimeDelta::FromMilliseconds(kCongestionControlMaxChangeIntervalMs));
 
   // Have enough time have passed?
-  if (elapsed_time < change_interval)  return false;
+  if (elapsed_time < change_interval)
+    return false;
 
   time_last_decrease_ = now;
   time_last_increase_ = now;
 
-  *new_bitrate = std::max(
-      static_cast<uint32>(bitrate_ * congestion_control_back_off_),
-      min_bitrate_configured_);
+  *new_bitrate =
+      std::max(static_cast<uint32>(bitrate_ * congestion_control_back_off_),
+               min_bitrate_configured_);
 
   bitrate_ = *new_bitrate;
   return true;
