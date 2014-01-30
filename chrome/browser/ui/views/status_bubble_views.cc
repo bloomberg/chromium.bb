@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/elide_url.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -722,7 +723,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
-  url_text_ = gfx::ElideUrl(url, gfx::FontList(), text_width, languages);
+  url_text_ = ElideUrl(url, gfx::FontList(), text_width, languages);
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
@@ -886,8 +887,7 @@ void StatusBubbleViews::ExpandBubble() {
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
   const gfx::FontList font_list;
-  url_text_ = gfx::ElideUrl(url_, font_list,
-                            max_status_bubble_width, languages_);
+  url_text_ = ElideUrl(url_, font_list, max_status_bubble_width, languages_);
   int expanded_bubble_width =
       std::max(GetStandardStatusBubbleWidth(),
                std::min(gfx::GetStringWidth(url_text_, font_list) +

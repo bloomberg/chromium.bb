@@ -15,7 +15,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
-#include "url/gurl.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -48,24 +47,12 @@ struct TestData {
   const int compare_result;
 };
 
-void RunUrlTest(Testcase* testcases, size_t num_testcases) {
-  static const FontList font_list;
-  for (size_t i = 0; i < num_testcases; ++i) {
-    const GURL url(testcases[i].input);
-    // Should we test with non-empty language list?
-    // That's kinda redundant with net_util_unittests.
-    const float available_width =
-        GetStringWidthF(UTF8ToUTF16(testcases[i].output), font_list);
-    EXPECT_EQ(UTF8ToUTF16(testcases[i].output),
-              ElideUrl(url, font_list, available_width, std::string()));
-  }
-}
-
 }  // namespace
 
 // TODO(ios): This test fails on iOS because iOS version of GetStringWidthF
 // that calls [NSString sizeWithFont] returns the rounded string width.
-#if defined(OS_IOS)
+// TODO(338784): Enable this on android.
+#if defined(OS_IOS) || defined(OS_ANDROID)
 #define MAYBE_ElideEmail DISABLED_ElideEmail
 #else
 #define MAYBE_ElideEmail ElideEmail
@@ -126,7 +113,13 @@ TEST(TextEliderTest, MAYBE_ElideEmail) {
   }
 }
 
-TEST(TextEliderTest, ElideEmailMoreSpace) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideEmailMoreSpace DISABLED_ElideEmailMoreSpace
+#else
+#define MAYBE_ElideEmailMoreSpace ElideEmailMoreSpace
+#endif
+TEST(TextEliderTest, MAYBE_ElideEmailMoreSpace) {
   const int test_width_factors[] = {
       100,
       10000,
@@ -151,135 +144,10 @@ TEST(TextEliderTest, ElideEmailMoreSpace) {
   }
 }
 
-// Test eliding of commonplace URLs.
-TEST(TextEliderTest, TestGeneralEliding) {
-  const std::string kEllipsisStr(kEllipsis);
-  Testcase testcases[] = {
-    {"http://www.google.com/intl/en/ads/",
-     "www.google.com/intl/en/ads/"},
-    {"http://www.google.com/intl/en/ads/", "www.google.com/intl/en/ads/"},
-    {"http://www.google.com/intl/en/ads/",
-     "google.com/intl/" + kEllipsisStr + "/ads/"},
-    {"http://www.google.com/intl/en/ads/",
-     "google.com/" + kEllipsisStr + "/ads/"},
-    {"http://www.google.com/intl/en/ads/", "google.com/" + kEllipsisStr},
-    {"http://www.google.com/intl/en/ads/", "goog" + kEllipsisStr},
-    {"https://subdomain.foo.com/bar/filename.html",
-     "subdomain.foo.com/bar/filename.html"},
-    {"https://subdomain.foo.com/bar/filename.html",
-     "subdomain.foo.com/" + kEllipsisStr + "/filename.html"},
-    {"http://subdomain.foo.com/bar/filename.html",
-     kEllipsisStr + "foo.com/" + kEllipsisStr + "/filename.html"},
-    {"http://www.google.com/intl/en/ads/?aLongQueryWhichIsNotRequired",
-     "www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
-  };
-
-  RunUrlTest(testcases, arraysize(testcases));
-}
-
-// When there is very little space available, the elision code will shorten
-// both path AND file name to an ellipsis - ".../...". To avoid this result,
-// there is a hack in place that simply treats them as one string in this
-// case.
-TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
-  const std::string kEllipsisStr(kEllipsis);
-
-  // Very little space, would cause double ellipsis.
-  FontList font_list;
-  GURL url("http://battersbox.com/directory/foo/peter_paul_and_mary.html");
-  float available_width = GetStringWidthF(
-      UTF8ToUTF16("battersbox.com/" + kEllipsisStr + "/" + kEllipsisStr),
-      font_list);
-
-  // Create the expected string, after elision. Depending on font size, the
-  // directory might become /dir... or /di... or/d... - it never should be
-  // shorter than that. (If it is, the font considers d... to be longer
-  // than .../... -  that should never happen).
-  ASSERT_GT(GetStringWidthF(UTF8ToUTF16(kEllipsisStr + "/" + kEllipsisStr),
-                            font_list),
-            GetStringWidthF(UTF8ToUTF16("d" + kEllipsisStr), font_list));
-  GURL long_url("http://battersbox.com/directorynameisreallylongtoforcetrunc");
-  base::string16 expected =
-      ElideUrl(long_url, font_list, available_width, std::string());
-  // Ensure that the expected result still contains part of the directory name.
-  ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
-  EXPECT_EQ(expected,
-             ElideUrl(url, font_list, available_width, std::string()));
-
-  // More space available - elide directories, partially elide filename.
-  Testcase testcases[] = {
-    {"http://battersbox.com/directory/foo/peter_paul_and_mary.html",
-     "battersbox.com/" + kEllipsisStr + "/peter" + kEllipsisStr},
-  };
-  RunUrlTest(testcases, arraysize(testcases));
-}
-
-// Test eliding of empty strings, URLs with ports, passwords, queries, etc.
-TEST(TextEliderTest, TestMoreEliding) {
-  const std::string kEllipsisStr(kEllipsis);
-  Testcase testcases[] = {
-    {"http://www.google.com/foo?bar", "www.google.com/foo?bar"},
-    {"http://xyz.google.com/foo?bar", "xyz.google.com/foo?" + kEllipsisStr},
-    {"http://xyz.google.com/foo?bar", "xyz.google.com/foo" + kEllipsisStr},
-    {"http://xyz.google.com/foo?bar", "xyz.google.com/fo" + kEllipsisStr},
-    {"http://a.b.com/pathname/c?d", "a.b.com/" + kEllipsisStr + "/c?d"},
-    {"", ""},
-    {"http://foo.bar..example.com...hello/test/filename.html",
-     "foo.bar..example.com...hello/" + kEllipsisStr + "/filename.html"},
-    {"http://foo.bar../", "foo.bar.."},
-    {"http://xn--1lq90i.cn/foo", "\xe5\x8c\x97\xe4\xba\xac.cn/foo"},
-    {"http://me:mypass@secrethost.com:99/foo?bar#baz",
-     "secrethost.com:99/foo?bar#baz"},
-    {"http://me:mypass@ss%xxfdsf.com/foo", "ss%25xxfdsf.com/foo"},
-    {"mailto:elgoato@elgoato.com", "mailto:elgoato@elgoato.com"},
-    {"javascript:click(0)", "javascript:click(0)"},
-    {"https://chess.eecs.berkeley.edu:4430/login/arbitfilename",
-     "chess.eecs.berkeley.edu:4430/login/arbitfilename"},
-    {"https://chess.eecs.berkeley.edu:4430/login/arbitfilename",
-     kEllipsisStr + "berkeley.edu:4430/" + kEllipsisStr + "/arbitfilename"},
-
-    // Unescaping.
-    {"http://www/%E4%BD%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-     "www/\xe4\xbd\xa0\xe5\xa5\xbd?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
-
-    // Invalid unescaping for path. The ref will always be valid UTF-8. We don't
-    // bother to do too many edge cases, since these are handled by the escaper
-    // unittest.
-    {"http://www/%E4%A0%E5%A5%BD?q=%E4%BD%A0%E5%A5%BD#\xe4\xbd\xa0",
-     "www/%E4%A0%E5%A5%BD?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
-  };
-
-  RunUrlTest(testcases, arraysize(testcases));
-}
-
-// Test eliding of file: URLs.
-TEST(TextEliderTest, TestFileURLEliding) {
-  const std::string kEllipsisStr(kEllipsis);
-  Testcase testcases[] = {
-    {"file:///C:/path1/path2/path3/filename",
-     "file:///C:/path1/path2/path3/filename"},
-    {"file:///C:/path1/path2/path3/filename",
-     "C:/path1/path2/path3/filename"},
-// GURL parses "file:///C:path" differently on windows than it does on posix.
-#if defined(OS_WIN)
-    {"file:///C:path1/path2/path3/filename",
-     "C:/path1/path2/" + kEllipsisStr + "/filename"},
-    {"file:///C:path1/path2/path3/filename",
-     "C:/path1/" + kEllipsisStr + "/filename"},
-    {"file:///C:path1/path2/path3/filename",
-     "C:/" + kEllipsisStr + "/filename"},
-#endif
-    {"file://filer/foo/bar/file", "filer/foo/bar/file"},
-    {"file://filer/foo/bar/file", "filer/foo/" + kEllipsisStr + "/file"},
-    {"file://filer/foo/bar/file", "filer/" + kEllipsisStr + "/file"},
-  };
-
-  RunUrlTest(testcases, arraysize(testcases));
-}
-
 // TODO(ios): This test fails on iOS because iOS version of GetStringWidthF
 // that calls [NSString sizeWithFont] returns the rounded string width.
-#if defined(OS_IOS)
+// TODO(338784): Enable this on android.
+#if defined(OS_IOS) || defined(OS_ANDROID)
 #define MAYBE_TestFilenameEliding DISABLED_TestFilenameEliding
 #else
 #define MAYBE_TestFilenameEliding TestFilenameEliding
@@ -333,7 +201,13 @@ TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
   }
 }
 
-TEST(TextEliderTest, ElideTextTruncate) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideTextTruncate DISABLED_ElideTextTruncate
+#else
+#define MAYBE_ElideTextTruncate ElideTextTruncate
+#endif
+TEST(TextEliderTest, MAYBE_ElideTextTruncate) {
   const FontList font_list;
   const float kTestWidth = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
   struct TestData {
@@ -356,7 +230,13 @@ TEST(TextEliderTest, ElideTextTruncate) {
   }
 }
 
-TEST(TextEliderTest, ElideTextEllipsis) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideTextEllipsis DISABLED_ElideTextEllipsis
+#else
+#define MAYBE_ElideTextEllipsis ElideTextEllipsis
+#endif
+TEST(TextEliderTest, MAYBE_ElideTextEllipsis) {
   const FontList font_list;
   const float kTestWidth = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
   const char* kEllipsis = "\xE2\x80\xA6";
@@ -401,7 +281,13 @@ static void CheckSurrogatePairs(const base::string16& text,
   }
 }
 
-TEST(TextEliderTest, ElideTextSurrogatePairs) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideTextSurrogatePairs DISABLED_ElideTextSurrogatePairs
+#else
+#define MAYBE_ElideTextSurrogatePairs ElideTextSurrogatePairs
+#endif
+TEST(TextEliderTest, MAYBE_ElideTextSurrogatePairs) {
   const FontList font_list;
   // The below is 'MUSICAL SYMBOL G CLEF', which is represented in UTF-16 as
   // two characters forming a surrogate pair 0x0001D11E.
@@ -427,7 +313,13 @@ TEST(TextEliderTest, ElideTextSurrogatePairs) {
   }
 }
 
-TEST(TextEliderTest, ElideTextLongStrings) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideTextLongStrings DISABLED_ElideTextLongStrings
+#else
+#define MAYBE_ElideTextLongStrings ElideTextLongStrings
+#endif
+TEST(TextEliderTest, MAYBE_ElideTextLongStrings) {
   const base::string16 kEllipsisStr = UTF8ToUTF16(kEllipsis);
   base::string16 data_scheme(UTF8ToUTF16("data:text/plain,"));
   size_t data_scheme_length = data_scheme.length();
@@ -495,50 +387,6 @@ TEST(TextEliderTest, ElideTextLongStrings) {
   }
 }
 
-// Verifies display_url is set correctly.
-TEST(TextEliderTest, SortedDisplayURL) {
-  SortedDisplayURL d_url(GURL("http://www.google.com"), std::string());
-  EXPECT_EQ("www.google.com", UTF16ToASCII(d_url.display_url()));
-}
-
-// Verifies DisplayURL::Compare works correctly.
-TEST(TextEliderTest, SortedDisplayURLCompare) {
-  UErrorCode create_status = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(create_status));
-  if (!U_SUCCESS(create_status))
-    return;
-
-  TestData tests[] = {
-    // IDN comparison. Hosts equal, so compares on path.
-    { "http://xn--1lq90i.cn/a", "http://xn--1lq90i.cn/b", -1},
-
-    // Because the host and after host match, this compares the full url.
-    { "http://www.x/b", "http://x/b", -1 },
-
-    // Because the host and after host match, this compares the full url.
-    { "http://www.a:1/b", "http://a:1/b", 1 },
-
-    // The hosts match, so these end up comparing on the after host portion.
-    { "http://www.x:0/b", "http://x:1/b", -1 },
-    { "http://www.x/a", "http://x/b", -1 },
-    { "http://x/b", "http://www.x/a", 1 },
-
-    // Trivial Equality.
-    { "http://a/", "http://a/", 0 },
-
-    // Compares just hosts.
-    { "http://www.a/", "http://b/", -1 },
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SortedDisplayURL url1(GURL(tests[i].a), std::string());
-    SortedDisplayURL url2(GURL(tests[i].b), std::string());
-    EXPECT_EQ(tests[i].compare_result, url1.Compare(url2, collator.get()));
-    EXPECT_EQ(-tests[i].compare_result, url2.Compare(url1, collator.get()));
-  }
-}
-
 TEST(TextEliderTest, ElideString) {
   struct TestData {
     const char* input;
@@ -567,7 +415,13 @@ TEST(TextEliderTest, ElideString) {
   }
 }
 
-TEST(TextEliderTest, ElideRectangleText) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideRectangleText DISABLED_ElideRectangleText
+#else
+#define MAYBE_ElideRectangleText ElideRectangleText
+#endif
+TEST(TextEliderTest, MAYBE_ElideRectangleText) {
   const FontList font_list;
   const int line_height = font_list.GetHeight();
   const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
@@ -624,7 +478,14 @@ TEST(TextEliderTest, ElideRectangleText) {
   }
 }
 
-TEST(TextEliderTest, ElideRectangleTextPunctuation) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideRectangleTextPunctuation \
+    DISABLED_ElideRectangleTextPunctuation
+#else
+#define MAYBE_ElideRectangleTextPunctuation ElideRectangleTextPunctuation
+#endif
+TEST(TextEliderTest, MAYBE_ElideRectangleTextPunctuation) {
   const FontList font_list;
   const int line_height = font_list.GetHeight();
   const float test_width = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
@@ -664,7 +525,13 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
   }
 }
 
-TEST(TextEliderTest, ElideRectangleTextLongWords) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideRectangleTextLongWords DISABLED_ElideRectangleTextLongWords
+#else
+#define MAYBE_ElideRectangleTextLongWords ElideRectangleTextLongWords
+#endif
+TEST(TextEliderTest, MAYBE_ElideRectangleTextLongWords) {
   const FontList font_list;
   const int kAvailableHeight = 1000;
   const base::string16 kElidedTesting =
@@ -729,7 +596,14 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
 // fail because the truncated integer width is returned for the string
 // and the accumulation of the truncated values causes the elide function
 // to wrap incorrectly.
-TEST(TextEliderTest, ElideRectangleTextCheckLineWidth) {
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideRectangleTextCheckLineWidth \
+    DISABLED_ElideRectangleTextCheckLineWidth
+#else
+#define MAYBE_ElideRectangleTextCheckLineWidth ElideRectangleTextCheckLineWidth
+#endif
+TEST(TextEliderTest, MAYBE_ElideRectangleTextCheckLineWidth) {
   FontList font_list;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Use a specific font to expose the line width exceeding problem.

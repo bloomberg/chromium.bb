@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/elide_url.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
@@ -113,9 +114,9 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   }
 
   // TODO(tc): We don't actually use gfx::Font as the font in the status
-  // bubble.  We should extend gfx::ElideUrl to take some sort of pango font.
+  // bubble.  We should extend ElideUrl to take some sort of pango font.
   url_text_ = base::UTF16ToUTF8(
-      gfx::ElideUrl(url_, gfx::FontList(), desired_width, languages_));
+      ElideUrl(url_, gfx::FontList(), desired_width, languages_));
   SetStatusTextTo(url_text_);
 }
 

@@ -1692,6 +1692,7 @@
         'browser/ui/tabs/tab_strip_model_unittest.cc',
         'browser/ui/tabs/test_tab_strip_model_delegate.cc',
         'browser/ui/tabs/test_tab_strip_model_delegate.h',
+        'browser/ui/tests/elide_url_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.mm',
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
@@ -2618,6 +2619,9 @@
             # Bookmark undo is not used on Android.
            'browser/undo/bookmark_undo_service_test.cc',
            'browser/undo/undo_manager_test.cc',
+
+            # URL elider is not used on android.
+           'browser/ui/tests/elide_url_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
