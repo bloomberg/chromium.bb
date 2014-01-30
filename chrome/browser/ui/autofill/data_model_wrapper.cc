@@ -53,12 +53,18 @@ gfx::Image DataModelWrapper::GetIcon() {
 bool DataModelWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
+  base::string16 phone =
+      GetInfoForDisplay(AutofillType(PHONE_HOME_WHOLE_NUMBER));
+  if (phone.empty())
+    return false;
+
   // Format the address.
   ::i18n::addressinput::AddressData address_data;
   address_data.recipient = UTF16ToUTF8(
       GetInfoForDisplay(AutofillType(NAME_FULL)));
-  address_data.country_code = UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_COUNTRY)));
+  address_data.country_code = UTF16ToASCII(
+      GetInfoForDisplay(AutofillType(HTML_TYPE_COUNTRY_CODE,
+                                     HTML_MODE_SHIPPING)));
   address_data.administrative_area = UTF16ToUTF8(
       GetInfoForDisplay(AutofillType(ADDRESS_HOME_STATE)));
   address_data.locality = UTF16ToUTF8(
@@ -85,8 +91,7 @@ bool DataModelWrapper::GetDisplayText(
   if (!email.empty())
     non_address_info += ASCIIToUTF16("\n") + email;
 
-  non_address_info += ASCIIToUTF16("\n") +
-      GetInfoForDisplay(AutofillType(PHONE_HOME_WHOLE_NUMBER));
+  non_address_info += ASCIIToUTF16("\n") + phone;
 
   // The separator is locale-specific.
   std::string compact_separator =
@@ -251,10 +256,8 @@ base::string16 WalletAddressWrapper::GetInfoForDisplay(const AutofillType& type)
 bool WalletAddressWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
-  if (!address_->is_complete_address() ||
-      GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
+  if (!address_->is_complete_address())
     return false;
-  }
 
   return DataModelWrapper::GetDisplayText(vertically_compact,
                                           horizontally_compact);
@@ -297,12 +300,15 @@ bool WalletInstrumentWrapper::GetDisplayText(
     base::string16* horizontally_compact) {
   // TODO(dbeam): handle other instrument statuses? http://crbug.com/233048
   if (instrument_->status() == wallet::WalletItems::MaskedInstrument::EXPIRED ||
-      !instrument_->address().is_complete_address() ||
-      GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
+      !instrument_->address().is_complete_address()) {
     return false;
   }
 
-  DataModelWrapper::GetDisplayText(vertically_compact, horizontally_compact);
+  if (!DataModelWrapper::GetDisplayText(vertically_compact,
+                                        horizontally_compact)) {
+    return false;
+  }
+
   // TODO(estade): descriptive_name() is user-provided. Should we use it or
   // just type + last 4 digits?
   base::string16 line1 = instrument_->descriptive_name() + ASCIIToUTF16("\n");

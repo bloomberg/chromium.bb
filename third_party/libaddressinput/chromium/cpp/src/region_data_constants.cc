@@ -1214,26 +1214,31 @@ const std::string& RegionDataConstants::GetLanguageCompactLineSeparator(
       language_code == "zh" ||
       language_code == "zh-hant" ||
       language_code == "zh-hans") {
-      return kEmptyString;
-  } else if (language_code == "ar" ||
-             language_code == "cjm" ||
-             language_code == "doi" ||
-             language_code == "fa" ||
-             language_code == "lah" ||
-             language_code == "prd" ||
-             language_code == "ps" ||
-             language_code == "swb" ||
-             language_code == "ug" ||
-             language_code == "ur") {
+    return kEmptyString;
+  }
+
+  if (language_code == "ar" ||
+      language_code == "cjm" ||
+      language_code == "doi" ||
+      language_code == "fa" ||
+      language_code == "lah" ||
+      language_code == "prd" ||
+      language_code == "ps" ||
+      language_code == "swb" ||
+      language_code == "ug" ||
+      language_code == "ur") {
     return kArabicSeparator;
-  } else if (language_code == "ko" ||
-             language_code == "kdt" ||
-             language_code == "lcp" ||
-             language_code == "lwl" ||
-             language_code == "th" ||
-             language_code == "tts") {
+  }
+
+  if (language_code == "ko" ||
+      language_code == "kdt" ||
+      language_code == "lcp" ||
+      language_code == "lwl" ||
+      language_code == "th" ||
+      language_code == "tts") {
     return kSpace;
   }
+
   return kCommaAndSpace;
 }
 
