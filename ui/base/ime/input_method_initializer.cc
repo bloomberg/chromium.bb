@@ -12,7 +12,6 @@
 #elif defined(OS_WIN)
 #include "base/win/metro.h"
 #include "ui/base/ime/input_method_factory.h"
-#include "ui/base/ime/win/tsf_bridge.h"
 #endif
 
 namespace {
@@ -31,9 +30,6 @@ void InitializeInputMethod() {
   chromeos::IMEBridge::Initialize();
 #elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
   InputMethodAuraLinux::Initialize();
-#elif defined(OS_WIN)
-  if (base::win::IsTSFAwareRequired())
-    TSFBridge::Initialize();
 #endif
 }
 
@@ -42,8 +38,6 @@ void ShutdownInputMethod() {
   chromeos::IMEBridge::Shutdown();
 #elif defined(OS_WIN)
   internal::DestroySharedInputMethod();
-  if (base::win::IsTSFAwareRequired())
-    TSFBridge::Shutdown();
 #endif
 }
 
@@ -60,12 +54,6 @@ void InitializeInputMethodForTesting() {
       << "else.";
   LinuxInputMethodContextFactory::SetInstance(
       g_linux_input_method_context_factory);
-#elif defined(OS_WIN)
-  if (base::win::IsTSFAwareRequired()) {
-    // Make sure COM is initialized because TSF depends on COM.
-    CoInitialize(NULL);
-    TSFBridge::Initialize();
-  }
 #endif
 }
 
@@ -82,10 +70,6 @@ void ShutdownInputMethodForTesting() {
   g_linux_input_method_context_factory = NULL;
 #elif defined(OS_WIN)
   internal::DestroySharedInputMethod();
-  if (base::win::IsTSFAwareRequired()) {
-    TSFBridge::Shutdown();
-    CoUninitialize();
-  }
 #endif
 }
 

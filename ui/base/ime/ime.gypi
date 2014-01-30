@@ -45,8 +45,6 @@
     'input_method_minimal.cc',
     'input_method_minimal.h',
     'input_method_observer.h',
-    'input_method_tsf.cc',
-    'input_method_tsf.h',
     'input_method_win.cc',
     'input_method_win.h',
     'linux/fake_input_method_context.cc',
@@ -66,14 +64,8 @@
     'text_input_type.h',
     'win/imm32_manager.cc',
     'win/imm32_manager.h',
-    'win/tsf_bridge.cc',
-    'win/tsf_bridge.h',
-    'win/tsf_event_router.cc',
-    'win/tsf_event_router.h',
     'win/tsf_input_scope.cc',
     'win/tsf_input_scope.h',
-    'win/tsf_text_store.cc',
-    'win/tsf_text_store.h',
   ],
   'conditions': [
     ['toolkit_views==0 and use_aura==0', {
@@ -99,8 +91,6 @@
       'sources!': [
         'input_method_imm32.cc',
         'input_method_imm32.h',
-        'input_method_tsf.cc',
-        'input_method_tsf.h',
       ],
     }],
     ['use_aura==0 or (desktop_linux==0 and use_ozone==0)', {

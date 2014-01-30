@@ -11,7 +11,6 @@
 #elif defined(OS_WIN)
 #include "base/win/metro.h"
 #include "ui/base/ime/input_method_imm32.h"
-#include "ui/base/ime/input_method_tsf.h"
 #include "ui/base/ime/remote_input_method_win.h"
 #elif defined(USE_AURA) && defined(OS_LINUX)
 #include "ui/base/ime/input_method_auralinux.h"
@@ -45,8 +44,6 @@ scoped_ptr<InputMethod> CreateInputMethod(
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   return scoped_ptr<InputMethod>(new InputMethodChromeOS(delegate));
 #elif defined(OS_WIN)
-  if (base::win::IsTSFAwareRequired())
-    return scoped_ptr<InputMethod>(new InputMethodTSF(delegate, widget));
   if (IsRemoteInputMethodWinRequired(widget))
     return CreateRemoteInputMethodWin(delegate);
   return scoped_ptr<InputMethod>(new InputMethodIMM32(delegate, widget));

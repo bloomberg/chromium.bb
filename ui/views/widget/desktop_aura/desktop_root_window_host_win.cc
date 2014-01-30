@@ -15,7 +15,6 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/win/shell.h"
 #include "ui/compositor/compositor_constants.h"
 #include "ui/gfx/insets.h"
@@ -847,8 +846,6 @@ void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  if (base::win::IsTSFAwareRequired() && event.IsAnyButton())
-    ui::TSFBridge::GetInstance()->CancelComposition();
   return delegate_->OnHostMouseEvent(const_cast<ui::MouseEvent*>(&event));
 }
 
