@@ -147,16 +147,7 @@ void FileSystemBackend::GrantFullAccessToExtension(
   DCHECK(special_storage_policy_->IsFileHandler(extension_id));
   if (!special_storage_policy_->IsFileHandler(extension_id))
     return;
-
-  std::vector<fileapi::MountPoints::MountPointInfo> files;
-  mount_points_->AddMountPointInfosTo(&files);
-  system_mount_points_->AddMountPointInfosTo(&files);
-
-  for (size_t i = 0; i < files.size(); ++i) {
-    file_access_permissions_->GrantAccessPermission(
-        extension_id,
-        base::FilePath::FromUTF8Unsafe(files[i].name));
-  }
+  file_access_permissions_->GrantFullAccessPermission(extension_id);
 }
 
 void FileSystemBackend::GrantFileAccessToExtension(

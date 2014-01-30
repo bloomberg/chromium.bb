@@ -45,36 +45,6 @@ using fileapi::FileSystemURL;
 namespace extensions {
 namespace {
 
-// Sets permissions for the Drive mount point so Files.app can access files
-// in the mount point directory. It's safe to call this function even if
-// Drive is disabled by the setting (i.e. prefs::kDisableDrive is true).
-void SetDriveMountPointPermissions(
-    Profile* profile,
-    const std::string& extension_id,
-    content::RenderViewHost* render_view_host) {
-  if (!render_view_host ||
-      !render_view_host->GetSiteInstance() || !render_view_host->GetProcess()) {
-    return;
-  }
-
-  fileapi::ExternalFileSystemBackend* backend =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          profile, render_view_host)->external_backend();
-  if (!backend)
-    return;
-
-  const base::FilePath mount_point =
-      drive::util::GetDriveMountPointPath(profile);
-  // Grant R/W permissions to drive 'folder'. File API layer still
-  // expects this to be satisfied.
-  ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
-      render_view_host->GetProcess()->GetID(), mount_point);
-
-  base::FilePath mount_point_virtual;
-  if (backend->GetVirtualPath(mount_point, &mount_point_virtual))
-    backend->GrantFileAccessToExtension(extension_id, mount_point_virtual);
-}
-
 // Retrieves total and remaining available size on |mount_path|.
 void GetSizeStatsOnBlockingPool(const std::string& mount_path,
                                 uint64* total_size,
@@ -305,8 +275,9 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   // Note that we call this function even when Drive is disabled by the
   // setting. Otherwise, we need to call this when the setting is changed at
   // a later time, which complicates the code.
-  SetDriveMountPointPermissions(
-      GetProfile(), extension_id(), render_view_host());
+  ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
+      render_view_host()->GetProcess()->GetID(),
+      drive::util::GetDriveMountPointPath(GetProfile()));
 
   fileapi::FileSystemInfo info =
       fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());

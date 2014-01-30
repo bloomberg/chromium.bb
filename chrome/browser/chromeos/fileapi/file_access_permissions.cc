@@ -4,29 +4,32 @@
 
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 
 namespace chromeos {
+
+namespace {
+
+// Empty path is prefix of any other paths, hence it represents full permission.
+base::FilePath FullPermission() { return base::FilePath(); }
+
+}  // namespace
 
 FileAccessPermissions::FileAccessPermissions() {}
 
 FileAccessPermissions::~FileAccessPermissions() {}
 
+void FileAccessPermissions::GrantFullAccessPermission(
+    const std::string& extension_id) {
+  base::AutoLock locker(lock_);
+  path_map_[extension_id].insert(FullPermission());
+}
 
 void FileAccessPermissions::GrantAccessPermission(
     const std::string& extension_id, const base::FilePath& path) {
+  DCHECK(!path.empty());
   base::AutoLock locker(lock_);
-  PathAccessMap::iterator path_map_iter = path_map_.find(extension_id);
-  if (path_map_iter == path_map_.end()) {
-    PathSet path_set;
-    path_set.insert(path);
-    path_map_.insert(PathAccessMap::value_type(extension_id, path_set));
-  } else {
-    if (path_map_iter->second.find(path) != path_map_iter->second.end())
-      return;
-    path_map_iter->second.insert(path);
-  }
+  path_map_[extension_id].insert(path);
 }
 
 bool FileAccessPermissions::HasAccessPermission(
@@ -35,13 +38,17 @@ bool FileAccessPermissions::HasAccessPermission(
   PathAccessMap::const_iterator path_map_iter = path_map_.find(extension_id);
   if (path_map_iter == path_map_.end())
     return false;
+  const PathSet& path_set = path_map_iter->second;
+
+  if (path_set.find(FullPermission()) != path_set.end())
+    return true;
 
   // Check this file and walk up its directory tree to find if this extension
   // has access to it.
   base::FilePath current_path = path.StripTrailingSeparators();
   base::FilePath last_path;
   while (current_path != last_path) {
-    if (path_map_iter->second.find(current_path) != path_map_iter->second.end())
+    if (path_set.find(current_path) != path_set.end())
       return true;
     last_path = current_path;
     current_path = current_path.DirName();

@@ -12,15 +12,18 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace chromeos {
 
+// In a thread safe manner maintains the set of paths allowed to access for
+// each extension.
 class FileAccessPermissions {
  public:
   FileAccessPermissions();
   virtual ~FileAccessPermissions();
 
+  // Grants |extension_id| full access to all paths.
+  void GrantFullAccessPermission(const std::string& extension_id);
   // Grants |extension_id| access to |path|.
   void GrantAccessPermission(const std::string& extension_id,
                              const base::FilePath& path);
