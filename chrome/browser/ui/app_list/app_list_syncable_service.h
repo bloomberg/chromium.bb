@@ -32,6 +32,7 @@ class AppListSpecifics;
 
 namespace app_list {
 
+class AppListFolderItem;
 class AppListItem;
 class AppListModel;
 
@@ -127,6 +128,13 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Removes sync item matching |id|.
   void RemoveSyncItem(const std::string& id);
+
+  // Updates folder items that may get created during initial sync.
+  void ResolveFolderPositions();
+
+  // Removes any empty SyncItem folders and deletes them from sync. Called
+  // after a sync item is removed (which may result in an empty folder).
+  void PruneEmptySyncFolders();
 
   // Creates or updates a SyncItem from |specifics|. Returns true if a new item
   // was created.

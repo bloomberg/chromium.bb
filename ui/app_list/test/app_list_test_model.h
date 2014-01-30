@@ -32,6 +32,8 @@ class AppListTestModel : public AppListModel {
     DISALLOW_COPY_AND_ASSIGN(AppListTestItemModel);
   };
 
+  static const char kItemType[];
+
   AppListTestModel();
 
   // Generates a name based on |id|.
@@ -61,8 +63,6 @@ class AppListTestModel : public AppListModel {
 
   int activate_count() { return activate_count_; }
   AppListItem* last_activated() { return last_activated_; }
-
-  static const char kItemType[];
 
  private:
   void ItemActivated(AppListTestItemModel* item);

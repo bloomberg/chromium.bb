@@ -34,6 +34,8 @@ class ExtensionAppItem : public app_list::AppListItem,
                          public ExtensionEnableFlowDelegate,
                          public app_list::AppContextMenuDelegate {
  public:
+  static const char kItemType[];
+
   ExtensionAppItem(Profile* profile,
                    const app_list::AppListSyncableService::SyncItem* sync_item,
                    const std::string& extension_id,
@@ -56,8 +58,6 @@ class ExtensionAppItem : public app_list::AppListItem,
 
   const std::string& extension_id() const { return extension_id_; }
   const std::string& extension_name() const { return extension_name_; }
-
-  static const char kItemType[];
 
  private:
   // Gets extension associated with this model. Returns NULL if extension

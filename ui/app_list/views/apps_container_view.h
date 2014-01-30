@@ -51,7 +51,7 @@ class AppsContainerView : public views::View,
   void ShowActiveFolder(AppListFolderItem* folder_item);
 
   // Shows the root level apps list. This is called when UI navigate back from
-  // a folder view with |folder_item|.
+  // a folder view with |folder_item|. If |folder_item| is NULL skips animation.
   void ShowApps(AppListFolderItem* folder_item);
 
   // Overridden from views::View:

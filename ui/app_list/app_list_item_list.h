@@ -59,7 +59,6 @@ class APP_LIST_EXPORT AppListItemList {
  private:
   friend class AppListItemListTest;
   friend class AppListModel;
-  friend class AppListModelTest;  // TODO(stevenjb): Remove dependency
 
   // Adds |item| to the end of |app_list_items_|. Takes ownership of |item|.
   // Triggers observers_.OnListItemAdded(). Returns the index of the added item.

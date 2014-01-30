@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "ui/app_list/app_list_switches.h"
 
 namespace {
 
@@ -69,7 +70,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
   ASSERT_EQ(kNumApps + kNumDefaultApps, service->GetNumSyncItemsForTest());
 
   ASSERT_TRUE(GetClient(0)->AwaitCommitActivityCompletion());
-
   ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
 
 }

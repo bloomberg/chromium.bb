@@ -514,7 +514,7 @@ TEST_F(AppsGridControllerTest, ModelRemove) {
   EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
 
   // Test removing in the middle.
-  model()->CreateAndAddItem("Item 2");
+  model()->CreateAndAddItem("Item 2", "");
   EXPECT_EQ(3u, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
   model()->DeleteItem("Item 1");

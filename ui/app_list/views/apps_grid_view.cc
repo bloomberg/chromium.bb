@@ -370,9 +370,9 @@ void AppsGridView::SetModel(AppListModel* model) {
 void AppsGridView::SetItemList(AppListItemList* item_list) {
   if (item_list_)
     item_list_->RemoveObserver(this);
-
   item_list_ = item_list;
-  item_list_->AddObserver(this);
+  if (item_list_)
+    item_list_->AddObserver(this);
   Update();
 }
 
@@ -779,11 +779,8 @@ void AppsGridView::ViewHierarchyChanged(
 
 void AppsGridView::Update() {
   DCHECK(!selected_view_ && !drag_view_);
-  if (!item_list_)
-    return;
-
   view_model_.Clear();
-  if (!item_list_->item_count())
+  if (!item_list_ || !item_list_->item_count())
     return;
   for (size_t i = 0; i < item_list_->item_count(); ++i) {
     views::View* view = CreateViewForItemAtIndex(i);
@@ -1338,7 +1335,7 @@ void AppsGridView::MoveItemToFolder(views::View* item_view,
       static_cast<AppListItemView*>(item_view)->item()->id();
   AppListItemView* target_view =
       static_cast<AppListItemView*>(GetViewAtSlotOnCurrentPage(target.slot));
-  const std::string&  target_id = target_view->item()->id();
+  const std::string& target_id = target_view->item()->id();
 
   // Make change to data model.
   item_list_->RemoveObserver(this);
@@ -1523,11 +1520,9 @@ bool AppsGridView::CanDropIntoTarget(const Index& drop_target) {
 
   AppListItem* target_item =
       static_cast<AppListItemView*>(target_view)->item();
-  if (!IsFolderItem(target_item))
-    return true;
-
-  return static_cast<AppListFolderItem*>(target_item)->item_list()->
-      item_count() < kMaxFolderItems;
+  // Items can be dropped into non-folders (which have no children) or folders
+  // that have fewer than the max allowed items.
+  return target_item->ChildItemCount() < kMaxFolderItems;
 }
 
 // TODO(jennyz): Optimize the calculation for finding nearest tile.

@@ -53,6 +53,11 @@ bool UpdateSyncItemFromAppItem(const AppListItem* app_item,
                                AppListSyncableService::SyncItem* sync_item) {
   DCHECK_EQ(sync_item->item_id, app_item->id());
   bool changed = false;
+  if (app_list::switches::IsFolderUIEnabled() &&
+      sync_item->parent_id != app_item->folder_id()) {
+    sync_item->parent_id = app_item->folder_id();
+    changed = true;
+  }
   if (sync_item->item_name != app_item->title()) {
     sync_item->item_name = app_item->title();
     changed = true;
@@ -62,7 +67,7 @@ bool UpdateSyncItemFromAppItem(const AppListItem* app_item,
     sync_item->item_ordinal = app_item->position();
     changed = true;
   }
-  // TODO(stevenjb): Set parent_id and page_ordinal.
+  // TODO(stevenjb): Set page_ordinal.
   return changed;
 }
 
@@ -242,7 +247,8 @@ void AppListSyncableService::AddItem(AppListItem* app_item) {
     return;  // Item is not valid.
 
   DVLOG(1) << this << ": AddItem: " << sync_item->ToString();
-  model_->AddItem(app_item);
+  std::string folder_id = sync_item->parent_id;
+  model_->AddItemToFolder(app_item, folder_id);
 }
 
 AppListSyncableService::SyncItem* AppListSyncableService::FindOrAddSyncItem(
@@ -343,6 +349,7 @@ void AppListSyncableService::UpdateSyncItem(AppListItem* app_item) {
 void AppListSyncableService::RemoveItem(const std::string& id) {
   RemoveSyncItem(id);
   model_->DeleteItem(id);
+  PruneEmptySyncFolders();
 }
 
 void AppListSyncableService::RemoveSyncItem(const std::string& id) {
@@ -374,6 +381,41 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
   }
 
   DeleteSyncItem(sync_item);
+}
+
+void AppListSyncableService::ResolveFolderPositions() {
+  if (!app_list::switches::IsFolderUIEnabled())
+    return;
+
+  for (SyncItemMap::iterator iter = sync_items_.begin();
+       iter != sync_items_.end(); ++iter) {
+    SyncItem* sync_item = iter->second;
+    if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
+      continue;
+    AppListItem* app_item = model_->FindItem(sync_item->item_id);
+    if (!app_item)
+      continue;
+    UpdateAppItemFromSyncItem(sync_item, app_item);
+  }
+}
+
+void AppListSyncableService::PruneEmptySyncFolders() {
+  if (!app_list::switches::IsFolderUIEnabled())
+    return;
+
+  std::set<std::string> parent_ids;
+  for (SyncItemMap::iterator iter = sync_items_.begin();
+       iter != sync_items_.end(); ++iter) {
+    parent_ids.insert(iter->second->parent_id);
+  }
+  for (SyncItemMap::iterator iter = sync_items_.begin();
+       iter != sync_items_.end(); ) {
+    SyncItem* sync_item = (iter++)->second;
+    if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
+      continue;
+    if (!ContainsKey(parent_ids, sync_item->item_id))
+      DeleteSyncItem(sync_item);
+  }
 }
 
 // AppListSyncableService syncer::SyncableService
@@ -433,6 +475,10 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
                                      GetSyncDataFromSyncItem(sync_item)));
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+
+  // Adding items may have created folders without setting their positions
+  // since we haven't started observing the item list yet. Resolve those.
+  ResolveFolderPositions();
 
   // Start observing app list model changes.
   model_observer_.reset(new ModelObserver(this));
@@ -554,8 +600,10 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_FOLDER: {
-      // TODO(stevenjb): Implement
-      LOG(WARNING) << "TYPE_FOLDER not supported";
+      AppListItem* app_item = model_->FindItem(sync_item->item_id);
+      if (!app_item)
+        return;  // Don't create new folders here, the model will do that.
+      UpdateAppItemFromSyncItem(sync_item, app_item);
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_URL: {
@@ -578,6 +626,12 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
   if (!app_item) {
     LOG(ERROR) << "Item not found in model: " << sync_item->ToString();
     return;
+  }
+  // This is the only place where sync can cause an item to change folders.
+  if (app_list::switches::IsFolderUIEnabled() &&
+      app_item->folder_id() != sync_item->parent_id) {
+    DVLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
+    model_->MoveItemToFolder(app_item, sync_item->parent_id);
   }
   UpdateAppItemFromSyncItem(sync_item, app_item);
 }
@@ -652,7 +706,9 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   DVLOG(2) << this << " <- SYNC DELETE: " << iter->second->ToString();
   delete iter->second;
   sync_items_.erase(iter);
-  if (item_type != sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP)
+  // Only delete apps from the model. Folders will be deleted when all
+  // children have been deleted.
+  if (item_type == sync_pb::AppListSpecifics::TYPE_APP)
     model_->DeleteItem(item_id);
 }
 

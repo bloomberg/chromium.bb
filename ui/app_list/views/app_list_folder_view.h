@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_FOLDER_VIEW_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_FOLDER_VIEW_H_
 
+#include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/app_list/views/folder_header_view.h"
 #include "ui/app_list/views/folder_header_view_delegate.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -31,6 +32,7 @@ class PaginationModel;
 
 class AppListFolderView : public views::View,
                           public FolderHeaderViewDelegate,
+                          public AppListItemListObserver,
                           public ui::ImplicitAnimationObserver {
  public:
   AppListFolderView(AppsContainerView* container_view,
@@ -53,6 +55,9 @@ class AppListFolderView : public views::View,
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
+  // Overridden from AppListItemListObserver:
+  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE;
+
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
@@ -69,6 +74,7 @@ class AppListFolderView : public views::View,
 
   scoped_ptr<views::ViewModel> view_model_;
 
+  AppListModel* model_;  // Not owned.
   AppListFolderItem* folder_item_;  // Not owned.
 
   scoped_ptr<PaginationModel> pagination_model_;
@@ -79,5 +85,3 @@ class AppListFolderView : public views::View,
 }  // namespace app_list
 
 #endif  // UI_APP_LIST_VIEWS_APP_LIST_FOLDER_VIEW_H_
-
-

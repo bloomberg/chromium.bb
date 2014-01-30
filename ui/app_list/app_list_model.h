@@ -50,8 +50,15 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // Finds the item matching |id|.
   AppListItem* FindItem(const std::string& id);
 
-  // Adds |item| to the model. The model takes ownership of the item.
+  // Find a folder item matching |id|.
+  AppListFolderItem* FindFolderItem(const std::string& id);
+
+  // Adds |item| to the model. The model takes ownership of |item|.
   void AddItem(AppListItem* item);
+
+  // Adds |item| to an existing folder or creates a new folder. If |folder_id|
+  // is empty, calls AddItem() instead. The model takes ownership of |item|.
+  void AddItemToFolder(AppListItem* item, const std::string& folder_id);
 
   // Merges two items. If the target item is a folder, the source item is added
   // to that folder, otherwise a new folder is created in the same position as
@@ -59,11 +66,16 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   const std::string& MergeItems(const std::string& target_item_id,
                                 const std::string& source_item_id);
 
-  // Sets the position of |item| in |item_list_|.
+  // Move |item| to the folder matching |folder_id| or out of any current
+  // folder if |folder_id| is empty.
+  void MoveItemToFolder(AppListItem* item, const std::string& folder_id);
+
+  // Sets the position of |item| either in |item_list_| or the folder specified
+  // by |item|->folder_id().
   void SetItemPosition(AppListItem* item,
                        const syncer::StringOrdinal& new_position);
 
-  // Deletes the item matching |id| from |item_list_|.
+  // Deletes the item matching |id| from |item_list_| or from its folder.
   void DeleteItem(const std::string& id);
 
   AppListItemList* item_list() { return item_list_.get(); }
@@ -80,11 +92,19 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // Returns the position of the last item in |item_list_| or an initial one.
   syncer::StringOrdinal GetLastItemPosition();
 
+  // Returns an existing folder matching |folder_id| or creates a new folder.
+  AppListFolderItem* FindOrCreateFolderItem(const std::string& folder_id);
+
   // Adds |item| to |item_list_| and notifies observers.
   void AddItemToItemList(AppListItem* item);
 
-  // Adds |item| to |folder|.
-  void AddItemToFolder(AppListFolderItem* folder, AppListItem* item);
+  // Adds |item| to |folder| and notifies observers.
+  void AddItemToFolderItem(AppListFolderItem* folder, AppListItem* item);
+
+  // Removes |item| from |folder|. If |folder| becomes empty, deletes |folder|
+  // from |item_list_|. Does NOT trigger observers, calling function must do so.
+  scoped_ptr<AppListItem> RemoveItemFromFolder(AppListFolderItem* folder,
+                                               AppListItem* item);
 
   scoped_ptr<AppListItemList> item_list_;
   scoped_ptr<SearchBoxModel> search_box_;

@@ -34,6 +34,16 @@ class SyncAppListHelper {
   // Moves an app in |profile|.
   void MoveApp(Profile* profile, size_t from, size_t to);
 
+  // Moves an app in |profile| to |folder_id|.
+  void MoveAppToFolder(Profile* profile,
+                       size_t index,
+                       const std::string& folder_id);
+
+  // Moves an app in |profile| from |folder_id| to the top level list of apps.
+  void MoveAppFromFolder(Profile* profile,
+                         size_t index_in_folder,
+                         const std::string& folder_id);
+
   // Copies ordinals for item matching |id| from |profile1| to test_->verifier.
   void CopyOrdinalsToVerifier(Profile* profile1, const std::string& id);
 
@@ -50,7 +60,8 @@ class SyncAppListHelper {
   // and the app list entries all have the same state.
   bool AppListMatchesVerifier(Profile* profile);
 
-  // Helper function for debugging, logs info for an item.
+  // Helper function for debugging, logs info for an item, including the
+  // contents of any folder items.
   void PrintItem(Profile* profile,
                  app_list::AppListItem* item,
                  const std::string& label);

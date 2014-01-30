@@ -185,6 +185,7 @@ bool PickleAppListItem(Pickle* pickle, AppListItem* item) {
 void CopyOverItem(AppListItem* src_item, AppListItem* dest_item) {
   dest_item->SetTitleAndFullName(src_item->title(), src_item->full_name());
   dest_item->SetIcon(src_item->icon(), src_item->has_shadow());
+  // Do not set folder_id, pass that to AppListModel::AddItemToFolder() instead.
 }
 
 }  // namespace
@@ -213,7 +214,7 @@ void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
     AppListItem* src_item = src->item_list()->item_at(i);
     AppListItem* dest_item = new AppListItem(src_item->id());
     CopyOverItem(src_item, dest_item);
-    dest->AddItem(dest_item);
+    dest->AddItemToFolder(dest_item, src_item->folder_id());
   }
 }
 
@@ -234,7 +235,8 @@ FastShowPickler::UnpickleAppListModelForFastShow(Pickle* pickle) {
     scoped_ptr<AppListItem> item(UnpickleAppListItem(&it).Pass());
     if (!item)
       return scoped_ptr<AppListModel>();
-    model->AddItem(item.release());
+    std::string folder_id = item->folder_id();
+    model->AddItemToFolder(item.release(), folder_id);
   }
 
   return model.Pass();

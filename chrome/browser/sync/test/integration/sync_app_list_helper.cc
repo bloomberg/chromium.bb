@@ -121,6 +121,29 @@ void SyncAppListHelper::MoveApp(Profile* profile, size_t from, size_t to) {
   service->model()->item_list()->MoveItem(from, to);
 }
 
+void SyncAppListHelper::MoveAppToFolder(Profile* profile,
+                                        size_t index,
+                                        const std::string& folder_id) {
+  AppListSyncableService* service =
+      AppListSyncableServiceFactory::GetForProfile(profile);
+  service->model()->MoveItemToFolder(
+      service->model()->item_list()->item_at(index), folder_id);
+}
+
+void SyncAppListHelper::MoveAppFromFolder(Profile* profile,
+                                          size_t index_in_folder,
+                                          const std::string& folder_id) {
+  AppListSyncableService* service =
+      AppListSyncableServiceFactory::GetForProfile(profile);
+  AppListFolderItem* folder = service->model()->FindFolderItem(folder_id);
+  if (!folder) {
+    LOG(ERROR) << "Folder not found: " << folder_id;
+    return;
+  }
+  service->model()->MoveItemToFolder(
+      folder->item_list()->item_at(index_in_folder), "");
+}
+
 void SyncAppListHelper::CopyOrdinalsToVerifier(Profile* profile,
                                                const std::string& id) {
   AppListSyncableService* service =

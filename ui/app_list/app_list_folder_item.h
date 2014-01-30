@@ -25,6 +25,8 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
                                           public AppListItemListObserver,
                                           public AppListItemObserver {
  public:
+  static const char kItemType[];
+
   explicit AppListFolderItem(const std::string& id);
   virtual ~AppListFolderItem();
 
@@ -35,8 +37,15 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   const gfx::ImageSkia& GetTopIcon(size_t item_index);
 
   AppListItemList* item_list() { return item_list_.get(); }
+  const AppListItemList* item_list() const { return item_list_.get(); }
 
-  static const char kItemType[];
+  // AppListItem
+  virtual void Activate(int event_flags) OVERRIDE;
+  virtual const char* GetItemType() const OVERRIDE;
+  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
+  virtual AppListItem* FindChildItem(const std::string& id) OVERRIDE;
+  virtual size_t ChildItemCount() const OVERRIDE;
+  virtual bool CompareForTest(const AppListItem* other) const OVERRIDE;
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons in sequence of top left, top right,
@@ -47,11 +56,6 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   static std::string GenerateId();
 
  private:
-  // AppListItem
-  virtual void Activate(int event_flags) OVERRIDE;
-  virtual const char* GetItemType() const OVERRIDE;
-  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
-
   // AppListItemObserver
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;

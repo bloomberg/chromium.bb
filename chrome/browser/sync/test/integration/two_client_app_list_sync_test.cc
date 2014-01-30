@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "ui/app_list/app_list_switches.h"
 
 using apps_helper::DisableApp;
 using apps_helper::EnableApp;
@@ -469,4 +470,104 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   sync_item = GetSyncItem(GetProfile(1), app_id2);
   ASSERT_TRUE(sync_item);
   EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
+}
+
+class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
+ public:
+  TwoClientAppListSyncFolderTest() {}
+  virtual ~TwoClientAppListSyncFolderTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    TwoClientAppListSyncTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(app_list::switches::kEnableFolderUI);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TwoClientAppListSyncFolderTest);
+};
+
+// Install some apps on both clients, then sync. Move an app on one client
+// to a folder and sync. The app lists, including folders, should match.
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncFolderTest, MoveToFolder) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  const int kNumApps = 5;
+  for (int i = 0; i < kNumApps; ++i) {
+    InstallApp(GetProfile(0), i);
+    InstallApp(GetProfile(1), i);
+    InstallApp(verifier(), i);
+  }
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  size_t index = 2u;
+  std::string folder_id = "Folder 0";
+  SyncAppListHelper::GetInstance()->MoveAppToFolder(
+      GetProfile(0), index, folder_id);
+  SyncAppListHelper::GetInstance()->MoveAppToFolder(
+      verifier(), index, folder_id);
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncFolderTest, FolderAddRemove) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  const int kNumApps = 10;
+  for (int i = 0; i < kNumApps; ++i) {
+    InstallApp(GetProfile(0), i);
+    InstallApp(GetProfile(1), i);
+    InstallApp(verifier(), i);
+  }
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  // Move a few apps to a folder.
+  const size_t kNumAppsToMove = 3;
+  std::string folder_id = "Folder 0";
+  // The folder will be created at the end of the list; always move the
+  // first non default item in the list.
+  size_t item_index = kNumDefaultApps;
+  for (size_t i = 0; i < kNumAppsToMove; ++i) {
+    SyncAppListHelper::GetInstance()->MoveAppToFolder(
+        GetProfile(0), item_index, folder_id);
+    SyncAppListHelper::GetInstance()->MoveAppToFolder(
+        verifier(), item_index, folder_id);
+  }
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  // Remove one app from the folder.
+  SyncAppListHelper::GetInstance()->MoveAppFromFolder(
+      GetProfile(0), 0, folder_id);
+  SyncAppListHelper::GetInstance()->MoveAppFromFolder(
+      verifier(), 0, folder_id);
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  // Remove remaining apps from the folder (deletes folder).
+  for (size_t i = 1; i < kNumAppsToMove; ++i) {
+    SyncAppListHelper::GetInstance()->MoveAppFromFolder(
+        GetProfile(0), 0, folder_id);
+    SyncAppListHelper::GetInstance()->MoveAppFromFolder(
+        verifier(), 0, folder_id);
+  }
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  // Move apps back to a (new) folder.
+  for (size_t i = 0; i < kNumAppsToMove; ++i) {
+    SyncAppListHelper::GetInstance()->MoveAppToFolder(
+        GetProfile(0), item_index, folder_id);
+    SyncAppListHelper::GetInstance()->MoveAppToFolder(
+        verifier(), item_index, folder_id);
+  }
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
 }

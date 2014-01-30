@@ -34,6 +34,7 @@ enum CommandId {
   CREATE_SHORTCUTS,
   OPTIONS,
   UNINSTALL,
+  REMOVE_FROM_FOLDER,
   DETAILS,
   MENU_NEW_WINDOW,
   MENU_NEW_INCOGNITO_WINDOW,
@@ -55,18 +56,18 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 AppContextMenu::AppContextMenu(AppContextMenuDelegate* delegate,
                                Profile* profile,
                                const std::string& app_id,
-                               AppListControllerDelegate* controller,
-                               bool is_platform_app,
-                               bool is_search_result)
+                               AppListControllerDelegate* controller)
     : delegate_(delegate),
       profile_(profile),
       app_id_(app_id),
       controller_(controller),
-      is_platform_app_(is_platform_app),
-      is_search_result_(is_search_result) {
+      is_platform_app_(false),
+      is_search_result_(false),
+      is_in_folder_(false) {
 }
 
-AppContextMenu::~AppContextMenu() {}
+AppContextMenu::~AppContextMenu() {
+}
 
 ui::MenuModel* AppContextMenu::GetMenuModel() {
   if (!controller_->IsExtensionInstalled(profile_, app_id_))
@@ -154,6 +155,12 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
         UNINSTALL,
         is_platform_app_ ? IDS_APP_LIST_UNINSTALL_ITEM
                          : IDS_EXTENSIONS_UNINSTALL);
+  }
+
+  if (is_in_folder_) {
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddItemWithStringId(
+        REMOVE_FROM_FOLDER, IDS_APP_LIST_CONTEXT_MENU_REMOVE_FROM_FOLDER);
   }
 
   return menu_model_.get();
@@ -257,6 +264,8 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller_->ShowOptionsPage(profile_, app_id_);
   } else if (command_id == UNINSTALL) {
     controller_->UninstallApp(profile_, app_id_);
+  } else if (command_id == REMOVE_FROM_FOLDER) {
+    controller_->RemoveAppFromFolder(profile_, app_id_);
   } else if (command_id == DETAILS) {
     controller_->ShowAppInWebStore(profile_, app_id_, is_search_result_);
   } else if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&

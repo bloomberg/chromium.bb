@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -19,6 +21,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/url_util.h"
+#include "ui/app_list/app_list_model.h"
 
 using extensions::ExtensionRegistry;
 
@@ -74,6 +77,16 @@ void AppListControllerDelegate::UninstallApp(Profile* profile,
   ExtensionUninstaller* uninstaller =
       new ExtensionUninstaller(profile, app_id, this);
   uninstaller->Run();
+}
+
+void AppListControllerDelegate::RemoveAppFromFolder(Profile* profile,
+                                                    const std::string& app_id) {
+  app_list::AppListModel* model =
+      app_list::AppListSyncableServiceFactory::GetForProfile(
+          profile)->model();
+  app_list::AppListItem* item = model->FindItem(app_id);
+  if (item)
+    model->MoveItemToFolder(item, "");
 }
 
 bool AppListControllerDelegate::IsAppFromWebStore(

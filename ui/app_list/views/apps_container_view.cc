@@ -146,7 +146,10 @@ void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
 }
 
 void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
-  CreateViewsForFolderTopItemsAnimation(folder_item, false);
+  if (folder_item)
+    CreateViewsForFolderTopItemsAnimation(folder_item, false);
+  else
+    top_icon_views_.clear();
   // Hide the active folder view until the animation completes.
   apps_grid_view_->activated_item_view()->SetVisible(false);
   SetShowState(SHOW_APPS);

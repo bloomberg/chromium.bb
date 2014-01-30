@@ -38,6 +38,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
     : container_view_(container_view),
       folder_header_view_(new FolderHeaderView(this)),
       view_model_(new views::ViewModel),
+      model_(model),
       folder_item_(NULL),
       pagination_model_(new PaginationModel) {
   AddChildView(folder_header_view_);
@@ -57,9 +58,12 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
 #endif
+
+  model_->item_list()->AddObserver(this);
 }
 
 AppListFolderView::~AppListFolderView() {
+  model_->item_list()->RemoveObserver(this);
   // Make sure |items_grid_view_| is deleted before |pagination_model_|.
   RemoveAllChildViews(true);
 }
@@ -106,6 +110,20 @@ void AppListFolderView::Layout() {
 
 bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
   return items_grid_view_->OnKeyPressed(event);
+}
+
+void AppListFolderView::OnListItemRemoved(size_t index, AppListItem* item) {
+  // If the folder item associated with this view is removed from the model,
+  // (e.g. the last item in the folder was deleted), reset the view and signal
+  // the container view to show the app list instead.
+  if (item == folder_item_) {
+    items_grid_view_->SetItemList(NULL);
+    folder_header_view_->SetFolderItem(NULL);
+    folder_item_ = NULL;
+    // Pass NULL to ShowApps() to avoid triggering animation from the deleted
+    // folder.
+    container_view_->ShowApps(NULL);
+  }
 }
 
 void AppListFolderView::OnImplicitAnimationsCompleted() {

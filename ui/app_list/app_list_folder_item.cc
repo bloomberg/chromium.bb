@@ -145,10 +145,6 @@ Rects AppListFolderItem::GetTopIconsBounds(
   return top_icon_bounds;
 }
 
-std::string AppListFolderItem::GenerateId() {
-  return base::GenerateGUID();
-}
-
 const char* AppListFolderItem::GetItemType() const {
   return AppListFolderItem::kItemType;
 }
@@ -156,6 +152,33 @@ const char* AppListFolderItem::GetItemType() const {
 ui::MenuModel* AppListFolderItem::GetContextMenuModel() {
   // TODO(stevenjb/jennyz): Implement.
   return NULL;
+}
+
+AppListItem* AppListFolderItem::FindChildItem(const std::string& id) {
+  return item_list_->FindItem(id);
+}
+
+size_t AppListFolderItem::ChildItemCount() const {
+  return item_list_->item_count();
+}
+
+bool AppListFolderItem::CompareForTest(const AppListItem* other) const {
+  if (!AppListItem::CompareForTest(other))
+    return false;
+  const AppListFolderItem* other_folder =
+      static_cast<const AppListFolderItem*>(other);
+  if (other_folder->item_list()->item_count() != item_list_->item_count())
+    return false;
+  for (size_t i = 0; i < item_list_->item_count(); ++i) {
+    if (!item_list()->item_at(i)->CompareForTest(
+            other_folder->item_list()->item_at(i)))
+      return false;
+  }
+  return true;
+}
+
+std::string AppListFolderItem::GenerateId() {
+  return base::GenerateGUID();
 }
 
 void AppListFolderItem::ItemIconChanged() {

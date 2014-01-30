@@ -86,8 +86,17 @@ ui::MenuModel* AppListItem::GetContextMenuModel() {
   return NULL;
 }
 
+AppListItem* AppListItem::FindChildItem(const std::string& id) {
+  return NULL;
+}
+
+size_t AppListItem::ChildItemCount() const {
+  return 0;
+}
+
 bool AppListItem::CompareForTest(const AppListItem* other) const {
   return id_ == other->id_ &&
+      folder_id_ == other->folder_id_ &&
       title_ == other->title_ &&
       GetItemType() == other->GetItemType() &&
       position_.Equals(other->position_);

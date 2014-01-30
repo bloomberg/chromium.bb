@@ -91,11 +91,6 @@ class AppListModelTest : public testing::Test {
     return item->observers_.HasObserver(folder);
   }
 
-  void AddFolderItem(AppListFolderItem* folder,
-                     const std::string& name) {
-    folder->item_list()->AddItem(model_.CreateItem(name, name));
-  }
-
   test::AppListTestModel model_;
   TestObserver observer_;
 
@@ -218,22 +213,42 @@ TEST_F(AppListModelTest, AppOrder) {
   }
 }
 
-TEST_F(AppListModelTest, FolderItem) {
-  scoped_ptr<AppListFolderItem> folder(new AppListFolderItem("folder1"));
+class AppListModelFolderTest : public AppListModelTest {
+ public:
+  AppListModelFolderTest() {}
+  virtual ~AppListModelFolderTest() {}
+
+  // testing::Test overrides:
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableFolderUI);
+    AppListModelTest::SetUp();
+  }
+  virtual void TearDown() OVERRIDE {
+    AppListModelTest::TearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListModelFolderTest);
+};
+
+TEST_F(AppListModelFolderTest, FolderItem) {
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
   const size_t num_folder_apps = 8;
   const size_t num_observed_apps = 4;
+  model_.AddItem(folder);
   for (int i = 0; static_cast<size_t>(i) < num_folder_apps; ++i) {
     std::string name = model_.GetItemName(i);
-    AddFolderItem(folder.get(), name);
+    model_.AddItemToFolder(model_.CreateItem(name, name), folder->id());
   }
+  ASSERT_EQ(num_folder_apps, folder->item_list()->item_count());
   // Check that items 0 and 3 are observed.
   EXPECT_TRUE(ItemObservedByFolder(
-      folder.get(), folder->item_list()->item_at(0)));
+      folder, folder->item_list()->item_at(0)));
   EXPECT_TRUE(ItemObservedByFolder(
-      folder.get(), folder->item_list()->item_at(num_observed_apps - 1)));
+      folder, folder->item_list()->item_at(num_observed_apps - 1)));
   // Check that item 4 is not observed.
   EXPECT_FALSE(ItemObservedByFolder(
-      folder.get(), folder->item_list()->item_at(num_observed_apps)));
+      folder, folder->item_list()->item_at(num_observed_apps)));
   folder->item_list()->MoveItem(num_observed_apps, 0);
   // Confirm that everything was moved where expected.
   EXPECT_EQ(model_.GetItemName(num_observed_apps),
@@ -244,12 +259,118 @@ TEST_F(AppListModelTest, FolderItem) {
             folder->item_list()->item_at(num_observed_apps)->id());
   // Check that items 0 and 3 are observed.
   EXPECT_TRUE(ItemObservedByFolder(
-      folder.get(), folder->item_list()->item_at(0)));
+      folder, folder->item_list()->item_at(0)));
   EXPECT_TRUE(ItemObservedByFolder(
-      folder.get(), folder->item_list()->item_at(num_observed_apps - 1)));
+      folder, folder->item_list()->item_at(num_observed_apps - 1)));
   // Check that item 4 is not observed.
   EXPECT_FALSE(ItemObservedByFolder(
-      folder.get(), folder->item_list()->item_at(num_observed_apps)));
+      folder, folder->item_list()->item_at(num_observed_apps)));
+}
+
+TEST_F(AppListModelFolderTest, MergeItems) {
+  model_.PopulateApps(2);
+  ASSERT_EQ(2u, model_.item_list()->item_count());
+  AppListItem* item0 = model_.item_list()->item_at(0);
+  AppListItem* item1 = model_.item_list()->item_at(1);
+  std::string folder_id = model_.MergeItems(item0->id(), item1->id());
+  ASSERT_EQ(1u, model_.item_list()->item_count());
+  EXPECT_EQ(folder_id, model_.item_list()->item_at(0)->id());
+  AppListFolderItem* folder_item = model_.FindFolderItem(folder_id);
+  ASSERT_TRUE(folder_item);
+  ASSERT_EQ(2u, folder_item->item_list()->item_count());
+  EXPECT_EQ(item0, folder_item->item_list()->item_at(0));
+  EXPECT_EQ(item1, folder_item->item_list()->item_at(1));
+}
+
+TEST_F(AppListModelFolderTest, AddItemToFolder) {
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  model_.AddItem(folder);
+  AppListItem* item0 = new AppListItem("Item 0");
+  model_.AddItemToFolder(item0, folder->id());
+  ASSERT_EQ(1u, model_.item_list()->item_count());
+  AppListFolderItem* folder_item = model_.FindFolderItem(folder->id());
+  ASSERT_TRUE(folder_item);
+  ASSERT_EQ(1u, folder_item->item_list()->item_count());
+  EXPECT_EQ(item0, folder_item->item_list()->item_at(0));
+  EXPECT_EQ(folder->id(), item0->folder_id());
+}
+
+TEST_F(AppListModelFolderTest, MoveItemToFolder) {
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  model_.AddItem(folder);
+  AppListItem* item0 = new AppListItem("Item 0");
+  AppListItem* item1 = new AppListItem("Item 1");
+  model_.AddItem(item0);
+  model_.AddItem(item1);
+  ASSERT_EQ(3u, model_.item_list()->item_count());
+  // Move item0 and item1 to folder.
+  std::string folder_id = folder->id();
+  model_.MoveItemToFolder(item0, folder_id);
+  model_.MoveItemToFolder(item1, folder_id);
+  AppListFolderItem* folder_item = model_.FindFolderItem(folder_id);
+  ASSERT_TRUE(folder_item);
+  ASSERT_EQ(2u, folder_item->item_list()->item_count());
+  EXPECT_EQ(item0, folder_item->item_list()->item_at(0));
+  EXPECT_EQ(item1, folder_item->item_list()->item_at(1));
+  EXPECT_EQ(folder_id, item0->folder_id());
+  EXPECT_EQ(folder_id, item1->folder_id());
+  // Move item0 out of folder.
+  model_.MoveItemToFolder(item0, "");
+  EXPECT_EQ("", item0->folder_id());
+  folder_item = model_.FindFolderItem(folder_id);
+  ASSERT_TRUE(folder_item);
+  // Move item1 out of folder, folder should be deleted.
+  model_.MoveItemToFolder(item1, "");
+  EXPECT_EQ("", item1->folder_id());
+  folder_item = model_.FindFolderItem(folder_id);
+  EXPECT_FALSE(folder_item);
+}
+
+TEST_F(AppListModelFolderTest, MoveItemFromFolderToFolder) {
+  AppListFolderItem* folder0 = new AppListFolderItem("folder0");
+  AppListFolderItem* folder1 = new AppListFolderItem("folder1");
+  model_.AddItem(folder0);
+  model_.AddItem(folder1);
+  AppListItem* item0 = new AppListItem("Item 0");
+  AppListItem* item1 = new AppListItem("Item 1");
+  model_.AddItemToFolder(item0, folder0->id());
+  model_.AddItemToFolder(item1, folder0->id());
+  ASSERT_EQ(2u, model_.item_list()->item_count());
+  ASSERT_EQ(2u, folder0->item_list()->item_count());
+  EXPECT_EQ(folder0->id(), item0->folder_id());
+  EXPECT_EQ(folder0->id(), item1->folder_id());
+
+  // Move item0 from folder0 to folder1.
+  model_.MoveItemToFolder(item0, folder1->id());
+  ASSERT_EQ(1u, folder0->item_list()->item_count());
+  ASSERT_EQ(1u, folder1->item_list()->item_count());
+  EXPECT_EQ(folder1->id(), item0->folder_id());
+
+  // Move item1 from folder0 to folder1. folder0 should get deleted.
+  model_.MoveItemToFolder(item1, folder1->id());
+  ASSERT_EQ(1u, model_.item_list()->item_count());
+  ASSERT_EQ(2u, folder1->item_list()->item_count());
+  EXPECT_EQ(folder1->id(), item1->folder_id());
+
+  // Move item1 to a non-existant folder2 which should get created.
+  model_.MoveItemToFolder(item1, "folder2");
+  ASSERT_EQ(2u, model_.item_list()->item_count());
+  ASSERT_EQ(1u, folder1->item_list()->item_count());
+  EXPECT_EQ("folder2", item1->folder_id());
+  AppListFolderItem* folder2 = model_.FindFolderItem("folder2");
+  ASSERT_TRUE(folder2);
+}
+
+TEST_F(AppListModelFolderTest, FindItemInFolder) {
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
+  EXPECT_TRUE(folder);
+  model_.AddItem(folder);
+  std::string folder_id = folder->id();
+  AppListItem* item0 = new AppListItem("Item 0");
+  model_.AddItemToFolder(item0, folder_id);
+  AppListItem* found_item = model_.FindItem(item0->id());
+  ASSERT_EQ(item0, found_item);
+  EXPECT_EQ(folder_id, found_item->folder_id());
 }
 
 }  // namespace app_list

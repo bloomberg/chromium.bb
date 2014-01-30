@@ -49,7 +49,10 @@ class APP_LIST_EXPORT AppListItem {
   void SetPercentDownloaded(int percent_downloaded);
   int percent_downloaded() const { return percent_downloaded_; }
 
+  bool IsInFolder() const { return !folder_id_.empty(); }
+
   const std::string& id() const { return id_; }
+  const std::string& folder_id() const { return folder_id_; }
   const syncer::StringOrdinal& position() const { return position_; }
 
   void AddObserver(AppListItemObserver* observer);
@@ -67,6 +70,13 @@ class APP_LIST_EXPORT AppListItem {
   // Note the returned menu model is owned by this item.
   virtual ui::MenuModel* GetContextMenuModel();
 
+  // Returns the item matching |id| contained in this item (e.g. if the item is
+  // a folder), or NULL if the item was not found or this is not a container.
+  virtual AppListItem* FindChildItem(const std::string& id);
+
+  // Returns the number of child items if it has any (e.g. is a folder) or 0.
+  virtual size_t ChildItemCount() const;
+
   // Utility functions for sync integration tests.
   virtual bool CompareForTest(const AppListItem* other) const;
   virtual std::string ToDebugString() const;
@@ -81,10 +91,13 @@ class APP_LIST_EXPORT AppListItem {
     position_ = new_position;
   }
 
+  void set_folder_id(const std::string& folder_id) { folder_id_ = folder_id; }
+
  private:
   friend class AppListModelTest;
 
   const std::string id_;
+  std::string folder_id_;  // Id of containing folder; empty if top level item.
   syncer::StringOrdinal position_;
   gfx::ImageSkia icon_;
   bool has_shadow_;
