@@ -32,7 +32,7 @@ class LocalExtensionCache {
   // means that all unused cache items will be removed on Shutdown.
   // All file I/O is done via the |backend_task_runner|.
   LocalExtensionCache(const base::FilePath& cache_dir,
-                      uint64 max_cache_size,
+                      size_t max_cache_size,
                       const base::TimeDelta& max_cache_age,
                       const scoped_refptr<base::SequencedTaskRunner>&
                           backend_task_runner);
@@ -73,10 +73,6 @@ class LocalExtensionCache {
   // removed from disk too.
   bool RemoveExtension(const std::string& id);
 
-  // Return cache statistics. Returns |false| if cache is not ready.
-  bool GetStatistics(uint64* cache_size,
-                     size_t* extensions_count);
-
   bool is_ready() const { return state_ == kReady; }
   bool is_uninitialized() const { return state_ == kUninitialized; }
   bool is_shutdown() const { return state_ == kShutdown; }
@@ -88,12 +84,12 @@ class LocalExtensionCache {
   struct CacheItemInfo {
     std::string version;
     base::Time last_used;
-    uint64 size;
+    int64 size;
     base::FilePath file_path;
 
     CacheItemInfo(const std::string& version,
                   const base::Time& last_used,
-                  const uint64 size,
+                  const size_t size,
                   const base::FilePath& file_path);
   };
   typedef std::map<std::string, CacheItemInfo> CacheMap;
@@ -179,7 +175,7 @@ class LocalExtensionCache {
   base::FilePath cache_dir_;
 
   // Maximum size of cache dir on disk.
-  uint64 max_cache_size_;
+  size_t max_cache_size_;
 
   // Minimal age of unused item in cache, items prior to this age will be
   // deleted on shutdown.

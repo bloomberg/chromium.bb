@@ -4425,20 +4425,6 @@ other types of suffix sets.
   <summary>The time for an extension's event page to load.</summary>
 </histogram>
 
-<histogram name="Extensions.ExtensionCacheCount">
-  <summary>
-    Number of cached extensions on disk. Reported on Chrome OS during user
-    session start.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.ExtensionCacheSize" units="MB">
-  <summary>
-    Total size of .crx files in cache on disk. Reported on Chrome OS during user
-    session start.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.ExtensionInstalled">
   <summary>An extension has been installed.</summary>
 </histogram>
