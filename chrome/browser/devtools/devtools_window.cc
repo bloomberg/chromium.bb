@@ -1481,9 +1481,12 @@ content::WebContents* DevToolsWindow::GetInspectedWebContents() {
 }
 
 void DevToolsWindow::DocumentOnLoadCompletedInMainFrame() {
-  // Load is completed when both kIsDockedSet and kOnLoadFired happened.
-  // Here we set kOnLoadFired.
-  load_state_ = load_state_ == kIsDockedSet ? kLoadCompleted : kOnLoadFired;
+  // We could be in kLoadCompleted state already if frontend reloads itself.
+  if (load_state_ != kLoadCompleted) {
+    // Load is completed when both kIsDockedSet and kOnLoadFired happened.
+    // Here we set kOnLoadFired.
+    load_state_ = load_state_ == kIsDockedSet ? kLoadCompleted : kOnLoadFired;
+  }
   if (load_state_ == kLoadCompleted)
     LoadCompleted();
 }
