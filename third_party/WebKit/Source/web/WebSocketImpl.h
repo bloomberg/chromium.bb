@@ -38,7 +38,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore { class MainThreadWebSocketChannel; }
+namespace WebCore { class WebSocketChannel; }
 
 namespace blink {
 
@@ -75,7 +75,7 @@ public:
     virtual void didClose(unsigned long bufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
 private:
-    RefPtr<WebCore::MainThreadWebSocketChannel> m_private;
+    RefPtr<WebCore::WebSocketChannel> m_private;
     WebSocketClient* m_client;
     BinaryType m_binaryType;
 };

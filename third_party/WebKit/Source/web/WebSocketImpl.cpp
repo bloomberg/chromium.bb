@@ -31,11 +31,12 @@
 #include "config.h"
 #include "WebSocketImpl.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "WebDocument.h"
 #include "core/dom/Document.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/frame/Settings.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
+#include "modules/websockets/NewWebSocketChannelImpl.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebString.h"
@@ -51,12 +52,11 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
     , m_binaryType(BinaryTypeBlob)
 {
     RefPtr<Document> coreDocument = PassRefPtr<Document>(document);
-    Settings* settings = coreDocument->settings();
-    if (settings && settings->experimentalWebSocketEnabled()) {
-        // FIXME: Create an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
+    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
+        m_private = NewWebSocketChannelImpl::create(coreDocument.get(), this);
+    } else {
         m_private = MainThreadWebSocketChannel::create(coreDocument.get(), this);
-    } else
-        m_private = MainThreadWebSocketChannel::create(coreDocument.get(), this);
+    }
 }
 
 WebSocketImpl::~WebSocketImpl()

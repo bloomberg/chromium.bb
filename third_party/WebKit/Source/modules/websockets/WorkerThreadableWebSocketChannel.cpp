@@ -32,6 +32,7 @@
 
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -39,11 +40,11 @@
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/frame/Settings.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
+#include "modules/websockets/NewWebSocketChannelImpl.h"
 #include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/MainThread.h"
@@ -166,12 +167,11 @@ WorkerThreadableWebSocketChannel::Peer::Peer(PassRefPtr<ThreadableWebSocketChann
     , m_taskMode(taskMode)
 {
     Document* document = toDocument(context);
-    Settings* settings = document->settings();
-    if (settings && settings->experimentalWebSocketEnabled()) {
-        // FIXME: Create an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
+    if (RuntimeEnabledFeatures::experimentalWebSocketEnabled()) {
+        m_mainWebSocketChannel = NewWebSocketChannelImpl::create(document, this, sourceURL, lineNumber);
+    } else {
         m_mainWebSocketChannel = MainThreadWebSocketChannel::create(document, this, sourceURL, lineNumber);
-    } else
-        m_mainWebSocketChannel = MainThreadWebSocketChannel::create(document, this, sourceURL, lineNumber);
+    }
     ASSERT(isMainThread());
 }
 
@@ -397,8 +397,9 @@ public:
             OwnPtr<WorkerThreadableWebSocketChannel::Peer> peer = adoptPtr(m_peer);
             m_peer = 0;
             m_loaderProxy->postTaskToLoader(createCallbackTask(&WorkerThreadableWebSocketChannel::mainThreadDestroy, peer.release()));
-        } else
+        } else {
             m_workerClientWrapper->didCreateWebSocketChannel(m_peer);
+        }
     }
     virtual bool isCleanupTask() const OVERRIDE { return true; }
 
