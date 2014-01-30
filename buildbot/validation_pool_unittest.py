@@ -649,6 +649,7 @@ class ValidationFailureOrTimeout(MoxBase):
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
     self.PatchObject(validation_pool.ValidationPool, 'RemoveCommitReady')
     self.PatchObject(validation_pool.ValidationPool, 'UpdateCLStatus')
+    self.StartPatcher(parallel_unittest.ParallelMock())
 
 
   def testPatchesWereRejectedByFailure(self):
@@ -689,6 +690,7 @@ class TestCoreLogic(MoxBase):
       self.mox.StubOutWithMock(validation_pool.ValidationPool, func)
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      side_effect=lambda x: x)
+    self.StartPatcher(parallel_unittest.ParallelMock())
 
   def MakePool(self, *args, **kwargs):
     """Helper for creating ValidationPool objects for Mox tests."""

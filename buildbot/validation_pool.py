@@ -1696,8 +1696,8 @@ class ValidationPool(object):
     self.PrintLinksToChanges(applied)
 
     if self.is_master:
-      for change in applied:
-        self._HandleApplySuccess(change)
+      inputs = [[change] for change in applied]
+      parallel.RunTasksInProcessPool(self._HandleApplySuccess, inputs)
 
     failed_tot = self._FilterDependencyErrors(failed_tot)
     if failed_tot:
@@ -1830,9 +1830,9 @@ class ValidationPool(object):
     assert not self.pre_cq, 'Trybot calling SubmitPool'
 
     # Mark all changes as successful.
-    for change in changes:
-      self.UpdateCLStatus(self.bot, change, self.STATUS_PASSED,
-                          dry_run=self.dryrun)
+    inputs = [[self.bot, change, self.STATUS_PASSED, self.dryrun]
+              for change in changes]
+    parallel.RunTasksInProcessPool(self.UpdateCLStatus, inputs)
 
     if (check_tree_open and not self.dryrun and not
        timeout_util.IsTreeOpen(self.STATUS_URL, self.SLEEP_TIMEOUT,
@@ -2176,6 +2176,30 @@ class ValidationPool(object):
 
     return '\n\n'.join(msg)
 
+  def _ChangeFailedValidation(self, change, messages, suspects, sanity):
+    """Handles a validation failure for an individual change.
+
+    Args:
+      change: The change to mark as failed.
+      messages: A list of build failure messages from supporting builders.
+          These must be ValidationFailedMessage objects.
+      suspects: The list of changes that are suspected of breaking the build.
+      sanity: A boolean indicating whether the build was considered sane by
+              any relevant sanity check builders (True = sane). If not sane,
+              none of the changes will have their CommitReady bit modified.
+    """
+    msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
+                                               messages, sanity)
+    self.SendNotification(change, '%(details)s', details=msg)
+    if sanity:
+      if change in suspects:
+        self.RemoveCommitReady(change)
+
+      # Mark the change as failed. If the Ready bit is still set, the change
+      # will be retried automatically.
+      self.UpdateCLStatus(self.bot, change, self.STATUS_FAILED,
+                          dry_run=self.dryrun)
+
   def HandleValidationFailure(self, messages, changes=None, sanity=True):
     """Handles a list of validation failure messages from slave builders.
 
@@ -2207,18 +2231,8 @@ class ValidationPool(object):
     suspects = CalculateSuspects.FindSuspects(candidates, messages)
 
     # Send out failure notifications for each change.
-    for change in candidates:
-      msg = self._CreateValidationFailureMessage(self.pre_cq, change, suspects,
-                                                 messages, sanity)
-      self.SendNotification(change, '%(details)s', details=msg)
-      if sanity:
-        if change in suspects:
-          self.RemoveCommitReady(change)
-
-        # Mark the change as failed. If the Ready bit is still set, the change
-        # will be retried automatically.
-        self.UpdateCLStatus(self.bot, change, self.STATUS_FAILED,
-                            dry_run=self.dryrun)
+    inputs = [[change, messages, suspects, sanity] for change in candidates]
+    parallel.RunTasksInProcessPool(self._ChangeFailedValidation, inputs)
 
   def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated."""
