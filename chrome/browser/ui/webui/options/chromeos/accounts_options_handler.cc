@@ -88,7 +88,8 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetBoolean("whitelist_is_managed",
                                 connector->IsEnterpriseManaged());
 
-  AddAccountUITweaksLocalizedValues(localized_strings);
+  AddAccountUITweaksLocalizedValues(localized_strings,
+                                    Profile::FromWebUI(web_ui()));
 }
 
 void AccountsOptionsHandler::HandleWhitelistUser(const base::ListValue* args) {

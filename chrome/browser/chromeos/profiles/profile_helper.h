@@ -62,6 +62,9 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // signin Profile.
   static bool IsSigninProfile(Profile* profile);
 
+  // Returns true when |profile| corresponds to owner's profile.
+  static bool IsOwnerProfile(Profile* profile);
+
   // Initialize a bunch of services that are tied to a browser profile.
   // TODO(dzhioev): Investigate whether or not this method is needed.
   void ProfileStartup(Profile* profile, bool process_startup);

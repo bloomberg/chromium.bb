@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chromeos/login/oauth2_login_manager_factory.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -113,6 +114,13 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 // static
 bool ProfileHelper::IsSigninProfile(Profile* profile) {
   return profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+}
+
+// static
+bool ProfileHelper::IsOwnerProfile(Profile* profile) {
+  chromeos::UserManager* manager = chromeos::UserManager::Get();
+  chromeos::User* user = manager->GetUserByProfile(profile);
+  return user->email() == manager->GetOwnerEmail();
 }
 
 void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {

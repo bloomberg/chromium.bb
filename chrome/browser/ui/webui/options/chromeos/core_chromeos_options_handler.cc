@@ -155,7 +155,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
   if (connector->IsEnterpriseManaged())
     dict->SetString("controlledBy", "policy");
   bool disabled_by_owner = IsSettingOwnerOnly(pref_name) &&
-      !UserManager::Get()->IsCurrentUserOwner();
+      !ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui()));
   dict->SetBoolean("disabled", disabled_by_owner);
   if (disabled_by_owner)
     dict->SetString("controlledBy", "owner");
@@ -214,7 +214,8 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   CoreOptionsHandler::GetLocalizedValues(localized_strings);
 
-  AddAccountUITweaksLocalizedValues(localized_strings);
+  AddAccountUITweaksLocalizedValues(localized_strings,
+                                    Profile::FromWebUI(web_ui()));
   localized_strings->SetString("controlledSettingOwner",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_OWNER));
 }

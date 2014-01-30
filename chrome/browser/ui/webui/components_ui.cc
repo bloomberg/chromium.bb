@@ -32,7 +32,7 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-content::WebUIDataSource* CreateComponentsUIHTMLSource() {
+content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIComponentsHost);
   source->SetUseJsonJSFormatV2();
@@ -48,7 +48,7 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource() {
   source->AddResourcePath("components.js", IDR_COMPONENTS_JS);
   source->SetDefaultResource(IDR_COMPONENTS_HTML);
 #if defined(OS_CHROMEOS)
-  chromeos::AddAccountUITweaksLocalizedValues(source);
+  chromeos::AddAccountUITweaksLocalizedValues(source, profile);
 #endif
   return source;
 }
@@ -156,7 +156,7 @@ ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://components/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateComponentsUIHTMLSource());
+  content::WebUIDataSource::Add(profile, CreateComponentsUIHTMLSource(profile));
 }
 
 // static

@@ -92,12 +92,12 @@ ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
 
+  web_ui->AddMessageHandler(core_handler_);
   core_handler_->set_handlers_host(this);
   core_handler_->GetLocalizedValues(localized_strings);
-  web_ui->AddMessageHandler(core_handler_);
 
-  proxy_handler_->GetLocalizedValues(localized_strings);
   web_ui->AddMessageHandler(proxy_handler_);
+  proxy_handler_->GetLocalizedValues(localized_strings);
 
   bool keyboard_driven_oobe =
       system::keyboard_settings::ForceKeyboardDrivenUINavigation();
