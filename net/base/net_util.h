@@ -574,6 +574,7 @@ unsigned MaskPrefixLength(const IPAddressNumber& mask);
 // See http://tools.ietf.org/html/rfc2474 for details.
 enum DiffServCodePoint {
   DSCP_NO_CHANGE = -1,
+  DSCP_FIRST = DSCP_NO_CHANGE,
   DSCP_DEFAULT = 0,  // Same as DSCP_CS0
   DSCP_CS0  = 0,   // The default
   DSCP_CS1  = 8,   // Bulk/background traffic
@@ -596,6 +597,7 @@ enum DiffServCodePoint {
   DSCP_EF   = 46,  // Voice
   DSCP_CS6  = 48,  // Voice
   DSCP_CS7  = 56,  // Control messages
+  DSCP_LAST = DSCP_CS7
 };
 
 }  // namespace net
