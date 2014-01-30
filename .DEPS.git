@@ -289,7 +289,7 @@ deps_os = {
         'src/third_party/google_toolbox_for_mac/src':
             Var('git_url') + '/external/google-toolbox-for-mac.git@471407b943b14bcebe017dc6d098b3f54019eaba',
         'src/third_party/lighttpd':
-            Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
+            Var('git_url') + '/chromium/deps/lighttpd.git@38b19afcf9e451ca012f8073a8772260ac70c3ee',
         'src/third_party/nss':
             Var('git_url') + '/chromium/deps/nss.git@c5a167aca715da97e349fc81932019672e05ce61',
         'src/third_party/pdfsqueeze':
@@ -345,7 +345,7 @@ deps_os = {
         'src/third_party/gperf':
             Var('git_url') + '/chromium/deps/gperf.git@d892d79f64f9449770443fb06da49b5a1e5d33c1',
         'src/third_party/lighttpd':
-            Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
+            Var('git_url') + '/chromium/deps/lighttpd.git@38b19afcf9e451ca012f8073a8772260ac70c3ee',
         'src/third_party/mingw-w64/mingw/bin':
             Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
         'src/third_party/nacl_sdk_binaries':
