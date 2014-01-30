@@ -1863,16 +1863,10 @@ class WebViewCaptureTest : public WebViewTest,
   }
 };
 
-#if defined(USE_AURA) && defined(OS_LINUX)
-// Keeps failing on LinuxAura try server, tentatively disable this
-// so that CQ becomes sane.
-// crbug.com/330146
-#define MAYBE_Shim_ScreenshotCapture DISABLED_Shim_ScreenshotCapture
-#else
-#define MAYBE_Shim_ScreenshotCapture Shim_ScreenshotCapture
-#endif
+// <webview> screenshot capture fails with ubercomp.
+// See http://crbug.com/327035.
 IN_PROC_BROWSER_TEST_P(WebViewCaptureTest,
-                       MAYBE_Shim_ScreenshotCapture) {
+                       DISABLED_Shim_ScreenshotCapture) {
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
 
