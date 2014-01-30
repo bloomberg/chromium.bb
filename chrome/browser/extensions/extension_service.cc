@@ -188,6 +188,36 @@ class SharedModuleProvider : public extensions::ManagementPolicy::Provider {
   DISALLOW_COPY_AND_ASSIGN(SharedModuleProvider);
 };
 
+enum VerifyAllSuccess {
+  VERIFY_ALL_BOOTSTRAP_SUCCESS = 0,
+  VERIFY_ALL_BOOTSTRAP_FAILURE,
+  VERIFY_ALL_NON_BOOTSTRAP_SUCCESS,
+  VERIFY_ALL_NON_BOOTSTRAP_FAILURE,
+
+  // Used in histograms. Do not remove/reorder any entries above, and the below
+  // MAX entry should always come last.
+
+  VERIFY_ALL_SUCCESS_MAX
+};
+
+void LogVerifyAllSuccessHistogram(bool bootstrap, bool success) {
+  VerifyAllSuccess result;
+  if (bootstrap && success)
+    result = VERIFY_ALL_BOOTSTRAP_SUCCESS;
+  else if (bootstrap && !success)
+    result = VERIFY_ALL_BOOTSTRAP_FAILURE;
+  else if (!bootstrap && success)
+    result = VERIFY_ALL_NON_BOOTSTRAP_SUCCESS;
+  else
+    result = VERIFY_ALL_NON_BOOTSTRAP_FAILURE;
+
+  UMA_HISTOGRAM_ENUMERATION("ExtensionService.VerifyAllSuccess",
+                            result, VERIFY_ALL_SUCCESS_MAX);
+}
+
+void LogAddVerifiedSuccess(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("ExtensionService.AddVerified", success);
+}
 
 }  // namespace
 
@@ -551,7 +581,7 @@ void ExtensionService::Init() {
     InstallVerifier* verifier =
         extensions::ExtensionSystem::Get(profile_)->install_verifier();
     if (verifier->NeedsBootstrap())
-      VerifyAllExtensions();
+      VerifyAllExtensions(true);  // bootstrap=true.
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
@@ -585,7 +615,7 @@ void ExtensionService::LoadGreylistFromPrefs() {
   }
 }
 
-void ExtensionService::VerifyAllExtensions() {
+void ExtensionService::VerifyAllExtensions(bool bootstrap) {
   ExtensionIdSet to_add;
   scoped_ptr<ExtensionSet> all_extensions = GenerateInstalledExtensionsSet();
 
@@ -598,10 +628,11 @@ void ExtensionService::VerifyAllExtensions() {
   }
   extensions::ExtensionSystem::Get(profile_)->install_verifier()->AddMany(
       to_add, base::Bind(&ExtensionService::FinishVerifyAllExtensions,
-                         AsWeakPtr()));
+                         AsWeakPtr(), bootstrap));
 }
 
-void ExtensionService::FinishVerifyAllExtensions(bool success) {
+void ExtensionService::FinishVerifyAllExtensions(bool bootstrap, bool success) {
+  LogVerifyAllSuccessHistogram(bootstrap, success);
   if (success) {
     // Check to see if any currently unverified extensions became verified.
     InstallVerifier* verifier =
@@ -2216,7 +2247,7 @@ void ExtensionService::AddNewOrUpdatedExtension(
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension)) {
     extensions::ExtensionSystem::Get(profile_)->install_verifier()->Add(
-        extension->id(), InstallVerifier::AddResultCallback());
+        extension->id(), base::Bind(LogAddVerifiedSuccess));
   }
   FinishInstallation(extension);
 }
