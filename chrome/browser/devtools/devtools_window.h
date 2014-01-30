@@ -301,6 +301,7 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void CloseWindow() OVERRIDE;
   virtual void SetContentsInsets(
       int left, int top, int right, int bottom) OVERRIDE;
+  virtual void InspectElementCompleted() OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetIsDocked(bool is_docked) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;
@@ -388,6 +389,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   base::WeakPtrFactory<DevToolsWindow> weak_factory_;
+  base::TimeTicks inspect_element_start_time_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

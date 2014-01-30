@@ -1834,6 +1834,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DevTools.InspectElement" units="milliseconds">
+  <summary>
+    Time to load Developer Tools when user clicks Inspect Element in the context
+    menu.
+  </summary>
+</histogram>
+
 <histogram name="Diagnostics.Recovery.ConflictingDlls" enum="DiagnosticsResult">
   <summary>
     TBD - Not run automatically yet, so this is just a placeholder for future

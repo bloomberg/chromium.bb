@@ -30,6 +30,7 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void CloseWindow() = 0;
     virtual void SetContentsInsets(
         int top, int left, int bottom, int right) = 0;
+    virtual void InspectElementCompleted() = 0;
     virtual void MoveWindow(int x, int y) = 0;
     virtual void SetIsDocked(bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;

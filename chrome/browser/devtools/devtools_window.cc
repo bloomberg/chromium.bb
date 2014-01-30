@@ -10,10 +10,12 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -469,9 +471,13 @@ void DevToolsWindow::InspectElement(content::RenderViewHost* inspected_rvh,
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
   agent->InspectElement(x, y);
+  bool should_measure_time = FindDevToolsWindow(agent.get()) == NULL;
+  base::TimeTicks start_time = base::TimeTicks::Now();
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
-  OpenDevToolsWindow(inspected_rvh);
+  DevToolsWindow* window = OpenDevToolsWindow(inspected_rvh);
+  if (should_measure_time)
+    window->inspect_element_start_time_ = start_time;
 }
 
 // static
@@ -1010,6 +1016,14 @@ void DevToolsWindow::SetContentsInsets(
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
       inspected_window->UpdateDevTools();
+  }
+}
+
+void DevToolsWindow::InspectElementCompleted() {
+  if (!inspect_element_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("DevTools.InspectElement",
+        base::TimeTicks::Now() - inspect_element_start_time_);
+    inspect_element_start_time_ = base::TimeTicks();
   }
 }
 

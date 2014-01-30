@@ -161,6 +161,9 @@ DevToolsEmbedderMessageDispatcher::DevToolsEmbedderMessageDispatcher(
   RegisterHandler("setContentsInsets",
       BindToListParser(base::Bind(&Delegate::SetContentsInsets,
                                   base::Unretained(delegate))));
+  RegisterHandler("inspectElementCompleted",
+        BindToListParser(base::Bind(&Delegate::InspectElementCompleted,
+                                    base::Unretained(delegate))));
   RegisterHandler("moveWindowBy",
       BindToListParser(base::Bind(&Delegate::MoveWindow,
                                   base::Unretained(delegate))));
