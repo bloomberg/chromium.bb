@@ -2,12 +2,11 @@
 <script src="../../../resources/js-test.js"></script>
 <form method="GET" onsubmit="finish(false)">
 <input type="file" oninvalid="finish(true)" required>
-<input type="reset">
 <input type="submit">
 </form>
 <pre id="console"></pre>
 <script>
-description("This tests that a reset file input with a required value doesn't validate.");
+description("This tests that a file input cleared of its (required) value doesn't validate.");
 
 var invalid = false;
 function finish(pass)
@@ -31,8 +30,8 @@ function dragFilesOntoInput(input, files) {
 
 function startTest()
 {
-    dragFilesOntoInput(document.forms[0].querySelector("[type=file]"), ['file-input-reset-validation.html']);
-    document.forms[0].querySelector("[type=reset]").click();
+    dragFilesOntoInput(document.forms[0].querySelector("[type=file]"), ['file-input-empty-validation.html']);
+    document.forms[0].querySelector("[type=file]").value = "";
     document.forms[0].querySelector("[type=submit]").click();
 }
 

@@ -200,10 +200,14 @@ bool FileInputType::getTypeSpecificValue(String& value)
     return true;
 }
 
-void FileInputType::setValue(const String&, bool, TextFieldEventBehavior)
+void FileInputType::setValue(const String&, bool valueChanged, TextFieldEventBehavior)
 {
+    if (!valueChanged)
+        return;
+
     m_fileList->clear();
     element().setNeedsStyleRecalc();
+    element().setNeedsValidityCheck();
 }
 
 PassRefPtr<FileList> FileInputType::createFileList(const Vector<FileChooserFileInfo>& files) const
