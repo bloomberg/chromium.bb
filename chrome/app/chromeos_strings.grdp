@@ -4920,10 +4920,5 @@ All users must sign out to continue.
   <message name="IDS_CHARGER_REPLACEMENT_DIALOG_TITLE" desc="Title of the charger replacement UI dialg">
     Check charger
   </message>
-  <message name="IDS_FLAGS_ENABLE_SYSTEM_SOUNDS_NAME" desc="Name of the flag to enable system sounds independently from ChromeVox.">
-    Enable system sounds
-  </message>
-  <message name="IDS_FLAGS_ENABLE_SYSTEM_SOUNDS_DESCRIPTION" desc="Description of the flag to enable system sounds independently from ChromeVox.">
-    System sounds will be played independently from ChromeVox.
-  </message>
+
 </grit-part>
