@@ -19,6 +19,7 @@
         'bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         'nfc/nfc.gyp:device_nfc',
         'usb/usb.gyp:device_usb',
+        'hid/hid.gyp:device_hid',
       ],
       'sources': [
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
@@ -33,6 +34,8 @@
         'nfc/nfc_chromeos_unittest.cc',
         'nfc/nfc_ndef_record_unittest.cc',
         'usb/usb_ids_unittest.cc',
+        'hid/hid_connection_unittest.cc',
+        'hid/hid_service_unittest.cc',
       ],
       'conditions': [
         ['chromeos==1', {
