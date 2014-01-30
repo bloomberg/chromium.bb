@@ -65,7 +65,7 @@ void EventFactoryEvdev::AttachInputDevice(const base::FilePath& path) {
   }
 
   // TODO(spang) Add more device types. Support hot-plugging.
-  scoped_ptr<EventConverterOzone> converter;
+  scoped_ptr<EventConverterEvdev> converter;
   if (IsTouchScreen(devinfo))
     converter.reset(new TouchEventConverterEvdev(fd, path));
   else if (devinfo.HasEventType(EV_KEY))

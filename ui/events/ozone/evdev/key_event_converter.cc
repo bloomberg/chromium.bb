@@ -11,6 +11,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
+#include "ui/events/ozone/event_factory_ozone.h"
 
 namespace ui {
 

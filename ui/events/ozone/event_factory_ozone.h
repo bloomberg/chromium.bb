@@ -10,9 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/events_export.h"
-#include "ui/events/ozone/event_converter_ozone.h"
 
 namespace ui {
+
+class Event;
 
 // Creates and dispatches |ui.Event|'s. Ozone assumes that events arrive on file
 // descriptors with one  |EventConverterOzone| instance for each descriptor.
@@ -37,6 +38,11 @@ class EVENTS_EXPORT EventFactoryOzone {
 
   // Sets the implementation delegate. Ownership is retained by the caller.
   static void SetInstance(EventFactoryOzone*);
+
+  // Subclasses should use this method to post a task that will dispatch
+  // |event| from the UI message loop. This method takes ownership of
+  // |event|. |event| will be deleted at the end of the posted task.
+  static void DispatchEvent(scoped_ptr<ui::Event> event);
 
  private:
   static EventFactoryOzone* impl_;  // not owned

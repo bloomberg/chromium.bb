@@ -12,14 +12,14 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
-#include "ui/events/ozone/event_converter_ozone.h"
+#include "ui/events/ozone/evdev/event_converter.h"
 
 namespace ui {
 
 class TouchEvent;
 
 class EVENTS_EXPORT TouchEventConverterEvdev
-    : public EventConverterOzone,
+    : public EventConverterEvdev,
       base::MessagePumpLibevent::Watcher {
  public:
   enum {

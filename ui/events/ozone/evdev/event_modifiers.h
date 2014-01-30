@@ -5,8 +5,8 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_H_
 
+#include "base/basictypes.h"
 #include "ui/events/events_export.h"
-#include "ui/events/ozone/event_converter_ozone.h"
 
 namespace ui {
 

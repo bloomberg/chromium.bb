@@ -20,6 +20,7 @@
 #include "base/message_loop/message_pump_ozone.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 
 namespace {

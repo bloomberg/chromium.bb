@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "ui/events/events_export.h"
+#include "ui/events/ozone/evdev/event_converter.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
@@ -26,7 +27,7 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   void AttachInputDevice(const base::FilePath& file_path);
 
   // Owned per-device event converters (by path).
-  std::map<base::FilePath, EventConverterOzone*> converters_;
+  std::map<base::FilePath, EventConverterEvdev*> converters_;
 
   EventModifiersEvdev modifiers_;
 
