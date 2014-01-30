@@ -43,6 +43,14 @@ python_lib_dir = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
 sys.path.insert(0, python_lib_dir)
 import argparse
 
+# Scons tests can check this version number to decide whether to enable tests
+# for toolchain bug fixes or new features.  This allows tests to be enabled on
+# the toolchain buildbots/trybots before the new toolchain version is rolled
+# into TOOL_REVISIONS (i.e. before the tests would pass on the main NaCl
+# buildbots/trybots).  If you are adding a test that depends on a toolchain
+# change, you can increment this version number manually.
+FEATURE_VERSION = 4
+
 # For backward compatibility, these key names match the directory names
 # previously used with gclient
 GIT_REPOS = {
@@ -334,6 +342,21 @@ def HostTools(host):
     tools[H('llvm')]['dependencies'].append('libdl')
   return tools
 
+# TODO(dschuff): The REV file should probably go here rather than in the driver
+# dir
+def Metadata():
+  data = {
+      'metadata': {
+          'type': 'build',
+          'inputs': { 'readme': os.path.join(NACL_DIR, 'pnacl', 'README') },
+          'commands': [
+              command.Copy('%(readme)s', os.path.join('%(output)s', 'README')),
+              command.WriteData(str(FEATURE_VERSION),
+                                os.path.join('%(output)s', 'FEATURE_VERSION')),
+          ],
+      }
+  }
+  return data
 
 def ParseComponentRevisionsFile(filename):
   ''' Parse a simple-format deps file, with fields of the form:
@@ -473,6 +496,7 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
     for arch in ALL_ARCHES:
       packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
+  packages.update(Metadata())
 
   tb = toolchain_main.PackageBuilder(packages,
                                      leftover_args)
