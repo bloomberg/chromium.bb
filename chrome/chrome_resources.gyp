@@ -30,6 +30,13 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+	{
+          'action_name': 'invalidations_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/invalidations_resources.grd',
+            },
+          'includes': ['../build/grit_action.gypi' ],
+        },
         {
           'action_name': 'signin_internals_resources',
           'variables': {

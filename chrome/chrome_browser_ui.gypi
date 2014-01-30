@@ -2371,6 +2371,8 @@
         'browser/ui/webui/inspect_ui.h',
         'browser/ui/webui/instant_ui.cc',
         'browser/ui/webui/instant_ui.h',
+        'browser/ui/webui/invalidations_ui.cc',
+        'browser/ui/webui/invalidations_ui.h',
         'browser/ui/webui/media/webrtc_logs_ui.cc',
         'browser/ui/webui/media/webrtc_logs_ui.h',
         'browser/ui/webui/memory_internals/memory_internals_handler.cc',

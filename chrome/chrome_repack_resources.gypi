@@ -11,6 +11,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
       '<(grit_out_dir)/browser_resources.pak',
       '<(grit_out_dir)/common_resources.pak',
+      '<(grit_out_dir)/invalidations_resources.pak',
       '<(grit_out_dir)/memory_internals_resources.pak',
       '<(grit_out_dir)/net_internals_resources.pak',
       '<(grit_out_dir)/signin_internals_resources.pak',

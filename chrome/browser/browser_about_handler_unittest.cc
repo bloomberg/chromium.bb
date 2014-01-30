@@ -56,6 +56,10 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         GURL(chrome_prefix + chrome::kChromeUISyncInternalsHost)
       },
       {
+        GURL(chrome_prefix + chrome::kChromeUIInvalidationsHost),
+        GURL(chrome_prefix + chrome::kChromeUIInvalidationsHost)
+      },
+      {
         GURL(chrome_prefix + "host/path?query#ref"),
         GURL(chrome_prefix + "host/path?query#ref"),
       }

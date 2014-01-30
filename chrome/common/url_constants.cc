@@ -52,6 +52,7 @@ const char kChromeUIHistoryFrameURL[] = "chrome://history-frame/";
 const char kChromeUIIdentityInternalsURL[] = "chrome://identity-internals/";
 const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInstantURL[] = "chrome://instant/";
+const char kChromeUIInvalidationsURL[] = "chrome://invalidations/";
 const char kChromeUIIPCURL[] = "chrome://ipc/";
 const char kChromeUIManagedUserPassphrasePageURL[] =
     "chrome://managed-user-passphrase/";
@@ -180,6 +181,7 @@ const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIIdentityInternalsHost[] = "identity-internals";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIInstantHost[] = "instant";
+const char kChromeUIInvalidationsHost[] = "invalidations";
 const char kChromeUIIPCHost[] = "ipc";
 const char kChromeUIKillHost[] = "kill";
 const char kChromeUIManagedUserPassphrasePageHost[] = "managed-user-passphrase";
@@ -548,6 +550,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUIFlagsHost,
   kChromeUIHelpHost,
   kChromeUIHistoryHost,
+  kChromeUIInvalidationsHost,
   kChromeUIIPCHost,
   kChromeUIMemoryHost,
   kChromeUIMemoryInternalsHost,

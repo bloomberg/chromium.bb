@@ -121,6 +121,9 @@
   "chrome/browser/resources/signin_internals_resources.grd": {
     "includes": [21750],
   },
+  "chrome/browser/resources/invalidations_resources.grd": {
+    "includes": [21950],
+  },
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {
     "includes": [22000],

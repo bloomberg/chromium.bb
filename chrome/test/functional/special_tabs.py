@@ -50,6 +50,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://flags': {},
     'chrome://flash': {},
     'chrome://gpu-internals': {},
+    'chrome://invalidations': { 'title': 'Invalidations' },
     'chrome://histograms': { 'title': 'About Histograms' },
     'chrome://history': { 'title': 'History' },
     'chrome://inspect': { 'title': 'Inspect with Chrome Developer Tools' },
