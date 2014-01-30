@@ -32,6 +32,7 @@ void GetServiceWorkerRegistrationStatusResponse(
       return;
 
     case SERVICE_WORKER_ERROR_ABORT:
+    case SERVICE_WORKER_ERROR_IPC_FAILED:
     case SERVICE_WORKER_ERROR_FAILED:
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
       // Unexpected, or should bail out before calling this, or we don't

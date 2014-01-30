@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
 
@@ -41,12 +42,12 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   scoped_ptr<EmbeddedWorkerInstance> CreateWorker();
 
   // Called from EmbeddedWorkerInstance, relayed to the child process.
-  bool StartWorker(int process_id,
-                   int embedded_worker_id,
-                   int64 service_worker_version_id,
-                   const GURL& script_url);
-  bool StopWorker(int process_id,
-                  int embedded_worker_id);
+  ServiceWorkerStatusCode StartWorker(int process_id,
+                                      int embedded_worker_id,
+                                      int64 service_worker_version_id,
+                                      const GURL& script_url);
+  ServiceWorkerStatusCode StopWorker(int process_id,
+                                     int embedded_worker_id);
 
   // Called back from EmbeddedWorker in the child process, relayed via
   // ServiceWorkerDispatcherHost.
@@ -70,7 +71,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   typedef std::map<int, IPC::Sender*> ProcessToSenderMap;
 
   ~EmbeddedWorkerRegistry();
-  bool Send(int process_id, IPC::Message* message);
+  ServiceWorkerStatusCode Send(int process_id, IPC::Message* message);
 
   // RemoveWorker is called when EmbeddedWorkerInstance is destructed.
   // |process_id| could be invalid (i.e. -1) if it's not running.

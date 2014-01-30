@@ -15,34 +15,36 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   registry_->RemoveWorker(process_id_, embedded_worker_id_);
 }
 
-bool EmbeddedWorkerInstance::Start(
+ServiceWorkerStatusCode EmbeddedWorkerInstance::Start(
     int64 service_worker_version_id,
     const GURL& script_url) {
   DCHECK(status_ == STOPPED);
   if (!ChooseProcess())
-    return false;
+    return SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND;
   status_ = STARTING;
-  bool success = registry_->StartWorker(
+  ServiceWorkerStatusCode status = registry_->StartWorker(
       process_id_,
       embedded_worker_id_,
       service_worker_version_id,
       script_url);
-  if (!success) {
+  if (status != SERVICE_WORKER_OK) {
     status_ = STOPPED;
     process_id_ = -1;
   }
-  return success;
+  return status;
 }
 
-bool EmbeddedWorkerInstance::Stop() {
+ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   DCHECK(status_ == STARTING || status_ == RUNNING);
-  const bool success = registry_->StopWorker(process_id_, embedded_worker_id_);
-  if (success)
+  ServiceWorkerStatusCode status =
+      registry_->StopWorker(process_id_, embedded_worker_id_);
+  if (status == SERVICE_WORKER_OK)
     status_ = STOPPING;
-  return success;
+  return status;
 }
 
-bool EmbeddedWorkerInstance::SendMessage(const IPC::Message& message) {
+ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
+    const IPC::Message& message) {
   DCHECK(status_ == RUNNING);
   return registry_->Send(process_id_,
                          new EmbeddedWorkerContextMsg_SendMessageToWorker(

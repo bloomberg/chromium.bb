@@ -32,6 +32,10 @@ enum ServiceWorkerStatusCode {
 
   // Activate event handling failed.
   SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED,
+
+  // Sending an IPC to the worker failed (often due to child process is
+  // terminated).
+  SERVICE_WORKER_ERROR_IPC_FAILED,
 };
 
 CONTENT_EXPORT const char* ServiceWorkerStatusToString(

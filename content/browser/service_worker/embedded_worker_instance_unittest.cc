@@ -55,14 +55,16 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   const GURL url("http://example.com/worker.js");
 
   // This fails as we have no available process yet.
-  EXPECT_FALSE(worker->Start(service_worker_version_id, url));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND,
+            worker->Start(service_worker_version_id, url));
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 
   // Simulate adding one process to the worker.
   helper_->SimulateAddProcess(embedded_worker_id, process_id);
 
   // Start should succeed.
-  EXPECT_TRUE(worker->Start(service_worker_version_id, url));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            worker->Start(service_worker_version_id, url));
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
   base::RunLoop().RunUntilIdle();
 
@@ -71,7 +73,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   EXPECT_EQ(process_id, worker->process_id());
 
   // Stop the worker.
-  EXPECT_TRUE(worker->Stop());
+  EXPECT_EQ(SERVICE_WORKER_OK, worker->Stop());
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPING, worker->status());
   base::RunLoop().RunUntilIdle();
 
@@ -101,7 +103,8 @@ TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
   helper_->SimulateAddProcess(embedded_worker_id, 3);
 
   // Process 3 has the biggest # of references and it should be chosen.
-  EXPECT_TRUE(worker->Start(1L, GURL("http://example.com/worker.js")));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            worker->Start(1L, GURL("http://example.com/worker.js")));
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
   EXPECT_EQ(3, worker->process_id());
 

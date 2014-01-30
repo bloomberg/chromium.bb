@@ -130,12 +130,12 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
     return;
   }
   observer_.reset(new StartObserver(this, callback));
-  const bool started = embedded_worker_->Start(
+  ServiceWorkerStatusCode status = embedded_worker_->Start(
       version_id_,
       registration_->script_url());
-  if (!started) {
+  if (status != SERVICE_WORKER_OK) {
     observer_.reset();
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    RunSoon(base::Bind(callback, status));
   }
 }
 
@@ -147,10 +147,10 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
     return;
   }
   observer_.reset(new StopObserver(this, callback));
-  const bool stopped = embedded_worker_->Stop();
-  if (!stopped) {
+  ServiceWorkerStatusCode status = embedded_worker_->Stop();
+  if (status != SERVICE_WORKER_OK) {
     observer_.reset();
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(base::Bind(callback, status));
   }
 }
 
@@ -159,7 +159,7 @@ bool ServiceWorkerVersion::DispatchFetchEvent(
   if (status() != RUNNING)
     return false;
   return embedded_worker_->SendMessage(
-      ServiceWorkerMsg_FetchEvent(request));
+      ServiceWorkerMsg_FetchEvent(request)) == SERVICE_WORKER_OK;
 }
 
 void ServiceWorkerVersion::AddProcessToWorker(int process_id) {

@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 
 class GURL;
 
@@ -50,21 +51,18 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Starts the worker. It is invalid to call this when the worker is
   // not in STOPPED status.
-  // This returns false if starting a worker fails immediately, e.g. when
-  // IPC couldn't be sent to the worker or no process was available.
-  bool Start(int64 service_worker_version_id,
-             const GURL& script_url);
+  ServiceWorkerStatusCode Start(int64 service_worker_version_id,
+                                const GURL& script_url);
 
   // Stops the worker. It is invalid to call this when the worker is
   // not in STARTING or RUNNING status.
   // This returns false if stopping a worker fails immediately, e.g. when
   // IPC couldn't be sent to the worker.
-  bool Stop();
+  ServiceWorkerStatusCode Stop();
 
   // Sends |message| to the embedded worker running in the child process.
-  // This returns false if sending IPC fails.
   // It is invalid to call this while the worker is not in RUNNING status.
-  bool SendMessage(const IPC::Message& message);
+  ServiceWorkerStatusCode SendMessage(const IPC::Message& message);
 
   // Add or remove |process_id| to the internal process set where this
   // worker can be started.

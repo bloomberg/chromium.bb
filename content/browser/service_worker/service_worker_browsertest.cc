@@ -131,14 +131,14 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     const int64 service_worker_version_id = 33L;
     const GURL script_url = embedded_test_server()->GetURL(
         "/service_worker/worker.js");
-    const bool started = worker_->Start(
+    ServiceWorkerStatusCode status = worker_->Start(
         service_worker_version_id, script_url);
 
     last_worker_status_ = worker_->status();
-    EXPECT_TRUE(started);
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
     EXPECT_EQ(EmbeddedWorkerInstance::STARTING, last_worker_status_);
 
-    if (!started && !done_closure_.is_null())
+    if (status != SERVICE_WORKER_OK && !done_closure_.is_null())
       done_closure_.Run();
   }
 
@@ -146,13 +146,13 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker_->status());
 
-    const bool stopped = worker_->Stop();
+    ServiceWorkerStatusCode status = worker_->Stop();
 
     last_worker_status_ = worker_->status();
-    EXPECT_TRUE(stopped);
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
     EXPECT_EQ(EmbeddedWorkerInstance::STOPPING, last_worker_status_);
 
-    if (!stopped && !done_closure_.is_null())
+    if (status != SERVICE_WORKER_OK && !done_closure_.is_null())
       done_closure_.Run();
   }
 

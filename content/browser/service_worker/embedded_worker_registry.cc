@@ -25,7 +25,7 @@ scoped_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
   return worker.Pass();
 }
 
-bool EmbeddedWorkerRegistry::StartWorker(
+ServiceWorkerStatusCode EmbeddedWorkerRegistry::StartWorker(
     int process_id,
     int embedded_worker_id,
     int64 service_worker_version_id,
@@ -36,8 +36,8 @@ bool EmbeddedWorkerRegistry::StartWorker(
                                                script_url));
 }
 
-bool EmbeddedWorkerRegistry::StopWorker(int process_id,
-                                        int embedded_worker_id) {
+ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(
+    int process_id, int embedded_worker_id) {
   return Send(process_id,
               new EmbeddedWorkerMsg_StopWorker(embedded_worker_id));
 }
@@ -107,13 +107,16 @@ EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
 
 EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {}
 
-bool EmbeddedWorkerRegistry::Send(int process_id, IPC::Message* message) {
+ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
+    int process_id, IPC::Message* message) {
   if (!context_)
-    return false;
+    return SERVICE_WORKER_ERROR_ABORT;
   ProcessToSenderMap::iterator found = process_sender_map_.find(process_id);
   if (found == process_sender_map_.end())
-    return false;
-  return found->second->Send(message);
+    return SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND;
+  if (!found->second->Send(message))
+    return SERVICE_WORKER_ERROR_IPC_FAILED;
+  return SERVICE_WORKER_OK;
 }
 
 void EmbeddedWorkerRegistry::RemoveWorker(int process_id,
