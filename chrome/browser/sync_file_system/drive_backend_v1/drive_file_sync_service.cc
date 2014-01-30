@@ -316,7 +316,7 @@ void DriveFileSyncService::ApplyLocalChange(
 void DriveFileSyncService::OnAuthenticated() {
   if (state_ == REMOTE_SERVICE_OK)
     return;
-  util::Log(logging::LOG_INFO, FROM_HERE, "OnAuthenticated");
+  util::Log(logging::LOG_VERBOSE, FROM_HERE, "OnAuthenticated");
 
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
 
@@ -327,7 +327,7 @@ void DriveFileSyncService::OnAuthenticated() {
 void DriveFileSyncService::OnNetworkConnected() {
   if (state_ == REMOTE_SERVICE_OK)
     return;
-  util::Log(logging::LOG_INFO, FROM_HERE, "OnNetworkConnected");
+  util::Log(logging::LOG_VERBOSE, FROM_HERE, "OnNetworkConnected");
 
   UpdateServiceState(REMOTE_SERVICE_OK, "Network connected");
 
@@ -493,7 +493,7 @@ void DriveFileSyncService::UpdateServiceState(RemoteServiceState state,
 
   // Notify remote sync service state if the state has been changed.
   if (old_state != GetCurrentState()) {
-    util::Log(logging::LOG_INFO, FROM_HERE,
+    util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "Service state changed: %d->%d: %s",
               old_state, GetCurrentState(), description.c_str());
     FOR_EACH_OBSERVER(

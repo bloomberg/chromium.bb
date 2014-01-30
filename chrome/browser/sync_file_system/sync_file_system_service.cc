@@ -578,7 +578,7 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
     RemoteServiceState state,
     const std::string& description) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  util::Log(logging::LOG_INFO, FROM_HERE,
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "OnRemoteServiceStateChanged: %d %s", state, description.c_str());
 
   FOR_EACH_OBSERVER(
