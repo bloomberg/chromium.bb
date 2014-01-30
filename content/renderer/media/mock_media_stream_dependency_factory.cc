@@ -136,7 +136,7 @@ bool MockVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
 MockAudioSource::MockAudioSource(
     const webrtc::MediaConstraintsInterface* constraints)
     : observer_(NULL),
-      state_(MediaSourceInterface::kInitializing),
+      state_(MediaSourceInterface::kLive),
       optional_constraints_(constraints->GetOptional()),
       mandatory_constraints_(constraints->GetMandatory()) {
 }
@@ -150,21 +150,6 @@ void MockAudioSource::RegisterObserver(webrtc::ObserverInterface* observer) {
 void MockAudioSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
   DCHECK(observer_ == observer);
   observer_ = NULL;
-}
-
-void MockAudioSource::SetLive() {
-  DCHECK(state_ == MediaSourceInterface::kInitializing ||
-         state_ == MediaSourceInterface::kLive);
-  state_ = MediaSourceInterface::kLive;
-  if (observer_)
-    observer_->OnChanged();
-}
-
-void MockAudioSource::SetEnded() {
-  DCHECK_NE(MediaSourceInterface::kEnded, state_);
-  state_ = MediaSourceInterface::kEnded;
-  if (observer_)
-    observer_->OnChanged();
 }
 
 webrtc::MediaSourceInterface::SourceState MockAudioSource::state() const {
@@ -384,20 +369,10 @@ class MockIceCandidate : public IceCandidateInterface {
 };
 
 MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory()
-    : MediaStreamDependencyFactory(NULL),
-      mock_pc_factory_created_(false) {
+    : MediaStreamDependencyFactory(NULL) {
 }
 
 MockMediaStreamDependencyFactory::~MockMediaStreamDependencyFactory() {}
-
-bool MockMediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
-  mock_pc_factory_created_ = true;
-  return true;
-}
-
-bool MockMediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
-  return mock_pc_factory_created_;
-}
 
 scoped_refptr<webrtc::PeerConnectionInterface>
 MockMediaStreamDependencyFactory::CreatePeerConnection(
@@ -405,7 +380,6 @@ MockMediaStreamDependencyFactory::CreatePeerConnection(
     const webrtc::MediaConstraintsInterface* constraints,
     blink::WebFrame* frame,
     webrtc::PeerConnectionObserver* observer) {
-  DCHECK(mock_pc_factory_created_);
   return new talk_base::RefCountedObject<MockPeerConnectionImpl>(this);
 }
 
@@ -417,13 +391,9 @@ MockMediaStreamDependencyFactory::CreateLocalAudioSource(
   return last_audio_source_;
 }
 
-scoped_refptr<webrtc::VideoSourceInterface>
-MockMediaStreamDependencyFactory::CreateLocalVideoSource(
-    int video_session_id,
-    bool is_screencast,
-    const webrtc::MediaConstraintsInterface* constraints) {
-  last_video_source_ = new talk_base::RefCountedObject<MockVideoSource>();
-  return last_video_source_;
+cricket::VideoCapturer* MockMediaStreamDependencyFactory::CreateVideoCapturer(
+    const StreamDeviceInfo& info) {
+  return NULL;
 }
 
 scoped_refptr<webrtc::VideoSourceInterface>
@@ -445,7 +415,6 @@ MockMediaStreamDependencyFactory::CreateWebAudioSource(
 scoped_refptr<webrtc::MediaStreamInterface>
 MockMediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
-  DCHECK(mock_pc_factory_created_);
   return new talk_base::RefCountedObject<MockMediaStream>(label);
 }
 
@@ -453,7 +422,6 @@ scoped_refptr<webrtc::VideoTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     webrtc::VideoSourceInterface* source) {
-  DCHECK(mock_pc_factory_created_);
   scoped_refptr<webrtc::VideoTrackInterface> track(
       new talk_base::RefCountedObject<MockLocalVideoTrack>(
           id, source));
@@ -464,8 +432,6 @@ scoped_refptr<webrtc::VideoTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     cricket::VideoCapturer* capturer) {
-  DCHECK(mock_pc_factory_created_);
-
   scoped_refptr<MockVideoSource> source =
       new talk_base::RefCountedObject<MockVideoSource>();
   source->SetVideoCapturer(capturer);
@@ -479,7 +445,6 @@ MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
     WebAudioCapturerSource* webaudio_source,
     webrtc::AudioSourceInterface* source) {
-  DCHECK(mock_pc_factory_created_);
   blink::WebMediaConstraints constraints;
   scoped_refptr<WebRtcAudioCapturer> audio_capturer = capturer ?
       capturer : WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),

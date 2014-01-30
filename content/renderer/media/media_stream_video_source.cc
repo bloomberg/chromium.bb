@@ -4,7 +4,9 @@
 
 #include "content/renderer/media/media_stream_video_source.h"
 
+#include "base/logging.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/rtc_media_constraints.h"
 #include "media/base/video_frame.h"
 #include "third_party/libjingle/source/talk/app/webrtc/remotevideocapturer.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
@@ -13,16 +15,50 @@ namespace content {
 
 MediaStreamVideoSource::MediaStreamVideoSource(
     MediaStreamDependencyFactory* factory)
-    : factory_(factory),
+    : initializing_(false),
+      factory_(factory),
       width_(0),
       height_(0),
       first_frame_timestamp_(media::kNoTimestamp()) {
   DCHECK(factory_);
 }
 
+MediaStreamVideoSource::~MediaStreamVideoSource() {
+  if (initializing_) {
+    adapter_->UnregisterObserver(this);
+  }
+}
+
 void MediaStreamVideoSource::AddTrack(
     const blink::WebMediaStreamTrack& track,
-    const blink::WebMediaConstraints& constraints) {
+    const blink::WebMediaConstraints& constraints,
+    const ConstraintsCallback& callback) {
+  if (!adapter_) {
+    // Create the webrtc::MediaStreamVideoSourceInterface adapter.
+    InitAdapter(constraints);
+    DCHECK(adapter_);
+
+    current_constraints_ = constraints;
+    initializing_ = true;
+    // Register to the adapter to get notified when it has been started
+    // successfully.
+    adapter_->RegisterObserver(this);
+  }
+
+  // TODO(perkj): Currently, reconfiguring the source is not supported. For now
+  // we ignore if |constraints| do not match the constraints that was used
+  // when the source was started
+
+  // There might be multiple tracks attaching to the source while it is being
+  // configured.
+  constraints_callbacks_.push_back(callback);
+  TriggerConstraintsCallbackOnStateChange();
+
+  // TODO(perkj): Use the MediaStreamDependencyFactory for now to create the
+  // MediaStreamVideoTrack since creation is currently still depending on
+  // libjingle. The webrtc video track implementation will attach to the
+  // webrtc::VideoSourceInterface returned by GetAdapter() to receive video
+  // frames.
   factory_->CreateNativeMediaStreamTrack(track);
 }
 
@@ -31,12 +67,12 @@ void MediaStreamVideoSource::RemoveTrack(
   // TODO(ronghuawu): What should be done here? Do we really need RemoveTrack?
 }
 
-void MediaStreamVideoSource::Init() {
-  if (!adapter_) {
-    const webrtc::MediaConstraintsInterface* constraints = NULL;
-    adapter_ = factory_->CreateVideoSource(new webrtc::RemoteVideoCapturer(),
-                                           constraints);
-  }
+void MediaStreamVideoSource::InitAdapter(
+    const blink::WebMediaConstraints& constraints) {
+  DCHECK(!adapter_);
+  RTCMediaConstraints webrtc_constraints(constraints);
+  adapter_ = factory_->CreateVideoSource(new webrtc::RemoteVideoCapturer(),
+                                         &webrtc_constraints);
 }
 
 void MediaStreamVideoSource::SetReadyState(
@@ -79,7 +115,29 @@ void MediaStreamVideoSource::DeliverVideoFrame(
   input->RenderFrame(&cricket_frame);
 }
 
-MediaStreamVideoSource::~MediaStreamVideoSource() {
+void MediaStreamVideoSource::OnChanged() {
+  DCHECK(CalledOnValidThread());
+  TriggerConstraintsCallbackOnStateChange();
+}
+
+void MediaStreamVideoSource::TriggerConstraintsCallbackOnStateChange() {
+  if (adapter_->state() == webrtc::MediaSourceInterface::kInitializing)
+    return;
+
+  if (initializing_) {
+    adapter_->UnregisterObserver(this);
+    initializing_ = false;
+  }
+
+  std::vector<ConstraintsCallback> callbacks;
+  callbacks.swap(constraints_callbacks_);
+
+  bool success = (adapter_->state() == webrtc::MediaSourceInterface::kLive);
+  for (std::vector<ConstraintsCallback>::iterator it = callbacks.begin();
+       it != callbacks.end(); ++it) {
+    if (!it->is_null())
+      it->Run(this, success);
+  }
 }
 
 }  // namespace content

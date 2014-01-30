@@ -4,8 +4,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_extra_data.h"
-#include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +16,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
 
 namespace content {
 
@@ -54,7 +54,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
         audio ? static_cast<size_t>(1) : 0);
     blink::WebVector<blink::WebMediaStreamSource> video_sources(
         video ? static_cast<size_t>(1) : 0);
-    MediaStreamSourceExtraData::SourceStopCallback dummy_callback;
+    MediaStreamSource::SourceStoppedCallback dummy_callback;
 
     if (audio) {
       StreamDeviceInfo info;
@@ -65,7 +65,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
                                   blink::WebMediaStreamSource::TypeAudio,
                                   "audio");
       audio_sources[0].setExtraData(
-          new MediaStreamSourceExtraData(info, dummy_callback));
+          new MediaStreamAudioSource());
       audio_sources_.assign(audio_sources);
     }
     if (video) {
@@ -77,7 +77,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
                                   blink::WebMediaStreamSource::TypeVideo,
                                   "video");
       video_sources[0].setExtraData(
-          new MediaStreamSourceExtraData(info, dummy_callback));
+          new MediaStreamVideoSource(dependency_factory_.get()));
       video_sources_.assign(video_sources);
     }
     blink::WebMediaStream stream_desc;
@@ -98,31 +98,6 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     stream_desc.initialize("media stream", audio_track_vector,
                            video_track_vector);
     return stream_desc;
-  }
-
-  void CreateNativeSources(blink::WebMediaStream* descriptor) {
-    static const int kRenderViewId = 1;
-
-    MediaSourceCreatedObserver observer;
-    blink::WebMediaConstraints audio_constraints;
-    dependency_factory_->CreateNativeMediaSources(
-        kRenderViewId,
-        blink::WebMediaConstraints(),
-        blink::WebMediaConstraints(),
-        descriptor,
-        base::Bind(
-            &MediaSourceCreatedObserver::OnCreateNativeSourcesComplete,
-            base::Unretained(&observer)));
-
-    EXPECT_FALSE(observer.result());
-    // Change the state of the created source to live. This should trigger
-    // MediaSourceCreatedObserver::OnCreateNativeSourcesComplete
-    if (dependency_factory_->last_video_source()) {
-      dependency_factory_->last_audio_source()->SetLive();
-      dependency_factory_->last_video_source()->SetLive();
-    }
-    EXPECT_TRUE(observer.result());
-    EXPECT_TRUE(observer.description() == descriptor);
   }
 
   void VerifyMediaStream(const blink::WebMediaStream& stream_desc,
@@ -151,7 +126,6 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
 
 TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
   blink::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
-  CreateNativeSources(&stream_desc);
 
   dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   VerifyMediaStream(stream_desc, 1, 1);
@@ -181,14 +155,12 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
   blink::WebMediaStream stream_desc;
   stream_desc.initialize("new stream", audio_tracks, video_tracks);
 
-  EXPECT_TRUE(dependency_factory_->EnsurePeerConnectionFactory());
   dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   VerifyMediaStream(stream_desc, 0, 0);
 }
 
 TEST_F(MediaStreamDependencyFactoryTest, AddAndRemoveNativeTrack) {
   blink::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
-  CreateNativeSources(&stream_desc);
 
   dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   VerifyMediaStream(stream_desc, 1, 1);

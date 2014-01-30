@@ -12,8 +12,9 @@
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
-#include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_track_extra_data.h"
+#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_identity_service.h"
 #include "content/renderer/media/rtc_media_constraints.h"
@@ -119,82 +120,6 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   blink::WebFrame* web_frame_;
 };
 
-// SourceStateObserver is a help class used for observing the startup state
-// transition of webrtc media sources such as a camera or microphone.
-// An instance of the object deletes itself after use.
-// Usage:
-// 1. Create an instance of the object with the blink::WebMediaStream
-//    the observed sources belongs to a callback.
-// 2. Add the sources to the observer using AddSource.
-// 3. Call StartObserving()
-// 4. The callback will be triggered when all sources have transitioned from
-//    webrtc::MediaSourceInterface::kInitializing.
-class SourceStateObserver : public webrtc::ObserverInterface,
-                            public base::NonThreadSafe {
- public:
-  SourceStateObserver(
-      blink::WebMediaStream* web_stream,
-      const MediaStreamDependencyFactory::MediaSourcesCreatedCallback& callback)
-     : web_stream_(web_stream),
-       ready_callback_(callback),
-       live_(true) {
-  }
-
-  void AddSource(webrtc::MediaSourceInterface* source) {
-    DCHECK(CalledOnValidThread());
-    switch (source->state()) {
-      case webrtc::MediaSourceInterface::kInitializing:
-        sources_.push_back(source);
-        source->RegisterObserver(this);
-        break;
-      case webrtc::MediaSourceInterface::kLive:
-        // The source is already live so we don't need to wait for it.
-        break;
-      case webrtc::MediaSourceInterface::kEnded:
-        // The source have already failed.
-        live_ = false;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void StartObservering() {
-    DCHECK(CalledOnValidThread());
-    CheckIfSourcesAreLive();
-  }
-
-  virtual void OnChanged() OVERRIDE {
-    DCHECK(CalledOnValidThread());
-    CheckIfSourcesAreLive();
-  }
-
- private:
-  void CheckIfSourcesAreLive() {
-    ObservedSources::iterator it = sources_.begin();
-    while (it != sources_.end()) {
-      if ((*it)->state() != webrtc::MediaSourceInterface::kInitializing) {
-        live_ &=  (*it)->state() == webrtc::MediaSourceInterface::kLive;
-        (*it)->UnregisterObserver(this);
-        it = sources_.erase(it);
-      } else {
-        ++it;
-      }
-    }
-    if (sources_.empty()) {
-      ready_callback_.Run(web_stream_, live_);
-      delete this;
-    }
-  }
-
-  blink::WebMediaStream* web_stream_;
-  MediaStreamDependencyFactory::MediaSourcesCreatedCallback ready_callback_;
-  bool live_;
-  typedef std::vector<scoped_refptr<webrtc::MediaSourceInterface> >
-      ObservedSources;
-  ObservedSources sources_;
-};
-
 MediaStreamDependencyFactory::MediaStreamDependencyFactory(
     P2PSocketDispatcher* p2p_socket_dispatcher)
     : network_manager_(NULL),
@@ -219,134 +144,91 @@ MediaStreamDependencyFactory::CreateRTCPeerConnectionHandler(
   // webKitRTCPeerConnection.
   UpdateWebRTCMethodCount(WEBKIT_RTC_PEER_CONNECTION);
 
-  if (!EnsurePeerConnectionFactory())
-    return NULL;
-
   return new RTCPeerConnectionHandler(client, this);
 }
 
-void MediaStreamDependencyFactory::CreateNativeMediaSources(
+bool MediaStreamDependencyFactory::InitializeMediaStreamAudioSource(
     int render_view_id,
     const blink::WebMediaConstraints& audio_constraints,
-    const blink::WebMediaConstraints& video_constraints,
-    blink::WebMediaStream* web_stream,
-    const MediaSourcesCreatedCallback& sources_created) {
-  DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeMediaSources()";
-  if (!EnsurePeerConnectionFactory()) {
-    sources_created.Run(web_stream, false);
-    return;
-  }
-
-  // |source_observer| clean up itself when it has completed
-  // source_observer->StartObservering.
-  SourceStateObserver* source_observer =
-      new SourceStateObserver(web_stream, sources_created);
-
-  // Create local video sources.
-  RTCMediaConstraints native_video_constraints(video_constraints);
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream->videoTracks(video_tracks);
-  for (size_t i = 0; i < video_tracks.size(); ++i) {
-    const blink::WebMediaStreamSource& source = video_tracks[i].source();
-    MediaStreamSourceExtraData* source_data =
-        static_cast<MediaStreamSourceExtraData*>(source.extraData());
-
-    // Check if the source has already been created. This happens when the same
-    // source is used in multiple MediaStreams as a result of calling
-    // getUserMedia.
-    if (source_data->video_source())
-      continue;
-
-    const bool is_screencast =
-        source_data->device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
-        source_data->device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
-    source_data->SetVideoSource(
-        CreateLocalVideoSource(source_data->device_info().session_id,
-                               is_screencast,
-                               &native_video_constraints).get());
-    source_observer->AddSource(source_data->video_source());
-  }
+    MediaStreamAudioSource* source_data) {
+  DVLOG(1) << "InitializeMediaStreamAudioSources()";
 
   // Do additional source initialization if the audio source is a valid
   // microphone or tab audio.
   RTCMediaConstraints native_audio_constraints(audio_constraints);
   ApplyFixedAudioConstraints(&native_audio_constraints);
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream->audioTracks(audio_tracks);
-  for (size_t i = 0; i < audio_tracks.size(); ++i) {
-    const blink::WebMediaStreamSource& source = audio_tracks[i].source();
-    MediaStreamSourceExtraData* source_data =
-        static_cast<MediaStreamSourceExtraData*>(source.extraData());
 
-    // Check if the source has already been created. This happens when the same
-    // source is used in multiple MediaStreams as a result of calling
-    // getUserMedia.
-    if (source_data->local_audio_source())
-      continue;
+  StreamDeviceInfo device_info = source_data->device_info();
+  RTCMediaConstraints constraints = native_audio_constraints;
 
-    // TODO(xians): Create a new capturer for difference microphones when we
-    // support multiple microphones. See issue crbug/262117 .
-    StreamDeviceInfo device_info = source_data->device_info();
-    RTCMediaConstraints constraints = native_audio_constraints;
-
-    // If any platform effects are available, check them against the
-    // constraints. Disable effects to match false constraints, but if a
-    // constraint is true, set the constraint to false to later disable the
-    // software effect.
-    int effects = device_info.device.input.effects;
-    if (effects != media::AudioParameters::NO_EFFECTS) {
-      for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConstraintEffectMap); ++i) {
-        bool value;
-        if (!webrtc::FindConstraint(&constraints,
-                kConstraintEffectMap[i].constraint, &value, NULL) || !value) {
-          // If the constraint is false, or does not exist, disable the platform
-          // effect.
-          effects &= ~kConstraintEffectMap[i].effect;
-          DVLOG(1) << "Disabling constraint: "
-                   << kConstraintEffectMap[i].constraint;
-        } else if (effects & kConstraintEffectMap[i].effect) {
-          // If the constraint is true, leave the platform effect enabled, and
-          // set the constraint to false to later disable the software effect.
-          constraints.AddMandatory(kConstraintEffectMap[i].constraint,
-              webrtc::MediaConstraintsInterface::kValueFalse, true);
-          DVLOG(1) << "Disabling platform effect: "
-                   << kConstraintEffectMap[i].constraint;
-        }
+  // If any platform effects are available, check them against the
+  // constraints. Disable effects to match false constraints, but if a
+  // constraint is true, set the constraint to false to later disable the
+  // software effect.
+  int effects = device_info.device.input.effects;
+  if (effects != media::AudioParameters::NO_EFFECTS) {
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kConstraintEffectMap); ++i) {
+      bool value;
+      if (!webrtc::FindConstraint(&constraints,
+                                  kConstraintEffectMap[i].constraint, &value,
+                                  NULL) || !value) {
+        // If the constraint is false, or does not exist, disable the platform
+        // effect.
+        effects &= ~kConstraintEffectMap[i].effect;
+        DVLOG(1) << "Disabling constraint: "
+            << kConstraintEffectMap[i].constraint;
+      } else if (effects & kConstraintEffectMap[i].effect) {
+        // If the constraint is true, leave the platform effect enabled, and
+        // set the constraint to false to later disable the software effect.
+        constraints.AddMandatory(kConstraintEffectMap[i].constraint,
+                                 webrtc::MediaConstraintsInterface::kValueFalse,
+                                 true);
+        DVLOG(1) << "Disabling platform effect: "
+            << kConstraintEffectMap[i].constraint;
       }
-      device_info.device.input.effects = effects;
     }
-
-    scoped_refptr<WebRtcAudioCapturer> capturer(
-        CreateAudioCapturer(render_view_id, device_info, audio_constraints));
-    if (!capturer.get()) {
-      DLOG(WARNING) << "Failed to create the capturer for device "
-                    << device_info.device.id;
-      sources_created.Run(web_stream, false);
-      // TODO(xians): Don't we need to check if source_observer is observing
-      // something? If not, then it looks like we have a leak here.
-      // OTOH, if it _is_ observing something, then the callback might
-      // be called multiple times which is likely also a bug.
-      return;
-    }
-    source_data->SetAudioCapturer(capturer);
-
-    // Creates a LocalAudioSource object which holds audio options.
-    // TODO(xians): The option should apply to the track instead of the source.
-    source_data->SetLocalAudioSource(
-        CreateLocalAudioSource(&constraints).get());
-    source_observer->AddSource(source_data->local_audio_source());
+    device_info.device.input.effects = effects;
   }
 
-  source_observer->StartObservering();
+  scoped_refptr<WebRtcAudioCapturer> capturer(
+      CreateAudioCapturer(render_view_id, device_info, audio_constraints));
+  if (!capturer.get()) {
+    DLOG(WARNING) << "Failed to create the capturer for device "
+        << device_info.device.id;
+    // TODO(xians): Don't we need to check if source_observer is observing
+    // something? If not, then it looks like we have a leak here.
+    // OTOH, if it _is_ observing something, then the callback might
+    // be called multiple times which is likely also a bug.
+    return false;
+  }
+  source_data->SetAudioCapturer(capturer);
+
+  // Creates a LocalAudioSource object which holds audio options.
+  // TODO(xians): The option should apply to the track instead of the source.
+  // TODO(perkj): Move audio constraints parsing to Chrome.
+  // Currently there are a few constraints that are parsed by libjingle and
+  // the state is set to ended if parsing fails.
+  scoped_refptr<webrtc::AudioSourceInterface> rtc_source(
+      CreateLocalAudioSource(&constraints).get());
+  if (rtc_source->state() != webrtc::MediaSourceInterface::kLive) {
+    DLOG(WARNING) << "Failed to create rtc LocalAudioSource.";
+    return false;
+  }
+  source_data->SetLocalAudioSource(rtc_source);
+  return true;
+}
+
+cricket::VideoCapturer* MediaStreamDependencyFactory::CreateVideoCapturer(
+    const StreamDeviceInfo& info) {
+  bool is_screeencast =
+      info.device.type == MEDIA_TAB_VIDEO_CAPTURE ||
+      info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
+  return new RtcVideoCapturer(info.session_id, is_screeencast);
 }
 
 void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     blink::WebMediaStream* web_stream) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeLocalMediaStream()";
-  if (!EnsurePeerConnectionFactory()) {
-    DVLOG(1) << "EnsurePeerConnectionFactory() failed!";
-    return;
-  }
 
   std::string label = base::UTF16ToUTF8(web_stream->id());
   scoped_refptr<webrtc::MediaStreamInterface> native_stream =
@@ -385,8 +267,8 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
-  MediaStreamSourceExtraData* source_data =
-      static_cast<MediaStreamSourceExtraData*>(source.extraData());
+  MediaStreamAudioSource* source_data =
+      static_cast<MediaStreamAudioSource*>(source.extraData());
 
   // In the future the constraints will belong to the track itself, but
   // right now they're on the source, so we fetch them from there.
@@ -403,7 +285,7 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
       // Create a specific capturer for each WebAudio consumer.
       webaudio_source = CreateWebAudioSource(&source, track_constraints);
       source_data =
-          static_cast<MediaStreamSourceExtraData*>(source.extraData());
+          static_cast<MediaStreamAudioSource*>(source.extraData());
     } else {
       // TODO(perkj): Implement support for sources from
       // remote MediaStreams.
@@ -432,10 +314,12 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
 scoped_refptr<webrtc::VideoTrackInterface>
 MediaStreamDependencyFactory::CreateNativeVideoMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
+  DCHECK(track.extraData() == NULL);
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
-  MediaStreamSourceExtraData* source_data =
-      static_cast<MediaStreamSourceExtraData*>(source.extraData());
+
+  MediaStreamVideoSource* source_data =
+      static_cast<MediaStreamVideoSource*>(source.extraData());
 
   if (!source_data) {
     // TODO(perkj): Implement support for sources from
@@ -444,14 +328,16 @@ MediaStreamDependencyFactory::CreateNativeVideoMediaStreamTrack(
     return NULL;
   }
 
-  std::string track_id = base::UTF16ToUTF8(track.id());
-  scoped_refptr<webrtc::VideoTrackInterface> video_track(
-      CreateLocalVideoTrack(track_id, source_data->video_source()));
-  AddNativeTrackToBlinkTrack(video_track.get(), track, true);
+  // Create native track from the source.
+  scoped_refptr<webrtc::VideoTrackInterface> webrtc_track =
+      CreateLocalVideoTrack(track.id().utf8(), source_data->GetAdapter());
 
-  video_track->set_enabled(track.isEnabled());
+  bool local_track = true;
+  AddNativeTrackToBlinkTrack(webrtc_track, track, local_track);
 
-  return video_track;
+  webrtc_track->set_enabled(track.isEnabled());
+
+  return webrtc_track;
 }
 
 void MediaStreamDependencyFactory::CreateNativeMediaStreamTrack(
@@ -563,14 +449,66 @@ scoped_refptr<webrtc::VideoSourceInterface>
         cricket::VideoCapturer* capturer,
         const webrtc::MediaConstraintsInterface* constraints) {
   scoped_refptr<webrtc::VideoSourceInterface> source =
-      pc_factory_->CreateVideoSource(capturer, constraints).get();
+      GetPcFactory()->CreateVideoSource(capturer, constraints).get();
   return source;
 }
 
-bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
+const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
+MediaStreamDependencyFactory::GetPcFactory() {
+  if (!pc_factory_)
+    CreatePeerConnectionFactory();
+  CHECK(pc_factory_);
+  return pc_factory_;
+}
+
+void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   DCHECK(!pc_factory_.get());
   DCHECK(!audio_device_.get());
+  DCHECK(!signaling_thread_);
+  DCHECK(!worker_thread_);
+  DCHECK(!network_manager_);
+  DCHECK(!socket_factory_);
+  DCHECK(!chrome_worker_thread_.IsRunning());
+
   DVLOG(1) << "MediaStreamDependencyFactory::CreatePeerConnectionFactory()";
+
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
+  jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
+  signaling_thread_ = jingle_glue::JingleThreadWrapper::current();
+  CHECK(signaling_thread_);
+
+  chrome_worker_thread_.Start();
+
+  base::WaitableEvent start_worker_event(true, false);
+  chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &MediaStreamDependencyFactory::InitializeWorkerThread,
+      base::Unretained(this),
+      &worker_thread_,
+      &start_worker_event));
+  start_worker_event.Wait();
+  CHECK(worker_thread_);
+
+  base::WaitableEvent create_network_manager_event(true, false);
+  chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &MediaStreamDependencyFactory::CreateIpcNetworkManagerOnWorkerThread,
+      base::Unretained(this),
+      &create_network_manager_event));
+  create_network_manager_event.Wait();
+
+  socket_factory_.reset(
+      new IpcPacketSocketFactory(p2p_socket_dispatcher_.get()));
+
+  // Init SSL, which will be needed by PeerConnection.
+#if defined(USE_OPENSSL)
+  if (!talk_base::InitializeSSL()) {
+    LOG(ERROR) << "Failed on InitializeSSL.";
+    NOTREACHED();
+    return;
+  }
+#else
+  // TODO(ronghuawu): Replace this call with InitializeSSL.
+  net::EnsureNSSSSLInit();
+#endif
 
   scoped_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
   scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
@@ -604,9 +542,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
                                           audio_device.get(),
                                           encoder_factory.release(),
                                           decoder_factory.release()));
-  if (!factory.get()) {
-    return false;
-  }
+  CHECK(factory);
 
   audio_device_ = audio_device;
   pc_factory_ = factory;
@@ -622,8 +558,6 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     StartAecDump(aec_dump_file_);
     aec_dump_file_ = base::kInvalidPlatformFileValue;
   }
-
-  return true;
 }
 
 bool MediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
@@ -638,6 +572,8 @@ MediaStreamDependencyFactory::CreatePeerConnection(
     webrtc::PeerConnectionObserver* observer) {
   CHECK(web_frame);
   CHECK(observer);
+  if (!GetPcFactory())
+    return NULL;
 
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
         new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
@@ -650,38 +586,24 @@ MediaStreamDependencyFactory::CreatePeerConnection(
       new PeerConnectionIdentityService(
           GURL(web_frame->document().url().spec()).GetOrigin());
 
-  return pc_factory_->CreatePeerConnection(ice_servers,
-                                           constraints,
-                                           pa_factory.get(),
-                                           identity_service,
-                                           observer).get();
+  return GetPcFactory()->CreatePeerConnection(ice_servers,
+                                            constraints,
+                                            pa_factory.get(),
+                                            identity_service,
+                                            observer).get();
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
 MediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
-  return pc_factory_->CreateLocalMediaStream(label).get();
+  return GetPcFactory()->CreateLocalMediaStream(label).get();
 }
 
 scoped_refptr<webrtc::AudioSourceInterface>
 MediaStreamDependencyFactory::CreateLocalAudioSource(
     const webrtc::MediaConstraintsInterface* constraints) {
   scoped_refptr<webrtc::AudioSourceInterface> source =
-      pc_factory_->CreateAudioSource(constraints).get();
-  return source;
-}
-
-scoped_refptr<webrtc::VideoSourceInterface>
-MediaStreamDependencyFactory::CreateLocalVideoSource(
-    int video_session_id,
-    bool is_screencast,
-    const webrtc::MediaConstraintsInterface* constraints) {
-  RtcVideoCapturer* capturer = new RtcVideoCapturer(
-      video_session_id, is_screencast);
-
-  // The video source takes ownership of |capturer|.
-  scoped_refptr<webrtc::VideoSourceInterface> source =
-      CreateVideoSource(capturer, constraints);
+      GetPcFactory()->CreateAudioSource(constraints).get();
   return source;
 }
 
@@ -694,7 +616,7 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
 
   scoped_refptr<WebAudioCapturerSource>
       webaudio_capturer_source(new WebAudioCapturerSource());
-  MediaStreamSourceExtraData* source_data = new MediaStreamSourceExtraData();
+  MediaStreamAudioSource* source_data = new MediaStreamAudioSource();
 
   // Create a LocalAudioSource object which holds audio options.
   // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
@@ -711,7 +633,7 @@ scoped_refptr<webrtc::VideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     webrtc::VideoSourceInterface* source) {
-  return pc_factory_->CreateVideoTrack(id, source).get();
+  return GetPcFactory()->CreateVideoTrack(id, source).get();
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
@@ -727,7 +649,7 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
       CreateVideoSource(capturer, NULL);
 
   // Create native track from the source.
-  return pc_factory_->CreateVideoTrack(id, source.get()).get();
+  return GetPcFactory()->CreateVideoTrack(id, source.get()).get();
 }
 
 scoped_refptr<webrtc::AudioTrackInterface>
@@ -791,68 +713,6 @@ void MediaStreamDependencyFactory::DeleteIpcNetworkManager() {
   DCHECK_EQ(base::MessageLoop::current(), chrome_worker_thread_.message_loop());
   delete network_manager_;
   network_manager_ = NULL;
-}
-
-bool MediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
-  DCHECK(CalledOnValidThread());
-  if (PeerConnectionFactoryCreated())
-    return true;
-
-  if (!signaling_thread_) {
-    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
-    jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
-    signaling_thread_ = jingle_glue::JingleThreadWrapper::current();
-    CHECK(signaling_thread_);
-  }
-
-  if (!worker_thread_) {
-    if (!chrome_worker_thread_.IsRunning()) {
-      if (!chrome_worker_thread_.Start()) {
-        LOG(ERROR) << "Could not start worker thread";
-        signaling_thread_ = NULL;
-        return false;
-      }
-    }
-    base::WaitableEvent event(true, false);
-    chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-        &MediaStreamDependencyFactory::InitializeWorkerThread,
-        base::Unretained(this),
-        &worker_thread_,
-        &event));
-    event.Wait();
-    DCHECK(worker_thread_);
-  }
-
-  if (!network_manager_) {
-    base::WaitableEvent event(true, false);
-    chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-        &MediaStreamDependencyFactory::CreateIpcNetworkManagerOnWorkerThread,
-        base::Unretained(this),
-        &event));
-    event.Wait();
-  }
-
-  if (!socket_factory_) {
-    socket_factory_.reset(
-        new IpcPacketSocketFactory(p2p_socket_dispatcher_.get()));
-  }
-
-  // Init SSL, which will be needed by PeerConnection.
-#if defined(USE_OPENSSL)
-  if (!talk_base::InitializeSSL()) {
-    LOG(ERROR) << "Failed on InitializeSSL.";
-    return false;
-  }
-#else
-  // TODO(ronghuawu): Replace this call with InitializeSSL.
-  net::EnsureNSSSSLInit();
-#endif
-
-  if (!CreatePeerConnectionFactory()) {
-    LOG(ERROR) << "Could not create PeerConnection factory";
-    return false;
-  }
-  return true;
 }
 
 void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
@@ -960,7 +820,7 @@ void MediaStreamDependencyFactory::StartAecDump(
     const base::PlatformFile& aec_dump_file) {
  // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
  // fails, |aec_dump_file| will be closed.
- if (!pc_factory_->StartAecDump(aec_dump_file))
+ if (!GetPcFactory()->StartAecDump(aec_dump_file))
    VLOG(1) << "Could not start AEC dump.";
 }
 

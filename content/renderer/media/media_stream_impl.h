@@ -30,7 +30,7 @@ namespace content {
 class MediaStreamAudioRenderer;
 class MediaStreamDependencyFactory;
 class MediaStreamDispatcher;
-class MediaStreamSourceExtraData;
+class MediaStreamSource;
 class WebRtcAudioRenderer;
 class WebRtcLocalAudioRenderer;
 
@@ -92,18 +92,16 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
 
  protected:
-  void OnLocalSourceStop(const blink::WebMediaStreamSource& source);
+  // Called when |source| has been stopped from JavaScript.
+  void OnLocalSourceStopped(const blink::WebMediaStreamSource& source);
 
+  // Called when a MediaStream with label |label| has been ordered to stop from
+  // JavaScript. The implementation must stop all sources that are not used by
+  // other MediaStreams.
+  // TODO(perkj): MediaStream::Stop has been deprecated from the spec and all
+  // applications should move to use MediaStreamTrack::Stop instead and this
+  // method be removed.
   void OnLocalMediaStreamStop(const std::string& label);
-
-  // Callback function triggered when all native (libjingle) versions of the
-  // underlying media sources have been created and started.
-  // |web_stream| is a raw pointer to the web_stream in
-  // UserMediaRequests::web_stream for which the underlying sources have been
-  // created.
-  void OnCreateNativeSourcesComplete(
-      blink::WebMediaStream* web_stream,
-      bool request_succeeded);
 
   // This function is virtual for test purposes. A test can override this to
   // test requesting local media streams. The function notifies WebKit that the
@@ -118,9 +116,14 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual blink::WebMediaStream GetMediaStream(const GURL& url);
 
  private:
-  // Structure for storing information about a WebKit request to create a
+  // Class for storing information about a WebKit request to create a
   // MediaStream.
-  struct UserMediaRequestInfo {
+  class UserMediaRequestInfo
+      : public base::SupportsWeakPtr<UserMediaRequestInfo> {
+   public:
+    typedef base::Callback<void(UserMediaRequestInfo* request_info,
+                                bool request_succeeded)> ResourcesReady;
+
     UserMediaRequestInfo(int request_id,
                          blink::WebFrame* frame,
                          const blink::WebUserMediaRequest& request,
@@ -134,7 +137,28 @@ class CONTENT_EXPORT MediaStreamImpl
     blink::WebFrame* frame;  // WebFrame that requested the MediaStream.
     blink::WebMediaStream web_stream;
     blink::WebUserMediaRequest request;
-    std::vector<blink::WebMediaStreamSource> sources;
+
+    void StartTrack(const blink::WebMediaStreamTrack& track,
+                    const blink::WebMediaConstraints& constraints);
+
+    // Triggers |callback| when all sources used in this request have either
+    // successfully started, or a source has failed to start.
+    void CallbackOnTracksStarted(const ResourcesReady& callback);
+
+    bool IsSourceUsed(const blink::WebMediaStreamSource& source) const;
+    void RemoveSource(const blink::WebMediaStreamSource& source);
+
+    bool AreAllSourcesRemoved() const { return sources_.empty(); };
+
+   private:
+    void OnTrackStarted(MediaStreamSource* source, bool success);
+    void CheckAllTracksStarted();
+
+    ResourcesReady ready_callback_;
+    bool request_failed_;
+    // Sources used in this request.
+    std::vector<blink::WebMediaStreamSource> sources_;
+    std::vector<MediaStreamSource*> sources_waiting_for_callback_;
   };
   typedef ScopedVector<UserMediaRequestInfo> UserMediaRequests;
 
@@ -152,16 +176,32 @@ class CONTENT_EXPORT MediaStreamImpl
 
   // Creates a WebKit representation of stream sources based on
   // |devices| from the MediaStreamDispatcher.
-  void CreateWebKitSourceVector(
-      const std::string& label,
-      const StreamDeviceInfoArray& devices,
+  void InitializeSourceObject(
+      const StreamDeviceInfo& device,
       blink::WebMediaStreamSource::Type type,
+      const blink::WebMediaConstraints& constraints,
       blink::WebFrame* frame,
-      blink::WebVector<blink::WebMediaStreamSource>& webkit_sources);
+      blink::WebMediaStreamSource* webkit_source);
+
+  void CreateVideoTracks(
+      const StreamDeviceInfoArray& devices,
+      const blink::WebMediaConstraints& constraints,
+      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks,
+      UserMediaRequestInfo* request);
+
+  void CreateAudioTracks(
+      const StreamDeviceInfoArray& devices,
+      const blink::WebMediaConstraints& constraints,
+      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks,
+      UserMediaRequestInfo* request);
+
+  // Callback function triggered when all native versions of the
+  // underlying media sources and tracks have been created and started.
+  void OnCreateNativeTracksCompleted(
+      UserMediaRequestInfo* request,
+      bool request_succeeded);
 
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
-  UserMediaRequestInfo* FindUserMediaRequestInfo(
-      blink::WebMediaStream* web_stream);
   UserMediaRequestInfo* FindUserMediaRequestInfo(
       const blink::WebUserMediaRequest& request);
   UserMediaRequestInfo* FindUserMediaRequestInfo(const std::string& label);
@@ -173,7 +213,7 @@ class CONTENT_EXPORT MediaStreamImpl
       const StreamDeviceInfo& device) const;
 
   // Returns true if |source| exists in |user_media_requests_|
-  bool FindSourceInRequests(const blink::WebMediaStreamSource& source) const;
+  bool IsSourceInRequests(const blink::WebMediaStreamSource& source) const;
 
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);

@@ -53,7 +53,7 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   }
 
   using MediaStreamImpl::OnLocalMediaStreamStop;
-  using MediaStreamImpl::OnLocalSourceStop;
+  using MediaStreamImpl::OnLocalSourceStopped;
 
   const blink::WebMediaStream& last_generated_stream() {
     return last_generated_stream_;
@@ -80,7 +80,6 @@ class MediaStreamImplTest : public ::testing::Test {
     ms_impl_->RequestUserMedia();
     FakeMediaStreamDispatcherComplete();
     ChangeVideoSourceStateToLive();
-    ChangeAudioSourceStateToLive();
 
     EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_SUCCEEDED,
               ms_impl_->request_state());
@@ -113,21 +112,9 @@ class MediaStreamImplTest : public ::testing::Test {
     }
   }
 
-  void ChangeAudioSourceStateToLive() {
-    if (dependency_factory_->last_audio_source() != NULL) {
-      dependency_factory_->last_audio_source()->SetLive();
-    }
-  }
-
   void ChangeVideoSourceStateToEnded() {
     if (dependency_factory_->last_video_source() != NULL) {
       dependency_factory_->last_video_source()->SetEnded();
-    }
-  }
-
-  void ChangeAudioSourceStateToEnded() {
-    if (dependency_factory_->last_audio_source() != NULL) {
-      dependency_factory_->last_audio_source()->SetEnded();
     }
   }
 
@@ -236,14 +223,14 @@ TEST_F(MediaStreamImplTest, StopSource) {
   // Stop the video source.
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   desc1.videoTracks(video_tracks);
-  ms_impl_->OnLocalSourceStop(video_tracks[0].source());
+  ms_impl_->OnLocalSourceStopped(video_tracks[0].source());
   EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 
   // Stop the audio source.
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   desc1.audioTracks(audio_tracks);
-  ms_impl_->OnLocalSourceStop(audio_tracks[0].source());
+  ms_impl_->OnLocalSourceStopped(audio_tracks[0].source());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
@@ -266,7 +253,6 @@ TEST_F(MediaStreamImplTest, MediaSourceFailToStart) {
   ms_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherComplete();
   ChangeVideoSourceStateToEnded();
-  ChangeAudioSourceStateToEnded();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
             ms_impl_->request_state());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
@@ -283,7 +269,6 @@ TEST_F(MediaStreamImplTest, MediaStreamImplShutDown) {
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
   ms_impl_.reset();
-  ChangeAudioSourceStateToLive();
   ChangeVideoSourceStateToLive();
 }
 
@@ -295,7 +280,6 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingStream) {
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(0, ms_dispatcher_->stop_video_device_counter());
-  ChangeAudioSourceStateToLive();
   ChangeVideoSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
@@ -310,7 +294,6 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
-  ChangeAudioSourceStateToLive();
   ChangeVideoSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());

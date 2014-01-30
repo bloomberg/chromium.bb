@@ -14,8 +14,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/remote_media_stream_impl.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
@@ -555,11 +555,11 @@ bool RTCPeerConnectionHandler::addStream(
   stream.audioTracks(audio_tracks);
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
     const blink::WebMediaStreamSource& source = audio_tracks[i].source();
-    MediaStreamSourceExtraData* extra_data =
-        static_cast<MediaStreamSourceExtraData*>(source.extraData());
-    // |extra_data| is NULL if the track is a remote audio track.
-    if (extra_data && extra_data->GetAudioCapturer())
-      extra_data->GetAudioCapturer()->EnablePeerConnectionMode();
+    MediaStreamAudioSource* audio_source =
+        static_cast<MediaStreamAudioSource*>(source.extraData());
+    // |audio_source| is NULL if the track is a remote audio track.
+    if (audio_source && audio_source->GetAudioCapturer())
+      audio_source->GetAudioCapturer()->EnablePeerConnectionMode();
   }
 
   return AddStream(stream, &constraints);

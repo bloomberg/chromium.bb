@@ -60,7 +60,6 @@ class PpFrameWriterTest
 class VideoDestinationHandlerTest : public ::testing::Test {
  public:
   VideoDestinationHandlerTest() : registry_(&factory_) {
-    factory_.EnsurePeerConnectionFactory();
     registry_.Init(kTestStreamUrl);
   }
 

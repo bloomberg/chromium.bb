@@ -44,7 +44,6 @@ class VideoSourceHandlerTest : public ::testing::Test {
  public:
   VideoSourceHandlerTest() : registry_(&dependency_factory_) {
     handler_.reset(new VideoSourceHandler(&registry_));
-    dependency_factory_.EnsurePeerConnectionFactory();
     registry_.Init(kTestStreamUrl);
     registry_.AddVideoTrack(kTestVideoTrackId);
   }

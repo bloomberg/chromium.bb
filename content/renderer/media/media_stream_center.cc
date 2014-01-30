@@ -16,7 +16,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_extra_data.h"
-#include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_track_extra_data.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -80,14 +80,14 @@ bool MediaStreamCenter::didStopMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::didStopMediaStreamTrack";
   blink::WebMediaStreamSource source = track.source();
-  MediaStreamSourceExtraData* extra_data =
-      static_cast<MediaStreamSourceExtraData*>(source.extraData());
+  MediaStreamSource* extra_data =
+      static_cast<MediaStreamSource*>(source.extraData());
   if (!extra_data) {
     DVLOG(1) << "didStopMediaStreamTrack called on a remote track.";
     return false;
   }
 
-  extra_data->OnLocalSourceStop();
+  extra_data->StopSource();
   return true;
 }
 

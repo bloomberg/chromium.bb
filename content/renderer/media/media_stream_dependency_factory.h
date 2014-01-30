@@ -45,6 +45,7 @@ namespace content {
 
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
+class MediaStreamAudioSource;
 class RTCMediaConstraints;
 class WebAudioCapturerSource;
 class WebRtcAudioCapturer;
@@ -70,19 +71,17 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
 
-  // CreateNativeMediaSources creates libjingle representations of
-  // the underlying sources to the tracks in |web_stream|.
-  // |sources_created| is invoked when the sources have either been created and
-  // transitioned to a live state or failed.
-  // The libjingle sources is stored in the extra data field of
-  // WebMediaStreamSource.
-  // |audio_constraints| and |video_constraints| set parameters for the sources.
-  void CreateNativeMediaSources(
+  // InitializeMediaStreamAudioSource initialize a MediaStream source object
+  // for audio input.
+  bool InitializeMediaStreamAudioSource(
       int render_view_id,
       const blink::WebMediaConstraints& audio_constraints,
-      const blink::WebMediaConstraints& video_constraints,
-      blink::WebMediaStream* web_stream,
-      const MediaSourcesCreatedCallback& sources_created);
+      MediaStreamAudioSource* source_data);
+
+  // Creates an implementation of a cricket::VideoCapturer object that can be
+  // used when creating a libjingle webrtc::VideoSourceInterface object.
+  virtual cricket::VideoCapturer* CreateVideoCapturer(
+      const StreamDeviceInfo& info);
 
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |web_stream|.
@@ -168,13 +167,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       CreateLocalAudioSource(
           const webrtc::MediaConstraintsInterface* constraints);
 
-  // Asks the PeerConnection factory to create a Local Video Source.
-  virtual scoped_refptr<webrtc::VideoSourceInterface>
-      CreateLocalVideoSource(
-          int video_session_id,
-          bool is_screen_cast,
-          const webrtc::MediaConstraintsInterface* constraints);
-
   // Creates a media::AudioCapturerSource with an implementation that is
   // specific for a WebAudio source. The created WebAudioCapturerSource
   // instance will function as audio source instead of the default
@@ -204,7 +196,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       CreateLocalVideoTrack(const std::string& id,
                             cricket::VideoCapturer* capturer);
 
-  virtual bool EnsurePeerConnectionFactory();
+  virtual const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
+      GetPcFactory();
   virtual bool PeerConnectionFactoryCreated();
 
   // Returns a new capturer or existing capturer based on the |render_view_id|
@@ -215,9 +208,9 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       const blink::WebMediaConstraints& constraints);
 
  private:
-  // Creates and deletes |pc_factory_|, which in turn is used for
+  // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
-  bool CreatePeerConnectionFactory();
+  void CreatePeerConnectionFactory();
 
   void InitializeWorkerThread(talk_base::Thread** thread,
                               base::WaitableEvent* event);

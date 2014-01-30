@@ -16,13 +16,9 @@ class DummyMediaStreamVideoSource : public MediaStreamVideoSource {
  public:
   DummyMediaStreamVideoSource(MediaStreamDependencyFactory* factory)
       : MediaStreamVideoSource(factory) {
-    Init();
-    SetVideoSource(GetAdapter());
-    SetReadyState(blink::WebMediaStreamSource::ReadyStateLive);
   }
 
   virtual ~DummyMediaStreamVideoSource() {
-    SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
   }
 
   void OnNewFrame(const scoped_refptr<media::VideoFrame>& frame) {
@@ -33,8 +29,9 @@ class DummyMediaStreamVideoSource : public MediaStreamVideoSource {
 class MediaStreamVideoSourceTest
     : public ::testing::Test {
  public:
-  MediaStreamVideoSourceTest() {
-    factory_.EnsurePeerConnectionFactory();
+  MediaStreamVideoSourceTest()
+      : number_of_successful_constraints_applied_(0),
+        number_of_failed_constraints_applied_(0) {
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
                               base::UTF8ToUTF16("dummy_source_name"));
@@ -43,10 +40,31 @@ class MediaStreamVideoSourceTest
 
  protected:
   // Create a track that's associated with |webkit_source_|.
-  blink::WebMediaStreamTrack CreateTrack(const std::string& id) {
+  blink::WebMediaStreamTrack CreateTrack(
+      const std::string& id,
+      const blink::WebMediaConstraints& constraints) {
     blink::WebMediaStreamTrack track;
     track.initialize(base::UTF8ToUTF16(id), webkit_source_);
+
+    DummyMediaStreamVideoSource* source =
+        static_cast<DummyMediaStreamVideoSource*>(track.source().extraData());
+
+    source->AddTrack(track,
+                     constraints,
+                     base::Bind(
+                         &MediaStreamVideoSourceTest::OnConstraintsApplied,
+                         base::Unretained(this)));
     return track;
+  }
+
+  // Simulate that the underlying device start successfully.
+  void StartSource() {
+    factory_.last_video_source()->SetLive();
+  }
+
+  // Simulate that the underlying device fail to start.
+  void FailToStartSource() {
+    factory_.last_video_source()->SetEnded();
   }
 
   void VerifyFrame(int width, int height, int num) {
@@ -58,17 +76,69 @@ class MediaStreamVideoSourceTest
     EXPECT_EQ(height, adapter->GetLastFrameHeight());
     EXPECT_EQ(num, adapter->GetFrameNum());
   }
+
+  int NumberOfSuccessConstraintsCallbacks() const {
+    return number_of_successful_constraints_applied_;
+  }
+
+  int NumberOfFailedConstraintsCallbacks() const {
+    return number_of_failed_constraints_applied_;
+  }
+
  private:
+  void OnConstraintsApplied(MediaStreamSource* source, bool success) {
+    ASSERT_EQ(source, webkit_source_.extraData());
+
+    if (success)
+      ++number_of_successful_constraints_applied_;
+    else
+      ++number_of_failed_constraints_applied_;
+  }
+
+  int number_of_successful_constraints_applied_;
+  int number_of_failed_constraints_applied_;
   MockMediaStreamDependencyFactory factory_;
   blink::WebMediaStreamSource webkit_source_;
 };
 
+TEST_F(MediaStreamVideoSourceTest, AddTrackAndStartAdapter) {
+  blink::WebMediaConstraints constraints;
+  blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
+  StartSource();
+  EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
+}
+
+TEST_F(MediaStreamVideoSourceTest, AddTwoTracksBeforeAdapterStart) {
+  blink::WebMediaConstraints constraints;
+  blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
+  blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
+  EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
+  StartSource();
+  EXPECT_EQ(2, NumberOfSuccessConstraintsCallbacks());
+}
+
+TEST_F(MediaStreamVideoSourceTest, AddTrackAfterAdapterStart) {
+  blink::WebMediaConstraints constraints;
+  blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
+  StartSource();
+  EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
+  blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
+  EXPECT_EQ(2, NumberOfSuccessConstraintsCallbacks());
+}
+
+TEST_F(MediaStreamVideoSourceTest, AddTrackAndFailToStartAdapter) {
+  blink::WebMediaConstraints constraints;
+  blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
+  FailToStartSource();
+  EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
+}
+
 TEST_F(MediaStreamVideoSourceTest, DeliverVideoFrame) {
   blink::WebMediaConstraints constraints;
-  blink::WebMediaStreamTrack track = CreateTrack("123");
+  blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
+  StartSource();
   DummyMediaStreamVideoSource* source =
       static_cast<DummyMediaStreamVideoSource*>(track.source().extraData());
-  source->AddTrack(track, constraints);
   VerifyFrame(0, 0, 0);
   const int kWidth = 640;
   const int kHeight = 480;
