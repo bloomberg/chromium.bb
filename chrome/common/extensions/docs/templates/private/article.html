@@ -9,7 +9,10 @@
        platformTitle:platformTitle}}
 <article class="article-content">
   <div itemprop="articleBody">
-    {{+article platform:platform platformTitle:platformTitle /}}
+
+{{- This is unindented because it may contain whitespace-sensitive tags. -}}
+{{+article platform:platform platformTitle:platformTitle /}}
+    
     {{+partials.cc /}}
     <nav class="inline-toc no-permalink">
       {{+partials.relatedpages_items items:sidenavs.related /}}
