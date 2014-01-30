@@ -11,12 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
-#if defined(USE_DEFAULT_RENDER_THEME)
-#include "content/shell/renderer/test_runner/WebTestThemeEngineMock.h"
-#elif defined(WIN32)
-#include "content/shell/renderer/test_runner/WebTestThemeEngineWin.h"
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
 #include "content/shell/renderer/test_runner/WebTestThemeEngineMac.h"
+#else
+#include "content/shell/renderer/test_runner/WebTestThemeEngineMock.h"
 #endif
 
 namespace blink {
@@ -70,12 +68,10 @@ private:
     WebTestProxyBase* m_proxy;
 
     std::vector<WebTestProxyBase*> m_windowList;
-#if defined(USE_DEFAULT_RENDER_THEME)
-    scoped_ptr<WebTestThemeEngineMock> m_themeEngine;
-#elif defined(WIN32)
-    scoped_ptr<WebTestThemeEngineWin> m_themeEngine;
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
     scoped_ptr<WebTestThemeEngineMac> m_themeEngine;
+#else
+    scoped_ptr<WebTestThemeEngineMock> m_themeEngine;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(TestInterfaces);

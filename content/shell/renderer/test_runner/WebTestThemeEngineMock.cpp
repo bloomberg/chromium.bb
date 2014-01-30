@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// FIXME: This code is largely cloned from WebTestThemeEngineWin.cpp
-// and WebTestThemeControlWin.cpp. We should delete that code once the
-// cutover to Aura is final.
-
 #include "content/shell/renderer/test_runner/WebTestThemeEngineMock.h"
 
 #include "skia/ext/platform_canvas.h"
