@@ -86,9 +86,15 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(block);
 #endif
+    ASSERT(m_clusterStack.isEmpty() == block->isRenderView());
 
-    if (block->isRenderView())
+    if (block->isRenderView()) {
         prepareRenderViewInfo(toRenderView(block));
+    } else if (block == currentCluster()->m_root) {
+        // Ignore beginLayout on the same block twice.
+        // This can happen with paginated overflow.
+        return;
+    }
 
     if (Cluster* cluster = maybeGetOrCreateCluster(block))
         m_clusterStack.append(cluster);
@@ -104,16 +110,10 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(listItem);
 #endif
-
-    Cluster* cluster = currentCluster();
-    // FIXME: Why is this check needed?
-    if (!cluster)
-        return;
-
     // Force the LI to be inside the DBCAT when computing the multiplier.
     // This guarantees that the DBCAT has entered layout, so we can ask for its width.
     // It also makes sense because the list marker is autosized like a text node.
-    float multiplier = clusterMultiplier(cluster);
+    float multiplier = clusterMultiplier(currentCluster());
 
     applyMultiplier(listItem, multiplier);
     applyMultiplier(listItemMarker, multiplier);
@@ -124,20 +124,19 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
     if (!enabled())
         return;
 #ifndef NDEBUG
-    m_blocksThatHaveBegunLayout.remove(block);
+    if (block->isRenderView())
+        m_blocksThatHaveBegunLayout.clear();
 #endif
 
-    Cluster* cluster = currentCluster();
-    if (cluster && cluster->m_root == block)
+    if (currentCluster()->m_root == block)
         m_clusterStack.removeLast();
+
+    ASSERT(m_clusterStack.isEmpty() == block->isRenderView());
 }
 
 void FastTextAutosizer::inflate(RenderBlock* block)
 {
     Cluster* cluster = currentCluster();
-    if (!cluster)
-        return;
-
     float multiplier = 0;
     for (RenderObject* descendant = nextChildSkippingChildrenOfBlocks(block, block); descendant; descendant = nextChildSkippingChildrenOfBlocks(descendant, block)) {
         if (descendant->isText()) {
@@ -248,7 +247,8 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeGetOrCreateCluster(const Ren
     if (!TextAutosizer::isAutosizingContainer(block))
         return 0;
 
-    Cluster* parentCluster = currentCluster();
+    Cluster* parentCluster = m_clusterStack.isEmpty() ? 0 : currentCluster();
+    ASSERT(parentCluster || block->isRenderView());
 
     // Create clusters to suppress / unsuppress autosizing based on containerShouldBeAutosized.
     bool containerCanAutosize = TextAutosizer::containerShouldBeAutosized(block);
@@ -462,7 +462,8 @@ bool FastTextAutosizer::isNarrowerDescendant(Cluster* cluster)
 
 FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const
 {
-    return !m_clusterStack.isEmpty() ? m_clusterStack.last() : 0;
+    ASSERT(!m_clusterStack.isEmpty());
+    return m_clusterStack.last();
 }
 
 void FastTextAutosizer::FingerprintMapper::add(const RenderBlock* block, AtomicString fingerprint)

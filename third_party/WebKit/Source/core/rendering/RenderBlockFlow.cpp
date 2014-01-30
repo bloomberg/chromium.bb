@@ -354,9 +354,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     else
         layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope, beforeEdge, afterEdge);
 
-    if (textAutosizer)
-        textAutosizer->endLayout(this);
-
     if (frameView()->partialLayout().isStopping()) {
         statePusher.pop();
         return true;
@@ -455,6 +452,9 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         else
             repaintOverflow();
     }
+
+    if (textAutosizer)
+        textAutosizer->endLayout(this);
 
     clearNeedsLayout();
     return true;
