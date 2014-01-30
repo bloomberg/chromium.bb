@@ -7,10 +7,10 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/child/web_discardable_memory_impl.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
-#include "webkit/child/web_discardable_memory_impl.h"
 #include "webkit/child/webthread_impl.h"
 #include "webkit/child/worker_task_runner.h"
 
@@ -138,8 +138,7 @@ WebKitPlatformSupportChildImpl::allocateAndLockDiscardableMemory(size_t bytes) {
       base::DiscardableMemory::GetPreferredType();
   if (type == base::DISCARDABLE_MEMORY_TYPE_EMULATED)
     return NULL;
-  return webkit_glue::WebDiscardableMemoryImpl::CreateLockedMemory(
-      bytes).release();
+  return content::WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
 }
 
 // static

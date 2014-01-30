@@ -1,26 +1,24 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
-#define WEBKIT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
+#ifndef CONTENT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
+#define CONTENT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
-#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebDiscardableMemory;
 }
 
-namespace webkit_glue {
+namespace content {
 
 // Implementation of WebDiscardableMemory that is responsible for allocating
 // discardable memory.
-class WEBKIT_CHILD_EXPORT WebDiscardableMemoryImpl
-    : NON_EXPORTED_BASE(public blink::WebDiscardableMemory) {
+class WebDiscardableMemoryImpl : public blink::WebDiscardableMemory {
  public:
   virtual ~WebDiscardableMemoryImpl();
 
@@ -39,6 +37,6 @@ class WEBKIT_CHILD_EXPORT WebDiscardableMemoryImpl
   DISALLOW_COPY_AND_ASSIGN(WebDiscardableMemoryImpl);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
+#endif  // CONTENT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_

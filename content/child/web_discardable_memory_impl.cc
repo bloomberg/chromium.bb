@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/web_discardable_memory_impl.h"
+#include "content/child/web_discardable_memory_impl.h"
 
-namespace webkit_glue {
+namespace content {
 
 WebDiscardableMemoryImpl::~WebDiscardableMemoryImpl() {}
 
@@ -45,4 +45,4 @@ WebDiscardableMemoryImpl::WebDiscardableMemoryImpl(
     : discardable_(memory.Pass()) {
 }
 
-}  // namespace webkit_glue
+}  // namespace content

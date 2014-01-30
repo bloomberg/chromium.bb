@@ -68,8 +68,6 @@
         'resource_loader_bridge.h',
         'touch_fling_gesture_curve.cc',
         'touch_fling_gesture_curve.h',
-        'web_discardable_memory_impl.cc',
-        'web_discardable_memory_impl.h',
         'webfallbackthemeengine_impl.cc',
         'webfallbackthemeengine_impl.h',
         'webkit_child_export.h',

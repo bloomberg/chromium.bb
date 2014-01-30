@@ -145,6 +145,8 @@
     'child/thread_safe_sender.h',
     'child/web_database_observer_impl.cc',
     'child/web_database_observer_impl.h',
+    'child/web_discardable_memory_impl.cc',
+    'child/web_discardable_memory_impl.h',
     'child/webblobregistry_impl.cc',
     'child/webblobregistry_impl.h',
     'child/webkitplatformsupport_impl.cc',
