@@ -224,11 +224,18 @@ TEST(Convolver, MAYBE_SIMDVerification) {
     {2,1}, {2,2}, {2,3}, {2,4}, {2,5},
     {3,1}, {3,2}, {3,3}, {3,4}, {3,5},
     {4,1}, {4,2}, {4,3}, {4,4}, {4,5},
+#ifdef NDEBUG
     {1920, 1080},
     {720, 480},
     {1377, 523},
-    {325, 241} };
+#endif
+    {325, 241}
+};
+#ifdef NDEBUG
   int dest_sizes[][2] = { {1280, 1024}, {480, 270}, {177, 123} };
+#else
+  int dest_sizes[][2] = { {128, 102}, {48, 27}, {17, 13} };
+#endif
   float filter[] = { 0.05f, -0.15f, 0.6f, 0.6f, -0.15f, 0.05f };
 
   srand(static_cast<unsigned int>(time(0)));
