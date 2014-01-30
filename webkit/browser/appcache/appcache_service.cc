@@ -425,7 +425,6 @@ void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
   delete this;
 }
 
-
 // AppCacheStorageReference ------
 
 AppCacheStorageReference::AppCacheStorageReference(
@@ -439,8 +438,7 @@ AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
     : appcache_policy_(NULL), quota_client_(NULL), handler_factory_(NULL),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(NULL),
-      force_keep_session_state_(false),
-      was_reinitialized_(false) {
+      force_keep_session_state_(false) {
   if (quota_manager_proxy_.get()) {
     quota_client_ = new AppCacheQuotaClient(this);
     quota_manager_proxy_->RegisterClient(quota_client_);
@@ -473,13 +471,36 @@ void AppCacheService::Initialize(const base::FilePath& cache_directory,
   storage_.reset(storage);
 }
 
-void AppCacheService::Reinitialize() {
-  AppCacheHistograms::CountReinitAttempt(was_reinitialized_);
-
-  // To avoid thrashing, we only do this once.
-  if (was_reinitialized_)
+void AppCacheService::ScheduleReinitialize() {
+  if (reinit_timer_.IsRunning())
     return;
-  was_reinitialized_ = true;
+
+  // Reinitialization only happens when corruption has been noticed.
+  // We don't want to thrash the disk but we also don't want to
+  // leave the appcache disabled for an indefinite period of time. Some
+  // users never shutdown the browser.
+
+  const base::TimeDelta kZeroDelta;
+  const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
+  const base::TimeDelta k30Seconds(base::TimeDelta::FromSeconds(30));
+
+  // If the system managed to stay up for long enough, reset the
+  // delay so a new failure won't incur a long wait to get going again.
+  base::TimeDelta up_time = base::Time::Now() - last_reinit_time_;
+  if (next_reinit_delay_ != kZeroDelta && up_time > kOneHour)
+    next_reinit_delay_ = kZeroDelta;
+
+  reinit_timer_.Start(FROM_HERE, next_reinit_delay_,
+                      this, &AppCacheService::Reinitialize);
+
+  // Adjust the delay for next time.
+  base::TimeDelta increment = std::max(k30Seconds, next_reinit_delay_);
+  next_reinit_delay_ = std::min(next_reinit_delay_ + increment,  kOneHour);
+}
+
+void AppCacheService::Reinitialize() {
+  AppCacheHistograms::CountReinitAttempt(!last_reinit_time_.is_null());
+  last_reinit_time_ = base::Time::Now();
 
   // Inform observers of about this and give them a chance to
   // defer deletion of the old storage object.

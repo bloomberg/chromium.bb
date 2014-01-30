@@ -75,6 +75,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDiskCache
 
   class ActiveCall;
   typedef std::set<ActiveCall*> ActiveCalls;
+  typedef std::set<EntryImpl*> OpenEntries;
 
   bool is_initializing() const {
     return create_backend_callback_.get() != NULL;
@@ -86,12 +87,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDiskCache
   void OnCreateBackendComplete(int rv);
   void AddActiveCall(ActiveCall* call) { active_calls_.insert(call); }
   void RemoveActiveCall(ActiveCall* call) { active_calls_.erase(call); }
+  void AddOpenEntry(EntryImpl* entry) { open_entries_.insert(entry); }
+  void RemoveOpenEntry(EntryImpl* entry) { open_entries_.erase(entry); }
 
   bool is_disabled_;
   net::CompletionCallback init_callback_;
   scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;
   PendingCalls pending_calls_;
   ActiveCalls active_calls_;
+  OpenEntries open_entries_;
   scoped_ptr<disk_cache::Backend> disk_cache_;
 };
 
