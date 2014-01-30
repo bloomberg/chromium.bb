@@ -752,6 +752,60 @@ class IsolateCommand(IsolateBase):
     out.saved_state.relative_cwd = u''
     return out
 
+  def test_CMDarchive(self):
+    actual = []
+    self.mock(
+        isolate.isolateserver, 'upload_tree',
+        lambda **kwargs: actual.append(kwargs))
+
+    isolate_file = os.path.join(self.cwd, 'x.isolate')
+    isolated_file = os.path.join(self.cwd, 'x.isolated')
+    with open(isolate_file, 'wb') as f:
+      f.write(
+          '# Foo\n'
+          '{'
+          '  \'conditions\':['
+          '    [\'OS=="dendy"\', {'
+          '      \'variables\': {'
+          '        \'isolate_dependency_tracked\': [\'foo\'],'
+          '      },'
+          '    }],'
+          '  ],'
+          '}')
+    with open(os.path.join(self.cwd, 'foo'), 'wb') as f:
+      f.write('fooo')
+
+    self.mock(sys, 'stdout', cStringIO.StringIO())
+    cmd = [
+        '-i', isolate_file,
+        '-s', isolated_file,
+        '--isolate-server', 'http://localhost:1',
+        '--config-variable', 'OS', 'dendy',
+    ]
+    self.assertEqual(0, isolate.CMDarchive(isolate.OptionParserIsolate(), cmd))
+    expected = [
+        {
+          'base_url': 'http://localhost:1',
+          'indir': self.cwd,
+          'infiles': {
+            isolated_file: {
+              'priority': '0',
+            },
+            u'foo': {
+              'h': '520d41b29f891bbaccf31d9fcfa72e82ea20fcf0',
+              's': 4,
+            },
+          },
+          'namespace': 'default-gzip',
+        },
+    ]
+    # These always change.
+    actual[0]['infiles'][isolated_file].pop('h')
+    actual[0]['infiles'][isolated_file].pop('s')
+    actual[0]['infiles']['foo'].pop('m')
+    actual[0]['infiles']['foo'].pop('t')
+    self.assertEqual(expected, actual)
+
   def test_CMDcheck_empty(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     isolated_file = os.path.join(self.cwd, 'x.isolated')
@@ -959,12 +1013,16 @@ class IsolateCommand(IsolateBase):
     cmd = [
       'run',
       '--isolate', 'blah.isolate',
-      '--outdir', os.path.join(self.cwd, 'jumbo'),
       '--', 'extra_args',
     ]
     self.mock(isolate, 'load_complete_state', self.load_complete_state)
     self.mock(isolate.subprocess, 'call', lambda *_, **_kwargs: 0)
     self.assertEqual(0, isolate.CMDrun(isolate.OptionParserIsolate(), cmd))
+
+
+def clear_env_vars():
+  for e in ('ISOLATE_DEBUG', 'ISOLATE_SERVER'):
+    os.environ.pop(e, None)
 
 
 if __name__ == '__main__':
@@ -973,4 +1031,5 @@ if __name__ == '__main__':
       format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
+  clear_env_vars()
   unittest.main()

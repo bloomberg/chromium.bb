@@ -38,7 +38,7 @@ from utils import file_path
 from utils import tools
 
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 
 class ExecutionError(Exception):
@@ -981,19 +981,6 @@ def merge(complete_state, trace_blacklist):
         exceptions[0][2]
 
 
-def get_remap_dir(root_dir, isolated, outdir):
-  """If necessary, creates a directory aside the root directory."""
-  if outdir:
-    if not os.path.isdir(outdir):
-      os.makedirs(outdir)
-    return outdir
-
-  if not os.path.isabs(root_dir):
-    root_dir = os.path.join(os.path.dirname(isolated), root_dir)
-  return run_isolated.make_temp_dir(
-      'isolate-%s' % datetime.date.today(), root_dir)
-
-
 def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
   """Creates a isolated tree usable for test execution.
 
@@ -1024,16 +1011,40 @@ def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
   return cwd
 
 
+def prepare_for_archival(options, cwd):
+  """Loads the isolated file and create 'infiles' for archival."""
+  complete_state = load_complete_state(
+      options, cwd, options.subdir, False)
+  # Make sure that complete_state isn't modified until save_files() is
+  # called, because any changes made to it here will propagate to the files
+  # created (which is probably not intended).
+  complete_state.save_files()
+
+  infiles = complete_state.saved_state.files
+  # Add all the .isolated files.
+  isolated_hash = []
+  isolated_files = [
+    options.isolated,
+  ] + complete_state.saved_state.child_isolated_files
+  for item in isolated_files:
+    item_path = os.path.join(
+        os.path.dirname(complete_state.isolated_filepath), item)
+    # Do not use isolateserver.hash_file() here because the file is
+    # likely smallish (under 500kb) and its file size is needed.
+    with open(item_path, 'rb') as f:
+      content = f.read()
+    isolated_hash.append(
+        complete_state.saved_state.algo(content).hexdigest())
+    isolated_metadata = {
+      'h': isolated_hash[-1],
+      's': len(content),
+      'priority': '0'
+    }
+    infiles[item_path] = isolated_metadata
+  return complete_state, infiles, isolated_hash
+
+
 ### Commands.
-
-
-def add_subdir_flag(parser):
-  parser.add_option(
-      '--subdir',
-      help='Filters to a subdirectory. Its behavior changes depending if it '
-           'is a relative path as a string or as a path variable. Path '
-           'variables are always keyed from the directory containing the '
-           '.isolate file. Anything else is keyed on the root directory.')
 
 
 def CMDarchive(parser, args):
@@ -1042,63 +1053,33 @@ def CMDarchive(parser, args):
   All the files listed in the .isolated file are put in the isolate server
   cache via isolateserver.py.
   """
-  add_subdir_flag(parser)
+  add_subdir_option(parser)
+  parser.add_option(
+      '-I', '--isolate-server', metavar='URL',
+      default=os.environ.get('ISOLATE_SERVER', ''),
+      help='URL of the isolate server')
+  parser.add_option(
+      '--namespace', metavar='NAME', default='default-gzip',
+      help='Namespace to use on the isolate server')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-
+  if not options.isolate_server:
+    parser.error('--isolate-server is required.')
+  cwd = os.getcwd()
   with tools.Profiler('GenerateHashtable'):
     success = False
     try:
-      complete_state = load_complete_state(
-          options, os.getcwd(), options.subdir, False)
-      if not options.outdir:
-        options.outdir = os.path.join(
-            os.path.dirname(complete_state.isolated_filepath), 'hashtable')
-      # Make sure that complete_state isn't modified until save_files() is
-      # called, because any changes made to it here will propagate to the files
-      # created (which is probably not intended).
-      complete_state.save_files()
-
-      infiles = complete_state.saved_state.files
-      # Add all the .isolated files.
-      isolated_hash = []
-      isolated_files = [
-        options.isolated,
-      ] + complete_state.saved_state.child_isolated_files
-      for item in isolated_files:
-        item_path = os.path.join(
-            os.path.dirname(complete_state.isolated_filepath), item)
-        # Do not use isolateserver.hash_file() here because the file is
-        # likely smallish (under 500kb) and its file size is needed.
-        with open(item_path, 'rb') as f:
-          content = f.read()
-        isolated_hash.append(
-            complete_state.saved_state.algo(content).hexdigest())
-        isolated_metadata = {
-          'h': isolated_hash[-1],
-          's': len(content),
-          'priority': '0'
-        }
-        infiles[item_path] = isolated_metadata
-
+      complete_state, infiles, isolated_hash = prepare_for_archival(
+          options, cwd)
       logging.info('Creating content addressed object store with %d item',
                    len(infiles))
 
-      if file_path.is_url(options.outdir):
-        isolateserver.upload_tree(
-            base_url=options.outdir,
-            indir=complete_state.root_dir,
-            infiles=infiles,
-            namespace='default-gzip')
-      else:
-        recreate_tree(
-            outdir=options.outdir,
-            indir=complete_state.root_dir,
-            infiles=infiles,
-            action=run_isolated.HARDLINK_WITH_FALLBACK,
-            as_hash=True)
-        # TODO(maruel): Make the files read-only?
+      isolateserver.upload_tree(
+          base_url=options.isolate_server,
+          indir=complete_state.root_dir,
+          infiles=infiles,
+          namespace=options.namespace)
       success = True
       print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
     finally:
@@ -1106,12 +1087,12 @@ def CMDarchive(parser, args):
       # important so no stale swarm job is executed.
       if not success and os.path.isfile(options.isolated):
         os.remove(options.isolated)
-  return not success
+  return int(not success)
 
 
 def CMDcheck(parser, args):
   """Checks that all the inputs are present and generates .isolated."""
-  add_subdir_flag(parser)
+  add_subdir_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
@@ -1124,13 +1105,49 @@ def CMDcheck(parser, args):
   return 0
 
 
-CMDhashtable = CMDarchive
+def CMDhashtable(parser, args):
+  """Creates a .isolated file and stores the contains in a directory.
+
+  All the files listed in the .isolated file are put in the directory with their
+  sha-1 as their file name. When using an NFS/CIFS server, the files can then be
+  shared accross slaves without an isolate server.
+  """
+  add_subdir_option(parser)
+  add_outdir_option(parser)
+  add_skip_refresh_option(parser)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+  cwd = os.getcwd()
+  process_outdir(parser, options, cwd)
+
+  success = False
+  try:
+    complete_state, infiles, isolated_hash = prepare_for_archival(options, cwd)
+    logging.info('Creating content addressed object store with %d item',
+                  len(infiles))
+    if not os.path.isdir(options.outdir):
+      os.makedirs(options.outdir)
+
+    # TODO(maruel): Make the files read-only?
+    recreate_tree(
+        outdir=options.outdir,
+        indir=complete_state.root_dir,
+        infiles=infiles,
+        action=run_isolated.HARDLINK_WITH_FALLBACK,
+        as_hash=True)
+    success = True
+    print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
+  finally:
+    # If the command failed, delete the .isolated file if it exists. This is
+    # important so no stale swarm job is executed.
+    if not success and os.path.isfile(options.isolated):
+      os.remove(options.isolated)
+  return int(not success)
 
 
 def CMDmerge(parser, args):
   """Reads and merges the data from the trace back into the original .isolate.
-
-  Ignores --outdir.
   """
   parser.require_isolated = False
   add_trace_option(parser)
@@ -1145,16 +1162,10 @@ def CMDmerge(parser, args):
 
 
 def CMDread(parser, args):
-  """Reads the trace file generated with command 'trace'.
-
-  Ignores --outdir.
-  """
+  """Reads the trace file generated with command 'trace'."""
   parser.require_isolated = False
   add_trace_option(parser)
-  parser.add_option(
-      '--skip-refresh', action='store_true',
-      help='Skip reading .isolate file and do not refresh the hash of '
-           'dependencies')
+  add_skip_refresh_option(parser)
   parser.add_option(
       '-m', '--merge', action='store_true',
       help='merge the results back in the .isolate file instead of printing')
@@ -1187,28 +1198,23 @@ def CMDremap(parser, args):
   run.
   """
   parser.require_isolated = False
-  parser.add_option(
-      '--skip-refresh', action='store_true',
-      help='Skip reading .isolate file and do not refresh the hash of '
-           'dependencies')
+  add_outdir_option(parser)
+  add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  if options.outdir and file_path.is_url(options.outdir):
-    parser.error('Can\'t use url for --outdir with mode remap.')
+  cwd = os.getcwd()
+  process_outdir(parser, options, cwd)
+  complete_state = load_complete_state(options, cwd, None, options.skip_refresh)
 
-  complete_state = load_complete_state(
-      options, os.getcwd(), None, options.skip_refresh)
-
-  outdir = get_remap_dir(
-      complete_state.root_dir, options.isolated, options.outdir)
-
-  print('Remapping into %s' % outdir)
-  if len(os.listdir(outdir)):
+  if not os.path.isdir(options.outdir):
+    os.makedirs(options.outdir)
+  print('Remapping into %s' % options.outdir)
+  if os.listdir(options.outdir):
     raise ExecutionError('Can\'t remap in a non-empty directory')
 
   create_isolate_tree(
-      outdir, complete_state.root_dir, complete_state.saved_state.files,
+      options.outdir, complete_state.root_dir, complete_state.saved_state.files,
       complete_state.saved_state.relative_cwd,
       complete_state.saved_state.read_only)
   if complete_state.isolated_filepath:
@@ -1250,21 +1256,15 @@ def CMDrun(parser, args):
   """Runs the test executable in an isolated (temporary) directory.
 
   All the dependencies are mapped into the temporary directory and the
-  directory is cleaned up after the target exits. Warning: if --outdir is
-  specified, it is deleted upon exit.
+  directory is cleaned up after the target exits.
 
   Argument processing stops at -- and these arguments are appended to the
   command line of the target to run. For example, use:
     isolate.py run --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
   parser.require_isolated = False
-  parser.add_option(
-      '--skip-refresh', action='store_true',
-      help='Skip reading .isolate file and do not refresh the hash of '
-           'dependencies')
+  add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
-  if options.outdir and file_path.is_url(options.outdir):
-    parser.error('Can\'t use url for --outdir with mode run.')
 
   complete_state = load_complete_state(
       options, os.getcwd(), None, options.skip_refresh)
@@ -1273,9 +1273,10 @@ def CMDrun(parser, args):
     raise ExecutionError('No command to run.')
   cmd = tools.fix_python_path(cmd)
 
+  outdir = run_isolated.make_temp_dir(
+      'isolate-%s' % datetime.date.today(),
+      os.path.dirname(complete_state.root_dir))
   try:
-    outdir = get_remap_dir(
-        complete_state.root_dir, options.isolated, options.outdir)
     # TODO(maruel): Use run_isolated.run_tha_test().
     cwd = create_isolate_tree(
         outdir, complete_state.root_dir, complete_state.saved_state.files,
@@ -1284,8 +1285,7 @@ def CMDrun(parser, args):
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     result = subprocess.call(cmd, cwd=cwd)
   finally:
-    if options.outdir:
-      run_isolated.rmtree(options.outdir)
+    run_isolated.rmtree(outdir)
 
   if complete_state.isolated_filepath:
     complete_state.save_files()
@@ -1309,10 +1309,7 @@ def CMDtrace(parser, args):
   parser.add_option(
       '-m', '--merge', action='store_true',
       help='After tracing, merge the results back in the .isolate file')
-  parser.add_option(
-      '--skip-refresh', action='store_true',
-      help='Skip reading .isolate file and do not refresh the hash of '
-           'dependencies')
+  add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
 
   complete_state = load_complete_state(
@@ -1429,6 +1426,15 @@ def add_variable_option(parser):
            'paths in the .isolate file but are not considered relative paths.')
 
 
+def add_subdir_option(parser):
+  parser.add_option(
+      '--subdir',
+      help='Filters to a subdirectory. Its behavior changes depending if it '
+           'is a relative path as a string or as a path variable. Path '
+           'variables are always keyed from the directory containing the '
+           '.isolate file. Anything else is keyed on the root directory.')
+
+
 def add_trace_option(parser):
   """Adds --trace-blacklist to the parser."""
   parser.add_option(
@@ -1437,6 +1443,31 @@ def add_trace_option(parser):
       help='List of regexp to use as blacklist filter for files to consider '
            'important, not to be confused with --blacklist which blacklists '
            'test case.')
+
+
+def add_outdir_option(parser):
+  parser.add_option(
+      '-o', '--outdir', metavar='DIR',
+      help='Directory used to recreate the tree.')
+
+
+def add_skip_refresh_option(parser):
+  parser.add_option(
+      '--skip-refresh', action='store_true',
+      help='Skip reading .isolate file and do not refresh the hash of '
+           'dependencies')
+
+def process_outdir(parser, options, cwd):
+  if not options.outdir:
+    parser.error('--outdir is required.')
+  if file_path.is_url(options.outdir):
+    parser.error('Can\'t use an URL for --outdir with mode remap.')
+  options.outdir = unicode(options.outdir).replace('/', os.path.sep)
+  # outdir doesn't need native path case since tracing is never done from there.
+  options.outdir = os.path.abspath(
+      os.path.normpath(os.path.join(cwd, options.outdir)))
+  # In theory, we'd create the directory outdir right away. Defer doing it in
+  # case there's errors in the command line.
 
 
 def parse_isolated_option(parser, options, cwd, require_isolated):
@@ -1485,11 +1516,6 @@ class OptionParserIsolate(tools.OptionParserWithLogging):
         help='.isolate file to load the dependency data from')
     add_variable_option(group)
     group.add_option(
-        '-o', '--outdir', metavar='DIR',
-        help='Directory used to recreate the tree or store the hash table. '
-             'Defaults: run|remap: a /tmp subdirectory, others: '
-             'defaults to the directory containing --isolated')
-    group.add_option(
         '--ignore_broken_items', action='store_true',
         default=bool(os.environ.get('ISOLATE_IGNORE_BROKEN_ITEMS')),
         help='Indicates that invalid entries in the isolated file to be '
@@ -1517,12 +1543,6 @@ class OptionParserIsolate(tools.OptionParserWithLogging):
       options.isolate = unicode(options.isolate).replace('/', os.path.sep)
       options.isolate = os.path.normpath(os.path.join(cwd, options.isolate))
       options.isolate = file_path.get_native_path_case(options.isolate)
-
-    if options.outdir and not file_path.is_url(options.outdir):
-      options.outdir = unicode(options.outdir).replace('/', os.path.sep)
-      # outdir doesn't need native path case since tracing is never done from
-      # there.
-      options.outdir = os.path.normpath(os.path.join(cwd, options.outdir))
 
     return options, args
 

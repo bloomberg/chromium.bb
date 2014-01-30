@@ -33,19 +33,6 @@ ALGO = hashlib.sha1
 HASH_NULL = ALGO().hexdigest()
 
 
-# Keep the list hard coded.
-EXPECTED_MODES = (
-  'archive',
-  'check',
-  'help',
-  'merge',
-  'read',
-  'remap',
-  'rewrite',
-  'run',
-  'trace',
-)
-
 # These are per test case, not per mode.
 RELATIVE_CWD = {
   'all_items_invalid': '.',
@@ -144,60 +131,80 @@ def list_files_tree(directory):
   return sorted(actual)
 
 
-class IsolateBase(unittest.TestCase):
+def _isolate_dict_to_string(values):
+  buf = cStringIO.StringIO()
+  isolate.isolate_format.pretty_print(values, buf)
+  return buf.getvalue()
+
+
+def _wrap_in_condition(variables):
+  """Wraps a variables dict inside the current OS condition.
+
+  Returns the equivalent string.
+  """
+  flavor = isolate.get_flavor()
+  chromeos_value = int(flavor == 'linux')
+  return _isolate_dict_to_string(
+      {
+        'conditions': [
+          ['OS=="%s" and chromeos==%d' % (flavor, chromeos_value), {
+            'variables': variables
+          }],
+        ],
+      })
+
+
+def _fix_file_mode(filename, read_only):
+  """4 modes are supported, 0750 (rwx), 0640 (rw), 0550 (rx), 0440 (r)."""
+  min_mode = 0440
+  if not read_only:
+    min_mode |= 0200
+  return (min_mode | 0110) if filename.endswith('.py') else min_mode
+
+
+class Isolate(unittest.TestCase):
+  def test_help_modes(self):
+    # Check coherency in the help and implemented modes.
+    p = subprocess.Popen(
+        [sys.executable, os.path.join(ROOT_DIR, 'isolate.py'), '--help'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=ROOT_DIR)
+    out = p.communicate()[0].splitlines()
+    self.assertEqual(0, p.returncode)
+    out = out[out.index('Commands are:') + 1:]
+    out = out[:out.index('')]
+    regexp = '^  (?:\x1b\\[\\d\\dm|)(\\w+)\s*(:?\x1b\\[\\d\\dm|) .+'
+    modes = [re.match(regexp, l) for l in out]
+    modes = [m.group(1) for m in modes if m]
+    EXPECTED_MODES = (
+        'archive',
+        'check',
+        'hashtable',
+        'help',
+        'merge',
+        'read',
+        'remap',
+        'rewrite',
+        'run',
+        'trace',
+    )
+    # If a new command is added it should at least has a bare test.
+    self.assertEqual(sorted(EXPECTED_MODES), sorted(modes))
+
+
+class IsolateTempdir(unittest.TestCase):
   def setUp(self):
-    # The tests assume the current directory is the file's directory.
-    os.chdir(ROOT_DIR)
+    super(IsolateTempdir, self).setUp()
     self.tempdir = tempfile.mkdtemp(prefix='isolate_smoke_')
     self.isolated = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
-    self.outdir = os.path.join(self.tempdir, 'isolated')
 
   def tearDown(self):
-    logging.debug(self.tempdir)
-    shutil.rmtree(self.tempdir)
-
-  @staticmethod
-  def _isolate_dict_to_string(values):
-    buf = cStringIO.StringIO()
-    isolate.isolate_format.pretty_print(values, buf)
-    return buf.getvalue()
-
-  @classmethod
-  def _wrap_in_condition(cls, variables):
-    """Wraps a variables dict inside the current OS condition.
-
-    Returns the equivalent string.
-    """
-    flavor = isolate.get_flavor()
-    chromeos_value = int(flavor == 'linux')
-    return cls._isolate_dict_to_string(
-        {
-          'conditions': [
-            ['OS=="%s" and chromeos==%d' % (flavor, chromeos_value), {
-              'variables': variables
-            }],
-          ],
-        })
-
-
-class IsolateModeBase(IsolateBase):
-  def _expect_no_tree(self):
-    self.assertFalse(os.path.exists(self.outdir))
-
-  def _result_tree(self):
-    return list_files_tree(self.outdir)
-
-  def _expected_tree(self):
-    """Verifies the files written in the temporary directory."""
-    self.assertEqual(sorted(DEPENDENCIES[self.case()]), self._result_tree())
-
-  @staticmethod
-  def _fix_file_mode(filename, read_only):
-    """4 modes are supported, 0750 (rwx), 0640 (rw), 0550 (rx), 0440 (r)."""
-    min_mode = 0440
-    if not read_only:
-      min_mode |= 0200
-    return (min_mode | 0110) if filename.endswith('.py') else min_mode
+    try:
+      logging.debug(self.tempdir)
+      shutil.rmtree(self.tempdir)
+    finally:
+      super(IsolateTempdir, self).tearDown()
 
   def _gen_files(self, read_only, empty_file, with_time):
     """Returns a dict of files like calling isolate.process_input() on each
@@ -221,7 +228,7 @@ class IsolateModeBase(IsolateBase):
       if not is_link:
         v[u's'] = filestats.st_size
         if isolate.get_flavor() != 'win':
-          v[u'm'] = self._fix_file_mode(relfile, read_only)
+          v[u'm'] = _fix_file_mode(relfile, read_only)
       if with_time:
         # Used to skip recalculating the hash. Use the most recent update
         # time.
@@ -298,6 +305,14 @@ class IsolateModeBase(IsolateBase):
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.isolated))
 
+  def _get_cmd(self, mode):
+    return [
+      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+      mode,
+      '--isolated', self.isolated,
+      '--isolate', self.filename(),
+    ]
+
   def _execute(self, mode, case, args, need_output, cwd=ROOT_DIR):
     """Executes isolate.py."""
     self.assertEqual(
@@ -305,14 +320,8 @@ class IsolateModeBase(IsolateBase):
         self.case() + '.isolate',
         'Rename the test case to test_%s()' % case)
     chromeos_value = int(isolate.get_flavor() == 'linux')
-    cmd = [
-      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
-      mode,
-      '--isolated', self.isolated,
-      '--outdir', self.outdir,
-      '--isolate', self.filename(),
-      '--config-variable', 'chromeos', str(chromeos_value),
-    ]
+    cmd = self._get_cmd(mode)
+    cmd.extend(('--config-variable', 'chromeos', str(chromeos_value)))
     cmd.extend(args)
 
     env = os.environ.copy()
@@ -359,6 +368,13 @@ class IsolateModeBase(IsolateBase):
   def saved_state(self):
     return isolate.isolatedfile_to_state(self.isolated)
 
+  def _test_all_items_invalid(self, mode):
+    out = self._execute(mode, 'all_items_invalid.isolate',
+                        ['--ignore_broken_item'], True)
+    self._expect_results(['empty.py'], None, None, None)
+
+    return out or ''
+
   def _test_missing_trailing_slash(self, mode):
     try:
       self._execute(mode, 'missing_trailing_slash.isolate', [], True)
@@ -366,7 +382,6 @@ class IsolateModeBase(IsolateBase):
     except subprocess.CalledProcessError as e:
       self.assertEqual('', e.output)
       out = e.stderr
-    self._expect_no_tree()
     self._expect_no_result()
     root = file_path.get_native_path_case(unicode(ROOT_DIR))
     expected = (
@@ -382,7 +397,6 @@ class IsolateModeBase(IsolateBase):
     except subprocess.CalledProcessError as e:
       self.assertEqual('', e.output)
       out = e.stderr
-    self._expect_no_tree()
     self._expect_no_result()
     root = file_path.get_native_path_case(unicode(ROOT_DIR))
     expected = (
@@ -391,78 +405,43 @@ class IsolateModeBase(IsolateBase):
     )
     self.assertIn(expected, out)
 
-  def _test_all_items_invalid(self, mode):
-    out = self._execute(mode, 'all_items_invalid.isolate',
-                        ['--ignore_broken_item'], True)
-    self._expect_results(['empty.py'], None, None, None)
 
-    return out or ''
+class IsolateOutdir(IsolateTempdir):
+  def setUp(self):
+    super(IsolateOutdir, self).setUp()
+    # The tests assume the current directory is the file's directory.
+    os.chdir(ROOT_DIR)
+    self.outdir = os.path.join(self.tempdir, 'isolated')
 
+  def _expect_no_tree(self):
+    # No outdir was created.
+    self.assertFalse(os.path.exists(self.outdir))
 
-class Isolate(unittest.TestCase):
-  # Does not inherit from the other *Base classes.
-  def test_help_modes(self):
-    # Check coherency in the help and implemented modes.
-    p = subprocess.Popen(
-        [sys.executable, os.path.join(ROOT_DIR, 'isolate.py'), '--help'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        cwd=ROOT_DIR)
-    out = p.communicate()[0].splitlines()
-    self.assertEqual(0, p.returncode)
-    out = out[out.index('Commands are:') + 1:]
-    out = out[:out.index('')]
-    regexp = '^  (?:\x1b\\[\\d\\dm|)(\\w+)\s*(:?\x1b\\[\\d\\dm|) .+'
-    modes = [re.match(regexp, l) for l in out]
-    modes = [m.group(1) for m in modes if m]
-    self.assertEqual(sorted(EXPECTED_MODES), sorted(modes))
+  def _result_tree(self):
+    return list_files_tree(self.outdir)
 
-  def test_modes(self):
-    # This is a bit redundant but make sure all combinations are tested.
-    files = sorted(
-      i[:-len('.isolate')]
-      for i in os.listdir(os.path.join(ROOT_DIR, 'tests', 'isolate'))
-      if i.endswith('.isolate')
-    )
-    files.remove('simple')
-    self.assertEqual(sorted(RELATIVE_CWD), files)
-    self.assertEqual(sorted(DEPENDENCIES), files)
+  def _expected_tree(self):
+    """Verifies the files written in the temporary directory."""
+    self.assertEqual(sorted(DEPENDENCIES[self.case()]), self._result_tree())
 
-    if sys.platform == 'win32':
-      # Symlink stuff is unsupported there, remove them from the list.
-      files = [f for f in files if not f.startswith('symlink_')]
+  def _get_cmd(self, mode):
+    """Adds --outdir for the commands supporting it."""
+    cmd = super(IsolateOutdir, self)._get_cmd(mode)
+    cmd.extend(('--outdir', self.outdir))
+    return cmd
 
-    files.remove('split')
-    # TODO(csharp): touch_only is disabled until crbug.com/150823 is fixed.
-    files.remove('touch_only')
+  def _test_missing_trailing_slash(self, mode):
+    super(IsolateOutdir, self)._test_missing_trailing_slash(mode)
+    self._expect_no_tree()
 
-    # modes read and trace are tested together.
-    modes_to_check = list(EXPECTED_MODES)
-    # Tested with test_help_modes.
-    modes_to_check.remove('help')
-    # Tested with trace_read_merge.
-    modes_to_check.remove('merge')
-    # Tested with trace_read_merge.
-    modes_to_check.remove('read')
-    # Tested in isolate_test.py.
-    modes_to_check.remove('rewrite')
-    # Tested with trace_read_merge.
-    modes_to_check.remove('trace')
-    modes_to_check.append('trace_read_merge')
-    for mode in modes_to_check:
-      expected_cases = set('test_%s' % f for f in files)
-      fixture_name = 'Isolate_%s' % mode
-      fixture = getattr(sys.modules[__name__], fixture_name)
-      actual_cases = set(i for i in dir(fixture) if i.startswith('test_'))
-      actual_cases.discard('split')
-      missing = expected_cases - actual_cases
-      self.assertFalse(missing, '%s.%s' % (fixture_name, missing))
+  def _test_non_existent(self, mode):
+    super(IsolateOutdir, self)._test_non_existent(mode)
+    self._expect_no_tree()
 
 
-class Isolate_check(IsolateModeBase):
+class Isolate_check(IsolateTempdir):
   def test_fail(self):
     self._execute('check', 'fail.isolate', [], False)
-    self._expect_no_tree()
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
@@ -474,11 +453,9 @@ class Isolate_check(IsolateModeBase):
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('check')
     self.assertEqual('', out)
-    self._expect_no_tree()
 
   def test_no_run(self):
     self._execute('check', 'no_run.isolate', [], False)
-    self._expect_no_tree()
     self._expect_results([], None, None, None)
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
@@ -486,41 +463,35 @@ class Isolate_check(IsolateModeBase):
     self._execute(
         'check', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
-    self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
 
   def test_touch_root(self):
     self._execute('check', 'touch_root.isolate', [], False)
-    self._expect_no_tree()
     self._expect_results(['touch_root.py'], None, None, None)
 
   def test_with_flag(self):
     self._execute(
         'check', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
-    self._expect_no_tree()
     self._expect_results(
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
       self._execute('check', 'symlink_full.isolate', [], False)
-      self._expect_no_tree()
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
       self._execute('check', 'symlink_partial.isolate', [], False)
-      self._expect_no_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
 
     def test_symlink_outside_build_root(self):
       self._execute('check', 'symlink_outside_build_root.isolate', [], False)
-      self._expect_no_tree()
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
-class Isolate_archive(IsolateModeBase):
+class Isolate_hashtable(IsolateOutdir):
   def _gen_expected_tree(self, empty_file):
     expected = [
       unicode(v['h'])
@@ -537,18 +508,18 @@ class Isolate_archive(IsolateModeBase):
         map(unicode, self._result_tree()))
 
   def test_fail(self):
-    self._execute('archive', 'fail.isolate', [], False)
+    self._execute('hashtable', 'fail.isolate', [], False)
     self._expected_hash_tree(None)
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
-    self._test_missing_trailing_slash('archive')
+    self._test_missing_trailing_slash('hashtable')
 
   def test_non_existent(self):
-    self._test_non_existent('archive')
+    self._test_non_existent('hashtable')
 
   def test_all_items_invalid(self):
-    out = self._test_all_items_invalid('archive')
+    out = self._test_all_items_invalid('hashtable')
     expected = (
         '%s  isolate_smoke_test.isolated\n' %
         isolateserver.hash_file(self.isolated, ALGO))
@@ -556,13 +527,13 @@ class Isolate_archive(IsolateModeBase):
     self._expected_hash_tree(None)
 
   def test_no_run(self):
-    self._execute('archive', 'no_run.isolate', [], False)
+    self._execute('hashtable', 'no_run.isolate', [], False)
     self._expected_hash_tree(None)
     self._expect_results([], None, None, None)
 
   def test_split(self):
     self._execute(
-        'archive',
+        'hashtable',
         'split.isolate',
         [
           '--path-variable', 'DEPTH', '.',
@@ -616,20 +587,20 @@ class Isolate_archive(IsolateModeBase):
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
   def do_not_test_touch_only(self):
     self._execute(
-        'archive', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
+        'hashtable', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     empty = os.path.join('files1', 'test_file1.txt')
     self._expected_hash_tree(empty)
     self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
 
   def test_touch_root(self):
-    self._execute('archive', 'touch_root.isolate', [], False)
+    self._execute('hashtable', 'touch_root.isolate', [], False)
     self._expected_hash_tree(None)
     self._expect_results(['touch_root.py'], None, None, None)
 
   def test_with_flag(self):
     self._execute(
-        'archive', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
+        'hashtable', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'],
         False)
     self._expected_hash_tree(None)
     self._expect_results(
@@ -637,7 +608,7 @@ class Isolate_archive(IsolateModeBase):
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
-      self._execute('archive', 'symlink_full.isolate', [], False)
+      self._execute('hashtable', 'symlink_full.isolate', [], False)
       # Construct our own tree.
       expected = [
         str(v['h'])
@@ -648,7 +619,7 @@ class Isolate_archive(IsolateModeBase):
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
-      self._execute('archive', 'symlink_partial.isolate', [], False)
+      self._execute('hashtable', 'symlink_partial.isolate', [], False)
       # Construct our own tree.
       expected = [
         str(v['h'])
@@ -660,7 +631,7 @@ class Isolate_archive(IsolateModeBase):
 
     def test_symlink_outside_build_root(self):
       self._execute(
-          'archive', 'symlink_outside_build_root.isolate', [], False)
+          'hashtable', 'symlink_outside_build_root.isolate', [], False)
       # Construct our own tree.
       expected = [
         str(v['h'])
@@ -671,7 +642,7 @@ class Isolate_archive(IsolateModeBase):
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
-class Isolate_remap(IsolateModeBase):
+class Isolate_remap(IsolateOutdir):
   def test_fail(self):
     self._execute('remap', 'fail.isolate', [], False)
     self._expected_tree()
@@ -733,17 +704,13 @@ class Isolate_remap(IsolateModeBase):
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
-class Isolate_run(IsolateModeBase):
-  def _expect_empty_tree(self):
-    self.assertEqual([], self._result_tree())
-
+class Isolate_run(IsolateTempdir):
   def test_fail(self):
     try:
       self._execute('run', 'fail.isolate', [], False)
       self.fail()
     except subprocess.CalledProcessError:
       pass
-    self._expect_empty_tree()
     self._expect_results(['fail.py'], None, None, None)
 
   def test_missing_trailing_slash(self):
@@ -755,7 +722,6 @@ class Isolate_run(IsolateModeBase):
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('run')
     self.assertEqual('', out)
-    self._expect_no_tree()
 
   def test_no_run(self):
     try:
@@ -763,7 +729,6 @@ class Isolate_run(IsolateModeBase):
       self.fail()
     except subprocess.CalledProcessError:
       pass
-    self._expect_empty_tree()
     self._expect_no_result()
 
   # TODO(csharp): Disabled until crbug.com/150823 is fixed.
@@ -771,43 +736,36 @@ class Isolate_run(IsolateModeBase):
     self._execute(
         'run', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'run'],
         False)
-    self._expect_empty_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expect_results(
         ['touch_only.py', 'run'], None, {u'FLAG': u'run'}, empty)
 
   def test_touch_root(self):
     self._execute('run', 'touch_root.isolate', [], False)
-    self._expect_empty_tree()
     self._expect_results(['touch_root.py'], None, None, None)
 
   def test_with_flag(self):
     self._execute(
         'run', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'run'],
         False)
-    # Not sure about the empty tree, should be deleted.
-    self._expect_empty_tree()
     self._expect_results(
         ['with_flag.py', 'run'], None, {u'FLAG': u'run'}, None)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
       self._execute('run', 'symlink_full.isolate', [], False)
-      self._expect_empty_tree()
       self._expect_results(['symlink_full.py'], None, None, None)
 
     def test_symlink_partial(self):
       self._execute('run', 'symlink_partial.isolate', [], False)
-      self._expect_empty_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
 
     def test_symlink_outside_build_root(self):
       self._execute('run', 'symlink_outside_build_root.isolate', [], False)
-      self._expect_empty_tree()
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 
 
-class Isolate_trace_read_merge(IsolateModeBase):
+class Isolate_trace_read_merge(IsolateTempdir):
   # Tests both trace, read and merge.
   # Warning: merge updates .isolate files. But they are currently in their
   # canonical format so they shouldn't be changed.
@@ -831,9 +789,8 @@ class Isolate_trace_read_merge(IsolateModeBase):
       self.fail()
     except subprocess.CalledProcessError, e:
       self.assertEqual('', e.output)
-    self._expect_no_tree()
     self._expect_results(['fail.py'], None, None, None)
-    expected = self._wrap_in_condition(
+    expected = _wrap_in_condition(
         {
           KEY_TRACKED: ['fail.py'],
         })
@@ -851,7 +808,6 @@ class Isolate_trace_read_merge(IsolateModeBase):
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('trace')
     self.assertEqual('', out)
-    self._expect_no_tree()
 
   def test_no_run(self):
     try:
@@ -860,7 +816,6 @@ class Isolate_trace_read_merge(IsolateModeBase):
     except subprocess.CalledProcessError, e:
       out = e.output
       err = e.stderr
-    self._expect_no_tree()
     self._expect_no_result()
     expected = 'No command to run.'
     self.assertEqual('', out)
@@ -872,7 +827,6 @@ class Isolate_trace_read_merge(IsolateModeBase):
         'trace', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'trace'],
         True)
     self.assertEqual('', out)
-    self._expect_no_tree()
     empty = os.path.join('files1', 'test_file1.txt')
     self._expect_results(
         ['touch_only.py', 'trace'], None, {u'FLAG': u'trace'}, empty)
@@ -886,16 +840,15 @@ class Isolate_trace_read_merge(IsolateModeBase):
       del expected[KEY_TOUCHED]
 
     out = self._execute('read', 'touch_only.isolate', [], True)
-    self.assertEqual(self._wrap_in_condition(expected), out)
+    self.assertEqual(_wrap_in_condition(expected), out)
     self._check_merge('touch_only.isolate')
 
   @trace_test_util.check_can_trace
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
     self.assertEqual('', out)
-    self._expect_no_tree()
     self._expect_results(['touch_root.py'], None, None, None)
-    expected = self._wrap_in_condition(
+    expected = _wrap_in_condition(
         {
           KEY_TRACKED: [
             '../../isolate.py',
@@ -912,7 +865,6 @@ class Isolate_trace_read_merge(IsolateModeBase):
         'trace', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'trace'],
         True)
     self.assertEqual('', out)
-    self._expect_no_tree()
     self._expect_results(
         ['with_flag.py', 'trace'], None, {u'FLAG': u'trace'}, None)
     expected = {
@@ -921,7 +873,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
       KEY_UNTRACKED: ['files1/'],
     }
     out = self._execute('read', 'with_flag.isolate', [], True)
-    self.assertEqual(self._wrap_in_condition(expected), out)
+    self.assertEqual(_wrap_in_condition(expected), out)
     self._check_merge('with_flag.isolate')
 
   if sys.platform != 'win32':
@@ -929,7 +881,6 @@ class Isolate_trace_read_merge(IsolateModeBase):
       out = self._execute(
           'trace', 'symlink_full.isolate', [], True)
       self.assertEqual('', out)
-      self._expect_no_tree()
       self._expect_results(['symlink_full.py'], None, None, None)
       expected = {
         KEY_TRACKED: ['symlink_full.py'],
@@ -937,28 +888,26 @@ class Isolate_trace_read_merge(IsolateModeBase):
         KEY_UNTRACKED: ['files2/'],
       }
       out = self._execute('read', 'symlink_full.isolate', [], True)
-      self.assertEqual(self._wrap_in_condition(expected), out)
+      self.assertEqual(_wrap_in_condition(expected), out)
       self._check_merge('symlink_full.isolate')
 
     def test_symlink_partial(self):
       out = self._execute(
           'trace', 'symlink_partial.isolate', [], True)
       self.assertEqual('', out)
-      self._expect_no_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
       expected = {
         KEY_TRACKED: ['symlink_partial.py'],
         KEY_UNTRACKED: ['files2/test_file2.txt'],
       }
       out = self._execute('read', 'symlink_partial.isolate', [], True)
-      self.assertEqual(self._wrap_in_condition(expected), out)
+      self.assertEqual(_wrap_in_condition(expected), out)
       self._check_merge('symlink_partial.isolate')
 
     def test_symlink_outside_build_root(self):
       out = self._execute(
           'trace', 'symlink_outside_build_root.isolate', [], True)
       self.assertEqual('', out)
-      self._expect_no_tree()
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
       expected = {
         KEY_TRACKED: ['symlink_outside_build_root.py'],
@@ -966,11 +915,11 @@ class Isolate_trace_read_merge(IsolateModeBase):
       }
       out = self._execute(
           'read', 'symlink_outside_build_root.isolate', [], True)
-      self.assertEqual(self._wrap_in_condition(expected), out)
+      self.assertEqual(_wrap_in_condition(expected), out)
       self._check_merge('symlink_outside_build_root.isolate')
 
 
-class IsolateNoOutdir(IsolateBase):
+class IsolateNoOutdir(IsolateTempdir):
   # Test without the --outdir flag.
   # So all the files are first copied in the tempdir and the test is run from
   # there.
@@ -986,7 +935,7 @@ class IsolateNoOutdir(IsolateBase):
           os.path.join(ROOT_DIR, 'isolate.py'),
           os.path.join(self.root, 'isolate.py'))
 
-  def _execute(self, mode, args, need_output):
+  def _execute(self, mode, args, need_output):  # pylint: disable=W0221
     """Executes isolate.py."""
     chromeos_value = int(isolate.get_flavor() == 'linux')
     cmd = [
@@ -1047,38 +996,13 @@ class IsolateNoOutdir(IsolateBase):
     ])
     self.assertEqual(files, list_files_tree(self.tempdir))
 
-  def test_archive(self):
-    self._execute('archive', ['--isolate', self.filename()], False)
-    files = sorted([
-      os.path.join(
-          'hashtable',
-          isolateserver.hash_file(os.path.join(ROOT_DIR, 'isolate.py'), ALGO)),
-      os.path.join(
-          'hashtable',
-          isolateserver.hash_file(
-              os.path.join(ROOT_DIR, 'tests', 'isolate', 'touch_root.py'),
-              ALGO)),
-      os.path.join(
-          'hashtable',
-          isolateserver.hash_file(os.path.join(self.isolated), ALGO)),
-      'isolate_smoke_test.isolated',
-      'isolate_smoke_test.isolated.state',
-      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
-      os.path.join('root', 'isolate.py'),
-    ])
-    self.assertEqual(files, list_files_tree(self.tempdir))
+  def test_hashtable(self):
+    with self.assertRaises(CalledProcessError):
+      self._execute('hashtable', ['--isolate', self.filename()], False)
 
   def test_remap(self):
-    self._execute('remap', ['--isolate', self.filename()], False)
-    files = sorted([
-      'isolate_smoke_test.isolated',
-      'isolate_smoke_test.isolated.state',
-      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
-      os.path.join('root', 'isolate.py'),
-    ])
-    self.assertEqual(files, list_files_tree(self.tempdir))
+    with self.assertRaises(CalledProcessError):
+      self._execute('remap', ['--isolate', self.filename()], False)
 
   def test_run(self):
     self._execute('run', ['--isolate', self.filename()], False)
@@ -1103,7 +1027,7 @@ class IsolateNoOutdir(IsolateBase):
         'touch_root.py',
       ],
     }
-    self.assertEqual(self._wrap_in_condition(expected), output)
+    self.assertEqual(_wrap_in_condition(expected), output)
 
     output = self._execute('merge', [], True)
     expected = 'Updating %s\n' % os.path.join(
@@ -1125,7 +1049,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEqual(files, list_files_tree(self.tempdir))
 
 
-class IsolateOther(IsolateBase):
+class IsolateOther(IsolateTempdir):
   def test_run_mixed(self):
     # Test when a user mapped from a directory and then replay from another
     # directory. This is a very rare corner case.
