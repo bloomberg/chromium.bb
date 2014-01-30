@@ -31,6 +31,7 @@
 #include "V8IDBKeyRange.h"
 #include "V8MIDIPort.h"
 #include "V8MediaKeyError.h"
+#include "V8MessagePort.h"
 #include "V8SpeechRecognitionError.h"
 #include "V8SpeechRecognitionResult.h"
 #include "V8SpeechRecognitionResultList.h"
@@ -350,7 +351,11 @@ bool Dictionary::get(const String& key, MessagePortArray& value) const
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    return getMessagePortArray(v8Value, key, value, m_isolate);
+    if (WebCore::isUndefinedOrNull(v8Value))
+        return true;
+    bool success = false;
+    value = toRefPtrNativeArray<MessagePort, V8MessagePort>(v8Value, key, m_isolate, &success);
+    return success;
 }
 
 bool Dictionary::convert(ConversionContext& context, const String& key, MessagePortArray& value) const

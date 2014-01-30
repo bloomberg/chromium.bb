@@ -101,26 +101,4 @@ bool extractTransferables(v8::Local<v8::Value> value, int argumentIndex, Message
     return true;
 }
 
-bool getMessagePortArray(v8::Local<v8::Value> value, const String& propertyName, MessagePortArray& ports, v8::Isolate* isolate)
-{
-    if (isUndefinedOrNull(value)) {
-        ports.resize(0);
-        return true;
-    }
-    bool success = false;
-    ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, propertyName, isolate, &success);
-    return success;
-}
-
-bool getMessagePortArray(v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, v8::Isolate* isolate)
-{
-    if (isUndefinedOrNull(value)) {
-        ports.resize(0);
-        return true;
-    }
-    bool success = false;
-    ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, argumentIndex, isolate, &success);
-    return success;
-}
-
 } // namespace WebCore

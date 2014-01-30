@@ -54,10 +54,6 @@ namespace WebCore {
     // of the HTML5 spec and generates exceptions as appropriate.
     // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
     bool extractTransferables(v8::Local<v8::Value>, int, MessagePortArray&, ArrayBufferArray&, ExceptionState&, v8::Isolate*);
-
-    bool getMessagePortArray(v8::Local<v8::Value>, const String& propertyName, MessagePortArray&, v8::Isolate*);
-    bool getMessagePortArray(v8::Local<v8::Value>, int argumentIndex, MessagePortArray&, v8::Isolate*);
-
 } // namespace WebCore
 
 #endif // V8Utilities_h
