@@ -21319,6 +21319,14 @@ other types of suffix sets.
   <summary>How long it took to create the X-Client-Data header.</summary>
 </histogram>
 
+<histogram name="Variations.LoadSeedSignature" enum="VariationSeedSignature">
+  <summary>
+    The result of verifying the variations seed signature, recorded when the
+    variations seed is stored to Local State after being retrieved from the
+    server.
+  </summary>
+</histogram>
+
 <histogram name="Variations.NetworkAvailability" enum="BooleanSuccess">
   <obsolete>
     Deprecated 9/2012. No longer tracked.
@@ -21366,6 +21374,13 @@ other types of suffix sets.
   <summary>
     Whether or not the 1-Percent uniformity trial from the Variations server was
     expired when loaded.
+  </summary>
+</histogram>
+
+<histogram name="Variations.StoreSeedSignature" enum="VariationSeedSignature">
+  <summary>
+    The result of verifying the variations seed signature, recorded when the
+    variations seed is loaded from Local State.
   </summary>
 </histogram>
 
@@ -31631,6 +31646,14 @@ other types of suffix sets.
   <int value="3" label="Public Account"/>
   <int value="4" label="Locally Managed"/>
   <int value="5" label="Kiosk App"/>
+</enum>
+
+<enum name="VariationSeedSignature" type="int">
+  <int value="0" label="Signature Missing"/>
+  <int value="1" label="Signature Decode Failed"/>
+  <int value="2" label="Invalid Signature"/>
+  <int value="3" label="Invalid Seed"/>
+  <int value="4" label="Valid Signature for Seed"/>
 </enum>
 
 <enum name="VariationsResourceRequestsAllowedState" type="int">
