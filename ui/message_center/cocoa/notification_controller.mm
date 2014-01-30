@@ -200,10 +200,13 @@
 
 // Creates a box that shows a border when the icon is not big enough to fill the
 // space.
-- (NSBox*)createImageBox;
+- (NSBox*)createImageBox:(const gfx::Image&)notificationImage;
 
 // Initializes the closeButton_ ivar with the configured button.
 - (void)configureCloseButtonInFrame:(NSRect)rootFrame;
+
+// Initializes the smallImage_ ivar with the appropriate frame.
+- (void)configureSmallImageInFrame:(NSRect)rootFrame;
 
 // Initializes title_ in the given frame.
 - (void)configureTitleInFrame:(NSRect)rootFrame;
@@ -229,7 +232,7 @@
 // it is too long.
 - (base::string16)wrapText:(const base::string16&)text
                    forFont:(NSFont*)font
-    maxNumberOfLines:(size_t)lines;
+          maxNumberOfLines:(size_t)lines;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -264,6 +267,9 @@
   [self configureCloseButtonInFrame:rootFrame];
   [rootView addSubview:closeButton_];
 
+  [self configureSmallImageInFrame:rootFrame];
+  [[self view] addSubview:smallImage_];
+
   // Create the title.
   [self configureTitleInFrame:rootFrame];
   [rootView addSubview:title_];
@@ -287,6 +293,8 @@
   NSRect rootFrame = NSMakeRect(0, 0,
       message_center::kNotificationPreferredImageWidth,
       message_center::kNotificationIconSize);
+
+  [smallImage_ setImage:notification_->small_image().AsNSImage()];
 
   // Update the icon.
   [icon_ setImage:notification_->icon().AsNSImage()];
@@ -607,7 +615,7 @@
   return imageBox.autorelease();
 }
 
-- (NSBox*)createImageBox:(gfx::Image)notificationImage {
+- (NSBox*)createImageBox:(const gfx::Image&)notificationImage {
   using message_center::kNotificationImageBorderSize;
   using message_center::kNotificationPreferredImageWidth;
   using message_center::kNotificationPreferredImageHeight;
@@ -643,11 +651,15 @@
 }
 
 - (void)configureCloseButtonInFrame:(NSRect)rootFrame {
-  closeButton_.reset([[HoverImageButton alloc] initWithFrame:NSMakeRect(
-      NSMaxX(rootFrame) - message_center::kControlButtonSize,
-      NSMaxY(rootFrame) - message_center::kControlButtonSize,
-      message_center::kControlButtonSize,
-      message_center::kControlButtonSize)]);
+  // The close button is configured to be the same size as the small image.
+  int closeButtonOriginOffset =
+      message_center::kSmallImageSize + message_center::kSmallImagePadding;
+  NSRect closeButtonFrame =
+      NSMakeRect(NSMaxX(rootFrame) - closeButtonOriginOffset,
+                 NSMaxY(rootFrame) - closeButtonOriginOffset,
+                 message_center::kSmallImageSize,
+                 message_center::kSmallImageSize);
+  closeButton_.reset([[HoverImageButton alloc] initWithFrame:closeButtonFrame]);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   [closeButton_ setDefaultImage:
       rb.GetNativeImageNamed(IDR_NOTIFICATION_CLOSE).ToNSImage()];
@@ -668,6 +680,19 @@
       accessibilitySetOverrideValue:
           l10n_util::GetNSString(IDS_APP_ACCNAME_CLOSE)
                        forAttribute:NSAccessibilityTitleAttribute];
+}
+
+- (void)configureSmallImageInFrame:(NSRect)rootFrame {
+  int smallImageXOffset =
+      message_center::kSmallImagePadding + message_center::kSmallImageSize;
+  NSRect smallImageFrame =
+      NSMakeRect(NSMaxX(rootFrame) - smallImageXOffset,
+                 NSMinY(rootFrame) + message_center::kSmallImagePadding,
+                 message_center::kSmallImageSize,
+                 message_center::kSmallImageSize);
+  smallImage_.reset([[NSImageView alloc] initWithFrame:smallImageFrame]);
+  [smallImage_ setImageScaling:NSImageScaleProportionallyUpOrDown];
+  [smallImage_ setAutoresizingMask:NSViewMinYMargin];
 }
 
 - (void)configureTitleInFrame:(NSRect)rootFrame {

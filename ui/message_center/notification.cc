@@ -39,6 +39,7 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       expanded_message(other.expanded_message),
       context_message(other.context_message),
       image(other.image),
+      small_image(other.small_image),
       items(other.items),
       progress(other.progress),
       buttons(other.buttons),

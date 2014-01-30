@@ -18,6 +18,7 @@
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/painter.h"
@@ -38,6 +39,7 @@ namespace message_center {
 MessageView::MessageView(MessageViewController* controller,
                          const std::string& notification_id,
                          const NotifierId& notifier_id,
+                         const gfx::ImageSkia& small_image,
                          const base::string16& display_source)
     : controller_(controller),
       notification_id_(notification_id),
@@ -52,6 +54,14 @@ MessageView::MessageView(MessageViewController* controller,
   background_view_->set_background(
       views::Background::CreateSolidBackground(kNotificationBackgroundColor));
   AddChildView(background_view_);
+
+  views::ImageView* small_image_view = new views::ImageView();
+  small_image_view->SetImage(small_image);
+  small_image_view->SetImageSize(gfx::Size(kSmallImageSize, kSmallImageSize));
+  // The small image view should be added to view hierarchy by the derived
+  // class. This ensures that it is on top of other views.
+  small_image_view->set_owned_by_client();
+  small_image_view_.reset(small_image_view);
 
   PaddedButton *close = new PaddedButton(this);
   close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
@@ -139,6 +149,8 @@ bool MessageView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void MessageView::OnPaint(gfx::Canvas* canvas) {
+  DCHECK_EQ(this, close_button_->parent());
+  DCHECK_EQ(this, small_image_view_->parent());
   SlideOutView::OnPaint(canvas);
   views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
@@ -163,9 +175,19 @@ void MessageView::Layout() {
 
   // Close button.
   gfx::Size close_size(close_button_->GetPreferredSize());
-  close_button_->SetBounds(
-      content_bounds.right() - close_size.width(), content_bounds.y(),
-      close_size.width(), close_size.height());
+  gfx::Rect close_rect(content_bounds.right() - close_size.width(),
+                       content_bounds.y(),
+                       close_size.width(),
+                       close_size.height());
+  close_button_->SetBoundsRect(close_rect);
+
+  gfx::Size small_image_size(small_image_view_->GetPreferredSize());
+  gfx::Rect small_image_rect(small_image_size);
+  small_image_rect.set_origin(gfx::Point(
+      content_bounds.right() - small_image_size.width() - kSmallImagePadding,
+      content_bounds.bottom() - small_image_size.height() -
+          kSmallImagePadding));
+  small_image_view_->SetBoundsRect(small_image_rect);
 }
 
 void MessageView::OnGestureEvent(ui::GestureEvent* event) {

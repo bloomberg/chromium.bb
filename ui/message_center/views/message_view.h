@@ -19,6 +19,7 @@ class MenuModel;
 
 namespace views {
 class ImageButton;
+class ImageView;
 class Painter;
 class ScrollView;
 }
@@ -48,6 +49,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   MessageView(MessageViewController* controller,
               const std::string& notification_id,
               const NotifierId& notifier_id,
+              const gfx::ImageSkia& small_image,
               const base::string16& display_source);
   virtual ~MessageView();
 
@@ -90,6 +92,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // Overridden from views::SlideOutView:
   virtual void OnSlideOut() OVERRIDE;
 
+  views::ImageView* small_image() { return small_image_view_.get(); }
   views::ImageButton* close_button() { return close_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
 
@@ -99,6 +102,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   NotifierId notifier_id_;
   views::View* background_view_;  // Owned by views hierarchy.
   scoped_ptr<views::ImageButton> close_button_;
+  scoped_ptr<views::ImageView> small_image_view_;
   views::ScrollView* scroller_;
 
   base::string16 accessible_name_;

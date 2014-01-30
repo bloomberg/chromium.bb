@@ -330,6 +330,10 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
 
   notification1_->OnFetchComplete(GURL(kButtonTwoIconUrl), &bitmap);
 
+  // Expect that the app icon has some data in it.
+  EXPECT_FALSE(notification1_->GetAppIcon().IsEmpty());
+  EXPECT_FALSE(notification_manager()->notification().small_image().IsEmpty());
+
   // Since we check Show() thoroughly in its own test, we only check cursorily.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
             notification_manager()->notification().type());

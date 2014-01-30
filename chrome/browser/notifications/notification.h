@@ -125,6 +125,9 @@ class Notification : public message_center::Notification {
   // The URL of a large image to be displayed for a a rich notification.
   GURL image_url_;
 
+  // The URL of a small image to be displayed for a a rich notification.
+  GURL small_image_url_;
+
   // The user-supplied replace ID for the notification.
   base::string16 replace_id_;
 

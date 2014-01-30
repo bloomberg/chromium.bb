@@ -45,6 +45,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   base::string16 expanded_message;
   base::string16 context_message;
   gfx::Image image;
+  gfx::Image small_image;
   std::vector<NotificationItem> items;
   int progress;
   std::vector<ButtonInfo> buttons;
@@ -132,6 +133,11 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   const gfx::Image& image() const { return optional_fields_.image; }
   void set_image(const gfx::Image& image) { optional_fields_.image = image; }
+
+  const gfx::Image& small_image() const { return optional_fields_.small_image; }
+  void set_small_image(const gfx::Image& image) {
+    optional_fields_.small_image = image;
+  }
 
   // Buttons, with icons fetched asynchronously.
   const std::vector<ButtonInfo>& buttons() const {

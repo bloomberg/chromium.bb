@@ -305,6 +305,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
     : MessageView(this,
                   notification.id(),
                   notification.notifier_id(),
+                  notification.small_image().AsImageSkia(),
                   notification.display_source()),
       controller_(controller),
       clickable_(notification.clickable()),
@@ -465,6 +466,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   AddChildView(top_view_);
   AddChildView(icon_view_);
   AddChildView(bottom_view_);
+  AddChildView(small_image());
   AddChildView(close_button());
   AddChildView(expand_button_);
   set_accessible_name(JoinString(accessible_lines, '\n'));

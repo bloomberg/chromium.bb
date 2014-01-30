@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -15,9 +16,16 @@
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "skia/ext/image_operations.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/size.h"
+#include "ui/gfx/skbitmap_operations.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
 
@@ -304,6 +312,28 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     if (!image_bitmap_.IsEmpty())
       rich_notification_data.image = image_bitmap_;
 
+    if (!app_icon_bitmap_.IsEmpty()) {
+      // Since we can't control the size of images we download, resize using a
+      // high quality filter down to the appropriate icon size.
+      // TODO(dewittj): Remove this when correct resources are sent via the
+      // protobuf.
+      SkBitmap new_app_icon =
+          skia::ImageOperations::Resize(app_icon_bitmap_.AsBitmap(),
+                                        skia::ImageOperations::RESIZE_BEST,
+                                        message_center::kSmallImageSize,
+                                        message_center::kSmallImageSize);
+
+      // The app icon should be in grayscale.
+      // TODO(dewittj): Remove this when correct resources are sent via the
+      // protobuf.
+      color_utils::HSL shift = {-1, 0, 0.6};
+      SkBitmap grayscale =
+          SkBitmapOperations::CreateHSLShiftedBitmap(new_app_icon, shift);
+      gfx::Image small_image =
+          gfx::Image(gfx::ImageSkia(gfx::ImageSkiaRep(grayscale, 1.0f)));
+      rich_notification_data.small_image = small_image;
+    }
+
     // Set the ContextMessage inside the rich notification data for the
     // annotation.
     rich_notification_data.context_message = annotation;
@@ -326,7 +356,6 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  replace_key,
                                  rich_notification_data,
                                  delegate.get());
-
     // In case the notification is not supposed to be toasted, pretend that it
     // has already been shown.
     ui_notification.set_shown_as_popup(!toast_state_);

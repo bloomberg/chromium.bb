@@ -37,6 +37,9 @@ MESSAGE_CENTER_EXPORT
   // The button that invokes |-close:|, in the upper-right corner.
   base::scoped_nsobject<HoverImageButton> closeButton_;
 
+  // The small icon associated with the notification, on the bottom right.
+  base::scoped_nsobject<NSImageView> smallImage_;
+
   // The large icon associated with the notification, on the left side.
   base::scoped_nsobject<NSImageView> icon_;
 
@@ -84,6 +87,7 @@ MESSAGE_CENTER_EXPORT
 @end
 
 @interface MCNotificationController (TestingInterface)
+- (NSImageView*)smallImageView;
 - (NSImageView*)iconView;
 @end
 

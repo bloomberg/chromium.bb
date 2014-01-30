@@ -65,6 +65,10 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   return closeButton_.get();
 }
 
+- (NSImageView*)smallImageView {
+  return smallImage_.get();
+}
+
 - (NSButton*)secondButton {
   // The buttons are in Cocoa-y-order, so the 2nd button is first.
   NSView* view = [[bottomView_ subviews] objectAtIndex:0];
@@ -122,7 +126,9 @@ TEST_F(NotificationControllerTest, BasicLayout) {
           DummyNotifierId(),
           message_center::RichNotificationData(),
           NULL));
-  notification->set_icon(gfx::Image([TestIcon() retain]));
+  gfx::Image testIcon([TestIcon() retain]);
+  notification->set_icon(testIcon);
+  notification->set_small_image(testIcon);
 
   base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
@@ -130,6 +136,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
   [controller view];
 
   EXPECT_EQ(TestIcon(), [[controller iconView] image]);
+  EXPECT_EQ(TestIcon(), [[controller smallImageView] image]);
   EXPECT_EQ(base::SysNSStringToUTF16([[controller titleView] string]),
             notification->title());
   EXPECT_EQ(base::SysNSStringToUTF16([[controller messageView] string]),
@@ -209,11 +216,15 @@ TEST_F(NotificationControllerTest, Update) {
   EXPECT_EQ(NSHeight([[controller view] frame]),
             message_center::kNotificationIconSize);
   EXPECT_FALSE([[controller iconView] image]);
+  EXPECT_FALSE([[controller smallImageView] image]);
 
   // Update the icon.
-  notification->set_icon(gfx::Image([TestIcon() retain]));
+  gfx::Image testIcon([TestIcon() retain]);
+  notification->set_icon(testIcon);
+  notification->set_small_image(testIcon);
   [controller updateNotification:notification.get()];
   EXPECT_EQ(TestIcon(), [[controller iconView] image]);
+  EXPECT_EQ(TestIcon(), [[controller smallImageView] image]);
   EXPECT_EQ(NSHeight([[controller view] frame]),
             message_center::kNotificationIconSize);
 }
