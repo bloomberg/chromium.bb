@@ -221,6 +221,21 @@ private:
     OwnPtr<ResourceLoaderSet> m_loaders;
     OwnPtr<ResourceLoaderSet> m_multipartLoaders;
 
+    // Used in hit rate histograms.
+    class DeadResourceStatsRecorder {
+    public:
+        DeadResourceStatsRecorder();
+        ~DeadResourceStatsRecorder();
+
+        void update(RevalidationPolicy);
+
+    private:
+        int m_useCount;
+        int m_revalidateCount;
+        int m_loadCount;
+    };
+    DeadResourceStatsRecorder m_deadStatsRecorder;
+
     // 29 bits left
     bool m_autoLoadImages : 1;
     bool m_imagesEnabled : 1;

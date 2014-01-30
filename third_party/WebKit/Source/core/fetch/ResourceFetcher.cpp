@@ -635,6 +635,9 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!resource)
         return 0;
 
+    if (!resource->hasClients())
+        m_deadStatsRecorder.update(policy);
+
     if (policy != Use)
         resource->setIdentifier(createUniqueIdentifier());
 
@@ -1375,6 +1378,39 @@ const ResourceLoaderOptions& ResourceFetcher::defaultResourceOptions()
 {
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
     return options;
+}
+
+ResourceFetcher::DeadResourceStatsRecorder::DeadResourceStatsRecorder()
+    : m_useCount(0)
+    , m_revalidateCount(0)
+    , m_loadCount(0)
+{
+}
+
+ResourceFetcher::DeadResourceStatsRecorder::~DeadResourceStatsRecorder()
+{
+    blink::Platform::current()->histogramCustomCounts(
+        "WebCore.ResourceFetcher.HitCount", m_useCount, 0, 1000, 50);
+    blink::Platform::current()->histogramCustomCounts(
+        "WebCore.ResourceFetcher.RevalidateCount", m_revalidateCount, 0, 1000, 50);
+    blink::Platform::current()->histogramCustomCounts(
+        "WebCore.ResourceFetcher.LoadCount", m_loadCount, 0, 1000, 50);
+}
+
+void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy policy)
+{
+    switch (policy) {
+    case Reload:
+    case Load:
+        ++m_loadCount;
+        return;
+    case Revalidate:
+        ++m_revalidateCount;
+        return;
+    case Use:
+        ++m_useCount;
+        return;
+    }
 }
 
 }
