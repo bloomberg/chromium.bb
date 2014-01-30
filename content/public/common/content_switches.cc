@@ -539,6 +539,10 @@ const char kEnableRegionBasedColumns[] =
 const char kEnableRepaintAfterLayout[] =
     "enable-repaint-after-layout";
 
+// Enables targeted style recalculation optimizations.
+const char kEnableTargetedStyleRecalc[] =
+    "enable-targeted-style-recalc";
+
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";

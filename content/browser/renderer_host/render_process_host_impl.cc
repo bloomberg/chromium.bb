@@ -1044,6 +1044,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSpeechSynthesis,
     switches::kEnableStatsTable,
     switches::kEnableStrictSiteIsolation,
+    switches::kEnableTargetedStyleRecalc,
     switches::kEnableThreadedCompositing,
     switches::kEnableUniversalAcceleratedOverflowScroll,
     switches::kEnableTouchDragDrop,
