@@ -29,7 +29,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ClickScrollingTest.testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow',
     'ClickScrollingTest.testShouldNotBeAbleToClickElementThatIsOutOfViewInANonScrollableFrame',
     'ClickScrollingTest.testShouldNotScrollIfAlreadyScrolledAndElementIsInView',
-    'ClickTest.testCanClickAnImageMapArea',
     'ClickTest.testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports',
     'CombinedInputActionsTest.testClickingOnFormElements',
     'CoordinatesTest.testShouldScrollPageAndGetCoordinatesOfAnElementThatIsOutOfViewPort',

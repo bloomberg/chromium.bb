@@ -39,6 +39,14 @@ def IsMac():
   return sys.platform.startswith('darwin')
 
 
+def GetAbsolutePathOfUserPath(user_path):
+  """Expand the given |user_path| (like "~/file") and return its absolute path.
+  """
+  if user_path is None:
+    return None
+  return os.path.abspath(os.path.expanduser(user_path))
+
+
 def _DeleteDir(path):
   """Deletes a directory recursively, which must exist."""
   # Don't use shutil.rmtree because it can't delete read-only files on Win.

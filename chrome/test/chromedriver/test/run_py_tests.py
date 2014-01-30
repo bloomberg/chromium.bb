@@ -919,6 +919,7 @@ if __name__ == '__main__':
             str(_ANDROID_NEGATIVE_FILTER.keys())))
   options, args = parser.parse_args()
 
+  options.chromedriver = util.GetAbsolutePathOfUserPath(options.chromedriver)
   if not options.chromedriver or not os.path.exists(options.chromedriver):
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
@@ -930,17 +931,17 @@ if __name__ == '__main__':
       options.android_package not in _ANDROID_NEGATIVE_FILTER):
     parser.error('Invalid --android-package')
 
-  chromedriver_server = server.Server(os.path.abspath(_CHROMEDRIVER_BINARY),
-                                      options.log_path)
+  chromedriver_server = server.Server(_CHROMEDRIVER_BINARY, options.log_path)
   global _CHROMEDRIVER_SERVER_URL
   _CHROMEDRIVER_SERVER_URL = chromedriver_server.GetUrl()
 
   global _REFERENCE_CHROMEDRIVER
-  _REFERENCE_CHROMEDRIVER = options.reference_chromedriver
+  _REFERENCE_CHROMEDRIVER = util.GetAbsolutePathOfUserPath(
+      options.reference_chromedriver)
 
   global _CHROME_BINARY
   if options.chrome:
-    _CHROME_BINARY = os.path.abspath(options.chrome)
+    _CHROME_BINARY = util.GetAbsolutePathOfUserPath(options.chrome)
   else:
     _CHROME_BINARY = None
 

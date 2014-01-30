@@ -265,6 +265,7 @@ def main():
       help='Relaunch the jar test harness after each test')
   options, _ = parser.parse_args()
 
+  options.chromedriver = util.GetAbsolutePathOfUserPath(options.chromedriver)
   if options.chromedriver is None or not os.path.exists(options.chromedriver):
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
@@ -319,7 +320,7 @@ def main():
           java_tests_src_dir=java_tests_src_dir,
           test_filter=filter,
           chromedriver_path=options.chromedriver,
-          chrome_path=options.chrome,
+          chrome_path=util.GetAbsolutePathOfUserPath(options.chrome),
           log_path=options.log_path,
           android_package_key=options.android_package,
           verbose=options.verbose,
