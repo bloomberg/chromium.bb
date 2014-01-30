@@ -80,7 +80,7 @@ std::string CanonicalizeHost(const GURL& url) {
   std::string retval =
       net::registry_controlled_domains::GetDomainAndRegistry(
           host,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (!retval.length())  // Is an IP address or other special origin.
     return host;
 

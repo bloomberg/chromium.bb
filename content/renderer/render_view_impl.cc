@@ -3199,7 +3199,7 @@ WebNavigationPolicy RenderViewImpl::DecidePolicyForNavigation(
         net::registry_controlled_domains::SameDomainOrHost(
             frame_url,
             url,
-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
     if (!same_domain_or_host || frame_url.scheme() != url.scheme()) {
       OpenURL(frame, url, referrer, default_policy);
       return blink::WebNavigationPolicyIgnore;

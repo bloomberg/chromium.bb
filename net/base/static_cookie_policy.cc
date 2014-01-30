@@ -24,7 +24,7 @@ int StaticCookiePolicy::CanGetCookies(
       return registry_controlled_domains::SameDomainOrHost(
           url,
           first_party_for_cookies,
-          registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) ?
+          registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) ?
               OK : ERR_ACCESS_DENIED;
     case StaticCookiePolicy::BLOCK_ALL_COOKIES:
       return ERR_ACCESS_DENIED;
@@ -47,7 +47,7 @@ int StaticCookiePolicy::CanSetCookie(
       return registry_controlled_domains::SameDomainOrHost(
           url,
           first_party_for_cookies,
-          registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) ?
+          registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) ?
               OK : ERR_ACCESS_DENIED;
     case StaticCookiePolicy::BLOCK_ALL_COOKIES:
       return ERR_ACCESS_DENIED;

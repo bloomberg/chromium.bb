@@ -26,7 +26,8 @@ std::string GetEffectiveDomain(const std::string& scheme,
                                const std::string& host) {
   if (scheme == "http" || scheme == "https") {
     return registry_controlled_domains::GetDomainAndRegistry(
-        host, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+        host,
+        registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   }
 
   if (!DomainIsHostOnly(host))

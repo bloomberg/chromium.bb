@@ -623,7 +623,7 @@ void WebsiteSettings::PresentSiteData() {
   std::string cookie_source =
       net::registry_controlled_domains::GetDomainAndRegistry(
           site_url_,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   if (cookie_source.empty())
     cookie_source = site_url_.host();
   cookie_info.cookie_source = cookie_source;

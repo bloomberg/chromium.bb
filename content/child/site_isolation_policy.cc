@@ -410,12 +410,10 @@ bool SiteIsolationPolicy::IsSameSite(const GURL& frame_origin,
 
   // SameDomainOrHost() extracts the effective domains (public suffix plus one)
   // from the two URLs and compare them.
-  // TODO(dsjang): use INCLUDE_PRIVATE_REGISTRIES when http://crbug.com/7988 is
-  // fixed.
   return net::registry_controlled_domains::SameDomainOrHost(
       frame_origin,
       response_url,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 // We don't use Webkit's existing CORS policy implementation since

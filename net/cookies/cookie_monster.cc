@@ -2076,7 +2076,7 @@ int CookieMonster::GarbageCollectDeleteRange(
 std::string CookieMonster::GetKey(const std::string& domain) const {
   std::string effective_domain(
       registry_controlled_domains::GetDomainAndRegistry(
-          domain, registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
+          domain, registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   if (effective_domain.empty())
     effective_domain = domain;
 

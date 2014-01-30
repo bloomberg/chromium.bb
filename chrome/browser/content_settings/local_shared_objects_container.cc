@@ -21,13 +21,11 @@
 
 namespace {
 
-// Helper wrapper for net::registry_controlled_domains::SameDomainOrHost
-// which always excludes private registries.
-bool SamePublicDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
+bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
   return net::registry_controlled_domains::SameDomainOrHost(
       gurl1,
       gurl2,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 }  // namespace
@@ -99,11 +97,11 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       if (cookie_domain[0] == '.')
         cookie_domain = cookie_domain.substr(1);
       // The |domain_url| is only created in order to use the
-      // SamePublicDomainOrHost method below. It does not matter which scheme is
-      // used as the scheme is ignored by the SamePublicDomainOrHost method.
+      // SameDomainOrHost method below. It does not matter which scheme is
+      // used as the scheme is ignored by the SameDomainOrHost method.
       GURL domain_url(std::string(content::kHttpScheme) +
                       content::kStandardSchemeSeparator + cookie_domain);
-      if (SamePublicDomainOrHost(origin, domain_url))
+      if (SameDomainOrHost(origin, domain_url))
         ++count;
     }
   }
@@ -114,7 +112,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   for (std::set<GURL>::const_iterator it = local_storage_info.begin();
        it != local_storage_info.end();
        ++it) {
-    if (SamePublicDomainOrHost(origin, *it))
+    if (SameDomainOrHost(origin, *it))
       ++count;
   }
 
@@ -123,7 +121,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   for (std::set<GURL>::const_iterator it = urls.begin();
        it != urls.end();
        ++it) {
-    if (SamePublicDomainOrHost(origin, *it))
+    if (SameDomainOrHost(origin, *it))
       ++count;
   }
 
@@ -135,7 +133,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
           indexed_db_info.begin();
       it != indexed_db_info.end();
       ++it) {
-    if (SamePublicDomainOrHost(origin, it->origin))
+    if (SameDomainOrHost(origin, it->origin))
       ++count;
   }
 
@@ -147,7 +145,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   for (FileSystemInfoList::const_iterator it = file_system_info.begin();
        it != file_system_info.end();
        ++it) {
-    if (SamePublicDomainOrHost(origin, it->origin))
+    if (SameDomainOrHost(origin, it->origin))
       ++count;
   }
 
@@ -159,7 +157,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
           database_list.begin();
       it != database_list.end();
       ++it) {
-    if (SamePublicDomainOrHost(origin, it->origin))
+    if (SameDomainOrHost(origin, it->origin))
       ++count;
   }
 
@@ -175,7 +173,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
              info_vector.begin();
          info != info_vector.end();
          ++info) {
-       if (SamePublicDomainOrHost(origin, info->manifest_url))
+       if (SameDomainOrHost(origin, info->manifest_url))
          ++count;
     }
   }

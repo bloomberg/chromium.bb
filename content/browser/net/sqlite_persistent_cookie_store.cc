@@ -634,7 +634,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
     std::string key =
         net::registry_controlled_domains::GetDomainAndRegistry(
             domain,
-            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
     keys_to_load_[key].insert(domain);
   }
