@@ -273,7 +273,7 @@ deps = {
     "/trunk/tools/deps2git@244803",
 
   "src/third_party/webpagereplay":
-    (Var("googlecode_url") % "web-page-replay") + "/trunk@528",
+    (Var("googlecode_url") % "web-page-replay") + "/trunk@536",
 
   "src/third_party/pywebsocket/src":
     (Var("googlecode_url") % "pywebsocket") + "/trunk/src@662",
