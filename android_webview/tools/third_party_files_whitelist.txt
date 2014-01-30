@@ -41,6 +41,8 @@ chrome/browser/resources/file_manager/foreground/js/main_scripts.js
 # String 'copyright' used in code.
 chrome/browser/resources/file_manager/foreground/js/media/mediaplayer_scripts.js
 # String 'copyright' used in code.
+chrome/browser/resources/file_manager/audio_player/js/audio_player_scripts.js
+# String 'copyright' used in code.
 chrome/browser/resources/file_manager/foreground/js/media/video_player_scripts.js
 # String 'copyright' used in code.
 chrome/common/importer/firefox_importer_utils.cc
