@@ -48,6 +48,7 @@ import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageTransitionTypes;
 import org.chromium.content.common.CleanupReference;
+import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -382,7 +383,7 @@ public class AwContents {
     }
 
     //--------------------------------------------------------------------------------------------
-    private class AwGestureStateListener implements ContentViewCore.GestureStateListener {
+    private class AwGestureStateListener extends GestureStateListener {
         @Override
         public void onPinchGestureStart() {
             // While it's possible to re-layout the view during a pinch gesture, the effect is very
@@ -400,7 +401,8 @@ public class AwContents {
         }
 
         @Override
-        public void onFlingStartGesture(int velocityX, int velocityY) {
+        public void onFlingStartGesture(
+                int velocityX, int velocityY, int scrollOffsetY, int scrollExtentY) {
             mScrollOffsetManager.onFlingStartGesture(velocityX, velocityY);
         }
 
@@ -517,7 +519,7 @@ public class AwContents {
 
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
             InternalAccessDelegate internalDispatcher, int nativeWebContents,
-            ContentViewCore.GestureStateListener pinchGestureStateListener,
+            GestureStateListener gestureStateListener,
             ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
         Context context = containerView.getContext();
@@ -526,7 +528,7 @@ public class AwContents {
                 context instanceof Activity ?
                         new ActivityWindowAndroid((Activity) context) :
                         new WindowAndroid(context.getApplicationContext()));
-        contentViewCore.setGestureStateListener(pinchGestureStateListener);
+        contentViewCore.addGestureStateListener(gestureStateListener);
         contentViewCore.setContentViewClient(contentViewClient);
         contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
         return contentViewCore;

@@ -180,35 +180,4 @@ public class ContentViewClient {
         return false;
     }
 
-    /**
-     * Called when a fling start event is sent. Note: onFlingStopped() of the previous
-     * fling may be called after onFlingStarted() of the current fling, so if the
-     * client wants to manage the fling status, a counter should be used.
-     */
-    public void onFlingStarted() {
-    }
-
-    /**
-     * Called when a fling is stopped, or a fling start event didn't trigger a fling.
-     */
-    public void onFlingStopped() {
-    }
-
-    /**
-     * Called when a scroll gesture has begun.
-     */
-    public void onScrollBeginEvent() {
-    }
-
-    /**
-     * Called when a scroll gesture has ended.
-     */
-    public void onScrollEndEvent() {
-    }
-
-    /**
-     * Called when the scroll offsets or viewport dimensions may have changed.
-     */
-    public void onScrollOrViewportChanged() {
-    }
 }

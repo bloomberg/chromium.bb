@@ -13,8 +13,8 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.concurrent.Callable;
@@ -669,7 +669,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         }
     }
 
-    private static class TestGestureStateListener implements ContentViewCore.GestureStateListener {
+    private static class TestGestureStateListener extends GestureStateListener {
         private CallbackHelper mOnScrollUpdateGestureConsumedHelper = new CallbackHelper();
 
         public CallbackHelper getOnScrollUpdateGestureConsumedHelper() {
@@ -685,7 +685,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         }
 
         @Override
-        public void onFlingStartGesture(int velocityX, int velocityY) {
+        public void onFlingStartGesture(
+                int velocityX, int velocityY, int scrollOffsetY, int scrollExtentY) {
         }
 
         @Override
@@ -726,7 +727,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.getContentViewCore().setGestureStateListener(
+                testContainerView.getContentViewCore().addGestureStateListener(
                         testGestureStateListener);
             }
         });

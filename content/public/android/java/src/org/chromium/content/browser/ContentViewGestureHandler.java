@@ -208,12 +208,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int GESTURE_SCROLL_END = 8;
     static final int GESTURE_FLING_START = 9;
     static final int GESTURE_FLING_CANCEL = 10;
-    static final int GESTURE_PINCH_BEGIN = 11;
-    static final int GESTURE_PINCH_BY = 12;
-    static final int GESTURE_PINCH_END = 13;
-    static final int GESTURE_TAP_CANCEL = 14;
-    static final int GESTURE_LONG_TAP = 15;
-    static final int GESTURE_TAP_DOWN = 16;
+    static final int GESTURE_FLING_END = 11;
+    static final int GESTURE_PINCH_BEGIN = 12;
+    static final int GESTURE_PINCH_BY = 13;
+    static final int GESTURE_PINCH_END = 14;
+    static final int GESTURE_TAP_CANCEL = 15;
+    static final int GESTURE_LONG_TAP = 16;
+    static final int GESTURE_TAP_DOWN = 17;
 
     // These have to be kept in sync with content/port/common/input_event_ack_state.h
     static final int INPUT_EVENT_ACK_STATE_UNKNOWN = 0;

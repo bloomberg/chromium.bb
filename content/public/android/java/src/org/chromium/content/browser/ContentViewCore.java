@@ -53,6 +53,8 @@ import com.google.common.annotations.VisibleForTesting;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ObserverList;
+import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.WeakContext;
 import org.chromium.content.R;
@@ -69,6 +71,7 @@ import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.input.SelectionHandleController;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -179,45 +182,6 @@ public class ContentViewCore
          * @see View#awakenScrollBars(int, boolean)
          */
         boolean super_awakenScrollBars(int startDelay, boolean invalidate);
-    }
-
-    /**
-     * An interface that allows the embedder to be notified of events and state changes related to
-     * gesture processing.
-     */
-    public interface GestureStateListener {
-        /**
-         * Called when the pinch gesture starts.
-         */
-        void onPinchGestureStart();
-
-        /**
-         * Called when the pinch gesture ends.
-         */
-        void onPinchGestureEnd();
-
-        /**
-         * Called when the fling gesture is sent.
-         */
-        void onFlingStartGesture(int vx, int vy);
-
-        /**
-         * Called when the fling cancel gesture is sent.
-         */
-        void onFlingCancelGesture();
-
-        /**
-         * Called when a fling event was not handled by the renderer.
-         */
-        void onUnhandledFlingStartEvent();
-
-        /**
-         * Called to indicate that a scroll update gesture had been consumed by the page.
-         * This callback is called whenever any layer is scrolled (like a frame or div). It is
-         * not called when a JS touch handler consumes the event (preventDefault), it is not called
-         * for JS-initiated scrolling.
-         */
-        void onScrollUpdateGestureConsumed();
     }
 
     /**
@@ -371,7 +335,8 @@ public class ContentViewCore
     private boolean mInForeground = false;
 
     private ContentViewGestureHandler mContentViewGestureHandler;
-    private GestureStateListener mGestureStateListener;
+    private final ObserverList<GestureStateListener> mGestureStateListeners;
+    private final RewindableIterator<GestureStateListener> mGestureStateListenersIterator;
     private ZoomManager mZoomManager;
     private ZoomControlsDelegate mZoomControlsDelegate;
 
@@ -500,6 +465,8 @@ public class ContentViewCore
         mInsertionHandlePoint = mRenderCoordinates.createNormalizedPoint();
         mAccessibilityManager = (AccessibilityManager)
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
+        mGestureStateListeners = new ObserverList<GestureStateListener>();
+        mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
     }
 
     /**
@@ -869,6 +836,7 @@ public class ContentViewCore
         mJavaScriptInterfaces.clear();
         mRetainedJavaScriptObjects.clear();
         unregisterAccessibilityContentObserver();
+        mGestureStateListeners.clear();
     }
 
     private void unregisterAccessibilityContentObserver() {
@@ -1293,35 +1261,38 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onFlingStartEventAck(int ackResult) {
-        if (ackResult == ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS
-                && mGestureStateListener != null) {
-            mGestureStateListener.onUnhandledFlingStartEvent();
+        if (ackResult == ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+            for (mGestureStateListenersIterator.rewind();
+                    mGestureStateListenersIterator.hasNext();) {
+                mGestureStateListenersIterator.next().onUnhandledFlingStartEvent();
+            }
         }
         if (ackResult != ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED) {
             // No fling happened for the fling start event.
             // Cancel the fling status set when sending GestureFlingStart.
-            getContentViewClient().onFlingStopped();
+            updateGestureStateListener(ContentViewGestureHandler.GESTURE_FLING_END, null);
         }
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollBeginEventAck() {
-        getContentViewClient().onScrollBeginEvent();
+        updateGestureStateListener(ContentViewGestureHandler.GESTURE_SCROLL_START, null);
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollUpdateGestureConsumed() {
-        if (mGestureStateListener != null) {
-            mGestureStateListener.onScrollUpdateGestureConsumed();
+        for (mGestureStateListenersIterator.rewind();
+                mGestureStateListenersIterator.hasNext();) {
+            mGestureStateListenersIterator.next().onScrollUpdateGestureConsumed();
         }
     }
 
     @SuppressWarnings("unused")
     @CalledByNative
     private void onScrollEndEventAck() {
-        getContentViewClient().onScrollEndEvent();
+        updateGestureStateListener(ContentViewGestureHandler.GESTURE_SCROLL_END, null);
     }
 
     private void reportActionAfterDoubleTapUMA(int type) {
@@ -1379,7 +1350,6 @@ public class ContentViewCore
                 nativeScrollEnd(mNativeContentViewCore, timeMs);
                 return true;
             case ContentViewGestureHandler.GESTURE_FLING_START:
-                mContentViewClient.onFlingStarted();
                 nativeFlingStart(mNativeContentViewCore, timeMs, x, y,
                         b.getInt(ContentViewGestureHandler.VELOCITY_X, 0),
                         b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0));
@@ -1427,30 +1397,61 @@ public class ContentViewCore
                 UMAActionAfterDoubleTap.COUNT);
     }
 
-    public void setGestureStateListener(GestureStateListener pinchGestureStateListener) {
-        mGestureStateListener = pinchGestureStateListener;
+    /**
+     * Add a listener that gets alerted on gesture state changes.
+     * @param listener Listener to add.
+     */
+    public void addGestureStateListener(GestureStateListener listener) {
+        mGestureStateListeners.addObserver(listener);
+    }
+
+    /**
+     * Removes a listener that was added to watch for gesture state changes.
+     * @param listener Listener to remove.
+     */
+    public void removeGestureStateListener(GestureStateListener listener) {
+        mGestureStateListeners.removeObserver(listener);
     }
 
     void updateGestureStateListener(int gestureType, Bundle b) {
-        if (mGestureStateListener == null) return;
-
-        switch (gestureType) {
-            case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
-                mGestureStateListener.onPinchGestureStart();
-                break;
-            case ContentViewGestureHandler.GESTURE_PINCH_END:
-                mGestureStateListener.onPinchGestureEnd();
-                break;
-            case ContentViewGestureHandler.GESTURE_FLING_START:
-                mGestureStateListener.onFlingStartGesture(
-                        b.getInt(ContentViewGestureHandler.VELOCITY_X, 0),
-                        b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0));
-                break;
-            case ContentViewGestureHandler.GESTURE_FLING_CANCEL:
-                mGestureStateListener.onFlingCancelGesture();
-                break;
-            default:
-                break;
+        for (mGestureStateListenersIterator.rewind();
+                mGestureStateListenersIterator.hasNext();) {
+            GestureStateListener listener = mGestureStateListenersIterator.next();
+            switch (gestureType) {
+                case ContentViewGestureHandler.GESTURE_PINCH_BEGIN:
+                    listener.onPinchGestureStart();
+                    break;
+                case ContentViewGestureHandler.GESTURE_PINCH_END:
+                    listener.onPinchGestureEnd();
+                    break;
+                case ContentViewGestureHandler.GESTURE_FLING_START:
+                    listener.onFlingStartGesture(
+                            b.getInt(ContentViewGestureHandler.VELOCITY_X, 0),
+                            b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0),
+                            computeVerticalScrollOffset(),
+                            computeVerticalScrollExtent());
+                    break;
+                case ContentViewGestureHandler.GESTURE_FLING_END:
+                    listener.onFlingEndGesture(
+                            computeVerticalScrollOffset(),
+                            computeVerticalScrollExtent());
+                    break;
+                case ContentViewGestureHandler.GESTURE_FLING_CANCEL:
+                    listener.onFlingCancelGesture();
+                    break;
+                case ContentViewGestureHandler.GESTURE_SCROLL_START:
+                    listener.onScrollStarted(
+                            computeVerticalScrollOffset(),
+                            computeVerticalScrollExtent());
+                    break;
+                case ContentViewGestureHandler.GESTURE_SCROLL_END:
+                    listener.onScrollEnded(
+                            computeVerticalScrollOffset(),
+                            computeVerticalScrollExtent());
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -2444,7 +2445,12 @@ public class ContentViewCore
         onRenderCoordinatesUpdated();
 
         if (scrollChanged || contentOffsetChanged) {
-            getContentViewClient().onScrollOrViewportChanged();
+            for (mGestureStateListenersIterator.rewind();
+                    mGestureStateListenersIterator.hasNext();) {
+                mGestureStateListenersIterator.next().onScrollOffsetOrExtentChanged(
+                        computeVerticalScrollOffset(),
+                        computeVerticalScrollExtent());
+            }
         }
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
@@ -3215,7 +3221,7 @@ public class ContentViewCore
 
     @CalledByNative
     private void onNativeFlingStopped() {
-        getContentViewClient().onFlingStopped();
+        updateGestureStateListener(ContentViewGestureHandler.GESTURE_FLING_END, null);
     }
 
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);
