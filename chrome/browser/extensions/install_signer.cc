@@ -9,13 +9,16 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/process/process_info.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -243,6 +246,41 @@ ExtensionIdSet InstallSigner::GetForcedNotFromWebstore() {
   return ExtensionIdSet(ids.begin(), ids.end());
 }
 
+namespace {
+
+static int g_request_count = 0;
+
+base::LazyInstance<base::TimeTicks> g_last_request_time =
+    LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<base::ThreadChecker> g_single_thread_checker =
+    LAZY_INSTANCE_INITIALIZER;
+
+void LogRequestStartHistograms() {
+  // Make sure we only ever call this from one thread, so that we don't have to
+  // worry about race conditions setting g_last_request_time.
+  DCHECK(g_single_thread_checker.Get().CalledOnValidThread());
+
+  const base::Time process_creation_time =
+      base::CurrentProcessInfo::CreationTime();
+  UMA_HISTOGRAM_COUNTS("ExtensionInstallSigner.UptimeAtTimeOfRequest",
+                       (base::Time::Now() - process_creation_time).InSeconds());
+
+  base::TimeDelta delta;
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (!g_last_request_time.Get().is_null())
+    delta = now - g_last_request_time.Get();
+  g_last_request_time.Get() = now;
+  UMA_HISTOGRAM_COUNTS("ExtensionInstallSigner.SecondsSinceLastRequest",
+                       delta.InSeconds());
+
+  g_request_count += 1;
+  UMA_HISTOGRAM_COUNTS_100("ExtensionInstallSigner.RequestCount",
+                           g_request_count);
+}
+
+}  // namespace
+
 void InstallSigner::GetSignature(const SignatureCallback& callback) {
   CHECK(!url_fetcher_.get());
   CHECK(callback_.is_null());
@@ -301,6 +339,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
     return;
   }
   url_fetcher_->SetUploadData("application/json", json);
+  LogRequestStartHistograms();
   url_fetcher_->Start();
 }
 
@@ -311,10 +350,17 @@ void InstallSigner::ReportErrorViaCallback() {
 }
 
 void InstallSigner::ParseFetchResponse() {
+  bool fetch_success = url_fetcher_->GetStatus().is_success();
+  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.FetchSuccess", fetch_success);
+
   std::string response;
-  if (!url_fetcher_->GetStatus().is_success() ||
-      !url_fetcher_->GetResponseAsString(&response) ||
-      response.empty()) {
+  if (fetch_success) {
+    if (!url_fetcher_->GetResponseAsString(&response))
+      response.clear();
+  }
+  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.GetResponseSuccess",
+                        !response.empty());
+  if (!fetch_success || response.empty()) {
     ReportErrorViaCallback();
     return;
   }
@@ -331,7 +377,10 @@ void InstallSigner::ParseFetchResponse() {
 
   base::DictionaryValue* dictionary = NULL;
   scoped_ptr<base::Value> parsed(base::JSONReader::Read(response));
-  if (!parsed.get() || !parsed->GetAsDictionary(&dictionary)) {
+  bool json_success = parsed.get() && parsed->GetAsDictionary(&dictionary);
+  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ParseJsonSuccess",
+                        json_success);
+  if (!json_success) {
     ReportErrorViaCallback();
     return;
   }
@@ -345,9 +394,13 @@ void InstallSigner::ParseFetchResponse() {
   dictionary->GetString(kSignatureKey, &signature_base64);
   dictionary->GetString(kExpiryKey, &expire_date);
 
-  if (protocol_version != 1 || signature_base64.empty() ||
-      !ValidateExpireDateFormat(expire_date) ||
-      !base::Base64Decode(signature_base64, &signature)) {
+  bool fields_success =
+      protocol_version == 1 && !signature_base64.empty() &&
+      ValidateExpireDateFormat(expire_date) &&
+      base::Base64Decode(signature_base64, &signature);
+  UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ParseFieldsSuccess",
+                        fields_success);
+  if (!fields_success) {
     ReportErrorViaCallback();
     return;
   }

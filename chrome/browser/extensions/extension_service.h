@@ -199,12 +199,15 @@ class ExtensionService
   // Initialize and start all installed extensions.
   void Init();
 
-  // Attempts to verify all extensions using the InstallVerifier.
-  void VerifyAllExtensions();
+  // Attempts to verify all extensions using the InstallVerifier. The
+  // |bootstrap| parameter indicates whether we're doing this because the
+  // InstallVerifier needed to be bootstrapped (otherwise it's for another
+  // reason, e.g. extension install/uninstall).
+  void VerifyAllExtensions(bool bootstrap);
 
   // Once the verifier work is finished, we may want to re-check management
   // policy if |success| indicates the verifier got a new signature back.
-  void FinishVerifyAllExtensions(bool success);
+  void FinishVerifyAllExtensions(bool bootstrap, bool success);
 
   // Called when the associated Profile is going to be destroyed.
   void Shutdown();
