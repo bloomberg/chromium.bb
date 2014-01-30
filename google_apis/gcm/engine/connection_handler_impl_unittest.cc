@@ -49,12 +49,16 @@ const char kDataMsgCategoryLong2[] =
 std::string EncodePacket(uint8 tag, const std::string& proto) {
   std::string result;
   google::protobuf::io::StringOutputStream string_output_stream(&result);
-  google::protobuf::io::CodedOutputStream coded_output_stream(
+  {
+    google::protobuf::io::CodedOutputStream coded_output_stream(
       &string_output_stream);
-  const unsigned char tag_byte[1] = {tag};
-  coded_output_stream.WriteRaw(tag_byte, 1);
-  coded_output_stream.WriteVarint32(proto.size());
-  coded_output_stream.WriteRaw(proto.c_str(), proto.size());
+    const unsigned char tag_byte[1] = { tag };
+    coded_output_stream.WriteRaw(tag_byte, 1);
+    coded_output_stream.WriteVarint32(proto.size());
+    coded_output_stream.WriteRaw(proto.c_str(), proto.size());
+    // ~CodedOutputStream must run before the move constructor at the
+    // return statement. http://crbug.com/338962
+  }
   return result;
 }
 
