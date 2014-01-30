@@ -169,14 +169,7 @@ class OAuth2Test : public OobeBaseTest {
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
 
     // Wait for the session merge to finish.
-    std::set<OAuth2LoginManager::SessionRestoreState> states;
-    states.insert(OAuth2LoginManager::SESSION_RESTORE_DONE);
-    states.insert(OAuth2LoginManager::SESSION_RESTORE_FAILED);
-    states.insert(OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED);
-    OAuth2LoginManagerStateWaiter merge_session_waiter(profile);
-    merge_session_waiter.WaitForStates(states);
-    EXPECT_EQ(merge_session_waiter.final_state(),
-              OAuth2LoginManager::SESSION_RESTORE_DONE);
+    WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
 
     // Check for existance of refresh token.
     ProfileOAuth2TokenService* token_service =
@@ -327,7 +320,10 @@ class OAuth2Test : public OobeBaseTest {
     content::WindowedNotificationObserver(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
-  }
+
+    // Wait for the session merge to finish.
+    WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
+}
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2Test);
 };
