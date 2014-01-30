@@ -18,10 +18,6 @@ void AppCacheHistograms::CountReinitAttempt(bool repeated_attempt) {
   UMA_HISTOGRAM_BOOLEAN("appcache.ReinitAttempt", repeated_attempt);
 }
 
-void AppCacheHistograms::CountCorruptionDetected() {
-  UMA_HISTOGRAM_BOOLEAN("appcache.CorruptionDetected", true);
-}
-
 void AppCacheHistograms::CountCheckResponseResult(
     CheckResponseResultType result) {
   UMA_HISTOGRAM_ENUMERATION(

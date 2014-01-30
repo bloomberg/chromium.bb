@@ -21,7 +21,6 @@ class AppCacheHistograms {
   };
   static void CountInitResult(InitResultType init_result);
   static void CountReinitAttempt(bool repeated_attempt);
-  static void CountCorruptionDetected();
 
   enum CheckResponseResultType {
     RESPONSE_OK, MANIFEST_OUT_OF_DATE, RESPONSE_OUT_OF_DATE, ENTRY_NOT_FOUND,

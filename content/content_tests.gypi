@@ -570,7 +570,6 @@
         'test/image_decoder_test.h',
         'test/run_all_unittests.cc',
         '../webkit/browser/appcache/appcache_database_unittest.cc',
-        '../webkit/browser/appcache/appcache_disk_cache_unittest.cc',
         '../webkit/browser/appcache/appcache_group_unittest.cc',
         '../webkit/browser/appcache/appcache_host_unittest.cc',
         '../webkit/browser/appcache/appcache_quota_client_unittest.cc',

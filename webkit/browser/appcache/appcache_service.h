@@ -12,8 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/appcache/appcache_storage.h"
@@ -101,9 +99,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
     observers_.RemoveObserver(observer);
   }
 
-  // For use in catastrophic failure modes to reboot the appcache system
+  // For use in a very specific failure mode to reboot the appcache system
   // without relaunching the browser.
-  void ScheduleReinitialize();
+  void Reinitialize();
 
   // Purges any memory not needed.
   void PurgeMemory() {
@@ -203,7 +201,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
  protected:
   friend class AppCacheStorageImplTest;
   friend class AppCacheServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(AppCacheServiceTest, ScheduleReinitialize);
 
   class AsyncHelper;
   class CanHandleOfflineHelper;
@@ -214,8 +211,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
 
   typedef std::set<AsyncHelper*> PendingAsyncHelpers;
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;
-
-  void Reinitialize();
 
   base::FilePath cache_directory_;
   scoped_refptr<base::MessageLoopProxy> db_thread_;
@@ -232,9 +227,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
   net::URLRequestContext* request_context_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
-  base::Time last_reinit_time_;
-  base::TimeDelta next_reinit_delay_;
-  base::OneShotTimer<AppCacheService> reinit_timer_;
+  bool was_reinitialized_;
   ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheService);

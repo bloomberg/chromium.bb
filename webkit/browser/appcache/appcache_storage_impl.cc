@@ -174,7 +174,7 @@ class AppCacheStorageImpl::DatabaseTask
  private:
   void CallRun(base::TimeTicks schedule_time);
   void CallRunCompleted(base::TimeTicks schedule_time);
-  void OnFatalError();
+  void CallDisableStorage();
 
   scoped_refptr<base::MessageLoopProxy> io_thread_;
 };
@@ -209,15 +209,10 @@ void AppCacheStorageImpl::DatabaseTask::CallRun(
     Run();
     AppCacheHistograms::AddTaskRunTimeSample(
         base::TimeTicks::Now() - run_time);
-
-    if (database_->was_corruption_detected()) {
-      AppCacheHistograms::CountCorruptionDetected();
-      database_->Disable();
-    }
     if (database_->is_disabled()) {
       io_thread_->PostTask(
           FROM_HERE,
-          base::Bind(&DatabaseTask::OnFatalError, this));
+          base::Bind(&DatabaseTask::CallDisableStorage, this));
     }
   }
   io_thread_->PostTask(
@@ -242,11 +237,10 @@ void AppCacheStorageImpl::DatabaseTask::CallRunCompleted(
   }
 }
 
-void AppCacheStorageImpl::DatabaseTask::OnFatalError() {
+void AppCacheStorageImpl::DatabaseTask::CallDisableStorage() {
   if (storage_) {
     DCHECK(io_thread_->BelongsToCurrentThread());
     storage_->Disable();
-    storage_->DeleteAndStartOver();
   }
 }
 
@@ -257,14 +251,7 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
   explicit InitTask(AppCacheStorageImpl* storage)
       : DatabaseTask(storage), last_group_id_(0),
         last_cache_id_(0), last_response_id_(0),
-        last_deletable_response_rowid_(0) {
-    if (!storage->is_incognito_) {
-      db_file_path_ =
-          storage->cache_directory_.Append(kAppCacheDatabaseName);
-      disk_cache_directory_ =
-          storage->cache_directory_.Append(kDiskCacheDirectoryName);
-    }
-  }
+        last_deletable_response_rowid_(0) {}
 
   // DatabaseTask:
   virtual void Run() OVERRIDE;
@@ -274,8 +261,6 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
   virtual ~InitTask() {}
 
  private:
-  base::FilePath db_file_path_;
-  base::FilePath disk_cache_directory_;
   int64 last_group_id_;
   int64 last_cache_id_;
   int64 last_response_id_;
@@ -284,17 +269,6 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
 };
 
 void AppCacheStorageImpl::InitTask::Run() {
-  // If there is no sql database, ensure there is no disk cache either.
-  if (!db_file_path_.empty() &&
-      !base::PathExists(db_file_path_) &&
-      base::DirectoryExists(disk_cache_directory_)) {
-    base::DeleteFile(disk_cache_directory_, true);
-    if (base::DirectoryExists(disk_cache_directory_)) {
-      database_->Disable();  // This triggers OnFatalError handling.
-      return;
-    }
-  }
-
   database_->FindLastStorageIds(
       &last_group_id_, &last_cache_id_, &last_response_id_,
       &last_deletable_response_rowid_);
@@ -938,6 +912,8 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   int64 group_id_;
   GURL manifest_url_;
 };
+
+
 
 void AppCacheStorageImpl::FindMainResponseTask::Run() {
   // NOTE: The heuristics around choosing amoungst multiple candidates
@@ -1817,6 +1793,9 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
                      base::Unretained(this)));
     }
 
+    // We should not keep this reference around.
+    cache_thread_ = NULL;
+
     if (rv != net::ERR_IO_PENDING)
       OnDiskCacheInitialized(rv);
   }
@@ -1832,38 +1811,21 @@ void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
     // really recover from. We handle it by temporarily disabling the appcache
     // deleting the directory on disk and reinitializing the appcache system.
     Disable();
-    if (rv != net::ERR_ABORTED)
-      DeleteAndStartOver();
+    if (!is_incognito_ && rv != net::ERR_ABORTED) {
+      VLOG(1) << "Deleting existing appcache data and starting over.";
+      db_thread_->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&base::DeleteFile),
+                     cache_directory_, true),
+          base::Bind(&AppCacheStorageImpl::CallReinitialize,
+                     weak_factory_.GetWeakPtr()));
+    }
   }
 }
 
-void AppCacheStorageImpl::DeleteAndStartOver() {
-  DCHECK(is_disabled_);
-  if (!is_incognito_) {
-    VLOG(1) << "Deleting existing appcache data and starting over.";
-    // We can have tasks in flight to close file handles on both the db
-    // and cache threads, we need to allow those tasks to cycle thru
-    // prior to deleting the files and calling reinit.
-    cache_thread_->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&base::DoNothing),
-        base::Bind(&AppCacheStorageImpl::DeleteAndStartOverPart2,
-                   weak_factory_.GetWeakPtr()));
-  }
-}
-
-void AppCacheStorageImpl::DeleteAndStartOverPart2() {
-  db_thread_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::DeleteFile),
-                 cache_directory_, true),
-      base::Bind(&AppCacheStorageImpl::CallScheduleReinitialize,
-                  weak_factory_.GetWeakPtr()));
-}
-
-void AppCacheStorageImpl::CallScheduleReinitialize() {
-  service_->ScheduleReinitialize();
-  // note: 'this' may be deleted at this point.
+void AppCacheStorageImpl::CallReinitialize() {
+  service_->Reinitialize();
+  // note: 'this' may be deleted during reinit.
 }
 
 }  // namespace appcache

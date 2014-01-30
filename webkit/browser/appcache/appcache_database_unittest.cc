@@ -109,37 +109,10 @@ TEST(AppCacheDatabaseTest, QuickIntegrityCheck) {
     EXPECT_TRUE(db.LazyOpen(true));
     EXPECT_FALSE(base::PathExists(kOtherFile));
     EXPECT_TRUE(base::PathExists(kDbFile));
-    EXPECT_TRUE(ignore_errors.CheckIgnoredErrors());
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 }
 #endif  // NDEBUG
-
-TEST(AppCacheDatabaseTest, WasCorrutionDetected) {
-  // Real files on disk for this test too, a corrupt database file.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
-
-  // First create a valid db file.
-  AppCacheDatabase db(kDbFile);
-  EXPECT_TRUE(db.LazyOpen(true));
-  EXPECT_TRUE(base::PathExists(kDbFile));
-  EXPECT_FALSE(db.was_corruption_detected());
-
-  // Break it.
-  ASSERT_TRUE(sql::test::CorruptSizeInHeader(kDbFile));
-
-  // See the the corruption is detected and reported.
-  {
-    sql::ScopedErrorIgnorer ignore_errors;
-    ignore_errors.IgnoreError(SQLITE_CORRUPT);
-    std::map<GURL, int64> usage_map;
-    EXPECT_FALSE(db.GetAllOriginUsage(&usage_map));
-    EXPECT_TRUE(db.was_corruption_detected());
-    EXPECT_TRUE(base::PathExists(kDbFile));
-    EXPECT_TRUE(ignore_errors.CheckIgnoredErrors());
-  }
-}
 
 TEST(AppCacheDatabaseTest, ExperimentalFlags) {
   const char kExperimentFlagsKey[] = "ExperimentFlags";

@@ -67,6 +67,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
   virtual void PurgeMemory() OVERRIDE;
 
  private:
+  friend class AppCacheStorageImplTest;
+
   // The AppCacheStorageImpl class methods and datamembers may only be
   // accessed on the IO thread. This class manufactures seperate DatabaseTasks
   // which access the DB on a seperate background thread.
@@ -112,9 +114,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   void OnDeletedOneResponse(int rv);
   void OnDiskCacheInitialized(int rv);
-  void DeleteAndStartOver();
-  void DeleteAndStartOverPart2();
-  void CallScheduleReinitialize();
+  void CallReinitialize();
 
   // Sometimes we can respond without having to query the database.
   bool FindResponseForMainRequestInGroup(
@@ -172,7 +172,6 @@ class AppCacheStorageImpl : public AppCacheStorage {
   std::deque<base::Closure> pending_simple_tasks_;
   base::WeakPtrFactory<AppCacheStorageImpl> weak_factory_;
 
-  friend class AppCacheStorageImplTest;
   friend class content::ChromeAppCacheServiceTest;
 };
 
