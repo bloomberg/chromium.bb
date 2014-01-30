@@ -15,11 +15,6 @@ class FramerTest : public ::testing::Test {
   FramerTest()
       : mock_rtp_payload_feedback_(),
         framer_(&testing_clock_, &mock_rtp_payload_feedback_, 0, true, 0) {
-  }
-
-  virtual ~FramerTest() {}
-
-  virtual void SetUp() OVERRIDE {
     // Build a default one packet frame - populate webrtc header.
     rtp_header_.is_key_frame = false;
     rtp_header_.frame_id = 0;
@@ -29,24 +24,27 @@ class FramerTest : public ::testing::Test {
     rtp_header_.reference_frame_id = 0;
     payload_.assign(kMaxIpPacketSize, 0);
 
-    EXPECT_CALL(mock_rtp_payload_feedback_,
-                CastFeedback(testing::_)).WillRepeatedly(testing::Return());
+    EXPECT_CALL(mock_rtp_payload_feedback_, CastFeedback(testing::_))
+        .WillRepeatedly(testing::Return());
   }
+
+  virtual ~FramerTest() {}
 
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
   MockRtpPayloadFeedback mock_rtp_payload_feedback_;
   Framer framer_;
   base::SimpleTestTickClock testing_clock_;
-};
 
+  DISALLOW_COPY_AND_ASSIGN(FramerTest);
+};
 
 TEST_F(FramerTest, EmptyState) {
   transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 }
 
 TEST_F(FramerTest, AlwaysStartWithKey) {
@@ -57,18 +55,18 @@ TEST_F(FramerTest, AlwaysStartWithKey) {
   bool duplicate = false;
 
   // Insert non key first frame.
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   rtp_header_.frame_id = 1;
   rtp_header_.is_key_frame = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(1u, frame.frame_id);
   EXPECT_TRUE(frame.key_frame);
@@ -84,11 +82,11 @@ TEST_F(FramerTest, CompleteFrame) {
 
   // Start with a complete key frame.
   rtp_header_.is_key_frame = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(0u, frame.frame_id);
   EXPECT_TRUE(frame.key_frame);
@@ -98,20 +96,20 @@ TEST_F(FramerTest, CompleteFrame) {
   ++rtp_header_.frame_id;
   rtp_header_.is_key_frame = false;
   rtp_header_.max_packet_id = 2;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(complete);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 
   // Complete delta - can't skip, as incomplete sequence.
   ++rtp_header_.frame_id;
   rtp_header_.max_packet_id = 0;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 }
 
 TEST_F(FramerTest, DuplicatePackets) {
@@ -125,41 +123,41 @@ TEST_F(FramerTest, DuplicatePackets) {
   rtp_header_.is_key_frame = true;
   rtp_header_.max_packet_id = 1;
   duplicate = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(complete);
   EXPECT_FALSE(duplicate);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 
   // Add same packet again in incomplete key frame.
   duplicate = false;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(complete);
   EXPECT_TRUE(duplicate);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 
   // Complete key frame.
   rtp_header_.packet_id = 1;
   duplicate = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
   EXPECT_FALSE(duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_EQ(0u, frame.frame_id);
 
   // Add same packet again in complete key frame.
   duplicate = false;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(complete);
   EXPECT_TRUE(duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_EQ(0u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
 
@@ -168,41 +166,41 @@ TEST_F(FramerTest, DuplicatePackets) {
   rtp_header_.packet_id = 0;
   rtp_header_.is_key_frame = false;
   duplicate = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(complete);
   EXPECT_FALSE(duplicate);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 
   // Add same packet again in incomplete delta frame.
   duplicate = false;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(complete);
   EXPECT_TRUE(duplicate);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 
   // Complete delta frame.
   rtp_header_.packet_id = 1;
   duplicate = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
   EXPECT_FALSE(duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_EQ(1u, frame.frame_id);
 
   // Add same packet again in complete delta frame.
   duplicate = false;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_FALSE(complete);
   EXPECT_TRUE(duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_EQ(1u, frame.frame_id);
 }
 
@@ -215,11 +213,11 @@ TEST_F(FramerTest, ContinuousSequence) {
 
   // Start with a complete key frame.
   rtp_header_.is_key_frame = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(0u, frame.frame_id);
   EXPECT_TRUE(frame.key_frame);
@@ -228,11 +226,11 @@ TEST_F(FramerTest, ContinuousSequence) {
   // Complete - not continuous.
   rtp_header_.frame_id = 2;
   rtp_header_.is_key_frame = false;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 }
 
 TEST_F(FramerTest, Wrap) {
@@ -245,10 +243,10 @@ TEST_F(FramerTest, Wrap) {
   // Start with a complete key frame.
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 255u;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(255u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
@@ -256,10 +254,10 @@ TEST_F(FramerTest, Wrap) {
   // Insert wrapped delta frame - should be continuous.
   rtp_header_.is_key_frame = false;
   rtp_header_.frame_id = 256;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(256u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
@@ -274,12 +272,12 @@ TEST_F(FramerTest, Reset) {
 
   // Start with a complete key frame.
   rtp_header_.is_key_frame = true;
-  complete = framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                                  &duplicate);
+  complete = framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   EXPECT_TRUE(complete);
   framer_.Reset();
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
 }
 
 TEST_F(FramerTest, RequireKeyAfterReset) {
@@ -293,16 +291,16 @@ TEST_F(FramerTest, RequireKeyAfterReset) {
   // Start with a complete key frame.
   rtp_header_.is_key_frame = false;
   rtp_header_.frame_id = 0u;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   rtp_header_.frame_id = 1;
   rtp_header_.is_key_frame = true;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
 }
 
@@ -314,22 +312,22 @@ TEST_F(FramerTest, BasicNonLastReferenceId) {
 
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 0;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   framer_.ReleaseFrame(frame.frame_id);
 
   rtp_header_.is_key_frame = false;
   rtp_header_.is_reference = true;
   rtp_header_.reference_frame_id = 0;
   rtp_header_.frame_id = 5u;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_FALSE(next_frame);
 }
 
@@ -342,53 +340,53 @@ TEST_F(FramerTest, InOrderReferenceFrameSelection) {
 
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 0;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   rtp_header_.is_key_frame = false;
   rtp_header_.frame_id = 1;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
   // Insert frame #2 partially.
   rtp_header_.frame_id = 2;
   rtp_header_.max_packet_id = 1;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   rtp_header_.frame_id = 4;
   rtp_header_.max_packet_id = 0;
   rtp_header_.is_reference = true;
   rtp_header_.reference_frame_id = 0;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_EQ(0u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(1u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_FALSE(next_frame);
   EXPECT_EQ(4u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
   // Insert remaining packet of frame #2 - should no be continuous.
   rtp_header_.frame_id = 2;
   rtp_header_.packet_id = 1;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                            &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_FALSE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   rtp_header_.is_reference = false;
   rtp_header_.frame_id = 5;
   rtp_header_.packet_id = 0;
   rtp_header_.max_packet_id = 0;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_TRUE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_TRUE(
+      framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(5u, frame.frame_id);
 }
@@ -403,31 +401,31 @@ TEST_F(FramerTest, AudioWrap) {
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 254;
 
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_TRUE(
+      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(254u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
 
   rtp_header_.frame_id = 255;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
   // Insert wrapped frame - should be continuous.
   rtp_header_.frame_id = 256;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
-  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(255u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
 
-  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(256u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
@@ -443,30 +441,30 @@ TEST_F(FramerTest, AudioWrapWithMissingFrame) {
   // Insert and get first packet.
   rtp_header_.is_key_frame = true;
   rtp_header_.frame_id = 253;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
-  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
+  EXPECT_TRUE(
+      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(253u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
 
   // Insert third and fourth packets.
   rtp_header_.frame_id = 255;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
   rtp_header_.frame_id = 256;
-  framer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_,
-                       &duplicate);
+  framer_.InsertPacket(
+      payload_.data(), payload_.size(), rtp_header_, &duplicate);
 
   // Get third and fourth packets.
-  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_FALSE(next_frame);
   EXPECT_EQ(255u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);
-  EXPECT_TRUE(framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp,
-                                           &next_frame));
+  EXPECT_TRUE(
+      framer_.GetEncodedAudioFrame(&frame, &rtp_timestamp, &next_frame));
   EXPECT_TRUE(next_frame);
   EXPECT_EQ(256u, frame.frame_id);
   framer_.ReleaseFrame(frame.frame_id);

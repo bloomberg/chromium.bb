@@ -10,13 +10,8 @@ namespace cast {
 
 class FrameBufferTest : public ::testing::Test {
  protected:
-  FrameBufferTest() {}
-
-  virtual ~FrameBufferTest() {}
-
-  virtual void SetUp() {
+  FrameBufferTest() {
     payload_.assign(kMaxIpPacketSize, 0);
-
     // Build a default one packet frame - populate webrtc header.
     rtp_header_.is_key_frame = false;
     rtp_header_.frame_id = 0;
@@ -26,9 +21,13 @@ class FrameBufferTest : public ::testing::Test {
     rtp_header_.reference_frame_id = 0;
   }
 
+  virtual ~FrameBufferTest() {}
+
   FrameBuffer buffer_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameBufferTest);
 };
 
 TEST_F(FrameBufferTest, EmptyBuffer) {

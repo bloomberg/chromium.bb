@@ -27,8 +27,7 @@ class FrameInfo {
 
   PacketType InsertPacket(uint16 packet_id);
   bool Complete() const;
-  void GetMissingPackets(bool newest_frame,
-                         PacketIdSet* missing_packets) const;
+  void GetMissingPackets(bool newest_frame, PacketIdSet* missing_packets) const;
 
   bool is_key_frame() const { return is_key_frame_; }
   uint32 frame_id() const { return frame_id_; }

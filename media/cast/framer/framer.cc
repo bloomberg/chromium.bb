@@ -17,9 +17,13 @@ Framer::Framer(base::TickClock* clock,
                bool decoder_faster_than_max_frame_rate,
                int max_unacked_frames)
     : decoder_faster_than_max_frame_rate_(decoder_faster_than_max_frame_rate),
-      cast_msg_builder_(new CastMessageBuilder(clock, incoming_payload_feedback,
-          &frame_id_map_, ssrc, decoder_faster_than_max_frame_rate,
-          max_unacked_frames)) {
+      cast_msg_builder_(
+          new CastMessageBuilder(clock,
+                                 incoming_payload_feedback,
+                                 &frame_id_map_,
+                                 ssrc,
+                                 decoder_faster_than_max_frame_rate,
+                                 max_unacked_frames)) {
   DCHECK(incoming_payload_feedback) << "Invalid argument";
 }
 
@@ -82,7 +86,8 @@ bool Framer::GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
 
   ConstFrameIterator it = frames_.find(frame_id);
   DCHECK(it != frames_.end());
-  if (it == frames_.end()) return false;
+  if (it == frames_.end())
+    return false;
 
   return it->second->GetEncodedAudioFrame(audio_frame, rtp_timestamp);
 }
@@ -98,7 +103,8 @@ bool Framer::GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
     *next_frame = true;
   } else {
     // Check if we can skip frames when our decoder is too slow.
-    if (!decoder_faster_than_max_frame_rate_) return false;
+    if (!decoder_faster_than_max_frame_rate_)
+      return false;
 
     if (!frame_id_map_.NextVideoFrameAllowingSkippingFrames(&frame_id)) {
       return false;
@@ -108,7 +114,8 @@ bool Framer::GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
 
   ConstFrameIterator it = frames_.find(frame_id);
   DCHECK(it != frames_.end());
-  if (it == frames_.end())  return false;
+  if (it == frames_.end())
+    return false;
 
   return it->second->GetEncodedVideoFrame(video_frame, rtp_timestamp);
 }
@@ -126,7 +133,7 @@ void Framer::ReleaseFrame(uint32 frame_id) {
   // We have a frame - remove all frames with lower frame id.
   bool skipped_old_frame = false;
   FrameList::iterator it;
-  for (it = frames_.begin(); it != frames_.end(); ) {
+  for (it = frames_.begin(); it != frames_.end();) {
     if (IsOlderFrameId(it->first, frame_id)) {
       frames_.erase(it++);
       skipped_old_frame = true;
@@ -143,9 +150,7 @@ bool Framer::TimeToSendNextCastMessage(base::TimeTicks* time_to_send) {
   return cast_msg_builder_->TimeToSendNextCastMessage(time_to_send);
 }
 
-void Framer::SendCastMessage() {
-  cast_msg_builder_->UpdateCastMessage();
-}
+void Framer::SendCastMessage() { cast_msg_builder_->UpdateCastMessage(); }
 
 }  // namespace cast
 }  // namespace media

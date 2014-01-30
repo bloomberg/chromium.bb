@@ -52,7 +52,8 @@ void CastMessageBuilder::CompleteFrameReceived(uint32 frame_id,
     // packet in the key-frame.
     UpdateAckMessage();
   } else {
-    if (!UpdateAckMessage()) return;
+    if (!UpdateAckMessage())
+      return;
 
     BuildPacketList();
   }
@@ -86,7 +87,8 @@ bool CastMessageBuilder::UpdateAckMessage() {
     uint32 frame_id = frame_id_map_->LastContinuousFrame();
 
     // Is it a new frame?
-    if (last_acked_frame_id_ == frame_id) return false;
+    if (last_acked_frame_id_ == frame_id)
+      return false;
 
     last_acked_frame_id_ = frame_id;
     acked_last_frame_ = true;
@@ -100,16 +102,18 @@ bool CastMessageBuilder::UpdateAckMessage() {
 bool CastMessageBuilder::TimeToSendNextCastMessage(
     base::TimeTicks* time_to_send) {
   // We haven't received any packets.
-  if (last_update_time_.is_null() && frame_id_map_->Empty()) return false;
+  if (last_update_time_.is_null() && frame_id_map_->Empty())
+    return false;
 
-  *time_to_send = last_update_time_ +
-      base::TimeDelta::FromMilliseconds(kCastMessageUpdateIntervalMs);
+  *time_to_send = last_update_time_ + base::TimeDelta::FromMilliseconds(
+                                          kCastMessageUpdateIntervalMs);
   return true;
 }
 
 void CastMessageBuilder::UpdateCastMessage() {
   RtcpCastMessage message(media_ssrc_);
-  if (!UpdateCastMessageInternal(&message)) return;
+  if (!UpdateCastMessageInternal(&message))
+    return;
 
   // Send cast message.
   cast_feedback_->CastFeedback(message);
@@ -151,7 +155,8 @@ void CastMessageBuilder::BuildPacketList() {
   cast_msg_.missing_frames_and_packets_.clear();
 
   // Are we missing packets?
-  if (frame_id_map_->Empty()) return;
+  if (frame_id_map_->Empty())
+    return;
 
   uint32 newest_frame_id = frame_id_map_->NewestFrameId();
   uint32 next_expected_frame_id = cast_msg_.ack_frame_id_ + 1;
@@ -173,8 +178,8 @@ void CastMessageBuilder::BuildPacketList() {
     PacketIdSet missing;
     if (frame_id_map_->FrameExists(next_expected_frame_id)) {
       bool last_frame = (newest_frame_id == next_expected_frame_id);
-      frame_id_map_->GetMissingPackets(next_expected_frame_id, last_frame,
-                                       &missing);
+      frame_id_map_->GetMissingPackets(
+          next_expected_frame_id, last_frame, &missing);
       if (!missing.empty()) {
         time_last_nacked_map_[next_expected_frame_id] = now;
         cast_msg_.missing_frames_and_packets_.insert(

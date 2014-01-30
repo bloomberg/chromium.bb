@@ -12,21 +12,18 @@
 namespace media {
 namespace cast {
 
+namespace {
 static const uint32 kSsrc = 0x1234;
 static const uint32 kShortTimeIncrementMs = 10;
 static const uint32 kLongTimeIncrementMs = 40;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
-namespace {
 typedef std::map<uint32, size_t> MissingPacketsMap;
 
 class NackFeedbackVerification : public RtpPayloadFeedback {
  public:
   NackFeedbackVerification()
-      : triggered_(false),
-        missing_packets_(),
-        last_frame_acked_(0) {}
-
+      : triggered_(false), missing_packets_(), last_frame_acked_(0) {}
 
   virtual void CastFeedback(const RtcpCastMessage& cast_feedback) OVERRIDE {
     EXPECT_EQ(kSsrc, cast_feedback.media_ssrc_);
@@ -43,10 +40,10 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
       if ((frame_it->second.size() == 1) &&
           (*frame_it->second.begin() == kRtcpCastAllPacketsLost)) {
         missing_packets_.insert(
-          std::make_pair(frame_it->first, kRtcpCastAllPacketsLost));
+            std::make_pair(frame_it->first, kRtcpCastAllPacketsLost));
       } else {
-      missing_packets_.insert(
-          std::make_pair(frame_it->first, frame_it->second.size()));
+        missing_packets_.insert(
+            std::make_pair(frame_it->first, frame_it->second.size()));
       }
       ++frame_it;
     }
@@ -56,14 +53,15 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
   size_t num_missing_packets(uint32 frame_id) {
     MissingPacketsMap::iterator it;
     it = missing_packets_.find(frame_id);
-    if (it == missing_packets_.end()) return 0;
+    if (it == missing_packets_.end())
+      return 0;
 
     return it->second;
   }
 
   // Holds value for one call.
   bool triggered() {
-    bool ret_val =  triggered_;
+    bool ret_val = triggered_;
     triggered_ = false;
     return ret_val;
   }
@@ -74,6 +72,8 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
   bool triggered_;
   MissingPacketsMap missing_packets_;  // Missing packets per frame.
   uint32 last_frame_acked_;
+
+  DISALLOW_COPY_AND_ASSIGN(NackFeedbackVerification);
 };
 }  // namespace
 
@@ -94,21 +94,15 @@ class CastMessageBuilderTest : public ::testing::Test {
 
   virtual ~CastMessageBuilderTest() {}
 
-  void SetFrameId(uint32 frame_id) {
-    rtp_header_.frame_id = frame_id;
-  }
+  void SetFrameId(uint32 frame_id) { rtp_header_.frame_id = frame_id; }
 
-  void SetPacketId(uint16 packet_id) {
-    rtp_header_.packet_id = packet_id;
-  }
+  void SetPacketId(uint16 packet_id) { rtp_header_.packet_id = packet_id; }
 
   void SetMaxPacketId(uint16 max_packet_id) {
     rtp_header_.max_packet_id = max_packet_id;
   }
 
-  void SetKeyFrame(bool is_key) {
-    rtp_header_.is_key_frame = is_key;
-  }
+  void SetKeyFrame(bool is_key) { rtp_header_.is_key_frame = is_key; }
 
   void SetReferenceFrameId(uint32 reference_frame_id) {
     rtp_header_.is_reference = true;
@@ -138,6 +132,8 @@ class CastMessageBuilderTest : public ::testing::Test {
   RtpCastHeader rtp_header_;
   FrameIdMap frame_id_map_;
   base::SimpleTestTickClock testing_clock_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastMessageBuilderTest);
 };
 
 TEST_F(CastMessageBuilderTest, StartWithAKeyFrame) {
@@ -481,18 +477,19 @@ TEST_F(CastMessageBuilderTest, SlowDownAck) {
     SetFrameId(frame_id);
     InsertPacket();
     testing_clock_.Advance(
-      base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
+        base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   }
   // We should now have entered the slowdown ACK state.
   uint32 expected_frame_id = 1;
   for (; frame_id < 10; ++frame_id) {
-    if (frame_id % 2)  ++expected_frame_id;
+    if (frame_id % 2)
+      ++expected_frame_id;
     EXPECT_TRUE(feedback_.triggered());
     EXPECT_EQ(expected_frame_id, feedback_.last_frame_acked());
     SetFrameId(frame_id);
     InsertPacket();
     testing_clock_.Advance(
-      base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
+        base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   }
   EXPECT_TRUE(feedback_.triggered());
   EXPECT_EQ(expected_frame_id, feedback_.last_frame_acked());

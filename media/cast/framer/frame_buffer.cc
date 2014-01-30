@@ -37,7 +37,8 @@ void FrameBuffer::InsertPacket(const uint8* payload_data,
     rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
   }
   // Is this the correct frame?
-  if (rtp_header.frame_id != frame_id_) return;
+  if (rtp_header.frame_id != frame_id_)
+    return;
 
   // Insert every packet only once.
   if (packets_.find(rtp_header.packet_id) != packets_.end()) {
@@ -50,8 +51,8 @@ void FrameBuffer::InsertPacket(const uint8* payload_data,
 
   // Insert the packet.
   retval.first->second.resize(payload_size);
-  std::copy(payload_data, payload_data + payload_size,
-            retval.first->second.begin());
+  std::copy(
+      payload_data, payload_data + payload_size, retval.first->second.begin());
 
   ++num_packets_received_;
   total_data_size_ += payload_size;
@@ -64,7 +65,8 @@ bool FrameBuffer::Complete() const {
 bool FrameBuffer::GetEncodedAudioFrame(
     transport::EncodedAudioFrame* audio_frame,
     uint32* rtp_timestamp) const {
-  if (!Complete()) return false;
+  if (!Complete())
+    return false;
 
   *rtp_timestamp = rtp_timestamp_;
 
@@ -76,8 +78,8 @@ bool FrameBuffer::GetEncodedAudioFrame(
   audio_frame->data.reserve(total_data_size_);
   PacketMap::const_iterator it;
   for (it = packets_.begin(); it != packets_.end(); ++it) {
-    audio_frame->data.insert(audio_frame->data.end(),
-                             it->second.begin(), it->second.end());
+    audio_frame->data.insert(
+        audio_frame->data.end(), it->second.begin(), it->second.end());
   }
   return true;
 }
@@ -85,7 +87,8 @@ bool FrameBuffer::GetEncodedAudioFrame(
 bool FrameBuffer::GetEncodedVideoFrame(
     transport::EncodedVideoFrame* video_frame,
     uint32* rtp_timestamp) const {
-  if (!Complete()) return false;
+  if (!Complete())
+    return false;
 
   *rtp_timestamp = rtp_timestamp_;
 
@@ -99,8 +102,8 @@ bool FrameBuffer::GetEncodedVideoFrame(
   video_frame->data.reserve(total_data_size_);
   PacketMap::const_iterator it;
   for (it = packets_.begin(); it != packets_.end(); ++it) {
-    video_frame->data.insert(video_frame->data.end(),
-                             it->second.begin(), it->second.end());
+    video_frame->data.insert(
+        video_frame->data.end(), it->second.begin(), it->second.end());
   }
   return true;
 }
