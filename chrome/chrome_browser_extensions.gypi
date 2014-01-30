@@ -36,7 +36,6 @@
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-        '../device/hid/hid.gyp:device_hid',
         '../extensions/extensions.gyp:extensions_browser',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
