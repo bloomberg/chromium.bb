@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_SERVICE_MANAGER_H_
-#define MOJO_SHELL_SERVICE_MANAGER_H_
+#ifndef MOJO_SHELL_SERVICE_CONNECTOR_H_
+#define MOJO_SHELL_SERVICE_CONNECTOR_H_
 
 #include <map>
 
@@ -15,7 +15,7 @@
 namespace mojo {
 namespace shell {
 
-class ServiceManager {
+class ServiceConnector {
  public:
   // Interface to allowing default loading behavior to be overridden for a
   // specific url.
@@ -28,8 +28,8 @@ class ServiceManager {
     Loader();
   };
 
-  ServiceManager();
-  ~ServiceManager();
+  ServiceConnector();
+  ~ServiceConnector();
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL().
   // Does not take ownership of |loader|.
@@ -43,17 +43,17 @@ class ServiceManager {
   void Connect(const GURL& url, ScopedMessagePipeHandle client_handle);
 
  private:
-  class Service;
+  class ServiceFactory;
 
   Loader* default_loader_;
-  typedef std::map<GURL, Service*> ServiceMap;
-  ServiceMap url_to_service_;
+  typedef std::map<GURL, ServiceFactory*> ServiceFactoryMap;
+  ServiceFactoryMap url_to_service_factory_;
   typedef std::map<GURL, Loader*> LoaderMap;
   LoaderMap url_to_loader_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceManager);
+  DISALLOW_COPY_AND_ASSIGN(ServiceConnector);
 };
 
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_SERVICE_MANAGER_H_
+#endif  // MOJO_SHELL_SERVICE_CONNECTOR_H_

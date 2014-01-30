@@ -6,5 +6,5 @@ include_rules = [
 
   # TODO(abarth) Instead of having the services depend on the shell, we
   # probably should create a layer below the services.
-  "+mojo/shell/context.h",
+  "+mojo/shell",
 ]

@@ -7,40 +7,14 @@
 
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/shell/service.h"
 #include "mojo/services/native_viewport/native_viewport_export.h"
-#include "mojom/shell.h"
-
-namespace mojo {
-
-namespace shell {
-class Context;
-}
-
-namespace services {
-
-class NativeViewportService : public ShellClient {
-  public:
-   NativeViewportService(ScopedMessagePipeHandle shell_handle);
-   virtual ~NativeViewportService();
-   virtual void AcceptConnection(ScopedMessagePipeHandle client_handle)
-      MOJO_OVERRIDE;
-
-   // For locally loaded services.
-   void set_context(shell::Context* context) { context_ = context; }
-
-  private:
-   class NativeViewportImpl;
-   RemotePtr<Shell> shell_;
-   ScopedVector<NativeViewportImpl> viewports_;
-   shell::Context* context_;
-};
-
-}  // namespace services
-}  // namespace mojo
+#include "mojo/shell/context.h"
 
 #if defined(OS_ANDROID)
-MOJO_NATIVE_VIEWPORT_EXPORT mojo::services::NativeViewportService*
-    CreateNativeViewportService(mojo::ScopedMessagePipeHandle shell_handle);
+MOJO_NATIVE_VIEWPORT_EXPORT mojo::ServiceFactoryBase*
+    CreateNativeViewportService(mojo::shell::Context* context,
+                                mojo::ScopedMessagePipeHandle shell_handle);
 #endif
 
 #endif  // MOJO_SERVICES_NATIVE_VIEWPORT_SERVICE_H_

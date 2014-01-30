@@ -5,7 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
-#include "mojo/shell/service_manager.h"
+#include "mojo/shell/service_connector.h"
 #include "mojom/shell.h"
 #include "mojom/test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,28 +71,28 @@ class TestClientImpl : public TestClient {
   bool quit_after_ack_;
 };
 
-class ServiceManagerTest : public testing::Test,
-                           public ServiceManager::Loader {
+class ServiceConnectorTest : public testing::Test,
+                             public ServiceConnector::Loader {
  public:
-  ServiceManagerTest() {
+  ServiceConnectorTest() {
   }
 
-  virtual ~ServiceManagerTest() {
+  virtual ~ServiceConnectorTest() {
   }
 
   virtual void SetUp() OVERRIDE {
     GURL test_url("test:testService");
-    service_manager_.reset(new ServiceManager);
-    service_manager_->SetLoaderForURL(this, test_url);
+    service_connector_.reset(new ServiceConnector);
+    service_connector_->SetLoaderForURL(this, test_url);
     MessagePipe pipe;
     test_client_.reset(new TestClientImpl(pipe.handle0.Pass()));
-    service_manager_->Connect(test_url, pipe.handle1.Pass());
+    service_connector_->Connect(test_url, pipe.handle1.Pass());
   }
 
   virtual void TearDown() OVERRIDE {
     test_client_.reset(NULL);
     test_app_.reset(NULL);
-    service_manager_.reset(NULL);
+    service_connector_.reset(NULL);
   }
 
   virtual void Load(const GURL& url,
@@ -104,11 +104,11 @@ class ServiceManagerTest : public testing::Test,
   base::MessageLoop loop_;
   scoped_ptr<TestApp> test_app_;
   scoped_ptr<TestClientImpl> test_client_;
-  scoped_ptr<ServiceManager> service_manager_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceManagerTest);
+  scoped_ptr<ServiceConnector> service_connector_;
+  DISALLOW_COPY_AND_ASSIGN(ServiceConnectorTest);
 };
 
-TEST_F(ServiceManagerTest, Basic) {
+TEST_F(ServiceConnectorTest, Basic) {
   test_client_->Test("test");
   loop_.Run();
   EXPECT_EQ(std::string("test"), test_app_->GetLastTestString());

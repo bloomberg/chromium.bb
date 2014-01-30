@@ -23,11 +23,11 @@ Context::Context()
   embedder::Init();
   gles2::GLES2SupportImpl::Init();
   dynamic_service_loader_.reset(new DynamicServiceLoader(this));
-  service_manager_.set_default_loader(dynamic_service_loader_.get());
+  service_connector_.set_default_loader(dynamic_service_loader_.get());
 }
 
 Context::~Context() {
-  service_manager_.set_default_loader(NULL);
+  service_connector_.set_default_loader(NULL);
 }
 
 }  // namespace shell

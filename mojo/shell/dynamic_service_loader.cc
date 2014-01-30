@@ -71,7 +71,9 @@ class DynamicServiceLoader::LoadContext
     base::ScopedNativeLibrary app_library(
         base::LoadNativeLibrary(app_path_, &load_error));
     if (!app_library.is_valid()) {
-      LOG(ERROR) << "Failed to load library: " << app_path_.value().c_str();
+      LOG(ERROR) << "Failed to load library: "
+                 << app_path_.value()
+                 << " (" << url_.spec() << ")";
       LOG(ERROR) << "error: " << load_error;
       return;
     }

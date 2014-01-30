@@ -327,8 +327,8 @@
         'shell/network_delegate.h',
         'shell/run.cc',
         'shell/run.h',
-        'shell/service_manager.cc',
-        'shell/service_manager.h',
+        'shell/service_connector.cc',
+        'shell/service_connector.h',
         'shell/storage.cc',
         'shell/storage.h',
         'shell/switches.cc',
@@ -337,18 +337,6 @@
         'shell/task_runners.h',
         'shell/url_request_context_getter.cc',
         'shell/url_request_context_getter.h',
-      ],
-    },
-    {
-      'target_name': 'mojo_shell_bindings',
-      'type': 'static_library',
-      'sources': [
-        'shell/shell.mojom',
-      ],
-      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_bindings',
-        'mojo_system',
       ],
     },
     {
@@ -381,7 +369,7 @@
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'sources': [
-        'shell/service_manager_unittest.cc',
+        'shell/service_connector_unittest.cc',
         'shell/test.mojom',
       ],
     },

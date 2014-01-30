@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/public/system/core_cpp.h"
-#include "mojo/shell/service_manager.h"
+#include "mojo/shell/service_connector.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -19,7 +19,7 @@ class Context;
 
 // A subclass of ServiceManager::Loader that loads a dynamic library containing
 // the implementation of the service.
-class DynamicServiceLoader : public ServiceManager::Loader {
+class DynamicServiceLoader : public ServiceConnector::Loader {
  public:
   explicit DynamicServiceLoader(Context* context);
   virtual ~DynamicServiceLoader();

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/shell/context.h"
-#include "mojo/shell/service_manager.h"
+#include "mojo/shell/service_connector.h"
 #include "mojo/shell/switches.h"
 #include "url/gurl.h"
 
@@ -34,7 +34,7 @@ void Run(Context* context) {
       return;
     }
     ScopedMessagePipeHandle no_handle;
-    context->service_manager()->Connect(GURL(*it), no_handle.Pass());
+    context->service_connector()->Connect(GURL(*it), no_handle.Pass());
   }
   // TODO(davemoore): Currently we leak |service_manager|.
 }
