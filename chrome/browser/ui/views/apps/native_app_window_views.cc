@@ -585,7 +585,7 @@ void NativeAppWindowViews::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-#if defined(USE_ASH)
+#if defined(USE_ASH) & defined(OS_CHROMEOS)
   scoped_ptr<ui::MenuModel> model = CreateMultiUserContextMenu(
       shell_window_->GetNativeWindow());
   if (!model.get())

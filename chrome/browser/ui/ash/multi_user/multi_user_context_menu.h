@@ -18,4 +18,8 @@ class MenuModel;
 // The multi user context menu factory.
 scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window);
 
+// Executes move of a |window| to another profile.
+// |command_id| defines a user whose desktop is being visited.
+void ExecuteVisitDesktopCommand(int command_id, aura::Window* window);
+
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_CONTEXT_MENU_H_

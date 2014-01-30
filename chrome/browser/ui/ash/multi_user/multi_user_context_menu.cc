@@ -10,3 +10,5 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
   scoped_ptr<ui::MenuModel> menu_model;
   return menu_model.Pass();
 }
+
+void ExecuteVisitDesktopCommand(int command_id, aura::Window* window) {}

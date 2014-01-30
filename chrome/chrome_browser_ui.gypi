@@ -330,6 +330,8 @@
         'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h',
         'browser/ui/ash/multi_user/multi_user_util.cc',
         'browser/ui/ash/multi_user/multi_user_util.h',
+        'browser/ui/ash/multi_user/multi_user_warning_dialog.cc',
+        'browser/ui/ash/multi_user/multi_user_warning_dialog.h',
         'browser/ui/ash/multi_user/multi_user_window_manager.cc',
         'browser/ui/ash/multi_user/multi_user_window_manager.h',
         'browser/ui/ash/multi_user/multi_user_window_manager_chromeos.cc',
