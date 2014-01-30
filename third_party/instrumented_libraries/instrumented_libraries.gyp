@@ -64,6 +64,8 @@
         '<(_sanitizer_type)-libdbus-glib-1-2',
         '<(_sanitizer_type)-nss',
         '<(_sanitizer_type)-libfontconfig1',
+        '<(_sanitizer_type)-pulseaudio',
+        '<(_sanitizer_type)-libasound2',
       ],
       'conditions': [
         ['asan==1', {
@@ -282,6 +284,19 @@
       'dependencies=': [
         '<(_sanitizer_type)-libnspr4',
       ],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'pulseaudio',
+      'dependencies=': [],
+      'run_before_build': 'pulseaudio.sh',
+      'custom_configure_flags': '--with-udev-rules-dir=<(INTERMEDIATE_DIR)/udev/rules.d',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libasound2',
+      'dependencies=': [],
+      'run_before_build': 'libasound2.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
