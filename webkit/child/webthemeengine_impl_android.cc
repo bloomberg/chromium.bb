@@ -29,18 +29,10 @@ static ui::NativeTheme::Part NativeThemePart(
     case WebThemeEngine::PartScrollbarUpArrow:
       return ui::NativeTheme::kScrollbarUpArrow;
     case WebThemeEngine::PartScrollbarHorizontalThumb:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
     case WebThemeEngine::PartScrollbarVerticalThumb:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
     case WebThemeEngine::PartScrollbarHorizontalTrack:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
     case WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebThemeEngine::PartScrollbarCorner:
       // Android doesn't draw scrollbars.
       NOTREACHED();
       return static_cast<ui::NativeTheme::Part>(0);

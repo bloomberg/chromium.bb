@@ -35,6 +35,8 @@ static ui::NativeTheme::Part NativeThemePart(
       return ui::NativeTheme::kScrollbarHorizontalTrack;
     case WebFallbackThemeEngine::PartScrollbarVerticalTrack:
       return ui::NativeTheme::kScrollbarVerticalTrack;
+    case WebFallbackThemeEngine::PartScrollbarCorner:
+      return ui::NativeTheme::kScrollbarCorner;
     case WebFallbackThemeEngine::PartCheckbox:
       return ui::NativeTheme::kCheckbox;
     case WebFallbackThemeEngine::PartRadio:
