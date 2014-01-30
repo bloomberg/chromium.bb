@@ -375,13 +375,10 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 
   default_host_ = NULL;
   // TODO(tengs): This should be refactored. See crbug.com/314934.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDriveOfflineFirstRun)) {
-    if (UserManager::Get()->IsCurrentUserNew()) {
-      // DriveOptInController will delete itself when finished.
-      (new DriveFirstRunController(
-          ProfileManager::GetActiveUserProfile()))->EnableOfflineMode();
-    }
+  if (UserManager::Get()->IsCurrentUserNew()) {
+    // DriveOptInController will delete itself when finished.
+    (new DriveFirstRunController(
+        ProfileManager::GetActiveUserProfile()))->EnableOfflineMode();
   }
 }
 

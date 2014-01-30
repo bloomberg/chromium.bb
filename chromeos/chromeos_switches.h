@@ -40,7 +40,6 @@ CHROMEOS_EXPORT extern const char kDisableQuickofficeComponentApp[];
 CHROMEOS_EXPORT extern const char kEchoExtensionPath[];
 CHROMEOS_EXPORT extern const char kEnableBackgroundLoader[];
 CHROMEOS_EXPORT extern const char kEnableCarrierSwitching[];
-CHROMEOS_EXPORT extern const char kEnableDriveOfflineFirstRun[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];
 CHROMEOS_EXPORT extern const char kEnableRequestTabletSite[];
 CHROMEOS_EXPORT extern const char kEnableStubInteractive[];

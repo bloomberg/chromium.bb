@@ -77,9 +77,6 @@ const char kEnableBackgroundLoader[]        = "enable-background-loader";
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 
-// Enables automatically initializing Google Drive offline mode on first run.
-const char kEnableDriveOfflineFirstRun[] = "enable-drive-offline-first-run";
-
 // Enable "interactive" mode for stub implemenations (e.g. NetworkStateHandler)
 const char kEnableStubInteractive[] = "enable-stub-interactive";
 
