@@ -681,6 +681,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
+            '<(icu_gyp_path):icudata',
             '../net/net.gyp:net',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             'remoting_base',
@@ -710,6 +711,7 @@
                 'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
               },
               'mac_bundle_resources': [
+                '<(PRODUCT_DIR)/icudtl.dat',
                 'host/disconnect_window.xib',
                 'host/remoting_me2me_host.icns',
                 'host/remoting_me2me_host-Info.plist',
