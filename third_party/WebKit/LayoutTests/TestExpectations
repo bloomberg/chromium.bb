@@ -802,7 +802,6 @@ crbug.com/329904 [ Mac ] fast/text-autosizing/forum-comments-autosizing.html [ I
 crbug.com/337852 [ Mac ] fast/text-autosizing/second-pass-no-wrap-container-autosizing.html [ ImageOnlyFailure ]
 
 crbug.com/302005 fast/text-autosizing/list-item-above-dbcat.html [ Missing ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/list-item-above-dbcat.html [ NeedsRebaseline ]
 
 # Started failing after r162755.
 crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-accelerated-background-color.html [ ImageOnlyFailure ]
