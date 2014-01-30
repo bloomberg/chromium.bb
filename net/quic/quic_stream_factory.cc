@@ -299,8 +299,8 @@ QuicStreamFactory::QuicStreamFactory(
       QuicTime::Delta::FromSeconds(30),
       QuicTime::Delta::FromSeconds(30));
 
-  cannoncial_suffixes_.push_back(string(".c.youtube.com"));
-  cannoncial_suffixes_.push_back(string(".googlevideo.com"));
+  canoncial_suffixes_.push_back(string(".c.youtube.com"));
+  canoncial_suffixes_.push_back(string(".googlevideo.com"));
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -641,15 +641,15 @@ void QuicStreamFactory::PopulateFromCanonicalConfig(
   const string server_hostname = host_port_proxy_pair.first.host();
 
   unsigned i = 0;
-  for (; i < cannoncial_suffixes_.size(); ++i) {
-    if (EndsWith(server_hostname, cannoncial_suffixes_[i], false)) {
+  for (; i < canoncial_suffixes_.size(); ++i) {
+    if (EndsWith(server_hostname, canoncial_suffixes_[i], false)) {
       break;
     }
   }
-  if (i == cannoncial_suffixes_.size())
+  if (i == canoncial_suffixes_.size())
     return;
 
-  HostPortPair canonical_host_port(cannoncial_suffixes_[i],
+  HostPortPair canonical_host_port(canoncial_suffixes_[i],
                                    host_port_proxy_pair.first.port());
   if (!ContainsKey(canonical_hostname_to_origin_map_, canonical_host_port)) {
     // This is the first host we've seen which matches the suffix, so make it

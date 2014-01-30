@@ -273,6 +273,28 @@ TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair2));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
+
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+  EXPECT_FALSE(impl_.HasAlternateProtocol(canonical_port_pair));
+
+  PortAlternateProtocolPair canonical_protocol;
+  canonical_protocol.port = 1234;
+  canonical_protocol.protocol = QUIC;
+
+  impl_.SetAlternateProtocol(canonical_port_pair,
+                             canonical_protocol.port,
+                             canonical_protocol.protocol);
+  // Verify the forced protocol.
+  ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
+  PortAlternateProtocolPair alternate =
+      impl_.GetAlternateProtocol(test_host_port_pair);
+  EXPECT_EQ(canonical_protocol.port, alternate.port);
+  EXPECT_EQ(canonical_protocol.protocol, alternate.protocol);
+}
+
 typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;
 
 TEST_F(SpdySettingsServerPropertiesTest, Initialize) {

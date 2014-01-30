@@ -232,8 +232,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   CanonicalHostMap canonical_hostname_to_origin_map_;
 
   // Contains list of suffixes (for exmaple ".c.youtube.com",
-  // ".googlevideo.com") of cannoncial hostnames.
-  std::vector<std::string> cannoncial_suffixes_;
+  // ".googlevideo.com") of canoncial hostnames.
+  std::vector<std::string> canoncial_suffixes_;
 
   QuicConfig config_;
 

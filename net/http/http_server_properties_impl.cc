@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_pipelined_host_capability.h"
 
@@ -21,6 +22,8 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
     : pipeline_capability_map_(
         new CachedPipelineCapabilityMap(kDefaultNumHostsToRemember)),
       weak_ptr_factory_(this) {
+  canoncial_suffixes_.push_back(".c.youtube.com");
+  canoncial_suffixes_.push_back(".googlevideo.com");
 }
 
 HttpServerPropertiesImpl::~HttpServerPropertiesImpl() {
@@ -49,6 +52,30 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
        it != alternate_protocol_map->end(); ++it) {
     if (it->second.protocol == ALTERNATE_PROTOCOL_BROKEN)
       alternate_protocol_map_[it->first] = it->second;
+  }
+  // Attempt to find canonical servers.
+  int canonical_ports[] = { 80, 443 };
+  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canoncial_suffixes_[i];
+    for (size_t j = 0; j < arraysize(canonical_ports); ++j) {
+      HostPortPair canonical_host(canonical_suffix, canonical_ports[j]);
+      // If we already have a valid canonical server, we're done.
+      if (ContainsKey(canonical_host_to_origin_map_, canonical_host) &&
+          ContainsKey(alternate_protocol_map_,
+                      canonical_host_to_origin_map_[canonical_host])) {
+        continue;
+      }
+      // Now attempt to find a server which matches this origin and set it as
+      // canonical .
+      for (AlternateProtocolMap::const_iterator it =
+               alternate_protocol_map_.begin();
+           it != alternate_protocol_map_.end(); ++it) {
+        if (EndsWith(it->first.host(), canoncial_suffixes_[i], false)) {
+          canonical_host_to_origin_map_[canonical_host] = it->first;
+          break;
+        }
+      }
+    }
   }
 }
 
@@ -159,8 +186,11 @@ void HttpServerPropertiesImpl::SetSupportsSpdy(
 
 bool HttpServerPropertiesImpl::HasAlternateProtocol(
     const HostPortPair& server) const {
-  return ContainsKey(alternate_protocol_map_, server) ||
-      g_forced_alternate_protocol;
+  if (ContainsKey(alternate_protocol_map_, server) ||
+      g_forced_alternate_protocol)
+    return true;
+
+  return GetCanonicalHost(server) != canonical_host_to_origin_map_.end();
 }
 
 PortAlternateProtocolPair
@@ -173,6 +203,11 @@ HttpServerPropertiesImpl::GetAlternateProtocol(
       alternate_protocol_map_.find(server);
   if (it != alternate_protocol_map_.end())
     return it->second;
+
+  // Next check the canonical host.
+  CanonicalHostMap::const_iterator canonical_host = GetCanonicalHost(server);
+  if (canonical_host != canonical_host_to_origin_map_.end())
+    return alternate_protocol_map_.find(canonical_host->second)->second;
 
   // We must be forcing an alternate.
   DCHECK(g_forced_alternate_protocol);
@@ -213,6 +248,17 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
   }
 
   alternate_protocol_map_[server] = alternate;
+
+  // If this host ends with a canonical suffix, then set it as the
+  // canonical host.
+  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canoncial_suffixes_[i];
+    if (EndsWith(server.host(), canoncial_suffixes_[i], false)) {
+      HostPortPair canonical_host(canonical_suffix, server.port());
+      canonical_host_to_origin_map_[canonical_host] = server;
+      break;
+    }
+  }
 }
 
 void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
@@ -315,6 +361,19 @@ HttpServerPropertiesImpl::GetPipelineCapabilityMap() const {
     result[it->first] = it->second;
   }
   return result;
+}
+
+HttpServerPropertiesImpl::CanonicalHostMap::const_iterator
+HttpServerPropertiesImpl::GetCanonicalHost(HostPortPair server) const {
+  for (size_t i = 0; i < canoncial_suffixes_.size(); ++i) {
+    std::string canonical_suffix = canoncial_suffixes_[i];
+    if (EndsWith(server.host(), canoncial_suffixes_[i], false)) {
+      HostPortPair canonical_host(canonical_suffix, server.port());
+      return canonical_host_to_origin_map_.find(canonical_host);
+    }
+  }
+
+  return canonical_host_to_origin_map_.end();
 }
 
 }  // namespace net
