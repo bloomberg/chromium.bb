@@ -35,7 +35,7 @@ void ColorChooserAura::OnColorChooserDialogClosed() {
 }
 
 void ColorChooserAura::End() {
-  if (widget_ && widget_->IsVisible()) {
+  if (widget_) {
     view_->set_listener(NULL);
     widget_->Close();
     view_ = NULL;
