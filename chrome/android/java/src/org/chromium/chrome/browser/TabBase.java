@@ -830,7 +830,8 @@ public abstract class TabBase implements NavigationClient {
 
     /** This is currently called when committing a pre-rendered page. */
     @CalledByNative
-    private void swapWebContents(final long newWebContents) {
+    private void swapWebContents(
+            final long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
         if (mContentViewCore != null) mContentViewCore.onHide();
         destroyContentView(false);
         NativePage previousNativePage = mNativePage;
@@ -840,7 +841,9 @@ public abstract class TabBase implements NavigationClient {
         mContentViewCore.attachImeAdapter();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
         destroyNativePageInternal(previousNativePage);
-        for (TabObserver observer : mObservers) observer.onWebContentsSwapped(this);
+        for (TabObserver observer : mObservers) {
+            observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
+        }
     }
 
     @CalledByNative

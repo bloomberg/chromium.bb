@@ -27,7 +27,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onUrlUpdated(TabBase tab) { }
 
     @Override
-    public void onWebContentsSwapped(TabBase tab) { }
+    public void onWebContentsSwapped(TabBase tab, boolean didStartLoad, boolean didFinishLoad) { }
 
     @Override
     public void onContextMenuShown(TabBase tab, ContextMenu menu) { }

@@ -1705,7 +1705,9 @@ gfx::Size Browser::GetSizeForNewRenderView(
 // Browser, CoreTabHelperDelegate implementation:
 
 void Browser::SwapTabContents(content::WebContents* old_contents,
-                              content::WebContents* new_contents) {
+                              content::WebContents* new_contents,
+                              bool did_start_load,
+                              bool did_finish_load) {
   int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_strip_model_->ReplaceWebContentsAt(index, new_contents);

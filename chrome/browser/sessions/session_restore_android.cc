@@ -42,7 +42,7 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
   TabAndroid* current_tab = TabAndroid::FromWebContents(web_contents);
   DCHECK(current_tab);
   if (disposition == CURRENT_TAB) {
-    current_tab->SwapTabContents(web_contents, new_web_contents);
+    current_tab->SwapTabContents(web_contents, new_web_contents, false, false);
     delete web_contents;
   } else {
     DCHECK(disposition == NEW_FOREGROUND_TAB ||

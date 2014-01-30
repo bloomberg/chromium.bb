@@ -648,7 +648,9 @@ class Browser : public TabStripModelObserver,
   // Overridden from CoreTabHelperDelegate:
   // Note that the caller is responsible for deleting |old_contents|.
   virtual void SwapTabContents(content::WebContents* old_contents,
-                               content::WebContents* new_contents) OVERRIDE;
+                               content::WebContents* new_contents,
+                               bool did_start_load,
+                               bool did_finish_load) OVERRIDE;
   virtual bool CanReloadContents(
       content::WebContents* web_contents) const OVERRIDE;
   virtual bool CanSaveContents(

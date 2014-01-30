@@ -9,7 +9,9 @@ CoreTabHelperDelegate::~CoreTabHelperDelegate() {
 
 void CoreTabHelperDelegate::SwapTabContents(
     content::WebContents* old_contents,
-    content::WebContents* new_contents) {
+    content::WebContents* new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
 }
 
 bool CoreTabHelperDelegate::CanReloadContents(

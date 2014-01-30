@@ -633,7 +633,10 @@ WebContents* PrerenderManager::SwapInternal(
       &old_web_contents->GetController(),
       should_replace_current_entry);
   CoreTabHelper::FromWebContents(old_web_contents)->delegate()->
-      SwapTabContents(old_web_contents, new_web_contents);
+      SwapTabContents(old_web_contents,
+                      new_web_contents,
+                      true,
+                      prerender_contents->has_finished_loading());
   prerender_contents->CommitHistory(new_web_contents);
 
   GURL icon_url = prerender_contents->icon_url();

@@ -258,7 +258,9 @@ bool TabAndroid::ShouldWelcomePageLinkToTermsOfService() {
 }
 
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
-                                 content::WebContents* new_contents) {
+                                 content::WebContents* new_contents,
+                                 bool did_start_load,
+                                 bool did_finish_load) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // We need to notify the native InfobarContainer so infobars can be swapped.
@@ -274,7 +276,9 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
   Java_TabBase_swapWebContents(
       env,
       weak_java_tab_.get(env).obj(),
-      reinterpret_cast<intptr_t>(new_contents));
+      reinterpret_cast<intptr_t>(new_contents),
+      did_start_load,
+      did_finish_load);
 }
 
 void TabAndroid::Observe(int type,
