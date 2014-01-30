@@ -538,7 +538,7 @@ void HarfBuzzShaper::setFontFeatures()
 
 bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
 {
-    if (!collectHarfBuzzRuns())
+    if (!createHarfBuzzRuns())
         return false;
 
     m_totalWidth = 0;
@@ -586,7 +586,7 @@ static inline int handleMultipleUChar(
     return 0;
 }
 
-bool HarfBuzzShaper::collectHarfBuzzRuns()
+bool HarfBuzzShaper::createHarfBuzzRuns()
 {
     const UChar* normalizedBufferEnd = m_normalizedBuffer.get() + m_normalizedBufferLength;
     SurrogatePairAwareTextIterator iterator(m_normalizedBuffer.get(), 0, m_normalizedBufferLength, m_normalizedBufferLength);

@@ -122,7 +122,7 @@ private:
 
     void setFontFeatures();
 
-    bool collectHarfBuzzRuns();
+    bool createHarfBuzzRuns();
     bool shapeHarfBuzzRuns();
     bool fillGlyphBuffer(GlyphBuffer*);
     void fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, FloatPoint& firstOffsetOfNextRun);
