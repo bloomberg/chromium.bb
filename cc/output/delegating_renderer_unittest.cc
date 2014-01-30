@@ -39,10 +39,10 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
 
   virtual void AfterTest() OVERRIDE {}
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame,
-                                     bool result)
-      OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
 
     const CompositorFrame& last_frame = output_surface_->last_sent_frame();
@@ -50,7 +50,7 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
     EXPECT_FALSE(last_frame.gl_frame_data);
     EXPECT_EQ(0.f, last_frame.metadata.min_page_scale_factor);
     EXPECT_EQ(0.f, last_frame.metadata.max_page_scale_factor);
-    return true;
+    return DrawSwapReadbackResult::DRAW_SUCCESS;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -89,10 +89,10 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
 
   virtual void AfterTest() OVERRIDE {}
 
-  virtual bool PrepareToDrawOnThread(
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      bool result) OVERRIDE {
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     frame->render_passes.clear();
     frame->render_passes_by_id.clear();
 
@@ -111,7 +111,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
         gfx::Transform());
     pass->AppendOneOfEveryQuadType(
         host_impl->resource_provider(), child_pass->id);
-    return true;
+    return draw_result;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {

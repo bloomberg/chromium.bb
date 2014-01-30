@@ -16,6 +16,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy)
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
+  SetViewportSize(gfx::Size(100, 100));
 }
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,

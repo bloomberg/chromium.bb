@@ -1110,17 +1110,9 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     bool readback_requested) {
   TRACE_EVENT_SYNTHETIC_DELAY("cc.DrawAndSwap");
   DrawSwapReadbackResult result;
-  result.did_draw = false;
-  result.did_swap = false;
-  result.did_readback = false;
+
   DCHECK(IsImplThread());
   DCHECK(impl().layer_tree_host_impl.get());
-  if (!impl().layer_tree_host_impl)
-    return result;
-
-  DCHECK(impl().layer_tree_host_impl->renderer());
-  if (!impl().layer_tree_host_impl->renderer())
-    return result;
 
   base::TimeTicks start_time = base::TimeTicks::HighResNow();
   base::TimeDelta draw_duration_estimate = DrawDurationEstimate();
@@ -1161,15 +1153,18 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     if (drawing_for_readback)
       readback_rect = impl().readback_request->rect;
 
-    if (impl().layer_tree_host_impl->PrepareToDraw(&frame, readback_rect) ||
-        forced_draw)
-      draw_frame = true;
+    result.draw_result =
+        impl().layer_tree_host_impl->PrepareToDraw(&frame, readback_rect);
+    draw_frame = forced_draw ||
+                 result.draw_result == DrawSwapReadbackResult::DRAW_SUCCESS;
   }
 
   if (draw_frame) {
     impl().layer_tree_host_impl->DrawLayers(
         &frame, impl().scheduler->LastBeginImplFrameTime());
-    result.did_draw = true;
+    result.draw_result = DrawSwapReadbackResult::DRAW_SUCCESS;
+  } else {
+    DCHECK_NE(DrawSwapReadbackResult::DRAW_SUCCESS, result.draw_result);
   }
   impl().layer_tree_host_impl->DidDrawAllLayers(frame);
 

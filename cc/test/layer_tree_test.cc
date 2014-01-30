@@ -35,10 +35,11 @@ TestHooks::TestHooks() {}
 
 TestHooks::~TestHooks() {}
 
-bool TestHooks::PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                      LayerTreeHostImpl::FrameData* frame_data,
-                                      bool result) {
-  return true;
+DrawSwapReadbackResult::DrawResult TestHooks::PrepareToDrawOnThread(
+    LayerTreeHostImpl* host_impl,
+    LayerTreeHostImpl::FrameData* frame_data,
+    DrawSwapReadbackResult::DrawResult draw_result) {
+  return draw_result;
 }
 
 base::TimeDelta TestHooks::LowFrequencyAnimationInterval() const {
@@ -101,12 +102,12 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     }
   }
 
-  virtual bool PrepareToDraw(FrameData* frame,
-                             const gfx::Rect& damage_rect) OVERRIDE {
-    bool result = LayerTreeHostImpl::PrepareToDraw(frame, damage_rect);
-    if (!test_hooks_->PrepareToDrawOnThread(this, frame, result))
-      result = false;
-    return result;
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDraw(
+      FrameData* frame,
+      const gfx::Rect& damage_rect) OVERRIDE {
+    DrawSwapReadbackResult::DrawResult draw_result =
+        LayerTreeHostImpl::PrepareToDraw(frame, damage_rect);
+    return test_hooks_->PrepareToDrawOnThread(this, frame, draw_result);
   }
 
   virtual void DrawLayers(FrameData* frame,

@@ -1402,11 +1402,12 @@ class TextureLayerClientTest
     expected_used_textures_on_draw_ = expected_used_textures_on_commit_;
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame_data,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     ContextForImplThread(host_impl)->ResetUsedTextures();
-    return true;
+    return DrawSwapReadbackResult::DRAW_SUCCESS;
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
@@ -1548,11 +1549,12 @@ class TextureLayerChangeInvisibleTest
     expected_texture_on_draw_ = texture_;
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame_data,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     ContextForImplThread(host_impl)->ResetUsedTextures();
-    return true;
+    return DrawSwapReadbackResult::DRAW_SUCCESS;
   }
 
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
@@ -1982,9 +1984,10 @@ class TextureLayerLostContextTest
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame_data,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     LayerImpl* root = host_impl->RootLayer();
     TextureLayerImpl* texture_layer =
         static_cast<TextureLayerImpl*>(root->children()[0]);
@@ -1992,7 +1995,7 @@ class TextureLayerLostContextTest
       EXPECT_EQ(0u, texture_layer->texture_id());
     else
       EXPECT_EQ(1u, texture_layer->texture_id());
-    return true;
+    return DrawSwapReadbackResult::DRAW_SUCCESS;
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {

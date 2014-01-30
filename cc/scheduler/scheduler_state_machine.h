@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/scheduler/draw_swap_readback_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 
 namespace base {
@@ -180,7 +181,7 @@ class CC_EXPORT SchedulerStateMachine {
   void SetSmoothnessTakesPriority(bool smoothness_takes_priority);
 
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
-  void DidDrawIfPossibleCompleted(bool success);
+  void DidDrawIfPossibleCompleted(DrawSwapReadbackResult::DrawResult result);
 
   // Indicates that a new commit flow needs to be performed, either to pull
   // updates from the main thread to the impl, or to push deltas from the impl
@@ -287,7 +288,7 @@ class CC_EXPORT SchedulerStateMachine {
   // we start throttling ACTION_MANAGE_TILES such that we average one
   // ManageTile per BeginImplFrame.
   int manage_tiles_funnel_;
-  int consecutive_failed_draws_;
+  int consecutive_checkerboard_animations_;
   bool needs_redraw_;
   bool needs_manage_tiles_;
   bool swap_used_incomplete_tile_;

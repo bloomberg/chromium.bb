@@ -27,7 +27,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_update_visible_tiles_was_called_(-1),
       manage_tiles_funnel_(0),
-      consecutive_failed_draws_(0),
+      consecutive_checkerboard_animations_(0),
       needs_redraw_(false),
       needs_manage_tiles_(false),
       swap_used_incomplete_tile_(false),
@@ -240,8 +240,8 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
       last_frame_number_update_visible_tiles_was_called_);
 
   minor_state->SetInteger("manage_tiles_funnel", manage_tiles_funnel_);
-  minor_state->SetInteger("consecutive_failed_draws",
-                          consecutive_failed_draws_);
+  minor_state->SetInteger("consecutive_checkerboard_animations",
+                          consecutive_checkerboard_animations_);
   minor_state->SetBoolean("needs_redraw", needs_redraw_);
   minor_state->SetBoolean("needs_manage_tiles", needs_manage_tiles_);
   minor_state->SetBoolean("swap_used_incomplete_tile",
@@ -1022,29 +1022,35 @@ void SchedulerStateMachine::SetSmoothnessTakesPriority(
   smoothness_takes_priority_ = smoothness_takes_priority;
 }
 
-void SchedulerStateMachine::DidDrawIfPossibleCompleted(bool success) {
-  draw_if_possible_failed_ = !success;
-  if (draw_if_possible_failed_) {
-    needs_redraw_ = true;
+void SchedulerStateMachine::DidDrawIfPossibleCompleted(
+    DrawSwapReadbackResult::DrawResult result) {
+  switch (result) {
+    case DrawSwapReadbackResult::INVALID_RESULT:
+      NOTREACHED() << "Uninitialized DrawSwapReadbackResult.";
+      break;
+    case DrawSwapReadbackResult::DRAW_SUCCESS:
+      consecutive_checkerboard_animations_ = 0;
+      forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
+      break;
+    case DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS:
+      needs_redraw_ = true;
 
-    // If we're already in the middle of a redraw, we don't need to
-    // restart it.
-    if (forced_redraw_state_ != FORCED_REDRAW_STATE_IDLE)
-      return;
+      // If we're already in the middle of a redraw, we don't need to
+      // restart it.
+      if (forced_redraw_state_ != FORCED_REDRAW_STATE_IDLE)
+        return;
 
-    needs_commit_ = true;
-    consecutive_failed_draws_++;
-    if (settings_.timeout_and_draw_when_animation_checkerboards &&
-        consecutive_failed_draws_ >=
-            settings_.maximum_number_of_failed_draws_before_draw_is_forced_) {
-      consecutive_failed_draws_ = 0;
-      // We need to force a draw, but it doesn't make sense to do this until
-      // we've committed and have new textures.
-      forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
-    }
-  } else {
-    consecutive_failed_draws_ = 0;
-    forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
+      needs_commit_ = true;
+      consecutive_checkerboard_animations_++;
+      if (settings_.timeout_and_draw_when_animation_checkerboards &&
+          consecutive_checkerboard_animations_ >=
+              settings_.maximum_number_of_failed_draws_before_draw_is_forced_) {
+        consecutive_checkerboard_animations_ = 0;
+        // We need to force a draw, but it doesn't make sense to do this until
+        // we've committed and have new textures.
+        forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
+      }
+      break;
   }
 }
 

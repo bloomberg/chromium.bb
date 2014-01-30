@@ -697,11 +697,11 @@ static void AppendQuadsToFillScreen(
   }
 }
 
-bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
+DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
+    FrameData* frame) {
   DCHECK(frame->render_passes.empty());
-
-  if (!CanDraw() || !active_tree_->root_layer())
-    return false;
+  DCHECK(CanDraw());
+  DCHECK(active_tree_->root_layer());
 
   TrackDamageForAllSurfaces(active_tree_->root_layer(),
                             *frame->render_surface_layer_list);
@@ -725,7 +725,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     DCHECK_EQ(0u, active_tree_->LayersWithCopyOutputRequest().size());
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
-    return true;
+    return DrawSwapReadbackResult::DRAW_SUCCESS;
   }
 
   TRACE_EVENT1("cc",
@@ -779,7 +779,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // still draw the frame. However when the layer being checkerboarded is moving
   // due to an impl-animation, we drop the frame to avoid flashing due to the
   // texture suddenly appearing in the future.
-  bool draw_frame = true;
+  DrawSwapReadbackResult::DrawResult draw_result =
+      DrawSwapReadbackResult::DRAW_SUCCESS;
   // When we have a copy request for a layer, we need to draw no matter
   // what, as the layer may disappear after this frame.
   bool have_copy_request = false;
@@ -865,8 +866,10 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       bool layer_has_animating_transform =
           it->screen_space_transform_is_animating() ||
           it->draw_transform_is_animating();
-      if (layer_has_animating_transform)
-        draw_frame = false;
+      if (layer_has_animating_transform) {
+        draw_result =
+            DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+      }
     }
 
     if (append_quads_data.had_incomplete_tile)
@@ -877,7 +880,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   if (have_copy_request ||
       output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
-    draw_frame = true;
+    draw_result = DrawSwapReadbackResult::DRAW_SUCCESS;
 
 #ifndef NDEBUG
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
@@ -901,7 +904,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         occlusion_tracker);
   }
 
-  if (draw_frame)
+  if (draw_result == DrawSwapReadbackResult::DRAW_SUCCESS)
     occlusion_tracker.overdraw_metrics()->RecordMetrics(this);
   else
     DCHECK(!have_copy_request);
@@ -926,7 +929,7 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   if (output_surface_->ForcedDrawToSoftwareDevice())
     DCHECK_EQ(1u, frame->render_passes.size());
 
-  return draw_frame;
+  return draw_result;
 }
 
 void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
@@ -1078,8 +1081,9 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
   }
 }
 
-bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
-                                      const gfx::Rect& damage_rect) {
+DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::PrepareToDraw(
+    FrameData* frame,
+    const gfx::Rect& damage_rect) {
   TRACE_EVENT1("cc",
                "LayerTreeHostImpl::PrepareToDraw",
                "SourceFrameNumber",
@@ -1109,15 +1113,16 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
         AddDamageNextUpdate(device_viewport_damage_rect);
   }
 
-  if (!CalculateRenderPasses(frame)) {
+  DrawSwapReadbackResult::DrawResult draw_result = CalculateRenderPasses(frame);
+  if (draw_result != DrawSwapReadbackResult::DRAW_SUCCESS) {
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
-    return false;
+    return draw_result;
   }
 
-  // If we return true, then we expect DrawLayers() to be called before this
-  // function is called again.
-  return true;
+  // If we return DRAW_SUCCESS, then we expect DrawLayers() to be called before
+  // this function is called again.
+  return draw_result;
 }
 
 void LayerTreeHostImpl::EvictTexturesForTesting() {

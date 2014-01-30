@@ -201,11 +201,11 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws
       EndTest();
   }
 
-  virtual bool PrepareToDrawOnThread(
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      bool result) OVERRIDE {
-    return false;
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void AfterTest() OVERRIDE { }
@@ -893,16 +893,17 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame_data,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     if (added_animations_ < 2)
-      return result;
+      return draw_result;
     if (TestEnded())
-      return result;
+      return draw_result;
     // Act like there is checkerboard when the second animation wants to draw.
     ++prevented_draw_;
-    return false;
+    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {

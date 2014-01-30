@@ -110,26 +110,30 @@ class FakeSchedulerClient : public SchedulerClient {
     states_.push_back(scheduler_->StateAsValue().release());
     num_draws_++;
     bool did_readback = false;
+    DrawSwapReadbackResult::DrawResult result =
+        draw_will_happen_
+            ? DrawSwapReadbackResult::DRAW_SUCCESS
+            : DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
     return DrawSwapReadbackResult(
-        draw_will_happen_,
+        result,
         draw_will_happen_ && swap_will_happen_if_draw_happens_,
         did_readback);
   }
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapForced");
     states_.push_back(scheduler_->StateAsValue().release());
-    bool did_draw = true;
     bool did_swap = swap_will_happen_if_draw_happens_;
     bool did_readback = false;
-    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
+    return DrawSwapReadbackResult(
+        DrawSwapReadbackResult::DRAW_SUCCESS, did_swap, did_readback);
   }
   virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndReadback");
     states_.push_back(scheduler_->StateAsValue().release());
-    bool did_draw = true;
     bool did_swap = false;
     bool did_readback = true;
-    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
+    return DrawSwapReadbackResult(
+        DrawSwapReadbackResult::DRAW_SUCCESS, did_swap, did_readback);
   }
   virtual void ScheduledActionCommit() OVERRIDE {
     actions_.push_back("ScheduledActionCommit");
@@ -689,10 +693,10 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
 
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE {
     NOTREACHED();
-    bool did_draw = true;
     bool did_swap = true;
     bool did_readback = false;
-    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
+    return DrawSwapReadbackResult(
+        DrawSwapReadbackResult::DRAW_SUCCESS, did_swap, did_readback);
   }
 
   virtual void ScheduledActionCommit() OVERRIDE {}
@@ -805,10 +809,10 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
 
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE {
     NOTREACHED();
-    bool did_draw = true;
     bool did_swap = false;
     bool did_readback = false;
-    return DrawSwapReadbackResult(did_draw, did_swap, did_readback);
+    return DrawSwapReadbackResult(
+        DrawSwapReadbackResult::DRAW_SUCCESS, did_swap, did_readback);
   }
 
   virtual void ScheduledActionCommit() OVERRIDE {}

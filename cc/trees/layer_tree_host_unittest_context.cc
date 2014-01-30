@@ -127,12 +127,13 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     return offscreen_contexts_;
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame,
-                                     bool result) OVERRIDE {
-    EXPECT_TRUE(result);
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
     if (!times_to_lose_during_draw_)
-      return result;
+      return draw_result;
 
     --times_to_lose_during_draw_;
     LoseContext();
@@ -142,7 +143,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     times_to_fail_create_offscreen_ = times_to_fail_recreate_offscreen_;
     times_to_fail_recreate_offscreen_ = 0;
 
-    return result;
+    return draw_result;
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -1114,15 +1115,16 @@ class LayerTreeHostContextTestDontUseLostResources
     }
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() == 2) {
       // Lose the context during draw on the second commit. This will cause
       // a third commit to recover.
       context3d_->set_times_bind_texture_succeeds(0);
     }
-    return true;
+    return draw_result;
   }
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
@@ -1209,12 +1211,13 @@ class LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit
     EXPECT_EQ(1, times_output_surface_created_);
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame_data,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     EXPECT_GE(host_impl->active_tree()->source_frame_number(), 0);
     EXPECT_LE(host_impl->active_tree()->source_frame_number(), 1);
-    return true;
+    return draw_result;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -1260,9 +1263,10 @@ class LayerTreeHostContextTestLoseOutputSurfaceDuringReadbackAndForcedDraw
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame_data,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     int sfn = host_impl->active_tree()->source_frame_number();
     EXPECT_TRUE(sfn == kFirstOutputSurfaceInitSourceFrameNumber ||
                 sfn == kSecondOutputSurfaceInitSourceFrameNumber ||
@@ -1279,7 +1283,7 @@ class LayerTreeHostContextTestLoseOutputSurfaceDuringReadbackAndForcedDraw
       LoseContext();
     }
 
-    return false;
+    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
@@ -1338,9 +1342,10 @@ class LayerTreeHostContextTestReadbackWithForcedDrawAndOutputSurfaceInit
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame_data,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame_data,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     int sfn = host_impl->active_tree()->source_frame_number();
     EXPECT_TRUE(sfn == kFirstOutputSurfaceInitSourceFrameNumber ||
                 sfn == kSecondOutputSurfaceInitSourceFrameNumber ||
@@ -1356,7 +1361,7 @@ class LayerTreeHostContextTestReadbackWithForcedDrawAndOutputSurfaceInit
     }
 
     // Returning false will result in a forced draw.
-    return false;
+    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void DidInitializeOutputSurface(bool succeeded) OVERRIDE {

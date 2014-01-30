@@ -709,13 +709,14 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
     first_draw_for_source_frame_ = true;
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame,
-                                     bool result) OVERRIDE {
-    EXPECT_TRUE(result);
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
 
     if (!first_draw_for_source_frame_)
-      return result;
+      return draw_result;
 
     gfx::RectF damage_rect;
     if (!frame->has_no_damage) {
@@ -811,7 +812,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
         break;
     }
 
-    return result;
+    return draw_result;
   }
 
  protected:

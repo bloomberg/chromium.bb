@@ -46,9 +46,10 @@ class LayerTreeHostVideoTestSetNeedsDisplay
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                     LayerTreeHostImpl::FrameData* frame,
-                                     bool result) OVERRIDE {
+  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+      LayerTreeHostImpl* host_impl,
+      LayerTreeHostImpl::FrameData* frame,
+      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
     LayerImpl* root_layer = host_impl->active_tree()->root_layer();
     RenderSurfaceImpl* root_surface = root_layer->render_surface();
     gfx::RectF damage_rect =
@@ -68,8 +69,8 @@ class LayerTreeHostVideoTestSetNeedsDisplay
         break;
     }
 
-    EXPECT_TRUE(result);
-    return result;
+    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+    return draw_result;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {

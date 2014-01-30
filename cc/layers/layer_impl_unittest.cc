@@ -257,8 +257,15 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeImplProxy proxy;
   FakeLayerTreeHostImpl host_impl(&proxy);
   EXPECT_TRUE(host_impl.InitializeRenderer(CreateFakeOutputSurface()));
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
-  root->SetScrollable(true);
+  host_impl.active_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl.active_tree(), 1));
+  LayerImpl* root = host_impl.active_tree()->root_layer();
+  scoped_ptr<LayerImpl> layer_ptr =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  LayerImpl* layer = layer_ptr.get();
+  root->AddChild(layer_ptr.Pass());
+  layer->SetScrollable(true);
+  DCHECK(host_impl.CanDraw());
 
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   float arbitrary_number = 0.352f;
@@ -277,83 +284,88 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
 
   // Related filter functions.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(FilterOperations()));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(FilterOperations()));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
 
   // Related scrolling functions.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetMaxScrollOffset(large_vector2d));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetMaxScrollOffset(large_vector2d));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->ScrollBy(arbitrary_vector2d));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->ScrollBy(gfx::Vector2d()));
-  root->SetScrollDelta(gfx::Vector2d(0, 0));
-  host_impl.ForcePrepareToDraw();
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetScrollDelta(arbitrary_vector2d));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetScrollDelta(arbitrary_vector2d));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetScrollOffset(arbitrary_vector2d));
+      layer->SetMaxScrollOffset(large_vector2d));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetScrollOffset(arbitrary_vector2d));
+      layer->SetMaxScrollOffset(large_vector2d));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(arbitrary_vector2d));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(gfx::Vector2d()));
+  layer->SetScrollDelta(gfx::Vector2d(0, 0));
+  host_impl.ForcePrepareToDraw();
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetScrollDelta(arbitrary_vector2d));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetScrollDelta(arbitrary_vector2d));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetScrollOffset(arbitrary_vector2d));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetScrollOffset(arbitrary_vector2d));
 
   // Unrelated functions, always set to new values, always set needs update.
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetAnchorPointZ(arbitrary_number));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetAnchorPointZ(arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetMasksToBounds(true));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetContentsOpaque(true));
+      layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5)));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetPosition(arbitrary_point_f));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetPreserves3d(true));
+      layer->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5)));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPosition(arbitrary_point_f));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPreserves3d(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetDoubleSided(false));  // constructor initializes it to "true".
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetContentBounds(arbitrary_size));
+      layer->SetDoubleSided(false));  // constructor initializes it to "true".
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentBounds(arbitrary_size));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetContentsScale(arbitrary_number, arbitrary_number));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetDrawsContent(true));
+      layer->SetContentsScale(arbitrary_number, arbitrary_number));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetBackgroundColor(arbitrary_color));
+      layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetBackgroundFilters(arbitrary_filters));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetOpacity(arbitrary_number));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetBlendMode(arbitrary_blend_mode));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetTransform(arbitrary_transform));
+      layer->SetBackgroundFilters(arbitrary_filters));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetOpacity(arbitrary_number));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetSublayerTransform(arbitrary_transform));
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetBounds(arbitrary_size));
+      layer->SetBlendMode(arbitrary_blend_mode));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetTransform(arbitrary_transform));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetSublayerTransform(arbitrary_transform));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
 
   // Unrelated functions, set to the same values, no needs update.
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetAnchorPointZ(arbitrary_number));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetIsRootForIsolatedGroup(true));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetMasksToBounds(true));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetContentsOpaque(true));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetPosition(arbitrary_point_f));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetPreserves3d(true));
+      layer->SetAnchorPointZ(arbitrary_number));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetDoubleSided(false));  // constructor initializes it to "true".
+      layer->SetIsRootForIsolatedGroup(true));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetFilters(arbitrary_filters));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPosition(arbitrary_point_f));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetPreserves3d(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetContentBounds(arbitrary_size));
+      layer->SetDoubleSided(false));  // constructor initializes it to "true".
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetContentsScale(arbitrary_number, arbitrary_number));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetDrawsContent(true));
+      layer->SetContentBounds(arbitrary_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetBackgroundColor(arbitrary_color));
+      layer->SetContentsScale(arbitrary_number, arbitrary_number));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetBackgroundFilters(arbitrary_filters));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetOpacity(arbitrary_number));
+      layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetBlendMode(arbitrary_blend_mode));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetIsRootForIsolatedGroup(true));
+      layer->SetBackgroundFilters(arbitrary_filters));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetOpacity(arbitrary_number));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetTransform(arbitrary_transform));
+      layer->SetBlendMode(arbitrary_blend_mode));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      root->SetSublayerTransform(arbitrary_transform));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetBounds(arbitrary_size));
+      layer->SetIsRootForIsolatedGroup(true));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetTransform(arbitrary_transform));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      layer->SetSublayerTransform(arbitrary_transform));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size));
 }
 
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {

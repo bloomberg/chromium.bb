@@ -405,6 +405,7 @@
         'resources/video_resource_updater.h',
         'scheduler/delay_based_time_source.cc',
         'scheduler/delay_based_time_source.h',
+        'scheduler/draw_swap_readback_result.h',
         'scheduler/frame_rate_controller.cc',
         'scheduler/frame_rate_controller.h',
         'scheduler/rolling_time_delta_history.cc',

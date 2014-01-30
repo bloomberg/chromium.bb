@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/scheduler/draw_swap_readback_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/trees/layer_tree_host.h"
@@ -20,16 +21,6 @@
 namespace cc {
 
 class Thread;
-
-struct DrawSwapReadbackResult {
-  DrawSwapReadbackResult()
-      : did_draw(false), did_swap(false), did_readback(false) {}
-  DrawSwapReadbackResult(bool did_draw, bool did_swap, bool did_readback)
-      : did_draw(did_draw), did_swap(did_swap), did_readback(did_readback) {}
-  bool did_draw;
-  bool did_swap;
-  bool did_readback;
-};
 
 class SchedulerClient {
  public:

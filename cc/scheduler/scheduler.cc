@@ -300,7 +300,7 @@ void Scheduler::PollForAnticipatedDrawTriggers() {
 void Scheduler::DrawAndSwapIfPossible() {
   DrawSwapReadbackResult result =
       client_->ScheduledActionDrawAndSwapIfPossible();
-  state_machine_.DidDrawIfPossibleCompleted(result.did_draw);
+  state_machine_.DidDrawIfPossibleCompleted(result.draw_result);
 }
 
 void Scheduler::DrawAndSwapForced() {
