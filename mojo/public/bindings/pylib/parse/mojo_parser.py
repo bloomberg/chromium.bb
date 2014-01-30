@@ -254,8 +254,7 @@ class Parser(object):
     p[0] = ''.join(p[1:])
 
   def p_unary_operator(self, p):
-    """unary_operator : TIMES
-                      | PLUS
+    """unary_operator : PLUS
                       | MINUS
                       | NOT
                       | LNOT"""
