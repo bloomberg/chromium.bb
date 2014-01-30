@@ -882,3 +882,5 @@ crbug.com/339174 fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Fai
 crbug.com/339252 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339238 inspector/layer-tree-model.html [ Pass Failure ]
+
+crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ] 
