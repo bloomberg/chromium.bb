@@ -6,8 +6,6 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 
-#include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
-
 namespace autofill {
 
 AutofillDialogView::~AutofillDialogView() {}

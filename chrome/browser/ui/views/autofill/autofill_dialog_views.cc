@@ -1441,76 +1441,9 @@ void AutofillDialogViews::ModelChanged() {
   }
 }
 
-TestableAutofillDialogView* AutofillDialogViews::GetTestableView() {
-  return this;
-}
-
 void AutofillDialogViews::OnSignInResize(const gfx::Size& pref_size) {
   sign_in_web_view_->SetPreferredSize(pref_size);
   ContentsPreferredSizeChanged();
-}
-
-void AutofillDialogViews::SubmitForTesting() {
-  Accept();
-}
-
-void AutofillDialogViews::CancelForTesting() {
-  GetDialogClientView()->CancelWindow();
-}
-
-base::string16 AutofillDialogViews::GetTextContentsOfInput(
-    ServerFieldType type) {
-  views::Textfield* textfield = TextfieldForType(type);
-  if (textfield)
-    return textfield->text();
-
-  views::Combobox* combobox = ComboboxForType(type);
-  if (combobox)
-    return combobox->model()->GetItemAt(combobox->selected_index());
-
-  NOTREACHED();
-  return base::string16();
-}
-
-void AutofillDialogViews::SetTextContentsOfInput(
-    ServerFieldType type,
-    const base::string16& contents) {
-  views::Textfield* textfield = TextfieldForType(type);
-  if (textfield) {
-    textfield->SetText(contents);
-    return;
-  }
-
-  views::Combobox* combobox = ComboboxForType(type);
-  if (combobox) {
-    SelectComboboxValueOrSetToDefault(combobox, contents);
-    return;
-  }
-
-  NOTREACHED();
-}
-
-void AutofillDialogViews::SetTextContentsOfSuggestionInput(
-    DialogSection section,
-    const base::string16& text) {
-  GroupForSection(section)->suggested_info->decorated_textfield()->
-      SetText(text);
-}
-
-void AutofillDialogViews::ActivateInput(ServerFieldType type) {
-  InputEditedOrActivated(type, gfx::Rect(), false);
-}
-
-gfx::Size AutofillDialogViews::GetSize() const {
-  return GetWidget() ? GetWidget()->GetRootView()->size() : gfx::Size();
-}
-
-content::WebContents* AutofillDialogViews::GetSignInWebContents() {
-  return sign_in_web_view_->web_contents();
-}
-
-bool AutofillDialogViews::IsShowingOverlay() const {
-  return overlay_view_->visible();
 }
 
 gfx::Size AutofillDialogViews::GetPreferredSize() {
@@ -2284,15 +2217,20 @@ void AutofillDialogViews::InputEditedOrActivated(ServerFieldType type,
   DCHECK_NE(UNKNOWN_TYPE, type);
 
   DecoratedTextfield* decorated = TextfieldForType(type);
-  DetailsGroup* group = decorated ?
-      GroupForView(decorated) : GroupForView(ComboboxForType(type));
+  views::Combobox* combobox = ComboboxForType(type);
+  DCHECK_NE(!!combobox, !!decorated);
+  DetailsGroup* group = decorated ? GroupForView(decorated) :
+                                    GroupForView(combobox);
+  base::string16 text = decorated ?
+      decorated->text() :
+      combobox->model()->GetItemAt(combobox->selected_index());
   DCHECK(group);
 
   delegate_->UserEditedOrActivatedInput(group->section,
                                         type,
                                         GetWidget()->GetNativeView(),
                                         bounds,
-                                        GetTextContentsOfInput(type),
+                                        text,
                                         was_edit);
 
   // If the field is a textfield and is invalid, check if the text is now valid.

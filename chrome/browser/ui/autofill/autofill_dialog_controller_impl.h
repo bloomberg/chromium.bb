@@ -54,7 +54,6 @@ class AutofillDataModel;
 class AutofillDialogView;
 class AutofillPopupControllerImpl;
 class DataModelWrapper;
-class TestableAutofillDialogView;
 
 namespace risk {
 class Fingerprint;
@@ -90,10 +89,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void TabActivated() OVERRIDE;
-
-  // Returns |view_| as a testable version of itself (if |view_| exists and
-  // actually implements |AutofillDialogView::GetTestableView()|).
-  TestableAutofillDialogView* GetTestableView();
 
   // AutofillDialogViewDelegate implementation.
   virtual base::string16 DialogTitle() const OVERRIDE;

@@ -186,9 +186,6 @@ class TestAutofillDialogView : public AutofillDialogView {
       OVERRIDE {
     *output = outputs_[section];
   }
-  virtual TestableAutofillDialogView* GetTestableView() OVERRIDE {
-    return NULL;
-  }
 
   virtual base::string16 GetCvc() OVERRIDE { return base::string16(); }
   virtual bool HitTestInput(ServerFieldType type,

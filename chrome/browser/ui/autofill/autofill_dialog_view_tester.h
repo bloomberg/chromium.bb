@@ -1,17 +1,31 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_TESTABLE_AUTOFILL_DIALOG_VIEW_H_
-#define CHROME_BROWSER_UI_AUTOFILL_TESTABLE_AUTOFILL_DIALOG_VIEW_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_TESTER_H_
+#define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_TESTER_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "ui/gfx/size.h"
+
+namespace content {
+class WebContents;
+}
 
 namespace autofill {
 
-// Functions that an AutofillDialogView implementation should implement in order
-// to assist in unit testing.
-class TestableAutofillDialogView {
+class AutofillDialogView;
+
+// Functionality that helps to test an AutofillDialogView.
+class AutofillDialogViewTester {
  public:
-  virtual ~TestableAutofillDialogView() {}
+  // Gets a AutofillDialogViewTester for |view|.
+  static scoped_ptr<AutofillDialogViewTester> For(AutofillDialogView* view);
+
+  virtual ~AutofillDialogViewTester() {}
 
   // Simulates the user pressing 'Submit' to accept the dialog.
   virtual void SubmitForTesting() = 0;
@@ -45,4 +59,4 @@ class TestableAutofillDialogView {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_TESTABLE_AUTOFILL_DIALOG_VIEW_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_TESTER_H_

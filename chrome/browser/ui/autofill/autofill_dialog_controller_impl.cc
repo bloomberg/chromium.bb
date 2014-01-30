@@ -646,10 +646,6 @@ void AutofillDialogControllerImpl::TabActivated() {
   }
 }
 
-TestableAutofillDialogView* AutofillDialogControllerImpl::GetTestableView() {
-  return view_ ? view_->GetTestableView() : NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillDialogViewDelegate implementation.
 

@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
-#include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -61,7 +60,6 @@ class InfoBubble;
 // Views toolkit implementation of the Autofill dialog that handles the
 // imperative autocomplete API call.
 class AutofillDialogViews : public AutofillDialogView,
-                            public TestableAutofillDialogView,
                             public views::DialogDelegateView,
                             public views::WidgetObserver,
                             public views::TextfieldController,
@@ -97,22 +95,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
-  virtual TestableAutofillDialogView* GetTestableView() OVERRIDE;
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE;
-
-  // TestableAutofillDialogView implementation:
-  virtual void SubmitForTesting() OVERRIDE;
-  virtual void CancelForTesting() OVERRIDE;
-  virtual base::string16 GetTextContentsOfInput(ServerFieldType type) OVERRIDE;
-  virtual void SetTextContentsOfInput(ServerFieldType type,
-                                      const base::string16& contents) OVERRIDE;
-  virtual void SetTextContentsOfSuggestionInput(
-      DialogSection section,
-      const base::string16& text) OVERRIDE;
-  virtual void ActivateInput(ServerFieldType type) OVERRIDE;
-  virtual gfx::Size GetSize() const OVERRIDE;
-  virtual content::WebContents* GetSignInWebContents() OVERRIDE;
-  virtual bool IsShowingOverlay() const OVERRIDE;
 
   // views::View implementation.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -178,6 +161,8 @@ class AutofillDialogViews : public AutofillDialogView,
   views::View* GetScrollableAreaForTesting();
 
  private:
+  friend class AutofillDialogViewTesterViews;
+
   // What the entire dialog should be doing (e.g. gathering info from the user,
   // asking the user to sign in, etc.).
   enum DialogMode {

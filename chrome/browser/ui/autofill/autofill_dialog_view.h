@@ -19,7 +19,6 @@ class Size;
 namespace autofill {
 
 class AutofillDialogViewDelegate;
-class TestableAutofillDialogView;
 
 // An interface for the dialog that appears when a site initiates an Autofill
 // action via the imperative autocomplete API.
@@ -97,10 +96,6 @@ class AutofillDialogView {
 
   // Called when the active suggestions data model changed.
   virtual void ModelChanged() = 0;
-
-  // Returns an object that can be used to test that the view is behaving as
-  // expected.
-  virtual TestableAutofillDialogView* GetTestableView() = 0;
 
   // Called by AutofillDialogSignInDelegate when the sign-in page experiences a
   // resize. |pref_size| is the new preferred size of the sign-in page.

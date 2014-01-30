@@ -17,10 +17,10 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_view_tester.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
-#include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -341,6 +341,10 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  scoped_ptr<AutofillDialogViewTester> GetViewTester() {
+    return AutofillDialogViewTester::For(controller()->view()).Pass();
+  }
+
   const MockAutofillMetrics& metric_logger() { return metric_logger_; }
   TestAutofillDialogController* controller() { return controller_; }
 
@@ -497,7 +501,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 // Submit the form data.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
-  controller()->GetTestableView()->SubmitForTesting();
+  GetViewTester()->SubmitForTesting();
 
   RunMessageLoop();
 
@@ -507,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
 
 // Cancel out of the dialog.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
-  controller()->GetTestableView()->CancelForTesting();
+  GetViewTester()->CancelForTesting();
 
   RunMessageLoop();
 
@@ -548,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, CloseDuringSignin) {
   EXPECT_CALL(metric_logger(),
               LogDialogDismissalState(
                   AutofillMetrics::DIALOG_CANCELED_DURING_SIGNIN));
-  controller()->GetTestableView()->CancelForTesting();
+  GetViewTester()->CancelForTesting();
 
   RunMessageLoop();
 
@@ -569,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const ServerFieldType triggering_type = inputs[0].type;
   base::string16 value = full_profile.GetRawInfo(triggering_type);
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_type);
@@ -633,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const ServerFieldType triggering_type = inputs[0].type;
   base::string16 value = full_profile.GetRawInfo(triggering_type);
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_type);
@@ -706,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       controller()->RequestedFieldsForSection(SECTION_BILLING);
   const ServerFieldType triggering_type = inputs[0].type;
   EXPECT_EQ(NAME_BILLING_FULL, triggering_type);
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->ActivateInput(triggering_type);
 
   ASSERT_EQ(triggering_type, controller()->popup_input_type());
@@ -752,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       controller()->RequestedFieldsForSection(SECTION_CC);
   const ServerFieldType triggering_type = inputs[0].type;
   base::string16 value = card1.GetRawInfo(triggering_type);
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_type);
@@ -827,7 +831,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
   ASSERT_FALSE(card.IsVerified());
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(
       CREDIT_CARD_NUMBER,
       card.GetRawInfo(CREDIT_CARD_NUMBER).substr(0, 1));
@@ -870,8 +874,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
 
 // Notifications with long message text should not make the dialog bigger.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
-  const gfx::Size no_notification_size =
-      controller()->GetTestableView()->GetSize();
+  const gfx::Size no_notification_size = GetViewTester()->GetSize();
   ASSERT_GT(no_notification_size.width(), 0);
 
   std::vector<DialogNotification> notifications;
@@ -888,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
   controller()->view()->UpdateNotificationArea();
 
   EXPECT_EQ(no_notification_size.width(),
-            controller()->GetTestableView()->GetSize().width());
+            GetViewTester()->GetSize().width());
 }
 
 // http://crbug.com/318526
@@ -906,7 +909,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());
 
-  TestableAutofillDialogView* view = controller->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view =
+      AutofillDialogViewTester::For(
+          static_cast<TestAutofillDialogController*>(controller)->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
   ExpectDomMessage("success");
@@ -934,7 +939,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());
 
-  TestableAutofillDialogView* view = controller->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view =
+      AutofillDialogViewTester::For(
+          static_cast<TestAutofillDialogController*>(controller)->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
   ExpectDomMessage("error: invalid");
@@ -953,7 +960,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
   ASSERT_TRUE(controller);
-  controller->GetTestableView()->CancelForTesting();
+  AutofillDialogViewTester::For(
+      static_cast<TestAutofillDialogController*>(controller)->view())->
+          CancelForTesting();
   ExpectDomMessage("error: cancel");
 }
 
@@ -964,8 +973,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
   controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
   EXPECT_FALSE(controller()->IsEditingExistingData(SECTION_CC));
 
-  ASSERT_NO_FATAL_FAILURE(
-      controller()->GetTestableView()->SubmitForTesting());
+  ASSERT_NO_FATAL_FAILURE(GetViewTester()->SubmitForTesting());
 }
 
 // Flaky on Win7, WinXP, and Win Aura.  http://crbug.com/270314.
@@ -977,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   controller()->set_use_validation(true);
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(CREDIT_CARD_NUMBER,
                                ASCIIToUTF16("4111111111111111"));
 
@@ -1021,7 +1029,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       wallet_items->instruments()[0]->TypeAndLastFourDigits();
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
-  TestableAutofillDialogView* test_view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> test_view = GetViewTester();
   EXPECT_FALSE(test_view->IsShowingOverlay());
   EXPECT_CALL(*controller(), LoadRiskFingerprintData());
   controller()->OnAccept();
@@ -1085,7 +1093,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
   controller()->SignInLinkClicked();
   EXPECT_TRUE(controller()->ShouldShowSignInWebView());
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   content::WebContents* sign_in_contents = view->GetSignInWebContents();
   ASSERT_TRUE(sign_in_contents);
 
@@ -1150,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
       account_chooser_model->GetItemCount() - 2);
   EXPECT_TRUE(controller()->ShouldShowSignInWebView());
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   content::WebContents* sign_in_contents = view->GetSignInWebContents();
   ASSERT_TRUE(sign_in_contents);
 
@@ -1211,7 +1219,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   AddAutofillProfileToProfile(controller->profile(),
                               test::GetVerifiedProfile());
 
-  TestableAutofillDialogView* view = controller->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view =
+      AutofillDialogViewTester::For(
+          static_cast<TestAutofillDialogController*>(controller)->view());
   view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
   view->SubmitForTesting();
   ExpectDomMessage("success");
@@ -1238,7 +1248,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewClearsComboboxes) {
   EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC));
 
   // Get the contents of the combobox of the credit card's expiration month.
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   base::string16 cc_exp_month_text =
       view->GetTextContentsOfInput(CREDIT_CARD_EXP_MONTH);
 
@@ -1308,8 +1318,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   controller()->SignInLinkClicked();
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
-  content::WebContents* sign_in_contents = view->GetSignInWebContents();
+  content::WebContents* sign_in_contents =
+      GetViewTester()->GetSignInWebContents();
   ASSERT_TRUE(sign_in_contents);
 
   sign_in_page_observer.Wait();
@@ -1465,7 +1475,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
   // Add some valid user input that should be preserved when country changes.
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(NAME_FULL, ASCIIToUTF16("B. Loblaw"));
 
   // Change both sections' countries.
@@ -1504,7 +1514,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   controller()->MenuModelForSection(SECTION_CC_BILLING)->ActivatedAt(1);
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   ASSERT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   ASSERT_EQ(ASCIIToUTF16("United States"),
@@ -1552,7 +1562,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
   controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   ASSERT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   ASSERT_EQ(ASCIIToUTF16("United States"),
@@ -1583,7 +1593,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   ASSERT_EQ(ASCIIToUTF16("United States"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   ASSERT_EQ(ASCIIToUTF16("United States"),
@@ -1610,7 +1620,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
 
-  TestableAutofillDialogView* view = controller()->GetTestableView();
+  scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("France"));
   view->ActivateInput(ADDRESS_BILLING_COUNTRY);
   view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Belarus"));

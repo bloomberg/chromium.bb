@@ -134,68 +134,11 @@ void AutofillDialogCocoa::UpdateErrorBubble() {
   [sheet_delegate_ updateErrorBubble];
 }
 
-TestableAutofillDialogView* AutofillDialogCocoa::GetTestableView() {
-  return this;
-}
-
 void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
   [sheet_delegate_ onSignInResize:
       NSMakeSize(pref_size.width(), pref_size.height())];
 }
 
-void AutofillDialogCocoa::SubmitForTesting() {
-  [sheet_delegate_ accept:nil];
-}
-
-void AutofillDialogCocoa::CancelForTesting() {
-  [sheet_delegate_ cancel:nil];
-}
-
-base::string16 AutofillDialogCocoa::GetTextContentsOfInput(
-    ServerFieldType type) {
-  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
-    DialogSection section = static_cast<DialogSection>(i);
-    FieldValueMap contents;
-    [sheet_delegate_ getInputs:&contents forSection:section];
-    FieldValueMap::const_iterator it = contents.find(type);
-    if (it != contents.end())
-      return it->second;
-  }
-
-  NOTREACHED();
-  return base::string16();
-}
-
-void AutofillDialogCocoa::SetTextContentsOfInput(
-    ServerFieldType type,
-    const base::string16& contents) {
-  [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(contents)
-                           forType:type];
-}
-
-void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
-    DialogSection section,
-    const base::string16& text) {
-  [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(text)
-            ofSuggestionForSection:section];
-}
-
-void AutofillDialogCocoa::ActivateInput(ServerFieldType type) {
-  [sheet_delegate_ activateFieldForType:type];
-}
-
-gfx::Size AutofillDialogCocoa::GetSize() const {
-  return gfx::Size(NSSizeToCGSize([[sheet_delegate_ window] frame].size));
-}
-
-content::WebContents* AutofillDialogCocoa::GetSignInWebContents() {
-  return [sheet_delegate_ getSignInWebContents];
-}
-
-
-bool AutofillDialogCocoa::IsShowingOverlay() const {
-  return [sheet_delegate_ isShowingOverlay];
-}
 
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
