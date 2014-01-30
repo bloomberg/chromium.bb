@@ -79,7 +79,7 @@ struct DisplayInfoSortFunctor {
 };
 
 struct ResolutionMatcher {
-  ResolutionMatcher(const gfx::Size& size) : size(size) {}
+  explicit ResolutionMatcher(const gfx::Size& size) : size(size) {}
   bool operator()(const Resolution& resolution) {
     return resolution.size == size;
   }
@@ -87,7 +87,7 @@ struct ResolutionMatcher {
 };
 
 struct ScaleComparator {
-  ScaleComparator(float s) : scale(s) {}
+  explicit ScaleComparator(float s) : scale(s) {}
 
   bool operator()(float s) const {
     const float kEpsilon = 0.0001f;
@@ -474,10 +474,8 @@ void DisplayManager::RegisterDisplayProperty(
     float ui_scale,
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels) {
-  if (display_info_.find(display_id) == display_info_.end()) {
-    display_info_[display_id] =
-        DisplayInfo(display_id, std::string(""), false);
-  }
+  if (display_info_.find(display_id) == display_info_.end())
+    display_info_[display_id] = DisplayInfo(display_id, std::string(), false);
 
   display_info_[display_id].set_rotation(rotation);
   // Just in case the preference file was corrupted.
@@ -705,7 +703,6 @@ void DisplayManager::UpdateDisplays(
           (current_display_info.size_in_pixel() !=
            new_display.GetSizeInPixel()) ||
           (current_display.rotation() != new_display.rotation())) {
-
         changed_display_indices.push_back(new_displays.size());
       }
 
@@ -975,9 +972,9 @@ void DisplayManager::AddMirrorDisplayInfoIfAny(
 void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
   std::map<int64, DisplayInfo>::iterator info =
       display_info_.find(new_info.id());
-  if (info != display_info_.end())
+  if (info != display_info_.end()) {
     info->second.Copy(new_info);
-  else {
+  } else {
     display_info_[new_info.id()] = new_info;
     display_info_[new_info.id()].set_native(false);
   }
@@ -1015,7 +1012,7 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
       (id_at_zero == first_display_id_ ||
        id_at_zero == gfx::Display::InternalDisplayId()) ?
       std::make_pair(id_at_zero, displays->at(1).id()) :
-      std::make_pair(displays->at(1).id(), id_at_zero) ;
+      std::make_pair(displays->at(1).id(), id_at_zero);
   DisplayLayout layout =
       layout_store_->ComputeDisplayLayoutForDisplayIdPair(pair);
 

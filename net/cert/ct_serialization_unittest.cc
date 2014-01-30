@@ -94,7 +94,7 @@ TEST_F(CtSerializationTest, EncodesV1SCTSignedData) {
   base::Time timestamp = base::Time::UnixEpoch() +
       base::TimeDelta::FromMilliseconds(1348589665525);
   std::string dummy_entry("abc");
-  std::string empty_extensions("");
+  std::string empty_extensions;
   // For now, no known failure cases.
   std::string encoded;
   ASSERT_TRUE(ct::EncodeV1SCTSignedData(
@@ -145,7 +145,7 @@ TEST_F(CtSerializationTest, DecodesSignedCertificateTimestamp) {
   // Subtracting 4 bytes for signature data (hash & sig algs),
   // actual signature data should be 71 bytes.
   EXPECT_EQ((size_t) 71, sct->signature.signature_data.size());
-  EXPECT_EQ(std::string(""), sct->extensions);
+  EXPECT_TRUE(sct->extensions.empty());
 }
 
 TEST_F(CtSerializationTest, FailsDecodingInvalidSignedCertificateTimestamp) {
@@ -162,5 +162,5 @@ TEST_F(CtSerializationTest, FailsDecodingInvalidSignedCertificateTimestamp) {
       ct::DecodeSignedCertificateTimestamp(&invalid_length_sct, &sct));
 }
 
-} // namespace net
+}  // namespace net
 

@@ -21,7 +21,7 @@ void DebugMarkerManager::Group::SetMarker(const std::string& marker) {
 
 DebugMarkerManager::DebugMarkerManager() {
   // Push root group.
-  group_stack_.push(Group(std::string("")));
+  group_stack_.push(Group(std::string()));
 }
 
 DebugMarkerManager::~DebugMarkerManager() {

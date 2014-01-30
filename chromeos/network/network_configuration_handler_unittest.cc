@@ -359,7 +359,7 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   network_configuration_handler_->CreateConfiguration(
       value,
       base::Bind(&StringResultCallback, std::string("/service/2")),
-      base::Bind(&ErrorCallback, false, std::string("")));
+      base::Bind(&ErrorCallback, false, std::string()));
   message_loop_.RunUntilIdle();
 }
 

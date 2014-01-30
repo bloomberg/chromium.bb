@@ -51,17 +51,17 @@ const char kContextNetwork[] = "network";
 // Reads a key from the input string erasing the read values + delimiters read
 // from the initial string
 std::string ReadKey(std::string* data) {
+  std::string key;
   size_t equal_sign = data->find("=");
   if (equal_sign == std::string::npos)
-    return std::string("");
-  std::string key = data->substr(0, equal_sign);
-  data->erase(0, equal_sign);
-  if (data->size() > 0) {
-    // erase the equal to sign also
-    data->erase(0,1);
     return key;
-  }
-  return std::string();
+  key = data->substr(0, equal_sign);
+  data->erase(0, equal_sign);
+  if (data->empty())
+    return key;
+  // erase the equal to sign also
+  data->erase(0, 1);
+  return key;
 }
 
 // Reads a value from the input string; erasing the read values from
@@ -93,7 +93,8 @@ std::string ReadValue(std::string* data) {
     std::string value = data->substr(0, next_multi);
     data->erase(0, next_multi + 3);
     return value;
-  } else { // single line value
+  } else {
+    // single line value
     size_t endl_pos = data->find_first_of(kNewLineChars);
     // if we don't find a new line, we just return the rest of the data
     std::string value = data->substr(0, endl_pos);
