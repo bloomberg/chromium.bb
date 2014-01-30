@@ -57,6 +57,38 @@ int32_t ConvertFileDescriptor(PP_FileHandle handle) {
 
 namespace plugin {
 
+NaClFileInfoAutoCloser::NaClFileInfoAutoCloser()
+    : info_(NoFileInfo()) {}
+
+NaClFileInfoAutoCloser::NaClFileInfoAutoCloser(NaClFileInfo* pass_ownership)
+    : info_(*pass_ownership) {
+  *pass_ownership = NoFileInfo();
+}
+
+void NaClFileInfoAutoCloser::FreeResources() {
+  if (-1 != get_desc()) {
+    PLUGIN_PRINTF(("NaClFileInfoAutoCloser::FreeResources close(%d)\n",
+                   get_desc()));
+    close(get_desc());
+  }
+  info_.desc = -1;
+}
+
+void NaClFileInfoAutoCloser::TakeOwnership(NaClFileInfo* pass_ownership) {
+  PLUGIN_PRINTF(("NaClFileInfoAutoCloser::set: taking ownership of %d\n",
+                 pass_ownership->desc));
+  CHECK(pass_ownership->desc == -1 || pass_ownership->desc != get_desc());
+  FreeResources();
+  info_ = *pass_ownership;
+  *pass_ownership = NoFileInfo();
+}
+
+NaClFileInfo NaClFileInfoAutoCloser::Release() {
+  NaClFileInfo info_to_return = info_;
+  info_ = NoFileInfo();
+  return info_to_return;
+}
+
 void FileDownloader::Initialize(Plugin* instance) {
   PLUGIN_PRINTF(("FileDownloader::FileDownloader (this=%p)\n",
                  static_cast<void*>(this)));
@@ -69,7 +101,7 @@ void FileDownloader::Initialize(Plugin* instance) {
   url_loader_trusted_interface_ = static_cast<const PPB_URLLoaderTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
   temp_buffer_.resize(kTempBufferSize);
-  cached_file_info_ = NoFileInfo();
+  file_info_.FreeResources();
 }
 
 bool FileDownloader::OpenStream(
@@ -101,7 +133,7 @@ bool FileDownloader::Open(
   file_open_notify_callback_ = callback;
   mode_ = mode;
   buffer_.clear();
-  cached_file_info_ = NoFileInfo();
+  file_info_.FreeResources();
   pp::URLRequestInfo url_request(instance_);
 
   // Allow CORS.
@@ -180,29 +212,32 @@ void FileDownloader::OpenFast(const nacl::string& url,
                               uint64_t file_token_lo, uint64_t file_token_hi) {
   PLUGIN_PRINTF(("FileDownloader::OpenFast (url=%s)\n", url.c_str()));
 
-  cached_file_info_ = NoFileInfo();
+  file_info_.FreeResources();
   CHECK(instance_ != NULL);
   open_time_ = NaClGetTimeOfDayMicroseconds();
   status_code_ = NACL_HTTP_STATUS_OK;
   url_to_open_ = url;
   url_ = url;
   mode_ = DOWNLOAD_NONE;
-  file_handle_ = file_handle;
-  file_token_.lo = file_token_lo;
-  file_token_.hi = file_token_hi;
+  if (not_streaming() && file_handle != PP_kInvalidFileHandle) {
+    NaClFileInfo tmp_info = NoFileInfo();
+    tmp_info.desc = ConvertFileDescriptor(file_handle);
+    tmp_info.file_token.lo = file_token_lo;
+    tmp_info.file_token.hi = file_token_hi;
+    file_info_.TakeOwnership(&tmp_info);
+  }
 }
 
-struct NaClFileInfo FileDownloader::GetFileInfo() {
-  PLUGIN_PRINTF(("FileDownloader::GetFileInfo\n"));
-  if (cached_file_info_.desc != -1) {
-    return cached_file_info_;
-  } else if (not_streaming() && file_handle_ != PP_kInvalidFileHandle) {
-    cached_file_info_.desc = ConvertFileDescriptor(file_handle_);
-    if (cached_file_info_.desc != -1)
-      cached_file_info_.file_token = file_token_;
-    return cached_file_info_;
+NaClFileInfo FileDownloader::GetFileInfo() {
+  NaClFileInfo info_to_return = NoFileInfo();
+
+  PLUGIN_PRINTF(("FileDownloader::GetFileInfo, this %p\n", this));
+  if (file_info_.get_desc() != -1) {
+    info_to_return = file_info_.Release();
   }
-  return NoFileInfo();
+  PLUGIN_PRINTF(("FileDownloader::GetFileInfo -- returning %d\n",
+                 info_to_return.desc));
+  return info_to_return;
 }
 
 int64_t FileDownloader::TimeSinceOpenMilliseconds() const {
@@ -452,8 +487,11 @@ void FileDownloader::GotFileHandleNotify(int32_t pp_error,
   PLUGIN_PRINTF((
       "FileDownloader::GotFileHandleNotify (pp_error=%" NACL_PRId32 ")\n",
       pp_error));
-  if (pp_error == PP_OK)
-    cached_file_info_.desc = ConvertFileDescriptor(handle);
+  if (pp_error == PP_OK) {
+    NaClFileInfo tmp_info = NoFileInfo();
+    tmp_info.desc = ConvertFileDescriptor(handle);
+    file_info_.TakeOwnership(&tmp_info);
+  }
 
   stream_finish_callback_.RunAndClear(pp_error);
 }

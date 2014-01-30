@@ -41,6 +41,37 @@ typedef std::vector<char>* FileStreamData;
 typedef CallbackSource<FileStreamData> StreamCallbackSource;
 typedef pp::CompletionCallbackWithOutput<FileStreamData> StreamCallback;
 
+// RAII-style wrapper class
+class NaClFileInfoAutoCloser {
+ public:
+  NaClFileInfoAutoCloser();
+
+  explicit NaClFileInfoAutoCloser(NaClFileInfo* pass_ownership);
+
+  ~NaClFileInfoAutoCloser() {
+    FreeResources();
+  }
+
+  // Frees owned resources
+  void FreeResources();
+
+  void TakeOwnership(NaClFileInfo* pass_ownership);
+
+  // Return NaClFileInfo for temporary use, retaining ownership.
+  const NaClFileInfo& get() { return info_; }
+
+  // Returns POSIX descriptor for temporary use, retaining ownership.
+  int get_desc() { return info_.desc; }
+
+  // Returns ownership to caller
+  NaClFileInfo Release();
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(NaClFileInfoAutoCloser);
+
+  NaClFileInfo info_;
+};
+
 // A class that wraps PPAPI URLLoader and FileIO functionality for downloading
 // the url into a file and providing an open file descriptor.
 class FileDownloader {
@@ -51,7 +82,6 @@ class FileDownloader {
       : instance_(NULL),
         file_open_notify_callback_(pp::BlockUntilComplete()),
         stream_finish_callback_(pp::BlockUntilComplete()),
-        file_handle_(PP_kInvalidFileHandle),
         file_io_private_interface_(NULL),
         url_loader_trusted_interface_(NULL),
         open_time_(-1),
@@ -185,8 +215,6 @@ class FileDownloader {
   pp::CompletionCallback file_open_notify_callback_;
   pp::CompletionCallback stream_finish_callback_;
   pp::FileIO file_reader_;
-  PP_FileHandle file_handle_;
-  struct NaClFileToken file_token_;
   const PPB_FileIO_Private* file_io_private_interface_;
   const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
   pp::URLLoader url_loader_;
@@ -200,7 +228,7 @@ class FileDownloader {
   std::deque<char> buffer_;
   UrlSchemeType url_scheme_;
   StreamCallbackSource* data_stream_callback_source_;
-  NaClFileInfo cached_file_info_;
+  NaClFileInfoAutoCloser file_info_;
 };
 }  // namespace plugin;
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_FILE_DOWNLOADER_H_

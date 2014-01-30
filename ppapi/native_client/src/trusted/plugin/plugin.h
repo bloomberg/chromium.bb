@@ -455,7 +455,7 @@ class Plugin : public pp::InstancePrivate {
   std::set<FileDownloader*> url_downloaders_;
   // Keep track of file descriptors opened by StreamAsFile().
   // These are owned by the browser.
-  std::map<nacl::string, struct NaClFileInfo> url_file_info_map_;
+  std::map<nacl::string, NaClFileInfoAutoCloser*> url_file_info_map_;
 
   // Pending progress events.
   std::queue<ProgressEvent*> progress_events_;
