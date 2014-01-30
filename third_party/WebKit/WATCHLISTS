@@ -53,6 +53,9 @@
                   '|Source/core/css/.*Event' \
                   '|Source/platform/.*Event'
     },
+    'fetch': {
+      'filepath': 'Source/core/fetch',
+    },
     'heap': {
       'filepath': 'Source/heap',
     },
@@ -260,6 +263,7 @@
                   'sigbjornf@opera.com' ],
     'canvas': [ 'cabanier@adobe.com', 'aandrey+blink@chromium.org' ],
     'custom_elements': [ 'dominicc+watchlist@chromium.org', 'dglazkov+blink@chromium.org' ],
+    'fetch': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'layers': [ 'blink-layers+watch@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'owners': [ 'abarth@chromium.org'],
