@@ -368,7 +368,7 @@ class DevToolsWindow : private content::NotificationObserver,
   bool can_dock_;
   LoadState load_state_;
   DevToolsToggleAction action_on_load_;
-  bool ignore_set_is_docked_for_test_;
+  bool ignore_set_is_docked_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<content::DevToolsClientHost> frontend_host_;
   scoped_ptr<DevToolsFileHelper> file_helper_;

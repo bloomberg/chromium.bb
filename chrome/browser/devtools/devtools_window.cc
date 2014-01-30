@@ -483,6 +483,7 @@ void DevToolsWindow::InspectedContentsClosing() {
   intercepted_page_beforeunload_ = false;
   // This will prevent any activity after frontend is loaded.
   action_on_load_ = DevToolsToggleAction::NoOp();
+  ignore_set_is_docked_ = true;
   web_contents_->GetRenderViewHost()->ClosePage();
 }
 
@@ -653,7 +654,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       // Passing "dockSide=undocked" parameter ensures proper UI.
       load_state_(can_dock ? kNotLoaded : kIsDockedSet),
       action_on_load_(DevToolsToggleAction::NoOp()),
-      ignore_set_is_docked_for_test_(false),
+      ignore_set_is_docked_(false),
       intercepted_page_beforeunload_(false),
       weak_factory_(this) {
   web_contents_ =
@@ -840,6 +841,7 @@ void DevToolsWindow::CloseContents(content::WebContents* source) {
   CHECK(is_docked_);
   // This will prevent any activity after frontend is loaded.
   action_on_load_ = DevToolsToggleAction::NoOp();
+  ignore_set_is_docked_ = true;
   // Update dev tools to reflect removed dev tools window.
   BrowserWindow* inspected_window = GetInspectedBrowserWindow();
   if (inspected_window)
@@ -979,6 +981,7 @@ void DevToolsWindow::CloseWindow() {
   DCHECK(is_docked_);
   // This will prevent any activity after frontend is loaded.
   action_on_load_ = DevToolsToggleAction::NoOp();
+  ignore_set_is_docked_ = true;
   web_contents_->GetRenderViewHost()->FirePageBeforeUnload(false);
 }
 
@@ -1023,11 +1026,11 @@ void DevToolsWindow::SetIsDockedAndShowImmediatelyForTest(bool is_docked) {
     if (load_state_ == kLoadCompleted)
       LoadCompleted();
   }
-  ignore_set_is_docked_for_test_ = true;
+  ignore_set_is_docked_ = true;
 }
 
 void DevToolsWindow::SetIsDocked(bool dock_requested) {
-  if (ignore_set_is_docked_for_test_)
+  if (ignore_set_is_docked_)
     return;
 
   DCHECK(can_dock_ || !dock_requested);
