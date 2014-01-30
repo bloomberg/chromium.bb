@@ -4,6 +4,7 @@
 
 #include "ui/events/ozone/evdev/touch_event_converter.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <poll.h>
@@ -116,8 +117,13 @@ void TouchEventConverterEvdev::OnFileCanWriteWithoutBlocking(int /* fd */) {
 void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
   input_event inputs[MAX_FINGERS * 6 + 1];
   ssize_t read_size = read(fd, inputs, sizeof(inputs));
-  if (read_size <= 0)
+  if (read_size < 0) {
+    if (errno == EINTR || errno == EAGAIN)
+      return;
+    PLOG(ERROR) << "error reading device " << path_.value();
+    Stop();
     return;
+  }
 
   for (unsigned i = 0; i < read_size / sizeof(*inputs); i++) {
     const input_event& input = inputs[i];

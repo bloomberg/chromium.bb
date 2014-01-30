@@ -4,6 +4,7 @@
 
 #include "ui/events/ozone/evdev/key_event_converter.h"
 
+#include <errno.h>
 #include <linux/input.h>
 
 #include "base/message_loop/message_pump_ozone.h"
@@ -210,8 +211,13 @@ void KeyEventConverterEvdev::Stop() {
 void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
   input_event inputs[4];
   ssize_t read_size = read(fd, inputs, sizeof(inputs));
-  if (read_size <= 0)
+  if (read_size < 0) {
+    if (errno == EINTR || errno == EAGAIN)
+      return;
+    PLOG(ERROR) << "error reading device " << path_.value();
+    Stop();
     return;
+  }
 
   CHECK_EQ(read_size % sizeof(*inputs), 0u);
   ProcessEvents(inputs, read_size / sizeof(*inputs));
