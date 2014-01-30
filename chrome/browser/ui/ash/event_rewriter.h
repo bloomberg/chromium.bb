@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_EVENT_REWRITER_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "ash/event_rewriter_delegate.h"
@@ -78,6 +79,7 @@ class EventRewriter : public ash::EventRewriterDelegate,
 
  private:
   friend class EventRewriterAshTest;
+  friend class EventRewriterTest;
 
   // ash::EventRewriterDelegate overrides:
   virtual ash::EventRewriterDelegate::Action RewriteOrFilterKeyEvent(
@@ -222,6 +224,9 @@ class EventRewriter : public ash::EventRewriterDelegate,
 #if defined(OS_CHROMEOS)
   // A mapping from X11 KeySym keys to KeyCode values.
   base::hash_map<unsigned long, unsigned long> keysym_to_keycode_map_;
+
+  // A set of device IDs whose press event has been rewritten.
+  std::set<int> pressed_device_ids_;
 
   chromeos::input_method::XKeyboard* xkeyboard_for_testing_;
 

@@ -1003,15 +1003,20 @@ void EventRewriter::RewriteLocatedEvent(ui::LocatedEvent* event) {
   xievent->mods.effective = remapped_native_modifiers;
 
   // Then, remap Alt+Button1 to Button3.
-  if ((xievent->mods.effective & Mod1Mask) && xievent->detail == 1) {
+  if ((xievent->evtype == XI_ButtonPress ||
+       pressed_device_ids_.count(xievent->sourceid)) &&
+      (xievent->mods.effective & Mod1Mask) && xievent->detail == Button1) {
     xievent->mods.effective &= ~Mod1Mask;
-    xievent->detail = 3;
+    xievent->detail = Button3;
     if (xievent->evtype == XI_ButtonRelease) {
       // On the release clear the left button from the existing state and the
       // mods, and set the right button.
-      XISetMask(xievent->buttons.mask, 3);
-      XIClearMask(xievent->buttons.mask, 1);
+      XISetMask(xievent->buttons.mask, Button3);
+      XIClearMask(xievent->buttons.mask, Button1);
       xievent->mods.effective &= ~Button1Mask;
+      pressed_device_ids_.erase(xievent->sourceid);
+    } else {
+      pressed_device_ids_.insert(xievent->sourceid);
     }
   }
 

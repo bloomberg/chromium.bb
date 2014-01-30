@@ -41,6 +41,10 @@ class ScopedXI2Event {
   void InitButtonEvent(EventType type,
                        int flags);
 
+  void InitGenericButtonEvent(int deviceid,
+                              EventType type,
+                              int flags);
+
   void InitMouseWheelEvent(int wheel_delta,
                            int flags);
 

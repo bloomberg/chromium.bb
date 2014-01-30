@@ -29,6 +29,7 @@
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {
@@ -62,6 +63,8 @@ std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
       "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
       ui_keycode, ui_flags, ui_type, x_keycode, x_state, x_type);
 }
+
+}  // namespace
 
 class EventRewriterTest : public testing::Test {
  public:
@@ -180,6 +183,11 @@ class EventRewriterTest : public testing::Test {
   void TestRewriteNumPadKeys();
   void TestRewriteNumPadKeysOnAppleKeyboard();
 
+  void RewriteLocatedEvent(EventRewriter* rewriter,
+                           ui::LocatedEvent* event) {
+    rewriter->RewriteLocatedEvent(event);
+  }
+
   Display* display_;
   const KeyCode keycode_a_;
   const KeyCode keycode_alt_l_;
@@ -270,7 +278,6 @@ class EventRewriterTest : public testing::Test {
   chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
 
-}  // namespace
 #else
 class EventRewriterTest : public testing::Test {
  public:
@@ -2378,6 +2385,78 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   send_function_keys_pref.SetValue(false);
   ASSERT_TRUE(RewriteFunctionKeys(&press_f1));
   ASSERT_EQ(ui::VKEY_BROWSER_BACK, press_f1.key_code());
+}
+
+TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
+  std::vector<unsigned int> device_list;
+  device_list.push_back(10);
+  device_list.push_back(11);
+  ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
+  TestingPrefServiceSyncable prefs;
+  EventRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+  const int kLeftAndAltFlag = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN;
+  {
+    ui::ScopedXI2Event xev;
+    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, kLeftAndAltFlag);
+    ui::MouseEvent press(xev);
+    // Sanity check.
+    EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
+    EXPECT_EQ(kLeftAndAltFlag, press.flags());
+
+    RewriteLocatedEvent(&rewriter, &press);
+
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & press.flags());
+  }
+  {
+    ui::ScopedXI2Event xev;
+    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    ui::MouseEvent release(xev);
+    RewriteLocatedEvent(&rewriter, &release);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
+  }
+
+  // No ALT in frst click.
+  {
+    ui::ScopedXI2Event xev;
+    xev.InitGenericButtonEvent(
+        10, ui::ET_MOUSE_PRESSED, ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent press(xev);
+    RewriteLocatedEvent(&rewriter, &press);
+    EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & press.flags());
+  }
+  {
+    ui::ScopedXI2Event xev;
+    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    ui::MouseEvent release(xev);
+    RewriteLocatedEvent(&rewriter, &release);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
+                release.flags());
+  }
+
+  // ALT on different device.
+  {
+    ui::ScopedXI2Event xev;
+    xev.InitGenericButtonEvent(11, ui::ET_MOUSE_PRESSED, kLeftAndAltFlag);
+    ui::MouseEvent press(xev);
+    RewriteLocatedEvent(&rewriter, &press);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & press.flags());
+  }
+  {
+    ui::ScopedXI2Event xev;
+    xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    ui::MouseEvent release(xev);
+    RewriteLocatedEvent(&rewriter, &release);
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) &
+                release.flags());
+  }
+  {
+    ui::ScopedXI2Event xev;
+    xev.InitGenericButtonEvent(11, ui::ET_MOUSE_RELEASED, kLeftAndAltFlag);
+    ui::MouseEvent release(xev);
+    RewriteLocatedEvent(&rewriter, &release);
+    EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & release.flags());
+  }
 }
 
 #endif  // OS_CHROMEOS
