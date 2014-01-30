@@ -518,7 +518,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
 
   // Wait until all windows are created.
   background.queue.run(function(onTaskCompleted) {
-    // Check if there is already a window with the same path. If so, then
+    // Check if there is already a window with the same URL. If so, then
     // reuse it instead of opening a new one.
     if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
         type == LaunchType.FOCUS_ANY_OR_CREATE) {
@@ -532,15 +532,15 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
             continue;
 
           // Different current directories.
-          if (opt_appState.currentDirectoryPath !==
-                  contentWindow.appState.currentDirectoryPath) {
+          if (opt_appState.currentDirectoryURL !==
+                  contentWindow.appState.currentDirectoryURL) {
             continue;
           }
 
-          // Selection path specified, and it is different.
-          if (opt_appState.selectionPath &&
-                  opt_appState.selectionPath !==
-                  contentWindow.appState.selectionPath) {
+          // Selection URL specified, and it is different.
+          if (opt_appState.selectionURL &&
+                  opt_appState.selectionURL !==
+                  contentWindow.appState.selectionURL) {
             continue;
           }
 
@@ -669,9 +669,9 @@ Background.prototype.onExecute_ = function(action, details) {
           },
           // It is not allowed to call getParent() here, since there may be
           // no permissions to access it at this stage. Therefore we are passing
-          // the selectionPath only, and the currentDirectory will be resolved
+          // the selectionURL only, and the currentDirectory will be resolved
           // later.
-          selectionPath: details.entries[0].fullPath
+          selectionURL: details.entries[0].toURL()
         };
         // For mounted devices just focus any Files.app window. The mounted
         // volume will appear on the navigation list.
@@ -798,15 +798,15 @@ Background.prototype.onRestarted_ = function() {
  */
 Background.prototype.onContextMenuClicked_ = function(info) {
   if (info.menuItemId == 'new-window') {
-    // Find the focused window (if any) and use it's current path for the
-    // new window. If not found, then launch with the default path.
+    // Find the focused window (if any) and use it's current url for the
+    // new window. If not found, then launch with the default url.
     for (var key in background.appWindows) {
       try {
         if (background.appWindows[key].contentWindow.isFocused()) {
           var appState = {
-            // Do not clone the selection path, only the current directory.
-            currentDirectoryPath: background.appWindows[key].contentWindow.
-                appState.currentDirectoryPath
+            // Do not clone the selection url, only the current directory.
+            currentDirectoryURL: background.appWindows[key].contentWindow.
+                appState.currentDirectoryURL
           };
           launchFileManager(appState);
           return;
@@ -817,7 +817,7 @@ Background.prototype.onContextMenuClicked_ = function(info) {
       }
     }
 
-    // Launch with the default path.
+    // Launch with the default URL.
     launchFileManager();
   }
 };

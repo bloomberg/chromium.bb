@@ -462,10 +462,9 @@ CommandHandler.COMMANDS_['new-folder'] = {
  */
 CommandHandler.COMMANDS_['new-window'] = {
   execute: function(event, fileManager) {
-    // TODO(mtomasz): Use Entry.toURL() instead of fullPath.
     fileManager.backgroundPage.launchFileManager({
-      currentDirectoryPath: fileManager.getCurrentDirectoryEntry() &&
-          fileManager.getCurrentDirectoryEntry().fullPath
+      currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
+          fileManager.getCurrentDirectoryEntry().toURL()
     });
   },
   canExecute: function(event, fileManager) {

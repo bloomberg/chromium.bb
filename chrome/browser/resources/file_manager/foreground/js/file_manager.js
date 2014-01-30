@@ -578,16 +578,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // TODO(mtomasz): Unify window.appState with location.search format.
     if (window.appState) {
       this.params_ = window.appState.params || {};
-      this.initCurrentDirectoryPath_ = window.appState.currentDirectoryPath;
-      this.initSelectionPath_ = window.appState.selectionPath;
+      this.initCurrentDirectoryURL_ = window.appState.currentDirectoryURL;
+      this.initSelectionPath_ = window.appState.selectionURL;
       this.initTargetName_ = window.appState.targetName;
     } else {
       // Used by the select dialog only.
       this.params_ = location.search ?
                      JSON.parse(decodeURIComponent(location.search.substr(1))) :
                      {};
-      this.initCurrentDirectoryPath_ = this.params_.currentDirectoryPath;
-      this.initSelectionPath_ = this.params_.selectionPath;
+      this.initCurrentDirectoryURL_ = this.params_.currentDirectoryURL;
+      this.initSelectionURL_ = this.params_.selectionURL;
       this.initTargetName_ = this.params_.targetName;
     }
 
@@ -1407,16 +1407,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var nextCurrentDirEntry;
     var selectionEntry;
 
-    // Resolve the selectionPath to selectionEntry or to currentDirectoryEntry
+    // Resolve the selectionURL to selectionEntry or to currentDirectoryEntry
     // in case of being a display root.
     queue.run(function(callback) {
-      // TODO(mtomasz): Migrate to URLs, and stop calling resolveAbsolutePath.
-      if (!this.initSelectionPath_) {
+      // TODO(mtomasz): Migrate to URLs, and stop calling resolveAbsoluteURL.
+      if (!this.initSelectionURL_) {
         callback();
         return;
       }
-      this.volumeManager_.resolveAbsolutePath(
-          this.initSelectionPath_,
+      webkitResolveLocalFileSystemURL(
+          this.initSelectionURL_,
           function(inEntry) {
             var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
             // If the selection is root, then use it as a current directory
@@ -1429,16 +1429,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             callback();
           }.bind(this), callback);
     }.bind(this));
-    // Resolve the currentDirectoryPath to currentDirectoryEntry (if not done
+    // Resolve the currentDirectoryURL to currentDirectoryEntry (if not done
     // by the previous step).
     queue.run(function(callback) {
-      if (nextCurrentDirEntry || !this.initCurrentDirectoryPath_) {
+      if (nextCurrentDirEntry || !this.initCurrentDirectoryURL_) {
         callback();
         return;
       }
-      // TODO(mtomasz): Migrate to URLs, and stop calling resolveAbsolutePath.
-      this.volumeManager_.resolveAbsolutePath(
-          this.initCurrentDirectoryPath_,
+      webkitResolveLocalFileSystemURL(
+          this.initCurrentDirectoryURL_,
           function(inEntry) {
             nextCurrentDirEntry = inEntry;
             callback();
@@ -1541,7 +1540,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     if (this.dialogType === DialogType.FULL_PAGE) {
-      // In the FULL_PAGE mode if the restored path points to a file we might
+      // In the FULL_PAGE mode if the restored URL points to a file we might
       // have to invoke a task after selecting it.
       if (this.params_.action === 'select')
         return;
@@ -1574,7 +1573,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         var listener = function() {
           if (!util.isSameEntry(this.directoryModel_.getCurrentDirEntry(),
                                directoryEntry)) {
-            // Opened on a different path. Probably fallbacked. Therefore,
+            // Opened on a different URL. Probably fallbacked. Therefore,
             // do not invoke a task.
             return;
           }
@@ -2300,12 +2299,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.searchBox.clear();
-    // TODO(mtomasz): Use Entry.toURL() instead of fullPath.
     // TODO(mtomasz): Consider remembering the selection.
     util.updateAppState(
         this.getCurrentDirectoryEntry() ?
-        this.getCurrentDirectoryEntry().fullPath : '',
-        '' /* selectionPath */,
+        this.getCurrentDirectoryEntry().toURL() : '',
+        '' /* selectionURL */,
         '' /* opt_param */);
 
     if (this.commandHandler)

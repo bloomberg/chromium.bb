@@ -43,8 +43,9 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
   const GURL url = GetFileManagerMainPageUrlWithParams(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       base::UTF8ToUTF16("some title"),
-      base::FilePath::FromUTF8Unsafe("/Downloads"),
-      base::FilePath::FromUTF8Unsafe("/Downloads/foo.txt"),
+      GURL("filesystem:chrome-extension://abc/Downloads/"),
+      GURL("filesystem:chrome-extension://abc/Downloads/foo.txt"),
+      "foo.txt",
       NULL,  // No file types
       0,  // Hence no file type index.
       FILE_PATH_LITERAL("txt"));
@@ -56,9 +57,11 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
   EXPECT_TRUE(url.query().find("%20") != std::string::npos);
   // The escaped query is hard to read. Pretty print the escaped JSON.
   EXPECT_EQ("{\n"
-            "   \"currentDirectoryPath\": \"/Downloads\",\n"
+            "   \"currentDirectoryURL\": "
+            "\"filesystem:chrome-extension://abc/Downloads/\",\n"
             "   \"defaultExtension\": \"txt\",\n"
-            "   \"selectionPath\": \"/Downloads/foo.txt\",\n"
+            "   \"selectionURL\": "
+            "\"filesystem:chrome-extension://abc/Downloads/foo.txt\",\n"
             "   \"shouldReturnLocalPath\": true,\n"
             "   \"targetName\": \"foo.txt\",\n"
             "   \"title\": \"some title\",\n"
@@ -88,8 +91,9 @@ TEST(FileManagerUrlUtilTest,
   const GURL url = GetFileManagerMainPageUrlWithParams(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
       base::UTF8ToUTF16("some title"),
-      base::FilePath::FromUTF8Unsafe("/Downloads"),
-      base::FilePath::FromUTF8Unsafe("/Downloads/foo.txt"),
+      GURL("filesystem:chrome-extension://abc/Downloads/"),
+      GURL("filesystem:chrome-extension://abc/Downloads/foo.txt"),
+      "foo.txt",
       &file_types,
       1,  // The file type index is 1-based.
       FILE_PATH_LITERAL("txt"));
@@ -101,10 +105,12 @@ TEST(FileManagerUrlUtilTest,
   EXPECT_TRUE(url.query().find("%20") != std::string::npos);
   // The escaped query is hard to read. Pretty print the escaped JSON.
   EXPECT_EQ("{\n"
-            "   \"currentDirectoryPath\": \"/Downloads\",\n"
+            "   \"currentDirectoryURL\": "
+            "\"filesystem:chrome-extension://abc/Downloads/\",\n"
             "   \"defaultExtension\": \"txt\",\n"
             "   \"includeAllFiles\": false,\n"
-            "   \"selectionPath\": \"/Downloads/foo.txt\",\n"
+            "   \"selectionURL\": "
+            "\"filesystem:chrome-extension://abc/Downloads/foo.txt\",\n"
             "   \"shouldReturnLocalPath\": false,\n"
             "   \"targetName\": \"foo.txt\",\n"
             "   \"title\": \"some title\",\n"

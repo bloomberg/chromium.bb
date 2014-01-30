@@ -684,23 +684,22 @@ util.createChild = function(parent, opt_className, opt_tag) {
 
 /**
  * Updates the app state.
- * TODO(mtomasz): Migrate to URLs.
  *
- * @param {string} currentDirectoryPath Currently opened path. If null the path
- *     is left unchanged.
- * @param {string} selectionPath Currently selected path. If null the path is
-*      left unchanged.
+ * @param {string} currentDirectoryURL Currently opened directory as an URL.
+ *     If null the value is left unchanged.
+ * @param {string} selectionURL Currently selected entry as an URL. If null the
+ *     value is left unchanged.
  * @param {string|Object=} opt_param Additional parameters, to be stored. If
  *     null, then left unchanged.
  */
-util.updateAppState = function(currentDirectoryPath, selectionPath, opt_param) {
+util.updateAppState = function(currentDirectoryURL, selectionURL, opt_param) {
   window.appState = window.appState || {};
   if (opt_param !== undefined && opt_param !== null)
     window.appState.params = opt_param;
-  if (currentDirectoryPath !== null)
-    window.appState.currentDirectoryPath = currentDirectoryPath;
-  if (selectionPath !== null)
-    window.appState.selectionPath = selectionPath;
+  if (currentDirectoryURL !== null)
+    window.appState.currentDirectoryURL = currentDirectoryURL;
+  if (selectionURL !== null)
+    window.appState.selectionURL = selectionURL;
   util.saveAppState();
 };
 

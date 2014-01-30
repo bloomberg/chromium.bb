@@ -333,52 +333,45 @@ void SelectFileDialogExtension::SelectFileImpl(
   base::FilePath fallback_path = profile_->last_selected_directory().empty() ?
       download_default_path : profile_->last_selected_directory();
 
-  // Convert the above absolute paths to virtual paths.
-  // TODO(mtomasz): Use URLs instead of paths.
-  base::FilePath selection_virtual_path;
-  if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+  // Convert the above absolute paths to file system URLs.
+  GURL selection_url;
+  if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
       profile_,
-      file_manager::kFileManagerAppId,
       selection_path,
-      &selection_virtual_path)) {
+      file_manager::kFileManagerAppId,
+      &selection_url)) {
     // Due to the current design, an invalid temporal cache file path may passed
     // as |default_path| (crbug.com/178013 #9-#11). In such a case, we use the
     // last selected directory as a workaround. Real fix is tracked at
     // crbug.com/110119.
-    if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+    if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
         profile_,
-        file_manager::kFileManagerAppId,
         fallback_path.Append(default_path.BaseName()),
-        &selection_virtual_path)) {
-      LOG(ERROR) << "Unable to resolve the selection path.";
+        file_manager::kFileManagerAppId,
+        &selection_url)) {
+      LOG(ERROR) << "Unable to resolve the selection URL.";
       return;
     }
   }
-  // TODO(mtomasz): Adding a leading separator works, because this code is
-  // executed on Chrome OS only. This trick will be removed, once migration to
-  // URLs is finished.
-  selection_virtual_path = base::FilePath("/").Append(selection_virtual_path);
 
-  base::FilePath current_directory_virtual_path;
+  GURL current_directory_url;
   base::FilePath current_directory_path = selection_path.DirName();
-  if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+  if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
       profile_,
-      file_manager::kFileManagerAppId,
       current_directory_path,
-      &current_directory_virtual_path)) {
+      file_manager::kFileManagerAppId,
+      &current_directory_url)) {
     // Fallback if necessary, see the comment above.
-    if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+    if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
             profile_,
-            file_manager::kFileManagerAppId,
             fallback_path,
-            &current_directory_virtual_path)) {
-      LOG(ERROR) << "Unable to resolve the current directory path: "
+            file_manager::kFileManagerAppId,
+            &current_directory_url)) {
+      LOG(ERROR) << "Unable to resolve the current directory URL for: "
                  << fallback_path.value();
       return;
     }
   }
-  current_directory_virtual_path = base::FilePath("/").Append(
-      current_directory_virtual_path);
 
   has_multiple_file_type_choices_ =
       !file_types || (file_types->extensions.size() > 1);
@@ -387,8 +380,9 @@ void SelectFileDialogExtension::SelectFileImpl(
       file_manager::util::GetFileManagerMainPageUrlWithParams(
           type,
           title,
-          current_directory_virtual_path,
-          selection_virtual_path,
+          current_directory_url,
+          selection_url,
+          default_path.BaseName().value(),
           file_types,
           file_type_index,
           default_extension);

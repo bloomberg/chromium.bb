@@ -227,37 +227,70 @@ var SHARED_WITH_ME_ENTRY_SET = [
 ];
 
 /**
- * Opens a Files.app's main window and waits until it is initialized.
+ * Opens a Files.app's main window.
  *
- * TODO(hirono): Add parameters to specify the entry set to be prepared.
+ * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.
  *
  * @param {Object} appState App state to be passed with on opening Files.app.
+ *     Can be null.
+ * @param {?string} initialRoot Root path to be used as a default current
+ *     directory during initialization. Can be null, for no default path.
+ * @param {function(string)} Callback with the app id.
+ */
+function openNewWindow(appState, initialRoot, callback) {
+  var appId;
+
+  // TODO(mtomasz): Migrate from full paths to a pair of a volumeId and a
+  // relative path. To compose the URL communicate via messages with
+  // file_manager_browser_test.cc.
+  var processedAppState = appState || {};
+  if (initialRoot) {
+    processedAppState.currentDirectoryURL =
+        'filesystem:chrome-extension://' + FILE_MANAGER_EXTENSIONS_ID +
+        '/external' + initialRoot;
+  }
+
+  callRemoteTestUtil('openMainWindow', null, [processedAppState], callback);
+}
+
+/**
+ * Opens a Files.app's main window and waits until it is initialized. Fills
+ * the window with initial files. Should be called for the first window only.
+ *
+ * TODO(hirono): Add parameters to specify the entry set to be prepared.
+ * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.
+ *
+ * @param {Object} appState App state to be passed with on opening Files.app.
+ *     Can be null.
+ * @param {?string} initialRoot Root path to be used as a default current
+ *     directory during initialization. Can be null, for no default path.
  * @param {function(string, Array.<Array.<string>>)} Callback with the app id
  *     and with the file list.
  */
-function setupAndWaitUntilReady(appState, callback) {
+function setupAndWaitUntilReady(appState, initialRoot, callback) {
   var appId;
-  var steps = [
+
+  StepsRunner.run([
     function() {
-      callRemoteTestUtil('openMainWindow', null, [appState], steps.shift());
+      openNewWindow(appState, initialRoot, this.next);
     },
     function(inAppId) {
       appId = inAppId;
-      addEntries(['local'], BASIC_LOCAL_ENTRY_SET, steps.shift());
+      addEntries(['local'], BASIC_LOCAL_ENTRY_SET, this.next);
     },
     function(success) {
       chrome.test.assertTrue(success);
-      addEntries(['drive'], BASIC_DRIVE_ENTRY_SET, steps.shift());
+      addEntries(['drive'], BASIC_DRIVE_ENTRY_SET, this.next);
     },
     function(success) {
       chrome.test.assertTrue(success);
-      callRemoteTestUtil('waitForFileListChange', appId, [0], steps.shift());
+      callRemoteTestUtil('waitForFileListChange', appId, [0], this.next);
     },
     function(fileList) {
       callback(appId, fileList);
+      this.next();
     }
-  ];
-  steps.shift()();
+  ]);
 }
 
 /**
@@ -270,8 +303,6 @@ function checkIfNoErrorsOccured(callback) {
     callback();
   });
 }
-
-
 
 /**
  * Returns the name of the given file list entry.
@@ -328,8 +359,7 @@ testcase.intermediate.fileDisplay = function(path) {
 
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: path};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, path, this.next);
     },
     // Notify that the list has been verified and a new file can be added
     // in file_manager_browsertest.cc.
@@ -364,8 +394,7 @@ testcase.intermediate.galleryOpen = function(path) {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: path};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, path, this.next);
     },
     // Resize the window to desired dimensions to avoid flakyness.
     function(inAppId) {
@@ -423,8 +452,7 @@ testcase.intermediate.audioOpen = function(path) {
   var audioAppId;
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: path};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, path, this.next);
     },
     // Select the song.
     function(inAppId) {
@@ -486,8 +514,7 @@ testcase.intermediate.videoOpen = function(path) {
   var videoAppId;
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: path};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, path, this.next);
     },
     function(inAppId) {
       appId = inAppId;
@@ -547,8 +574,7 @@ testcase.intermediate.keyboardCopy = function(path, callback) {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: path};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, path, this.next);
     },
     // Copy the file.
     function(inAppId, inFileListBefore) {
@@ -593,8 +619,7 @@ testcase.intermediate.keyboardDelete = function(path) {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: path};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, path, this.next);
     },
     // Delete the file.
     function(inAppId, inFileListBefore) {
@@ -700,8 +725,7 @@ testcase.openSidebarRecent = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: RootPath.DRIVE};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Click the icon of the Recent volume.
     function(inAppId) {
@@ -738,8 +762,7 @@ testcase.openSidebarOffline = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: RootPath.DRIVE};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Click the icon of the Offline volume.
     function(inAppId) {
@@ -775,8 +798,7 @@ testcase.openSidebarSharedWithMe = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: RootPath.DRIVE};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Click the icon of the Shared With Me volume.
     function(inAppId) {
@@ -817,8 +839,7 @@ testcase.autocomplete = function() {
 
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: RootPath.DRIVE};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Perform an auto complete test and wait until the list changes.
     // TODO(mtomasz): Move the operation from test_util.js to tests_cases.js.
@@ -859,8 +880,7 @@ testcase.intermediate.copyBetweenVolumes = function(targetFile,
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Select the source volume.
     function(inAppId) {
@@ -957,8 +977,7 @@ testcase.intermediate.share = function(path) {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DRIVE};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Select the source file.
     function(inAppId) {
@@ -1029,14 +1048,14 @@ testcase.intermediate.share = function(path) {
 
 /**
  * Test utility for traverse tests.
+ * @param {string} path Root path to be traversed.
  */
-testcase.intermediate.traverseDirectories = function(root) {
+testcase.intermediate.traverseDirectories = function(path) {
   var appId;
   StepsRunner.run([
-    // Set up File Manager.
+    // Set up File Manager. Do not add initial files.
     function() {
-      var appState = {currentDirectoryPath: root};
-      callRemoteTestUtil('openMainWindow', null, [appState], this.next);
+      openNewWindow(null, path, this.next);
     },
     // Check the initial view.
     function(inAppId) {
@@ -1193,18 +1212,16 @@ testcase.executeDefaultTaskOnDownloads = function(root) {
 
 /**
  * Tests executing the default task when there is only one task.
+ * @param {boolean} drive Whether to test Drive or Downloads.
  */
 testcase.intermediate.executeDefaultTask = function(drive) {
-  var root = drive ? RootPath.DRIVE : RootPath.DOWNLOADS;
+  var path = drive ? RootPath.DRIVE : RootPath.DOWNLOADS;
   var taskId = drive ? 'dummytaskid|drive|open-with' : 'dummytaskid|open-with'
   var appId;
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {
-        currentDirectoryPath: root
-      };
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, path, this.next);
     },
     // Override tasks list with a dummy task.
     function(inAppId, inFileListBefore) {
@@ -1272,13 +1289,12 @@ testcase.suggestAppDialog = function() {
       var data = JSON.parse(json);
 
       var appState = {
-        currentDirectoryPath: RootPath.DRIVE,
         suggestAppsDialogState: {
           overrideCwsContainerUrlForTest: data.url,
           overrideCwsContainerOriginForTest: data.origin
         }
       };
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(appState, RootPath.DRIVE, this.next);
     },
     function(inAppId, inFileListBefore) {
       appId = inAppId;
@@ -1386,8 +1402,7 @@ testcase.hideSearchBox = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Resize the window.
     function(inAppId, inFileListBefore) {
@@ -1427,8 +1442,7 @@ testcase.restoreSortColumn = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Sort by name.
     function(inAppId) {
@@ -1468,8 +1482,7 @@ testcase.restoreSortColumn = function() {
     },
     // Open another window, where the sorted column should be restored.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Check the sorted style of the header.
     function(inAppId) {
@@ -1501,8 +1514,7 @@ testcase.restoreCurrentView = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Check the initial view.
     function(inAppId) {
@@ -1536,8 +1548,7 @@ testcase.restoreCurrentView = function() {
     },
     // Open another window, where the current view is restored.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      callRemoteTestUtil('openMainWindow', null, [appState], this.next);
+      openNewWindow(null, RootPath.DOWNLOADS, this.next);
     },
     // Check the current view.
     function(inAppId) {
@@ -1562,8 +1573,7 @@ testcase.traverseNavigationList = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DRIVE};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Wait until Google Drive is selected.
     function(inAppId) {
@@ -1658,8 +1668,7 @@ testcase.restoreGeometry = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Resize the window to minimal dimensions.
     function(inAppId) {
@@ -1688,8 +1697,7 @@ testcase.restoreGeometry = function() {
     },
     // Open another window, where the current view is restored.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Check the next window's size.
     function(inAppId) {
@@ -1726,8 +1734,7 @@ testcase.searchBoxFocus = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {currentDirectoryPath: RootPath.DRIVE};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
     },
     // Check that the file list has the focus on launch.
     function(inAppId) {
@@ -1776,8 +1783,7 @@ testcase.thumbnailsDownloads = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {currentDirectoryPath: RootPath.DOWNLOADS};
-      setupAndWaitUntilReady(appState, this.next);
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
     // Select the image.
     function(inAppId) {

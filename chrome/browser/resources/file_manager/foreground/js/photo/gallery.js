@@ -499,7 +499,7 @@ Gallery.prototype.delete_ = function() {
     // TODO(hirono): Use fileOperationManager.
     var entry = itemsToRemove.pop().getEntry();
     entry.remove(deleteNext, function() {
-      util.flog('Error deleting: ' + entry.fullPath, deleteNext);
+      util.flog('Error deleting: ' + entry.name, deleteNext);
     });
   }
 
@@ -637,22 +637,18 @@ Gallery.prototype.onKeyDown_ = function(event) {
  * @private
  */
 Gallery.prototype.updateSelectionAndState_ = function() {
-  var path;
   var displayName = '';
 
-  // TODO(mtomasz): Migrate fullPath to toURL().
   var selectedItems = this.getSelectedItems();
   if (selectedItems.length === 1) {
     var item = selectedItems[0];
     var entry = item.getEntry();
-    path = entry.fullPath;
     window.top.document.title = entry.name;
     displayName = ImageUtil.getDisplayNameFromName(entry.name);
   } else if (selectedItems.length > 1 && this.context_.curDirEntry) {
     // If the Gallery was opened on search results the search query will not be
     // recorded in the app state and the relaunch will just open the gallery
     // in the curDirEntry directory.
-    path = this.context_.curDirEntry.fullPath;
     window.top.document.title = this.context_.curDirEntry.name;
     displayName =
         this.displayStringFunction_('GALLERY_ITEMS_SELECTED',
@@ -661,7 +657,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
   window.top.util.updateAppState(
       null,  // Keep the current directory.
-      path,  // Update the selection.
+      entry.toURL(),  // Update the selection.
       {gallery: (this.currentMode_ === this.mosaicMode_ ? 'mosaic' : 'slide')});
 
   // We can't rename files in readonly directory.
@@ -671,7 +667,6 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
   this.filenameEdit_.value = displayName;
 
-  // Resolve real filesystem path of the current file.
   if (this.selectionModel_.selectedIndexes.length) {
     var selectedIndex = this.selectionModel_.selectedIndex;
     var selectedItem =
