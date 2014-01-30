@@ -101,6 +101,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_NUMPAD7, ui::EF_ALT_DOWN, IDC_SELECT_TAB_6 },
   { ui::VKEY_8, ui::EF_ALT_DOWN, IDC_SELECT_TAB_7 },
   { ui::VKEY_NUMPAD8, ui::EF_ALT_DOWN, IDC_SELECT_TAB_7 },
+  { ui::VKEY_BROWSER_FAVORITES, ui::EF_NONE, IDC_SHOW_BOOKMARK_BAR },
 #endif
   { ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_SHOW_BOOKMARK_BAR },
@@ -134,19 +135,22 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_F11, ui::EF_NONE, IDC_FULLSCREEN },
 
   // Platform-specific key maps.
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, VKEY_BROWSER_SEARCH is handled in Ash.
+#if defined(OS_LINUX)
   { ui::VKEY_BROWSER_BACK, ui::EF_NONE, IDC_BACK },
-  { ui::VKEY_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_CLEAR_BROWSING_DATA },
   { ui::VKEY_BROWSER_FORWARD, ui::EF_NONE, IDC_FORWARD },
-  { ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN, IDC_HELP_PAGE_VIA_KEYBOARD },
-  { ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    IDC_HELP_PAGE_VIA_KEYBOARD },
   { ui::VKEY_BROWSER_HOME, ui::EF_NONE, IDC_HOME },
   { ui::VKEY_BROWSER_REFRESH, ui::EF_NONE, IDC_RELOAD },
   { ui::VKEY_BROWSER_REFRESH, ui::EF_CONTROL_DOWN, IDC_RELOAD_IGNORING_CACHE },
   { ui::VKEY_BROWSER_REFRESH, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
+#endif  // defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, VKEY_BROWSER_SEARCH is handled in Ash.
+  { ui::VKEY_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    IDC_CLEAR_BROWSING_DATA },
+  { ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN, IDC_HELP_PAGE_VIA_KEYBOARD },
+  { ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    IDC_HELP_PAGE_VIA_KEYBOARD },
   { ui::VKEY_BROWSER_FAVORITES, ui::EF_NONE, IDC_SHOW_BOOKMARK_MANAGER },
   { ui::VKEY_BROWSER_STOP, ui::EF_NONE, IDC_STOP },
   // Not implemented inside Ash to allow web pages to capture the key.
