@@ -657,6 +657,12 @@ DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
     return DOMWrapperWorld::isolatedWorld(isolate->GetCurrentContext());
 }
 
+v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)
+{
+    v8::Handle<v8::Value> boundFunction = function->GetBoundFunction();
+    return boundFunction->IsFunction() ? v8::Handle<v8::Function>::Cast(boundFunction) : function;
+}
+
 v8::Local<v8::Value> getHiddenValue(v8::Isolate* isolate, v8::Handle<v8::Object> object, const char* key)
 {
     return getHiddenValue(isolate, object, v8AtomicString(isolate, key));

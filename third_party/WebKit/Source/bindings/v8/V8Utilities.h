@@ -58,8 +58,6 @@ namespace WebCore {
     bool getMessagePortArray(v8::Local<v8::Value>, const String& propertyName, MessagePortArray&, v8::Isolate*);
     bool getMessagePortArray(v8::Local<v8::Value>, int argumentIndex, MessagePortArray&, v8::Isolate*);
 
-    v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function);
-
 } // namespace WebCore
 
 #endif // V8Utilities_h

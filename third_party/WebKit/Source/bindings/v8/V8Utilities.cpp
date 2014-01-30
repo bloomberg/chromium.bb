@@ -123,14 +123,4 @@ bool getMessagePortArray(v8::Local<v8::Value> value, int argumentIndex, MessageP
     return success;
 }
 
-v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)
-{
-    v8::Handle<v8::Value> boundFunction = function->GetBoundFunction();
-    if (boundFunction->IsFunction()) {
-        return v8::Handle<v8::Function>::Cast(boundFunction);
-    } else {
-        return function;
-    }
-}
-
 } // namespace WebCore

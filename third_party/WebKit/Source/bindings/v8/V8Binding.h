@@ -686,6 +686,7 @@ namespace WebCore {
     {
         return v8::Function::New(isolate, function, environment);
     }
+    v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function>);
 
     v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*);
     v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
