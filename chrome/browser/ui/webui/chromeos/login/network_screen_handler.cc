@@ -36,6 +36,8 @@ const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
 const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
 
+const char kUSlayout[] = "xkb:us::eng";
+
 }  // namespace
 
 namespace chromeos {
@@ -277,8 +279,13 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
   std::string current_input_method_id = manager->GetCurrentInputMethod().id();
+  bool default_us_layout_added = false;
   for (size_t i = 0; i < input_methods->size(); ++i) {
     const std::string ime_id = input_methods->at(i).id();
+
+    if (ime_id == kUSlayout)
+      default_us_layout_added = true;
+
     base::DictionaryValue* input_method = new base::DictionaryValue;
     input_method->SetString("value", ime_id);
     input_method->SetString(
@@ -286,6 +293,17 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
         util->GetInputMethodLongName(input_methods->at(i)));
     input_method->SetBoolean("selected",
         ime_id == current_input_method_id);
+    input_methods_list->Append(input_method);
+  }
+  // "xkb:us::eng" should always be in the list of available layouts.
+  if (!default_us_layout_added) {
+    const input_method::InputMethodDescriptor* us_eng_descriptor =
+        util->GetInputMethodDescriptorFromId(kUSlayout);
+    DCHECK(us_eng_descriptor != NULL);
+    base::DictionaryValue* input_method = new base::DictionaryValue;
+    input_method->SetString("value", kUSlayout);
+    input_method->SetString("title",
+                            util->GetInputMethodLongName(*us_eng_descriptor));
     input_methods_list->Append(input_method);
   }
   return input_methods_list;
