@@ -1543,8 +1543,6 @@
             'rendering/RenderTextControl.h',
             'rendering/RenderTextControlMultiLine.cpp',
             'rendering/RenderTextControlMultiLine.h',
-            'rendering/RenderTextControlPlaceholder.cpp',
-            'rendering/RenderTextControlPlaceholder.h',
             'rendering/RenderTextControlSingleLine.cpp',
             'rendering/RenderTextControlSingleLine.h',
             'rendering/RenderTextFragment.cpp',

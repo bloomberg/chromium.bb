@@ -1179,7 +1179,10 @@ void RenderBlock::removeChild(RenderObject* oldChild)
 
 bool RenderBlock::isSelfCollapsingBlock() const
 {
-    ASSERT(!needsLayout());
+    // Placeholder elements are not laid out until the dimensions of their parent text control are known, so they
+    // don't get layout until their parent has had layout - this is unique in the layout tree and means
+    // when we call isSelfCollapsingBlock on them we find that they still need layout.
+    ASSERT(!needsLayout() || (node() && node()->isElementNode() && toElement(node())->shadowPseudoId() == "-webkit-input-placeholder"));
 
     // We are not self-collapsing if we
     // (a) have a non-zero height according to layout (an optimization to avoid wasting time)
