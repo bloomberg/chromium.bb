@@ -71,7 +71,7 @@ struct HTMLConstructionSiteTask {
 } // namespace WebCore
 
 namespace WTF {
-template<> struct VectorTraits<WebCore::HTMLConstructionSiteTask> : SimpleClassVectorTraits { };
+template<> struct VectorTraits<WebCore::HTMLConstructionSiteTask> : SimpleClassVectorTraits<WebCore::HTMLConstructionSiteTask> { };
 } // namespace WTF
 
 namespace WebCore {

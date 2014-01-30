@@ -567,13 +567,13 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { retu
 
 namespace WTF {
 
-template <typename T> struct VectorTraits<WebCore::Member<T> > : VectorTraitsBase<false, WebCore::Member<T> > {
+template <typename T> struct VectorTraits<WebCore::Member<T> > : VectorTraitsBase<WebCore::Member<T> > {
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canMoveWithMemcpy = true;
 };
 
-template <typename T> struct VectorTraits<WebCore::WeakMember<T> > : VectorTraitsBase<false, WebCore::WeakMember<T> > {
+template <typename T> struct VectorTraits<WebCore::WeakMember<T> > : VectorTraitsBase<WebCore::WeakMember<T> > {
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canMoveWithMemcpy = true;

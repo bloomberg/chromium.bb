@@ -255,6 +255,8 @@ template<> struct DefaultHash<AtomicString> {
     typedef AtomicStringHash Hash;
 };
 
+template<> struct VectorTraits<AtomicString> : SimpleClassVectorTraits<AtomicString> { };
+
 } // namespace WTF
 
 #ifndef ATOMICSTRING_HIDE_GLOBALS

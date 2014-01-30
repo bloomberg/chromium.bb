@@ -668,7 +668,7 @@ template<> struct DefaultHash<String> {
     typedef StringHash Hash;
 };
 
-template <> struct VectorTraits<String> : SimpleClassVectorTraits {
+template <> struct VectorTraits<String> : SimpleClassVectorTraits<String> {
     static const bool canCompareWithMemcmp = false;
 };
 

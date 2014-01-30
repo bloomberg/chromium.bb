@@ -144,7 +144,7 @@ private:
 namespace WTF {
 // This is required for a struct with OwnPtr. We know RenderGeometryMapStep is simple enough that
 // initializing to 0 and moving with memcpy (and then not destructing the original) will work.
-template<> struct VectorTraits<WebCore::RenderGeometryMapStep> : SimpleClassVectorTraits { };
+template<> struct VectorTraits<WebCore::RenderGeometryMapStep> : SimpleClassVectorTraits<WebCore::RenderGeometryMapStep> { };
 }
 
 #endif // RenderGeometryMap_h

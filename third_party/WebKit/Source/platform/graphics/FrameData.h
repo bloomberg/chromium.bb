@@ -34,16 +34,6 @@
 #include "wtf/VectorTraits.h"
 
 namespace WebCore {
-struct FrameData;
-}
-
-namespace WTF {
-template<> struct VectorTraits<WebCore::FrameData> : public SimpleClassVectorTraits {
-    static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
-};
-}
-
-namespace WebCore {
 
 class NativeImageSkia;
 
@@ -67,5 +57,11 @@ public:
 };
 
 } // namespace WebCore
+
+namespace WTF {
+template<> struct VectorTraits<WebCore::FrameData> : public SimpleClassVectorTraits<WebCore::FrameData> {
+    static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
+};
+}
 
 #endif // FrameData_h
