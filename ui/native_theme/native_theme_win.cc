@@ -615,6 +615,8 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
       skia::BitmapPlatformDevice::Create(
           rect.width(), rect.height(), false, NULL));
   DCHECK(device);
+  if (!device)
+    return;
   SkCanvas offscreen_canvas(device.get());
   DCHECK(skia::SupportsPlatformPaint(&offscreen_canvas));
 
