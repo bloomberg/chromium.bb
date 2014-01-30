@@ -450,6 +450,7 @@
         '../media/media.gyp:shared_memory_support',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/gl/gl.gyp:gl',
+        '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',

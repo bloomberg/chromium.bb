@@ -140,7 +140,6 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../../content/content.gyp:content',
             '../../content/content.gyp:content_browser',
             '../events/events.gyp:events',
             '../views/controls/webview/webview.gyp:webview',

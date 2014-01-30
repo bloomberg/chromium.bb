@@ -19,7 +19,6 @@
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../cc/cc.gyp:cc',
-        '../content/content.gyp:content',
         '../content/content.gyp:content_browser',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
@@ -662,7 +661,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../content/content.gyp:content',
         '../content/content.gyp:content_browser',
         '../ipc/ipc.gyp:ipc',
         '../skia/skia.gyp:skia',
