@@ -23,6 +23,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -507,8 +508,10 @@ void AppListServiceWin::ScheduleWarmup() {
 }
 
 bool AppListServiceWin::IsWarmupNeeded() {
-  if (!g_browser_process || g_browser_process->IsShuttingDown())
+  if (!g_browser_process || g_browser_process->IsShuttingDown() ||
+      browser_shutdown::IsTryingToQuit()) {
     return false;
+  }
 
   // We only need to initialize the view if there's no view already created and
   // there's no profile loading to be shown.
