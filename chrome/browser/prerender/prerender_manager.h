@@ -361,6 +361,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                                 PrerenderContents::CookieEvent event,
                                 const net::CookieList* cookie_list);
 
+  // Arranges for all session storage merges to hang indefinitely. This is used
+  // to reliably test various swap abort cases.
+  static void HangSessionStorageMergesForTesting();
+
  protected:
   class PendingSwap;
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
@@ -445,6 +449,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                 bool should_replace_current_entry);
     virtual ~PendingSwap();
 
+    content::WebContents* target_contents() const;
     void set_swap_successful(bool swap_successful) {
       swap_successful_ = swap_successful;
     }
@@ -483,7 +488,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
     // Prerender parameters.
     PrerenderManager* manager_;
-    content::WebContents* target_contents_;
     PrerenderData* prerender_data_;
     GURL url_;
     bool should_replace_current_entry_;
@@ -617,6 +621,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // prerender, returns the PrerenderData object for that prerender. Otherwise,
   // returns NULL.
   PrerenderData* FindPrerenderDataForChildAndRoute(int child_id, int route_id);
+
+  // Finds the active PrerenderData object currently in a PendingSwap for
+  // |target_contents|. Otherwise, returns NULL.
+  PrerenderData* FindPrerenderDataForTargetContents(
+      content::WebContents* target_contents);
 
   // Given the |prerender_contents|, find the iterator in active_prerenders_
   // correponding to the given prerender.

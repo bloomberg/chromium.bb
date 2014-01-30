@@ -96,6 +96,9 @@ const int kHistoryLength = 100;
 // Timeout, in ms, for a session storage namespace merge.
 const int kSessionStorageNamespaceMergeTimeoutMs = 500;
 
+// If true, all session storage merges hang indefinitely.
+bool g_hang_session_storage_merges_for_testing = false;
+
 // Indicates whether a Prerender has been cancelled such that we need
 // a dummy replacement for the purpose of recording the correct PPLT for
 // the Match Complete case.
@@ -461,11 +464,17 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
   RecordEvent(prerender_data->contents(), PRERENDER_EVENT_SWAPIN_CANDIDATE);
   DCHECK(prerender_data->contents());
 
-  // If there is currently a merge pending for this prerender data,
-  // or this webcontents, do not swap in, but give the merge a chance to
-  // finish and swap into the intended target webcontents.
+  // If there is currently a merge pending for this prerender data, don't swap.
   if (prerender_data->pending_swap())
     return false;
+
+  // Abort any existing pending swap on the target contents.
+  PrerenderData* pending_swap =
+      FindPrerenderDataForTargetContents(web_contents);
+  if (pending_swap) {
+    pending_swap->ClearPendingSwap();
+    DCHECK(FindPrerenderDataForTargetContents(web_contents) == NULL);
+  }
 
   RecordEvent(prerender_data->contents(),
               PRERENDER_EVENT_SWAPIN_NO_MERGE_PENDING);
@@ -711,6 +720,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
     (*it)->MakeIntoMatchCompleteReplacement();
   } else {
     to_delete_prerenders_.push_back(*it);
+    (*it)->ClearPendingSwap();
     active_prerenders_.weak_erase(it);
   }
 
@@ -1124,7 +1134,6 @@ PrerenderManager::PendingSwap::PendingSwap(
     bool should_replace_current_entry)
     : content::WebContentsObserver(target_contents),
       manager_(manager),
-      target_contents_(target_contents),
       prerender_data_(prerender_data),
       url_(url),
       should_replace_current_entry_(should_replace_current_entry),
@@ -1139,9 +1148,16 @@ PrerenderManager::PendingSwap::~PendingSwap() {
       target_route_id_, swap_successful_);
 }
 
+WebContents* PrerenderManager::PendingSwap::target_contents() const {
+  return web_contents();
+}
+
 void PrerenderManager::PendingSwap::BeginSwap() {
+  if (g_hang_session_storage_merges_for_testing)
+    return;
+
   SessionStorageNamespace* target_namespace =
-      target_contents_->GetController().GetDefaultSessionStorageNamespace();
+      target_contents()->GetController().GetDefaultSessionStorageNamespace();
   SessionStorageNamespace* prerender_namespace =
       prerender_data_->contents()->GetSessionStorageNamespace();
 
@@ -1261,23 +1277,25 @@ void PrerenderManager::PendingSwap::OnMergeCompleted(
 
   RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPPING_IN);
 
-  WebContents* new_web_contents = NULL;
-  // Ensure that the prerendering hasn't been destroyed in the meantime.
-  if (prerender_data_->contents()->final_status() == FINAL_STATUS_MAX) {
-    // Note that SwapInternal, on success, will delete |prerender_data_| and
-    // |this|. Pass in a new GURL object rather than a reference to |url_|.
-    //
-    // TODO(davidben): See about deleting PrerenderData asynchronously so this
-    // behavior is more reasonable.
-
-    new_web_contents =  manager_->SwapInternal(
-        GURL(url_), target_contents_, prerender_data_,
+  // Note that SwapInternal will, on success, delete |prerender_data_| and
+  // |this|. It will also delete |this| in some failure cases. Pass in a new
+  // GURL object rather than a reference to |url_|. Also hold on to |manager_|
+  // and |prerender_data_|.
+  //
+  // TODO(davidben): Can we make this less fragile?
+  PrerenderManager* manager = manager_;
+  PrerenderData* prerender_data = prerender_data_;
+  WebContents* new_web_contents = manager_->SwapInternal(
+        GURL(url_), target_contents(), prerender_data_,
         should_replace_current_entry_);
-  }
-
   if (!new_web_contents) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPIN_FAILED);
-    prerender_data_->ClearPendingSwap();
+    manager->RecordEvent(prerender_data->contents(),
+                         PRERENDER_EVENT_MERGE_RESULT_SWAPIN_FAILED);
+    // Depending on whether SwapInternal called Destroy() or simply failed to
+    // swap, |this| may or may not be deleted. Either way, if the swap failed,
+    // |prerender_data| is deleted asynchronously, so this call is a no-op if
+    // |this| is already gone.
+    prerender_data->ClearPendingSwap();
   }
 }
 
@@ -1590,6 +1608,18 @@ PrerenderManager::FindPrerenderDataForChildAndRoute(
       continue;
 
     if (contents_child_id == child_id && contents_route_id == route_id)
+      return *it;
+  }
+  return NULL;
+}
+
+PrerenderManager::PrerenderData*
+PrerenderManager::FindPrerenderDataForTargetContents(
+    WebContents* target_contents) {
+  for (ScopedVector<PrerenderData>::iterator it = active_prerenders_.begin();
+       it != active_prerenders_.end(); ++it) {
+    if ((*it)->pending_swap() &&
+        (*it)->pending_swap()->target_contents() == target_contents)
       return *it;
   }
   return NULL;
@@ -1926,6 +1956,11 @@ void PrerenderManager::OnHistoryServiceDidQueryURL(
     const history::URLRow* url_row,
     history::VisitVector* visists) {
   histograms_->RecordPrerenderPageVisitedStatus(origin, experiment_id, success);
+}
+
+// static
+void PrerenderManager::HangSessionStorageMergesForTesting() {
+  g_hang_session_storage_merges_for_testing = true;
 }
 
 }  // namespace prerender

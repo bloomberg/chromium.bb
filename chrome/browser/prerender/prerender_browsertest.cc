@@ -238,7 +238,21 @@ class NavigationOrSwapObserver : public WebContentsObserver,
   NavigationOrSwapObserver(TabStripModel* tab_strip_model,
                            WebContents* web_contents)
       : WebContentsObserver(web_contents),
-        tab_strip_model_(tab_strip_model) {
+        tab_strip_model_(tab_strip_model),
+        number_of_loads_(1) {
+    CHECK_NE(TabStripModel::kNoTab,
+             tab_strip_model->GetIndexOfWebContents(web_contents));
+    tab_strip_model_->AddObserver(this);
+  }
+
+  // Waits for either |number_of_loads| loads or a swap of |tab_strip_model|'s
+  // active WebContents.
+  NavigationOrSwapObserver(TabStripModel* tab_strip_model,
+                           WebContents* web_contents,
+                           int number_of_loads)
+      : WebContentsObserver(web_contents),
+        tab_strip_model_(tab_strip_model),
+        number_of_loads_(number_of_loads) {
     CHECK_NE(TabStripModel::kNoTab,
              tab_strip_model->GetIndexOfWebContents(web_contents));
     tab_strip_model_->AddObserver(this);
@@ -254,7 +268,9 @@ class NavigationOrSwapObserver : public WebContentsObserver,
 
   // WebContentsObserver implementation:
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE {
-    loop_.Quit();
+    number_of_loads_--;
+    if (number_of_loads_ == 0)
+      loop_.Quit();
   }
 
   // TabStripModelObserver implementation:
@@ -269,6 +285,7 @@ class NavigationOrSwapObserver : public WebContentsObserver,
 
  private:
   TabStripModel* tab_strip_model_;
+  int number_of_loads_;
   base::RunLoop loop_;
 };
 
@@ -325,10 +342,14 @@ class TestPrerenderContents : public PrerenderContents {
         was_hidden_(false),
         was_shown_(false),
         should_be_shown_(expected_final_status == FINAL_STATUS_USED),
+        skip_final_checks_(false),
         expected_pending_prerenders_(0) {
   }
 
   virtual ~TestPrerenderContents() {
+    if (skip_final_checks_)
+      return;
+
     if (expected_final_status_ == FINAL_STATUS_MAX) {
       EXPECT_EQ(match_complete_status(), MATCH_COMPLETE_REPLACEMENT);
     } else {
@@ -404,6 +425,9 @@ class TestPrerenderContents : public PrerenderContents {
   // even though it is used.
   void set_should_be_shown(bool value) { should_be_shown_ = value; }
 
+  // For tests which do not know whether the prerender will be used.
+  void set_skip_final_checks(bool value) { skip_final_checks_ = value; }
+
   FinalStatus expected_final_status() const { return expected_final_status_; }
 
  private:
@@ -455,6 +479,8 @@ class TestPrerenderContents : public PrerenderContents {
   // Expected final value of was_shown_.  Defaults to true for
   // FINAL_STATUS_USED, and false otherwise.
   bool should_be_shown_;
+  // If true, |expected_final_status_| and other shutdown checks are skipped.
+  bool skip_final_checks_;
 
   // Total number of pending prerenders we're currently waiting for.  Zero
   // indicates we currently aren't waiting for any.
@@ -1381,6 +1407,20 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
             &display_test_result))
       return false;
     return display_test_result;
+  }
+
+  scoped_ptr<TestPrerender> ExpectPrerender(FinalStatus expected_final_status) {
+    return prerender_contents_factory_->ExpectPrerenderContents(
+        expected_final_status);
+  }
+
+  void AddPrerender(const GURL& url, int index) {
+    std::string javascript = base::StringPrintf(
+        "AddPrerender('%s', %d)", url.spec().c_str(), index);
+    RenderViewHost* render_view_host =
+        GetActiveWebContents()->GetRenderViewHost();
+    render_view_host->ExecuteJavascriptInWebFrame(
+        base::string16(), base::ASCIIToUTF16(javascript));
   }
 
  protected:
@@ -3716,6 +3756,94 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReplaceCurrentEntry) {
   EXPECT_EQ(GURL(content::kAboutBlankURL),
             controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(dest_url(), controller.GetEntryAtIndex(1)->GetURL());
+}
+
+// Checks prerender does not hit DCHECKs and behaves properly if two pending
+// swaps occur in a row.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDoublePendingSwap) {
+  GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
+  GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
+
+  GURL url1 = test_server()->GetURL("files/prerender/prerender_page.html?1");
+  scoped_ptr<TestPrerender> prerender1 =
+      PrerenderTestURL(url1, FINAL_STATUS_APP_TERMINATING, 1);
+
+  GURL url2 = test_server()->GetURL("files/prerender/prerender_page.html?2");
+  scoped_ptr<TestPrerender> prerender2 = ExpectPrerender(FINAL_STATUS_USED);
+  AddPrerender(url2, 1);
+  prerender2->WaitForStart();
+  prerender2->WaitForLoads(1);
+
+  // There's no reason the second prerender can't be used, but the swap races
+  // with didStartProvisionalLoad and didFailProvisionalLoad from the previous
+  // navigation. The current logic will conservatively fail to swap under such
+  // races. However, if the renderer is slow enough, it's possible for the
+  // prerender to still be used, so don't program in either expectation.
+  ASSERT_TRUE(prerender2->contents());
+  prerender2->contents()->set_skip_final_checks(true);
+
+  // Open a new tab to navigate in.
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Fire off two navigations, without running the event loop between them.
+  NavigationOrSwapObserver swap_observer(
+      current_browser()->tab_strip_model(),
+      GetActiveWebContents(), 2);
+  current_browser()->OpenURL(OpenURLParams(
+      url1, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+  current_browser()->OpenURL(OpenURLParams(
+      url2, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+  swap_observer.Wait();
+
+  // The WebContents should be on url2. There may be 2 or 3 entries, depending
+  // on whether the first one managed to complete.
+  //
+  // TODO(davidben): When http://crbug.com/335835 is fixed, the 3 entry case
+  // shouldn't be possible because it's throttled by the pending swap that
+  // cannot complete.
+  const NavigationController& controller =
+      GetActiveWebContents()->GetController();
+  EXPECT_TRUE(controller.GetPendingEntry() == NULL);
+  EXPECT_LE(2, controller.GetEntryCount());
+  EXPECT_GE(3, controller.GetEntryCount());
+  EXPECT_EQ(GURL(content::kAboutBlankURL),
+            controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url2, controller.GetEntryAtIndex(
+      controller.GetEntryCount() - 1)->GetURL());
+}
+
+// Verify that pending swaps get aborted on new navigations.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderPendingSwapNewNavigation) {
+  PrerenderManager::HangSessionStorageMergesForTesting();
+
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_APP_TERMINATING, 1);
+
+  // Open a new tab to navigate in.
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(), GURL(content::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Navigate to the URL. Wait for DidStartLoading, just so it's definitely
+  // progressed somewhere.
+  content::WindowedNotificationObserver page_load_observer(
+      content::NOTIFICATION_LOAD_START,
+      content::Source<NavigationController>(
+          &GetActiveWebContents()->GetController()));
+  current_browser()->OpenURL(OpenURLParams(
+      dest_url(), Referrer(), CURRENT_TAB,
+      content::PAGE_TRANSITION_TYPED, false));
+  page_load_observer.Wait();
+
+  // Navigate somewhere else. This should succeed and abort the pending swap.
+  TestNavigationObserver nav_observer(GetActiveWebContents());
+  current_browser()->OpenURL(OpenURLParams(
+      GURL(content::kAboutBlankURL), Referrer(), CURRENT_TAB,
+      content::PAGE_TRANSITION_TYPED, false));
+  nav_observer.Wait();
 }
 
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {
