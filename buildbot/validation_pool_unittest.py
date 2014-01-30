@@ -30,6 +30,7 @@ from chromite.lib import gerrit
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
@@ -1109,6 +1110,25 @@ class TestFindSuspects(MoxBase):
     suspects = [self.kernel_patch, self.power_manager_patch]
     changes = suspects + [self.secret_patch]
     self._AssertSuspects(changes, suspects)
+
+
+class TestCLStatus(MoxBase):
+  """Tests methods that get the CL status."""
+
+  def testPrintLinks(self):
+    changes = self.GetPatches(3)
+    with parallel_unittest.ParallelMock():
+      validation_pool.ValidationPool.PrintLinksToChanges(changes)
+
+  def testStatusCache(self):
+    validation_pool.ValidationPool._CL_STATUS_CACHE = {}
+    changes = self.GetPatches(3)
+    with parallel_unittest.ParallelMock():
+      validation_pool.ValidationPool.FillCLStatusCache(validation_pool.CQ,
+                                                       changes)
+      self.assertEqual(len(validation_pool.ValidationPool._CL_STATUS_CACHE), 12)
+      validation_pool.ValidationPool.PrintLinksToChanges(changes)
+      self.assertEqual(len(validation_pool.ValidationPool._CL_STATUS_CACHE), 12)
 
 
 class TestCreateValidationFailureMessage(Base):

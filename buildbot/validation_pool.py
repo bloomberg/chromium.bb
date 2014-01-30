@@ -30,6 +30,7 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import gs
+from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 
@@ -1212,6 +1213,9 @@ class ValidationPool(object):
   # errors.
   REJECTION_GRACE_PERIOD = 30 * 60
 
+  # Cache for the status of CLs.
+  _CL_STATUS_CACHE = {}
+
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
                conflicting_changes=None, pre_cq=False):
@@ -1618,13 +1622,17 @@ class ValidationPool(object):
           error = getattr(error, 'error', None)
     return results
 
-  def PrintLinksToChanges(self, changes):
+  @classmethod
+  def PrintLinksToChanges(cls, changes):
     """Print links to the specified |changes|.
 
     Args:
       changes: A list of cros_patch.GerritPatch instances to generate
         transactions for.
     """
+    # Completely fill the status cache in parallel.
+    cls.FillCLStatusCache(CQ, changes)
+
     failure_stats = {}
     for change in changes:
       failure_stats[change] = ValidationPool.GetCLStatusCount(
@@ -2278,8 +2286,8 @@ class ValidationPool(object):
     """Get the status URL for |change| on |bot|.
 
     Args:
-      change: GerritPatch instance to operate upon.
       bot: Which bot to look at. Can be CQ or PRE_CQ.
+      change: GerritPatch instance to operate upon.
       latest_patchset_only: If True, return the URL for tracking the latest
         patchset. If False, return the URL for tracking all patchsets. Defaults
         to True.
@@ -2327,8 +2335,8 @@ class ValidationPool(object):
     """Return how many times |change| has been set to |status| on |bot|.
 
     Args:
-      change: GerritPatch instance to operate upon.
       bot: Which bot to look at. Can be CQ or PRE_CQ.
+      change: GerritPatch instance to operate upon.
       status: The status string to look for.
       latest_patchset_only: If True, only how many times the latest patchset has
         been set to |status|. If False, count how many times any patchset has
@@ -2338,9 +2346,42 @@ class ValidationPool(object):
       The number of times |change| has been set to |status| on |bot|, as an
       integer.
     """
-    base_url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
-    url = '%s/%s' % (base_url, status)
-    return gs.GSContext().Counter(url).Get()
+    cache_key = (bot, change, status, latest_patchset_only)
+    if cache_key not in cls._CL_STATUS_CACHE:
+      base_url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
+      url = '%s/%s' % (base_url, status)
+      cls._CL_STATUS_CACHE[cache_key] = gs.GSContext().Counter(url).Get()
+    return cls._CL_STATUS_CACHE[cache_key]
+
+  @classmethod
+  def FillCLStatusCache(cls, bot, changes, statuses=None):
+    """Cache all of the stats about the given |changes| in parallel.
+
+    Args:
+      bot: Bot to pull down stats for.
+      changes: Changes to cache.
+      statuses: Statuses to cache. By default, cache the PASSED and FAILED
+        counts.
+    """
+    if statuses is None:
+      statuses = (cls.STATUS_PASSED, cls.STATUS_FAILED)
+    inputs = []
+    for change in changes:
+      for status in statuses:
+        for latest_patchset_only in (False, True):
+          cache_key = (bot, change, status, latest_patchset_only)
+          if cache_key not in cls._CL_STATUS_CACHE:
+            inputs.append(cache_key)
+
+    with parallel.Manager() as manager:
+      # Grab the CL status of all of the CLs in the background, into a proxied
+      # dictionary.
+      cls._CL_STATUS_CACHE = manager.dict(cls._CL_STATUS_CACHE)
+      parallel.RunTasksInProcessPool(cls.GetCLStatusCount, inputs)
+
+      # Convert the cache back into a regular dictionary before we shut down
+      # the manager.
+      cls._CL_STATUS_CACHE = dict(cls._CL_STATUS_CACHE)
 
   def CreateDisjointTransactions(self, manifest, max_txn_length=None):
     """Create a list of disjoint transactions from the changes in the pool.
