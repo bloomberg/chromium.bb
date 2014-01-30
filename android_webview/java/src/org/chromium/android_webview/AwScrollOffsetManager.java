@@ -26,7 +26,11 @@ public class AwScrollOffsetManager {
     // Time for the longest scroll animation.
     private static final int MAX_SCROLL_ANIMATION_DURATION_MILLISEC = 750;
 
-    // The unit of all the values in this delegate are physical pixels.
+    /**
+     * The interface that all users of AwScrollOffsetManager should implement.
+     *
+     * The unit of all the values in this delegate are physical pixels.
+     */
     public interface Delegate {
         // Call View#overScrollBy on the containerView.
         void overScrollContainerViewBy(int deltaX, int deltaY, int scrollX, int scrollY,
@@ -279,15 +283,13 @@ public class AwScrollOffsetManager {
 
         mScroller.fling(scrollX, scrollY, velocityX, velocityY,
                 0, scrollRangeX, 0, scrollRangeY);
-        mFlinging = true;
         mDelegate.invalidate();
     }
 
     // Called immediately before the draw to update the scroll offset.
     public void computeScrollAndAbsorbGlow(OverScrollGlow overScrollGlow) {
-        final boolean stillAnimating = mScroller.computeScrollOffset();
-        if (!stillAnimating) {
-            mFlinging = false;
+        mFlinging = mScroller.computeScrollOffset();
+        if (!mFlinging) {
             return;
         }
 
