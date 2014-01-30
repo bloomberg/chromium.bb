@@ -34,8 +34,9 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/events/Event.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/Event.h"
+#include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGCursorElement.h"
@@ -651,48 +652,20 @@ void SVGElement::setCorrespondingElement(SVGElement* correspondingElement)
 
 void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    // standard events
-    if (name == onloadAttr)
-        setAttributeEventListener(EventTypeNames::load, createAttributeEventListener(this, name, value));
-    else if (name == onclickAttr)
-        setAttributeEventListener(EventTypeNames::click, createAttributeEventListener(this, name, value));
-    else if (name == onmousedownAttr)
-        setAttributeEventListener(EventTypeNames::mousedown, createAttributeEventListener(this, name, value));
-    else if (name == onmouseenterAttr)
-        setAttributeEventListener(EventTypeNames::mouseenter, createAttributeEventListener(this, name, value));
-    else if (name == onmouseleaveAttr)
-        setAttributeEventListener(EventTypeNames::mouseleave, createAttributeEventListener(this, name, value));
-    else if (name == onmousemoveAttr)
-        setAttributeEventListener(EventTypeNames::mousemove, createAttributeEventListener(this, name, value));
-    else if (name == onmouseoutAttr)
-        setAttributeEventListener(EventTypeNames::mouseout, createAttributeEventListener(this, name, value));
-    else if (name == onmouseoverAttr)
-        setAttributeEventListener(EventTypeNames::mouseover, createAttributeEventListener(this, name, value));
-    else if (name == onmouseupAttr)
-        setAttributeEventListener(EventTypeNames::mouseup, createAttributeEventListener(this, name, value));
-    else if (name == SVGNames::onfocusinAttr)
-        setAttributeEventListener(EventTypeNames::focusin, createAttributeEventListener(this, name, value));
-    else if (name == SVGNames::onfocusoutAttr)
-        setAttributeEventListener(EventTypeNames::focusout, createAttributeEventListener(this, name, value));
-    else if (name == SVGNames::onactivateAttr)
-        setAttributeEventListener(EventTypeNames::DOMActivate, createAttributeEventListener(this, name, value));
-    else if (name == HTMLNames::classAttr) {
+    if (name == HTMLNames::classAttr) {
         // SVG animation has currently requires special storage of values so we set
         // the className here. svgAttributeChanged actually causes the resulting
         // style updates (instead of Element::parseAttribute). We don't
         // tell Element about the change to avoid parsing the class list twice
         setClassNameBaseValue(value);
-    } else if (name == ontouchstartAttr) {
-        setAttributeEventListener(EventTypeNames::touchstart, createAttributeEventListener(this, name, value));
-    } else if (name == ontouchmoveAttr) {
-        setAttributeEventListener(EventTypeNames::touchmove, createAttributeEventListener(this, name, value));
-    } else if (name == ontouchendAttr) {
-        setAttributeEventListener(EventTypeNames::touchend, createAttributeEventListener(this, name, value));
-    } else if (name == ontouchcancelAttr) {
-        setAttributeEventListener(EventTypeNames::touchcancel, createAttributeEventListener(this, name, value));
     } else if (name.matches(XMLNames::langAttr) || name.matches(XMLNames::spaceAttr)) {
     } else {
-        Element::parseAttribute(name, value);
+        // standard events
+        const AtomicString& eventName = HTMLElement::eventNameForAttributeName(name);
+        if (!eventName.isNull())
+            setAttributeEventListener(eventName, createAttributeEventListener(this, name, value));
+        else
+            Element::parseAttribute(name, value);
     }
 }
 

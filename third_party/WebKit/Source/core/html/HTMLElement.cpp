@@ -202,7 +202,7 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
         Element::collectStyleForPresentationAttribute(name, value, style);
 }
 
-const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& attrName) const
+const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& attrName)
 {
     if (!attrName.namespaceURI().isNull())
         return nullAtom;

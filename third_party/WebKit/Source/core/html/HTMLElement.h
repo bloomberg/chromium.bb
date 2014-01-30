@@ -88,6 +88,8 @@ public:
     virtual bool isInteractiveContent() const;
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
+    static const AtomicString& eventNameForAttributeName(const QualifiedName& attrName);
+
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 
@@ -118,8 +120,6 @@ private:
     TextDirection directionality(Node** strongDirectionalityTextNode= 0) const;
 
     TranslateAttributeMode translateAttributeMode() const;
-
-    const AtomicString& eventNameForAttributeName(const QualifiedName& attrName) const;
 
     void handleKeypressEvent(KeyboardEvent*);
     bool supportsSpatialNavigationFocus() const;

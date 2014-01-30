@@ -71,3 +71,15 @@ for (var i = 0; i < elementAndDocumentProperties.length; ++i) {
 for (var i = 0; i < bodyAndFrameSetProperties.length; ++i) {
     shouldBeTrue("'" + bodyAndFrameSetProperties[i] + "' in frameSet");
 }
+
+debug("\nTest SVGPathElement");
+var pathelement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+for (var i = 0; i < elementAndDocumentProperties.length; ++i) {
+    shouldBeTrue("'" + elementAndDocumentProperties[i] + "' in pathelement");
+}
+
+debug("\nTest SVGSVGElement");
+var svgelement = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg").documentElement;
+for (var i = 0; i < elementAndDocumentProperties.length; ++i) {
+    shouldBeTrue("'" + elementAndDocumentProperties[i] + "' in svgelement");
+}
