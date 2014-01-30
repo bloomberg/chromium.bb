@@ -31,7 +31,6 @@ shouldBeDefined("SVGTests");
 shouldBeDefined("SVGViewSpec");
 shouldBeDefined("SVGURIReference");
 shouldBeDefined("SVGCSSRule");
-shouldBeDefined("SVGDocument");
 shouldBeDefined("SVGSVGElement");
 shouldBeDefined("SVGGElement");
 shouldBeDefined("SVGDefsElement");

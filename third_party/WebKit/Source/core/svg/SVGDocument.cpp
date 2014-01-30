@@ -37,16 +37,20 @@ namespace WebCore {
 SVGDocument::SVGDocument(const DocumentInit& initializer)
     : XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass)
 {
-    ScriptWrappable::init(this);
 }
 
-SVGSVGElement* SVGDocument::rootElement() const
+SVGSVGElement* SVGDocument::rootElement(const Document* document)
 {
-    Element* elem = documentElement();
+    Element* elem = document->documentElement();
     if (elem && elem->hasTagName(SVGNames::svgTag))
         return toSVGSVGElement(elem);
 
     return 0;
+}
+
+SVGSVGElement* SVGDocument::rootElement() const
+{
+    return rootElement(this);
 }
 
 void SVGDocument::dispatchZoomEvent(float prevScale, float newScale)

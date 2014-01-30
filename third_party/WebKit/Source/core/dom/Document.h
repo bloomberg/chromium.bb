@@ -685,6 +685,7 @@ public:
     EventListener* getWindowAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);
 
     PassRefPtr<Event> createEvent(const String& eventType, ExceptionState&);
+    PassRefPtr<Event> createEvent(ExceptionState&);
 
     // keep track of what types of event listeners are registered, so we don't
     // dispatch events unnecessarily

@@ -271,7 +271,6 @@ SVGCursorElement
 SVGDefsElement
 SVGDescElement
 SVGDiscardElement
-SVGDocument
 SVGElement
 SVGElementInstance
 SVGElementInstanceList

@@ -10,6 +10,10 @@
 
 <script>
 <![CDATA[
+if (window.testRunner) {
+    testRunner.dumpAsText();
+}
+
 function log(message) {
     var logDiv = document.getElementById('log');
     var newDiv = document.createElementNS("http://www.w3.org/1999/xhtml",'div');
@@ -29,7 +33,7 @@ function init() {
     var parser = new DOMParser();
     var svgDocument = parser.parseFromString(documentString, "image/svg+xml");
 
-    log("DOMParser.parseFromString returned: " + svgDocument + " should be: [object SVGDocument]");
+    log("DOMParser.parseFromString returned: " + svgDocument + " should be: [object XMLDocument]");
 
     // Try some operations on the new document 
     log("SVGDocument's rootElement: " + svgDocument.rootElement + " should be: [object SVGSVGElement]");

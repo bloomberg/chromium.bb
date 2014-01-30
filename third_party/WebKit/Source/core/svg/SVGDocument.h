@@ -35,6 +35,7 @@ public:
         return adoptRef(new SVGDocument(initializer));
     }
 
+    static SVGSVGElement* rootElement(const Document*);
     SVGSVGElement* rootElement() const;
 
     void dispatchZoomEvent(float prevScale, float newScale);

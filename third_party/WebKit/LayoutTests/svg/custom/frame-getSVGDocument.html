@@ -27,7 +27,7 @@
   }
 
   var continueTest1 = function() {
-    shouldBeEqualToString("frame.getSVGDocument().toString()", "[object SVGDocument]");
+    shouldBeEqualToString("frame.getSVGDocument().toString()", "[object XMLDocument]");
     frame.parentNode.removeChild(frame);
 
     iframe = document.createElement("iframe");
@@ -38,7 +38,7 @@
   }
 
   var continueTest2 = function() {
-    shouldBeEqualToString("iframe.getSVGDocument().toString()", "[object SVGDocument]");
+    shouldBeEqualToString("iframe.getSVGDocument().toString()", "[object XMLDocument]");
     iframe.parentNode.removeChild(iframe);
 
     embed = document.createElement("embed");
@@ -49,7 +49,7 @@
   }
 
   var continueTest3 = function(event) {
-    shouldBeEqualToString("embed.getSVGDocument().toString()", "[object SVGDocument]");
+    shouldBeEqualToString("embed.getSVGDocument().toString()", "[object XMLDocument]");
     embed.parentNode.removeChild(embed);
 
     object = document.createElement("object");
@@ -60,7 +60,7 @@
   }
 
   function continueTest4() {
-    shouldBeEqualToString("object.getSVGDocument().toString()", "[object SVGDocument]");
+    shouldBeEqualToString("object.getSVGDocument().toString()", "[object XMLDocument]");
     object.parentNode.removeChild(object);
 
     finishJSTest();

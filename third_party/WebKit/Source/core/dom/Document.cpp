@@ -3737,6 +3737,18 @@ PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState&
     return 0;
 }
 
+PassRefPtr<Event> Document::createEvent(ExceptionState& exceptionState)
+{
+    if (!isSVGDocument()) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, 0));
+        return 0;
+    }
+
+    UseCounter::count(this, UseCounter::DocumentCreateEventOptionalArgument);
+    // Legacy SVGDocument behavior.
+    return createEvent("undefined", exceptionState);
+}
+
 void Document::addMutationEventListenerTypeIfEnabled(ListenerType listenerType)
 {
     if (ContextFeatures::mutationEventsEnabled(this))

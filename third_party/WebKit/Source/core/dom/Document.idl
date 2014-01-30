@@ -21,7 +21,7 @@
 callback CustomElementConstructor = Element ();
 
 [
-    SpecialWrapFor=HTMLDocument|SVGDocument|XMLDocument
+    SpecialWrapFor=HTMLDocument|XMLDocument
 ] interface Document : Node {
 
     // DOM Level 1 Core
@@ -61,7 +61,7 @@ callback CustomElementConstructor = Element ();
 
     // DOM Level 2 Events (DocumentEvents interface)
 
-    [RaisesException] Event createEvent(DOMString eventType);
+    [RaisesException] Event createEvent(optional DOMString eventType);
 
     // DOM Level 2 Traversal and Range (DocumentRange interface)
 

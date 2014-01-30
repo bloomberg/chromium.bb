@@ -9,7 +9,7 @@ PASS document.implementation.createDocument("", "").__proto__ is XMLDocument.pro
 PASS document.implementation.createDocument("", "html").__proto__ is XMLDocument.prototype
 PASS document.implementation.createDocument("http://www.w3.org/1999/xhtml", "html").__proto__ is XMLDocument.prototype
 PASS document.implementation.createDocument("http://www.w3.org/2000/xmlns/", "xmlns:test").__proto__ is XMLDocument.prototype
-FAIL document.implementation.createDocument("http://www.w3.org/2000/svg", "svg").__proto__ should be [object Object]. Was [object Object].
+PASS document.implementation.createDocument("http://www.w3.org/2000/svg", "svg").__proto__ is XMLDocument.prototype
 PASS successfullyParsed is true
 
 TEST COMPLETE
