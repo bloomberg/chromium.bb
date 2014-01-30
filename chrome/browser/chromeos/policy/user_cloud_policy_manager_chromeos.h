@@ -36,6 +36,7 @@ namespace policy {
 class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
+class WildcardLoginChecker;
 
 // UserCloudPolicyManagerChromeOS implements logic for initializing user policy
 // on Chrome OS.
@@ -85,6 +86,10 @@ class UserCloudPolicyManagerChromeOS
   // Returns true if the underlying CloudPolicyClient is already registered.
   bool IsClientRegistered() const;
 
+  // Indicates a wildcard login check should be performed once an access token
+  // is available.
+  void EnableWildcardLoginCheck(const std::string& username);
+
   // ConfigurationPolicyProvider:
   virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
@@ -132,6 +137,9 @@ class UserCloudPolicyManagerChromeOS
   // Manages external data referenced by policies.
   scoped_ptr<CloudExternalDataManager> external_data_manager_;
 
+  // Username for the wildcard login check if applicable, empty otherwise.
+  std::string wildcard_username_;
+
   // Path where policy for components will be cached.
   base::FilePath component_policy_cache_path_;
 
@@ -149,6 +157,9 @@ class UserCloudPolicyManagerChromeOS
   // Used to fetch the policy OAuth token, when necessary. This object holds
   // a callback with an unretained reference to the manager, when it exists.
   scoped_ptr<PolicyOAuth2TokenFetcher> token_fetcher_;
+
+  // Keeps alive the wildcard checker while its running.
+  scoped_ptr<WildcardLoginChecker> wildcard_login_checker_;
 
   // The access token passed to OnAccessTokenAvailable. It is stored here so
   // that it can be used if OnInitializationCompleted is called later.

@@ -13,7 +13,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -46,6 +48,20 @@ const char kUMAInitialFetchOAuth2Error[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2Error";
 const char kUMAInitialFetchOAuth2NetworkError[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError";
+
+void OnWildcardCheckCompleted(const std::string& username, bool result) {
+  if (!result) {
+    LOG(ERROR) << "Online wildcard login check failed, terminating session.";
+
+    // TODO(mnissler): This only removes the user pod from the login screen, but
+    // the cryptohome remains. This is because deleting the cryptohome for a
+    // logged-in session is not possible. Fix this either by delaying the
+    // cryptohome deletion operation or by getting rid of the in-session
+    // wildcard check.
+    chromeos::UserManager::Get()->RemoveUserFromList(username);
+    chrome::AttemptUserExit();
+  }
+}
 
 }  // namespace
 
@@ -125,6 +141,14 @@ void UserCloudPolicyManagerChromeOS::Connect(
 void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
     const std::string& access_token) {
   access_token_ = access_token;
+
+  if (!wildcard_username_.empty()) {
+    wildcard_login_checker_.reset(new WildcardLoginChecker());
+    wildcard_login_checker_->StartWithAccessToken(
+        access_token,
+        base::Bind(&OnWildcardCheckCompleted, wildcard_username_));
+  }
+
   if (service() && service()->IsInitializationComplete() &&
       client() && !client()->is_registered()) {
     OnOAuth2PolicyTokenFetched(
@@ -134,6 +158,12 @@ void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
 
 bool UserCloudPolicyManagerChromeOS::IsClientRegistered() const {
   return client() && client()->is_registered();
+}
+
+void UserCloudPolicyManagerChromeOS::EnableWildcardLoginCheck(
+    const std::string& username) {
+  DCHECK(access_token_.empty());
+  wildcard_username_ = username;
 }
 
 void UserCloudPolicyManagerChromeOS::Shutdown() {
@@ -181,8 +211,7 @@ void UserCloudPolicyManagerChromeOS::OnInitializationCompleted(
     if (wait_for_policy_fetch_) {
       FetchPolicyOAuthTokenUsingSigninProfile();
     } else if (!access_token_.empty()) {
-      OnOAuth2PolicyTokenFetched(
-          access_token_, GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+      OnAccessTokenAvailable(access_token_);
     }
   }
 
@@ -267,7 +296,6 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
     const std::string& policy_token,
     const GoogleServiceAuthError& error) {
   DCHECK(!client()->is_registered());
-
   time_token_available_ = base::Time::Now();
   if (wait_for_policy_fetch_) {
     UMA_HISTOGRAM_MEDIUM_TIMES(kUMAInitialFetchDelayOAuth2Token,

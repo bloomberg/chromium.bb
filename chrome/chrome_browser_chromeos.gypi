@@ -746,6 +746,8 @@
         'browser/chromeos/policy/user_policy_disk_cache.h',
         'browser/chromeos/policy/user_policy_token_loader.cc',
         'browser/chromeos/policy/user_policy_token_loader.h',
+        'browser/chromeos/policy/wildcard_login_checker.cc',
+        'browser/chromeos/policy/wildcard_login_checker.h',
         'browser/chromeos/power/idle_action_warning_dialog_view.cc',
         'browser/chromeos/power/idle_action_warning_dialog_view.h',
         'browser/chromeos/power/idle_action_warning_observer.cc',

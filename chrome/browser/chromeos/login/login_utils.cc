@@ -892,7 +892,8 @@ void LoginUtils::Set(LoginUtils* mock) {
 }
 
 // static
-bool LoginUtils::IsWhitelisted(const std::string& username) {
+bool LoginUtils::IsWhitelisted(const std::string& username,
+                               bool* wildcard_match) {
   // Skip whitelist check for tests.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kOobeSkipPostLogin)) {
@@ -904,7 +905,8 @@ bool LoginUtils::IsWhitelisted(const std::string& username) {
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   if (allow_new_user)
     return true;
-  return cros_settings->FindEmailInList(kAccountsPrefUsers, username);
+  return cros_settings->FindEmailInList(
+      kAccountsPrefUsers, username, wildcard_match);
 }
 
 }  // namespace chromeos

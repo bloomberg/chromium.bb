@@ -177,7 +177,7 @@ void EnrollmentScreen::OnConfirmationClosed() {
   if (is_auto_enrollment_ &&
       !enrollment_failed_once_ &&
       !user_.empty() &&
-      LoginUtils::IsWhitelisted(user_)) {
+      LoginUtils::IsWhitelisted(user_, NULL)) {
     actor_->ShowLoginSpinnerScreen();
     get_screen_observer()->OnExit(
         ScreenObserver::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);

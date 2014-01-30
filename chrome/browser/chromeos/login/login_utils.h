@@ -11,9 +11,9 @@
 
 class CommandLine;
 class GURL;
-class Profile;
 class PrefRegistrySimple;
 class PrefService;
+class Profile;
 
 namespace chromeos {
 
@@ -48,8 +48,9 @@ class LoginUtils {
   static void Set(LoginUtils* ptr);
 
   // Checks if the given username is whitelisted and allowed to sign-in to
-  // this device.
-  static bool IsWhitelisted(const std::string& username);
+  // this device. |wildcard_match| may be NULL. If it's present, it'll be set to
+  // true if the whitelist check was satisfied via a wildcard.
+  static bool IsWhitelisted(const std::string& username, bool* wildcard_match);
 
   virtual ~LoginUtils() {}
 

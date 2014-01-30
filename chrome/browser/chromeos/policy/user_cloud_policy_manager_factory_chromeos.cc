@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -199,6 +200,15 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
           base::MessageLoopProxy::current(),
           file_task_runner,
           io_task_runner));
+
+  bool wildcard_match = false;
+  if (connector->IsEnterpriseManaged() &&
+      chromeos::LoginUtils::IsWhitelisted(username, &wildcard_match) &&
+      wildcard_match &&
+      !connector->IsNonEnterpriseUser(username)) {
+    manager->EnableWildcardLoginCheck(username);
+  }
+
   manager->Init(SchemaRegistryServiceFactory::GetForContext(profile));
   manager->Connect(g_browser_process->local_state(),
                    device_management_service,

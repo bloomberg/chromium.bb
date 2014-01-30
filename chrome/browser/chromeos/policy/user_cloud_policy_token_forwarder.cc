@@ -10,6 +10,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
 
 namespace policy {
 
@@ -73,12 +74,9 @@ void UserCloudPolicyTokenForwarder::OnInitializationCompleted(
 }
 
 void UserCloudPolicyTokenForwarder::Initialize() {
-  if (manager_->IsClientRegistered()) {
-    // We already have a DMToken, so no need to ask for an access token.
-    // All done here.
-    Shutdown();
-    return;
-  }
+  // TODO(mnissler): Once a better way to reconfirm whether a user is on the
+  // login whitelist is available, there is no reason to fetch the OAuth2 token
+  // here if the client is already registered, so check and bail out here.
 
   if (token_service_->RefreshTokenIsAvailable(
           token_service_->GetPrimaryAccountId()))
@@ -90,6 +88,7 @@ void UserCloudPolicyTokenForwarder::Initialize() {
 void UserCloudPolicyTokenForwarder::RequestAccessToken() {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
+  scopes.insert(GaiaUrls::GetInstance()->oauth_wrap_bridge_user_info_scope());
   request_ = token_service_->StartRequest(
       token_service_->GetPrimaryAccountId(), scopes, this);
 }

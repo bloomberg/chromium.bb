@@ -200,7 +200,8 @@ bool CrosSettings::GetDictionary(
 }
 
 bool CrosSettings::FindEmailInList(const std::string& path,
-                                   const std::string& email) const {
+                                   const std::string& email,
+                                   bool* wildcard_match) const {
   DCHECK(CalledOnValidThread());
   std::string canonicalized_email(
       gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)));
@@ -211,9 +212,14 @@ bool CrosSettings::FindEmailInList(const std::string& path,
         std::string("*").append(canonicalized_email.substr(at_pos));
   }
 
+  if (wildcard_match)
+    *wildcard_match = false;
+
   const base::ListValue* list;
   if (!GetList(path, &list))
     return false;
+
+  bool found_wildcard_match = false;
   for (base::ListValue::const_iterator entry(list->begin());
        entry != list->end();
        ++entry) {
@@ -225,12 +231,19 @@ bool CrosSettings::FindEmailInList(const std::string& path,
     std::string canonicalized_entry(
         gaia::CanonicalizeEmail(gaia::SanitizeEmail(entry_string)));
 
-    if (canonicalized_entry == canonicalized_email ||
-        canonicalized_entry == wildcard_email) {
+    if (canonicalized_entry == canonicalized_email)
       return true;
-    }
+
+    // If there is a wildcard match, don't exit early. There might be an exact
+    // match further down the list that should take precedence if present.
+    if (canonicalized_entry == wildcard_email)
+      found_wildcard_match = true;
   }
-  return false;
+
+  if (wildcard_match)
+    *wildcard_match = found_wildcard_match;
+
+  return found_wildcard_match;
 }
 
 bool CrosSettings::AddSettingsProvider(CrosSettingsProvider* provider) {

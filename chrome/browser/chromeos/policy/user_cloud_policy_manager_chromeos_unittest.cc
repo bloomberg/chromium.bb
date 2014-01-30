@@ -249,6 +249,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       EXPECT_TRUE(token_service);
       OAuth2TokenService::ScopeSet scopes;
       scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
+      scopes.insert(
+          GaiaUrls::GetInstance()->oauth_wrap_bridge_user_info_scope());
       token_service->IssueTokenForScope(
           scopes, "5678",
           base::Time::Now() + base::TimeDelta::FromSeconds(3600));

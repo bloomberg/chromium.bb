@@ -88,6 +88,10 @@ class CrosSettingsTest : public testing::Test {
     response.set_policy_data_signature("false");
   }
 
+  static bool IsWhitelisted(CrosSettings* cs, const std::string& username) {
+    return cs->FindEmailInList(kAccountsPrefUsers, username, NULL);
+  }
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 
@@ -230,25 +234,25 @@ TEST_F(CrosSettingsTest, FindEmailInList) {
   CrosSettings* cs = &settings_;
   cs->Set(kAccountsPrefUsers, list);
 
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "user@example.com"));
-  EXPECT_FALSE(cs->FindEmailInList(kAccountsPrefUsers, "us.er@example.com"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "USER@example.com"));
-  EXPECT_FALSE(cs->FindEmailInList(kAccountsPrefUsers, "user"));
+  EXPECT_TRUE(IsWhitelisted(cs, "user@example.com"));
+  EXPECT_FALSE(IsWhitelisted(cs, "us.er@example.com"));
+  EXPECT_TRUE(IsWhitelisted(cs, "USER@example.com"));
+  EXPECT_FALSE(IsWhitelisted(cs, "user"));
 
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "nodomain"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "nodomain@gmail.com"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "no.domain@gmail.com"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "NO.DOMAIN"));
+  EXPECT_TRUE(IsWhitelisted(cs, "nodomain"));
+  EXPECT_TRUE(IsWhitelisted(cs, "nodomain@gmail.com"));
+  EXPECT_TRUE(IsWhitelisted(cs, "no.domain@gmail.com"));
+  EXPECT_TRUE(IsWhitelisted(cs, "NO.DOMAIN"));
 
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "with.dots@gmail.com"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "withdots@gmail.com"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "WITH.DOTS@gmail.com"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "WITHDOTS"));
+  EXPECT_TRUE(IsWhitelisted(cs, "with.dots@gmail.com"));
+  EXPECT_TRUE(IsWhitelisted(cs, "withdots@gmail.com"));
+  EXPECT_TRUE(IsWhitelisted(cs, "WITH.DOTS@gmail.com"));
+  EXPECT_TRUE(IsWhitelisted(cs, "WITHDOTS"));
 
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "Upper@example.com"));
-  EXPECT_FALSE(cs->FindEmailInList(kAccountsPrefUsers, "U.pper@example.com"));
-  EXPECT_FALSE(cs->FindEmailInList(kAccountsPrefUsers, "Upper"));
-  EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "upper@example.com"));
+  EXPECT_TRUE(IsWhitelisted(cs, "Upper@example.com"));
+  EXPECT_FALSE(IsWhitelisted(cs, "U.pper@example.com"));
+  EXPECT_FALSE(IsWhitelisted(cs, "Upper"));
+  EXPECT_TRUE(IsWhitelisted(cs, "upper@example.com"));
 }
 
 }  // namespace chromeos

@@ -196,7 +196,7 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
           (*it)->GetType() != User::USER_TYPE_LOCALLY_MANAGED ||
           UserManager::Get()->AreLocallyManagedUsersAllowed();
       bool meets_whitelist_requirements =
-          LoginUtils::IsWhitelisted((*it)->email()) ||
+          LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
           (*it)->GetType() != User::USER_TYPE_REGULAR;
       if (meets_locally_managed_requirements && meets_whitelist_requirements) {
         filtered_users.push_back(*it);

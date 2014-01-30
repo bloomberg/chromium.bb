@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/pref_names.h"
@@ -162,13 +163,28 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
     return;
   }
 
-  bool is_whitelisted = LoginUtils::IsWhitelisted(
-      gaia::CanonicalizeEmail(user_context.username));
+  bool wildcard_match = false;
+  std::string email = gaia::CanonicalizeEmail(user_context.username);
+  bool is_whitelisted = LoginUtils::IsWhitelisted(email, &wildcard_match);
   if (is_whitelisted) {
     switch (auth_mode_) {
-      case AUTH_MODE_EXTENSION:
-        StartLoginCompletion();
+      case AUTH_MODE_EXTENSION: {
+        // On enterprise devices, reconfirm login permission with the server.
+        policy::BrowserPolicyConnectorChromeOS* connector =
+            g_browser_process->platform_part()
+                ->browser_policy_connector_chromeos();
+        if (connector->IsEnterpriseManaged() && wildcard_match &&
+            !connector->IsNonEnterpriseUser(email)) {
+          wildcard_login_checker_.reset(new policy::WildcardLoginChecker());
+          wildcard_login_checker_->Start(
+                  ProfileHelper::GetSigninProfile()->GetRequestContext(),
+                  base::Bind(&LoginPerformer::OnlineWildcardLoginCheckCompleted,
+                             weak_factory_.GetWeakPtr()));
+        } else {
+          StartLoginCompletion();
+        }
         break;
+      }
       case AUTH_MODE_INTERNAL:
         StartAuthentication();
         break;
@@ -339,6 +355,15 @@ void LoginPerformer::StartAuthentication() {
   }
   user_context_.password.clear();
   user_context_.auth_code.clear();
+}
+
+void LoginPerformer::OnlineWildcardLoginCheckCompleted(bool result) {
+  if (result) {
+    StartLoginCompletion();
+  } else {
+    if (delegate_)
+      delegate_->WhiteListCheckFailed(user_context_.username);
+  }
 }
 
 }  // namespace chromeos

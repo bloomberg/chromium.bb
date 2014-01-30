@@ -32,7 +32,7 @@ namespace {
 // in the whitelist.
 bool WhitelistUser(const std::string& username) {
   CrosSettings* cros_settings = CrosSettings::Get();
-  if (cros_settings->FindEmailInList(kAccountsPrefUsers, username))
+  if (cros_settings->FindEmailInList(kAccountsPrefUsers, username, NULL))
     return false;
   base::StringValue username_value(username);
   cros_settings->AppendToList(kAccountsPrefUsers, &username_value);

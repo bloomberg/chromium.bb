@@ -86,8 +86,11 @@ class CrosSettings : public base::NonThreadSafe {
 
   // Helper function for the whitelist op. Implemented here because we will need
   // this in a few places. The functions searches for |email| in the pref |path|
-  // It respects whitelists so foo@bar.baz will match *@bar.baz too.
-  bool FindEmailInList(const std::string& path, const std::string& email) const;
+  // It respects whitelists so foo@bar.baz will match *@bar.baz too. If the
+  // match was via a wildcard, |wildcard_match| is set to true.
+  bool FindEmailInList(const std::string& path,
+                       const std::string& email,
+                       bool* wildcard_match) const;
 
   // Adding/removing of providers.
   bool AddSettingsProvider(CrosSettingsProvider* provider);
