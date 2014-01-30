@@ -433,7 +433,6 @@ InspectorTest.completeProfilerTest = function()
 
 InspectorTest.runHeapSnapshotTestSuite = function(testSuite)
 {
-    InspectorTest._nextUid = 1;
     var testSuiteTests = testSuite.slice();
     var completeTestStack;
 
@@ -695,22 +694,22 @@ InspectorTest.switchToView = function(title, callback)
 InspectorTest.takeAndOpenSnapshot = function(generator, callback)
 {
     callback = InspectorTest.safeWrap(callback);
-    var uid = InspectorTest._nextUid++;
     var snapshot = generator();
     var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
-    var profile = new WebInspector.HeapProfileHeader(profileType, "Mock snapshot #" + uid, uid);
-    function pushGeneratedSnapshot(uid, callback)
+    function pushGeneratedSnapshot(reportProgress, callback)
     {
+        var profile = profileType.profileBeingRecorded();
+        if (reportProgress) {
+            profileType.reportHeapSnapshotProgress(50, 100, false);
+            profileType.reportHeapSnapshotProgress(100, 100, true);
+        }
         snapshot.snapshot.typeId = "HEAP";
-        snapshot.snapshot.title = profile.title;
-        snapshot.snapshot.uid = profile.uid;
-        profileType.addHeapSnapshotChunk(uid, JSON.stringify(snapshot));
+        profileType.addHeapSnapshotChunk(profile.uid, JSON.stringify(snapshot));
         setTimeout(callback, 0);
     }
-    InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", pushGeneratedSnapshot);
+    InspectorTest.override(HeapProfilerAgent, "takeHeapSnapshot", pushGeneratedSnapshot);
     InspectorTest._takeAndOpenSnapshotCallback = callback;
-    profileType.addProfile(profile);
-    WebInspector.panels.profiles.showProfile(profile);
+    profileType._takeHeapSnapshot(function() { });
 };
 
 InspectorTest.viewColumns = function()

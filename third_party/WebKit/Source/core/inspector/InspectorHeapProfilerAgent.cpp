@@ -256,7 +256,7 @@ void InspectorHeapProfilerAgent::removeProfile(ErrorString*, int rawUid)
         m_snapshots.remove(uid);
 }
 
-void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString*, const bool* reportProgress)
+void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, const bool* reportProgress)
 {
     class HeapSnapshotProgress FINAL : public ScriptProfiler::HeapSnapshotProgress {
     public:
@@ -269,9 +269,14 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString*, const bool* repo
         virtual void Worked(int workDone) OVERRIDE
         {
             if (m_frontend)
-                m_frontend->reportHeapSnapshotProgress(workDone, m_totalWork);
+                m_frontend->reportHeapSnapshotProgress(workDone, m_totalWork, 0);
         }
-        virtual void Done() OVERRIDE { }
+        virtual void Done() OVERRIDE
+        {
+            const bool finished = true;
+            if (m_frontend)
+                m_frontend->reportHeapSnapshotProgress(m_totalWork, m_totalWork, &finished);
+        }
         virtual bool isCanceled() OVERRIDE { return false; }
     private:
         InspectorFrontend::HeapProfiler* m_frontend;
@@ -281,10 +286,26 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString*, const bool* repo
     String title = "Snapshot " + String::number(m_nextUserInitiatedHeapSnapshotNumber++);
     HeapSnapshotProgress progress(reportProgress && *reportProgress ? m_frontend : 0);
     RefPtr<ScriptHeapSnapshot> snapshot = ScriptProfiler::takeHeapSnapshot(title, &progress);
-    if (snapshot) {
-        m_snapshots.add(snapshot->uid(), snapshot);
-        if (m_frontend)
-            m_frontend->addProfileHeader(createSnapshotHeader(*snapshot));
+    if (!snapshot) {
+        *errorString = "Failed to take heap snapshot";
+        return;
+    }
+
+    class OutputStream : public ScriptHeapSnapshot::OutputStream {
+    public:
+        OutputStream(InspectorFrontend::HeapProfiler* frontend, unsigned uid)
+            : m_frontend(frontend), m_uid(uid) { }
+        void Write(const String& chunk) { m_frontend->addHeapSnapshotChunk(m_uid, chunk); }
+        void Close() { }
+    private:
+        InspectorFrontend::HeapProfiler* m_frontend;
+        int m_uid;
+    };
+
+    if (m_frontend) {
+        unsigned uid = static_cast<unsigned>(snapshot->uid());
+        OutputStream stream(m_frontend, uid);
+        snapshot->writeJSON(&stream);
     }
 }
 

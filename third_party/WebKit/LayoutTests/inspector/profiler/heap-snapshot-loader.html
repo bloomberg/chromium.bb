@@ -18,10 +18,14 @@ function test()
 
         var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
 
-        InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
-        function getHeapSnapshotMock(uid, callback) {
+        InspectorTest.override(HeapProfilerAgent, "takeHeapSnapshot", takeHeapSnapshotMock);
+        function takeHeapSnapshotMock(reportProgress, callback) {
+            if (reportProgress) {
+                profileType.reportHeapSnapshotProgress(50, 100, false);
+                profileType.reportHeapSnapshotProgress(100, 100, true);
+            }
             for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
-                dispatcher.addHeapSnapshotChunk(uid, sourceStringified.slice(i, i + partSize));
+                dispatcher.addHeapSnapshotChunk(-1, sourceStringified.slice(i, i + partSize));
             setTimeout(callback, 0);
         }
 
@@ -30,14 +34,7 @@ function test()
             callback(this);
         }
         InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_didWriteToTempFile", tempFileReady);
-        profileType._profileBeingRecorded = new WebInspector.HeapProfileHeader(profileType, "Snapshotting");
-        profileType.addProfile(profileType._profileBeingRecorded);
-
-        dispatcher.addProfileHeader({
-            typeId: WebInspector.HeapSnapshotProfileType.TypeId,
-            title: "heapSnapshotSaveToFileTest",
-            uid: 42
-        });
+        profileType._takeHeapSnapshot(function() {});
     }
 
     WebInspector.log = function(message) {

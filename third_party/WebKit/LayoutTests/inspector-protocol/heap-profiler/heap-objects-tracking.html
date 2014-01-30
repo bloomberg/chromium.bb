@@ -28,7 +28,6 @@ function test()
 
     var gotLastSeenObjectIdEvent = false;
     var gotHeapStatsUpdateEvent = false;
-    var gotHeapProfilerHeader = false;
     function trackingStarted()
     {
         InspectorTest.log("SUCCESS: tracking started");
@@ -40,8 +39,6 @@ function test()
             InspectorTest.log("SUCCESS: heapStatsUpdate arrived");
         if (gotLastSeenObjectIdEvent)
             InspectorTest.log("SUCCESS: lastSeenObjectId arrived");
-        if (gotHeapProfilerHeader)
-            InspectorTest.log("SUCCESS: addProfileHeader arrived");
         InspectorTest.log("SUCCESS: tracking stopped");
         InspectorTest.completeTest();
     }
@@ -73,11 +70,6 @@ function test()
         InspectorTest.assert(statsUpdate[2], "statsUpdate: total size of objects should be not zero");
         fragments.push(statsUpdate);
         gotHeapStatsUpdateEvent = true;
-    }
-
-    InspectorTest.eventHandler["HeapProfiler.addProfileHeader"] = function(messageObject)
-    {
-        gotHeapProfilerHeader = true;
     }
 
     InspectorTest.sendCommand("HeapProfiler.startTrackingHeapObjects", {}, trackingStarted);
