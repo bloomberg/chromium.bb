@@ -281,11 +281,11 @@ void Rule::ParseJsonRule(const Json& json_rule) {
   }
 
   if (json_rule.GetStringValueForKey("lang", &value)) {
-    language_ = value;
+    language_.swap(value);
   }
 
   if (json_rule.GetStringValueForKey("zip", &value)) {
-    postal_code_format_ = value;
+    postal_code_format_.swap(value);
   }
 
   if (json_rule.GetStringValueForKey("state_name_type", &value)) {
