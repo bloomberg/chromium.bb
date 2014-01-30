@@ -7,7 +7,7 @@ sky@chromium.org
 # to load balance. Only use the above for subdirectories when doing refactorings
 # that touch all the platforms.
 
-per-file browser_tab_contents.*=avi@chromium.org
+per-file tab_helpers.*=avi@chromium.org
 
 # Instant/Search files.
 per-file browser_instant_controller*=brettw@chromium.org
