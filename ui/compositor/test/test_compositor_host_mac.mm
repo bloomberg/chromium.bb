@@ -78,7 +78,7 @@ class AppKitHost : public FoundationHost {
 
 // TestCompositorHostMac provides a window surface and a coordinated compositor
 // for use in the compositor unit tests.
-class TestCompositorHostMac : public TestCompositorHost
+class TestCompositorHostMac : public TestCompositorHost,
                               public AppKitHost {
  public:
   TestCompositorHostMac(const gfx::Rect& bounds);
@@ -124,7 +124,8 @@ void TestCompositorHostMac::Show() {
                               defer:NO];
   base::scoped_nsobject<AcceleratedTestView> view(
       [[AcceleratedTestView alloc] init]);
-  compositor_.reset(new ui::Compositor(view, bounds_.size()));
+  compositor_.reset(new ui::Compositor(view));
+  compositor_->SetScaleAndSize(1.0f, bounds_.size());
   [view setCompositor:compositor_.get()];
   [window_ setContentView:view];
   [window_ orderFront:nil];
