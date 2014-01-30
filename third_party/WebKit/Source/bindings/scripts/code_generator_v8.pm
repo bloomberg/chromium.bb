@@ -1092,7 +1092,7 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $hasCustomIndexedDeleters = $indexedDeleterFunction && $indexedDeleterFunction->extendedAttributes->{"Custom"};
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
-    my $hasCustomNamedGetter = $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"Custom"};
+    my $hasCustomNamedGetter = $namedGetterFunction && HasCustomPropertyGetter($namedGetterFunction->extendedAttributes);
 
     my $namedSetterFunction = GetNamedSetterFunction($interface);
     my $hasCustomNamedSetter = $namedSetterFunction && $namedSetterFunction->extendedAttributes->{"Custom"};
@@ -1101,7 +1101,7 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $hasCustomNamedDeleter = $namedDeleterFunction && $namedDeleterFunction->extendedAttributes->{"Custom"};
 
     my $namedEnumeratorFunction = $namedGetterFunction && !$namedGetterFunction->extendedAttributes->{"NotEnumerable"};
-    my $hasCustomNamedEnumerator = $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"CustomEnumerateProperty"};
+    my $hasCustomNamedEnumerator = $namedGetterFunction && ExtendedAttributeContains($namedGetterFunction->extendedAttributes->{"Custom"}, "PropertyEnumerator");
 
     if ($hasCustomIndexedGetter) {
         $header{classPublic}->add("    static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);\n");
@@ -1194,6 +1194,13 @@ sub HasCustomMethod
 {
     my $attrExt = shift;
     return $attrExt->{"Custom"};
+}
+
+sub HasCustomPropertyGetter
+{
+    my $attrExt = shift;
+    my $custom = $attrExt->{"Custom"};
+    return $custom && ($custom eq "VALUE_IS_MISSING" || ExtendedAttributeContains($custom, "PropertyGetter"));
 }
 
 sub IsReadonly
@@ -3820,7 +3827,7 @@ sub GenerateImplementationNamedPropertyAccessors
             AddToImplIncludes("wtf/RefPtr.h");
             AddToImplIncludes("wtf/GetPtr.h");
         }
-        my $hasCustomNamedGetter = $namedGetterFunction->extendedAttributes->{"Custom"};
+        my $hasCustomNamedGetter = HasCustomPropertyGetter($namedGetterFunction->extendedAttributes);
         if (!$hasCustomNamedGetter) {
             GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
         }
@@ -3848,7 +3855,7 @@ sub GenerateImplementationNamedPropertyAccessors
 
     my $namedEnumeratorFunction = $namedGetterFunction && !$namedGetterFunction->extendedAttributes->{"NotEnumerable"};
     if ($namedEnumeratorFunction) {
-        my $hasCustomNamedEnumerator = $namedGetterFunction->extendedAttributes->{"CustomEnumerateProperty"};
+        my $hasCustomNamedEnumerator = ExtendedAttributeContains($namedGetterFunction->extendedAttributes->{"Custom"}, "PropertyEnumerator");
         if (!$hasCustomNamedEnumerator) {
             GenerateImplementationNamedPropertyQuery($interface);
         }
