@@ -1033,6 +1033,7 @@
         'browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm',
         'browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc',
         'browser/media_galleries/media_file_system_registry_unittest.cc',
+	'browser/media_galleries/media_folder_finder_unittest.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.h',
         'browser/media_galleries/media_galleries_dialog_controller_unittest.cc',
