@@ -861,7 +861,6 @@ void SpdySession::EnqueueStreamWrite(
 scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
     SpdyStreamId stream_id,
     RequestPriority priority,
-    uint8 credential_slot,
     SpdyControlFlags flags,
     const SpdyHeaderBlock& headers) {
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
@@ -874,9 +873,8 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
   SpdyPriority spdy_priority =
       ConvertRequestPriorityToSpdyPriority(priority, GetProtocolVersion());
   scoped_ptr<SpdyFrame> syn_frame(
-      buffered_spdy_framer_->CreateSynStream(
-          stream_id, 0, spdy_priority,
-          credential_slot, flags, &headers));
+      buffered_spdy_framer_->CreateSynStream(stream_id, 0, spdy_priority, flags,
+                                             &headers));
 
   base::StatsCounter spdy_requests("spdy.requests");
   spdy_requests.Increment();
@@ -2033,7 +2031,6 @@ int SpdySession::OnInitialResponseHeadersReceived(
 void SpdySession::OnSynStream(SpdyStreamId stream_id,
                               SpdyStreamId associated_stream_id,
                               SpdyPriority priority,
-                              uint8 credential_slot,
                               bool fin,
                               bool unidirectional,
                               const SpdyHeaderBlock& headers) {

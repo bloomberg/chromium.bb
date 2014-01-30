@@ -164,7 +164,6 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional) = 0;
 

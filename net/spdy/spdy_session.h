@@ -290,7 +290,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   scoped_ptr<SpdyFrame> CreateSynStream(
       SpdyStreamId stream_id,
       RequestPriority priority,
-      uint8 credential_slot,
       SpdyControlFlags flags,
       const SpdyHeaderBlock& headers);
 
@@ -802,7 +801,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional,
                            const SpdyHeaderBlock& headers) OVERRIDE;

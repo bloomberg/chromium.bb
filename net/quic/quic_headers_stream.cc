@@ -30,7 +30,6 @@ class QuicHeadersStream::SpdyFramerVisitor
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional) OVERRIDE {
     if (!stream_->IsConnected()) {
@@ -39,11 +38,6 @@ class QuicHeadersStream::SpdyFramerVisitor
 
     if (associated_stream_id != 0) {
       CloseConnection("associated_stream_id != 0");
-      return;
-    }
-
-    if (credential_slot != 0) {
-      CloseConnection("credential_slot != 0");
       return;
     }
 

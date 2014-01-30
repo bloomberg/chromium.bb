@@ -363,8 +363,6 @@ enum SpdyGoAwayStatus {
 // number between 0 and 3.
 typedef uint8 SpdyPriority;
 
-typedef uint8 SpdyCredentialSlot;
-
 typedef std::map<std::string, std::string> SpdyNameValueBlock;
 
 typedef uint32 SpdyPingId;
@@ -500,7 +498,6 @@ class NET_EXPORT_PRIVATE SpdySynStreamIR
       : SpdyFrameWithNameValueBlockIR(stream_id),
         associated_to_stream_id_(0),
         priority_(0),
-        slot_(0),
         unidirectional_(false) {}
   SpdyStreamId associated_to_stream_id() const {
     return associated_to_stream_id_;
@@ -510,8 +507,6 @@ class NET_EXPORT_PRIVATE SpdySynStreamIR
   }
   SpdyPriority priority() const { return priority_; }
   void set_priority(SpdyPriority priority) { priority_ = priority; }
-  SpdyCredentialSlot slot() const { return slot_; }
-  void set_slot(SpdyCredentialSlot slot) { slot_ = slot; }
   bool unidirectional() const { return unidirectional_; }
   void set_unidirectional(bool unidirectional) {
     unidirectional_ = unidirectional;
@@ -522,7 +517,6 @@ class NET_EXPORT_PRIVATE SpdySynStreamIR
  private:
   SpdyStreamId associated_to_stream_id_;
   SpdyPriority priority_;
-  SpdyCredentialSlot slot_;
   bool unidirectional_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdySynStreamIR);

@@ -479,7 +479,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   SpdyStreamId stream_id_;
   const GURL url_;
   const RequestPriority priority_;
-  size_t slot_;
 
   // Flow control variables.
   bool send_stalled_by_flow_control_;

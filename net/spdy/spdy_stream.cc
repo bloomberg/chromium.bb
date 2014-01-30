@@ -91,7 +91,6 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       stream_id_(0),
       url_(url),
       priority_(priority),
-      slot_(0),
       send_stalled_by_flow_control_(false),
       send_window_size_(initial_send_window_size),
       recv_window_size_(initial_recv_window_size),
@@ -203,7 +202,7 @@ scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
       (send_status_ == NO_MORE_DATA_TO_SEND) ?
       CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
   scoped_ptr<SpdyFrame> frame(session_->CreateSynStream(
-      stream_id_, priority_, slot_, flags, *request_headers_));
+      stream_id_, priority_, flags, *request_headers_));
   send_time_ = base::TimeTicks::Now();
   return frame.Pass();
 }

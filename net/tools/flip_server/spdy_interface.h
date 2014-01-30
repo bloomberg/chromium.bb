@@ -66,7 +66,6 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional,
                            const SpdyHeaderBlock& headers) OVERRIDE;

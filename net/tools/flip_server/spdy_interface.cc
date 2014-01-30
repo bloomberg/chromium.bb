@@ -130,13 +130,14 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSyn(" << stream_id << ")";
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: # headers: " << headers.size();
 
-  SpdyHeaderBlock supplement;
   SpdyHeaderBlock::const_iterator method = headers.end();
   SpdyHeaderBlock::const_iterator host = headers.end();
   SpdyHeaderBlock::const_iterator path = headers.end();
   SpdyHeaderBlock::const_iterator scheme = headers.end();
   SpdyHeaderBlock::const_iterator version = headers.end();
   SpdyHeaderBlock::const_iterator url = headers.end();
+
+  std::string path_string, host_string, version_string;
 
   if (spdy_version() == SPDY2) {
     url = headers.find("url");
@@ -153,22 +154,23 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
     // path contains a query string with a http:// in one of its values,
     // UrlUtilities::GetUrlPath will fail and always return a / breaking
     // the request. GetUrlPath assumes the absolute URL is being passed in.
-    std::string path_string = UrlUtilities::GetUrlPath(url->second);
-    std::string host_string = UrlUtilities::GetUrlHost(url->second);
-    path = supplement.insert(std::make_pair(":path", path_string)).first;
-    host = supplement.insert(std::make_pair(":host", host_string)).first;
+    path_string = UrlUtilities::GetUrlPath(url->second);
+    host_string = UrlUtilities::GetUrlHost(url->second);
+    version_string = version->second;
   } else {
     method = headers.find(":method");
     host = headers.find(":host");
     path = headers.find(":path");
     scheme = headers.find(":scheme");
-    version = supplement.insert(std::make_pair(":version", "HTTP/1.1")).first;
     if (method == headers.end() || host == headers.end() ||
         path == headers.end() || scheme == headers.end()) {
       VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: A mandatory header is "
               << "missing. Not creating stream";
       return 0;
     }
+    host_string = host->second;
+    path_string = path->second;
+    version_string = "HTTP/1.1";
   }
 
   if (scheme->second.compare("https") == 0) {
@@ -177,16 +179,16 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
 
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second
-            << " " << path->second;
-    std::string filename = EncodeURL(path->second,
-                                     host->second,
+            << " " << path_string;
+    std::string filename = EncodeURL(path_string,
+                                     host_string,
                                      method->second);
     NewStream(stream_id, priority, filename);
   } else {
     http_data +=
-        method->second + " " + path->second + " " + version->second + "\r\n";
+        method->second + " " + path_string + " " + version_string + "\r\n";
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second << " "
-            << path->second << " " << version->second;
+            << path_string << " " << version_string;
     http_data += "Host: " + (*is_https_scheme ?
                              acceptor_->https_server_ip_ :
                              acceptor_->http_server_ip_) + "\r\n";
@@ -241,7 +243,6 @@ void SpdySM::OnStreamFrameData(SpdyStreamId stream_id,
 void SpdySM::OnSynStream(SpdyStreamId stream_id,
                          SpdyStreamId associated_stream_id,
                          SpdyPriority priority,
-                         uint8 credential_slot,
                          bool fin,
                          bool unidirectional,
                          const SpdyHeaderBlock& headers) {
@@ -470,7 +471,7 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
   }
 
   SpdyFrame* fsrcf = buffered_spdy_framer_->CreateSynStream(
-      stream_id, 0, 0, 0, CONTROL_FLAG_NONE, &block);
+      stream_id, 0, 0, CONTROL_FLAG_NONE, &block);
   size_t df_size = fsrcf->size();
   EnqueueDataFrame(new SpdyFrameDataFrame(fsrcf));
 

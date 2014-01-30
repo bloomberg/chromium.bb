@@ -62,7 +62,6 @@ void BufferedSpdyFramer::OnError(SpdyFramer* spdy_framer) {
 void BufferedSpdyFramer::OnSynStream(SpdyStreamId stream_id,
                                      SpdyStreamId associated_stream_id,
                                      SpdyPriority priority,
-                                     uint8 credential_slot,
                                      bool fin,
                                      bool unidirectional) {
   frames_received_++;
@@ -72,7 +71,6 @@ void BufferedSpdyFramer::OnSynStream(SpdyStreamId stream_id,
   control_frame_fields_->stream_id = stream_id;
   control_frame_fields_->associated_stream_id = associated_stream_id;
   control_frame_fields_->priority = priority;
-  control_frame_fields_->credential_slot = credential_slot;
   control_frame_fields_->fin = fin;
   control_frame_fields_->unidirectional = unidirectional;
 
@@ -128,7 +126,6 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
         visitor_->OnSynStream(control_frame_fields_->stream_id,
                               control_frame_fields_->associated_stream_id,
                               control_frame_fields_->priority,
-                              control_frame_fields_->credential_slot,
                               control_frame_fields_->fin,
                               control_frame_fields_->unidirectional,
                               headers);
@@ -246,13 +243,11 @@ SpdyFrame* BufferedSpdyFramer::CreateSynStream(
     SpdyStreamId stream_id,
     SpdyStreamId associated_stream_id,
     SpdyPriority priority,
-    uint8 credential_slot,
     SpdyControlFlags flags,
     const SpdyHeaderBlock* headers) {
   SpdySynStreamIR syn_stream(stream_id);
   syn_stream.set_associated_to_stream_id(associated_stream_id);
   syn_stream.set_priority(priority);
-  syn_stream.set_slot(credential_slot);
   syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
   syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
   // TODO(hkhalil): Avoid copy here.

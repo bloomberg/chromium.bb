@@ -38,7 +38,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional,
                            const SpdyHeaderBlock& headers) = 0;
@@ -127,7 +126,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional) OVERRIDE;
   virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE;
@@ -166,7 +164,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyFrame* CreateSynStream(SpdyStreamId stream_id,
                              SpdyStreamId associated_stream_id,
                              SpdyPriority priority,
-                             uint8 credential_slot,
                              SpdyControlFlags flags,
                              const SpdyHeaderBlock* headers);
   SpdyFrame* CreateSynReply(SpdyStreamId stream_id,

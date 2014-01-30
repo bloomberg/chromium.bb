@@ -39,7 +39,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional,
                            const SpdyHeaderBlock& headers) OVERRIDE {
@@ -221,7 +220,6 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
       framer.CreateSynStream(1,                        // stream_id
                              0,                        // associated_stream_id
                              1,                        // priority
-                             0,                        // credential_slot
                              CONTROL_FLAG_NONE,
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);

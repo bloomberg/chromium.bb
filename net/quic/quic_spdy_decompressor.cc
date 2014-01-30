@@ -36,7 +36,6 @@ class SpdyFramerVisitor : public SpdyFramerVisitorInterface {
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional) OVERRIDE {}
   virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE {}

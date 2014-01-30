@@ -116,7 +116,6 @@ class SpdyFramerTestUtil {
     virtual void OnSynStream(SpdyStreamId stream_id,
                              SpdyStreamId associated_stream_id,
                              SpdyPriority priority,
-                             uint8 slot,
                              bool fin,
                              bool unidirectional) OVERRIDE {
       SpdyFramer framer(version_);
@@ -124,7 +123,6 @@ class SpdyFramerTestUtil {
       SpdySynStreamIR syn_stream(stream_id);
       syn_stream.set_associated_to_stream_id(associated_stream_id);
       syn_stream.set_priority(priority);
-      syn_stream.set_slot(slot);
       syn_stream.set_fin(fin);
       syn_stream.set_unidirectional(unidirectional);
       scoped_ptr<SpdyFrame> frame(framer.SerializeSynStream(syn_stream));
@@ -309,7 +307,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional) OVERRIDE {
     syn_frame_count_++;
@@ -614,68 +611,6 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
   EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
                                                serialized_headers.size() - 2,
                                                &new_headers));
-}
-
-TEST_P(SpdyFramerTest, OutOfOrderHeaders) {
-  SpdyFramer framer(spdy_version_);
-  framer.set_enable_compression(false);
-
-  // Frame builder with plentiful buffer size.
-  SpdyFrameBuilder frame(1024);
-  if (spdy_version_ < 4) {
-    frame.WriteControlFrameHeader(framer, SYN_STREAM, CONTROL_FLAG_NONE);
-    frame.WriteUInt32(3);  // stream_id
-  } else {
-    frame.WriteFramePrefix(framer, SYN_STREAM, CONTROL_FLAG_NONE, 3);
-  }
-
-  frame.WriteUInt32(0);  // Associated stream id
-  frame.WriteUInt16(0);  // Priority.
-
-  if (IsSpdy2()) {
-    frame.WriteUInt16(2);  // Number of headers.
-    frame.WriteString("gamma");
-    frame.WriteString("gamma");
-    frame.WriteString("alpha");
-    frame.WriteString("alpha");
-  } else {
-    frame.WriteUInt32(2);  // Number of headers.
-    frame.WriteStringPiece32("gamma");
-    frame.WriteStringPiece32("gamma");
-    frame.WriteStringPiece32("alpha");
-    frame.WriteStringPiece32("alpha");
-  }
-  // write the length
-  frame.RewriteLength(framer);
-
-  SpdyHeaderBlock new_headers;
-  scoped_ptr<SpdyFrame> control_frame(frame.take());
-  base::StringPiece serialized_headers =
-      GetSerializedHeaders(control_frame.get(), framer);
-  EXPECT_TRUE(framer.ParseHeaderBlockInBuffer(serialized_headers.data(),
-                                              serialized_headers.size(),
-                                              &new_headers));
-}
-
-// Test that if we receive a SYN_STREAM with stream ID zero, we signal an error
-// (but don't crash).
-TEST_P(SpdyFramerTest, SynStreamWithStreamIdZero) {
-  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-  SpdyFramer framer(spdy_version_);
-  framer.set_visitor(&visitor);
-
-  SpdySynStreamIR syn_stream(0);
-  syn_stream.set_priority(1);
-  syn_stream.SetHeader("alpha", "beta");
-  scoped_ptr<SpdyFrame> frame(framer.SerializeSynStream(syn_stream));
-  ASSERT_TRUE(frame.get() != NULL);
-
-  // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
-  EXPECT_GT(frame->size(), framer.ProcessInput(frame->data(), frame->size()));
-  EXPECT_TRUE(framer.HasError());
-  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
 }
 
 // Test that if we receive a SYN_REPLY with stream ID zero, we signal an error
@@ -1687,10 +1622,9 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
   framer.set_enable_compression(false);
 
   {
-    const char kDescription[] = "SYN_STREAM frame, lowest pri, slot 2, no FIN";
+    const char kDescription[] = "SYN_STREAM frame, lowest pri, no FIN";
 
     const unsigned char kPri = IsSpdy2() ? 0xC0 : 0xE0;
-    const unsigned char kCre = IsSpdy2() ? 0 : 2;
     const unsigned char kV2FrameData[] = {
       0x80, spdy_version_ch_, 0x00, 0x01,
       0x00, 0x00, 0x00, 0x20,
@@ -1708,7 +1642,7 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
       0x00, 0x00, 0x00, 0x2a,
       0x00, 0x00, 0x00, 0x01,
       0x00, 0x00, 0x00, 0x00,
-      kPri, kCre, 0x00, 0x00,
+      kPri, 0x00, 0x00, 0x00,
       0x00, 0x02, 0x00, 0x00,
       0x00, 0x03, 'b',  'a',
       'r',  0x00, 0x00, 0x00,
@@ -1733,7 +1667,6 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
     };
     SpdySynStreamIR syn_stream(1);
     syn_stream.set_priority(framer.GetLowestPriority());
-    syn_stream.set_slot(kCre);
     syn_stream.SetHeader("bar", "foo");
     syn_stream.SetHeader("foo", "bar");
     scoped_ptr<SpdyFrame> frame(framer.SerializeSynStream(syn_stream));
@@ -3732,10 +3665,10 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
     } else {
       EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(8, SYN_STREAM, _));
       if (IsSpdy4()) {
-        EXPECT_CALL(visitor, OnSynStream(8, 0, 1, 0, flags & CONTROL_FLAG_FIN,
+        EXPECT_CALL(visitor, OnSynStream(8, 0, 1, flags & CONTROL_FLAG_FIN,
                                          false));
       } else {
-        EXPECT_CALL(visitor, OnSynStream(8, 3, 1, 0, flags & CONTROL_FLAG_FIN,
+        EXPECT_CALL(visitor, OnSynStream(8, 3, 1, flags & CONTROL_FLAG_FIN,
                                          flags & CONTROL_FLAG_UNIDIRECTIONAL));
       }
       EXPECT_CALL(visitor, OnControlFrameHeaderData(8, _, _))
@@ -4087,7 +4020,7 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
   }
 
   EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(1, SYN_STREAM, _));
-  EXPECT_CALL(visitor, OnSynStream(1, 0, 1, 0, false, false));
+  EXPECT_CALL(visitor, OnSynStream(1, 0, 1, false, false));
   EXPECT_CALL(visitor, OnControlFrameHeaderData(1, NULL, 0));
 
   framer.ProcessInput(frame->data(), framer.GetSynStreamMinimumSize());

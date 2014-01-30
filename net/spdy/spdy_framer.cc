@@ -183,7 +183,8 @@ size_t SpdyFramer::GetSynStreamMinimumSize() const {
   // name-value block.
   if (spdy_version_ < 4) {
     // Calculated as:
-    // control frame header + 2 * 4 (stream IDs) + 1 (priority) + 1 (slot)
+    // control frame header + 2 * 4 (stream IDs) + 1 (priority)
+    // + 1 (unused, was credential slot)
     return GetControlFrameHeaderSize() + 10;
   } else {
     // Calculated as:
@@ -1162,14 +1163,8 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             priority = priority >> 5;
           }
 
-          uint8 slot = 0;
-          if (protocol_version() < 3) {
-            // SPDY 2 had an unused byte here. Seek past it.
-            reader.Seek(1);
-          } else {
-            successful_read = reader.ReadUInt8(&slot);
-            DCHECK(successful_read);
-          }
+         // Seek past unused byte; used to be credential slot in SPDY 3.
+         reader.Seek(1);
 
           DCHECK(reader.IsDoneReading());
           if (debug_visitor_) {
@@ -1182,7 +1177,6 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
               current_frame_stream_id_,
               associated_to_stream_id,
               priority,
-              slot,
               (current_frame_flags_ & CONTROL_FLAG_FIN) != 0,
               (current_frame_flags_ & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
         }
@@ -1244,7 +1238,6 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
                 current_frame_stream_id_,
                 0,  // associated_to_stream_id
                 priority,
-                0,  // TODO(hkhalil): handle slot for SPDY 4+?
                 current_frame_flags_ & CONTROL_FLAG_FIN,
                 false);  // unidirectional
           } else {
@@ -1798,7 +1791,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
     builder.WriteUInt32(syn_stream.stream_id());
     builder.WriteUInt32(syn_stream.associated_to_stream_id());
     builder.WriteUInt8(priority << ((spdy_version_ < 3) ? 6 : 5));
-    builder.WriteUInt8(syn_stream.slot());
+    builder.WriteUInt8(0);  // Unused byte where credential slot used to be.
   } else {
     builder.WriteFramePrefix(*this,
                              HEADERS,

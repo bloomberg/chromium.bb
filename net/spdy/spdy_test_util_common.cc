@@ -216,7 +216,6 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,
-                           uint8 credential_slot,
                            bool fin,
                            bool unidirectional,
                            const SpdyHeaderBlock& headers) OVERRIDE {
@@ -750,10 +749,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyFrame(
       break;
     case SYN_STREAM:
       {
-        size_t credential_slot = is_spdy2() ? 0 : header_info.credential_slot;
         frame = framer.CreateSynStream(header_info.id, header_info.assoc_id,
                                        header_info.priority,
-                                       credential_slot,
                                        header_info.control_flags,
                                        headers.get());
       }

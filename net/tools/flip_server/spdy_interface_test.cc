@@ -44,15 +44,13 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
   virtual ~SpdyFramerVisitor() {}
   MOCK_METHOD1(OnError, void(SpdyFramer::SpdyError));
   MOCK_METHOD2(OnStreamError, void(SpdyStreamId, const std::string&));
-  MOCK_METHOD7(OnSynStream,
+  MOCK_METHOD6(OnSynStream,
                void(SpdyStreamId,
                     SpdyStreamId,
                     SpdyPriority,
-                    uint8,
                     bool,
                     bool,
                     const SpdyHeaderBlock&));
-  MOCK_METHOD3(OnSynStream, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
   MOCK_METHOD3(OnSynReply, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
   MOCK_METHOD3(OnHeaders, void(SpdyStreamId, bool, const SpdyHeaderBlock&));
   MOCK_METHOD3(OnDataFrameHeader, void(SpdyStreamId, size_t, bool));
@@ -243,7 +241,7 @@ TEST_P(SpdySMProxyTest, OnSynStream_SPDY2) {
                         InvokeWithoutArgs(&saver, &StringSaver::Save),
                         Return(0)));
   }
-  visitor->OnSynStream(stream_id, associated_id, 0, 0, false, false, block);
+  visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
   ASSERT_EQ(expected, saver.string);
 }
 
@@ -278,7 +276,7 @@ TEST_P(SpdySMProxyTest, OnSynStream) {
                         InvokeWithoutArgs(&saver, &StringSaver::Save),
                         Return(0)));
   }
-  visitor->OnSynStream(stream_id, associated_id, 0, 0, false, false, block);
+  visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
   ASSERT_EQ(expected, saver.string);
 }
 
@@ -310,7 +308,7 @@ TEST_P(SpdySMProxyTest, OnStreamFrameData_SPDY2) {
                 ProcessWriteInput(frame->data(), frame->size())).Times(1);
   }
 
-  visitor->OnSynStream(stream_id, associated_id, 0, 0, false, false, block);
+  visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
   checkpoint.Call(0);
   visitor->OnStreamFrameData(stream_id, frame->data(), frame->size(), true);
 }
@@ -345,7 +343,7 @@ TEST_P(SpdySMProxyTest, OnStreamFrameData) {
                 ProcessWriteInput(frame->data(), frame->size())).Times(1);
   }
 
-  visitor->OnSynStream(stream_id, associated_id, 0, 0, false, false, block);
+  visitor->OnSynStream(stream_id, associated_id, 0, false, false, block);
   checkpoint.Call(0);
   visitor->OnStreamFrameData(stream_id, frame->data(), frame->size(), true);
 }
@@ -455,8 +453,13 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound_SPDY2) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
-        .WillOnce(SaveArg<2>(&actual_header_block));
+    if (GetParam() < SPDY4) {
+      EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    } else {
+      EXPECT_CALL(*spdy_framer_visitor_, OnHeaders(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    }
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnDataFrameHeader(stream_id, _, true));
@@ -499,9 +502,15 @@ TEST_P(SpdySMProxyTest, SendErrorNotFound) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_,
-                OnSynReply(stream_id, false, _))
-        .WillOnce(SaveArg<2>(&actual_header_block));
+    if (GetParam() < SPDY4) {
+      EXPECT_CALL(*spdy_framer_visitor_,
+                  OnSynReply(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    } else {
+      EXPECT_CALL(*spdy_framer_visitor_,
+                  OnHeaders(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    }
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnDataFrameHeader(stream_id, _, true));
@@ -547,8 +556,8 @@ TEST_P(SpdySMProxyTest, SendSynStream_SPDY2) {
   {
     InSequence s;
     EXPECT_CALL(*spdy_framer_visitor_,
-                OnSynStream(stream_id, 0, _, _, false, false, _))
-        .WillOnce(SaveArg<6>(&actual_header_block));
+                OnSynStream(stream_id, 0, _, false, false, _))
+        .WillOnce(SaveArg<5>(&actual_header_block));
   }
 
   spdy_framer_->ProcessInput(df->data, df->size);
@@ -581,8 +590,8 @@ TEST_P(SpdySMProxyTest, SendSynStream) {
   {
     InSequence s;
     EXPECT_CALL(*spdy_framer_visitor_,
-                OnSynStream(stream_id, 0, _, _, false, false, _))
-        .WillOnce(SaveArg<6>(&actual_header_block));
+                OnSynStream(stream_id, 0, _, false, false, _))
+        .WillOnce(SaveArg<5>(&actual_header_block));
   }
 
   spdy_framer_->ProcessInput(df->data, df->size);
@@ -614,8 +623,13 @@ TEST_P(SpdySMProxyTest, SendSynReply_SPDY2) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
-        .WillOnce(SaveArg<2>(&actual_header_block));
+    if (GetParam() < SPDY4) {
+      EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    } else {
+      EXPECT_CALL(*spdy_framer_visitor_, OnHeaders(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    }
   }
 
   spdy_framer_->ProcessInput(df->data, df->size);
@@ -645,8 +659,13 @@ TEST_P(SpdySMProxyTest, SendSynReply) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
-        .WillOnce(SaveArg<2>(&actual_header_block));
+    if (GetParam() < SPDY4) {
+      EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    } else {
+      EXPECT_CALL(*spdy_framer_visitor_, OnHeaders(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    }
   }
 
   spdy_framer_->ProcessInput(df->data, df->size);
@@ -787,7 +806,7 @@ TEST_P(SpdySMServerTest, OnSynStream) {
     BalsaHeaders headers;
     memory_cache_->InsertFile(&headers, "GET_/path", "");
   }
-  visitor->OnSynStream(stream_id, 0, 0, 0, true, true, spdy_headers);
+  visitor->OnSynStream(stream_id, 0, 0, true, true, spdy_headers);
   ASSERT_TRUE(HasStream(stream_id));
 }
 
@@ -817,8 +836,13 @@ TEST_P(SpdySMServerTest, NewStreamError) {
 
   {
     InSequence s;
-    EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
-        .WillOnce(SaveArg<2>(&actual_header_block));
+    if (GetParam() < SPDY4) {
+      EXPECT_CALL(*spdy_framer_visitor_, OnSynReply(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    } else {
+      EXPECT_CALL(*spdy_framer_visitor_, OnHeaders(stream_id, false, _))
+          .WillOnce(SaveArg<2>(&actual_header_block));
+    }
     EXPECT_CALL(checkpoint, Call(0));
     EXPECT_CALL(*spdy_framer_visitor_,
                 OnDataFrameHeader(stream_id, _, true));

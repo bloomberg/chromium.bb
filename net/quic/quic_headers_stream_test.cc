@@ -37,10 +37,9 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD3(OnControlFrameHeaderData, bool(SpdyStreamId stream_id,
                                               const char* header_data,
                                               size_t len));
-  MOCK_METHOD6(OnSynStream, void(SpdyStreamId stream_id,
+  MOCK_METHOD5(OnSynStream, void(SpdyStreamId stream_id,
                                  SpdyStreamId associated_stream_id,
                                  SpdyPriority priority,
-                                 uint8 slot,
                                  bool fin,
                                  bool unidirectional));
   MOCK_METHOD2(OnSynReply, void(SpdyStreamId stream_id, bool fin));
@@ -124,7 +123,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
     if (type == SYN_STREAM) {
       EXPECT_CALL(visitor_, OnSynStream(stream_id, kNoAssociatedStream, 0,
                                         // priority,
-                                        _, fin, kNotUnidirectional));
+                                        fin, kNotUnidirectional));
     } else {
       EXPECT_CALL(visitor_, OnSynReply(stream_id, fin));
     }

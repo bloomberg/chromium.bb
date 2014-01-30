@@ -921,7 +921,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
 
   // OnSynStream() expects |in_io_loop_| to be true.
   session->in_io_loop_ = true;
-  session->OnSynStream(2, 1, 0, 0, true, false, headers);
+  session->OnSynStream(2, 1, 0, true, false, headers);
   session->in_io_loop_ = false;
 
   // Verify that there is one unclaimed push stream.
@@ -936,7 +936,7 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
 
   spdy_util_.AddUrlToHeaderBlock("http://www.google.com/b.dat", &headers);
   session->in_io_loop_ = true;
-  session->OnSynStream(4, 1, 0, 0, true, false, headers);
+  session->OnSynStream(4, 1, 0, true, false, headers);
   session->in_io_loop_ = false;
 
   // Verify that the second pushed stream evicted the first pushed stream.
