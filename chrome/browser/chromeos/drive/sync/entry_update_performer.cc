@@ -153,12 +153,12 @@ EntryUpdatePerformer::EntryUpdatePerformer(
     JobScheduler* scheduler,
     ResourceMetadata* metadata,
     FileCache* cache,
-    ChangeListLoader* change_list_loader)
+    LoaderController* loader_controller)
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
-      change_list_loader_(change_list_loader),
+      loader_controller_(loader_controller),
       remove_performer_(new RemovePerformer(blocking_task_runner,
                                             observer,
                                             scheduler,
@@ -219,6 +219,10 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   // Perform content update.
   if (local_state->should_content_update) {
     if (local_state->entry.resource_id().empty()) {
+      // Lock the loader to avoid race conditions.
+      scoped_ptr<base::ScopedClosureRunner> loader_lock =
+          loader_controller_->GetLock();
+
       drive::DriveUploader::UploadNewFileOptions options;
       options.modified_date = last_modified;
       options.last_viewed_by_me_date = last_accessed;
@@ -235,7 +239,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
                      context,
                      callback,
                      local_state->entry.local_id(),
-                     base::Passed(change_list_loader_->GetLock())));
+                     base::Passed(&loader_lock)));
     } else {
       drive::DriveUploader::UploadExistingFileOptions options;
       options.title = local_state->entry.title();
@@ -280,7 +284,7 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     const ClientContext& context,
     const FileOperationCallback& callback,
     const std::string& local_id,
-    scoped_ptr<base::ScopedClosureRunner> change_list_loader_lock,
+    scoped_ptr<base::ScopedClosureRunner> loader_lock,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

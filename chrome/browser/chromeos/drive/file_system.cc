@@ -249,6 +249,24 @@ void FileSystem::Reset(const FileOperationCallback& callback) {
 
 void FileSystem::ResetComponents() {
   file_system::OperationObserver* observer = this;
+
+  loader_controller_.reset(new internal::LoaderController);
+  change_list_loader_.reset(new internal::ChangeListLoader(
+      blocking_task_runner_.get(),
+      resource_metadata_,
+      scheduler_,
+      drive_service_,
+      loader_controller_.get()));
+  change_list_loader_->AddObserver(this);
+
+  sync_client_.reset(new internal::SyncClient(blocking_task_runner_.get(),
+                                              observer,
+                                              scheduler_,
+                                              resource_metadata_,
+                                              cache_,
+                                              loader_controller_.get(),
+                                              temporary_file_directory_));
+
   copy_operation_.reset(
       new file_system::CopyOperation(
           blocking_task_runner_.get(),
@@ -298,7 +316,8 @@ void FileSystem::ResetComponents() {
                                          cache_,
                                          temporary_file_directory_));
   search_operation_.reset(new file_system::SearchOperation(
-      blocking_task_runner_.get(), scheduler_, resource_metadata_));
+      blocking_task_runner_.get(), scheduler_, resource_metadata_,
+      loader_controller_.get()));
   get_file_for_saving_operation_.reset(
       new file_system::GetFileForSavingOperation(blocking_task_runner_.get(),
                                                  observer,
@@ -306,21 +325,6 @@ void FileSystem::ResetComponents() {
                                                  resource_metadata_,
                                                  cache_,
                                                  temporary_file_directory_));
-
-  change_list_loader_.reset(new internal::ChangeListLoader(
-      blocking_task_runner_.get(),
-      resource_metadata_,
-      scheduler_,
-      drive_service_));
-  change_list_loader_->AddObserver(this);
-
-  sync_client_.reset(new internal::SyncClient(blocking_task_runner_.get(),
-                                              observer,
-                                              scheduler_,
-                                              resource_metadata_,
-                                              cache_,
-                                              change_list_loader_.get(),
-                                              temporary_file_directory_));
 }
 
 void FileSystem::CheckForUpdates() {

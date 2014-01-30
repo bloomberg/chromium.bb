@@ -37,6 +37,7 @@ class JobScheduler;
 namespace internal {
 class ChangeListLoader;
 class FileCache;
+class LoaderController;
 class ResourceMetadata;
 class SyncClient;
 }  // namespace internal
@@ -254,6 +255,9 @@ class FileSystem : public FileSystemInterface,
 
   // Error of the last update check.
   FileError last_update_check_error_;
+
+  // Used to control ChangeListLoader.
+  scoped_ptr<internal::LoaderController> loader_controller_;
 
   // The loader is used to load the change lists.
   scoped_ptr<internal::ChangeListLoader> change_list_loader_;

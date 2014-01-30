@@ -299,16 +299,60 @@ FileError RefreshMyDriveIfNeeded(
 
 }  // namespace
 
+LoaderController::LoaderController()
+    : lock_count_(0),
+      weak_ptr_factory_(this) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+LoaderController::~LoaderController() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+scoped_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ++lock_count_;
+  return make_scoped_ptr(new base::ScopedClosureRunner(
+      base::Bind(&LoaderController::Unlock,
+                 weak_ptr_factory_.GetWeakPtr())));
+}
+
+void LoaderController::ScheduleRun(const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!task.is_null());
+
+  if (lock_count_ > 0) {
+    pending_tasks_.push_back(task);
+  } else {
+    task.Run();
+  }
+}
+
+void LoaderController::Unlock() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_LT(0, lock_count_);
+
+  if (--lock_count_ > 0)
+    return;
+
+  std::vector<base::Closure> tasks;
+  tasks.swap(pending_tasks_);
+  for (size_t i = 0; i < tasks.size(); ++i)
+    tasks[i].Run();
+}
+
 ChangeListLoader::ChangeListLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
-    DriveServiceInterface* drive_service)
+    DriveServiceInterface* drive_service,
+    LoaderController* loader_controller)
     : blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       drive_service_(drive_service),
-      lock_count_(0),
+      loader_controller_(loader_controller),
       loaded_(false),
       weak_ptr_factory_(this) {
 }
@@ -405,14 +449,6 @@ void ChangeListLoader::GetAboutResource(
   } else {
     UpdateAboutResource(callback);
   }
-}
-
-scoped_ptr<base::ScopedClosureRunner> ChangeListLoader::GetLock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ++lock_count_;
-  return make_scoped_ptr(new base::ScopedClosureRunner(
-      base::Bind(&ChangeListLoader::Unlock,
-                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 void ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry(
@@ -763,7 +799,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
   util::Log(logging::LOG_INFO,
             "Apply change lists (is delta: %d)",
             is_delta_update);
-  ApplyChange(base::Bind(
+  loader_controller_->ScheduleRun(base::Bind(
       base::IgnoreResult(
           &base::PostTaskAndReplyWithResult<FileError, FileError>),
       blocking_task_runner_,
@@ -873,7 +909,7 @@ void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
   }
 
   base::FilePath* directory_path = new base::FilePath;
-  ApplyChange(base::Bind(
+  loader_controller_->ScheduleRun(base::Bind(
       base::IgnoreResult(
           &base::PostTaskAndReplyWithResult<FileError, FileError>),
       blocking_task_runner_,
@@ -905,29 +941,6 @@ void ChangeListLoader::LoadDirectoryFromServerAfterRefresh(
     FOR_EACH_OBSERVER(ChangeListLoaderObserver, observers_,
                       OnDirectoryChanged(*directory_path));
   }
-}
-
-void ChangeListLoader::ApplyChange(const base::Closure& closure) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!closure.is_null());
-  if (lock_count_ > 0) {
-    pending_apply_closures_.push_back(closure);
-  } else {
-    closure.Run();
-  }
-}
-
-void ChangeListLoader::Unlock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_LT(0, lock_count_);
-
-  if (--lock_count_ > 0)
-    return;
-
-  std::vector<base::Closure> callbacks;
-  callbacks.swap(pending_apply_closures_);
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i].Run();
 }
 
 void ChangeListLoader::UpdateAboutResource(

@@ -46,6 +46,35 @@ class ChangeListProcessor;
 class DirectoryFetchInfo;
 class ResourceMetadata;
 
+// Delays execution of tasks as long as more than one lock is alive.
+// Used to ensure that ChangeListLoader does not cause race condition by adding
+// new entries created by sync tasks before they do.
+// All code which may add entries found on the server to the local metadata
+// should use this class.
+class LoaderController {
+ public:
+  LoaderController();
+  ~LoaderController();
+
+  // Increments the lock count and returns an object which decrements the count
+  // on its destruction.
+  // While the lock count is positive, tasks will be pending.
+  scoped_ptr<base::ScopedClosureRunner> GetLock();
+
+  // Runs the task if the lock count is 0, otherwise it will be pending.
+  void ScheduleRun(const base::Closure& task);
+
+ private:
+  // Decrements the lock count.
+  void Unlock();
+
+  int lock_count_;
+  std::vector<base::Closure> pending_tasks_;
+
+  base::WeakPtrFactory<LoaderController> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(LoaderController);
+};
+
 // ChangeListLoader is used to load the change list, the full resource list,
 // and directory contents, from WAPI (codename for Documents List API)
 // or Google Drive API.  The class also updates the resource metadata with
@@ -64,7 +93,8 @@ class ChangeListLoader {
   ChangeListLoader(base::SequencedTaskRunner* blocking_task_runner,
                    ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
-                   DriveServiceInterface* drive_service);
+                   DriveServiceInterface* drive_service,
+                   LoaderController* apply_task_controller);
   ~ChangeListLoader();
 
   // Indicates whether there is a request for full resource list or change
@@ -103,12 +133,6 @@ class ChangeListLoader {
   // availlavle, just runs |callback| with the cached about resource. If not,
   // calls |UpdateAboutResource| passing |callback|.
   void GetAboutResource(const google_apis::AboutResourceCallback& callback);
-
-  // Increments the lock count and returns an object which decrements the count
-  // on its destruction.
-  // While the lock count is positive, ChangeListLoader does not add any entries
-  // to the local metadata.
-  scoped_ptr<base::ScopedClosureRunner> GetLock();
 
  private:
   // Part of LoadDirectoryIfNeeded().
@@ -198,14 +222,6 @@ class ChangeListLoader {
       const base::FilePath* directory_path,
       FileError error);
 
-  // ================= Implementation for lock mechanism ====================
-  // Runs the closure if the lock count is 0, otherwise it will be pending.
-  // All tasks which may add entries should be run via this method.
-  void ApplyChange(const base::Closure& closure);
-
-  // Decrements the lock count.
-  void Unlock();
-
   // ================= Implementation for other stuff =================
 
   // Gets the about resource from the server, and caches it if successful. This
@@ -226,14 +242,12 @@ class ChangeListLoader {
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   DriveServiceInterface* drive_service_;  // Not owned.
+  LoaderController* loader_controller_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
   typedef std::map<std::string, std::vector<FileOperationCallback> >
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;
   FileOperationCallback pending_update_check_callback_;
-
-  int lock_count_;
-  std::vector<base::Closure> pending_apply_closures_;
 
   // Running feed fetcher.
   scoped_ptr<FeedFetcher> change_feed_fetcher_;

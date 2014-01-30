@@ -31,7 +31,7 @@ class EntryUpdatePerformerTest : public file_system::OperationTestBase {
                                               scheduler(),
                                               metadata(),
                                               cache(),
-                                              change_list_loader()));
+                                              loader_controller()));
   }
 
   // Stores |content| to the cache and mark it as dirty.

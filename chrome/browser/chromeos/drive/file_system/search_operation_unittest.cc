@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
 
+#include "base/callback_helpers.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
@@ -16,7 +18,8 @@ namespace file_system {
 typedef OperationTestBase SearchOperationTest;
 
 TEST_F(SearchOperationTest, ContentSearch) {
-  SearchOperation operation(blocking_task_runner(), scheduler(), metadata());
+  SearchOperation operation(blocking_task_runner(), scheduler(), metadata(),
+                            loader_controller());
 
   std::set<std::string> expected_results;
   expected_results.insert(
@@ -45,7 +48,8 @@ TEST_F(SearchOperationTest, ContentSearch) {
 }
 
 TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
-  SearchOperation operation(blocking_task_runner(), scheduler(), metadata());
+  SearchOperation operation(blocking_task_runner(), scheduler(), metadata(),
+                            loader_controller());
 
   // Create a new directory in the drive service.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
@@ -105,7 +109,8 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
 }
 
 TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
-  SearchOperation operation(blocking_task_runner(), scheduler(), metadata());
+  SearchOperation operation(blocking_task_runner(), scheduler(), metadata(),
+                            loader_controller());
 
   FileError error = FILE_ERROR_FAILED;
   GURL next_link;
@@ -119,6 +124,33 @@ TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
   EXPECT_EQ(0U, results->size());
+}
+
+TEST_F(SearchOperationTest, Lock) {
+  SearchOperation operation(blocking_task_runner(), scheduler(), metadata(),
+                            loader_controller());
+
+  // Lock.
+  scoped_ptr<base::ScopedClosureRunner> lock = loader_controller()->GetLock();
+
+  // Search does not return the result as long as lock is alive.
+  FileError error = FILE_ERROR_FAILED;
+  GURL next_link;
+  scoped_ptr<std::vector<SearchResultInfo> > results;
+
+  operation.Search("\"Directory 1\"", GURL(),
+                   google_apis::test_util::CreateCopyResultCallback(
+                       &error, &next_link, &results));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_FAILED, error);
+  EXPECT_FALSE(results);
+
+  // Unlock, this should resume the pending search.
+  lock.reset();
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  ASSERT_TRUE(results);
+  EXPECT_EQ(1u, results->size());
 }
 
 }  // namespace file_system

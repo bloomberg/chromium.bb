@@ -36,6 +36,7 @@ namespace internal {
 class ChangeListLoader;
 class EntryUpdatePerformer;
 class FileCache;
+class LoaderController;
 class ResourceMetadata;
 
 // The SyncClient is used to synchronize pinned files on Drive and the
@@ -51,7 +52,7 @@ class SyncClient {
              JobScheduler* scheduler,
              ResourceMetadata* metadata,
              FileCache* cache,
-             ChangeListLoader* change_list_loader,
+             LoaderController* loader_controller,
              const base::FilePath& temporary_file_directory);
   virtual ~SyncClient();
 

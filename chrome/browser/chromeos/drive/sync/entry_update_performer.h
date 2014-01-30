@@ -33,9 +33,9 @@ class OperationObserver;
 
 namespace internal {
 
-class ChangeListLoader;
 class EntryRevertPerformer;
 class FileCache;
+class LoaderController;
 class RemovePerformer;
 class ResourceMetadata;
 
@@ -47,7 +47,7 @@ class EntryUpdatePerformer {
                        JobScheduler* scheduler,
                        ResourceMetadata* metadata,
                        FileCache* cache,
-                       ChangeListLoader* change_list_loader);
+                       LoaderController* loader_controller);
   ~EntryUpdatePerformer();
 
   // Requests the server to update the metadata of the entry specified by
@@ -72,7 +72,7 @@ class EntryUpdatePerformer {
       const ClientContext& context,
       const FileOperationCallback& callback,
       const std::string& local_id,
-      scoped_ptr<base::ScopedClosureRunner> change_list_loader_lock,
+      scoped_ptr<base::ScopedClosureRunner> loader_lock,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
@@ -80,7 +80,7 @@ class EntryUpdatePerformer {
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
   FileCache* cache_;
-  ChangeListLoader* change_list_loader_;
+  LoaderController* loader_controller_;
   scoped_ptr<RemovePerformer> remove_performer_;
   scoped_ptr<EntryRevertPerformer> entry_revert_performer_;
 

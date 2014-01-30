@@ -114,11 +114,13 @@ void OperationTestBase::SetUp() {
   ASSERT_TRUE(success);
 
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
+  loader_controller_.reset(new internal::LoaderController);
   change_list_loader_.reset(new internal::ChangeListLoader(
       blocking_task_runner_.get(),
       metadata_.get(),
       scheduler_.get(),
-      fake_drive_service_.get()));
+      fake_drive_service_.get(),
+      loader_controller_.get()));
   change_list_loader_->LoadForTesting(
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();

@@ -135,11 +135,13 @@ class SyncClientTest : public testing::Test {
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
 
+    loader_controller_.reset(new LoaderController);
     change_list_loader_.reset(new ChangeListLoader(
         base::MessageLoopProxy::current().get(),
         metadata_.get(),
         scheduler_.get(),
-        drive_service_.get()));
+        drive_service_.get(),
+        loader_controller_.get()));
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 
     sync_client_.reset(new SyncClient(base::MessageLoopProxy::current().get(),
@@ -147,7 +149,7 @@ class SyncClientTest : public testing::Test {
                                       scheduler_.get(),
                                       metadata_.get(),
                                       cache_.get(),
-                                      change_list_loader_.get(),
+                                      loader_controller_.get(),
                                       temp_dir_.path()));
 
     // Disable delaying so that DoSyncLoop() starts immediately.
@@ -257,6 +259,7 @@ class SyncClientTest : public testing::Test {
              test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<LoaderController> loader_controller_;
   scoped_ptr<ChangeListLoader> change_list_loader_;
   scoped_ptr<SyncClient> sync_client_;
 

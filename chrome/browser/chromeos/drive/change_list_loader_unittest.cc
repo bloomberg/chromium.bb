@@ -100,11 +100,13 @@ class ChangeListLoaderTest : public testing::Test {
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
 
+    loader_controller_.reset(new LoaderController);
     change_list_loader_.reset(
         new ChangeListLoader(base::MessageLoopProxy::current().get(),
                              metadata_.get(),
                              scheduler_.get(),
-                             drive_service_.get()));
+                             drive_service_.get(),
+                             loader_controller_.get()));
   }
 
   // Adds a new file to the root directory of the service.
@@ -132,6 +134,7 @@ class ChangeListLoaderTest : public testing::Test {
              test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<LoaderController> loader_controller_;
   scoped_ptr<ChangeListLoader> change_list_loader_;
 };
 
@@ -193,7 +196,8 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
       new ChangeListLoader(base::MessageLoopProxy::current().get(),
                            metadata_.get(),
                            scheduler_.get(),
-                           drive_service_.get()));
+                           drive_service_.get(),
+                           loader_controller_.get()));
 
   // Add a file to the service.
   scoped_ptr<google_apis::ResourceEntry> gdata_entry = AddNewFile("New File");
@@ -440,7 +444,7 @@ TEST_F(ChangeListLoaderTest, Lock) {
   ASSERT_TRUE(file);
 
   // Lock the loader.
-  scoped_ptr<base::ScopedClosureRunner> lock = change_list_loader_->GetLock();
+  scoped_ptr<base::ScopedClosureRunner> lock = loader_controller_->GetLock();
 
   // Start update.
   TestChangeListLoaderObserver observer(change_list_loader_.get());

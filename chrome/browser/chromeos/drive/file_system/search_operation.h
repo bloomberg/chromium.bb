@@ -27,6 +27,7 @@ namespace drive {
 class JobScheduler;
 
 namespace internal {
+class LoaderController;
 class ResourceMetadata;
 }  // namespace internal
 
@@ -38,7 +39,8 @@ class SearchOperation {
  public:
   SearchOperation(base::SequencedTaskRunner* blocking_task_runner,
                   JobScheduler* scheduler,
-                  internal::ResourceMetadata* metadata);
+                  internal::ResourceMetadata* metadata,
+                  internal::LoaderController* loader_controller);
   ~SearchOperation();
 
   // Performs server side content search operation for |search_query|.  If
@@ -68,6 +70,7 @@ class SearchOperation {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
+  internal::LoaderController* loader_controller_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

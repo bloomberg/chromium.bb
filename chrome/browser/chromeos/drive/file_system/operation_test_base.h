@@ -30,6 +30,7 @@ class JobScheduler;
 namespace internal {
 class ChangeListLoader;
 class FileCache;
+class LoaderController;
 class ResourceMetadata;
 class ResourceMetadataStorage;
 }  // namespace internal
@@ -117,6 +118,9 @@ class OperationTestBase : public testing::Test {
     return fake_free_disk_space_getter_.get();
   }
   internal::FileCache* cache() { return cache_.get(); }
+  internal::LoaderController* loader_controller() {
+    return loader_controller_.get();
+  }
   internal::ChangeListLoader* change_list_loader() {
     return change_list_loader_.get();
   }
@@ -136,6 +140,7 @@ class OperationTestBase : public testing::Test {
       metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<internal::LoaderController> loader_controller_;
   scoped_ptr<internal::ChangeListLoader> change_list_loader_;
 };
 

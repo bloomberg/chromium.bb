@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -79,10 +80,12 @@ FileError ResolveSearchResultOnBlockingPool(
 SearchOperation::SearchOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     JobScheduler* scheduler,
-    internal::ResourceMetadata* metadata)
+    internal::ResourceMetadata* metadata,
+    internal::LoaderController* loader_controller)
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
+      loader_controller_(loader_controller),
       weak_ptr_factory_(this) {
 }
 
@@ -137,9 +140,14 @@ void SearchOperation::SearchAfterGetResourceList(
     return;
   }
 
+  // ResolveSearchResultOnBlockingPool() may add entries newly created on the
+  // server to the local metadata.
+  // This may race with sync tasks so we should ask LoaderController here.
   std::vector<SearchResultInfo>* result_ptr = result.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
+  loader_controller_->ScheduleRun(base::Bind(
+      base::IgnoreResult(
+          &base::PostTaskAndReplyWithResult<FileError, FileError>),
+      blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ResolveSearchResultOnBlockingPool,
                  metadata_,
@@ -149,7 +157,7 @@ void SearchOperation::SearchAfterGetResourceList(
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  next_url,
-                 base::Passed(&result)));
+                 base::Passed(&result))));
 }
 
 void SearchOperation::SearchAfterResolveSearchResult(
