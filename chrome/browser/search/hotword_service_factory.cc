@@ -16,9 +16,7 @@
 HotwordService* HotwordServiceFactory::GetForProfile(Profile* profile) {
   if (!profile ||
       (profile->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled) &&
-       !profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)) ||
-      (profile->IsOffTheRecord() &&
-       !profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchIncognitoEnabled)))
+       !profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)))
     return NULL;
 
   return static_cast<HotwordService*>(
@@ -51,20 +49,9 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
                              false,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHotwordSearchIncognitoEnabled,
-                             false,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kHotwordOptInPopupTimesShown,
                              0,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHotwordSearchTimeoutEnabled,
-                             true,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
-content::BrowserContext* HotwordServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 BrowserContextKeyedService* HotwordServiceFactory::BuildServiceInstanceFor(

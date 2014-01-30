@@ -32,8 +32,6 @@ class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {
   // Overrides from BrowserContextKeyedServiceFactory:
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const OVERRIDE;
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 

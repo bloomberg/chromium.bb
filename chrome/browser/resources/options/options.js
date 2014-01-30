@@ -104,6 +104,16 @@ function load() {
             $('spelling-enabled-control').metric),
         BrowserOptions.getInstance());
   }
+  OptionsPage.registerOverlay(
+      new ConfirmDialog(
+          'hotwordConfirm',
+          loadTimeData.getString('hotwordConfirmOverlayTabTitle'),
+          'hotword-confirm-overlay',
+          $('hotword-confirm-ok'),
+          $('hotword-confirm-cancel'),
+          $('hotword-search-enable').pref,
+          $('hotword-search-enable').metric),
+      BrowserOptions.getInstance());
   OptionsPage.registerOverlay(ContentSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);

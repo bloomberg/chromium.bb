@@ -139,61 +139,6 @@
           </button>
         </div>
       </div>
-      <div id ="hotword-search" hidden>
-        <div class="checkbox">
-          <span class="controlled-setting-with-label">
-            <input id="hotword-search-enable" pref="hotword.search_enabled"
-                type="checkbox">
-            <span>
-              <label for="hotword-search-enable"
-                  i18n-values=".innerHTML:hotwordSearchEnable">
-              </label>
-              <span class="controlled-setting-indicator"
-                  pref="hotword.search_enabled">
-              </span>
-            </span>
-          </span>
-          <div id="hotword-search-description" class="hotword-settings">
-            <span i18n-content="hotwordSearchDescription"></span>
-          </div>
-        </div>
-        <div id="hotword-settings-section" class="hotword-settings" hidden>
-          <div id="hotword-settings-section-container">
-            <div class="checkbox">
-              <span class="controlled-setting-with-label">
-                <input id="hotword-search-timeout"
-                    pref="hotword.search_timeout_enabled" type="checkbox">
-                <span>
-                  <label for="hotword-search-timeout"
-                      i18n-content="hotwordSearchTimeout">
-                  </label>
-                  <span class="controlled-setting-indicator"
-                      pref="hotword.search_timeout_enabled">
-                  </span>
-                </span>
-              </span>
-              <div id="hotword-search-timeout-description"
-                  class="hotword-settings">
-                <span i18n-content="hotwordSearchTimeoutDescription"></span>
-              </div>
-            </div>
-            <div class="checkbox">
-              <span class="controlled-setting-with-label">
-                <input id="hotword-search-incognito-enable"
-                    pref="hotword.incognito_search_enabled" type="checkbox">
-                <span>
-                  <label for="hotword-search-incognito-enable"
-                      i18n-content="hotwordSearchIncognito">
-                  </label>
-                  <span class="controlled-setting-indicator"
-                      pref="hotword.incognito_search_enabled">
-                  </span>
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
   </section>
   <section id="sync-users-section" guest-visibility="hidden">
     <h3 i18n-content="sectionTitleUsers"></h3>
@@ -407,6 +352,22 @@
         </span>
       </div>
 </if>
+      <div id ="hotword-search" hidden>
+        <div class="checkbox">
+          <span class="controlled-setting-with-label">
+            <input id="hotword-search-enable" pref="hotword.search_enabled"
+                type="checkbox" dialog-pref>
+            <span>
+              <label for="hotword-search-enable"
+                  i18n-values=".innerHTML:hotwordSearchEnable">
+              </label>
+              <span class="controlled-setting-indicator"
+                  pref="hotword.search_enabled" dialog-pref>
+              </span>
+            </span>
+          </span>
+        </div>
+      </div>
     </div>
   </section>
 <if expr="pp_ifdef('chromeos')">

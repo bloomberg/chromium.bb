@@ -2093,20 +2093,11 @@ const char kVideoCaptureAllowedUrls[] = "hardware.video_capture_allowed_urls";
 // trigger.
 const char kHotwordSearchEnabled[] = "hotword.search_enabled";
 
-// A boolean pref that controls the enabled-state of hotword search voice
-// trigger when using incognito mode.
-const char kHotwordSearchIncognitoEnabled[] =
-    "hotword.incognito_search_enabled";
-
 // An integer pref that keeps track of how many times the opt in popup for
 // hotword void search has been shown to the user. After this pref has reached
 // the maximum number of times as defined by the HotwordService, the popup is no
 // longer shown.
 const char kHotwordOptInPopupTimesShown[] = "hotword.opt_in_popup_times_shown";
-
-// A boolean pref that controls whether hotword search voice trigger stops
-// listening after 5 minutes.
-const char kHotwordSearchTimeoutEnabled[] = "hotword.search_timeout_enabled";
 
 #if defined(OS_ANDROID)
 // Boolean that controls the global enabled-state of protected media identifier.

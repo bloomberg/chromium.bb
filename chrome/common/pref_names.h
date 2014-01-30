@@ -726,10 +726,7 @@ extern const char kVideoCaptureAllowed[];
 extern const char kVideoCaptureAllowedUrls[];
 
 extern const char kHotwordSearchEnabled[];
-extern const char kHotwordSearchIncognitoEnabled[];
 extern const char kHotwordOptInPopupTimesShown[];
-
-extern const char kHotwordSearchTimeoutEnabled[];
 
 #if defined(OS_ANDROID)
 extern const char kProtectedMediaIdentifierEnabled[];

@@ -128,8 +128,6 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('homePageOverlay');
       };
 
-      Preferences.getInstance().addEventListener('hotword.search_enabled',
-          this.onHotwordSearchPrefChanged_.bind(this));
       chrome.send('requestHotwordAvailabile');
 
       if ($('set-wallpaper')) {
@@ -884,24 +882,6 @@ cr.define('options', function() {
      */
     showHotwordSection_: function() {
       $('hotword-search').hidden = false;
-    },
-
-    /**
-     * Event listener for the 'hotword search enabled' preference. Shows/hides
-     * the UI for updating hotword settings..
-     * @param {Event} event The preference change event.
-     */
-    onHotwordSearchPrefChanged_: function(event) {
-      var section = $('hotword-settings-section');
-      var container = $('hotword-settings-section-container');
-      // event.value is a dictionary with details about the preference that was
-      // changed. Within that dictionary, |value| is the new value of the
-      // preference. In this case, the preference represents a Boolean so it
-      // can be checked for true/false.
-      if (event.value.value)
-        this.showSectionWithAnimation_(section, container);
-      else
-        this.hideSectionWithAnimation_(section, container);
     },
 
     /**

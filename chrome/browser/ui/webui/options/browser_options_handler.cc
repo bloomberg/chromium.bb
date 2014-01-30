@@ -45,6 +45,8 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/search/hotword_service.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -257,11 +259,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "homePageShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
-    { "hotwordSearchDescription", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
-    { "hotwordSearchIncognito", IDS_HOTWORD_SEARCH_INCOGNITO_PREF_CHKBOX },
-    { "hotwordSearchTimeout", IDS_HOTWORD_SEARCH_TIMEOUT_PREF_CHKBOX },
-    { "hotwordSearchTimeoutDescription",
-      IDS_HOTWORD_SEARCH_TIMEOUT_PREF_DESCRIPTION },
+    { "hotwordSearchEnable", IDS_HOTWORD_SEARCH_PREF_CHKBOX },
+    { "hotwordConfirmEnable", IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE },
+    { "hotwordConfirmDisable", IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE },
+    { "hotwordConfirmMessage", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
@@ -480,10 +481,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString(
       "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
-  base::string16 hotword_url = base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
-  values->SetString(
-      "hotwordSearchEnable",
-      l10n_util::GetStringFUTF16(IDS_HOTWORD_SEARCH_PREF_CHKBOX, hotword_url));
+  values->SetString("hotwordLearnMoreURL", chrome::kHotwordLearnMoreURL);
+  RegisterTitle(values, "hotwordConfirmOverlay",
+                IDS_HOTWORD_SEARCH_PREF_CHKBOX);
 
 #if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -493,6 +493,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
         chromeos::UserManager::Get()->GetUserByProfile(profile);
     if (user && (user->GetType() != chromeos::User::USER_TYPE_GUEST))
       username = user->email();
+
   }
   if (!username.empty())
     username = gaia::SanitizeEmail(gaia::CanonicalizeEmail(username));
@@ -1521,15 +1522,11 @@ void BrowserOptionsHandler::RemoveCloudPrintConnectorSection() {
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_FULL_PRINTING)
 
-void BrowserOptionsHandler::SendHotwordAvailable() {
+void BrowserOptionsHandler::HandleRequestHotwordAvailable(
+    const base::ListValue* args) {
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
   if (group != "" && group != "Disabled")
     web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
-}
-
-void BrowserOptionsHandler::HandleRequestHotwordAvailable(
-    const base::ListValue* args) {
-  SendHotwordAvailable();
 }
 
 #if defined(OS_CHROMEOS)

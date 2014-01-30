@@ -6890,19 +6890,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <message name="IDS_HOTWORD_SEARCH_PREF_CHKBOX" desc="A checkbox under Search on the Settings page to allow audio capture devices to initiate searches.">
-        Enable "Ok Google" to start a voice search. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+        Enable "Ok Google" to start a voice search
       </message>
       <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword  search preference">
-        Important: If you enable this feature, Chrome will listen for you to say "Ok Google" and then send the sound of the next thing you say, plus a few seconds before, to Google.
+        Important: When you say "Ok Google," Chrome will send the sound of the next thing you say (plus a few seconds before) to Google.
       </message>
-      <message name="IDS_HOTWORD_SEARCH_TIMEOUT_PREF_CHKBOX" desc="A checkbox under the hotword search preference to define the preference for whether to stop listening after 5 minutes.">
-        Stop listening for "Ok Google" after 5 minutes
+      <message name="IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE" desc="The button text that allows the hotword voice search trigger.">
+        Enable "Ok Google"
       </message>
-      <message name="IDS_HOTWORD_SEARCH_TIMEOUT_PREF_DESCRIPTION" desc="Description of the hotword listening timeout preference.">
-        This will help reduce battery consumption on a laptop
-      </message>
-      <message name="IDS_HOTWORD_SEARCH_INCOGNITO_PREF_CHKBOX" desc="A checkbox under the hotword search preference to allow hotword searching in incognito mode.">
-        Allow in incognito
+      <message name="IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE" desc="The button text that disallows the hotword voice search trigger.">
+        No thanks
       </message>
 
       <!-- Conflicts page -->
