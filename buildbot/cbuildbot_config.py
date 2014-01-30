@@ -1512,7 +1512,7 @@ internal_paladin.add_config('slippy-paladin',
 
 internal_paladin.add_config('sonic-paladin',
   sonic,
-  paladin_builder_name='sonic paladin',
+  paladin_builder_name='sonic paladin (experimental)',
   important=False,
 )
 
