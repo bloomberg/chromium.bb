@@ -208,7 +208,7 @@ void ShellWindow::Init(const GURL& url,
   // properly. In particular, on Windows, the view's clickthrough region needs
   // to be set.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile_));
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   // Close when the browser process is exiting.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
