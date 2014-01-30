@@ -39,7 +39,6 @@ bool ChromeNotifierServiceFactory::UseSyncedNotifications(
       channel == chrome::VersionInfo::CHANNEL_DEV ||
       channel == chrome::VersionInfo::CHANNEL_CANARY)
     return true;
-  else
 
   return false;
 }

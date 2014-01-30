@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -134,6 +136,12 @@ class ChromeNotifierServiceTest : public testing::Test {
 
   // Methods from testing::Test.
   virtual void SetUp() {
+    // These tests rely on synced notifications being active.  Some testers
+    // report the channel as STABLE so we need to manually enable it.
+    // See crbug.com/338426 for details.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableSyncSyncedNotifications);
+
     // Prevent test code from trying to go to the network.
     ChromeNotifierService::set_avoid_bitmap_fetching_for_test(true);
     notification_manager_.reset(new StubNotificationUIManager(GURL(
