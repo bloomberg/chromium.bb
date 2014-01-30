@@ -6252,9 +6252,6 @@
    fun:pk11_IsPresentCertLoad
    fun:SECMOD_OpenNewSlot
    fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton10OpenUserDBERKN4base8FilePathEPKc
-   fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton26OpenPersistentNSSDBForPathERKN4base8FilePathE
-   fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton28InitializeNSSForChromeOSUserERKSsS3_bRKN4base8FilePathE
-   fun:_ZN6crypto28InitializeNSSForChromeOSUserERKSsS1_bRKN4base8FilePathE
 }
 {
    bug_327672
