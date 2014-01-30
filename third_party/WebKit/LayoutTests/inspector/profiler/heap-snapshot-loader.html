@@ -25,7 +25,7 @@ function test()
                 profileType.reportHeapSnapshotProgress(100, 100, true);
             }
             for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
-                dispatcher.addHeapSnapshotChunk(-1, sourceStringified.slice(i, i + partSize));
+                dispatcher.addHeapSnapshotChunk(sourceStringified.slice(i, i + partSize));
             setTimeout(callback, 0);
         }
 

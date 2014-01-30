@@ -55,12 +55,9 @@ public:
     virtual ~InspectorHeapProfilerAgent();
 
     virtual void collectGarbage(ErrorString*) OVERRIDE;
-    virtual void clearProfiles(ErrorString*) OVERRIDE;
 
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
-    virtual void getHeapSnapshot(ErrorString*, int uid) OVERRIDE;
-    virtual void removeProfile(ErrorString*, int uid) OVERRIDE;
     virtual void startTrackingHeapObjects(ErrorString*) OVERRIDE;
     virtual void stopTrackingHeapObjects(ErrorString*, const bool* reportProgress) OVERRIDE;
 
@@ -79,19 +76,14 @@ private:
 
     explicit InspectorHeapProfilerAgent(InjectedScriptManager*);
 
-    typedef HashMap<unsigned, RefPtr<ScriptHeapSnapshot> > IdToHeapSnapshotMap;
-
-    void resetFrontendProfiles();
     void requestHeapStatsUpdate();
     void pushHeapStatsUpdate(const uint32_t* const data, const int size);
 
-    PassRefPtr<TypeBuilder::HeapProfiler::ProfileHeader> createSnapshotHeader(const ScriptHeapSnapshot&);
     void stopTrackingHeapObjectsInternal();
 
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::HeapProfiler* m_frontend;
     unsigned m_nextUserInitiatedHeapSnapshotNumber;
-    IdToHeapSnapshotMap m_snapshots;
     OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 

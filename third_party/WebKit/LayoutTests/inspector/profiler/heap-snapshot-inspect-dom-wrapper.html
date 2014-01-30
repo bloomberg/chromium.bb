@@ -88,7 +88,7 @@ function test()
     {
         if (errorMessage)
             InspectorTest.addResult(errorMessage);
-        HeapProfilerAgent.clearProfiles(done);
+        setTimeout(done, 0);
         WebInspector.panels.profiles._reset();
         return !errorMessage;
     }
