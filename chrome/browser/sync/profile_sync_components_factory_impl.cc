@@ -233,11 +233,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new UIDataTypeController(
             syncer::MANAGED_USERS, this, profile_, pss));
   }
-  // TODO(bauerb): Enable once the Sync server has been updated to know about
-  // this data type.
-  // pss->RegisterDataTypeController(
-  //     new UIDataTypeController(
-  //         syncer::MANAGED_USER_SHARED_SETTINGS, this, profile_, pss));
+  pss->RegisterDataTypeController(
+      new UIDataTypeController(
+          syncer::MANAGED_USER_SHARED_SETTINGS, this, profile_, pss));
 #endif
 }
 
