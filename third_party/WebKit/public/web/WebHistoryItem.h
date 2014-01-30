@@ -75,8 +75,6 @@ public:
 
     BLINK_EXPORT WebString referrer() const;
     BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
-    // FIXME: Remove.
-    BLINK_EXPORT void setReferrer(const WebString& referrer) { setReferrer(referrer, WebReferrerPolicyDefault); }
     BLINK_EXPORT void setReferrer(const WebString&, WebReferrerPolicy);
 
     BLINK_EXPORT WebString target() const;
