@@ -307,9 +307,7 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
                     OmniboxFocusState /* new_focus_state */,
                     OmniboxFocusChangeReason /* reason */)
 
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxMarginChange,
-                    int /* start */,
-                    int /* width */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMarginChange, int /* start */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                     std::vector<InstantMostVisitedItem> /* items */)

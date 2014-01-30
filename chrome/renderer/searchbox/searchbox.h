@@ -118,7 +118,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnDetermineIfPageSupportsInstant();
   void OnFocusChanged(OmniboxFocusState new_focus_state,
                       OmniboxFocusChangeReason reason);
-  void OnMarginChange(int margin, int width);
+  void OnMarginChange(int margin);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItem>& items);
   void OnPromoInformationReceived(bool is_app_launcher_enabled);
@@ -148,7 +148,6 @@ class SearchBox : public content::RenderViewObserver,
   base::string16 query_;
   int start_margin_;
   InstantSuggestion suggestion_;
-  int width_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

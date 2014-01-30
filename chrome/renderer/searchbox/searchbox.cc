@@ -150,8 +150,7 @@ SearchBox::SearchBox(content::RenderView* render_view)
     display_instant_results_(false),
     most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
     query_(),
-    start_margin_(0),
-    width_(0) {
+    start_margin_(0) {
 }
 
 SearchBox::~SearchBox() {
@@ -361,9 +360,8 @@ void SearchBox::OnFocusChanged(OmniboxFocusState new_focus_state,
   }
 }
 
-void SearchBox::OnMarginChange(int margin, int width) {
+void SearchBox::OnMarginChange(int margin) {
   start_margin_ = margin;
-  width_ = width;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchMarginChange(
         render_view()->GetWebView()->mainFrame());
@@ -458,7 +456,6 @@ void SearchBox::Reset() {
   query_.clear();
   suggestion_ = InstantSuggestion();
   start_margin_ = 0;
-  width_ = 0;
   is_focused_ = false;
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();
