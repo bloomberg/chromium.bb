@@ -767,7 +767,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
             return 0;
     }
 
-    if (RuntimeEnabledFeatures::customElementsEnabled() && !typeExtension.isNull() && !typeExtension.isEmpty())
+    if (RuntimeEnabledFeatures::customElementsEnabled() && !typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
 
     return element;
@@ -794,7 +794,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
             return 0;
     }
 
-    if (!typeExtension.isNull() && !typeExtension.isEmpty())
+    if (!typeExtension.isEmpty())
         CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
 
     return element;
