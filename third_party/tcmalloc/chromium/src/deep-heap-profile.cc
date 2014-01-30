@@ -127,8 +127,7 @@ void DeepHeapProfile::MemoryInfoGetterLinux::Initialize() {
   RAW_CHECK(pagemap_fd_ != -1, "Failed to open /proc/self/pagemap");
 
   if (pageframe_type_ == DUMP_PAGECOUNT) {
-    snprintf(filename, sizeof(filename), "/proc/kpagecount",
-             static_cast<int>(getpid()));
+    snprintf(filename, sizeof(filename), "/proc/kpagecount");
     kpagecount_fd_ = open(filename, O_RDONLY);
     if (kpagecount_fd_ == -1)
       RAW_LOG(0, "Failed to open /proc/kpagecount");
