@@ -21,7 +21,8 @@ struct SocketPermissionRequest {
     UDP_MULTICAST_MEMBERSHIP,
     RESOLVE_HOST,
     RESOLVE_PROXY,
-    NETWORK_STATE
+    NETWORK_STATE,
+    OPERATION_TYPE_LAST = NETWORK_STATE
   };
 
   SocketPermissionRequest(OperationType type,
