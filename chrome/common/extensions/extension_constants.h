@@ -109,6 +109,9 @@ namespace extension_misc {
   // The extension id of the Crosh component app for ChromeOS.
   extern const char kCroshBuiltinAppId[];
 
+  // The extension id of the hotword voice search trigger extension.
+  extern const char kHotwordExtensionId[];
+
   // The extension id of the PDF extension.
   extern const char kPdfExtensionId[];
 
