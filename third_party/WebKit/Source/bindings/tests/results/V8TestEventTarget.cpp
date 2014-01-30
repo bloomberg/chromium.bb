@@ -213,22 +213,6 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name);
-    DeleteResult result = collection->anonymousNamedDeleter(propertyName);
-    if (result != DeleteUnknownProperty)
-        return v8SetReturnValueBool(info, result == DeleteSuccess);
-}
-
-static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
-    TestEventTargetV8Internal::namedPropertyDeleter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
@@ -246,6 +230,22 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     TestEventTargetV8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name);
+    DeleteResult result = collection->anonymousNamedDeleter(propertyName);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TestEventTargetV8Internal::namedPropertyDeleter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 

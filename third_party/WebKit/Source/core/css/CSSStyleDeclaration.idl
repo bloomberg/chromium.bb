@@ -33,7 +33,7 @@
 
     readonly attribute unsigned long    length;
     getter DOMString          item([Default=Undefined] optional unsigned long index);
-    [Custom=PropertyGetter|PropertyEnumerator] getter (DOMString or float) (DOMString name);
+    [Custom=PropertyGetter|PropertyEnumerator|PropertyQuery] getter (DOMString or float) (DOMString name);
     [Custom] setter void (DOMString propertyName, [TreatNullAs=NullString] DOMString propertyValue);
     readonly attribute CSSRule          parentRule;
     [RuntimeEnabled=CSSVariables] readonly attribute CSSVariablesMap var;

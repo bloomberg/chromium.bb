@@ -138,10 +138,12 @@ template <typename T> void V8_USE(T) { }
 {% block named_property_getter_callback %}{% endblock %}
 {% block named_property_setter %}{% endblock %}
 {% block named_property_setter_callback %}{% endblock %}
+{% block named_property_query %}{% endblock %}
+{% block named_property_query_callback %}{% endblock %}
 {% block named_property_deleter %}{% endblock %}
 {% block named_property_deleter_callback %}{% endblock %}
-{% block named_property_query_and_callback %}{% endblock %}
-{% block named_property_enumerator_and_callback %}{% endblock %}
+{% block named_property_enumerator %}{% endblock %}
+{% block named_property_enumerator_callback %}{% endblock %}
 } // namespace {{cpp_class}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}

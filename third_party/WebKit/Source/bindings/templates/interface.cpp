@@ -300,8 +300,9 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 
 {##############################################################################}
-{% block named_property_query_and_callback %}
-{% if named_property_getter %}
+{% block named_property_query %}
+{% if named_property_getter and
+      not named_property_getter.is_custom_property_query %}
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
@@ -315,10 +316,22 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
     v8SetReturnValueInt(info, v8::None);
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block named_property_query_callback %}
+{% if named_property_getter %}
+{% set getter = named_property_getter %}
 static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    {% if getter.is_custom_property_query %}
+    {{v8_class}}::namedPropertyQueryCustom(name, info);
+    {% else %}
     {{cpp_class}}V8Internal::namedPropertyQuery(name, info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -364,8 +377,9 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 
 {##############################################################################}
-{% block named_property_enumerator_and_callback %}
-{% if named_property_getter %}
+{% block named_property_enumerator %}
+{% if named_property_getter and
+      not named_property_getter.is_custom_property_enumerator %}
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
@@ -380,10 +394,22 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     v8SetReturnValue(info, v8names);
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block named_property_enumerator_callback %}
+{% if named_property_getter %}
+{% set getter = named_property_getter %}
 static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    {% if getter.is_custom_property_enumerator %}
+    {{v8_class}}::namedPropertyEnumeratorCustom(info);
+    {% else %}
     {{cpp_class}}V8Internal::namedPropertyEnumerator(info);
+    {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 

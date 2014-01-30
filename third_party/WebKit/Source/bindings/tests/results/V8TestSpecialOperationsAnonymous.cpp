@@ -165,22 +165,6 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    TestSpecialOperationsAnonymous* collection = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
-    AtomicString propertyName = toCoreAtomicString(name);
-    DeleteResult result = collection->anonymousNamedDeleter(propertyName);
-    if (result != DeleteUnknownProperty)
-        return v8SetReturnValueBool(info, result == DeleteSuccess);
-}
-
-static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
-    TestSpecialOperationsAnonymousV8Internal::namedPropertyDeleter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     TestSpecialOperationsAnonymous* collection = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
@@ -198,6 +182,22 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     TestSpecialOperationsAnonymousV8Internal::namedPropertyQuery(name, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TestSpecialOperationsAnonymous* collection = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
+    AtomicString propertyName = toCoreAtomicString(name);
+    DeleteResult result = collection->anonymousNamedDeleter(propertyName);
+    if (result != DeleteUnknownProperty)
+        return v8SetReturnValueBool(info, result == DeleteSuccess);
+}
+
+static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
+    TestSpecialOperationsAnonymousV8Internal::namedPropertyDeleter(name, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 

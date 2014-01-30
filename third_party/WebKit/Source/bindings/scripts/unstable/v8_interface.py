@@ -41,7 +41,7 @@ import v8_methods
 import v8_types
 from v8_types import inherits_interface
 import v8_utilities
-from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute, has_extended_attribute_value, runtime_enabled_function_name
+from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute_value, runtime_enabled_function_name
 
 
 INTERFACE_H_INCLUDES = set([
@@ -496,7 +496,14 @@ def property_getter(getter):
     extended_attributes = getter.extended_attributes
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
-        'is_custom': 'Custom' in extended_attributes,
+        'is_custom':
+            'Custom' in extended_attributes and
+            (not extended_attributes['Custom'] or
+             has_extended_attribute_value(getter, 'Custom', 'PropertyGetter')),
+        'is_custom_property_enumerator': has_extended_attribute_value(
+            getter, 'Custom', 'PropertyEnumerator'),
+        'is_custom_property_query': has_extended_attribute_value(
+            getter, 'Custom', 'PropertyQuery'),
         'is_null_expression': is_null_expression(idl_type),
         'name': cpp_name(getter),
         'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),

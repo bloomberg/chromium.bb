@@ -1101,7 +1101,8 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $hasCustomNamedDeleter = $namedDeleterFunction && $namedDeleterFunction->extendedAttributes->{"Custom"};
 
     my $namedEnumeratorFunction = $namedGetterFunction && !$namedGetterFunction->extendedAttributes->{"NotEnumerable"};
-    my $hasCustomNamedEnumerator = $namedGetterFunction && ExtendedAttributeContains($namedGetterFunction->extendedAttributes->{"Custom"}, "PropertyEnumerator");
+    my $hasCustomNamedEnumerator = $namedEnumeratorFunction && ExtendedAttributeContains($namedGetterFunction->extendedAttributes->{"Custom"}, "PropertyEnumerator");
+    my $hasCustomNamedQuery = $namedEnumeratorFunction && ExtendedAttributeContains($namedGetterFunction->extendedAttributes->{"Custom"}, "PropertyQuery");
 
     if ($hasCustomIndexedGetter) {
         $header{classPublic}->add("    static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);\n");
@@ -1123,13 +1124,16 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
         $header{classPublic}->add("    static void namedPropertySetterCustom(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);\n");
     }
 
+    if ($hasCustomNamedQuery) {
+        $header{classPublic}->add("    static void namedPropertyQueryCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Integer>&);\n");
+    }
+
     if ($hasCustomNamedDeleter) {
         $header{classPublic}->add("    static void namedPropertyDeleterCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Boolean>&);\n");
     }
 
     if ($hasCustomNamedEnumerator) {
         $header{classPublic}->add("    static void namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>&);\n");
-        $header{classPublic}->add("    static void namedPropertyQueryCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Integer>&);\n");
     }
 }
 
@@ -3819,6 +3823,8 @@ sub GenerateImplementationNamedPropertyAccessors
     my $v8ClassName = GetV8ClassName($interface);
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
+    my $namedEnumeratorFunction = $namedGetterFunction && !$namedGetterFunction->extendedAttributes->{"NotEnumerable"};
+
     if ($namedGetterFunction) {
         # includes for return type even if custom
         my $returnType = $namedGetterFunction->type;
@@ -3844,6 +3850,14 @@ sub GenerateImplementationNamedPropertyAccessors
         GenerateImplementationNamedPropertySetterCallback($interface, $hasCustomNamedSetter);
     }
 
+    if ($namedEnumeratorFunction) {
+        my $hasCustomNamedQuery = ExtendedAttributeContains($namedGetterFunction->extendedAttributes->{"Custom"}, "PropertyQuery");
+        if (!$hasCustomNamedQuery) {
+            GenerateImplementationNamedPropertyQuery($interface);
+        }
+        GenerateImplementationNamedPropertyQueryCallback($interface, $hasCustomNamedQuery);
+    }
+
     my $namedDeleterFunction = GetNamedDeleterFunction($interface);
     if ($namedDeleterFunction) {
         my $hasCustomNamedDeleter = $namedDeleterFunction->extendedAttributes->{"Custom"};
@@ -3853,13 +3867,8 @@ sub GenerateImplementationNamedPropertyAccessors
         GenerateImplementationNamedPropertyDeleterCallback($interface, $hasCustomNamedDeleter);
     }
 
-    my $namedEnumeratorFunction = $namedGetterFunction && !$namedGetterFunction->extendedAttributes->{"NotEnumerable"};
     if ($namedEnumeratorFunction) {
         my $hasCustomNamedEnumerator = ExtendedAttributeContains($namedGetterFunction->extendedAttributes->{"Custom"}, "PropertyEnumerator");
-        if (!$hasCustomNamedEnumerator) {
-            GenerateImplementationNamedPropertyQuery($interface);
-        }
-        GenerateImplementationNamedPropertyQueryCallback($interface, $hasCustomNamedEnumerator);
         if (!$hasCustomNamedEnumerator) {
             GenerateImplementationNamedPropertyEnumerator($interface);
         }
