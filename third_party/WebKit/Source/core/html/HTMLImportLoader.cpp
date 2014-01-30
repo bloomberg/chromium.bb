@@ -63,7 +63,7 @@ void HTMLImportLoader::responseReceived(Resource* resource, const ResourceRespon
 {
     // Resource may already have been loaded with the import loader
     // being added as a client later & now being notified. Fail early.
-    if (resource->loadFailedOrCanceled()) {
+    if (resource->loadFailedOrCanceled() || response.httpStatusCode() >= 400) {
         setState(StateError);
         return;
     }
