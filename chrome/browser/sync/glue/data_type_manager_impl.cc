@@ -78,7 +78,17 @@ DataTypeManagerImpl::~DataTypeManagerImpl() {}
 void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
                                     syncer::ConfigureReason reason) {
   desired_types.PutAll(syncer::CoreTypes());
-  ConfigureImpl(desired_types, reason);
+
+  // Only allow control types and types that have controllers.
+  syncer::ModelTypeSet filtered_desired_types;
+  for (syncer::ModelTypeSet::Iterator type = desired_types.First();
+      type.Good(); type.Inc()) {
+    if (syncer::IsControlType(type.Get()) ||
+        controllers_->find(type.Get()) != controllers_->end()) {
+      filtered_desired_types.Put(type.Get());
+    }
+  }
+  ConfigureImpl(filtered_desired_types, reason);
 }
 
 void DataTypeManagerImpl::PurgeForMigration(
@@ -257,6 +267,12 @@ TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
     result.push(high_priority_types);
   if (!low_priority_types.Empty())
     result.push(low_priority_types);
+
+  // Could be empty in case of purging for migration, sync nothing, etc.
+  // Configure empty set to purge data from backend.
+  if (result.empty())
+    result.push(syncer::ModelTypeSet());
+
   return result;
 }
 
