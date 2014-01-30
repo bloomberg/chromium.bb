@@ -9,8 +9,8 @@
 
 #define IPC_MESSAGE_START AppCacheMsgStart
 
-IPC_ENUM_TRAITS(appcache::EventID)
-IPC_ENUM_TRAITS(appcache::Status)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::EventID, appcache::EVENT_ID_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::Status, appcache::STATUS_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(appcache::AppCacheInfo)
   IPC_STRUCT_TRAITS_MEMBER(manifest_url)
