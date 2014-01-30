@@ -9,6 +9,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/extensions/api/gcm/gcm_api.h"
+#endif
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
@@ -486,6 +489,10 @@ void GCMProfileService::Initialize() {
   // This has to be done first since CheckIn depends on it.
   io_worker_ = new IOWorker(weak_ptr_factory_.GetWeakPtr());
 
+#if !defined(OS_ANDROID)
+  js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
+#endif
+
   // This initializes GCMClient and also does the check to find out if GCMClient
   // has finished the loading.
   content::BrowserThread::PostTask(
@@ -922,11 +929,15 @@ void GCMProfileService::GCMClientLoadingFinished() {
   DoCheckIn();
 }
 
-GCMEventRouter* GCMProfileService::GetEventRouter(const std::string& app_id) {
+GCMEventRouter* GCMProfileService::GetEventRouter(const std::string& app_id)
+    const {
   if (testing_delegate_ && testing_delegate_->GetEventRouter())
     return testing_delegate_->GetEventRouter();
-  // TODO(fgorski): check and create the event router for JS routing.
+#if defined(OS_ANDROID)
+  return NULL;
+#else
   return js_event_router_.get();
+#endif
 }
 
 void GCMProfileService::DeleteRegistrationInfo(const std::string& app_id) {

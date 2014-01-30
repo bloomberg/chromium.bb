@@ -160,7 +160,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   void GCMClientLoadingFinished();
 
   // Returns the event router to fire the event for the given app.
-  GCMEventRouter* GetEventRouter(const std::string& app_id);
+  GCMEventRouter* GetEventRouter(const std::string& app_id) const;
 
   // Used to persist registration info into the app's state store.
   void DeleteRegistrationInfo(const std::string& app_id);
@@ -206,7 +206,9 @@ class GCMProfileService : public BrowserContextKeyedService,
   RegistrationInfoMap registration_info_map_;
 
   // Event router to talk with JS API.
+#if !defined(OS_ANDROID)
   scoped_ptr<GCMEventRouter> js_event_router_;
+#endif
 
   // For testing purpose.
   TestingDelegate* testing_delegate_;
