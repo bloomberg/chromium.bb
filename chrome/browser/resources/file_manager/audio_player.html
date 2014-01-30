@@ -1,0 +1,206 @@
+<!--
+  -- Copyright 2014 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+<!DOCTYPE HTML>
+<html>
+<head>
+  <!-- We have to set some default title, or chrome will use the page name.
+    -- As soon as the i18n'd strings are loaded we replace it with the correct
+    -- string. Until then, use an invisible non-whitespace character.
+    -->
+  <title>&#xFEFF;</title>
+  <link rel="stylesheet" type="text/css" href="audio_player/css/audio_player.css">
+
+  <!-- Don't load mediaplayer_scripts.js when flattening is disabled -->
+  <if expr="0"><!-- </if>
+    <script src="audio_player/js/audio_player_scripts.js"></script>
+  <if expr="0"> --></if>
+  <if expr="0">
+    <!-- This section is used when the file manager is loaded with
+         'filemgr-ext-path' command-line flag. -->
+    <!-- Keep the list in sync with audio_player_scripts.js. -->
+    <script src="../../../../ui/webui//resources/js/cr.js"></script>
+    <script src="../../../../ui/webui/resources/js/cr/event_target.js"></script>
+    <script src="../../../../ui/webui/resources/js/cr/ui/array_data_model.js">
+    </script>
+
+    <script src="../../../../third_party/polymer/platform/platform.js"></script>
+    <script src="../../../../third_party/polymer/polymer/polymer.js"></script>
+
+    <script src="common/js/async_util.js"></script>
+    <script src="common/js/util.js"></script>
+    <script src="common/js/path_util.js"></script>
+    <script src="foreground/js/file_type.js"></script>
+    <script src="foreground/js/volume_manager_wrapper.js"></script>
+    <script src="foreground/js/metadata/metadata_cache.js"></script>
+
+    <script src="audio_player/js/audio_player.js"></script>
+    <script src="foreground/js/media/player_testapi.js"></script>
+
+    <script src="audio_player/elements/track_list.js"></script>
+    <script src="audio_player/elements/control_panel.js"></script>
+    <script src="audio_player/elements/volume_controller.js"></script>
+    <script src="audio_player/elements/audio_player.js"></script>
+   </if>
+ </head>
+<body>
+  <!-- Definition of <track-list> tag. -->
+  <polymer-element name="track-list" attributes="tracks expanded">
+    <template>
+      <link rel="stylesheet" href="audio_player/elements/track_list.css"></link>
+      <template id="tracks" repeat="{{tracks}}">
+        <div class="track" active="{{active}}" on-click="{{trackClicked}}">
+          <div class="data">
+            <div class="data-title">{{title}}</div>
+            <div class="data-artist">{{artist}}</div>
+          </div>
+        </div>
+      </template>
+    </template>
+  </polymer-element>
+
+  <!-- Definition of <control-panel> tag. -->
+  <polymer-element name="control-panel" attributes="expanded">
+    <template>
+      <link rel="stylesheet"
+            href="audio_player/elements/control_panel.css"></link>
+
+      <div class="controls">
+        <div class="upper-controls time-controls">
+          <div class="time media-control">
+            <div class="current">{{timeString_}}</div>
+          </div>
+          <div class="progress media-control custom-slider">
+            <input name="timeInput"
+                   type="range"
+                   min="0" max="{{duration}}" value="{{time}}">
+            <div class="bar">
+              <div class="filled" style="width: {{time/duration*100}}%;"></div>
+              <div class="cap left"></div>
+              <div class="cap right"></div>
+            </div>
+          </div>
+          <div class="time media-control">
+            <div class="duration">{{durationString_}}</div>
+          </div>
+        </div>
+        <div class="lower-controls audio-controls">
+          <!-- Shuffle toggle button in the bottom line. -->
+          <div class="shuffle-mode media-button toggle" state="default">
+            <label>
+              <input id="shuffleCheckbox"
+                     type="checkbox"
+                     checked="{{shuffle}}"></input>
+              <div class="icon"></div>
+            </label>
+          </div>
+
+          <!-- Repeat toggle button in the bottom line. -->
+          <div class="repeat media-button toggle" state="default">
+            <label>
+              <input id="repeatCheckbox"
+                     type="checkbox"
+                     checked="{{repeat}}"></input>
+              <div class="icon"></div>
+            </label>
+            </div>
+
+          <!-- Prev button in the bottom line. -->
+          <div class="previous media-button"
+               state="default"
+               on-click="{{previousClick}}">
+            <div class="normal default"></div>
+            <div class="disabled"></div>
+          </div>
+
+          <!-- Play button in the bottom line. -->
+          <div class="play media-control media-button"
+               state='{{playing ? "playing" : "ended"}}'
+               on-click="{{playClick}}">
+            <div class="normal playing"></div>
+            <div class="normal ended"></div>
+            <div class="disabled"></div>
+          </div>
+
+          <!-- Next button in the bottom line. -->
+          <div class="next media-button"
+               state="default"
+               on-click="{{nextClick}}">
+            <div class="normal default"></div>
+            <div class="disabled"></div>
+          </div>
+
+          <div id="volumeContainer"
+               class="default-hidden"
+               anchor-point="bottom center">
+            <volume-controller id="volumeSlider"
+                               width="32" height="85" value="50"
+                               on-changed="{{volumeSliderChanged}}">
+            </volume-controller>
+
+            <polymer-anchor-point id="anchorHelper"></polymer-anchor-point>
+          </div>
+
+          <!-- Volume button in the bottom line. -->
+          <div id="volumeButton"
+               class="volume media-button toggle"
+               state="default"
+               on-click="{{volumeButtonClick}}"
+               anchor-point="bottom center">
+            <label>
+              <input type="checkbox" checked="{{volumeSliderShown}}"></input>
+              <div class="icon"></div>
+            </label>
+          </div>
+
+          <!-- Playlist button in the bottom line. -->
+          <div id="playlistButton"
+               class="playlist media-button toggle"
+               state="default">
+            <label>
+              <input type="checkbox" checked="{{playlistExpanded}}"></input>
+              <div class="icon"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </template>
+  </polymer-element>
+
+  <!-- Definition of <volume-controller> tag. -->
+  <polymer-element name="volume-controller" attributes="width height value">
+    <template>
+      <link rel="stylesheet"
+            href="audio_player/elements/volume_controller.css"></link>
+
+      <div id="background"></div>
+      <input name="rawValueInput" id="rawValueInput"
+             type="range" min="0" max="100" value="{{rawValue}}">
+      <div id="bar">
+        <div class="filled" style="height: {{rawValue}}%;"></div>
+        <div class="cap left"></div>
+        <div class="cap right"></div>
+      </div>
+    </template>
+  </polymer-element>
+
+  <!-- Definition of <audio-player> tag. -->
+  <polymer-element name="audio-player" attributes="tracks">
+    <template>
+      <track-list id="trackList" expanded="true"></track-list>
+      <control-panel id="audioController"
+                     on-next-clicked="{{onControllerNextClicked}}"
+                     on-previous-clicked="{{onControllerPreviousClicked}}">
+      </control-panel>
+      <audio id="audio"></audio>
+    </template>
+  </polymer-element>
+
+  <div class="audio-player">
+    <!-- Place the audio player. -->
+    <audio-player></audio-player>
+  </div>
+</body>
+</html>

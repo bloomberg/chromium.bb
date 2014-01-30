@@ -1151,6 +1151,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerShowCheckboxes)
   },
   {
+    "enable-new-audio-player",
+    IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_AUDIO_PLAYER_NAME,
+    IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_AUDIO_PLAYER_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerEnableNewAudioPlayer)
+  },
+  {
     "file-manager-enable-webstore-integration",
     IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION,
     IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION_DESCRIPTION,

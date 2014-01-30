@@ -91,6 +91,9 @@
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER" file="file_manager/mediaplayer.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_MEDIAPLAYER_JS" file="file_manager/foreground/js/media/mediaplayer_scripts.js" flattenhtml="true" type="BINDATA" />
 
+        <include name="IDR_FILE_MANAGER_AUDIO_PLAYER" file="file_manager/audio_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_AUDIO_PLAYER_SCRIPTS_JS" file="file_manager/audio_player/js/audio_player_scripts.js" flattenhtml="true" type="BINDATA" />
+
         <include name="IDR_FILE_MANAGER_VIDEO_PLAYER" file="file_manager/video_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_VIDEO_PLAYER_JS" file="file_manager/foreground/js/media/video_player_scripts.js" flattenhtml="true" type="BINDATA" />
 

@@ -1,0 +1,76 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  align-items: center;
+  background: #f5f5f5;
+  bottom: 72px;  /* Room for the controls bar. */
+  color: #3d3d3d;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
+  font-size: 10pt;
+  justify-content: flex-start;
+  left: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+/* Track item. */
+.track {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: row;
+  height: 44px;
+  justify-content: flex-start;
+  padding-left: 20px;
+  width: 100%;
+}
+
+track-list:not([expanded]) > .track:not([active='true']) {
+  display: none;
+}
+
+/* In the expanded mode the selected track is highlighted. */
+.track[active='true'] {
+  background-color: rgb(66, 129, 244);
+}
+
+/* Track data. */
+
+.track .data {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 0;
+  margin-right: 4px;
+}
+
+.track .data .data-title,
+.track .data .data-artist {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track .data .data-title {
+  color: #343434;
+  font-weight: bold;
+}
+
+.track .data .data-artist {
+  color: #969696;
+}
+
+.track[active='true'] .data .data-title,
+.track[active='true'] .data .data-artist {
+  color: #fff;
+}

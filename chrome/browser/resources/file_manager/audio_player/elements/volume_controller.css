@@ -1,0 +1,52 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  background: white;
+  display: block;
+  height: 100px;
+  position: relative;
+  width: 32px;
+}
+
+#background {
+  height: 100%;  /* will be overridden by javascript */
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+input[type='range'] {
+  -webkit-appearance: none !important;
+  -webkit-transform: rotate(90deg);
+  background: transparent;
+  outline: none;
+  position: absolute;
+  z-index: 1;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  -webkit-transform: rotate(-90deg);
+  background-image: -webkit-image-set(
+      url(../assets/100/player_timeline_handler.png) 1x,
+      url(../assets/200/player_timeline_handler.png) 2x);
+  background-position: 50% 50%;
+  background-repeat: no-repeat no-repeat;
+  height: 24px;
+  position: relative;
+  width: 24px;
+}
+
+#bar {
+  background: #000;
+  bottom: 14px;
+  position: absolute;
+  top: 14px;
+}
+
+#bar .filled {
+  background: #aaa;
+}

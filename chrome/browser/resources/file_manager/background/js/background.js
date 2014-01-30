@@ -683,29 +683,48 @@ Background.prototype.onExecute_ = function(action, details) {
   }
 };
 
-/**
- * Audio player window create options.
- * @type {Object}
- * @const
- */
-var AUDIO_PLAYER_CREATE_OPTIONS = Object.freeze({
-  type: 'panel',
-  hidden: true,
-  minHeight: 35 + 58,
-  minWidth: 280,
-  height: 35 + 58,
-  width: 280
-});
+// The instance of audio player. Until it's ready, this is null.
+var audioPlayer = null;
 
-var audioPlayer = new SingletonAppWindowWrapper('mediaplayer.html',
-                                                AUDIO_PLAYER_CREATE_OPTIONS);
+// Queue to serializes the initialization, launching and reloading of the audio
+// player, so races won't happen.
+var audioPlayerInitializationQueue = new AsyncUtil.Queue();
+
+audioPlayerInitializationQueue.run(function(callback) {
+  chrome.commandLinePrivate.hasSwitch(
+      'file-manager-enable-new-audio-player',
+      function(newAudioPlayerEnabled) {
+        var audioPlayerHTML =
+            newAudioPlayerEnabled ? 'audio_player.html' : 'mediaplayer.html';
+
+        /**
+         * Audio player window create options.
+         * @type {Object}
+         */
+        var audioPlayerCreateOptions = Object.freeze({
+          type: 'panel',
+          hidden: true,
+          minHeight: newAudioPlayerEnabled ? 116 : (35 + 58),
+          minWidth: newAudioPlayerEnabled ? 292 : 280,
+          height: newAudioPlayerEnabled ? 356 : (35 + 58),
+          width: newAudioPlayerEnabled ? 292 : 280,
+        });
+
+        audioPlayer = new SingletonAppWindowWrapper(audioPlayerHTML,
+                                                    audioPlayerCreateOptions);
+        callback();
+      });
+});
 
 /**
  * Launch the audio player.
  * @param {Object} playlist Playlist.
  */
 function launchAudioPlayer(playlist) {
-  audioPlayer.launch(playlist);
+  audioPlayerInitializationQueue.run(function(callback) {
+    audioPlayer.launch(playlist);
+    callback();
+  });
 }
 
 var videoPlayer = new SingletonAppWindowWrapper('video_player.html',
@@ -762,8 +781,13 @@ Background.prototype.onRestarted_ = function() {
     }
   });
 
-  // Reopen sub-applications.
-  audioPlayer.reopen();
+  // Reopen audio player.
+  audioPlayerInitializationQueue.run(function(callback) {
+    audioPlayer.reopen();
+    callback();
+  });
+
+  // Reopen video player.
   videoPlayer.reopen();
 };
 

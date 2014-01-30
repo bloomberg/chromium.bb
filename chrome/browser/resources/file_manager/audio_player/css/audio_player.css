@@ -1,0 +1,100 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+html {
+  height: 100%;
+}
+
+body {
+  -webkit-user-select: none;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.header {
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  height: 32px;
+}
+
+.audio-player {
+  color: #3d3d3d;
+  cursor: default;
+  flex: 1 1 auto;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
+  font-size: 10pt;
+  position: relative;
+}
+
+.audio-player:not(.collapsed):not(.single-track) > .title-button {
+  background-color: #1f1f1f;
+}
+
+/* Customized scrollbar for the playlist. */
+
+::-webkit-scrollbar {
+  height: 16px;
+  width: 16px;
+}
+
+::-webkit-scrollbar-button {
+  height: 0;
+  width: 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background-clip: padding-box;
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.10),
+              inset 0 -1px 0  rgba(0, 0, 0, 0.07);
+  min-height: 28px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.20);
+  box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+::-webkit-scrollbar-thumb:vertical {
+  border-bottom: 0 solid transparent;
+  border-left: 5px solid transparent;
+  border-right: 0 solid transparent;
+  border-top: 0 solid transparent;
+}
+
+::-webkit-scrollbar-track:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.10);
+}
+
+::-webkit-scrollbar-track:active {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.14),
+              inset -1px -1px 0 rgba(0, 0, 0, 0.07);
+}
+
+::-webkit-scrollbar-track:vertical {
+  background-clip: padding-box;
+  background-color: transparent;
+  border-left: 5px solid transparent;
+  border-right: 0 solid transparent;
+}
+
+control-panel {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  bottom: 0;
+  left: 0;
+  margin-bottom: 8px;
+  position: fixed;
+  right: 0;
+}
