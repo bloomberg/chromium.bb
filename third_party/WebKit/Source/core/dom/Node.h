@@ -690,7 +690,7 @@ private:
 
         // These bits are used by derived classes, pulled up here so they can
         // be stored in the same memory word as the Node bits above.
-        IsParsingChildrenFinishedFlag = 1 << 12, // Element
+        IsFinishedParsingChildrenFlag = 1 << 12, // Element
 
         AlreadySpellCheckedFlag = 1 << 13,
 
@@ -714,7 +714,7 @@ private:
         CustomElement = 1 << 27,
         CustomElementUpgraded = 1 << 28,
 
-        DefaultNodeFlags = IsParsingChildrenFinishedFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
+        DefaultNodeFlags = IsFinishedParsingChildrenFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
     };
 
     // 4 bits remaining.
@@ -782,8 +782,8 @@ protected:
 
     void markAncestorsWithChildNeedsStyleRecalc();
 
-    bool isParsingChildrenFinished() const { return getFlag(IsParsingChildrenFinishedFlag); }
-    void setIsParsingChildrenFinished(bool value) { setFlag(value, IsParsingChildrenFinishedFlag); }
+    bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
+    void setIsFinishedParsingChildren(bool value) { setFlag(value, IsFinishedParsingChildrenFlag); }
 
 private:
     friend class TreeShared<Node>;

@@ -1958,7 +1958,7 @@ void Element::removeAllEventListeners()
 
 void Element::finishParsingChildren()
 {
-    setIsParsingChildrenFinished(true);
+    setIsFinishedParsingChildren(true);
     checkForSiblingStyleChanges(this, lastChild(), 0, 0);
 }
 

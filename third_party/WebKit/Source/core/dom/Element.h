@@ -417,8 +417,7 @@ public:
     virtual void didBecomeFullscreenElement() { }
     virtual void willStopBeingFullscreenElement() { }
 
-    // FIXME: Pick one name and remove the other method.
-    bool isFinishedParsingChildren() const { return isParsingChildrenFinished(); }
+    using Node::isFinishedParsingChildren; // make public for SelectorChecker
 
     // Called by the parser when this element's close tag is reached,
     // signaling that all child tags have been parsed and added.
@@ -428,7 +427,7 @@ public:
     // but making parsing a special case in this respect should be avoided if possible.
     virtual void finishParsingChildren();
 
-    void beginParsingChildren() { setIsParsingChildrenFinished(false); }
+    void beginParsingChildren() { setIsFinishedParsingChildren(false); }
 
     PseudoElement* pseudoElement(PseudoId) const;
     RenderObject* pseudoElementRenderer(PseudoId) const;
