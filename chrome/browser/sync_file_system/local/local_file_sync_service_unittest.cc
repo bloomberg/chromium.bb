@@ -122,7 +122,7 @@ class LocalFileSyncServiceTest
     local_service_ = LocalFileSyncService::CreateForTesting(
         &profile_, in_memory_env_.get());
 
-    file_system_->SetUp();
+    file_system_->SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
     base::RunLoop run_loop;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
@@ -302,7 +302,7 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
       in_memory_env_.get(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  file_system2.SetUp();
+  file_system2.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
   base::RunLoop run_loop;
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;

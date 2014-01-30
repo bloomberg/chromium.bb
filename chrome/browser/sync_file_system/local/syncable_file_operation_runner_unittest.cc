@@ -65,7 +65,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
-    file_system_.SetUp();
+    file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
     sync_context_ = new LocalFileSyncContext(
         dir_.path(),
         in_memory_env_.get(),

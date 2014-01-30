@@ -130,7 +130,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
               .get());
 
       SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-      file_system->SetUp();
+      file_system->SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
       local_sync_service_->MaybeInitializeFileSystemContext(
           origin, file_system->file_system_context(),
           CreateResultReceiver(&status));

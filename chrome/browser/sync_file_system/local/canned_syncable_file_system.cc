@@ -222,18 +222,20 @@ CannedSyncableFileSystem::CannedSyncableFileSystem(
 
 CannedSyncableFileSystem::~CannedSyncableFileSystem() {}
 
-void CannedSyncableFileSystem::SetUp() {
+void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
   ASSERT_FALSE(is_filesystem_set_up_);
   ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
   scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
       new quota::MockSpecialStoragePolicy();
 
-  quota_manager_ = new QuotaManager(false /* is_incognito */,
-                                    data_dir_.path(),
-                                    io_task_runner_.get(),
-                                    base::MessageLoopProxy::current().get(),
-                                    storage_policy.get());
+  if (quota_mode == QUOTA_ENABLED) {
+    quota_manager_ = new QuotaManager(false /* is_incognito */,
+                                      data_dir_.path(),
+                                      io_task_runner_.get(),
+                                      base::MessageLoopProxy::current().get(),
+                                      storage_policy.get());
+  }
 
   std::vector<std::string> additional_allowed_schemes;
   additional_allowed_schemes.push_back(origin_.scheme());
@@ -250,7 +252,7 @@ void CannedSyncableFileSystem::SetUp() {
       file_task_runner_.get(),
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
       storage_policy.get(),
-      quota_manager_->proxy(),
+      quota_manager_ ? quota_manager_->proxy() : NULL,
       additional_backends.Pass(),
       data_dir_.path(), options);
 
@@ -708,6 +710,7 @@ void CannedSyncableFileSystem::DoGetUsageAndQuota(
     const quota::StatusCallback& callback) {
   EXPECT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
   EXPECT_TRUE(is_filesystem_opened_);
+  DCHECK(quota_manager_);
   quota_manager_->GetUsageAndQuota(
       origin_, storage_type(),
       base::Bind(&DidGetUsageAndQuota, callback, usage, quota));

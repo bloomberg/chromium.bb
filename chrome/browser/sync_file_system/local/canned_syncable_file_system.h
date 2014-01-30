@@ -67,6 +67,11 @@ class CannedSyncableFileSystem
   typedef base::Callback<void(int64)> WriteCallback;
   typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
+  enum QuotaMode {
+    QUOTA_ENABLED,
+    QUOTA_DISABLED,
+  };
+
   CannedSyncableFileSystem(const GURL& origin,
                            leveldb::Env* env_override,
                            base::SingleThreadTaskRunner* io_task_runner,
@@ -74,7 +79,7 @@ class CannedSyncableFileSystem
   virtual ~CannedSyncableFileSystem();
 
   // SetUp must be called before using this instance.
-  void SetUp();
+  void SetUp(QuotaMode quota_mode);
 
   // TearDown must be called before destructing this instance.
   void TearDown();

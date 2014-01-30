@@ -43,7 +43,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
                      base::MessageLoopProxy::current().get()) {}
 
   virtual void SetUp() OVERRIDE {
-    file_system_.SetUp();
+    file_system_.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
     sync_context_ =
         new LocalFileSyncContext(base::FilePath(),
