@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
 
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -112,6 +114,36 @@ TEST_F(RemovePerformerTest, RemoveShared) {
   ASSERT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
   EXPECT_FALSE(gdata_entry->deleted());  // It's not deleted.
   EXPECT_FALSE(gdata_entry->GetLinkByType(google_apis::Link::LINK_PARENT));
+}
+
+TEST_F(RemovePerformerTest, RemoveLocallyCreatedFile) {
+  RemovePerformer performer(blocking_task_runner(), observer(), scheduler(),
+                            metadata());
+
+  // Add an entry without resource ID.
+  ResourceEntry entry;
+  entry.set_title("New File.txt");
+  entry.set_parent_local_id(util::kDriveTrashDirLocalId);
+
+  FileError error = FILE_ERROR_FAILED;
+  std::string local_id;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::AddEntry,
+                 base::Unretained(metadata()),
+                 entry,
+                 &local_id),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Remove the entry.
+  performer.Remove(local_id, ClientContext(USER_INITIATED),
+                   google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntryById(local_id, &entry));
 }
 
 }  // namespace internal

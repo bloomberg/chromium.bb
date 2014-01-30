@@ -67,6 +67,17 @@ RemovePerformer::~RemovePerformer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+// Returns |entry| corresponding to |local_id|.
+// Adding to that, removes the entry when it does not exist on the server.
+FileError TryToRemoveLocally(ResourceMetadata* metadata,
+                             const std::string& local_id,
+                             ResourceEntry* entry) {
+  FileError error = metadata->GetResourceEntryById(local_id, entry);
+  if (error != FILE_ERROR_OK || !entry->resource_id().empty())
+    return error;
+  return metadata->RemoveEntry(local_id);
+}
+
 void RemovePerformer::Remove(const std::string& local_id,
                              const ClientContext& context,
                              const FileOperationCallback& callback) {
@@ -77,10 +88,7 @@ void RemovePerformer::Remove(const std::string& local_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&ResourceMetadata::GetResourceEntryById,
-                 base::Unretained(metadata_),
-                 local_id,
-                 entry),
+      base::Bind(&TryToRemoveLocally, metadata_, local_id, entry),
       base::Bind(&RemovePerformer::RemoveAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  context,
@@ -96,7 +104,7 @@ void RemovePerformer::RemoveAfterGetResourceEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != FILE_ERROR_OK) {
+  if (error != FILE_ERROR_OK || entry->resource_id().empty()) {
     callback.Run(error);
     return;
   }

@@ -110,6 +110,9 @@ void EntryRevertPerformer::RevertEntryAfterPrepare(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (error == FILE_ERROR_OK && entry->resource_id().empty())
+    error = FILE_ERROR_INVALID_OPERATION;
+
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
