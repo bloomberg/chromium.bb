@@ -21,6 +21,8 @@
 
 namespace content {
 
+using webcrypto::Status;
+
 namespace {
 
 class SymKeyHandle : public blink::WebCryptoKeyHandle {
@@ -56,26 +58,21 @@ enum CipherOperation {
   kDoEncrypt = 1
 };
 
-bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
-                          const blink::WebCryptoAlgorithm& algorithm,
-                          const blink::WebCryptoKey& key,
-                          const unsigned char* data,
-                          unsigned data_size,
-                          blink::WebArrayBuffer* buffer) {
-
-  // TODO(padolph): Handle other encrypt operations and then remove this gate
-  if (algorithm.id() != blink::WebCryptoAlgorithmIdAesCbc)
-    return false;
-
+Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
+                            const blink::WebCryptoAlgorithm& algorithm,
+                            const blink::WebCryptoKey& key,
+                            const unsigned char* data,
+                            unsigned data_size,
+                            blink::WebArrayBuffer* buffer) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdAesCbc, algorithm.id());
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
   DCHECK_EQ(blink::WebCryptoKeyTypeSecret, key.type());
 
   if (data_size >= INT_MAX - AES_BLOCK_SIZE) {
     // TODO(padolph): Handle this by chunking the input fed into OpenSSL. Right
     // now it doesn't make much difference since the one-shot API would end up
-    // blowing out the memory and crashing anyway. However a newer version of
-    // the spec allows for a sequence<CryptoData> so this will be relevant.
-    return false;
+    // blowing out the memory and crashing anyway.
+    return Status::ErrorDataTooLarge();
   }
 
   // Note: PKCS padding is enabled by default
@@ -83,7 +80,7 @@ bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
       EVP_CIPHER_CTX_new());
 
   if (!context.get())
-    return false;
+    return Status::Error();
 
   SymKeyHandle* const sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
 
@@ -93,7 +90,7 @@ bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
 
   const blink::WebCryptoAesCbcParams* const params = algorithm.aesCbcParams();
   if (params->iv().size() != AES_BLOCK_SIZE)
-    return false;
+    return Status::ErrorIncorrectSizeAesCbcIv();
 
   if (!EVP_CipherInit_ex(context.get(),
                          cipher,
@@ -101,7 +98,7 @@ bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
                          &sym_key->key()[0],
                          params->iv().data(),
                          cipher_operation)) {
-    return false;
+    return Status::Error();
   }
 
   // According to the openssl docs, the amount of data written may be as large
@@ -121,11 +118,11 @@ bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
   int output_len = 0;
   if (!EVP_CipherUpdate(
           context.get(), buffer_data, &output_len, data, data_size))
-    return false;
+    return Status::Error();
   int final_output_chunk_len = 0;
   if (!EVP_CipherFinal_ex(
           context.get(), buffer_data + output_len, &final_output_chunk_len))
-    return false;
+    return Status::Error();
 
   const unsigned final_output_len =
       static_cast<unsigned>(output_len) +
@@ -134,61 +131,67 @@ bool AesCbcEncryptDecrypt(CipherOperation cipher_operation,
 
   webcrypto::ShrinkBuffer(buffer, final_output_len);
 
-  return true;
+  return Status::Success();
 }
 
-bool ExportKeyInternalRaw(
+Status ExportKeyInternalRaw(
     const blink::WebCryptoKey& key,
     blink::WebArrayBuffer* buffer) {
 
   DCHECK(key.handle());
   DCHECK(buffer);
 
-  if (key.type() != blink::WebCryptoKeyTypeSecret || !key.extractable())
-    return false;
+  if (key.type() != blink::WebCryptoKeyTypeSecret)
+    return Status::ErrorUnexpectedKeyType();
+
+  // TODO(eroman): This should be in a more generic location.
+  if (!key.extractable())
+    return Status::ErrorKeyNotExtractable();
 
   const SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
 
   *buffer = webcrypto::CreateArrayBuffer(
       webcrypto::Uint8VectorStart(sym_key->key()), sym_key->key().size());
 
-  return true;
+  return Status::Success();
 }
 
 }  // namespace
 
 void WebCryptoImpl::Init() { crypto::EnsureOpenSSLInit(); }
 
-bool WebCryptoImpl::EncryptInternal(const blink::WebCryptoAlgorithm& algorithm,
-                                    const blink::WebCryptoKey& key,
-                                    const unsigned char* data,
-                                    unsigned data_size,
-                                    blink::WebArrayBuffer* buffer) {
+Status WebCryptoImpl::EncryptInternal(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    blink::WebArrayBuffer* buffer) {
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         kDoEncrypt, algorithm, key, data, data_size, buffer);
   }
 
-  return false;
+  return Status::ErrorUnsupported();
 }
 
-bool WebCryptoImpl::DecryptInternal(const blink::WebCryptoAlgorithm& algorithm,
-                                    const blink::WebCryptoKey& key,
-                                    const unsigned char* data,
-                                    unsigned data_size,
-                                    blink::WebArrayBuffer* buffer) {
+Status WebCryptoImpl::DecryptInternal(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    blink::WebArrayBuffer* buffer) {
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         kDoDecrypt, algorithm, key, data, data_size, buffer);
   }
 
-  return false;
+  return Status::ErrorUnsupported();
 }
 
-bool WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
-                                   const unsigned char* data,
-                                   unsigned data_size,
-                                   blink::WebArrayBuffer* buffer) {
+Status WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
+                                     const unsigned char* data,
+                                     unsigned data_size,
+                                     blink::WebArrayBuffer* buffer) {
 
   crypto::OpenSSLErrStackTracer(FROM_HERE);
 
@@ -211,23 +214,23 @@ bool WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
       break;
     default:
       // Not a digest algorithm.
-      return false;
+      return Status::ErrorUnsupported();
   }
 
   crypto::ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> digest_context(
       EVP_MD_CTX_create());
   if (!digest_context.get()) {
-    return false;
+    return Status::Error();
   }
 
   if (!EVP_DigestInit_ex(digest_context.get(), digest_algorithm, NULL) ||
       !EVP_DigestUpdate(digest_context.get(), data, data_size)) {
-    return false;
+    return Status::Error();
   }
 
   const int hash_expected_size = EVP_MD_CTX_size(digest_context.get());
   if (hash_expected_size <= 0) {
-    return false;
+    return Status::ErrorUnexpected();
   }
   DCHECK_LE(hash_expected_size, EVP_MAX_MD_SIZE);
 
@@ -239,13 +242,13 @@ bool WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
   if (!EVP_DigestFinal_ex(digest_context.get(), hash_buffer, &hash_size) ||
       static_cast<int>(hash_size) != hash_expected_size) {
     buffer->reset();
-    return false;
+    return Status::Error();
   }
 
-  return true;
+  return Status::Success();
 }
 
-bool WebCryptoImpl::GenerateKeyInternal(
+Status WebCryptoImpl::GenerateKeyInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -259,10 +262,10 @@ bool WebCryptoImpl::GenerateKeyInternal(
           algorithm.aesKeyGenParams();
       DCHECK(params);
       if (params->lengthBits() % 8)
-        return false;
+        return Status::ErrorGenerateKeyLength();
       keylen_bytes = params->lengthBits() / 8;
       if (!GetAESCipherByKeyLength(keylen_bytes)) {
-        return false;
+        return Status::Error();
       }
       key_type = blink::WebCryptoKeyTypeSecret;
       break;
@@ -279,28 +282,28 @@ bool WebCryptoImpl::GenerateKeyInternal(
       break;
     }
 
-    default: { return false; }
+    default: { return Status::ErrorUnsupported(); }
   }
 
   if (keylen_bytes == 0) {
-    return false;
+    return Status::ErrorGenerateKeyLength();
   }
 
   crypto::OpenSSLErrStackTracer(FROM_HERE);
 
   std::vector<unsigned char> random_bytes(keylen_bytes, 0);
   if (!(RAND_bytes(&random_bytes[0], keylen_bytes))) {
-    return false;
+    return Status::Error();
   }
 
   *key = blink::WebCryptoKey::create(
       new SymKeyHandle(&random_bytes[0], random_bytes.size()),
       key_type, extractable, algorithm, usage_mask);
 
-  return true;
+  return Status::Success();
 }
 
-bool WebCryptoImpl::GenerateKeyPairInternal(
+Status WebCryptoImpl::GenerateKeyPairInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -308,10 +311,10 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
     blink::WebCryptoKey* private_key) {
   // TODO(padolph): Placeholder for OpenSSL implementation.
   // Issue http://crbug.com/267888.
-  return false;
+  return Status::ErrorUnsupported();
 }
 
-bool WebCryptoImpl::ImportKeyInternal(
+Status WebCryptoImpl::ImportKeyInternal(
     blink::WebCryptoKeyFormat format,
     const unsigned char* key_data,
     unsigned key_data_size,
@@ -322,13 +325,13 @@ bool WebCryptoImpl::ImportKeyInternal(
   // TODO(eroman): Currently expects algorithm to always be specified, as it is
   //               required for raw format.
   if (algorithm_or_null.isNull())
-    return false;
+    return Status::ErrorMissingAlgorithmImportRawKey();
   const blink::WebCryptoAlgorithm& algorithm = algorithm_or_null;
 
   // TODO(padolph): Support all relevant alg types and then remove this gate.
   if (algorithm.id() != blink::WebCryptoAlgorithmIdHmac &&
       algorithm.id() != blink::WebCryptoAlgorithmIdAesCbc) {
-    return false;
+    return Status::ErrorUnsupported();
   }
 
   // TODO(padolph): Need to split handling for symmetric (raw format) and
@@ -348,25 +351,23 @@ bool WebCryptoImpl::ImportKeyInternal(
       // incompatible with AES. The line below is to match this behavior.
       if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc &&
           !GetAESCipherByKeyLength(raw_key_data_size)) {
-        return false;
+        return Status::Error();
       }
       break;
     case blink::WebCryptoKeyFormatJwk:
-      // TODO(padolph): Handle jwk format; need simple JSON parser.
-      // break;
-      return false;
+      return Status::ErrorUnexpected();
     default:
-      return false;
+      return Status::ErrorUnsupported();
   }
 
   *key = blink::WebCryptoKey::create(
       new SymKeyHandle(raw_key_data, raw_key_data_size),
       type, extractable, algorithm, usage_mask);
 
-  return true;
+  return Status::Success();
 }
 
-bool WebCryptoImpl::ExportKeyInternal(
+Status WebCryptoImpl::ExportKeyInternal(
     blink::WebCryptoKeyFormat format,
     const blink::WebCryptoKey& key,
     blink::WebArrayBuffer* buffer) {
@@ -375,17 +376,17 @@ bool WebCryptoImpl::ExportKeyInternal(
       return ExportKeyInternalRaw(key, buffer);
     case blink::WebCryptoKeyFormatSpki:
       // TODO(padolph): Implement spki export
-      return false;
+      return Status::ErrorUnsupported();
     case blink::WebCryptoKeyFormatPkcs8:
       // TODO(padolph): Implement pkcs8 export
-      return false;
+      return Status::ErrorUnsupported();
     default:
-      return false;
+      return Status::ErrorUnsupported();
   }
-  return false;
+  return Status::ErrorUnsupported();
 }
 
-bool WebCryptoImpl::SignInternal(
+Status WebCryptoImpl::SignInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
@@ -402,7 +403,7 @@ bool WebCryptoImpl::SignInternal(
 
       const blink::WebCryptoHmacParams* const params = algorithm.hmacParams();
       if (!params)
-        return false;
+        return Status::ErrorUnexpected();
 
       const EVP_MD* evp_sha = 0;
       unsigned int hmac_expected_length = 0;
@@ -430,7 +431,7 @@ bool WebCryptoImpl::SignInternal(
           break;
         default:
           // Not a digest algorithm.
-          return false;
+          return Status::ErrorUnsupported();
       }
 
       SymKeyHandle* const sym_key =
@@ -461,19 +462,19 @@ bool WebCryptoImpl::SignInternal(
                                           hmac_result.safe_buffer(),
                                           &hmac_actual_length);
       if (!success || hmac_actual_length != hmac_expected_length)
-        return false;
+        return Status::Error();
 
       break;
     }
     default:
-      return false;
+      return Status::ErrorUnsupported();
   }
 
   *buffer = result;
-  return true;
+  return Status::Success();
 }
 
-bool WebCryptoImpl::VerifySignatureInternal(
+Status WebCryptoImpl::VerifySignatureInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* signature,
@@ -484,8 +485,9 @@ bool WebCryptoImpl::VerifySignatureInternal(
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdHmac: {
       blink::WebArrayBuffer result;
-      if (!SignInternal(algorithm, key, data, data_size, &result)) {
-        return false;
+      Status status = SignInternal(algorithm, key, data, data_size, &result);
+      if (status.IsError()) {
+        return status;
       }
 
       // Handling of truncated signatures is underspecified in the WebCrypto
@@ -499,12 +501,12 @@ bool WebCryptoImpl::VerifySignatureInternal(
       break;
     }
     default:
-      return false;
+      return Status::ErrorUnsupported();
   }
-  return true;
+  return Status::Success();
 }
 
-bool WebCryptoImpl::ImportRsaPublicKeyInternal(
+Status WebCryptoImpl::ImportRsaPublicKeyInternal(
     const unsigned char* modulus_data,
     unsigned modulus_size,
     const unsigned char* exponent_data,
@@ -515,7 +517,7 @@ bool WebCryptoImpl::ImportRsaPublicKeyInternal(
     blink::WebCryptoKey* key) {
   // TODO(padolph): Placeholder for OpenSSL implementation.
   // Issue http://crbug.com/267888.
-  return false;
+  return Status::ErrorUnsupported();
 }
 
 }  // namespace content

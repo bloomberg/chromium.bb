@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,18 @@
 #define MAYBE(test_name) test_name
 #endif
 
+// Helper macros to verify the value of a Status.
+#define EXPECT_STATUS_ERROR(code) EXPECT_FALSE((code).IsSuccess())
+#define EXPECT_STATUS(expected, code) \
+    EXPECT_EQ(expected.ToString(), (code).ToString())
+#define ASSERT_STATUS(expected, code) \
+    ASSERT_EQ(expected.ToString(), (code).ToString())
+#define EXPECT_STATUS_SUCCESS(code) EXPECT_STATUS(Status::Success(), code)
+#define ASSERT_STATUS_SUCCESS(code) ASSERT_STATUS(Status::Success(), code)
+
 namespace content {
+
+using webcrypto::Status;
 
 namespace {
 
@@ -220,13 +231,14 @@ class WebCryptoImplTest : public testing::Test {
 
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
     bool extractable = true;
-    EXPECT_TRUE(crypto_.ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                          webcrypto::Uint8VectorStart(key_raw),
-                                          key_raw.size(),
-                                          algorithm,
-                                          extractable,
-                                          usage,
-                                          &key));
+    EXPECT_STATUS_SUCCESS(
+        crypto_.ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                  webcrypto::Uint8VectorStart(key_raw),
+                                  key_raw.size(),
+                                  algorithm,
+                                  extractable,
+                                  usage,
+                                  &key));
 
     EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
@@ -245,7 +257,7 @@ class WebCryptoImplTest : public testing::Test {
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* public_key,
       blink::WebCryptoKey* private_key) {
-    EXPECT_TRUE(ImportKeyInternal(
+    EXPECT_STATUS_SUCCESS(ImportKeyInternal(
         blink::WebCryptoKeyFormatSpki,
         HexStringToBytes(spki_der_hex),
         algorithm,
@@ -259,7 +271,7 @@ class WebCryptoImplTest : public testing::Test {
     EXPECT_EQ(extractable, extractable);
     EXPECT_EQ(usage_mask, public_key->usages());
 
-    EXPECT_TRUE(ImportKeyInternal(
+    EXPECT_STATUS_SUCCESS(ImportKeyInternal(
         blink::WebCryptoKeyFormatPkcs8,
         HexStringToBytes(pkcs8_der_hex),
         algorithm,
@@ -280,7 +292,7 @@ class WebCryptoImplTest : public testing::Test {
     std::vector<uint8> key_raw(16, 0);
 
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-    return crypto_.ImportKeyInternal(
+    Status status = crypto_.ImportKeyInternal(
         blink::WebCryptoKeyFormatRaw,
         webcrypto::Uint8VectorStart(key_raw),
         key_raw.size(),
@@ -288,25 +300,33 @@ class WebCryptoImplTest : public testing::Test {
         true,
         blink::WebCryptoKeyUsageEncrypt,
         &key);
+
+    if (status.IsError()) {
+      EXPECT_EQ(Status::ErrorUnsupported().ToString(), status.ToString());
+    }
+    return status.IsSuccess();
+
   }
 
-  bool AesGcmEncrypt(const blink::WebCryptoKey& key,
-                     const std::vector<uint8>& iv,
-                     const std::vector<uint8>& additional_data,
-                     unsigned tag_length_bits,
-                     const std::vector<uint8>& plain_text,
-                     std::vector<uint8>* cipher_text,
-                     std::vector<uint8>* authentication_tag) {
+  Status AesGcmEncrypt(const blink::WebCryptoKey& key,
+                       const std::vector<uint8>& iv,
+                       const std::vector<uint8>& additional_data,
+                       unsigned tag_length_bits,
+                       const std::vector<uint8>& plain_text,
+                       std::vector<uint8>* cipher_text,
+                       std::vector<uint8>* authentication_tag) {
     blink::WebCryptoAlgorithm algorithm = CreateAesGcmAlgorithm(
         iv, additional_data, tag_length_bits);
 
     blink::WebArrayBuffer output;
-    if (!EncryptInternal(algorithm, key, plain_text, &output))
-      return false;
+    Status status = EncryptInternal(algorithm, key, plain_text, &output);
+    if (status.IsError()) {
+      return status;
+    }
 
     if (output.byteLength() * 8 < tag_length_bits) {
       EXPECT_TRUE(false);
-      return false;
+      return Status::Error();
     }
 
     // The encryption result is cipher text with authentication tag appended.
@@ -318,16 +338,16 @@ class WebCryptoImplTest : public testing::Test {
         static_cast<uint8*>(output.data()) + cipher_text->size(),
         static_cast<uint8*>(output.data()) + output.byteLength());
 
-    return true;
+    return Status::Success();
   }
 
-  bool AesGcmDecrypt(const blink::WebCryptoKey& key,
-                     const std::vector<uint8>& iv,
-                     const std::vector<uint8>& additional_data,
-                     unsigned tag_length_bits,
-                     const std::vector<uint8>& cipher_text,
-                     const std::vector<uint8>& authentication_tag,
-                     blink::WebArrayBuffer* plain_text) {
+  Status AesGcmDecrypt(const blink::WebCryptoKey& key,
+                       const std::vector<uint8>& iv,
+                       const std::vector<uint8>& additional_data,
+                       unsigned tag_length_bits,
+                       const std::vector<uint8>& cipher_text,
+                       const std::vector<uint8>& authentication_tag,
+                       blink::WebArrayBuffer* plain_text) {
     blink::WebCryptoAlgorithm algorithm = CreateAesGcmAlgorithm(
         iv, additional_data, tag_length_bits);
 
@@ -347,7 +367,7 @@ class WebCryptoImplTest : public testing::Test {
   // Forwarding methods to gain access to protected methods of
   // WebCryptoImpl.
 
-  bool DigestInternal(
+  Status DigestInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const std::vector<uint8>& data,
       blink::WebArrayBuffer* buffer) {
@@ -355,15 +375,16 @@ class WebCryptoImplTest : public testing::Test {
         algorithm, webcrypto::Uint8VectorStart(data), data.size(), buffer);
   }
 
-  bool GenerateKeyInternal(
+  Status GenerateKeyInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       blink::WebCryptoKey* key) {
     bool extractable = true;
     blink::WebCryptoKeyUsageMask usage_mask = 0;
-    return crypto_.GenerateKeyInternal(algorithm, extractable, usage_mask, key);
+    return crypto_.GenerateKeyInternal(
+        algorithm, extractable, usage_mask, key);
   }
 
-  bool GenerateKeyPairInternal(
+  Status GenerateKeyPairInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
@@ -373,7 +394,7 @@ class WebCryptoImplTest : public testing::Test {
         algorithm, extractable, usage_mask, public_key, private_key);
   }
 
-  bool ImportKeyInternal(
+  Status ImportKeyInternal(
       blink::WebCryptoKeyFormat format,
       const std::vector<uint8>& key_data,
       const blink::WebCryptoAlgorithm& algorithm,
@@ -389,14 +410,14 @@ class WebCryptoImplTest : public testing::Test {
                                      key);
   }
 
-  bool ExportKeyInternal(
+  Status ExportKeyInternal(
       blink::WebCryptoKeyFormat format,
       const blink::WebCryptoKey& key,
       blink::WebArrayBuffer* buffer) {
     return crypto_.ExportKeyInternal(format, key, buffer);
   }
 
-  bool SignInternal(
+  Status SignInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const std::vector<uint8>& data,
@@ -405,7 +426,7 @@ class WebCryptoImplTest : public testing::Test {
         algorithm, key, webcrypto::Uint8VectorStart(data), data.size(), buffer);
   }
 
-  bool VerifySignatureInternal(
+  Status VerifySignatureInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* signature,
@@ -421,7 +442,7 @@ class WebCryptoImplTest : public testing::Test {
                                            signature_match);
   }
 
-  bool VerifySignatureInternal(
+  Status VerifySignatureInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const std::vector<uint8>& signature,
@@ -437,7 +458,7 @@ class WebCryptoImplTest : public testing::Test {
         signature_match);
   }
 
-  bool EncryptInternal(
+  Status EncryptInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
@@ -446,7 +467,7 @@ class WebCryptoImplTest : public testing::Test {
     return crypto_.EncryptInternal(algorithm, key, data, data_size, buffer);
   }
 
-  bool EncryptInternal(
+  Status EncryptInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const std::vector<uint8>& data,
@@ -455,7 +476,7 @@ class WebCryptoImplTest : public testing::Test {
         algorithm, key, webcrypto::Uint8VectorStart(data), data.size(), buffer);
   }
 
-  bool DecryptInternal(
+  Status DecryptInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
@@ -464,7 +485,7 @@ class WebCryptoImplTest : public testing::Test {
     return crypto_.DecryptInternal(algorithm, key, data, data_size, buffer);
   }
 
-  bool DecryptInternal(
+  Status DecryptInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const std::vector<uint8>& data,
@@ -473,7 +494,7 @@ class WebCryptoImplTest : public testing::Test {
         algorithm, key, webcrypto::Uint8VectorStart(data), data.size(), buffer);
   }
 
-  bool ImportKeyJwk(
+  Status ImportKeyJwk(
       const std::vector<uint8>& key_data,
       const blink::WebCryptoAlgorithm& algorithm,
       bool extractable,
@@ -490,6 +511,13 @@ class WebCryptoImplTest : public testing::Test {
  private:
   WebCryptoImpl crypto_;
 };
+
+TEST_F(WebCryptoImplTest, StatusToString) {
+  EXPECT_EQ("Success", Status::Success().ToString());
+  EXPECT_EQ("", Status::Error().ToString());
+  EXPECT_EQ("The requested operation is unsupported",
+            Status::ErrorUnsupported().ToString());
+}
 
 TEST_F(WebCryptoImplTest, DigestSampleSets) {
   // The results are stored here in hex format for readability.
@@ -568,7 +596,7 @@ TEST_F(WebCryptoImplTest, DigestSampleSets) {
     std::vector<uint8> input = HexStringToBytes(test.hex_input);
 
     blink::WebArrayBuffer output;
-    ASSERT_TRUE(DigestInternal(algorithm, input, &output));
+    ASSERT_STATUS_SUCCESS(DigestInternal(algorithm, input, &output));
     ExpectArrayBufferMatchesHex(test.hex_result, output);
   }
 }
@@ -719,19 +747,20 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
 
     // Verify exported raw key is identical to the imported data
     blink::WebArrayBuffer raw_key;
-    EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+    EXPECT_STATUS_SUCCESS(
+        ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
     ExpectArrayBufferMatchesHex(test.key, raw_key);
 
     std::vector<uint8> message_raw = HexStringToBytes(test.message);
 
     blink::WebArrayBuffer output;
 
-    ASSERT_TRUE(SignInternal(algorithm, key, message_raw, &output));
+    ASSERT_STATUS_SUCCESS(SignInternal(algorithm, key, message_raw, &output));
 
     ExpectArrayBufferMatchesHex(test.mac, output);
 
     bool signature_match = false;
-    EXPECT_TRUE(VerifySignatureInternal(
+    EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
         algorithm,
         key,
         static_cast<const unsigned char*>(output.data()),
@@ -741,7 +770,7 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
     EXPECT_TRUE(signature_match);
 
     // Ensure truncated signature does not verify by passing one less byte.
-    EXPECT_TRUE(VerifySignatureInternal(
+    EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
         algorithm,
         key,
         static_cast<const unsigned char*>(output.data()),
@@ -750,9 +779,19 @@ TEST_F(WebCryptoImplTest, HMACSampleSets) {
         &signature_match));
     EXPECT_FALSE(signature_match);
 
+    // Ensure truncated signature does not verify by passing no bytes.
+    EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
+        algorithm,
+        key,
+        NULL,
+        0,
+        message_raw,
+        &signature_match));
+    EXPECT_FALSE(signature_match);
+
     // Ensure extra long signature does not cause issues and fails.
     const unsigned char kLongSignature[1024] = { 0 };
-    EXPECT_TRUE(VerifySignatureInternal(
+    EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
         algorithm,
         key,
         kLongSignature,
@@ -772,7 +811,8 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
 
   // Verify exported raw key is identical to the imported data
   blink::WebArrayBuffer raw_key;
-  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+  EXPECT_STATUS_SUCCESS(
+      ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
   ExpectArrayBufferMatchesHex(key_hex, raw_key);
 
   blink::WebArrayBuffer output;
@@ -781,9 +821,9 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
   {
     std::vector<uint8> input(32);
     std::vector<uint8> iv;
-    EXPECT_FALSE(EncryptInternal(
+    EXPECT_STATUS(Status::ErrorIncorrectSizeAesCbcIv(), EncryptInternal(
         webcrypto::CreateAesCbcAlgorithm(iv), key, input, &output));
-    EXPECT_FALSE(DecryptInternal(
+    EXPECT_STATUS(Status::ErrorIncorrectSizeAesCbcIv(), DecryptInternal(
         webcrypto::CreateAesCbcAlgorithm(iv), key, input, &output));
   }
 
@@ -791,9 +831,9 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
   {
     std::vector<uint8> input(32);
     std::vector<uint8> iv(17);
-    EXPECT_FALSE(EncryptInternal(
+    EXPECT_STATUS(Status::ErrorIncorrectSizeAesCbcIv(), EncryptInternal(
         webcrypto::CreateAesCbcAlgorithm(iv), key, input, &output));
-    EXPECT_FALSE(DecryptInternal(
+    EXPECT_STATUS(Status::ErrorIncorrectSizeAesCbcIv(), DecryptInternal(
         webcrypto::CreateAesCbcAlgorithm(iv), key, input, &output));
   }
 
@@ -808,9 +848,9 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
     const unsigned char* input = &iv[0];
     unsigned input_len = INT_MAX - 3;
 
-    EXPECT_FALSE(EncryptInternal(
+    EXPECT_STATUS(Status::ErrorDataTooLarge(), EncryptInternal(
         webcrypto::CreateAesCbcAlgorithm(iv), key, input, input_len, &output));
-    EXPECT_FALSE(DecryptInternal(
+    EXPECT_STATUS(Status::ErrorDataTooLarge(), DecryptInternal(
         webcrypto::CreateAesCbcAlgorithm(iv), key, input, input_len, &output));
   }
 
@@ -820,18 +860,25 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
     std::vector<uint8> iv(16);
 
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-    EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                   key_raw,
-                                   webcrypto::CreateAesCbcAlgorithm(iv),
-                                   true,
-                                   blink::WebCryptoKeyUsageEncrypt,
-                                   &key));
+    EXPECT_STATUS(
+        Status::Error(),
+        ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                          key_raw,
+                          webcrypto::CreateAesCbcAlgorithm(iv),
+                          true,
+                          blink::WebCryptoKeyUsageEncrypt,
+                          &key));
   }
 
+  // TODO(eroman): Enable for OpenSSL once implemented.
+#if !defined(USE_OPENSSL)
   // Fail exporting the key in SPKI and PKCS#8 formats (not allowed for secret
   // keys).
-  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
-  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatPkcs8, key, &output));
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
+      ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
+  EXPECT_STATUS(Status::ErrorUnsupported(),
+      ExportKeyInternal(blink::WebCryptoKeyFormatPkcs8, key, &output));
+#endif
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(AesCbcSampleSets)) {
@@ -923,7 +970,8 @@ TEST_F(WebCryptoImplTest, MAYBE(AesCbcSampleSets)) {
 
     // Verify exported raw key is identical to the imported data
     blink::WebArrayBuffer raw_key;
-    EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+    EXPECT_STATUS_SUCCESS(ExportKeyInternal(
+        blink::WebCryptoKeyFormatRaw, key, &raw_key));
     ExpectArrayBufferMatchesHex(test.key, raw_key);
 
     std::vector<uint8> plain_text = HexStringToBytes(test.plain_text);
@@ -932,18 +980,22 @@ TEST_F(WebCryptoImplTest, MAYBE(AesCbcSampleSets)) {
     blink::WebArrayBuffer output;
 
     // Test encryption.
-    EXPECT_TRUE(EncryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
-                                key,
-                                plain_text,
-                                &output));
+    EXPECT_STATUS(
+        Status::Success(),
+        EncryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
+                        key,
+                        plain_text,
+                        &output));
     ExpectArrayBufferMatchesHex(test.cipher_text, output);
 
     // Test decryption.
     std::vector<uint8> cipher_text = HexStringToBytes(test.cipher_text);
-    EXPECT_TRUE(DecryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
-                                key,
-                                cipher_text,
-                                &output));
+    EXPECT_STATUS(
+        Status::Success(),
+        DecryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
+                        key,
+                        cipher_text,
+                        &output));
     ExpectArrayBufferMatchesHex(test.plain_text, output);
 
     const unsigned kAesCbcBlockSize = 16;
@@ -951,21 +1003,25 @@ TEST_F(WebCryptoImplTest, MAYBE(AesCbcSampleSets)) {
     // Decrypt with a padding error by stripping the last block. This also ends
     // up testing decryption over empty cipher text.
     if (cipher_text.size() >= kAesCbcBlockSize) {
-      EXPECT_FALSE(DecryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
-                                   key,
-                                   &cipher_text[0],
-                                   cipher_text.size() - kAesCbcBlockSize,
-                                   &output));
+      EXPECT_STATUS(
+          Status::Error(),
+          DecryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
+                          key,
+                          &cipher_text[0],
+                          cipher_text.size() - kAesCbcBlockSize,
+                          &output));
     }
 
     // Decrypt cipher text which is not a multiple of block size by stripping
     // a few bytes off the cipher text.
     if (cipher_text.size() > 3) {
-      EXPECT_FALSE(DecryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
-                                   key,
-                                   &cipher_text[0],
-                                   cipher_text.size() - 3,
-                                   &output));
+      EXPECT_STATUS(
+          Status::Error(),
+          DecryptInternal(webcrypto::CreateAesCbcAlgorithm(iv),
+                          key,
+                          &cipher_text[0],
+                          cipher_text.size() - 3,
+                          &output));
     }
   }
 }
@@ -988,10 +1044,10 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyAes)) {
     // Generate a small sample of keys.
     keys.clear();
     for (int j = 0; j < 16; ++j) {
-      ASSERT_TRUE(GenerateKeyInternal(algorithm[i], &key));
+      ASSERT_STATUS_SUCCESS(GenerateKeyInternal(algorithm[i], &key));
       EXPECT_TRUE(key.handle());
       EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
-      ASSERT_TRUE(
+      ASSERT_STATUS_SUCCESS(
           ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &key_bytes));
       keys.push_back(key_bytes);
     }
@@ -1006,11 +1062,11 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyAesBadLength)) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kKeyLen); ++i) {
     SCOPED_TRACE(i);
-    EXPECT_FALSE(GenerateKeyInternal(
+    EXPECT_STATUS(Status::ErrorGenerateKeyLength(), GenerateKeyInternal(
         CreateAesCbcKeyGenAlgorithm(kKeyLen[i]), &key));
-    EXPECT_FALSE(GenerateKeyInternal(
+    EXPECT_STATUS(Status::ErrorGenerateKeyLength(), GenerateKeyInternal(
         CreateAesGcmKeyGenAlgorithm(kKeyLen[i]), &key));
-    EXPECT_FALSE(GenerateKeyInternal(
+    EXPECT_STATUS(Status::ErrorGenerateKeyLength(), GenerateKeyInternal(
         CreateAesKwKeyGenAlgorithm(kKeyLen[i]), &key));
   }
 }
@@ -1023,14 +1079,15 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmac)) {
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
     blink::WebCryptoAlgorithm algorithm = webcrypto::CreateHmacKeyGenAlgorithm(
         blink::WebCryptoAlgorithmIdSha1, 64);
-    ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
+    ASSERT_STATUS_SUCCESS(GenerateKeyInternal(algorithm, &key));
     EXPECT_FALSE(key.isNull());
     EXPECT_TRUE(key.handle());
     EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
     EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, key.algorithm().id());
 
     blink::WebArrayBuffer raw_key;
-    ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+    ASSERT_STATUS_SUCCESS(
+        ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
     EXPECT_EQ(64U, raw_key.byteLength());
     keys.push_back(raw_key);
   }
@@ -1044,18 +1101,20 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmacNoLength)) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   blink::WebCryptoAlgorithm algorithm =
       webcrypto::CreateHmacKeyGenAlgorithm(blink::WebCryptoAlgorithmIdSha1, 0);
-  ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
+  ASSERT_STATUS_SUCCESS(GenerateKeyInternal(algorithm, &key));
   EXPECT_TRUE(key.handle());
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
   blink::WebArrayBuffer raw_key;
-  ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+  ASSERT_STATUS_SUCCESS(
+      ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
   EXPECT_EQ(64U, raw_key.byteLength());
 
   // The block size for HMAC SHA-512 is larger.
   algorithm = webcrypto::CreateHmacKeyGenAlgorithm(
       blink::WebCryptoAlgorithmIdSha512, 0);
-  ASSERT_TRUE(GenerateKeyInternal(algorithm, &key));
-  ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+  ASSERT_STATUS_SUCCESS(GenerateKeyInternal(algorithm, &key));
+  ASSERT_STATUS_SUCCESS(
+      ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
   EXPECT_EQ(128U, raw_key.byteLength());
 }
 
@@ -1063,7 +1122,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportSecretKeyNoAlgorithm)) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
 
   // This fails because the algorithm is null.
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::ErrorMissingAlgorithmImportRawKey(), ImportKeyInternal(
       blink::WebCryptoKeyFormatRaw,
       HexStringToBytes("00000000000000000000"),
       blink::WebCryptoAlgorithm::createNull(),
@@ -1086,11 +1145,11 @@ TEST_F(WebCryptoImplTest, ImportJwkFailures) {
   // complete.
   base::DictionaryValue dict;
   RestoreJwkOctDictionary(&dict);
-  EXPECT_TRUE(ImportKeyJwk(
+  EXPECT_STATUS_SUCCESS(ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
 
   // Fail on empty JSON.
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorImportEmptyKeyData(), ImportKeyJwk(
       MakeJsonVector(""), algorithm, false, usage_mask, &key));
 
   // Fail on invalid JSON.
@@ -1100,38 +1159,41 @@ TEST_F(WebCryptoImplTest, ImportJwkFailures) {
         "\"alg\"         : \"HS256\","
         "\"use\"         : "
   );
-  EXPECT_FALSE(ImportKeyJwk(bad_json_vec, algorithm, false, usage_mask, &key));
+  EXPECT_STATUS(Status::ErrorJwkNotDictionary(),
+      ImportKeyJwk(bad_json_vec, algorithm, false, usage_mask, &key));
 
   // Fail on JWK alg present but unrecognized.
   dict.SetString("alg", "A127CBC");
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkUnrecognizedAlgorithm(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on both JWK and input algorithm missing.
   dict.Remove("alg", NULL);
-  EXPECT_FALSE(ImportKeyJwk(MakeJsonVector(dict),
-                            blink::WebCryptoAlgorithm::createNull(),
-                            false,
-                            usage_mask,
-                            &key));
+  EXPECT_STATUS(
+      Status::ErrorJwkAlgorithmMissing(),
+      ImportKeyJwk(MakeJsonVector(dict),
+                   blink::WebCryptoAlgorithm::createNull(),
+                   false,
+                   usage_mask,
+                   &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid kty.
   dict.SetString("kty", "foo");
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkUnrecognizedKty(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on missing kty.
   dict.Remove("kty", NULL);
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkMissingKty(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid use.
   dict.SetString("use", "foo");
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkUnrecognizedUsage(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 }
@@ -1146,7 +1208,7 @@ TEST_F(WebCryptoImplTest, ImportJwkOctFailures) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
 
   // Baseline pass.
-  EXPECT_TRUE(ImportKeyJwk(
+  EXPECT_STATUS_SUCCESS(ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   EXPECT_EQ(algorithm.id(), key.algorithm().id());
   EXPECT_FALSE(key.extractable());
@@ -1157,26 +1219,28 @@ TEST_F(WebCryptoImplTest, ImportJwkOctFailures) {
 
   // Fail on missing k.
   dict.Remove("k", NULL);
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkDecodeK(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on bad b64 encoding for k.
   dict.SetString("k", "Qk3f0DsytU8lfza2au #$% Htaw2xpop9GYyTuH0p5GghxTI=");
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkDecodeK(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on empty k.
   dict.SetString("k", "");
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkDecodeK(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on k actual length (120 bits) inconsistent with the embedded JWK alg
   // value (128) for an AES key.
   dict.SetString("k", "AVj42h0Y5aqGtE3yluKL");
-  EXPECT_FALSE(ImportKeyJwk(
+  // TODO(eroman): This is failing for a different reason than the test
+  //               expects.
+  EXPECT_STATUS(Status::Error(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 }
@@ -1197,7 +1261,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkRsaFailures)) {
   // section 6.3.
 
   // Baseline pass.
-  EXPECT_TRUE(ImportKeyJwk(
+  EXPECT_STATUS_SUCCESS(ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   EXPECT_EQ(algorithm.id(), key.algorithm().id());
   EXPECT_FALSE(key.extractable());
@@ -1212,19 +1276,19 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkRsaFailures)) {
 
     // Fail on missing parameter.
     dict.Remove(kKtyParmName[idx], NULL);
-    EXPECT_FALSE(ImportKeyJwk(
+    EXPECT_STATUS_ERROR(ImportKeyJwk(
         MakeJsonVector(dict), algorithm, false, usage_mask, &key));
     RestoreJwkRsaDictionary(&dict);
 
     // Fail on bad b64 parameter encoding.
     dict.SetString(kKtyParmName[idx], "Qk3f0DsytU8lfza2au #$% Htaw2xpop9yTuH0");
-    EXPECT_FALSE(ImportKeyJwk(
+    EXPECT_STATUS_ERROR(ImportKeyJwk(
         MakeJsonVector(dict), algorithm, false, usage_mask, &key));
     RestoreJwkRsaDictionary(&dict);
 
     // Fail on empty parameter.
     dict.SetString(kKtyParmName[idx], "");
-    EXPECT_FALSE(ImportKeyJwk(
+    EXPECT_STATUS_ERROR(ImportKeyJwk(
         MakeJsonVector(dict), algorithm, false, usage_mask, &key));
     RestoreJwkRsaDictionary(&dict);
   }
@@ -1232,7 +1296,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkRsaFailures)) {
   // Fail if "d" parameter is present, implying the JWK is a private key, which
   // is not supported.
   dict.SetString("d", "Qk3f0Dsyt");
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkRsaPrivateKeyUnsupported(), ImportKeyJwk(
       MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   RestoreJwkRsaDictionary(&dict);
 }
@@ -1251,7 +1315,8 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkInputConsistency)) {
   dict.SetString("kty", "oct");
   dict.SetString("k", "l3nZEgZCeX8XRwJdWyK3rGB8qwjhdY8vOkbIvh4lxTuMao9Y_--hdg");
   std::vector<uint8> json_vec = MakeJsonVector(dict);
-  EXPECT_TRUE(ImportKeyJwk(json_vec, algorithm, extractable, usage_mask, &key));
+  EXPECT_STATUS_SUCCESS(ImportKeyJwk(
+      json_vec, algorithm, extractable, usage_mask, &key));
   EXPECT_TRUE(key.handle());
   EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
   EXPECT_EQ(extractable, key.extractable());
@@ -1271,28 +1336,31 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkInputConsistency)) {
   dict.SetBoolean("extractable", false);
   dict.SetString("k", "l3nZEgZCeX8XRwJdWyK3rGB8qwjhdY8vOkbIvh4lxTuMao9Y_--hdg");
   json_vec = MakeJsonVector(dict);
-  EXPECT_TRUE(ImportKeyJwk(json_vec, algorithm, extractable, usage_mask, &key));
+  EXPECT_STATUS_SUCCESS(
+      ImportKeyJwk(json_vec, algorithm, extractable, usage_mask, &key));
 
   // Extractable cases:
   // 1. input=T, JWK=F ==> fail (inconsistent)
   // 4. input=F, JWK=F ==> pass, result extractable is F
   // 2. input=T, JWK=T ==> pass, result extractable is T
   // 3. input=F, JWK=T ==> pass, result extractable is F
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, true, usage_mask, &key));
-  EXPECT_TRUE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
+  EXPECT_STATUS(Status::ErrorJwkExtractableInconsistent(),
+      ImportKeyJwk(json_vec, algorithm, true, usage_mask, &key));
+  EXPECT_STATUS_SUCCESS(
+      ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
   EXPECT_FALSE(key.extractable());
   dict.SetBoolean("extractable", true);
-  EXPECT_TRUE(
+  EXPECT_STATUS_SUCCESS(
       ImportKeyJwk(MakeJsonVector(dict), algorithm, true, usage_mask, &key));
   EXPECT_TRUE(key.extractable());
-  EXPECT_TRUE(
+  EXPECT_STATUS_SUCCESS(
       ImportKeyJwk(MakeJsonVector(dict), algorithm, false, usage_mask, &key));
   EXPECT_FALSE(key.extractable());
   dict.SetBoolean("extractable", true);  // restore previous value
 
   // Fail: Input algorithm (AES-CBC) is inconsistent with JWK value
   // (HMAC SHA256).
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkAlgorithmInconsistent(), ImportKeyJwk(
       json_vec,
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
       extractable,
@@ -1301,7 +1369,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkInputConsistency)) {
 
   // Fail: Input algorithm (HMAC SHA1) is inconsistent with JWK value
   // (HMAC SHA256).
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkAlgorithmInconsistent(), ImportKeyJwk(
       json_vec,
       webcrypto::CreateHmacAlgorithmByHashId(blink::WebCryptoAlgorithmIdSha1),
       extractable,
@@ -1309,16 +1377,16 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkInputConsistency)) {
       &key));
 
   // Pass: JWK alg valid but input algorithm isNull: use JWK algorithm value.
-  EXPECT_TRUE(ImportKeyJwk(json_vec,
-                           blink::WebCryptoAlgorithm::createNull(),
-                           extractable,
-                           usage_mask,
-                           &key));
+  EXPECT_STATUS_SUCCESS(ImportKeyJwk(json_vec,
+                        blink::WebCryptoAlgorithm::createNull(),
+                        extractable,
+                        usage_mask,
+                        &key));
   EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, algorithm.id());
 
   // Pass: JWK alg missing but input algorithm specified: use input value
   dict.Remove("alg", NULL);
-  EXPECT_TRUE(ImportKeyJwk(
+  EXPECT_STATUS_SUCCESS(ImportKeyJwk(
       MakeJsonVector(dict),
       webcrypto::CreateHmacAlgorithmByHashId(blink::WebCryptoAlgorithmIdSha256),
       extractable,
@@ -1329,16 +1397,16 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkInputConsistency)) {
 
   // Fail: Input usage_mask (encrypt) is not a subset of the JWK value
   // (sign|verify)
-  EXPECT_FALSE(ImportKeyJwk(
+  EXPECT_STATUS(Status::ErrorJwkUsageInconsistent(), ImportKeyJwk(
       json_vec, algorithm, extractable, blink::WebCryptoKeyUsageEncrypt, &key));
 
   // Fail: Input usage_mask (encrypt|sign|verify) is not a subset of the JWK
   // value (sign|verify)
   usage_mask = blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageSign |
                blink::WebCryptoKeyUsageVerify;
-  EXPECT_FALSE(
+  EXPECT_STATUS(
+      Status::ErrorJwkUsageInconsistent(),
       ImportKeyJwk(json_vec, algorithm, extractable, usage_mask, &key));
-  usage_mask = blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;
 
   // TODO(padolph): kty vs alg consistency tests: Depending on the kty value,
   // only certain alg values are permitted. For example, when kty = "RSA" alg
@@ -1368,7 +1436,8 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkHappy)) {
   dict.SetString("k", "l3nZEgZCeX8XRwJdWyK3rGB8qwjhdY8vOkbIvh4lxTuMao9Y_--hdg");
   std::vector<uint8> json_vec = MakeJsonVector(dict);
 
-  ASSERT_TRUE(ImportKeyJwk(json_vec, algorithm, extractable, usage_mask, &key));
+  ASSERT_STATUS_SUCCESS(ImportKeyJwk(
+      json_vec, algorithm, extractable, usage_mask, &key));
 
   const std::vector<uint8> message_raw = HexStringToBytes(
       "b1689c2591eaf3c9e66070f8a77954ffb81749f1b00346f9dfe0b2ee905dcc288baf4a"
@@ -1378,7 +1447,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkHappy)) {
 
   blink::WebArrayBuffer output;
 
-  ASSERT_TRUE(SignInternal(algorithm, key, message_raw, &output));
+  ASSERT_STATUS_SUCCESS(SignInternal(algorithm, key, message_raw, &output));
 
   const std::string mac_raw =
       "769f00d3e6a6cc1fb426a14a4f76c6462e6149726e0dee0ec0cf97a16605ac8b";
@@ -1391,7 +1460,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkHappy)) {
 TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // Passing case: Import a valid RSA key in SPKI format.
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  ASSERT_TRUE(ImportKeyInternal(
+  ASSERT_STATUS_SUCCESS(ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
       HexStringToBytes(kPublicKeySpkiDerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
@@ -1404,7 +1473,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, key.usages());
 
   // Failing case: Empty SPKI data
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::ErrorImportEmptyKeyData(), ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
       std::vector<uint8>(),
       blink::WebCryptoAlgorithm::createNull(),
@@ -1415,7 +1484,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // Failing case: Import RSA key with NULL input algorithm. This is not
   // allowed because the SPKI ASN.1 format for RSA keys is not specific enough
   // to map to a Web Crypto algorithm.
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::Error(), ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
       HexStringToBytes(kPublicKeySpkiDerHex),
       blink::WebCryptoAlgorithm::createNull(),
@@ -1424,7 +1493,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
       &key));
 
   // Failing case: Bad DER encoding.
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::Error(), ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
       HexStringToBytes("618333c4cb"),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
@@ -1433,7 +1502,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
       &key));
 
   // Failing case: Import RSA key but provide an inconsistent input algorithm.
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::Error(), ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
       HexStringToBytes(kPublicKeySpkiDerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
@@ -1444,15 +1513,17 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // Passing case: Export a previously imported RSA public key in SPKI format
   // and compare to original data.
   blink::WebArrayBuffer output;
-  ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
+  ASSERT_STATUS_SUCCESS(
+      ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
   ExpectArrayBufferMatchesHex(kPublicKeySpkiDerHex, output);
 
   // Failing case: Try to export a previously imported RSA public key in raw
   // format (not allowed for a public key).
-  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &output));
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
+      ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &output));
 
   // Failing case: Try to export a non-extractable key
-  ASSERT_TRUE(ImportKeyInternal(
+  ASSERT_STATUS_SUCCESS(ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
       HexStringToBytes(kPublicKeySpkiDerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
@@ -1461,13 +1532,14 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
       &key));
   EXPECT_TRUE(key.handle());
   EXPECT_FALSE(key.extractable());
-  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
+  EXPECT_STATUS(Status::ErrorKeyNotExtractable(),
+      ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
   // Passing case: Import a valid RSA key in PKCS#8 format.
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  ASSERT_TRUE(ImportKeyInternal(
+  ASSERT_STATUS_SUCCESS(ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
@@ -1480,7 +1552,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageSign, key.usages());
 
   // Failing case: Empty PKCS#8 data
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::ErrorImportEmptyKeyData(), ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
       std::vector<uint8>(),
       blink::WebCryptoAlgorithm::createNull(),
@@ -1491,7 +1563,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
   // Failing case: Import RSA key with NULL input algorithm. This is not
   // allowed because the PKCS#8 ASN.1 format for RSA keys is not specific enough
   // to map to a Web Crypto algorithm.
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::Error(), ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       blink::WebCryptoAlgorithm::createNull(),
@@ -1500,7 +1572,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
       &key));
 
   // Failing case: Bad DER encoding.
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::Error(), ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
       HexStringToBytes("618333c4cb"),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
@@ -1509,7 +1581,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
       &key));
 
   // Failing case: Import RSA key but provide an inconsistent input algorithm.
-  EXPECT_FALSE(ImportKeyInternal(
+  EXPECT_STATUS(Status::Error(), ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
       HexStringToBytes(kPrivateKeyPkcs8DerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
@@ -1532,7 +1604,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   const blink::WebCryptoKeyUsageMask usage_mask = 0;
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
   blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
-  EXPECT_TRUE(GenerateKeyPairInternal(
+  EXPECT_STATUS_SUCCESS(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
@@ -1546,7 +1618,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   // Fail with bad modulus.
   algorithm = webcrypto::CreateRsaKeyGenAlgorithm(
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, 0, public_exponent);
-  EXPECT_FALSE(GenerateKeyPairInternal(
+  EXPECT_STATUS(Status::ErrorGenerateRsaZeroModulus(), GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
 
   // Fail with bad exponent: larger than unsigned long.
@@ -1556,8 +1628,9 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
       modulus_length,
       long_exponent);
-  EXPECT_FALSE(GenerateKeyPairInternal(
-      algorithm, extractable, usage_mask, &public_key, &private_key));
+  EXPECT_STATUS(Status::ErrorGenerateKeyPublicExponent(),
+      GenerateKeyPairInternal(algorithm, extractable, usage_mask, &public_key,
+          &private_key));
 
   // Fail with bad exponent: empty.
   const std::vector<uint8> empty_exponent;
@@ -1565,8 +1638,9 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
       modulus_length,
       empty_exponent);
-  EXPECT_FALSE(GenerateKeyPairInternal(
-      algorithm, extractable, usage_mask, &public_key, &private_key));
+  EXPECT_STATUS(Status::ErrorGenerateKeyPublicExponent(),
+      GenerateKeyPairInternal(algorithm, extractable, usage_mask, &public_key,
+          &private_key));
 
   // Fail with bad exponent: all zeros.
   std::vector<uint8> exponent_with_leading_zeros(15, 0x00);
@@ -1574,8 +1648,9 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
       modulus_length,
       exponent_with_leading_zeros);
-  EXPECT_FALSE(GenerateKeyPairInternal(
-      algorithm, extractable, usage_mask, &public_key, &private_key));
+  EXPECT_STATUS(Status::ErrorGenerateKeyPublicExponent(),
+      GenerateKeyPairInternal(algorithm, extractable, usage_mask, &public_key,
+          &private_key));
 
   // Key generation success using exponent with leading zeros.
   exponent_with_leading_zeros.insert(exponent_with_leading_zeros.end(),
@@ -1585,7 +1660,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
       modulus_length,
       exponent_with_leading_zeros);
-  EXPECT_TRUE(GenerateKeyPairInternal(
+  EXPECT_STATUS_SUCCESS(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
@@ -1599,7 +1674,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   // Successful WebCryptoAlgorithmIdRsaOaep key generation.
   algorithm = webcrypto::CreateRsaKeyGenAlgorithm(
       blink::WebCryptoAlgorithmIdRsaOaep, modulus_length, public_exponent);
-  EXPECT_TRUE(GenerateKeyPairInternal(
+  EXPECT_STATUS_SUCCESS(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
@@ -1615,7 +1690,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
       blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
       modulus_length,
       public_exponent);
-  EXPECT_TRUE(GenerateKeyPairInternal(
+  EXPECT_STATUS_SUCCESS(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
   EXPECT_FALSE(private_key.isNull());
@@ -1630,8 +1705,10 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   // since it is expensive to generate an RSA key pair and we already have a
   // private key here.
   blink::WebArrayBuffer output;
-  EXPECT_FALSE(
-      ExportKeyInternal(blink::WebCryptoKeyFormatSpki, private_key, &output));
+  // TODO(eroman): This test is failing for a different reason than expected by
+  //               the test.
+  EXPECT_STATUS(Status::ErrorKeyNotExtractable(), ExportKeyInternal(
+      blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(RsaEsRoundTrip)) {
@@ -1671,13 +1748,13 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsRoundTrip)) {
   blink::WebArrayBuffer decrypted_data;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDataHex); ++i) {
     SCOPED_TRACE(i);
-    ASSERT_TRUE(EncryptInternal(
+    EXPECT_STATUS_SUCCESS(EncryptInternal(
         algorithm,
         public_key,
         HexStringToBytes(kTestDataHex[i]),
         &encrypted_data));
-    EXPECT_EQ(kModulusLength/8, encrypted_data.byteLength());
-    ASSERT_TRUE(DecryptInternal(
+    EXPECT_EQ(kModulusLength / 8, encrypted_data.byteLength());
+    ASSERT_STATUS_SUCCESS(DecryptInternal(
         algorithm,
         private_key,
         reinterpret_cast<const unsigned char*>(encrypted_data.data()),
@@ -1770,7 +1847,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsKnownAnswer)) {
   // Decrypt the known-good ciphertext with the private key. As a check we must
   // get the known original cleartext.
   blink::WebArrayBuffer decrypted_data;
-  ASSERT_TRUE(DecryptInternal(
+  ASSERT_STATUS_SUCCESS(DecryptInternal(
       algorithm,
       private_key,
       HexStringToBytes(ciphertext_hex),
@@ -1780,7 +1857,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsKnownAnswer)) {
 
   // Encrypt this decrypted data with the public key.
   blink::WebArrayBuffer encrypted_data;
-  ASSERT_TRUE(EncryptInternal(
+  ASSERT_STATUS_SUCCESS(EncryptInternal(
       algorithm,
       public_key,
       reinterpret_cast<const unsigned char*>(decrypted_data.data()),
@@ -1791,7 +1868,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsKnownAnswer)) {
   // Finally, decrypt the newly encrypted result with the private key, and
   // compare to the known original cleartext.
   decrypted_data.reset();
-  ASSERT_TRUE(DecryptInternal(
+  ASSERT_STATUS_SUCCESS(DecryptInternal(
       algorithm,
       private_key,
       reinterpret_cast<const unsigned char*>(encrypted_data.data()),
@@ -1820,28 +1897,30 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsFailures)) {
   blink::WebArrayBuffer encrypted_data;
   const std::string message_hex_str("0102030405060708090a0b0c0d0e0f");
   const std::vector<uint8> message_hex(HexStringToBytes(message_hex_str));
-  EXPECT_FALSE(
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
       EncryptInternal(algorithm, private_key, message_hex, &encrypted_data));
 
   // Fail encrypt with empty message.
-  EXPECT_FALSE(EncryptInternal(
+  EXPECT_STATUS(Status::Error(), EncryptInternal(
       algorithm, public_key, std::vector<uint8>(), &encrypted_data));
 
   // Fail encrypt with message too large. RSAES can operate on messages up to
   // length of k - 11 bytes, where k is the octet length of the RSA modulus.
   const unsigned kMaxMsgSizeBytes = kModulusLength / 8 - 11;
-  EXPECT_FALSE(EncryptInternal(algorithm,
-                               public_key,
-                               std::vector<uint8>(kMaxMsgSizeBytes + 1, '0'),
-                               &encrypted_data));
+  EXPECT_STATUS(
+      Status::ErrorDataTooLarge(),
+      EncryptInternal(algorithm,
+                      public_key,
+                      std::vector<uint8>(kMaxMsgSizeBytes + 1, '0'),
+                      &encrypted_data));
 
   // Generate encrypted data.
-  EXPECT_TRUE(
+  EXPECT_STATUS(Status::Success(),
       EncryptInternal(algorithm, public_key, message_hex, &encrypted_data));
 
   // Fail decrypt with a public key.
   blink::WebArrayBuffer decrypted_data;
-  EXPECT_FALSE(DecryptInternal(
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(), DecryptInternal(
       algorithm,
       public_key,
       reinterpret_cast<const unsigned char*>(encrypted_data.data()),
@@ -1853,14 +1932,14 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsFailures)) {
       static_cast<uint8*>(encrypted_data.data()),
       static_cast<uint8*>(encrypted_data.data()) + encrypted_data.byteLength());
   corrupted_data[corrupted_data.size() / 2] ^= 0x01;
-  EXPECT_FALSE(
+ EXPECT_STATUS(Status::Error(),
       DecryptInternal(algorithm, private_key, corrupted_data, &decrypted_data));
 
   // TODO(padolph): Are there other specific data corruption scenarios to
   // consider?
 
   // Do a successful decrypt with good data just for confirmation.
-  EXPECT_TRUE(DecryptInternal(
+  EXPECT_STATUS_SUCCESS(DecryptInternal(
       algorithm,
       private_key,
       reinterpret_cast<const unsigned char*>(encrypted_data.data()),
@@ -1890,14 +1969,24 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
 
   // Compute a signature.
   const std::vector<uint8> data = HexStringToBytes("010203040506070809");
-  ASSERT_TRUE(SignInternal(algorithm, private_key, data, &signature));
+  ASSERT_STATUS_SUCCESS(SignInternal(algorithm, private_key, data, &signature));
 
   // Ensure truncated signature does not verify by passing one less byte.
-  EXPECT_TRUE(VerifySignatureInternal(
+  EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
       algorithm,
       public_key,
       static_cast<const unsigned char*>(signature.data()),
       signature.byteLength() - 1,
+      data,
+      &signature_match));
+  EXPECT_FALSE(signature_match);
+
+  // Ensure truncated signature does not verify by passing no bytes.
+  EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
+      algorithm,
+      public_key,
+      NULL,
+      0,
       data,
       &signature_match));
   EXPECT_FALSE(signature_match);
@@ -1907,7 +1996,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
       static_cast<uint8*>(signature.data()),
       static_cast<uint8*>(signature.data()) + signature.byteLength());
   corrupt_sig[corrupt_sig.size() / 2] ^= 0x1;
-  EXPECT_TRUE(VerifySignatureInternal(
+  EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
       algorithm,
       public_key,
       webcrypto::Uint8VectorStart(corrupt_sig),
@@ -1920,7 +2009,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
   const unsigned long_message_size_bytes = 1024;
   DCHECK_GT(long_message_size_bytes, kModulusLength/8);
   const unsigned char kLongSignature[long_message_size_bytes] = { 0 };
-  EXPECT_TRUE(VerifySignatureInternal(
+  EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
       algorithm,
       public_key,
       kLongSignature,
@@ -1930,7 +2019,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
   EXPECT_FALSE(signature_match);
 
   // Ensure that verifying using a private key, rather than a public key, fails.
-  EXPECT_FALSE(VerifySignatureInternal(
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(), VerifySignatureInternal(
       algorithm,
       private_key,
       static_cast<const unsigned char*>(signature.data()),
@@ -1939,13 +2028,15 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
       &signature_match));
 
   // Ensure that signing using a public key, rather than a private key, fails.
-  EXPECT_FALSE(SignInternal(algorithm, public_key, data, &signature));
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
+      SignInternal(algorithm, public_key, data, &signature));
 
   // Ensure that signing and verifying with an incompatible algorithm fails.
   algorithm =
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
-  EXPECT_FALSE(SignInternal(algorithm, private_key, data, &signature));
-  EXPECT_FALSE(VerifySignatureInternal(
+  EXPECT_STATUS(Status::ErrorUnsupported(),
+      SignInternal(algorithm, private_key, data, &signature));
+  EXPECT_STATUS(Status::ErrorUnsupported(), VerifySignatureInternal(
       algorithm,
       public_key,
       static_cast<const unsigned char*>(signature.data()),
@@ -1963,7 +2054,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
   // is specified by the input algorithm (desired), the verify will fail.
 
   // Compute a signature using SHA-1 as the inner hash.
-  EXPECT_TRUE(SignInternal(CreateRsaAlgorithmWithInnerHash(
+  EXPECT_STATUS_SUCCESS(SignInternal(CreateRsaAlgorithmWithInnerHash(
                                blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
                                blink::WebCryptoAlgorithmIdSha1),
                            private_key,
@@ -1976,7 +2067,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
   // algorithm has WebCryptoRsaKeyGenParams and not WebCryptoRsaSsaParams. Thus
   // it has no inner hash to conflict with the input algorithm.
   bool is_match;
-  EXPECT_TRUE(VerifySignatureInternal(
+  EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
       CreateRsaAlgorithmWithInnerHash(
           blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
           blink::WebCryptoAlgorithmIdSha256),
@@ -2209,11 +2300,12 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSignVerifyKnownAnswer)) {
     const std::vector<uint8> message = HexStringToBytes(test.message_hex);
 
     signature.reset();
-    ASSERT_TRUE(SignInternal(algorithm, private_key, message, &signature));
+    ASSERT_STATUS_SUCCESS(
+        SignInternal(algorithm, private_key, message, &signature));
     ExpectArrayBufferMatchesHex(test.signature_hex, signature);
 
     bool is_match = false;
-    ASSERT_TRUE(VerifySignatureInternal(
+    ASSERT_STATUS_SUCCESS(VerifySignatureInternal(
         algorithm,
         public_key,
         HexStringToBytes(test.signature_hex),
@@ -2230,80 +2322,84 @@ TEST_F(WebCryptoImplTest, MAYBE(AesKwKeyImport)) {
 
   // Import a 128-bit Key Encryption Key (KEK)
   std::string key_raw_hex_in = "025a8cf3f08b4f6c5f33bbc76a471939";
-  ASSERT_TRUE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                HexStringToBytes(key_raw_hex_in),
-                                algorithm,
-                                true,
-                                blink::WebCryptoKeyUsageWrapKey,
-                                &key));
+  ASSERT_STATUS_SUCCESS(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                          HexStringToBytes(key_raw_hex_in),
+                                          algorithm,
+                                          true,
+                                          blink::WebCryptoKeyUsageWrapKey,
+                                          &key));
   blink::WebArrayBuffer key_raw_out;
-  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                key,
-                                &key_raw_out));
+  EXPECT_STATUS_SUCCESS(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                        key,
+                        &key_raw_out));
   ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
 
   // Import a 192-bit KEK
   key_raw_hex_in = "c0192c6466b2370decbb62b2cfef4384544ffeb4d2fbc103";
-  ASSERT_TRUE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                HexStringToBytes(key_raw_hex_in),
-                                algorithm,
-                                true,
-                                blink::WebCryptoKeyUsageWrapKey,
-                                &key));
-  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                key,
-                                &key_raw_out));
+  ASSERT_STATUS_SUCCESS(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                          HexStringToBytes(key_raw_hex_in),
+                                          algorithm,
+                                          true,
+                                          blink::WebCryptoKeyUsageWrapKey,
+                                          &key));
+  EXPECT_STATUS_SUCCESS(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                          key,
+                                          &key_raw_out));
   ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
 
   // Import a 256-bit Key Encryption Key (KEK)
   key_raw_hex_in =
       "e11fe66380d90fa9ebefb74e0478e78f95664d0c67ca20ce4a0b5842863ac46f";
-  ASSERT_TRUE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                HexStringToBytes(key_raw_hex_in),
-                                algorithm,
-                                true,
-                                blink::WebCryptoKeyUsageWrapKey,
-                                &key));
-  EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                key,
-                                &key_raw_out));
+  ASSERT_STATUS_SUCCESS(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                          HexStringToBytes(key_raw_hex_in),
+                                          algorithm,
+                                          true,
+                                          blink::WebCryptoKeyUsageWrapKey,
+                                          &key));
+  EXPECT_STATUS_SUCCESS(ExportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                                          key,
+                                          &key_raw_out));
   ExpectArrayBufferMatchesHex(key_raw_hex_in, key_raw_out);
 
   // Fail import of 0 length key
-  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                 HexStringToBytes(""),
-                                 algorithm,
-                                 true,
-                                 blink::WebCryptoKeyUsageWrapKey,
-                                 &key));
+  EXPECT_STATUS(Status::Error(),
+      ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                        HexStringToBytes(""),
+                        algorithm,
+                        true,
+                        blink::WebCryptoKeyUsageWrapKey,
+                        &key));
 
   // Fail import of 124-bit KEK
   key_raw_hex_in = "3e4566a2bdaa10cb68134fa66c15ddb";
-  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                 HexStringToBytes(key_raw_hex_in),
-                                 algorithm,
-                                 true,
-                                 blink::WebCryptoKeyUsageWrapKey,
-                                 &key));
+  EXPECT_STATUS(Status::Error(),
+      ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                        HexStringToBytes(key_raw_hex_in),
+                        algorithm,
+                        true,
+                        blink::WebCryptoKeyUsageWrapKey,
+                        &key));
 
   // Fail import of 200-bit KEK
   key_raw_hex_in = "0a1d88608a5ad9fec64f1ada269ebab4baa2feeb8d95638c0e";
-  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                 HexStringToBytes(key_raw_hex_in),
-                                 algorithm,
-                                 true,
-                                 blink::WebCryptoKeyUsageWrapKey,
-                                 &key));
+  EXPECT_STATUS(Status::Error(),
+        ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                          HexStringToBytes(key_raw_hex_in),
+                          algorithm,
+                          true,
+                          blink::WebCryptoKeyUsageWrapKey,
+                          &key));
 
   // Fail import of 260-bit KEK
   key_raw_hex_in =
       "72d4e475ff34215416c9ad9c8281247a4d730c5f275ac23f376e73e3bce8d7d5a";
-  EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
-                                 HexStringToBytes(key_raw_hex_in),
-                                 algorithm,
-                                 true,
-                                 blink::WebCryptoKeyUsageWrapKey,
-                                 &key));
+  EXPECT_STATUS(Status::Error(),
+      ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
+                        HexStringToBytes(key_raw_hex_in),
+                        algorithm,
+                        true,
+                        blink::WebCryptoKeyUsageWrapKey,
+                        &key));
 }
 
 // TODO(eroman):
@@ -2425,7 +2521,8 @@ TEST_F(WebCryptoImplTest, MAYBE(AesGcmSampleSets)) {
 
     // Verify exported raw key is identical to the imported data
     blink::WebArrayBuffer raw_key;
-    EXPECT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &raw_key));
+    EXPECT_STATUS_SUCCESS(ExportKeyInternal(
+        blink::WebCryptoKeyFormatRaw, key, &raw_key));
     ExpectArrayBufferMatchesHex(test.key, raw_key);
 
     const std::vector<uint8> test_iv = HexStringToBytes(test.iv);
@@ -2442,34 +2539,38 @@ TEST_F(WebCryptoImplTest, MAYBE(AesGcmSampleSets)) {
     // Test encryption.
     std::vector<uint8> cipher_text;
     std::vector<uint8> authentication_tag;
-    EXPECT_TRUE(AesGcmEncrypt(key, test_iv, test_additional_data,
-                              test_tag_size_bits, test_plain_text,
-                              &cipher_text, &authentication_tag));
+    EXPECT_STATUS_SUCCESS(AesGcmEncrypt(key, test_iv, test_additional_data,
+                                        test_tag_size_bits, test_plain_text,
+                                        &cipher_text, &authentication_tag));
 
     ExpectVectorMatchesHex(test.cipher_text, cipher_text);
     ExpectVectorMatchesHex(test.authentication_tag, authentication_tag);
 
     // Test decryption.
     blink::WebArrayBuffer plain_text;
-    EXPECT_TRUE(AesGcmDecrypt(key, test_iv, test_additional_data,
-                              test_tag_size_bits, test_cipher_text,
-                              test_authentication_tag, &plain_text));
+    EXPECT_STATUS_SUCCESS(AesGcmDecrypt(key, test_iv, test_additional_data,
+                                        test_tag_size_bits, test_cipher_text,
+                                        test_authentication_tag, &plain_text));
     ExpectArrayBufferMatchesHex(test.plain_text, plain_text);
 
     // Decryption should fail if any of the inputs are tampered with.
-    EXPECT_FALSE(AesGcmDecrypt(key, Corrupted(test_iv), test_additional_data,
-                               test_tag_size_bits, test_cipher_text,
-                               test_authentication_tag, &plain_text));
-    EXPECT_FALSE(AesGcmDecrypt(key, test_iv, Corrupted(test_additional_data),
-                               test_tag_size_bits, test_cipher_text,
-                               test_authentication_tag, &plain_text));
-    EXPECT_FALSE(AesGcmDecrypt(key, test_iv, test_additional_data,
-                               test_tag_size_bits, Corrupted(test_cipher_text),
-                               test_authentication_tag, &plain_text));
-    EXPECT_FALSE(AesGcmDecrypt(key, test_iv, test_additional_data,
-                               test_tag_size_bits, test_cipher_text,
-                               Corrupted(test_authentication_tag),
-                               &plain_text));
+    EXPECT_STATUS(Status::Error(),
+        AesGcmDecrypt(key, Corrupted(test_iv), test_additional_data,
+                      test_tag_size_bits, test_cipher_text,
+                      test_authentication_tag, &plain_text));
+    EXPECT_STATUS(Status::Error(),
+        AesGcmDecrypt(key, test_iv, Corrupted(test_additional_data),
+                      test_tag_size_bits, test_cipher_text,
+                      test_authentication_tag, &plain_text));
+    EXPECT_STATUS(Status::Error(),
+        AesGcmDecrypt(key, test_iv, test_additional_data,
+                      test_tag_size_bits, Corrupted(test_cipher_text),
+                      test_authentication_tag, &plain_text));
+    EXPECT_STATUS(Status::Error(),
+        AesGcmDecrypt(key, test_iv, test_additional_data,
+                      test_tag_size_bits, test_cipher_text,
+                      Corrupted(test_authentication_tag),
+                      &plain_text));
 
     // Try different incorrect tag lengths
     uint8 kAlternateTagLengths[] = {8, 96, 120, 128, 160, 255};
@@ -2477,9 +2578,9 @@ TEST_F(WebCryptoImplTest, MAYBE(AesGcmSampleSets)) {
       unsigned wrong_tag_size_bits = kAlternateTagLengths[tag_i];
       if (test_tag_size_bits == wrong_tag_size_bits)
         continue;
-      EXPECT_FALSE(AesGcmDecrypt(key, test_iv, test_additional_data,
-                                 wrong_tag_size_bits, test_cipher_text,
-                                 test_authentication_tag, &plain_text));
+      EXPECT_STATUS_ERROR(AesGcmDecrypt(key, test_iv, test_additional_data,
+                                        wrong_tag_size_bits, test_cipher_text,
+                                        test_authentication_tag, &plain_text));
     }
   }
 }

@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
 namespace content {
+namespace webcrypto { class Status; }
 
 class CONTENT_EXPORT WebCryptoImpl
     : NON_EXPORTED_BASE(public blink::WebCrypto) {
@@ -72,35 +73,35 @@ class CONTENT_EXPORT WebCryptoImpl
 
   void Init();
 
-  bool EncryptInternal(
+  webcrypto::Status EncryptInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
       unsigned data_size,
       blink::WebArrayBuffer* buffer);
-  bool DecryptInternal(
+  webcrypto::Status DecryptInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
       unsigned data_size,
       blink::WebArrayBuffer* buffer);
-  bool DigestInternal(
+  webcrypto::Status DigestInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,
       unsigned data_size,
       blink::WebArrayBuffer* buffer);
-  bool GenerateKeyInternal(
+  webcrypto::Status GenerateKeyInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* key);
-  bool GenerateKeyPairInternal(
+  webcrypto::Status GenerateKeyPairInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* public_key,
       blink::WebCryptoKey* private_key);
-  bool ImportKeyInternal(
+  webcrypto::Status ImportKeyInternal(
       blink::WebCryptoKeyFormat format,
       const unsigned char* key_data,
       unsigned key_data_size,
@@ -108,17 +109,17 @@ class CONTENT_EXPORT WebCryptoImpl
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* key);
-  bool ExportKeyInternal(
+  webcrypto::Status ExportKeyInternal(
       blink::WebCryptoKeyFormat format,
       const blink::WebCryptoKey& key,
       blink::WebArrayBuffer* buffer);
-  bool SignInternal(
+  webcrypto::Status SignInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
       unsigned data_size,
       blink::WebArrayBuffer* buffer);
-  bool VerifySignatureInternal(
+  webcrypto::Status VerifySignatureInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* signature,
@@ -127,14 +128,14 @@ class CONTENT_EXPORT WebCryptoImpl
       unsigned data_size,
       bool* signature_match);
 
-  bool ImportKeyJwk(
+  webcrypto::Status ImportKeyJwk(
       const unsigned char* key_data,
       unsigned key_data_size,
       const blink::WebCryptoAlgorithm& algorithm_or_null,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* key);
-  bool ImportRsaPublicKeyInternal(
+  webcrypto::Status ImportRsaPublicKeyInternal(
       const unsigned char* modulus_data,
       unsigned modulus_size,
       const unsigned char* exponent_data,

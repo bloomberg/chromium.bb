@@ -17,10 +17,18 @@
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
 
+using webcrypto::Status;
+
 namespace {
+
+void CompleteWithError(const Status& status, blink::WebCryptoResult* result) {
+  DCHECK(status.IsError());
+  result->completeWithError(blink::WebString::fromUTF8(status.ToString()));
+}
 
 bool IsAlgorithmAsymmetric(const blink::WebCryptoAlgorithm& algorithm) {
   // TODO(padolph): include all other asymmetric algorithms once they are
@@ -175,8 +183,9 @@ void WebCryptoImpl::encrypt(
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
-  if (!EncryptInternal(algorithm, key, data, data_size, &buffer)) {
-    result.completeWithError();
+  Status status = EncryptInternal(algorithm, key, data, data_size, &buffer);
+  if (status.IsError()) {
+    CompleteWithError(status, &result);
   } else {
     result.completeWithBuffer(buffer);
   }
@@ -190,8 +199,9 @@ void WebCryptoImpl::decrypt(
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
-  if (!DecryptInternal(algorithm, key, data, data_size, &buffer)) {
-    result.completeWithError();
+  Status status = DecryptInternal(algorithm, key, data, data_size, &buffer);
+  if (status.IsError()) {
+    CompleteWithError(status, &result);
   } else {
     result.completeWithBuffer(buffer);
   }
@@ -204,8 +214,9 @@ void WebCryptoImpl::digest(
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
-  if (!DigestInternal(algorithm, data, data_size, &buffer)) {
-    result.completeWithError();
+  Status status = DigestInternal(algorithm, data, data_size, &buffer);
+  if (status.IsError()) {
+    CompleteWithError(status, &result);
   } else {
     result.completeWithBuffer(buffer);
   }
@@ -220,9 +231,10 @@ void WebCryptoImpl::generateKey(
   if (IsAlgorithmAsymmetric(algorithm)) {
     blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
     blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
-    if (!GenerateKeyPairInternal(
-             algorithm, extractable, usage_mask, &public_key, &private_key)) {
-      result.completeWithError();
+    Status status = GenerateKeyPairInternal(
+        algorithm, extractable, usage_mask, &public_key, &private_key);
+    if (status.IsError()) {
+      CompleteWithError(status, &result);
     } else {
       DCHECK(public_key.handle());
       DCHECK(private_key.handle());
@@ -236,8 +248,10 @@ void WebCryptoImpl::generateKey(
     }
   } else {
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-    if (!GenerateKeyInternal(algorithm, extractable, usage_mask, &key)) {
-      result.completeWithError();
+    Status status = GenerateKeyInternal(
+        algorithm, extractable, usage_mask, &key);
+    if (status.IsError()) {
+      CompleteWithError(status, &result);
     } else {
       DCHECK(key.handle());
       DCHECK_EQ(algorithm.id(), key.algorithm().id());
@@ -257,32 +271,31 @@ void WebCryptoImpl::importKey(
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoResult result) {
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  Status status = Status::Error();
   if (format == blink::WebCryptoKeyFormatJwk) {
-    if (!ImportKeyJwk(key_data,
-                      key_data_size,
-                      algorithm_or_null,
-                      extractable,
-                      usage_mask,
-                      &key)) {
-      result.completeWithError();
-      return;
-    }
+    status = ImportKeyJwk(key_data,
+                          key_data_size,
+                          algorithm_or_null,
+                          extractable,
+                          usage_mask,
+                          &key);
   } else {
-    if (!ImportKeyInternal(format,
-                           key_data,
-                           key_data_size,
-                           algorithm_or_null,
-                           extractable,
-                           usage_mask,
-                           &key)) {
-      result.completeWithError();
-      return;
-    }
+    status = ImportKeyInternal(format,
+                               key_data,
+                               key_data_size,
+                               algorithm_or_null,
+                               extractable,
+                               usage_mask,
+                               &key);
   }
-  DCHECK(key.handle());
-  DCHECK(!key.algorithm().isNull());
-  DCHECK_EQ(extractable, key.extractable());
-  result.completeWithKey(key);
+  if (status.IsError()) {
+    CompleteWithError(status, &result);
+  } else {
+    DCHECK(key.handle());
+    DCHECK(!key.algorithm().isNull());
+    DCHECK_EQ(extractable, key.extractable());
+    result.completeWithKey(key);
+  }
 }
 
 void WebCryptoImpl::exportKey(
@@ -290,11 +303,12 @@ void WebCryptoImpl::exportKey(
     const blink::WebCryptoKey& key,
     blink::WebCryptoResult result) {
   blink::WebArrayBuffer buffer;
-  if (!ExportKeyInternal(format, key, &buffer)) {
-    result.completeWithError();
-    return;
+  Status status = ExportKeyInternal(format, key, &buffer);
+  if (status.IsError()) {
+    CompleteWithError(status, &result);
+  } else {
+    result.completeWithBuffer(buffer);
   }
-  result.completeWithBuffer(buffer);
 }
 
 void WebCryptoImpl::sign(
@@ -305,8 +319,9 @@ void WebCryptoImpl::sign(
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
-  if (!SignInternal(algorithm, key, data, data_size, &buffer)) {
-    result.completeWithError();
+  Status status = SignInternal(algorithm, key, data, data_size, &buffer);
+  if (status.IsError()) {
+    CompleteWithError(status, &result);
   } else {
     result.completeWithBuffer(buffer);
   }
@@ -322,20 +337,21 @@ void WebCryptoImpl::verifySignature(
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   bool signature_match = false;
-  if (!VerifySignatureInternal(algorithm,
-                               key,
-                               signature,
-                               signature_size,
-                               data,
-                               data_size,
-                               &signature_match)) {
-    result.completeWithError();
+  Status status = VerifySignatureInternal(algorithm,
+                                          key,
+                                          signature,
+                                          signature_size,
+                                          data,
+                                          data_size,
+                                          &signature_match);
+  if (status.IsError()) {
+    CompleteWithError(status, &result);
   } else {
     result.completeWithBoolean(signature_match);
   }
 }
 
-bool WebCryptoImpl::ImportKeyJwk(
+Status WebCryptoImpl::ImportKeyJwk(
     const unsigned char* key_data,
     unsigned key_data_size,
     const blink::WebCryptoAlgorithm& algorithm_or_null,
@@ -479,7 +495,7 @@ bool WebCryptoImpl::ImportKeyJwk(
   //
 
   if (!key_data_size)
-    return false;
+    return Status::ErrorImportEmptyKeyData();
   DCHECK(key);
 
   // Parse the incoming JWK JSON.
@@ -489,19 +505,21 @@ bool WebCryptoImpl::ImportKeyJwk(
   // Note, bare pointer dict_value is ok since it points into scoped value.
   base::DictionaryValue* dict_value = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict_value) || !dict_value)
-    return false;
+    return Status::ErrorJwkNotDictionary();
 
   // JWK "kty". Exit early if this required JWK parameter is missing.
   std::string jwk_kty_value;
   if (!dict_value->GetString("kty", &jwk_kty_value))
-    return false;
+    return Status::ErrorJwkMissingKty();
 
   // JWK "extractable" (optional) --> extractable parameter
+  // TODO(eroman): Should error if "extractable" was specified but not a
+  //               boolean.
   {
     bool jwk_extractable_value;
     if (dict_value->GetBoolean("extractable", &jwk_extractable_value)) {
       if (!jwk_extractable_value && extractable)
-        return false;
+        return Status::ErrorJwkExtractableInconsistent();
       extractable = extractable && jwk_extractable_value;
     }
   }
@@ -516,6 +534,7 @@ bool WebCryptoImpl::ImportKeyJwk(
   //      input value (because it has potentially more details)
   // 5. JWK alg missing AND input algorithm isNull: error
   // 6. JWK alg missing AND input algorithm specified: use input value
+  // TODO(eroman): Should error if "alg" was specified but not a string.
   blink::WebCryptoAlgorithm algorithm = blink::WebCryptoAlgorithm::createNull();
   std::string jwk_alg_value;
   if (dict_value->GetString("alg", &jwk_alg_value)) {
@@ -528,7 +547,7 @@ bool WebCryptoImpl::ImportKeyJwk(
         jwk_alg_factory.Get().CreateAlgorithmFromName(jwk_alg_value);
     if (jwk_algorithm.isNull()) {
       // JWK alg unrecognized
-      return false;  // case 1
+      return Status::ErrorJwkUnrecognizedAlgorithm();  // case 1
     }
     // JWK alg valid
     if (algorithm_or_null.isNull()) {
@@ -537,18 +556,19 @@ bool WebCryptoImpl::ImportKeyJwk(
     } else {
       // input algorithm specified
       if (!WebCryptoAlgorithmsConsistent(jwk_algorithm, algorithm_or_null))
-        return false;  // case 3
+        return Status::ErrorJwkAlgorithmInconsistent();  // case 3
       algorithm = algorithm_or_null;  // case 4
     }
   } else {
     // JWK alg missing
     if (algorithm_or_null.isNull())
-      return false;  // case 5
+      return Status::ErrorJwkAlgorithmMissing();  // case 5
     algorithm = algorithm_or_null;  // case 6
   }
   DCHECK(!algorithm.isNull());
 
   // JWK "use" (optional) --> usage_mask parameter
+  // TODO(eroman): Should error if "use" was specified but not a string.
   std::string jwk_use_value;
   if (dict_value->GetString("use", &jwk_use_value)) {
     blink::WebCryptoKeyUsageMask jwk_usage_mask = 0;
@@ -562,11 +582,11 @@ bool WebCryptoImpl::ImportKeyJwk(
       jwk_usage_mask =
           blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey;
     } else {
-      return false;
+      return Status::ErrorJwkUnrecognizedUsage();
     }
     if ((jwk_usage_mask & usage_mask) != usage_mask) {
       // A usage_mask must be a subset of jwk_usage_mask.
-      return false;
+      return Status::ErrorJwkUsageInconsistent();
     }
   }
 
@@ -575,7 +595,7 @@ bool WebCryptoImpl::ImportKeyJwk(
 
     std::string jwk_k_value;
     if (!GetDecodedUrl64ValueByKey(*dict_value, "k", &jwk_k_value))
-      return false;
+      return Status::ErrorJwkDecodeK();
 
     // TODO(padolph): Some JWK alg ID's embed information about the key length
     // in the alg ID string. For example "A128" implies the JWK carries 128 bits
@@ -602,14 +622,14 @@ bool WebCryptoImpl::ImportKeyJwk(
     // entry is found.
     // TODO(padolph): Support RSA private key import.
     if (dict_value->HasKey("d"))
-      return false;
+      return Status::ErrorJwkRsaPrivateKeyUnsupported();
 
     std::string jwk_n_value;
     if (!GetDecodedUrl64ValueByKey(*dict_value, "n", &jwk_n_value))
-      return false;
+      return Status::ErrorJwkDecodeN();
     std::string jwk_e_value;
     if (!GetDecodedUrl64ValueByKey(*dict_value, "e", &jwk_e_value))
-      return false;
+      return Status::ErrorJwkDecodeE();
 
     return ImportRsaPublicKeyInternal(
         reinterpret_cast<const uint8*>(jwk_n_value.data()),
@@ -622,10 +642,10 @@ bool WebCryptoImpl::ImportKeyJwk(
         key);
 
   } else {
-    return false;
+    return Status::ErrorJwkUnrecognizedKty();
   }
 
-  return true;
+  return Status::Success();
 }
 
 }  // namespace content

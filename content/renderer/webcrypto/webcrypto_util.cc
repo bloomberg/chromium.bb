@@ -13,9 +13,147 @@ namespace content {
 
 namespace webcrypto {
 
-namespace {
+bool Status::IsError() const {
+  return error_details_ != NULL;
+}
 
-}  // namespace
+bool Status::IsSuccess() const {
+  return !IsError();
+}
+
+std::string Status::ToString() const {
+  return IsSuccess() ? "Success" : std::string(error_details_);
+}
+
+Status Status::Success() {
+  return Status(NULL);
+}
+
+Status Status::Error() {
+  return Status("");
+}
+
+Status Status::ErrorJwkNotDictionary() {
+  return Status("JWK input could not be parsed to a JSON dictionary");
+}
+
+Status Status::ErrorJwkMissingKty() {
+  return Status("JWK dictionary is missing \"kty\" property or it is not a "
+                "string");
+}
+
+Status Status::ErrorJwkExtractableInconsistent() {
+  return Status("The \"extractable\" property of the JWK dictionary is "
+                "inconsistent what that specified by the Web Crypto call");
+}
+
+Status Status::ErrorJwkUnrecognizedAlgorithm() {
+  return Status("The JWK \"alg\" property was not recognized");
+}
+
+Status Status::ErrorJwkAlgorithmInconsistent() {
+  return Status("The JWK \"alg\" property was inconsistent with that specified "
+                "by the Web Crypto call");
+}
+
+Status Status::ErrorJwkAlgorithmMissing() {
+  return Status("The JWK optional \"alg\" property is missing or not a string, "
+                "and one wasn't specified by the Web Crypto call");
+}
+
+Status Status::ErrorJwkUnrecognizedUsage() {
+  return Status("The JWK \"use\" property could not be parsed");
+}
+
+Status Status::ErrorJwkUsageInconsistent() {
+  return Status("The JWK \"use\" property was inconsistent with that specified "
+                "by the Web Crypto call. The JWK usage must be a superset of "
+                "those requested");
+}
+
+Status Status::ErrorJwkDecodeK() {
+  return Status("Could not extract required base64 encoded property \"k\"");
+}
+
+Status Status::ErrorJwkDecodeN() {
+  return Status("Could not extract required base64 encoded property \"n\"");
+}
+
+Status Status::ErrorJwkDecodeE() {
+  return Status("Could not extract required base64 encoded property \"e\"");
+}
+
+Status Status::ErrorJwkRsaPrivateKeyUnsupported() {
+  return Status("JWK RSA key contained \"d\" property: Private key import is "
+                "not yet supported");
+}
+
+Status Status::ErrorJwkUnrecognizedKty() {
+  return Status("The JWK \"kty\" property was unrecognized");
+}
+
+Status Status::ErrorImportEmptyKeyData() {
+  return Status("No key data was provided");
+}
+
+Status Status::ErrorUnexpectedKeyType() {
+  return Status("The key is not of the expected type");
+}
+
+Status Status::ErrorIncorrectSizeAesCbcIv() {
+  return Status("The \"iv\" has an unexpected length -- must be 16 bytes");
+}
+
+Status Status::ErrorDataTooLarge() {
+  return Status("The provided data is too large");
+}
+
+Status Status::ErrorUnsupported() {
+  return Status("The requested operation is unsupported");
+}
+
+Status Status::ErrorUnexpected() {
+  return Status("Something unexpected happened...");
+}
+
+Status Status::ErrorInvalidAesGcmTagLength() {
+  return Status("The tag length is invalid: either too large or not a multiple "
+                "of 8 bits");
+}
+
+Status Status::ErrorGenerateKeyPublicExponent() {
+  return Status("The \"publicExponent\" is either empty, zero, or too large");
+}
+
+Status Status::ErrorMissingAlgorithmImportRawKey() {
+  return Status("The key's algorithm must be specified when importing "
+                "raw-formatted key.");
+}
+
+Status Status::ErrorImportRsaEmptyModulus() {
+  return Status("The modulus is empty");
+}
+
+Status Status::ErrorGenerateRsaZeroModulus() {
+  return Status("The modulus bit length cannot be zero");
+}
+
+Status Status::ErrorImportRsaEmptyExponent() {
+  return Status("No bytes for the exponent were provided");
+}
+
+Status Status::ErrorKeyNotExtractable() {
+  return Status("They key is not extractable");
+}
+
+Status Status::ErrorGenerateKeyLength() {
+  return Status("Invalid key length: it is either zero or not a multiple of 8 "
+                "bits");
+}
+
+Status::Status(const char* error_details_utf8)
+    : error_details_(error_details_utf8) {
+}
 
 const uint8* Uint8VectorStart(const std::vector<uint8>& data) {
   if (data.empty())
