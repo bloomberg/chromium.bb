@@ -74,7 +74,7 @@ public:
     static void start(const String& title);
     static PassRefPtr<ScriptProfile> stop(const String& title);
     static PassRefPtr<ScriptHeapSnapshot> takeHeapSnapshot(const String& title, HeapSnapshotProgress*);
-    static void startTrackingHeapObjects();
+    static void startTrackingHeapObjects(bool trackAllocations);
     static void stopTrackingHeapObjects();
     static unsigned requestHeapStatsUpdate(OutputStream*);
     static void initialize();

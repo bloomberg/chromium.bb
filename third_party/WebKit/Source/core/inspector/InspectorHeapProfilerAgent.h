@@ -58,7 +58,7 @@ public:
 
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
-    virtual void startTrackingHeapObjects(ErrorString*) OVERRIDE;
+    virtual void startTrackingHeapObjects(ErrorString*, const bool* trackAllocations) OVERRIDE;
     virtual void stopTrackingHeapObjects(ErrorString*, const bool* reportProgress) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;

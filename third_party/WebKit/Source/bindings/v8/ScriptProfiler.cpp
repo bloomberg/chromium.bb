@@ -183,9 +183,9 @@ private:
 
 } // namespace
 
-void ScriptProfiler::startTrackingHeapObjects()
+void ScriptProfiler::startTrackingHeapObjects(bool trackAllocations)
 {
-    v8::Isolate::GetCurrent()->GetHeapProfiler()->StartTrackingHeapObjects();
+    v8::Isolate::GetCurrent()->GetHeapProfiler()->StartTrackingHeapObjects(trackAllocations);
 }
 
 namespace {

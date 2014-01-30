@@ -140,11 +140,11 @@ private:
     InspectorHeapProfilerAgent* m_heapProfilerAgent;
 };
 
-void InspectorHeapProfilerAgent::startTrackingHeapObjects(ErrorString*)
+void InspectorHeapProfilerAgent::startTrackingHeapObjects(ErrorString*, const bool* trackAllocations)
 {
     if (m_heapStatsUpdateTask)
         return;
-    ScriptProfiler::startTrackingHeapObjects();
+    ScriptProfiler::startTrackingHeapObjects(trackAllocations && *trackAllocations);
     m_heapStatsUpdateTask = adoptPtr(new HeapStatsUpdateTask(this));
     m_heapStatsUpdateTask->startTimer();
 }
