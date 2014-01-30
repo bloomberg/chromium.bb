@@ -98,7 +98,10 @@ TEST_F(TrayViewControllerTest, AddRemoveOne) {
   center_->RemoveNotification("1", true);
   [tray_ onMessageCenterTrayChanged];
   EXPECT_EQ(0u, [[view subviews] count]);
-  EXPECT_CGFLOAT_EQ(0, NSHeight([view frame]));
+  // The empty tray is now 100px tall to accommodate
+  // the empty message.
+  EXPECT_CGFLOAT_EQ(message_center::kMinScrollViewHeight,
+                    NSHeight([view frame]));
 }
 
 TEST_F(TrayViewControllerTest, AddThreeClearAll) {
@@ -146,7 +149,10 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
   [tray_ onMessageCenterTrayChanged];
 
   EXPECT_EQ(0u, [[view subviews] count]);
-  EXPECT_CGFLOAT_EQ(0, NSHeight([view frame]));
+  // The empty tray is now 100px tall to accommodate
+  // the empty message.
+  EXPECT_CGFLOAT_EQ(message_center::kMinScrollViewHeight,
+                    NSHeight([view frame]));
 }
 
 TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
@@ -242,6 +248,32 @@ TEST_F(TrayViewControllerTest, Settings) {
 
   // The tray should be back at its previous height now.
   EXPECT_EQ(trayHeight, NSHeight([[tray_ view] frame]));
+}
+
+TEST_F(TrayViewControllerTest, EmptyCenter) {
+  EXPECT_FALSE([[tray_ emptyDescription] isHidden]);
+
+  // With no notifications, the divider should be hidden.
+  EXPECT_TRUE([[tray_ divider] isHidden]);
+  EXPECT_TRUE([[tray_ scrollView] isHidden]);
+
+  scoped_ptr<message_center::Notification> notification;
+  notification.reset(new message_center::Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      "1",
+      ASCIIToUTF16("First notification"),
+      ASCIIToUTF16("This is a simple test."),
+      gfx::Image(),
+      base::string16(),
+      DummyNotifierId(),
+      message_center::RichNotificationData(),
+      NULL));
+  center_->AddNotification(notification.Pass());
+  [tray_ onMessageCenterTrayChanged];
+
+  EXPECT_FALSE([[tray_ divider] isHidden]);
+  EXPECT_FALSE([[tray_ scrollView] isHidden]);
+  EXPECT_TRUE([[tray_ emptyDescription] isHidden]);
 }
 
 }  // namespace message_center

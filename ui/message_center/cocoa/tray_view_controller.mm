@@ -359,6 +359,14 @@ const CGFloat kTrayBottomMargin = 75;
 
 // Testing API /////////////////////////////////////////////////////////////////
 
+- (NSBox*)divider {
+  return divider_.get();
+}
+
+- (NSTextField*)emptyDescription {
+  return emptyDescription_.get();
+}
+
 - (NSScrollView*)scrollView {
   return scrollView_.get();
 }
@@ -390,16 +398,21 @@ const CGFloat kTrayBottomMargin = 75;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   NSView* view = [self view];
 
+  auto configureLabel = ^(NSTextField* textField) {
+      [textField setAutoresizingMask:NSViewMinYMargin];
+      [textField setBezeled:NO];
+      [textField setBordered:NO];
+      [textField setDrawsBackground:NO];
+      [textField setEditable:NO];
+      [textField setSelectable:NO];
+  };
+
   // Create the "Notifications" label at the top of the tray.
   NSFont* font = [NSFont labelFontOfSize:message_center::kTitleFontSize];
   title_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
-  [title_ setAutoresizingMask:NSViewMinYMargin];
-  [title_ setBezeled:NO];
-  [title_ setBordered:NO];
-  [title_ setDrawsBackground:NO];
-  [title_ setEditable:NO];
+  configureLabel(title_);
+
   [title_ setFont:font];
-  [title_ setSelectable:NO];
   [title_ setStringValue:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_FOOTER_TITLE)];
   [title_ setTextColor:gfx::SkColorToCalibratedNSColor(
@@ -445,16 +458,17 @@ const CGFloat kTrayBottomMargin = 75;
   [[self view] addSubview:backButton_];
 
   // Create the divider line between the control area and the notifications.
-  base::scoped_nsobject<NSBox> divider(
+  divider_.reset(
       [[NSBox alloc] initWithFrame:NSMakeRect(0, 0, NSWidth([view frame]), 1)]);
-  [divider setAutoresizingMask:NSViewMinYMargin];
-  [divider setBorderType:NSNoBorder];
-  [divider setBoxType:NSBoxCustom];
-  [divider setContentViewMargins:NSZeroSize];
-  [divider setFillColor:gfx::SkColorToCalibratedNSColor(
+  [divider_ setAutoresizingMask:NSViewMinYMargin];
+  [divider_ setBorderType:NSNoBorder];
+  [divider_ setBoxType:NSBoxCustom];
+  [divider_ setContentViewMargins:NSZeroSize];
+  [divider_ setFillColor:gfx::SkColorToCalibratedNSColor(
       message_center::kFooterDelimiterColor)];
-  [divider setTitlePosition:NSNoTitle];
-  [view addSubview:divider];
+  [divider_ setTitlePosition:NSNoTitle];
+  [view addSubview:divider_];
+
 
   auto getButtonFrame = ^NSRect(CGFloat maxX, NSImage* image) {
       NSSize size = [image size];
@@ -524,13 +538,45 @@ const CGFloat kTrayBottomMargin = 75;
   [pauseButton_ setAction:@selector(toggleQuietMode:)];
   configureButton(pauseButton_);
   [view addSubview:pauseButton_];
+
+  // Create the description field for the empty message center.  Initially it is
+  // invisible.
+  emptyDescription_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+  configureLabel(emptyDescription_);
+
+  NSFont* smallFont =
+      [NSFont labelFontOfSize:message_center::kEmptyCenterFontSize];
+  [emptyDescription_ setFont:smallFont];
+  [emptyDescription_ setStringValue:
+      l10n_util::GetNSString(IDS_MESSAGE_CENTER_NO_MESSAGES)];
+  [emptyDescription_ setTextColor:gfx::SkColorToCalibratedNSColor(
+      message_center::kDimTextColor)];
+  [emptyDescription_ sizeToFit];
+  [emptyDescription_ setHidden:YES];
+
+  [view addSubview:emptyDescription_];
 }
 
 - (void)updateTrayViewAndWindow {
-  CGFloat scrollContentHeight = 0;
+  CGFloat scrollContentHeight = message_center::kMinScrollViewHeight;
   if ([notifications_ count]) {
+    [emptyDescription_ setHidden:YES];
+    [scrollView_ setHidden:NO];
+    [divider_ setHidden:NO];
     scrollContentHeight = NSMaxY([[[notifications_ lastObject] view] frame]) +
         message_center::kMarginBetweenItems;;
+  } else {
+    [emptyDescription_ setHidden:NO];
+    [scrollView_ setHidden:YES];
+    [divider_ setHidden:YES];
+
+    NSRect centeredFrame = [emptyDescription_ frame];
+    NSPoint centeredOrigin = NSMakePoint(
+      floor((NSWidth([[self view] frame]) - NSWidth(centeredFrame))/2 + 0.5),
+      floor((scrollContentHeight - NSHeight(centeredFrame))/2 + 0.5));
+
+    centeredFrame.origin = centeredOrigin;
+    [emptyDescription_ setFrame:centeredFrame];
   }
 
   // Resize the scroll view's content.

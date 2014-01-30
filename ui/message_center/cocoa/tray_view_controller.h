@@ -46,6 +46,12 @@ MESSAGE_CENTER_EXPORT
   // The "Notifications" label at the top.
   base::scoped_nsobject<NSTextField> title_;
 
+  // The 1px horizontal divider between the scroll view and the title bar.
+  base::scoped_nsobject<NSBox> divider_;
+
+  // The "Nothing to see here" label in an empty message center.
+  base::scoped_nsobject<NSTextField> emptyDescription_;
+
   // The scroll view that contains all the notifications in its documentView.
   base::scoped_nsobject<NSScrollView> scrollView_;
 
@@ -157,6 +163,8 @@ MESSAGE_CENTER_EXPORT
 // Testing API /////////////////////////////////////////////////////////////////
 
 @interface MCTrayViewController (TestingAPI)
+- (NSBox*)divider;
+- (NSTextField*)emptyDescription;
 - (NSScrollView*)scrollView;
 - (HoverImageButton*)pauseButton;
 - (HoverImageButton*)clearAllButton;

@@ -31,6 +31,7 @@ const size_t kMaxVisiblePopupNotifications = 3;
 
 // DIP dimension; H size of the whole card.
 const int kNotificationWidth = 360;
+const int kMinScrollViewHeight = 100;
 
 // Colors.
 MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterBorderColor;
@@ -64,6 +65,7 @@ const int kIconBottomPadding = 16;  // Minimum non-zero V space between icon
 
 // Text sizes.
 const int kTitleFontSize = 14;             // For title only.
+const int kEmptyCenterFontSize = 13;       // For empty message only.
 const int kTitleLineHeight = 20;           // In DIPs.
 const int kMessageFontSize = 12;           // For everything but title.
 const int kMessageLineHeight = 18;         // In DIPs.

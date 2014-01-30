@@ -51,7 +51,6 @@ const SkColor kNoNotificationsTextColor = SkColorSetRGB(0xb4, 0xb4, 0xb4);
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
 #endif
 const int kAnimateClearingNextNotificationDelayMS = 40;
-const int kMinScrollViewHeight = 100;
 
 const int kDefaultAnimationDurationMs = 120;
 const int kDefaultFrameRateHz = 60;
