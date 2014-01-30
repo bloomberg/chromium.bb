@@ -19,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -201,7 +202,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
 }
 
 TEST_F(WorkspaceEventHandlerTest,
-    DoubleClickSingleAxisDoesntResizeVerticalEdgeIfConstrained) {
+       DoubleClickSingleAxisDoesntResizeVerticalEdgeIfConstrained) {
   gfx::Rect restored_bounds(10, 10, 50, 50);
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, restored_bounds));
@@ -225,7 +226,7 @@ TEST_F(WorkspaceEventHandlerTest,
 }
 
 TEST_F(WorkspaceEventHandlerTest,
-    DoubleClickSingleAxisDoesntResizeHorizontalEdgeIfConstrained) {
+       DoubleClickSingleAxisDoesntResizeHorizontalEdgeIfConstrained) {
   gfx::Rect restored_bounds(10, 10, 50, 50);
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, restored_bounds));
@@ -246,6 +247,35 @@ TEST_F(WorkspaceEventHandlerTest,
   // The size of the window should be unchanged.
   EXPECT_EQ(restored_bounds.x(), window->bounds().x());
   EXPECT_EQ(restored_bounds.width(), window->bounds().width());
+}
+
+TEST_F(WorkspaceEventHandlerTest,
+       DoubleClickOrTapWithModalChildDoesntMaximize) {
+  aura::test::TestWindowDelegate wd1;
+  aura::test::TestWindowDelegate wd2;
+  scoped_ptr<aura::Window> window(
+      CreateTestWindow(&wd1, gfx::Rect(10, 20, 30, 40)));
+  scoped_ptr<aura::Window> child(
+      CreateTestWindow(&wd2, gfx::Rect(0, 0, 1, 1)));
+  window->SetProperty(aura::client::kCanMaximizeKey, true);
+  wd1.set_window_component(HTCAPTION);
+
+  child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  views::corewm::AddTransientChild(window.get(), child.get());
+
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  aura::test::EventGenerator generator(root, window.get());
+  generator.DoubleClickLeftButton();
+  EXPECT_EQ("10,20 30x40", window->bounds().ToString());
+  EXPECT_FALSE(window_state->IsMaximized());
+
+  generator.GestureTapAt(gfx::Point(25, 25));
+  generator.GestureTapAt(gfx::Point(25, 25));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("10,20 30x40", window->bounds().ToString());
+  EXPECT_FALSE(window_state->IsMaximized());
 }
 
 TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {

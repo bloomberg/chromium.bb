@@ -27,6 +27,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_util.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -350,6 +351,25 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomWorkArea) {
   EXPECT_EQ(
       gfx::Size(100, work_area.height() - target->bounds().y()).ToString(),
       target->bounds().size().ToString());
+}
+
+TEST_F(ToplevelWindowEventHandlerTest, DontDragIfModalChild) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
+  scoped_ptr<aura::Window> w2(CreateWindow(HTCAPTION));
+  w2->SetBounds(gfx::Rect(100, 0, 100, 100));
+  w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  views::corewm::AddTransientChild(w1.get(), w2.get());
+  gfx::Size size = w1->bounds().size();
+
+  // Attempt to drag w1, position and size should not change because w1 has a
+  // modal child.
+  DragFromCenterBy(w1.get(), 100, 100);
+  EXPECT_EQ("0,0", w1->bounds().origin().ToString());
+  EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
+
+  TouchDragFromCenterBy(w1.get(), 100, 100);
+  EXPECT_EQ("0,0", w1->bounds().origin().ToString());
+  EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
 }
 
 // Verifies we don't let windows drag to a -y location.

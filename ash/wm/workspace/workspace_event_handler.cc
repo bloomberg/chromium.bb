@@ -60,6 +60,8 @@ WorkspaceEventHandler::~WorkspaceEventHandler() {
 }
 
 void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->handled())
+    return;
   aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED: {
@@ -95,6 +97,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->handled())
+    return;
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (event->type() == ui::ET_GESTURE_TAP &&
       target->delegate()->GetNonClientComponent(event->location()) ==

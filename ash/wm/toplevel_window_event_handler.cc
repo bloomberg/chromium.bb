@@ -183,6 +183,8 @@ void ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 
 void ToplevelWindowEventHandler::OnMouseEvent(
     ui::MouseEvent* event) {
+  if (event->handled())
+    return;
   if ((event->flags() &
       (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON)) != 0)
     return;
@@ -214,6 +216,8 @@ void ToplevelWindowEventHandler::OnMouseEvent(
 }
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->handled())
+    return;
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (!target->delegate())
     return;
@@ -495,7 +499,8 @@ void ToplevelWindowEventHandler::HandleMouseReleased(
   // Completing the drag may result in hiding the window. If this happens
   // return true so no other handlers/observers see the event. Otherwise
   // they see the event on a hidden window.
-  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED &&
+  if (window_resizer_ &&
+      event->type() == ui::ET_MOUSE_CAPTURE_CHANGED &&
       !target->IsVisible()) {
     event->StopPropagation();
   }
