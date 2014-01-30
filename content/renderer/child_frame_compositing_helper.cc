@@ -279,6 +279,13 @@ void ChildFrameCompositingHelper::OnContainerDestroy() {
   web_layer_.reset();
 }
 
+void ChildFrameCompositingHelper::ChildFrameGone() {
+  background_layer_->SetBackgroundColor(SkColorSetARGBInline(255, 0, 128, 0));
+  background_layer_->RemoveAllChildren();
+  background_layer_->SetIsDrawable(true);
+  background_layer_->SetContentsOpaque(true);
+}
+
 void ChildFrameCompositingHelper::OnBuffersSwappedPrivate(
     const SwapBuffersInfo& mailbox,
     unsigned sync_point,

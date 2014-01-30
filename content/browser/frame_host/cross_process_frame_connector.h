@@ -70,6 +70,8 @@ class CrossProcessFrameConnector {
   // above.
   void set_view(RenderWidgetHostViewChildFrame* view);
 
+  void RenderProcessGone();
+
   // 'Platform' functionality exposed to RenderWidgetHostViewChildFrame.
   // These methods can forward messages to the child frame proxy in the parent
   // frame's renderer or attempt to handle them within the browser process.

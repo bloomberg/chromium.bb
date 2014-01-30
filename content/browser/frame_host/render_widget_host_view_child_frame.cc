@@ -165,6 +165,8 @@ void RenderWidgetHostViewChildFrame::TextInputTypeChanged(
 void RenderWidgetHostViewChildFrame::RenderProcessGone(
     base::TerminationStatus status,
     int error_code) {
+  if (frame_connector_)
+    frame_connector_->RenderProcessGone();
 }
 
 void RenderWidgetHostViewChildFrame::Destroy() {

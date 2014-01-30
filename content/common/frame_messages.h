@@ -57,6 +57,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_BuffersSwapped,
 IPC_MESSAGE_ROUTED1(FrameMsg_CompositorFrameSwapped,
                     FrameMsg_CompositorFrameSwapped_Params /* params */)
 
+// Notifies the embedding frame that the process rendering the child frame's
+// contents has terminated.
+IPC_MESSAGE_ROUTED0(FrameMsg_ChildFrameProcessGone)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

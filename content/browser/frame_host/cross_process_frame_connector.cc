@@ -53,6 +53,11 @@ void CrossProcessFrameConnector::set_view(
     view_->set_cross_process_frame_connector(this);
 }
 
+void CrossProcessFrameConnector::RenderProcessGone() {
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_ChildFrameProcessGone(
+      frame_proxy_in_parent_renderer_->routing_id()));
+}
+
 void CrossProcessFrameConnector::ChildFrameBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& gpu_params,
     int gpu_host_id) {

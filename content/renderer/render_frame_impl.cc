@@ -391,6 +391,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(msg))
+    IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -535,6 +536,11 @@ void RenderFrameImpl::LoadURLExternally(
     const blink::WebURLRequest& request,
     blink::WebNavigationPolicy policy) {
   loadURLExternally(frame, request, policy);
+}
+
+void RenderFrameImpl::OnChildFrameProcessGone() {
+  if (compositing_helper_)
+    compositing_helper_->ChildFrameGone();
 }
 
 // blink::WebFrameClient implementation ----------------------------------------

@@ -80,6 +80,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
                                 uint32 output_surface_id,
                                 int host_id);
   void UpdateVisibility(bool);
+  void ChildFrameGone();
 
   // cc::DelegatedFrameProviderClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE;
