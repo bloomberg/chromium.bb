@@ -10,6 +10,7 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/test/default_context_factory.h"
 #include "ui/compositor/test/test_context_factory.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace ui {
 
@@ -40,11 +41,9 @@ void InitializeContextFactoryForTests(bool allow_test_contexts) {
   if (use_test_contexts) {
     g_implicit_factory = new ui::TestContextFactory;
   } else {
+    DCHECK_NE(gfx::kGLImplementationNone, gfx::GetGLImplementation());
     DVLOG(1) << "Using DefaultContextFactory";
-    scoped_ptr<ui::DefaultContextFactory> instance(
-        new ui::DefaultContextFactory());
-    if (instance->Initialize())
-      g_implicit_factory = instance.release();
+    g_implicit_factory = new ui::DefaultContextFactory();
   }
   ContextFactory::SetInstance(g_implicit_factory);
 }

@@ -65,23 +65,19 @@ ScopedRestoreNonOwnedEGLContext::ScopedRestoreNonOwnedEGLContext()
   // Chromium native code, but created by Android system itself.
   DCHECK(!gfx::GLContext::GetCurrent());
 
-  if (gfx::GLSurface::InitializeOneOff()) {
-    context_ = eglGetCurrentContext();
-    display_ = eglGetCurrentDisplay();
-    draw_surface_ = eglGetCurrentSurface(EGL_DRAW);
-    read_surface_ = eglGetCurrentSurface(EGL_READ);
-  }
+  context_ = eglGetCurrentContext();
+  display_ = eglGetCurrentDisplay();
+  draw_surface_ = eglGetCurrentSurface(EGL_DRAW);
+  read_surface_ = eglGetCurrentSurface(EGL_READ);
 }
 
 ScopedRestoreNonOwnedEGLContext::~ScopedRestoreNonOwnedEGLContext() {
   if (context_ == EGL_NO_CONTEXT || display_ == EGL_NO_DISPLAY ||
-      draw_surface_ == EGL_NO_SURFACE || read_surface_ == EGL_NO_SURFACE) {
+      draw_surface_ == EGL_NO_SURFACE || read_surface_ == EGL_NO_SURFACE)
     return;
-  }
 
-  if (!eglMakeCurrent(display_, draw_surface_, read_surface_, context_)) {
+  if (!eglMakeCurrent(display_, draw_surface_, read_surface_, context_))
     LOG(WARNING) << "Failed to restore EGL context";
-  }
 }
 
 }

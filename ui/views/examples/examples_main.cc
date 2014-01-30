@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/screen.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/views/corewm/wm_state.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
@@ -45,6 +46,8 @@ int main(int argc, char** argv) {
   pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
 
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+
+  gfx::GLSurface::InitializeOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
   bool allow_test_contexts = false;

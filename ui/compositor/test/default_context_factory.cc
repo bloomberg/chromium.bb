@@ -15,18 +15,10 @@
 namespace ui {
 
 DefaultContextFactory::DefaultContextFactory() {
+  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
 }
 
 DefaultContextFactory::~DefaultContextFactory() {
-}
-
-bool DefaultContextFactory::Initialize() {
-  if (!gfx::GLSurface::InitializeOneOff() ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
-    LOG(ERROR) << "Could not load the GL bindings";
-    return false;
-  }
-  return true;
 }
 
 scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(

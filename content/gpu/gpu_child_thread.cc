@@ -65,11 +65,14 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
   DCHECK(
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU));
+#if !defined(OS_ANDROID)
   // For single process and in-process GPU mode, we need to load and
   // initialize the GL implementation and locate the GL entry points here.
-  if (!gfx::GLSurface::InitializeOneOff()) {
-    VLOG(1) << "gfx::GLSurface::InitializeOneOff()";
-  }
+  // On Android, GLSurface::InitializeOneOff() is called from BrowserMainLoop
+  // before getting here. crbug.com/326295
+  if (!gfx::GLSurface::InitializeOneOff())
+    VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
+#endif
   g_thread_safe_sender.Get() = thread_safe_sender();
 }
 
