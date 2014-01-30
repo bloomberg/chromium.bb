@@ -170,7 +170,8 @@ class EBuild(object):
 
   @classmethod
   def _RunCommand(cls, command, **kwargs):
-    return cros_build_lib.RunCommandCaptureOutput(
+    kwargs.setdefault('capture_output', True)
+    return cros_build_lib.RunCommand(
         command, print_cmd=cls.VERBOSE, **kwargs).output
 
   @classmethod
@@ -716,8 +717,8 @@ def ParseBashArray(value):
   sep = ','
   # Because %s may contain bash comments (#), put a clever newline in the way.
   cmd = 'ARR=%s\nIFS=%s; echo -n "${ARR[*]}"' % (value, sep)
-  return cros_build_lib.RunCommandCaptureOutput(
-      cmd, print_cmd=False, shell=True).output.split(sep)
+  return cros_build_lib.RunCommand(
+      cmd, print_cmd=False, shell=True, capture_output=True).output.split(sep)
 
 
 def GetWorkonProjectMap(overlay, subdirectories):
@@ -734,8 +735,9 @@ def GetWorkonProjectMap(overlay, subdirectories):
   # Search ebuilds for project names, ignoring non-existent directories.
   cmd = ['grep', '^CROS_WORKON_PROJECT=', '--include', '*-9999.ebuild',
          '-Hsr'] + list(subdirectories)
-  result = cros_build_lib.RunCommandCaptureOutput(
-      cmd, cwd=overlay, error_code_ok=True, print_cmd=False)
+  result = cros_build_lib.RunCommand(
+      cmd, cwd=overlay, error_code_ok=True, print_cmd=False,
+      capture_output=True)
   for grep_line in result.output.splitlines():
     filename, _, line = grep_line.partition(':')
     value = line.partition('=')[2]
@@ -865,8 +867,9 @@ def BestVisible(atom, board=None, pkg_type='ebuild',
   portageq = 'portageq' if board is None else 'portageq-%s' % board
   root = cros_build_lib.GetSysroot(board=board)
   cmd = [portageq, 'best_visible', root, pkg_type, atom]
-  result = cros_build_lib.RunCommandCaptureOutput(
-      cmd, cwd=buildroot, enter_chroot=True, debug_level=logging.DEBUG)
+  result = cros_build_lib.RunCommand(
+      cmd, cwd=buildroot, enter_chroot=True, debug_level=logging.DEBUG,
+      capture_output=True)
   return SplitCPV(result.output.strip())
 
 

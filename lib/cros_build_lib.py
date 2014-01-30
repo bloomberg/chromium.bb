@@ -354,7 +354,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
                chroot_args=None, debug_level=logging.INFO,
                error_code_ok=False, kill_timeout=1, log_output=False,
-               stdout_to_pipe=False):
+               stdout_to_pipe=False, capture_output=False, quiet=False):
   """Runs a command.
 
   Args:
@@ -369,7 +369,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     input: input to pipe into this command through stdin.
     enter_chroot: this command should be run from within the chroot.  If set,
       cwd must point to the scripts directory. If we are already inside the
-      chroot, this command will be run as if enter_chroot is False.
+      chroot, this command will be run as if |enter_chroot| is False.
     shell: Controls whether we add a shell as a command interpreter.  See cmd
       since it has to agree as to the type.
     env: If non-None, this is the environment for the new process.  If
@@ -385,7 +385,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       Ctrl-C at the same time, which means we'll forcefully kill the child.
     combine_stdout_stderr: Combines stdout and stderr streams into stdout.
     log_stdout_to_file: If set, redirects stdout to file specified by this path.
-      If combine_stdout_stderr is set to True, then stderr will also be logged
+      If |combine_stdout_stderr| is set to True, then stderr will also be logged
       to the specified file.
     chroot_args: An array of arguments for the chroot environment wrapper.
     debug_level: The debug level of RunCommand's output - applies to output
@@ -399,6 +399,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                   Specified in seconds.
     log_output: Log the command and its output automatically.
     stdout_to_pipe: Redirect stdout to pipe.
+    capture_output: Set |redirect_stdout| and |redirect_stderr| to True.
+    quiet: Set |print_cmd| to False, |stdout_to_pipe| and |combine_stdout_stderr|
+      to True.
 
   Returns:
     A CommandResult object.
@@ -406,6 +409,13 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   Raises:
     RunCommandError:  Raises exception on error with optional error_message.
   """
+  if capture_output:
+    redirect_stdout, redirect_stderr = True, True
+
+  if quiet:
+    print_cmd = False
+    stdout_to_pipe, combine_stdout_stderr = True, True
+
   # Set default for variables.
   stdout = None
   stderr = None
@@ -707,33 +717,6 @@ def GetHostDomain():
   hostname = GetHostName(fully_qualified=True)
   domain = hostname.partition('.')[2]
   return domain if domain else 'localdomain'
-
-
-def RunCommandCaptureOutput(cmd, **kwargs):
-  """Wrapper for RunCommand that captures output.
-
-  This wrapper calls RunCommand with redirect_stdout=True and
-  redirect_stderr=True. This is for convenience.
-
-  Args:
-    cmd: The command to run.
-    kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
-  """
-  return RunCommand(cmd, redirect_stdout=kwargs.pop('redirect_stdout', True),
-                    redirect_stderr=kwargs.pop('redirect_stderr', True),
-                    **kwargs)
-
-
-def RunCommandQuietly(*args, **kwargs):
-  """Wrapper for RunCommand that runs silently.
-
-  The wrapper does not echo the command.  stdout and stderr are captured but
-  not echoed.
-  """
-  kwargs.setdefault('print_cmd', False)
-  kwargs.setdefault('stdout_to_pipe', True)
-  kwargs.setdefault('combine_stdout_stderr', True)
-  return RunCommand(*args, **kwargs)
 
 
 def TimedCommand(functor, *args, **kwargs):
@@ -1133,9 +1116,9 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
     May raise an ApiMismatchError if validate_version is set.
   """
   try:
-    api = RunCommandCaptureOutput(
+    api = RunCommand(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
-        cwd=buildroot, error_code_ok=True)
+        cwd=buildroot, error_code_ok=True, capture_output=True)
   except RunCommandError:
     # Although error_code_ok=True was used, this exception will still be raised
     # if the executible did not exist.
@@ -1541,7 +1524,7 @@ def GetIPv4Address(dev=None, global_ip=True):
   cmd += ['scope', 'global' if global_ip else 'host']
   cmd += [] if dev is None else ['dev', dev]
 
-  result = RunCommandCaptureOutput(cmd, print_cmd=False)
+  result = RunCommand(cmd, print_cmd=False, capture_output=True)
   matches = re.findall(r'\binet (\d+\.\d+\.\d+\.\d+).*', result.output)
   if matches:
     return matches[0]

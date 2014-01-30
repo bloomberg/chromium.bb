@@ -190,8 +190,8 @@ class RepoRepository(object):
     # rebuild.
     if os.path.exists(os.path.join(self.directory, '.repo', 'manifest.xml')):
       try:
-        cros_build_lib.RunCommandCaptureOutput(
-            ['repo', 'manifest'], cwd=self.directory)
+        cros_build_lib.RunCommand(
+            ['repo', 'manifest'], cwd=self.directory, capture_output=True)
       except cros_build_lib.RunCommandError:
         cros_build_lib.Warning("Wiping %r due to `repo manifest` failure",
                                self.directory)
@@ -362,10 +362,10 @@ class RepoRepository(object):
     # Find all projects, even if they're not in the manifest.  Note the find
     # trickery this is done to keep it as fast as possible.
     repo_path = os.path.join(self.directory, '.repo', 'projects')
-    current = set(cros_build_lib.RunCommandCaptureOutput(
+    current = set(cros_build_lib.RunCommand(
         ['find', repo_path, '-type', 'd', '-name', '*.git', '-printf', '%P\n',
          '-a', '!', '-wholename',  '*.git/*', '-prune'],
-        print_cmd=False).output.splitlines())
+        print_cmd=False, capture_output=True).output.splitlines())
     data = {}.fromkeys(current, 0)
 
     path = os.path.join(self.directory, '.repo', 'project.lru')
@@ -410,8 +410,8 @@ class RepoRepository(object):
     cmd = ['repo', 'manifest', '-o', '-']
     if revisions:
       cmd += ['-r']
-    output = cros_build_lib.RunCommandCaptureOutput(
-        cmd, cwd=self.directory, print_cmd=False,
+    output = cros_build_lib.RunCommand(
+        cmd, cwd=self.directory, print_cmd=False, capture_output=True,
         extra_env={'PAGER':'cat'}).output
 
     if not mark_revision:

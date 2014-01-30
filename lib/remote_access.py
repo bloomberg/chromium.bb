@@ -144,6 +144,7 @@ class RemoteAccess(object):
       the ssh_error_ok flag.
 
     """
+    kwargs.setdefault('capture_output', True)
     kwargs.setdefault('debug_level', self.debug_level)
 
     ssh_cmd = self._GetSSHCmd(connect_settings)
@@ -153,8 +154,7 @@ class RemoteAccess(object):
       ssh_cmd += [self.target_ssh_url, '--'] + cmd
 
     try:
-      result = cros_build_lib.RunCommandCaptureOutput(
-          ssh_cmd, **kwargs)
+      result = cros_build_lib.RunCommand(ssh_cmd, **kwargs)
     except cros_build_lib.RunCommandError as e:
       if ((e.result.returncode == SSH_ERROR_CODE and ssh_error_ok) or
           (e.result.returncode and e.result.returncode != SSH_ERROR_CODE
@@ -184,7 +184,8 @@ class RemoteAccess(object):
         ConnectionAttempts=REBOOT_SSH_CONNECT_ATTEMPTS)
     cmd = "[ ! -e '%s' ]" % REBOOT_MARKER
     result = self.RemoteSh(cmd, connect_settings=connect_settings,
-                           error_code_ok=True, ssh_error_ok=True)
+                           error_code_ok=True, ssh_error_ok=True,
+                           capture_output=True)
 
     errors = {0: 'Reboot complete.',
               1: 'Device has not yet shutdown.',
@@ -301,9 +302,8 @@ class RemoteAccess(object):
       cmd: Command to run on the remote device.
       **kwargs: See RemoteSh for documentation.
     """
-    result = cros_build_lib.RunCommandCaptureOutput(producer_cmd,
-                                                    stdout_to_pipe=True,
-                                                    print_cmd=False)
+    result = cros_build_lib.RunCommand(producer_cmd, stdout_to_pipe=True,
+                                       print_cmd=False, capture_output=True)
     return self.RemoteSh(cmd, input=kwargs.pop('input', result.output),
                          **kwargs)
 
@@ -421,7 +421,7 @@ class RemoteDevice(object):
     return self.agent.RemoteReboot()
 
   def RunCommand(self, cmd, **kwargs):
-    """Executes a shell command on the device with output captured.
+    """Executes a shell command on the device with output captured by default.
 
     Args:
       cmd: command to run. See RemoteAccess.RemoteSh documentation.

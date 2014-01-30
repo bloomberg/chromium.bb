@@ -164,8 +164,8 @@ def VerifyTarball(tarball, dir_struct):
     AssertionError when there is any divergence between the tarball and the
     structure specified by 'dir_struct'.
   """
-  contents = cros_build_lib.RunCommandCaptureOutput(
-      ['tar', '-tf', tarball]).output.splitlines()
+  contents = cros_build_lib.RunCommand(
+      ['tar', '-tf', tarball], capture_output=True).output.splitlines()
   normalized = set()
   for p in contents:
     norm = os.path.normpath(p)
@@ -1018,12 +1018,12 @@ class GerritTestCase(TempDirTestCase):
     # supported.  Alas.
     http_sock.close()
     ssh_sock.close()
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         ['bash', gerrit_init_script, '--http-port', http_port,
-         '--ssh-port', ssh_port, gerrit_dir])
+         '--ssh-port', ssh_port, gerrit_dir], quiet=True)
 
     gerrit_exe = os.path.join(gerrit_dir, 'bin', 'gerrit.sh')
-    cros_build_lib.RunCommandQuietly(['bash', gerrit_exe, 'start'])
+    cros_build_lib.RunCommand(['bash', gerrit_exe, 'start'], quiet=True)
     gerrit_pid = int(osutils.ReadFile(
         os.path.join(gerrit_dir, 'logs', 'gerrit.pid')).rstrip())
     return cls.GerritInstance(
@@ -1072,16 +1072,17 @@ class GerritTestCase(TempDirTestCase):
     clone_path = os.path.join(gi.gerrit_dir, 'tmp', 'All-Projects')
     cls._CloneProject('All-Projects', clone_path)
     project_config = os.path.join(clone_path, 'project.config')
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         ['git', 'config', '--file', project_config, '--add',
-         'access.refs/meta/config.read', 'group Anonymous Users'])
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'add', project_config], cwd=clone_path)
-    cros_build_lib.RunCommandQuietly(
+         'access.refs/meta/config.read', 'group Anonymous Users'], quiet=True)
+    cros_build_lib.RunCommand(
+        ['git', 'add', project_config], cwd=clone_path, quiet=True)
+    cros_build_lib.RunCommand(
         ['git', 'commit', '-m', 'Anonyous read for refs/meta/config'],
-        cwd=clone_path)
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'push', 'origin', 'HEAD:refs/meta/config'], cwd=clone_path)
+        cwd=clone_path, quiet=True)
+    cros_build_lib.RunCommand(
+        ['git', 'push', 'origin', 'HEAD:refs/meta/config'], cwd=clone_path,
+        quiet=True)
 
     # Make all chromite code point to the test server.
     cls.constants_patcher = mock.patch.dict(constants.__dict__, {
@@ -1131,21 +1132,22 @@ class GerritTestCase(TempDirTestCase):
     """Clone a project from the test gerrit server."""
     osutils.SafeMakedirs(os.path.dirname(path))
     url = 'http://%s/%s' % (cls.gerrit_instance.gerrit_host, name)
-    cros_build_lib.RunCommandQuietly(['git', 'clone', url, path])
+    cros_build_lib.RunCommand(['git', 'clone', url, path], quiet=True)
     # Install commit-msg hook.
     hook_path = os.path.join(path, '.git', 'hooks', 'commit-msg')
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         ['curl', '-o', hook_path,
-         'http://%s/tools/hooks/commit-msg' % cls.gerrit_instance.gerrit_host])
+         'http://%s/tools/hooks/commit-msg' % cls.gerrit_instance.gerrit_host],
+        quiet=True)
     os.chmod(hook_path, stat.S_IRWXU)
     # Set git identity to test account
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'config', 'user.email', cls.TEST_EMAIL], cwd=path)
+    cros_build_lib.RunCommand(
+        ['git', 'config', 'user.email', cls.TEST_EMAIL], cwd=path, quiet=True)
     # Configure non-interactive credentials for git operations.
     config_path = os.path.join(path, '.git', 'config')
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         ['git', 'config', '--file', config_path, 'credential.helper',
-         'store --file=%s' % cls.gerrit_instance.credential_file])
+         'store --file=%s' % cls.gerrit_instance.credential_file], quiet=True)
     return path
 
   def cloneProject(self, name, path=None):
@@ -1168,9 +1170,9 @@ class GerritTestCase(TempDirTestCase):
       text = 'Another day, another dollar.'
     fpath = os.path.join(clone_path, fn)
     osutils.WriteFile(fpath, '%s\n' % text, mode='a')
-    cros_build_lib.RunCommandQuietly(['git', 'add', fn], cwd=clone_path)
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'commit', '-m', msg], cwd=clone_path)
+    cros_build_lib.RunCommand(['git', 'add', fn], cwd=clone_path, quiet=True)
+    cros_build_lib.RunCommand(
+        ['git', 'commit', '-m', msg], cwd=clone_path, quiet=True)
     return cls._GetCommit(clone_path)
 
   def createCommit(self, clone_path, fn=None, msg=None, text=None):
@@ -1180,8 +1182,9 @@ class GerritTestCase(TempDirTestCase):
 
   @staticmethod
   def _GetCommit(clone_path, ref='HEAD'):
-    log_proc = cros_build_lib.RunCommandCaptureOutput(
-        ['git', 'log', '-n', '1', ref], cwd=clone_path, print_cmd=False)
+    log_proc = cros_build_lib.RunCommand(
+        ['git', 'log', '-n', '1', ref], cwd=clone_path,
+        print_cmd=False, capture_output=True)
     sha1 = None
     change_id = None
     for line in log_proc.output.splitlines():
@@ -1205,8 +1208,9 @@ class GerritTestCase(TempDirTestCase):
 
   @staticmethod
   def _UploadChange(clone_path, branch='master', remote='origin'):
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'push', remote, 'HEAD:refs/for/%s' % branch], cwd=clone_path)
+    cros_build_lib.RunCommand(
+        ['git', 'push', remote, 'HEAD:refs/for/%s' % branch], cwd=clone_path,
+        quiet=True)
 
   def uploadChange(self, clone_path, branch='master', remote='origin'):
     """Create a gerrit CL from the HEAD of a git checkout."""
@@ -1215,9 +1219,9 @@ class GerritTestCase(TempDirTestCase):
 
   @staticmethod
   def _PushBranch(clone_path, branch='master'):
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         ['git', 'push', 'origin', 'HEAD:refs/heads/%s' % branch],
-        cwd=clone_path)
+        cwd=clone_path, quiet=True)
 
   def pushBranch(self, clone_path, branch='master'):
     """Push a branch directly to gerrit, bypassing code review."""
@@ -1255,7 +1259,8 @@ class GerritTestCase(TempDirTestCase):
     """Stops the running gerrit instance and deletes it."""
     try:
       # This should terminate the gerrit process.
-      cros_build_lib.RunCommandQuietly(['bash', gerrit_obj.gerrit_exe, 'stop'])
+      cros_build_lib.RunCommand(['bash', gerrit_obj.gerrit_exe, 'stop'],
+                                quiet=True)
     finally:
       try:
         # cls.gerrit_pid should have already terminated.  If it did, then
@@ -1368,37 +1373,39 @@ class RepoTestCase(GerritTestCase):
     # Create local mirror of repo tool repository.
     mirror_path = '%s.git' % (
         os.path.join(cls.gerrit_instance.git_dir, constants.REPO_PROJECT))
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'clone', '--mirror', external_repo_url, mirror_path])
+    cros_build_lib.RunCommand(
+      ['git', 'clone', '--mirror', external_repo_url, mirror_path],
+      quiet=True)
 
     # Check out the top-level repo script; it will be used for invocation.
     repo_clone_path = os.path.join(
         cls.gerrit_instance.gerrit_dir, 'tmp', 'repo')
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'clone', '-n', constants.REPO_URL, repo_clone_path])
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'checkout', 'origin/stable', 'repo'], cwd=repo_clone_path)
+    cros_build_lib.RunCommand(
+        ['git', 'clone', '-n', constants.REPO_URL, repo_clone_path], quiet=True)
+    cros_build_lib.RunCommand(
+        ['git', 'checkout', 'origin/stable', 'repo'], cwd=repo_clone_path,
+        quiet=True)
     osutils.RmDir(os.path.join(repo_clone_path, '.git'))
     cls.repo_exe = os.path.join(repo_clone_path, 'repo')
 
     # Create manifest repository.
     clone_path = os.path.join(cls.gerrit_instance.gerrit_dir, 'tmp', 'manifest')
     osutils.SafeMakedirs(clone_path)
-    cros_build_lib.RunCommandQuietly(['git', 'init'], cwd=clone_path)
+    cros_build_lib.RunCommand(['git', 'init'], cwd=clone_path, quiet=True)
     manifest_path = os.path.join(clone_path, 'default.xml')
     osutils.WriteFile(manifest_path, cls.MANIFEST_TEMPLATE % constants.__dict__)
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'add', 'default.xml'], cwd=clone_path)
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'commit', '-m', 'Test manifest.'], cwd=clone_path)
+    cros_build_lib.RunCommand(
+        ['git', 'add', 'default.xml'], cwd=clone_path, quiet=True)
+    cros_build_lib.RunCommand(
+        ['git', 'commit', '-m', 'Test manifest.'], cwd=clone_path, quiet=True)
     cls.createProject(constants.MANIFEST_PROJECT)
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         ['git', 'push', constants.MANIFEST_URL, 'HEAD:refs/heads/master'],
-        cwd=clone_path)
+        quiet=True, cwd=clone_path)
     cls.createProject(constants.MANIFEST_INT_PROJECT)
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         ['git', 'push', constants.MANIFEST_INT_URL, 'HEAD:refs/heads/master'],
-         cwd=clone_path)
+         cwd=clone_path, quiet=True)
 
     # Create project repositories.
     for i in xrange(1, 5):
@@ -1420,7 +1427,8 @@ class RepoTestCase(GerritTestCase):
     else:
       env.setdefault('HOME', munged_home)
     args[0].insert(0, cls.repo_exe)
-    return cros_build_lib.RunCommandQuietly(*args, **kwargs)
+    kwargs.setdefault('quiet', True)
+    return cros_build_lib.RunCommand(*args, **kwargs)
 
   @classmethod
   def tearDownClass(cls):
@@ -1428,22 +1436,22 @@ class RepoTestCase(GerritTestCase):
     GerritTestCase.tearDownClass()
 
   def uploadChange(self, clone_path, branch='master', remote='origin'):
-    review_host = cros_build_lib.RunCommandCaptureOutput(
+    review_host = cros_build_lib.RunCommand(
         ['git', 'config', 'remote.%s.review' % remote],
-        print_cmd=False, cwd=clone_path).output.strip()
+        print_cmd=False, cwd=clone_path, capture_output=True).output.strip()
     assert(review_host)
-    projectname = cros_build_lib.RunCommandCaptureOutput(
+    projectname = cros_build_lib.RunCommand(
         ['git', 'config', 'remote.%s.projectname' % remote],
-        print_cmd=False, cwd=clone_path).output.strip()
+        print_cmd=False, cwd=clone_path, capture_output=True).output.strip()
     assert(projectname)
     GerritTestCase._UploadChange(
         clone_path, branch=branch, remote='%s://%s/%s' % (
             gob_util.GERRIT_PROTOCOL, review_host, projectname))
 
   def setUp(self):
-    cros_build_lib.RunCommandQuietly(
+    cros_build_lib.RunCommand(
         [self.repo_exe, 'init', '-u', constants.MANIFEST_URL, '--repo-url',
-         constants.REPO_URL, '--no-repo-verify'], cwd=self.tempdir)
+         constants.REPO_URL, '--no-repo-verify'], cwd=self.tempdir, quiet=True)
     self.repo = repository.RepoRepository(constants.MANIFEST_URL, self.tempdir)
     self.repo.Sync()
     self.manifest = git.ManifestCheckout(self.tempdir)
@@ -1452,12 +1460,13 @@ class RepoTestCase(GerritTestCase):
       proj = 'testproj%d' % i
       config_path = os.path.join(
           self.tempdir, 'localpath', proj, '.git', 'config')
-      cros_build_lib.RunCommandQuietly(
+      cros_build_lib.RunCommand(
           ['git', 'config', '--file', config_path, 'credential.helper',
-           'store --file=%s' % self.gerrit_instance.credential_file])
-      cros_build_lib.RunCommandQuietly(
+           'store --file=%s' % self.gerrit_instance.credential_file],
+          quiet=True)
+      cros_build_lib.RunCommand(
           ['git', 'config', '--file', config_path, 'review.%s.upload' %
-           self.gerrit_instance.gerrit_host, 'true'])
+           self.gerrit_instance.gerrit_host, 'true'], quiet=True)
 
     # Make all google storage URL's point to the local filesystem.
     self.gs_url_patcher = mock.patch(
@@ -1603,9 +1612,9 @@ def FindTests(directory, module_namespace=''):
   Returns:
     A list of python unittests in python namespace form.
   """
-  results = cros_build_lib.RunCommandCaptureOutput(
+  results = cros_build_lib.RunCommand(
       ['find', '.', '-name', '*_unittest.py', '-printf', '%P\n'],
-      cwd=directory, print_cmd=False).output.splitlines()
+      cwd=directory, print_cmd=False, capture_output=True).output.splitlines()
   # Drop the trailing .py, inject in the name if one was given.
   if module_namespace:
     module_namespace += '.'

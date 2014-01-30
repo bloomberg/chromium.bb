@@ -86,8 +86,8 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
     api.output = constants.REEXEC_API_VERSION
     cros_build_lib.RunCommand(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
-        cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
-        error_code_ok=True).AndReturn(api)
+        cwd=self.buildroot, capture_output=True, error_code_ok=True
+        ).AndReturn(api)
 
     result = self.mox.CreateMock(cros_build_lib.CommandResult)
     result.returncode = 0
@@ -124,8 +124,8 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
     api.output = constants.REEXEC_API_VERSION
     cros_build_lib.RunCommand(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
-        cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
-        error_code_ok=True).AndReturn(api)
+        cwd=self.buildroot, capture_output=True, error_code_ok=True
+        ).AndReturn(api)
 
     result = self.mox.CreateMock(cros_build_lib.CommandResult)
     result.returncode = 0
@@ -289,16 +289,16 @@ class InterfaceTest(cros_test_lib.MoxTestCase, cros_test_lib.LoggingTestCase):
     # Verify the tests below actually are testing correct behaviour;
     # specifically that it doesn't always just return 0.
     self.assertRaises(cros_build_lib.RunCommandError,
-                      cros_build_lib.RunCommandCaptureOutput,
+                      cros_build_lib.RunCommand,
                       ['cbuildbot', '--monkeys'], cwd=constants.SOURCE_ROOT)
 
     # Validate depot_tools lookup.
-    cros_build_lib.RunCommandCaptureOutput(
-        ['cbuildbot', '--help'], cwd=constants.SOURCE_ROOT)
+    cros_build_lib.RunCommand(
+        ['cbuildbot', '--help'], cwd=constants.SOURCE_ROOT, capture_output=True)
 
     # Validate buildbot invocation pathway.
-    cros_build_lib.RunCommandCaptureOutput(
-        [path, '--help'], cwd=constants.SOURCE_ROOT)
+    cros_build_lib.RunCommand(
+        [path, '--help'], cwd=constants.SOURCE_ROOT, capture_output=True)
 
   def testDebugBuildBotSetByDefault(self):
     """Test that debug and buildbot flags are set by default."""
@@ -604,7 +604,8 @@ class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
 
   def testInferBuildRootExists(self):
     """Test that we don't prompt the user if buildroot already exists."""
-    cros_build_lib.RunCommandCaptureOutput(['touch', self.external_marker])
+    cros_build_lib.RunCommand(['touch', self.external_marker],
+                              capture_output=True)
     os.utime(self.external_marker, None)
     (cros_build_lib.GetInput(mox.IgnoreArg()).InAnyOrder()
         .AndRaise(TestFailedException()))

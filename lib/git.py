@@ -786,7 +786,7 @@ def _GitRepoIsContentMerging(git_repo, remote):
 
 
 def RunGit(git_repo, cmd, retry=True, **kwargs):
-  """RunCommandCaptureOutput wrapper for git commands.
+  """RunCommand wrapper for git commands.
 
   This suppresses print_cmd, and suppresses output by default.  Git
   functionality w/in this module should use this unless otherwise
@@ -819,8 +819,9 @@ def RunGit(git_repo, cmd, retry=True, **kwargs):
   kwargs.setdefault('print_cmd', False)
   kwargs.setdefault('sleep', DEFAULT_RETRY_INTERVAL)
   kwargs.setdefault('cwd', git_repo)
+  kwargs.setdefault('capture_output', True)
   return retry_util.GenericRetry(
-      _ShouldRetry, max_retry, cros_build_lib.RunCommandCaptureOutput,
+      _ShouldRetry, max_retry, cros_build_lib.RunCommand,
       ['git'] + cmd, **kwargs)
 
 

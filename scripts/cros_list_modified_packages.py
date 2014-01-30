@@ -81,8 +81,8 @@ class WorkonProjectsMonitor(object):
       path: Directory to look at.
     """
     cmd = 'find . -name .git -prune -o -printf "%T@\n" | sort -nr | head -n1'
-    ret = cros_build_lib.RunCommandCaptureOutput(cmd, cwd=path, shell=True,
-                                                 print_cmd=False)
+    ret = cros_build_lib.RunCommand(cmd, cwd=path, shell=True, print_cmd=False,
+                                    capture_output=True)
     return float(ret.output) if ret.output else 0
 
   def GetProjectModificationTimes(self):
@@ -133,7 +133,7 @@ def ListWorkonPackages(board, host):
   """
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'cros_workon'), 'list']
   cmd.extend(['--host'] if host else ['--board', board])
-  result = cros_build_lib.RunCommandCaptureOutput(cmd, print_cmd=False)
+  result = cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
   return result.output.split()
 
 

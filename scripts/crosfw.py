@@ -424,9 +424,10 @@ def SetupBuild(options):
   #    Whenever you're wrong, admit it;
   #    Whenever you're right, shut up.
   cmd = [CompilerTool('gcc'), '-ffreestanding', '-x', 'c', '-c', '-']
-  result = cros_build_lib.RunCommandCaptureOutput(cmd,
-                                                  input='#include <stdint.h>',
-                                                  **kwargs)
+  result = cros_build_lib.RunCommand(cmd,
+                                     input='#include <stdint.h>',
+                                     capture_output=True,
+                                     **kwargs)
   if result.returncode == 0:
     base.append('USE_STDINT=1')
 

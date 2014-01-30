@@ -58,8 +58,8 @@ class TestFailure(results_lib.StepFailure):
 # =========================== Command Helpers =================================
 
 
-def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
-                    possibly_flaky=False, **kwargs):
+def _RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
+                    **kwargs):
   """Run a build script, wrapping exceptions as needed.
 
   This wraps RunCommand(cmd, cwd=buildroot, **kwargs), adding extra logic to
@@ -76,7 +76,6 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
   Args:
     buildroot: The root of the build directory.
     cmd: The command to run.
-    capture_output: Whether or not to capture all output.
     chromite_cmd: Whether the command should be evaluated relative to the
       chromite/bin subdir of the |buildroot|.
     possibly_flaky: Whether this failure is likely to fail occasionally due
@@ -105,12 +104,8 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
       status_file = stack.Add(tempfile.NamedTemporaryFile, dir=chroot_tmp)
       kwargs['extra_env']['PARALLEL_EMERGE_STATUS_FILE'] = \
           git.ReinterpretPathForChroot(status_file.name)
-
     try:
-      if capture_output:
-        return cros_build_lib.RunCommandCaptureOutput(cmd, **kwargs)
-      else:
-        return cros_build_lib.RunCommand(cmd, **kwargs)
+      return cros_build_lib.RunCommand(cmd, **kwargs)
     except cros_build_lib.RunCommandError as ex:
       # Print the original exception.
       cros_build_lib.Error('\n%s', ex)
@@ -773,9 +768,9 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
               line = line[:frame_end] + board_path + line[frame_end:]
             log_content += line
         # Symbolize and demangle it.
-        raw = cros_build_lib.RunCommandCaptureOutput(
+        raw = cros_build_lib.RunCommand(
             ['asan_symbolize.py'], input=log_content, enter_chroot=True,
-            debug_level=logging.DEBUG,
+            debug_level=logging.DEBUG, capture_output=True,
             extra_env={'LLVM_SYMBOLIZER_PATH' : '/usr/bin/llvm-symbolizer'})
         cros_build_lib.RunCommand(['c++filt'],
                                   input=raw.output, debug_level=logging.DEBUG,
@@ -869,9 +864,10 @@ def MarkChromeAsStable(buildroot,
 
     # Sanity check: We should always be able to merge the version of
     # Chrome we just unmasked.
-    result = cros_build_lib.RunCommandCaptureOutput(
+    result = cros_build_lib.RunCommand(
         ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
-        enter_chroot=True, error_code_ok=True, combine_stdout_stderr=True)
+        enter_chroot=True, error_code_ok=True, combine_stdout_stderr=True,
+        capture_output=True)
     if result.returncode:
       cros_build_lib.PrintBuildbotStepWarnings()
       cros_build_lib.Warning('\n%s' % result.output)
@@ -1449,8 +1445,8 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
 
   # TODO(sosa): Temporary hack to bootstrap devserver dependency.
   cmd = ['site_utils/autoupdate/full_release_test.py', '--help']
-  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd, error_code_ok=True,
-                                         print_cmd=False)
+  cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True,
+                            print_cmd=False, capture_output=True)
 
   cmd = ['site_utils/autoupdate/full_release_test.py',
          '--npo', '--nmo', '--dump',
@@ -1517,8 +1513,8 @@ def BuildImageZip(archive_dir, image_dir):
   """
   filename = 'image.zip'
   zipfile = os.path.join(archive_dir, filename)
-  cros_build_lib.RunCommandCaptureOutput(['zip', zipfile, '-r', '.'],
-                                         cwd=image_dir)
+  cros_build_lib.RunCommand(['zip', zipfile, '-r', '.'], cwd=image_dir,
+                            capture_output=True)
   return filename
 
 
@@ -1627,7 +1623,7 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
                   f if os.path.isfile(src_path) else
                   os.path.join(f, '*')])
 
-  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=temp_dir)
+  cros_build_lib.RunCommand(cmd, cwd=temp_dir, capture_output=True)
   osutils.RmDir(temp_dir)
   return filename
 
@@ -1646,7 +1642,7 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir, image_dir):
          '--from', archive_dir,
          '--image_dir', image_dir,
          '--output_tag', hwqual_name]
-  cros_build_lib.RunCommandCaptureOutput(cmd)
+  cros_build_lib.RunCommand(cmd, capture_output=True)
   return '%s.tar.bz2' % hwqual_name
 
 
@@ -1660,7 +1656,8 @@ def RemoveOldArchives(bot_archive_root, keep_max):
   # TODO(davidjames): Reimplement this in Python.
   # +2 because line numbers start at 1 and need to skip LATEST file
   cmd = 'ls -t1 | tail --lines=+%d | xargs rm -rf' % (keep_max + 2)
-  cros_build_lib.RunCommandCaptureOutput(cmd, cwd=bot_archive_root, shell=True)
+  cros_build_lib.RunCommand(cmd, cwd=bot_archive_root, shell=True,
+                            capture_output=True)
 
 
 def CreateTestRoot(build_root):
@@ -1693,7 +1690,7 @@ def GenerateFullPayload(build_root, target_image_path, archive_dir):
          '--full_payload',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
-  cros_build_lib.RunCommandCaptureOutput(cmd)
+  cros_build_lib.RunCommand(cmd, capture_output=True)
 
 
 def GenerateNPlus1Payloads(build_root, previous_versions_dir, target_image_path,
@@ -1729,7 +1726,7 @@ def GetChromeLKGM(svn_revision):
     svn_revision_args = ['-r', str(svn_revision)]
 
   svn_cmd = ['svn', 'cat', svn_url] + svn_revision_args
-  return cros_build_lib.RunCommandCaptureOutput(svn_cmd).output.strip()
+  return cros_build_lib.RunCommand(svn_cmd, capture_output=True).output.strip()
 
 
 def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):

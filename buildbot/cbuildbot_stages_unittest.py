@@ -743,8 +743,9 @@ class SDKStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
     # Check tarball for the correct contents.
-    output = cros_build_lib.RunCommandCaptureOutput(
-        ['tar', '-I', 'xz', '-tvf', fake_tarball]).output.splitlines()
+    output = cros_build_lib.RunCommand(
+        ['tar', '-I', 'xz', '-tvf', fake_tarball],
+        capture_output=True).output.splitlines()
     # First line is './', use it as an anchor, count the chars, and strip as
     # much from all other lines.
     stripchars = len(output[0]) - 1

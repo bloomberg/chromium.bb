@@ -850,7 +850,8 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     # TODO(vapier, ferringb):  mangle this so it inits from a local
     # checkout if one is available, same for the git-repo fetch.
     cmd = ['repo', 'init', '-u', constants.MANIFEST_URL]
-    cros_build_lib.RunCommandCaptureOutput(cmd, cwd=self.tempdir, input='')
+    cros_build_lib.RunCommand(cmd, cwd=self.tempdir, input='',
+                              capture_output=True)
     self.active_manifest = os.path.realpath(
         os.path.join(self.tempdir, '.repo', 'manifest.xml'))
 

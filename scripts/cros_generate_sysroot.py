@@ -79,8 +79,8 @@ class GenerateSysroot(object):
     # Calculate buildtime deps that are not runtime deps.
     raw_sysroot = cros_build_lib.GetSysroot(board=self.options.board)
     cmd = ['qdepends', '-q', '-C', self.options.package]
-    output = cros_build_lib.RunCommandCaptureOutput(
-        cmd, extra_env={'ROOT': raw_sysroot}).output
+    output = cros_build_lib.RunCommand(
+        cmd, extra_env={'ROOT': raw_sysroot}, capture_output=True).output
 
     if output.count('\n') > 1:
       raise AssertionError('Too many packages matched given package pattern')

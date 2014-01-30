@@ -25,7 +25,6 @@ from chromite.scripts import cros_mark_as_stable
 class NonClassTests(cros_test_lib.MoxTestCase):
   def setUp(self):
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
     self._branch = 'test_branch'
     self._target_manifest_branch = 'cros/master'
 
@@ -110,7 +109,6 @@ class GitBranchTest(cros_test_lib.MoxTestCase):
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
     self._branch = self.mox.CreateMock(cros_mark_as_stable.GitBranch)
     self._branch_name = 'test_branch'
     self._branch.branch_name = self._branch_name
@@ -121,8 +119,8 @@ class GitBranchTest(cros_test_lib.MoxTestCase):
   def testCheckoutCreate(self):
     # Test init with no previous branch existing.
     self._branch.Exists(self._branch_name).AndReturn(False)
-    cros_build_lib.RunCommandCaptureOutput(['repo', 'start', self._branch_name,
-                                            '.'], print_cmd=False, cwd='.')
+    cros_build_lib.RunCommand(['repo', 'start', self._branch_name, '.'],
+                              print_cmd=False, cwd='.', capture_output=True)
     self.mox.ReplayAll()
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
     self.mox.VerifyAll()
@@ -130,9 +128,8 @@ class GitBranchTest(cros_test_lib.MoxTestCase):
   def testCheckoutNoCreate(self):
     # Test init with previous branch existing.
     self._branch.Exists(self._branch_name).AndReturn(True)
-    cros_build_lib.RunCommandCaptureOutput(['git', 'checkout', '-f',
-                                            self._branch_name], print_cmd=False,
-                                           cwd='.')
+    cros_build_lib.RunCommand(['git', 'checkout', '-f', self._branch_name],
+                              print_cmd=False, cwd='.', capture_output=True)
     self.mox.ReplayAll()
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
     self.mox.VerifyAll()

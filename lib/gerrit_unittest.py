@@ -31,8 +31,8 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     clone_path = self.cloneProject('test001')
     (head_sha1, head_changeid) = self.createCommit(clone_path)
     for idx in xrange(3):
-      cros_build_lib.RunCommandQuietly(
-          ['git', 'checkout', head_sha1], cwd=clone_path)
+      cros_build_lib.RunCommand(
+          ['git', 'checkout', head_sha1], cwd=clone_path, quiet=True)
       self.createCommit(clone_path, fn='test-file-%d.txt' % idx)
       self.uploadChange(clone_path)
     helper = self._GetHelper()
@@ -66,7 +66,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
              'git add test-file-$i.txt; '
              'git commit -m "Test commit $i."; '
              'done' % (shard, min(shard+10, num_changes)))
-      cros_build_lib.RunCommandQuietly(cmd, shell=True, cwd=clone_path)
+      cros_build_lib.RunCommand(cmd, shell=True, cwd=clone_path, quiet=True)
       self.uploadChange(clone_path)
     helper = self._GetHelper()
     changes = helper.Query(project='test002')
@@ -157,8 +157,8 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     (sha1, _) = self.createCommit(clone_path)
     (_, changeid) = self.createCommit(clone_path)
     self.uploadChange(clone_path, 'master')
-    cros_build_lib.RunCommandQuietly(
-        ['git', 'checkout', sha1], cwd=clone_path)
+    cros_build_lib.RunCommand(
+        ['git', 'checkout', sha1], cwd=clone_path, quiet=True)
     self.createCommit(clone_path)
     self.pushBranch(clone_path, 'testbranch')
     self.createCommit(

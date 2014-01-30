@@ -97,12 +97,13 @@ class EBuildTest(cros_test_lib.MoxTestCase):
     fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
 
     # git rev-parse HEAD
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     result = _DummyCommandResult(fake_hash)
-    cros_build_lib.RunCommandCaptureOutput(
+    cros_build_lib.RunCommand(
         mox.IgnoreArg(),
         cwd=mox.IgnoreArg(),
-        print_cmd=portage_utilities.EBuild.VERBOSE).AndReturn(result)
+        print_cmd=portage_utilities.EBuild.VERBOSE,
+        capture_output=True).AndReturn(result)
 
     self.mox.ReplayAll()
     test_hash = fake_ebuild.GetCommitId(fake_sources)

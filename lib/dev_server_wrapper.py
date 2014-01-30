@@ -248,13 +248,7 @@ class DevServerWrapper(multiprocessing.Process):
   def _RunCommand(self, *args, **kwargs):
     """Runs a shell commmand."""
     kwargs.setdefault('debug_level', logging.DEBUG)
-
-    if kwargs.pop('capture_output', False):
-      func = cros_build_lib.RunCommandCaptureOutput
-    else:
-      func = cros_build_lib.SudoRunCommand
-
-    return func(*args, **kwargs)
+    return cros_build_lib.SudoRunCommand(*args, **kwargs)
 
 
 class RemoteDevServerWrapper(DevServerWrapper):
@@ -317,9 +311,6 @@ You can fix this with one of the following three options:
       *args: See RemoteAccess.RemoteDevice documentation.
       **kwargs: See RemoteAccess.RemoteDevice documentation.
     """
-    # Discard the keyword because RemoteDevice.RemoteSh always captures output.
-    kwargs.pop('capture_output', True)
-
     kwargs.setdefault('debug_level', logging.DEBUG)
     return self.device.RunCommand(*args, **kwargs)
 

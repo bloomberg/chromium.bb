@@ -197,8 +197,8 @@ class GitBranch(object):
       git_cmd = ['git', 'checkout', '-f', branch]
     else:
       git_cmd = ['repo', 'start', branch, '.']
-    cros_build_lib.RunCommandCaptureOutput(git_cmd, print_cmd=False,
-                                           cwd=self.cwd)
+    cros_build_lib.RunCommand(git_cmd, print_cmd=False, cwd=self.cwd,
+                              capture_output=True)
 
   def Exists(self, branch=None):
     """Returns True if the branch exists."""

@@ -737,9 +737,9 @@ class ChromeSDKCommand(cros.CrosCommand):
 
   def _GomaPort(self, goma_dir):
     """Returns current active Goma port."""
-    port = cros_build_lib.RunCommandCaptureOutput(
-        self.GOMACC_PORT_CMD, cwd=goma_dir,
-        debug_level=logging.DEBUG, error_code_ok=True).output.strip()
+    port = cros_build_lib.RunCommand(
+        self.GOMACC_PORT_CMD, cwd=goma_dir, debug_level=logging.DEBUG,
+        error_code_ok=True, capture_output=True).output.strip()
     return port
 
   def _FetchGoma(self):

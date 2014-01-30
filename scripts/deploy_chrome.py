@@ -109,7 +109,8 @@ class DeployChrome(object):
 
   def _GetRemoteMountFree(self, remote_dir):
     result = self.host.RemoteSh((DF_COMMAND if not self.content_shell
-                                 else DF_COMMAND_ANDROID) % remote_dir)
+                                 else DF_COMMAND_ANDROID) % remote_dir,
+                                capture_output=True)
     line = result.output.splitlines()[1]
     value = line.split()[3]
     multipliers = {
@@ -126,17 +127,18 @@ class DeployChrome(object):
                       'directory size to properly calculate available free '
                       'space.')
       return 0
-    result = self.host.RemoteSh('du -ks %s' % remote_dir)
+    result = self.host.RemoteSh('du -ks %s' % remote_dir, capture_output=True)
     return int(result.output.split()[0])
 
   def _GetStagingDirSize(self):
     result = cros_build_lib.DebugRunCommand(['du', '-ks', self.staging_dir],
-                                            redirect_stdout=True)
+                                            redirect_stdout=True,
+                                            capture_output=True)
     return int(result.output.split()[0])
 
   def _ChromeFileInUse(self):
     result = self.host.RemoteSh(LSOF_COMMAND % (self.options.target_dir,),
-                                error_code_ok=True)
+                                error_code_ok=True, capture_output=True)
     return result.returncode == 0
 
   def _DisableRootfsVerification(self):
@@ -178,7 +180,7 @@ class DeployChrome(object):
     # <job_name> <status> ['process' <pid>].
     # <status> is in the format <goal>/<state>.
     try:
-      result = self.host.RemoteSh('status ui')
+      result = self.host.RemoteSh('status ui', capture_output=True)
     except cros_build_lib.RunCommandError as e:
       if 'Unknown job' in e.result.error:
         return False
@@ -227,7 +229,8 @@ class DeployChrome(object):
     # TODO: Should migrate to use the remount functions in remote_access.
     result = self.host.RemoteSh(MOUNT_RW_COMMAND if not self.content_shell
                                 else MOUNT_RW_COMMAND_ANDROID,
-                                error_code_ok=error_code_ok)
+                                error_code_ok=error_code_ok,
+                                capture_output=True)
     if result.returncode:
       self._rootfs_is_still_readonly.set()
 

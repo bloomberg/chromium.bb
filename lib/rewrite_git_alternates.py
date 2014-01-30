@@ -131,10 +131,10 @@ def _GetProjects(repo_root):
   # into the actual git repository; for IO constrained systems,
   # this avoids a fairly large amount of inode/dentry load up.
   # TLDR; It's faster, don't remove it ;)
-  data = cros_build_lib.RunCommandCaptureOutput(
+  data = cros_build_lib.RunCommand(
       ['find', './', '-type', 'd', '-name', '*.git', '-a',
        '!', '-wholename', '*/*.git/*', '-prune'],
-      cwd=os.path.join(repo_root, 'project-objects'))
+      cwd=os.path.join(repo_root, 'project-objects'), capture_output=True)
 
   # Drop the leading ./ and the trailing .git
   data = [x[2:-4] for x in data.output.splitlines() if x]

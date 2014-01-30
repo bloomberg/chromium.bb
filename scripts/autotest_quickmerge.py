@@ -83,8 +83,8 @@ def GetNewestFileTime(path, ignore_subdirs=[]):
     command.extend(['-path', os.path.join(path, ignore), '-prune', '-o'])
   command.extend(['-printf', r'%T@\n'])
 
-  command_result = cros_build_lib.RunCommandCaptureOutput(command,
-                                                          error_code_ok=True)
+  command_result = cros_build_lib.RunCommand(command, error_code_ok=True,
+                                             capture_output=True)
   float_times = [float(str_time) for str_time in
                 command_result.output.split('\n')
                 if str_time != '']
