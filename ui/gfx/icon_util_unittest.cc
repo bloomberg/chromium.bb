@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gfx/icon_util.h"
+
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
@@ -9,11 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gfx_paths.h"
-#include "ui/gfx/icon_util.h"
+#include "ui/gfx/icon_util_unittests_resource.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
 #include "ui/gfx/size.h"
-#include "ui/test/ui_unittests_resource.h"
 
 namespace {
 

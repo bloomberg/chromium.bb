@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "ui_unittests_resource.h"
+#include "icon_util_unittests_resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME  ICON  "ui_unittests.ico"
+IDR_MAINFRAME  ICON  "icon_util_unittests.ico"
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
