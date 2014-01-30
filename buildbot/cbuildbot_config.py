@@ -1958,6 +1958,13 @@ _arm_brillo_release.add_config('duck-release',
   boards=['duck'],
 )
 
+_release.add_config('stumpy_moblab-release',
+  boards=['stumpy_moblab'],
+  hw_tests=[],
+  important=False,
+  vm_tests=None,
+)
+
 # Factory and Firmware releases much inherit from these classes.  Modifications
 # for these release builders should go here.
 
