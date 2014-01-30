@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<script src="../../../resources/js-test.js"></script>
+<head>
+<link id="importLink" rel="import" href="resources/hello.html">
+</head>
+<body>
+<script>
+shouldBe("importLink.import.defaultView", "document.defaultView");
+
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "resources/root.html", false);
+xhr.responseType = "document";
+xhr.send();
+shouldBeNull("xhr.response.defaultView");
+
+createdDoc = document.implementation.createHTMLDocument("Hello");
+shouldBeNull("createdDoc.defaultView");
+
+</script>
+</body>
+</html>
