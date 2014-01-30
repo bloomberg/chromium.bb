@@ -88,6 +88,7 @@
         '--extra-variable', 'version_full=<(version_full)',
 
         '--config-variable', 'OS=<(OS)',
+        '--config-variable', 'chromeos=<(chromeos)',
         '--config-variable', 'component=<(component)',
         # TODO(kbr): move this to chrome_tests.gypi:gles2_conform_tests_run
         # once support for user-defined config variables is added.

@@ -21,9 +21,6 @@
           '<(PRODUCT_DIR)/libppapi_tests.so',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
-        'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/chromevox_test_data/',
-        ],
       },
     }],
     ['OS=="linux" or OS=="mac"', {
@@ -138,6 +135,13 @@
         'isolate_dependency_untracked': [
           '../third_party/npapi/npspy/extern/plugin/',
           '../third_party/psyco_win32/psyco/',
+        ],
+      },
+    }],
+    ['chromeos==1', {
+      'variables': {
+        'isolate_dependency_untracked': [
+          '<(PRODUCT_DIR)/chromevox_test_data/',
         ],
       },
     }],

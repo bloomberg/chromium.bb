@@ -120,6 +120,7 @@ def _GenerateDepsDirUsingIsolate(suite_name):
       '--path-variable', 'PRODUCT_DIR', constants.GetOutDirectory(),
 
       '--config-variable', 'OS', 'android',
+      '--config-variable', 'chromeos', '0',
       '--config-variable', 'component', 'static_library',
       '--config-variable', 'icu_use_data_file_flag', '0',
       '--config-variable', 'use_openssl', '0',
