@@ -16,7 +16,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/rtcp/rtcp.h"  // RtcpCastMessage
+#include "media/cast/rtcp/rtcp.h"                          // RtcpCastMessage
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"  // RtpCastHeader
 
 namespace crypto {
@@ -69,6 +69,7 @@ class AudioReceiver : public base::NonThreadSafe,
   void IncomingParsedRtpPacket(const uint8* payload_data,
                                size_t payload_size,
                                const RtpCastHeader& rtp_header);
+
  private:
   friend class LocalRtpAudioData;
   friend class LocalRtpAudioFeedback;
@@ -90,7 +91,8 @@ class AudioReceiver : public base::NonThreadSafe,
                               int desired_frequency,
                               const AudioFrameDecodedCallback callback);
   void ReturnDecodedFrameWithPlayoutDelay(
-      scoped_ptr<PcmAudioFrame> audio_frame, uint32 rtp_timestamp,
+      scoped_ptr<PcmAudioFrame> audio_frame,
+      uint32 rtp_timestamp,
       const AudioFrameDecodedCallback callback);
 
   // Return the playout time based on the current time and rtp timestamp.

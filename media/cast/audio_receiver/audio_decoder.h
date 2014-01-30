@@ -51,7 +51,7 @@ class AudioDecoder {
  private:
   scoped_refptr<CastEnvironment> cast_environment_;
 
-  // The webrtc AudioCodingModule is threadsafe.
+  // The webrtc AudioCodingModule is thread safe.
   scoped_ptr<webrtc::AudioCodingModule> audio_decoder_;
 
   FrameIdMap frame_id_map_;

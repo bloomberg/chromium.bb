@@ -20,11 +20,10 @@ namespace cast {
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 namespace {
-class TestAudioEncoderCallback :
-    public base::RefCountedThreadSafe<TestAudioEncoderCallback>  {
+class TestAudioEncoderCallback
+    : public base::RefCountedThreadSafe<TestAudioEncoderCallback> {
  public:
-  TestAudioEncoderCallback()
-      : num_called_(0) {}
+  TestAudioEncoderCallback() : num_called_(0) {}
 
   void SetExpectedResult(uint8 expected_frame_id,
                          const base::TimeTicks& expected_playout_time) {
@@ -41,7 +40,7 @@ class TestAudioEncoderCallback :
     num_called_++;
   }
 
-  int number_times_called() const { return num_called_;}
+  int number_times_called() const { return num_called_; }
 
  protected:
   virtual ~TestAudioEncoderCallback() {}
@@ -52,6 +51,8 @@ class TestAudioEncoderCallback :
   int num_called_;
   uint8 expected_frame_id_;
   base::TimeTicks expected_playout_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAudioEncoderCallback);
 };
 }  // namespace
 
@@ -79,17 +80,22 @@ class AudioReceiverTest : public ::testing::Test {
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(testing_clock_);
-    cast_environment_ = new CastEnvironment(
-        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_,
-        task_runner_, GetDefaultCastReceiverLoggingConfig());
+    cast_environment_ =
+        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            task_runner_,
+                            GetDefaultCastReceiverLoggingConfig());
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();
   }
 
   void Configure(bool use_external_decoder) {
     audio_config_.use_external_decoder = use_external_decoder;
-    receiver_.reset(new PeerAudioReceiver(cast_environment_, audio_config_,
-                                          &mock_transport_));
+    receiver_.reset(new PeerAudioReceiver(
+        cast_environment_, audio_config_, &mock_transport_));
   }
 
   virtual ~AudioReceiverTest() {}
@@ -110,7 +116,7 @@ class AudioReceiverTest : public ::testing::Test {
   AudioReceiverConfig audio_config_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
-  base::SimpleTestTickClock* testing_clock_; // Owned by CastEnvironment.
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   transport::MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerAudioReceiver> receiver_;
@@ -122,12 +128,12 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
   Configure(true);
   EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).Times(1);
 
-  receiver_->IncomingParsedRtpPacket(payload_.data(),
-      payload_.size(), rtp_header_);
+  receiver_->IncomingParsedRtpPacket(
+      payload_.data(), payload_.size(), rtp_header_);
   transport::EncodedAudioFrame audio_frame;
   base::TimeTicks playout_time;
-  test_audio_encoder_callback_->SetExpectedResult(
-      0, testing_clock_->NowTicks());
+  test_audio_encoder_callback_->SetExpectedResult(0,
+                                                  testing_clock_->NowTicks());
 
   AudioFrameEncodedCallback frame_encoded_callback =
       base::Bind(&TestAudioEncoderCallback::DeliverEncodedAudioFrame,
@@ -140,8 +146,8 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
 
 TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   Configure(true);
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).WillRepeatedly(
-      testing::Return(true));
+  EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_))
+      .WillRepeatedly(testing::Return(true));
 
   AudioFrameEncodedCallback frame_encoded_callback =
       base::Bind(&TestAudioEncoderCallback::DeliverEncodedAudioFrame,
@@ -149,13 +155,13 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
 
   receiver_->GetEncodedAudioFrame(frame_encoded_callback);
 
-  receiver_->IncomingParsedRtpPacket(payload_.data(), payload_.size(),
-                                     rtp_header_);
+  receiver_->IncomingParsedRtpPacket(
+      payload_.data(), payload_.size(), rtp_header_);
 
   transport::EncodedAudioFrame audio_frame;
   base::TimeTicks playout_time;
-  test_audio_encoder_callback_->SetExpectedResult(
-      0, testing_clock_->NowTicks());
+  test_audio_encoder_callback_->SetExpectedResult(0,
+                                                  testing_clock_->NowTicks());
 
   task_runner_->RunTasks();
   EXPECT_EQ(1, test_audio_encoder_callback_->number_times_called());
@@ -165,8 +171,10 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   uint32 ntp_high;
   uint32 ntp_low;
   ConvertTimeTicksToNtp(testing_clock_->NowTicks(), &ntp_high, &ntp_low);
-  rtcp_packet.AddSrWithNtp(audio_config_.feedback_ssrc, ntp_high, ntp_low,
-      rtp_header_.webrtc.header.timestamp);
+  rtcp_packet.AddSrWithNtp(audio_config_.feedback_ssrc,
+                           ntp_high,
+                           ntp_low,
+                           rtp_header_.webrtc.header.timestamp);
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
 
@@ -179,11 +187,11 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   rtp_header_.is_reference = true;
   rtp_header_.reference_frame_id = 0;
   rtp_header_.webrtc.header.timestamp = 960;
-  test_audio_encoder_callback_->SetExpectedResult(2,
-      testing_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(100));
+  test_audio_encoder_callback_->SetExpectedResult(
+      2, testing_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(100));
 
-  receiver_->IncomingParsedRtpPacket(payload_.data(), payload_.size(),
-                                     rtp_header_);
+  receiver_->IncomingParsedRtpPacket(
+      payload_.data(), payload_.size(), rtp_header_);
   receiver_->GetEncodedAudioFrame(frame_encoded_callback);
   task_runner_->RunTasks();
 
@@ -198,16 +206,16 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   task_runner_->RunTasks();
   EXPECT_EQ(2, test_audio_encoder_callback_->number_times_called());
 
-  test_audio_encoder_callback_->SetExpectedResult(
-      3, testing_clock_->NowTicks());
+  test_audio_encoder_callback_->SetExpectedResult(3,
+                                                  testing_clock_->NowTicks());
 
   // Through on one more pending audio frame.
   rtp_header_.frame_id = 3;
   rtp_header_.is_reference = false;
   rtp_header_.reference_frame_id = 0;
   rtp_header_.webrtc.header.timestamp = 1280;
-  receiver_->IncomingParsedRtpPacket(payload_.data(), payload_.size(),
-                                     rtp_header_);
+  receiver_->IncomingParsedRtpPacket(
+      payload_.data(), payload_.size(), rtp_header_);
 
   receiver_->GetEncodedAudioFrame(frame_encoded_callback);
   task_runner_->RunTasks();
@@ -215,8 +223,7 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
 }
 
 // TODO(mikhal): Add encoded frames.
-TEST_F(AudioReceiverTest, GetRawFrame) {
-}
+TEST_F(AudioReceiverTest, GetRawFrame) {}
 
 }  // namespace cast
 }  // namespace media
