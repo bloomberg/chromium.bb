@@ -445,6 +445,12 @@
           '<(DEPTH)/build/linux/system.gyp:dridrm',
           ],
         }],
+        ['desktop_linux==1 or chromeos==1', {
+          'dependencies': [
+            # font_render_params_linux.cc uses fontconfig
+            '<(DEPTH)/build/linux/system.gyp:fontconfig',
+          ],
+        }],
       ],
       'target_conditions': [
         # Need 'target_conditions' to override default filename_rules to include
