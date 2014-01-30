@@ -48,6 +48,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -65,6 +66,8 @@ const CGFloat kTextFontSize = 12.0;
 const CGFloat kProfileButtonHeight = 30;
 const int kOverlayHeight = 20;  // Height of the "Change" avatar photo overlay.
 const int kBezelThickness = 3;  // Width of the bezel on an NSButton.
+const int kImageTitleSpacing = 10;
+const int kBlueButtonHeight = 30;
 
 // Minimum size for embedded sign in pages as defined in Gaia.
 const CGFloat kMinGaiaViewWidth = 320;
@@ -99,9 +102,6 @@ NSString* ElideEmail(const std::string& email, CGFloat width) {
 
 // Class that listens to changes to the OAuth2Tokens for the active profile, or
 // changes to the avatar menu model.
-// TODO(noms): The avatar menu model changes can only be triggered by modifying
-// the name or avatar for the active profile, but this is not currently
-// implemented.
 class ActiveProfileObserverBridge : public AvatarMenuObserver,
                                     public OAuth2TokenService::Observer {
  public:
@@ -144,7 +144,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   DISALLOW_COPY_AND_ASSIGN(ActiveProfileObserverBridge);
 };
-
 
 // A custom button that has a transparent backround.
 @interface TransparentBackgroundButton : NSButton
@@ -339,12 +338,91 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [profileNameTextField_ becomeFirstResponder];
 }
 
-- (NSString*)profileName {
-  return [self title];
-}
 @end
 
-@interface ProfileChooserController (Private)
+// Custom button cell that adds a left padding before the button image, and
+// a custom spacing between the button image and title.
+@interface CustomPaddingImageButtonCell : NSButtonCell {
+ @private
+  // Padding between the left margin of the button and the cell image.
+  int leftMarginSpacing_;
+  // Spacing between the cell image and title.
+  int imageTitleSpacing_;
+}
+
+- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
+              imageTitleSpacing:(int)imageTitleSpacing;
+@end
+
+@implementation CustomPaddingImageButtonCell
+- (id)initWithLeftMarginSpacing:(int)leftMarginSpacing
+              imageTitleSpacing:(int)imageTitleSpacing {
+  if ((self = [super init])) {
+    leftMarginSpacing_ = leftMarginSpacing;
+    imageTitleSpacing_ = imageTitleSpacing;
+  }
+  return self;
+}
+
+- (NSRect)drawTitle:(NSAttributedString*)title
+          withFrame:(NSRect)frame
+             inView:(NSView*)controlView {
+  // The title frame origin isn't aware of the left margin spacing added
+  // in -drawImage, so it must be added when drawing the title as well.
+  frame.origin.x += leftMarginSpacing_ + imageTitleSpacing_;
+  return [super drawTitle:title withFrame:frame inView:controlView];
+}
+
+- (void)drawImage:(NSImage*)image
+       withFrame:(NSRect)frame
+          inView:(NSView*)controlView {
+  frame.origin.x = leftMarginSpacing_;
+  [super drawImage:image withFrame:frame inView:controlView];
+}
+
+- (NSSize)cellSize {
+  NSSize buttonSize = [super cellSize];
+  buttonSize.width += leftMarginSpacing_ + imageTitleSpacing_;
+  return buttonSize;
+}
+
+@end
+
+// A custom button that allows for setting a background color when hovered over.
+@interface BackgroundColorHoverButton : HoverButton
+@end
+
+@implementation BackgroundColorHoverButton
+- (id)initWithFrame:(NSRect)frameRect {
+  if ((self = [super initWithFrame:frameRect])) {
+    [self setBordered:NO];
+    [self setFont:[NSFont labelFontOfSize:kTextFontSize]];
+    [self setButtonType:NSMomentaryChangeButton];
+
+    base::scoped_nsobject<CustomPaddingImageButtonCell> cell(
+        [[CustomPaddingImageButtonCell alloc]
+            initWithLeftMarginSpacing:kHorizontalSpacing
+                    imageTitleSpacing:kImageTitleSpacing]);
+    [self setCell:cell.get()];
+  }
+  return self;
+}
+
+- (void)setHoverState:(HoverState)state {
+  [super setHoverState:state];
+  bool isHighlighted = ([self hoverState] != kHoverStateNone);
+  NSColor* backgroundColor = gfx::SkColorToCalibratedNSColor(
+      ui::NativeTheme::instance()->GetSystemColor(isHighlighted?
+          ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor :
+          ui::NativeTheme::kColorId_MenuBackgroundColor));
+
+  [[self cell] setBackgroundColor:backgroundColor];
+}
+
+@end
+
+
+@interface ProfileChooserController ()
 // Creates the main profile card for the profile |item| at the top of
 // the bubble.
 - (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item;
@@ -372,12 +450,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // Creates the Gaia sign-in/add account view.
 - (NSView*)createGaiaEmbeddedView;
 
-// Creates a generic button with text given by |textResourceId|, an icon
-// given by |imageResourceId| and with |action|.
-- (NSButton*)buttonWithRect:(NSRect)rect
-             textResourceId:(int)textResourceId
-            imageResourceId:(int)imageResourceId
-                     action:(SEL)action;
+// Creates a button with text given by |textResourceId|, an icon given by
+// |imageResourceId| and with |action|.
+- (NSButton*)hoverButtonWithRect:(NSRect)rect
+                  textResourceId:(int)textResourceId
+                 imageResourceId:(int)imageResourceId
+                          action:(SEL)action;
 
 // Creates a generic link button with |title| and an |action| positioned at
 // |frameOrigin|.
@@ -387,9 +465,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 // Creates an email account button with |title|. If |canBeDeleted| is YES, then
 // the button is clickable and has a remove icon.
-- (NSButton*)makeAccountButtonWithRect:(NSRect)rect
-                                 title:(const std::string&)title
-                          canBeDeleted:(BOOL)canBeDeleted;
+- (NSButton*)accountButtonWithRect:(NSRect)rect
+                             title:(const std::string&)title
+                      canBeDeleted:(BOOL)canBeDeleted;
 
 - (void)dealloc;
 
@@ -537,16 +615,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // |yOffset| is the next position at which to draw in |contentView|
   // coordinates.
-  CGFloat yOffset = kVerticalSpacing;
-  NSRect viewRect = NSMakeRect(kHorizontalSpacing, yOffset, contentsWidth, 0);
+  CGFloat yOffset = kSmallVerticalSpacing;
 
   // Guest / Add Person / View All Persons buttons.
-  NSView* optionsView = [self createOptionsViewWithRect:viewRect];
+  NSView* optionsView = [self createOptionsViewWithRect:
+      NSMakeRect(0, yOffset, contentsWidthWithSpacing, 0)];
   [contentView addSubview:optionsView];
-  yOffset = NSMaxY([optionsView frame]) + kVerticalSpacing;
+  yOffset = NSMaxY([optionsView frame]) + kSmallVerticalSpacing;
 
-  NSBox* separator = [self separatorWithFrame:NSMakeRect(
-      0, yOffset, contentsWidthWithSpacing, 0)];
+  NSBox* separator = [self separatorWithFrame:
+      NSMakeRect(0, yOffset, contentsWidthWithSpacing, 0)];
   [contentView addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
@@ -565,15 +643,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     if ([otherProfiles.get() count] > 0)
       yOffset += kSmallVerticalSpacing;
   } else if (viewToDisplay == ACCOUNT_MANAGEMENT_VIEW) {
-    // Reuse the same view area as for the option buttons.
-    viewRect.origin.y = yOffset;
-    NSView* currentProfileAccountsView =
-        [self createCurrentProfileAccountsView:viewRect];
+    NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
+        NSMakeRect(kHorizontalSpacing, yOffset, contentsWidth, 0)];
     [contentView addSubview:currentProfileAccountsView];
     yOffset = NSMaxY([currentProfileAccountsView frame]) + kVerticalSpacing;
 
-    NSBox* accountsSeparator = [self separatorWithFrame:NSMakeRect(
-        0, yOffset, contentsWidthWithSpacing, 0)];
+    NSBox* accountsSeparator = [self separatorWithFrame:
+        NSMakeRect(0, yOffset, contentsWidthWithSpacing, 0)];
     [contentView addSubview:accountsSeparator];
     yOffset = NSMaxY([accountsSeparator frame]) + kVerticalSpacing;
   }
@@ -701,12 +777,17 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   const AvatarMenu::Item& item = avatarMenu_->GetItemAt(itemIndex);
   base::scoped_nsobject<NSButton> profileButton([[NSButton alloc]
       initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<CustomPaddingImageButtonCell> cell(
+  [[CustomPaddingImageButtonCell alloc]
+      initWithLeftMarginSpacing:0
+              imageTitleSpacing:kImageTitleSpacing]);
+  [profileButton setCell:cell.get()];
 
-  // TODO(noms): Increase the spacing between the icon and the text to 10px;
   [profileButton setTitle:base::SysUTF16ToNSString(item.name)];
   [profileButton setImage:CreateProfileImage(
       item.icon, kSmallImageSide).ToNSImage()];
   [profileButton setImagePosition:NSImageLeft];
+  [profileButton setAlignment:NSLeftTextAlignment];
   [profileButton setBordered:NO];
   [profileButton setFont:[NSFont labelFontOfSize:kTitleFontSize]];
   [profileButton setTag:itemIndex];
@@ -718,41 +799,38 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSView*)createOptionsViewWithRect:(NSRect)rect {
-  CGFloat yOffset = 0;
-  base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
-
+  NSRect viewRect = NSMakeRect(0, 0, rect.size.width, kBlueButtonHeight);
   NSButton* allUsersButton =
-      [self buttonWithRect:NSMakeRect(0, yOffset, 0, 0)
-            textResourceId:IDS_PROFILES_ALL_PEOPLE_BUTTON
-           imageResourceId:IDR_ICON_PROFILES_ADD_USER
-                    action:@selector(showUserManager:)];
-  yOffset = NSMaxY([allUsersButton frame]) + kSmallVerticalSpacing;
+      [self hoverButtonWithRect:viewRect
+                 textResourceId:IDS_PROFILES_ALL_PEOPLE_BUTTON
+                imageResourceId:IDR_ICON_PROFILES_ADD_USER
+                         action:@selector(showUserManager:)];
+  viewRect.origin.y = NSMaxY([allUsersButton frame]);
 
   NSButton* addUserButton =
-      [self buttonWithRect:NSMakeRect(0, yOffset, 0, 0)
-            textResourceId:IDS_PROFILES_ADD_PERSON_BUTTON
-           imageResourceId:IDR_ICON_PROFILES_ADD_USER
-                    action:@selector(addNewProfile:)];
-  yOffset = NSMaxY([addUserButton frame]) + kSmallVerticalSpacing;
+      [self hoverButtonWithRect:viewRect
+                 textResourceId:IDS_PROFILES_ADD_PERSON_BUTTON
+                imageResourceId:IDR_ICON_PROFILES_ADD_USER
+                         action:@selector(addNewProfile:)];
+  viewRect.origin.y = NSMaxY([addUserButton frame]);
 
   int guestButtonText = isGuestSession_ ? IDS_PROFILES_EXIT_GUEST_BUTTON :
                                           IDS_PROFILES_GUEST_BUTTON;
   SEL guestButtonAction = isGuestSession_ ? @selector(exitGuestProfile:) :
                                             @selector(switchToGuestProfile:);
   NSButton* guestButton =
-      [self buttonWithRect:NSMakeRect(0, yOffset, 0, 0)
-            textResourceId:guestButtonText
-           imageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST
-                    action:guestButtonAction];
-  yOffset = NSMaxY([guestButton frame]);
-
+      [self hoverButtonWithRect:viewRect
+                 textResourceId:guestButtonText
+                imageResourceId:IDR_ICON_PROFILES_BROWSE_GUEST
+                         action:guestButtonAction];
+  rect.size.height = NSMaxY([guestButton frame]);
+  base::scoped_nsobject<NSView> container([[NSView alloc]
+      initWithFrame:rect]);
   [container setSubviews:@[allUsersButton, addUserButton, guestButton]];
-  [container setFrameSize:NSMakeSize(NSWidth([container frame]), yOffset)];
   return container.autorelease();
 }
 
 - (NSView*)createCurrentProfileAccountsView:(NSRect)rect {
-  const CGFloat kBlueButtonHeight = 30;
   const CGFloat kAccountButtonHeight = 15;
 
   const AvatarMenu::Item& item =
@@ -797,9 +875,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   for (size_t i = 0; i < accounts.size(); ++i) {
     // Save the original email address, as the button text could be elided.
     currentProfileAccounts_[i] = accounts[i];
-    NSButton* accountButton = [self makeAccountButtonWithRect:rect
-                                                        title:accounts[i]
-                                                 canBeDeleted:true];
+    NSButton* accountButton = [self accountButtonWithRect:rect
+                                                    title:accounts[i]
+                                             canBeDeleted:true];
     [accountButton setTag:i];
     [container addSubview:accountButton];
     rect.origin.y = NSMaxY([accountButton frame]) + kSmallVerticalSpacing;
@@ -810,9 +888,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // TODO(rogerta): we still need to further differentiate the primary account
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
-  NSButton* accountButton = [self makeAccountButtonWithRect:rect
-                                                      title:primaryAccount
-                                               canBeDeleted:false];
+  NSButton* accountButton = [self accountButtonWithRect:rect
+                                                  title:primaryAccount
+                                           canBeDeleted:false];
   [container addSubview:accountButton];
   [container setFrameSize:NSMakeSize(NSWidth([container frame]),
                                      NSMaxY([accountButton frame]))];
@@ -836,21 +914,21 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return webview;
 }
 
-- (NSButton*)buttonWithRect:(NSRect)rect
-             textResourceId:(int)textResourceId
-            imageResourceId:(int)imageResourceId
-                     action:(SEL)action  {
-  base::scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:rect]);
+- (NSButton*)hoverButtonWithRect:(NSRect)rect
+                  textResourceId:(int)textResourceId
+                 imageResourceId:(int)imageResourceId
+                          action:(SEL)action  {
+  base::scoped_nsobject<BackgroundColorHoverButton> button(
+      [[BackgroundColorHoverButton alloc] initWithFrame:rect]);
 
-  // TODO(noms): Increase the spacing between the icon and the text to 10px;
   [button setTitle:l10n_util::GetNSString(textResourceId)];
   [button setImage:ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       imageResourceId).ToNSImage()];
   [button setImagePosition:NSImageLeft];
+  [button setAlignment:NSLeftTextAlignment];
   [button setBordered:NO];
   [button setTarget:self];
   [button setAction:action];
-  [button sizeToFit];
 
   return button.autorelease();
 }
@@ -875,9 +953,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return link.autorelease();
 }
 
-- (NSButton*)makeAccountButtonWithRect:(NSRect)rect
-                                 title:(const std::string&)title
-                          canBeDeleted:(BOOL)canBeDeleted {
+- (NSButton*)accountButtonWithRect:(NSRect)rect
+                             title:(const std::string&)title
+                      canBeDeleted:(BOOL)canBeDeleted {
   base::scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:rect]);
   [button setTitle:ElideEmail(title, rect.size.width)];
   [button setAlignment:NSLeftTextAlignment];
