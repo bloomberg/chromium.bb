@@ -161,12 +161,14 @@ void* OpenZipBuffer(void* opaque, const char* /*filename*/, int mode) {
 }
 
 // Reads compressed data from the specified stream. This function copies data
-// refered by the opaque parameter and returns the size actually copied.
+// referred by the opaque parameter and returns the size actually copied.
 uLong ReadZipBuffer(void* opaque, void* /*stream*/, void* buf, uLong size) {
   ZipBuffer* buffer = static_cast<ZipBuffer*>(opaque);
+  if (!buffer)
+    return 0;
   DCHECK_LE(buffer->offset, buffer->length);
   size_t remaining_bytes = buffer->length - buffer->offset;
-  if (!buffer || !buffer->data || !remaining_bytes)
+  if (!buffer->data || !remaining_bytes)
     return 0;
   size = std::min(size, static_cast<uLong>(remaining_bytes));
   memcpy(buf, &buffer->data[buffer->offset], size);
