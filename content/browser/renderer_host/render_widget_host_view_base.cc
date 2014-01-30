@@ -477,8 +477,10 @@ void RenderWidgetHostViewBase::OnSetNeedsFlushInput() {
       &RenderWidgetHostViewBase::FlushInput);
 }
 
-void RenderWidgetHostViewBase::GestureEventAck(int gesture_event_type,
-                                               InputEventAckState ack_result) {}
+void RenderWidgetHostViewBase::GestureEventAck(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+}
 
 void RenderWidgetHostViewBase::SetPopupType(blink::WebPopupType popup_type) {
   popup_type_ = popup_type;

@@ -73,10 +73,6 @@ public class AwScrollOffsetManager {
     private int mDeferredNativeScrollX;
     private int mDeferredNativeScrollY;
 
-    // The velocity of the last recorded fling,
-    private int mLastFlingVelocityX;
-    private int mLastFlingVelocityY;
-
     private OverScroller mScroller;
 
     public AwScrollOffsetManager(Delegate delegate, OverScroller overScroller) {
@@ -253,12 +249,6 @@ public class AwScrollOffsetManager {
         mDelegate.scrollNativeTo(x, y);
     }
 
-    // Called at the beginning of every fling gesture.
-    public void onFlingStartGesture(int velocityX, int velocityY) {
-        mLastFlingVelocityX = velocityX;
-        mLastFlingVelocityY = velocityY;
-    }
-
     // Called whenever some other touch interaction requires the fling gesture to be canceled.
     public void onFlingCancelGesture() {
         // TODO(mkosiba): Support speeding up a fling by flinging again.
@@ -269,8 +259,8 @@ public class AwScrollOffsetManager {
     // Called when a fling gesture is not handled by the renderer.
     // We explicitly ask the renderer not to handle fling gestures targeted at the root
     // scroll layer.
-    public void onUnhandledFlingStartEvent() {
-        flingScroll(-mLastFlingVelocityX, -mLastFlingVelocityY);
+    public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
+        flingScroll(-velocityX, -velocityY);
     }
 
     // Starts the fling animation. Called both as a response to a fling gesture and as via the

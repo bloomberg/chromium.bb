@@ -12,20 +12,20 @@ public class GestureStateListener {
     /**
      * Called when the pinch gesture starts.
      */
-    public void onPinchGestureStart() {}
+    public void onPinchStarted() {}
 
     /**
      * Called when the pinch gesture ends.
      */
-    public void onPinchGestureEnd() {}
+    public void onPinchEnded() {}
 
     /**
-     * Called when the fling gesture is sent.
+     * Called when a fling starts.
      */
     public void onFlingStartGesture(int vx, int vy, int scrollOffsetY, int scrollExtentY) {}
 
     /**
-     * Called when the fling cancel gesture is sent.
+     * Called when a fling is cancelled.
      */
     public void onFlingCancelGesture() {}
 
@@ -37,7 +37,7 @@ public class GestureStateListener {
     /**
      * Called when a fling event was not handled by the renderer.
      */
-    public void onUnhandledFlingStartEvent() {}
+    public void onUnhandledFlingStartEvent(int vx, int vy) {}
 
     /**
      * Called to indicate that a scroll update gesture had been consumed by the page.

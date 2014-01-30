@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -2780,7 +2779,7 @@ public class AwSettingsTest extends AwTestBase {
             @Override
             public void run() {
                 awContents.getContentViewCore().sendDoubleTapForTest(
-                        SystemClock.uptimeMillis(), x, y, new Bundle());
+                        SystemClock.uptimeMillis(), x, y);
             }
         });
     }

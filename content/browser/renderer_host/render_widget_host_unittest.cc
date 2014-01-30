@@ -477,9 +477,9 @@ class TestView : public TestRenderWidgetHostView {
   virtual void UnhandledWheelEvent(const WebMouseWheelEvent& event) OVERRIDE {
     unhandled_wheel_event_ = event;
   }
-  virtual void GestureEventAck(int gesture_event_type,
+  virtual void GestureEventAck(const WebGestureEvent& event,
                                InputEventAckState ack_result) OVERRIDE {
-    gesture_event_type_ = gesture_event_type;
+    gesture_event_type_ = event.type;
     ack_result_ = ack_result;
   }
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE {

@@ -2150,10 +2150,11 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
 #endif
 }
 
-void RenderWidgetHostViewAura::GestureEventAck(int gesture_event_type,
-                                               InputEventAckState ack_result) {
+void RenderWidgetHostViewAura::GestureEventAck(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
   if (touch_editing_client_)
-    touch_editing_client_->GestureEventAck(gesture_event_type);
+    touch_editing_client_->GestureEventAck(event.type);
 }
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(

@@ -236,24 +236,7 @@ public class ContentView extends FrameLayout
      */
     @VisibleForTesting
     public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
-        mContentViewCore.getContentViewGestureHandler().fling(timeMs, x, y, velocityX, velocityY);
-    }
-
-    /**
-     * Modify the ContentView magnification level. The effect of calling this
-     * method is exactly as after "pinch zoom".
-     *
-     * @param timeMs The event time in milliseconds.
-     * @param delta The ratio of the new magnification level over the current
-     *            magnification level.
-     * @param anchorX The magnification anchor (X) in the current view
-     *            coordinate.
-     * @param anchorY The magnification anchor (Y) in the current view
-     *            coordinate.
-     */
-    @VisibleForTesting
-    public void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
-        mContentViewCore.getContentViewGestureHandler().pinchBy(timeMs, anchorX, anchorY, delta);
+        mContentViewCore.flingForTest(timeMs, x, y, velocityX, velocityY);
     }
 
     /**
@@ -475,11 +458,11 @@ public class ContentView extends FrameLayout
     }
 
     public int getSingleTapX()  {
-        return mContentViewCore.getContentViewGestureHandler().getSingleTapX();
+        return mContentViewCore.getSingleTapX();
     }
 
     public int getSingleTapY()  {
-        return mContentViewCore.getContentViewGestureHandler().getSingleTapY();
+        return mContentViewCore.getSingleTapY();
     }
 
     @Override

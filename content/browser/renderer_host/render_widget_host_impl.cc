@@ -2094,7 +2094,7 @@ void RenderWidgetHostImpl::OnGestureEventAck(
   }
 
   if (view_)
-    view_->GestureEventAck(event.event.type, ack_result);
+    view_->GestureEventAck(event.event, ack_result);
 }
 
 void RenderWidgetHostImpl::OnTouchEventAck(

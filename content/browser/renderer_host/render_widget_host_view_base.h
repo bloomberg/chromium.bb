@@ -64,7 +64,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       const blink::WebInputEvent& input_event) OVERRIDE;
   virtual void OnSetNeedsFlushInput() OVERRIDE;
   virtual void OnDidFlushInput() OVERRIDE;
-  virtual void GestureEventAck(int gesture_event_type,
+  virtual void GestureEventAck(const blink::WebGestureEvent& event,
                                InputEventAckState ack_result) OVERRIDE;
   virtual void SetPopupType(blink::WebPopupType popup_type) OVERRIDE;
   virtual blink::WebPopupType GetPopupType() OVERRIDE;

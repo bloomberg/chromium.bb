@@ -33,6 +33,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -110,6 +111,88 @@ ScopedJavaLocalRef<jobject> CreateJavaRect(
                                       static_cast<int>(rect.bottom())));
 }
 
+bool PossiblyTriggeredByTouchTimeout(const WebGestureEvent& event) {
+  switch (event.type) {
+    case WebInputEvent::GestureShowPress:
+    case WebInputEvent::GestureLongPress:
+      return true;
+    // On Android, a GestureTap may be sent after a certain timeout window
+    // if there is no GestureDoubleTap follow-up.
+    case WebInputEvent::GestureTap:
+      return true;
+    // On Android, a GestureTapCancel may be triggered by the loss of window
+    //  focus (e.g., following a GestureLongPress).
+    case WebInputEvent::GestureTapCancel:
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
+int ToContentViewGestureHandlerType(WebInputEvent::Type type) {
+  // These values should match exactly those in ContentViewGestureHandler.
+  enum ContentViewGestureHandlerType {
+    GESTURE_SHOW_PRESS = 0,
+    GESTURE_DOUBLE_TAP = 1,
+    GESTURE_SINGLE_TAP_UP = 2,
+    GESTURE_SINGLE_TAP_CONFIRMED = 3,
+    GESTURE_SINGLE_TAP_UNCONFIRMED = 4,
+    GESTURE_LONG_PRESS = 5,
+    GESTURE_SCROLL_START = 6,
+    GESTURE_SCROLL_BY = 7,
+    GESTURE_SCROLL_END = 8,
+    GESTURE_FLING_START = 9,
+    GESTURE_FLING_CANCEL = 10,
+    GESTURE_PINCH_BEGIN = 11,
+    GESTURE_PINCH_BY = 12,
+    GESTURE_PINCH_END = 13,
+    GESTURE_TAP_CANCEL = 14,
+    GESTURE_LONG_TAP = 15,
+    GESTURE_TAP_DOWN = 16
+  };
+  switch (type) {
+    case WebInputEvent::GestureScrollBegin:
+      return GESTURE_SCROLL_START;
+    case WebInputEvent::GestureScrollEnd:
+      return GESTURE_SCROLL_END;
+    case WebInputEvent::GestureScrollUpdate:
+      return GESTURE_SCROLL_BY;
+    case WebInputEvent::GestureFlingStart:
+      return GESTURE_FLING_START;
+    case WebInputEvent::GestureFlingCancel:
+      return GESTURE_FLING_CANCEL;
+    case WebInputEvent::GestureShowPress:
+      return GESTURE_SHOW_PRESS;
+    case WebInputEvent::GestureTap:
+      return GESTURE_SINGLE_TAP_CONFIRMED;
+    case WebInputEvent::GestureTapUnconfirmed:
+      return GESTURE_SINGLE_TAP_UNCONFIRMED;
+    case WebInputEvent::GestureTapDown:
+      return GESTURE_TAP_DOWN;
+    case WebInputEvent::GestureTapCancel:
+      return GESTURE_TAP_CANCEL;
+    case WebInputEvent::GestureDoubleTap:
+      return GESTURE_DOUBLE_TAP;
+    case WebInputEvent::GestureLongPress:
+      return GESTURE_LONG_PRESS;
+    case WebInputEvent::GestureLongTap:
+      return GESTURE_LONG_TAP;
+    case WebInputEvent::GesturePinchBegin:
+      return GESTURE_PINCH_BEGIN;
+    case WebInputEvent::GesturePinchEnd:
+      return GESTURE_PINCH_END;
+    case WebInputEvent::GesturePinchUpdate:
+      return GESTURE_PINCH_BY;
+    case WebInputEvent::GestureTwoFingerTap:
+    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
+    default:
+      NOTREACHED() << "Invalid source gesture type: "
+                   << WebInputEventTraits::GetName(type);
+      return -1;
+  };
+}
+
 }  // namespace
 
 // Enables a callback when the underlying WebContents is destroyed, to enable
@@ -176,7 +259,9 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
       view_android_(view_android),
       window_android_(window_android),
       device_orientation_(0),
-      geolocation_needs_pause_(false) {
+      geolocation_needs_pause_(false),
+      gesture_event_queue_(this),
+      handling_touch_event_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
@@ -300,6 +385,13 @@ void ContentViewCoreImpl::Observe(int type,
 void ContentViewCoreImpl::RenderViewReady() {
   if (device_orientation_ != 0)
     SendOrientationChangeEventInternal();
+}
+
+void ContentViewCoreImpl::ForwardGestureEvent(
+    const blink::WebGestureEvent& event) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->SendGestureEvent(event);
 }
 
 RenderWidgetHostViewAndroid*
@@ -495,55 +587,74 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
 }
 
 void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return;
-  Java_ContentViewCore_confirmTouchEvent(env, j_obj.obj(),
-                                         static_cast<jint>(ack_result));
+  gesture_event_queue_.OnTouchEventAck(ack_result);
 }
 
-void ContentViewCoreImpl::OnFlingStartEventAck(InputEventAckState ack_result) {
+void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
+                                            InputEventAckState ack_result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  Java_ContentViewCore_onFlingStartEventAck(env, j_obj.obj(),
-                                            static_cast<jint>(ack_result));
+
+  switch (event.type) {
+    case WebInputEvent::GestureFlingStart:
+      if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+        Java_ContentViewCore_onFlingStartEventConsumed(env, j_obj.obj(),
+            event.data.flingStart.velocityX, event.data.flingStart.velocityY);
+      } else {
+        // If a scroll ends with a fling, a GESTURE_SCROLL_END is never sent.
+        // However, if that fling went unconsumed, we still need to let the
+        // listeners know that scrolling has ended.
+        Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());
+      }
+
+      if (ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+        Java_ContentViewCore_onFlingStartEventHadNoConsumer(env, j_obj.obj(),
+            event.data.flingStart.velocityX, event.data.flingStart.velocityY);
+      }
+      break;
+    case WebInputEvent::GestureFlingCancel:
+      Java_ContentViewCore_onFlingCancelEventAck(env, j_obj.obj());
+      break;
+    case WebInputEvent::GestureScrollBegin:
+      Java_ContentViewCore_onScrollBeginEventAck(env, j_obj.obj());
+      break;
+    case WebInputEvent::GestureScrollUpdate:
+      if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
+        Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj.obj());
+      break;
+    case WebInputEvent::GestureScrollEnd:
+      Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());
+      break;
+    case WebInputEvent::GesturePinchBegin:
+      Java_ContentViewCore_onPinchBeginEventAck(env, j_obj.obj());
+      break;
+    case WebInputEvent::GesturePinchEnd:
+      Java_ContentViewCore_onPinchEndEventAck(env, j_obj.obj());
+      break;
+    default:
+      break;
+  }
 }
 
-void ContentViewCoreImpl::OnScrollBeginEventAck() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return;
-  Java_ContentViewCore_onScrollBeginEventAck(env, j_obj.obj());
-}
+bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
+  if (!WebInputEvent::isGestureEventType(event.type))
+    return false;
 
-void ContentViewCoreImpl::OnScrollUpdateGestureConsumed() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
-    return;
-  Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj.obj());
-}
+    return false;
 
-void ContentViewCoreImpl::OnScrollEndEventAck() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return;
-  Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());
-}
-
-void ContentViewCoreImpl::HasTouchEventHandlers(bool need_touch_events) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return;
-  Java_ContentViewCore_hasTouchEventHandlers(env,
-                                             j_obj.obj(),
-                                             need_touch_events);
+  const blink::WebGestureEvent& gesture =
+      static_cast<const blink::WebGestureEvent&>(event);
+  int gesture_type = ToContentViewGestureHandlerType(event.type);
+  return Java_ContentViewCore_filterGestureEvent(env,
+                                                 j_obj.obj(),
+                                                 gesture_type,
+                                                 gesture.x,
+                                                 gesture.y);
 }
 
 bool ContentViewCoreImpl::HasFocus() {
@@ -919,21 +1030,32 @@ void ContentViewCoreImpl::SendOrientationChangeEvent(JNIEnv* env,
   }
 }
 
-jboolean ContentViewCoreImpl::SendTouchEvent(JNIEnv* env,
-                                             jobject obj,
-                                             jlong time_ms,
-                                             jint type,
-                                             jobjectArray pts) {
+void ContentViewCoreImpl::OnTouchEventHandlingBegin(JNIEnv* env,
+                                                    jobject obj,
+                                                    jlong time_ms,
+                                                    jint type,
+                                                    jobjectArray pts) {
+  DCHECK(!handling_touch_event_);
+  handling_touch_event_ = true;
+
+  blink::WebTouchEvent event;
+  TouchPoint::BuildWebTouchEvent(env, type, time_ms, GetDpiScale(), pts, event);
+  pending_touch_event_ = event;
+
+  pending_gesture_packet_ = GestureEventPacket::FromTouch(event);
+}
+
+void ContentViewCoreImpl::OnTouchEventHandlingEnd(JNIEnv* env, jobject obj) {
+  DCHECK(handling_touch_event_);
+  handling_touch_event_ = false;
+
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv) {
-    using blink::WebTouchEvent;
-    blink::WebTouchEvent event;
-    TouchPoint::BuildWebTouchEvent(env, type, time_ms, GetDpiScale(), pts,
-        event);
-    rwhv->SendTouchEvent(event);
-    return true;
-  }
-  return false;
+  if (!rwhv)
+    return;
+
+  // Note: Order is important here, as the touch may be ack'ed synchronously
+  gesture_event_queue_.OnGestureEventPacket(pending_gesture_packet_);
+  rwhv->SendTouchEvent(pending_touch_event_);
 }
 
 float ContentViewCoreImpl::GetTouchPaddingDip() {
@@ -1003,9 +1125,33 @@ WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(
 
 void ContentViewCoreImpl::SendGestureEvent(
     const blink::WebGestureEvent& event) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->SendGestureEvent(event);
+  // Gestures received while |handling_touch_event_| will accumulate until
+  // touch handling finishes, at which point the gestures will be pushed to the
+  // |gesture_event_queue_|.
+  if (handling_touch_event_) {
+    pending_gesture_packet_.Push(event);
+    return;
+  }
+
+  // TODO(jdduke): In general, timeout-based gestures *should* have the same
+  // timestamp as the initial TouchStart of the current sequence. We should
+  // verify that this is true, and use that as another timeout check.
+  if (PossiblyTriggeredByTouchTimeout(event)) {
+    gesture_event_queue_.OnGestureEventPacket(
+        GestureEventPacket::FromTouchTimeout(event));
+    return;
+  }
+
+  // If |event| was not (directly or indirectly) touch-derived, treat it as
+  // a synthetic gesture event.
+  SendSyntheticGestureEvent(event);
+}
+
+void ContentViewCoreImpl::SendSyntheticGestureEvent(
+    const blink::WebGestureEvent& event) {
+  // Synthetic gestures (e.g., those not generated directly by touches
+  // for which we expect an ack), should be forwarded directly.
+  ForwardGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env,
@@ -1065,12 +1211,17 @@ void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
       WebInputEvent::GestureTap, time_ms, x, y);
 
   event.data.tap.tapCount = 1;
-  if (!disambiguation_popup_tap) {
-    const float touch_padding_dip = GetTouchPaddingDip();
-    event.data.tap.width = touch_padding_dip;
-    event.data.tap.height = touch_padding_dip;
+
+  // Disambiguation popup gestures are treated as synthetic because their
+  // generating touches were never forwarded to the renderer.
+  if (disambiguation_popup_tap) {
+    SendSyntheticGestureEvent(event);
+    return;
   }
 
+  const float touch_padding_dip = GetTouchPaddingDip();
+  event.data.tap.width = touch_padding_dip;
+  event.data.tap.height = touch_padding_dip;
   SendGestureEvent(event);
 }
 
@@ -1089,9 +1240,9 @@ void ContentViewCoreImpl::SingleTapUnconfirmed(JNIEnv* env, jobject obj,
   SendGestureEvent(event);
 }
 
-void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
-                                         jlong time_ms,
-                                         jfloat x, jfloat y) {
+void ContentViewCoreImpl::ShowPress(JNIEnv* env, jobject obj,
+                                    jlong time_ms,
+                                    jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureShowPress, time_ms, x, y);
   SendGestureEvent(event);
@@ -1128,12 +1279,16 @@ void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureLongPress, time_ms, x, y);
 
-  if (!disambiguation_popup_tap) {
-    const float touch_padding_dip = GetTouchPaddingDip();
-    event.data.longPress.width = touch_padding_dip;
-    event.data.longPress.height = touch_padding_dip;
+  // Disambiguation popup gestures are treated as synthetic because their
+  // generating touches were never forwarded to the renderer.
+  if (disambiguation_popup_tap) {
+    SendSyntheticGestureEvent(event);
+    return;
   }
 
+  const float touch_padding_dip = GetTouchPaddingDip();
+  event.data.longPress.width = touch_padding_dip;
+  event.data.longPress.height = touch_padding_dip;
   SendGestureEvent(event);
 }
 
@@ -1143,12 +1298,16 @@ void ContentViewCoreImpl::LongTap(JNIEnv* env, jobject obj, jlong time_ms,
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureLongTap, time_ms, x, y);
 
-  if (!disambiguation_popup_tap) {
-    const float touch_padding_dip = GetTouchPaddingDip();
-    event.data.longPress.width = touch_padding_dip;
-    event.data.longPress.height = touch_padding_dip;
+  // Disambiguation popup gestures are treated as synthetic because their
+  // generating touches were never forwarded to the renderer.
+  if (disambiguation_popup_tap) {
+    SendSyntheticGestureEvent(event);
+    return;
   }
 
+  const float touch_padding_dip = GetTouchPaddingDip();
+  event.data.longPress.width = touch_padding_dip;
+  event.data.longPress.height = touch_padding_dip;
   SendGestureEvent(event);
 }
 

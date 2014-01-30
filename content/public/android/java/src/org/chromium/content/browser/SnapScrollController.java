@@ -24,11 +24,9 @@ class SnapScrollController {
     private int mFirstTouchY = -1;
     private float mDistanceX = 0;
     private float mDistanceY = 0;
-    private ZoomManager mZoomManager;
 
-    SnapScrollController(Context context, ZoomManager zoomManager) {
+    SnapScrollController(Context context) {
         calculateChannelDistance(context);
-        mZoomManager = zoomManager;
     }
 
     /**
@@ -63,7 +61,7 @@ class SnapScrollController {
      * Sets the snap scroll mode based on the event type.
      * @param event The received MotionEvent.
      */
-    void setSnapScrollingMode(MotionEvent event) {
+    void setSnapScrollingMode(MotionEvent event, boolean isScaleGestureDetectionInProgress) {
         switch(event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mSnapScrollMode = SNAP_NONE;
@@ -76,7 +74,7 @@ class SnapScrollController {
              // and movement towards x-axis is trivial.
              // Scrolling mode will remain in SNAP_NONE for other conditions.
             case MotionEvent.ACTION_MOVE:
-                if (!mZoomManager.isScaleGestureDetectionInProgress() &&
+                if (!isScaleGestureDetectionInProgress &&
                         mSnapScrollMode == SNAP_NONE) {
                     int xDiff = (int) Math.abs(event.getX() - mFirstTouchX);
                     int yDiff = (int) Math.abs(event.getY() - mFirstTouchY);

@@ -106,8 +106,9 @@ public class GestureDetector {
          * that trigged it.
          *
          * @param e The initial on down motion event that started the longpress.
+         * @return true if the event is consumed, else false
          */
-        void onLongPress(MotionEvent e);
+        boolean onLongPress(MotionEvent e);
 
         /**
          * Notified of a fling event when it occurs with the initial on down {@link MotionEvent}
@@ -172,7 +173,8 @@ public class GestureDetector {
             return false;
         }
 
-        public void onLongPress(MotionEvent e) {
+        public boolean onLongPress(MotionEvent e) {
+            return false;
         }
 
         public boolean onScroll(MotionEvent e1, MotionEvent e2,
@@ -708,7 +710,10 @@ public class GestureDetector {
     private void dispatchLongPress() {
         mHandler.removeMessages(TAP);
         mDeferConfirmSingleTap = false;
+/*  Changed in Chromium to allow scrolling after a longpress.
         mInLongPress = true;
         mListener.onLongPress(mCurrentDownEvent);
+*/
+        mInLongPress = mListener.onLongPress(mCurrentDownEvent);
     }
 }

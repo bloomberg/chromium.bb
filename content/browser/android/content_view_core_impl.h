@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -37,7 +38,8 @@ struct MenuItem;
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
                             public NotificationObserver,
-                            public WebContentsObserver {
+                            public WebContentsObserver,
+                            public GestureEventQueueClient {
  public:
   static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
   ContentViewCoreImpl(JNIEnv* env,
@@ -94,11 +96,12 @@ class ContentViewCoreImpl : public ContentViewCore,
       JNIEnv* env, jobject obj) const;
   jboolean IsIncognito(JNIEnv* env, jobject obj);
   void SendOrientationChangeEvent(JNIEnv* env, jobject obj, jint orientation);
-  jboolean SendTouchEvent(JNIEnv* env,
-                          jobject obj,
-                          jlong time_ms,
-                          jint type,
-                          jobjectArray pts);
+  void OnTouchEventHandlingBegin(JNIEnv* env,
+                                 jobject obj,
+                                 jlong time_ms,
+                                 jint type,
+                                 jobjectArray pts);
+  void OnTouchEventHandlingEnd(JNIEnv* env, jobject obj);
   jboolean SendMouseMoveEvent(JNIEnv* env,
                               jobject obj,
                               jlong time_ms,
@@ -123,8 +126,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                  jboolean disambiguation_popup_tap);
   void SingleTapUnconfirmed(JNIEnv* env, jobject obj, jlong time_ms,
                             jfloat x, jfloat y);
-  void ShowPressState(JNIEnv* env, jobject obj, jlong time_ms,
-                      jfloat x, jfloat y);
+  void ShowPress(JNIEnv* env, jobject obj, jlong time_ms,
+                 jfloat x, jfloat y);
   void TapCancel(JNIEnv* env, jobject obj, jlong time_ms,
                  jfloat x, jfloat y);
   void TapDown(JNIEnv* env, jobject obj, jlong time_ms,
@@ -269,11 +272,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   bool HasFocus();
   void ConfirmTouchEvent(InputEventAckState ack_result);
-  void OnFlingStartEventAck(InputEventAckState ack_result);
-  void OnScrollBeginEventAck();
-  void OnScrollUpdateGestureConsumed();
-  void OnScrollEndEventAck();
-  void HasTouchEventHandlers(bool need_touch_events);
+  void OnGestureEventAck(const blink::WebGestureEvent& event,
+                         InputEventAckState ack_result);
+  bool FilterInputEvent(const blink::WebInputEvent& event);
   void OnSelectionChanged(const std::string& text);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
@@ -336,6 +337,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void RenderViewReady() OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
+  // GestureEventQueueClient implementation.
+  virtual void ForwardGestureEvent(
+      const blink::WebGestureEvent& event) OVERRIDE;
+
   // --------------------------------------------------------------------------
   // Other private methods and data
   // --------------------------------------------------------------------------
@@ -357,6 +362,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void DeleteScaledSnapshotTexture();
 
   void SendGestureEvent(const blink::WebGestureEvent& event);
+  void SendSyntheticGestureEvent(const blink::WebGestureEvent& event);
 
   // Update focus state of the RenderWidgetHostView.
   void SetFocusInternal(bool focused);
@@ -395,6 +401,11 @@ class ContentViewCoreImpl : public ContentViewCore,
   int device_orientation_;
 
   bool geolocation_needs_pause_;
+
+  GestureEventQueue gesture_event_queue_;
+  bool handling_touch_event_;
+  blink::WebTouchEvent pending_touch_event_;
+  GestureEventPacket pending_gesture_packet_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

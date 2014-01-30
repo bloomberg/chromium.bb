@@ -1101,28 +1101,18 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
 }
 
 void RenderWidgetHostViewAndroid::GestureEventAck(
-    int gesture_event_type,
+    const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  // Scroll events.
-  if (gesture_event_type == blink::WebInputEvent::GestureScrollBegin) {
-    content_view_core_->OnScrollBeginEventAck();
-  }
-  if (gesture_event_type == blink::WebInputEvent::GestureScrollUpdate &&
-      ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
-    content_view_core_->OnScrollUpdateGestureConsumed();
-  }
-  if (gesture_event_type == blink::WebInputEvent::GestureScrollEnd) {
-    content_view_core_->OnScrollEndEventAck();
-  }
-
-  // Fling events.
-  if (gesture_event_type == blink::WebInputEvent::GestureFlingStart) {
-    content_view_core_->OnFlingStartEventAck(ack_result);
-  }
+  if (content_view_core_)
+    content_view_core_->OnGestureEventAck(event, ack_result);
 }
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
+  if (content_view_core_ &&
+      content_view_core_->FilterInputEvent(input_event))
+    return INPUT_EVENT_ACK_STATE_CONSUMED;
+
   if (!host_)
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 
@@ -1240,7 +1230,6 @@ void RenderWidgetHostViewAndroid::SendTouchEvent(
   if (host_)
     host_->ForwardTouchEventWithLatencyInfo(event, CreateLatencyInfo(event));
 }
-
 
 void RenderWidgetHostViewAndroid::SendMouseEvent(
     const blink::WebMouseEvent& event) {
@@ -1367,11 +1356,6 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     if (content_view_core_ && !using_synchronous_compositor_)
       content_view_core_->GetWindowAndroid()->AddObserver(this);
   }
-
-  // Ensure ContentsViewCore is aware of the current touch handling state, eg.
-  // in case we've already been running JS for the page as part of preload.
-  if (content_view_core_ && host_)
-    content_view_core_->HasTouchEventHandlers(host_->has_touch_handler());
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
@@ -1383,8 +1367,6 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
 
 void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
     bool need_touch_events) {
-  if (content_view_core_)
-    content_view_core_->HasTouchEventHandlers(need_touch_events);
 }
 
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {

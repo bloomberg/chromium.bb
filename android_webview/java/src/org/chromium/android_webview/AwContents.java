@@ -385,7 +385,7 @@ public class AwContents {
     //--------------------------------------------------------------------------------------------
     private class AwGestureStateListener extends GestureStateListener {
         @Override
-        public void onPinchGestureStart() {
+        public void onPinchStarted() {
             // While it's possible to re-layout the view during a pinch gesture, the effect is very
             // janky (especially that the page scale update notification comes from the renderer
             // main thread, not from the impl thread, so it's usually out of sync with what's on
@@ -396,14 +396,8 @@ public class AwContents {
         }
 
         @Override
-        public void onPinchGestureEnd() {
+        public void onPinchEnded() {
             mLayoutSizer.unfreezeLayoutRequests();
-        }
-
-        @Override
-        public void onFlingStartGesture(
-                int velocityX, int velocityY, int scrollOffsetY, int scrollExtentY) {
-            mScrollOffsetManager.onFlingStartGesture(velocityX, velocityY);
         }
 
         @Override
@@ -412,8 +406,8 @@ public class AwContents {
         }
 
         @Override
-        public void onUnhandledFlingStartEvent() {
-            mScrollOffsetManager.onUnhandledFlingStartEvent();
+        public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
+            mScrollOffsetManager.onUnhandledFlingStartEvent(velocityX, velocityY);
         }
 
         @Override

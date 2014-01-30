@@ -677,11 +677,11 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         }
 
         @Override
-        public void onPinchGestureStart() {
+        public void onPinchStarted() {
         }
 
         @Override
-        public void onPinchGestureEnd() {
+        public void onPinchEnded() {
         }
 
         @Override
@@ -694,7 +694,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         }
 
         @Override
-        public void onUnhandledFlingStartEvent() {
+        public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
         }
 
         @Override
