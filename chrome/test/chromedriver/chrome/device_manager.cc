@@ -16,6 +16,10 @@
 #include "chrome/test/chromedriver/chrome/adb.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
+// TODO(craigdh): Remove once Chromedriver no longer supports pre-m33 Chrome.
+const char* kChromeCmdLineFileBeforeM33 = "/data/local/chrome-command-line";
+const char* kChromeCmdLineFile = "/data/local/tmp/chrome-command-line";
+
 Device::Device(
     const std::string& device_serial, Adb* adb,
     base::Callback<void()> release_callback)
@@ -38,7 +42,7 @@ Status Device::SetUp(const std::string& package,
         active_package_ + " was launched and has not been quit");
 
   Status status = adb_->CheckAppInstalled(serial_, package);
-  if (!status.IsOk())
+  if (status.IsError())
     return status;
 
   std::string known_activity;
@@ -46,26 +50,32 @@ Status Device::SetUp(const std::string& package,
   std::string device_socket;
   std::string exec_name;
   if (package.compare("org.chromium.content_shell_apk") == 0) {
+    // Chromium content shell.
     known_activity = ".ContentShellActivity";
     device_socket = "content_shell_devtools_remote";
     command_line_file = "/data/local/tmp/content-shell-command-line";
     exec_name = "content_shell";
   } else if (package.compare("org.chromium.chrome.testshell") == 0) {
+    // Chromium test shell.
     known_activity = ".ChromiumTestShellActivity";
     device_socket = "chromium_testshell_devtools_remote";
     command_line_file = "/data/local/tmp/chromium-testshell-command-line";
     exec_name = "chromium_testshell";
   } else if (package.find("chrome") != std::string::npos &&
              package.find("webview") == std::string::npos) {
+    // Chrome.
     known_activity = "com.google.android.apps.chrome.Main";
     device_socket = "chrome_devtools_remote";
-    command_line_file = "/data/local/chrome-command-line";
+    command_line_file = kChromeCmdLineFileBeforeM33;
     exec_name = "chrome";
+    status = adb_->SetDebugApp(serial_, package);
+    if (status.IsError())
+      return status;
   }
 
   if (!use_running_app) {
     status = adb_->ClearAppData(serial_, package);
-    if (!status.IsOk())
+    if (status.IsError())
       return status;
 
     if (!known_activity.empty()) {
@@ -78,15 +88,28 @@ Status Device::SetUp(const std::string& package,
     }
 
     if (!command_line_file.empty()) {
-      status = adb_->SetCommandLineFile(serial_, command_line_file, exec_name,
-                                        args);
-      if (!status.IsOk())
-        return status;
+      // If Chrome is set as the debug app it looks in /data/local/tmp/.
+      // There's no way to know if this is set, so write to both locations.
+      // This can be removed once support for pre-M33 is no longer needed.
+      if (command_line_file == kChromeCmdLineFileBeforeM33) {
+        status = adb_->SetCommandLineFile(
+            serial_, kChromeCmdLineFileBeforeM33, exec_name, args);
+        Status status2 = adb_->SetCommandLineFile(
+            serial_, kChromeCmdLineFile, exec_name, args);
+        if (status.IsError() && status2.IsError())
+          return Status(kUnknownError,
+              "Failed to set Chrome's command line file on device " + serial_);
+      } else {
+        status = adb_->SetCommandLineFile(
+            serial_, command_line_file, exec_name, args);
+        if (status.IsError())
+          return status;
+      }
     }
 
     status = adb_->Launch(serial_, package,
                           known_activity.empty() ? activity : known_activity);
-    if (!status.IsOk())
+    if (status.IsError())
       return status;
 
     active_package_ = package;
@@ -106,7 +129,7 @@ Status Device::ForwardDevtoolsPort(const std::string& package,
     Status status = adb_->GetPidByName(serial_,
                                        process.empty() ? package : process,
                                        &pid);
-    if (!status.IsOk()) {
+    if (status.IsError()) {
       if (process.empty())
         status.AddDetails(
             "process name must be specified if not equal to package name");
@@ -122,7 +145,7 @@ Status Device::TearDown() {
   if (!active_package_.empty()) {
     std::string response;
     Status status = adb_->ForceStop(serial_, active_package_);
-    if (!status.IsOk())
+    if (status.IsError())
       return status;
     active_package_ = "";
   }
@@ -138,7 +161,7 @@ DeviceManager::~DeviceManager() {}
 Status DeviceManager::AcquireDevice(scoped_ptr<Device>* device) {
   std::vector<std::string> devices;
   Status status = adb_->GetDevices(&devices);
-  if (!status.IsOk())
+  if (status.IsError())
     return status;
 
   if (devices.empty())
@@ -162,7 +185,7 @@ Status DeviceManager::AcquireSpecificDevice(
     const std::string& device_serial, scoped_ptr<Device>* device) {
   std::vector<std::string> devices;
   Status status = adb_->GetDevices(&devices);
-  if (!status.IsOk())
+  if (status.IsError())
     return status;
 
   if (std::find(devices.begin(), devices.end(), device_serial) == devices.end())

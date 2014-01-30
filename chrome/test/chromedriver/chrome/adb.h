@@ -26,6 +26,8 @@ class Adb {
                                    const std::string& package) = 0;
   virtual Status ClearAppData(const std::string& device_serial,
                               const std::string& package) = 0;
+  virtual Status SetDebugApp(const std::string& device_serial,
+                             const std::string& package) = 0;
   virtual Status Launch(const std::string& device_serial,
                         const std::string& package,
                         const std::string& activity) = 0;

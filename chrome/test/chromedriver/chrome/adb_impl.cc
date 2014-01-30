@@ -160,6 +160,13 @@ Status AdbImpl::ClearAppData(
   return Status(kOk);
 }
 
+Status AdbImpl::SetDebugApp(
+    const std::string& device_serial, const std::string& package) {
+  std::string response;
+  return ExecuteHostShellCommand(
+      device_serial, "am set-debug-app --persistent " + package, &response);
+}
+
 Status AdbImpl::Launch(
     const std::string& device_serial, const std::string& package,
     const std::string& activity) {

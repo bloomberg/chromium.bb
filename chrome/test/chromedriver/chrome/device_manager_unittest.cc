@@ -48,6 +48,11 @@ class FakeAdb : public Adb {
     return Status(kOk);
   }
 
+  virtual Status SetDebugApp(const std::string& device_serial,
+                              const std::string& package) OVERRIDE {
+    return Status(kOk);
+  }
+
   virtual Status Launch(const std::string& device_serial,
                         const std::string& package,
                         const std::string& activity) OVERRIDE {
