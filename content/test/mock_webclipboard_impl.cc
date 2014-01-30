@@ -33,10 +33,10 @@ MockWebClipboardImpl::~MockWebClipboardImpl() {}
 bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   switch (format) {
     case FormatPlainText:
-      return !m_plainText.isNull();
+      return !m_plainText.is_null();
 
     case FormatHTML:
-      return !m_htmlText.isNull();
+      return !m_htmlText.is_null();
 
     case FormatSmartPaste:
       return m_writeSmartPaste;
@@ -66,10 +66,10 @@ WebVector<WebString> MockWebClipboardImpl::readAvailableTypes(
     bool* containsFilenames) {
   *containsFilenames = false;
   std::vector<WebString> results;
-  if (!m_plainText.isEmpty()) {
+  if (!m_plainText.string().empty()) {
     results.push_back(WebString("text/plain"));
   }
-  if (!m_htmlText.isEmpty()) {
+  if (!m_htmlText.string().empty()) {
     results.push_back(WebString("text/html"));
   }
   if (!m_image.isNull()) {
@@ -97,7 +97,7 @@ blink::WebString MockWebClipboardImpl::readHTML(
     unsigned* fragmentStart,
     unsigned* fragmentEnd) {
   *fragmentStart = 0;
-  *fragmentEnd = static_cast<unsigned>(m_htmlText.length());
+  *fragmentEnd = static_cast<unsigned>(m_htmlText.string().length());
   return m_htmlText;
 }
 
@@ -199,8 +199,8 @@ void MockWebClipboardImpl::writeDataObject(const WebDragData& data) {
 }
 
 void MockWebClipboardImpl::clear() {
-  m_plainText = WebString();
-  m_htmlText = WebString();
+  m_plainText = base::NullableString16();
+  m_htmlText = base::NullableString16();
   m_image.reset();
   m_customData.clear();
   m_writeSmartPaste = false;

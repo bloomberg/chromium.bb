@@ -12,6 +12,7 @@
 
 #include <map>
 
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
@@ -52,8 +53,8 @@ class MockWebClipboardImpl : public blink::WebClipboard {
  private:
   void clear();
 
-  blink::WebString m_plainText;
-  blink::WebString m_htmlText;
+  base::NullableString16 m_plainText;
+  base::NullableString16 m_htmlText;
   blink::WebImage m_image;
   std::map<base::string16, base::string16> m_customData;
   bool m_writeSmartPaste;
