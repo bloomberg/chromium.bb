@@ -33,6 +33,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/gestures/gesture_configuration.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -1500,6 +1501,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
 #endif
 
 TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
+  // Slop is an implementation detail of gesture recognition, and complicates
+  // these tests. Ignore it.
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(0);
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   {
     SCOPED_TRACE("BOTTOM");

@@ -29,6 +29,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/events/gestures/gesture_configuration.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
@@ -127,6 +128,9 @@ void AshTestBase::SetUp() {
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   ash::Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
+
+  // Changing GestureConfiguration shouldn't make tests fail.
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(5);
 
 #if defined(OS_WIN)
   if (!command_line->HasSwitch(ash::switches::kForceAshToDesktop)) {

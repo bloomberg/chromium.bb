@@ -116,8 +116,6 @@ bool GesturePoint::IsInTripleClickWindow(const TouchEvent& event) const {
 }
 
 bool GesturePoint::IsInScrollWindow(const TouchEvent& event) const {
-  if (IsConsistentScrollingActionUnderway())
-    return true;
   return event.type() == ui::ET_TOUCH_MOVED &&
          !IsInsideTouchSlopRegion(event);
 }
@@ -139,14 +137,6 @@ int GesturePoint::ScrollVelocityDirection(float v) {
 bool GesturePoint::DidScroll(const TouchEvent& event, int dist) const {
   gfx::Vector2dF d = last_touch_position_ - second_last_touch_position_;
   return fabs(d.x()) > dist || fabs(d.y()) > dist;
-}
-
-bool GesturePoint::IsConsistentScrollingActionUnderway() const {
-  int me = GestureConfiguration::min_scroll_successive_velocity_events();
-  if (abs(same_direction_count_.x()) >= me ||
-      abs(same_direction_count_.y()) >= me)
-    return true;
-  return false;
 }
 
 bool GesturePoint::IsInHorizontalRailWindow() const {

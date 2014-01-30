@@ -39,6 +39,11 @@ enum ScrollType {
   ST_VERTICAL,
 };
 
+enum IsFirstScroll {
+  FS_FIRST_SCROLL,
+  FS_NOT_FIRST_SCROLL,
+};
+
 // Delegates dispatch of gesture events for which the GestureSequence does not
 // have enough context to dispatch itself.
 class EVENTS_EXPORT GestureSequenceDelegate {
@@ -130,7 +135,8 @@ class EVENTS_EXPORT GestureSequence {
                               float x_velocity,
                               float y_velocity);
   void AppendScrollGestureUpdate(GesturePoint& point,
-                                 Gestures* gestures);
+                                 Gestures* gestures,
+                                 IsFirstScroll is_first_scroll);
 
   // Pinch gestures.
   void AppendPinchGestureBegin(const GesturePoint& p1,
@@ -165,7 +171,8 @@ class EVENTS_EXPORT GestureSequence {
                        Gestures* gestures);
   bool ScrollUpdate(const TouchEvent& event,
                     GesturePoint& point,
-                    Gestures* gestures);
+                    Gestures* gestures,
+                    IsFirstScroll is_first_scroll);
   bool TouchDown(const TouchEvent& event,
                  const GesturePoint& point,
                  Gestures* gestures);

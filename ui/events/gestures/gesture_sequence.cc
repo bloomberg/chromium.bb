@@ -587,7 +587,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       if (ScrollStart(event, point, gestures.get())) {
         PrependTapCancelGestureEvent(point, gestures.get());
         set_state(GS_SCROLL);
-        if (ScrollUpdate(event, point, gestures.get()))
+        if (ScrollUpdate(event, point, gestures.get(), FS_FIRST_SCROLL))
           point.UpdateForScroll();
       }
       break;
@@ -615,7 +615,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       if (scroll_type_ == ST_VERTICAL ||
           scroll_type_ == ST_HORIZONTAL)
         BreakRailScroll(event, point, gestures.get());
-      if (ScrollUpdate(event, point, gestures.get()))
+      if (ScrollUpdate(event, point, gestures.get(), FS_NOT_FIRST_SCROLL))
         point.UpdateForScroll();
       break;
     case GST_SCROLL_FIRST_RELEASED:
@@ -1010,7 +1010,8 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
 }
 
 void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
-                                                Gestures* gestures) {
+                                                Gestures* gestures,
+                                                IsFirstScroll is_first_scroll) {
   static bool use_scroll_prediction = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableScrollPrediction);
   gfx::Vector2dF d;
@@ -1035,6 +1036,15 @@ void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
     d += last_scroll_prediction_offset_;
     location += gfx::Vector2dF(last_scroll_prediction_offset_.x(),
                                last_scroll_prediction_offset_.y());
+  }
+
+  if (is_first_scroll == FS_FIRST_SCROLL) {
+    float slop = GestureConfiguration::max_touch_move_in_pixels_for_click();
+    float length = d.Length();
+    float ratio = std::max((length - slop) / length, 0.0f);
+
+    d.set_x(d.x() * ratio);
+    d.set_y(d.y() * ratio);
   }
 
   gfx::Vector2dF o = d;
@@ -1178,11 +1188,12 @@ void GestureSequence::BreakRailScroll(const TouchEvent& event,
 
 bool GestureSequence::ScrollUpdate(const TouchEvent& event,
                                    GesturePoint& point,
-                                   Gestures* gestures) {
+                                   Gestures* gestures,
+                                   IsFirstScroll is_first_scroll) {
   DCHECK(state_ == GS_SCROLL);
   if (!point.DidScroll(event, 0))
     return false;
-  AppendScrollGestureUpdate(point, gestures);
+  AppendScrollGestureUpdate(point, gestures, is_first_scroll);
   return true;
 }
 
@@ -1358,7 +1369,7 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
         distance / pinch_distance_current_, gestures);
     pinch_distance_current_ = distance;
   }
-  AppendScrollGestureUpdate(point, gestures);
+  AppendScrollGestureUpdate(point, gestures, FS_NOT_FIRST_SCROLL);
 
   return true;
 }

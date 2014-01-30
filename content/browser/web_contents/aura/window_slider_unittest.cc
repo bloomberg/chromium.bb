@@ -185,7 +185,7 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   WindowSlider* slider =
       new WindowSlider(&slider_delegate, root_window(), window.get());
   generator.GestureScrollSequence(gfx::Point(10, 10),
-                                  gfx::Point(160, 10),
+                                  gfx::Point(180, 10),
                                   base::TimeDelta::FromMilliseconds(10),
                                   10);
   EXPECT_TRUE(slider_delegate.created_back_layer());
@@ -198,7 +198,7 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   window->SetTransform(gfx::Transform());
 
   // Generat a horizontal overscroll in the reverse direction.
-  generator.GestureScrollSequence(gfx::Point(160, 10),
+  generator.GestureScrollSequence(gfx::Point(180, 10),
                                   gfx::Point(10, 10),
                                   base::TimeDelta::FromMilliseconds(10),
                                   10);
@@ -225,7 +225,7 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   // Generate a horizontal scroll that starts overscroll, but doesn't scroll
   // enough to complete it.
   generator.GestureScrollSequence(gfx::Point(10, 10),
-                                  gfx::Point(60, 10),
+                                  gfx::Point(80, 10),
                                   base::TimeDelta::FromMilliseconds(10),
                                   10);
   EXPECT_TRUE(slider_delegate.created_back_layer());
@@ -367,7 +367,7 @@ TEST_F(WindowSliderTest, OwnerIsDestroyedOnSliderDestroy) {
   scoped_ptr<WindowSlider> slider(
       new WindowSlider(&slider_delegate, root_window(), window));
   generator.GestureScrollSequence(gfx::Point(10, 10),
-                                  gfx::Point(160, 10),
+                                  gfx::Point(180, 10),
                                   base::TimeDelta::FromMilliseconds(10),
                                   10);
   EXPECT_TRUE(slider_delegate.created_back_layer());
@@ -396,7 +396,7 @@ TEST_F(WindowSliderTest, OwnerIsDestroyedOnSlideComplete) {
   // Generate a horizontal overscroll.
   new WindowSlider(&slider_delegate, root_window(), window);
   generator.GestureScrollSequence(gfx::Point(10, 10),
-                                  gfx::Point(160, 10),
+                                  gfx::Point(180, 10),
                                   base::TimeDelta::FromMilliseconds(10),
                                   10);
   EXPECT_TRUE(slider_delegate.created_back_layer());

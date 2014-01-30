@@ -125,12 +125,6 @@ class EVENTS_EXPORT GestureConfiguration {
   static void set_min_scroll_delta_squared(double val) {
     min_scroll_delta_squared_ = val;
   }
-  static int min_scroll_successive_velocity_events() {
-    return min_scroll_successive_velocity_events_;
-  }
-  static void set_min_scroll_successive_velocity_events(int val) {
-    min_scroll_successive_velocity_events_ = val;
-  }
   static float min_scroll_velocity() {
     return min_scroll_velocity_;
   }
@@ -238,7 +232,6 @@ class EVENTS_EXPORT GestureConfiguration {
   static double min_pinch_update_distance_in_pixels_;
   static double min_rail_break_velocity_;
   static double min_scroll_delta_squared_;
-  static int min_scroll_successive_velocity_events_;
   static float min_scroll_velocity_;
   static double min_swipe_speed_;
   static double min_touch_down_duration_in_seconds_for_click_;

@@ -89,9 +89,6 @@ class GesturePoint {
  private:
   // Various statistical functions to manipulate gestures.
 
-  // Tests if the point has a consistent scroll vector across a window of touch
-  // move events.
-  bool IsConsistentScrollingActionUnderway() const;
   bool IsInClickTimeWindow() const;
   bool IsInClickAggregateTimeWindow(double before, double after) const;
   bool IsPointInsideDoubleTapTouchSlopRegion(

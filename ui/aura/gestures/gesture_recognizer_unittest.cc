@@ -1002,6 +1002,11 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
 
 // Check that appropriate touch events generate scroll gesture events.
 TEST_F(GestureRecognizerTest, GestureEventScroll) {
+  // We'll start by moving the touch point by (10.5, 10.5). We want 5 dips of
+  // that distance to be consumed by the slop, so we set the slop radius to
+  // sqrt(5 * 5 + 5 * 5).
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
+      sqrt(static_cast<double>(5 * 5 + 5 * 5)));
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1024,13 +1029,14 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
   // The first movement is diagonal, to ensure that we have a free scroll,
   // and not a rail scroll.
-  tes.SendScrollEvent(dispatcher(), 130.5, 230.5, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 111.5, 211.5, kTouchId, delegate.get());
   EXPECT_3_EVENTS(delegate->events(),
                   ui::ET_GESTURE_TAP_CANCEL,
                   ui::ET_GESTURE_SCROLL_BEGIN,
                   ui::ET_GESTURE_SCROLL_UPDATE);
-  EXPECT_FLOAT_EQ(29.5, delegate->scroll_x());
-  EXPECT_FLOAT_EQ(29.5, delegate->scroll_y());
+  // The slop consumed 5 dips
+  EXPECT_FLOAT_EQ(5.5, delegate->scroll_x());
+  EXPECT_FLOAT_EQ(5.5, delegate->scroll_y());
   EXPECT_EQ(gfx::Point(1, 1).ToString(),
             delegate->scroll_begin_position().ToString());
 
@@ -1039,13 +1045,13 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
   // Move some more to generate a few more scroll updates.
-  tes.SendScrollEvent(dispatcher(), 110, 211, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 91, 192, kTouchId, delegate.get());
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_FLOAT_EQ(-20.5, delegate->scroll_x());
   EXPECT_FLOAT_EQ(-19.5, delegate->scroll_y());
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
-  tes.SendScrollEvent(dispatcher(), 140, 215, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 121, 196, kTouchId, delegate.get());
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_EQ(30, delegate->scroll_x());
   EXPECT_EQ(4, delegate->scroll_y());
@@ -1067,13 +1073,19 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
 TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   const double prediction_interval = 0.03;
   ui::GestureConfiguration::set_scroll_prediction_seconds(prediction_interval);
+   // We'll start by moving the touch point by (5, 5). We want all of that
+  // distance to be consumed by the slop, so we set the slop radius to
+  // sqrt(5 * 5 + 5 * 5).
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
+      sqrt(static_cast<double>(5 * 5 + 5 * 5)));
+
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
   const int kWindowWidth = 123;
   const int kWindowHeight = 45;
   const int kTouchId = 5;
-  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  gfx::Rect bounds(95, 195, kWindowWidth, kWindowHeight);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, bounds, root_window()));
 
@@ -1081,12 +1093,24 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   // Tracks the total scroll since we want to verify that the correct position
   // will be scrolled to throughout the prediction.
   gfx::Vector2dF total_scroll;
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(96, 196),
                        kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_BEGIN,
                   ui::ET_GESTURE_TAP_DOWN);
+  delegate->Reset();
+
+  // Get rid of touch slop.
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(101, 201),
+                      kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  EXPECT_3_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_TAP_CANCEL,
+                  ui::ET_GESTURE_SCROLL_BEGIN,
+                  ui::ET_GESTURE_SCROLL_UPDATE);
+  total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
+  total_scroll.set_y(total_scroll.y() + delegate->scroll_y());
 
   // Move the touch-point enough so that it is considered as a scroll. This
   // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
@@ -1094,10 +1118,8 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   // and not a rail scroll.
   tes.LeapForward(30);
   tes.SendScrollEvent(dispatcher(), 130, 230, kTouchId, delegate.get());
-  EXPECT_3_EVENTS(delegate->events(),
-                  ui::ET_GESTURE_TAP_CANCEL,
-                  ui::ET_GESTURE_SCROLL_BEGIN,
-                  ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_1_EVENT(delegate->events(),
+                 ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_GT(delegate->scroll_velocity_x(), 0);
   EXPECT_GT(delegate->scroll_velocity_y(), 0);
   total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
@@ -1207,9 +1229,16 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
                        kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
+  // Get rid of touch slop.
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(5, 0),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  delegate->Reset();
+
+
   // Move the touch-point horizontally enough that it is considered a
   // horizontal scroll.
-  tes.SendScrollEvent(dispatcher(), 20, 1, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 25, 1, kTouchId, delegate.get());
   EXPECT_EQ(0, delegate->scroll_y());
   EXPECT_EQ(1, delegate->scroll_y_ordinal());
   EXPECT_EQ(20, delegate->scroll_x());
@@ -1251,9 +1280,15 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
                        kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
+  // Get rid of touch slop.
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(0, 5),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  delegate->Reset();
+
   // Move the touch-point vertically enough that it is considered a
   // vertical scroll.
-  tes.SendScrollEvent(dispatcher(), 1, 20, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 1, 25, kTouchId, delegate.get());
   EXPECT_EQ(20, delegate->scroll_y());
   EXPECT_EQ(20, delegate->scroll_y_ordinal());
   EXPECT_EQ(0, delegate->scroll_x());
@@ -1262,7 +1297,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   EXPECT_GT(delegate->scroll_velocity_x_ordinal(), 0);
 
   // Get a high y velocity, while still staying on the rail
-  tes.SendScrollEvents(dispatcher(), 1, 1,
+  tes.SendScrollEvents(dispatcher(), 1, 6,
                        10, 100, kTouchId, 1,
                        ui::GestureConfiguration::points_buffered_for_velocity(),
                        delegate.get());
@@ -1270,7 +1305,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   EXPECT_GT(delegate->scroll_velocity_y(), 0);
 
   delegate->Reset();
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 206),
                          kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
 
@@ -1283,6 +1318,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
 // Check Scroll End Events reports zero velocities
 // if the user is not on a rail
 TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(0);
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -1525,13 +1561,20 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
                        kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
+  // Get rid of touch slop.
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(5, 0),
+                      kTouchId, tes.Now());
+
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  delegate->Reset();
+
   // Move the touch-point horizontally enough that it is considered a
   // horizontal scroll.
-  tes.SendScrollEvent(dispatcher(), 20, 1, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 25, 1, kTouchId, delegate.get());
   EXPECT_EQ(0, delegate->scroll_y());
   EXPECT_EQ(20, delegate->scroll_x());
 
-  tes.SendScrollEvent(dispatcher(), 25, 6, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 30, 6, kTouchId, delegate.get());
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_EQ(5, delegate->scroll_x());
   // y shouldn't change, as we're on a horizontal rail.
@@ -1540,7 +1583,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
   tes.SendScrollEvents(dispatcher(), 1, 1,
-                       1, 100, kTouchId, 1,
+                       6, 100, kTouchId, 1,
                        ui::GestureConfiguration::points_buffered_for_velocity(),
                        delegate.get());
   // Since the scroll is not longer railing, the velocity should be set for both
@@ -1548,8 +1591,8 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
   EXPECT_GT(delegate->scroll_velocity_x(), 0);
   EXPECT_GT(delegate->scroll_velocity_y(), 0);
 
-  tes.SendScrollEvent(dispatcher(), 0, 0, kTouchId, delegate.get());
-  tes.SendScrollEvent(dispatcher(), 5, 5, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 5, 0, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 10, 5, kTouchId, delegate.get());
 
   // The rail should be broken
   EXPECT_TRUE(delegate->scroll_update());
@@ -1572,13 +1615,19 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
                        kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
+  // Get rid of touch slop.
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(0, 5),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  delegate->Reset();
+
   // Move the touch-point vertically enough that it is considered a
   // vertical scroll.
-  tes.SendScrollEvent(dispatcher(), 1, 20, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 1, 25, kTouchId, delegate.get());
   EXPECT_EQ(0, delegate->scroll_x());
   EXPECT_EQ(20, delegate->scroll_y());
 
-  tes.SendScrollEvent(dispatcher(), 6, 25, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 6, 30, kTouchId, delegate.get());
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_EQ(5, delegate->scroll_y());
   // x shouldn't change, as we're on a vertical rail.
@@ -1587,15 +1636,15 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
 
   // Send enough information that a velocity can be calculated for the gesture,
   // and we can break the rail
-  tes.SendScrollEvents(dispatcher(), 1, 1,
+  tes.SendScrollEvents(dispatcher(), 1, 6,
                        100, 1, kTouchId, 1,
                        ui::GestureConfiguration::points_buffered_for_velocity(),
                        delegate.get());
   EXPECT_GT(delegate->scroll_velocity_x(), 0);
   EXPECT_GT(delegate->scroll_velocity_y(), 0);
 
-  tes.SendScrollEvent(dispatcher(), 0, 0, kTouchId, delegate.get());
-  tes.SendScrollEvent(dispatcher(), 5, 5, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 0, 5, kTouchId, delegate.get());
+  tes.SendScrollEvent(dispatcher(), 5, 10, kTouchId, delegate.get());
 
   // The rail should be broken
   EXPECT_TRUE(delegate->scroll_update());
@@ -1604,6 +1653,12 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
 }
 
 TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
+  // We'll start by moving the touch point by (5, 5). We want all of that
+  // distance to be consumed by the slop, so we set the slop radius to
+  // sqrt(5 * 5 + 5 * 5).
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(
+      sqrt(static_cast<double>(5 * 5 + 5 * 5)));
+
   // First, tap. Then, do a scroll using the same touch-id.
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
@@ -1652,28 +1707,38 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
 
+  // Get rid of touch slop.
+  ui::TouchEvent move_remove_slop(ui::ET_TOUCH_MOVED, gfx::Point(106, 206),
+                                  kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move_remove_slop);
+  EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_EQ(5, delegate->scroll_x_hint());
+  EXPECT_EQ(5, delegate->scroll_y_hint());
+
+  delegate->Reset();
+
   // Move the touch-point enough so that it is considered as a scroll. This
   // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
   // The first movement is diagonal, to ensure that we have a free scroll,
   // and not a rail scroll.
   delegate->Reset();
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 230),
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(135, 235),
                       kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
-  EXPECT_TRUE(delegate->tap_cancel());
-  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->tap_cancel());
+  EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
   EXPECT_EQ(29, delegate->scroll_x());
   EXPECT_EQ(29, delegate->scroll_y());
-  EXPECT_EQ(29, delegate->scroll_x_hint());
-  EXPECT_EQ(29, delegate->scroll_y_hint());
 
   // Move some more to generate a few more scroll updates.
   delegate->Reset();
-  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(110, 211),
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(115, 216),
                        kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
   EXPECT_FALSE(delegate->tap());
@@ -1688,7 +1753,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   EXPECT_EQ(0, delegate->scroll_y_hint());
 
   delegate->Reset();
-  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(140, 215),
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(145, 220),
                        kTouchId, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_FALSE(delegate->tap());
@@ -3547,7 +3612,8 @@ TEST_F(GestureRecognizerTest, NoDriftInScroll) {
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
-  EXPECT_EQ(-4, delegate->scroll_y());
+  // 3 px consumed by touch slop region.
+  EXPECT_EQ(-1, delegate->scroll_y());
   EXPECT_EQ(-4, delegate->scroll_y_hint());
 
   delegate->Reset();
@@ -3913,6 +3979,66 @@ TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveLongPressTest) {
   // Wait until the timer runs out
   delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
   EXPECT_TRUE(delegate->long_press());
+}
+
+// Tests that the deltas are correct when leaving the slop region very slowly.
+TEST_F(GestureRecognizerTest, TestExceedingSlopSlowly) {
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(3);
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 234;
+  const int kWindowHeight = 345;
+  const int kTouchId = 5;
+  TimedEvents tes;
+  gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  delegate->Reset();
+
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(11, 10), kTouchId,
+                       tes.LeapForward(40));
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_x_hint());
+  delegate->Reset();
+
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(12, 10), kTouchId,
+                       tes.LeapForward(40));
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_x_hint());
+  delegate->Reset();
+
+
+  ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(13, 10), kTouchId,
+                       tes.LeapForward(40));
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move3);
+  EXPECT_TRUE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(3, delegate->scroll_x_hint());
+  delegate->Reset();
+
+
+  ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(14, 10), kTouchId,
+                       tes.LeapForward(40));
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move4);
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_TRUE(delegate->scroll_update());
+  EXPECT_EQ(1, delegate->scroll_x());
+  EXPECT_EQ(0, delegate->scroll_x_hint());
+  delegate->Reset();
+
 }
 
 }  // namespace test

@@ -27,9 +27,12 @@ using ui::GestureConfiguration;
 
 namespace {
 
-// TODO(rjkroege): Remove this deprecated pref in M29. http://crbug.com/160243.
+// TODO(tdresser): Remove this deprecated pref in M29. http://crbug.com/160243.
 const char kTouchScreenFlingAccelerationAdjustment[] =
     "gesture.touchscreen_fling_acceleration_adjustment";
+// TODO(tdresser): Remove this deprecated pref. See crbug.com/339486.
+const char kMinScrollSuccessiveVelocityEvents[] =
+    "gesture.min_scroll_successive_velocity_events";
 
 struct OverscrollPref {
   const char* pref_name;
@@ -115,7 +118,6 @@ const char* kPrefsToObserve[] = {
   prefs::kMinPinchUpdateDistanceInPixels,
   prefs::kMinRailBreakVelocity,
   prefs::kMinScrollDeltaSquared,
-  prefs::kMinScrollSuccessiveVelocityEvents,
   prefs::kMinSwipeSpeed,
   prefs::kMinTouchDownDurationInSecondsForClick,
   prefs::kPointsBufferedForVelocity,
@@ -140,6 +142,7 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
   // Clear for migration.
   prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
+  prefs->ClearPref(kMinScrollSuccessiveVelocityEvents);
 
   // Clear temporary pref gesture.config_is_trustworthy, so that in M33, we can
   // remove it completely: crbug.com/269292.
@@ -233,9 +236,6 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_min_scroll_delta_squared(
       prefs_->GetDouble(
           prefs::kMinScrollDeltaSquared));
-  GestureConfiguration::set_min_scroll_successive_velocity_events(
-      prefs_->GetInteger(
-          prefs::kMinScrollSuccessiveVelocityEvents));
   GestureConfiguration::set_min_swipe_speed(
       prefs_->GetDouble(
           prefs::kMinSwipeSpeed));
@@ -416,10 +416,6 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
       prefs::kMinScrollDeltaSquared,
       GestureConfiguration::min_scroll_delta_squared(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kMinScrollSuccessiveVelocityEvents,
-      GestureConfiguration::min_scroll_successive_velocity_events(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
       prefs::kMinSwipeSpeed,
       GestureConfiguration::min_swipe_speed(),
@@ -453,6 +449,10 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
   registry->RegisterDoublePref(
       kTouchScreenFlingAccelerationAdjustment,
       0.0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      kMinScrollSuccessiveVelocityEvents,
+      0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   RegisterOverscrollPrefs(registry);

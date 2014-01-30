@@ -28,7 +28,6 @@ double GestureConfiguration::min_flick_speed_squared_ = 550.f * 550.f;
 double GestureConfiguration::min_pinch_update_distance_in_pixels_ = 5;
 double GestureConfiguration::min_rail_break_velocity_ = 200;
 double GestureConfiguration::min_scroll_delta_squared_ = 4 * 4;
-int GestureConfiguration::min_scroll_successive_velocity_events_ = 4;
 float GestureConfiguration::min_scroll_velocity_ = 30.0f;
 double GestureConfiguration::min_swipe_speed_ = 20;
 double GestureConfiguration::scroll_prediction_seconds_ = 0.03;

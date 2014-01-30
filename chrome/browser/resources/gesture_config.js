@@ -241,11 +241,6 @@ function GestureConfig() {
       units: ''
     },
     {
-      key: 'min_scroll_successive_velocity_events',
-      label: 'Minimum Scroll Successive Velocity Events',
-      units: ''
-    },
-    {
       key: 'scroll_prediction_seconds',
       label: 'Scroll prediction interval<br>' +
           '(Enable scroll prediction in ' +
