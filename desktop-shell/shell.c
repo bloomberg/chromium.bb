@@ -4304,14 +4304,14 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	else
 		restore_all_output_modes(shell->compositor);
 
+	/* Update the surface’s layer. This brings it to the top of the stacking
+	 * order as appropriate. */
+	shell_surface_update_layer(shsurf);
+
 	if (shell->focus_animation_type != ANIMATION_NONE) {
 		ws = get_current_workspace(shell);
 		animate_focus_change(shell, ws, get_default_view(old_es), get_default_view(es));
 	}
-
-	/* Update the surface’s layer. This brings it to the top of the stacking
-	 * order as appropriate. */
-	shell_surface_update_layer(shsurf);
 }
 
 /* no-op func for checking black surface */
