@@ -115,22 +115,25 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
 
  private:
   friend class MergeSessionLoadPageTest;
+  friend class OAuth2Test;
 
   // Session restore outcomes (for UMA).
-  enum {
+  enum SessionRestoreOutcome {
     SESSION_RESTORE_UNDEFINED = 0,
     SESSION_RESTORE_SUCCESS = 1,
     SESSION_RESTORE_TOKEN_FETCH_FAILED = 2,
     SESSION_RESTORE_NO_REFRESH_TOKEN_FAILED = 3,
     SESSION_RESTORE_OAUTHLOGIN_FAILED = 4,
     SESSION_RESTORE_MERGE_SESSION_FAILED = 5,
-    SESSION_RESTORE_COUNT = SESSION_RESTORE_MERGE_SESSION_FAILED,
+    SESSION_RESTORE_LISTACCOUNTS_FAILED = 6,
+    SESSION_RESTORE_NOT_NEEDED = 7,
+    SESSION_RESTORE_COUNT = 8,
   };
 
   // Outcomes of post-merge session verification.
   // This enum is used for an UMA histogram, and hence new items should only be
   // appended at the end.
-  enum PostMergeVerificationOutcome {
+  enum MergeVerificationOutcome {
     POST_MERGE_UNDEFINED  = 0,
     POST_MERGE_SUCCESS = 1,
     POST_MERGE_NO_ACCOUNTS = 2,
@@ -191,6 +194,10 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // Reports when all tokens are loaded.
   void ReportOAuth2TokensLoaded();
 
+  // Checks if primary account sessions cookies are stale and restores them
+  // if needed.
+  void VerifySessionCookies();
+
   // Issue GAIA cookie recovery (MergeSession) from |refresh_token_|.
   void RestoreSessionCookies();
 
@@ -204,8 +211,15 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
   // Testing helper.
   void SetSessionRestoreStartForTesting(const base::Time& time);
 
-  // Records |outcome| of post merge verification check.
-  static void RecordPostMergeOutcome(PostMergeVerificationOutcome outcome);
+  // Records |outcome| of session restore process and sets new |state|.
+  void RecordSessionRestoreOutcome(SessionRestoreOutcome outcome,
+                                   SessionRestoreState state);
+
+  // Records |outcome| of merge verification check. |is_pre_merge| specifies
+  // if this is pre or post merge session verification.
+  static void RecordCookiesCheckOutcome(
+      bool is_pre_merge,
+      MergeVerificationOutcome outcome);
 
   // Keeps the track if we have already reported OAuth2 token being loaded
   // by OAuth2TokenService.

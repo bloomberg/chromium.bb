@@ -53,6 +53,9 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
                       const std::string& oauthlogin_access_token);
   virtual ~OAuth2LoginVerifier();
 
+  // Initiates verification of GAIA cookies in |profile|'s cookie jar.
+  void VerifyUserCookies(Profile* profile);
+
   // Attempts to restore session from OAuth2 refresh token minting all necesarry
   // tokens along the way (OAuth2 access token, SID/LSID, GAIA service token).
   void VerifyProfileTokens(Profile* profile);
@@ -94,8 +97,8 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   // hasn't stumped over SID/LSID.
   void SchedulePostMergeVerification();
 
-  // Starts post merge request verification.
-  void StartPostRestoreVerification();
+  // Starts GAIA auth cookies (SID/LSID) verification.
+  void StartAuthCookiesVerification();
 
   // Decides how to proceed on GAIA |error|. If the error looks temporary,
   // retries |task| after certain delay until max retry count is reached.
@@ -103,6 +106,10 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
                     const GoogleServiceAuthError& error,
                     const base::Closure& task_to_retry,
                     const ErrorHandler& error_handler);
+
+  // Delays operation defined with |callback| based on the current networking
+  // conditions.
+  bool DelayNetworkCall(const base::Closure& callback);
 
   OAuth2LoginVerifier::Delegate* delegate_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;

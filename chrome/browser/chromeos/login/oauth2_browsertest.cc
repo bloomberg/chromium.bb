@@ -138,7 +138,14 @@ class OAuth2Test : public OobeBaseTest {
     SetupGaiaServerWithAccessTokens();
   }
 
-  void SetupGaiaServerForExistingAccount() {
+  void SetupGaiaServerForUnexpiredAccount() {
+    FakeGaia::MergeSessionParams params;
+    params.email = kTestAccountId;
+    fake_gaia_->SetMergeSessionParams(params);
+    SetupGaiaServerWithAccessTokens();
+  }
+
+  void SetupGaiaServerForExpiredAccount() {
     FakeGaia::MergeSessionParams params;
     params.gaia_uber_token = kTestGaiaUberToken;
     params.session_sid_cookie = kTestSession2SIDCookie;
@@ -147,9 +154,42 @@ class OAuth2Test : public OobeBaseTest {
     SetupGaiaServerWithAccessTokens();
   }
 
+  void LoginAsExistingUser() {
+    content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
+
+    JsExpect("!!document.querySelector('#account-picker')");
+    JsExpect("!!document.querySelector('#pod-row')");
+
+    EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
+              User::OAUTH2_TOKEN_STATUS_VALID);
+
+    EXPECT_TRUE(TryToLogin(kTestAccountId, kTestAccountPassword));
+    Profile* profile = ProfileManager::GetPrimaryUserProfile();
+
+    // Wait for the session merge to finish.
+    std::set<OAuth2LoginManager::SessionRestoreState> states;
+    states.insert(OAuth2LoginManager::SESSION_RESTORE_DONE);
+    states.insert(OAuth2LoginManager::SESSION_RESTORE_FAILED);
+    states.insert(OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED);
+    OAuth2LoginManagerStateWaiter merge_session_waiter(profile);
+    merge_session_waiter.WaitForStates(states);
+    EXPECT_EQ(merge_session_waiter.final_state(),
+              OAuth2LoginManager::SESSION_RESTORE_DONE);
+
+    // Check for existance of refresh token.
+    ProfileOAuth2TokenService* token_service =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kTestAccountId));
+
+    EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
+              User::OAUTH2_TOKEN_STATUS_VALID);
+  }
+
   bool TryToLogin(const std::string& username,
                   const std::string& password) {
-    if (!AddUserTosession(username, password))
+    if (!AddUserToSession(username, password))
       return false;
 
     if (const User* active_user = UserManager::Get()->GetActiveUser())
@@ -183,7 +223,7 @@ class OAuth2Test : public OobeBaseTest {
     return OobeBaseTest::profile();
   }
 
-  bool AddUserTosession(const std::string& username,
+  bool AddUserToSession(const std::string& username,
                         const std::string& password) {
     ExistingUserController* controller =
         ExistingUserController::current_controller();
@@ -352,12 +392,8 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
 };
 
 // PRE_MergeSession is testing merge session for a new profile.
-IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_MergeSession) {
+IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
   StartNewUserSession();
-
-  // Wait for the session merge to finish.
-  WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
-
   // Check for existance of refresh token.
   ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(
@@ -374,36 +410,32 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_MergeSession) {
 }
 
 // MergeSession test is running merge session process for an existing profile
-// that was generated in PRE_PRE_MergeSession test.
-IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_MergeSession) {
-  SetupGaiaServerForExistingAccount();
+// that was generated in PRE_PRE_PRE_MergeSession test. In this test, we
+// are not running /MergeSession process since the /ListAccounts call confirms
+// that the session is not stale.
+IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_MergeSession) {
+  SetupGaiaServerForUnexpiredAccount();
   SimulateNetworkOnline();
-
-  content::WindowedNotificationObserver(
-    chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-    content::NotificationService::AllSources()).Wait();
-
-  JsExpect("!!document.querySelector('#account-picker')");
-  JsExpect("!!document.querySelector('#pod-row')");
-
-  EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
-            User::OAUTH2_TOKEN_STATUS_VALID);
-
-  EXPECT_TRUE(TryToLogin(kTestAccountId, kTestAccountPassword));
-
-  // Wait for the session merge to finish.
-  WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
-
-  // Check for existance of refresh token.
-  ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kTestAccountId));
-
-  EXPECT_EQ(GetOAuthStatusFromLocalState(kTestAccountId),
-            User::OAUTH2_TOKEN_STATUS_VALID);
-
+  LoginAsExistingUser();
   scoped_refptr<CookieReader> cookie_reader(new CookieReader());
   cookie_reader->ReadCookies(profile());
+  // These are still cookie values form the initial session since
+  // /ListAccounts
+  EXPECT_EQ(cookie_reader->GetCookieValue("SID"), kTestSessionSIDCookie);
+  EXPECT_EQ(cookie_reader->GetCookieValue("LSID"), kTestSessionLSIDCookie);
+}
+
+// MergeSession test is running merge session process for an existing profile
+// that was generated in PRE_PRE_MergeSession test.
+IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_MergeSession) {
+  SetupGaiaServerForExpiredAccount();
+  SimulateNetworkOnline();
+  LoginAsExistingUser();
+  scoped_refptr<CookieReader> cookie_reader(new CookieReader());
+  cookie_reader->ReadCookies(profile());
+  // These should be cookie values that we generated by calling /MergeSession,
+  // since /ListAccounts should have tell us that the initial session cookies
+  // are stale.
   EXPECT_EQ(cookie_reader->GetCookieValue("SID"), kTestSession2SIDCookie);
   EXPECT_EQ(cookie_reader->GetCookieValue("LSID"), kTestSession2LSIDCookie);
 }
