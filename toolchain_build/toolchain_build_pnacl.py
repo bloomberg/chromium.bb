@@ -270,6 +270,8 @@ def HostTools(host):
     return fnmatch.fnmatch(host, 'x86_64*')
   def HostSubdir(host):
     return 'host_x86_64' if IsHost64(host) else 'host_x86_32'
+  def BinSubdir(host):
+    return 'bin64' if host == 'x86_64-linux' else 'bin'
   tools = {
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'],
@@ -297,8 +299,7 @@ def HostTools(host):
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(command.path.join('%(abs_output)s', dir))
-               for dir in ('arm-pc-nacl', 'lib', 'lib32')] +
-              [command.SkipForIncrementalCommand(MakeCommand(host) + ['check'])]
+               for dir in ('arm-pc-nacl', 'lib', 'lib32')]
           },
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
@@ -327,7 +328,7 @@ def HostTools(host):
       },
       H('driver'): {
         'type': 'build',
-        'output_subdir': 'bin64' if IsHost64(host) else 'bin',
+        'output_subdir': BinSubdir(host),
         'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
         'commands': [
             command.Runnable(pnacl_commands.InstallDriverScripts,
@@ -409,13 +410,15 @@ def SyncPNaClRepos(revisions):
       base64.decode(input_fh, output_fh)
       input_fh.close()
       output_fh.close()
-      subprocess.check_call(['git', 'fetch'], cwd=destination)
-      subprocess.check_call(['git', 'bundle', 'unbundle', bundle_file],
+      subprocess.check_call(repo_tools.GitCmd() + ['fetch'], cwd=destination)
+      subprocess.check_call(repo_tools.GitCmd() + ['bundle', 'unbundle',
+                                                   bundle_file],
                             cwd=destination)
       commit_id_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
                                     '%s_commit_id' % repo)
       commit_id = open(commit_id_file, 'r').readline().strip()
-      subprocess.check_call(['git', 'checkout', commit_id], cwd=destination)
+      subprocess.check_call(repo_tools.GitCmd() + ['checkout', commit_id],
+                            cwd=destination)
 
 
 def InstallMinGWHostCompiler():

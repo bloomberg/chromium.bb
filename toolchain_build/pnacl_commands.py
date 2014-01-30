@@ -15,6 +15,7 @@ import stat
 import file_tools
 import platform_tools
 import repo_tools
+import subprocess
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -58,5 +59,10 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
       print >> f, subst.Substitute(line)
   # Install the REV file
   with open(os.path.join(dstdir, 'REV'), 'w') as f:
-    url, rev = repo_tools.SvnRevInfo(NACL_DIR)
-    print >> f, '[SVN] %s: %s' % (url, rev)
+    try:
+      url, rev = repo_tools.GitRevInfo(NACL_DIR)
+      repotype = 'GIT'
+    except subprocess.CalledProcessError:
+      url, rev = repo_tools.SvnRevInfo(NACL_DIR)
+      repotype = 'SVN'
+    print >> f, '[%s] %s: %s' % (repotype, url, rev)

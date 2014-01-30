@@ -9,6 +9,7 @@ import os
 import file_tools
 import log_tools
 import platform_tools
+import subprocess
 
 def GitCmd():
   """Return the git command to execute for the host platform."""
@@ -82,6 +83,18 @@ def CleanGitWorkingDir(directory, path):
   """
   log_tools.CheckCall(GitCmd() + ['clean', '-f', path], cwd=directory)
 
+
+def GitRevInfo(directory):
+  """Get the git revision information of a git checkout.
+
+  Args:
+    directory: Existing git working directory.
+"""
+  url = log_tools.CheckOutput(GitCmd() + ['ls-remote', '--get-url', 'origin'],
+                              cwd=directory)
+  rev = log_tools.CheckOutput(GitCmd() + ['log', '-n', '1', '--pretty=%H'],
+                              cwd=directory)
+  return url.strip(), rev.strip()
 
 def SvnRevInfo(directory):
   """Get the SVN revision information of an existing svn/gclient checkout.
