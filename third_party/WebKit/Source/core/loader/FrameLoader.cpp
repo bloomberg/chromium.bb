@@ -785,8 +785,10 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     // FIXME: We need to reset cache policy to prevent it from being incorrectly propagted to the reload.
     // Do we need to propagate anything other than the url?
     request.setCachePolicy(UseProtocolCachePolicy);
-    if (!overrideURL.isEmpty())
+    if (!overrideURL.isEmpty()) {
         request.setURL(overrideURL);
+        request.setHTTPReferrer(Referrer());
+    }
     else if (!m_documentLoader->unreachableURL().isEmpty())
         request.setURL(m_documentLoader->unreachableURL());
 
