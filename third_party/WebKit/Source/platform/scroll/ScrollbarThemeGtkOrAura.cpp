@@ -119,7 +119,7 @@ void ScrollbarThemeGtkOrAura::paintButton(GraphicsContext* gc, ScrollbarThemeCli
     if (useMockTheme() && !scrollbar->enabled()) {
         state = blink::WebThemeEngine::StateDisabled;
     } else if (!useMockTheme() && ((checkMin && (scrollbar->currentPos() <= 0))
-        || (checkMax && scrollbar->currentPos() == scrollbar->maximum()))) {
+        || (checkMax && scrollbar->currentPos() >= scrollbar->maximum()))) {
         state = blink::WebThemeEngine::StateDisabled;
     } else {
         if (part == scrollbar->pressedPart())

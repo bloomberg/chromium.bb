@@ -860,7 +860,7 @@ IntPoint RenderListBox::minimumScrollPosition() const
 
 IntPoint RenderListBox::maximumScrollPosition() const
 {
-    return IntPoint(0, numItems() - numVisibleItems());
+    return IntPoint(0, std::max(numItems() - numVisibleItems(), 0));
 }
 
 bool RenderListBox::userInputScrollable(ScrollbarOrientation orientation) const
