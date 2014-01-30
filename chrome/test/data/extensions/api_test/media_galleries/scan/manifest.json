@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.scan",
+  "version": "0.1",
+  "description": "test scan callbacks",
+  "app": {
+    "background": {
+      "scripts": ["common_injected.js", "test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["read", "allAutoDetected", "scan"]}]
+}

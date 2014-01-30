@@ -16,6 +16,7 @@ class MediaScanManagerObserver {
   virtual void OnScanFinished(
       const std::string& extension_id, int gallery_count, int image_count,
       int audio_count, int video_count) {}
+  virtual void OnScanError(const std::string& extension_id) {}
 };
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_SCAN_MANAGER_OBSERVER_H_

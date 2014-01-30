@@ -42,6 +42,7 @@ namespace extensions {
 
 const char MediaGalleriesPermission::kAllAutoDetectedPermission[] =
     "allAutoDetected";
+const char MediaGalleriesPermission::kScanPermission[] = "scan";
 const char MediaGalleriesPermission::kReadPermission[] = "read";
 const char MediaGalleriesPermission::kCopyToPermission[] = "copyTo";
 const char MediaGalleriesPermission::kDeletePermission[] = "delete";
@@ -68,7 +69,8 @@ bool MediaGalleriesPermission::FromValue(const base::Value* value,
   bool has_delete = false;
   for (std::set<MediaGalleriesPermissionData>::const_iterator it =
       data_set_.begin(); it != data_set_.end(); ++it) {
-    if (it->permission() == kAllAutoDetectedPermission) {
+    if (it->permission() == kAllAutoDetectedPermission ||
+        it->permission() == kScanPermission) {
       continue;
     }
     if (it->permission() == kReadPermission) {

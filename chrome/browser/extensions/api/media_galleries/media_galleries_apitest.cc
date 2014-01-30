@@ -446,3 +446,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   iapps::SetMacPreferencesForTesting(NULL);
 }
 #endif  // defined(OS_MACOSX)
+
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, Scan) {
+  RemoveAllGalleries();
+  ASSERT_TRUE(RunMediaGalleriesTest("scan")) << message_;
+}

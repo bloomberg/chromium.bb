@@ -45,6 +45,7 @@ class MediaGalleriesPermission
 
   // Permission strings.
   static const char kAllAutoDetectedPermission[];
+  static const char kScanPermission[];
   static const char kReadPermission[];
   static const char kCopyToPermission[];
   static const char kDeletePermission[];

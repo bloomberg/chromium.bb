@@ -30,7 +30,9 @@ namespace mediaGalleries {
     cancel,
     // The scan finished but none of the result have been added,
     // addScanResults() has to be called to ask the user for permission.
-    finish
+    finish,
+    // The scan encountered an error and could not proceed.
+    error
   };
 
   [inline_doc] dictionary MediaFileSystemsDetails {

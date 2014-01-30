@@ -64,6 +64,8 @@ const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
 const char kMissingEventListener[] =
     "Missing event listener registration.";
+const char kNoScanPermission[] =
+    "No permission to scan.";
 
 const char kDeviceIdKey[] = "deviceId";
 const char kGalleryIdKey[] = "galleryId";
@@ -179,6 +181,19 @@ base::ListValue* ConstructFileSystemList(
   }
 
   return list.release();
+}
+
+bool CheckScanPermission(const extensions::Extension* extension,
+                         std::string* error) {
+  DCHECK(extension);
+  DCHECK(error);
+  MediaGalleriesPermission::CheckParam scan_param(
+      MediaGalleriesPermission::kScanPermission);
+  bool has_scan_permission = PermissionsData::CheckAPIPermissionWithParam(
+      extension, APIPermission::kMediaGalleries, &scan_param);
+  if (!has_scan_permission)
+    *error = kNoScanPermission;
+  return has_scan_permission;
 }
 
 class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
@@ -309,6 +324,16 @@ void MediaGalleriesEventRouter::OnScanFinished(
   details.image_count.reset(new int(image_count));
   details.audio_count.reset(new int(audio_count));
   details.video_count.reset(new int(video_count));
+  DispatchEventToExtension(
+      extension_id,
+      MediaGalleries::OnScanProgress::kEventName,
+      MediaGalleries::OnScanProgress::Create(details).Pass());
+}
+
+void MediaGalleriesEventRouter::OnScanError(
+    const std::string& extension_id) {
+  MediaGalleries::ScanProgressDetails details;
+  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_ERROR;
   DispatchEventToExtension(
       extension_id,
       MediaGalleries::OnScanProgress::kEventName,
@@ -605,6 +630,11 @@ MediaGalleriesStartMediaScanFunction::~MediaGalleriesStartMediaScanFunction() {}
 
 bool MediaGalleriesStartMediaScanFunction::RunImpl() {
   media_galleries::UsageCount(media_galleries::START_MEDIA_SCAN);
+  if (!CheckScanPermission(GetExtension(), &error_)) {
+    MediaGalleriesEventRouter::Get(GetProfile())->OnScanError(
+        GetExtension()->id());
+    return false;
+  }
   return Setup(GetProfile(), &error_, base::Bind(
       &MediaGalleriesStartMediaScanFunction::OnPreferencesInit, this));
 }
@@ -628,6 +658,11 @@ MediaGalleriesCancelMediaScanFunction::
 
 bool MediaGalleriesCancelMediaScanFunction::RunImpl() {
   media_galleries::UsageCount(media_galleries::CANCEL_MEDIA_SCAN);
+  if (!CheckScanPermission(GetExtension(), &error_)) {
+    MediaGalleriesEventRouter::Get(GetProfile())->OnScanError(
+        GetExtension()->id());
+    return false;
+  }
   return Setup(GetProfile(), &error_, base::Bind(
       &MediaGalleriesCancelMediaScanFunction::OnPreferencesInit, this));
 }
@@ -642,6 +677,10 @@ MediaGalleriesAddScanResultsFunction::~MediaGalleriesAddScanResultsFunction() {}
 
 bool MediaGalleriesAddScanResultsFunction::RunImpl() {
   media_galleries::UsageCount(media_galleries::ADD_SCAN_RESULTS);
+  if (!CheckScanPermission(GetExtension(), &error_)) {
+    // We don't fire a scan progress error here, as it would be unintuitive.
+    return false;
+  }
   return Setup(GetProfile(), &error_, base::Bind(
       &MediaGalleriesAddScanResultsFunction::OnPreferencesInit, this));
 }

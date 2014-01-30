@@ -519,6 +519,10 @@
     "channel": "stable",
     "extension_types": [ "platform_app" ]
   },
+  "mediaGalleries.scan": {
+    "channel": "dev",
+    "extension_types": [ "platform_app" ]
+  },
   "mediaGalleries.read": {
     "channel": "stable",
     "extension_types": [ "platform_app" ]
