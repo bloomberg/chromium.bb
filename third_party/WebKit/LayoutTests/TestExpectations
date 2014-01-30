@@ -879,3 +879,4 @@ crbug.com/339539 http/tests/workers/terminate-during-sync-operation.html [ Pass 
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ] 
 crbug.com/339265 fast/loader/stateobjects/document-destroyed-navigate-back-with-fragment-scroll.html [ Pass Timeout Crash ]
 crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pass Crash ]
+crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
