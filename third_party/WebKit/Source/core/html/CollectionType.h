@@ -52,13 +52,12 @@ enum CollectionType {
     MapAreas,
     FormControls,
 
-    ClassCollectionType,
-    TagCollectionType,
-    HTMLTagCollectionType,
-
     // Live NodeList.
     ChildNodeListType,
+    ClassNodeListType,
     NameNodeListType,
+    TagNodeListType,
+    HTMLTagNodeListType,
     RadioNodeListType,
     RadioImgNodeListType,
     LabelsNodeListType,

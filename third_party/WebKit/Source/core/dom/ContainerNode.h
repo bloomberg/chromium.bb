@@ -104,10 +104,10 @@ public:
     void removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
     void appendChild(PassRefPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
-    PassRefPtr<HTMLCollection> getElementsByTagName(const AtomicString&);
-    PassRefPtr<HTMLCollection> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
+    PassRefPtr<NodeList> getElementsByTagName(const AtomicString&);
+    PassRefPtr<NodeList> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
     PassRefPtr<NodeList> getElementsByName(const AtomicString& elementName);
-    PassRefPtr<HTMLCollection> getElementsByClassName(const AtomicString& classNames);
+    PassRefPtr<NodeList> getElementsByClassName(const AtomicString& classNames);
     PassRefPtr<RadioNodeList> radioNodeList(const AtomicString&, bool onlyMatchImgElements = false);
 
     // These methods are only used during parsing.

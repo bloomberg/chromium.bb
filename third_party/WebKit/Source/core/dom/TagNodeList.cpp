@@ -22,22 +22,22 @@
  */
 
 #include "config.h"
-#include "core/dom/TagCollection.h"
+#include "core/dom/TagNodeList.h"
 
 #include "core/dom/NodeRareData.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
 
-TagCollection::TagCollection(ContainerNode* rootNode, CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
-    : HTMLCollection(rootNode, type, DoesNotOverrideItemAfter)
+TagNodeList::TagNodeList(PassRefPtr<ContainerNode> rootNode, CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
+    : LiveNodeList(rootNode, type, DoNotInvalidateOnAttributeChanges)
     , m_namespaceURI(namespaceURI)
     , m_localName(localName)
 {
     ASSERT(m_namespaceURI.isNull() || !m_namespaceURI.isEmpty());
 }
 
-TagCollection::~TagCollection()
+TagNodeList::~TagNodeList()
 {
     if (m_namespaceURI == starAtom)
         ownerNode()->nodeLists()->removeCacheWithAtomicName(this, type(), m_localName);
@@ -45,7 +45,7 @@ TagCollection::~TagCollection()
         ownerNode()->nodeLists()->removeCacheWithQualifiedName(this, m_namespaceURI, m_localName);
 }
 
-bool TagCollection::elementMatches(const Element& testNode) const
+bool TagNodeList::nodeMatches(const Element& testNode) const
 {
     // Implements http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagnamens
     if (m_localName != starAtom && m_localName != testNode.localName())
@@ -54,10 +54,15 @@ bool TagCollection::elementMatches(const Element& testNode) const
     return m_namespaceURI == starAtom || m_namespaceURI == testNode.namespaceURI();
 }
 
-HTMLTagCollection::HTMLTagCollection(ContainerNode* rootNode, const AtomicString& localName)
-    : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName)
+HTMLTagNodeList::HTMLTagNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicString& localName)
+    : TagNodeList(rootNode, HTMLTagNodeListType, starAtom, localName)
     , m_loweredLocalName(localName.lower())
 {
+}
+
+bool HTMLTagNodeList::nodeMatches(const Element& testNode) const
+{
+    return nodeMatchesInlined(testNode);
 }
 
 } // namespace WebCore

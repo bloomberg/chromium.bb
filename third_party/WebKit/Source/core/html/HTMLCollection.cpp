@@ -24,7 +24,7 @@
 #include "core/html/HTMLCollection.h"
 
 #include "HTMLNames.h"
-#include "core/dom/ClassCollection.h"
+#include "core/dom/ClassNodeList.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeRareData.h"
@@ -40,9 +40,6 @@ using namespace HTMLNames;
 static bool shouldOnlyIncludeDirectChildren(CollectionType type)
 {
     switch (type) {
-    case ClassCollectionType:
-    case TagCollectionType:
-    case HTMLTagCollectionType:
     case DocAll:
     case DocAnchors:
     case DocApplets:
@@ -66,7 +63,10 @@ static bool shouldOnlyIncludeDirectChildren(CollectionType type)
     case TableTBodies:
         return true;
     case ChildNodeListType:
+    case ClassNodeListType:
     case NameNodeListType:
+    case TagNodeListType:
+    case HTMLTagNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
     case LabelsNodeListType:
@@ -91,9 +91,6 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case DocumentNamedItems:
     case FormControls:
         return NodeListIsRootedAtDocument;
-    case ClassCollectionType:
-    case TagCollectionType:
-    case HTMLTagCollectionType:
     case NodeChildren:
     case TableTBodies:
     case TSectionRows:
@@ -105,7 +102,10 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
     case MapAreas:
         return NodeListIsRootedAtNode;
     case ChildNodeListType:
+    case ClassNodeListType:
     case NameNodeListType:
+    case TagNodeListType:
+    case HTMLTagNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
     case LabelsNodeListType:
@@ -118,8 +118,6 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type)
 static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(CollectionType type)
 {
     switch (type) {
-    case TagCollectionType:
-    case HTMLTagCollectionType:
     case DocImages:
     case DocEmbeds:
     case DocForms:
@@ -148,10 +146,11 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
         return InvalidateOnIdNameAttrChange;
     case FormControls:
         return InvalidateForFormControls;
-    case ClassCollectionType:
-        return InvalidateOnClassAttrChange;
     case ChildNodeListType:
+    case ClassNodeListType:
     case NameNodeListType:
+    case TagNodeListType:
+    case HTMLTagNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
     case LabelsNodeListType:
@@ -176,11 +175,9 @@ PassRefPtr<HTMLCollection> HTMLCollection::create(ContainerNode* base, Collectio
 
 HTMLCollection::~HTMLCollection()
 {
-    // HTMLNameCollection, ClassCollection and TagCollection remove cache by themselves.
-    if (type() != WindowNamedItems && type() != DocumentNamedItems && type() != ClassCollectionType
-        && type() != HTMLTagCollectionType && type() != TagCollectionType) {
+    // HTMLNameCollection removes cache by itself.
+    if (type() != WindowNamedItems && type() != DocumentNamedItems)
         ownerNode()->nodeLists()->removeCacheWithAtomicName(this, type());
-    }
 }
 
 void HTMLCollection::invalidateCache() const
@@ -195,24 +192,7 @@ inline bool isMatchingElement(const NodeListType&, const Element&);
 template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, const Element& element)
 {
     CollectionType type = htmlCollection.type();
-
-    // These collections apply to any kind of Elements, not just HTMLElements.
-    switch (type) {
-    case DocAll:
-    case NodeChildren:
-        return true;
-    case ClassCollectionType:
-        return static_cast<const ClassCollection&>(htmlCollection).elementMatches(element);
-    case TagCollectionType:
-        return static_cast<const TagCollection&>(htmlCollection).elementMatches(element);
-    case HTMLTagCollectionType:
-        return static_cast<const HTMLTagCollection&>(htmlCollection).elementMatches(element);
-    default:
-        break;
-    }
-
-    // The following only applies to HTMLElements.
-    if (!element.isHTMLElement())
+    if (!element.isHTMLElement() && !(type == DocAll || type == NodeChildren || type == WindowNamedItems))
         return false;
 
     switch (type) {
@@ -249,17 +229,18 @@ template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, 
         return (element.hasLocalName(aTag) || element.hasLocalName(areaTag)) && element.fastHasAttribute(hrefAttr);
     case DocAnchors:
         return element.hasLocalName(aTag) && element.fastHasAttribute(nameAttr);
-    case ClassCollectionType:
-    case TagCollectionType:
-    case HTMLTagCollectionType:
     case DocAll:
     case NodeChildren:
+        return true;
     case FormControls:
     case DocumentNamedItems:
     case TableRows:
     case WindowNamedItems:
     case ChildNodeListType:
+    case ClassNodeListType:
     case NameNodeListType:
+    case TagNodeListType:
+    case HTMLTagNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
     case LabelsNodeListType:
@@ -271,6 +252,16 @@ template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, 
 template <> inline bool isMatchingElement(const LiveNodeList& nodeList, const Element& element)
 {
     return nodeList.nodeMatches(element);
+}
+
+template <> inline bool isMatchingElement(const HTMLTagNodeList& nodeList, const Element& element)
+{
+    return nodeList.nodeMatchesInlined(element);
+}
+
+template <> inline bool isMatchingElement(const ClassNodeList& nodeList, const Element& element)
+{
+    return nodeList.nodeMatchesInlined(element);
 }
 
 static Node* previousNode(const Node& base, const Node& previous, bool onlyIncludeDirectChildren)
@@ -371,6 +362,10 @@ inline Node* LiveNodeList::traverseToFirstElement(const ContainerNode& root) con
     switch (type()) {
     case ChildNodeListType:
         return root.firstChild();
+    case HTMLTagNodeListType:
+        return firstMatchingElement(static_cast<const HTMLTagNodeList&>(*this), root);
+    case ClassNodeListType:
+        return firstMatchingElement(static_cast<const ClassNodeList&>(*this), root);
     default:
         return firstMatchingElement(static_cast<const LiveNodeList&>(*this), root);
     }
@@ -383,6 +378,10 @@ inline Node* LiveNodeList::traverseForwardToOffset(unsigned offset, Node& curren
     switch (type()) {
     case ChildNodeListType:
         return traverseSiblingsForwardToOffset(offset, currentNode, currentOffset);
+    case HTMLTagNodeListType:
+        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagNodeList&>(*this), offset, toElement(currentNode), currentOffset, root);
+    case ClassNodeListType:
+        return traverseMatchingElementsForwardToOffset(static_cast<const ClassNodeList&>(*this), offset, toElement(currentNode), currentOffset, root);
     default:
         return traverseMatchingElementsForwardToOffset(*this, offset, toElement(currentNode), currentOffset, root);
     }

@@ -25,7 +25,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ChildListMutationScope.h"
-#include "core/dom/ClassCollection.h"
+#include "core/dom/ClassNodeList.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
@@ -999,17 +999,17 @@ void ContainerNode::updateTreeAfterInsertion(Node& child)
     dispatchChildInsertionEvents(child);
 }
 
-PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
+PassRefPtr<NodeList> ContainerNode::getElementsByTagName(const AtomicString& localName)
 {
     if (localName.isNull())
         return 0;
 
     if (document().isHTMLDocument())
-        return ensureRareData().ensureNodeLists().addCacheWithAtomicName<HTMLTagCollection>(this, HTMLTagCollectionType, localName);
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<TagCollection>(this, TagCollectionType, localName);
+        return ensureRareData().ensureNodeLists().addCacheWithAtomicName<HTMLTagNodeList>(this, HTMLTagNodeListType, localName);
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<TagNodeList>(this, TagNodeListType, localName);
 }
 
-PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
+PassRefPtr<NodeList> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
     if (localName.isNull())
         return 0;
@@ -1029,9 +1029,9 @@ PassRefPtr<NodeList> ContainerNode::getElementsByName(const AtomicString& elemen
 
 // Takes an AtomicString in argument because it is common for elements to share the same set of class names.
 // Therefore, the ClassNodeList factory function expects an AtomicString type.
-PassRefPtr<HTMLCollection> ContainerNode::getElementsByClassName(const AtomicString& classNames)
+PassRefPtr<NodeList> ContainerNode::getElementsByClassName(const AtomicString& classNames)
 {
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<ClassCollection>(this, ClassCollectionType, classNames);
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<ClassNodeList>(this, ClassNodeListType, classNames);
 }
 
 PassRefPtr<RadioNodeList> ContainerNode::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)

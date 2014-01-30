@@ -27,49 +27,52 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ClassCollection_h
-#define ClassCollection_h
+#ifndef ClassNodeList_h
+#define ClassNodeList_h
 
 #include "core/dom/Element.h"
+#include "core/dom/LiveNodeList.h"
+#include "core/dom/Node.h"
 #include "core/dom/SpaceSplitString.h"
-#include "core/html/HTMLCollection.h"
 
 namespace WebCore {
 
-class ClassCollection FINAL : public HTMLCollection {
+class ClassNodeList FINAL : public LiveNodeList {
 public:
     // classNames argument is an AtomicString because it is common for Elements to share the same class names.
     // It is also used to construct a SpaceSplitString (m_classNames) and its constructor requires an AtomicString.
-    static PassRefPtr<ClassCollection> create(ContainerNode* rootNode, CollectionType type, const AtomicString& classNames)
+    static PassRefPtr<ClassNodeList> create(PassRefPtr<ContainerNode> rootNode, CollectionType type, const AtomicString& classNames)
     {
-        ASSERT_UNUSED(type, type == ClassCollectionType);
-        return adoptRef(new ClassCollection(rootNode, classNames));
+        ASSERT_UNUSED(type, type == ClassNodeListType);
+        return adoptRef(new ClassNodeList(rootNode, classNames));
     }
 
-    virtual ~ClassCollection();
+    virtual ~ClassNodeList();
 
-    bool elementMatches(const Element&) const;
+    bool nodeMatchesInlined(const Element&) const;
 
 private:
-    ClassCollection(ContainerNode* rootNode, const AtomicString& classNames);
+    ClassNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicString& classNames);
+
+    virtual bool nodeMatches(const Element&) const OVERRIDE;
 
     SpaceSplitString m_classNames;
     AtomicString m_originalClassNames;
 };
 
-inline bool ClassCollection::elementMatches(const Element& testElement) const
+inline bool ClassNodeList::nodeMatchesInlined(const Element& testNode) const
 {
-    if (!testElement.hasClass())
+    if (!testNode.hasClass())
         return false;
     if (!m_classNames.size())
         return false;
     // FIXME: DOM4 allows getElementsByClassName to return non StyledElement.
     // https://bugs.webkit.org/show_bug.cgi?id=94718
-    if (!testElement.isStyledElement())
+    if (!testNode.isStyledElement())
         return false;
-    return testElement.classNames().containsAll(m_classNames);
+    return testNode.classNames().containsAll(m_classNames);
 }
 
 } // namespace WebCore
 
-#endif // ClassCollection_h
+#endif // ClassNodeList_h

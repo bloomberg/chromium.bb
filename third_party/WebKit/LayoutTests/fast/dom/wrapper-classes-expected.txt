@@ -32,10 +32,10 @@ PASS classString(document.createNodeIterator(root, 0, null, false)) is "NodeIter
 FAIL classString(document.createNodeIterator(root, 0, null, false).__proto__) should be NodeIteratorPrototype. Was Object.
 PASS classString(document.createNodeIterator(root, 0, null, false).constructor) is "Function"
 PASS document.createNodeIterator(root, 0, null, false).constructor.name is "NodeIterator"
-PASS classString(document.getElementsByTagName('div')) is "HTMLCollection"
-FAIL classString(document.getElementsByTagName('div').__proto__) should be HTMLCollectionPrototype. Was Object.
+PASS classString(document.getElementsByTagName('div')) is "NodeList"
+FAIL classString(document.getElementsByTagName('div').__proto__) should be NodeListPrototype. Was Object.
 PASS classString(document.getElementsByTagName('div').constructor) is "Function"
-PASS document.getElementsByTagName('div').constructor.name is "HTMLCollection"
+PASS document.getElementsByTagName('div').constructor.name is "NodeList"
 PASS classString(document.createRange()) is "Range"
 FAIL classString(document.createRange().__proto__) should be RangePrototype. Was Object.
 PASS classString(document.createRange().constructor) is "Function"

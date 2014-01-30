@@ -38,18 +38,17 @@
 #include "WebDocument.h"
 #include "WebElement.h"
 #include "WebFrameImpl.h"
-#include "WebNodeCollection.h"
 #include "WebNodeList.h"
 #include "WebPluginContainer.h"
 #include "WebPluginContainerImpl.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/EmptyNodeList.h"
+#include "core/events/Event.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
 #include "core/editing/markup.h"
-#include "core/events/Event.h"
-#include "core/html/HTMLCollection.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderWidget.h"
 #include "platform/Widget.h"
@@ -192,11 +191,11 @@ void WebNode::simulateClick()
     m_private->dispatchSimulatedClick(0);
 }
 
-WebNodeCollection WebNode::getElementsByTagName(const WebString& tag) const
+WebNodeList WebNode::getElementsByTagName(const WebString& tag) const
 {
     if (m_private->isContainerNode())
-        return WebNodeCollection(toContainerNode(m_private.get())->getElementsByTagName(tag));
-    return WebNodeCollection();
+        return WebNodeList(toContainerNode(m_private.get())->getElementsByTagName(tag));
+    return WebNodeList(EmptyNodeList::create(m_private.get()));
 }
 
 WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) const

@@ -71,8 +71,6 @@ private:
     void assign(WebCore::HTMLCollection*);
     WebCore::HTMLCollection* m_private;
     mutable unsigned m_current;
-
-    friend class WebNodeList;
 };
 
 } // namespace blink
