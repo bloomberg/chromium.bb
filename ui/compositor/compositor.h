@@ -28,10 +28,6 @@ class MessageLoopProxy;
 class RunLoop;
 }
 
-namespace blink {
-class WebGraphicsContext3D;
-}
-
 namespace cc {
 class ContextProvider;
 class Layer;

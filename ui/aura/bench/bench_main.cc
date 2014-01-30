@@ -42,7 +42,6 @@ using base::TimeTicks;
 using ui::Compositor;
 using ui::Layer;
 using ui::LayerDelegate;
-using blink::WebGraphicsContext3D;
 
 namespace {
 
