@@ -881,3 +881,5 @@ crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-nega
 crbug.com/339265 fast/loader/stateobjects/document-destroyed-navigate-back-with-fragment-scroll.html [ Pass Timeout Crash ]
 crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pass Crash ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
+
+crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]

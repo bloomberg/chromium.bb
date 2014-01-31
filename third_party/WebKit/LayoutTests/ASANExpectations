@@ -80,3 +80,4 @@ crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-over
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-set-none.html [ Failure Pass ]
 crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Failure Pass ]
 crbug.com/333901 [ Linux ] virtual/legacy-animations-engine/animations/timing-model.html [ Failure Pass ]
+crbug.com/339778 [ Linux ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
