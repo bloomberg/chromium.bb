@@ -1069,8 +1069,6 @@ private:
 
     void updateUseShadowTrees();
 
-    void unscheduleStyleRecalc();
-
     void detachParser();
 
     virtual bool isDocument() const OVERRIDE FINAL { return true; }
@@ -1098,6 +1096,8 @@ private:
     void updateTitle(const String&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
+
+    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending; }
 
     void executeScriptsWaitingForResourcesIfNeeded();
 
@@ -1204,8 +1204,6 @@ private:
     bool m_visuallyOrdered;
     ReadyState m_readyState;
     bool m_bParsing;
-
-    bool m_hasPendingStyleRecalc;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;

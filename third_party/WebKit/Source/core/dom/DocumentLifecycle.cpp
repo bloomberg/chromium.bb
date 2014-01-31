@@ -32,6 +32,7 @@
 #include "core/dom/DocumentLifecycle.h"
 
 #include "wtf/Assertions.h"
+#include <stdio.h>
 
 namespace WebCore {
 
@@ -44,12 +45,34 @@ DocumentLifecycle::~DocumentLifecycle()
 {
 }
 
-void DocumentLifecycle::advanceTo(State state)
+bool DocumentLifecycle::canAdvanceTo(State state) const
 {
+    if (state > m_state)
+        return true;
     // FIXME: We can dispose a document multiple times. This seems wrong.
     // See https://code.google.com/p/chromium/issues/detail?id=301668.
-    ASSERT(state > m_state || (state == Disposed && m_state == Disposed) || (isActive() && state == Clean));
+    if (m_state == Disposed)
+        return state == Disposed;
+    if (m_state == Clean) {
+        // We can synchronously enter recalc style without rewinding to
+        // StyleRecalcPending.
+        return state == InStyleRecalc;
+    }
+    return false;
+}
+
+void DocumentLifecycle::advanceTo(State state)
+{
+    ASSERT(canAdvanceTo(state));
     m_state = state;
+}
+
+void DocumentLifecycle::rewindTo(State state)
+{
+    ASSERT(m_state == Clean);
+    ASSERT(state < m_state);
+    m_state = state;
+    ASSERT(isActive());
 }
 
 }

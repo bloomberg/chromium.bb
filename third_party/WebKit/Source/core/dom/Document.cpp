@@ -453,7 +453,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
     , m_bParsing(false)
-    , m_hasPendingStyleRecalc(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
@@ -1580,29 +1579,20 @@ bool Document::shouldCallRecalcStyleForDocument()
 
 void Document::scheduleStyleRecalc()
 {
-    if (!isActive())
-        return;
-
-    if (m_hasPendingStyleRecalc || !shouldScheduleLayout())
+    if (hasPendingStyleRecalc() || !isActive() || inStyleRecalc() || !shouldScheduleLayout())
         return;
 
     ASSERT(shouldCallRecalcStyleForDocument());
 
     view()->scheduleAnimation();
-    m_hasPendingStyleRecalc = true;
+    m_lifecycle.rewindTo(DocumentLifecycle::StyleRecalcPending);
 
     InspectorInstrumentation::didScheduleStyleRecalculation(this);
 }
 
-void Document::unscheduleStyleRecalc()
-{
-    ASSERT(!isActive() || (!needsStyleRecalc() && !childNeedsStyleRecalc()));
-    m_hasPendingStyleRecalc = false;
-}
-
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return m_hasPendingStyleRecalc && !inStyleRecalc() && styleChangeType() >= SubtreeStyleChange;
+    return hasPendingStyleRecalc() && !inStyleRecalc() && styleChangeType() >= SubtreeStyleChange;
 }
 
 void Document::updateDistributionIfNeeded()
@@ -1796,7 +1786,6 @@ void Document::recalcStyle(StyleRecalcChange change)
         view()->updateCompositingLayersAfterStyleChange();
 
         clearChildNeedsStyleRecalc();
-        unscheduleStyleRecalc();
 
         if (m_styleEngine->hasResolver()) {
             // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
@@ -1805,6 +1794,8 @@ void Document::recalcStyle(StyleRecalcChange change)
             resolver.clearStyleSharingList();
         }
 
+        ASSERT(!needsStyleRecalc());
+        ASSERT(!childNeedsStyleRecalc());
         ASSERT(inStyleRecalc());
         m_lifecycle.advanceTo(DocumentLifecycle::Clean);
     }
@@ -2133,8 +2124,6 @@ void Document::detach(const AttachContext& context)
     m_autofocusElement = 0;
 
     ContainerNode::detach(context);
-
-    unscheduleStyleRecalc();
 
     m_styleEngine->didDetach();
 

@@ -43,8 +43,9 @@ public:
         Inactive,
 
         // When the document is active, it traverses these states.
-        Clean,
+        StyleRecalcPending,
         InStyleRecalc,
+        Clean,
 
         // Once the document starts shuting down, we cannot return
         // to the style/layout/rendering states.
@@ -60,8 +61,11 @@ public:
     State state() const { return m_state; }
 
     void advanceTo(State);
+    void rewindTo(State);
 
 private:
+    bool canAdvanceTo(State) const;
+
     State m_state;
 };
 
