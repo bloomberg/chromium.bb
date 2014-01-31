@@ -59,8 +59,6 @@
     'remoting_webapp_js_host_files': [
       'webapp/host_controller.js',
       'webapp/host_dispatcher.js',
-      'webapp/host_it2me_dispatcher.js',
-      'webapp/host_it2me_native_messaging.js',
       'webapp/host_native_messaging.js',
       'webapp/host_session.js',
     ],

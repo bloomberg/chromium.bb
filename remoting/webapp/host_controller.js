@@ -10,7 +10,7 @@ var remoting = remoting || {};
 /** @constructor */
 remoting.HostController = function() {
   /** @return {remoting.HostPlugin} */
-  var createPluginForMe2Me = function() {
+  var createNpapiPlugin = function() {
     var plugin = remoting.HostSession.createPlugin();
     /** @type {HTMLElement} @private */
     var container = document.getElementById('daemon-plugin-container');
@@ -19,7 +19,7 @@ remoting.HostController = function() {
   };
 
   /** @type {remoting.HostDispatcher} @private */
-  this.hostDispatcher_ = new remoting.HostDispatcher(createPluginForMe2Me);
+  this.hostDispatcher_ = new remoting.HostDispatcher(createNpapiPlugin);
 
   /** @param {string} version */
   var printVersion = function(version) {
