@@ -48,10 +48,10 @@ class ASH_EXPORT InfolistWindow : public views::BubbleDelegateView {
   std::vector<InfolistEntryView*> entry_views_;
 
   // Information title font.
-  gfx::FontList title_font_;
+  gfx::FontList title_font_list_;
 
   // Information description font.
-  gfx::FontList description_font_;
+  gfx::FontList description_font_list_;
 
   base::OneShotTimer<views::Widget> show_hide_timer_;
 

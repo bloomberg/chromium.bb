@@ -261,8 +261,10 @@ void LocationBarView::Init() {
       ResourceBundle::BaseFont);
   const int current_font_size = font_list.GetFontSize();
   const int desired_font_size = browser_defaults::kOmniboxFontPixelSize;
-  if (current_font_size < desired_font_size)
-    font_list = font_list.DeriveFontListWithSize(desired_font_size);
+  if (current_font_size != desired_font_size) {
+    font_list =
+        font_list.DeriveWithSizeDelta(desired_font_size - current_font_size);
+  }
   // Shrink large fonts to make them fit.
   // TODO(pkasting): Stretch the location bar instead in this case.
   const int location_height = GetInternalHeight(true);

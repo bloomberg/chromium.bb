@@ -638,43 +638,43 @@ void ResourceBundle::LoadFontsIfNecessary() {
 
     if (!bold_font_list_.get()) {
       bold_font_list_.reset(new gfx::FontList());
-      *bold_font_list_ = base_font_list_->DeriveFontList(
+      *bold_font_list_ = base_font_list_->DeriveWithStyle(
           base_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
 
     if (!small_font_list_.get()) {
       small_font_list_.reset(new gfx::FontList());
-      *small_font_list_ = base_font_list_->DeriveFontListWithSize(
-          base_font_list_->GetFontSize() + kSmallFontSizeDelta);
+      *small_font_list_ =
+          base_font_list_->DeriveWithSizeDelta(kSmallFontSizeDelta);
     }
 
     if (!small_bold_font_list_.get()) {
       small_bold_font_list_.reset(new gfx::FontList());
-      *small_bold_font_list_ = small_font_list_->DeriveFontList(
+      *small_bold_font_list_ = small_font_list_->DeriveWithStyle(
           small_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
 
     if (!medium_font_list_.get()) {
       medium_font_list_.reset(new gfx::FontList());
-      *medium_font_list_ = base_font_list_->DeriveFontListWithSize(
-          base_font_list_->GetFontSize() + kMediumFontSizeDelta);
+      *medium_font_list_ =
+          base_font_list_->DeriveWithSizeDelta(kMediumFontSizeDelta);
     }
 
     if (!medium_bold_font_list_.get()) {
       medium_bold_font_list_.reset(new gfx::FontList());
-      *medium_bold_font_list_ = medium_font_list_->DeriveFontList(
+      *medium_bold_font_list_ = medium_font_list_->DeriveWithStyle(
           medium_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
 
     if (!large_font_list_.get()) {
       large_font_list_.reset(new gfx::FontList());
-      *large_font_list_ = base_font_list_->DeriveFontListWithSize(
-          base_font_list_->GetFontSize() + kLargeFontSizeDelta);
+      *large_font_list_ =
+          base_font_list_->DeriveWithSizeDelta(kLargeFontSizeDelta);
     }
 
     if (!large_bold_font_list_.get()) {
       large_bold_font_list_.reset(new gfx::FontList());
-      *large_bold_font_list_ = large_font_list_->DeriveFontList(
+      *large_bold_font_list_ = large_font_list_->DeriveWithStyle(
           large_font_list_->GetFontStyle() | gfx::Font::BOLD);
     }
   }

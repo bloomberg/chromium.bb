@@ -66,21 +66,23 @@ class GFX_EXPORT FontList {
   // is changed.
   static void SetDefaultFontDescription(const std::string& font_description);
 
-  // Returns a new FontList with the given |font_style| flags.
-  FontList DeriveFontList(int font_style) const;
-
-  // Returns a new FontList with the same font names and style but with the
-  // given font |size| in pixels.
-  FontList DeriveFontListWithSize(int size) const;
-
-  // Returns a new FontList with the same font names and style but resized.
-  // |size_delta| is the size in pixels to add to the current font size.
-  FontList DeriveFontListWithSizeDelta(int size_delta) const;
-
   // Returns a new FontList with the same font names but resized and the given
   // style. |size_delta| is the size in pixels to add to the current font size.
   // |font_style| specifies the new style, which is a bitmask of the values:
   // Font::BOLD, Font::ITALIC and Font::UNDERLINE.
+  FontList Derive(int size_delta, int font_style) const;
+
+  // Returns a new FontList with the same font names and style but resized.
+  // |size_delta| is the size in pixels to add to the current font size.
+  FontList DeriveWithSizeDelta(int size_delta) const;
+
+  // Returns a new FontList with the same font names and size but the given
+  // style. |font_style| specifies the new style, which is a bitmask of the
+  // values: Font::BOLD, Font::ITALIC and Font::UNDERLINE.
+  FontList DeriveWithStyle(int font_style) const;
+
+  // Obsolete versions.  Use the abolve methods instead.
+  FontList DeriveFontListWithSizeDelta(int size_delta) const;
   FontList DeriveFontListWithSizeDeltaAndStyle(int size_delta,
                                                int font_style) const;
 

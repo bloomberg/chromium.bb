@@ -173,27 +173,12 @@ void FontList::SetDefaultFontDescription(const std::string& font_description) {
   g_default_font_list = NULL;
 }
 
-FontList FontList::DeriveFontList(int font_style) const {
-  return DeriveFontListWithSizeDeltaAndStyle(0, font_style);
-}
-
-FontList FontList::DeriveFontListWithSize(int size) const {
-  DCHECK_GT(size, 0);
-  return DeriveFontListWithSizeDeltaAndStyle(size - GetFontSize(),
-                                             GetFontStyle());
-}
-
-FontList FontList::DeriveFontListWithSizeDelta(int size_delta) const {
-  return DeriveFontListWithSizeDeltaAndStyle(size_delta, GetFontStyle());
-}
-
-FontList FontList::DeriveFontListWithSizeDeltaAndStyle(int size_delta,
-                                                       int style) const {
+FontList FontList::Derive(int size_delta, int font_style) const {
   // If there is a font vector, derive from that.
   if (!fonts_.empty()) {
     std::vector<Font> fonts = fonts_;
     for (size_t i = 0; i < fonts.size(); ++i)
-      fonts[i] = fonts[i].DeriveFont(size_delta, style);
+      fonts[i] = fonts[i].DeriveFont(size_delta, font_style);
     return FontList(fonts);
   }
 
@@ -203,9 +188,25 @@ FontList FontList::DeriveFontListWithSizeDeltaAndStyle(int size_delta,
   int old_style;
   ParseFontDescriptionString(font_description_string_, &font_names,
                              &old_style, &old_size);
-  int size = old_size + size_delta;
-  DCHECK_GT(size, 0);
-  return FontList(font_names, style, size);
+  const int size = std::max(1, old_size + size_delta);
+  return FontList(font_names, font_style, size);
+}
+
+FontList FontList::DeriveWithSizeDelta(int size_delta) const {
+  return Derive(size_delta, GetFontStyle());
+}
+
+FontList FontList::DeriveWithStyle(int font_style) const {
+  return Derive(0, font_style);
+}
+
+FontList FontList::DeriveFontListWithSizeDelta(int size_delta) const {
+  return Derive(size_delta, GetFontStyle());
+}
+
+FontList FontList::DeriveFontListWithSizeDeltaAndStyle(int size_delta,
+                                                       int font_style) const {
+  return Derive(size_delta, font_style);
 }
 
 int FontList::GetHeight() const {

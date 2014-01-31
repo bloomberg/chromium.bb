@@ -126,7 +126,7 @@ class TextExample::TextExampleView : public View {
     return font_list_.GetFontStyle();
   }
   void SetFontStyle(int style) {
-    font_list_ = font_list_.DeriveFontList(style);
+    font_list_ = font_list_.DeriveWithStyle(style);
   }
 
  private:

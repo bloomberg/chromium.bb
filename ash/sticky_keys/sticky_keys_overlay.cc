@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -69,10 +70,11 @@ class StickyKeyOverlayLabel : public views::Label {
 
 StickyKeyOverlayLabel::StickyKeyOverlayLabel(const std::string& key_name)
     : state_(STICKY_KEY_STATE_DISABLED) {
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+
   SetText(base::UTF8ToUTF16(key_name));
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  SetFontList(
-      font_list().DeriveFontListWithSize(18));
+  SetFontList(rb->GetFontList(ui::ResourceBundle::LargeFont));
   SetAutoColorReadabilityEnabled(false);
   SetFocusable(false);
   SetEnabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
@@ -102,7 +104,7 @@ void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
 
   SetEnabledColor(label_color);
   SetDisabledColor(label_color);
-  SetFontList(font_list().DeriveFontListWithSizeDeltaAndStyle(0, style));
+  SetFontList(font_list().DeriveWithStyle(style));
 }
 
 void StickyKeyOverlayLabel::PaintText(gfx::Canvas* canvas,

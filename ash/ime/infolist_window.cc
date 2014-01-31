@@ -12,7 +12,6 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/font.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -87,8 +86,8 @@ gfx::Insets InfolistBorder::GetInsets() const {
 class InfolistEntryView : public views::View {
  public:
   InfolistEntryView(const ui::InfolistEntry& entry,
-                    const gfx::FontList& title_font,
-                    const gfx::FontList& description_font);
+                    const gfx::FontList& title_font_list,
+                    const gfx::FontList& description_font_list);
   virtual ~InfolistEntryView();
 
   void SetEntry(const ui::InfolistEntry& entry);
@@ -111,20 +110,18 @@ class InfolistEntryView : public views::View {
 };
 
 InfolistEntryView::InfolistEntryView(const ui::InfolistEntry& entry,
-                                     const gfx::FontList& title_font,
-                                     const gfx::FontList& description_font)
+                                     const gfx::FontList& title_font_list,
+                                     const gfx::FontList& description_font_list)
     : entry_(entry) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
-  title_label_ = new views::Label(entry.title);
+  title_label_ = new views::Label(entry.title, title_font_list);
   title_label_->SetPosition(gfx::Point(0, 0));
-  title_label_->SetFontList(title_font);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetBorder(views::Border::CreateEmptyBorder(4, 7, 2, 4));
 
-  description_label_ = new views::Label(entry.body);
+  description_label_ = new views::Label(entry.body, description_font_list);
   description_label_->SetPosition(gfx::Point(0, 0));
-  description_label_->SetFontList(description_font);
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   description_label_->SetMultiLine(true);
   description_label_->SizeToFit(kInfolistEntryWidth);
@@ -172,8 +169,9 @@ void InfolistEntryView::UpdateBackground() {
 InfolistWindow::InfolistWindow(views::View* candidate_window,
                                const std::vector<ui::InfolistEntry>& entries)
     : views::BubbleDelegateView(candidate_window, views::BubbleBorder::NONE),
-      title_font_(gfx::Font(kJapaneseFontName, kFontSizeDelta + 15)),
-      description_font_(gfx::Font(kJapaneseFontName, kFontSizeDelta + 11)) {
+      title_font_list_(gfx::Font(kJapaneseFontName, kFontSizeDelta + 15)),
+      description_font_list_(gfx::Font(kJapaneseFontName,
+                                       kFontSizeDelta + 11)) {
   set_move_with_anchor(true);
   set_margins(gfx::Insets());
 
@@ -189,8 +187,6 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
 
   views::Label* caption_label = new views::Label(
       l10n_util::GetStringUTF16(IDS_ASH_IME_INFOLIST_WINDOW_TITLE));
-  caption_label->SetFontList(
-      caption_label->font_list().DeriveFontList(kFontSizeDelta - 2));
   caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   caption_label->SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
@@ -204,8 +200,8 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
   AddChildView(caption_label);
 
   for (size_t i = 0; i < entries.size(); ++i) {
-    entry_views_.push_back(
-        new InfolistEntryView(entries[i], title_font_, description_font_));
+    entry_views_.push_back(new InfolistEntryView(
+        entries[i], title_font_list_, description_font_list_));
     AddChildView(entry_views_.back());
   }
 }
@@ -232,7 +228,7 @@ void InfolistWindow::Relayout(const std::vector<ui::InfolistEntry>& entries) {
       entry_views_[i]->SetEntry(entries[i]);
     } else {
       InfolistEntryView* new_entry = new InfolistEntryView(
-          entries[i], title_font_, description_font_);
+          entries[i], title_font_list_, description_font_list_);
       AddChildView(new_entry);
       entry_views_.push_back(new_entry);
     }

@@ -27,7 +27,6 @@ namespace {
 const int kShadowOffset = 1;
 const int kShadowBlur = 4;
 const int kSpeechViewMaxHeight = 300;
-const int kTextSize = 20;
 const int kMicButtonMargin = 12;
 const int kTextMargin = 32;
 const int kIndicatorRadiusMax = 100;
@@ -116,10 +115,11 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
   container->AddChildView(mic_button_);
 
   // TODO(mukai): use BoundedLabel to cap 2 lines.
-  speech_result_ = new views::Label();
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  speech_result_ = new views::Label(
+      base::string16(), bundle.GetFontList(ui::ResourceBundle::LargeFont));
   speech_result_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  const gfx::FontList& font_list = speech_result_->font_list();
-  speech_result_->SetFontList(font_list.DeriveFontListWithSize(kTextSize));
+
   speech_result_->SetMultiLine(true);
   container->AddChildView(speech_result_);
 
@@ -142,8 +142,8 @@ void SpeechView::Reset() {
   speech_result_->SetText(l10n_util::GetStringUTF16(
       IDS_APP_LIST_SPEECH_HINT_TEXT));
   speech_result_->SetEnabledColor(kHintTextColor);
-  mic_button_->SetImage(views::Button::STATE_NORMAL, bundle.GetImageSkiaNamed(
-      IDR_APP_LIST_SPEECH_MIC_ON));
+  mic_button_->SetImage(views::Button::STATE_NORMAL,
+                        bundle.GetImageSkiaNamed(IDR_APP_LIST_SPEECH_MIC_ON));
 }
 
 int SpeechView::GetIndicatorRadius(uint8 level) {
@@ -215,8 +215,8 @@ void SpeechView::OnSpeechRecognitionStateChanged(
     resource_id = IDR_APP_LIST_SPEECH_MIC_RECORDING;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  mic_button_->SetImage(views::Button::STATE_NORMAL, bundle.GetImageSkiaNamed(
-      resource_id));
+  mic_button_->SetImage(views::Button::STATE_NORMAL,
+                        bundle.GetImageSkiaNamed(resource_id));
 }
 
 }  // namespace app_list
