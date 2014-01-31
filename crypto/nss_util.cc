@@ -437,7 +437,7 @@ class NSSInitSingleton {
   void InitializePrivateSoftwareSlotForChromeOSUser(
       const std::string& username_hash) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    LOG(WARNING) << "using software private slot for " << username_hash;
+    VLOG(1) << "using software private slot for " << username_hash;
     DCHECK(chromeos_user_map_.find(username_hash) != chromeos_user_map_.end());
     chromeos_user_map_[username_hash]->SetPrivateSlot(
         chromeos_user_map_[username_hash]->GetPublicSlot());
