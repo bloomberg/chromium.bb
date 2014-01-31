@@ -1,18 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_H__
+#define COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_H__
 
 #include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "components/sync_driver/data_type_error_handler.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -27,8 +28,7 @@ namespace browser_sync {
 // Data type controllers need to be refcounted threadsafe, as they may
 // need to run model associator or change processor on other threads.
 class DataTypeController
-    : public base::RefCountedThreadSafe<
-          DataTypeController, content::BrowserThread::DeleteOnUIThread>,
+    : public base::RefCountedDeleteOnMessageLoop<DataTypeController>,
       public DataTypeErrorHandler {
  public:
   enum State {
@@ -118,16 +118,18 @@ class DataTypeController
       syncer::ModelType type) OVERRIDE;
 
  protected:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
+  friend class base::RefCountedDeleteOnMessageLoop<DataTypeController>;
   friend class base::DeleteHelper<DataTypeController>;
+
+  DataTypeController(scoped_refptr<base::MessageLoopProxy> ui_thread,
+                     const base::Closure& error_callback);
 
   // If the DTC is waiting for models to load, once the models are
   // loaded the datatype service will call this function on DTC to let
   // us know that it is safe to start associating.
   virtual void OnModelLoaded() = 0;
 
-  virtual ~DataTypeController() {}
+  virtual ~DataTypeController();
 
   // Handles the reporting of unrecoverable error. It records stuff in
   // UMA and reports to breakpad.
@@ -135,8 +137,12 @@ class DataTypeController
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message);
+
+ private:
+  // The callback that will be invoked when an unrecoverable error occurs.
+  base::Closure error_callback_;
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_H__

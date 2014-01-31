@@ -177,7 +177,9 @@ class ProfileSyncServicePreferenceTest
     EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
         WillOnce(ReturnNewDataTypeManagerWithDebugListener(
                      syncer::MakeWeakHandle(debug_ptr_factory_.GetWeakPtr())));
-    dtc_ = new UIDataTypeController(syncer::PREFERENCES,
+    dtc_ = new UIDataTypeController(base::MessageLoopProxy::current(),
+                                    base::Closure(),
+                                    syncer::PREFERENCES,
                                     components,
                                     profile_.get(),
                                     sync_service_);

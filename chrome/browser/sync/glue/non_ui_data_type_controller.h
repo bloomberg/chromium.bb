@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/shared_change_processor.h"
+#include "components/sync_driver/data_type_controller.h"
 
 class Profile;
 class ProfileSyncService;
@@ -27,6 +27,8 @@ namespace browser_sync {
 class NonUIDataTypeController : public DataTypeController {
  public:
   NonUIDataTypeController(
+      scoped_refptr<base::MessageLoopProxy> ui_thread,
+      const base::Closure& error_callback,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);

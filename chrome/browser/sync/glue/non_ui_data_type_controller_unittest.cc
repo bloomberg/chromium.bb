@@ -13,11 +13,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/shared_change_processor_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "components/sync_driver/data_type_controller_mock.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/fake_syncable_service.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -65,9 +65,11 @@ class NonUIDataTypeControllerFake
       Profile* profile,
       ProfileSyncService* sync_service,
       NonUIDataTypeControllerMock* mock)
-      : NonUIDataTypeController(profile_sync_factory,
-                                         profile,
-                                         sync_service),
+      : NonUIDataTypeController(base::MessageLoopProxy::current(),
+                                base::Closure(),
+                                profile_sync_factory,
+                                profile,
+                                sync_service),
         blocked_(false),
         mock_(mock) {}
 

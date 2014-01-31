@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "google/cacheinvalidation/types.pb.h"

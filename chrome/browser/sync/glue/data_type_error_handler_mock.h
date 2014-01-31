@@ -4,7 +4,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_MOCK_H__
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_MOCK_H__
 
-#include "chrome/browser/sync/glue/data_type_controller.h"
+#include "components/sync_driver/data_type_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #include "sync/internal_api/public/base/model_type.h"

@@ -13,6 +13,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -67,9 +68,12 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : NonFrontendDataTypeController(profile_sync_factory,
-                                    profile,
-                                    sync_service),
+    : NonFrontendDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          profile_sync_factory,
+          profile,
+          sync_service),
       backend_(NULL) {
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(

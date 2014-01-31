@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_FAKE_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_FAKE_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
+#define COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__
 
-#include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_manager.h"
+#include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/data_type_manager.h"
 
 namespace browser_sync {
 // Fake DataTypeController implementation that simulates the state
@@ -68,4 +68,4 @@ class FakeDataTypeController : public DataTypeController {
 };
 
 }  // namespace browser_sync
-#endif  // CHROME_BROWSER_SYNC_GLUE_FAKE_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__

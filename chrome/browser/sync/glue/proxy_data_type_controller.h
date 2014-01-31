@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
+#include "components/sync_driver/data_type_controller.h"
 
 namespace browser_sync {
 
@@ -16,7 +16,9 @@ namespace browser_sync {
 // service.
 class ProxyDataTypeController : public DataTypeController {
  public:
-  explicit ProxyDataTypeController(syncer::ModelType type);
+  explicit ProxyDataTypeController(
+       scoped_refptr<base::MessageLoopProxy> ui_thread,
+       syncer::ModelType type);
 
   // DataTypeController interface.
   virtual void LoadModels(

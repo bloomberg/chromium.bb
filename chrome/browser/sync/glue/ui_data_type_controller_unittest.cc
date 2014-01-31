@@ -8,11 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/fake_generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
+#include "components/sync_driver/data_type_controller_mock.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +48,9 @@ class SyncUIDataTypeControllerTest : public testing::Test {
   virtual void SetUp() {
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     preference_dtc_ =
-        new UIDataTypeController(type_,
+        new UIDataTypeController(base::MessageLoopProxy::current(),
+                                 base::Closure(),
+                                 type_,
                                  profile_sync_factory_.get(),
                                  &profile_,
                                  &profile_sync_service_);

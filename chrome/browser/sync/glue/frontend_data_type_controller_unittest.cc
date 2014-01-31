@@ -11,12 +11,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"
-#include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
+#include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "content/public/test/test_browser_thread.h"
 
@@ -42,7 +42,9 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
       Profile* profile,
       ProfileSyncService* sync_service,
       FrontendDataTypeControllerMock* mock)
-      : FrontendDataTypeController(profile_sync_factory,
+      : FrontendDataTypeController(base::MessageLoopProxy::current(),
+                                   base::Closure(),
+                                   profile_sync_factory,
                                    profile,
                                    sync_service),
         mock_(mock) {}

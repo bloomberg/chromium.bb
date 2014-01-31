@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
 
-#include "chrome/browser/sync/glue/data_type_manager.h"
+#include "components/sync_driver/data_type_manager.h"
 
 #include <map>
 #include <queue>

@@ -21,7 +21,8 @@ using content::BrowserThread;
 namespace browser_sync {
 
 UIDataTypeController::UIDataTypeController()
-    : profile_sync_factory_(NULL),
+    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+      profile_sync_factory_(NULL),
       profile_(NULL),
       sync_service_(NULL),
       state_(NOT_RUNNING),
@@ -29,11 +30,14 @@ UIDataTypeController::UIDataTypeController()
 }
 
 UIDataTypeController::UIDataTypeController(
+    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    const base::Closure& error_callback,
     syncer::ModelType type,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : profile_sync_factory_(profile_sync_factory),
+    : DataTypeController(ui_thread, error_callback),
+      profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING),

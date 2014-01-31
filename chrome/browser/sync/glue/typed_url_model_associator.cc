@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_util.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/read_node.h"

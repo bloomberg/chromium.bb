@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_arg_list.h"

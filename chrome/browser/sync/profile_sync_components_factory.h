@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
+#include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"

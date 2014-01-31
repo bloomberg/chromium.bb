@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,9 +26,12 @@ BookmarkDataTypeController::BookmarkDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : FrontendDataTypeController(profile_sync_factory,
-                                 profile,
-                                 sync_service),
+    : FrontendDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          profile_sync_factory,
+          profile,
+          sync_service),
       bookmark_model_(NULL),
       installed_bookmark_observer_(false) {
 }

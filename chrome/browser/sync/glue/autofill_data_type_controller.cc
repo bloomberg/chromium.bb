@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -26,7 +27,11 @@ AutofillDataTypeController::AutofillDataTypeController(
     Profile* profile,
     ProfileSyncService* sync_service)
     : NonUIDataTypeController(
-        profile_sync_factory, profile, sync_service) {
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          profile_sync_factory,
+          profile,
+          sync_service) {
 }
 
 syncer::ModelType AutofillDataTypeController::type() const {

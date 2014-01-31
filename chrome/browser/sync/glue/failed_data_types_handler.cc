@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/failed_data_types_handler.h"
+#include "components/sync_driver/data_type_manager.h"
 
 using browser_sync::DataTypeManager;
 

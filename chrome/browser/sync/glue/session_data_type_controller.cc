@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -13,16 +14,21 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
+using content::BrowserThread;
+
 namespace browser_sync {
 
 SessionDataTypeController::SessionDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : FrontendDataTypeController(profile_sync_factory,
-                                 profile,
-                                 sync_service) {
-}
+    : FrontendDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          profile_sync_factory,
+          profile,
+          sync_service) {
+    }
 
 SessionModelAssociator* SessionDataTypeController::GetModelAssociator() {
   return reinterpret_cast<SessionModelAssociator*>(model_associator_.get());

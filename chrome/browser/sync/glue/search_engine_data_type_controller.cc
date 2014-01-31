@@ -7,8 +7,10 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "sync/api/syncable_service.h"
 
 using content::BrowserThread;
@@ -19,10 +21,13 @@ SearchEngineDataTypeController::SearchEngineDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : UIDataTypeController(syncer::SEARCH_ENGINES,
-                           profile_sync_factory,
-                           profile,
-                           sync_service) {
+    : UIDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          syncer::SEARCH_ENGINES,
+          profile_sync_factory,
+          profile,
+          sync_service) {
 }
 
 SearchEngineDataTypeController::~SearchEngineDataTypeController() {}

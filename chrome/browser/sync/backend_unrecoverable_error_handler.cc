@@ -6,6 +6,7 @@
 
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 

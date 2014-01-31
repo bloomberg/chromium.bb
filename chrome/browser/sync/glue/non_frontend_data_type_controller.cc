@@ -51,8 +51,8 @@ class NonFrontendDataTypeController::BackendComponentsContainer {
 NonFrontendDataTypeController::
 BackendComponentsContainer::BackendComponentsContainer(
     NonFrontendDataTypeController* controller)
-     : controller_(controller),
-       type_(controller->type()) {
+    : controller_(controller),
+      type_(controller->type()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   controller_handle_ =
       syncer::MakeWeakHandle(controller_->weak_ptr_factory_.GetWeakPtr());
@@ -157,10 +157,13 @@ NonFrontendDataTypeController::AssociationResult::AssociationResult(
 NonFrontendDataTypeController::AssociationResult::~AssociationResult() {}
 
 NonFrontendDataTypeController::NonFrontendDataTypeController(
+    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    const base::Closure& error_callback,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : state_(NOT_RUNNING),
+    : DataTypeController(ui_thread, error_callback),
+      state_(NOT_RUNNING),
       profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       profile_sync_service_(sync_service),
@@ -302,7 +305,8 @@ void NonFrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
 }
 
 NonFrontendDataTypeController::NonFrontendDataTypeController()
-    : state_(NOT_RUNNING),
+    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+      state_(NOT_RUNNING),
       profile_sync_factory_(NULL),
       profile_(NULL),
       profile_sync_service_(NULL),

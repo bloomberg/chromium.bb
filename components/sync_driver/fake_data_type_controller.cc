@@ -1,11 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-#include "chrome/browser/sync/glue/fake_data_type_controller.h"
+#include "components/sync_driver/fake_data_type_controller.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +11,10 @@ using syncer::ModelType;
 namespace browser_sync {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
-      : state_(NOT_RUNNING), model_load_delayed_(false), type_(type) {}
+      : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+        state_(NOT_RUNNING),
+        model_load_delayed_(false),
+        type_(type) {}
 
 FakeDataTypeController::~FakeDataTypeController() {
 }

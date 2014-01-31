@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -26,9 +27,12 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : NonUIDataTypeController(profile_sync_factory,
-                              profile,
-                              sync_service),
+    : NonUIDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          profile_sync_factory,
+          profile,
+          sync_service),
       personal_data_(NULL),
       callback_registered_(false) {}
 

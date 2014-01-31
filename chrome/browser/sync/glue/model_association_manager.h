@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 
-#include "chrome/browser/sync/glue/data_type_manager.h"
+#include "components/sync_driver/data_type_manager.h"
 #include "sync/internal_api/public/data_type_association_stats.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 

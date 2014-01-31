@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/sync/glue/data_type_manager.h"
+#include "components/sync_driver/data_type_manager.h"
 
 namespace browser_sync {
 

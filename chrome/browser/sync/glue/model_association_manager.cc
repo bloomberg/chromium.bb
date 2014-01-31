@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 using content::BrowserThread;

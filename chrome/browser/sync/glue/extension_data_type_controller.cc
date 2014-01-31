@@ -6,8 +6,12 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
+
+using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -16,10 +20,13 @@ ExtensionDataTypeController::ExtensionDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : UIDataTypeController(type,
-                           profile_sync_factory,
-                           profile,
-                           sync_service) {
+    : UIDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          type,
+          profile_sync_factory,
+          profile,
+          sync_service) {
   DCHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
 }
 

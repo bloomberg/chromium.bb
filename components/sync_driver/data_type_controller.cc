@@ -1,14 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-
-#include "chrome/browser/sync/glue/data_type_controller.h"
+#include "components/sync_driver/data_type_controller.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
 
 namespace browser_sync {
+
+DataTypeController::DataTypeController(
+    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    const base::Closure& error_callback)
+    : base::RefCountedDeleteOnMessageLoop<DataTypeController>(ui_thread),
+      error_callback_(error_callback) {
+}
+
+DataTypeController::~DataTypeController() {
+}
 
 bool DataTypeController::IsUnrecoverableResult(StartResult result) {
   return (result == UNRECOVERABLE_ERROR);
@@ -22,7 +30,8 @@ syncer::SyncError DataTypeController::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message,
     syncer::ModelType type) {
-  ChromeReportUnrecoverableError();
+  if (!error_callback_.is_null())
+    error_callback_.Run();
   return syncer::SyncError(location,
                            syncer::SyncError::DATATYPE_ERROR,
                            message,
@@ -42,8 +51,8 @@ void DataTypeController::RecordUnrecoverableError(
 
   // TODO(sync): remove this once search engines triggers less errors, such as
   // due to crbug.com/130448.
-  if (type() != syncer::SEARCH_ENGINES)
-    ChromeReportUnrecoverableError();
+  if ((type() != syncer::SEARCH_ENGINES) && (!error_callback_.is_null()))
+    error_callback_.Run();
 }
 
 }  // namespace browser_sync
