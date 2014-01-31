@@ -1985,6 +1985,13 @@ const Experiment kExperiments[] = {
     kOsMac,
     MULTI_VALUE_TYPE(kNotificationCenterTrayBehaviorChoices)
   },
+  {
+    "out-of-process-pdf",
+    IDS_FLAGS_OUT_OF_PROCESS_PDF_NAME,
+    IDS_FLAGS_OUT_OF_PROCESS_PDF_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kOutOfProcessPdf)
+  },
 };
 
 const Experiment* experiments = kExperiments;
