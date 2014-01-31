@@ -406,7 +406,6 @@
         'browser/ui/autofill/password_generation_popup_controller_impl.h',
         'browser/ui/autofill/password_generation_popup_controller.h',
         'browser/ui/autofill/password_generation_popup_observer.h',
-        'browser/ui/autofill/password_generation_popup_view.cc',
         'browser/ui/autofill/password_generation_popup_view.h',
         'browser/ui/autofill/popup_controller_common.cc',
         'browser/ui/autofill/popup_controller_common.h',

@@ -139,7 +139,7 @@ void AwContentRendererClient::RenderViewCreated(
   // autofill agent to store a weakptr).
   autofill::PasswordAutofillAgent* password_autofill_agent =
       new autofill::PasswordAutofillAgent(render_view);
-  new autofill::AutofillAgent(render_view, password_autofill_agent, NULL);
+  new autofill::AutofillAgent(render_view, password_autofill_agent);
 }
 
 std::string AwContentRendererClient::GetDefaultEncoding() {

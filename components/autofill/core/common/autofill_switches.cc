@@ -32,10 +32,10 @@ const char kEnableInteractiveAutocomplete[] = "enable-interactive-autocomplete";
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
-// Removes the requirement that we recieved a ping from the autofill servers
-// and that the user doesn't have the given form blacklisted. Used in testing.
-const char kLocalHeuristicsOnlyForPasswordGeneration[] =
-    "local-heuristics-only-for-password-generation";
+// Removes the requirement that we recieved a ping from the autofill servers.
+// Used in testing.
+const char kNoAutofillNecessaryForPasswordGeneration[] =
+    "no-autofill-for-password-generation";
 
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";

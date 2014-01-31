@@ -59,9 +59,6 @@ class PasswordGenerationPopupControllerImpl
   // Does not update the view if one is already showing.
   void Show();
 
-  // Hides the popup and destroys |this|.
-  void HideAndDestroy();
-
   // Accessors.
   content::WebContents* web_contents() {
     return controller_common_.web_contents();

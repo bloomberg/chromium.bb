@@ -1545,7 +1545,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kDisablePasswordGeneration,
       autofill::switches::kEnableInteractiveAutocomplete,
       autofill::switches::kEnablePasswordGeneration,
-      autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration,
+      autofill::switches::kNoAutofillNecessaryForPasswordGeneration,
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kAllowLegacyExtensionManifests,
       extensions::switches::kAllowScriptingGallery,

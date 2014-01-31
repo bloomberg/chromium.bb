@@ -207,10 +207,6 @@ void PasswordGenerationPopupControllerImpl::Show() {
     observer_->OnPopupShown();
 }
 
-void PasswordGenerationPopupControllerImpl::HideAndDestroy() {
-  Hide();
-}
-
 void PasswordGenerationPopupControllerImpl::Hide() {
   controller_common_.RemoveKeyPressCallback();
 

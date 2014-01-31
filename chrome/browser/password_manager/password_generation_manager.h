@@ -7,17 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/gfx/rect.h"
 
 namespace autofill {
 struct FormData;
 class FormStructure;
 class PasswordGenerator;
-class PasswordGenerationPopupControllerImpl;
-class PasswordGenerationPopupObserver;
 struct PasswordForm;
 }
 
@@ -50,12 +46,6 @@ class PasswordGenerationManager
   void DetectAccountCreationForms(
       const std::vector<autofill::FormStructure*>& forms);
 
-  // Hide any visible password generation related popups.
-  void HidePopup();
-
-  // Observer for PasswordGenerationPopup events. Used for testing.
-  void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
-
  protected:
   explicit PasswordGenerationManager(content::WebContents* contents);
 
@@ -75,32 +65,15 @@ class PasswordGenerationManager
       content::RenderViewHost* host,
       const std::vector<autofill::FormData>& forms);
 
-  // Given |bounds| in the renderers coordinate system, return the same bounds
-  // in the screens coordinate system.
-  gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
-
-  // Causes the password generation UI to be shown for the specified form.
-  // The popup will be anchored at |element_bounds|. The generated password
-  // will be no longer than |max_length|.
-  void OnShowPasswordGenerationPopup(const gfx::RectF& element_bounds,
+  // Causes the password generation bubble UI to be shown for the specified
+  // form. The popup will be anchored at |icon_bounds|. The generated
+  // password will be no longer than |max_length|.
+  void OnShowPasswordGenerationPopup(const gfx::Rect& icon_bounds,
                                      int max_length,
                                      const autofill::PasswordForm& form);
 
-  // Causes the password editing UI to be shown anchored at |element_bounds|.
-  void OnShowPasswordEditingPopup(const gfx::RectF& element_bounds);
-
-  // Hide any visible UI.
-  void OnHidePasswordGenerationPopup();
-
-  // Observer for password generation popup.
-  autofill::PasswordGenerationPopupObserver* observer_;
-
   // Controls how passwords are generated.
   scoped_ptr<autofill::PasswordGenerator> password_generator_;
-
-  // Controls the popup
-  base::WeakPtr<
-    autofill::PasswordGenerationPopupControllerImpl> popup_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManager);
 };

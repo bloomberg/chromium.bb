@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "ui/gfx/rect.h"
 
 namespace blink {
 class WebDocument;
@@ -167,9 +166,6 @@ bool IsWebpageEmpty(const blink::WebFrame* frame);
 // This function checks whether the children of |element|
 // are of the type <script>, <meta>, or <title>.
 bool IsWebElementEmpty(const blink::WebElement& element);
-
-// Return a gfx::RectF that is the bounding box for |element| scaled by |scale|.
-gfx::RectF GetScaledBoundingBox(float scale, blink::WebInputElement* element);
 
 }  // namespace autofill
 

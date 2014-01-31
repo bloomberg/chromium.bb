@@ -1175,12 +1175,4 @@ bool IsWebElementEmpty(const blink::WebElement& element) {
   return true;
 }
 
-gfx::RectF GetScaledBoundingBox(float scale, WebInputElement* element) {
-  gfx::Rect bounding_box(element->boundsInViewportSpace());
-  return gfx::RectF(bounding_box.x() * scale,
-                    bounding_box.y() * scale,
-                    bounding_box.width() * scale,
-                    bounding_box.height() * scale);
-}
-
 }  // namespace autofill

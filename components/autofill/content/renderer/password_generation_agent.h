@@ -34,10 +34,6 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   explicit PasswordGenerationAgent(content::RenderView* render_view);
   virtual ~PasswordGenerationAgent();
 
-  // Returns true if the field being changed is one where a generated password
-  // is being offered. Updates the state of the popup if necessary.
-  bool TextDidChangeInTextField(const blink::WebInputElement& element);
-
  protected:
   // Returns true if this document is one that we should consider analyzing.
   // Virtual so that it can be overriden during testing.
@@ -46,14 +42,10 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // Use to force enable during testing.
-  void set_enabled(bool enabled) { enabled_ = enabled; }
-
  private:
   // RenderViewObserver:
   virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
 
   // WebPasswordGeneratorClient:
   virtual void openPasswordGenerator(blink::WebInputElement& element) OVERRIDE;
@@ -64,19 +56,8 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   void OnAccountCreationFormsDetected(
       const std::vector<autofill::FormData>& forms);
 
-  // Helper function to decide if |passwords_| contains password fields for
-  // an account creation form. Sets |generation_element_| to the field that
-  // we want to trigger the generation UI on.
-  void DetermineGenerationElement();
-
-  // Show password generation UI anchored at |generation_element_|.
-  void ShowGenerationPopup();
-
-  // Show UI for editing a generated password at |generation_element_|.
-  void ShowEditingPopup();
-
-  // Hides a password generation popup if one exists.
-  void HidePopup();
+  // Helper function to decide whether we should show password generation icon.
+  void MaybeShowIcon();
 
   content::RenderView* render_view_;
 
@@ -93,22 +74,7 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   // not be sent if the feature is disabled.
   std::vector<autofill::FormData> generation_enabled_forms_;
 
-  // Password elements that may be part of an account creation form.
-  std::vector<blink::WebInputElement> password_elements_;
-
-  // Element where we want to trigger password generation UI.
-  blink::WebInputElement generation_element_;
-
-  // If the password field at |generation_element_| contains a generated
-  // password.
-  bool password_is_generated_;
-
-  // True if a password was generated and the user edited it. Used for UMA
-  // stats.
-  bool password_edited_;
-
-  // If this feature is enabled. Controlled by Finch.
-  bool enabled_;
+  std::vector<blink::WebInputElement> passwords_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };

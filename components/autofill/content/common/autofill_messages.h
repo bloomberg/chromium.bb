@@ -232,21 +232,13 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
 // Instructs the browser to hide the Autofill UI.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillUI)
 
-// Instructs the browser to show the password generation popup at the
+// Instructs the browser to show the password generation bubble at the
 // specified location. This location should be specified in the renderers
 // coordinate system. Form is the form associated with the password field.
 IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordGenerationPopup,
-                    gfx::RectF /* source location */,
+                    gfx::Rect /* source location */,
                     int /* max length of the password */,
                     autofill::PasswordForm)
-
-// Instructs the browser to show the popup for editing a generated password.
-// The location should be specified in the renderers coordinate system.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_ShowPasswordEditingPopup,
-                    gfx::RectF /* source location */)
-
-// Instructs the browser to hide any password generation popups.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePasswordGenerationPopup)
 
 // Instruct the browser that a password mapping has been found for a field.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
