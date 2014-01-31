@@ -450,6 +450,9 @@ void UserManagerScreenHandler::SendUserList() {
 void UserManagerScreenHandler::ReportAuthenticationResult(
     bool success,
     ProfileMetrics::ProfileAuth auth) {
+  ProfileMetrics::LogProfileAuthResult(auth);
+  password_attempt_.clear();
+
   if (success) {
     ProfileInfoCache& info_cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -469,7 +472,4 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
         base::StringValue(""),
         base::FundamentalValue(0));
   }
-
-  ProfileMetrics::LogProfileAuthResult(auth);
-  password_attempt_.clear();
 }

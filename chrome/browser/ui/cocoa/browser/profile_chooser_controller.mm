@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -32,6 +33,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
@@ -101,16 +103,45 @@ NSString* ElideEmail(const std::string& email, CGFloat width) {
 
 }  // namespace
 
-// Class that listens to changes to the OAuth2Tokens for the active profile, or
-// changes to the avatar menu model.
+// Class that listens to changes to the OAuth2Tokens for the active profile,
+// changes to the avatar menu model or browser close notifications.
 class ActiveProfileObserverBridge : public AvatarMenuObserver,
+                                    public content::NotificationObserver,
                                     public OAuth2TokenService::Observer {
  public:
-  explicit ActiveProfileObserverBridge(ProfileChooserController* controller)
-      : controller_(controller) {
+  ActiveProfileObserverBridge(ProfileChooserController* controller,
+                              Browser* browser)
+      : controller_(controller),
+        browser_(browser),
+        token_observer_registered_(false) {
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
+                   content::NotificationService::AllSources());
+    if (!browser_->profile()->IsGuestSession())
+      AddTokenServiceObserver();
   }
 
   virtual ~ActiveProfileObserverBridge() {
+    RemoveTokenServiceObserver();
+  }
+
+ private:
+  void AddTokenServiceObserver() {
+    ProfileOAuth2TokenService* oauth2_token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+    DCHECK(oauth2_token_service);
+    oauth2_token_service->AddObserver(this);
+    token_observer_registered_ = true;
+  }
+
+  void RemoveTokenServiceObserver() {
+    if (!token_observer_registered_)
+      return;
+    DCHECK(browser_->profile());
+    ProfileOAuth2TokenService* oauth2_token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+    DCHECK(oauth2_token_service);
+    oauth2_token_service->RemoveObserver(this);
+    token_observer_registered_ = false;
   }
 
   // OAuth2TokenService::Observer:
@@ -140,8 +171,26 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [controller_ initMenuContentsWithView:PROFILE_CHOOSER_VIEW];
   }
 
- private:
+  // content::NotificationObserver:
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE {
+    DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSING, type);
+    if (browser_ == content::Source<Browser>(source).ptr())
+      RemoveTokenServiceObserver();
+  }
+
   ProfileChooserController* controller_;  // Weak; owns this.
+  Browser* browser_;  // Weak.
+  content::NotificationRegistrar registrar_;
+
+  // The observer can be removed both when closing the browser, and by just
+  // closing the avatar bubble. However, in the case of closing the browser,
+  // the avatar bubble will also be closed afterwards, resulting in a second
+  // attempt to remove the observer. This ensures the observer is only
+  // removed once.
+  bool token_observer_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveProfileObserverBridge);
 };
@@ -470,8 +519,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                              title:(const std::string&)title
                       canBeDeleted:(BOOL)canBeDeleted;
 
-- (void)dealloc;
-
 @end
 
 @implementation ProfileChooserController
@@ -550,7 +597,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                          anchoredAt:point])) {
     browser_ = browser;
     viewMode_ = PROFILE_CHOOSER_VIEW;
-    observer_.reset(new ActiveProfileObserverBridge(self));
+    observer_.reset(new ActiveProfileObserverBridge(self, browser_));
 
     avatarMenu_.reset(new AvatarMenu(
         &g_browser_process->profile_manager()->GetProfileInfoCache(),
@@ -560,28 +607,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
     // Guest profiles do not have a token service.
     isGuestSession_ = browser_->profile()->IsGuestSession();
-    if (!isGuestSession_) {
-      ProfileOAuth2TokenService* oauth2TokenService =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
-      DCHECK(oauth2TokenService);
-      oauth2TokenService->AddObserver(observer_.get());
-    }
 
     [[self bubble] setArrowLocation:info_bubble::kTopRight];
     [self initMenuContentsWithView:viewMode_];
   }
 
   return self;
-}
-
-- (void)dealloc {
-  if (!isGuestSession_) {
-    ProfileOAuth2TokenService* oauth2TokenService =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
-    DCHECK(oauth2TokenService);
-    oauth2TokenService->RemoveObserver(observer_.get());
-  }
-  [super dealloc];
 }
 
 - (void)initMenuContentsWithView:(BubbleViewMode)viewToDisplay {
