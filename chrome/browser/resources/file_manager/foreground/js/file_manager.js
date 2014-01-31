@@ -372,8 +372,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initDataTransferOperations_ = function() {
-    this.fileOperationManager_ = FileOperationManagerWrapper.getInstance(
-        this.backgroundPage_);
+    this.fileOperationManager_ =
+        this.backgroundPage_.background.fileOperationManager;
 
     // CopyManager are required for 'Delete' operation in
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.

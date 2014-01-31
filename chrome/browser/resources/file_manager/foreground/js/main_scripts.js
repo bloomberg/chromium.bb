@@ -86,7 +86,6 @@
 //<include src="drag_selector.js"/>
 //<include src="drive_banners.js" />
 //<include src="error_dialog.js"/>
-//<include src="file_operation_manager_wrapper.js"/>
 //<include src="file_grid.js"/>
 //<include src="file_manager.js"/>
 //<include src="file_selection.js"/>
@@ -126,7 +125,6 @@ window.fileManager = fileManager;
 
 // Exports
 window.util = util;
-window.FileOperationManagerWrapper = FileOperationManagerWrapper;
 
 window.unload = unload;
 

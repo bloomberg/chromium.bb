@@ -304,19 +304,6 @@ function FileOperationManager() {
 }
 
 /**
- * Get FileOperationManager instance. In case is hasn't been initialized, a new
- * instance is created.
- *
- * @return {FileOperationManager} A FileOperationManager instance.
- */
-FileOperationManager.getInstance = function() {
-  if (!FileOperationManager.instance_)
-    FileOperationManager.instance_ = new FileOperationManager();
-
-  return FileOperationManager.instance_;
-};
-
-/**
  * Manages Event dispatching.
  * Currently this can send three types of events: "copy-progress",
  * "copy-operation-completed" and "delete".

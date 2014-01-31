@@ -52,7 +52,7 @@ function Background() {
    * File operation manager.
    * @type {FileOperationManager}
    */
-  this.fileOperationManager = FileOperationManager.getInstance();
+  this.fileOperationManager = new FileOperationManager();
 
   /**
    * Event handler for progress center.
