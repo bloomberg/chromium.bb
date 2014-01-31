@@ -23,16 +23,13 @@ class URLRequestContextGetter;
 class URLRequest;
 }
 
-namespace component_updater {
-class OnDemandTester;
-}
-
 namespace content {
 class ResourceThrottle;
 }
 
 namespace component_updater {
 
+class OnDemandTester;
 class ComponentPatcher;
 
 // Component specific installers must derive from this class and implement

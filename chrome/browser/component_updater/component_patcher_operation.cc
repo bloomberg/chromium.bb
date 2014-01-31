@@ -223,4 +223,3 @@ ComponentUnpacker::Error DeltaUpdateOpPatchCourgette::DoRun(
 }
 
 }  // namespace component_updater
-

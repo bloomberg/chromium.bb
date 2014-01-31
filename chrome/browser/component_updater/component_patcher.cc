@@ -34,7 +34,6 @@ base::ListValue* ReadCommands(const base::FilePath& unpack_path) {
 
 }  // namespace
 
-
 // The patching support is not cross-platform at the moment.
 ComponentPatcherCrossPlatform::ComponentPatcherCrossPlatform() {}
 
@@ -51,35 +50,42 @@ ComponentUnpacker::Error ComponentPatcherCrossPlatform::Patch(
 // Takes the contents of a differential component update in input_dir
 // and produces the contents of a full component update in unpack_dir
 // using input_abs_path_ files that the installer knows about.
-ComponentUnpacker::Error DifferentialUpdatePatch(
+void DifferentialUpdatePatch(
     const base::FilePath& input_dir,
     const base::FilePath& unpack_dir,
     ComponentPatcher* patcher,
     ComponentInstaller* installer,
-    int* error) {
-  *error = 0;
+    base::Callback<void(ComponentUnpacker::Error, int)> callback) {
+  int error = 0;
   scoped_ptr<base::ListValue> commands(ReadCommands(input_dir));
-  if (!commands.get())
-    return ComponentUnpacker::kDeltaBadCommands;
+  if (!commands.get()) {
+    callback.Run(ComponentUnpacker::kDeltaBadCommands, error);
+    return;
+  }
 
   for (base::ValueVector::const_iterator command = commands->begin(),
       end = commands->end(); command != end; command++) {
-    if (!(*command)->IsType(base::Value::TYPE_DICTIONARY))
-      return ComponentUnpacker::kDeltaBadCommands;
+    if (!(*command)->IsType(base::Value::TYPE_DICTIONARY)) {
+      callback.Run(ComponentUnpacker::kDeltaBadCommands, error);
+      return;
+    }
     base::DictionaryValue* command_args =
         static_cast<base::DictionaryValue*>(*command);
     scoped_ptr<DeltaUpdateOp> operation(CreateDeltaUpdateOp(command_args));
-    if (!operation)
-      return ComponentUnpacker::kDeltaUnsupportedCommand;
+    if (!operation) {
+      callback.Run(ComponentUnpacker::kDeltaUnsupportedCommand, error);
+      return;
+    }
 
     ComponentUnpacker::Error result = operation->Run(
-        command_args, input_dir, unpack_dir, patcher, installer, error);
-    if (result != ComponentUnpacker::kNone)
-      return result;
+        command_args, input_dir, unpack_dir, patcher, installer, &error);
+    if (result != ComponentUnpacker::kNone) {
+      callback.Run(result, error);
+      return;
+    }
   }
 
-  return ComponentUnpacker::kNone;
+  callback.Run(ComponentUnpacker::kNone, error);
 }
 
 }  // namespace component_updater
-

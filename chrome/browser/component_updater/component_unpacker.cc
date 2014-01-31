@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
 #include "crypto/signature_verifier.h"
 #include "extensions/common/crx_file.h"
@@ -32,7 +35,7 @@ namespace {
 // and well formed.
 class CRXValidator {
  public:
-  explicit CRXValidator(FILE* crx_file) : valid_(false), delta_(false) {
+  explicit CRXValidator(FILE* crx_file) : valid_(false), is_delta_(false) {
     extensions::CrxFile::Header header;
     size_t len = fread(&header, 1, sizeof(header), crx_file);
     if (len < sizeof(header))
@@ -43,7 +46,7 @@ class CRXValidator {
         extensions::CrxFile::Parse(header, &error));
     if (!crx.get())
       return;
-    delta_ = extensions::CrxFile::HeaderIsDelta(header);
+    is_delta_ = extensions::CrxFile::HeaderIsDelta(header);
 
     std::vector<uint8> key(header.key_size);
     len = fread(&key[0], sizeof(uint8), header.key_size, crx_file);
@@ -79,17 +82,36 @@ class CRXValidator {
 
   bool valid() const { return valid_; }
 
-  bool delta() const { return delta_; }
+  bool is_delta() const { return is_delta_; }
 
   const std::vector<uint8>& public_key() const { return public_key_; }
 
  private:
   bool valid_;
-  bool delta_;
+  bool is_delta_;
   std::vector<uint8> public_key_;
 };
 
-}  // namespace.
+}  // namespace
+
+ComponentUnpacker::ComponentUnpacker(
+    const std::vector<uint8>& pk_hash,
+    const base::FilePath& path,
+    const std::string& fingerprint,
+    ComponentPatcher* patcher,
+    ComponentInstaller* installer,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : pk_hash_(pk_hash),
+      path_(path),
+      is_delta_(false),
+      fingerprint_(fingerprint),
+      patcher_(patcher),
+      installer_(installer),
+      error_(kNone),
+      extended_error_(0),
+      ptr_factory_(this),
+      task_runner_(task_runner) {
+}
 
 // TODO(cpu): add a specific attribute check to a component json that the
 // extension unpacker will reject, so that a component cannot be installed
@@ -111,105 +133,145 @@ scoped_ptr<base::DictionaryValue> ReadManifest(
       static_cast<base::DictionaryValue*>(root.release())).Pass();
 }
 
-ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
-                                     const base::FilePath& path,
-                                     const std::string& fingerprint,
-                                     ComponentPatcher* patcher,
-                                     ComponentInstaller* installer)
-    : error_(kNone),
-      extended_error_(0) {
-  if (pk_hash.empty() || path.empty()) {
+bool ComponentUnpacker::UnpackInternal() {
+  return Verify() && Unzip() && BeginPatching();
+}
+
+void ComponentUnpacker::Unpack(
+    const base::Callback<void(Error, int)>& callback) {
+  callback_ = callback;
+  if (!UnpackInternal())
+    Finish();
+}
+
+bool ComponentUnpacker::Verify() {
+  if (pk_hash_.empty() || path_.empty()) {
     error_ = kInvalidParams;
-    return;
+    return false;
   }
   // First, validate the CRX header and signature. As of today
   // this is SHA1 with RSA 1024.
-  ScopedStdioHandle file(base::OpenFile(path, "rb"));
+  ScopedStdioHandle file(base::OpenFile(path_, "rb"));
   if (!file.get()) {
     error_ = kInvalidFile;
-    return;
+    return false;
   }
   CRXValidator validator(file.get());
+  file.Close();
   if (!validator.valid()) {
     error_ = kInvalidFile;
-    return;
+    return false;
   }
-  file.Close();
+  is_delta_ = validator.is_delta();
 
   // File is valid and the digital signature matches. Now make sure
   // the public key hash matches the expected hash. If they do we fully
   // trust this CRX.
-  uint8 hash[32];
+  uint8 hash[32] = {};
   scoped_ptr<SecureHash> sha256(SecureHash::Create(SecureHash::SHA256));
   sha256->Update(&(validator.public_key()[0]), validator.public_key().size());
   sha256->Finish(hash, arraysize(hash));
 
-  if (!std::equal(pk_hash.begin(), pk_hash.end(), hash)) {
+  if (!std::equal(pk_hash_.begin(), pk_hash_.end(), hash)) {
     error_ = kInvalidId;
-    return;
+    return false;
   }
+  return true;
+}
+
+bool ComponentUnpacker::Unzip() {
+  base::FilePath& destination = is_delta_ ? unpack_diff_path_ : unpack_path_;
   if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
-                                    &unpack_path_)) {
+                                    &destination)) {
     error_ = kUnzipPathError;
+    return false;
+  }
+  if (!zip::Unzip(path_, destination)) {
+    error_ = kUnzipFailed;
+    return false;
+  }
+  return true;
+}
+
+
+bool ComponentUnpacker::BeginPatching() {
+  if (is_delta_) {  // Package is a diff package.
+    // Use a different temp directory for the patch output files.
+    if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
+                                      &unpack_path_)) {
+      error_ = kUnzipPathError;
+      return false;
+    }
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DifferentialUpdatePatch,
+                              unpack_diff_path_,
+                              unpack_path_,
+                              patcher_,
+                              installer_,
+                              base::Bind(&ComponentUnpacker::EndPatching,
+                                         GetWeakPtr())));
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ComponentUnpacker::EndPatching,
+                              GetWeakPtr(),
+                              kNone,
+                              0));
+  }
+  return true;
+}
+
+void ComponentUnpacker::EndPatching(Error error, int extended_error) {
+  error_ = error;
+  extended_error_ = extended_error;
+  if (error_ != kNone) {
+    Finish();
     return;
   }
-  if (validator.delta()) {  // Package is a diff package.
-    // We want a different temp directory for the delta files; we'll put the
-    // patch output into unpack_path_.
-    base::FilePath unpack_diff_path;
-    if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
-                                      &unpack_diff_path)) {
-      error_ = kUnzipPathError;
-      return;
-    }
-    if (!zip::Unzip(path, unpack_diff_path)) {
-      error_ = kUnzipFailed;
-      return;
-    }
-    ComponentUnpacker::Error result = DifferentialUpdatePatch(unpack_diff_path,
-                                                              unpack_path_,
-                                                              patcher,
-                                                              installer,
-                                                              &extended_error_);
-    base::DeleteFile(unpack_diff_path, true);
-    unpack_diff_path.clear();
-    error_ = result;
-    if (error_ != kNone) {
-      return;
-    }
-  } else {
-    // Package is a normal update/install; unzip it into unpack_path_ directly.
-    if (!zip::Unzip(path, unpack_path_)) {
-      error_ = kUnzipFailed;
-      return;
-    }
+  // Optimization: clean up patch files early, in case disk space is too low to
+  // install otherwise.
+  if (!unpack_diff_path_.empty()) {
+    base::DeleteFile(unpack_diff_path_, true);
+    unpack_diff_path_.clear();
+  }
+  Install();
+  Finish();
+}
+
+void ComponentUnpacker::Install() {
+  // Write the fingerprint to disk.
+  if (static_cast<int>(fingerprint_.size()) !=
+      file_util::WriteFile(
+          unpack_path_.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
+          fingerprint_.c_str(),
+          fingerprint_.size())) {
+    error_ = kFingerprintWriteFailed;
+    return;
   }
   scoped_ptr<base::DictionaryValue> manifest(ReadManifest(unpack_path_));
   if (!manifest.get()) {
     error_ = kBadManifest;
     return;
   }
-  // Write the fingerprint to disk.
-  if (static_cast<int>(fingerprint.size()) !=
-      file_util::WriteFile(
-          unpack_path_.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
-          fingerprint.c_str(),
-          fingerprint.size())) {
-    error_ = kFingerprintWriteFailed;
-    return;
-  }
-  if (!installer->Install(*manifest, unpack_path_)) {
+  DCHECK(error_ == kNone);
+  if (!installer_->Install(*manifest, unpack_path_)) {
     error_ = kInstallerError;
     return;
   }
-  // Installation successful. The directory is not our concern now.
-  unpack_path_.clear();
+}
+
+void ComponentUnpacker::Finish() {
+  if (!unpack_diff_path_.empty())
+    base::DeleteFile(unpack_diff_path_, true);
+  if (!unpack_path_.empty())
+    base::DeleteFile(unpack_path_, true);
+  callback_.Run(error_, extended_error_);
+}
+
+base::WeakPtr<ComponentUnpacker> ComponentUnpacker::GetWeakPtr() {
+  return ptr_factory_.GetWeakPtr();
 }
 
 ComponentUnpacker::~ComponentUnpacker() {
-  if (!unpack_path_.empty())
-    base::DeleteFile(unpack_path_, true);
 }
 
 }  // namespace component_updater
-

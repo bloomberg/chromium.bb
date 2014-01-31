@@ -8,10 +8,10 @@
 #include <string>
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
 
 namespace base {
-class FilePath;
 class DictionaryValue;
 }  // namespace base
 
@@ -29,13 +29,12 @@ class DeltaUpdateOp {
   // Parses, runs, and verifies the operation, returning an error code if an
   // error is encountered, and DELTA_OK otherwise. In case of errors,
   // extended error information can be returned in the |error| parameter.
-  ComponentUnpacker::Error Run(
-      base::DictionaryValue* command_args,
-      const base::FilePath& input_dir,
-      const base::FilePath& unpack_dir,
-      ComponentPatcher* patcher,
-      ComponentInstaller* installer,
-      int* error);
+  ComponentUnpacker::Error Run(base::DictionaryValue* command_args,
+                               const base::FilePath& input_dir,
+                               const base::FilePath& unpack_dir,
+                               ComponentPatcher* patcher,
+                               ComponentInstaller* installer,
+                               int* error);
 
  protected:
   std::string output_sha256_;

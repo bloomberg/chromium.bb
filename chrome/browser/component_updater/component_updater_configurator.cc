@@ -224,4 +224,3 @@ ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
 }
 
 }  // namespace component_updater
-

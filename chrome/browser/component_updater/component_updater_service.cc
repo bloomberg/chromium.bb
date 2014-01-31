@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/timer/timer.h"
@@ -224,6 +225,11 @@ class CrxUpdateService : public ComponentUpdateService {
 
   void Install(scoped_ptr<CRXContext> context, const base::FilePath& crx_path);
 
+  void EndUnpacking(const std::string& component_id,
+                    const base::FilePath& crx_path,
+                    ComponentUnpacker::Error error,
+                    int extended_error);
+
   void DoneInstalling(const std::string& component_id,
                       ComponentUnpacker::Error error,
                       int extended_error);
@@ -250,6 +256,8 @@ class CrxUpdateService : public ComponentUpdateService {
   scoped_ptr<UpdateChecker> update_checker_;
 
   scoped_ptr<PingManager> ping_manager_;
+
+  scoped_ptr<ComponentUnpacker> unpacker_;
 
   scoped_ptr<CrxDownloader> crx_downloader_;
 
@@ -827,25 +835,34 @@ void CrxUpdateService::DownloadComplete(
 
 // Install consists of digital signature verification, unpacking and then
 // calling the component specific installer. All that is handled by the
-// |unpacker|. If there is an error this function is in charge of deleting
+// |unpacker_|. If there is an error this function is in charge of deleting
 // the files created.
 void CrxUpdateService::Install(scoped_ptr<CRXContext> context,
                                const base::FilePath& crx_path) {
   // This function owns the file at |crx_path| and the |context| object.
-  ComponentUnpacker unpacker(context->pk_hash,
-                             crx_path,
-                             context->fingerprint,
-                             component_patcher_.get(),
-                             context->installer);
+  unpacker_.reset(new ComponentUnpacker(context->pk_hash,
+                                        crx_path,
+                                        context->fingerprint,
+                                        component_patcher_.get(),
+                                        context->installer,
+                                        blocking_task_runner_));
+  unpacker_->Unpack(base::Bind(&CrxUpdateService::EndUnpacking,
+                               base::Unretained(this),
+                               context->id,
+                               crx_path));
+}
+
+void CrxUpdateService::EndUnpacking(const std::string& component_id,
+                                    const base::FilePath& crx_path,
+                                    ComponentUnpacker::Error error,
+                                    int extended_error) {
   if (!DeleteFileAndEmptyParentDirectory(crx_path))
     NOTREACHED() << crx_path.value();
-
-  // Why unretained? See comment at top of file.
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&CrxUpdateService::DoneInstalling, base::Unretained(this),
-                 context->id, unpacker.error(), unpacker.extended_error()),
+                 component_id, error, extended_error),
       base::TimeDelta::FromMilliseconds(config_->StepDelay()));
 }
 

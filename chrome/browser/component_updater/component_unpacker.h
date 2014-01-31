@@ -9,9 +9,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 
 namespace component_updater {
 
@@ -27,13 +30,39 @@ scoped_ptr<base::DictionaryValue> ReadManifest(
 // error the component specific installer will be invoked to proceed with
 // the component installation or update.
 //
-// This class should be used only by the component updater. It is inspired
+// This class should be used only by the component updater. It is inspired by
 // and overlaps with code in the extension's SandboxedUnpacker.
 // The main differences are:
 // - The public key hash is full SHA256.
 // - Does not use a sandboxed unpacker. A valid component is fully trusted.
 // - The manifest can have different attributes and resources are not
 //   transcoded.
+//
+// If the CRX is a delta CRX, the flow is:
+//   [ComponentUpdater]      [ComponentPatcher]
+//   Unpack
+//     \_ Verify
+//     \_ Unzip
+//     \_ BeginPatching ---> DifferentialUpdatePatch
+//                             ...
+//   EndPatching <------------ ...
+//     \_ Install
+//     \_ Finish
+//
+// For a full CRX, the flow is:
+//   [ComponentUpdater]
+//   Unpack
+//     \_ Verify
+//     \_ Unzip
+//     \_ BeginPatching
+//          |
+//          V
+//   EndPatching
+//     \_ Install
+//     \_ Finish
+//
+// In both cases, if there is an error at any point, the remaining steps will
+// be skipped and Finish will be called.
 class ComponentUnpacker {
  public:
   // Possible error conditions.
@@ -58,26 +87,72 @@ class ComponentUnpacker {
     kDeltaMissingExistingFile,
     kFingerprintWriteFailed,
   };
-  // Unpacks, verifies and calls the installer. |pk_hash| is the expected
-  // public key SHA256 hash. |path| is the current location of the CRX.
+
+  // Constructs an unpacker for a specific component unpacking operation.
+  // |pk_hash| is the expected/ public key SHA256 hash. |path| is the current
+  // location of the CRX.
   ComponentUnpacker(const std::vector<uint8>& pk_hash,
                     const base::FilePath& path,
                     const std::string& fingerprint,
                     ComponentPatcher* patcher,
-                    ComponentInstaller* installer);
+                    ComponentInstaller* installer,
+                    scoped_refptr<base::SequencedTaskRunner> task_runner);
 
-  // If something went wrong during unpacking or installer invocation, the
-  // destructor will delete the unpacked CRX files.
-  ~ComponentUnpacker();
+  virtual ~ComponentUnpacker();
 
-  Error error() const { return error_; }
-
-  int extended_error() const { return extended_error_; }
+  // Begins the actual unpacking of the files. May invoke a patcher if the
+  // package is a differential update. Calls |callback| with the result.
+  void Unpack(
+      const base::Callback<void(Error, int)>& callback);
 
  private:
+  bool UnpackInternal();
+
+  // The first step of unpacking is to verify the file. Returns false if an
+  // error is encountered, the file is malformed, or the file is incorrectly
+  // signed.
+  bool Verify();
+
+  // The second step of unpacking is to unzip. Returns false if an error
+  // occurs as part of unzipping.
+  bool Unzip();
+
+  // The third step is to optionally patch files - this is a no-op for full
+  // (non-differential) updates. This step is asynchronous. Returns false if an
+  // error is encountered.
+  bool BeginPatching();
+
+  // When patching is complete, EndPatching is called before moving on to step
+  // four.
+  void EndPatching(Error error, int extended_error);
+
+  // The fourth step is to install the unpacked component.
+  void Install();
+
+  // The final step is to do clean-up for things that can't be tidied as we go.
+  // If there is an error at any step, the remaining steps are skipped and
+  // and Finish is called.
+  // Finish is responsible for calling the callback provided in Start().
+  void Finish();
+
+  // Returns a weak pointer to this object.
+  base::WeakPtr<ComponentUnpacker> GetWeakPtr();
+
+  std::vector<uint8> pk_hash_;
+  base::FilePath path_;
   base::FilePath unpack_path_;
+  base::FilePath unpack_diff_path_;
+  bool is_delta_;
+  std::string fingerprint_;
+  ComponentPatcher* patcher_;
+  ComponentInstaller* installer_;
+  base::Callback<void(Error, int)> callback_;
   Error error_;
-  int extended_error_;  // Provides additional error information.
+  int extended_error_;
+  base::WeakPtrFactory<ComponentUnpacker> ptr_factory_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ComponentUnpacker);
 };
 
 }  // namespace component_updater

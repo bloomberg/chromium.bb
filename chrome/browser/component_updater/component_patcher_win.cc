@@ -115,4 +115,3 @@ ComponentUnpacker::Error ComponentPatcherWin::Patch(
 }
 
 }  // namespace component_updater
-

@@ -29,6 +29,7 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
 
@@ -77,13 +78,14 @@ class ComponentPatcherCrossPlatform : public ComponentPatcher {
 // component installer, and creates a new (non-differential) unpacked CRX, which
 // is then installed normally.
 // The non-differential files are written into the |unpack_dir| directory.
-// Sets |error| to the error code of the first failing patch operation.
-ComponentUnpacker::Error DifferentialUpdatePatch(
+// When finished, calls the callback, passing error codes if any errors were
+// encountered.
+void DifferentialUpdatePatch(
     const base::FilePath& input_dir,
     const base::FilePath& unpack_dir,
     ComponentPatcher* component_patcher,
     ComponentInstaller* installer,
-    int* error);
+    base::Callback<void(ComponentUnpacker::Error, int)> callback);
 
 }  // namespace component_updater
 

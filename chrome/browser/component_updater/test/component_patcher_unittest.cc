@@ -187,4 +187,3 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
 }
 
 }  // namespace component_updater
-
