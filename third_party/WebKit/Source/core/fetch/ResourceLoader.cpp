@@ -313,8 +313,15 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     const ResourceResponse& resourceResponse = response.toResourceResponse();
 
     if (responseNeedsAccessControlCheck()) {
-        m_resource->setResponse(resourceResponse);
-        if (!m_host->canAccessResource(m_resource, response.url())) {
+        // If the response successfully validated a cached resource, perform
+        // the access control with respect to it. Need to do this right here
+        // before the resource switches clients over to that validated resource.
+        Resource* resource = m_resource;
+        if (resource->isCacheValidator() && resourceResponse.httpStatusCode() == 304)
+            resource = m_resource->resourceToRevalidate();
+        else
+            m_resource->setResponse(resourceResponse);
+        if (!m_host->canAccessResource(resource, response.url())) {
             cancel();
             return;
         }
