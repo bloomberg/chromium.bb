@@ -400,7 +400,6 @@ AudioParameters AudioManagerBase::GetInputStreamParameters(
 
 std::string AudioManagerBase::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
-  NOTIMPLEMENTED();
   return "";
 }
 
