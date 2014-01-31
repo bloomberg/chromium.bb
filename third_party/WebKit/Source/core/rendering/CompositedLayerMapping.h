@@ -81,14 +81,6 @@ public:
 
     RenderLayer* owningLayer() const { return m_owningLayer; }
 
-    enum UpdateAfterLayoutFlag {
-        CompositingChildrenOnly = 1 << 0,
-        NeedsFullRepaint = 1 << 1,
-        IsUpdateRoot = 1 << 2
-    };
-    typedef unsigned UpdateAfterLayoutFlags;
-    void updateAfterLayout(UpdateAfterLayoutFlags);
-
     // Returns true if layer configuration changed.
     bool updateGraphicsLayerConfiguration();
     // Update graphics layer position and bounds.
@@ -200,6 +192,8 @@ private:
 
     PassOwnPtr<GraphicsLayer> createGraphicsLayer(CompositingReasons);
     bool toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&, bool needsLayer);
+
+    void updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer*);
 
     RenderLayerModelObject* renderer() const { return m_owningLayer->renderer(); }
     RenderLayerCompositor* compositor() const { return m_owningLayer->compositor(); }

@@ -104,9 +104,6 @@ public:
     // Update the compositing state of the given layer. Returns true if that state changed.
     bool updateLayerCompositingState(RenderLayer*);
 
-    // Update the geometry for compositing children of compositingAncestor.
-    void updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);
-
     // Whether layer's compositedLayerMapping needs a GraphicsLayer to do clipping by an ancestor (non-stacking-context parent with overflow).
     bool clippedByAncestor(const RenderLayer*) const;
     // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given RenderLayer.
@@ -197,6 +194,14 @@ public:
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
+    // Allocates, sets up hierarchy, and sets appropriate properties for the GraphicsLayers that correspond to a given
+    // composited RenderLayer. Does nothing if the given RenderLayer does not have a CompositedLayerMapping.
+    enum UpdateGraphicsLayersOptions {
+        UpdateGraphicsLayerConfigurationAndPositionOverflowControls,
+        DoNotUpdateGraphicsLayerConfigurationAndPositionOverflowControls,
+    };
+    void updateGraphicsLayersMappedToRenderLayer(RenderLayer*, UpdateGraphicsLayersOptions = UpdateGraphicsLayerConfigurationAndPositionOverflowControls);
+
 private:
     class OverlapMap;
 
@@ -260,10 +265,6 @@ private:
     // Defines which RenderLayers will paint into which composited backings, by allocating and destroying CompositedLayerMappings as needed.
     void assignLayersToBackings(RenderLayer*, bool& layersChanged);
     void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged);
-
-    // Allocates, sets up hierarchy, and sets appropriate properties for the GraphicsLayers that correspond to a given
-    // composited RenderLayer. Does nothing if the given RenderLayer does not have a CompositedLayerMapping.
-    void updateGraphicsLayersMappedToRenderLayer(RenderLayer*);
 
     // Recurses down the tree, parenting descendant compositing layers and collecting an array of child layers for the current compositing layer.
     void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, int depth);
