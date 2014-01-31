@@ -32,7 +32,7 @@ class GCMClientMock : public GCMClient {
                     const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
-  virtual bool IsLoading() const OVERRIDE;
+  virtual bool IsReady() const OVERRIDE;
 
   // Simulate receiving something from the server.
   // Called on UI thread.
@@ -45,7 +45,7 @@ class GCMClientMock : public GCMClient {
     simulate_server_error_ = simulate_server_error;
   }
 
-  void SetIsLoading(bool is_loading);
+  void SetReady(bool ready);
 
   static CheckinInfo GetCheckinInfoFromUsername(const std::string& username);
   static std::string GetRegistrationIdFromSenderIds(
@@ -70,11 +70,11 @@ class GCMClientMock : public GCMClient {
   void MessageSendError(std::string username,
                         std::string app_id,
                         std::string message_id);
-  void LoadingCompleted();
+  void SetReadyOnIO();
 
   std::map<std::string, Delegate*> delegates_;
 
-  bool is_loading_;
+  bool ready_;
 
   // The testing code could set this to simulate the server error in order to
   // test the error scenario.

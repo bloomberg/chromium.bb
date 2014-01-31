@@ -70,8 +70,7 @@ class GCMProfileService::DelayedTaskController {
     AppTaskQueue();
     ~AppTaskQueue();
 
-    // The flag that indicates if GCMProfileService completes loading the
-    // persistent data for the app.
+    // The flag that indicates if GCMClient is ready.
     bool ready;
 
     // Tasks to be invoked upon ready.
@@ -201,7 +200,7 @@ class GCMProfileService::IOWorker
                                   const std::string& message_id,
                                   GCMClient::Result result) OVERRIDE;
   virtual GCMClient::CheckinInfo GetCheckinInfo() const OVERRIDE;
-  virtual void OnLoadingCompleted() OVERRIDE;
+  virtual void OnGCMReady() OVERRIDE;
 
   // Called on IO thread.
   void Initialize();
@@ -253,9 +252,9 @@ void GCMProfileService::IOWorker::Initialize() {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GCMProfileService::CheckGCMClientLoadingFinished,
+      base::Bind(&GCMProfileService::FinishInitializationOnUI,
                  service_,
-                 gcm_client_->IsLoading()));
+                 gcm_client_->IsReady()));
 }
 
 void GCMProfileService::IOWorker::OnCheckInFinished(
@@ -351,11 +350,11 @@ GCMClient::CheckinInfo GCMProfileService::IOWorker::GetCheckinInfo() const {
   return checkin_info_;
 }
 
-void GCMProfileService::IOWorker::OnLoadingCompleted() {
+void GCMProfileService::IOWorker::OnGCMReady() {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GCMProfileService::GCMClientLoadingFinished,
+      base::Bind(&GCMProfileService::GCMClientReady,
                  service_));
 }
 
@@ -494,7 +493,7 @@ void GCMProfileService::Initialize() {
 #endif
 
   // This initializes GCMClient and also does the check to find out if GCMClient
-  // has finished the loading.
+  // is ready.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -544,7 +543,7 @@ void GCMProfileService::Register(const std::string& app_id,
 
   EnsureAppReady(app_id);
 
-  // Delay the register operation until the loading is done.
+  // Delay the register operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay(app_id)) {
     delayed_task_controller_->AddTask(
         app_id,
@@ -638,7 +637,7 @@ void GCMProfileService::Send(const std::string& app_id,
 
   EnsureAppReady(app_id);
 
-  // Delay the send operation until all the loadings are done.
+  // Delay the send operation until all GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay(app_id)) {
     delayed_task_controller_->AddTask(
         app_id,
@@ -911,15 +910,15 @@ void GCMProfileService::MessageSendError(const std::string& app_id,
   GetEventRouter(app_id)->OnSendError(app_id, message_id, result);
 }
 
-void GCMProfileService::CheckGCMClientLoadingFinished(bool is_loading) {
+void GCMProfileService::FinishInitializationOnUI(bool ready) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  gcm_client_ready_ = !is_loading;
+  gcm_client_ready_ = ready;
   if (gcm_client_ready_)
     DoCheckIn();
 }
 
-void GCMProfileService::GCMClientLoadingFinished() {
+void GCMProfileService::GCMClientReady() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (gcm_client_ready_)

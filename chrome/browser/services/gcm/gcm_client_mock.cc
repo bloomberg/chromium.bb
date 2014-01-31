@@ -26,7 +26,7 @@ uint64 HashToUInt64(const std::string& hash) {
 }  // namespace
 
 GCMClientMock::GCMClientMock()
-    : is_loading_(false),
+    : ready_(true),
       simulate_server_error_(false) {
 }
 
@@ -97,8 +97,8 @@ void GCMClientMock::Send(const std::string& username,
                  message.id));
 }
 
-bool GCMClientMock::IsLoading() const {
-  return is_loading_;
+bool GCMClientMock::IsReady() const {
+  return ready_;
 }
 
 void GCMClientMock::ReceiveMessage(const std::string& username,
@@ -129,19 +129,19 @@ void GCMClientMock::DeleteMessages(const std::string& username,
                  app_id));
 }
 
-void GCMClientMock::SetIsLoading(bool is_loading) {
+void GCMClientMock::SetReady(bool ready) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (is_loading == is_loading_)
+  if (ready == ready_)
     return;
-  is_loading_ = is_loading;
+  ready_ = ready;
 
-  if (is_loading_)
+  if (!ready_)
     return;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMClientMock::LoadingCompleted,
+      base::Bind(&GCMClientMock::SetReadyOnIO,
                  base::Unretained(this)));
 }
 
@@ -242,11 +242,11 @@ void GCMClientMock::MessageSendError(std::string username,
     delegate->OnMessageSendError(app_id, message_id, NETWORK_ERROR);
 }
 
-void GCMClientMock::LoadingCompleted() {
+void GCMClientMock::SetReadyOnIO() {
   for (std::map<std::string, Delegate*>::const_iterator iter =
            delegates_.begin();
        iter != delegates_.end(); ++iter) {
-    iter->second->OnLoadingCompleted();
+    iter->second->OnGCMReady();
   }
 }
 

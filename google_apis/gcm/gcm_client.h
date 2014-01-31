@@ -124,9 +124,10 @@ class GCM_EXPORT GCMClient {
     // OnCheckInFinished.
     virtual CheckinInfo GetCheckinInfo() const = 0;
 
-    // Called when the loading from the persistent store is done. The loading
-    // is triggered asynchronously when GCMClient is created.
-    virtual void OnLoadingCompleted() = 0;
+    // Called when the GCM becomes ready. To get to this state, GCMClient
+    // finished loading from the GCM store and retrieved the device check-in
+    // from the server if it hadn't yet.
+    virtual void OnGCMReady() = 0;
   };
 
   GCMClient();
@@ -176,8 +177,8 @@ class GCM_EXPORT GCMClient {
                     const std::string& receiver_id,
                     const OutgoingMessage& message) = 0;
 
-  // Returns true if the loading from the persistent store is still in progress.
-  virtual bool IsLoading() const = 0;
+  // Returns true if GCM becomes ready.
+  virtual bool IsReady() const = 0;
 };
 
 }  // namespace gcm

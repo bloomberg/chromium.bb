@@ -799,7 +799,7 @@ TEST_F(GCMProfileServiceSingleProfileTest, ReadRegistrationFromStateStore) {
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest,
-       GCMClientLoadingCompletedAfterReadingRegistration) {
+       GCMClientReadyAfterReadingRegistration) {
   scoped_refptr<Extension> extension(consumer()->CreateExtension());
 
   std::vector<std::string> sender_ids;
@@ -815,8 +815,8 @@ TEST_F(GCMProfileServiceSingleProfileTest,
   // preparation to call register 2nd time.
   consumer()->clear_registration_result();
 
-  // Mark that GCMClient is in loading state.
-  GetGCMClientMock()->SetIsLoading(true);
+  // Mark that GCMClient is not ready.
+  GetGCMClientMock()->SetReady(false);
 
   // Simulate start-up by recreating GCMProfileService.
   consumer()->CreateGCMProfileServiceInstance();
@@ -831,8 +831,8 @@ TEST_F(GCMProfileServiceSingleProfileTest,
   EXPECT_TRUE(consumer()->registration_id().empty());
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, consumer()->registration_result());
 
-  // Register operation will be invoked after GCMClient finishes the loading.
-  GetGCMClientMock()->SetIsLoading(false);
+  // Register operation will be invoked after GCMClient becomes ready.
+  GetGCMClientMock()->SetReady(true);
   WaitUntilCompleted();
   EXPECT_EQ(old_registration_id, consumer()->registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());

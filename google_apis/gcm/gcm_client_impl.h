@@ -69,7 +69,7 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
                     const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
-  virtual bool IsLoading() const OVERRIDE;
+  virtual bool IsReady() const OVERRIDE;
 
  private:
   // State representation of the GCMClient.
@@ -131,6 +131,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   void StartMCSLogin();
   // Resets state to before initialization.
   void ResetState();
+  // Sets state to ready. This will initiate the MCS login and notify the
+  // delegates.
+  void OnReady();
 
   // Startes a checkin request for a user with specified |serial_number|.
   // Checkin info can be invalid, in which case it is considered a first time

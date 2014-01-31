@@ -129,7 +129,6 @@ class GCMClientImplTest : public testing::Test,
   void CompleteRegistration(const std::string& registration_id);
 
   // GCMClient::Delegate overrides (for verification).
-  virtual void OnLoadingCompleted() OVERRIDE;
   virtual void OnCheckInFinished(const GCMClient::CheckinInfo& checkin_info,
                                  GCMClient::Result result) OVERRIDE;
   virtual void OnRegisterFinished(const std::string& app_id,
@@ -148,6 +147,7 @@ class GCMClientImplTest : public testing::Test,
   virtual GCMClient::CheckinInfo GetCheckinInfo() const OVERRIDE {
     return checkin_info_;
   }
+  virtual void OnGCMReady() OVERRIDE;
 
   void SetCheckinInfo(uint64 android_id, uint64 security_token);
 
@@ -296,7 +296,7 @@ void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
   gcm_client_->OnMessageReceivedFromMCS(message);
 }
 
-void GCMClientImplTest::OnLoadingCompleted() {
+void GCMClientImplTest::OnGCMReady() {
   last_event_ = LOADING_COMPLETED;
   QuitLoop();
 }

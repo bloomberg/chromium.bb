@@ -47,7 +47,7 @@ class GCMClientDelegate : public GCMClient::Delegate {
   virtual GCMClient::CheckinInfo GetCheckinInfo() const OVERRIDE {
     return GCMClient::CheckinInfo();
   }
-  virtual void OnLoadingCompleted() OVERRIDE {}
+  virtual void OnGCMReady() OVERRIDE {}
 
  private:
   std::string username_;

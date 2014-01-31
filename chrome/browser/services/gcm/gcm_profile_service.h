@@ -156,8 +156,8 @@ class GCMProfileService : public BrowserContextKeyedService,
   void MessageSendError(const std::string& app_id,
                         const std::string& message_id,
                         GCMClient::Result result);
-  void CheckGCMClientLoadingFinished(bool is_loading);
-  void GCMClientLoadingFinished();
+  void FinishInitializationOnUI(bool ready);
+  void GCMClientReady();
 
   // Returns the event router to fire the event for the given app.
   GCMEventRouter* GetEventRouter(const std::string& app_id) const;

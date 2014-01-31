@@ -159,12 +159,7 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
     return;
   }
 
-  state_ = READY;
-  StartMCSLogin();
-
-  std::vector<Delegate*> delegates = user_list_->GetAllDelegates();
-  for (size_t i = 0; i < delegates.size(); ++i)
-    delegates[i]->OnLoadingCompleted();
+  OnReady();
 }
 
 void GCMClientImpl::InitializeMCSClient(
@@ -181,14 +176,23 @@ void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(
     const CheckinInfo& checkin_info) {
   DCHECK(!device_checkin_info_.IsValid());
 
-  state_ = READY;
   device_checkin_info_.android_id = checkin_info.android_id;
   device_checkin_info_.secret = checkin_info.secret;
   gcm_store_->SetDeviceCredentials(
       checkin_info.android_id, checkin_info.secret,
       base::Bind(&GCMClientImpl::SetDeviceCredentialsCallback,
                  base::Unretained(this)));
+
+  OnReady();
+}
+
+void GCMClientImpl::OnReady() {
+  state_ = READY;
   StartMCSLogin();
+
+  std::vector<Delegate*> delegates = user_list_->GetAllDelegates();
+  for (size_t i = 0; i < delegates.size(); ++i)
+    delegates[i]->OnGCMReady();
 }
 
 void GCMClientImpl::StartMCSLogin() {
@@ -293,7 +297,7 @@ void GCMClientImpl::SetDelegateCompleted(const std::string& username,
   Delegate* delegate = user_list_->GetDelegateByUsername(username);
   DCHECK(delegate);
   if (state_ == READY) {
-    delegate->OnLoadingCompleted();
+    delegate->OnGCMReady();
     return;
   }
 }
@@ -408,8 +412,8 @@ void GCMClientImpl::Send(const std::string& username,
   mcs_client_->SendMessage(mcs_message);
 }
 
-bool GCMClientImpl::IsLoading() const {
-  return state_ != READY;
+bool GCMClientImpl::IsReady() const {
+  return state_ == READY;
 }
 
 void GCMClientImpl::OnMessageReceivedFromMCS(const gcm::MCSMessage& message) {
