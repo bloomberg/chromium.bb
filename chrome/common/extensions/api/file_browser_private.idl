@@ -585,8 +585,8 @@ interface Functions {
   static void addMount(DOMString source, AddMountCallback callback);
 
   // Unmounts a mounted resource.
-  // |volumeId| An ID of the volume.
-  static void removeMount(DOMString volumeId);
+  // |mountPath| A path of the mount.
+  static void removeMount(DOMString mountPath);
 
   // Get the list of mounted volumes.
   // |callback|

@@ -53,6 +53,11 @@ class FileBrowserPrivateRemoveMountFunction
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // A callback method to handle the result of GetSelectedFileInfo.
+  void GetSelectedFileInfoResponse(
+      const std::vector<ui::SelectedFileInfo>& files);
 };
 
 // Implements chrome.fileBrowserPrivate.getVolumeMetadataList method.
