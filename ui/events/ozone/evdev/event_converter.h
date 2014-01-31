@@ -7,13 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/events/events_export.h"
 
 namespace ui {
 
 class Event;
 
 // Base class for device-specific evdev event conversion.
-class EventConverterEvdev {
+class EVENTS_EXPORT EventConverterEvdev {
  public:
   EventConverterEvdev();
   virtual ~EventConverterEvdev();
