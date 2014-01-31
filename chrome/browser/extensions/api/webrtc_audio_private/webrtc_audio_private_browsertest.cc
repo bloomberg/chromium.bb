@@ -27,6 +27,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,7 +73,9 @@ class AudioWaitingExtensionTest : public ExtensionApiTest {
 
 class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
  public:
-  WebrtcAudioPrivateTest() : enumeration_event_(false, false) {
+  WebrtcAudioPrivateTest()
+      : enumeration_event_(false, false),
+        source_url_("chrome-extension://fakeid012345678/fakepage.html") {
   }
 
  protected:
@@ -84,6 +87,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
 
     scoped_refptr<WebrtcAudioPrivateGetActiveSinkFunction> function =
         new WebrtcAudioPrivateGetActiveSinkFunction();
+    function->set_source_url(source_url_);
     scoped_ptr<base::Value> result(
         RunFunctionAndReturnSingleResult(function.get(),
                                          parameter_string,
@@ -91,6 +95,17 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
     std::string device_id;
     result->GetAsString(&device_id);
     return device_id;
+  }
+
+  scoped_ptr<base::Value> InvokeGetSinks(base::ListValue** sink_list) {
+    scoped_refptr<WebrtcAudioPrivateGetSinksFunction> function =
+        new WebrtcAudioPrivateGetSinksFunction();
+    function->set_source_url(source_url_);
+
+    scoped_ptr<base::Value> result(
+        RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
+    result->GetAsList(sink_list);
+    return result.Pass();
   }
 
   // Synchronously (from the calling thread's point of view) runs the
@@ -115,22 +130,22 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
   }
 
   // Synchronously (from the calling thread's point of view) retrieve the
-  // source id in the |origin| on the IO thread. On return,
-  // |source_id_in_origin| contains the id |raw_device_id| is known by in
+  // device id in the |origin| on the IO thread. On return,
+  // |id_in_origin| contains the id |raw_device_id| is known by in
   // the origin.
-  void GetSourceIDInOrigin(content::ResourceContext* resource_context,
-                           GURL origin,
-                           const std::string& raw_device_id,
-                           std::string* source_id_in_origin) {
+  void GetIDInOrigin(content::ResourceContext* resource_context,
+                     GURL origin,
+                     const std::string& raw_device_id,
+                     std::string* id_in_origin) {
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&WebrtcAudioPrivateTest::GetSourceIDInOrigin,
+          base::Bind(&WebrtcAudioPrivateTest::GetIDInOrigin,
                      this, resource_context, origin, raw_device_id,
-                     source_id_in_origin));
-     enumeration_event_.Wait();
+                     id_in_origin));
+      enumeration_event_.Wait();
     } else {
-      *source_id_in_origin = content::GetHMACForMediaDeviceID(
+      *id_in_origin = content::GetHMACForMediaDeviceID(
           resource_context,
           origin,
           raw_device_id);
@@ -140,18 +155,18 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
 
   // Event used to signal completion of enumeration.
   base::WaitableEvent enumeration_event_;
+
+  GURL source_url_;
 };
 
+#if !defined(OS_MACOSX)
+// http://crbug.com/334579
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
   AudioDeviceNames devices;
   GetAudioDeviceNames(&AudioManager::GetAudioOutputDeviceNames, &devices);
 
-  scoped_refptr<WebrtcAudioPrivateGetSinksFunction> function =
-      new WebrtcAudioPrivateGetSinksFunction();
-  scoped_ptr<base::Value> result(
-      RunFunctionAndReturnSingleResult(function.get(), "[]", browser()));
   base::ListValue* sink_list = NULL;
-  result->GetAsList(&sink_list);
+  scoped_ptr<base::Value> result = InvokeGetSinks(&sink_list);
 
   std::string result_string;
   JSONWriter::Write(result.get(), &result_string);
@@ -169,7 +184,19 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
     sink_list->GetDictionary(ix, &dict);
     std::string sink_id;
     dict->GetString("sinkId", &sink_id);
-    EXPECT_EQ(it->unique_id, sink_id);
+
+    std::string expected_id;
+    if (it->unique_id.empty() ||
+        it->unique_id == media::AudioManagerBase::kDefaultDeviceId) {
+      expected_id = media::AudioManagerBase::kDefaultDeviceId;
+    } else {
+      GetIDInOrigin(profile()->GetResourceContext(),
+                    source_url_.GetOrigin(),
+                    it->unique_id,
+                    &expected_id);
+    }
+
+    EXPECT_EQ(expected_id, sink_id);
     std::string sink_label;
     dict->GetString("sinkLabel", &sink_label);
     EXPECT_EQ(it->device_name, sink_label);
@@ -181,6 +208,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
     EXPECT_TRUE(dict->HasKey("sampleRate"));
   }
 }
+#endif  // OS_MACOSX
 
 // This exercises the case where you have a tab with no active media
 // stream and try to retrieve the currently active audio sink.
@@ -194,6 +222,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetActiveSinkNoMediaStream) {
 
   scoped_refptr<WebrtcAudioPrivateGetActiveSinkFunction> function =
       new WebrtcAudioPrivateGetActiveSinkFunction();
+  function->set_source_url(source_url_);
   scoped_ptr<base::Value> result(
       RunFunctionAndReturnSingleResult(function.get(),
                                        parameter_string,
@@ -217,6 +246,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
 
   scoped_refptr<WebrtcAudioPrivateSetActiveSinkFunction> function =
       new WebrtcAudioPrivateSetActiveSinkFunction();
+  function->set_source_url(source_url_);
   std::string error(RunFunctionAndReturnError(function.get(),
                                               parameter_string,
                                               browser()));
@@ -225,13 +255,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
-  // First get the list of output devices, so that we can (if
-  // available) set the active device to a device other than the one
-  // it starts as. This function is not threadsafe and is normally
-  // called only from the audio IO thread, but we know no other code
-  // is currently running so we call it directly.
-  AudioDeviceNames devices;
-  GetAudioDeviceNames(&AudioManager::GetAudioOutputDeviceNames, &devices);
+  // First retrieve the list of all sinks, so that we can run a test
+  // where we set the active sink to each of the different available
+  // sinks in turn.
+  base::ListValue* sink_list = NULL;
+  scoped_ptr<base::Value> result = InvokeGetSinks(&sink_list);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
 
@@ -250,10 +278,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
   EXPECT_NE("", current_device);
 
   // Set to each of the other devices in turn.
-  for (AudioDeviceNames::const_iterator it = devices.begin();
-       it != devices.end();
-       ++it) {
-    std::string target_device(it->unique_id);
+  for (size_t ix = 0; ix < sink_list->GetSize(); ++ix) {
+    base::DictionaryValue* dict = NULL;
+    sink_list->GetDictionary(ix, &dict);
+    std::string target_device;
+    dict->GetString("sinkId", &target_device);
 
     base::ListValue parameters;
     parameters.AppendInteger(tab_id);
@@ -263,6 +292,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
 
     scoped_refptr<WebrtcAudioPrivateSetActiveSinkFunction> function =
       new WebrtcAudioPrivateSetActiveSinkFunction();
+    function->set_source_url(source_url_);
     scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
         function.get(), parameter_string, browser()));
     // The function was successful if the above invocation doesn't
@@ -289,15 +319,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
        ++device) {
     scoped_refptr<WebrtcAudioPrivateGetAssociatedSinkFunction> function =
         new WebrtcAudioPrivateGetAssociatedSinkFunction();
+    function->set_source_url(source_url_);
 
     std::string raw_device_id = device->unique_id;
     VLOG(2) << "Trying to find associated sink for device " << raw_device_id;
     std::string source_id_in_origin;
     GURL origin(GURL("http://www.google.com/").GetOrigin());
-    GetSourceIDInOrigin(profile()->GetResourceContext(),
-                        origin,
-                        raw_device_id,
-                        &source_id_in_origin);
+    GetIDInOrigin(profile()->GetResourceContext(),
+                  origin,
+                  raw_device_id,
+                  &source_id_in_origin);
 
     base::ListValue parameters;
     parameters.AppendString(origin.spec());
