@@ -25,4 +25,4 @@ class SasInjector {
 
 }  // namespace remoting
 
-#endif REMOTING_HOST_SAS_INJECTOR_H_
+#endif  // REMOTING_HOST_SAS_INJECTOR_H_
