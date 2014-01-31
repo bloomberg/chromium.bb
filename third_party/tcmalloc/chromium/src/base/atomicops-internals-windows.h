@@ -86,21 +86,29 @@ inline LONG FastInterlockedExchangeAdd(volatile LONG* ptr, LONG increment) {
 // have conflicting declarations of some intrinsics, breaking
 // compilation.  So we declare the intrinsics we need ourselves.  See
 //   http://connect.microsoft.com/VisualStudio/feedback/details/262047
+
+// Don't declare the intrinsics if using Clang. Clang provides inline
+// definitions in its Intrin.h.
+#ifndef __clang__
 LONG _InterlockedCompareExchange(volatile LONG* ptr, LONG newval, LONG oldval);
 #pragma intrinsic(_InterlockedCompareExchange)
+
+LONG _InterlockedExchange(volatile LONG* ptr, LONG newval);
+#pragma intrinsic(_InterlockedExchange)
+
+LONG _InterlockedExchangeAdd(volatile LONG* ptr, LONG increment);
+#pragma intrinsic(_InterlockedExchangeAdd)
+#endif
+
 inline LONG FastInterlockedCompareExchange(volatile LONG* ptr,
                                            LONG newval, LONG oldval) {
   return _InterlockedCompareExchange(ptr, newval, oldval);
 }
 
-LONG _InterlockedExchange(volatile LONG* ptr, LONG newval);
-#pragma intrinsic(_InterlockedExchange)
 inline LONG FastInterlockedExchange(volatile LONG* ptr, LONG newval) {
   return _InterlockedExchange(ptr, newval);
 }
 
-LONG _InterlockedExchangeAdd(volatile LONG* ptr, LONG increment);
-#pragma intrinsic(_InterlockedExchangeAdd)
 inline LONG FastInterlockedExchangeAdd(volatile LONG* ptr, LONG increment) {
   return _InterlockedExchangeAdd(ptr, increment);
 }
