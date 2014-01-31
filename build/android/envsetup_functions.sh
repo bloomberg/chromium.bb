@@ -98,9 +98,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
       DEFINES+=" target_arch=arm"
       ;;
     "x86")
-      host_arch=$(uname -m | sed -e \
-        's/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/;s/i86pc/ia32/')
-      DEFINES+=" host_arch=${host_arch}"
       DEFINES+=" target_arch=ia32"
       ;;
     "mips")
