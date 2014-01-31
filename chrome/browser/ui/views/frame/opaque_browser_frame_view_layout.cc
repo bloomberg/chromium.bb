@@ -268,12 +268,10 @@ gfx::Rect OpaqueBrowserFrameViewLayout::CalculateClientAreaBounds(
 }
 
 bool OpaqueBrowserFrameViewLayout::IsTitleBarCondensed() const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
-    return true;
-#endif
-
-  return delegate_->IsMaximized();
+  // If there are no caption buttons, there is no need to have an uncondensed
+  // title bar. If the window is maximized, the title bar is condensed
+  // regardless of whether there are caption buttons.
+  return !delegate_->ShouldShowCaptionButtons() || delegate_->IsMaximized();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -362,7 +362,8 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
-  // Tests the layout of a default chrome window with no caption buttons.
+  // Tests the layout of a default chrome window with no caption buttons (which
+  // should force the tab strip to be condensed).
   delegate_->SetShouldShowCaptionButtons(false);
   root_view_->Layout();
 
@@ -371,15 +372,15 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
   EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
   EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
 
-  EXPECT_EQ("-1,13 492x29",
+  EXPECT_EQ("-5,-3 500x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+  EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());
 
   // A normal window with no window icon still produces icon bounds for
   // Windows, which has a hidden icon that a user can double click on to close
   // the window.
-  EXPECT_EQ("6,4 17x17", layout_manager_->IconBounds().ToString());
+  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, MaximizedWithoutCaptionButtons) {
@@ -486,6 +487,7 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest,
   // Tests the layout of a chrome window with an avatar icon and no caption
   // buttons. However, the caption buttons *would* be on the left if they
   // weren't hidden, and therefore, the avatar icon should be on the right.
+  // The lack of caption buttons should force the tab strip to be condensed.
   AddAvatarButton();
   std::vector<views::FrameButton> leading_buttons;
   std::vector<views::FrameButton> trailing_buttons;
@@ -502,16 +504,16 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest,
   EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
 
   // Check the location of the avatar
-  EXPECT_EQ("454,11 40x29", menu_button_->bounds().ToString());
-  EXPECT_EQ("-1,13 450x29",
+  EXPECT_EQ("458,0 40x24", menu_button_->bounds().ToString());
+  EXPECT_EQ("-5,-3 458x29",
             layout_manager_->GetBoundsForTabStrip(
                 delegate_->GetTabstripPreferredSize(), kWidth).ToString());
-  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+  EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());
 
   // A normal window with no window icon still produces icon bounds for
   // Windows, which has a hidden icon that a user can double click on to close
   // the window.
-  EXPECT_EQ("6,4 17x17", layout_manager_->IconBounds().ToString());
+  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithNewAvatar) {

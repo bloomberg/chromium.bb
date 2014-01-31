@@ -431,26 +431,12 @@ void OpaqueBrowserFrameView::Observe(
 // OpaqueBrowserFrameView, OpaqueBrowserFrameViewLayoutDelegate implementation:
 
 bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // If using the system title bar, we do not want to show a second title bar
-  // inside the client area.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
-    return false;
-#endif
-
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   return ShouldShowWindowTitleBar() && delegate &&
          delegate->ShouldShowWindowIcon();
 }
 
 bool OpaqueBrowserFrameView::ShouldShowWindowTitle() const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // If using the system title bar, we do not want to show a second title bar
-  // inside the client area.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
-    return false;
-#endif
-
   // |delegate| may be NULL if called from callback of InputMethodChanged while
   // a window is being destroyed.
   // See more discussion at http://crosbug.com/8958
@@ -483,12 +469,6 @@ gfx::Size OpaqueBrowserFrameView::GetBrowserViewMinimumSize() const {
 }
 
 bool OpaqueBrowserFrameView::ShouldShowCaptionButtons() const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Do not show caption buttons if the system title bar is being used.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
-    return false;
-#endif
-
   if (!OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons())
     return false;
   return ShouldShowWindowTitleBar();
@@ -614,6 +594,14 @@ gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
 }
 
 bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Do not show the custom title bar if the system title bar option is enabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
+    return false;
+#endif
+
+  // Do not show caption buttons if the window manager is forcefully providing a
+  // title bar (e.g., in Ubuntu Unity, if the window is maximized).
   if (!views::ViewsDelegate::views_delegate)
     return true;
   return !views::ViewsDelegate::views_delegate->WindowManagerProvidesTitleBar(
