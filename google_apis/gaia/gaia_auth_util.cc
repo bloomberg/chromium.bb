@@ -96,8 +96,9 @@ std::vector<std::string> ParseListAccountsData(const std::string& data) {
     base::ListValue* account;
     if (accounts->GetList(i, &account) && account != NULL) {
       std::string email;
+      // Canonicalize the email since ListAccounts returns "display email".
       if (account->GetString(3, &email) && !email.empty())
-        account_ids.push_back(email);
+        account_ids.push_back(CanonicalizeEmail(email));
     }
   }
 

@@ -156,7 +156,9 @@ AccountReconcilor::AccountReconcilor(Profile* profile)
           profile->GetRequestContext(),
           NULL),
       registered_with_token_service_(false),
-      are_gaia_accounts_set_(false),requests_(NULL) {
+      is_reconcile_started_(false),
+      are_gaia_accounts_set_(false),
+      requests_(NULL) {
   DVLOG(1) << "AccountReconcilor::AccountReconcilor";
   RegisterWithSigninManager();
   RegisterWithCookieMonster();
@@ -296,15 +298,13 @@ void AccountReconcilor::Observe(int type,
 }
 
 void AccountReconcilor::OnCookieChanged(ChromeCookieDetails* details) {
-  /*
-  Commenting out for now until I speak with gaia team.
   if (details->cookie->Name() == "LSID" &&
       details->cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
       details->cookie->IsSecure() &&
       details->cookie->IsHttpOnly()) {
+    DVLOG(1) << "AccountReconcilor::OnCookieChanged: LSID changed";
     StartReconcile();
   }
-  */
 }
 
 void AccountReconcilor::OnRefreshTokenAvailable(const std::string& account_id) {
@@ -377,8 +377,10 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
 }
 
 void AccountReconcilor::StartReconcile() {
-  if (!IsProfileConnected())
+  if (!IsProfileConnected() || is_reconcile_started_)
     return;
+
+  is_reconcile_started_ = true;
 
   // Reset state for validating gaia cookie.
   are_gaia_accounts_set_ = false;
@@ -402,7 +404,7 @@ void AccountReconcilor::GetAccountsFromCookie(
   if (!gaia_fetcher_) {
     // There is no list account request in flight.
     gaia_fetcher_.reset(new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
-                                          profile_->GetRequestContext()));
+                                            profile_->GetRequestContext()));
     gaia_fetcher_->StartListAccounts();
   }
 }
@@ -448,7 +450,7 @@ void AccountReconcilor::OnListAccountsFailure(
 void AccountReconcilor::MayBeDoNextListAccounts() {
   if (!get_gaia_accounts_callbacks_.empty()) {
     gaia_fetcher_.reset(new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
-                                          profile_->GetRequestContext()));
+                                            profile_->GetRequestContext()));
     gaia_fetcher_->StartListAccounts();
   }
 }
@@ -590,6 +592,8 @@ void AccountReconcilor::FinishReconcile() {
       PerformAddToChromeAction(i->first, i->second);
     }
   }
+
+  is_reconcile_started_ = false;
 }
 
 void AccountReconcilor::HandleSuccessfulAccountIdCheck(

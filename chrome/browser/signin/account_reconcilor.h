@@ -87,6 +87,7 @@ class AccountReconcilor : public BrowserContextKeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToChrome);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileBadPrimary);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileOnlyOnce);
 
   class UserIdFetcher;
 
@@ -168,6 +169,9 @@ class AccountReconcilor : public BrowserContextKeyedService,
   base::RepeatingTimer<AccountReconcilor> reconciliation_timer_;
   MergeSessionHelper merge_session_helper_;
   bool registered_with_token_service_;
+
+  // Used during reconcile action.
+  bool is_reconcile_started_;
 
   // Used during reconcile action.
   // These members are used used to validate the gaia cookie.
