@@ -648,7 +648,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initEssentialUI_ = function(callback) {
-    // Optional list of file types.
+    // Record stats of dialog types. New values must NOT be inserted into the
+    // array enumerating the types. It must be in sync with
+    // FileDialogType enum in tools/metrics/histograms/histogram.xml.
     metrics.recordEnum('Create', this.dialogType,
         [DialogType.SELECT_FOLDER,
          DialogType.SELECT_UPLOAD_FOLDER,
