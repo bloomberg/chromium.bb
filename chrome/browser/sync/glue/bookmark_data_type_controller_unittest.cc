@@ -299,6 +299,24 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
 
+TEST_F(SyncBookmarkDataTypeControllerTest, StartAbortedThenLoadModel) {
+  // Don't load the bookmark model, but load the history model.
+  CreateBookmarkModel(DONT_LOAD_MODEL);
+  EXPECT_CALL(*history_service_, BackendLoaded()).WillRepeatedly(Return(true));
+
+  EXPECT_CALL(model_load_callback_, Run(_, _));
+  bookmark_dtc_->LoadModels(
+      base::Bind(&ModelLoadCallbackMock::Run,
+                 base::Unretained(&model_load_callback_)));
+
+  bookmark_dtc_->Stop();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
+
+  // Should not crash.
+  bookmark_model_->Load(profile_.GetIOTaskRunner());
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(SyncBookmarkDataTypeControllerTest, Stop) {
   CreateBookmarkModel(LOAD_MODEL);
   SetStartExpectations();

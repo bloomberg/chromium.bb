@@ -74,9 +74,11 @@ bool BookmarkDataTypeController::StartModels() {
   return true;
 }
 
-// Cleanup for our extra registrar usage.
+// Cleanup for local model observations/notifications.
 void BookmarkDataTypeController::CleanUpState() {
   registrar_.RemoveAll();
+  if (bookmark_model_)
+    bookmark_model_->RemoveObserver(this);
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
