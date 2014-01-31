@@ -635,6 +635,10 @@ void FrameView::updateCompositingLayersAfterStyleChange()
     if (m_doingPreLayoutStyleUpdate || layoutPending() || renderView->needsLayout())
         return;
 
+    // FIXME: really, we're in the compositing updates phase here, and the compositing queries are legal.
+    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    DisableCompositingQueryAsserts disabler;
+
     // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
     renderView->compositor()->cacheAcceleratedCompositingFlags();
 
@@ -653,6 +657,10 @@ void FrameView::updateCompositingLayersAfterLayout()
     RenderView* renderView = this->renderView();
     if (!renderView)
         return;
+
+    // FIXME: really, we're in the compositing updates phase here, and the compositing queries are legal.
+    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    DisableCompositingQueryAsserts disabler;
 
     // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
     renderView->compositor()->cacheAcceleratedCompositingFlags();
@@ -1097,6 +1105,10 @@ void FrameView::repaintTree(RenderObject* root)
 {
     ASSERT(RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
     ASSERT(!root->needsLayout());
+
+    // FIXME: really, we're in the repaint phase here, and the compositing queries are legal.
+    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    DisableCompositingQueryAsserts disabler;
 
     for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
         const LayoutRect& oldRepaintRect = renderer->oldRepaintRect();

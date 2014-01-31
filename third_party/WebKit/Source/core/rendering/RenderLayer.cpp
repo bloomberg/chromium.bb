@@ -95,6 +95,13 @@ using namespace std;
 
 namespace WebCore {
 
+namespace {
+
+static CompositingQueryMode gCompositingQueryMode =
+    CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases;
+
+} // namespace
+
 using namespace HTMLNames;
 
 RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
@@ -246,6 +253,11 @@ void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, 
 
 void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLayerPositionsFlags flags)
 {
+    // FIXME: really, we're in the 'update layer positions phase' here, and in this phase
+    // compositing state queries are illegal. Until those states are fully fledged, I will
+    // explicitly disallow compositing state queries.
+    TemporaryChange<CompositingQueryMode> enforcer(gCompositingQueryMode, CompositingQueriesAreDisallowed);
+
     updateLayerPosition(); // For relpositioned layers or non-positioned layers,
                            // we need to keep in sync, since we may have shifted relative
                            // to our parent layer.
@@ -1041,6 +1053,8 @@ const RenderLayer* RenderLayer::compositingContainer() const
 // any other use cases should probably have an API between the non-compositing and compositing sides of code.
 RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf) const
 {
+    ASSERT(isAllowedToQueryCompositingState());
+
     if ((includeSelf == IncludeSelf) && compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking)
         return const_cast<RenderLayer*>(this);
 
@@ -1054,6 +1068,8 @@ RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf
 
 RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot includeSelf) const
 {
+    ASSERT(isAllowedToQueryCompositingState());
+
     if ((includeSelf == IncludeSelf) && (compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking))
         return const_cast<RenderLayer*>(this);
 
@@ -1067,6 +1083,8 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
 
 RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
 {
+    ASSERT(isAllowedToQueryCompositingState());
+
     if (!renderer()->acceleratedCompositingForOverflowScrollEnabled())
         return 0;
 
@@ -2566,6 +2584,10 @@ bool RenderLayer::hitTest(const HitTestRequest& request, HitTestResult& result)
 
 bool RenderLayer::hitTest(const HitTestRequest& request, const HitTestLocation& hitTestLocation, HitTestResult& result)
 {
+    // FIXME: really, we're in the hit test phase here, and compositing queries are legal
+    // (since the document is up to date). Until those states are fully fledged, I'll
+    // just disable the ASSERTS.
+    DisableCompositingQueryAsserts disabler;
     ASSERT(isSelfPaintingLayer() || hasSelfPaintingLayerDescendant());
 
     // RenderView should make sure to update layout before entering hit testing
@@ -3401,6 +3423,8 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
 
 CompositingState RenderLayer::compositingState() const
 {
+    ASSERT(isAllowedToQueryCompositingState());
+
     // This is computed procedurally so there is no redundant state variable that
     // can get out of sync from the real actual compositing state.
 
@@ -3418,6 +3442,22 @@ CompositingState RenderLayer::compositingState() const
 
     ASSERT(m_compositedLayerMapping);
     return PaintsIntoOwnBacking;
+}
+
+bool RenderLayer::isAllowedToQueryCompositingState() const
+{
+#if STRICT_STATE_MACHINE
+    if (gCompositingQueryMode == CompositingQueriesAreAllowed)
+        return true;
+
+    if (gCompositingQueryMode == CompositingQueriesAreDisallowed)
+        return false;
+
+    return !renderer()->document().inStyleRecalc()
+        && !renderer()->frameView()->isInPerformLayout();
+#else
+    return true;
+#endif
 }
 
 CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
@@ -3770,6 +3810,13 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
         didPaintWithFilters = true;
     updateFilters(oldStyle, renderer()->style());
 
+    // FIXME: I assume that these geometry updates are done because they issue
+    // invalidations as a side effect? It doesn't make sense that we would do
+    // them otherwise since we haven't done layout yet and don't actually know
+    // where we (or our composited ancestor) are positioned. That is, we're just
+    // going to have to update this again later after layout anyhow.
+    DisableCompositingQueryAsserts disabler;
+
     const RenderStyle* newStyle = renderer()->style();
     if (compositor()->updateLayerCompositingState(this)
         || needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
@@ -3906,6 +3953,9 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->addLayerHitTestRects(rects);
 }
+
+DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
+    : m_disabler(gCompositingQueryMode, CompositingQueriesAreAllowed) { }
 
 } // namespace WebCore
 

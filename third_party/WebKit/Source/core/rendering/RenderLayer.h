@@ -84,6 +84,23 @@ enum CompositedScrollingHistogramBuckets {
     CompositedScrollingHistogramMax = 3
 };
 
+enum CompositingQueryMode {
+    CompositingQueriesAreAllowed,
+    CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases,
+    CompositingQueriesAreDisallowed
+};
+
+#define STRICT_STATE_MACHINE 0
+
+// FIXME: remove this once the compositing query ASSERTS are no longer hit.
+class DisableCompositingQueryAsserts {
+    WTF_MAKE_NONCOPYABLE(DisableCompositingQueryAsserts);
+public:
+    DisableCompositingQueryAsserts();
+private:
+    TemporaryChange<CompositingQueryMode> m_disabler;
+};
+
 class RenderLayer {
 public:
     friend class RenderReplica;
@@ -332,6 +349,10 @@ public:
     void operator delete(void*);
 
     CompositingState compositingState() const;
+
+    // This returns true if our document is in a phase of its lifestyle during which
+    // compositing state may legally be read.
+    bool isAllowedToQueryCompositingState() const;
 
     CompositedLayerMappingPtr compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
     CompositedLayerMappingPtr ensureCompositedLayerMapping();

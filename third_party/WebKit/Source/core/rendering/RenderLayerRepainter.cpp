@@ -59,6 +59,9 @@ RenderLayerRepainter::RenderLayerRepainter(RenderLayerModelObject* renderer)
 
 void RenderLayerRepainter::repaintAfterLayout(RenderGeometryMap* geometryMap, bool shouldCheckForRepaint)
 {
+    // FIXME: really, we're in the repaint phase here, and the following queries are legal.
+    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    DisableCompositingQueryAsserts disabler;
     if (m_renderer->layer()->hasVisibleContent()) {
         RenderView* view = m_renderer->view();
         ASSERT(view);

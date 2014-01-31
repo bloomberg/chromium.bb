@@ -1448,6 +1448,9 @@ void RenderObject::repaint() const
     if (view->document().printing())
         return; // Don't repaint if we're printing.
 
+    // FIXME: really, we're in the repaint phase here, and the following queries are legal.
+    // Until those states are fully fledged, I'll just disable the ASSERTS.
+    DisableCompositingQueryAsserts disabler;
     RenderLayerModelObject* repaintContainer = containerForRepaint();
     repaintUsingContainer(repaintContainer ? repaintContainer : view, pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)));
 }
