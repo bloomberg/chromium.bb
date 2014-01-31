@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
 
 // This tests verifies that reloading the embedder does not crash the browser
 // and that the guest is reset.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_ReloadEmbedder) {
   const char kEmbedderURL[] = "/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
