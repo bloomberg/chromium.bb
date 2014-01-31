@@ -38,7 +38,7 @@ WindowTreeHostOzone::~WindowTreeHostOzone() {
 
 bool WindowTreeHostOzone::Dispatch(const base::NativeEvent& ne) {
   ui::Event* event = static_cast<ui::Event*>(ne);
-  SendEventToProcessor(event);
+  ui::EventDispatchDetails details ALLOW_UNUSED = SendEventToProcessor(event);
   return true;
 }
 
@@ -111,6 +111,10 @@ void WindowTreeHostOzone::OnDeviceScaleFactorChanged(
 }
 
 void WindowTreeHostOzone::PrepareForShutdown() { NOTIMPLEMENTED(); }
+
+ui::EventProcessor* WindowTreeHostOzone::GetEventProcessor() {
+  return delegate_->GetEventProcessor();
+}
 
 // static
 WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {

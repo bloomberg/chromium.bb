@@ -10,12 +10,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
 
 class WindowTreeHostOzone : public WindowTreeHost,
+                            public ui::EventSource,
                             public base::MessagePumpDispatcher {
  public:
   explicit WindowTreeHostOzone(const gfx::Rect& bounds);
@@ -47,6 +49,9 @@ class WindowTreeHostOzone : public WindowTreeHost,
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+  // ui::EventSource overrides.
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   gfx::AcceleratedWidget widget_;
   gfx::Rect bounds_;
