@@ -287,7 +287,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
 
     // We need to handle a DOMWindow specially, because a DOMWindow wrapper exists on a prototype chain.
     if (!target)
-        target = toNativeDOMWindow(value, info.GetIsolate());
+        target = toDOMWindow(value, info.GetIsolate());
 
     if (!target || !target->executionContext())
         return;

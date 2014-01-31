@@ -579,8 +579,6 @@ namespace WebCore {
 
     PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Isolate*);
 
-    DOMWindow* toNativeDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
-
     inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)
     {
         return value->IsNull() || value->IsUndefined();
@@ -629,6 +627,7 @@ namespace WebCore {
     PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
 
     v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context>);
+    DOMWindow* toDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
     DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
     ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
 

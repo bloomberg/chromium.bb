@@ -134,18 +134,6 @@ PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, v8::Isolate*
     return filter.release();
 }
 
-DOMWindow* toNativeDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    if (value.IsEmpty() || !value->IsObject())
-        return 0;
-
-    v8::Handle<v8::Object> global = v8::Handle<v8::Object>::Cast(value);
-    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(isolate, worldType(isolate)));
-    if (windowWrapper.IsEmpty())
-        return 0;
-    return V8Window::toNative(windowWrapper);
-}
-
 const int32_t kMaxInt32 = 0x7fffffff;
 const int32_t kMinInt32 = -kMaxInt32 - 1;
 const uint32_t kMaxUInt32 = 0xffffffff;
@@ -497,16 +485,24 @@ v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> context)
     return v8::Handle<v8::Object>::Cast(context->Global()->GetPrototype());
 }
 
+DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    if (value.IsEmpty() || !value->IsObject())
+        return 0;
+
+    v8::Handle<v8::Object> global = v8::Handle<v8::Object>::Cast(value);
+    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(isolate, MainWorld));
+    if (!windowWrapper.IsEmpty())
+        return V8Window::toNative(windowWrapper);
+    windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(isolate, IsolatedWorld));
+    if (!windowWrapper.IsEmpty())
+        return V8Window::toNative(windowWrapper);
+    return 0;
+}
+
 DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 {
-    v8::Handle<v8::Object> global = context->Global();
-    ASSERT(!global.IsEmpty());
-    v8::Handle<v8::Object> window = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), MainWorld));
-    if (!window.IsEmpty())
-        return V8Window::toNative(window);
-    window = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), IsolatedWorld));
-    ASSERT(!window.IsEmpty());
-    return V8Window::toNative(window);
+    return toDOMWindow(context->Global(), context->GetIsolate());
 }
 
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)

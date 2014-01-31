@@ -5569,7 +5569,7 @@ sub JSValueToNative
     }
 
     if ($type eq "Window") {
-        return "toNativeDOMWindow($value, $getIsolate)";
+        return "toDOMWindow($value, $getIsolate)";
     }
 
     if ($type eq "MediaQueryListListener") {

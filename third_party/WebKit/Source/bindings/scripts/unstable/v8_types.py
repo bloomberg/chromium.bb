@@ -388,7 +388,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'Promise': 'ScriptPromise({v8_value}, info.GetIsolate())',
     'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, info.GetIsolate())',
     'ScriptValue': 'ScriptValue({v8_value}, info.GetIsolate())',
-    'Window': 'toNativeDOMWindow({v8_value}, info.GetIsolate())',
+    'Window': 'toDOMWindow({v8_value}, info.GetIsolate())',
     'XPathNSResolver': 'toXPathNSResolver({v8_value}, info.GetIsolate())',
 }
 

@@ -327,7 +327,7 @@ bool Dictionary::get(const String& key, RefPtr<DOMWindow>& value) const
 
     // We need to handle a DOMWindow specially, because a DOMWindow wrapper
     // exists on a prototype chain of v8Value.
-    value = toNativeDOMWindow(v8Value, m_isolate);
+    value = toDOMWindow(v8Value, m_isolate);
     return true;
 }
 
