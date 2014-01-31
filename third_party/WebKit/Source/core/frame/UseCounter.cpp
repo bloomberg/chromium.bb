@@ -703,6 +703,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case DOMImplementationCreateCSSStyleSheet:
         return "'DOMImplementation.createCSSStyleSheet()' is deprecated.";
 
+    case MediaErrorEncrypted:
+        return "'MediaError.MEDIA_ERR_ENCRYPTED' is deprecated. This error code is never used.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
