@@ -41,6 +41,8 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
 
+  this.metadataCache_ = metadataCache;
+
   this.volumeManager_ = volumeManager;
   this.volumeManager_.volumeInfoList.addEventListener(
       'splice', this.onVolumeInfoListUpdated_.bind(this));
@@ -572,10 +574,12 @@ DirectoryModel.prototype.onRenameEntry = function(
  * @param {function(DirectoryEntry)} successCallback Callback on success.
  * @param {function(FileError)} errorCallback Callback on failure.
  */
-DirectoryModel.prototype.createDirectory = function(name, successCallback,
+DirectoryModel.prototype.createDirectory = function(name,
+                                                    successCallback,
                                                     errorCallback) {
+  // Obtain and check the current directory.
   var entry = this.getCurrentDirEntry();
-  if (!entry) {
+  if (!entry || this.isSearching()) {
     errorCallback(util.createDOMError(
         util.FileError.INVALID_MODIFICATION_ERR));
     return;
@@ -584,30 +588,43 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
   var tracker = this.createDirectoryChangeTracker();
   tracker.start();
 
-  var onSuccess = function(newEntry) {
-    // Do not change anything or call the callback if current
-    // directory changed.
-    tracker.stop();
-    if (tracker.hasChanged)
-      return;
+  new Promise(entry.getDirectory.bind(
+      entry, name, {create: true, exclusive: true})).
 
-    var existing = this.getFileList().slice().filter(
-        function(e) {return e.name == name;});
+      then(function(newEntry) {
+        // Refresh the cache.
+        this.metadataCache_.clear([newEntry], '*');
+        return new Promise(function(onFulfilled, onRejected) {
+          this.metadataCache_.get([newEntry],
+                                  'filesystem',
+                                  onFulfilled.bind(null, newEntry));
+        }.bind(this));
+      }.bind(this)).
 
-    if (existing.length) {
-      this.selectEntry(newEntry);
-      successCallback(existing[0]);
-    } else {
-      this.fileListSelection_.beginChange();
-      this.getFileList().splice(0, 0, newEntry);
-      this.selectEntry(newEntry);
-      this.fileListSelection_.endChange();
-      successCallback(newEntry);
-    }
-  };
+      then(function(newEntry) {
+        // Do not change anything or call the callback if current
+        // directory changed.
+        tracker.stop();
+        if (tracker.hasChanged)
+          return;
 
-  this.currentDirContents_.createDirectory(name, onSuccess.bind(this),
-                                           errorCallback);
+        // If target directory is already in the list, just select it.
+        var existing = this.getFileList().slice().filter(
+            function(e) { return e.name === name; });
+        if (existing.length) {
+          this.selectEntry(newEntry);
+          successCallback(existing[0]);
+        } else {
+          this.fileListSelection_.beginChange();
+          this.getFileList().splice(0, 0, newEntry);
+          this.selectEntry(newEntry);
+          this.fileListSelection_.endChange();
+          successCallback(newEntry);
+        }
+      }.bind(this), function(reason) {
+        tracker.stop();
+        errorCallback(reason);
+      });
 };
 
 /**

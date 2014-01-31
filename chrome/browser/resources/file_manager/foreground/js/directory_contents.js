@@ -450,7 +450,9 @@ function FileListContext(fileFilter, metadataCache) {
  * @constructor
  * @extends {cr.EventTarget}
  */
-function DirectoryContents(context, isSearch, directoryEntry,
+function DirectoryContents(context,
+                           isSearch,
+                           directoryEntry,
                            lastNonSearchDirectoryEntry,
                            scannerFactory) {
   this.context_ = context;
@@ -651,40 +653,6 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
  */
 DirectoryContents.prototype.prefetchMetadata = function(entries, callback) {
   this.context_.metadataCache.get(entries, 'filesystem', callback);
-};
-
-/**
- * @param {Array.<Entry>} entries Files.
- * @param {function(Object)} callback Callback on done.
- */
-DirectoryContents.prototype.reloadMetadata = function(entries, callback) {
-  this.context_.metadataCache.clear(entries, '*');
-  this.context_.metadataCache.get(entries, 'filesystem', callback);
-};
-
-/**
- * @param {string} name Directory name.
- * @param {function(DirectoryEntry)} successCallback Called on success.
- * @param {function(FileError)} errorCallback On error.
- */
-DirectoryContents.prototype.createDirectory = function(
-    name, successCallback, errorCallback) {
-  // TODO(hidehiko): createDirectory should not be the part of
-  // DirectoryContent.
-  if (this.isSearch_ || !this.directoryEntry_) {
-    errorCallback(util.createDOMError(
-        util.FileError.INVALID_MODIFICATION_ERR));
-    return;
-  }
-
-  var onSuccess = function(newEntry) {
-    this.reloadMetadata([newEntry], function() {
-      successCallback(newEntry);
-    });
-  };
-
-  this.directoryEntry_.getDirectory(name, {create: true, exclusive: true},
-                                    onSuccess.bind(this), errorCallback);
 };
 
 /**
