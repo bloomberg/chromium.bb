@@ -47,8 +47,7 @@ pushAllRegisters:
         mov r3, r2
         mov r2, sp
         blx r3
-        /* Discard all the registers, and pop lr into pc which returns
+        /* Pop all the registers, including lr into pc which returns
          * and switches mode if needed.
          */
-        add sp, sp, #32
-        pop pc
+        pop {r4-r11, pc}
