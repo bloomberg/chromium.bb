@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 
 // This tests against a renderer crash that was present during development.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
-                       AddExtensionMatchingExistingTabWithDeadFrames) {
+                       DISABLED_AddExtensionMatchingExistingTabWithDeadFrames) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
   content::WebContents* const tab =
