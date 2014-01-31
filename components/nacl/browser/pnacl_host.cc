@@ -112,15 +112,22 @@ void PnaclHost::Init() {
     OnCacheInitialized(rv);
 }
 
-// Initialize using the in-memory backend, and manually set the temporary file
-// directory instead of using the system directory.
-void PnaclHost::InitForTest(base::FilePath temp_dir) {
+// Initialize for testing, optionally using the in-memory backend, and manually
+// setting the temporary file directory instead of using the system directory.
+void PnaclHost::InitForTest(base::FilePath temp_dir, bool in_memory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   disk_cache_.reset(new pnacl::PnaclTranslationCache());
   cache_state_ = CacheInitializing;
   temp_dir_ = temp_dir;
-  int rv = disk_cache_->InitInMemory(
+  int rv;
+  if (in_memory) {
+    rv = disk_cache_->InitInMemory(
       base::Bind(&PnaclHost::OnCacheInitialized, weak_factory_.GetWeakPtr()));
+  } else {
+    rv = disk_cache_->InitOnDisk(
+      temp_dir,
+      base::Bind(&PnaclHost::OnCacheInitialized, weak_factory_.GetWeakPtr()));
+  }
   if (rv != net::ERR_IO_PENDING)
     OnCacheInitialized(rv);
 }
@@ -625,7 +632,9 @@ void PnaclHost::OnEntriesDoomed(const base::Closure& callback, int net_error) {
 // the backend to avoid hanging shutdown.
 void PnaclHost::DeInitIfSafe() {
   DCHECK(pending_backend_operations_ >= 0);
-  if (pending_translations_.empty() && pending_backend_operations_ <= 0) {
+  if (pending_translations_.empty() &&
+      pending_backend_operations_ <= 0 &&
+      cache_state_ == CacheReady) {
     cache_state_ = CacheUninitialized;
     disk_cache_.reset();
   }

@@ -31,7 +31,7 @@ class PnaclHostTest : public testing::Test {
   virtual void SetUp() {
     host_ = new PnaclHost();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    host_->InitForTest(temp_dir_.path());
+    host_->InitForTest(temp_dir_.path(), true);
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(PnaclHost::CacheReady, host_->cache_state_);
   }
@@ -57,7 +57,7 @@ class PnaclHostTest : public testing::Test {
     return host_->cache_state_ == PnaclHost::CacheReady;
   }
   void ReInitBackend() {
-    host_->InitForTest(temp_dir_.path());
+    host_->InitForTest(temp_dir_.path(), true);
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(PnaclHost::CacheReady, host_->cache_state_);
   }
@@ -427,6 +427,29 @@ TEST_F(PnaclHostTest, ClearTranslationCache) {
   EXPECT_EQ(0, cb.GetResult(net::ERR_IO_PENDING));
   // Now check that the backend has been freed.
   EXPECT_FALSE(CacheIsInitialized());
+}
+
+// A version of PnaclHostTest that initializes cache on disk.
+class PnaclHostTestDisk : public PnaclHostTest {
+ protected:
+  virtual void SetUp() {
+    host_ = new PnaclHost();
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    host_->InitForTest(temp_dir_.path(), false);
+    EXPECT_EQ(PnaclHost::CacheInitializing, host_->cache_state_);
+  }
+  void DeInit() {
+    host_->DeInitIfSafe();
+  }
+};
+TEST_F(PnaclHostTestDisk, DeInitWhileInitializing) {
+  // Since there's no easy way to pump message queues one message at a time, we
+  // have to simulate what would happen if 1 DeInitIfsafe task gets queued, then
+  // a GetNexeFd gets queued, and then another DeInitIfSafe gets queued before
+  // the first one runs. We can just shortcut and call DeInitIfSafe while the
+  // cache is still initializing.
+  DeInit();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace pnacl

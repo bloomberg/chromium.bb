@@ -22,6 +22,7 @@ class DrainableIOBuffer;
 namespace pnacl {
 
 class PnaclHostTest;
+class PnaclHostTestDisk;
 class PnaclTranslationCache;
 
 // Shared state (translation cache) and common utilities (temp file creation)
@@ -101,6 +102,7 @@ class PnaclHost {
   // ever been started.
   friend struct DefaultSingletonTraits<PnaclHost>;
   friend class pnacl::PnaclHostTest;
+  friend class pnacl::PnaclHostTestDisk;
   enum CacheState {
     CacheUninitialized,
     CacheInitializing,
@@ -128,7 +130,7 @@ class PnaclHost {
   static bool TranslationMayBeCached(
       const PendingTranslationMap::iterator& entry);
 
-  void InitForTest(base::FilePath temp_dir);
+  void InitForTest(base::FilePath temp_dir, bool in_memory);
   void OnCacheInitialized(int net_error);
 
   static void DoCreateTemporaryFile(base::FilePath temp_dir_,
