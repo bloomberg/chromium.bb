@@ -145,7 +145,7 @@ static const struct Executables {
   { "shb", ALLOW_ON_USER_GESTURE },
   { "shs", ALLOW_ON_USER_GESTURE },
   { "sys", DANGEROUS },
-  { "url", ALLOW_ON_USER_GESTURE },
+  { "url", DANGEROUS },
   { "vb", ALLOW_ON_USER_GESTURE },
   { "vbe", ALLOW_ON_USER_GESTURE },
   { "vbs", ALLOW_ON_USER_GESTURE },
