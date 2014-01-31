@@ -130,6 +130,11 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
 {
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, propertyValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    if (!isUndefinedOrNull(jsValue) && !V8Node::hasInstance(jsValue, info.GetIsolate())) {
+        exceptionState.throwTypeError("The provided value is not of type 'Node'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     bool result = collection->anonymousIndexedSetter(index, propertyValue);
     if (!result)
         return;
@@ -196,11 +201,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);
-    bool result;
-    if (jsValue->IsUndefined())
-        result = collection->anonymousNamedSetterUndefined(propertyName);
-    else
-        result = collection->anonymousNamedSetter(propertyName, propertyValue);
+    bool result = collection->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
     v8SetReturnValue(info, jsValue);

@@ -28,10 +28,10 @@
 
 interface TestEventTarget : EventTarget {
     getter Node item(unsigned long index);
-    setter Node (unsigned long index, Node node);
-    getter Node namedItem(DOMString name);
-    setter Node (DOMString name, [TreatUndefinedAs=anonymousNamedSetterUndefined] DOMString value);
+    [StrictTypeChecking] setter Node (unsigned long index, Node? node);
     [RaisesException] deleter boolean (unsigned long index);
+
+    getter Node namedItem(DOMString name);
+    setter Node (DOMString name, DOMString value);
     deleter boolean (DOMString name);
 };
-

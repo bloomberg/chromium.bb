@@ -114,18 +114,11 @@ void HTMLOptionsCollection::anonymousNamedGetter(const AtomicString& name, bool&
     returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
-bool HTMLOptionsCollection::anonymousIndexedSetterRemove(unsigned index, ExceptionState& exceptionState)
-{
-    HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
-    base->remove(index);
-    return true;
-}
-
 bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
-    if (!value) {
-        exceptionState.throwTypeError(ExceptionMessages::failedToSet(String::number(index), "HTMLOptionsCollection", "The element provided was not an HTMLOptionElement."));
+    if (!value) { // undefined or null
+        base->remove(index);
         return true;
     }
     base->setOption(index, value.get(), exceptionState);

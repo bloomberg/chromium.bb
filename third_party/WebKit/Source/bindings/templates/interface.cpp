@@ -142,6 +142,15 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
+    {% if setter.has_strict_type_checking %}
+    {# Type checking for interface types (if interface not implemented, throw
+       TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
+    if (!isUndefinedOrNull(jsValue) && !V8{{setter.idl_type}}::hasInstance(jsValue, info.GetIsolate())) {
+        exceptionState.throwTypeError("The provided value is not of type '{{setter.idl_type}}'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    {% endif %}
     {% set setter_name = setter.name or 'anonymousIndexedSetter' %}
     bool result = collection->{{setter_name}}(index, propertyValue);
     if (!result)

@@ -515,6 +515,10 @@ def property_setter(setter):
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
     return {
+        'has_strict_type_checking':
+            'StrictTypeChecking' in extended_attributes and
+            v8_types.is_wrapper_type(idl_type),
+        'idl_type': idl_type,
         'is_custom': 'Custom' in extended_attributes,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(

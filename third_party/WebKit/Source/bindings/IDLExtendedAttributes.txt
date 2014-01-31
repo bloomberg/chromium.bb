@@ -88,8 +88,8 @@ SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SpecialWrapFor=*
 StrictTypeChecking
-TreatNullAs=NullString|*
+TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined
-TreatUndefinedAs=NullString|*
+TreatUndefinedAs=NullString
 URL
 Unforgeable

@@ -3788,19 +3788,17 @@ sub GenerateImplementationIndexedPropertySetter
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
 
-    my @conditions = ();
-    my @statements = ();
-    if ($treatNullAs && $treatNullAs ne "NullString") {
-        push @conditions, "jsValue->IsNull()";
-        push @statements, "collection->${treatNullAs}(index$extraArguments);";
+    if ($indexedSetterFunction->extendedAttributes->{"StrictTypeChecking"} && IsWrapperType($type)) {
+        $code .= <<END;
+    if (!isUndefinedOrNull(jsValue) && !V8${type}::hasInstance(jsValue, info.GetIsolate())) {
+        exceptionState.throwTypeError("The provided value is not of type '$type'.");
+        exceptionState.throwIfNeeded();
+        return;
     }
-    if ($treatUndefinedAs && $treatUndefinedAs ne "NullString") {
-        push @conditions, "jsValue->IsUndefined()";
-        push @statements, "collection->${treatUndefinedAs}(index$extraArguments);";
+END
     }
-    push @conditions, "";
-    push @statements, "collection->${methodName}(index, propertyValue$extraArguments);";
-    $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
+
+    $code .= "    bool result = collection->${methodName}(index, propertyValue$extraArguments);\n";
 
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
@@ -4121,20 +4119,7 @@ sub GenerateImplementationNamedPropertySetter
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "name", "propertyName", "    ", "info.GetIsolate()");
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
 
-    my @conditions = ();
-    my @statements = ();
-    if ($treatNullAs && $treatNullAs ne "NullString") {
-        push @conditions, "jsValue->IsNull()";
-        push @statements, "collection->${treatNullAs}(propertyName$extraArguments);";
-    }
-    if ($treatUndefinedAs && $treatUndefinedAs ne "NullString") {
-        push @conditions, "jsValue->IsUndefined()";
-        push @statements, "collection->${treatUndefinedAs}(propertyName$extraArguments);";
-    }
-    push @conditions, "";
-    push @statements, "collection->${methodName}(propertyName, propertyValue$extraArguments);";
-    $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
-
+    $code .= "    bool result = collection->$methodName(propertyName, propertyValue$extraArguments);\n";
     $code .= "    if (!result)\n";
     $code .= "        return;\n";
     if ($raisesExceptions) {
