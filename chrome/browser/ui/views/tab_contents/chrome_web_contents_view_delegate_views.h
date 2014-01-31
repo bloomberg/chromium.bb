@@ -38,6 +38,7 @@ class ChromeWebContentsViewDelegateViews
   virtual bool Focus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
   virtual void ShowContextMenu(
+      content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void SizeChanged(const gfx::Size& size) OVERRIDE;
 

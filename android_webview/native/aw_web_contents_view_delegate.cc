@@ -34,6 +34,7 @@ content::WebDragDestDelegate* AwWebContentsViewDelegate::GetDragDestDelegate() {
 }
 
 void AwWebContentsViewDelegate::ShowContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // TODO(boliu): Large blocks of this function are identical with
   // ChromeWebContentsViewDelegateAndroid::ShowContextMenu. De-dup this if

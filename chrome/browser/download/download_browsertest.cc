@@ -324,9 +324,9 @@ static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(WebContents* web_contents,
+  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                             const content::ContextMenuParams& params)
-      : RenderViewContextMenu(web_contents, params) {
+      : RenderViewContextMenu(render_frame_host, params) {
   }
   virtual ~TestRenderViewContextMenu() {}
 
@@ -2333,7 +2333,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   context_menu_params.src_url = url;
   context_menu_params.page_url = url;
   TestRenderViewContextMenu menu(
-      browser()->tab_strip_model()->GetActiveWebContents(),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
       context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
@@ -2413,7 +2413,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   context_menu_params.media_type = blink::WebContextMenuData::MediaTypeImage;
   context_menu_params.src_url = jpeg_url;
   context_menu_params.page_url = jpeg_url;
-  TestRenderViewContextMenu menu(web_contents, context_menu_params);
+  TestRenderViewContextMenu menu(web_contents->GetMainFrame(),
+                                 context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 0);
   waiter_context_menu->WaitForFinished();

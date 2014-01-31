@@ -72,6 +72,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -120,6 +121,7 @@ using content::DownloadUrlParameters;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
+using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
@@ -395,11 +397,14 @@ bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
 static const int kSpellcheckRadioGroup = 1;
 
 RenderViewContextMenu::RenderViewContextMenu(
-    WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params)
     : params_(params),
-      source_web_contents_(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      source_web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
+      render_process_id_(render_frame_host->GetProcess()->GetID()),
+      render_frame_id_(render_frame_host->GetRoutingID()),
+      profile_(Profile::FromBrowserContext(
+          source_web_contents_->GetBrowserContext())),
       menu_model_(this),
       extension_items_(profile_, this, &menu_model_,
                     base::Bind(MenuItemMatchesParams, params_)),
@@ -1514,7 +1519,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         source_web_contents_, false, std::string());
     }
 #endif
-    rvh->ExecuteCustomContextMenuCommand(action, context);
+    RenderFrameHost* render_frame_host =
+        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (render_frame_host)
+      render_frame_host->ExecuteCustomContextMenuCommand(action, context);
     return;
   }
 
@@ -1995,10 +2003,10 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
       source_web_contents_->GetRenderWidgetHostView();
   if (view)
     view->SetShowingContextMenu(false);
-  RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
-  if (rvh) {
-    rvh->NotifyContextMenuClosed(params_.custom_context);
-  }
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (render_frame_host)
+    render_frame_host->NotifyContextMenuClosed(params_.custom_context);
 
   if (!command_executed_) {
     FOR_EACH_OBSERVER(RenderViewContextMenuObserver,

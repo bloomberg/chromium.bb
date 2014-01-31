@@ -26,9 +26,9 @@ using content::WebContents;
 // RenderViewContextMenuViews, public:
 
 RenderViewContextMenuViews::RenderViewContextMenuViews(
-    WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params)
-    : RenderViewContextMenu(web_contents, params),
+    : RenderViewContextMenu(render_frame_host, params),
       bidi_submenu_model_(this) {
 }
 
@@ -38,9 +38,9 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 #if !defined(OS_WIN)
 // static
 RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
-  return new RenderViewContextMenuViews(web_contents, params);
+  return new RenderViewContextMenuViews(render_frame_host, params);
 }
 #endif  // OS_WIN
 

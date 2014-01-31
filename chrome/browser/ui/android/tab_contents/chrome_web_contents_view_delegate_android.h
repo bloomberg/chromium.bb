@@ -24,6 +24,7 @@ class ChromeWebContentsViewDelegateAndroid
 
   // WebContentsViewDelegate:
   virtual void ShowContextMenu(
+      content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params) OVERRIDE;
 
   // WebContentsViewDelegate:

@@ -14,6 +14,7 @@ class Message;
 namespace content {
 class RenderFrameHost;
 class WebContents;
+struct ContextMenuParams;
 
 // An interface implemented by an object interested in knowing about the state
 // of the RenderFrameHost.
@@ -30,7 +31,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) {}
 
   // Notification that a worker process has crashed.
-  virtual void WorkerCrashed() {}
+  virtual void WorkerCrashed(RenderFrameHost* render_frame_host) {}
+
+  // A context menu should be shown, to be built using the context information
+  // provided in the supplied params.
+  virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
+                               const ContextMenuParams& params) {}
 
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.

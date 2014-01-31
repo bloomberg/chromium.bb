@@ -1238,7 +1238,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnDocumentOnLoadCompletedInMainFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen, OnToggleFullscreen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
@@ -1607,22 +1606,6 @@ void RenderViewHostImpl::OnDocumentAvailableInMainFrame() {
 void RenderViewHostImpl::OnDocumentOnLoadCompletedInMainFrame(
     int32 page_id) {
   delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
-}
-
-void RenderViewHostImpl::OnContextMenu(const ContextMenuParams& params) {
-  // Validate the URLs in |params|.  If the renderer can't request the URLs
-  // directly, don't show them in the context menu.
-  ContextMenuParams validated_params(params);
-  RenderProcessHost* process = GetProcess();
-
-  // We don't validate |unfiltered_link_url| so that this field can be used
-  // when users want to copy the original link URL.
-  process->FilterURL(true, &validated_params.link_url);
-  process->FilterURL(true, &validated_params.src_url);
-  process->FilterURL(false, &validated_params.page_url);
-  process->FilterURL(true, &validated_params.frame_url);
-
-  delegate_->ShowContextMenu(validated_params);
 }
 
 void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
@@ -2060,16 +2043,6 @@ void RenderViewHostImpl::EnableAutoResize(const gfx::Size& min_size,
 void RenderViewHostImpl::DisableAutoResize(const gfx::Size& new_size) {
   SetShouldAutoResize(false);
   Send(new ViewMsg_DisableAutoResize(GetRoutingID(), new_size));
-}
-
-void RenderViewHostImpl::ExecuteCustomContextMenuCommand(
-    int action, const CustomContextMenuContext& context) {
-  Send(new ViewMsg_CustomContextMenuAction(GetRoutingID(), context, action));
-}
-
-void RenderViewHostImpl::NotifyContextMenuClosed(
-    const CustomContextMenuContext& context) {
-  Send(new ViewMsg_ContextMenuClosed(GetRoutingID(), context));
 }
 
 void RenderViewHostImpl::CopyImageAt(int x, int y) {

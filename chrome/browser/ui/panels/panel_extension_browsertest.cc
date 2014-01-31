@@ -115,9 +115,9 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest,
 // Non-abstract RenderViewContextMenu class for testing context menus in Panels.
 class PanelContextMenu : public RenderViewContextMenu {
  public:
-  PanelContextMenu(content::WebContents* web_contents,
+  PanelContextMenu(content::RenderFrameHost* render_frame_host,
                    const content::ContextMenuParams& params)
-      : RenderViewContextMenu(web_contents, params) {}
+      : RenderViewContextMenu(render_frame_host, params) {}
 
   bool HasCommandWithId(int command_id) {
     return menu_model_.GetIndexOfCommandId(command_id) != -1;
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
-        new PanelContextMenu(web_contents, params));
+        new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
     EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
-        new PanelContextMenu(web_contents, params));
+        new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
     EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
-        new PanelContextMenu(web_contents, params));
+        new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
     EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 
     scoped_ptr<PanelContextMenu> menu(
-        new PanelContextMenu(web_contents, params));
+        new PanelContextMenu(web_contents->GetMainFrame(), params));
     menu->Init();
 
     EXPECT_FALSE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -257,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, CustomContextMenu) {
 
   // Verify menu contents contains the custom item added by their own extension.
   scoped_ptr<PanelContextMenu> menu;
-  menu.reset(new PanelContextMenu(web_contents, params));
+  menu.reset(new PanelContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   EXPECT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   EXPECT_FALSE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));

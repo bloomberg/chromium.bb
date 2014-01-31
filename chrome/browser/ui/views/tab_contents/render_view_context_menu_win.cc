@@ -16,9 +16,9 @@
 using content::WebContents;
 
 RenderViewContextMenuWin::RenderViewContextMenuWin(
-    WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params)
-    : RenderViewContextMenuViews(web_contents, params) {
+    : RenderViewContextMenuViews(render_frame_host, params) {
 }
 
 RenderViewContextMenuWin::~RenderViewContextMenuWin() {
@@ -26,9 +26,9 @@ RenderViewContextMenuWin::~RenderViewContextMenuWin() {
 
 // static
 RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
-  return new RenderViewContextMenuWin(web_contents, params);
+  return new RenderViewContextMenuWin(render_frame_host, params);
 }
 
 bool RenderViewContextMenuWin::IsCommandIdVisible(int command_id) const {

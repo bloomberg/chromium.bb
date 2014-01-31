@@ -56,7 +56,6 @@
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
-#include "ui/base/ui_base_types.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/common/webpreferences.h"
 
@@ -154,7 +153,6 @@ class RendererDateTimePicker;
 class RendererWebColorChooserImpl;
 class SpeechRecognitionDispatcher;
 class WebPluginDelegateProxy;
-struct CustomContextMenuContext;
 struct DropData;
 struct FaviconURL;
 struct FileChooserParams;
@@ -335,11 +333,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client);
-  // Temporary call until the context menu code moves to RenderFrmae.
-  // TODO(jam): remove me
-  int ShowContextMenu(ContextMenuClient* client,
-                      const ContextMenuParams& params);
-  void CancelContextMenu(int request_id);
   // Temporary call until this code moves to RenderFrame.
   // virtual since overriden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(
@@ -701,8 +694,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void DidHandleKeyEvent() OVERRIDE;
   virtual bool WillHandleMouseEvent(
       const blink::WebMouseEvent& event) OVERRIDE;
-  virtual bool WillHandleKeyEvent(
-      const blink::WebKeyboardEvent& event) OVERRIDE;
   virtual bool WillHandleGestureEvent(
       const blink::WebGestureEvent& event) OVERRIDE;
   virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) OVERRIDE;
@@ -800,8 +791,6 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SetHistoryLengthAndPrune);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ZoomLimit);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, NavigateFrame);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
-                           ShouldUpdateSelectionTextFromContextMenuParams);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, BasicRenderFrame);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, TextInputTypeWithPepper);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
@@ -897,13 +886,10 @@ class CONTENT_EXPORT RenderViewImpl
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage();
-  void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnShowContextMenu(const gfx::Point& location);
   void OnCopyImageAt(int x, int y);
   void OnCSSInsertRequest(const base::string16& frame_xpath,
                           const std::string& css);
-  void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
-      unsigned action);
   void OnSetName(const std::string& name);
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
@@ -1089,14 +1075,6 @@ class CONTENT_EXPORT RenderViewImpl
                      int ordinal,
                      const blink::WebRect& selection_rect,
                      bool final_status_update);
-
-  // Returns whether |params.selection_text| should be synchronized to the
-  // browser before bringing up the context menu. Static for testing.
-  static bool ShouldUpdateSelectionTextFromContextMenuParams(
-      const base::string16& selection_text,
-      size_t selection_text_offset,
-      const gfx::Range& selection_range,
-      const ContextMenuParams& params);
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
@@ -1294,19 +1272,6 @@ class CONTENT_EXPORT RenderViewImpl
   // could correspond to a substring of |selection_text_|; see above).
   gfx::Range selection_range_;
 
-  // External context menu requests we're waiting for. "Internal"
-  // (WebKit-originated) context menu events will have an ID of 0 and will not
-  // be in this map.
-  //
-  // We don't want to add internal ones since some of the "special" page
-  // handlers in the browser process just ignore the context menu requests so
-  // avoid showing context menus, and so this will cause right clicks to leak
-  // entries in this map. Most users of the custom context menu (e.g. Pepper
-  // plugins) are normally only on "regular" pages and the regular pages will
-  // always respond properly to the request, so we don't have to worry so
-  // much about leaks.
-  IDMap<ContextMenuClient, IDMapExternalPointer> pending_context_menus_;
-
 #if defined(OS_ANDROID)
   // Cache the old top controls state constraints. Used when updating
   // current value only without altering the constraints.
@@ -1495,9 +1460,6 @@ class CONTENT_EXPORT RenderViewImpl
   // NOTE: stats_collection_observer_ should be the last members because their
   // constructors call the AddObservers method of RenderViewImpl.
   scoped_ptr<StatsCollectionObserver> stats_collection_observer_;
-
-  ui::MenuSourceType context_menu_source_type_;
-  gfx::Point touch_editing_context_menu_location_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

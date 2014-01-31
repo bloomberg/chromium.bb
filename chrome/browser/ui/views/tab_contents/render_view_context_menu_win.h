@@ -14,7 +14,7 @@ class WebContents;
 // Windows specific implementation of the render view context menu.
 class RenderViewContextMenuWin : public RenderViewContextMenuViews {
  public:
-  RenderViewContextMenuWin(content::WebContents* web_contents,
+  RenderViewContextMenuWin(content::RenderFrameHost* render_frame_host,
                            const content::ContextMenuParams& params);
   virtual ~RenderViewContextMenuWin();
 

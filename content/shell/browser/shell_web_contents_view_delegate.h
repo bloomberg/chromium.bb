@@ -22,7 +22,8 @@ class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
   virtual ~ShellWebContentsViewDelegate();
 
   // Overridden from WebContentsViewDelegate:
-  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
+  virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
+                               const ContextMenuParams& params) OVERRIDE;
   virtual WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
 
 #if defined(TOOLKIT_GTK)

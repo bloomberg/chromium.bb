@@ -54,7 +54,6 @@ class SessionStorageNamespace;
 class SiteInstance;
 class WebContents;
 class WebContentsImpl;
-struct ContextMenuParams;
 struct FileChooserParams;
 struct GlobalRequestID;
 struct NativeWebKeyboardEvent;
@@ -393,10 +392,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // Show the newly created full screen widget. Similar to above.
   virtual void ShowCreatedFullscreenWidget(int route_id) {}
-
-  // A context menu should be shown, to be built using the context information
-  // provided in the supplied params.
-  virtual void ShowContextMenu(const ContextMenuParams& params) {}
 
   // The render view has requested access to media devices listed in
   // |request|, and the client should grant or deny that permission by

@@ -32,6 +32,7 @@ class ChromeWebContentsViewDelegateMac
           content::RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
   virtual void ShowContextMenu(
+      content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params) OVERRIDE;
 
  private:

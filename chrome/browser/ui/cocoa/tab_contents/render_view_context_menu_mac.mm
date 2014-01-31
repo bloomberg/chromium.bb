@@ -50,10 +50,10 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
 // Relies on the tag being set to the command id.
 
 RenderViewContextMenuMac::RenderViewContextMenuMac(
-    WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params,
     NSView* parent_view)
-    : RenderViewContextMenu(web_contents, params),
+    : RenderViewContextMenu(render_frame_host, params),
       speech_submenu_model_(this),
       bidi_submenu_model_(this),
       parent_view_(parent_view) {

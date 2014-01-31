@@ -257,7 +257,7 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     params.unfiltered_link_url = params.link_url;
     content::WebContents* wc = web_contents();
     TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
-        wc, params);
+        wc->GetMainFrame(), params);
     // TestingProfile (returned by profile()) does not provide a protocol
     // registry.
     menu->protocol_handler_registry_ = registry_.get();

@@ -29,6 +29,7 @@ ChromeWebContentsViewDelegateAndroid::GetDragDestDelegate() {
 }
 
 void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Display paste pop-up only when selection is empty and editable.
   if (params.is_editable && params.selection_text.empty()) {

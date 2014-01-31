@@ -402,7 +402,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
     params.edit_flags = blink::WebContextMenuData::CanTranslate;
-    return new TestRenderViewContextMenu(web_contents, params);
+    return new TestRenderViewContextMenu(web_contents->GetMainFrame(), params);
   }
 
   bool IsItemPresent(int id) {
@@ -416,9 +416,9 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
       ui::Accelerator* accelerator) OVERRIDE { return false; }
 
  private:
-  TestRenderViewContextMenu(content::WebContents* web_contents,
+  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                             const content::ContextMenuParams& params)
-      : RenderViewContextMenu(web_contents, params) {
+      : RenderViewContextMenu(render_frame_host, params) {
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);

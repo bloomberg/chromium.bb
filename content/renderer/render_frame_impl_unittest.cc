@@ -4,13 +4,13 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/range/range.h"
 
 namespace content {
 
-TEST(RenderViewImplTest, ShouldUpdateSelectionTextFromContextMenuParams) {
+TEST(RenderFrameImplTest, ShouldUpdateSelectionTextFromContextMenuParams) {
   struct {
     const char* selection_text;
     size_t selection_text_offset;
@@ -30,7 +30,7 @@ TEST(RenderViewImplTest, ShouldUpdateSelectionTextFromContextMenuParams) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     params.selection_text = base::UTF8ToUTF16(cases[i].params_selection_text);
     EXPECT_EQ(cases[i].expected_result,
-              RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
+              RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
                   base::UTF8ToUTF16(cases[i].selection_text),
                   cases[i].selection_text_offset,
                   cases[i].selection_range,

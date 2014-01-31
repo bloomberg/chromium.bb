@@ -217,7 +217,8 @@ void WebContentsViewGuest::GotFocus() {
 void WebContentsViewGuest::TakeFocus(bool reverse) {
 }
 
-void WebContentsViewGuest::ShowContextMenu(const ContextMenuParams& params) {
+void WebContentsViewGuest::ShowContextMenu(RenderFrameHost* render_frame_host,
+                                           const ContextMenuParams& params) {
 #if defined(USE_AURA) || defined(OS_WIN)
   // Context menu uses ScreenPositionClient::ConvertPointToScreen() in aura and
   // windows to calculate popup position. Guest's native view
@@ -234,9 +235,10 @@ void WebContentsViewGuest::ShowContextMenu(const ContextMenuParams& params) {
   ContextMenuParams params_in_embedder = params;
   params_in_embedder.x += offset.x();
   params_in_embedder.y += offset.y();
-  platform_view_delegate_view_->ShowContextMenu(params_in_embedder);
+  platform_view_delegate_view_->ShowContextMenu(
+      render_frame_host, params_in_embedder);
 #else
-  platform_view_delegate_view_->ShowContextMenu(params);
+  platform_view_delegate_view_->ShowContextMenu(render_frame_host, params);
 #endif  // defined(USE_AURA) || defined(OS_WIN)
 }
 

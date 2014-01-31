@@ -53,7 +53,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
@@ -63,7 +62,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/navigation_state.h"
@@ -76,7 +74,6 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
-#include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_automation_controller.h"
@@ -252,7 +249,6 @@ using blink::WebCString;
 using blink::WebColor;
 using blink::WebColorName;
 using blink::WebConsoleMessage;
-using blink::WebContextMenuData;
 using blink::WebData;
 using blink::WebDataSource;
 using blink::WebDocument;
@@ -857,8 +853,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       session_storage_namespace_id_(params->session_storage_namespace_id),
       handling_select_range_(false),
       next_snapshot_id_(0),
-      allow_partial_swap_(params->allow_partial_swap),
-      context_menu_source_type_(ui::MENU_SOURCE_MOUSE) {
+      allow_partial_swap_(params->allow_partial_swap) {
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
@@ -1312,14 +1307,11 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnOrientationChangeEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
-                        OnCustomContextMenuAction)
     IPC_MESSAGE_HANDLER(ViewMsg_GetAllSavableResourceLinksForCurrentPage,
                         OnGetAllSavableResourceLinksForCurrentPage)
     IPC_MESSAGE_HANDLER(
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
-    IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     // TODO(viettrungluu): Move to a separate message filter.
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
@@ -2660,59 +2652,10 @@ void RenderViewImpl::moveValidationMessage(
 }
 
 void RenderViewImpl::showContextMenu(
-    WebFrame* frame, const WebContextMenuData& data) {
-  ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
-  params.source_type = context_menu_source_type_;
-  if (context_menu_source_type_ == ui::MENU_SOURCE_TOUCH_EDIT_MENU) {
-    params.x = touch_editing_context_menu_location_.x();
-    params.y = touch_editing_context_menu_location_.y();
-  }
-  OnShowHostContextMenu(&params);
-
-  // Plugins, e.g. PDF, don't currently update the render view when their
-  // selected text changes, but the context menu params do contain the updated
-  // selection. If that's the case, update the render view's state just prior
-  // to showing the context menu.
-  // TODO(asvitkine): http://crbug.com/152432
-  if (ShouldUpdateSelectionTextFromContextMenuParams(selection_text_,
-                                                     selection_text_offset_,
-                                                     selection_range_,
-                                                     params)) {
-    selection_text_ = params.selection_text;
-    // TODO(asvitkine): Text offset and range is not available in this case.
-    selection_text_offset_ = 0;
-    selection_range_ = gfx::Range(0, selection_text_.length());
-    Send(new ViewHostMsg_SelectionChanged(routing_id_,
-                                          selection_text_,
-                                          selection_text_offset_,
-                                          selection_range_));
-  }
-
-  // frame is NULL if invoked by BlockedPlugin.
-  if (frame)
-    params.frame_id = frame->identifier();
-
-  // Serializing a GURL longer than kMaxURLChars will fail, so don't do
-  // it.  We replace it with an empty GURL so the appropriate items are disabled
-  // in the context menu.
-  // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
-  //                 data encoded images.  We should have a way to save them.
-  if (params.src_url.spec().size() > GetMaxURLChars())
-    params.src_url = GURL();
-  context_menu_node_ = data.node;
-
-#if defined(OS_ANDROID)
-  gfx::Rect start_rect;
-  gfx::Rect end_rect;
-  GetSelectionBounds(&start_rect, &end_rect);
-  params.selection_start = gfx::Point(start_rect.x(), start_rect.bottom());
-  params.selection_end = gfx::Point(end_rect.right(), end_rect.bottom());
-#endif
-
-  Send(new ViewHostMsg_ContextMenu(routing_id_, params));
-
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidRequestShowContextMenu(frame, data));
+    WebFrame* frame, const blink::WebContextMenuData& data) {
+  // TODO(jam): move this method to WebFrameClient.
+  RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+  render_frame->showContextMenu(data);
 }
 
 void RenderViewImpl::clearContextMenu() {
@@ -3999,26 +3942,6 @@ void RenderViewImpl::SendFindReply(int request_id,
                                   final_status_update));
 }
 
-// static
-bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
-    const base::string16& selection_text,
-    size_t selection_text_offset,
-    const gfx::Range& selection_range,
-    const ContextMenuParams& params) {
-  base::string16 trimmed_selection_text;
-  if (!selection_text.empty() && !selection_range.is_empty()) {
-    const int start = selection_range.GetMin() - selection_text_offset;
-    const size_t length = selection_range.length();
-    if (start >= 0 && start + length <= selection_text.length()) {
-      TrimWhitespace(selection_text.substr(start, length), TRIM_ALL,
-                     &trimmed_selection_text);
-    }
-  }
-  base::string16 trimmed_params_text;
-  TrimWhitespace(params.selection_text, TRIM_ALL, &trimmed_params_text);
-  return trimmed_params_text != trimmed_selection_text;
-}
-
 void RenderViewImpl::reportFindInPageMatchCount(int request_id,
                                                 int count,
                                                 bool final_update) {
@@ -4249,20 +4172,6 @@ bool RenderViewImpl::GetContentStateImmediately() const {
 
 float RenderViewImpl::GetFilteredTimePerFrame() const {
   return filtered_time_per_frame();
-}
-
-int RenderViewImpl::ShowContextMenu(ContextMenuClient* client,
-                                    const ContextMenuParams& params) {
-  DCHECK(client);  // A null client means "internal" when we issue callbacks.
-  ContextMenuParams our_params(params);
-  our_params.custom_context.request_id = pending_context_menus_.Add(client);
-  Send(new ViewHostMsg_ContextMenu(routing_id_, our_params));
-  return our_params.custom_context.request_id;
-}
-
-void RenderViewImpl::CancelContextMenu(int request_id) {
-  DCHECK(pending_context_menus_.Lookup(request_id));
-  pending_context_menus_.Remove(request_id);
 }
 
 blink::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
@@ -4836,21 +4745,6 @@ void RenderViewImpl::OnUpdateTimezone() {
     NotifyTimezoneChange(webview()->mainFrame());
 }
 
-void RenderViewImpl::OnCustomContextMenuAction(
-    const CustomContextMenuContext& custom_context,
-    unsigned action) {
-  if (custom_context.request_id) {
-    // External context menu request, look in our map.
-    ContextMenuClient* client =
-        pending_context_menus_.Lookup(custom_context.request_id);
-    if (client)
-      client->OnMenuAction(custom_context.request_id, action);
-  } else {
-    // Internal request, forward to WebKit.
-    webview()->performCustomContextMenuAction(action);
-  }
-}
-
 void RenderViewImpl::OnEnumerateDirectoryResponse(
     int id,
     const std::vector<base::FilePath>& paths) {
@@ -5366,7 +5260,6 @@ void RenderViewImpl::DidHandleKeyEvent() {
 }
 
 bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
-  context_menu_source_type_ = ui::MENU_SOURCE_MOUSE;
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
   possible_drag_event_info_.event_location =
@@ -5388,14 +5281,8 @@ bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
 }
 
-bool RenderViewImpl::WillHandleKeyEvent(const blink::WebKeyboardEvent& event) {
-  context_menu_source_type_ = ui::MENU_SOURCE_KEYBOARD;
-  return false;
-}
-
 bool RenderViewImpl::WillHandleGestureEvent(
     const blink::WebGestureEvent& event) {
-  context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
   possible_drag_event_info_.event_location =
@@ -6041,22 +5928,6 @@ void RenderViewImpl::OnSelectPopupMenuItems(
   external_popup_menu_.reset();
 }
 #endif
-
-void RenderViewImpl::OnContextMenuClosed(
-    const CustomContextMenuContext& custom_context) {
-  if (custom_context.request_id) {
-    // External request, should be in our map.
-    ContextMenuClient* client =
-        pending_context_menus_.Lookup(custom_context.request_id);
-    if (client) {
-      client->OnMenuClosed(custom_context.request_id);
-      pending_context_menus_.Remove(custom_context.request_id);
-    }
-  } else {
-    // Internal request, forward to WebKit.
-    context_menu_node_.reset();
-  }
-}
 
 void RenderViewImpl::OnShowContextMenu(const gfx::Point& location) {
   context_menu_source_type_ = ui::MENU_SOURCE_TOUCH_EDIT_MENU;

@@ -27,7 +27,7 @@ class FocusStoreGtk;
 }
 
 namespace content {
-
+class RenderFrameHost;
 class RenderWidgetHost;
 class WebDragDestDelegate;
 struct ContextMenuParams;
@@ -42,7 +42,8 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual WebDragDestDelegate* GetDragDestDelegate() = 0;
 
   // Shows a context menu.
-  virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
+  virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
+                               const ContextMenuParams& params) = 0;
 
 #if defined(OS_WIN) || defined(USE_AURA)
   // These methods allow the embedder to intercept WebContentsViewWin's

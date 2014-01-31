@@ -30,6 +30,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
@@ -380,7 +381,8 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       outstanding_ime_acks_(0),
 #endif
       popup_origin_scale_for_emulation_(0.f),
-      resizing_mode_selector_(new ResizingModeSelector()) {
+      resizing_mode_selector_(new ResizingModeSelector()),
+      context_menu_source_type_(ui::MENU_SOURCE_MOUSE) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
@@ -1096,18 +1098,17 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
         *static_cast<const WebMouseEvent*>(input_event);
     TRACE_EVENT2("renderer", "HandleMouseMove",
                  "x", mouse_event.x, "y", mouse_event.y);
+    context_menu_source_type_ = ui::MENU_SOURCE_MOUSE;
     prevent_default = WillHandleMouseEvent(mouse_event);
   }
 
-  if (WebInputEvent::isKeyboardEventType(input_event->type)) {
-    const WebKeyboardEvent& key_event =
-        *static_cast<const WebKeyboardEvent*>(input_event);
-    prevent_default = WillHandleKeyEvent(key_event);
-  }
+  if (WebInputEvent::isKeyboardEventType(input_event->type))
+    context_menu_source_type_ = ui::MENU_SOURCE_KEYBOARD;
 
   if (WebInputEvent::isGestureEventType(input_event->type)) {
     const WebGestureEvent& gesture_event =
         *static_cast<const WebGestureEvent*>(input_event);
+    context_menu_source_type_ = ui::MENU_SOURCE_TOUCH;
     prevent_default = prevent_default || WillHandleGestureEvent(gesture_event);
   }
 
@@ -2798,10 +2799,6 @@ void RenderWidget::GetBrowserRenderingStats(BrowserRenderingStats* stats) {
 }
 
 bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
-  return false;
-}
-
-bool RenderWidget::WillHandleKeyEvent(const blink::WebKeyboardEvent& event) {
   return false;
 }
 

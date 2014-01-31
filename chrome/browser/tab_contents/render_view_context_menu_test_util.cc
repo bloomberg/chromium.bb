@@ -5,9 +5,9 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_test_util.h"
 
 TestRenderViewContextMenu::TestRenderViewContextMenu(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     content::ContextMenuParams params)
-    : RenderViewContextMenu(web_contents, params) {}
+    : RenderViewContextMenu(render_frame_host, params) {}
 
 TestRenderViewContextMenu::~TestRenderViewContextMenu() {}
 

@@ -14,6 +14,7 @@ namespace content {
 class RenderProcessHost;
 class RenderViewHost;
 class SiteInstance;
+struct CustomContextMenuContext;
 
 // The interface provides a communication conduit with a frame in the renderer.
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
@@ -35,6 +36,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the associated widget's native view.
   virtual gfx::NativeView GetNativeView() = 0;
+
+  // Let the renderer know that the menu has been closed.
+  virtual void NotifyContextMenuClosed(
+      const CustomContextMenuContext& context) = 0;
+
+  // Executes custom context menu action that was provided from Blink.
+  virtual void ExecuteCustomContextMenuCommand(
+      int action, const CustomContextMenuContext& context) = 0;
 
   // Temporary until we get rid of RenderViewHost.
   virtual RenderViewHost* GetRenderViewHost() = 0;

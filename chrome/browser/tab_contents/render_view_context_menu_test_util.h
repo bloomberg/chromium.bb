@@ -10,7 +10,7 @@
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(content::WebContents* web_contents,
+  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                             content::ContextMenuParams params);
   virtual ~TestRenderViewContextMenu();
 

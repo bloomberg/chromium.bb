@@ -26,6 +26,7 @@ class FrameTreeNode;
 class RenderFrameHostDelegate;
 class RenderProcessHost;
 class RenderViewHostImpl;
+struct ContextMenuParams;
 
 class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
  public:
@@ -38,6 +39,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual RenderProcessHost* GetProcess() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual void NotifyContextMenuClosed(
+      const CustomContextMenuContext& context) OVERRIDE;
+  virtual void ExecuteCustomContextMenuCommand(
+      int action, const CustomContextMenuContext& context) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
   // IPC::Sender
@@ -106,6 +111,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                     const GURL& source_url,
                                     const GURL& target_url);
   void OnSwapOutACK();
+  void OnContextMenu(const ContextMenuParams& params);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

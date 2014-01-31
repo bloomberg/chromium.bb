@@ -119,6 +119,7 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
 }
 
 void ChromeWebContentsViewDelegateViews::ShowContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Menus need a Widget to work. If we're not the active tab we won't
   // necessarily be in a widget.
@@ -127,7 +128,7 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
     return;
 
   context_menu_.reset(
-      RenderViewContextMenuViews::Create(web_contents_, params));
+      RenderViewContextMenuViews::Create(render_frame_host, params));
   context_menu_->Init();
 
   // Don't show empty menus.

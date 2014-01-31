@@ -31,9 +31,9 @@ namespace {
 // RenderViewContextMenu where extension items get added and executed.
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(WebContents* web_contents,
+  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                             const content::ContextMenuParams& params)
-      : RenderViewContextMenu(web_contents, params) {}
+      : RenderViewContextMenu(render_frame_host, params) {}
 
   virtual ~TestRenderViewContextMenu() {}
 
@@ -121,7 +121,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
     params.link_url = link_url;
     params.frame_url = frame_url;
     TestRenderViewContextMenu* menu =
-        new TestRenderViewContextMenu(web_contents, params);
+        new TestRenderViewContextMenu(web_contents->GetMainFrame(), params);
     menu->Init();
     return menu;
   }

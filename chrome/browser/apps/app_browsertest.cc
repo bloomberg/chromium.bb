@@ -70,9 +70,9 @@ namespace {
 // Non-abstract RenderViewContextMenu class.
 class PlatformAppContextMenu : public RenderViewContextMenu {
  public:
-  PlatformAppContextMenu(WebContents* web_contents,
+  PlatformAppContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params)
-      : RenderViewContextMenu(web_contents, params) {}
+      : RenderViewContextMenu(render_frame_host, params) {}
 
   bool HasCommandWithId(int command_id) {
     return menu_model_.GetIndexOfCommandId(command_id) != -1;
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
-  menu.reset(new PlatformAppContextMenu(web_contents, params));
+  menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_TRUE(
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
-  menu.reset(new PlatformAppContextMenu(web_contents, params));
+  menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, InstalledAppWithContextMenu) {
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
   scoped_ptr<PlatformAppContextMenu> menu;
-  menu.reset(new PlatformAppContextMenu(web_contents, params));
+  menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
   content::ContextMenuParams params;
   params.is_editable = true;
   scoped_ptr<PlatformAppContextMenu> menu;
-  menu.reset(new PlatformAppContextMenu(web_contents, params));
+  menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
   content::ContextMenuParams params;
   params.selection_text = base::ASCIIToUTF16("Hello World");
   scoped_ptr<PlatformAppContextMenu> menu;
-  menu.reset(new PlatformAppContextMenu(web_contents, params));
+  menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   content::ContextMenuParams params;
   params.page_url = GURL("http://foo.bar");
   scoped_ptr<PlatformAppContextMenu> menu;
-  menu.reset(new PlatformAppContextMenu(web_contents, params));
+  menu.reset(new PlatformAppContextMenu(web_contents->GetMainFrame(), params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
 

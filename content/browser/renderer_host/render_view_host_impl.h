@@ -64,7 +64,6 @@ class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
 class SessionStorageNamespaceImpl;
 class TestRenderViewHost;
-struct ContextMenuParams;
 struct FileChooserParams;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
@@ -167,8 +166,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                                 const gfx::Size& max_size) OVERRIDE;
   virtual void DisableAutoResize(const gfx::Size& new_size) OVERRIDE;
   virtual void EnablePreferredSizeMode() OVERRIDE;
-  virtual void ExecuteCustomContextMenuCommand(
-      int action, const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
       const blink::WebMediaPlayerAction& action) OVERRIDE;
@@ -193,8 +190,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void InsertCSS(const base::string16& frame_xpath,
                          const std::string& css) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
-  virtual void NotifyContextMenuClosed(
-      const CustomContextMenuContext& context) OVERRIDE;
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
   virtual void ReloadFrame() OVERRIDE;
   virtual void SetWebUIProperty(const std::string& name,
@@ -523,7 +518,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidDisownOpener();
   void OnDocumentAvailableInMainFrame();
   void OnDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnContextMenu(const ContextMenuParams& params);
   void OnToggleFullscreen(bool enter_fullscreen);
   void OnOpenURL(const ViewHostMsg_OpenURL_Params& params);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);

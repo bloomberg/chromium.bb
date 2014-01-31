@@ -34,6 +34,7 @@ content::WebDragDestDelegate*
 }
 
 void ChromeWebContentsViewDelegateMac::ShowContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // The renderer may send the "show context menu" message multiple times, one
   // for each right click mouse event it receives. Normally, this doesn't happen
@@ -48,7 +49,7 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
     return;
 
   context_menu_.reset(new RenderViewContextMenuMac(
-      web_contents_,
+      render_frame_host,
       params,
       web_contents_->GetView()->GetContentNativeView()));
   context_menu_->Init();

@@ -24,8 +24,11 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -33,6 +36,7 @@
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
+#include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
@@ -72,6 +76,7 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #endif
 
+using blink::WebContextMenuData;
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -392,6 +397,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(msg))
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
+    IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
+    IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
+                        OnCustomContextMenuAction)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -475,6 +483,56 @@ void RenderFrameImpl::OnCompositorFrameSwapped(const IPC::Message& message) {
                                                 param.a.producing_host_id);
 }
 
+void RenderFrameImpl::OnContextMenuClosed(
+    const CustomContextMenuContext& custom_context) {
+  if (custom_context.request_id) {
+    // External request, should be in our map.
+    ContextMenuClient* client =
+        pending_context_menus_.Lookup(custom_context.request_id);
+    if (client) {
+      client->OnMenuClosed(custom_context.request_id);
+      pending_context_menus_.Remove(custom_context.request_id);
+    }
+  } else {
+    // Internal request, forward to WebKit.
+    render_view_->context_menu_node_.reset();
+  }
+}
+
+void RenderFrameImpl::OnCustomContextMenuAction(
+    const CustomContextMenuContext& custom_context,
+    unsigned action) {
+  if (custom_context.request_id) {
+    // External context menu request, look in our map.
+    ContextMenuClient* client =
+        pending_context_menus_.Lookup(custom_context.request_id);
+    if (client)
+      client->OnMenuAction(custom_context.request_id, action);
+  } else {
+    // Internal request, forward to WebKit.
+    render_view_->webview()->performCustomContextMenuAction(action);
+  }
+}
+
+bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(
+    const base::string16& selection_text,
+    size_t selection_text_offset,
+    const gfx::Range& selection_range,
+    const ContextMenuParams& params) {
+  base::string16 trimmed_selection_text;
+  if (!selection_text.empty() && !selection_range.is_empty()) {
+    const int start = selection_range.GetMin() - selection_text_offset;
+    const size_t length = selection_range.length();
+    if (start >= 0 && start + length <= selection_text.length()) {
+      TrimWhitespace(selection_text.substr(start, length), TRIM_ALL,
+                     &trimmed_selection_text);
+    }
+  }
+  base::string16 trimmed_params_text;
+  TrimWhitespace(params.selection_text, TRIM_ALL, &trimmed_params_text);
+  return trimmed_params_text != trimmed_selection_text;
+}
+
 void RenderFrameImpl::DidCommitCompositorFrame() {
   if (compositing_helper_)
     compositing_helper_->DidCommitCompositorFrame();
@@ -499,11 +557,16 @@ WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
 
 int RenderFrameImpl::ShowContextMenu(ContextMenuClient* client,
                                      const ContextMenuParams& params) {
-  return render_view_->ShowContextMenu(client, params);
+  DCHECK(client);  // A null client means "internal" when we issue callbacks.
+  ContextMenuParams our_params(params);
+  our_params.custom_context.request_id = pending_context_menus_.Add(client);
+  Send(new FrameHostMsg_ContextMenu(routing_id_, our_params));
+  return our_params.custom_context.request_id;
 }
 
 void RenderFrameImpl::CancelContextMenu(int request_id) {
-  return render_view_->CancelContextMenu(request_id);
+  DCHECK(pending_context_menus_.Lookup(request_id));
+  pending_context_menus_.Remove(request_id);
 }
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
@@ -1506,6 +1569,59 @@ void RenderFrameImpl::didLoseWebGLContext(blink::WebFrame* frame,
       GURL(frame->top()->document().securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       arb_robustness_status_code));
+}
+
+void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
+  ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
+  params.source_type = GetRenderWidget()->context_menu_source_type();
+  if (params.source_type == ui::MENU_SOURCE_TOUCH_EDIT_MENU) {
+    params.x = GetRenderWidget()->touch_editing_context_menu_location().x();
+    params.y = GetRenderWidget()->touch_editing_context_menu_location().y();
+  }
+  GetRenderWidget()->OnShowHostContextMenu(&params);
+
+  // Plugins, e.g. PDF, don't currently update the render view when their
+  // selected text changes, but the context menu params do contain the updated
+  // selection. If that's the case, update the render view's state just prior
+  // to showing the context menu.
+  // TODO(asvitkine): http://crbug.com/152432
+  if (ShouldUpdateSelectionTextFromContextMenuParams(
+          render_view_->selection_text_,
+          render_view_->selection_text_offset_,
+          render_view_->selection_range_,
+          params)) {
+    render_view_->selection_text_ = params.selection_text;
+    // TODO(asvitkine): Text offset and range is not available in this case.
+    render_view_->selection_text_offset_ = 0;
+    render_view_->selection_range_ =
+        gfx::Range(0, render_view_->selection_text_.length());
+    Send(new ViewHostMsg_SelectionChanged(
+        routing_id_,
+        render_view_->selection_text_,
+        render_view_->selection_text_offset_,
+        render_view_->selection_range_));
+  }
+
+  params.frame_id = frame_->identifier();
+
+  // Serializing a GURL longer than kMaxURLChars will fail, so don't do
+  // it.  We replace it with an empty GURL so the appropriate items are disabled
+  // in the context menu.
+  // TODO(jcivelli): http://crbug.com/45160 This prevents us from saving large
+  //                 data encoded images.  We should have a way to save them.
+  if (params.src_url.spec().size() > GetMaxURLChars())
+    params.src_url = GURL();
+  render_view_->context_menu_node_ = data.node;
+
+#if defined(OS_ANDROID)
+  gfx::Rect start_rect;
+  gfx::Rect end_rect;
+  render_view_->GetSelectionBounds(&start_rect, &end_rect);
+  params.selection_start = gfx::Point(start_rect.x(), start_rect.bottom());
+  params.selection_end = gfx::Point(end_rect.right(), end_rect.bottom());
+#endif
+
+  Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {

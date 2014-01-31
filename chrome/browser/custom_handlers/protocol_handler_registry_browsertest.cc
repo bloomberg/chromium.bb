@@ -25,9 +25,9 @@ namespace {
 
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(WebContents* web_contents,
+  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                             content::ContextMenuParams params)
-      : RenderViewContextMenu(web_contents, params) { }
+      : RenderViewContextMenu(render_frame_host, params) { }
 
   virtual void PlatformInit() OVERRIDE { }
   virtual void PlatformCancel() OVERRIDE { }
@@ -62,7 +62,8 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
     TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
-        browser()->tab_strip_model()->GetActiveWebContents(), params);
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+        params);
     menu->Init();
     return menu;
   }

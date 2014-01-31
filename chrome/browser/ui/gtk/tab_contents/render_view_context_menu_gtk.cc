@@ -75,10 +75,10 @@ GtkWidget* GetMenuItemByID(ui::MenuModel* model,
 }  // namespace
 
 RenderViewContextMenuGtk::RenderViewContextMenuGtk(
-    WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params,
     content::RenderWidgetHostView* view)
-    : RenderViewContextMenu(web_contents, params),
+    : RenderViewContextMenu(render_frame_host, params),
       bidi_submenu_model_(this) {
   GdkEventButton* event = view->GetLastMouseDown();
   triggering_event_time_ = event ? event->time : GDK_CURRENT_TIME;

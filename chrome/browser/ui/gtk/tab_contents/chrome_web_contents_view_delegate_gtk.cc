@@ -128,6 +128,7 @@ gboolean ChromeWebContentsViewDelegateGtk::OnNativeViewFocusEvent(
 }
 
 void ChromeWebContentsViewDelegateGtk::ShowContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Find out the RenderWidgetHostView that corresponds to the render widget on
   // which this context menu is showed, so that we can retrieve the last mouse
@@ -149,7 +150,7 @@ void ChromeWebContentsViewDelegateGtk::ShowContextMenu(
   }
 
   context_menu_.reset(
-      new RenderViewContextMenuGtk(web_contents_, params, view));
+      new RenderViewContextMenuGtk(render_frame_host, params, view));
   context_menu_->Init();
 
   // Don't show empty menus.

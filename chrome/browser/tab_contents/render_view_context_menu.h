@@ -28,6 +28,7 @@ class SpellingMenuObserver;
 class SpellCheckerSubMenuObserver;
 
 namespace content {
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 }
@@ -130,7 +131,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
  public:
   static const size_t kMaxSelectionTextLength;
 
-  RenderViewContextMenu(content::WebContents* web_contents,
+  RenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                         const content::ContextMenuParams& params);
 
   virtual ~RenderViewContextMenu();
@@ -180,6 +181,9 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   content::ContextMenuParams params_;
   content::WebContents* source_web_contents_;
+  // The RenderFrameHost's IDs.
+  int render_process_id_;
+  int render_frame_id_;
   Profile* profile_;
 
   ui::SimpleMenuModel menu_model_;

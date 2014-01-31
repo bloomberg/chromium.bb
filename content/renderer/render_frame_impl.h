@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
+#include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
@@ -26,10 +28,12 @@ struct FrameMsg_CompositorFrameSwapped_Params;
 namespace blink {
 class WebMouseEvent;
 struct WebCompositionUnderline;
+struct WebContextMenuData;
 struct WebCursorInfo;
 }
 
 namespace gfx {
+class Point;
 class Range;
 class Rect;
 }
@@ -43,6 +47,7 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
+struct CustomContextMenuContext;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
@@ -314,11 +319,16 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didLoseWebGLContext(blink::WebFrame* frame,
                                    int arb_robustness_status_code);
 
+  // TODO(jam): move this to WebFrameClient
+  virtual void showContextMenu(const blink::WebContextMenuData& data);
+
  protected:
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
 
  private:
   friend class RenderFrameObserver;
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
+                           ShouldUpdateSelectionTextFromContextMenuParams);
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);
@@ -332,6 +342,18 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnChildFrameProcessGone();
   void OnBuffersSwapped(const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
+  void OnShowContextMenu(const gfx::Point& location);
+  void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
+  void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
+                                 unsigned action);
+
+  // Returns whether |params.selection_text| should be synchronized to the
+  // browser before bringing up the context menu. Static for testing.
+  static bool ShouldUpdateSelectionTextFromContextMenuParams(
+      const base::string16& selection_text,
+      size_t selection_text_offset,
+      const gfx::Range& selection_range,
+      const ContextMenuParams& params);
 
   // Stores the WebFrame we are associated with.
   blink::WebFrame* frame_;
@@ -353,6 +375,19 @@ class CONTENT_EXPORT RenderFrameImpl
   ObserverList<RenderFrameObserver> observers_;
 
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
+
+  // External context menu requests we're waiting for. "Internal"
+  // (WebKit-originated) context menu events will have an ID of 0 and will not
+  // be in this map.
+  //
+  // We don't want to add internal ones since some of the "special" page
+  // handlers in the browser process just ignore the context menu requests so
+  // avoid showing context menus, and so this will cause right clicks to leak
+  // entries in this map. Most users of the custom context menu (e.g. Pepper
+  // plugins) are normally only on "regular" pages and the regular pages will
+  // always respond properly to the request, so we don't have to worry so
+  // much about leaks.
+  IDMap<ContextMenuClient, IDMapExternalPointer> pending_context_menus_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };

@@ -1528,14 +1528,6 @@ RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int route_id) {
   return widget_host_view;
 }
 
-void WebContentsImpl::ShowContextMenu(const ContextMenuParams& params) {
-  // Allow WebContentsDelegates to handle the context menu operation first.
-  if (delegate_ && delegate_->HandleContextMenu(params))
-    return;
-
-  render_view_host_delegate_view_->ShowContextMenu(params);
-}
-
 void WebContentsImpl::RequestMediaAccessPermission(
     const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
@@ -2684,9 +2676,18 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
                     RenderFrameDeleted(render_frame_host));
 }
 
-void WebContentsImpl::WorkerCrashed() {
+void WebContentsImpl::WorkerCrashed(RenderFrameHost* render_frame_host) {
   if (delegate_)
     delegate_->WorkerCrashed(this);
+}
+
+void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
+                                      const ContextMenuParams& params) {
+  // Allow WebContentsDelegates to handle the context menu operation first.
+  if (delegate_ && delegate_->HandleContextMenu(params))
+    return;
+
+  render_view_host_delegate_view_->ShowContextMenu(render_frame_host, params);
 }
 
 WebContents* WebContentsImpl::GetAsWebContents() {

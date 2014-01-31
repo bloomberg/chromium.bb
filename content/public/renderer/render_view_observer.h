@@ -31,7 +31,6 @@ class WebMouseEvent;
 class WebNode;
 class WebTouchEvent;
 class WebURL;
-struct WebContextMenuData;
 struct WebURLError;
 }
 
@@ -85,9 +84,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void ZoomLevelChanged() {};
   virtual void DidChangeScrollOffset(blink::WebFrame* frame) {}
   virtual void DraggableRegionsChanged(blink::WebFrame* frame) {}
-  virtual void DidRequestShowContextMenu(
-      blink::WebFrame* frame,
-      const blink::WebContextMenuData& data) {}
   virtual void DidCommitCompositorFrame() {}
   virtual void DidUpdateLayout() {}
 

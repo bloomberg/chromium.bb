@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/rect.h"
@@ -248,6 +249,7 @@ class CONTENT_EXPORT RenderWidget
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();
 
+  void OnShowHostContextMenu(ContextMenuParams* params);
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
   // Checks if the composition range or composition character bounds have been
@@ -258,6 +260,12 @@ class CONTENT_EXPORT RenderWidget
 
   // Temporary for debugging purposes...
   bool closing() const { return closing_; }
+
+  ui::MenuSourceType context_menu_source_type() {
+    return context_menu_source_type_; }
+  gfx::Point touch_editing_context_menu_location() {
+    return touch_editing_context_menu_location_;
+  }
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -336,7 +344,6 @@ class CONTENT_EXPORT RenderWidget
       float root_layer_scale);
   void SetExternalPopupOriginAdjustmentsForEmulation(
       ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator);
-  virtual void OnShowHostContextMenu(ContextMenuParams* params);
 
   // RenderWidget IPC message handlers
   void OnHandleInputEvent(const blink::WebInputEvent* event,
@@ -518,12 +525,6 @@ class CONTENT_EXPORT RenderWidget
   // Returns true if no further handling is needed. In that case, the event
   // won't be sent to WebKit or trigger DidHandleMouseEvent().
   virtual bool WillHandleMouseEvent(const blink::WebMouseEvent& event);
-
-  // Called by OnHandleInputEvent() to notify subclasses that a key event is
-  // about to be handled.
-  // Returns true if no further handling is needed. In that case, the event
-  // won't be sent to WebKit or trigger DidHandleKeyEvent().
-  virtual bool WillHandleKeyEvent(const blink::WebKeyboardEvent& event);
 
   // Called by OnHandleInputEvent() to notify subclasses that a gesture event is
   // about to be handled.
@@ -802,6 +803,9 @@ class CONTENT_EXPORT RenderWidget
   // A list of swapped out RenderFrames that need to be notified
   // of compositing-related events (e.g. DidCommitCompositorFrame).
   ObserverList<RenderFrameImpl> swapped_out_frames_;
+
+  ui::MenuSourceType context_menu_source_type_;
+  gfx::Point touch_editing_context_menu_location_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

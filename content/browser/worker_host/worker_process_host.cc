@@ -84,7 +84,7 @@ void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
   RenderFrameHostImpl* host =
       RenderFrameHostImpl::FromID(render_process_unique_id, render_frame_id);
   if (host)
-    host->delegate()->WorkerCrashed();
+    host->delegate()->WorkerCrashed(host);
 }
 
 void WorkerCreatedCallback(int render_process_id,

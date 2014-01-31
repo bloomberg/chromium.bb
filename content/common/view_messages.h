@@ -22,7 +22,6 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -75,7 +74,6 @@
 
 IPC_ENUM_TRAITS(AccessibilityMode)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
-IPC_ENUM_TRAITS(blink::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(blink::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(blink::WebPluginAction::Type)
 IPC_ENUM_TRAITS(blink::WebPopupType)
@@ -95,7 +93,6 @@ IPC_ENUM_TRAITS(content::StopFindAction)
 IPC_ENUM_TRAITS(content::ThreeDAPIType)
 IPC_ENUM_TRAITS(media::ChannelLayout)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
-IPC_ENUM_TRAITS(ui::MenuSourceType)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 IPC_ENUM_TRAITS(ui::TextInputType)
 
@@ -171,49 +168,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::DateTimeSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(value)
   IPC_STRUCT_TRAITS_MEMBER(localized_value)
   IPC_STRUCT_TRAITS_MEMBER(label)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
-  IPC_STRUCT_TRAITS_MEMBER(media_type)
-  IPC_STRUCT_TRAITS_MEMBER(x)
-  IPC_STRUCT_TRAITS_MEMBER(y)
-  IPC_STRUCT_TRAITS_MEMBER(link_url)
-  IPC_STRUCT_TRAITS_MEMBER(link_text)
-  IPC_STRUCT_TRAITS_MEMBER(unfiltered_link_url)
-  IPC_STRUCT_TRAITS_MEMBER(src_url)
-  IPC_STRUCT_TRAITS_MEMBER(has_image_contents)
-  IPC_STRUCT_TRAITS_MEMBER(page_url)
-  IPC_STRUCT_TRAITS_MEMBER(keyword_url)
-  IPC_STRUCT_TRAITS_MEMBER(frame_url)
-  IPC_STRUCT_TRAITS_MEMBER(frame_page_state)
-  IPC_STRUCT_TRAITS_MEMBER(media_flags)
-  IPC_STRUCT_TRAITS_MEMBER(selection_text)
-  IPC_STRUCT_TRAITS_MEMBER(misspelled_word)
-  IPC_STRUCT_TRAITS_MEMBER(misspelling_hash)
-  IPC_STRUCT_TRAITS_MEMBER(dictionary_suggestions)
-  IPC_STRUCT_TRAITS_MEMBER(speech_input_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(spellcheck_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(is_editable)
-  IPC_STRUCT_TRAITS_MEMBER(writing_direction_default)
-  IPC_STRUCT_TRAITS_MEMBER(writing_direction_left_to_right)
-  IPC_STRUCT_TRAITS_MEMBER(writing_direction_right_to_left)
-  IPC_STRUCT_TRAITS_MEMBER(edit_flags)
-  IPC_STRUCT_TRAITS_MEMBER(security_info)
-  IPC_STRUCT_TRAITS_MEMBER(frame_charset)
-  IPC_STRUCT_TRAITS_MEMBER(referrer_policy)
-  IPC_STRUCT_TRAITS_MEMBER(custom_context)
-  IPC_STRUCT_TRAITS_MEMBER(custom_items)
-  IPC_STRUCT_TRAITS_MEMBER(source_type)
-#if defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(selection_start)
-  IPC_STRUCT_TRAITS_MEMBER(selection_end)
-#endif
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
-  IPC_STRUCT_TRAITS_MEMBER(is_pepper_menu)
-  IPC_STRUCT_TRAITS_MEMBER(request_id)
-  IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
@@ -916,16 +870,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_SwapBuffers_ACK)
 IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
                     bool /* reverse */)
 
-// Executes custom context menu action that was provided from WebKit.
-IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,
-                    content::CustomContextMenuContext /* custom_context */,
-                    unsigned /* action */)
-
-// Sent in response to a ViewHostMsg_ContextMenu to let the renderer know that
-// the menu has been closed.
-IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
-                    content::CustomContextMenuContext /* custom_context */)
-
 // Sent to inform the renderer to invoke a context menu.
 // The parameter specifies the location in the render view's coordinates.
 IPC_MESSAGE_ROUTED1(ViewMsg_ShowContextMenu,
@@ -1489,12 +1433,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
 // render_messages.h.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameNavigate,
                     ViewHostMsg_FrameNavigate_Params)
-
-// Used to tell the parent that the user right clicked on an area of the
-// content area, and a context menu should be shown for it. The params
-// object contains information about the node(s) that were selected when the
-// user right clicked.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ContextMenu, content::ContextMenuParams)
 
 // Message to show a popup menu using native cocoa controls (Mac only).
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,

@@ -46,7 +46,6 @@ class RenderFrameHost;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
-struct CustomContextMenuContext;
 struct DropData;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
@@ -153,10 +152,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Instructs the RenderView to send back updates to the preferred size.
   virtual void EnablePreferredSizeMode() = 0;
 
-  // Executes custom context menu action that was provided from WebKit.
-  virtual void ExecuteCustomContextMenuCommand(
-      int action, const CustomContextMenuContext& context) = 0;
-
   // Tells the renderer to perform the given action on the media player
   // located at the given point.
   virtual void ExecuteMediaPlayerActionAtLocation(
@@ -215,10 +210,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.
   virtual bool IsRenderViewLive() const = 0;
-
-  // Let the renderer know that the menu has been closed.
-  virtual void NotifyContextMenuClosed(
-      const CustomContextMenuContext& context) = 0;
 
   // Notification that a move or resize renderer's containing window has
   // started.

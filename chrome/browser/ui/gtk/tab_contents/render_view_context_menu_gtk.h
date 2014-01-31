@@ -19,7 +19,7 @@ struct ContextMenuParams;
 class RenderViewContextMenuGtk : public RenderViewContextMenu,
                                  public MenuGtk::Delegate {
  public:
-  RenderViewContextMenuGtk(content::WebContents* web_contents,
+  RenderViewContextMenuGtk(content::RenderFrameHost* render_frame_host,
                            const content::ContextMenuParams& params,
                            content::RenderWidgetHostView* view);
 

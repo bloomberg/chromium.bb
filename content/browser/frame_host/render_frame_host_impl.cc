@@ -97,6 +97,16 @@ gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   return view->GetNativeView();
 }
 
+void RenderFrameHostImpl::NotifyContextMenuClosed(
+    const CustomContextMenuContext& context) {
+  Send(new FrameMsg_ContextMenuClosed(routing_id_, context));
+}
+
+void RenderFrameHostImpl::ExecuteCustomContextMenuCommand(
+    int action, const CustomContextMenuContext& context) {
+  Send(new FrameMsg_CustomContextMenuAction(routing_id_, context, action));
+}
+
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }
@@ -124,6 +134,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRedirectProvisionalLoad,
                         OnDidRedirectProvisionalLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -137,7 +148,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 }
 
 void RenderFrameHostImpl::Init() {
-  GetProcess()->ResumeRequestsForView(routing_id());
+  GetProcess()->ResumeRequestsForView(routing_id_);
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(int new_frame_routing_id,
@@ -178,7 +189,7 @@ void RenderFrameHostImpl::OnDidRedirectProvisionalLoad(
 
 void RenderFrameHostImpl::SwapOut() {
   if (render_view_host_->IsRenderViewLive()) {
-    Send(new FrameMsg_SwapOut(routing_id()));
+    Send(new FrameMsg_SwapOut(routing_id_));
   } else {
     // Our RenderViewHost doesn't have a live renderer, so just skip the unload
     // event.
@@ -192,6 +203,22 @@ void RenderFrameHostImpl::OnSwapOutACK() {
 
 void RenderFrameHostImpl::OnSwappedOut(bool timed_out) {
   frame_tree_node_->render_manager()->SwappedOutFrame(this);
+}
+
+void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
+  // Validate the URLs in |params|.  If the renderer can't request the URLs
+  // directly, don't show them in the context menu.
+  ContextMenuParams validated_params(params);
+  RenderProcessHost* process = GetProcess();
+
+  // We don't validate |unfiltered_link_url| so that this field can be used
+  // when users want to copy the original link URL.
+  process->FilterURL(true, &validated_params.link_url);
+  process->FilterURL(true, &validated_params.src_url);
+  process->FilterURL(false, &validated_params.page_url);
+  process->FilterURL(true, &validated_params.frame_url);
+
+  delegate_->ShowContextMenu(this, validated_params);
 }
 
 }  // namespace content

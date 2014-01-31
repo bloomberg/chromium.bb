@@ -53,9 +53,9 @@ namespace {
 // An UI-less RenderViewContextMenu.
 class TestRenderViewContextMenu : public RenderViewContextMenu {
  public:
-  TestRenderViewContextMenu(WebContents* web_contents,
+  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                             const content::ContextMenuParams& params)
-      : RenderViewContextMenu(web_contents, params) {
+      : RenderViewContextMenu(render_frame_host, params) {
   }
   virtual ~TestRenderViewContextMenu() {}
 
@@ -520,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
       frame_navigation_state().GetMainFrameID().frame_num;
   params.link_url = extension->GetResourceURL("b.html");
 
-  TestRenderViewContextMenu menu(tab, params);
+  TestRenderViewContextMenu menu(tab->GetMainFrame(), params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 
