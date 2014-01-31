@@ -7,7 +7,7 @@ function loadMediaFromURL(video) {
   video.addEventListener('playing', function(event) {
     console.log('Video Playing.');
   });
-  var source = loadMediaSource(QueryString.mediafile, QueryString.mediatype);
+  var source = loadMediaSource(QueryString.mediaFile, QueryString.mediaType);
   video.src = window.URL.createObjectURL(source);
 }
 

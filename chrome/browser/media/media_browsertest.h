@@ -19,7 +19,7 @@ class TitleWatcher;
 // the test http server.
 class MediaBrowserTest : public InProcessBrowserTest {
  protected:
-  typedef std::pair<const char*, const char*> StringPair;
+  typedef std::pair<std::string, std::string> StringPair;
 
   // Common test results.
   static const char kEnded[];
@@ -34,13 +34,13 @@ class MediaBrowserTest : public InProcessBrowserTest {
   // If http is true, the test starts a local http test server to load the test
   // page, otherwise a local file URL is loaded inside the content shell.
   // It uses RunTest() to check for expected test output.
-  void RunMediaTestPage(const char* html_page,
+  void RunMediaTestPage(const std::string& html_page,
                         std::vector<StringPair>* query_params,
-                        const char* expected, bool http);
+                        const std::string& expected, bool http);
 
   // Opens a URL and waits for the document title to match either one of the
   // default strings or the expected string.
-  base::string16 RunTest(const GURL& gurl, const char* expected);
+  base::string16 RunTest(const GURL& gurl, const std::string& expected);
 
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher);
 };
