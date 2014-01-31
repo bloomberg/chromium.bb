@@ -300,7 +300,7 @@ class OAuth2Test : public OobeBaseTest {
     EXPECT_EQ(merge_session_waiter.final_state(), final_state);
   }
 
-  void StartNewUserSession() {
+  void StartNewUserSession(bool wait_for_merge) {
     SetupGaiaServerForNewAccount();
     SimulateNetworkOnline();
     chromeos::WizardController::SkipPostLoginScreensForTesting();
@@ -321,8 +321,10 @@ class OAuth2Test : public OobeBaseTest {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources()).Wait();
 
-    // Wait for the session merge to finish.
-    WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
+    if (wait_for_merge) {
+      // Wait for the session merge to finish.
+      WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
+    }
 }
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2Test);
@@ -389,7 +391,7 @@ class CookieReader : public base::RefCountedThreadSafe<CookieReader> {
 
 // PRE_MergeSession is testing merge session for a new profile.
 IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
-  StartNewUserSession();
+  StartNewUserSession(true);
   // Check for existance of refresh token.
   ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(
@@ -675,8 +677,8 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   return browser;
 }
 
-IN_PROC_BROWSER_TEST_F(MergeSessionTest, DISABLED_PageThrottle) {
-  StartNewUserSession();
+IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
+  StartNewUserSession(false);
 
   // Try to open a page from google.com.
   Browser* browser =
@@ -718,8 +720,8 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, DISABLED_PageThrottle) {
   DVLOG(1) << "Loaded page at the end : " << title;
 }
 
-IN_PROC_BROWSER_TEST_F(MergeSessionTest, DISABLED_XHRThrottle) {
-  StartNewUserSession();
+IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
+  StartNewUserSession(false);
 
   // Wait until we get send merge session request.
   WaitForMergeSessionToStart();
