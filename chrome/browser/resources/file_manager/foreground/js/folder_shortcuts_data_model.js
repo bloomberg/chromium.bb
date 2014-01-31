@@ -455,7 +455,7 @@ FolderShortcutsDataModel.prototype = {
     }
 
     var url = this.driveVolumeInfo_.root.toURL() +
-              path.substr(STORED_DRIVE_MOUNT_PATH.length);
+        encodeURIComponent(path.substr(STORED_DRIVE_MOUNT_PATH.length));
     return url;
   },
 
@@ -475,7 +475,8 @@ FolderShortcutsDataModel.prototype = {
       return null;
     }
 
-    var storedPath = STORED_DRIVE_MOUNT_PATH + url.substr(rootUrl.length);
+    var storedPath = decodeURIComponent(
+        STORED_DRIVE_MOUNT_PATH + url.substr(rootUrl.length));
     return storedPath;
   },
 };
