@@ -62,12 +62,6 @@ common_vars_defines() {
   export PATH=$PATH:${ANDROID_SDK_ROOT}/build-tools/\
 ${ANDROID_SDK_BUILD_TOOLS_VERSION}
 
-  # This must be set before ANDROID_TOOLCHAIN, so that clang could find the
-  # gold linker.
-  # TODO(michaelbai): Remove this path once the gold linker become the default
-  # linker.
-  export PATH=$PATH:${CHROME_SRC}/build/android/${toolchain_arch}-gold
-
   # Add Chromium Android development scripts to system path.
   # Must be after CHROME_SRC is set.
   export PATH=$PATH:${CHROME_SRC}/build/android
