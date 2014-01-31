@@ -70,6 +70,7 @@ void AppEventRouter::DispatchOnRestartedEvent(Profile* profile,
   scoped_ptr<Event> event(new Event(app_runtime::OnRestarted::kEventName,
                                     arguments.Pass()));
   event->restrict_to_browser_context = profile;
+  event->can_load_ephemeral_apps = true;
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), event.Pass());
 }
