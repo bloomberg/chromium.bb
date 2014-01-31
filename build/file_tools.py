@@ -118,3 +118,32 @@ def RemoveDirectoryIfPresent(path):
 
   if os.path.exists(path):
     shutil.rmtree(path, onerror=onerror_readonly)
+
+
+def CopyTree(src, dst):
+  """Recursively copy the items in the src directory to the dst directory.
+
+  Unlike shutil.copytree, the destination directory and any subdirectories and
+  files may exist. Existing directories are left untouched, and existing files
+  are removed and copied from the source using shutil.copy2. It is also not
+  symlink-aware.
+
+  Args:
+    src: Source. Must be an existing directory.
+    dst: Destination directory. If it exists, must be a directory. Otherwise it
+         will be created, along with parent directories.
+  """
+  if not os.path.isdir(dst):
+    os.makedirs(dst)
+  for root, dirs, files in os.walk(src):
+    relroot = os.path.relpath(root, src)
+    dstroot = os.path.join(dst, relroot)
+    for d in dirs:
+      dstdir = os.path.join(dstroot, d)
+      if not os.path.isdir(dstdir):
+        os.mkdir(dstdir)
+    for f in files:
+      dstfile = os.path.join(dstroot, f)
+      if os.path.isfile(dstfile):
+        os.remove(dstfile)
+      shutil.copy2(os.path.join(root, f), dstfile)

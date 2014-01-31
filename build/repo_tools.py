@@ -92,7 +92,7 @@ def GitRevInfo(directory):
 """
   url = log_tools.CheckOutput(GitCmd() + ['ls-remote', '--get-url', 'origin'],
                               cwd=directory)
-  rev = log_tools.CheckOutput(GitCmd() + ['log', '-n', '1', '--pretty=%H'],
+  rev = log_tools.CheckOutput(GitCmd() + ['rev-parse', 'HEAD'],
                               cwd=directory)
   return url.strip(), rev.strip()
 

@@ -50,7 +50,8 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
       batch_script = nopy_name + '.bat'
       shutil.copy(os.path.join(srcdir, 'redirect.bat'), batch_script)
       os.chmod(batch_script,
-             stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP)
+               stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR | stat.S_IRGRP |
+               stat.S_IWGRP | stat.S_IXGRP)
   # Install the driver.conf file
   with open(os.path.join(dstdir, 'driver.conf'), 'w') as f:
     print >> f, 'HAS_FRONTEND=1'

@@ -219,6 +219,9 @@ class PackageBuilder(object):
         signature_file=self._signature_file,
         subdir=output_subdir)
 
+    if not is_source_target and self._options.install:
+      file_tools.CopyTree(output, self._options.install)
+
   def BuildOrder(self, targets):
     """Find what needs to be built in what order to build all targets.
 
@@ -326,6 +329,9 @@ class PackageBuilder(object):
         '-i', '--ignore-dependencies', dest='ignore_dependencies',
         default=False, action='store_true',
         help='Ignore target dependencies and build only the specified target.')
+    parser.add_option('--install', dest='install',
+                      help='After building, copy contents of build packages' +
+                      ' to the specified directory')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
       print >>sys.stderr, (
