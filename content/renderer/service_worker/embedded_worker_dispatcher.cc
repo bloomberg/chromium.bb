@@ -75,6 +75,7 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
   start_data.scriptURL = script_url;
   start_data.userAgent =
       base::UTF8ToUTF16(webkit_glue::GetUserAgent(script_url));
+  start_data.startMode = blink::WebEmbeddedWorkerStartModeDontPauseOnStart;
 
   wrapper->worker()->startWorkerContext(start_data);
   workers_.AddWithID(wrapper.release(), embedded_worker_id);
