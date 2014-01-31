@@ -363,10 +363,6 @@ void Shell::PlatformExit() {
 }
 
 void Shell::PlatformCleanUp() {
-  if (headless_) {
-    delete platform_;
-    platform_ = NULL;
-  }
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
