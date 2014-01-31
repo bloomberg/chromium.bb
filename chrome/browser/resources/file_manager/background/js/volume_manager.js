@@ -41,19 +41,19 @@ function VolumeInfo(
   this.displayRootPromise_ = null;
 
   if (volumeType === util.VolumeType.DRIVE) {
-    this.fakeEntries[RootType.DRIVE_OFFLINE] = {
+    this.fakeEntries_[RootType.DRIVE_OFFLINE] = {
       fullPath: '/drive_offline',
       isDirectory: true,
       rootType: RootType.DRIVE_OFFLINE,
       toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
-    this.fakeEntries[RootType.DRIVE_SHARED_WITH_ME] = {
+    this.fakeEntries_[RootType.DRIVE_SHARED_WITH_ME] = {
       fullPath: '/drive_shared_with_me',
       isDirectory: true,
       rootType: RootType.DRIVE_SHARED_WITH_ME,
       toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
-    this.fakeEntries[RootType.DRIVE_RECENT] = {
+    this.fakeEntries_[RootType.DRIVE_RECENT] = {
       fullPath: '/drive_recent',
       isDirectory: true,
       rootType: RootType.DRIVE_RECENT,
@@ -371,16 +371,24 @@ VolumeInfoList.prototype.findIndex = function(volumeId) {
 };
 
 /**
- * Searches the information of the volume that contains an item pointed by the
- * path.
- * @param {string} path Path pointing an entry on a volume.
+ * Searches the information of the volume that contains the passed entry.
+ * @param {Entry|Object} entry Entry on the volume to be foudn.
  * @return {VolumeInfo} The volume's information, or null if not found.
  */
-VolumeInfoList.prototype.findByPath = function(path) {
+VolumeInfoList.prototype.findByEntry = function(entry) {
+  // TODO(mtomasz): Switch to comparing file systems once possible.
   for (var i = 0; i < this.length; i++) {
-    var mountPath = this.item(i).mountPath;
-    if (path === mountPath || path.indexOf(mountPath + '/') === 0)
-      return this.item(i);
+    var volumeInfo = this.item(i);
+    var mountPath = volumeInfo.mountPath;
+    if (entry.fullPath === mountPath ||
+        entry.fullPath.indexOf(mountPath + '/') === 0)
+      return volumeInfo;
+    // Additionally, check fake entries.
+    for (var key in volumeInfo.fakeEntries_) {
+      var fakeEntry = volumeInfo.fakeEntries_[key];
+      if (util.isSameEntry(fakeEntry, entry))
+        return volumeInfo;
+    }
   }
   return null;
 };
@@ -544,7 +552,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
           event.volumeMetadata,
           function(volumeInfo) {
             this.volumeInfoList.add(volumeInfo);
-            this.finishRequest_(requestKey, event.status, volumeInfo.mountPath);
+            this.finishRequest_(requestKey, event.status, volumeInfo);
 
             if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
               // Update the network connection status, because until the
@@ -559,23 +567,21 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       this.finishRequest_(requestKey, event.status);
     }
   } else if (event.eventType === 'unmount') {
-    var mountPath = event.volumeMetadata.mountPath;
+    var volumeId = event.volumeMetadata.volumeId;
     var status = event.status;
     if (status === util.VolumeError.PATH_UNMOUNTED) {
-      console.warn('Volume already unmounted: ', mountPath);
+      console.warn('Volume already unmounted: ', volumeId);
       status = 'success';
     }
-    var requestKey = this.makeRequestKey_('unmount', mountPath);
+    var requestKey = this.makeRequestKey_('unmount', volumeId);
     var requested = requestKey in this.requests_;
     var volumeInfoIndex =
-        this.volumeInfoList.findIndex(event.volumeMetadata.volumeId);
-    var volumeInfo = volumeInfoIndex != -1 ?
+        this.volumeInfoList.findIndex(volumeId);
+    var volumeInfo = volumeInfoIndex !== -1 ?
         this.volumeInfoList.item(volumeInfoIndex) : null;
     if (event.status === 'success' && !requested && volumeInfo) {
-      console.warn('Mounted volume without a request: ', mountPath);
+      console.warn('Mounted volume without a request: ', volumeId);
       var e = new Event('externally-unmounted');
-      // TODO(mtomasz): The mountPath field is deprecated. Remove it.
-      e.mountPath = mountPath;
       e.volumeInfo = volumeInfo;
       this.dispatchEvent(e);
     }
@@ -590,25 +596,25 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
  * Creates string to match mount events with requests.
  * @param {string} requestType 'mount' | 'unmount'. TODO(hidehiko): Replace by
  *     enum.
- * @param {string} path Source path provided by API for mount request, or
- *     mount path for unmount request.
+ * @param {string} argument Argument describing the request, eg. source file
+ *     path of the archive to be mounted, or a volumeId for unmounting.
  * @return {string} Key for |this.requests_|.
  * @private
  */
-VolumeManager.prototype.makeRequestKey_ = function(requestType, path) {
-  return requestType + ':' + path;
+VolumeManager.prototype.makeRequestKey_ = function(requestType, argument) {
+  return requestType + ':' + argument;
 };
 
 /**
  * @param {string} fileUrl File url to the archive file.
- * @param {function(string)} successCallback Success callback.
+ * @param {function(VolumeInfo)} successCallback Success callback.
  * @param {function(util.VolumeError)} errorCallback Error callback.
  */
 VolumeManager.prototype.mountArchive = function(
     fileUrl, successCallback, errorCallback) {
   chrome.fileBrowserPrivate.addMount(fileUrl, function(sourcePath) {
     console.info(
-        'Mount request: url=' + fileUrl + '; sourceUrl=' + sourcePath);
+        'Mount request: url=' + fileUrl + '; sourcePath=' + sourcePath);
     var requestKey = this.makeRequestKey_('mount', sourcePath);
     this.startRequest_(requestKey, successCallback, errorCallback);
   }.bind(this));
@@ -617,7 +623,7 @@ VolumeManager.prototype.mountArchive = function(
 /**
  * Unmounts volume.
  * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
- * @param {function(string)} successCallback Success callback.
+ * @param {function()} successCallback Success callback.
  * @param {function(util.VolumeError)} errorCallback Error callback.
  */
 VolumeManager.prototype.unmount = function(volumeInfo,
@@ -625,25 +631,17 @@ VolumeManager.prototype.unmount = function(volumeInfo,
                                            errorCallback) {
   chrome.fileBrowserPrivate.removeMount(
       util.makeFilesystemUrl(volumeInfo.mountPath));
-  var requestKey = this.makeRequestKey_('unmount', volumeInfo.mountPath);
+  var requestKey = this.makeRequestKey_('unmount', volumeInfo.volumeId);
   this.startRequest_(requestKey, successCallback, errorCallback);
 };
 
 /**
- * Obtains the information of the volume that containing an entry pointed by the
- * specified path.
- * TODO(hirono): Stop to use path to get a volume info.
- *
- * @param {string|Entry} target Path or Entry pointing anywhere on a volume.
- * @return {VolumeInfo} The data about the volume.
+ * Obtains a volume info containing the passed entry.
+ * @param {Entry|Object} entry Entry on the volume to be returned. Can be fake.
+ * @return {VolumeInfo} The VolumeInfo instance or null if not found.
  */
-VolumeManager.prototype.getVolumeInfo = function(target) {
-  if (typeof target === 'string')
-    return this.volumeInfoList.findByPath(target);
-  else if (util.isFakeEntry(target))
-    return this.getCurrentProfileVolumeInfo(util.VolumeType.DRIVE);
-  else
-    return this.volumeInfoList.findByPath(target.fullPath);
+VolumeManager.prototype.getVolumeInfo = function(entry) {
+  return this.volumeInfoList.findByEntry(entry);
 };
 
 /**
@@ -678,8 +676,7 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         true /* fake entries are read only. */);
   }
 
-  // TODO(mtomasz): Find by Entry instead.
-  var volumeInfo = this.volumeInfoList.findByPath(entry.fullPath);
+  var volumeInfo = this.volumeInfoList.findByEntry(entry);
   if (!volumeInfo)
     return null;
 
@@ -732,8 +729,8 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
 
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
- * @param {function(string)} successCallback To be called when request finishes
- *     successfully.
+ * @param {function(VolumeInfo)} successCallback To be called when request
+ *     finishes successfully.
  * @param {function(util.VolumeError)} errorCallback To be called when
  *     request fails.
  * @private
@@ -769,16 +766,16 @@ VolumeManager.prototype.onTimeout_ = function(key) {
 /**
  * @param {string} key Key produced by |makeRequestKey_|.
  * @param {util.VolumeError|'success'} status Status received from the API.
- * @param {string=} opt_mountPath Mount path.
+ * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
  * @private
  */
-VolumeManager.prototype.finishRequest_ = function(key, status, opt_mountPath) {
+VolumeManager.prototype.finishRequest_ = function(key, status, opt_volumeInfo) {
   var request = this.requests_[key];
   if (!request)
     return;
 
   clearTimeout(request.timeout);
-  this.invokeRequestCallbacks_(request, status, opt_mountPath);
+  this.invokeRequestCallbacks_(request, status, opt_volumeInfo);
   delete this.requests_[key];
 };
 
@@ -786,18 +783,18 @@ VolumeManager.prototype.finishRequest_ = function(key, status, opt_mountPath) {
  * @param {Object} request Structure created in |startRequest_|.
  * @param {util.VolumeError|string} status If status === 'success'
  *     success callbacks are called.
- * @param {string=} opt_mountPath Mount path. Required if success.
+ * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
  * @private
  */
-VolumeManager.prototype.invokeRequestCallbacks_ = function(request, status,
-                                                           opt_mountPath) {
+VolumeManager.prototype.invokeRequestCallbacks_ = function(
+    request, status, opt_volumeInfo) {
   var callEach = function(callbacks, self, args) {
     for (var i = 0; i < callbacks.length; i++) {
       callbacks[i].apply(self, args);
     }
   };
   if (status === 'success') {
-    callEach(request.successCallbacks, this, [opt_mountPath]);
+    callEach(request.successCallbacks, this, [opt_volumeInfo]);
   } else {
     volumeManagerUtil.validateError(status);
     callEach(request.errorCallbacks, this, [status]);

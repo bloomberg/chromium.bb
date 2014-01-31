@@ -583,13 +583,8 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
     for (var index = 0; index < resolvedURLs.length; ++index) {
       // TODO(mtomasz): Pass Entry instead of URL.
       fm.volumeManager.mountArchive(resolvedURLs[index],
-        function(mountPath) {
+        function(volumeInfo) {
           if (tracker.hasChanged) {
-            tracker.stop();
-            return;
-          }
-          var volumeInfo = fm.volumeManager.getVolumeInfo(mountPath);
-          if (!volumeInfo) {
             tracker.stop();
             return;
           }

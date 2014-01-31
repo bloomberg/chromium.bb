@@ -213,18 +213,17 @@ VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
 };
 
 /**
- * @param {string} mountPath The path to mount location of the volume.
- * @return {VolumeInfo} The VolumeInfo instance for the volume mounted at
- *     mountPath, or null if no volume is found
+ * Obtains a volume info containing the passed entry.
+ * @param {Entry} entry Entry on the volume to be returned.
+ * @return {VolumeInfo} The VolumeInfo instance or null if not found.
  */
-VolumeManagerWrapper.prototype.getVolumeInfo = function(mountPath) {
+VolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
   return this.filterDisabledDriveVolume_(
-      this.volumeManager_ && this.volumeManager_.getVolumeInfo(mountPath));
+      this.volumeManager_ && this.volumeManager_.getVolumeInfo(entry));
 };
 
 /**
  * Obtains a volume information of the current profile.
- *
  * @param {util.VolumeType} volumeType Volume type.
  * @return {VolumeInfo} Found volume info.
  */
@@ -271,7 +270,8 @@ VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
 /**
  * Requests to mount the archive file.
  * @param {string} fileUrl The path to the archive file to be mounted.
- * @param {function(string)} successCallback Called with mount path on success.
+ * @param {function(VolumeInfo)} successCallback Called with the VolumeInfo
+ *     instance.
  * @param {function(util.VolumeError)} errorCallback Called when an error
  *     occurs.
  */
@@ -289,8 +289,7 @@ VolumeManagerWrapper.prototype.mountArchive = function(
 /**
  * Requests unmount the volume at mountPath.
  * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
- * @param {function(string)} successCallback Called with the mount path
- *     on success.
+ * @param {function()} successCallback Called on success.
  * @param {function(util.VolumeError)} errorCallback Called when an error
  *     occurs.
  */
