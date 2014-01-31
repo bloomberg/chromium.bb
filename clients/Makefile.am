@@ -3,7 +3,6 @@ bin_PROGRAMS = $(install_clients)
 demo_clients = \
 	$(clients_programs)			\
 	$(pango_programs)			\
-	$(poppler_programs)			\
 	$(simple_clients_programs)		\
 	$(simple_egl_clients_programs)
 
@@ -248,10 +247,3 @@ endif
 
 wayland_protocoldir = $(top_srcdir)/protocol
 include $(top_srcdir)/wayland-scanner.mk
-
-if HAVE_POPPLER
-poppler_programs = weston-view
-weston_view_SOURCES = view.c
-weston_view_LDADD = libtoytoolkit.la $(POPPLER_LIBS)
-weston_view_CPPFLAGS = $(AM_CPPFLAGS) $(POPPLER_CFLAGS)
-endif

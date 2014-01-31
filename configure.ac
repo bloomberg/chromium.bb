@@ -303,9 +303,6 @@ if test x$enable_clients = xyes; then
   PKG_CHECK_MODULES(SERVER, [wayland-server])
   PKG_CHECK_MODULES(WESTON_INFO, [wayland-client])
 
-  PKG_CHECK_MODULES(POPPLER, [poppler-glib glib-2.0 gobject-2.0 gio-2.0 ],
-			     [have_poppler=yes], [have_poppler=no])
-
   # Only check for cairo-egl if a GL or GLES renderer requested
   AS_IF([test "x$cairo_modules" = "xcairo-gl" -o "x$cairo_modules" = "xcairo-glesv2"], [
     PKG_CHECK_MODULES(CAIRO_EGL, [wayland-egl egl >= 7.10 cairo-egl >= 1.11.3 $cairo_modules],
@@ -351,9 +348,6 @@ if test x$enable_egl = xyes; then
   PKG_CHECK_MODULES(GLU, [glu], [have_glu=yes], [have_glu=no])
 fi
 AM_CONDITIONAL(HAVE_GLU, test "x$have_glu" = "xyes")
-
-
-AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
 
