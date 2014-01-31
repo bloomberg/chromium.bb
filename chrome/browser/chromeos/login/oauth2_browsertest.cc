@@ -675,7 +675,7 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   return browser;
 }
 
-IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
+IN_PROC_BROWSER_TEST_F(MergeSessionTest, DISABLED_PageThrottle) {
   StartNewUserSession();
 
   // Try to open a page from google.com.
@@ -718,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, PageThrottle) {
   DVLOG(1) << "Loaded page at the end : " << title;
 }
 
-IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
+IN_PROC_BROWSER_TEST_F(MergeSessionTest, DISABLED_XHRThrottle) {
   StartNewUserSession();
 
   // Wait until we get send merge session request.
