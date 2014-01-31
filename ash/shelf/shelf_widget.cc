@@ -636,9 +636,9 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
   status_container->SetLayoutManager(
       new internal::StatusAreaLayoutManager(this));
 
-  shelf_container->set_event_targeter(scoped_ptr<ui::EventTargeter>(new
+  shelf_container->SetEventTargeter(scoped_ptr<ui::EventTargeter>(new
       ShelfWindowTargeter(shelf_container, shelf_layout_manager_)));
-  status_container->set_event_targeter(scoped_ptr<ui::EventTargeter>(new
+  status_container->SetEventTargeter(scoped_ptr<ui::EventTargeter>(new
       ShelfWindowTargeter(status_container, shelf_layout_manager_)));
 
   views::Widget::AddObserver(this);

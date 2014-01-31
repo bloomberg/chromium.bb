@@ -433,6 +433,13 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
     layout_manager_->OnWindowAddedToLayout(*it);
 }
 
+scoped_ptr<ui::EventTargeter>
+Window::SetEventTargeter(scoped_ptr<ui::EventTargeter> targeter) {
+  scoped_ptr<ui::EventTargeter> old_targeter = targeter_.Pass();
+  targeter_ = targeter.Pass();
+  return old_targeter.Pass();
+}
+
 void Window::SetBounds(const gfx::Rect& new_bounds) {
   if (parent_ && parent_->layout_manager())
     parent_->layout_manager()->SetChildBounds(this, new_bounds);

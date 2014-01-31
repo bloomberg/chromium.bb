@@ -312,7 +312,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
       app_list_main_view_));
   set_background(NULL);
-  window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+  window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new views::BubbleWindowTargeter(this)));
 #else
   set_background(new AppListBackground(

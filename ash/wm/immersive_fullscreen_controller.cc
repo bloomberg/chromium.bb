@@ -255,7 +255,7 @@ void ImmersiveFullscreenController::Init(Delegate* delegate,
   top_container_ = top_container;
   widget_ = widget;
   native_window_ = widget_->GetNativeWindow();
-  native_window_->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+  native_window_->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new ResizeHandleWindowTargeter(native_window_, this)));
 }
 

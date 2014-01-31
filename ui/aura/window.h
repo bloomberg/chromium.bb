@@ -163,9 +163,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void SetLayoutManager(LayoutManager* layout_manager);
   LayoutManager* layout_manager() { return layout_manager_.get(); }
 
-  void set_event_targeter(scoped_ptr<ui::EventTargeter> targeter) {
-    targeter_ = targeter.Pass();
-  }
+  // Sets a new event-targeter for the window, and returns the previous
+  // event-targeter.
+  scoped_ptr<ui::EventTargeter> SetEventTargeter(
+      scoped_ptr<ui::EventTargeter> targeter);
 
   // Changes the bounds of the window. If present, the window's parent's
   // LayoutManager may adjust the bounds.

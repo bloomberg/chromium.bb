@@ -103,7 +103,7 @@ TEST_F(BubbleWindowTargeterTest, HitTest) {
     EXPECT_EQ(bubble_window, targeter->FindTargetForEvent(root, &move1));
   }
 
-  bubble_window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+  bubble_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new BubbleWindowTargeter(bubble_delegate())));
   {
     bubble_delegate()->set_margins(gfx::Insets(20, 20, 20, 20));

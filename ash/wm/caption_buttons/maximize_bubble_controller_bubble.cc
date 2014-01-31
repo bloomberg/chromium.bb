@@ -391,7 +391,7 @@ MaximizeBubbleControllerBubble::MaximizeBubbleControllerBubble(
     StartFade(true);
 
   aura::Window* window = bubble_widget_->GetNativeWindow();
-  window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+  window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new MaximizeBubbleTargeter(window, bubble_border_)));
 
   ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(

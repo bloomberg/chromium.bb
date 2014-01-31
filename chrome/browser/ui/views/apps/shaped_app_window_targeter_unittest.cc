@@ -96,7 +96,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
   // receive events outside of its bounds. Verify that this window-targeter is
   // active unless the window has a custom shape.
   gfx::Insets inset(-30, -30, -30, -30);
-  root_window()->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+  root_window()->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new wm::EasyResizeWindowTargeter(root_window(), inset, inset)));
 
   aura::Window* window = widget()->GetNativeWindow();

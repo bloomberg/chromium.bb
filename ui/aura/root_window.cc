@@ -114,7 +114,7 @@ RootWindow::RootWindow(const CreateParams& params)
       held_event_factory_(this) {
   window()->set_dispatcher(this);
   window()->SetName("RootWindow");
-  window()->set_event_targeter(
+  window()->SetEventTargeter(
       scoped_ptr<ui::EventTargeter>(new WindowTargeter()));
 
   prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),

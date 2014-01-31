@@ -198,7 +198,7 @@ void SetUsesEasyResizeTargeter(aura::Window* container) {
                            -kResizeOutsideBoundsSize);
   gfx::Insets touch_extend = mouse_extend.Scale(
       kResizeOutsideBoundsScaleForTouch);
-  container->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+  container->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new ::wm::EasyResizeWindowTargeter(container, mouse_extend,
                                          touch_extend)));
 }

@@ -149,7 +149,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     widget_->SetAlwaysOnTop(true);
 
     aura::Window* window = widget_->GetNativeWindow();
-    window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+    window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
         new TouchHandleWindowTargeter(window, this)));
 
     // We are owned by the TouchSelectionController.

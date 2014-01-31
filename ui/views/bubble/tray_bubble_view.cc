@@ -356,7 +356,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
     layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
 
   GetWidget()->Show();
-  GetWidget()->GetNativeWindow()->set_event_targeter(
+  GetWidget()->GetNativeWindow()->SetEventTargeter(
       scoped_ptr<ui::EventTargeter>(new BubbleWindowTargeter(this)));
   UpdateBubble();
 }

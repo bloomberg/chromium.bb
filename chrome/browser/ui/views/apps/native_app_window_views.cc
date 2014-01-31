@@ -946,13 +946,13 @@ void NativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
   if (shape_) {
     window_->SetShape(new SkRegion(*shape_));
     if (!had_shape) {
-      native_window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+      native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
           new ShapedAppWindowTargeter(native_window, this)));
     }
   } else {
     window_->SetShape(NULL);
     if (had_shape)
-      native_window->set_event_targeter(scoped_ptr<ui::EventTargeter>());
+      native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>());
   }
 }
 

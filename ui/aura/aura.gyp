@@ -103,6 +103,8 @@
         'root_window_transformer.h',
         'root_window.cc',
         'root_window.h',
+        'scoped_window_targeter.cc',
+        'scoped_window_targeter.h',
         'window.cc',
         'window.h',
         'window_targeter.cc',

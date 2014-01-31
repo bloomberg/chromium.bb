@@ -188,7 +188,7 @@ aura::Window* KeyboardController::GetContainerWindow() {
   if (!container_.get()) {
     container_.reset(new aura::Window(
         new KeyboardWindowDelegate(proxy_.get())));
-    container_->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+    container_->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
         new KeyboardContainerTargeter(container_.get(), proxy_.get())));
     container_->SetName("KeyboardContainer");
     container_->set_owned_by_parent(false);

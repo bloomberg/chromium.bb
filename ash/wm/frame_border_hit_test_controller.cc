@@ -21,7 +21,7 @@ namespace ash {
 
 FrameBorderHitTestController::FrameBorderHitTestController(views::Widget* frame)
     : frame_window_(frame->GetNativeWindow()) {
-  frame_window_->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+  frame_window_->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new ResizeHandleWindowTargeter(frame_window_, NULL)));
 }
 
