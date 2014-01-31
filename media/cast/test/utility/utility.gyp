@@ -18,11 +18,14 @@
 
       ],
       'sources': [
-        'input_helper.cc',
-        'input_helper.h',
-        '<(DEPTH)/media/cast/test/audio_utility.cc',
         '<(DEPTH)/media/cast/test/fake_task_runner.cc',
-        '<(DEPTH)/media/cast/test/video_utility.cc',
+        '<(DEPTH)/media/cast/test/fake_task_runner.h',
+        'input_builder.cc',
+        'input_builder.h',
+        'audio_utility.cc',
+        'audio_utility.h',
+        'video_utility.cc',
+        'video_utility.h',
       ], # source
     },
   ],

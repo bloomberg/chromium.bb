@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "media/base/video_frame.h"
@@ -22,10 +23,9 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/test/audio_utility.h"
-#include "media/cast/test/crypto_utility.h"
 #include "media/cast/test/fake_task_runner.h"
-#include "media/cast/test/video_utility.h"
+#include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
@@ -34,6 +34,8 @@
 
 namespace media {
 namespace cast {
+
+namespace {
 
 static const int64 kStartMillisecond = GG_INT64_C(1245);
 static const int kAudioChannels = 2;
@@ -58,11 +60,22 @@ static const int kFrameTimerMs = 33;
 // retransmitted.
 static const int kTimerErrorMs = 15;
 
-namespace {
+std::string ConvertFromBase16String(const std::string base_16) {
+  std::string compressed;
+  DCHECK_EQ(base_16.size() % 2, 0u) << "Must be a multiple of 2";
+  compressed.reserve(base_16.size() / 2);
+
+  std::vector<uint8> v;
+  if (!base::HexStringToBytes(base_16, &v)) {
+    NOTREACHED();
+  }
+  compressed.assign(reinterpret_cast<const char*>(&v[0]), v.size());
+  return compressed;
+}
+
 // Dummy callback function that does nothing except to accept ownership of
 // |audio_bus| for destruction.
-void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
-}
+void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {}
 void UpdateCastTransportStatus(transport::CastTransportStatus status) {
   EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
 }
@@ -76,8 +89,7 @@ class LoopBackTransport : public transport::PacketSender {
       : send_packets_(true),
         drop_packets_belonging_to_odd_frames_(false),
         reset_reference_frame_id_(false),
-        cast_environment_(cast_environment) {
-  }
+        cast_environment_(cast_environment) {}
 
   void SetPacketReceiver(
       const transport::PacketReceiverCallback& packet_receiver) {
@@ -86,11 +98,13 @@ class LoopBackTransport : public transport::PacketSender {
 
   virtual bool SendPacket(const Packet& packet) OVERRIDE {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-    if (!send_packets_) return false;
+    if (!send_packets_)
+      return false;
 
     if (drop_packets_belonging_to_odd_frames_) {
       uint32 frame_id = packet[13];
-      if (frame_id % 2 == 1) return true;
+      if (frame_id % 2 == 1)
+        return true;
     }
 
     scoped_ptr<Packet> packet_copy(new Packet(packet));
@@ -102,17 +116,13 @@ class LoopBackTransport : public transport::PacketSender {
     return true;
   }
 
-  void SetSendPackets(bool send_packets) {
-    send_packets_ = send_packets;
-  }
+  void SetSendPackets(bool send_packets) { send_packets_ = send_packets; }
 
   void DropAllPacketsBelongingToOddFrames() {
     drop_packets_belonging_to_odd_frames_ = true;
   }
 
-  void AlwaysResetReferenceFrameId() {
-    reset_reference_frame_id_ = true;
-  }
+  void AlwaysResetReferenceFrameId() { reset_reference_frame_id_ = true; }
 
  private:
   transport::PacketReceiverCallback packet_receiver_;
@@ -123,8 +133,8 @@ class LoopBackTransport : public transport::PacketSender {
 };
 
 // Class that verifies the audio frames coming out of the receiver.
-class TestReceiverAudioCallback :
-     public base::RefCountedThreadSafe<TestReceiverAudioCallback>  {
+class TestReceiverAudioCallback
+    : public base::RefCountedThreadSafe<TestReceiverAudioCallback> {
  public:
   struct ExpectedAudioFrame {
     PcmAudioFrame audio_frame;
@@ -132,8 +142,7 @@ class TestReceiverAudioCallback :
     base::TimeTicks record_time;
   };
 
-  TestReceiverAudioCallback()
-      : num_called_(0) {}
+  TestReceiverAudioCallback() : num_called_(0) {}
 
   void SetExpectedSamplingFrequency(int expected_sampling_frequency) {
     expected_sampling_frequency_ = expected_sampling_frequency;
@@ -160,10 +169,11 @@ class TestReceiverAudioCallback :
     EXPECT_EQ(audio_frame->channels, kAudioChannels);
     EXPECT_EQ(audio_frame->frequency, expected_sampling_frequency_);
     EXPECT_EQ(static_cast<int>(audio_frame->samples.size()),
-        expected_audio_frame.num_10ms_blocks * kAudioChannels *
-            expected_sampling_frequency_ / 100);
+              expected_audio_frame.num_10ms_blocks * kAudioChannels *
+                  expected_sampling_frequency_ / 100);
 
-    const base::TimeTicks upper_bound = expected_audio_frame.record_time +
+    const base::TimeTicks upper_bound =
+        expected_audio_frame.record_time +
         base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs +
                                           kTimerErrorMs);
     EXPECT_GE(upper_bound, playout_time)
@@ -185,7 +195,8 @@ class TestReceiverAudioCallback :
     CheckBasicAudioFrame(audio_frame, playout_time);
     ExpectedAudioFrame expected_audio_frame = expected_frame_.front();
     expected_frame_.pop_front();
-    if (audio_frame->samples.size() == 0) return;  // No more checks needed.
+    if (audio_frame->samples.size() == 0)
+      return;  // No more checks needed.
 
     EXPECT_NEAR(CountZeroCrossings(expected_audio_frame.audio_frame.samples),
                 CountZeroCrossings(audio_frame->samples),
@@ -202,16 +213,18 @@ class TestReceiverAudioCallback :
     expected_frame_.pop_front();
 
     EXPECT_EQ(static_cast<int>(audio_frame->data.size()),
-        2 * kAudioChannels * expected_sampling_frequency_ / 100);
+              2 * kAudioChannels * expected_sampling_frequency_ / 100);
 
     base::TimeDelta time_since_recording =
-       playout_time - expected_audio_frame.record_time;
+        playout_time - expected_audio_frame.record_time;
 
-    EXPECT_LE(time_since_recording, base::TimeDelta::FromMilliseconds(
-        kDefaultRtpMaxDelayMs + kTimerErrorMs));
+    EXPECT_LE(time_since_recording,
+              base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs +
+                                                kTimerErrorMs));
 
     EXPECT_LT(expected_audio_frame.record_time, playout_time);
-    if (audio_frame->data.size() == 0) return;  // No more checks needed.
+    if (audio_frame->data.size() == 0)
+      return;  // No more checks needed.
 
     // We need to convert our "coded" audio frame to our raw format.
     std::vector<int16> output_audio_samples;
@@ -229,9 +242,7 @@ class TestReceiverAudioCallback :
                 1);
   }
 
-  int number_times_called() const {
-    return num_called_;
-  }
+  int number_times_called() const { return num_called_; }
 
  protected:
   virtual ~TestReceiverAudioCallback() {}
@@ -245,8 +256,8 @@ class TestReceiverAudioCallback :
 };
 
 // Class that verifies the video frames coming out of the receiver.
-class TestReceiverVideoCallback :
-     public base::RefCountedThreadSafe<TestReceiverVideoCallback>  {
+class TestReceiverVideoCallback
+    : public base::RefCountedThreadSafe<TestReceiverVideoCallback> {
  public:
   struct ExpectedVideoFrame {
     int start_value;
@@ -255,8 +266,7 @@ class TestReceiverVideoCallback :
     base::TimeTicks capture_time;
   };
 
-  TestReceiverVideoCallback()
-      : num_called_(0) {}
+  TestReceiverVideoCallback() : num_called_(0) {}
 
   void AddExpectedResult(int start_value,
                          int width,
@@ -279,7 +289,7 @@ class TestReceiverVideoCallback :
     expected_frame_.pop_front();
 
     base::TimeDelta time_since_capture =
-       render_time - expected_video_frame.capture_time;
+        render_time - expected_video_frame.capture_time;
     const base::TimeDelta upper_bound = base::TimeDelta::FromMilliseconds(
         kDefaultRtpMaxDelayMs + kTimerErrorMs);
 
@@ -293,13 +303,13 @@ class TestReceiverVideoCallback :
     gfx::Size size(expected_video_frame.width, expected_video_frame.height);
     scoped_refptr<media::VideoFrame> expected_I420_frame =
         media::VideoFrame::CreateFrame(
-        VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
+            VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
     PopulateVideoFrame(expected_I420_frame, expected_video_frame.start_value);
 
     EXPECT_GE(I420PSNR(expected_I420_frame, video_frame), kVideoAcceptedPSNR);
   }
 
-  int number_times_called() { return num_called_;}
+  int number_times_called() { return num_called_; }
 
  protected:
   virtual ~TestReceiverVideoCallback() {}
@@ -310,7 +320,6 @@ class TestReceiverVideoCallback :
   int num_called_;
   std::list<ExpectedVideoFrame> expected_frame_;
 };
-
 
 CastLoggingConfig EnableCastLoggingConfig(bool sender) {
   CastLoggingConfig config(sender);
@@ -330,8 +339,13 @@ class End2EndTest : public ::testing::Test {
         transport_task_runner_(new test::FakeTaskRunner(testing_clock_)),
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
-            task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, task_runner_, EnableCastLoggingConfig(true))),
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            EnableCastLoggingConfig(true))),
         receiver_to_sender_(cast_environment_),
         sender_to_receiver_(cast_environment_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
@@ -356,8 +370,7 @@ class End2EndTest : public ::testing::Test {
 
     audio_receiver_config_.feedback_ssrc =
         audio_sender_config_.incoming_feedback_ssrc;
-    audio_receiver_config_.incoming_ssrc =
-        audio_sender_config_.sender_ssrc;
+    audio_receiver_config_.incoming_ssrc = audio_sender_config_.sender_ssrc;
     audio_receiver_config_.rtp_payload_type =
         audio_sender_config_.rtp_config.payload_type;
     audio_receiver_config_.use_external_decoder = external_audio_decoder;
@@ -387,8 +400,7 @@ class End2EndTest : public ::testing::Test {
 
     video_receiver_config_.feedback_ssrc =
         video_sender_config_.incoming_feedback_ssrc;
-    video_receiver_config_.incoming_ssrc =
-        video_sender_config_.sender_ssrc;
+    video_receiver_config_.incoming_ssrc = video_sender_config_.sender_ssrc;
     video_receiver_config_.rtp_payload_type =
         video_sender_config_.rtp_config.payload_type;
     video_receiver_config_.use_external_decoder = false;
@@ -405,11 +417,11 @@ class End2EndTest : public ::testing::Test {
   }
 
   void Create() {
-    cast_receiver_.reset(CastReceiver::CreateCastReceiver(
-        cast_environment_,
-        audio_receiver_config_,
-        video_receiver_config_,
-        &receiver_to_sender_));
+    cast_receiver_.reset(
+        CastReceiver::CreateCastReceiver(cast_environment_,
+                                         audio_receiver_config_,
+                                         video_receiver_config_,
+                                         &receiver_to_sender_));
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         testing_clock_,
         transport_config_,
@@ -431,9 +443,11 @@ class End2EndTest : public ::testing::Test {
     frame_input_ = cast_sender_->frame_input();
     frame_receiver_ = cast_receiver_->frame_receiver();
 
-    audio_bus_factory_.reset(new TestAudioBusFactory(
-        audio_sender_config_.channels, audio_sender_config_.frequency,
-        kSoundFrequency, kSoundVolume));
+    audio_bus_factory_.reset(
+        new TestAudioBusFactory(audio_sender_config_.channels,
+                                audio_sender_config_.frequency,
+                                kSoundFrequency,
+                                kSoundVolume));
   }
 
   virtual ~End2EndTest() {}
@@ -447,14 +461,14 @@ class End2EndTest : public ::testing::Test {
   void SendVideoFrame(int start_value, const base::TimeTicks& capture_time) {
     if (start_time_.is_null())
       start_time_ = testing_clock_->NowTicks();
-      start_time_ = testing_clock_->NowTicks();
+    start_time_ = testing_clock_->NowTicks();
     base::TimeDelta time_diff = testing_clock_->NowTicks() - start_time_;
     gfx::Size size(kVideoWidth, kVideoHeight);
-    EXPECT_TRUE(VideoFrame::IsValidConfig(VideoFrame::I420,
-                                          size, gfx::Rect(size), size));
+    EXPECT_TRUE(VideoFrame::IsValidConfig(
+        VideoFrame::I420, size, gfx::Rect(size), size));
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
-        VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
+            VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
     PopulateVideoFrame(video_frame, start_value);
     frame_input_->InsertRawVideoFrame(video_frame, capture_time);
   }
@@ -514,8 +528,11 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
     audio_diff -= num_10ms_blocks * 10;
     base::TimeTicks send_time = testing_clock_->NowTicks();
 
-    test_receiver_video_callback_->AddExpectedResult(video_start,
-        video_sender_config_.width, video_sender_config_.height, send_time);
+    test_receiver_video_callback_->AddExpectedResult(
+        video_start,
+        video_sender_config_.width,
+        video_sender_config_.height,
+        send_time);
 
     scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
@@ -526,11 +543,14 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
       // ignore the first frame.
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
-          num_10ms_blocks, send_time);
+          num_10ms_blocks,
+          send_time);
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     SendVideoFrame(video_start, send_time);
@@ -539,20 +559,22 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
     audio_diff += kFrameTimerMs;
 
     if (i == 0) {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     } else {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     }
 
     frame_receiver_->GetRawVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-            test_receiver_video_callback_));
+                   test_receiver_video_callback_));
 
     video_start++;
   }
@@ -566,7 +588,8 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
 // TODO(mikhal): Crashes on the Win7 x64 bots. Re-enable.
 // http://crbug.com/329563
 #if defined(OS_WIN)
-#define MAYBE_LoopNoLossPcm16ExternalDecoder DISABLED_LoopNoLossPcm16ExternalDecoder
+#define MAYBE_LoopNoLossPcm16ExternalDecoder \
+  DISABLED_LoopNoLossPcm16ExternalDecoder
 #else
 #define MAYBE_LoopNoLossPcm16ExternalDecoder LoopNoLossPcm16ExternalDecoder
 #endif
@@ -583,16 +606,19 @@ TEST_F(End2EndTest, MAYBE_LoopNoLossPcm16ExternalDecoder) {
         base::TimeDelta::FromMilliseconds(10)));
     test_receiver_audio_callback_->AddExpectedResult(
         ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
-        1, send_time);
+        1,
+        send_time);
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     RunTasks(10);
     frame_receiver_->GetCodedAudioFrame(
         base::Bind(&TestReceiverAudioCallback::CheckCodedPcmAudioFrame,
-            test_receiver_audio_callback_));
+                   test_receiver_audio_callback_));
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(10, test_receiver_audio_callback_->number_times_called());
@@ -620,25 +646,30 @@ TEST_F(End2EndTest, MAYBE_LoopNoLossOpus) {
     if (i != 0) {
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
-          num_10ms_blocks, send_time);
+          num_10ms_blocks,
+          send_time);
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     RunTasks(30);
 
     if (i == 0) {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     } else {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     }
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
@@ -667,7 +698,9 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     SendVideoFrame(video_start, send_time);
@@ -691,34 +724,42 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
     if (j >= number_of_audio_frames_to_ignore) {
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
-          num_10ms_blocks, send_time);
+          num_10ms_blocks,
+          send_time);
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
-    test_receiver_video_callback_->AddExpectedResult(video_start,
-        video_sender_config_.width, video_sender_config_.height, send_time);
+    test_receiver_video_callback_->AddExpectedResult(
+        video_start,
+        video_sender_config_.width,
+        video_sender_config_.height,
+        send_time);
 
     SendVideoFrame(video_start, send_time);
     RunTasks(kFrameTimerMs);
     audio_diff += kFrameTimerMs;
 
     if (j < number_of_audio_frames_to_ignore) {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
-         audio_sender_config_.frequency,
-         base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
-              test_receiver_audio_callback_));
-     } else {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
+          audio_sender_config_.frequency,
+          base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
+                     test_receiver_audio_callback_));
+    } else {
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     }
     frame_receiver_->GetRawVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-            test_receiver_video_callback_));
+                   test_receiver_video_callback_));
     video_start++;
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
@@ -740,10 +781,12 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
   RunTasks(kFrameTimerMs);
 
   test_receiver_video_callback_->AddExpectedResult(video_start,
-      video_sender_config_.width, video_sender_config_.height, send_time);
+                                                   video_sender_config_.width,
+                                                   video_sender_config_.height,
+                                                   send_time);
   frame_receiver_->GetRawVideoFrame(
       base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-          test_receiver_video_callback_));
+                 test_receiver_video_callback_));
 
   RunTasks(750);  // Make sure that we send a RTCP packet.
 
@@ -767,11 +810,13 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
   RunTasks(kFrameTimerMs);
 
   test_receiver_video_callback_->AddExpectedResult(video_start,
-      video_sender_config_.width, video_sender_config_.height, send_time);
+                                                   video_sender_config_.width,
+                                                   video_sender_config_.height,
+                                                   send_time);
 
   frame_receiver_->GetRawVideoFrame(
       base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-          test_receiver_video_callback_));
+                 test_receiver_video_callback_));
 
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(2, test_receiver_video_callback_->number_times_called());
@@ -793,14 +838,17 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
     SendVideoFrame(video_start, send_time);
 
     if (i % 2 == 0) {
-      test_receiver_video_callback_->AddExpectedResult(video_start,
-          video_sender_config_.width, video_sender_config_.height, send_time);
+      test_receiver_video_callback_->AddExpectedResult(
+          video_start,
+          video_sender_config_.width,
+          video_sender_config_.height,
+          send_time);
 
       // GetRawVideoFrame will not return the frame until we are close in
       // time before we should render the frame.
       frame_receiver_->GetRawVideoFrame(
           base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-              test_receiver_video_callback_));
+                     test_receiver_video_callback_));
     }
     RunTasks(kFrameTimerMs);
     video_start++;
@@ -822,8 +870,11 @@ TEST_F(End2EndTest, ResetReferenceFrameId) {
     const base::TimeTicks send_time = testing_clock_->NowTicks();
     SendVideoFrame(frames_counter, send_time);
 
-    test_receiver_video_callback_->AddExpectedResult(frames_counter,
-        video_sender_config_.width, video_sender_config_.height, send_time);
+    test_receiver_video_callback_->AddExpectedResult(
+        frames_counter,
+        video_sender_config_.width,
+        video_sender_config_.height,
+        send_time);
 
     // GetRawVideoFrame will not return the frame until we are close to the
     // time in which we should render the frame.
@@ -856,8 +907,11 @@ TEST_F(End2EndTest, CryptoVideo) {
 
     SendVideoFrame(frames_counter, send_time);
 
-    test_receiver_video_callback_->AddExpectedResult(frames_counter,
-        video_sender_config_.width, video_sender_config_.height, send_time);
+    test_receiver_video_callback_->AddExpectedResult(
+        frames_counter,
+        video_sender_config_.width,
+        video_sender_config_.height,
+        send_time);
 
     // GetRawVideoFrame will not return the frame until we are close to the
     // time in which we should render the frame.
@@ -881,9 +935,9 @@ TEST_F(End2EndTest, MAYBE_CryptoAudio) {
   SetupConfig(transport::kPcm16, 32000, false, 1);
 
   transport_config_.aes_iv_mask =
-     ConvertFromBase16String("abcdeffedcba12345678900987654321");
+      ConvertFromBase16String("abcdeffedcba12345678900987654321");
   transport_config_.aes_key =
-     ConvertFromBase16String("deadbeefcafecafedeadbeefb0b0b0b0");
+      ConvertFromBase16String("deadbeefcafecafedeadbeefb0b0b0b0");
 
   audio_receiver_config_.aes_iv_mask = transport_config_.aes_iv_mask;
   audio_receiver_config_.aes_key = transport_config_.aes_key;
@@ -905,24 +959,29 @@ TEST_F(End2EndTest, MAYBE_CryptoAudio) {
       // ignore the first frame.
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
-          num_10ms_blocks, send_time);
+          num_10ms_blocks,
+          send_time);
     }
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     RunTasks(num_10ms_blocks * 10);
 
     if (frames_counter == 0) {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           32000,
           base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     } else {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           32000,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     }
   }
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
@@ -940,15 +999,18 @@ TEST_F(End2EndTest, VideoLogging) {
   int i = 0;
   for (; i < 1; ++i) {
     base::TimeTicks send_time = testing_clock_->NowTicks();
-    test_receiver_video_callback_->AddExpectedResult(video_start,
-        video_sender_config_.width, video_sender_config_.height, send_time);
+    test_receiver_video_callback_->AddExpectedResult(
+        video_start,
+        video_sender_config_.width,
+        video_sender_config_.height,
+        send_time);
 
     SendVideoFrame(video_start, send_time);
     RunTasks(kFrameTimerMs);
 
     frame_receiver_->GetRawVideoFrame(
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-            test_receiver_video_callback_));
+                   test_receiver_video_callback_));
 
     video_start++;
   }
@@ -970,29 +1032,25 @@ TEST_F(End2EndTest, VideoLogging) {
   // Choose a video frame, and verify that all events were logged.
   std::vector<CastLoggingEvent> event_log = frame_it->second.type;
   std::vector<CastLoggingEvent>::iterator event_it;
-  event_it = std::find(event_log.begin(), event_log.end(),
-                       kVideoFrameSentToEncoder);
+  event_it =
+      std::find(event_log.begin(), event_log.end(), kVideoFrameSentToEncoder);
   EXPECT_TRUE(event_it != event_log.end());
   event_log.erase(event_it);
 
-  event_it = std::find(event_log.begin(), event_log.end(),
-                       kVideoFrameEncoded);
+  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameEncoded);
   EXPECT_TRUE(event_it != event_log.end());
   event_log.erase(event_it);
 
-  event_it = std::find(event_log.begin(), event_log.end(),
-                       kVideoFrameReceived);
+  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameReceived);
   EXPECT_TRUE(event_it != event_log.end());
   event_log.erase(event_it);
 
-  event_it = std::find(event_log.begin(), event_log.end(),
-                       kVideoRenderDelay);
+  event_it = std::find(event_log.begin(), event_log.end(), kVideoRenderDelay);
   EXPECT_TRUE(event_it != event_log.end());
   event_log.erase(event_it);
 
   // TODO(mikhal): Plumb this one through.
-  event_it = std::find(event_log.begin(), event_log.end(),
-                       kVideoFrameDecoded);
+  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameDecoded);
   EXPECT_TRUE(event_it == event_log.end());
 
   // Verify that there were no other events logged with respect to this frame.
@@ -1006,8 +1064,9 @@ TEST_F(End2EndTest, VideoLogging) {
   PacketRawMap::const_iterator packet_it = packet_raw_log.begin();
   // Choose a packet, and verify that all events were logged.
   event_log = (++(packet_it->second.packet_map.begin()))->second.type;
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kVideoPacketReceived)) != event_log.end());
+  EXPECT_TRUE(
+      (std::find(event_log.begin(), event_log.end(), kVideoPacketReceived)) !=
+      event_log.end());
 
   RunTasks(750);  // Make sure that we send a RTCP message with the log.
 
@@ -1022,12 +1081,10 @@ TEST_F(End2EndTest, VideoLogging) {
   // Choose a video frame, and verify that all events were logged.
   event_log = frame_it->second.type;
 
-  event_it = std::find(event_log.begin(), event_log.end(),
-                       kVideoFrameEncoded);
+  event_it = std::find(event_log.begin(), event_log.end(), kVideoFrameEncoded);
   EXPECT_TRUE(event_it != event_log.end());
 
-  event_it = std::find(event_log.begin(), event_log.end(),
-                       kVideoRenderDelay);
+  event_it = std::find(event_log.begin(), event_log.end(), kVideoRenderDelay);
 
   EXPECT_TRUE(event_it != event_log.end());
 }
@@ -1061,32 +1118,37 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
       // ignore the first frame.
       test_receiver_audio_callback_->AddExpectedResult(
           ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
-          num_10ms_blocks, send_time);
+          num_10ms_blocks,
+          send_time);
     }
 
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        send_time,
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     RunTasks(kFrameTimerMs);
     audio_diff += kFrameTimerMs;
 
     if (i == 0) {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     } else {
-      frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
+      frame_receiver_->GetRawAudioFrame(
+          num_10ms_blocks,
           audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
-              test_receiver_audio_callback_));
+                     test_receiver_audio_callback_));
     }
   }
 
   // Basic tests.
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
-  //EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
+  // EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
   EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
   // Logging tests.
   LoggingImpl* sender_log = cast_environment_->Logging();
@@ -1096,23 +1158,25 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
   // rtp_timestamp for audio for this to work.
   // Should have logged both audio and video. Every frame should have only one
   // entry.
-  //EXPECT_EQ(static_cast<unsigned int>(i - 1), frame_raw_log.size());
+  // EXPECT_EQ(static_cast<unsigned int>(i - 1), frame_raw_log.size());
   FrameRawMap::const_iterator frame_it = frame_raw_log.begin();
   // Choose a video frame, and verify that all events were logged.
   std::vector<CastLoggingEvent> event_log = frame_it->second.type;
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kAudioFrameReceived)) != event_log.end());
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kAudioFrameEncoded)) != event_log.end());
+  EXPECT_TRUE(
+      (std::find(event_log.begin(), event_log.end(), kAudioFrameReceived)) !=
+      event_log.end());
+  EXPECT_TRUE(
+      (std::find(event_log.begin(), event_log.end(), kAudioFrameEncoded)) !=
+      event_log.end());
   // EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
   //              kAudioPlayoutDelay)) != event_log.end());
   // TODO(mikhal): Plumb this one through.
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kAudioFrameDecoded)) == event_log.end());
+  EXPECT_TRUE(
+      (std::find(event_log.begin(), event_log.end(), kAudioFrameDecoded)) ==
+      event_log.end());
   // Verify that there were no other events logged with respect to this frame.
   EXPECT_EQ(2u, event_log.size());
 }
-
 
 // TODO(pwestin): Add repeatable packet loss test.
 // TODO(pwestin): Add test for misaligned send get calls.

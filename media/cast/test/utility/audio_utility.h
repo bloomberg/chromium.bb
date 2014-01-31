@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_TEST_AUDIO_UTILITY_H_
-#define MEDIA_CAST_TEST_AUDIO_UTILITY_H_
+#ifndef MEDIA_CAST_TEST_UTILITY_AUDIO_UTILITY_H_
+#define MEDIA_CAST_TEST_UTILITY_AUDIO_UTILITY_H_
 
 #include "media/audio/simple_sources.h"
 
@@ -24,8 +24,10 @@ struct PcmAudioFrame;
 // the continuation of a single sine wave.
 class TestAudioBusFactory {
  public:
-  TestAudioBusFactory(int num_channels, int sample_rate,
-                      float sine_wave_frequency, float volume);
+  TestAudioBusFactory(int num_channels,
+                      int sample_rate,
+                      float sine_wave_frequency,
+                      float volume);
   ~TestAudioBusFactory();
 
   // Creates a new AudioBus of the given |duration|, filled with the next batch
@@ -59,4 +61,4 @@ int CountZeroCrossings(const std::vector<int16>& samples);
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_TEST_AUDIO_UTILITY_H_
+#endif  // MEDIA_CAST_TEST_UTILITY_AUDIO_UTILITY_H_

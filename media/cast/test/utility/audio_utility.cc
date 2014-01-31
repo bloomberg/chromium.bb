@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/test/audio_utility.h"
+#include "media/cast/test/utility/audio_utility.h"
 
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -29,8 +29,8 @@ TestAudioBusFactory::~TestAudioBusFactory() {}
 
 scoped_ptr<AudioBus> TestAudioBusFactory::NextAudioBus(
     const base::TimeDelta& duration) {
-  const int num_samples = static_cast<int>(
-      (sample_rate_ * duration) / base::TimeDelta::FromSeconds(1));
+  const int num_samples = static_cast<int>((sample_rate_ * duration) /
+                                           base::TimeDelta::FromSeconds(1));
   scoped_ptr<AudioBus> bus(AudioBus::Create(num_channels_, num_samples));
   source_.OnMoreData(bus.get(), AudioBuffersState());
   bus->Scale(volume_);
@@ -43,9 +43,9 @@ scoped_ptr<PcmAudioFrame> ToPcmAudioFrame(const AudioBus& audio_bus,
   audio_frame->channels = audio_bus.channels();
   audio_frame->frequency = sample_rate;
   audio_frame->samples.resize(audio_bus.channels() * audio_bus.frames());
-  audio_bus.ToInterleaved(
-      audio_bus.frames(), sizeof(audio_frame->samples.front()),
-      &audio_frame->samples.front());
+  audio_bus.ToInterleaved(audio_bus.frames(),
+                          sizeof(audio_frame->samples.front()),
+                          &audio_frame->samples.front());
   return audio_frame.Pass();
 }
 
@@ -60,8 +60,7 @@ int CountZeroCrossings(const std::vector<int16>& samples) {
   for (; i != samples.end() && abs(last) < kAmplitudeThreshold; ++i)
     last = *i;
   for (; i != samples.end(); ++i) {
-    if (abs(*i) >= kAmplitudeThreshold &&
-        (last < 0) != (*i < 0)) {
+    if (abs(*i) >= kAmplitudeThreshold && (last < 0) != (*i < 0)) {
       ++count;
       last = *i;
     }

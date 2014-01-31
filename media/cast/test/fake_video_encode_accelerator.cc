@@ -15,13 +15,11 @@ static const size_t kMinimumOutputBufferSize = 123456;
 
 FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator(
     VideoEncodeAccelerator::Client* client)
-    : client_(client),
-      first_(true) {
+    : client_(client), first_(true) {
   DCHECK(client);
 }
 
-FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {
-}
+FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {}
 
 void FakeVideoEncodeAccelerator::Initialize(
     media::VideoFrame::Format input_format,
@@ -36,9 +34,8 @@ void FakeVideoEncodeAccelerator::Initialize(
     return;
   }
   client_->NotifyInitializeDone();
-  client_->RequireBitstreamBuffers(kMinimumInputCount,
-                                   input_visible_size,
-                                   kMinimumOutputBufferSize);
+  client_->RequireBitstreamBuffers(
+      kMinimumInputCount, input_visible_size, kMinimumOutputBufferSize);
 }
 
 void FakeVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
@@ -65,16 +62,13 @@ void FakeVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void FakeVideoEncodeAccelerator::RequestEncodingParametersChange(
-    uint32 bitrate, uint32 framerate) {
+    uint32 bitrate,
+    uint32 framerate) {
   // No-op.
 }
 
-void FakeVideoEncodeAccelerator::Destroy() {
-  delete this;
-}
+void FakeVideoEncodeAccelerator::Destroy() { delete this; }
 
 }  // namespace test
 }  // namespace cast
 }  // namespace media
-
-

@@ -81,8 +81,6 @@
             'rtp_receiver/receiver_stats_unittest.cc',
             'rtp_receiver/rtp_parser/test/rtp_packet_builder.cc',
             'rtp_receiver/rtp_parser/rtp_parser_unittest.cc',
-            'test/crypto_utility.cc',
-            'test/crypto_utility.h',
             'test/encode_decode_test.cc',
             'test/end2end_unittest.cc',
             'test/fake_gpu_video_accelerator_factories.cc',

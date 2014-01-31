@@ -11,7 +11,7 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/test/fake_task_runner.h"
-#include "media/cast/test/video_utility.h"
+#include "media/cast/test/utility/video_utility.h"
 #include "media/cast/video_sender/video_encoder_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

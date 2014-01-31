@@ -21,7 +21,7 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/test/utility/input_helper.h"
+#include "media/cast/test/utility/input_builder.h"
 #include "media/cast/transport/transport/udp_transport.h"
 #include "net/base/net_util.h"
 
@@ -53,14 +53,13 @@ const int kVideoWindowHeight = 720;
 #endif  // OS_LINUX
 static const int kFrameTimerMs = 33;
 
-
 void GetPorts(int* tx_port, int* rx_port) {
-  test::InputBuilder tx_input("Enter send port.",
-      DEFAULT_SEND_PORT, 1, INT_MAX);
+  test::InputBuilder tx_input(
+      "Enter send port.", DEFAULT_SEND_PORT, 1, INT_MAX);
   *tx_port = tx_input.GetIntInput();
 
-  test::InputBuilder rx_input("Enter receive port.",
-      DEFAULT_RECEIVE_PORT, 1, INT_MAX);
+  test::InputBuilder rx_input(
+      "Enter receive port.", DEFAULT_RECEIVE_PORT, 1, INT_MAX);
   *rx_port = rx_input.GetIntInput();
 }
 
@@ -76,28 +75,30 @@ std::string GetIpAddress(const std::string display_text) {
 }
 
 void GetSsrcs(AudioReceiverConfig* audio_config) {
-  test::InputBuilder input_tx("Choose audio sender SSRC.",
-      DEFAULT_AUDIO_FEEDBACK_SSRC, 1, INT_MAX);
+  test::InputBuilder input_tx(
+      "Choose audio sender SSRC.", DEFAULT_AUDIO_FEEDBACK_SSRC, 1, INT_MAX);
   audio_config->feedback_ssrc = input_tx.GetIntInput();
 
-  test::InputBuilder input_rx("Choose audio receiver SSRC.",
-      DEFAULT_AUDIO_INCOMING_SSRC, 1, INT_MAX);
+  test::InputBuilder input_rx(
+      "Choose audio receiver SSRC.", DEFAULT_AUDIO_INCOMING_SSRC, 1, INT_MAX);
   audio_config->incoming_ssrc = input_tx.GetIntInput();
 }
 
 void GetSsrcs(VideoReceiverConfig* video_config) {
-  test::InputBuilder input_tx("Choose video sender SSRC.",
-      DEFAULT_VIDEO_FEEDBACK_SSRC, 1, INT_MAX);
+  test::InputBuilder input_tx(
+      "Choose video sender SSRC.", DEFAULT_VIDEO_FEEDBACK_SSRC, 1, INT_MAX);
   video_config->feedback_ssrc = input_tx.GetIntInput();
 
-  test::InputBuilder input_rx("Choose video receiver SSRC.",
-      DEFAULT_VIDEO_INCOMING_SSRC, 1, INT_MAX);
+  test::InputBuilder input_rx(
+      "Choose video receiver SSRC.", DEFAULT_VIDEO_INCOMING_SSRC, 1, INT_MAX);
   video_config->incoming_ssrc = input_rx.GetIntInput();
 }
 
 void GetPayloadtype(AudioReceiverConfig* audio_config) {
   test::InputBuilder input("Choose audio receiver payload type.",
-      DEFAULT_AUDIO_PAYLOAD_TYPE, 96, 127);
+                           DEFAULT_AUDIO_PAYLOAD_TYPE,
+                           96,
+                           127);
   audio_config->rtp_payload_type = input.GetIntInput();
 }
 
@@ -119,7 +120,9 @@ AudioReceiverConfig GetAudioReceiverConfig() {
 
 void GetPayloadtype(VideoReceiverConfig* video_config) {
   test::InputBuilder input("Choose video receiver payload type.",
-      DEFAULT_VIDEO_PAYLOAD_TYPE, 96, 127);
+                           DEFAULT_VIDEO_PAYLOAD_TYPE,
+                           96,
+                           127);
   video_config->rtp_payload_type = input.GetIntInput();
 }
 
@@ -145,12 +148,13 @@ static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
 class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
  public:
   explicit ReceiveProcess(scoped_refptr<FrameReceiver> frame_receiver)
-    : frame_receiver_(frame_receiver),
+      : frame_receiver_(frame_receiver),
 #if defined(OS_LINUX)
-      render_(0, 0, kVideoWindowWidth, kVideoWindowHeight, "Cast_receiver"),
-#endif // OS_LINUX
-      last_playout_time_(),
-      last_render_time_() {}
+        render_(0, 0, kVideoWindowWidth, kVideoWindowHeight, "Cast_receiver"),
+#endif  // OS_LINUX
+        last_playout_time_(),
+        last_render_time_() {
+  }
 
   void Start() {
     GetAudioFrame(base::TimeDelta::FromMilliseconds(kFrameTimerMs));
@@ -164,14 +168,14 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
   friend class base::RefCountedThreadSafe<ReceiveProcess>;
 
   void DisplayFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& render_time) {
+                    const base::TimeTicks& render_time) {
 #ifdef OS_LINUX
     render_.RenderFrame(video_frame);
-#endif // OS_LINUX
+#endif  // OS_LINUX
     // Print out the delta between frames.
     if (!last_render_time_.is_null()) {
-        base::TimeDelta time_diff = render_time - last_render_time_;
-        VLOG(0) << " RenderDelay[mS] =  " << time_diff.InMilliseconds();
+      base::TimeDelta time_diff = render_time - last_render_time_;
+      VLOG(0) << " RenderDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_render_time_ = render_time;
     GetVideoFrame();
@@ -184,8 +188,8 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
     base::TimeDelta time_diff =
         base::TimeDelta::FromMilliseconds(kFrameTimerMs);
     if (!last_playout_time_.is_null()) {
-        time_diff = playout_time - last_playout_time_;
-        VLOG(0) << " ***PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
+      time_diff = playout_time - last_playout_time_;
+      VLOG(0) << " ***PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_playout_time_ = playout_time;
     GetAudioFrame(time_diff);
@@ -193,7 +197,9 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
 
   void GetAudioFrame(base::TimeDelta playout_diff) {
     int num_10ms_blocks = playout_diff.InMilliseconds() / 10;
-    frame_receiver_->GetRawAudioFrame(num_10ms_blocks, kAudioSamplingFrequency,
+    frame_receiver_->GetRawAudioFrame(
+        num_10ms_blocks,
+        kAudioSamplingFrequency,
         base::Bind(&ReceiveProcess::ReceiveAudioFrame, this));
   }
 
@@ -205,7 +211,7 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
   scoped_refptr<FrameReceiver> frame_receiver_;
 #ifdef OS_LINUX
   test::LinuxOutputWindow render_;
-#endif // OS_LINUX
+#endif  // OS_LINUX
   base::TimeTicks last_playout_time_;
   base::TimeTicks last_render_time_;
 };
@@ -229,8 +235,8 @@ int main(int argc, char** argv) {
 
   // Enable receiver side threads, and disable logging.
   // Running transport on main thread.
-  scoped_refptr<media::cast::CastEnvironment> cast_environment(new
-      media::cast::CastEnvironment(
+  scoped_refptr<media::cast::CastEnvironment> cast_environment(
+      new media::cast::CastEnvironment(
           clock.Pass(),
           main_message_loop.message_loop_proxy(),
           NULL,
@@ -278,10 +284,7 @@ int main(int argc, char** argv) {
           base::Bind(&media::cast::UpdateCastTransportStatus)));
   scoped_ptr<media::cast::CastReceiver> cast_receiver(
       media::cast::CastReceiver::CreateCastReceiver(
-      cast_environment,
-      audio_config,
-      video_config,
-      transport.get()));
+          cast_environment, audio_config, video_config, transport.get()));
 
   // TODO(hubbe): Make the cast receiver do this automatically.
   transport->StartReceiving(cast_receiver->packet_receiver());

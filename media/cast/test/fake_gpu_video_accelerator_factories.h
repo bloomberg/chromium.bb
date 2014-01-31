@@ -40,7 +40,7 @@ class FakeGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   virtual void ReadPixels(uint32 texture_id,
                           const gfx::Size& size,
-                          const SkBitmap& pixels) OVERRIDE {};
+                          const SkBitmap& pixels) OVERRIDE{};
 
   virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator(
       VideoCodecProfile profile,

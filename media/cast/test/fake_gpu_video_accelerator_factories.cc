@@ -13,11 +13,9 @@ namespace test {
 
 FakeGpuVideoAcceleratorFactories::FakeGpuVideoAcceleratorFactories(
     const scoped_refptr<base::TaskRunner>& fake_task_runner)
-    : fake_task_runner_(fake_task_runner) {
-}
+    : fake_task_runner_(fake_task_runner) {}
 
-FakeGpuVideoAcceleratorFactories::~FakeGpuVideoAcceleratorFactories() {
-}
+FakeGpuVideoAcceleratorFactories::~FakeGpuVideoAcceleratorFactories() {}
 
 scoped_ptr<VideoEncodeAccelerator>
 FakeGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator(
@@ -53,16 +51,13 @@ uint32 FakeGpuVideoAcceleratorFactories::CreateTextures(
 scoped_ptr<VideoDecodeAccelerator>
 FakeGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator(
     VideoCodecProfile profile,
-    VideoDecodeAccelerator::Client* client)  {
+    VideoDecodeAccelerator::Client* client) {
   return scoped_ptr<VideoDecodeAccelerator>(
       static_cast<media::VideoDecodeAccelerator*>(NULL));
 }
 
-bool FakeGpuVideoAcceleratorFactories::IsAborted() {
-  return false;
-}
+bool FakeGpuVideoAcceleratorFactories::IsAborted() { return false; }
 
 }  // namespace test
 }  // namespace cast
 }  // namespace media
-

@@ -15,9 +15,9 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/test/audio_utility.h"
-#include "media/cast/test/utility/input_helper.h"
-#include "media/cast/test/video_utility.h"
+#include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/input_builder.h"
+#include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/transport/udp_transport.h"
@@ -54,23 +54,21 @@ static const int kFrameTimerMs = 33;
 // Dummy callback function that does nothing except to accept ownership of
 // |audio_bus| for destruction. This guarantees that the audio_bus is valid for
 // the entire duration of the encode/send process (not equivalent to DoNothing).
-void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
-}
-} // namespace
+void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {}
+}  // namespace
 
 void GetPorts(int* tx_port, int* rx_port) {
-  test::InputBuilder tx_input("Enter send port.",
-      DEFAULT_SEND_PORT, 1, INT_MAX);
+  test::InputBuilder tx_input(
+      "Enter send port.", DEFAULT_SEND_PORT, 1, INT_MAX);
   *tx_port = tx_input.GetIntInput();
 
-  test::InputBuilder rx_input("Enter receive port.",
-      DEFAULT_RECEIVE_PORT, 1, INT_MAX);
+  test::InputBuilder rx_input(
+      "Enter receive port.", DEFAULT_RECEIVE_PORT, 1, INT_MAX);
   *rx_port = rx_input.GetIntInput();
 }
 
 std::string GetIpAddress(const std::string display_text) {
-  test::InputBuilder input(display_text, DEFAULT_SEND_IP,
-      INT_MIN, INT_MAX);
+  test::InputBuilder input(display_text, DEFAULT_SEND_IP, INT_MIN, INT_MAX);
   std::string ip_address = input.GetStringInput();
   // Verify correct form:
   while (std::count(ip_address.begin(), ip_address.end(), '.') != 3) {
@@ -80,40 +78,40 @@ std::string GetIpAddress(const std::string display_text) {
 }
 
 bool ReadFromFile() {
-  test::InputBuilder input("Enter 1 to read from file.", DEFAULT_READ_FROM_FILE,
-      0, 1);
+  test::InputBuilder input(
+      "Enter 1 to read from file.", DEFAULT_READ_FROM_FILE, 0, 1);
   return (1 == input.GetIntInput());
 }
 
 std::string GetVideoFile() {
-  test::InputBuilder input("Enter file and path to raw video file.", "",
-      INT_MIN, INT_MAX);
+  test::InputBuilder input(
+      "Enter file and path to raw video file.", "", INT_MIN, INT_MAX);
   return input.GetStringInput();
 }
 
 void GetSsrcs(AudioSenderConfig* audio_config) {
-  test::InputBuilder input_tx("Choose audio sender SSRC.",
-      DEFAULT_AUDIO_SENDER_SSRC, 1, INT_MAX);
+  test::InputBuilder input_tx(
+      "Choose audio sender SSRC.", DEFAULT_AUDIO_SENDER_SSRC, 1, INT_MAX);
   audio_config->sender_ssrc = input_tx.GetIntInput();
 
-  test::InputBuilder input_rx("Choose audio receiver SSRC.",
-      DEFAULT_AUDIO_RECEIVER_SSRC, 1, INT_MAX);
+  test::InputBuilder input_rx(
+      "Choose audio receiver SSRC.", DEFAULT_AUDIO_RECEIVER_SSRC, 1, INT_MAX);
   audio_config->incoming_feedback_ssrc = input_rx.GetIntInput();
 }
 
 void GetSsrcs(VideoSenderConfig* video_config) {
-  test::InputBuilder input_tx("Choose video sender SSRC.",
-      DEFAULT_VIDEO_SENDER_SSRC, 1, INT_MAX);
+  test::InputBuilder input_tx(
+      "Choose video sender SSRC.", DEFAULT_VIDEO_SENDER_SSRC, 1, INT_MAX);
   video_config->sender_ssrc = input_tx.GetIntInput();
 
-  test::InputBuilder input_rx("Choose video receiver SSRC.",
-      DEFAULT_VIDEO_RECEIVER_SSRC, 1, INT_MAX);
+  test::InputBuilder input_rx(
+      "Choose video receiver SSRC.", DEFAULT_VIDEO_RECEIVER_SSRC, 1, INT_MAX);
   video_config->incoming_feedback_ssrc = input_rx.GetIntInput();
 }
 
 void GetPayloadtype(AudioSenderConfig* audio_config) {
-  test::InputBuilder input("Choose audio sender payload type.",
-      DEFAULT_AUDIO_PAYLOAD_TYPE, 96, 127);
+  test::InputBuilder input(
+      "Choose audio sender payload type.", DEFAULT_AUDIO_PAYLOAD_TYPE, 96, 127);
   audio_config->rtp_config.payload_type = input.GetIntInput();
 }
 
@@ -135,32 +133,32 @@ AudioSenderConfig GetAudioSenderConfig() {
 }
 
 void GetPayloadtype(VideoSenderConfig* video_config) {
-  test::InputBuilder input("Choose video sender payload type.",
-      DEFAULT_VIDEO_PAYLOAD_TYPE, 96, 127);
+  test::InputBuilder input(
+      "Choose video sender payload type.", DEFAULT_VIDEO_PAYLOAD_TYPE, 96, 127);
   video_config->rtp_config.payload_type = input.GetIntInput();
 }
 
 void GetVideoCodecSize(VideoSenderConfig* video_config) {
-  test::InputBuilder input_width("Choose video width.",
-      DEFAULT_VIDEO_CODEC_WIDTH, 144, 1920);
+  test::InputBuilder input_width(
+      "Choose video width.", DEFAULT_VIDEO_CODEC_WIDTH, 144, 1920);
   video_config->width = input_width.GetIntInput();
 
-  test::InputBuilder input_height("Choose video height.",
-      DEFAULT_VIDEO_CODEC_HEIGHT, 176, 1080);
+  test::InputBuilder input_height(
+      "Choose video height.", DEFAULT_VIDEO_CODEC_HEIGHT, 176, 1080);
   video_config->height = input_height.GetIntInput();
 }
 
 void GetVideoBitrates(VideoSenderConfig* video_config) {
-  test::InputBuilder input_start_br("Choose start bitrate[kbps].",
-      DEFAULT_VIDEO_CODEC_BITRATE, 0, INT_MAX);
+  test::InputBuilder input_start_br(
+      "Choose start bitrate[kbps].", DEFAULT_VIDEO_CODEC_BITRATE, 0, INT_MAX);
   video_config->start_bitrate = input_start_br.GetIntInput() * 1000;
 
-  test::InputBuilder input_max_br("Choose max bitrate[kbps].",
-      DEFAULT_VIDEO_CODEC_MAX_BITRATE, 0, INT_MAX);
+  test::InputBuilder input_max_br(
+      "Choose max bitrate[kbps].", DEFAULT_VIDEO_CODEC_MAX_BITRATE, 0, INT_MAX);
   video_config->max_bitrate = input_max_br.GetIntInput() * 1000;
 
-  test::InputBuilder input_min_br("Choose min bitrate[kbps].",
-      DEFAULT_VIDEO_CODEC_MIN_BITRATE, 0, INT_MAX);
+  test::InputBuilder input_min_br(
+      "Choose min bitrate[kbps].", DEFAULT_VIDEO_CODEC_MIN_BITRATE, 0, INT_MAX);
   video_config->min_bitrate = input_min_br.GetIntInput() * 1000;
 }
 
@@ -202,7 +200,9 @@ class SendProcess {
         send_time_(),
         weak_factory_(this) {
     audio_bus_factory_.reset(new TestAudioBusFactory(kAudioChannels,
-        kAudioSamplingFrequency, kSoundFrequency, kSoundVolume));
+                                                     kAudioSamplingFrequency,
+                                                     kSoundFrequency,
+                                                     kSoundVolume));
     if (ReadFromFile()) {
       std::string video_file_name = GetVideoFile();
       video_file_ = fopen(video_file_name.c_str(), "r");
@@ -229,7 +229,9 @@ class SendProcess {
     scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
     AudioBus* const audio_bus_ptr = audio_bus.get();
-    frame_input_->InsertAudio(audio_bus_ptr, clock_->NowTicks(),
+    frame_input_->InsertAudio(
+        audio_bus_ptr,
+        clock_->NowTicks(),
         base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     gfx::Size size(video_config_.width, video_config_.height);
@@ -239,7 +241,7 @@ class SendProcess {
     base::TimeDelta time_diff = clock_->NowTicks() - start_time_;
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
-        VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
+            VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
     if (video_file_) {
       if (!PopulateVideoFrameFromFile(video_frame, video_file_))
         return;
@@ -255,24 +257,27 @@ class SendProcess {
         base::TimeDelta::FromMilliseconds(kFrameTimerMs);
     base::TimeDelta elapsed_time = now - send_time_;
     if (elapsed_time < video_frame_time) {
-      VLOG(1) << "Wait" <<
-          (video_frame_time - elapsed_time).InMilliseconds();
-     test_app_thread_proxy_->PostDelayedTask(FROM_HERE,
-        base::Bind(&SendProcess::SendVideoFrameOnTime, base::Unretained(this),
-                   video_frame),
-        video_frame_time - elapsed_time);
+      VLOG(1) << "Wait" << (video_frame_time - elapsed_time).InMilliseconds();
+      test_app_thread_proxy_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&SendProcess::SendVideoFrameOnTime,
+                     base::Unretained(this),
+                     video_frame),
+          video_frame_time - elapsed_time);
     } else {
-      test_app_thread_proxy_->PostTask(FROM_HERE,
-      base::Bind(&SendProcess::SendVideoFrameOnTime, base::Unretained(this),
-                 video_frame));
+      test_app_thread_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(&SendProcess::SendVideoFrameOnTime,
+                     base::Unretained(this),
+                     video_frame));
     }
   }
 
   void SendVideoFrameOnTime(scoped_refptr<media::VideoFrame> video_frame) {
     send_time_ = clock_->NowTicks();
     frame_input_->InsertRawVideoFrame(video_frame, send_time_);
-    test_app_thread_proxy_->PostTask(FROM_HERE,
-        base::Bind(&SendProcess::SendFrame, base::Unretained(this)));
+    test_app_thread_proxy_->PostTask(
+        FROM_HERE, base::Bind(&SendProcess::SendFrame, base::Unretained(this)));
   }
 
  private:
@@ -294,10 +299,9 @@ class SendProcess {
 
 namespace {
 void UpdateCastTransportStatus(
-    media::cast::transport::CastTransportStatus status) {
-}
+    media::cast::transport::CastTransportStatus status) {}
 
-void InitializationResult(media::cast::CastInitializationStatus result)  {
+void InitializationResult(media::cast::CastInitializationStatus result) {
   CHECK_EQ(result, media::cast::STATUS_INITIALIZED);
   VLOG(1) << "Cast Sender initialized";
 }
@@ -337,55 +341,55 @@ int main(int argc, char** argv) {
 
   // Setting up transport config.
   media::cast::transport::CastTransportConfig config;
-  config.receiver_endpoint = CreateUDPAddress(remote_ip_address,
-                                              remote_port);
-  config.local_endpoint = CreateUDPAddress(local_ip_address,
-                                           local_port);
+  config.receiver_endpoint = CreateUDPAddress(remote_ip_address, remote_port);
+  config.local_endpoint = CreateUDPAddress(local_ip_address, local_port);
   config.audio_ssrc = audio_config.sender_ssrc;
   config.video_ssrc = video_config.sender_ssrc;
   config.audio_rtp_config = audio_config.rtp_config;
   config.video_rtp_config = video_config.rtp_config;
 
   scoped_ptr<media::cast::transport::CastTransportSender> transport_sender(
-      media::cast::transport::
-      CastTransportSender::CreateCastTransportSender(clock.get(), config,
-      base::Bind(&UpdateCastTransportStatus),
-      io_message_loop.message_loop_proxy()));
+      media::cast::transport::CastTransportSender::CreateCastTransportSender(
+          clock.get(),
+          config,
+          base::Bind(&UpdateCastTransportStatus),
+          io_message_loop.message_loop_proxy()));
 
   // Enable main and send side threads only. Disable logging.
   // Running transport on the main thread.
-  scoped_refptr<media::cast::CastEnvironment> cast_environment(new
-      media::cast::CastEnvironment(
-      clock.Pass(),
-      io_message_loop.message_loop_proxy(),
-      audio_thread.message_loop_proxy(),
-      NULL,
-      video_thread.message_loop_proxy(),
-      NULL,
-      io_message_loop.message_loop_proxy(),
-      media::cast::GetDefaultCastSenderLoggingConfig()));
+  scoped_refptr<media::cast::CastEnvironment> cast_environment(
+      new media::cast::CastEnvironment(
+          clock.Pass(),
+          io_message_loop.message_loop_proxy(),
+          audio_thread.message_loop_proxy(),
+          NULL,
+          video_thread.message_loop_proxy(),
+          NULL,
+          io_message_loop.message_loop_proxy(),
+          media::cast::GetDefaultCastSenderLoggingConfig()));
 
   scoped_ptr<media::cast::CastSender> cast_sender(
-      media::cast::CastSender::CreateCastSender(cast_environment,
-      audio_config,
-      video_config,
-      NULL,  // gpu_factories.
-      base::Bind(&InitializationResult),
-      transport_sender.get()));
+      media::cast::CastSender::CreateCastSender(
+          cast_environment,
+          audio_config,
+          video_config,
+          NULL,  // gpu_factories.
+          base::Bind(&InitializationResult),
+          transport_sender.get()));
 
   transport_sender->SetPacketReceiver(cast_sender->packet_receiver());
 
   media::cast::FrameInput* frame_input = cast_sender->frame_input();
-  scoped_ptr<media::cast::SendProcess> send_process(new
-      media::cast::SendProcess(test_thread.message_loop_proxy(),
-                               cast_environment->Clock(),
-                               video_config,
-                               frame_input));
+  scoped_ptr<media::cast::SendProcess> send_process(
+      new media::cast::SendProcess(test_thread.message_loop_proxy(),
+                                   cast_environment->Clock(),
+                                   video_config,
+                                   frame_input));
 
   test_thread.message_loop_proxy()->PostTask(
       FROM_HERE,
       base::Bind(&media::cast::SendProcess::SendFrame,
-      base::Unretained(send_process.get())));
+                 base::Unretained(send_process.get())));
 
   io_message_loop.Run();
   return 0;

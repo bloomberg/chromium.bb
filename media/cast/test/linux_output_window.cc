@@ -18,7 +18,7 @@ LinuxOutputWindow::LinuxOutputWindow(int x_pos,
                                      int width,
                                      int height,
                                      const std::string& name) {
-  CreateWindow( x_pos, y_pos, width, height, name);
+  CreateWindow(x_pos, y_pos, width, height, name);
 }
 
 LinuxOutputWindow::~LinuxOutputWindow() {
@@ -62,13 +62,21 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
   window_attributes.background_pixel = 0;
   window_attributes.border_pixel = 0;
 
-  unsigned long attribute_mask = CWBackPixel | CWBorderPixel | CWColormap |
-      CWEventMask;
+  unsigned long attribute_mask =
+      CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-  window_ = XCreateWindow(display_, DefaultRootWindow(display_), x_pos,
-                          y_pos, width, height, 0, visual_info.depth,
-                          InputOutput, visual_info.visual,
-                          attribute_mask, &window_attributes);
+  window_ = XCreateWindow(display_,
+                          DefaultRootWindow(display_),
+                          x_pos,
+                          y_pos,
+                          width,
+                          height,
+                          0,
+                          visual_info.depth,
+                          InputOutput,
+                          visual_info.visual,
+                          attribute_mask,
+                          &window_attributes);
 
   // Set window name.
   XStoreName(display_, window_, name.c_str());
@@ -89,12 +97,11 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
   gc_ = XCreateGC(display_, window_, 0, 0);
 
   // create shared memory image
-  image_ = XShmCreateImage(display_, CopyFromParent, 24, ZPixmap, NULL,
-                           &shminfo_, width, height);
-  shminfo_.shmid = shmget(IPC_PRIVATE,
-                          (image_->bytes_per_line * image_->height),
-                          IPC_CREAT | 0777);
-  shminfo_.shmaddr = image_->data = (char*) shmat(shminfo_.shmid, 0, 0);
+  image_ = XShmCreateImage(
+      display_, CopyFromParent, 24, ZPixmap, NULL, &shminfo_, width, height);
+  shminfo_.shmid = shmget(
+      IPC_PRIVATE, (image_->bytes_per_line * image_->height), IPC_CREAT | 0777);
+  shminfo_.shmaddr = image_->data = (char*)shmat(shminfo_.shmid, 0, 0);
   if (image_->data == reinterpret_cast<char*>(-1)) {
     VLOG(1) << "XShmCreateImage failed";
     NOTREACHED();
@@ -124,9 +131,17 @@ void LinuxOutputWindow::RenderFrame(
                      video_frame->coded_size().height());
 
   // Place image in window.
-  XShmPutImage(display_, window_, gc_, image_, 0, 0, 0, 0,
+  XShmPutImage(display_,
+               window_,
+               gc_,
+               image_,
+               0,
+               0,
+               0,
+               0,
                video_frame->coded_size().width(),
-               video_frame->coded_size().height(), true);
+               video_frame->coded_size().height(),
+               true);
 
   // Very important for the image to update properly!
   XSync(display_, false);

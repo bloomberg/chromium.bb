@@ -11,7 +11,7 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/test/fake_gpu_video_accelerator_factories.h"
 #include "media/cast/test/fake_task_runner.h"
-#include "media/cast/test/video_utility.h"
+#include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender_impl.h"
 #include "media/cast/transport/pacing/paced_sender.h"

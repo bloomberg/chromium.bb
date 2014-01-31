@@ -20,7 +20,6 @@ namespace media {
 class VideoFrame;
 }
 
-
 namespace media {
 namespace cast {
 namespace test {

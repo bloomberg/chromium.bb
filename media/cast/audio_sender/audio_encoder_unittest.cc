@@ -13,8 +13,8 @@
 #include "media/cast/audio_sender/audio_encoder.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/test/audio_utility.h"
 #include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/utility/audio_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {

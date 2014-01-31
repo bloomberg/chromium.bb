@@ -12,8 +12,7 @@ namespace cast {
 namespace test {
 
 FakeTaskRunner::FakeTaskRunner(base::SimpleTestTickClock* clock)
-    : clock_(clock) {
-}
+    : clock_(clock) {}
 
 FakeTaskRunner::~FakeTaskRunner() {}
 
@@ -21,25 +20,28 @@ bool FakeTaskRunner::PostDelayedTask(const tracked_objects::Location& from_here,
                                      const base::Closure& task,
                                      base::TimeDelta delay) {
   EXPECT_GE(delay, base::TimeDelta());
-  PostedTask posed_task(from_here, task, clock_->NowTicks(), delay,
+  PostedTask posed_task(from_here,
+                        task,
+                        clock_->NowTicks(),
+                        delay,
                         base::TestPendingTask::NESTABLE);
 
   tasks_.insert(std::make_pair(posed_task.GetTimeToRun(), posed_task));
   return false;
 }
 
-bool FakeTaskRunner::RunsTasksOnCurrentThread() const {
-  return true;
-}
+bool FakeTaskRunner::RunsTasksOnCurrentThread() const { return true; }
 
 void FakeTaskRunner::RunTasks() {
   for (;;) {
     // Run all tasks equal or older than current time.
     std::multimap<base::TimeTicks, PostedTask>::iterator it = tasks_.begin();
-    if (it == tasks_.end()) return;  // No more tasks.
+    if (it == tasks_.end())
+      return;  // No more tasks.
 
     PostedTask task = it->second;
-    if (clock_->NowTicks() < task.GetTimeToRun()) return;
+    if (clock_->NowTicks() < task.GetTimeToRun())
+      return;
 
     tasks_.erase(it);
     task.task.Run();

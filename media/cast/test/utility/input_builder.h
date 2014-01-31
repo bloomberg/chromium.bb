@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_TEST_UTILITY_INPUT_HELPER_
-#define MEDIA_CAST_TEST_UTILITY_INPUT_HELPER_
+#ifndef MEDIA_CAST_TEST_UTILITY_INPUT_BUILDER_
+#define MEDIA_CAST_TEST_UTILITY_INPUT_BUILDER_
 
 #include <string>
 
@@ -46,4 +46,4 @@ class InputBuilder {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_TEST_UTILITY_INPUT_HELPER_
+#endif  // MEDIA_CAST_TEST_UTILITY_INPUT_BUILDER_

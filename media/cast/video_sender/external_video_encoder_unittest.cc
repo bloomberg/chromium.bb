@@ -13,7 +13,7 @@
 #include "media/cast/test/fake_gpu_video_accelerator_factories.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/fake_video_encode_accelerator.h"
-#include "media/cast/test/video_utility.h"
+#include "media/cast/test/utility/video_utility.h"
 #include "media/cast/video_sender/external_video_encoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
