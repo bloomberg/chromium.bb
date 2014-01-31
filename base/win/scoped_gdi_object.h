@@ -60,7 +60,7 @@ class ScopedGDIObject {
 // An explicit specialization for HICON because we have to call DestroyIcon()
 // instead of DeleteObject() for HICON.
 template<>
-void ScopedGDIObject<HICON>::Close() {
+void inline ScopedGDIObject<HICON>::Close() {
   if (object_)
     DestroyIcon(object_);
 }
