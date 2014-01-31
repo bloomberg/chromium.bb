@@ -358,6 +358,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
     const char kErrorMessageKey[] = "message";
     const char kErrorReasonRateLimitExceeded[] = "rateLimitExceeded";
     const char kErrorReasonUserRateLimitExceeded[] = "userRateLimitExceeded";
+    const char kErrorReasonQuotaExceeded[] = "quotaExceeded";
 
     scoped_ptr<base::Value> value(ParseJsonInternal(response_writer_->data()));
     base::DictionaryValue* dictionary = NULL;
@@ -380,6 +381,8 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
         if (reason == kErrorReasonRateLimitExceeded ||
             reason == kErrorReasonUserRateLimitExceeded)
           error_code_ = HTTP_SERVICE_UNAVAILABLE;
+        if (reason == kErrorReasonQuotaExceeded)
+          error_code_ = GDATA_NO_SPACE;
       }
     }
   }

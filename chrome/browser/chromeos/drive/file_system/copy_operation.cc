@@ -121,13 +121,6 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
                       internal::FileCache::FILE_OPERATION_COPY);
 }
 
-int64 GetFileSize(const base::FilePath& file_path) {
-  int64 file_size;
-  if (!base::GetFileSize(file_path, &file_size))
-    return -1;
-  return file_size;
-}
-
 // Stores the copied entry and returns its path.
 FileError UpdateLocalStateForServerSideCopy(
     internal::ResourceMetadata* metadata,
@@ -419,61 +412,6 @@ void CopyOperation::ScheduleTransferRegularFile(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&GetFileSize, local_src_path),
-      base::Bind(&CopyOperation::ScheduleTransferRegularFileAfterGetFileSize,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 local_src_path, remote_dest_path, callback));
-}
-
-void CopyOperation::ScheduleTransferRegularFileAfterGetFileSize(
-    const base::FilePath& local_src_path,
-    const base::FilePath& remote_dest_path,
-    const FileOperationCallback& callback,
-    int64 local_file_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (local_file_size < 0) {
-    callback.Run(FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  // For regular files, check the server-side quota whether sufficient space
-  // is available for the file to be uploaded.
-  scheduler_->GetAboutResource(
-      base::Bind(
-          &CopyOperation::ScheduleTransferRegularFileAfterGetAboutResource,
-          weak_ptr_factory_.GetWeakPtr(),
-          local_src_path, remote_dest_path, callback, local_file_size));
-}
-
-void CopyOperation::ScheduleTransferRegularFileAfterGetAboutResource(
-    const base::FilePath& local_src_path,
-    const base::FilePath& remote_dest_path,
-    const FileOperationCallback& callback,
-    int64 local_file_size,
-    google_apis::GDataErrorCode status,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileError error = GDataToFileError(status);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK(about_resource);
-  const int64 space =
-      about_resource->quota_bytes_total() - about_resource->quota_bytes_used();
-  if (space < local_file_size) {
-    callback.Run(FILE_ERROR_NO_SERVER_SPACE);
-    return;
-  }
 
   create_file_operation_->CreateFile(
       remote_dest_path,

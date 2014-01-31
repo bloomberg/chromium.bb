@@ -124,24 +124,6 @@ class CopyOperation {
                                    const base::FilePath& remote_dest_path,
                                    const FileOperationCallback& callback);
 
-  // Part of ScheduleTransferRegularFile(). Called after GetFileSize() is
-  // completed.
-  void ScheduleTransferRegularFileAfterGetFileSize(
-      const base::FilePath& local_src_path,
-      const base::FilePath& remote_dest_path,
-      const FileOperationCallback& callback,
-      int64 local_file_size);
-
-  // Part of ScheduleTransferRegularFile(). Called after GetAboutResource()
-  // is completed.
-  void ScheduleTransferRegularFileAfterGetAboutResource(
-      const base::FilePath& local_src_path,
-      const base::FilePath& remote_dest_path,
-      const FileOperationCallback& callback,
-      int64 local_file_size,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
-
   // Part of ScheduleTransferRegularFile(). Called after file creation.
   void ScheduleTransferRegularFileAfterCreate(
       const base::FilePath& local_src_path,
