@@ -73,6 +73,11 @@ bool IsProxyOriginSetOnCommandLine() {
   return command_line.HasSwitch(switches::kSpdyProxyAuthOrigin);
 }
 
+bool IsEnableSpdyProxyAuthSetOnCommandLine() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kEnableSpdyProxyAuth);
+}
+
 }  // namespace
 
 DataReductionProxySettings::DataReductionProxySettings()
@@ -104,21 +109,8 @@ void DataReductionProxySettings::InitDataReductionProxySettings() {
   AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  // Setting the kEnableSpdyProxyAuth switch has the same effect as enabling
-  // the feature via settings, in that once set, the preference will be sticky
-  // across instances of Chrome. Disabling the feature can only be done through
-  // the settings menu.
-  if (spdy_proxy_auth_enabled_.GetValue() ||
-      command_line.HasSwitch(switches::kEnableSpdyProxyAuth)) {
-    MaybeActivateDataReductionProxy(true);
-  } else {
-    // This is logged so we can use this information in user feedback.
-    LogProxyState(false /* enabled */,
-                  false /* restricted */,
-                  true /* at startup */);
-  }
+  // We set or reset the proxy pref at startup.
+  MaybeActivateDataReductionProxy(true);
 }
 
 // static
@@ -300,7 +292,8 @@ base::string16 DataReductionProxySettings::GetTokenForAuthChallenge(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() {
-  return spdy_proxy_auth_enabled_.GetValue();
+  return spdy_proxy_auth_enabled_.GetValue() ||
+      IsEnableSpdyProxyAuthSetOnCommandLine();
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyManaged() {
@@ -487,7 +480,7 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
   std::string proxy = GetDataReductionProxyOrigin();
   // Configure use of the data reduction proxy if it is enabled and the proxy
   // origin is non-empty.
-  enabled_by_user_= spdy_proxy_auth_enabled_.GetValue() && !proxy.empty();
+  enabled_by_user_= IsDataReductionProxyEnabled() && !proxy.empty();
   SetProxyConfigs(enabled_by_user_, restricted_by_carrier_, at_startup);
 
   // Check if the proxy has been restricted explicitly by the carrier.

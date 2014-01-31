@@ -259,7 +259,6 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
     bool enabled_at_startup) {
   AddProxyToCommandLine();
   base::MessageLoopForUI loop;
-  pref_service_.SetBoolean(prefs::kSpdyProxyAuthEnabled, enabled_at_startup);
   SetProbeResult(kProbeURLWithOKResponse,
                  "OK",
                  FetchResult(enabled_at_startup, true),
@@ -270,8 +269,7 @@ void DataReductionProxySettingsTestBase::CheckInitDataReductionProxy(
   if (enabled_at_startup) {
     CheckProxyConfigs(enabled_at_startup, false);
   } else {
-    // This presumes the proxy preference hadn't been set up by Chrome.
-    CheckProxyPref(std::string(), std::string());
+    CheckProxyPref(std::string(), ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
   }
 }
 
@@ -579,6 +577,8 @@ TEST_F(DataReductionProxySettingsTest, TestOnProxyEnabledPrefChange) {
 TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOn) {
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_CALL(*settings, RecordStartupState(spdyproxy::PROXY_ENABLED));
+
+  pref_service_.SetBoolean(prefs::kSpdyProxyAuthEnabled, true);
   CheckInitDataReductionProxy(true);
 }
 
@@ -586,9 +586,19 @@ TEST_F(DataReductionProxySettingsTest, TestInitDataReductionProxyOff) {
   // InitDataReductionProxySettings with the preference off will directly call
   // LogProxyState.
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
-  EXPECT_CALL(*settings, LogProxyState(false, false, true)).Times(1);
   EXPECT_CALL(*settings, RecordStartupState(spdyproxy::PROXY_DISABLED));
+
+  pref_service_.SetBoolean(prefs::kSpdyProxyAuthEnabled, false);
   CheckInitDataReductionProxy(false);
+}
+
+TEST_F(DataReductionProxySettingsTest, TestSetProxyFromCommandLine) {
+  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
+  EXPECT_CALL(*settings, RecordStartupState(spdyproxy::PROXY_ENABLED));
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableSpdyProxyAuth);
+  CheckInitDataReductionProxy(true);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
