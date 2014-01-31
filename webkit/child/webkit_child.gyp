@@ -79,14 +79,6 @@
         'websocketstreamhandle_delegate.h',
         'websocketstreamhandle_impl.cc',
         'websocketstreamhandle_impl.h',
-        'webthemeengine_impl_android.cc',
-        'webthemeengine_impl_android.h',
-        'webthemeengine_impl_default.cc',
-        'webthemeengine_impl_default.h',
-        'webthemeengine_impl_mac.cc',
-        'webthemeengine_impl_mac.h',
-        'webthemeengine_impl_win.cc',
-        'webthemeengine_impl_win.h',
         'webthread_impl.cc',
         'webthread_impl.h',
         'weburlloader_impl.cc',
@@ -101,14 +93,6 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267 ],
       'conditions': [
-        ['use_default_render_theme==0',
-          {
-            'sources/': [
-              ['exclude', 'webthemeengine_impl_default.cc'],
-              ['exclude', 'webthemeengine_impl_default.h'],
-            ],
-          }
-        ],
         ['OS=="mac"',
           {
             'link_settings': {

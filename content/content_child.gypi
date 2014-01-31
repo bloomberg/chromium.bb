@@ -159,12 +159,28 @@
     'child/websocket_bridge.h',
     'child/websocket_dispatcher.cc',
     'child/websocket_dispatcher.h',
+    'child/webthemeengine_impl_android.cc',
+    'child/webthemeengine_impl_android.h',
+    'child/webthemeengine_impl_default.cc',
+    'child/webthemeengine_impl_default.h',
+    'child/webthemeengine_impl_mac.cc',
+    'child/webthemeengine_impl_mac.h',
+    'child/webthemeengine_impl_win.cc',
+    'child/webthemeengine_impl_win.h',
     'child/worker_thread_task_runner.cc',
     'child/worker_thread_task_runner.h',
     'public/child/image_decoder_utils.h',
     'public/child/resource_dispatcher_delegate.h',
   ],
   'conditions': [
+    ['use_default_render_theme==0',
+      {
+        'sources/': [
+          ['exclude', 'child/webthemeengine_impl_default.cc'],
+          ['exclude', 'child/webthemeengine_impl_default.h'],
+        ],
+      }
+    ],
     ['OS=="android"', {
       'includes': [
         '../build/android/cpufeatures.gypi',

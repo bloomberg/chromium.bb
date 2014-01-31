@@ -12,13 +12,13 @@
 #include "webkit/child/webkitplatformsupport_impl.h"
 
 #if defined(USE_DEFAULT_RENDER_THEME)
-#include "webkit/child/webthemeengine_impl_default.h"
+#include "content/child/webthemeengine_impl_default.h"
 #elif defined(OS_WIN)
-#include "webkit/child/webthemeengine_impl_win.h"
+#include "content/child/webthemeengine_impl_win.h"
 #elif defined(OS_MACOSX)
-#include "webkit/child/webthemeengine_impl_mac.h"
+#include "content/child/webthemeengine_impl_mac.h"
 #elif defined(OS_ANDROID)
-#include "webkit/child/webthemeengine_impl_android.h"
+#include "content/child/webthemeengine_impl_android.h"
 #endif
 
 namespace webkit_glue {
@@ -64,7 +64,7 @@ class CONTENT_EXPORT WebKitPlatformSupportChildImpl :
  private:
   static void DestroyCurrentThread(void*);
 
-  webkit_glue::WebThemeEngineImpl native_theme_engine_;
+  WebThemeEngineImpl native_theme_engine_;
   webkit_glue::WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   scoped_ptr<webkit_glue::FlingCurveConfiguration> fling_curve_configuration_;

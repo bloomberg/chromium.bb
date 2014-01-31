@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/webthemeengine_impl_android.h"
+#include "content/child/webthemeengine_impl_android.h"
 
 #include "base/logging.h"
 #include "skia/ext/platform_canvas.h"
@@ -15,7 +15,7 @@ using blink::WebColor;
 using blink::WebRect;
 using blink::WebThemeEngine;
 
-namespace webkit_glue {
+namespace content {
 
 static ui::NativeTheme::Part NativeThemePart(
     WebThemeEngine::Part part) {
@@ -175,4 +175,4 @@ void WebThemeEngineImpl::paint(
       gfx::Rect(rect),
       native_theme_extra_params);
 }
-}  // namespace webkit_glue
+}  // namespace content

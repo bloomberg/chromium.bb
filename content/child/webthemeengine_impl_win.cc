@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/webthemeengine_impl_win.h"
+#include "content/child/webthemeengine_impl_win.h"
 
 #include <vsstyle.h>  // To convert to ui::NativeTheme::State
 
@@ -18,7 +18,7 @@ using blink::WebColor;
 using blink::WebRect;
 using blink::WebSize;
 
-namespace webkit_glue {
+namespace content {
 
 static RECT WebRectToRECT(const WebRect& rect) {
   RECT result;
@@ -1011,4 +1011,4 @@ WebSize WebThemeEngineImpl::getSize(int part) {
   return WebSize();
 }
 
-}  // namespace webkit_glue
+}  // namespace content

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/webthemeengine_impl_mac.h"
+#include "content/child/webthemeengine_impl_mac.h"
 
 #include <Carbon/Carbon.h>
 
@@ -14,7 +14,7 @@ using blink::WebCanvas;
 using blink::WebRect;
 using blink::WebThemeEngine;
 
-namespace webkit_glue {
+namespace content {
 
 static ThemeTrackEnableState stateToHIEnableState(WebThemeEngine::State state) {
   switch (state) {
@@ -58,4 +58,4 @@ void WebThemeEngineImpl::paintScrollbarThumb(
   HIThemeDrawTrack(&trackInfo, 0, cgContext, kHIThemeOrientationNormal);
 }
 
-}  // namespace webkit_glue
+}  // namespace content
