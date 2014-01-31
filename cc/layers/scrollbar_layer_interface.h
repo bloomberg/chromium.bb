@@ -10,10 +10,15 @@
 
 namespace cc {
 
+class Layer;
+class LayerImpl;
+
 class CC_EXPORT ScrollbarLayerInterface {
  public:
   virtual int ScrollLayerId() const = 0;
-  virtual void SetScrollLayerId(int id) = 0;
+  virtual void SetScrollLayer(int layer_id) = 0;
+  virtual void SetClipLayer(int layer_id) = 0;
+  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) = 0;
 
   virtual ScrollbarOrientation orientation() const = 0;
 

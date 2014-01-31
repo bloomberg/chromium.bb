@@ -31,7 +31,8 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   // ScrollbarLayerInterface
   virtual int ScrollLayerId() const OVERRIDE;
-  virtual void SetScrollLayerId(int id) OVERRIDE;
+  virtual void SetScrollLayer(int layer_id) OVERRIDE;
+  virtual void SetClipLayer(int layer_id) OVERRIDE;
 
   virtual ScrollbarOrientation orientation() const OVERRIDE;
 
@@ -40,6 +41,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
+  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,
                                       float page_scale_factor,
@@ -80,6 +82,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   scoped_ptr<Scrollbar> scrollbar_;
   int scroll_layer_id_;
+  int clip_layer_id_;
 
   // Snapshot of properties taken in UpdateThumbAndTrackGeometry and used in
   // PushPropertiesTo.

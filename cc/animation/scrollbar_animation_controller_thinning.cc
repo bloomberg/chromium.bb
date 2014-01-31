@@ -180,28 +180,22 @@ float ScrollbarAnimationControllerThinning::AdjustScale(
 
 void ScrollbarAnimationControllerThinning::ApplyOpacityAndThumbThicknessScale(
     float opacity, float thumb_thickness_scale) {
-  ScrollbarLayerImplBase* horizontal_scrollbar =
-      scroll_layer_->horizontal_scrollbar_layer();
-  if (horizontal_scrollbar) {
-    horizontal_scrollbar->SetOpacity(
-        AdjustScale(opacity, horizontal_scrollbar->opacity(), opacity_change_));
-    horizontal_scrollbar->SetThumbThicknessScaleFactor(
-        AdjustScale(
-          thumb_thickness_scale,
-          horizontal_scrollbar->thumb_thickness_scale_factor(),
-          thickness_change_));
-  }
+  if (!scroll_layer_->scrollbars())
+    return;
 
-  ScrollbarLayerImplBase* vertical_scrollbar =
-      scroll_layer_->vertical_scrollbar_layer();
-  if (vertical_scrollbar) {
-    vertical_scrollbar->SetOpacity(
-        AdjustScale(opacity, vertical_scrollbar->opacity(), opacity_change_));
-    vertical_scrollbar->SetThumbThicknessScaleFactor(
-        AdjustScale(
-          thumb_thickness_scale,
-          vertical_scrollbar->thumb_thickness_scale_factor(),
-          thickness_change_));
+  LayerImpl::ScrollbarSet* scrollbars = scroll_layer_->scrollbars();
+  for (LayerImpl::ScrollbarSet::iterator it = scrollbars->begin();
+       it != scrollbars->end();
+       ++it) {
+    ScrollbarLayerImplBase* scrollbar = *it;
+    if (scrollbar->is_overlay_scrollbar()) {
+      scrollbar->SetOpacity(
+          AdjustScale(opacity, scrollbar->opacity(), opacity_change_));
+      scrollbar->SetThumbThicknessScaleFactor(
+          AdjustScale(thumb_thickness_scale,
+                      scrollbar->thumb_thickness_scale_factor(),
+                      thickness_change_));
+    }
   }
 }
 

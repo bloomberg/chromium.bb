@@ -89,6 +89,9 @@ class GFX_EXPORT Transform {
   // to |this|.
   void Scale(SkMScalar x, SkMScalar y);
   void Scale3d(SkMScalar x, SkMScalar y, SkMScalar z);
+  gfx::Vector2dF Scale2d() const {
+    return gfx::Vector2dF(matrix_.get(0, 0), matrix_.get(1, 1));
+  }
 
   // Applies the current transformation on a translation and assigns the result
   // to |this|.
@@ -135,6 +138,11 @@ class GFX_EXPORT Transform {
   // Returns true if the matrix is either identity or pure, non-fractional
   // translation.
   bool IsIdentityOrIntegerTranslation() const;
+
+  // Returns true if the matrix had only scaling components.
+  bool IsScale2d() const {
+    return !(matrix_.getType() & ~SkMatrix44::kScale_Mask);
+  }
 
   // Returns true if the matrix is has only scaling and translation components.
   bool IsScaleOrTranslation() const {

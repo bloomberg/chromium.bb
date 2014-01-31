@@ -33,11 +33,11 @@ scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
       new PaintedScrollbarLayer(scrollbar.Pass(), scroll_layer_id));
 }
 
-PaintedScrollbarLayer::PaintedScrollbarLayer(
-    scoped_ptr<Scrollbar> scrollbar,
-    int scroll_layer_id)
+PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar,
+                                             int scroll_layer_id)
     : scrollbar_(scrollbar.Pass()),
       scroll_layer_id_(scroll_layer_id),
+      clip_layer_id_(Layer::INVALID_ID),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()),
       is_overlay_(scrollbar_->IsOverlay()),
@@ -52,11 +52,19 @@ int PaintedScrollbarLayer::ScrollLayerId() const {
   return scroll_layer_id_;
 }
 
-void PaintedScrollbarLayer::SetScrollLayerId(int id) {
-  if (id == scroll_layer_id_)
+void PaintedScrollbarLayer::SetScrollLayer(int layer_id) {
+  if (layer_id == scroll_layer_id_)
     return;
 
-  scroll_layer_id_ = id;
+  scroll_layer_id_ = layer_id;
+  SetNeedsFullTreeSync();
+}
+
+void PaintedScrollbarLayer::SetClipLayer(int layer_id) {
+  if (layer_id == clip_layer_id_)
+    return;
+
+  clip_layer_id_ = layer_id;
   SetNeedsFullTreeSync();
 }
 
@@ -109,6 +117,8 @@ void PaintedScrollbarLayer::CalculateContentsScale(
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   ContentsScalingLayer::PushPropertiesTo(layer);
 
+  PushScrollClipPropertiesTo(layer);
+
   PaintedScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(layer);
 
@@ -134,6 +144,14 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
 ScrollbarLayerInterface* PaintedScrollbarLayer::ToScrollbarLayer() {
   return this;
+}
+
+void PaintedScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
+  PaintedScrollbarLayerImpl* scrollbar_layer =
+      static_cast<PaintedScrollbarLayerImpl*>(layer);
+
+  scrollbar_layer->SetScrollLayerById(scroll_layer_id_);
+  scrollbar_layer->SetClipLayerById(clip_layer_id_);
 }
 
 void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {

@@ -4,6 +4,7 @@
 
 #include "webkit/renderer/compositor_bindings/web_scrollbar_layer_impl.h"
 
+#include "cc/layers/layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
@@ -51,8 +52,15 @@ WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {}
 blink::WebLayer* WebScrollbarLayerImpl::layer() { return layer_.get(); }
 
 void WebScrollbarLayerImpl::setScrollLayer(blink::WebLayer* layer) {
-  int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
-  static_cast<PaintedScrollbarLayer*>(layer_->layer())->SetScrollLayerId(id);
+  cc::Layer* scroll_layer =
+      layer ? static_cast<WebLayerImpl*>(layer)->layer() : 0;
+  layer_->layer()->ToScrollbarLayer()->SetScrollLayer(scroll_layer->id());
+}
+
+void WebScrollbarLayerImpl::setClipLayer(blink::WebLayer* layer) {
+  cc::Layer* clip_layer =
+      layer ? static_cast<WebLayerImpl*>(layer)->layer() : 0;
+  layer_->layer()->ToScrollbarLayer()->SetClipLayer(clip_layer->id());
 }
 
 }  // namespace webkit

@@ -12,9 +12,14 @@ namespace cc {
 
 scoped_ptr<LayerImpl> SolidColorScrollbarLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return SolidColorScrollbarLayerImpl::Create(
-      tree_impl, id(), orientation(), thumb_thickness_,
-      is_left_side_vertical_scrollbar_).PassAs<LayerImpl>();
+  const bool kIsOverlayScrollbar = true;
+  return SolidColorScrollbarLayerImpl::Create(tree_impl,
+                                              id(),
+                                              orientation(),
+                                              thumb_thickness_,
+                                              is_left_side_vertical_scrollbar_,
+                                              kIsOverlayScrollbar)
+      .PassAs<LayerImpl>();
 }
 
 scoped_refptr<SolidColorScrollbarLayer> SolidColorScrollbarLayer::Create(
@@ -34,7 +39,8 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayer(
     int thumb_thickness,
     bool is_left_side_vertical_scrollbar,
     int scroll_layer_id)
-    : scroll_layer_id_(scroll_layer_id),
+    : scroll_layer_id_(Layer::INVALID_ID),
+      clip_layer_id_(scroll_layer_id),
       orientation_(orientation),
       thumb_thickness_(thumb_thickness),
       is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {}
@@ -45,6 +51,19 @@ ScrollbarLayerInterface* SolidColorScrollbarLayer::ToScrollbarLayer() {
   return this;
 }
 
+void SolidColorScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
+  Layer::PushPropertiesTo(layer);
+  PushScrollClipPropertiesTo(layer);
+}
+
+void SolidColorScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
+  SolidColorScrollbarLayerImpl* scrollbar_layer =
+      static_cast<SolidColorScrollbarLayerImpl*>(layer);
+
+  scrollbar_layer->SetScrollLayerById(scroll_layer_id_);
+  scrollbar_layer->SetClipLayerById(clip_layer_id_);
+}
+
 bool SolidColorScrollbarLayer::OpacityCanAnimateOnImplThread() const {
   return true;
 }
@@ -53,11 +72,19 @@ int SolidColorScrollbarLayer::ScrollLayerId() const {
   return scroll_layer_id_;
 }
 
-void SolidColorScrollbarLayer::SetScrollLayerId(int id) {
-  if (id == scroll_layer_id_)
+void SolidColorScrollbarLayer::SetScrollLayer(int layer_id) {
+  if (layer_id == scroll_layer_id_)
     return;
 
-  scroll_layer_id_ = id;
+  scroll_layer_id_ = layer_id;
+  SetNeedsFullTreeSync();
+}
+
+void SolidColorScrollbarLayer::SetClipLayer(int layer_id) {
+  if (layer_id == clip_layer_id_)
+    return;
+
+  clip_layer_id_ = layer_id;
   SetNeedsFullTreeSync();
 }
 

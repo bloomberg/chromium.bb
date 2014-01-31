@@ -195,6 +195,12 @@ class CC_EXPORT LayerTreeHost {
       scoped_refptr<Layer> page_scale_layer,
       scoped_refptr<Layer> inner_viewport_scroll_layer,
       scoped_refptr<Layer> outer_viewport_scroll_layer);
+  Layer* inner_viewport_scroll_layer() const {
+    return inner_viewport_scroll_layer_.get();
+  }
+  Layer* outer_viewport_scroll_layer() const {
+    return outer_viewport_scroll_layer_.get();
+  }
 
   const LayerTreeSettings& settings() const { return settings_; }
 
@@ -235,6 +241,8 @@ class CC_EXPORT LayerTreeHost {
                                base::TimeDelta duration);
 
   void ApplyScrollAndScale(const ScrollAndScaleSet& info);
+  gfx::Vector2d DistributeScrollOffsetToViewports(const gfx::Vector2d offset,
+                                                  Layer* layer);
 
   void SetImplTransform(const gfx::Transform& transform);
 

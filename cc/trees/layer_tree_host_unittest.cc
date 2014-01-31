@@ -1142,9 +1142,17 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
       scroll_layer_ = FakeContentLayer::Create(&client_);
     }
 
-    scroll_layer_->SetScrollable(true);
+    Layer* root_layer = layer_tree_host()->root_layer();
+    scroll_layer_->SetScrollClipLayerId(root_layer->id());
+    scroll_layer_->SetIsContainerForFixedPositionLayers(true);
+    scroll_layer_->SetBounds(gfx::Size(2 * root_layer->bounds().width(),
+                                       2 * root_layer->bounds().height()));
     scroll_layer_->SetScrollOffset(gfx::Vector2d());
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+    // This test requires the page_scale and inner viewport layers to be
+    // identified.
+    layer_tree_host()->RegisterViewportLayers(
+        root_layer, scroll_layer_.get(), NULL);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
   }
 

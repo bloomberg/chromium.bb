@@ -163,6 +163,9 @@ LayerTreeHost::~LayerTreeHost() {
     proxy_->Stop();
   }
 
+  // We must clear any pointers into the layer tree prior to destroying it.
+  RegisterViewportLayers(NULL, NULL, NULL);
+
   if (root_layer_.get()) {
     // The layer tree must be destroyed before the layer tree host. We've
     // made a contract with our animation controllers that the registrar
@@ -338,12 +341,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_background_color(background_color_);
   sync_tree->set_has_transparent_background(has_transparent_background_);
 
-  sync_tree->FindRootScrollLayer();
-
-  // TODO(wjmaclean) For now, not all LTH clients will register viewports, so
-  // only set them when available..
-  if (page_scale_layer_) {
-    DCHECK(inner_viewport_scroll_layer_);
+  if (page_scale_layer_ && inner_viewport_scroll_layer_) {
     sync_tree->SetViewportLayersFromIds(
         page_scale_layer_->id(),
         inner_viewport_scroll_layer_->id(),
@@ -1045,8 +1043,8 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
   if (!root_layer_.get())
     return;
 
-  gfx::Vector2d root_scroll_delta;
-  Layer* root_scroll_layer = FindFirstScrollableLayer(root_layer_.get());
+  gfx::Vector2d inner_viewport_scroll_delta;
+  gfx::Vector2d outer_viewport_scroll_delta;
 
   for (size_t i = 0; i < info.scrolls.size(); ++i) {
     Layer* layer =
@@ -1054,29 +1052,86 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
                                                 info.scrolls[i].layer_id);
     if (!layer)
       continue;
-    if (layer == root_scroll_layer) {
-      root_scroll_delta += info.scrolls[i].scroll_delta;
+    if (layer == outer_viewport_scroll_layer_.get()) {
+      outer_viewport_scroll_delta += info.scrolls[i].scroll_delta;
+    } else if (layer == inner_viewport_scroll_layer_.get()) {
+      inner_viewport_scroll_delta += info.scrolls[i].scroll_delta;
     } else {
       layer->SetScrollOffsetFromImplSide(layer->scroll_offset() +
                                          info.scrolls[i].scroll_delta);
     }
   }
 
-  if (!root_scroll_delta.IsZero() || info.page_scale_delta != 1.f) {
+  if (!inner_viewport_scroll_delta.IsZero() ||
+      !outer_viewport_scroll_delta.IsZero() || info.page_scale_delta != 1.f) {
     // SetScrollOffsetFromImplSide above could have destroyed the tree,
     // so re-get this layer before doing anything to it.
-    root_scroll_layer = FindFirstScrollableLayer(root_layer_.get());
 
     // Preemptively apply the scroll offset and scale delta here before sending
     // it to the client.  If the client comes back and sets it to the same
     // value, then the layer can early out without needing a full commit.
-    if (root_scroll_layer) {
-      root_scroll_layer->SetScrollOffsetFromImplSide(
-          root_scroll_layer->scroll_offset() + root_scroll_delta);
+    DCHECK(inner_viewport_scroll_layer_);  // We should always have this.
+
+    inner_viewport_scroll_layer_->SetScrollOffsetFromImplSide(
+        inner_viewport_scroll_layer_->scroll_offset() +
+        inner_viewport_scroll_delta);
+    if (outer_viewport_scroll_layer_) {
+      outer_viewport_scroll_layer_->SetScrollOffsetFromImplSide(
+          outer_viewport_scroll_layer_->scroll_offset() +
+          outer_viewport_scroll_delta);
     }
     ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
-    client_->ApplyScrollAndScale(root_scroll_delta, info.page_scale_delta);
+
+    client_->ApplyScrollAndScale(
+        inner_viewport_scroll_delta + outer_viewport_scroll_delta,
+        info.page_scale_delta);
   }
+}
+
+gfx::Vector2d LayerTreeHost::DistributeScrollOffsetToViewports(
+    const gfx::Vector2d offset,
+    Layer* layer) {
+  DCHECK(layer);
+  if (layer != outer_viewport_scroll_layer_.get())
+    return offset;
+
+  gfx::Vector2d inner_viewport_offset =
+      inner_viewport_scroll_layer_->scroll_offset();
+  gfx::Vector2d outer_viewport_offset =
+      outer_viewport_scroll_layer_->scroll_offset();
+
+  if (offset == inner_viewport_offset + outer_viewport_offset) {
+    // In this case, nothing should change, so we just return to the outer
+    // viewport the offset is already has.
+    return outer_viewport_offset;
+  }
+
+  // In the spirit of document-scrolls-first, we always want any change to
+  // go to the outer viewport first.
+  gfx::Vector2d max_outer_viewport_scroll_offset =
+      outer_viewport_scroll_layer_->MaxScrollOffset();
+#if ENABLE_DCHECK
+// TODO(wjmaclean) The DCHECK below is triggering during zoom-out.
+// crbug.com/336574
+/*
+  gfx::Vector2d maxInnerViewportScrollOffset =
+      inner_viewport_scroll_layer_->MaxScrollOffset();
+
+  gfx::Vector2d totalMaxScrollOffset =
+      max_outer_viewport_scroll_offset + maxInnerViewportScrollOffset;
+  DCHECK(totalMaxScrollOffset.x() >= offset.x() &&
+         totalMaxScrollOffset.y() >= offset.y());
+*/
+#endif
+
+  outer_viewport_offset = offset - inner_viewport_offset;
+  outer_viewport_offset.SetToMin(max_outer_viewport_scroll_offset);
+  outer_viewport_offset.SetToMax(gfx::Vector2d());
+
+  inner_viewport_offset = offset - outer_viewport_offset;
+  inner_viewport_scroll_layer_->SetScrollOffset(inner_viewport_offset);
+
+  return outer_viewport_offset;
 }
 
 void LayerTreeHost::StartRateLimiter() {
