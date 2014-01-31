@@ -9,7 +9,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/gfx_paths.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_implementation.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -31,8 +31,8 @@ void CompositorTestSuite::Initialize() {
 #if defined(USE_X11)
   XInitThreads();
 #endif
+  CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
   base::TestSuite::Initialize();
-  gfx::GLSurface::InitializeOneOffForTests();
 
   gfx::RegisterPathProvider();
 

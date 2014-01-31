@@ -31,7 +31,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
-  DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
+  if (GetGLImplementation() != kGLImplementationNone)
+    return true;
 
   // Allow the main thread or another to initialize these bindings
   // after instituting restrictions on I/O. Going forward they will

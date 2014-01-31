@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace {
 
@@ -79,6 +80,7 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
 
 SoftwareBrowserCompositorOutputSurfaceTest::
     SoftwareBrowserCompositorOutputSurfaceTest() {
+  CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
   message_loop_.reset(new base::MessageLoopForUI);
 }
 

@@ -21,6 +21,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 using gpu::gles2::GLES2Interface;
 
@@ -54,6 +55,8 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
 
     case GL_WITH_DEFAULT:
     case GL_WITH_BITMAP: {
+      CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
+
       output_surface = make_scoped_ptr(
           new PixelTestOutputSurface(new TestInProcessContextProvider));
       break;
@@ -312,6 +315,8 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
     scoped_ptr<SingleReleaseCallback>* release_callback) {
   DCHECK_GT(bitmap.width(), 0);
   DCHECK_GT(bitmap.height(), 0);
+
+  CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
 
   scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();

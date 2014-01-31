@@ -219,25 +219,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 
     base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();
 
-    // Determine if we need to initialize GL here or it has already been done.
-    bool gl_already_initialized = false;
-#if defined(OS_MACOSX)
-    // On Mac, GLSurface::InitializeOneOff() is called from the sandbox warmup
-    // code before getting here.
-    gl_already_initialized = true;
-#endif
-    if (command_line.HasSwitch(switches::kInProcessGPU)) {
-      // With in-process GPU, GLSurface::InitializeOneOff() is called from
-      // GpuChildThread before getting here.
-      gl_already_initialized = true;
-    }
-
     // Load and initialize the GL implementation and locate the GL entry points.
-    bool gl_initialized =
-        gl_already_initialized
-            ? gfx::GetGLImplementation() != gfx::kGLImplementationNone
-            : gfx::GLSurface::InitializeOneOff();
-    if (gl_initialized) {
+    if (gfx::GLSurface::InitializeOneOff()) {
       // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
       // purposes. However, on Mac we don't actually use them. As documented in
       // crbug.com/222934, due to some driver issues, glGetString could take
