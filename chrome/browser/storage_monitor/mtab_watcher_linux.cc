@@ -16,6 +16,7 @@ namespace {
 
 // List of file systems we care about.
 const char* const kKnownFileSystems[] = {
+  "btrfs",
   "ext2",
   "ext3",
   "ext4",
