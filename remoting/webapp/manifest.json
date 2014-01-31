@@ -5,6 +5,7 @@
   "description": "__MSG_PRODUCT_DESCRIPTION__",
   "manifest_version": 2,
   "default_locale": "en",
+  "minimum_chrome_version": "32",
   "app": {
     "launch": {
       "local_path": "main.html"

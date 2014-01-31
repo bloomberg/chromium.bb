@@ -56,8 +56,8 @@ remoting.HostNativeMessaging.PendingReply = function(type, onDone, onError) {
 
 /**
  * Sets up connection to the Native Messaging host process and exchanges
- * 'hello' messages. If Native Messaging is not available or the host
- * process is not installed, this returns false to the callback.
+ * 'hello' messages. Invokes onDone on success and onError on failure (the
+ * native messaging host is probably not installed).
  *
  * @param {function(): void} onDone Called after successful initialization.
  * @param {function(remoting.Error): void} onError Called if initialization
@@ -65,22 +65,6 @@ remoting.HostNativeMessaging.PendingReply = function(type, onDone, onError) {
  * @return {void} Nothing.
  */
 remoting.HostNativeMessaging.prototype.initialize = function(onDone, onError) {
-  if (!chrome.runtime.connectNative) {
-    console.log('Native Messaging API not available');
-    onError(remoting.Error.UNEXPECTED);
-    return;
-  }
-
-  // NativeMessaging API exists on Chrome 26.xxx but fails to notify
-  // onDisconnect in the case where the Host components are not installed. Need
-  // to blacklist these versions of Chrome.
-  var majorVersion = navigator.appVersion.match('Chrome/(\\d+)\.')[1];
-  if (!majorVersion || majorVersion <= 26) {
-    console.log('Native Messaging not supported on this version of Chrome');
-    onError(remoting.Error.UNEXPECTED);
-    return;
-  }
-
   try {
     this.port_ = chrome.runtime.connectNative(
         'com.google.chrome.remote_desktop');

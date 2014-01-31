@@ -2,9 +2,9 @@ diff --git a/remoting/webapp/manifest.json b/remoting/webapp/manifest.json
 index d1f8d1f..67bf660 100644
 --- a/manifest.json
 +++ b/manifest.json
-@@ -5,30 +5,15 @@
-   "manifest_version": 2,
+@@ -6,30 +6,15 @@
    "default_locale": "en",
+   "minimum_chrome_version": "32",
    "app": {
 -    "launch": {
 -      "local_path": "main.html"
@@ -37,7 +37,7 @@ index d1f8d1f..67bf660 100644
    "optional_permissions": [
      "<all_urls>"
    ],
-@@ -42,16 +28,22 @@
+@@ -43,16 +29,22 @@
      "clipboardRead",
      "clipboardWrite",
 -    "nativeMessaging"
