@@ -13,6 +13,7 @@
 #include "base/win/metro.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/windows_version.h"
 #include "media/base/media_switches.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"
 
@@ -154,10 +155,14 @@ void DeleteMediaType(AM_MEDIA_TYPE* mt) {
 // static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  // Use Media Foundation for Metro processes (after and including Win8)
-  // and DirectShow for any other platforms.
-  if (base::win::IsMetroProcess() &&
-      !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) {
+  // Use Media Foundation for Metro processes (after and including Win8) and
+  // DirectShow for any other versions, unless forced via flag. Media Foundation
+  // can also be forced if appropriate flag is set and we are in Windows 7 or
+  // 8 in non-Metro mode.
+  if ((base::win::IsMetroProcess() &&
+      !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) ||
+      (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture))) {
     VideoCaptureDeviceMFWin::GetDeviceNames(device_names);
   } else {
     VideoCaptureDeviceWin::GetDeviceNames(device_names);
@@ -167,7 +172,19 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
 // static
 void VideoCaptureDevice::GetDeviceSupportedFormats(const Name& device,
     VideoCaptureFormats* formats) {
-  NOTIMPLEMENTED();
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  // Use Media Foundation for Metro processes (after and including Win8) and
+  // DirectShow for any other versions, unless forced via flag. Media Foundation
+  // can also be forced if appropriate flag is set and we are in Windows 7 or
+  // 8 in non-Metro mode.
+  if ((base::win::IsMetroProcess() &&
+      !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) ||
+      (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture))) {
+    VideoCaptureDeviceMFWin::GetDeviceSupportedFormats(device, formats);
+  } else {
+    VideoCaptureDeviceWin::GetDeviceSupportedFormats(device, formats);
+  }
 }
 
 // static
@@ -261,6 +278,12 @@ void VideoCaptureDeviceWin::GetDeviceNames(Names* device_names) {
     }
     moniker.Release();
   }
+}
+
+// static
+void VideoCaptureDeviceWin::GetDeviceSupportedFormats(const Name& device,
+    VideoCaptureFormats* formats) {
+  NOTIMPLEMENTED();
 }
 
 VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)

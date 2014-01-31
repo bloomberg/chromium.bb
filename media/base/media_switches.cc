@@ -67,6 +67,11 @@ const char kEnableExclusiveAudio[] = "enable-exclusive-audio";
 // See bug: http://crbug.com/268412
 const char kForceDirectShowVideoCapture[] = "force-directshow";
 
+// Force the use of MediaFoundation for video capture. This is only supported in
+// Windows 7 and above. Used, like |kForceDirectShowVideoCapture|, to
+// troubleshoot problems in Windows platforms.
+const char kForceMediaFoundationVideoCapture[] = "force-mediafoundation";
+
 // Use Windows WaveOut/In audio API even if Core Audio is supported.
 const char kForceWaveAudio[] = "force-wave-audio";
 

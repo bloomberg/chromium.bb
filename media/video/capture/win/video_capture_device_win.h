@@ -46,6 +46,8 @@ class VideoCaptureDeviceWin
   virtual void StopAndDeAllocate() OVERRIDE;
 
   static void GetDeviceNames(Names* device_names);
+  static void GetDeviceSupportedFormats(const Name& device,
+                                        VideoCaptureFormats* formats);
 
  private:
   enum InternalState {

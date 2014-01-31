@@ -52,6 +52,9 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
 
   static void GetDeviceNames(Names* device_names);
 
+  static void GetDeviceSupportedFormats(const Name& device,
+                                        VideoCaptureFormats* formats);
+
   // Captured a new video frame.
   void OnIncomingCapturedFrame(const uint8* data,
                                int length,

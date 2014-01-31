@@ -287,6 +287,60 @@ void VideoCaptureDeviceMFWin::GetDeviceNames(Names* device_names) {
   }
 }
 
+// static
+void VideoCaptureDeviceMFWin::GetDeviceSupportedFormats(const Name& device,
+    VideoCaptureFormats* formats) {
+  ScopedComPtr<IMFMediaSource> source;
+  if (!CreateVideoCaptureDevice(device.id().c_str(), source.Receive()))
+    return;
+
+  HRESULT hr;
+  base::win::ScopedComPtr<IMFSourceReader> reader;
+  if (FAILED(hr = MFCreateSourceReaderFromMediaSource(source, NULL,
+                                                      reader.Receive()))) {
+    DLOG(ERROR) << "MFCreateSourceReaderFromMediaSource: " << std::hex << hr;
+    return;
+  }
+
+  DWORD stream_index = 0;
+  ScopedComPtr<IMFMediaType> type;
+  while (SUCCEEDED(hr = reader->GetNativeMediaType(
+         MF_SOURCE_READER_FIRST_VIDEO_STREAM, stream_index, type.Receive()))) {
+    UINT32 width, height;
+    hr = MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width, &height);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "MFGetAttributeSize: " << std::hex << hr;
+      return;
+    }
+    VideoCaptureFormat capture_format;
+    capture_format.frame_size.SetSize(width, height);
+
+    UINT32 numerator, denominator;
+    hr = MFGetAttributeRatio(type, MF_MT_FRAME_RATE, &numerator, &denominator);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "MFGetAttributeSize: " << std::hex << hr;
+      return;
+    }
+    capture_format.frame_rate = denominator ? numerator / denominator : 0;
+
+    GUID type_guid;
+    hr = type->GetGUID(MF_MT_SUBTYPE, &type_guid);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "GetGUID: " << std::hex << hr;
+      return;
+    }
+    FormatFromGuid(type_guid, &capture_format.pixel_format);
+    type.Release();
+    formats->push_back(capture_format);
+    ++stream_index;
+
+    DVLOG(1) << device.name() << " resolution: "
+             << capture_format.frame_size.ToString() << ", fps: "
+             << capture_format.frame_rate << ", pixel format: "
+             << capture_format.pixel_format;
+  }
+}
+
 const std::string VideoCaptureDevice::Name::GetModel() const {
   const size_t vid_prefix_size = sizeof(kVidPrefix) - 1;
   const size_t pid_prefix_size = sizeof(kPidPrefix) - 1;
