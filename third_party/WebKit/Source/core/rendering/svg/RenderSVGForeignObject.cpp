@@ -161,6 +161,14 @@ void RenderSVGForeignObject::layout()
     repainter.repaintAfterLayout();
 }
 
+void RenderSVGForeignObject::computeRectForRepaint(const RenderLayerModelObject* repaintContainer,
+    LayoutRect& rect, bool fixed) const
+{
+    FloatRect r(rect);
+    SVGRenderSupport::computeFloatRectForRepaint(this, repaintContainer, r, fixed);
+    rect = enclosingLayoutRect(r);
+}
+
 bool RenderSVGForeignObject::nodeAtFloatPoint(const HitTestRequest& request, HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
 {
     // Embedded content is drawn in the foreground phase.
