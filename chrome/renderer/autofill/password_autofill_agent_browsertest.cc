@@ -12,7 +12,6 @@
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/password_autofill_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -302,19 +301,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     // has been shown to the user. Of course, it hasn't, so a message is never
     // sent to the browser on acceptance, and the DCHECK isn't hit (and nothing
     // is filled).
-    //
-    // These tests only make sense in the context of not ignoring
-    // autocomplete='off', so only test them if the disable autocomplete='off'
-    // flag is not enabled.
-    // TODO(jww): Remove this function and callers once autocomplete='off' is
-    // permanently ignored.
-    if (!ShouldIgnoreAutocompleteOffForPasswordFields()) {
-      EXPECT_TRUE(autofill_agent_->password_autofill_agent_->ShowSuggestions(
-          username_element_));
+    EXPECT_TRUE(autofill_agent_->password_autofill_agent_->ShowSuggestions(
+        username_element_));
 
-      EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-          AutofillHostMsg_ShowPasswordSuggestions::ID));
-    }
+    EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+        AutofillHostMsg_ShowPasswordSuggestions::ID));
   }
 
   void SimulateKeyDownEvent(const WebInputElement& element,
