@@ -11,6 +11,8 @@
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
+class ErrorHandler;
+
 namespace internal {
 
 // The Connector class is responsible for performing read/write operations on a
@@ -30,7 +32,15 @@ class Connector : public MessageReceiver {
   // Sets the receiver to handle messages read from the message pipe.  The
   // Connector will only read messages from the pipe if an incoming receiver
   // has been set.
-  void SetIncomingReceiver(MessageReceiver* receiver);
+  void set_incoming_receiver(MessageReceiver* receiver) {
+    incoming_receiver_ = receiver;
+  }
+
+  // Sets the error handler to receives notifications when an error is
+  // encountered while reading from the pipe or waiting to read from the pipe.
+  void set_error_handler(ErrorHandler* error_handler) {
+    error_handler_ = error_handler;
+  }
 
   // Returns true if an error was encountered while reading from or writing to
   // the message pipe.
@@ -40,12 +50,14 @@ class Connector : public MessageReceiver {
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
 
  private:
-  static void OnHandleReady(void* closure, MojoResult result);
+  static void CallOnHandleReady(void* closure, MojoResult result);
+  void OnHandleReady(MojoResult result);
 
   void WaitToReadMore();
   void ReadMore();
   void WriteOne(Message* message);
 
+  ErrorHandler* error_handler_;
   MojoAsyncWaiter* waiter_;
 
   ScopedMessagePipeHandle message_pipe_;

@@ -18,7 +18,7 @@ GLES2ClientImpl::GLES2ClientImpl(MojoAsyncWaiter* async_waiter,
                                  MojoGLES2ContextLost lost_callback,
                                  MojoGLES2DrawAnimationFrame animation_callback,
                                  void* closure)
-    : service_(pipe.Pass(), this, async_waiter),
+    : service_(pipe.Pass(), this, NULL, async_waiter),
       implementation_(NULL),
       created_callback_(created_callback),
       lost_callback_(lost_callback),

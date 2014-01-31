@@ -4,10 +4,9 @@
 
 #include "mojo/public/bindings/lib/connector.h"
 
-#include <assert.h>
 #include <stdlib.h>
 
-#include <algorithm>
+#include "mojo/public/bindings/error_handler.h"
 
 namespace mojo {
 namespace internal {
@@ -16,23 +15,20 @@ namespace internal {
 
 Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      MojoAsyncWaiter* waiter)
-    : waiter_(waiter),
+    : error_handler_(NULL),
+      waiter_(waiter),
       message_pipe_(message_pipe.Pass()),
       incoming_receiver_(NULL),
       async_wait_id_(0),
       error_(false) {
+  // Even though we don't have an incoming receiver, we still want to monitor
+  // the message pipe to know if is closed or encounters an error.
+  WaitToReadMore();
 }
 
 Connector::~Connector() {
   if (async_wait_id_)
     waiter_->CancelWait(waiter_, async_wait_id_);
-}
-
-void Connector::SetIncomingReceiver(MessageReceiver* receiver) {
-  assert(!incoming_receiver_);
-  incoming_receiver_ = receiver;
-  if (incoming_receiver_)
-    WaitToReadMore();
 }
 
 bool Connector::Accept(Message* message) {
@@ -44,10 +40,22 @@ bool Connector::Accept(Message* message) {
 }
 
 // static
-void Connector::OnHandleReady(void* closure, MojoResult result) {
+void Connector::CallOnHandleReady(void* closure, MojoResult result) {
   Connector* self = static_cast<Connector*>(closure);
-  self->async_wait_id_ = 0;
-  self->ReadMore();
+  self->OnHandleReady(result);
+}
+
+void Connector::OnHandleReady(MojoResult result) {
+  async_wait_id_ = 0;
+
+  if (result == MOJO_RESULT_OK) {
+    ReadMore();
+  } else {
+    error_ = true;
+  }
+
+  if (error_ && error_handler_)
+    error_handler_->OnError();
 }
 
 void Connector::WaitToReadMore() {
@@ -55,7 +63,7 @@ void Connector::WaitToReadMore() {
                                       message_pipe_.get().value(),
                                       MOJO_WAIT_FLAG_READABLE,
                                       MOJO_DEADLINE_INDEFINITE,
-                                      &Connector::OnHandleReady,
+                                      &Connector::CallOnHandleReady,
                                       this);
 }
 
@@ -95,7 +103,8 @@ void Connector::ReadMore() {
       break;
     }
 
-    incoming_receiver_->Accept(&message);
+    if (incoming_receiver_)
+      incoming_receiver_->Accept(&message);
   }
 }
 

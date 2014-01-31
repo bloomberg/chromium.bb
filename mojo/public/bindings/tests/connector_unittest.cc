@@ -83,7 +83,7 @@ TEST_F(ConnectorTest, Basic) {
   connector0.Accept(&message);
 
   MessageAccumulator accumulator;
-  connector1.SetIncomingReceiver(&accumulator);
+  connector1.set_incoming_receiver(&accumulator);
 
   PumpMessages();
 
@@ -102,7 +102,7 @@ TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
   internal::Connector connector1(handle1_.Pass());
 
   MessageAccumulator accumulator;
-  connector1.SetIncomingReceiver(&accumulator);
+  connector1.set_incoming_receiver(&accumulator);
 
   const char kText[] = "hello world";
 
@@ -137,7 +137,7 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
   }
 
   MessageAccumulator accumulator;
-  connector1.SetIncomingReceiver(&accumulator);
+  connector1.set_incoming_receiver(&accumulator);
 
   PumpMessages();
 
@@ -192,7 +192,7 @@ TEST_F(ConnectorTest, MessageWithHandles) {
   EXPECT_TRUE(message.handles.empty());
 
   MessageAccumulator accumulator;
-  connector1.SetIncomingReceiver(&accumulator);
+  connector1.set_incoming_receiver(&accumulator);
 
   PumpMessages();
 
@@ -219,7 +219,7 @@ TEST_F(ConnectorTest, MessageWithHandles) {
   AllocMessage(kText, &message);
 
   connector_received.Accept(&message);
-  connector_original.SetIncomingReceiver(&accumulator);
+  connector_original.set_incoming_receiver(&accumulator);
   PumpMessages();
 
   ASSERT_FALSE(accumulator.IsEmpty());

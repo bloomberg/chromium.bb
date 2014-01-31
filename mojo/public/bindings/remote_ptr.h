@@ -15,7 +15,7 @@ namespace mojo {
 // A RemotePtr is a smart-pointer for managing the connection of a message pipe
 // to an interface proxy.
 //
-// EXAMPLE
+// EXAMPLE:
 //
 // On the client side of a service, RemotePtr might be used like so:
 //
@@ -46,6 +46,15 @@ namespace mojo {
 //     mojo::RemotePtr<FooClient> client_;
 //   };
 //
+// NOTE:
+//
+// 1- It is valid to pass NULL for the peer if you are not interested in
+//    receiving incoming messages. Those messages will still be consumed.
+//
+// 2- You may optionally register an ErrorHandler on the RemotePtr to be
+//    notified if the peer has gone away. Alternatively, you may poll the
+//    |encountered_error()| method to check if the peer has gone away.
+//
 template <typename S>
 class RemotePtr {
   struct State;
@@ -55,8 +64,9 @@ class RemotePtr {
   RemotePtr() : state_(NULL) {}
   explicit RemotePtr(ScopedMessagePipeHandle message_pipe,
                      typename S::_Peer* peer = NULL,
+                     ErrorHandler* error_handler = NULL,
                      MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter())
-      : state_(new State(message_pipe.Pass(), peer, waiter)) {
+      : state_(new State(message_pipe.Pass(), peer, error_handler, waiter)) {
   }
 
   // Move-only constructor and operator=.
@@ -90,9 +100,10 @@ class RemotePtr {
 
   void reset(ScopedMessagePipeHandle message_pipe,
              typename S::_Peer* peer = NULL,
+             ErrorHandler* error_handler = NULL,
              MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
     delete state_;
-    state_ = new State(message_pipe.Pass(), peer, waiter);
+    state_ = new State(message_pipe.Pass(), peer, error_handler, waiter);
   }
 
   bool encountered_error() const {
@@ -103,12 +114,13 @@ class RemotePtr {
  private:
   struct State {
     State(ScopedMessagePipeHandle message_pipe, typename S::_Peer* peer,
-          MojoAsyncWaiter* waiter)
+          ErrorHandler* error_handler, MojoAsyncWaiter* waiter)
         : connector(message_pipe.Pass(), waiter),
           proxy(&connector),
           stub(peer) {
+      connector.set_error_handler(error_handler);
       if (peer)
-        connector.SetIncomingReceiver(&stub);
+        connector.set_incoming_receiver(&stub);
     }
     internal::Connector connector;
     typename S::_Proxy proxy;

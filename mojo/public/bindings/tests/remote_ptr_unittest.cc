@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/utility/run_loop.h"
@@ -10,6 +11,22 @@
 
 namespace mojo {
 namespace test {
+namespace {
+
+class ErrorObserver : public ErrorHandler {
+ public:
+  ErrorObserver() : encountered_error_(false) {
+  }
+
+  bool encountered_error() const { return encountered_error_; }
+
+  virtual void OnError() MOJO_OVERRIDE {
+    encountered_error_ = true;
+  }
+
+ private:
+  bool encountered_error_;
+};
 
 class MathCalculatorImpl : public math::Calculator {
  public:
@@ -41,8 +58,9 @@ class MathCalculatorImpl : public math::Calculator {
 
 class MathCalculatorUIImpl : public math::CalculatorUI {
  public:
-  explicit MathCalculatorUIImpl(ScopedMessagePipeHandle pipe)
-      : calculator_(pipe.Pass(), this),
+  explicit MathCalculatorUIImpl(ScopedMessagePipeHandle pipe,
+                                ErrorHandler* error_handler = NULL)
+      : calculator_(pipe.Pass(), this, error_handler),
         output_(0.0) {
   }
 
@@ -101,6 +119,8 @@ class RemotePtrTest : public testing::Test {
   Environment env_;
   RunLoop loop_;
 };
+
+}  // namespace
 
 TEST_F(RemotePtrTest, EndToEnd) {
   // Suppose this is instantiated in a process that has pipe0_.
@@ -172,6 +192,36 @@ TEST_F(RemotePtrTest, EncounteredError) {
 
   // OK, now we see the error.
   EXPECT_TRUE(calculator_ui.encountered_error());
+}
+
+TEST_F(RemotePtrTest, EncounteredErrorCallback) {
+  MathCalculatorImpl* calculator = new MathCalculatorImpl(pipe0_.Pass());
+
+  ErrorObserver error_observer;
+  MathCalculatorUIImpl calculator_ui(pipe1_.Pass(), &error_observer);
+
+  calculator_ui.Add(2.0);
+  PumpMessages();
+  EXPECT_EQ(2.0, calculator_ui.GetOutput());
+  EXPECT_FALSE(calculator_ui.encountered_error());
+
+  calculator_ui.Multiply(5.0);
+  EXPECT_FALSE(calculator_ui.encountered_error());
+
+  // Close the other side of the pipe.
+  delete calculator;
+
+  // The state change isn't picked up locally yet.
+  EXPECT_FALSE(calculator_ui.encountered_error());
+
+  PumpMessages();
+
+  // OK, now we see the error.
+  EXPECT_TRUE(calculator_ui.encountered_error());
+
+  // We should have also been able to observe the error through the
+  // ErrorHandler interface.
+  EXPECT_TRUE(error_observer.encountered_error());
 }
 
 }  // namespace test

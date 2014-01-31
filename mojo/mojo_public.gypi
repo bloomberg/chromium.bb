@@ -165,6 +165,7 @@
         'public/bindings/allocation_scope.h',
         'public/bindings/array.h',
         'public/bindings/buffer.h',
+        'public/bindings/error_handler.h',
         'public/bindings/passable.h',
         'public/bindings/remote_ptr.h',
         'public/bindings/type_converter.h',
