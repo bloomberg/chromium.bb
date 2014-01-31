@@ -54,6 +54,30 @@ HideKeyboardKeyTester.prototype = {
   },
 
   /**
+   * Mocks tap/click on hide keyboard key. It should hide and unlock keyboard.
+   * @param {string} keysetId Initial keyset.
+   */
+  keyTap: function(keysetId) {
+    var self = this;
+    var fn = function() {
+      Debug('Mock keypress on hide keyboard key.');
+
+      var hideKey =
+          $('keyboard').activeKeyset.querySelector('kb-hide-keyboard-key');
+      assertTrue(!!hideKey, 'Unable to find hide keyboard key.');
+
+      chrome.virtualKeyboardPrivate.hideKeyboard.addExpectation();
+      // Hide keyboard should unlock keyboard too.
+      chrome.virtualKeyboardPrivate.lockKeyboard.addExpectation(false);
+
+      hideKey.down({pointerId: 1});
+      hideKey.up({pointerId: 1});
+    };
+    this.addWaitCondition(fn, keysetId);
+    this.addSubtask(fn);
+  },
+
+  /**
    * Mocks selection of lock/unlock button from the options menu.
    * @param {boolean} expect Whether or not the keyboard should be locked.
    */
@@ -114,14 +138,7 @@ function testLockUnlockKeyboard(testDoneCallback) {
   checkTypeLockUnlockKey(false);  // Expect to unlock keyboard.
 
   checkTypeLockUnlockKey(true);  // Expect to lock keyboard.
-  var hideKey =
-      $('keyboard').activeKeyset.querySelector('kb-hide-keyboard-key');
-  assertTrue(!!hideKey, 'Unable to find hide keyboard key.');
-  chrome.virtualKeyboardPrivate.hideKeyboard.addExpectation();
-  // Hide keyboard should unlock keyboard too.
-  chrome.virtualKeyboardPrivate.lockKeyboard.addExpectation(false);
-  hideKey.down({pointerId: 1});
-  hideKey.up({pointerId: 1});
+  tester.keyTap(Keyset.LOWER);
 
   tester.scheduleTest('testLockUnlockKeyboard', testDoneCallback);
 }

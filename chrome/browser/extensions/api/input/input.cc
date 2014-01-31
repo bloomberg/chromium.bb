@@ -141,6 +141,19 @@ bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
   return false;
 }
 
+bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if defined(USE_ASH)
+  base::DictionaryValue* results = new base::DictionaryValue();
+  results->SetString("layout", keyboard::GetKeyboardLayout());
+  results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
+  SetResult(results);
+  return true;
+#endif
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
 InputAPI::InputAPI(Profile* profile) {
 }
 

@@ -300,6 +300,7 @@
 
     Polymer('kb-keyboard', {
       alt: null,
+      config: null,
       control: null,
       dblDetail_: null,
       dblTimer_: null,
@@ -348,9 +349,17 @@
           keyset.show();
       },
 
+      configChanged: function() {
+        this.layout = this.config.layout;
+      },
+
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
         this.swipeHandler = this.move.bind(this);
+        var self = this;
+        getKeyboardConfig(function(config) {
+          self.config = config;
+        });
       },
 
       /**
@@ -367,6 +376,10 @@
        * Otherwise, the keyboard layout for 'text' type will be loaded.
        */
       inputTypeChanged: function() {
+        // Disable layout switching at accessbility mode.
+        if (this.config && this.config.a11ymode)
+          return;
+
         // TODO(bshe): Toggle visibility of some keys in a keyboard layout
         // according to the input type.
         var layout = this.inputTypeToLayoutMap[this.inputType];

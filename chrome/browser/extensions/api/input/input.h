@@ -93,6 +93,20 @@ class VirtualKeyboardPrivateKeyboardLoadedFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class VirtualKeyboardPrivateGetKeyboardConfigFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "virtualKeyboardPrivate.getKeyboardConfig",
+      VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG);
+
+ protected:
+  virtual ~VirtualKeyboardPrivateGetKeyboardConfigFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class InputAPI : public ProfileKeyedAPI {
  public:
   explicit InputAPI(Profile* profile);

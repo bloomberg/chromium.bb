@@ -46,6 +46,16 @@ void SetAccessibilityKeyboardEnabled(bool enabled) {
   g_accessibility_keyboard_enabled = enabled;
 }
 
+bool GetAccessibilityKeyboardEnabled() {
+  return g_accessibility_keyboard_enabled;
+}
+
+std::string GetKeyboardLayout() {
+  // TODO(bshe): layout string is currently hard coded. We should use more
+  // standard keyboard layouts.
+  return GetAccessibilityKeyboardEnabled() ? "system-qwerty" : "qwerty";
+}
+
 bool IsKeyboardEnabled() {
   return g_accessibility_keyboard_enabled ||
       CommandLine::ForCurrentProcess()->HasSwitch(

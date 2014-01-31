@@ -115,6 +115,36 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "getKeyboardConfig",
+        "type": "function",
+        "description": "Gets the virtual keyboard configuration.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when querying virtual keyboard configuration is complete.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "config",
+                "properties": {
+                  "layout": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Virtual keyboard layout string."
+                  },
+                  "a11ymode": {
+                    "type": "boolean",
+                    "description": "True if accessbility virtual keyboard is enabled."
+                  }
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

@@ -63,6 +63,12 @@ function keyboardLoaded() {
   chrome.virtualKeyboardPrivate.keyboardLoaded(logIfError);
 }
 
+function getKeyboardConfig(callback) {
+  chrome.virtualKeyboardPrivate.getKeyboardConfig(function (config) {
+    callback(config);
+  });
+}
+
 chrome.virtualKeyboardPrivate.onTextInputBoxFocused.addListener(
   function (inputContext) {
     $('keyboard').inputTypeValue = inputContext.type;
