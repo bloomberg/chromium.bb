@@ -947,10 +947,16 @@ public:
 
     bool hasTouchEventHandlers() const { return (m_touchEventTargets.get()) ? m_touchEventTargets->size() : false; }
 
+    // Called when a single touch event handler has been added or removed for a node.
+    // The Node should always be in this Document, except for child Documents which report
+    // themselves to their parent exactly once if they have any touch handlers.
+    // Handlers added/removed from the DOMWindow are reported as the Document.
     void didAddTouchEventHandler(Node*);
-    void didRemoveTouchEventHandler(Node*);
+    void didRemoveTouchEventHandler(Node* handler) { didRemoveTouchEventHandler(handler, false); }
 
-    void didRemoveEventTargetNode(Node*);
+    // Called whenever all touch event handlers have been removed for a node (such as when the
+    // node itself is being removed from the document).
+    void didClearTouchEventHandlers(Node* handler) { didRemoveTouchEventHandler(handler, true); }
 
     const TouchEventTargetSet* touchEventTargets() const { return m_touchEventTargets.get(); }
 
@@ -1119,6 +1125,8 @@ private:
     void processHttpEquivSetCookie(const AtomicString& content);
     void processHttpEquivXFrameOptions(const AtomicString& content);
     void processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content);
+
+    void didRemoveTouchEventHandler(Node*, bool clearAll);
 
     // Returns true if Document::recalcStyle() needs to be run.
     bool shouldCallRecalcStyleForDocument();

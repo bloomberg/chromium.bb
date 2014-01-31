@@ -291,6 +291,7 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE FINAL;
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE FINAL;
+    virtual void removeAllEventListeners() OVERRIDE FINAL;
 
     virtual bool hasCustomFocusLogic() const OVERRIDE FINAL;
     virtual bool isKeyboardFocusable() const OVERRIDE FINAL;

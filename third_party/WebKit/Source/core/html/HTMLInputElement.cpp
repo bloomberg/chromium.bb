@@ -168,7 +168,7 @@ HTMLInputElement::~HTMLInputElement()
     if (isRadioButton())
         document().formController()->checkedRadioButtons().removeButton(this);
     if (m_hasTouchEventHandler)
-        document().didRemoveEventTargetNode(this);
+        document().didRemoveTouchEventHandler(this);
 }
 
 const AtomicString& HTMLInputElement::name() const
@@ -1117,7 +1117,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
             return;
     }
 
-    if (evt->isTouchEvent()) {
+    if (evt->isTouchEvent() && m_inputTypeView->hasTouchEventHandler()) {
         m_inputTypeView->handleTouchEvent(toTouchEvent(evt));
         if (evt->defaultHandled())
             return;
@@ -1437,12 +1437,18 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
     if (isRadioButton())
         oldDocument.formController()->checkedRadioButtons().removeButton(this);
     if (m_hasTouchEventHandler)
-        oldDocument.didRemoveEventTargetNode(this);
+        oldDocument.didRemoveTouchEventHandler(this);
 
     if (m_hasTouchEventHandler)
         document().didAddTouchEventHandler(this);
 
     HTMLTextFormControlElement::didMoveToNewDocument(oldDocument);
+}
+
+void HTMLInputElement::removeAllEventListeners()
+{
+    HTMLTextFormControlElement::removeAllEventListeners();
+    m_hasTouchEventHandler = false;
 }
 
 bool HTMLInputElement::recalcWillValidate() const

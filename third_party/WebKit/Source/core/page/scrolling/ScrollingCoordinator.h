@@ -103,7 +103,7 @@ public:
     void scrollableAreaScrollbarLayerDidChange(ScrollableArea*, ScrollbarOrientation);
     void setLayerIsContainerForFixedPositionLayers(GraphicsLayer*, bool);
     void updateLayerPositionConstraint(RenderLayer*);
-    void touchEventTargetRectsDidChange(const Document*);
+    void touchEventTargetRectsDidChange();
     void willDestroyRenderLayer(RenderLayer*);
 
     void updateScrollParentForGraphicsLayer(GraphicsLayer* child, RenderLayer* parent);

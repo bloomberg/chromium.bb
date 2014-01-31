@@ -135,6 +135,8 @@ void TouchActionTest::runTouchActionTest(std::string file)
 
     RefPtr<WebCore::Document> document = static_cast<PassRefPtr<WebCore::Document> >(webView->mainFrame()->document());
     runTestOnTree(document.get(), webView, client);
+
+    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
 void TouchActionTest::runShadowDOMTest(std::string file)
@@ -156,6 +158,8 @@ void TouchActionTest::runShadowDOMTest(std::string file)
 
     // Projections show up in the main document.
     runTestOnTree(document.get(), webView, client);
+
+    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
 WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebViewClient& client)

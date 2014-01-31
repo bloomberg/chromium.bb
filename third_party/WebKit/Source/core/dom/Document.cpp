@@ -553,9 +553,6 @@ Document::~Document()
     if (m_templateDocument)
         m_templateDocument->setTemplateDocumentHost(0); // balanced in templateDocument().
 
-    if (Document* ownerDocument = this->ownerDocument())
-        ownerDocument->didRemoveEventTargetNode(this);
-
     m_scriptRunner.clear();
 
     removeAllEventListeners();
@@ -2127,8 +2124,8 @@ void Document::detach(const AttachContext& context)
     if (renderView)
         renderView->destroy();
 
-    if (m_touchEventTargets && m_touchEventTargets->size() && parentDocument())
-        parentDocument()->didRemoveEventTargetNode(this);
+    if (Document* parentDoc = parentDocument())
+        parentDoc->didClearTouchEventHandlers(this);
 
     // This is required, as our Frame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
@@ -2160,7 +2157,7 @@ void Document::prepareForDestruction()
 
 void Document::removeAllEventListeners()
 {
-    EventTarget::removeAllEventListeners();
+    ContainerNode::removeAllEventListeners();
 
     if (DOMWindow* domWindow = this->domWindow())
         domWindow->removeAllEventListeners();
@@ -4945,55 +4942,75 @@ PassRefPtr<TouchList> Document::createTouchList(Vector<RefPtr<Touch> >& touches)
 
 void Document::didAddTouchEventHandler(Node* handler)
 {
+    // The node should either be in this document, or be the Document node of a child
+    // of this document.
+    ASSERT(&handler->document() == this
+        || (handler->isDocumentNode() && toDocument(handler)->parentDocument() == this));
     if (!m_touchEventTargets.get())
         m_touchEventTargets = adoptPtr(new TouchEventTargetSet);
-    m_touchEventTargets->add(handler);
-    if (Document* parent = parentDocument()) {
-        parent->didAddTouchEventHandler(this);
+    bool isFirstHandler = m_touchEventTargets->isEmpty();
+
+    if (!m_touchEventTargets->add(handler).isNewEntry) {
+        // Just incremented refcount, no real change.
+        // If this is a child document node, then the count should never go above 1.
+        ASSERT(!handler->isDocumentNode() || &handler->document() == this);
         return;
     }
-    if (Page* page = this->page()) {
-        if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-            scrollingCoordinator->touchEventTargetRectsDidChange(this);
-        if (m_touchEventTargets->size() == 1)
-            frameHost()->chrome().client().needTouchEvents(true);
+
+    if (isFirstHandler) {
+        if (Document* parent = parentDocument()) {
+            parent->didAddTouchEventHandler(this);
+        } else {
+            // This is the first touch handler on the whole page.
+            if (FrameHost* frameHost = this->frameHost())
+                frameHost->chrome().client().needTouchEvents(true);
+        }
+    }
+
+    // When we're all done with all frames, ensure touch hit rects are marked as dirty.
+    if (!handler->isDocumentNode() || handler == this) {
+        if (Page* page = this->page()) {
+            if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+                scrollingCoordinator->touchEventTargetRectsDidChange();
+        }
     }
 }
 
-void Document::didRemoveTouchEventHandler(Node* handler)
+void Document::didRemoveTouchEventHandler(Node* handler, bool clearAll)
 {
+    // Note that we can't assert that |handler| is in this document because it might be in
+    // the process of moving out of it.
+    ASSERT(clearAll || m_touchEventTargets->contains(handler));
     if (!m_touchEventTargets.get())
         return;
-    ASSERT(m_touchEventTargets->contains(handler));
-    m_touchEventTargets->remove(handler);
-    if (Document* parent = parentDocument()) {
-        parent->didRemoveTouchEventHandler(this);
-        return;
-    }
 
-    Page* page = this->page();
-    if (!page)
-        return;
-    if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-        scrollingCoordinator->touchEventTargetRectsDidChange(this);
-    if (m_touchEventTargets->size())
-        return;
-    for (const Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->document() && frame->document()->hasTouchEventHandlers())
+    if (clearAll) {
+        if (!m_touchEventTargets->contains(handler))
+            return;
+        m_touchEventTargets->removeAll(handler);
+    } else {
+        if (!m_touchEventTargets->remove(handler))
+            // Just decremented refcount, no real update.
             return;
     }
-    frameHost()->chrome().client().needTouchEvents(false);
-}
 
-void Document::didRemoveEventTargetNode(Node* handler)
-{
-    if (m_touchEventTargets && !m_touchEventTargets->isEmpty()) {
-        if (handler == this)
-            m_touchEventTargets->clear();
-        else
-            m_touchEventTargets->removeAll(handler);
-        if (m_touchEventTargets->isEmpty() && parentDocument())
-            parentDocument()->didRemoveEventTargetNode(this);
+    if (m_touchEventTargets->isEmpty()) {
+        if (Document* parent = parentDocument()) {
+            // This was the last handler in this document, update the parent document too.
+            parent->didRemoveTouchEventHandler(this, clearAll);
+        } else {
+            // We just removed the last touch handler on the whole page.
+            if (FrameHost* frameHost = this->frameHost())
+                frameHost->chrome().client().needTouchEvents(false);
+        }
+    }
+
+    // When we're all done with all frames, ensure touch hit rects are marked as dirty.
+    if (!handler->isDocumentNode() || handler == this) {
+        if (Page* page = this->page()) {
+            if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+                scrollingCoordinator->touchEventTargetRectsDidChange();
+        }
     }
 }
 

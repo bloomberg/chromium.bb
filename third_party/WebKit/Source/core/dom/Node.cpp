@@ -287,8 +287,8 @@ void Node::willBeDeletedFromDocument()
     Document& document = this->document();
 
     if (hasEventTargetData()) {
-        document.didRemoveEventTargetNode(this);
         clearEventTargetData();
+        document.didClearTouchEventHandlers(this);
     }
 
     if (AXObjectCache* cache = document.existingAXObjectCache())
@@ -2029,6 +2029,12 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
 bool Node::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
     return tryRemoveEventListener(this, eventType, listener, useCapture);
+}
+
+void Node::removeAllEventListeners()
+{
+    EventTarget::removeAllEventListeners();
+    document().didClearTouchEventHandlers(this);
 }
 
 typedef HashMap<Node*, OwnPtr<EventTargetData> > EventTargetDataMap;

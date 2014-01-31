@@ -144,6 +144,22 @@ debug("Test setting touch handlers on a div.");
     shouldBe('window.internals.touchEventHandlerCount(document)', '0');
 })();
 
+debug("Test redudant addEventListener on a div.");
+(function() {
+    var listener = function() { }
+    var div = document.getElementById('touchtarget');
+
+    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    div.addEventListener('touchstart', listener, false);
+    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    div.addEventListener('touchstart', listener, false);
+    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+
+    div.removeEventListener('touchstart', listener, false);
+    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+})();
+
+
 debug("Test addEventListener/removeEventListener on a new div.");
 (function() {
     var div = document.createElement('div');
@@ -204,24 +220,41 @@ debug("Test setting touch handlers on a new div.");
     shouldBe('window.internals.touchEventHandlerCount(document)', '0');
 })();
 
-debug("Test that nested Documents' touch handlers are properly removed from their parent Document.");
+var nestedDocument;
+
+debug("Test that nested Documents' touch handlers are properly tracked in their parent Document.");
 (function() {
     var iframe = document.createElement('iframe');
     var touchtarget = document.getElementById('touchtarget');
-
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
-
-    touchtarget.appendChild(iframe);
-
-    var nestedDocument = iframe.contentWindow.document;
-    nestedDocument.open('text/html', 'replace');
-    nestedDocument.write("<!DOCTYPE html>\n<html><body onload=\"window.ontouchstart = function() { };\"></body>");
-    nestedDocument.close();
+    touchtarget.ontouchend = function() {};
 
     shouldBe('window.internals.touchEventHandlerCount(document)', '1');
 
+    touchtarget.appendChild(iframe);
+
+    nestedDocument = iframe.contentWindow.document;
+    nestedDocument.open('text/html', 'replace');
+    nestedDocument.write('<!DOCTYPE html>\n<script>\nwindow.ontouchstart=function(){};\n</' + 'script>\n' +
+        '<div id=twoHandlers ontouchmove="function(){}" ontouchcancel="function(){}"></div>');
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '3');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+
+    nestedDocument.write('<script>window.ontouchstart=undefined</' + 'script>\n');
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '2');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+
+    nestedDocument.write('<script>document.addEventListener("touchmove", function(){});</' + 'script>\n');
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '3');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    
+    nestedDocument.write('<script>document.getElementById("twoHandlers").remove();</' + 'script>\n');
+    gc();
+    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '1');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    nestedDocument.close();    
+
     touchtarget.removeChild(iframe);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
 })();
 </script>
 </body>

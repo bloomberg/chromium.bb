@@ -581,7 +581,7 @@ void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& lay
     }
 }
 
-void ScrollingCoordinator::touchEventTargetRectsDidChange(const Document*)
+void ScrollingCoordinator::touchEventTargetRectsDidChange()
 {
     if (!touchHitTestingEnabled())
         return;

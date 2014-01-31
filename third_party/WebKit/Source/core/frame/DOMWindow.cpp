@@ -1621,7 +1621,7 @@ void DOMWindow::removeAllEventListeners()
     lifecycleNotifier().notifyRemoveAllEventListeners(this);
 
     if (Document* document = this->document())
-        document->didRemoveEventTargetNode(document);
+        document->didClearTouchEventHandlers(document);
 
     removeAllUnloadEventListeners(this);
     removeAllBeforeUnloadEventListeners(this);
