@@ -303,8 +303,8 @@ def main():
   elif args[0] == 'incompatible_directories':
     incompatible_directories = GetIncompatibleDirectories()
     if incompatible_directories:
-      print ("Incompatibly licensed directories found:" +
-             "\n".join(incompatible_directories))
+      print ("Incompatibly licensed directories found:\n" +
+             "\n".join(sorted(incompatible_directories)))
       return ScanResult.Errors
     return ScanResult.Ok
 
