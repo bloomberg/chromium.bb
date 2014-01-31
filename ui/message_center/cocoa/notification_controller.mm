@@ -729,7 +729,13 @@
 
 - (NSTextView*)newLabelWithFrame:(NSRect)frame {
   NSTextView* label = [[NSTextView alloc] initWithFrame:frame];
-  [label setDrawsBackground:NO];
+
+  // The labels MUST draw their background so that subpixel antialiasing can
+  // happen on the text.
+  [label setDrawsBackground:YES];
+  [label setBackgroundColor:gfx::SkColorToCalibratedNSColor(
+      message_center::kNotificationBackgroundColor)];
+
   [label setEditable:NO];
   [label setSelectable:NO];
   [label setTextContainerInset:NSMakeSize(0.0f, 0.0f)];
