@@ -103,12 +103,7 @@
             ['OS=="win" or OS=="mac" or OS=="ios"', {
               'host_arch%': 'ia32',
             }, {
-              # This handles the Unix platforms for which there is some support.
-              # Anything else gets passed through, which probably won't work
-              # very well; such hosts should pass an explicit target_arch to
-              # gyp.
-              'host_arch%':
-                '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/;s/i86pc/ia32/")',
+              'host_arch%': '<!(python <(DEPTH)/build/linux/detect_host_arch.py)',
             }],
 
             # Embedded implies ozone.
