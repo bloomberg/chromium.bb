@@ -454,7 +454,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_readyState(Complete)
     , m_bParsing(false)
     , m_hasPendingStyleRecalc(false)
-    , m_inStyleRecalc(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
@@ -1606,7 +1605,7 @@ void Document::unscheduleStyleRecalc()
 
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return m_hasPendingStyleRecalc && !m_inStyleRecalc && styleChangeType() >= SubtreeStyleChange;
+    return m_hasPendingStyleRecalc && !inStyleRecalc() && styleChangeType() >= SubtreeStyleChange;
 }
 
 void Document::updateDistributionIfNeeded()
@@ -1714,7 +1713,7 @@ void Document::recalcStyle(StyleRecalcChange change)
     if (!isActive() || !view())
         return;
 
-    if (m_inStyleRecalc)
+    if (inStyleRecalc())
         return;
 
     TRACE_EVENT0("webkit", "Document::recalcStyle");
@@ -1743,7 +1742,7 @@ void Document::recalcStyle(StyleRecalcChange change)
     {
         PostAttachCallbacks::SuspendScope suspendPostAttachCallbacks;
         RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-        TemporaryChange<bool> changeInStyleRecalc(m_inStyleRecalc, true);
+        m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
@@ -1791,6 +1790,9 @@ void Document::recalcStyle(StyleRecalcChange change)
             m_styleEngine->resetCSSFeatureFlags(resolver.ensureRuleFeatureSet());
             resolver.clearStyleSharingList();
         }
+
+        ASSERT(inStyleRecalc());
+        m_lifecycle.advanceTo(DocumentLifecycle::Clean);
     }
 
     InspectorInstrumentation::didRecalculateStyle(cookie);
@@ -2064,7 +2066,7 @@ void Document::attach(const AttachContext& context)
 
     ContainerNode::attach(context);
 
-    m_lifecycle.advanceTo(DocumentLifecycle::Active);
+    m_lifecycle.advanceTo(DocumentLifecycle::Clean);
 }
 
 void Document::detach(const AttachContext& context)

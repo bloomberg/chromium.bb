@@ -41,7 +41,13 @@ public:
     enum State {
         Uninitialized,
         Inactive,
-        Active,
+
+        // When the document is active, it traverses these states.
+        Clean,
+        InStyleRecalc,
+
+        // Once the document starts shuting down, we cannot return
+        // to the style/layout/rendering states.
         Stopping,
         Stopped,
         Disposed,
@@ -50,6 +56,7 @@ public:
     DocumentLifecycle();
     ~DocumentLifecycle();
 
+    bool isActive() const { return m_state > Inactive && m_state < Stopping; }
     State state() const { return m_state; }
 
     void advanceTo(State);

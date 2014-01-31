@@ -991,7 +991,7 @@ public:
     void setNeedsNotifyRemoveAllPendingStylesheet() { m_needsNotifyRemoveAllPendingStylesheet = true; }
     void clearStyleResolver();
 
-    bool inStyleRecalc() { return m_inStyleRecalc; }
+    bool inStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::InStyleRecalc; }
 
     // Return a Locale for the default locale if the argument is null or empty.
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
@@ -1020,7 +1020,7 @@ public:
     Frame* executingFrame();
 
     DocumentLifecycleNotifier& lifecycleNotifier();
-    bool isActive() const { return m_lifecycle.state() == DocumentLifecycle::Active; }
+    bool isActive() const { return m_lifecycle.isActive(); }
     bool isStopped() const { return m_lifecycle.state() == DocumentLifecycle::Stopped; }
 
     enum HttpRefreshType {
@@ -1197,7 +1197,6 @@ private:
     bool m_bParsing;
 
     bool m_hasPendingStyleRecalc;
-    bool m_inStyleRecalc;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;
