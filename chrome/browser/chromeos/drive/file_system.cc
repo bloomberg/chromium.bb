@@ -280,9 +280,7 @@ void FileSystem::ResetComponents() {
   create_file_operation_.reset(
       new file_system::CreateFileOperation(blocking_task_runner_.get(),
                                            observer,
-                                           scheduler_,
-                                           resource_metadata_,
-                                           cache_));
+                                           resource_metadata_));
   move_operation_.reset(
       new file_system::MoveOperation(blocking_task_runner_.get(),
                                      observer,

@@ -226,9 +226,7 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
     id_canonicalizer_(id_canonicalizer),
     create_file_operation_(new CreateFileOperation(blocking_task_runner,
                                                    observer,
-                                                   scheduler,
-                                                   metadata,
-                                                   cache)),
+                                                   metadata)),
     weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

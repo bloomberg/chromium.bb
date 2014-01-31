@@ -8,11 +8,7 @@
 
 #include "base/file_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
@@ -26,108 +22,46 @@ namespace {
 
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
-// Part of CreateFileOperation::CreateFile(), runs on |blocking_task_runner_|
-// of the operation, before server-side file creation.
-FileError CheckPreConditionForCreateFile(internal::ResourceMetadata* metadata,
-                                         const base::FilePath& file_path,
-                                         bool is_exclusive,
-                                         std::string* parent_resource_id,
-                                         std::string* mime_type) {
+// Updates local state.
+FileError UpdateLocalState(internal::ResourceMetadata* metadata,
+                           const base::FilePath& file_path,
+                           const std::string& mime_type_in,
+                           ResourceEntry* entry) {
   DCHECK(metadata);
-  DCHECK(parent_resource_id);
-  DCHECK(mime_type);
 
-  ResourceEntry entry;
-  FileError error = metadata->GetResourceEntryByPath(file_path, &entry);
-  if (error == FILE_ERROR_OK) {
-    // Error if an exclusive mode is requested, or the entry is not a file.
-    return (is_exclusive ||
-            entry.file_info().is_directory() ||
-            entry.file_specific_info().is_hosted_document()) ?
-        FILE_ERROR_EXISTS : FILE_ERROR_OK;
-  }
+  FileError error = metadata->GetResourceEntryByPath(file_path, entry);
+  if (error == FILE_ERROR_OK)
+    return FILE_ERROR_EXISTS;
 
-  // If the file is not found, an actual request to create a new file will be
-  // sent to the server.
-  if (error == FILE_ERROR_NOT_FOUND) {
-    // If parent path is not a directory, it is an error.
-    ResourceEntry parent;
-    if (metadata->GetResourceEntryByPath(
-            file_path.DirName(), &parent) != FILE_ERROR_OK ||
-        !parent.file_info().is_directory())
-      return FILE_ERROR_NOT_A_DIRECTORY;
+  if (error != FILE_ERROR_NOT_FOUND)
+    return error;
 
-    // In the request, parent_resource_id and mime_type are needed.
-    // Here, populate them.
-    *parent_resource_id = parent.resource_id();
+  // If parent path is not a directory, it is an error.
+  ResourceEntry parent;
+  if (metadata->GetResourceEntryByPath(
+          file_path.DirName(), &parent) != FILE_ERROR_OK ||
+      !parent.file_info().is_directory())
+    return FILE_ERROR_NOT_A_DIRECTORY;
 
-    // If mime_type is not set or "application/octet-stream", guess from the
-    // |file_path|. If it is still unsure, use octet-stream by default.
-    if ((mime_type->empty() || *mime_type == kMimeTypeOctetStream) &&
-        !net::GetMimeTypeFromFile(file_path, mime_type)) {
-      *mime_type = kMimeTypeOctetStream;
-    }
-  }
-
-  return error;
-}
-
-// Part of CreateFileOperation::CreateFile(), runs on |blocking_task_runner_|
-// of the operation, after server side file creation.
-FileError UpdateLocalStateForCreateFile(
-    internal::ResourceMetadata* metadata,
-    internal::FileCache* cache,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry,
-    base::FilePath* file_path) {
-  DCHECK(metadata);
-  DCHECK(cache);
-  DCHECK(resource_entry);
-  DCHECK(file_path);
+  // If mime_type is not set or "application/octet-stream", guess from the
+  // |file_path|. If it is still unsure, use octet-stream by default.
+  std::string mime_type = mime_type_in;
+  if ((mime_type.empty() || mime_type == kMimeTypeOctetStream) &&
+      !net::GetMimeTypeFromFile(file_path, &mime_type))
+    mime_type = kMimeTypeOctetStream;
 
   // Add the entry to the local resource metadata.
-  ResourceEntry entry;
-  std::string parent_resource_id;
-  if (!ConvertToResourceEntry(*resource_entry, &entry, &parent_resource_id) ||
-      parent_resource_id.empty())
-    return FILE_ERROR_NOT_A_FILE;
-
-  std::string parent_local_id;
-  FileError error = metadata->GetIdByResourceId(parent_resource_id,
-                                                &parent_local_id);
-  if (error != FILE_ERROR_OK)
-    return error;
-  entry.set_parent_local_id(parent_local_id);
+  const base::Time now = base::Time::Now();
+  entry->mutable_file_info()->set_last_modified(now.ToInternalValue());
+  entry->mutable_file_info()->set_last_accessed(now.ToInternalValue());
+  entry->set_title(file_path.BaseName().AsUTF8Unsafe());
+  entry->set_parent_local_id(parent.local_id());
+  entry->set_metadata_edit_state(ResourceEntry::DIRTY);
+  entry->mutable_file_specific_info()->set_content_mime_type(mime_type);
 
   std::string local_id;
-  error = metadata->AddEntry(entry, &local_id);
-
-  // Depending on timing, the metadata may have inserted via change list
-  // already. So, FILE_ERROR_EXISTS is not an error.
-  if (error == FILE_ERROR_EXISTS)
-    error = metadata->GetIdByResourceId(entry.resource_id(), &local_id);
-
-  if (error == FILE_ERROR_OK) {
-    // At this point, upload to the server is fully succeeded.
-    // Populate the |file_path| which will be used to notify the observer.
-    *file_path = metadata->GetFilePath(local_id);
-
-    // Also store an empty file to the cache.
-    // Here, failure is not a fatal error, so ignore the returned code.
-    FileError cache_store_error = FILE_ERROR_FAILED;
-    base::FilePath empty_file;
-    if (base::CreateTemporaryFile(&empty_file)) {
-      cache_store_error =  cache->Store(
-          local_id,
-          entry.file_specific_info().md5(),
-          empty_file,
-          internal::FileCache::FILE_OPERATION_MOVE);
-    }
-    DLOG_IF(WARNING, cache_store_error != FILE_ERROR_OK)
-        << "Failed to store a cache file: "
-        << FileErrorToString(cache_store_error)
-        << ", local_id: " << local_id;
-  }
-
+  error = metadata->AddEntry(*entry, &local_id);
+  entry->set_local_id(local_id);
   return error;
 }
 
@@ -136,14 +70,10 @@ FileError UpdateLocalStateForCreateFile(
 CreateFileOperation::CreateFileOperation(
     base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
-    JobScheduler* scheduler,
-    internal::ResourceMetadata* metadata,
-    internal::FileCache* cache)
+    internal::ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
       observer_(observer),
-      scheduler_(scheduler),
       metadata_(metadata),
-      cache_(cache),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -159,95 +89,43 @@ void CreateFileOperation::CreateFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  std::string* parent_resource_id = new std::string;
-  std::string* determined_mime_type = new std::string(mime_type);
+  ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&CheckPreConditionForCreateFile,
+      base::Bind(&UpdateLocalState,
                  metadata_,
                  file_path,
-                 is_exclusive,
-                 parent_resource_id,
-                 determined_mime_type),
-      base::Bind(&CreateFileOperation::CreateFileAfterCheckPreCondition,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback,
-                 base::Owned(parent_resource_id),
-                 base::Owned(determined_mime_type)));
-}
-
-void CreateFileOperation::CreateFileAfterCheckPreCondition(
-    const base::FilePath& file_path,
-    const FileOperationCallback& callback,
-    std::string* parent_resource_id,
-    std::string* mime_type,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  DCHECK(parent_resource_id);
-  DCHECK(mime_type);
-
-  // If the file is found, or an error other than "not found" is found,
-  // runs callback and quit the operation.
-  if (error != FILE_ERROR_NOT_FOUND) {
-    callback.Run(error);
-    return;
-  }
-
-  scheduler_->CreateFile(
-      *parent_resource_id,
-      file_path,
-      file_path.BaseName().value(),
-      *mime_type,
-      ClientContext(USER_INITIATED),
-      base::Bind(&CreateFileOperation::CreateFileAfterUpload,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void CreateFileOperation::CreateFileAfterUpload(
-    const FileOperationCallback& callback,
-    google_apis::GDataErrorCode gdata_error,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileError error = GDataToFileError(gdata_error);
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-  DCHECK(resource_entry);
-
-  base::FilePath* file_path = new base::FilePath;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&UpdateLocalStateForCreateFile,
-                 metadata_,
-                 cache_,
-                 base::Passed(&resource_entry),
-                 file_path),
+                 mime_type,
+                 entry),
       base::Bind(&CreateFileOperation::CreateFileAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 base::Owned(file_path)));
+                 file_path,
+                 is_exclusive,
+                 base::Owned(entry)));
 }
 
 void CreateFileOperation::CreateFileAfterUpdateLocalState(
     const FileOperationCallback& callback,
-    base::FilePath* file_path,
+    const base::FilePath& file_path,
+    bool is_exclusive,
+    ResourceEntry* entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK(file_path);
 
-  // Notify observer if the file creation process is successfully done.
-  if (error == FILE_ERROR_OK)
-    observer_->OnDirectoryChangedByOperation(file_path->DirName());
-
+  if (error == FILE_ERROR_EXISTS) {
+    // Error if an exclusive mode is requested, or the entry is not a file.
+    error = (is_exclusive ||
+             entry->file_info().is_directory() ||
+             entry->file_specific_info().is_hosted_document()) ?
+        FILE_ERROR_EXISTS : FILE_ERROR_OK;
+  } else if (error == FILE_ERROR_OK) {
+    // Notify observer if the file was newly created.
+    observer_->OnDirectoryChangedByOperation(file_path.DirName());
+    observer_->OnEntryUpdatedByOperation(entry->local_id());
+  }
   callback.Run(error);
 }
 

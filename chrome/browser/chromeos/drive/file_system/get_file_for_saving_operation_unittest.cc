@@ -40,7 +40,8 @@ class TestObserver : public OperationObserver {
 
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE {
     observed_local_id_ = local_id;
-    quit_closure_.Run();
+    if (!quit_closure_.is_null())
+      quit_closure_.Run();
   }
 
  private:

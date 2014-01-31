@@ -36,7 +36,7 @@ OpenFileOperation::OpenFileOperation(
       observer_(observer),
       cache_(cache),
       create_file_operation_(new CreateFileOperation(
-          blocking_task_runner, observer, scheduler, metadata, cache)),
+          blocking_task_runner, observer, metadata)),
       download_operation_(new DownloadOperation(
           blocking_task_runner, observer, scheduler,
           metadata, cache, temporary_file_directory)),

@@ -16,9 +16,36 @@ typedef OperationTestBase CreateFileOperationTest;
 TEST_F(CreateFileOperationTest, CreateFile) {
   CreateFileOperation operation(blocking_task_runner(),
                                 observer(),
-                                scheduler(),
-                                metadata(),
-                                cache());
+                                metadata());
+
+  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/New File.txt"));
+  FileError error = FILE_ERROR_FAILED;
+  operation.CreateFile(
+      kFilePath,
+      true,  // is_exclusive
+      std::string(),  // no predetermined mime type
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
+  EXPECT_FALSE(base::Time::FromInternalValue(
+      entry.file_info().last_modified()).is_null());
+  EXPECT_FALSE(base::Time::FromInternalValue(
+      entry.file_info().last_accessed()).is_null());
+
+  EXPECT_EQ(1u, observer()->get_changed_paths().size());
+  EXPECT_EQ(1u, observer()->get_changed_paths().count(kFilePath.DirName()));
+  EXPECT_EQ(1u, observer()->updated_local_ids().size());
+  EXPECT_EQ(1u, observer()->updated_local_ids().count(entry.local_id()));
+}
+
+TEST_F(CreateFileOperationTest, CreateFileIsExclusive) {
+  CreateFileOperation operation(blocking_task_runner(),
+                                observer(),
+                                metadata());
 
   const base::FilePath kExistingFile(
       FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -79,9 +106,7 @@ TEST_F(CreateFileOperationTest, CreateFile) {
 TEST_F(CreateFileOperationTest, CreateFileMimeType) {
   CreateFileOperation operation(blocking_task_runner(),
                                 observer(),
-                                scheduler(),
-                                metadata(),
-                                cache());
+                                metadata());
 
   const base::FilePath kPng1(FILE_PATH_LITERAL("drive/root/1.png"));
   const base::FilePath kPng2(FILE_PATH_LITERAL("drive/root/2.png"));
@@ -129,7 +154,6 @@ TEST_F(CreateFileOperationTest, CreateFileMimeType) {
   EXPECT_EQ("application/octet-stream",
             entry.file_specific_info().content_mime_type());
 }
-
 
 }  // namespace file_system
 }  // namespace drive

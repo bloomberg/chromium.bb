@@ -7,29 +7,20 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "google_apis/drive/gdata_errorcode.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace google_apis {
-class ResourceEntry;
-}  // namespace google_apis
-
 namespace drive {
 
 namespace internal {
-class FileCache;
 class ResourceMetadata;
 }  // namespace internal
 
-struct EntryInfoPairResult;
-class JobScheduler;
 class ResourceEntry;
 
 namespace file_system {
@@ -43,12 +34,10 @@ class CreateFileOperation {
  public:
   CreateFileOperation(base::SequencedTaskRunner* blocking_task_runner,
                       OperationObserver* observer,
-                      JobScheduler* scheduler,
-                      internal::ResourceMetadata* metadata,
-                      internal::FileCache* cache);
+                      internal::ResourceMetadata* metadata);
   ~CreateFileOperation();
 
-  // Creates an empty file at |file_path| in the remote server. When the file
+  // Creates an empty file at |file_path|. When the file
   // already exists at that path, the operation fails if |is_exclusive| is true,
   // and it succeeds without doing anything if the flag is false.
   // If |mime_type| is non-empty, it is used as the mime type of the entry. If
@@ -61,30 +50,16 @@ class CreateFileOperation {
                   const FileOperationCallback& callback);
 
  private:
-  // Part of CreateFile(). Called after the precondition check is completed.
-  void CreateFileAfterCheckPreCondition(const base::FilePath& file_path,
-                                        const FileOperationCallback& callback,
-                                        std::string* parent_resource_id,
-                                        std::string* mime_type,
-                                        FileError error);
-
-  // Part of CreateFile(). Called after the server side file creation is
-  // completed.
-  void CreateFileAfterUpload(
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode error,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
-
   // Part of CreateFile(). Called after the updating local state is completed.
   void CreateFileAfterUpdateLocalState(const FileOperationCallback& callback,
-                                       base::FilePath* file_path,
+                                       const base::FilePath& file_path,
+                                       bool is_exclusive,
+                                       ResourceEntry* entry,
                                        FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
-  JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
-  internal::FileCache* cache_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

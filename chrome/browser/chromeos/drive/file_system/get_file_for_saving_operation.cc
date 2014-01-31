@@ -28,9 +28,7 @@ GetFileForSavingOperation::GetFileForSavingOperation(
     const base::FilePath& temporary_file_directory)
     : create_file_operation_(new CreateFileOperation(blocking_task_runner,
                                                      observer,
-                                                     scheduler,
-                                                     metadata,
-                                                     cache)),
+                                                     metadata)),
       download_operation_(new DownloadOperation(blocking_task_runner,
                                                 observer,
                                                 scheduler,
