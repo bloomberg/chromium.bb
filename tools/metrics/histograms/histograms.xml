@@ -12587,6 +12587,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordGeneration.Event" enum="PasswordGenerationEvent">
+  <summary>
+    Measures the frequency of various password generation events.
+
+    Note that this histogram is logged from the renderer process, and
+    consequently the numbers should not be directly compared to the other
+    PasswordGeneration.* histograms, which are logged from the browser process.
+    Histograms logged in different processes are lost at different rates, which
+    introduces systematic bias between histograms logged in the renderer process
+    vs. those logged in the browser process.
+  </summary>
+</histogram>
+
 <histogram name="PasswordGeneration.UploadStarted" enum="Boolean">
   <summary>
     The number of times that we try to upload a form that we believe should
@@ -28814,6 +28827,19 @@ other types of suffix sets.
   <int value="1" label="Cookie contains control chars"/>
   <int value="2" label="Cookie is invalid"/>
   <int value="3" label="Cookie contains both control chars and is invalid"/>
+</enum>
+
+<enum name="PasswordGenerationEvent" type="int">
+  <int value="0" label="No sign up form"/>
+  <int value="1" label="Local heuristics found sign up form"/>
+  <int value="2" label="DEPRECATED: Icon shown"/>
+  <int value="3" label="DEPRECATED: Bubble shown"/>
+  <int value="4" label="Generation available"/>
+  <int value="5" label="Generation popup shown"/>
+  <int value="6" label="Generated password accepted"/>
+  <int value="7" label="Editing popup shown"/>
+  <int value="8" label="Generated password edited"/>
+  <int value="9" label="Generated password deleted"/>
 </enum>
 
 <enum name="PasswordManagerActionsTaken" type="int">

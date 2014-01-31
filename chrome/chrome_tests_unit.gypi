@@ -527,6 +527,8 @@
         '../apps/shell_window_geometry_cache_unittest.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.h',
+        '../components/autofill/content/renderer/test_password_generation_agent.cc',
+        '../components/autofill/content/renderer/test_password_generation_agent.h',
         '../extensions/browser/admin_policy_unittest.cc',
         '../extensions/browser/error_map_unittest.cc',
         '../extensions/browser/event_listener_map_unittest.cc',

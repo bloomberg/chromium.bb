@@ -9,6 +9,7 @@ namespace autofill {
 namespace password_generation {
 
 // Enumerates various events related to the password generation process.
+// Do not remove items from this enum as they are used for UMA stats logging.
 enum PasswordGenerationEvent {
   // No Account creation form is detected.
   NO_SIGN_UP_DETECTED,
@@ -16,11 +17,31 @@ enum PasswordGenerationEvent {
   // Account creation form is detected.
   SIGN_UP_DETECTED,
 
-  // Password generation icon is shown inside the first password field.
-  ICON_SHOWN,
+  // DEPRECATED: Password generation icon shown (old UI).
+  DEPRECATED_ICON_SHOWN,
 
-  // Password generation bubble is shown after user clicks on the icon.
-  BUBBLE_SHOWN,
+  // DEPRECATED: Password generation bubble shown (old UI).
+  DEPRECATED_BUBBLE_SHOWN,
+
+  // Password generation could be triggered if the user selects the appropriate
+  // element.
+  GENERATION_AVAILABLE,
+
+  // Password generation popup is shown after user focuses the appropriate
+  // password field.
+  GENERATION_POPUP_SHOWN,
+
+  // Generated password was accepted by the user.
+  PASSWORD_ACCEPTED,
+
+  // User focused the password field containing the generated password.
+  EDITING_POPUP_SHOWN,
+
+  // Password was changed after generation.
+  PASSWORD_EDITED,
+
+  // Generated password was deleted by the user
+  PASSWORD_DELETED,
 
   // Number of enum entries, used for UMA histogram reporting macros.
   EVENT_ENUM_COUNT

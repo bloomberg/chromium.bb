@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/rect.h"
 
@@ -28,9 +30,15 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordGenerationManager);
 
 PasswordGenerationManager::PasswordGenerationManager(
     content::WebContents* contents)
-    : content::WebContentsObserver(contents) {}
+    : content::WebContentsObserver(contents),
+      observer_(NULL) {}
 
 PasswordGenerationManager::~PasswordGenerationManager() {}
+
+void PasswordGenerationManager::SetTestObserver(
+    autofill::PasswordGenerationPopupObserver* observer) {
+  observer_ = observer;
+}
 
 void PasswordGenerationManager::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {
@@ -58,6 +66,10 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PasswordGenerationManager, message)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordGenerationPopup,
                         OnShowPasswordGenerationPopup)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordEditingPopup,
+                        OnShowPasswordEditingPopup)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_HidePasswordGenerationPopup,
+                        OnHidePasswordGenerationPopup)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -102,17 +114,50 @@ void PasswordGenerationManager::SendAccountCreationFormsToRenderer(
       host->GetRoutingID(), forms));
 }
 
+gfx::RectF PasswordGenerationManager::GetBoundsInScreenSpace(
+    const gfx::RectF& bounds) {
+  gfx::Rect client_area;
+  web_contents()->GetView()->GetContainerBounds(&client_area);
+  return bounds + client_area.OffsetFromOrigin();
+}
+
 void PasswordGenerationManager::OnShowPasswordGenerationPopup(
-    const gfx::Rect& bounds,
+    const gfx::RectF& bounds,
     int max_length,
     const autofill::PasswordForm& form) {
-#if defined(OS_ANDROID)
-  NOTIMPLEMENTED();
-#else
+  // TODO(gcasto): Validate data in PasswordForm.
+
+  // Only implemented for Aura right now.
+#if defined(USE_AURA)
+  // Convert element_bounds to be in screen space.
+  gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
+
   password_generator_.reset(new autofill::PasswordGenerator(max_length));
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  browser->window()->ShowPasswordGenerationBubble(bounds,
-                                                  form,
-                                                  password_generator_.get());
-#endif  // #if defined(OS_ANDROID)
+
+  popup_controller_ =
+      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
+          popup_controller_,
+          element_bounds_in_screen_space,
+          form,
+          password_generator_.get(),
+          PasswordManager::FromWebContents(web_contents()),
+          observer_,
+          web_contents(),
+          web_contents()->GetView()->GetNativeView());
+  popup_controller_->Show();
+#endif  // #if defined(USE_AURA)
+}
+
+void PasswordGenerationManager::OnShowPasswordEditingPopup(
+    const gfx::RectF& bounds) {
+  // TODO(gcasto): Enable this.
+}
+
+void PasswordGenerationManager::OnHidePasswordGenerationPopup() {
+  HidePopup();
+}
+
+void PasswordGenerationManager::HidePopup() {
+  if (popup_controller_)
+    popup_controller_->HideAndDestroy();
 }

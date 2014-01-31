@@ -105,7 +105,7 @@ bool PasswordGenerationPopupControllerImpl::HandleKeyPressEvent(
       return true;
     case ui::VKEY_RETURN:
     case ui::VKEY_TAB:
-      // We supress tab if the password is selected because we will
+      // We suppress tab if the password is selected because we will
       // automatically advance focus anyway.
       return PossiblyAcceptPassword();
     default:
@@ -114,10 +114,12 @@ bool PasswordGenerationPopupControllerImpl::HandleKeyPressEvent(
 }
 
 bool PasswordGenerationPopupControllerImpl::PossiblyAcceptPassword() {
-  if (password_selected_)
-    PasswordAccepted();
+  if (password_selected_) {
+    PasswordAccepted();  // This will delete |this|.
+    return true;
+  }
 
-  return password_selected_;
+  return false;
 }
 
 void PasswordGenerationPopupControllerImpl::PasswordSelected(bool selected) {
@@ -205,6 +207,10 @@ void PasswordGenerationPopupControllerImpl::Show() {
 
   if (observer_)
     observer_->OnPopupShown();
+}
+
+void PasswordGenerationPopupControllerImpl::HideAndDestroy() {
+  Hide();
 }
 
 void PasswordGenerationPopupControllerImpl::Hide() {

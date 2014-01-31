@@ -144,6 +144,13 @@ void TabAutofillManagerDelegate::UpdateAutofillPopupDataListValues(
 void TabAutofillManagerDelegate::HideAutofillPopup() {
   if (popup_controller_.get())
     popup_controller_->Hide();
+
+  // Password generation popups behave in the same fashion and should also
+  // be hidden.
+  PasswordGenerationManager* generation_manager =
+      PasswordGenerationManager::FromWebContents(web_contents_);
+  if (generation_manager)
+    generation_manager->HidePopup();
 }
 
 bool TabAutofillManagerDelegate::IsAutocompleteEnabled() {

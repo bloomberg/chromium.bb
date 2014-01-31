@@ -32,6 +32,7 @@ struct FormData;
 struct FormFieldData;
 struct WebElementDescriptor;
 class PasswordAutofillAgent;
+class PasswordGenerationAgent;
 
 // AutofillAgent deals with Autofill related communications between WebKit and
 // the browser.  There is one AutofillAgent per RenderView.
@@ -46,8 +47,11 @@ class AutofillAgent : public content::RenderViewObserver,
                       public blink::WebAutofillClient {
  public:
   // PasswordAutofillAgent is guaranteed to outlive AutofillAgent.
+  // PasswordGenerationAgent may be NULL. If it is not, then it is also
+  // guaranteed to outlive AutofillAgent.
   AutofillAgent(content::RenderView* render_view,
-                PasswordAutofillAgent* password_autofill_manager);
+                PasswordAutofillAgent* password_autofill_manager,
+                PasswordGenerationAgent* password_generation_agent);
   virtual ~AutofillAgent();
 
  private:
@@ -174,7 +178,8 @@ class AutofillAgent : public content::RenderViewObserver,
 
   FormCache form_cache_;
 
-  PasswordAutofillAgent* password_autofill_agent_;  // WEAK reference.
+  PasswordAutofillAgent* password_autofill_agent_;  // Weak reference.
+  PasswordGenerationAgent* password_generation_agent_;  // Weak reference.
 
   // The ID of the last request sent for form field Autofill.  Used to ignore
   // out of date responses.

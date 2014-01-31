@@ -68,7 +68,6 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
-#include "components/autofill/core/common/password_generation_util.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -406,13 +405,15 @@ void ChromeContentRendererClient::RenderViewCreated(
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
 
+  PasswordGenerationAgent* password_generation_agent =
+      new PasswordGenerationAgent(render_view);
   PasswordAutofillAgent* password_autofill_agent =
       new PasswordAutofillAgent(render_view);
-  new AutofillAgent(render_view, password_autofill_agent);
+  new AutofillAgent(render_view,
+                    password_autofill_agent,
+                    password_generation_agent);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (autofill::password_generation::IsPasswordGenerationEnabled())
-    new PasswordGenerationAgent(render_view);
   if (command_line->HasSwitch(switches::kInstantProcess))
     new SearchBox(render_view);
 
