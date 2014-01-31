@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_store.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 
@@ -88,6 +89,7 @@ void PrefHashFilter::Initialize(PrefStore* pref_store) {
 // validation results via UMA, and updates hashes in case of mismatch.
 void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
   DCHECK(pref_store_contents);
+  base::TimeTicks checkpoint = base::TimeTicks::Now();
   for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
        it != tracked_paths_.end(); ++it) {
     const std::string& pref_path = it->first;
@@ -146,6 +148,11 @@ void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
       pref_hash_store_->StoreHash(pref_path, new_value);
     }
   }
+  // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
+  // data has been gathered from the wild to be confident this doesn't
+  // significantly affect startup.
+  UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
+                      base::TimeTicks::Now() - checkpoint);
 }
 
 // Marks |path| has having changed if it is part of |tracked_paths_|. A new hash
@@ -160,12 +167,20 @@ void PrefHashFilter::FilterUpdate(const std::string& path) {
 // is too expensive (see perf regression @ http://crbug.com/331273).
 void PrefHashFilter::FilterSerializeData(
     const base::DictionaryValue* pref_store_contents) {
-  for (std::set<std::string>::const_iterator it = changed_paths_.begin();
-       it != changed_paths_.end(); ++it) {
-    const std::string& changed_path = *it;
-    const base::Value* value = NULL;
-    pref_store_contents->Get(changed_path, &value);
-    pref_hash_store_->StoreHash(changed_path, value);
+  if (!changed_paths_.empty()) {
+    base::TimeTicks checkpoint = base::TimeTicks::Now();
+    for (std::set<std::string>::const_iterator it = changed_paths_.begin();
+         it != changed_paths_.end(); ++it) {
+      const std::string& changed_path = *it;
+      const base::Value* value = NULL;
+      pref_store_contents->Get(changed_path, &value);
+      pref_hash_store_->StoreHash(changed_path, value);
+    }
+    changed_paths_.clear();
+    // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
+    // data has been gathered from the wild to be confident this doesn't
+    // significantly affect performance on the UI thread.
+    UMA_HISTOGRAM_TIMES("Settings.FilterSerializeDataTime",
+                        base::TimeTicks::Now() - checkpoint);
   }
-  changed_paths_.clear();
 }

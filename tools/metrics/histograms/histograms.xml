@@ -17380,7 +17380,8 @@ other types of suffix sets.
 <histogram name="Settings.FilterSerializeDataTime" units="milliseconds">
   <summary>
     The amount of time it took to run PrefHashFilter::FilterSerializeData on the
-    UI thread prior to writing the Preferences file to disk.
+    UI thread prior to writing the Preferences file to disk. Only logged when
+    PrefHashFilter::FilterSerializeData actually had work to do.
   </summary>
 </histogram>
 
