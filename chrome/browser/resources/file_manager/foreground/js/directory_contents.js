@@ -323,10 +323,11 @@ DriveMetadataSearchContentScanner.prototype.scan = function(
  * When filters are changed, a 'changed' event is fired.
  *
  * @param {MetadataCache} metadataCache Metadata cache service.
+ * @param {boolean} showHidden If files starting with '.' are shown.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function FileFilter(metadataCache) {
+function FileFilter(metadataCache, showHidden) {
   /**
    * @type {MetadataCache}
    * @private
@@ -338,6 +339,7 @@ function FileFilter(metadataCache) {
    * @private
    */
   this.filters_ = {};
+  this.setFilterHidden(!showHidden);
 
   // Do not show entries marked as 'deleted'.
   this.addFilter('deleted', function(entry) {
@@ -367,6 +369,27 @@ FileFilter.prototype.addFilter = function(name, callback) {
 FileFilter.prototype.removeFilter = function(name) {
   delete this.filters_[name];
   cr.dispatchSimpleEvent(this, 'changed');
+};
+
+/**
+ * @param {boolean} value If do not show hidden files.
+ */
+FileFilter.prototype.setFilterHidden = function(value) {
+  if (value) {
+    this.addFilter(
+        'hidden',
+        function(entry) { return entry.name.substr(0, 1) !== '.'; }
+    );
+  } else {
+    this.removeFilter('hidden');
+  }
+};
+
+/**
+ * @return {boolean} If the files with names starting with "." are not shown.
+ */
+FileFilter.prototype.isFilterHiddenOn = function() {
+  return 'hidden' in this.filters_;
 };
 
 /**

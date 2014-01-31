@@ -44,13 +44,6 @@ function FileManager() {
    * @private
    */
   this.currentVolumeInfo_ = null;
-
-  /**
-   * Whether to show dot files in the non-Drive folder. Default: false.
-   * @type {boolean}
-   * @private
-   */
-  this.dotFilesHidden_ = false;
 }
 
 FileManager.prototype = {
@@ -916,7 +909,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER ||
         this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
-    this.fileFilter_ = new FileFilter(this.metadataCache_);
+    this.fileFilter_ = new FileFilter(
+        this.metadataCache_,
+        false  /* Don't show dot files by default. */);
 
     this.fileWatcher_ = new FileWatcher(this.metadataCache_);
     this.fileWatcher_.addEventListener(
@@ -1317,32 +1312,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       };
       this.fileFilter_.addFilter('fileType', filter);
     }
-  };
-
-  /**
-   * Filters dot files if the setting is enabled and the current directory is
-   * '/Downloads'.
-   *
-   * @return {boolean} True if the filter is enabled, false otherwise.
-   * @private
-   */
-  FileManager.prototype.updateDotFilesFilter_ = function() {
-    var enabled =
-        this.dotFilesHidden_ &&
-        this.currentVolumeInfo_ &&
-        this.currentVolumeInfo_.volumeType !== util.VolumeType.DRIVE;
-
-    if (enabled) {
-      this.fileFilter_.addFilter(
-          'dot-file-hidden',
-          function(entry) {
-            return (entry.name.charAt(0) !== '.');
-          });
-    } else {
-      this.fileFilter_.removeFilter('dot-file-hidden');
-    }
-
-    return enabled;
   };
 
   /**
@@ -2349,8 +2318,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         '' /* selectionURL */,
         '' /* opt_param */);
 
-    this.updateDotFilesFilter_();
-
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
 
@@ -2884,8 +2851,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
-        this.dotFilesHidden_ = !this.dotFilesHidden_;
-        this.updateDotFilesFilter_();
+        this.fileFilter_.setFilterHidden(
+            !this.fileFilter_.isFilterHiddenOn());
+        event.preventDefault();
         return;
 
       case '27':  // Escape => Cancel dialog.
@@ -3352,7 +3320,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       msg = str('ERROR_WHITESPACE_NAME');
     } else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
       msg = str('ERROR_RESERVED_NAME');
-    } else if (this.updateDotFilesFilter_() && name[0] == '.') {
+    } else if (this.fileFilter_.isFilterHiddenOn() && name[0] == '.') {
       msg = str('ERROR_HIDDEN_NAME');
     }
 
