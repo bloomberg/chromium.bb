@@ -25,6 +25,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
@@ -132,9 +133,10 @@ class DriveBackendSyncTest : public testing::Test {
                        std::string* file_id) {
     FileTracker tracker;
     base::FilePath result_path;
+    base::FilePath normalized_path = path.NormalizePathSeparators();
     if (!metadata_database()->FindNearestActiveAncestor(
-            app_id, path, &tracker, &result_path) ||
-        path != result_path)
+            app_id, normalized_path, &tracker, &result_path) ||
+        normalized_path != result_path)
       return false;
     *file_id = tracker.file_id();
     return true;
@@ -225,6 +227,15 @@ class DriveBackendSyncTest : public testing::Test {
     return status;
   }
 
+  int64 GetLargestChangeID() {
+    scoped_ptr<google_apis::AboutResource> about_resource;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_service_helper()->GetAboutResource(&about_resource));
+    if (!about_resource)
+      return 0;
+    return about_resource->largest_change_id();
+  }
+
   void FetchRemoteChanges() {
     remote_sync_service_->OnNotificationReceived();
     base::RunLoop().RunUntilIdle();
@@ -233,9 +244,7 @@ class DriveBackendSyncTest : public testing::Test {
   SyncStatusCode ProcessChangesUntilDone() {
     SyncStatusCode local_sync_status;
     SyncStatusCode remote_sync_status;
-    do {
-      FetchRemoteChanges();
-
+    while (true) {
       local_sync_status = ProcessLocalChange();
       if (local_sync_status != SYNC_STATUS_OK &&
           local_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
@@ -245,8 +254,17 @@ class DriveBackendSyncTest : public testing::Test {
       if (remote_sync_status != SYNC_STATUS_OK &&
           remote_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
         return remote_sync_status;
-    } while (local_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC ||
-             remote_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
+
+      if (local_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC &&
+          remote_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+        if (metadata_database()->GetLargestFetchedChangeID() !=
+            GetLargestChangeID()) {
+          FetchRemoteChanges();
+          continue;
+        }
+        break;
+      }
+    }
     return SYNC_STATUS_OK;
   }
 
@@ -327,7 +345,10 @@ class DriveBackendSyncTest : public testing::Test {
       const fileapi::DirectoryEntry& local_entry = *itr;
       fileapi::FileSystemURL entry_url(
           CreateURL(app_id, path.Append(local_entry.name)));
-      std::string title = entry_url.path().AsUTF8Unsafe();
+      std::string title =
+          fileapi::VirtualPath::BaseName(entry_url.path()).AsUTF8Unsafe();
+      SCOPED_TRACE(testing::Message() << "Verifying entry: " << title);
+
       ASSERT_TRUE(ContainsKey(remote_entry_by_title, title));
       const google_apis::ResourceEntry& remote_entry =
           *remote_entry_by_title[title];
@@ -427,6 +448,7 @@ class DriveBackendSyncTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  ScopedEnableSyncFSV2 enable_syncfs_v2_;
 
   base::ScopedTempDir base_dir_;
   scoped_ptr<leveldb::Env> in_memory_env_;
@@ -642,6 +664,175 @@ TEST_F(DriveBackendSyncTest, RemoteRenameAndRevertTest) {
 
   EXPECT_EQ(3u, CountMetadata());
   EXPECT_EQ(3u, CountTracker());
+}
+
+TEST_F(DriveBackendSyncTest, ReorganizeToOtherFolder) {
+  std::string app_id = "example";
+  const base::FilePath::StringType path(FPL("file"));
+
+  RegisterApp(app_id);
+  AddLocalFolder(app_id, FPL("folder_src"));
+  AddLocalFolder(app_id, FPL("folder_dest"));
+  AddOrUpdateLocalFile(app_id, FPL("folder_src/file"), "abcde");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  std::string file_id;
+  std::string src_folder_id;
+  std::string dest_folder_id;
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_src/file"), &file_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_src"), &src_folder_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_dest"), &dest_folder_id));
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->RemoveResourceFromDirectory(
+                src_folder_id, file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddResourceToDirectory(
+                dest_folder_id, file_id));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(4u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("folder_dest/file")), "abcde");
+
+  EXPECT_EQ(5u, CountMetadata());
+  EXPECT_EQ(5u, CountTracker());
+}
+
+TEST_F(DriveBackendSyncTest, ReorganizeToOtherApp) {
+  std::string src_app_id = "src_app";
+  std::string dest_app_id = "dest_app";
+
+  RegisterApp(src_app_id);
+  RegisterApp(dest_app_id);
+
+  AddLocalFolder(src_app_id, FPL("folder_src"));
+  AddLocalFolder(dest_app_id, FPL("folder_dest"));
+  AddOrUpdateLocalFile(src_app_id, FPL("folder_src/file"), "abcde");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  std::string file_id;
+  std::string src_folder_id;
+  std::string dest_folder_id;
+  EXPECT_TRUE(GetFileIDByPath(src_app_id, FPL("folder_src/file"), &file_id));
+  EXPECT_TRUE(GetFileIDByPath(src_app_id, FPL("folder_src"), &src_folder_id));
+  EXPECT_TRUE(
+      GetFileIDByPath(dest_app_id, FPL("folder_dest"), &dest_folder_id));
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->RemoveResourceFromDirectory(
+                src_folder_id, file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddResourceToDirectory(
+                dest_folder_id, file_id));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  EXPECT_EQ(2u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(src_app_id));
+  EXPECT_EQ(3u, CountLocalFile(dest_app_id));
+  VerifyLocalFile(
+      dest_app_id, base::FilePath(FPL("folder_dest/file")), "abcde");
+
+  EXPECT_EQ(6u, CountMetadata());
+  EXPECT_EQ(6u, CountTracker());
+}
+
+TEST_F(DriveBackendSyncTest, ReorganizeToUnmanagedArea) {
+  std::string app_id = "example";
+
+  RegisterApp(app_id);
+
+  AddLocalFolder(app_id, FPL("folder_src"));
+  AddOrUpdateLocalFile(app_id, FPL("folder_src/file_orphaned"), "abcde");
+  AddOrUpdateLocalFile(app_id, FPL("folder_src/file_under_sync_root"), "123");
+  AddOrUpdateLocalFile(app_id, FPL("folder_src/file_under_drive_root"), "hoge");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  std::string file_orphaned_id;
+  std::string file_under_sync_root_id;
+  std::string file_under_drive_root_id;
+
+  std::string folder_id;
+  std::string sync_root_folder_id;
+
+  EXPECT_TRUE(GetFileIDByPath(
+      app_id, FPL("folder_src/file_orphaned"), &file_orphaned_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id,
+                              FPL("folder_src/file_under_sync_root"),
+                              &file_under_sync_root_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id,
+                              FPL("folder_src/file_under_drive_root"),
+                              &file_under_drive_root_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_src"), &folder_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->GetSyncRootFolderID(
+                &sync_root_folder_id));
+
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->RemoveResourceFromDirectory(
+                folder_id, file_orphaned_id));
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->RemoveResourceFromDirectory(
+                folder_id, file_under_sync_root_id));
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->RemoveResourceFromDirectory(
+                folder_id, file_under_drive_root_id));
+
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddResourceToDirectory(
+                sync_root_folder_id, file_under_sync_root_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddResourceToDirectory(
+                fake_drive_service()->GetRootResourceId(),
+                file_under_drive_root_id));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(2u, CountLocalFile(app_id));
+
+  EXPECT_EQ(4u, CountMetadata());
+  EXPECT_EQ(4u, CountTracker());
+}
+
+TEST_F(DriveBackendSyncTest, ReorganizeToMultipleParents) {
+  std::string app_id = "example";
+
+  RegisterApp(app_id);
+
+  AddLocalFolder(app_id, FPL("parent1"));
+  AddLocalFolder(app_id, FPL("parent2"));
+  AddOrUpdateLocalFile(app_id, FPL("parent1/file"), "abcde");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  std::string file_id;
+  std::string parent2_folder_id;
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("parent1/file"), &file_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("parent2"), &parent2_folder_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddResourceToDirectory(
+                parent2_folder_id, file_id));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(4u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("parent1/file")), "abcde");
+
+  EXPECT_EQ(5u, CountMetadata());
+  EXPECT_EQ(5u, CountMetadata());
 }
 
 }  // namespace drive_backend
