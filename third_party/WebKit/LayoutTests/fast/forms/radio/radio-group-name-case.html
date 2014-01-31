@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+
+<form>
+    <input type=radio>
+    <input type=radio>
+    <input type=radio>
+ </form>
+ 
+ <script>
+ description("Case shouldn't matter when it comes to radio group names");
+ 
+ function checkAllRadioButtonsInOrder() {
+     for (var i = 0; i < form.elements.length; i++)
+        form.elements[i].checked = false;
+     for (var i = 0; i < form.elements.length; i++)
+        form.elements[i].checked = true;
+ }
+ 
+ function testCheckedCorrectness() {
+    var i;
+    for (i = 0; i < (form.elements.length - 1); i++) {
+        shouldBeFalse("form.elements[" + i + "].checked");
+    }
+    shouldBeTrue("form.elements[" + i + "].checked");
+ }
+ 
+ form = document.forms[0];
+ 
+ debug("Test 1");
+ evalAndLog("form.elements[0].name = 'r';");
+ evalAndLog("form.elements[1].name = 'r';");
+ evalAndLog("form.elements[2].name = 'R';");
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ 
+ debug("\nTest 2");
+ evalAndLog("form.elements[0].name = 'radio';");
+ evalAndLog("form.elements[1].name = 'rAdIO';");
+ evalAndLog("form.elements[2].name = 'RADIO';");
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ 
+ debug("\nTest 3 (LATIN SMALL LETTER N WITH TILDE / LATIN CAPITAL LETTER N WITH TILDE)");
+ evalAndLog("form.elements[0].name = '\\u00F1';");
+ evalAndLog("form.elements[1].name = '\\u00F1';");
+ evalAndLog("form.elements[2].name = '\\u00D1';");
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ 
+ debug("\nTest 4 (LATIN SMALL LETTER SHARP S / SS)");
+ evalAndLog("form.elements[0].name = '\\u00DF';");
+ evalAndLog("form.elements[1].name = '\\u00DF';");
+ evalAndLog("form.elements[2].name = 'SS';")
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ 
+ debug("\nTest 5 (DESERET SMALL LETTER LONG I / DESERET CAPITAL LETTER LONG I)");
+ evalAndLog("form.elements[0].name = '\\uD801\\uDC28';");
+ evalAndLog("form.elements[1].name = '\\uD801\\uDC28';");
+ evalAndLog("form.elements[2].name = '\\uD801\\uDC00';");
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ 
+ debug("\nTest 6 (GREEK SMALL LETTER FINAL SIGMA / GREEK SMALL LETTER SIGMA / GREEK CAPITAL LETTER SIGMA)");
+ evalAndLog("form.elements[0].name = '\\u03C2';");
+ evalAndLog("form.elements[1].name = '\\u03C3';");
+ evalAndLog("form.elements[2].name = '\\u03A3';");
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ 
+ debug("\nTest 7 (LATIN CAPITAL LETTER I WITH DOT ABOVE)");
+ evalAndLog("form.elements[0].name = '\\u0130';");
+ evalAndLog("form.elements[1].name = '\\u0069';");
+ evalAndLog("form.elements[2].name = '\\u0130';");
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ 
+ debug("\nTest 8 (LATIN SMALL LETTER DOTLESS I)");
+ evalAndLog("form.elements[0].name = '\\u0131';");
+ evalAndLog("form.elements[1].name = '\\u0049';");
+ evalAndLog("form.elements[2].name = '\\u0131';");
+ checkAllRadioButtonsInOrder();
+ testCheckedCorrectness();
+ </script> 
+ </body>
