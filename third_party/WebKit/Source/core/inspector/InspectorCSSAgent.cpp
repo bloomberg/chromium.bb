@@ -1214,30 +1214,6 @@ void InspectorCSSAgent::addRule(ErrorString* errorString, const int contextNodeI
     result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
 }
 
-void InspectorCSSAgent::getSupportedCSSProperties(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSPropertyInfo> >& cssProperties)
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSPropertyInfo> > properties = TypeBuilder::Array<TypeBuilder::CSS::CSSPropertyInfo>::create();
-    for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
-        CSSPropertyID id = convertToCSSPropertyID(i);
-        RefPtr<TypeBuilder::CSS::CSSPropertyInfo> property = TypeBuilder::CSS::CSSPropertyInfo::create()
-            .setName(getPropertyNameString(id));
-
-        const StylePropertyShorthand& shorthand = shorthandForProperty(id);
-        if (!shorthand.length()) {
-            properties->addItem(property.release());
-            continue;
-        }
-        RefPtr<TypeBuilder::Array<String> > longhands = TypeBuilder::Array<String>::create();
-        for (unsigned j = 0; j < shorthand.length(); ++j) {
-            CSSPropertyID longhandID = shorthand.properties()[j];
-            longhands->addItem(getPropertyNameString(longhandID));
-        }
-        property->setLonghands(longhands);
-        properties->addItem(property.release());
-    }
-    cssProperties = properties.release();
-}
-
 void InspectorCSSAgent::forcePseudoState(ErrorString* errorString, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses)
 {
     Element* element = m_domAgent->assertElement(errorString, nodeId);
