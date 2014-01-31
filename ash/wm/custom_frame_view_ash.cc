@@ -357,6 +357,10 @@ CustomFrameViewAsh::OverlayView::~OverlayView() {
 }
 
 void CustomFrameViewAsh::OverlayView::Layout() {
+  // Layout |header_view_| because layout affects the result of
+  // GetPreferredOnScreenHeight().
+  header_view_->Layout();
+
   int onscreen_height = header_view_->GetPreferredOnScreenHeight();
   if (onscreen_height == 0) {
     header_view_->SetVisible(false);

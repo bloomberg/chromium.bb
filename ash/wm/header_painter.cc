@@ -394,6 +394,11 @@ void HeaderPainter::PaintTitleBar(gfx::Canvas* canvas,
 }
 
 void HeaderPainter::LayoutHeader(bool shorter_layout) {
+  // Purposefully set |header_height_| to an invalid value. We cannot use
+  // |header_height_| because the computation of |header_height_| may depend
+  // on having laid out the window controls.
+  header_height_ = -1;
+
   caption_button_container_->set_header_style(shorter_layout ?
       FrameCaptionButtonContainerView::HEADER_STYLE_SHORT :
       FrameCaptionButtonContainerView::HEADER_STYLE_TALL);

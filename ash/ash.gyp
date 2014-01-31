@@ -903,6 +903,7 @@
         'wm/caption_buttons/alternate_frame_size_button_unittest.cc',
         'wm/caption_buttons/frame_caption_button_container_view_unittest.cc',
         'wm/caption_buttons/frame_maximize_button_unittest.cc',
+        'wm/custom_frame_view_ash_unittest.cc',
         'wm/dock/docked_window_layout_manager_unittest.cc',
         'wm/dock/docked_window_resizer_unittest.cc',
         'wm/drag_window_resizer_unittest.cc',

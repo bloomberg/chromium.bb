@@ -261,6 +261,11 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
+  // The header must be laid out before computing |header_height| because the
+  // computation of |header_height| for app and popup windows depends on the
+  // position of the window controls.
+  header_painter_->LayoutHeader(UseShortHeader());
+
   int header_height = 0;
   if (browser_view()->IsTabStripVisible()) {
     header_height = GetTopInset() +
@@ -273,7 +278,6 @@ void BrowserNonClientFrameViewAsh::Layout() {
     header_height = GetTopInset();
   }
   header_painter_->set_header_height(header_height);
-  header_painter_->LayoutHeader(UseShortHeader());
   if (avatar_button())
     LayoutAvatar();
   BrowserNonClientFrameView::Layout();
