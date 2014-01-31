@@ -59,6 +59,8 @@
 253674 MOUNTAINLION INTEL : GL_control_flow_input_run = FAIL
 253674 MOUNTAINLION INTEL : GL_operators_input_run = FAIL
 
+339911 MOUNTAINLION INTEL : GL2FixedTests_blend_input_run = FAIL
+
 253674 MAC NVIDIA : GL2Tests_glUniform_input_run = FAIL
 253674 MAC NVIDIA : GL2Tests_three_uniforms_input_run = FAIL
 
