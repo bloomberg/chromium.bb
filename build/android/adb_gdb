@@ -911,8 +911,16 @@ PORT=5039
 HOST_PORT=$PORT
 TARGET_PORT=$PORT
 
-# Pull the app_process binary from the device
+# Detect AddressSanitizer setup on the device. In that case app_process is a
+# script, and the real executable is app_process.real.
 GDBEXEC=app_process
+GDBEXEC_ASAN=app_process.real
+adb_shell ls /system/bin/$GDBEXEC_ASAN
+if [ $? == 0 ]; then
+    GDBEXEC=$GDBEXEC_ASAN
+fi
+
+# Pull the app_process binary from the device.
 log "Pulling $GDBEXEC from device"
 adb pull /system/bin/$GDBEXEC "$TMPDIR"/$GDBEXEC &>/dev/null
 fail_panic "Could not retrieve $GDBEXEC from the device!"
