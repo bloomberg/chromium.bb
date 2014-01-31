@@ -167,6 +167,9 @@ def CheckChange(input_api, output_api):
   # through idl.
   whitelist = ['ppb_opengles2', 'ppb_opengles2ext_dev']
 
+  # The PDF interface is hand-written.
+  whitelist += ['ppb_pdf']
+
   # Find all relevant .h and .idl files.
   for filename in files:
     name, ext = os.path.splitext(filename)
