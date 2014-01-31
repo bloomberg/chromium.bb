@@ -42,8 +42,8 @@ base::FilePath MakePath(std::string dir) {
 }
 
 MediaGalleryPrefId AddScanResult(MediaGalleriesPreferences* gallery_prefs,
-                                 const std::string& path, int image_count,
-                                 int music_count, int video_count) {
+                                 const std::string& path, int audio_count,
+                                 int image_count, int video_count) {
   MediaGalleryPrefInfo gallery_info;
   gallery_prefs->LookUpGalleryByPath(MakePath(path), &gallery_info);
   return gallery_prefs->AddGallery(
@@ -55,7 +55,7 @@ MediaGalleryPrefId AddScanResult(MediaGalleriesPreferences* gallery_prefs,
       gallery_info.model_name,
       gallery_info.total_size_in_bytes,
       gallery_info.last_attach_time,
-      image_count, music_count, video_count);
+      audio_count, image_count, video_count);
 }
 
 class MockMediaGalleriesScanResultDialog

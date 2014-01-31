@@ -192,8 +192,8 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     EXPECT_EQ(in_expectation->second.device_id, actual.device_id);
     EXPECT_EQ(in_expectation->second.path.value(), actual.path.value());
     EXPECT_EQ(in_expectation->second.type, actual.type);
+    EXPECT_EQ(in_expectation->second.audio_count, actual.audio_count);
     EXPECT_EQ(in_expectation->second.image_count, actual.image_count);
-    EXPECT_EQ(in_expectation->second.music_count, actual.music_count);
     EXPECT_EQ(in_expectation->second.video_count, actual.video_count);
   }
 
@@ -225,13 +225,13 @@ class MediaGalleriesPreferencesTest : public testing::Test {
                                 base::string16 display_name,
                                 std::string device_id,
                                 base::FilePath relative_path,
+                                int audio_count,
                                 int image_count,
-                                int music_count,
                                 int video_count) {
     AddGalleryExpectation(id, display_name, device_id, relative_path,
                           MediaGalleryPrefInfo::kScanResult);
+    expected_galleries_[id].audio_count = audio_count;
     expected_galleries_[id].image_count = image_count;
-    expected_galleries_[id].music_count = music_count;
     expected_galleries_[id].video_count = video_count;
   }
 
@@ -1055,8 +1055,8 @@ TEST_F(MediaGalleriesPreferencesTest, ScanResults) {
   // Remove a scan result (i.e. make it blacklisted).
   gallery_prefs()->ForgetGalleryById(id);
   expected_galleries_[id].type = MediaGalleryPrefInfo::kRemovedScan;
+  expected_galleries_[id].audio_count = 0;
   expected_galleries_[id].image_count = 0;
-  expected_galleries_[id].music_count = 0;
   expected_galleries_[id].video_count = 0;
   Verify();
 

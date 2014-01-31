@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>chrome.mediaGalleries</code> API to access media files (images,
-// video, audio) from the user's local disks (with the user's consent).
+// Use the <code>chrome.mediaGalleries</code> API to access media files (audio,
+// images, video) from the user's local disks (with the user's consent).
 namespace mediaGalleries {
 
   [inline_doc] enum GetMediaFileSystemsInteractivity {
@@ -88,8 +88,8 @@ namespace mediaGalleries {
 
     // Appoximate number of media files found; some file types can be either
     // audio or video and are included in both counts.
-    long? imageCount;
     long? audioCount;
+    long? imageCount;
     long? videoCount;
   };
 
@@ -99,14 +99,14 @@ namespace mediaGalleries {
   dictionary MediaMetadata {
     // The browser sniffed mime type.
     DOMString mimeType;
-    
+
     // Defined for images and video. In pixels.
     long? height;
     long? width;
-    
+
     // Defined for audio and video. In seconds.
     double? duration;
-    
+
     // Generic metadata tags.
     DOMString? album;
     DOMString? artist;

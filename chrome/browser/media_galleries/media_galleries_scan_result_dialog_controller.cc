@@ -33,9 +33,9 @@ namespace {
 bool ScanResultsComparator(
     const MediaGalleriesScanResultDialogController::ScanResult& a,
     const MediaGalleriesScanResultDialogController::ScanResult& b) {
-  int a_media_count = a.pref_info.image_count + a.pref_info.music_count +
+  int a_media_count = a.pref_info.audio_count + a.pref_info.image_count +
                       a.pref_info.video_count;
-  int b_media_count = b.pref_info.image_count + b.pref_info.music_count +
+  int b_media_count = b.pref_info.audio_count + b.pref_info.image_count +
                       b.pref_info.video_count;
   if (a_media_count == b_media_count)
     return a.pref_info.AbsolutePath() < b.pref_info.AbsolutePath();

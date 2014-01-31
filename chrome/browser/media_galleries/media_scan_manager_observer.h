@@ -8,14 +8,16 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/media_galleries/media_scan_types.h"
 
 class MediaScanManagerObserver {
  public:
   virtual void OnScanStarted(const std::string& extension_id) {}
   virtual void OnScanCancelled(const std::string& extension_id) {}
   virtual void OnScanFinished(
-      const std::string& extension_id, int gallery_count, int image_count,
-      int audio_count, int video_count) {}
+      const std::string& extension_id,
+      int gallery_count,
+      const MediaGalleryScanResult& file_counts) {}
   virtual void OnScanError(const std::string& extension_id) {}
 };
 

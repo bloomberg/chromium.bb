@@ -316,14 +316,14 @@ void MediaGalleriesEventRouter::OnScanCancelled(
 }
 
 void MediaGalleriesEventRouter::OnScanFinished(
-    const std::string& extension_id, int gallery_count, int image_count,
-    int audio_count, int video_count) {
+    const std::string& extension_id, int gallery_count,
+    const MediaGalleryScanResult& file_counts) {
   MediaGalleries::ScanProgressDetails details;
   details.type = MediaGalleries::SCAN_PROGRESS_TYPE_FINISH;
   details.gallery_count.reset(new int(gallery_count));
-  details.image_count.reset(new int(image_count));
-  details.audio_count.reset(new int(audio_count));
-  details.video_count.reset(new int(video_count));
+  details.audio_count.reset(new int(file_counts.audio_count));
+  details.image_count.reset(new int(file_counts.image_count));
+  details.video_count.reset(new int(file_counts.video_count));
   DispatchEventToExtension(
       extension_id,
       MediaGalleries::OnScanProgress::kEventName,

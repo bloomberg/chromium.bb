@@ -45,8 +45,9 @@ class MediaGalleriesEventRouter : public ProfileKeyedAPI,
   virtual void OnScanStarted(const std::string& extension_id) OVERRIDE;
   virtual void OnScanCancelled(const std::string& extension_id) OVERRIDE;
   virtual void OnScanFinished(
-      const std::string& extension_id, int gallery_count, int image_count,
-      int audio_count, int video_count) OVERRIDE;
+      const std::string& extension_id,
+      int gallery_count,
+      const MediaGalleryScanResult& file_counts) OVERRIDE;
   virtual void OnScanError(const std::string& extension_id) OVERRIDE;
 
  private:
