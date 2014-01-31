@@ -55,7 +55,7 @@
 	to list and bind the global objects available from the
 	compositor.
       </description>
-      <arg name="callback" type="new_id" interface="wl_registry"/>
+      <arg name="registry" type="new_id" interface="wl_registry"/>
     </request>
 
     <event name="error">
