@@ -114,19 +114,9 @@ function validateObject(received, expected, name) {
   return true;
 }
 
-function createFileUrl(fileName) {
-  var testExtensionId = 'ddammdhioacbehjngdmkjcjbnfginlla';
-  var fileUrl = 'filesystem:chrome-extension://' + testExtensionId +
-                '/external/' + fileName;
-  return fileUrl;
-}
-
 chrome.test.runTests([
   function removeMount() {
-    // The ID of this extension.
-    var fileUrl = createFileUrl('archive/archive_mount_path');
-
-    chrome.fileBrowserPrivate.removeMount(fileUrl);
+    chrome.fileBrowserPrivate.removeMount('archive:archive_mount_path');
 
     // We actually check this one on C++ side. If MountLibrary.RemoveMount
     // doesn't get called, test will fail.

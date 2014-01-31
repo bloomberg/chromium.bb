@@ -629,8 +629,7 @@ VolumeManager.prototype.mountArchive = function(
 VolumeManager.prototype.unmount = function(volumeInfo,
                                            successCallback,
                                            errorCallback) {
-  chrome.fileBrowserPrivate.removeMount(
-      util.makeFilesystemUrl(volumeInfo.mountPath));
+  chrome.fileBrowserPrivate.removeMount(volumeInfo.volumeId);
   var requestKey = this.makeRequestKey_('unmount', volumeInfo.volumeId);
   this.startRequest_(requestKey, successCallback, errorCallback);
 };
