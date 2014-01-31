@@ -1323,31 +1323,33 @@ void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
   const gfx::Rect screen_bounds(widget->GetWindowBoundsInScreen());
   ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, screen_bounds.CenterPoint(),
                             screen_bounds.CenterPoint(), 0, 0);
-  aura::WindowTreeHostDelegate* rwhd =
-      widget->GetNativeWindow()->GetDispatcher()->AsWindowTreeHostDelegate();
-  rwhd->OnHostMouseEvent(&move_event);
-  if (last_event_type == ui::ET_MOUSE_ENTERED)
+  aura::WindowEventDispatcher* dispatcher =
+      widget->GetNativeWindow()->GetDispatcher();
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&move_event);
+  if (last_event_type == ui::ET_MOUSE_ENTERED || details.dispatcher_destroyed)
     return;
-  rwhd->OnHostMouseEvent(&move_event);
-  if (last_event_type == ui::ET_MOUSE_MOVED)
+  details = dispatcher->OnEventFromSource(&move_event);
+  if (last_event_type == ui::ET_MOUSE_MOVED || details.dispatcher_destroyed)
     return;
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, screen_bounds.CenterPoint(),
                              screen_bounds.CenterPoint(), 0, 0);
-  rwhd->OnHostMouseEvent(&press_event);
-  if (last_event_type == ui::ET_MOUSE_PRESSED)
+  details = dispatcher->OnEventFromSource(&press_event);
+  if (last_event_type == ui::ET_MOUSE_PRESSED || details.dispatcher_destroyed)
     return;
 
   gfx::Point end_point(screen_bounds.CenterPoint());
   end_point.Offset(1, 1);
   ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, end_point, end_point, 0, 0);
-  rwhd->OnHostMouseEvent(&drag_event);
-  if (last_event_type == ui::ET_MOUSE_DRAGGED)
+  details = dispatcher->OnEventFromSource(&drag_event);
+  if (last_event_type == ui::ET_MOUSE_DRAGGED || details.dispatcher_destroyed)
     return;
 
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, end_point, end_point, 0,
                                0);
-  rwhd->OnHostMouseEvent(&release_event);
+  details = dispatcher->OnEventFromSource(&release_event);
+  if (details.dispatcher_destroyed)
+    return;
 }
 
 // Creates a widget and invokes GenerateMouseEvents() with |last_event_type|.
@@ -2086,8 +2088,9 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                            cursor_location_main,
                            ui::EF_NONE,
                            ui::EF_NONE);
-  top_level_widget.GetNativeView()->GetDispatcher()->
-      AsWindowTreeHostDelegate()->OnHostMouseEvent(&move_main);
+  ui::EventDispatchDetails details = top_level_widget.GetNativeView()->
+      GetDispatcher()->OnEventFromSource(&move_main);
+  ASSERT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(1, widget_view->GetEventCount(ui::ET_MOUSE_ENTERED));
   widget_view->ResetCounts();
@@ -2113,8 +2116,9 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                    cursor_location_dialog,
                                    ui::EF_NONE,
                                    ui::EF_NONE);
-  top_level_widget.GetNativeView()->GetDispatcher()->
-      AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse_down_dialog);
+  details = top_level_widget.GetNativeView()->GetDispatcher()->
+      OnEventFromSource(&mouse_down_dialog);
+  ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, dialog_widget_view->GetEventCount(ui::ET_MOUSE_PRESSED));
 
   // Send a mouse move message to the main window. It should not be received by
@@ -2125,8 +2129,9 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
                                  cursor_location_main2,
                                  ui::EF_NONE,
                                  ui::EF_NONE);
-  top_level_widget.GetNativeView()->GetDispatcher()->
-      AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse_down_main);
+  details = top_level_widget.GetNativeView()->GetDispatcher()->
+      OnEventFromSource(&mouse_down_main);
+  ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(0, widget_view->GetEventCount(ui::ET_MOUSE_MOVED));
 
   modal_dialog_widget->CloseNow();

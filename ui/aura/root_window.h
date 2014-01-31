@@ -267,10 +267,6 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
       ui::LayerAnimationSequence* animation) OVERRIDE;
 
   // Overridden from aura::WindowTreeHostDelegate:
-  virtual bool OnHostKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual bool OnHostMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual bool OnHostScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual bool OnHostTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnHostCancelMode() OVERRIDE;
   virtual void OnHostActivated() OVERRIDE;
   virtual void OnHostLostWindowCapture() OVERRIDE;

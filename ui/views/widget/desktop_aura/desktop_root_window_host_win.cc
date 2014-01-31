@@ -577,6 +577,14 @@ void DesktopWindowTreeHostWin::OnDeviceScaleFactorChanged(
 void DesktopWindowTreeHostWin::PrepareForShutdown() {
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopWindowTreeHostWin, ui::EventSource implementation:
+
+ui::EventProcessor* DesktopWindowTreeHostWin::GetEventProcessor() {
+  return delegate_->GetEventProcessor();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, aura::AnimationHost implementation:
 
@@ -846,7 +854,8 @@ void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  return delegate_->OnHostMouseEvent(const_cast<ui::MouseEvent*>(&event));
+  SendEventToProcessor(const_cast<ui::MouseEvent*>(&event));
+  return event.handled();
 }
 
 bool DesktopWindowTreeHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
@@ -856,7 +865,8 @@ bool DesktopWindowTreeHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
 bool DesktopWindowTreeHostWin::HandleUntranslatedKeyEvent(
     const ui::KeyEvent& event) {
   ui::KeyEvent duplicate_event(event);
-  return delegate_->OnHostKeyEvent(&duplicate_event);
+  SendEventToProcessor(&duplicate_event);
+  return duplicate_event.handled();
 }
 
 void DesktopWindowTreeHostWin::HandleTouchEvent(
@@ -881,12 +891,11 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(
                                   static_cast<View*>(NULL));
       target_event.set_location(gfx::Point(target_location));
       target_event.set_root_location(target_event.location());
-      target->delegate_->OnHostTouchEvent(&target_event);
+      target->SendEventToProcessor(&target_event);
       return;
     }
   }
-  delegate_->OnHostTouchEvent(
-      const_cast<ui::TouchEvent*>(&event));
+  SendEventToProcessor(const_cast<ui::TouchEvent*>(&event));
 }
 
 bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
@@ -954,7 +963,8 @@ void DesktopWindowTreeHostWin::PostHandleMSG(UINT message,
 
 bool DesktopWindowTreeHostWin::HandleScrollEvent(
     const ui::ScrollEvent& event) {
-  return delegate_->OnHostScrollEvent(const_cast<ui::ScrollEvent*>(&event));
+  SendEventToProcessor(const_cast<ui::ScrollEvent*>(&event));
+  return event.handled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

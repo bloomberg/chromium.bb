@@ -638,7 +638,9 @@ void RootWindow::DispatchPostponedGestureEvent(ui::GestureEvent* event) {
 }
 
 void RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
-  OnHostTouchEvent(event);
+  DispatchDetails details = OnEventFromSource(event);
+  if (details.dispatcher_destroyed)
+    return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -659,34 +661,6 @@ void RootWindow::OnLayerAnimationAborted(
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, WindowTreeHostDelegate implementation:
-
-bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
-  DispatchDetails details = OnEventFromSource(event);
-  if (details.dispatcher_destroyed)
-    event->SetHandled();
-  return event->handled();
-}
-
-bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
-  DispatchDetails details = OnEventFromSource(event);
-  if (details.dispatcher_destroyed)
-    event->SetHandled();
-  return event->handled();
-}
-
-bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
-  DispatchDetails details = OnEventFromSource(event);
-  if (details.dispatcher_destroyed)
-    event->SetHandled();
-  return event->handled();
-}
-
-bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
-  DispatchDetails details = OnEventFromSource(event);
-  if (details.dispatcher_destroyed)
-    event->SetHandled();
-  return event->handled();
-}
 
 void RootWindow::OnHostCancelMode() {
   ui::CancelModeEvent event;

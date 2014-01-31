@@ -485,6 +485,10 @@ void RemoteWindowTreeHostWin::OnDeviceScaleFactorChanged(
 void RemoteWindowTreeHostWin::PrepareForShutdown() {
 }
 
+ui::EventProcessor* RemoteWindowTreeHostWin::GetEventProcessor() {
+  return delegate_->GetEventProcessor();
+}
+
 void RemoteWindowTreeHostWin::CancelComposition() {
   if (!host_)
     return;
@@ -522,7 +526,7 @@ void RemoteWindowTreeHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
 
   gfx::Point location = PointFromNativeEvent(x, y);
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, flags, 0);
-  delegate_->OnHostMouseEvent(&event);
+  SendEventToProcessor(&event);
 }
 
 void RemoteWindowTreeHostWin::OnMouseButton(
@@ -537,7 +541,7 @@ void RemoteWindowTreeHostWin::OnMouseButton(
     int x_offset = params.is_horizontal_wheel ? params.extra : 0;
     int y_offset = !params.is_horizontal_wheel ? params.extra : 0;
     ui::MouseWheelEvent wheel_event(mouse_event, x_offset, y_offset);
-    delegate_->OnHostMouseEvent(&wheel_event);
+    SendEventToProcessor(&wheel_event);
   } else if (params.event_type == ui::ET_MOUSE_PRESSED) {
     // TODO(shrikant): Ideally modify code in event.cc by adding automatic
     // tracking of double clicks in synthetic MouseEvent constructor code.
@@ -553,9 +557,9 @@ void RemoteWindowTreeHostWin::OnMouseButton(
       mouse_event.SetClickCount(1);
     }
     last_mouse_click_event_ .reset(new ui::MouseEvent(mouse_event));
-    delegate_->OnHostMouseEvent(&mouse_event);
+    SendEventToProcessor(&mouse_event);
   } else {
-    delegate_->OnHostMouseEvent(&mouse_event);
+    SendEventToProcessor(&mouse_event);
   }
 }
 
@@ -596,7 +600,7 @@ void RemoteWindowTreeHostWin::OnTouchDown(int32 x,
                        location,
                        pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
-  delegate_->OnHostTouchEvent(&event);
+  SendEventToProcessor(&event);
 }
 
 void RemoteWindowTreeHostWin::OnTouchUp(int32 x,
@@ -608,7 +612,7 @@ void RemoteWindowTreeHostWin::OnTouchUp(int32 x,
                        location,
                        pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
-  delegate_->OnHostTouchEvent(&event);
+  SendEventToProcessor(&event);
 }
 
 void RemoteWindowTreeHostWin::OnTouchMoved(int32 x,
@@ -620,7 +624,7 @@ void RemoteWindowTreeHostWin::OnTouchMoved(int32 x,
                        location,
                        pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
-  delegate_->OnHostTouchEvent(&event);
+  SendEventToProcessor(&event);
 }
 
 void RemoteWindowTreeHostWin::OnFileSaveAsDone(bool success,
@@ -744,7 +748,7 @@ void RemoteWindowTreeHostWin::DispatchKeyboardMessage(ui::EventType type,
                        ui::KeyboardCodeForWindowsKeyCode(vkey),
                        flags,
                        is_character);
-    delegate_->OnHostKeyEvent(&event);
+    SendEventToProcessor(&event);
   }
 }
 

@@ -233,6 +233,10 @@ void WindowTreeHostWin::PrepareForShutdown() {
   NOTIMPLEMENTED();
 }
 
+ui::EventProcessor* WindowTreeHostWin::GetEventProcessor() {
+  return delegate_->GetEventProcessor();
+}
+
 void WindowTreeHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
   base::MessageLoopForUI::current()->Quit();
@@ -243,7 +247,8 @@ LRESULT WindowTreeHostWin::OnKeyEvent(UINT message,
                                       LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
   ui::KeyEvent keyev(msg, message == WM_CHAR);
-  SetMsgHandled(delegate_->OnHostKeyEvent(&keyev));
+  ui::EventDispatchDetails details = SendEventToProcessor(&keyev);
+  SetMsgHandled(keyev.handled() || details.dispatcher_destroyed);
   return 0;
 }
 
@@ -254,8 +259,10 @@ LRESULT WindowTreeHostWin::OnMouseRange(UINT message,
               { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
   ui::MouseEvent event(msg);
   bool handled = false;
-  if (!(event.flags() & ui::EF_IS_NON_CLIENT))
-    handled = delegate_->OnHostMouseEvent(&event);
+  if (!(event.flags() & ui::EF_IS_NON_CLIENT)) {
+    ui::EventDispatchDetails details = SendEventToProcessor(&event);
+    handled = event.handled() || details.dispatcher_destroyed;
+  }
   SetMsgHandled(handled);
   return 0;
 }

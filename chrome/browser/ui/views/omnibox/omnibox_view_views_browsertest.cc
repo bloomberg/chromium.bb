@@ -20,6 +20,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_delegate.h"
 #endif // defined(USE_AURA)
@@ -66,35 +67,28 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
 #if defined(USE_AURA)
   // Tap the center of the browser window.
   void TapBrowserWindowCenter() {
-    aura::WindowTreeHostDelegate* rwhd =
-        browser()->window()->GetNativeWindow()->GetRootWindow()->
-        GetDispatcher()->AsWindowTreeHostDelegate();
-
     gfx::Point center = BrowserView::GetBrowserViewForBrowser(
         browser())->GetBoundsInScreen().CenterPoint();
-    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, center,
-                         5, base::TimeDelta::FromMilliseconds(0));
-    rwhd->OnHostTouchEvent(&press);
-
-    ui::TouchEvent release(ui::ET_TOUCH_RELEASED, center,
-                           5, base::TimeDelta::FromMilliseconds(50));
-    rwhd->OnHostTouchEvent(&release);
+    aura::test::EventGenerator generator(browser()->window()->
+        GetNativeWindow()->GetRootWindow());
+    generator.GestureTapAt(center);
   }
 
   // Touch down and release at the specified locations.
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
-    aura::WindowTreeHostDelegate* rwhd =
-        browser()->window()->GetNativeWindow()->GetRootWindow()->
-        GetDispatcher()->AsWindowTreeHostDelegate();
+    aura::WindowEventDispatcher* dispatcher =
+        browser()->window()->GetNativeWindow()->GetDispatcher();
 
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, press_location,
                          5, base::TimeDelta::FromMilliseconds(0));
-    rwhd->OnHostTouchEvent(&press);
+    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+    ASSERT_FALSE(details.dispatcher_destroyed);
 
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, release_location,
                            5, base::TimeDelta::FromMilliseconds(50));
-    rwhd->OnHostTouchEvent(&release);
+    details = dispatcher->OnEventFromSource(&release);
+    ASSERT_FALSE(details.dispatcher_destroyed);
   }
 #endif // defined(USE_AURA)
 

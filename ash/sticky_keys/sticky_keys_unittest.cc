@@ -264,13 +264,15 @@ class StickyKeysTest : public test::AshTestBase,
     handler->HandleKeyEvent(ev.get());
   }
 
-  void SendActivateStickyKeyPattern(aura::WindowTreeHostDelegate* delegate,
+  void SendActivateStickyKeyPattern(aura::WindowEventDispatcher* dispatcher,
                                     ui::KeyboardCode key_code) {
     scoped_ptr<ui::KeyEvent> ev;
     ev.reset(GenerateKey(true, key_code));
-    delegate->OnHostKeyEvent(ev.get());
+    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
+    CHECK(!details.dispatcher_destroyed);
     ev.reset(GenerateKey(false, key_code));
-    delegate->OnHostKeyEvent(ev.get());
+    details = dispatcher->OnEventFromSource(ev.get());
+    CHECK(!details.dispatcher_destroyed);
   }
 
   aura::Window* target() { return target_; }
@@ -792,19 +794,19 @@ TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
   // Test the actual key event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowTreeHostDelegate* delegate = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher()->AsWindowTreeHostDelegate();
+  aura::WindowEventDispatcher* dispatcher = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
-  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
   scoped_ptr<ui::KeyEvent> ev;
   buffer.PopEvents(&events);
 
   // Test key press event is correctly modified and modifier release
   // event is sent.
   ev.reset(GenerateKey(true, ui::VKEY_C));
-  delegate->OnHostKeyEvent(ev.get());
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
   buffer.PopEvents(&events);
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(ui::ET_KEY_PRESSED, events[0]->type());
@@ -816,7 +818,8 @@ TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
 
   // Test key release event is not modified.
   ev.reset(GenerateKey(false, ui::VKEY_C));
-  delegate->OnHostKeyEvent(ev.get());
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
   buffer.PopEvents(&events);
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ(ui::ET_KEY_RELEASED, events[0]->type());
@@ -831,18 +834,18 @@ TEST_F(StickyKeysTest, MouseEventDispatchImpl) {
   // Test the actual sticky mouse event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowTreeHostDelegate* delegate = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher()->AsWindowTreeHostDelegate();
+  aura::WindowEventDispatcher* dispatcher = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
   scoped_ptr<ui::MouseEvent> ev;
-  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
   buffer.PopEvents(&events);
 
   // Test mouse press event is correctly modified.
   ev.reset(GenerateMouseEvent(true));
-  delegate->OnHostMouseEvent(ev.get());
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
   buffer.PopEvents(&events);
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0]->type());
@@ -851,7 +854,8 @@ TEST_F(StickyKeysTest, MouseEventDispatchImpl) {
   // Test mouse release event is correctly modified and modifier release
   // event is sent.
   ev.reset(GenerateMouseEvent(false));
-  delegate->OnHostMouseEvent(ev.get());
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
   buffer.PopEvents(&events);
   EXPECT_EQ(2u, events.size());
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0]->type());
@@ -867,19 +871,20 @@ TEST_F(StickyKeysTest, MouseWheelEventDispatchImpl) {
   // Test the actual mouse wheel event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::WindowTreeHostDelegate* delegate = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher()->AsWindowTreeHostDelegate();
+  aura::WindowEventDispatcher* dispatcher = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
   scoped_ptr<ui::MouseWheelEvent> ev;
-  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
   buffer.PopEvents(&events);
 
   // Test positive mouse wheel event is correctly modified and modifier release
   // event is sent.
   ev.reset(GenerateMouseWheelEvent(ui::MouseWheelEvent::kWheelDelta));
-  delegate->OnHostMouseEvent(ev.get());
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
   buffer.PopEvents(&events);
   EXPECT_EQ(2u, events.size());
   EXPECT_TRUE(events[0]->IsMouseWheelEvent());
@@ -892,11 +897,12 @@ TEST_F(StickyKeysTest, MouseWheelEventDispatchImpl) {
 
   // Test negative mouse wheel event is correctly modified and modifier release
   // event is sent.
-  SendActivateStickyKeyPattern(delegate, ui::VKEY_CONTROL);
+  SendActivateStickyKeyPattern(dispatcher, ui::VKEY_CONTROL);
   buffer.PopEvents(&events);
 
   ev.reset(GenerateMouseWheelEvent(-ui::MouseWheelEvent::kWheelDelta));
-  delegate->OnHostMouseEvent(ev.get());
+  details = dispatcher->OnEventFromSource(ev.get());
+  ASSERT_FALSE(details.dispatcher_destroyed);
   buffer.PopEvents(&events);
   EXPECT_EQ(2u, events.size());
   EXPECT_TRUE(events[0]->IsMouseWheelEvent());

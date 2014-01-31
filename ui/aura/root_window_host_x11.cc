@@ -429,12 +429,12 @@ bool WindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
     }
     case KeyPress: {
       ui::KeyEvent keydown_event(xev, false);
-      delegate_->OnHostKeyEvent(&keydown_event);
+      SendEventToProcessor(&keydown_event);
       break;
     }
     case KeyRelease: {
       ui::KeyEvent keyup_event(xev, false);
-      delegate_->OnHostKeyEvent(&keyup_event);
+      SendEventToProcessor(&keyup_event);
       break;
     }
     case ButtonPress: {
@@ -902,7 +902,7 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
 #endif  // defined(USE_XI2_MT)
       }
 #endif  // defined(OS_CHROMEOS)
-      delegate_->OnHostTouchEvent(&touchev);
+      SendEventToProcessor(&touchev);
       break;
     }
     case ui::ET_MOUSE_MOVED:
@@ -955,7 +955,7 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_SCROLL_FLING_CANCEL:
     case ui::ET_SCROLL: {
       ui::ScrollEvent scrollev(xev);
-      delegate_->OnHostScrollEvent(&scrollev);
+      SendEventToProcessor(&scrollev);
       break;
     }
     case ui::ET_UMA_DATA:
@@ -1001,7 +1001,7 @@ void WindowTreeHostX11::TranslateAndDispatchMouseEvent(
     event->set_location(location);
     event->set_root_location(location);
   }
-  delegate_->OnHostMouseEvent(event);
+  SendEventToProcessor(event);
 }
 
 void WindowTreeHostX11::UpdateIsInternalDisplay() {

@@ -47,11 +47,12 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
       touch_with_latency, &events, SCREEN_COORDINATES);
   DCHECK(conversion_success);
 
-  aura::WindowTreeHostDelegate* root_window_host_delegate =
-      GetWindowTreeHostDelegate();
+  aura::WindowEventDispatcher* dispatcher = GetWindowEventDispatcher();
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
-    root_window_host_delegate->OnHostTouchEvent(*iter);
+    ui::EventDispatchDetails details = dispatcher->OnEventFromSource(*iter);
+    if (details.dispatcher_destroyed)
+      break;
   }
 }
 
@@ -69,7 +70,10 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
   ui::MouseWheelEvent wheel_event(
       mouse_event, web_wheel.deltaX, web_wheel.deltaY);
 
-  GetWindowTreeHostDelegate()->OnHostMouseEvent(&wheel_event);
+  ui::EventDispatchDetails details =
+      GetWindowEventDispatcher()->OnEventFromSource(&wheel_event);
+  if (details.dispatcher_destroyed)
+    return;
 }
 
 namespace {
@@ -136,7 +140,10 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
   ui::MouseEvent mouse_event(event_type, location, location, flags, flags);
 
-  GetWindowTreeHostDelegate()->OnHostMouseEvent(&mouse_event);
+  ui::EventDispatchDetails details =
+      GetWindowEventDispatcher()->OnEventFromSource(&mouse_event);
+  if (details.dispatcher_destroyed)
+    return;
 }
 
 SyntheticGestureParams::GestureSourceType
@@ -162,13 +169,11 @@ aura::Window* SyntheticGestureTargetAura::GetWindow() const {
   return window;
 }
 
-aura::WindowTreeHostDelegate*
-SyntheticGestureTargetAura::GetWindowTreeHostDelegate() const {
-  aura::Window* root_window = GetWindow()->GetRootWindow();
-  aura::WindowTreeHostDelegate* root_window_host_delegate =
-      root_window->GetDispatcher()->AsWindowTreeHostDelegate();
-  DCHECK(root_window_host_delegate);
-  return root_window_host_delegate;
+aura::WindowEventDispatcher*
+SyntheticGestureTargetAura::GetWindowEventDispatcher() const {
+  aura::WindowEventDispatcher* dispatcher = GetWindow()->GetDispatcher();
+  DCHECK(dispatcher);
+  return dispatcher;
 }
 
 aura::client::ScreenPositionClient*

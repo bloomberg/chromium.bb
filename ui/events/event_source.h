@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_EVENT_SOURCE_H_
 #define UI_EVENTS_EVENT_SOURCE_H_
 
+#include "ui/events/event_dispatcher.h"
 #include "ui/events/events_export.h"
 
 namespace ui {
@@ -21,7 +22,7 @@ class EVENTS_EXPORT EventSource {
   virtual EventProcessor* GetEventProcessor() = 0;
 
  protected:
-  void SendEventToProcessor(Event* event);
+  EventDispatchDetails SendEventToProcessor(Event* event);
 };
 
 }  // namespace ui

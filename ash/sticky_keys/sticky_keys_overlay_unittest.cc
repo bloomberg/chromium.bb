@@ -41,9 +41,9 @@ class StickyKeysOverlayTest : public test::AshTestBase {
     ui::Event::DispatcherApi dispatcher(&event);
     dispatcher.set_target(Shell::GetInstance()->GetPrimaryRootWindow());
 
-    aura::WindowTreeHostDelegate* delegate = Shell::GetPrimaryRootWindow()
-        ->GetDispatcher()->AsWindowTreeHostDelegate();
-    delegate->OnHostKeyEvent(&event);
+    ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()->
+        GetDispatcher()->OnEventFromSource(&event);
+    CHECK(!details.dispatcher_destroyed);
   }
 
   StickyKeysController* controller_;

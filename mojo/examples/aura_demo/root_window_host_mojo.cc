@@ -155,6 +155,10 @@ void WindowTreeHostMojo::PrepareForShutdown() {
   NOTIMPLEMENTED();
 }
 
+ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
+  return delegate_->GetEventProcessor();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, NativeViewportClient implementation:
 
@@ -187,7 +191,7 @@ void WindowTreeHostMojo::OnEvent(const Event& event) {
       gfx::Point location(event.location().x(), event.location().y());
       ui::MouseEvent ev(static_cast<ui::EventType>(event.action()), location,
                         location, event.flags(), 0);
-      delegate_->OnHostMouseEvent(&ev);
+      SendEventToProcessor(&ev);
       break;
     }
     case ui::ET_KEY_PRESSED:
@@ -196,7 +200,7 @@ void WindowTreeHostMojo::OnEvent(const Event& event) {
           static_cast<ui::EventType>(event.action()),
           static_cast<ui::KeyboardCode>(event.key_data().key_code()),
           event.flags(), event.key_data().is_char());
-      delegate_->OnHostKeyEvent(&ev);
+      SendEventToProcessor(&ev);
       break;
     }
     // TODO(beng): touch, etc.

@@ -38,16 +38,7 @@ WindowTreeHostOzone::~WindowTreeHostOzone() {
 
 bool WindowTreeHostOzone::Dispatch(const base::NativeEvent& ne) {
   ui::Event* event = static_cast<ui::Event*>(ne);
-  if (event->IsTouchEvent()) {
-    ui::TouchEvent* touchev = static_cast<ui::TouchEvent*>(ne);
-    delegate_->OnHostTouchEvent(touchev);
-  } else if (event->IsKeyEvent()) {
-    ui::KeyEvent* keyev = static_cast<ui::KeyEvent*>(ne);
-    delegate_->OnHostKeyEvent(keyev);
-  } else if (event->IsMouseEvent()) {
-    ui::MouseEvent* mouseev = static_cast<ui::MouseEvent*>(ne);
-    delegate_->OnHostMouseEvent(mouseev);
-  }
+  SendEventToProcessor(event);
   return true;
 }
 

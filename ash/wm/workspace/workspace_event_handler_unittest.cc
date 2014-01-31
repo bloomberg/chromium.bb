@@ -305,12 +305,14 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
                        ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_IS_DOUBLE_CLICK,
                        ui::EF_MIDDLE_MOUSE_BUTTON);
   aura::WindowEventDispatcher* dispatcher = root->GetDispatcher();
-  dispatcher->AsWindowTreeHostDelegate()->OnHostMouseEvent(&press);
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+  ASSERT_FALSE(details.dispatcher_destroyed);
   ui::MouseEvent release(ui::ET_MOUSE_RELEASED, generator.current_location(),
                          generator.current_location(),
                          ui::EF_IS_DOUBLE_CLICK,
                          ui::EF_MIDDLE_MOUSE_BUTTON);
-  dispatcher->AsWindowTreeHostDelegate()->OnHostMouseEvent(&release);
+  details = dispatcher->OnEventFromSource(&release);
+  ASSERT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ("1,2 30x40", window->bounds().ToString());

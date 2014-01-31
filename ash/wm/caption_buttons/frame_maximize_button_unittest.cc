@@ -558,7 +558,8 @@ TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
                        button_pos,
                        kTouchId,
                        ui::EventTimeForNow());
-  dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+  ASSERT_FALSE(details.dispatcher_destroyed);
 
   button_pos.Offset(9, 8);
   ui::TouchEvent release(
@@ -566,7 +567,8 @@ TEST_F(FrameMaximizeButtonTest, MaximizeTap) {
       button_pos,
       kTouchId,
       press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
-  dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
+  details = dispatcher->OnEventFromSource(&release);
+  ASSERT_FALSE(details.dispatcher_destroyed);
 
   ui::GestureConfiguration::set_default_radius(touch_default_radius);
 }

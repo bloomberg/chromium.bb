@@ -8,12 +8,10 @@
 
 namespace ui {
 
-void EventSource::SendEventToProcessor(Event* event) {
+EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
   EventProcessor* processor = GetEventProcessor();
   CHECK(processor);
-  EventDispatchDetails details = processor->OnEventFromSource(event);
-  if (details.dispatcher_destroyed)
-    return;
+  return processor->OnEventFromSource(event);
 }
 
 }  // namespace ui

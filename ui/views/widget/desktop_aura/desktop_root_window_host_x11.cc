@@ -917,6 +917,13 @@ void DesktopWindowTreeHostX11::PrepareForShutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// DesktopWindowTreeHostX11, ui::EventSource implementation:
+
+ui::EventProcessor* DesktopWindowTreeHostX11::GetEventProcessor() {
+  return delegate_->GetEventProcessor();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
 void DesktopWindowTreeHostX11::InitX11Window(
@@ -1112,13 +1119,13 @@ void DesktopWindowTreeHostX11::OnCaptureReleased() {
 
 void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   if (!g_current_capture || g_current_capture == this) {
-    delegate_->OnHostMouseEvent(event);
+    SendEventToProcessor(event);
   } else {
     // Another DesktopWindowTreeHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
     event->ConvertLocationToTarget(root_window_->window(),
                                    g_current_capture->root_window_->window());
-    g_current_capture->delegate_->OnHostMouseEvent(event);
+    g_current_capture->SendEventToProcessor(event);
   }
 }
 
@@ -1127,9 +1134,9 @@ void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
       event->type() == ui::ET_TOUCH_PRESSED) {
     event->ConvertLocationToTarget(root_window_->window(),
                                    g_current_capture->root_window_->window());
-    g_current_capture->delegate_->OnHostTouchEvent(event);
+    g_current_capture->SendEventToProcessor(event);
   } else {
-    delegate_->OnHostTouchEvent(event);
+    SendEventToProcessor(event);
   }
 }
 
@@ -1259,12 +1266,12 @@ bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
     }
     case KeyPress: {
       ui::KeyEvent keydown_event(xev, false);
-      delegate_->OnHostKeyEvent(&keydown_event);
+      SendEventToProcessor(&keydown_event);
       break;
     }
     case KeyRelease: {
       ui::KeyEvent keyup_event(xev, false);
-      delegate_->OnHostKeyEvent(&keyup_event);
+      SendEventToProcessor(&keyup_event);
       break;
     }
     case ButtonPress: {
@@ -1412,7 +1419,7 @@ bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         case ui::ET_SCROLL_FLING_CANCEL:
         case ui::ET_SCROLL: {
           ui::ScrollEvent scrollev(xev);
-          delegate_->OnHostScrollEvent(&scrollev);
+          SendEventToProcessor(&scrollev);
           break;
         }
         case ui::ET_UNKNOWN:

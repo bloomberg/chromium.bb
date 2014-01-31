@@ -60,14 +60,11 @@ TEST_F(WindowTargeterTest, Basic) {
                        gfx::Point(20, 20),
                        ui::EF_NONE,
                        ui::EF_NONE);
-  root_window()->GetDispatcher()->AsWindowTreeHostDelegate()->
-      OnHostMouseEvent(&press);
+  DispatchEventUsingWindowDispatcher(&press);
   EXPECT_EQ(1, handler.num_mouse_events());
 
   handler.Reset();
-  ui::EventDispatchDetails details =
-      root_window()->GetDispatcher()->OnEventFromSource(&press);
-  EXPECT_FALSE(details.dispatcher_destroyed);
+  DispatchEventUsingWindowDispatcher(&press);
   EXPECT_EQ(1, handler.num_mouse_events());
 
   one->RemovePreTargetHandler(&handler);

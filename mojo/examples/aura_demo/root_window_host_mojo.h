@@ -9,6 +9,7 @@
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojom/native_viewport.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -21,6 +22,7 @@ namespace examples {
 class GLES2ClientImpl;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
+                           public ui::EventSource,
                            public NativeViewportClient {
  public:
   WindowTreeHostMojo(ScopedMessagePipeHandle viewport_handle,
@@ -54,6 +56,9 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+  // ui::EventSource:
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   // Overridden from NativeViewportClient:
   virtual void OnCreated() MOJO_OVERRIDE;

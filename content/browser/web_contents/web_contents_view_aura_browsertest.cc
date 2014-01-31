@@ -329,14 +329,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
       gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
       0, timestamp);
-  dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&press);
+  ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, GetCurrentIndex());
 
   timestamp += base::TimeDelta::FromMilliseconds(10);
   ui::TouchEvent move1(ui::ET_TOUCH_MOVED,
       gfx::Point(bounds.right() - 10, bounds.y() + 5),
       0, timestamp);
-  dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
+  details = dispatcher->OnEventFromSource(&move1);
+  ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, GetCurrentIndex());
 
   // Swipe back from the right edge, back to the left edge, back to the right
@@ -347,7 +349,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED,
         gfx::Point(x, bounds.y() + 5),
         0, timestamp);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&inc);
+    details = dispatcher->OnEventFromSource(&inc);
+    ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
 
@@ -356,7 +359,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED,
         gfx::Point(x, bounds.y() + 5),
         0, timestamp);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&inc);
+    details = dispatcher->OnEventFromSource(&inc);
+    ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
 
@@ -365,7 +369,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED,
         gfx::Point(x, bounds.y() + 5),
         0, timestamp);
-    dispatcher->AsWindowTreeHostDelegate()->OnHostTouchEvent(&inc);
+    details = dispatcher->OnEventFromSource(&inc);
+    ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
 

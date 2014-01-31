@@ -14,6 +14,7 @@
 #include "ui/base/ime/remote_input_method_delegate_win.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/metro_viewer/ime_types.h"
 
@@ -102,6 +103,7 @@ AURA_EXPORT void HandleMetroExit();
 // frontend process, which forwards input events to this class.
 class AURA_EXPORT RemoteWindowTreeHostWin
     : public WindowTreeHost,
+      public ui::EventSource,
       public ui::internal::RemoteInputMethodDelegateWin {
  public:
   // Returns the only RemoteWindowTreeHostWin, if this is the first time
@@ -230,6 +232,9 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+  // ui::EventSource:
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   // ui::internal::RemoteInputMethodDelegateWin overrides:
   virtual void CancelComposition() OVERRIDE;

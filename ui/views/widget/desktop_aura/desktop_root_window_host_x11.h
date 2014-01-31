@@ -37,6 +37,7 @@ class X11WindowEventFilter;
 class VIEWS_EXPORT DesktopWindowTreeHostX11 :
     public DesktopWindowTreeHost,
     public aura::WindowTreeHost,
+    public ui::EventSource,
     public base::MessagePumpDispatcher {
  public:
   DesktopWindowTreeHostX11(
@@ -152,6 +153,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 :
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+  // Overridden frm ui::EventSource
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
 private:
   // Initializes our X11 surface to draw on. This method performs all

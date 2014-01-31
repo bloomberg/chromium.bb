@@ -30,10 +30,6 @@ class RootWindow;
 // with their owning RootWindow.
 class AURA_EXPORT WindowTreeHostDelegate {
  public:
-  virtual bool OnHostKeyEvent(ui::KeyEvent* event) = 0;
-  virtual bool OnHostMouseEvent(ui::MouseEvent* event) = 0;
-  virtual bool OnHostScrollEvent(ui::ScrollEvent* event) = 0;
-  virtual bool OnHostTouchEvent(ui::TouchEvent* event) = 0;
   virtual void OnHostCancelMode() = 0;
 
   // Called when the windowing system activates the window.

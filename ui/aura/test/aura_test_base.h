@@ -37,6 +37,10 @@ class AuraTestBase : public testing::Test {
 
   void ParentWindow(Window* window);
 
+  // A convenience function for dispatching an event to |dispatcher()|.
+  // Returns whether |event| was handled.
+  bool DispatchEventUsingWindowDispatcher(ui::Event* event);
+
   Window* root_window() { return helper_->root_window(); }
   RootWindow* dispatcher() { return helper_->dispatcher(); }
   TestScreen* test_screen() { return helper_->test_screen(); }

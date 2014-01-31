@@ -10,6 +10,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/events/event_dispatcher.h"
 #include "ui/events/gestures/gesture_configuration.h"
 
 namespace aura {
@@ -104,6 +105,12 @@ void AuraTestBase::RunAllPendingInMessageLoop() {
 
 void AuraTestBase::ParentWindow(Window* window) {
   client::ParentWindowWithContext(window, root_window(), gfx::Rect());
+}
+
+bool AuraTestBase::DispatchEventUsingWindowDispatcher(ui::Event* event) {
+  ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(event);
+  CHECK(!details.dispatcher_destroyed);
+  return event->handled();
 }
 
 }  // namespace test

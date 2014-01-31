@@ -737,8 +737,9 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
     ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
                               mouse_move_location, 0, 0);
-    Shell::GetPrimaryRootWindow()->GetDispatcher()->AsWindowTreeHostDelegate()->
-        OnHostMouseEvent(&mouse_move);
+    ui::EventDispatchDetails details = Shell::GetPrimaryRootWindow()->
+        GetDispatcher()->OnEventFromSource(&mouse_move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
   }
 
   generator.ReleaseLeftButton();

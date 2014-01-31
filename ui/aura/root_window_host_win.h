@@ -8,11 +8,14 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/win/window_impl.h"
 
 namespace aura {
 
-class WindowTreeHostWin : public WindowTreeHost, public gfx::WindowImpl {
+class WindowTreeHostWin : public WindowTreeHost,
+                          public ui::EventSource,
+                          public gfx::WindowImpl {
  public:
   WindowTreeHostWin(const gfx::Rect& bounds);
   virtual ~WindowTreeHostWin();
@@ -38,6 +41,9 @@ class WindowTreeHostWin : public WindowTreeHost, public gfx::WindowImpl {
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
+
+  // ui::EventSource:
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
  private:
   CR_BEGIN_MSG_MAP_EX(WindowTreeHostWin)

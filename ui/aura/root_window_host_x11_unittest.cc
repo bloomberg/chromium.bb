@@ -26,22 +26,6 @@ class TestWindowTreeHostDelegate : public aura::WindowTreeHostDelegate,
   virtual ~TestWindowTreeHostDelegate() {}
 
   // aura::WindowTreeHostDelegate:
-  virtual bool OnHostKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    return true;
-  }
-  virtual bool OnHostMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    return true;
-  }
-  virtual bool OnHostScrollEvent(ui::ScrollEvent* event) OVERRIDE {
-    return true;
-  }
-  virtual bool OnHostTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    last_touch_id_ = event->touch_id();
-    last_touch_type_ = event->type();
-    last_touch_location_ = event->location();
-    return true;
-  }
-
   virtual void OnHostCancelMode() OVERRIDE {}
   virtual void OnHostActivated() OVERRIDE {}
   virtual void OnHostLostWindowCapture() OVERRIDE {}

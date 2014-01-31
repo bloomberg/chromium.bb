@@ -654,33 +654,33 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
 #if defined(OS_WIN)
   MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
   ui::TranslatedKeyEvent key_event1(msg1, false);
-  EXPECT_TRUE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &key_event1));
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&key_event1);
+  EXPECT_TRUE(key_event1.handled() || details.dispatcher_destroyed);
 
   MSG msg2 = { NULL, WM_CHAR, L'A', 0 };
   ui::TranslatedKeyEvent key_event2(msg2, true);
-  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &key_event2));
+  details = dispatcher->OnEventFromSource(&key_event2);
+  EXPECT_FALSE(key_event2.handled() || details.dispatcher_destroyed);
 
   MSG msg3 = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
   ui::TranslatedKeyEvent key_event3(msg3, false);
-  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &key_event3));
+  details = dispatcher->OnEventFromSource(&key_event3);
+  EXPECT_FALSE(key_event3.handled() || details.dispatcher_destroyed);
 #elif defined(USE_X11)
   ui::ScopedXI2Event key_event;
   key_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   ui::TranslatedKeyEvent key_event1(key_event, false);
-  EXPECT_TRUE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &key_event1));
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(&key_event1);
+  EXPECT_TRUE(key_event1.handled() || details.dispatcher_destroyed);
 
   ui::TranslatedKeyEvent key_event2(key_event, true);
-  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &key_event2));
+  details = dispatcher->OnEventFromSource(&key_event2);
+  EXPECT_FALSE(key_event2.handled() || details.dispatcher_destroyed);
 
   key_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
   ui::TranslatedKeyEvent key_event3(key_event, false);
-  EXPECT_FALSE(dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &key_event3));
+  details = dispatcher->OnEventFromSource(&key_event3);
+  EXPECT_FALSE(key_event3.handled() || details.dispatcher_destroyed);
 #endif
   EXPECT_EQ(1, target.accelerator_pressed_count());
 }

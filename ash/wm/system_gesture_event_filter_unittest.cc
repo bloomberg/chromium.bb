@@ -192,8 +192,9 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
                        gfx::Point(10, 10),
                        kTouchId,
                        ui::EventTimeForNow());
-  root_window->GetDispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
-      &press);
+  ui::EventDispatchDetails details =
+      root_window->GetDispatcher()->OnEventFromSource(&press);
+  ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(window1->HasCapture());
 
   base::OneShotTimer<internal::LongPressAffordanceHandler>* timer =

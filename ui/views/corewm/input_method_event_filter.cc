@@ -64,8 +64,10 @@ bool InputMethodEventFilter::DispatchKeyEventPostIME(
     DCHECK_NE(event.native_event().message, static_cast<UINT>(WM_CHAR));
 #endif
   ui::TranslatedKeyEvent aura_event(event);
-  return target_dispatcher_->AsWindowTreeHostDelegate()->OnHostKeyEvent(
-      &aura_event);
+  ui::EventDispatchDetails details =
+      target_dispatcher_->OnEventFromSource(&aura_event);
+  CHECK(!details.dispatcher_destroyed);
+  return aura_event.handled();
 }
 
 }  // namespace corewm

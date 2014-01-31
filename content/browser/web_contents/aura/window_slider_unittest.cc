@@ -21,12 +21,8 @@ void DispatchEventDuringScrollCallback(aura::WindowEventDispatcher* dispatcher,
                                        const gfx::Vector2dF& delta) {
   if (type != ui::ET_GESTURE_SCROLL_UPDATE)
     return;
-  aura::WindowTreeHostDelegate* delegate =
-      dispatcher->AsWindowTreeHostDelegate();
-  if (event->IsMouseEvent())
-    delegate->OnHostMouseEvent(static_cast<ui::MouseEvent*>(event));
-  else if (event->IsKeyEvent())
-    delegate->OnHostKeyEvent(static_cast<ui::KeyEvent*>(event));
+  ui::EventDispatchDetails details = dispatcher->OnEventFromSource(event);
+  CHECK(!details.dispatcher_destroyed);
 }
 
 void ChangeSliderOwnerDuringScrollCallback(scoped_ptr<aura::Window>* window,

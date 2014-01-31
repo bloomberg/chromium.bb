@@ -587,23 +587,9 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
     }
     pending_events_.push_back(pending_event);
   } else {
-    WindowTreeHostDelegate* root_window_host_delegate =
-        current_root_window_->AsWindowTreeHostDelegate();
-    if (event->IsKeyEvent()) {
-      root_window_host_delegate->OnHostKeyEvent(
-          static_cast<ui::KeyEvent*>(event));
-    } else if (event->IsMouseEvent()) {
-      root_window_host_delegate->OnHostMouseEvent(
-          static_cast<ui::MouseEvent*>(event));
-    } else if (event->IsTouchEvent()) {
-      root_window_host_delegate->OnHostTouchEvent(
-          static_cast<ui::TouchEvent*>(event));
-    } else if (event->IsScrollEvent()) {
-      root_window_host_delegate->OnHostScrollEvent(
-          static_cast<ui::ScrollEvent*>(event));
-    } else {
-      NOTREACHED() << "Invalid event type";
-    }
+    ui::EventDispatchDetails details = current_root_window_->OnEventFromSource(
+        static_cast<ui::KeyEvent*>(event));
+    CHECK(!details.dispatcher_destroyed);
   }
 }
 
