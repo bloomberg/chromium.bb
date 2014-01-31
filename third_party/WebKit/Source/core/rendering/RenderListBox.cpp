@@ -660,7 +660,12 @@ void RenderListBox::scrollTo(int newOffset)
         return;
 
     m_indexOffset = newOffset;
-    repaint();
+
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout())
+        setShouldDoFullRepaintAfterLayout(true);
+    else
+        repaint();
+
     node()->document().enqueueScrollEventForNode(node());
 }
 
@@ -757,7 +762,22 @@ void RenderListBox::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect&
         scrollRect.move(borderLeft(), borderTop());
     else
         scrollRect.move(width() - borderRight() - scrollbar->width(), borderTop());
-    repaintRectangle(scrollRect);
+
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && frameView()->isInPerformLayout()) {
+        m_verticalBarDamage = scrollRect;
+        m_hasVerticalBarDamage = true;
+    } else {
+        repaintRectangle(scrollRect);
+    }
+}
+
+void RenderListBox::repaintScrollbarIfNeeded()
+{
+    if (!hasVerticalBarDamage())
+        return;
+    repaintRectangle(verticalBarDamage());
+
+    resetScrollbarDamage();
 }
 
 IntRect RenderListBox::convertFromScrollbarToContainingView(const Scrollbar* scrollbar, const IntRect& scrollbarRect) const

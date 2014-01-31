@@ -192,9 +192,27 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
         scrollRect.move(verticalScrollbarStart(0, m_box->width()), m_box->borderTop());
     else
         scrollRect.move(horizontalScrollbarStart(0), m_box->height() - m_box->borderBottom() - scrollbar->height());
+
+    if (scrollRect.isEmpty())
+        return;
+
     LayoutRect repaintRect = scrollRect;
     m_box->flipForWritingMode(repaintRect);
-    m_box->repaintRectangle(repaintRect);
+
+    IntRect intRect = pixelSnappedIntRect(repaintRect);
+
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && m_box->frameView()->isInPerformLayout()) {
+        if (scrollbar == m_vBar.get()) {
+            m_verticalBarDamage = intRect;
+            m_hasVerticalBarDamage = true;
+        } else {
+            m_horizontalBarDamage = intRect;
+            m_hasHorizontalBarDamage = true;
+        }
+
+    } else {
+        m_box->repaintRectangle(intRect);
+    }
 }
 
 void RenderLayerScrollableArea::invalidateScrollCornerRect(const IntRect& rect)

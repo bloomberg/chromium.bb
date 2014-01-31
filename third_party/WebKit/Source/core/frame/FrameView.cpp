@@ -59,6 +59,7 @@
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -1079,7 +1080,7 @@ void FrameView::layout(bool allowSubtree)
 #endif
 
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
-    // however m_inLayout is not set for most of this function, so none of our RELEASE_ASSERTS
+    // however m_inPerformLayout is not set for most of this function, so none of our RELEASE_ASSERTS
     // in Frame/Page will fire. One of the post-layout tasks is disconnecting the Frame from
     // the page in fast/frames/crash-remove-iframe-during-object-beforeload-2.html
     // necessitating this check here.
@@ -1119,15 +1120,41 @@ void FrameView::repaintTree(RenderObject* root)
                 }
 
             } else {
-                didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(), renderer->shouldDoFullRepaintAfterLayout(),
-                    oldRepaintRect, oldOutlineRect, &newRepaintRect, &newOutlineRect);
+                didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(),
+                    renderer->shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldOutlineRect,
+                    &newRepaintRect, &newOutlineRect);
             }
         }
+
         if (!didFullRepaint && renderer->shouldRepaintOverflowIfNeeded())
             renderer->repaintOverflow();
+
+        // Repaint any scrollbars if there is a scrollable area for this renderer.
+        if (renderer->enclosingLayer()) {
+            if (RenderLayerScrollableArea* area = renderer->enclosingLayer()->scrollableArea()) {
+                if (area->hasVerticalBarDamage())
+                    renderer->repaintRectangle(area->verticalBarDamage());
+                if (area->hasHorizontalBarDamage())
+                    renderer->repaintRectangle(area->horizontalBarDamage());
+                area->resetScrollbarDamage();
+            }
+        }
+        // The list box has a verticalScrollbar we may need to repaint.
+        if (renderer->isListBox()) {
+            RenderListBox* listBox = static_cast<RenderListBox*>(renderer);
+            listBox->repaintScrollbarIfNeeded();
+        }
+
         renderer->clearRepaintRects();
     }
     renderView()->setOldMaximalOutlineSize(0);
+
+    // Repaint the frameviews scrollbars if needed
+    if (hasVerticalBarDamage())
+        invalidateRect(verticalBarDamage());
+    if (hasHorizontalBarDamage())
+        invalidateRect(horizontalBarDamage());
+    resetScrollbarDamage();
 }
 
 void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
@@ -1153,7 +1180,6 @@ void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
         }
     }
 }
-
 
 RenderBox* FrameView::embeddedContentBox() const
 {
@@ -2314,7 +2340,18 @@ void FrameView::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rec
     // Add in our offset within the FrameView.
     IntRect dirtyRect = rect;
     dirtyRect.moveBy(scrollbar->location());
-    invalidateRect(dirtyRect);
+
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && m_inPerformLayout) {
+        if (scrollbar == verticalScrollbar()) {
+            m_verticalBarDamage = dirtyRect;
+            m_hasVerticalBarDamage = true;
+        } else {
+            m_horizontalBarDamage = dirtyRect;
+            m_hasHorizontalBarDamage = true;
+        }
+    } else {
+        invalidateRect(dirtyRect);
+    }
 }
 
 void FrameView::getTickmarks(Vector<IntRect>& tickmarks) const

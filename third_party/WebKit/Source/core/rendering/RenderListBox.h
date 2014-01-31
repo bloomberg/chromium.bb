@@ -57,6 +57,8 @@ public:
 
     int size() const;
 
+    void repaintScrollbarIfNeeded();
+
 private:
     HTMLSelectElement* selectElement() const;
 

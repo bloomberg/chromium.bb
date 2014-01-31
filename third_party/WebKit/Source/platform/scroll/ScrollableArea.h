@@ -191,6 +191,27 @@ public:
     int maximumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? maximumScrollPosition().x() : maximumScrollPosition().y(); }
     int clampScrollPosition(ScrollbarOrientation orientation, int pos)  { return std::max(std::min(pos, maximumScrollPosition(orientation)), minimumScrollPosition(orientation)); }
 
+    bool hasVerticalBarDamage() const { return m_hasVerticalBarDamage; }
+    bool hasHorizontalBarDamage() const { return m_hasHorizontalBarDamage; }
+
+    const IntRect& verticalBarDamage() const
+    {
+        ASSERT(m_hasVerticalBarDamage);
+        return m_verticalBarDamage;
+    }
+
+    const IntRect& horizontalBarDamage() const
+    {
+        ASSERT(m_hasHorizontalBarDamage);
+        return m_horizontalBarDamage;
+    }
+
+    void resetScrollbarDamage()
+    {
+        m_hasVerticalBarDamage = false;
+        m_hasHorizontalBarDamage = false;
+    }
+
 protected:
     ScrollableArea();
     virtual ~ScrollableArea();
@@ -209,6 +230,13 @@ protected:
     bool hasLayerForHorizontalScrollbar() const;
     bool hasLayerForVerticalScrollbar() const;
     bool hasLayerForScrollCorner() const;
+
+    // For repaint after layout, stores the damage to be repainted for the
+    // scrollbars.
+    unsigned m_hasHorizontalBarDamage : 1;
+    unsigned m_hasVerticalBarDamage : 1;
+    IntRect m_horizontalBarDamage;
+    IntRect m_verticalBarDamage;
 
 private:
     void scrollPositionChanged(const IntPoint&);
