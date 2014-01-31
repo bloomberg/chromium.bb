@@ -2019,19 +2019,15 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 		return -1;
 	}
 
-	seat->keyboard = keyboard;
-	seat->keyboard_device_count = 1;
-	keyboard->seat = seat;
-
 #ifdef ENABLE_XKBCOMMON
 	if (seat->compositor->use_xkbcommon) {
 		if (keymap != NULL) {
 			keyboard->xkb_info = weston_xkb_info_create(keymap);
 			if (keyboard->xkb_info == NULL)
-				return -1;
+				goto err;
 		} else {
 			if (weston_compositor_build_global_keymap(seat->compositor) < 0)
-				return -1;
+				goto err;
 			keyboard->xkb_info = seat->compositor->xkb_info;
 			keyboard->xkb_info->ref_count++;
 		}
@@ -2039,16 +2035,27 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 		keyboard->xkb_state.state = xkb_state_new(keyboard->xkb_info->keymap);
 		if (keyboard->xkb_state.state == NULL) {
 			weston_log("failed to initialise XKB state\n");
-			return -1;
+			goto err;
 		}
 
 		keyboard->xkb_state.leds = 0;
 	}
 #endif
 
+	seat->keyboard = keyboard;
+	seat->keyboard_device_count = 1;
+	keyboard->seat = seat;
+
 	seat_send_updated_caps(seat);
 
 	return 0;
+
+err:
+	if (keyboard->xkb_info)
+		weston_xkb_info_destroy(keyboard->xkb_info);
+	free(keyboard);
+
+	return -1;
 }
 
 static void
