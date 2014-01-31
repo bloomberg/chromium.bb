@@ -724,9 +724,6 @@ const char kEnableQuicHttps[]               = "enable-quic-https";
 // This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 
-// Enables the Quickoffoce/Chrome document viewer rather than the editor.
-const char kEnableQuickofficeViewing[]      = "enable-quickoffice-viewing";
-
 // Enables save password prompt bubble.
 const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 

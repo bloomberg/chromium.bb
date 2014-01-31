@@ -1666,15 +1666,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kHighDPISupport, "1",
                                         switches::kHighDPISupport, "0")
   },
-#if defined(OS_CHROMEOS)
-  {
-    "enable-quickoffice-viewing",
-    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_VIEWING_NAME,
-    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_VIEWING_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableQuickofficeViewing),
-  },
-#endif
   {
     "enable-web-midi",
     IDS_FLAGS_ENABLE_WEB_MIDI_NAME,
