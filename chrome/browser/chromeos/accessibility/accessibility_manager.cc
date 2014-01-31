@@ -795,6 +795,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   high_contrast_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
+  virtual_keyboard_pref_handler_.HandleProfileChanged(profile_, profile);
 
   if (profile && spoken_feedback_enabled_)
     SetUpPreLoadChromeVox(profile);
