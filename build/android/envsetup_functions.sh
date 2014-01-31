@@ -55,8 +55,7 @@ common_vars_defines() {
 
   common_check_toolchain
 
-  # Add Android SDK/NDK tools to system path.
-  export PATH=$PATH:${ANDROID_NDK_ROOT}
+  # Add Android SDK tools to system path.
   export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
   export PATH=$PATH:${ANDROID_SDK_ROOT}/build-tools/\
