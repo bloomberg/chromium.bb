@@ -11,31 +11,32 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "base/time/default_clock.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/engine/mcs_client.h"
-#include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/gcm_client.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "net/base/net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace base {
+class Clock;
 class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
 
 namespace net {
 class HttpNetworkSession;
-}
+}  // namespace net
 
 namespace gcm {
 
 class CheckinRequest;
 class ConnectionFactory;
 class GCMClientImplTest;
+class RegistrationRequest;
 class UserList;
 
 // Implements the GCM Client. It is used to coordinate MCS Client (communication
@@ -216,6 +217,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   // RegistrationRequests.
   PendingRegistrations pending_registrations_;
   STLValueDeleter<PendingRegistrations> pending_registrations_deleter_;
+
+  // Factory for creating references in callbacks.
+  base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientImpl);
 };

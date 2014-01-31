@@ -10,12 +10,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/default_clock.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/checkin_request.h"
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/mcs_client.h"
+#include "google_apis/gcm/engine/registration_request.h"
 #include "google_apis/gcm/engine/user_list.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
@@ -98,7 +100,8 @@ GCMClientImpl::GCMClientImpl()
       clock_(new base::DefaultClock()),
       url_request_context_getter_(NULL),
       pending_checkins_deleter_(&pending_checkins_),
-      pending_registrations_deleter_(&pending_registrations_) {
+      pending_registrations_deleter_(&pending_registrations_),
+      weak_ptr_factory_(this) {
 }
 
 GCMClientImpl::~GCMClientImpl() {
@@ -118,7 +121,7 @@ void GCMClientImpl::Initialize(
 
   gcm_store_.reset(new GCMStoreImpl(false, path, blocking_task_runner));
   gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
-                              base::Unretained(this)));
+                              weak_ptr_factory_.GetWeakPtr()));
   user_list_.reset(new UserList(gcm_store_.get()));
 
   // |mcs_client_| might already be set for testing at this point. No need to
@@ -165,10 +168,11 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
 void GCMClientImpl::InitializeMCSClient(
     scoped_ptr<GCMStore::LoadResult> result) {
   mcs_client_->Initialize(
-      base::Bind(&GCMClientImpl::OnMCSError, base::Unretained(this)),
+      base::Bind(&GCMClientImpl::OnMCSError, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&GCMClientImpl::OnMessageReceivedFromMCS,
-                 base::Unretained(this)),
-      base::Bind(&GCMClientImpl::OnMessageSentToMCS, base::Unretained(this)),
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&GCMClientImpl::OnMessageSentToMCS,
+                 weak_ptr_factory_.GetWeakPtr()),
       result.Pass());
 }
 
@@ -181,7 +185,7 @@ void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(
   gcm_store_->SetDeviceCredentials(
       checkin_info.android_id, checkin_info.secret,
       base::Bind(&GCMClientImpl::SetDeviceCredentialsCallback,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   OnReady();
 }
@@ -217,8 +221,7 @@ void GCMClientImpl::StartCheckin(int64 user_serial_number,
   CheckinRequest* checkin_request =
       new CheckinRequest(
           base::Bind(&GCMClientImpl::OnCheckinCompleted,
-                     // GCMClientImpl owns and outlives CheckinRequests.
-                     base::Unretained(this),
+                     weak_ptr_factory_.GetWeakPtr(),
                      user_serial_number),
           chrome_build_proto_,
           user_serial_number,
@@ -293,7 +296,8 @@ void GCMClientImpl::SetUserDelegate(const std::string& username,
   user_list_->SetDelegate(
       username,
       delegate,
-      base::Bind(&GCMClientImpl::SetDelegateCompleted, base::Unretained(this)));
+      base::Bind(&GCMClientImpl::SetDelegateCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GCMClientImpl::SetDelegateCompleted(const std::string& username,
@@ -338,9 +342,7 @@ void GCMClientImpl::Register(const std::string& username,
   RegistrationRequest* registration_request =
       new RegistrationRequest(request_info,
                               base::Bind(&GCMClientImpl::OnRegisterCompleted,
-                                         // GCMClientImpl owns and outlives
-                                         // RegistrationRequests.
-                                         base::Unretained(this),
+                                         weak_ptr_factory_.GetWeakPtr(),
                                          registration_key),
                               url_request_context_getter_);
   pending_registrations_[registration_key] = registration_request;
