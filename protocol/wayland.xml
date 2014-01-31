@@ -46,7 +46,7 @@
 	compositor after the callback is fired and as such the client must not
 	attempt to use it after that point.
 
-	The data passed in the callback is the event serial.
+	The callback_data passed in the callback is the event serial.
       </description>
       <arg name="callback" type="new_id" interface="wl_callback"/>
     </request>
@@ -172,7 +172,7 @@
       <description summary="done event">
        Notify the client when the related request is done.
       </description>
-      <arg name="data" type="uint" summary="request-specific data for the wl_callback"/>
+      <arg name="callback_data" type="uint" summary="request-specific data for the wl_callback"/>
     </event>
   </interface>
 
@@ -1079,7 +1079,8 @@
 	compositor after the callback is fired and as such the client must not
 	attempt to use it after that point.
 
-	The data passed in the callback is the current time, in milliseconds.
+	The callback_data passed in the callback is the current time, in
+	milliseconds.
       </description>
 
       <arg name="callback" type="new_id" interface="wl_callback"/>
