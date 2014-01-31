@@ -204,7 +204,6 @@ void GCMClientImpl::StartMCSLogin() {
   DCHECK(device_checkin_info_.IsValid());
   std::vector<int64> user_serial_numbers =
       user_list_->GetAllActiveUserSerialNumbers();
-  user_serial_numbers.push_back(1LL);
   mcs_client_->Login(device_checkin_info_.android_id,
                      device_checkin_info_.secret,
                      user_serial_numbers);
