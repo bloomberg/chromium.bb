@@ -424,6 +424,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       can_compose_inline_(true),
       allow_overlapping_views_(false),
       use_core_animation_(false),
+      pending_latency_info_delay_(0),
+      pending_latency_info_delay_weak_ptr_factory_(this),
       is_loading_(false),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
@@ -944,8 +946,7 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
     const std::vector<ui::LatencyInfo>& latency_info) {
   GotSoftwareFrame();
 
-  for (size_t i = 0; i < latency_info.size(); i++)
-    software_latency_info_.push_back(latency_info[i]);
+  AddPendingLatencyInfo(latency_info);
 
   if (render_widget_host_->is_hidden())
     return;
@@ -1308,6 +1309,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   if (render_widget_host_->is_hidden())
     return;
 
+  AddPendingLatencyInfo(latency_info);
+
   NSWindow* window = [cocoa_view_ window];
   if (window_number() <= 0) {
     // There is no window to present so capturing during present won't work.
@@ -1321,7 +1324,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
         CGLSetCurrentContext(compositing_iosurface_context_->cgl_context());
         compositing_iosurface_->SetIOSurfaceWithContextCurrent(
             compositing_iosurface_context_, surface_handle, size,
-            surface_scale_factor, latency_info);
+            surface_scale_factor);
         compositing_iosurface_->CopyToVideoFrame(
             gfx::Rect(size), frame,
             base::Bind(callback, present_time));
@@ -1363,7 +1366,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   CGLSetCurrentContext(compositing_iosurface_context_->cgl_context());
   if (!compositing_iosurface_->SetIOSurfaceWithContextCurrent(
           compositing_iosurface_context_, surface_handle, size,
-          surface_scale_factor, latency_info)) {
+          surface_scale_factor)) {
     LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
     GotAcceleratedCompositingError();
     return;
@@ -1475,6 +1478,7 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
     }
   }
 
+  SendPendingLatencyInfoToHost();
   return true;
 }
 
@@ -1734,9 +1738,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
       software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
       render_widget_host_->GetProcess()->GetID(),
       ack);
-  for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
-    software_latency_info_.push_back(frame->metadata.latency_info[i]);
-  }
+  AddPendingLatencyInfo(frame->metadata.latency_info);
   software_frame_manager_->SwapToNewFrameComplete(
       !render_widget_host_->is_hidden());
 
@@ -1984,13 +1986,63 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
                                              scale_factor()));
 }
 
-void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
-  for (size_t i = 0; i < software_latency_info_.size(); i++) {
-    software_latency_info_[i].AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-    render_widget_host_->FrameSwapped(software_latency_info_[i]);
+void RenderWidgetHostViewMac::AddPendingLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  // If a screenshot is being taken when using CoreAnimation, send a few extra
+  // calls to setNeedsDisplay and wait for their resulting display calls,
+  // before reporting that the frame has reached the screen.
+  if (use_core_animation_) {
+    bool should_defer = false;
+    for (size_t i = 0; i < latency_info.size(); i++) {
+      if (latency_info[i].FindLatency(
+              ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+              render_widget_host_->GetLatencyComponentId(),
+              NULL)) {
+        should_defer = true;
+      }
+    }
+    if (should_defer) {
+      // Multiple pending screenshot requests will work, but if every frame
+      // requests a screenshot, then the delay will never expire. Assert this
+      // here to avoid this.
+      CHECK_EQ(pending_latency_info_delay_, 0u);
+      // Wait a fixed number of frames (calls to CALayer::display) before
+      // claiming that the screenshot has reached the screen. This number
+      // comes from taking the first number where tests didn't fail (six),
+      // and doubling it.
+      const uint32 kScreenshotLatencyDelayInFrames = 12;
+      pending_latency_info_delay_ = kScreenshotLatencyDelayInFrames;
+      TickPendingLatencyInfoDelay();
+    }
   }
-  software_latency_info_.clear();
+
+  for (size_t i = 0; i < latency_info.size(); i++) {
+    pending_latency_info_.push_back(latency_info[i]);
+  }
+}
+
+void RenderWidgetHostViewMac::SendPendingLatencyInfoToHost() {
+  if (pending_latency_info_delay_) {
+    pending_latency_info_delay_ -= 1;
+    return;
+  }
+  pending_latency_info_delay_weak_ptr_factory_.InvalidateWeakPtrs();
+
+  for (size_t i = 0; i < pending_latency_info_.size(); i++) {
+    pending_latency_info_[i].AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+    render_widget_host_->FrameSwapped(pending_latency_info_[i]);
+  }
+  pending_latency_info_.clear();
+}
+
+void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
+  // Keep calling setNeedsDisplay in a loop until enough display calls come in.
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&RenderWidgetHostViewMac::TickPendingLatencyInfoDelay,
+                 pending_latency_info_delay_weak_ptr_factory_.GetWeakPtr()));
+  [software_layer_ setNeedsDisplay];
+  [compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 }  // namespace content
@@ -2942,7 +2994,7 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
       }
     }
 
-    renderWidgetHostView_->SendSoftwareLatencyInfoToHost();
+    renderWidgetHostView_->SendPendingLatencyInfoToHost();
 
     // Fill the remaining portion of the damagedRect with white
     [self fillBottomRightRemainderOfRect:bitmapRect

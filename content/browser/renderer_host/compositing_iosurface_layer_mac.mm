@@ -157,7 +157,10 @@
         window_scale_factor,
         false)) {
     renderWidgetHostView_->GotAcceleratedCompositingError();
+    return;
   }
+
+  renderWidgetHostView_->SendPendingLatencyInfoToHost();
 }
 
 @end

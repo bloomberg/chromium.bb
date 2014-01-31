@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/video_frame.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -54,8 +53,7 @@ class CompositingIOSurfaceMac {
       scoped_refptr<CompositingIOSurfaceContext> current_context,
       uint64 io_surface_handle,
       const gfx::Size& size,
-      float scale_factor,
-      const std::vector<ui::LatencyInfo>& latency_info);
+      float scale_factor);
 
   // Get the CGL renderer ID currently associated with this context.
   int GetRendererID();
@@ -345,8 +343,6 @@ class CompositingIOSurfaceMac {
 
   // Error saved by GetAndSaveGLError
   GLint gl_error_;
-
-  std::vector<ui::LatencyInfo> latency_info_;
 };
 
 }  // namespace content

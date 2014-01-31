@@ -331,17 +331,13 @@ bool CompositingIOSurfaceMac::SetIOSurfaceWithContextCurrent(
     scoped_refptr<CompositingIOSurfaceContext> current_context,
     uint64 io_surface_handle,
     const gfx::Size& size,
-    float scale_factor,
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    float scale_factor) {
   pixel_io_surface_size_ = size;
   scale_factor_ = scale_factor;
   dip_io_surface_size_ = gfx::ToFlooredSize(
       gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor_));
   bool result = MapIOSurfaceToTextureWithContextCurrent(
       current_context, io_surface_handle);
-  for (size_t i = 0; i < latency_info.size(); i++) {
-    latency_info_.push_back(latency_info[i]);
-  }
   return result;
 }
 
@@ -487,13 +483,6 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     LOG(ERROR) << "GL error in DrawIOSurface: " << gl_error_;
     result = false;
   }
-
-  for (size_t i = 0; i < latency_info_.size(); i++) {
-    latency_info_[i].AddLatencyNumber(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-  }
-  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info_);
-  latency_info_.clear();
 
   // Try to finish previous copy requests after flush to get better pipelining.
   CheckIfAllCopiesAreFinished(false);

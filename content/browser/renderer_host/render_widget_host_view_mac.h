@@ -444,7 +444,16 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Whether to use the CoreAnimation path to draw content.
   bool use_core_animation_;
 
-  std::vector<ui::LatencyInfo> software_latency_info_;
+  // Latency info to send back when the next frame appears on the
+  // screen.
+  std::vector<ui::LatencyInfo> pending_latency_info_;
+
+  // When taking a screenshot when using CoreAnimation, add a delay of
+  // a few frames to ensure that the contents have reached the screen
+  // before reporting latency info.
+  uint32 pending_latency_info_delay_;
+  base::WeakPtrFactory<RenderWidgetHostViewMac>
+      pending_latency_info_delay_weak_ptr_factory_;
 
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;
@@ -464,7 +473,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   float scale_factor() const;
 
-  void SendSoftwareLatencyInfoToHost();
+  void AddPendingLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info);
+  void SendPendingLatencyInfoToHost();
+  void TickPendingLatencyInfoDelay();
 
  private:
   friend class RenderWidgetHostView;
