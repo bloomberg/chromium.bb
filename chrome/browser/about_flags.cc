@@ -1294,7 +1294,7 @@ const Experiment kExperiments[] = {
     "password-autofill-public-suffix-domain-matching",
     IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_NAME,
     IDS_FLAGS_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_DESCRIPTION,
-    kOsAndroid | kOsWin | kOsLinux,
+    kOsAll,
     ENABLE_DISABLE_VALUE_TYPE(
         switches::kEnablePasswordAutofillPublicSuffixDomainMatching,
         switches::kDisablePasswordAutofillPublicSuffixDomainMatching)

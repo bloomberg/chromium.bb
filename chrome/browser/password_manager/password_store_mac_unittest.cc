@@ -23,8 +23,11 @@ using base::ASCIIToUTF16;
 using base::WideToUTF16;
 using content::BrowserThread;
 using crypto::MockAppleKeychain;
+using internal_keychain_helpers::FormsMatchForMerge;
+using internal_keychain_helpers::STRICT_FORM_MATCH;
 using testing::_;
 using testing::DoAll;
+using testing::Invoke;
 using testing::WithArg;
 
 namespace {
@@ -33,6 +36,15 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD1(OnGetPasswordStoreResults,
                void(const std::vector<autofill::PasswordForm*>&));
+
+  void CopyElements(const std::vector<autofill::PasswordForm*>& forms) {
+    last_result.clear();
+    for (size_t i = 0; i < forms.size(); ++i) {
+      last_result.push_back(*forms[i]);
+    }
+  }
+
+  std::vector<PasswordForm> last_result;
 };
 
 ACTION(STLDeleteElements0) {
@@ -380,7 +392,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
 
     // Check matches treating the form as a fill target.
     std::vector<PasswordForm*> matching_items =
-        keychain_adapter.PasswordsFillingForm(*query_form);
+        keychain_adapter.PasswordsFillingForm(query_form->signon_realm,
+                                              query_form->scheme);
     EXPECT_EQ(test_data[i].expected_fill_matches, matching_items.size());
     STLDeleteElements(&matching_items);
 
@@ -406,7 +419,8 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
 
     // None of the pre-seeded items are owned by us, so none should match an
     // owned-passwords-only search.
-    matching_items = owned_keychain_adapter.PasswordsFillingForm(*query_form);
+    matching_items = owned_keychain_adapter.PasswordsFillingForm(
+        query_form->signon_realm, query_form->scheme);
     EXPECT_EQ(0U, matching_items.size());
     STLDeleteElements(&matching_items);
   }
@@ -632,39 +646,39 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMatch) {
     different_form.ssl_valid = true;
     different_form.preferred = true;
     different_form.date_created = base::Time::Now();
-    EXPECT_TRUE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                              different_form));
+    EXPECT_TRUE(
+        FormsMatchForMerge(base_form, different_form, STRICT_FORM_MATCH));
 
     // Check that path differences don't prevent a match.
     base_form.origin = GURL("http://some.domain.com/other_page.html");
-    EXPECT_TRUE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                              different_form));
+    EXPECT_TRUE(
+        FormsMatchForMerge(base_form, different_form, STRICT_FORM_MATCH));
   }
 
   // Check that any one primary key changing is enough to prevent matching.
   {
     PasswordForm different_form(base_form);
     different_form.scheme = PasswordForm::SCHEME_DIGEST;
-    EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form));
+    EXPECT_FALSE(
+        FormsMatchForMerge(base_form, different_form, STRICT_FORM_MATCH));
   }
   {
     PasswordForm different_form(base_form);
     different_form.signon_realm = std::string("http://some.domain.com:8080/");
-    EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form));
+    EXPECT_FALSE(
+        FormsMatchForMerge(base_form, different_form, STRICT_FORM_MATCH));
   }
   {
     PasswordForm different_form(base_form);
     different_form.username_value = ASCIIToUTF16("john.doe");
-    EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form));
+    EXPECT_FALSE(
+        FormsMatchForMerge(base_form, different_form, STRICT_FORM_MATCH));
   }
   {
     PasswordForm different_form(base_form);
     different_form.blacklisted_by_user = true;
-    EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form));
+    EXPECT_FALSE(
+        FormsMatchForMerge(base_form, different_form, STRICT_FORM_MATCH));
   }
 
   // Blacklist forms should *never* match for merging, even when identical
@@ -673,7 +687,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMatch) {
     PasswordForm form_a(base_form);
     form_a.blacklisted_by_user = true;
     PasswordForm form_b(form_a);
-    EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(form_a, form_b));
+    EXPECT_FALSE(FormsMatchForMerge(form_a, form_b, STRICT_FORM_MATCH));
   }
 }
 
@@ -1035,6 +1049,17 @@ class PasswordStoreMacTest : public testing::Test {
     base::MessageLoop::current()->Run();
   }
 
+  void WaitForStoreUpdate() {
+    // Do a store-level query to wait for all the operations above to be done.
+    MockPasswordStoreConsumer consumer;
+    ON_CALL(consumer, OnGetPasswordStoreResults(_))
+        .WillByDefault(QuitUIMessageLoop());
+    EXPECT_CALL(consumer, OnGetPasswordStoreResults(_))
+        .WillOnce(DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
+    store_->GetLogins(PasswordForm(), PasswordStore::ALLOW_PROMPT, &consumer);
+    base::MessageLoop::current()->Run();
+  }
+
  protected:
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -1110,14 +1135,7 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
     store_->UpdateLogin(*form);
   }
 
-  // Do a store-level query to wait for all the operations above to be done.
-  MockPasswordStoreConsumer consumer;
-  ON_CALL(consumer, OnGetPasswordStoreResults(_)).WillByDefault(
-      QuitUIMessageLoop());
-  EXPECT_CALL(consumer, OnGetPasswordStoreResults(_)).WillOnce(
-      DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
-  store_->GetLogins(*joint_form, PasswordStore::ALLOW_PROMPT, &consumer);
-  base::MessageLoop::current()->Run();
+  WaitForStoreUpdate();
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(updates); ++i) {
@@ -1125,7 +1143,8 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
         CreatePasswordFormFromData(updates[i].form_data));
 
     std::vector<PasswordForm*> matching_items =
-        keychain_adapter.PasswordsFillingForm(*query_form);
+        keychain_adapter.PasswordsFillingForm(query_form->signon_realm,
+                                              query_form->scheme);
     if (updates[i].password) {
       EXPECT_GT(matching_items.size(), 0U) << "iteration " << i;
       if (matching_items.size() >= 1)
@@ -1141,4 +1160,71 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
         << "iteration " << i;
     STLDeleteElements(&matching_items);
   }
+}
+
+TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
+  // Tests that association between the keychain and login database parts of a
+  // password added by fuzzy (PSL) matching works.
+  // 1. Add a password for www.facebook.com
+  // 2. Get a password for m.facebook.com. This fuzzy matches and returns the
+  //    www.facebook.com password.
+  // 3. Add the returned password for m.facebook.com.
+  // 4. Remove both passwords.
+  //    -> check: that both are gone from the login DB and the keychain
+  // This test should in particular ensure that we don't keep passwords in the
+  // keychain just before we think we still have other (fuzzy-)matching entries
+  // for them in the login database. (For example, here if we deleted the
+  // www.facebook.com password from the login database, we should not be blocked
+  // from deleting it from the keystore just becaus the m.facebook.com password
+  // fuzzy-matches the www.facebook.com one.)
+
+  // 1. Add a password for www.facebook.com
+  PasswordFormData www_form_data = {
+    PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+    "http://www.facebook.com/index.html", "login",
+    L"username", L"password", L"submit", L"joe_user", L"sekrit", true, false, 1
+  };
+  scoped_ptr<PasswordForm> www_form(CreatePasswordFormFromData(www_form_data));
+  login_db_->AddLogin(*www_form);
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
+  owned_keychain_adapter.AddPassword(*www_form);
+
+  // 2. Get a password for m.facebook.com.
+  PasswordForm m_form(*www_form);
+  m_form.signon_realm = "http://m.facebook.com";
+  m_form.origin = GURL("http://m.facebook.com/index.html");
+  MockPasswordStoreConsumer consumer;
+  ON_CALL(consumer, OnGetPasswordStoreResults(_))
+      .WillByDefault(QuitUIMessageLoop());
+  EXPECT_CALL(consumer, OnGetPasswordStoreResults(_)).WillOnce(DoAll(
+      WithArg<0>(Invoke(&consumer, &MockPasswordStoreConsumer::CopyElements)),
+      WithArg<0>(STLDeleteElements0()),
+      QuitUIMessageLoop()));
+  store_->GetLogins(m_form, PasswordStore::ALLOW_PROMPT, &consumer);
+  base::MessageLoop::current()->Run();
+  EXPECT_EQ(1u, consumer.last_result.size());
+
+  // 3. Add the returned password for m.facebook.com.
+  login_db_->AddLogin(consumer.last_result[0]);
+  owned_keychain_adapter.AddPassword(m_form);
+
+  // 4. Remove both passwords.
+  store_->RemoveLogin(*www_form);
+  store_->RemoveLogin(m_form);
+  WaitForStoreUpdate();
+
+  std::vector<PasswordForm*> matching_items;
+  // No trace of www.facebook.com.
+  matching_items = owned_keychain_adapter.PasswordsFillingForm(
+      www_form->signon_realm, www_form->scheme);
+  EXPECT_EQ(0u, matching_items.size());
+  login_db_->GetLogins(*www_form, &matching_items);
+  EXPECT_EQ(0u, matching_items.size());
+  // No trace of m.facebook.com.
+  matching_items = owned_keychain_adapter.PasswordsFillingForm(
+      m_form.signon_realm, m_form.scheme);
+  EXPECT_EQ(0u, matching_items.size());
+  login_db_->GetLogins(m_form, &matching_items);
+  EXPECT_EQ(0u, matching_items.size());
 }

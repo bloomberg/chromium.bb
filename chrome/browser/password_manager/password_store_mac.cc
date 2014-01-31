@@ -358,18 +358,23 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
 }
 
 bool FormsMatchForMerge(const PasswordForm& form_a,
-                        const PasswordForm& form_b) {
+                        const PasswordForm& form_b,
+                        FormMatchStrictness strictness) {
   // We never merge blacklist entries between our store and the keychain.
   if (form_a.blacklisted_by_user || form_b.blacklisted_by_user) {
     return false;
   }
-  return form_a.scheme == form_b.scheme &&
-         form_a.signon_realm == form_b.signon_realm &&
+  bool equal_realm = form_a.signon_realm == form_b.signon_realm;
+  if (strictness == FUZZY_FORM_MATCH) {
+    equal_realm |= (!form_a.original_signon_realm.empty()) &&
+                   form_a.original_signon_realm == form_b.signon_realm;
+  }
+  return form_a.scheme == form_b.scheme && equal_realm &&
          form_a.username_value == form_b.username_value;
 }
 
-// Returns an the best match for |form| from |keychain_forms|, or NULL if there
-// is no suitable match.
+// Returns an the best match for |base_form| from |keychain_forms|, or NULL if
+// there is no suitable match.
 PasswordForm* BestKeychainFormForForm(
     const PasswordForm& base_form,
     const std::vector<PasswordForm*>* keychain_forms) {
@@ -379,7 +384,7 @@ PasswordForm* BestKeychainFormForForm(
     // TODO(stuartmorgan): We should really be scoring path matches and picking
     // the best, rather than just checking exact-or-not (although in practice
     // keychain items with paths probably came from us).
-    if (FormsMatchForMerge(base_form, *(*i))) {
+    if (FormsMatchForMerge(base_form, *(*i), FUZZY_FORM_MATCH)) {
       if (base_form.origin == (*i)->origin) {
         return *i;
       } else if (!partial_match) {
@@ -556,7 +561,8 @@ bool FormIsValidAndMatchesOtherForm(const PasswordForm& query_form,
                                     &is_secure, &security_domain)) {
     return false;
   }
-  return internal_keychain_helpers::FormsMatchForMerge(query_form, other_form);
+  return internal_keychain_helpers::FormsMatchForMerge(
+      query_form, other_form, STRICT_FORM_MATCH);
 }
 
 std::vector<PasswordForm*> ExtractPasswordsMergeableWithForm(
@@ -592,12 +598,11 @@ MacKeychainPasswordFormAdapter::MacKeychainPasswordFormAdapter(
     : keychain_(keychain), finds_only_owned_(false) {
 }
 
-std::vector<PasswordForm*>
-    MacKeychainPasswordFormAdapter::PasswordsFillingForm(
-        const PasswordForm& query_form) {
+std::vector<PasswordForm*> MacKeychainPasswordFormAdapter::PasswordsFillingForm(
+    const std::string& signon_realm,
+    PasswordForm::Scheme scheme) {
   std::vector<SecKeychainItemRef> keychain_items =
-      MatchingKeychainItems(query_form.signon_realm, query_form.scheme,
-                            NULL, NULL);
+      MatchingKeychainItems(signon_realm, scheme, NULL, NULL);
 
   return ConvertKeychainItemsToForms(&keychain_items);
 }
@@ -982,12 +987,33 @@ void PasswordStoreMac::GetLoginsImpl(
   chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
       prompt_policy == ALLOW_PROMPT);
 
-  MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
-  std::vector<PasswordForm*> keychain_forms =
-      keychain_adapter.PasswordsFillingForm(form);
-
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetLogins(form, &database_forms);
+
+  // Let's gather all signon realms we want to match with keychain entries.
+  std::set<std::string> realm_set;
+  realm_set.insert(form.signon_realm);
+  for (std::vector<PasswordForm*>::const_iterator db_form =
+           database_forms.begin();
+       db_form != database_forms.end();
+       ++db_form) {
+    const std::string& original_singon_realm((*db_form)->original_signon_realm);
+    if (!original_singon_realm.empty()) {
+      realm_set.insert(original_singon_realm);
+      CHECK_EQ(form.scheme, (*db_form)->scheme);
+    }
+  }
+  std::vector<PasswordForm*> keychain_forms;
+  for (std::set<std::string>::const_iterator realm = realm_set.begin();
+       realm != realm_set.end();
+       ++realm) {
+    MacKeychainPasswordFormAdapter keychain_adapter(keychain_.get());
+    std::vector<PasswordForm*> temp_keychain_forms =
+        keychain_adapter.PasswordsFillingForm(*realm, form.scheme);
+    keychain_forms.insert(keychain_forms.end(),
+                          temp_keychain_forms.begin(),
+                          temp_keychain_forms.end());
+  }
 
   std::vector<PasswordForm*> matched_forms;
   internal_keychain_helpers::MergePasswordForms(&keychain_forms,
@@ -1061,7 +1087,11 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
   login_metadata_db_->GetLogins(form, &database_forms);
   for (std::vector<PasswordForm*>::iterator i = database_forms.begin();
        i != database_forms.end(); ++i) {
-    if (internal_keychain_helpers::FormsMatchForMerge(form, **i) &&
+    // Below we filter out forms with non-empty original_signon_realm, because
+    // those signal fuzzy matches, and we are only interested in exact ones.
+    if ((*i)->original_signon_realm.empty() &&
+        internal_keychain_helpers::FormsMatchForMerge(
+            form, **i, internal_keychain_helpers::STRICT_FORM_MATCH) &&
         (*i)->origin == form.origin) {
       has_match = true;
       break;

@@ -27,7 +27,8 @@ class MacKeychainPasswordFormAdapter {
   // Returns PasswordForms for each keychain entry that could be used to fill
   // |form|. Caller is responsible for deleting the returned forms.
   std::vector<autofill::PasswordForm*> PasswordsFillingForm(
-      const autofill::PasswordForm& query_form);
+      const std::string& signon_realm,
+      autofill::PasswordForm::Scheme scheme);
 
   // Returns the PasswordForm for the Keychain entry that matches |form| on all
   // of the fields that uniquely identify a Keychain item, or NULL if there is
@@ -142,10 +143,21 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
                                       autofill::PasswordForm* form,
                                       bool extract_password_data);
 
-// Returns true if the two given forms match based on signon_reaml, scheme, and
-// username_value, and are thus suitable for merging (see MergePasswordForms).
+// Use FormMatchStrictness to configure which forms are considered a match by
+// FormsMatchForMerge:
+enum FormMatchStrictness {
+  STRICT_FORM_MATCH,  // Match only forms with the same scheme, signon realm and
+                      // username value.
+  FUZZY_FORM_MATCH,   // Also match cases where the first form's
+                      // original_signon_realm is nonempty and matches the
+                      // second form's signon_realm.
+};
+
+// Returns true if the two given forms are suitable for merging (see
+// MergePasswordForms).
 bool FormsMatchForMerge(const autofill::PasswordForm& form_a,
-                        const autofill::PasswordForm& form_b);
+                        const autofill::PasswordForm& form_b,
+                        FormMatchStrictness strictness);
 
 // Populates merged_forms by combining the password data from keychain_forms and
 // the metadata from database_forms, removing used entries from the two source
