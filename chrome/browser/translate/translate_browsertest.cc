@@ -10,7 +10,6 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -52,10 +51,6 @@ class TranslateBrowserTest : public InProcessBrowserTest {
                       SSLOptions(SSLOptions::CERT_OK),
                       base::FilePath(kTranslateRoot)),
         infobar_service_(NULL) {}
-
-  virtual void SetUpOnMainThread() OVERRIDE {
-    TranslateManager::SetUseInfobar(true);
-  }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ASSERT_TRUE(https_server_.Start());

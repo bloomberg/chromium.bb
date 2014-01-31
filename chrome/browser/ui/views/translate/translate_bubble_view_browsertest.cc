@@ -21,6 +21,9 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
   TranslateBubbleViewBrowserTest() {}
   virtual ~TranslateBubbleViewBrowserTest() {}
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kEnableTranslateNewUX);
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleViewBrowserTest);
 };

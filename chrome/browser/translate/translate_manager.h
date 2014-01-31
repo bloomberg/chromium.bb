@@ -94,10 +94,6 @@ class TranslateManager : public content::NotificationObserver {
   // Returns true if the new translate bubble is enabled.
   static bool IsTranslateBubbleEnabled();
 
-  // Sets whether of not the infobar UI is used. This method is intented to be
-  // used only for tests.
-  static void SetUseInfobar(bool value);
-
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set
   // or if prefs::kEnableTranslate is set to false.
@@ -208,10 +204,6 @@ class TranslateManager : public content::NotificationObserver {
   void ShowBubble(content::WebContents* web_contents,
                   TranslateBubbleModel::ViewState view_state,
                   TranslateErrors::Type error_type);
-
-  // Whether or not the infobar is used. This is intented to be used
-  // only for testing.
-  static bool use_infobar_;
 
   // Returns the different parameters used to decide whether extra shortcuts
   // are needed.
