@@ -19,6 +19,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/ppp_pdf.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
@@ -116,7 +117,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     : public base::RefCounted<PepperPluginInstanceImpl>,
       public NON_EXPORTED_BASE(PepperPluginInstance),
       public ppapi::PPB_Instance_Shared,
-      public NON_EXPORTED_BASE(cc::TextureLayerClient) {
+      public NON_EXPORTED_BASE(cc::TextureLayerClient),
+      public RenderFrameObserver {
  public:
   // Create and return a PepperPluginInstanceImpl object which supports the most
   // recent version of PPP_Instance possible by querying the given
@@ -506,6 +508,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       cc::TextureMailbox* mailbox,
       scoped_ptr<cc::SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE;
+
+  // RenderFrameObserver
+  virtual void OnDestruct() OVERRIDE;
 
   // Update any transforms that should be applied to the texture layer.
   void UpdateLayerTransform();

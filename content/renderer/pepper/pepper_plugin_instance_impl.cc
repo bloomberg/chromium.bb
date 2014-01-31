@@ -483,7 +483,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     ppapi::PPP_Instance_Combined* instance_interface,
     WebPluginContainer* container,
     const GURL& plugin_url)
-    : render_frame_(render_frame),
+    : RenderFrameObserver(render_frame),
+      render_frame_(render_frame),
       module_(module),
       instance_interface_(instance_interface),
       pp_instance_(0),
@@ -1959,6 +1960,10 @@ bool PepperPluginInstanceImpl::PrepareTextureMailbox(
     return false;
   return bound_graphics_2d_platform_->PrepareTextureMailbox(
       mailbox, release_callback);
+}
+
+void PepperPluginInstanceImpl::OnDestruct() {
+  render_frame_ = NULL;
 }
 
 void PepperPluginInstanceImpl::UpdateLayerTransform() {
