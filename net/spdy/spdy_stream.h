@@ -124,6 +124,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
     //
     // TODO(akalin): Treat headers received after data has been
     // received as a protocol error for non-bidirectional streams.
+    // TODO(jgraettinger): This should be at the semantic (HTTP) rather
+    // than stream layer. Streams shouldn't have a notion of header
+    // completeness. Move to SpdyHttpStream/SpdyWebsocketStream.
     virtual SpdyResponseHeadersStatus OnResponseHeadersUpdated(
         const SpdyHeaderBlock& response_headers) = 0;
 
@@ -430,18 +433,20 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // The implementations of each state of the state machine.
   int DoSendRequestHeaders();
   int DoSendRequestHeadersComplete();
-  int DoReadHeaders();
-  int DoReadHeadersComplete(int result);
   int DoOpen();
 
   // Update the histograms.  Can safely be called repeatedly, but should only
   // be called after the stream has completed.
   void UpdateHistograms();
 
-  // When a server-pushed stream is first created, this function is
-  // posted on the current MessageLoop to replay the data that the
-  // server has already sent.
-  void PushedStreamReplayData();
+  // When a server-push stream is claimed by SetDelegate(), this function is
+  // posted on the current MessageLoop to replay everything the server has sent.
+  // From the perspective of SpdyStream's state machine, headers, data, and
+  // FIN states received prior to the delegate being attached have not yet been
+  // read. While buffered by |pending_recv_data_| it's not until
+  // PushedStreamReplay() is invoked that reads are considered
+  // to have occurred, driving the state machine forward.
+  void PushedStreamReplay();
 
   // Produces the SYN_STREAM frame for the stream. The stream must
   // already be activated.
@@ -493,17 +498,22 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // The transaction should own the delegate.
   SpdyStream::Delegate* delegate_;
 
-  // Whether or not we have more data to send on this stream.
-  SpdySendStatus send_status_;
-
   // The headers for the request to send.
   //
   // TODO(akalin): Hang onto this only until we send it. This
   // necessitates stashing the URL separately.
   scoped_ptr<SpdyHeaderBlock> request_headers_;
 
-  // The data waiting to be sent.
+  // Data waiting to be sent, and the close state of the local endpoint
+  // after the data is fully written.
   scoped_refptr<DrainableIOBuffer> pending_send_data_;
+  SpdySendStatus pending_send_status_;
+
+  // Data waiting to be received, and the close state of the remote endpoint
+  // after the data is fully read. Specifically, data received before the
+  // delegate is attached must be buffered and later replayed. A remote FIN
+  // is represented by a final, zero-length buffer.
+  ScopedVector<SpdyBuffer> pending_recv_data_;
 
   // The time at which the request was made that resulted in this response.
   // For cached responses, this time could be "far" in the past.
@@ -533,9 +543,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // including frame overhead. Note that this does not count headers.
   int send_bytes_;
   int recv_bytes_;
-
-  // Data received before delegate is attached.
-  ScopedVector<SpdyBuffer> pending_buffers_;
 
   std::string domain_bound_private_key_;
   std::string domain_bound_cert_;

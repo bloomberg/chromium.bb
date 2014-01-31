@@ -97,7 +97,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       unacked_recv_window_bytes_(0),
       session_(session),
       delegate_(NULL),
-      send_status_(
+      pending_send_status_(
           (type_ == SPDY_PUSH_STREAM) ?
           NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND),
       request_time_(base::Time::Now()),
@@ -131,11 +131,11 @@ void SpdyStream::SetDelegate(Delegate* delegate) {
     DCHECK(continue_buffering_data_);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&SpdyStream::PushedStreamReplayData, GetWeakPtr()));
+        base::Bind(&SpdyStream::PushedStreamReplay, GetWeakPtr()));
   }
 }
 
-void SpdyStream::PushedStreamReplayData() {
+void SpdyStream::PushedStreamReplay() {
   DCHECK_EQ(type_, SPDY_PUSH_STREAM);
   DCHECK_NE(stream_id_, 0u);
   DCHECK(continue_buffering_data_);
@@ -155,7 +155,7 @@ void SpdyStream::PushedStreamReplayData() {
     // we're waiting for another HEADERS frame, and we had better not
     // have any pending data frames.
     CHECK(weak_this);
-    if (!pending_buffers_.empty()) {
+    if (!pending_recv_data_.empty()) {
       LogStreamError(ERR_SPDY_PROTOCOL_ERROR,
                      "Data received with incomplete headers.");
       session_->CloseActiveStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR);
@@ -169,10 +169,10 @@ void SpdyStream::PushedStreamReplayData() {
 
   response_headers_status_ = RESPONSE_HEADERS_ARE_COMPLETE;
 
-  while (!pending_buffers_.empty()) {
-    // Take ownership of the first element of |pending_buffers_|.
-    scoped_ptr<SpdyBuffer> buffer(pending_buffers_.front());
-    pending_buffers_.weak_erase(pending_buffers_.begin());
+  while (!pending_recv_data_.empty()) {
+    // Take ownership of the first element of |pending_recv_data_|.
+    scoped_ptr<SpdyBuffer> buffer(pending_recv_data_.front());
+    pending_recv_data_.weak_erase(pending_recv_data_.begin());
 
     bool eof = (buffer == NULL);
 
@@ -184,10 +184,10 @@ void SpdyStream::PushedStreamReplayData() {
       return;
 
     if (eof) {
-      DCHECK(pending_buffers_.empty());
+      DCHECK(pending_recv_data_.empty());
       session_->CloseActiveStream(stream_id_, OK);
       DCHECK(!weak_this);
-      // |pending_buffers_| is invalid at this point.
+      // |pending_recv_data_| is invalid at this point.
       break;
     }
   }
@@ -199,7 +199,7 @@ scoped_ptr<SpdyFrame> SpdyStream::ProduceSynStreamFrame() {
   CHECK_GT(stream_id_, 0u);
 
   SpdyControlFlags flags =
-      (send_status_ == NO_MORE_DATA_TO_SEND) ?
+      (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
       CONTROL_FLAG_FIN : CONTROL_FLAG_NONE;
   scoped_ptr<SpdyFrame> frame(session_->CreateSynStream(
       stream_id_, priority_, flags, *request_headers_));
@@ -409,7 +409,8 @@ int SpdyStream::OnInitialResponseHeadersReceived(
       // For a request/response stream, we're ready for the response
       // headers once we've finished sending the request headers and
       // the request body (if we have one).
-      if ((io_state_ < STATE_IDLE) || (send_status_ == MORE_DATA_TO_SEND) ||
+      if ((io_state_ < STATE_IDLE) ||
+          (pending_send_status_ == MORE_DATA_TO_SEND) ||
           pending_send_data_.get()) {
         session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
                               "Response received before request sent");
@@ -419,7 +420,7 @@ int SpdyStream::OnInitialResponseHeadersReceived(
 
     case SPDY_PUSH_STREAM:
       // For a push stream, we're ready immediately.
-      DCHECK_EQ(send_status_, NO_MORE_DATA_TO_SEND);
+      DCHECK_EQ(pending_send_status_, NO_MORE_DATA_TO_SEND);
       DCHECK_EQ(io_state_, STATE_IDLE);
       break;
   }
@@ -461,9 +462,9 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
     // It should be valid for this to happen in the server push case.
     // We'll return received data when delegate gets attached to the stream.
     if (buffer) {
-      pending_buffers_.push_back(buffer.release());
+      pending_recv_data_.push_back(buffer.release());
     } else {
-      pending_buffers_.push_back(NULL);
+      pending_recv_data_.push_back(NULL);
       metrics_.StopStream();
       // Note: we leave the stream open in the session until the stream
       //       is claimed.
@@ -577,12 +578,12 @@ base::WeakPtr<SpdyStream> SpdyStream::GetWeakPtr() {
 int SpdyStream::SendRequestHeaders(scoped_ptr<SpdyHeaderBlock> request_headers,
                                    SpdySendStatus send_status) {
   CHECK_NE(type_, SPDY_PUSH_STREAM);
-  CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
+  CHECK_EQ(pending_send_status_, MORE_DATA_TO_SEND);
   CHECK(!request_headers_);
   CHECK(!pending_send_data_.get());
   CHECK_EQ(io_state_, STATE_NONE);
   request_headers_ = request_headers.Pass();
-  send_status_ = send_status;
+  pending_send_status_ = send_status;
   io_state_ = STATE_SEND_REQUEST_HEADERS;
   return DoLoop(OK);
 }
@@ -591,11 +592,11 @@ void SpdyStream::SendData(IOBuffer* data,
                           int length,
                           SpdySendStatus send_status) {
   CHECK_NE(type_, SPDY_PUSH_STREAM);
-  CHECK_EQ(send_status_, MORE_DATA_TO_SEND);
+  CHECK_EQ(pending_send_status_, MORE_DATA_TO_SEND);
   CHECK_GE(io_state_, STATE_SEND_REQUEST_HEADERS_COMPLETE);
   CHECK(!pending_send_data_.get());
   pending_send_data_ = new DrainableIOBuffer(data, length);
-  send_status_ = send_status;
+  pending_send_status_ = send_status;
   QueueNextDataFrame();
 }
 
@@ -758,7 +759,7 @@ int SpdyStream::DoSendRequestHeadersComplete() {
   // check in the destructor.
   delegate_->OnRequestHeadersSent();
 
-  return GetOpenStateResult(type_, send_status_);
+  return GetOpenStateResult(type_, pending_send_status_);
 }
 
 int SpdyStream::DoOpen() {
@@ -799,7 +800,7 @@ int SpdyStream::DoOpen() {
   // |in_do_loop_| check in the destructor.
   delegate_->OnDataSent();
 
-  return GetOpenStateResult(type_, send_status_);
+  return GetOpenStateResult(type_, pending_send_status_);
 }
 
 void SpdyStream::UpdateHistograms() {
@@ -841,7 +842,7 @@ void SpdyStream::QueueNextDataFrame() {
   CHECK_GT(pending_send_data_->BytesRemaining(), 0);
 
   SpdyDataFlags flags =
-      (send_status_ == NO_MORE_DATA_TO_SEND) ?
+      (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
       DATA_FLAG_FIN : DATA_FLAG_NONE;
   scoped_ptr<SpdyBuffer> data_buffer(
       session_->CreateDataBuffer(stream_id_,
