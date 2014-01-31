@@ -36,9 +36,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "V8SVGAnimatedString.h"
-#include "V8SVGDocument.h"
 #include "V8SVGPoint.h"
-#include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
@@ -160,28 +158,6 @@ static void immutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "getSVGDocument", "TestSVG", info.Holder(), info.GetIsolate());
-    TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->getSVGDocument(exceptionState), exceptionState)) {
-        v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    RefPtr<SVGDocument> result = imp->getSVGDocument(exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValue(info, result.release());
-}
-
-static void getSVGDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestSVGV8Internal::getSVGDocumentMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
 static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
@@ -280,7 +256,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestSVGAttributes[] = 
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestSVGMethods[] = {
-    {"getSVGDocument", TestSVGV8Internal::getSVGDocumentMethodCallback, 0, 0},
     {"mutablePointFunction", TestSVGV8Internal::mutablePointFunctionMethodCallback, 0, 0},
     {"immutablePointFunction", TestSVGV8Internal::immutablePointFunctionMethodCallback, 0, 0},
     {"immutablePointFunctionTypedef", TestSVGV8Internal::immutablePointFunctionTypedefMethodCallback, 0, 0},

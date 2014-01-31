@@ -33,7 +33,6 @@ typedef SVGPoint SVGPOINT;
 
 interface TestSVG {
     [Reflect] attribute SVGAnimatedString animatedReflectedAttribute;
-    [CheckSecurity=Node, RaisesException] SVGDocument getSVGDocument();
 
     attribute SVGPoint mutablePoint;
     [Immutable] attribute SVGPoint immutablePoint;
