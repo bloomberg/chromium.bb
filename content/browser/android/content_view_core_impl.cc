@@ -19,7 +19,6 @@
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
-#include "content/browser/android/touch_point.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -1032,17 +1031,15 @@ void ContentViewCoreImpl::SendOrientationChangeEvent(JNIEnv* env,
 
 void ContentViewCoreImpl::OnTouchEventHandlingBegin(JNIEnv* env,
                                                     jobject obj,
-                                                    jlong time_ms,
-                                                    jint type,
-                                                    jobjectArray pts) {
+                                                    jobject motion_event) {
   DCHECK(!handling_touch_event_);
   handling_touch_event_ = true;
 
-  blink::WebTouchEvent event;
-  TouchPoint::BuildWebTouchEvent(env, type, time_ms, GetDpiScale(), pts, event);
-  pending_touch_event_ = event;
+  pending_touch_event_ =
+      WebTouchEventBuilder::Build(motion_event, GetDpiScale());
 
-  pending_gesture_packet_ = GestureEventPacket::FromTouch(event);
+  pending_gesture_packet_ =
+      GestureEventPacket::FromTouch(pending_touch_event_);
 }
 
 void ContentViewCoreImpl::OnTouchEventHandlingEnd(JNIEnv* env, jobject obj) {

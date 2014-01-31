@@ -98,9 +98,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SendOrientationChangeEvent(JNIEnv* env, jobject obj, jint orientation);
   void OnTouchEventHandlingBegin(JNIEnv* env,
                                  jobject obj,
-                                 jlong time_ms,
-                                 jint type,
-                                 jobjectArray pts);
+                                 jobject motion_event);
   void OnTouchEventHandlingEnd(JNIEnv* env, jobject obj);
   jboolean SendMouseMoveEvent(JNIEnv* env,
                               jobject obj,

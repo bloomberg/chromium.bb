@@ -179,21 +179,19 @@ class ContentViewGestureHandler {
      */
     public interface MotionEventDelegate {
         /**
-         * Send a raw {@link MotionEvent} to the native side
-         * @param timeMs Time of the event in ms.
-         * @param action The action type for the event.
-         * @param pts The TouchPoint array to be sent for the event.
+         * Signal the start of gesture detection for the provided {@link MotionEvent}.
+         * @param event The {@link MotionEvent} being fed to the gesture detectors.
          */
-        public void onTouchEventHandlingBegin(long timeMs, int action, TouchPoint[] pts);
+        public void onTouchEventHandlingBegin(MotionEvent event);
 
         /**
-         * Signal that all gestures for the current {@link MotionEvent} have been dispatchd.
+         * Signal that all gestures for the current {@link MotionEvent} have been dispatched.
          */
         public void onTouchEventHandlingEnd();
 
         /**
          * Forward a generated event to the client.  This will normally be wrapped by
-         * calls to {@link #onTouchEventHandlingBegin(long, int, TouchPoint[])} and
+         * calls to {@link #onTouchEventHandlingBegin(MotionEvent)} and
          * {@link #onTouchEventHandlingEnd()}, unless the gesture is generated from
          * a touch timeout, e.g., GESTURE_LONG_PRESS.
          * @param type The type of the gesture event.
@@ -721,6 +719,19 @@ class ContentViewGestureHandler {
      * @return Whether the event was handled.
      */
     boolean onTouchEvent(MotionEvent event) {
+        final int eventAction = event.getActionMasked();
+        // Only these actions have any effect on gesture detection.  Other
+        // actions have no corresponding WebTouchEvent type and may confuse the
+        // touch pipline, so we ignore them entirely.
+        if (eventAction != MotionEvent.ACTION_DOWN
+                && eventAction != MotionEvent.ACTION_UP
+                && eventAction != MotionEvent.ACTION_CANCEL
+                && eventAction != MotionEvent.ACTION_MOVE
+                && eventAction != MotionEvent.ACTION_POINTER_DOWN
+                && eventAction != MotionEvent.ACTION_POINTER_UP) {
+            return false;
+        }
+
         try {
             TraceEvent.begin("onTouchEvent");
 
@@ -771,10 +782,7 @@ class ContentViewGestureHandler {
     }
 
     private boolean processTouchEvent(MotionEvent event) {
-        TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
-        int type = TouchPoint.createTouchPoints(event, pts);
-        assert type != TouchPoint.CONVERSION_ERROR;
-        mMotionEventDelegate.onTouchEventHandlingBegin(event.getEventTime(), type, pts);
+        mMotionEventDelegate.onTouchEventHandlingBegin(event);
 
         final boolean wasTouchScrolling = mTouchScrolling;
 

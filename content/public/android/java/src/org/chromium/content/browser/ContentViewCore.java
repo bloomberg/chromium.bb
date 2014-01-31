@@ -1321,9 +1321,9 @@ public class ContentViewCore
     }
 
     @Override
-    public void onTouchEventHandlingBegin(long timeMs, int action, TouchPoint[] pts) {
+    public void onTouchEventHandlingBegin(MotionEvent event) {
         if (mNativeContentViewCore == 0) return;
-        nativeOnTouchEventHandlingBegin(mNativeContentViewCore, timeMs, action, pts);
+        nativeOnTouchEventHandlingBegin(mNativeContentViewCore,event);
     }
 
     @Override
@@ -3345,7 +3345,7 @@ public class ContentViewCore
 
     // All touch events (including flings, scrolls etc) accept coordinates in physical pixels.
     private native void nativeOnTouchEventHandlingBegin(
-            long nativeContentViewCoreImpl, long timeMs, int action, TouchPoint[] pts);
+            long nativeContentViewCoreImpl, MotionEvent event);
 
     private native void nativeOnTouchEventHandlingEnd(long nativeContentViewCoreImpl);
 

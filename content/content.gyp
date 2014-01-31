@@ -490,10 +490,21 @@
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
         {
+          'target_name': 'motionevent_jni_headers',
+          'type': 'none',
+          'variables': {
+             'jni_gen_package': 'content',
+             'jni_generator_ptr_type': 'long',
+             'input_java_class': 'android/view/MotionEvent.class',
+           },
+          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+        },
+        {
           'target_name': 'content_jni_headers',
           'type': 'none',
           'dependencies': [
-            'java_set_jni_headers'
+            'java_set_jni_headers',
+            'motionevent_jni_headers'
           ],
           'includes': [ 'content_jni.gypi' ],
         },

@@ -80,7 +80,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         final CountDownLatch mShowPressCalled = new CountDownLatch(1);
 
         @Override
-        public void onTouchEventHandlingBegin(long timeMs, int action, TouchPoint[] pts) {
+        public void onTouchEventHandlingBegin(MotionEvent event) {
         }
 
         @Override
@@ -119,7 +119,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         mGestureHandler = new ContentViewGestureHandler(
                 getInstrumentation().getTargetContext(), mMockMotionEventDelegate);
         mGestureHandler.updateMultiTouchSupport(false);
-        TouchPoint.initializeConstantsForTesting();
     }
 
     /**
