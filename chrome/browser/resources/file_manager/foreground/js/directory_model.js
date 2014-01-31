@@ -554,25 +554,10 @@ DirectoryModel.prototype.onRenameEntry = function(
     if (util.isSameEntry(oldEntry, this.getCurrentDirEntry()))
       this.changeDirectoryEntry(newEntry);
 
-    // Look for the old entry.
+    // Replace the old item with the new item.
     // If the entry doesn't exist in the list, it has been updated from
-    // outside (probably by directory rescan).
-    var index = this.findIndexByEntry_(oldEntry);
-    if (index >= 0) {
-      // Update the content list and selection status.
-      var wasSelected = this.fileListSelection_.getIndexSelected(index);
-      this.updateSelectionAndPublishEvent_(this.fileListSelection_, function() {
-        this.fileListSelection_.setIndexSelected(index, false);
-        this.getFileList().splice(index, 1, newEntry);
-        if (wasSelected) {
-          // We re-search the index, because splice may trigger sorting so that
-          // index may be stale.
-          this.fileListSelection_.setIndexSelected(
-              this.findIndexByEntry_(newEntry), true);
-        }
-        return true;
-      }.bind(this));
-    }
+    // outside (probably by directory rescan) and is just ignored.
+    this.getFileList().replaceItem(oldEntry, newEntry);
 
     // Run callback, finally.
     if (opt_callback)
