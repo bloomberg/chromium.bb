@@ -34,26 +34,35 @@
 /* Customized scrollbar for the playlist. */
 
 .media-button {
+  background-color: #fff;
+  border: 0;
   height: 32px;
+  outline: none;  /* TODO(yoshiki): Show outline only on keyboard focus. */
+  padding: 0;
   position: relative;
   width: 32px;
 }
 
-.media-button > div {
+.media-button:active {
+  background-image: -webkit-image-set(
+      url('../assets/100/player_button_pressed.png') 1x,
+      url('../assets/200/player_button_pressed.png') 2x);
+}
+
+.media-button > div,
+.media-button.toggle > label > span {
+  display: inline-block;
   height: 100%;
-  opacity: 0;
   pointer-events: none;
-  position: absolute;
   transition: opacity 100ms linear;
   width: 100%;
 }
 
-.media-button.toggle > label > div {
-  height: 100%;
-  pointer-events: none;
+.media-button > div {
+  left: 0;
+  opacity: 0;
   position: absolute;
-  transition: opacity 100ms linear;
-  width: 100%;
+  top: 0;
 }
 
 .media-button[state='default']:not(.disabled) > .default,
