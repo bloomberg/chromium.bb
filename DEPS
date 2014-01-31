@@ -43,7 +43,7 @@ vars = {
   "ffmpeg_hash": "61396529e4d0a9987b5c396e80534da8226ffc2c",
 
   "sfntly_revision": "228",
-  "lighttpd_revision": "248005",
+  "lighttpd_revision": "33737",
   "skia_revision": "13235",
   "skia_hash": "8fe722845afd26310cff114bb1c9aa62274d64d7",
   # Three lines of non-changing comments so that
