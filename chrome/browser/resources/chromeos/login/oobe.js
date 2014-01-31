@@ -16,18 +16,27 @@ cr.define('cr.ui.Oobe', function() {
   return {
     /**
      * Setups given "select" element using the list and adds callback.
+     * Creates option groups if needed.
      * @param {!Element} select Select object to be updated.
      * @param {!Object} list List of the options to be added.
+     * Elements with optionGroupName are considered option group.
      * @param {string} callback Callback name which should be send to Chrome or
      * an empty string if the event listener shouldn't be added.
      */
     setupSelect: function(select, list, callback) {
-      select.options.length = 0;
+      select.innerHTML = '';
+      var optgroup = select;
       for (var i = 0; i < list.length; ++i) {
         var item = list[i];
-        var option =
-            new Option(item.title, item.value, item.selected, item.selected);
-        select.appendChild(option);
+        if (item.optionGroupName) {
+          optgroup = document.createElement('optgroup');
+          optgroup.label = item.optionGroupName;
+          select.appendChild(optgroup);
+        } else {
+          var option =
+              new Option(item.title, item.value, item.selected, item.selected);
+          optgroup.appendChild(option);
+        }
       }
       if (callback) {
         var sendCallback = function() {

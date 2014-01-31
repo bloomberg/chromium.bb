@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -212,6 +213,22 @@ void StartupCustomizationDocument::Init(
                                            &initial_timezone_);
   statistics_provider->GetMachineStatistic(kKeyboardLayoutAttr,
                                            &keyboard_layout_);
+  configured_locales_.resize(0);
+  base::SplitString(initial_locale_, ',', &configured_locales_);
+  // Let's always have configured_locales_.front() a valid entry.
+  if (configured_locales_.size() == 0)
+    configured_locales_.push_back(std::string());
+}
+
+const std::vector<std::string>&
+StartupCustomizationDocument::configured_locales() const {
+  return configured_locales_;
+}
+
+const std::string& StartupCustomizationDocument::initial_locale_default()
+    const {
+  DCHECK(configured_locales_.size() > 0);
+  return configured_locales_.front();
 }
 
 std::string StartupCustomizationDocument::GetHelpPage(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CUSTOMIZATION_DOCUMENT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -26,6 +27,9 @@ class FilePath;
 namespace net {
 class URLFetcher;
 }
+
+// This test is in global namespace so it must be declared here.
+void Test__InitStartupCustomizationDocument(const std::string& manifest);
 
 namespace chromeos {
 
@@ -76,7 +80,15 @@ class StartupCustomizationDocument : public CustomizationDocument {
 
   // These methods can be called even if !IsReady(), in this case VPD values
   // will be returned.
+  //
+  // Raw value of "initial_locale" like initial_locale="en-US,sv,da,fi,no" .
   const std::string& initial_locale() const { return initial_locale_; }
+
+  // Vector of individual locale values.
+  const std::vector<std::string>& configured_locales() const;
+
+  // Default locale value (first value in initial_locale list).
+  const std::string& initial_locale_default() const;
   const std::string& initial_timezone() const { return initial_timezone_; }
   const std::string& keyboard_layout() const { return keyboard_layout_; }
 
@@ -84,6 +96,9 @@ class StartupCustomizationDocument : public CustomizationDocument {
   FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, VPD);
   FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, BadManifest);
+  FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, MultiLanguage);
+  friend void ::Test__InitStartupCustomizationDocument(
+      const std::string& manifest);
   friend struct DefaultSingletonTraits<StartupCustomizationDocument>;
 
   // C-tor for singleton construction.
@@ -101,6 +116,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
   void InitFromMachineStatistic(const char* attr, std::string* value);
 
   std::string initial_locale_;
+  std::vector<std::string> configured_locales_;
   std::string initial_timezone_;
   std::string keyboard_layout_;
   std::string registration_url_;
@@ -138,6 +154,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
  private:
   FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, BadManifest);
+  FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, MultiLanguage);
   friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;
 
   // C-tor for singleton construction.

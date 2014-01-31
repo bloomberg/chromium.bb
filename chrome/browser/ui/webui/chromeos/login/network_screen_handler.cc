@@ -22,6 +22,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -258,10 +259,17 @@ base::ListValue* NetworkScreenHandler::GetLanguageList() {
     std::string native_name;
     language_info->GetString("nativeDisplayName", &native_name);
 
-    if (display_name != native_name)
+    // If it's option group divider, add field name.
+    if (value == options::kVendorOtherLanguagesListDivider) {
+      language_info->SetString(
+          "optionGroupName",
+          l10n_util::GetStringUTF16(IDS_OOBE_OTHER_LANGUAGES));
+    }
+    if (display_name != native_name) {
       display_name = base::StringPrintf("%s - %s",
                                         display_name.c_str(),
                                         native_name.c_str());
+    }
 
     language_info->SetString("value", value);
     language_info->SetString("title", display_name);

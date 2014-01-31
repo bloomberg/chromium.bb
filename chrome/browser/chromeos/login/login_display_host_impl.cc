@@ -1160,7 +1160,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   const std::string current_locale =
       prefs->GetString(prefs::kApplicationLocale);
   VLOG(1) << "Current locale: " << current_locale;
-  std::string locale = startup_manifest->initial_locale();
+  std::string locale = startup_manifest->initial_locale_default();
 
   if (!current_locale.empty() || locale.empty()) {
     ShowLoginWizardFinish(first_screen_name, startup_manifest, display_host);

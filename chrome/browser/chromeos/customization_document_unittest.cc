@@ -47,6 +47,21 @@ const char kGoodStartupManifest[] =
     "  ],"
     "}";
 
+const char kMultiLanguageStartupManifest[] =
+    "{\n"
+    "  \"version\": \"1.0\",\n"
+    "  \"initial_locale\" : \"en-US,de,fr,it\",\n"
+    "  \"initial_timezone\" : \"Europe/Zurich\",\n"
+    "  \"keyboard_layout\" : \"xkb:us::eng\",\n"
+    "  \"registration_url\" : \"http://www.google.com\",\n"
+    "  \"setup_content\" : {\n"
+    "    \"default\" : {\n"
+    "      \"help_page\" : \"file:///opt/oem/help/en-US/help.html\",\n"
+    "      \"eula_page\" : \"file:///opt/oem/eula/en-US/eula.html\",\n"
+    "    },\n"
+    "  },"
+    "}";
+
 const char kBadManifest[] = "{\"version\": \"1\"}";
 
 const char kGoodServicesManifest[] =
@@ -155,6 +170,27 @@ TEST(ServicesCustomizationDocumentTest, Basic) {
   EXPECT_EQ("http://mario/us", customization.GetSupportPage("en-US"));
   EXPECT_EQ("http://mario/ru", customization.GetSupportPage("ru-RU"));
   EXPECT_EQ("http://mario/global", customization.GetSupportPage("ja"));
+}
+
+#define EXPECT_LOCALE_ENTRY(i, value)                     \
+  if (customization.configured_locales().size() > i)      \
+  EXPECT_EQ(value, customization.configured_locales()[i]) \
+      << "Bad locale value at index " << i
+
+TEST(ServicesCustomizationDocumentTest, MultiLanguage) {
+  system::MockStatisticsProvider mock_statistics_provider;
+  StartupCustomizationDocument customization(&mock_statistics_provider,
+                                             kMultiLanguageStartupManifest);
+  EXPECT_TRUE(customization.IsReady());
+
+  EXPECT_EQ("en-US,de,fr,it", customization.initial_locale());
+  EXPECT_EQ("en-US", customization.initial_locale_default());
+  EXPECT_EQ(4u, customization.configured_locales().size());
+
+  EXPECT_LOCALE_ENTRY(0, "en-US");
+  EXPECT_LOCALE_ENTRY(1, "de");
+  EXPECT_LOCALE_ENTRY(2, "fr");
+  EXPECT_LOCALE_ENTRY(3, "it");
 }
 
 TEST(ServicesCustomizationDocumentTest, BadManifest) {

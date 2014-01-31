@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 
+#include <algorithm>
+#include <iterator>
 #include <map>
 #include <set>
 #include <vector>
@@ -16,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -52,6 +55,9 @@ bool IsBlacklisted(const std::string& language_code) {
 
 namespace chromeos {
 namespace options {
+
+const char kVendorOtherLanguagesListDivider[] =
+    "VENDOR_OTHER_LANGUAGES_LIST_DIVIDER";
 
 CrosLanguageOptionsHandler::CrosLanguageOptionsHandler()
     : composition_extension_appended_(false),
@@ -184,7 +190,8 @@ base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
 // static
 base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     const input_method::InputMethodDescriptors& descriptors,
-    const std::vector<std::string>& base_language_codes) {
+    const std::vector<std::string>& base_language_codes,
+    const bool insert_divider) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
 
   std::set<std::string> language_codes;
@@ -197,6 +204,18 @@ base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
       language_codes.insert(languages[i]);
   }
 
+  const StartupCustomizationDocument* startup_manifest =
+      StartupCustomizationDocument::GetInstance();
+
+  const std::vector<std::string>& configured_locales =
+      startup_manifest->configured_locales();
+
+  // Languages sort order.
+  std::map<std::string, int /* index */> language_index;
+  for (size_t i = 0; i < configured_locales.size(); ++i) {
+    language_index[configured_locales[i]] = i;
+  }
+
   // Map of display name -> {language code, native_display_name}.
   // In theory, we should be able to create a map that is sorted by
   // display names using ICU comparator, but doing it is hard, thus we'll
@@ -204,9 +223,15 @@ base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
   typedef std::pair<std::string, base::string16> LanguagePair;
   typedef std::map<base::string16, LanguagePair> LanguageMap;
   LanguageMap language_map;
-  // The auxiliary vector mentioned above.
+
+  // The auxiliary vector mentioned above. (except vendor locales)
   std::vector<base::string16> display_names;
 
+  // Separate vector of vendor locales.
+  std::vector<base::string16> configured_locales_display_names(
+      configured_locales.size());
+
+  size_t configured_locales_count = 0;
   // Build the list of display names, and build the language map.
   for (std::set<std::string>::const_iterator iter = language_codes.begin();
        iter != language_codes.end(); ++iter) {
@@ -223,11 +248,20 @@ base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     const base::string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(*iter, *iter, true);
 
-    display_names.push_back(display_name);
     language_map[display_name] =
         std::make_pair(*iter, native_display_name);
+
+    const std::map<std::string, int>::const_iterator index_pos =
+        language_index.find(*iter);
+    if (index_pos != language_index.end()) {
+      configured_locales_display_names[index_pos->second] = display_name;
+      ++configured_locales_count;
+    } else {
+      display_names.push_back(display_name);
+    }
   }
-  DCHECK_EQ(display_names.size(), language_map.size());
+  DCHECK_EQ(display_names.size() + configured_locales_count,
+            language_map.size());
 
   // Build the list of display names, and build the language map.
   for (size_t i = 0; i < base_language_codes.size(); ++i) {
@@ -249,26 +283,61 @@ base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     display_names.push_back(display_name);
     language_map[display_name] =
         std::make_pair(base_language_codes[i], native_display_name);
+
+    const std::map<std::string, int>::const_iterator index_pos =
+        language_index.find(base_language_codes[i]);
+    if (index_pos != language_index.end()) {
+      configured_locales_display_names[index_pos->second] = display_name;
+      ++configured_locales_count;
+    } else {
+      display_names.push_back(display_name);
+    }
   }
 
   // Sort display names using locale specific sorter.
   l10n_util::SortStrings16(app_locale, &display_names);
+  // Concatenate configured_locales_display_names and display_names.
+  // Insert special divider in between.
+  std::vector<base::string16> out_display_names;
+  for (size_t i = 0; i < configured_locales_display_names.size(); ++i) {
+    if (configured_locales_display_names[i].size() == 0)
+      continue;
+    out_display_names.push_back(configured_locales_display_names[i]);
+  }
+
+  base::string16 divider16;
+  if (insert_divider) {
+    divider16 = base::ASCIIToUTF16(
+        insert_divider ? "" : kVendorOtherLanguagesListDivider);
+    out_display_names.push_back(divider16);
+  }
+
+  std::copy(display_names.begin(),
+            display_names.end(),
+            std::back_inserter(out_display_names));
 
   // Build the language list from the language map.
   base::ListValue* language_list = new base::ListValue();
-  for (size_t i = 0; i < display_names.size(); ++i) {
+  for (size_t i = 0; i < out_display_names.size(); ++i) {
     // Sets the directionality of the display language name.
-    base::string16 display_name(display_names[i]);
+    base::string16 display_name(out_display_names[i]);
+    if (insert_divider && display_name == divider16) {
+      // Insert divider.
+      base::DictionaryValue* dictionary = new base::DictionaryValue();
+      dictionary->SetString("code", kVendorOtherLanguagesListDivider);
+      language_list->Append(dictionary);
+      continue;
+    }
     bool markup_removal =
         base::i18n::UnadjustStringForLocaleDirection(&display_name);
     DCHECK(markup_removal);
     bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(display_name);
     std::string directionality = has_rtl_chars ? "rtl" : "ltr";
 
-    const LanguagePair& pair = language_map[display_names[i]];
+    const LanguagePair& pair = language_map[out_display_names[i]];
     base::DictionaryValue* dictionary = new base::DictionaryValue();
     dictionary->SetString("code", pair.first);
-    dictionary->SetString("displayName", display_names[i]);
+    dictionary->SetString("displayName", out_display_names[i]);
     dictionary->SetString("textDirection", directionality);
     dictionary->SetString("nativeDisplayName", pair.second);
     language_list->Append(dictionary);
@@ -284,14 +353,15 @@ base::ListValue* CrosLanguageOptionsHandler::GetAcceptLanguageList(
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   std::vector<std::string> accept_language_codes;
   l10n_util::GetAcceptLanguagesForLocale(app_locale, &accept_language_codes);
-  return GetLanguageListInternal(descriptors, accept_language_codes);
+  return GetLanguageListInternal(descriptors, accept_language_codes, false);
 }
 
 // static
 base::ListValue* CrosLanguageOptionsHandler::GetUILanguageList(
     const input_method::InputMethodDescriptors& descriptors) {
   // Collect the language codes from the available locales.
-  return GetLanguageListInternal(descriptors, l10n_util::GetAvailableLocales());
+  return GetLanguageListInternal(
+      descriptors, l10n_util::GetAvailableLocales(), true);
 }
 
 base::ListValue*

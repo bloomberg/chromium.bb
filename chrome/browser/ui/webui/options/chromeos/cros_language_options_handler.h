@@ -13,6 +13,11 @@
 namespace chromeos {
 namespace options {
 
+// GetUILanguageList() returns concatenated list of list of vendor languages
+// followed by other languages. An entry with "code" attribute set to this value
+// is inserted in between.
+extern const char kVendorOtherLanguagesListDivider[];
+
 // Language options page UI handler for Chrome OS.  For non-Chrome OS,
 // see LanguageOptionsHnadler.
 class CrosLanguageOptionsHandler
@@ -46,6 +51,8 @@ class CrosLanguageOptionsHandler
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
+  // "most relevant" languages, as set in initial_locale in VPD, will be first
+  // in the list.
   static base::ListValue* GetAcceptLanguageList(
       const input_method::InputMethodDescriptors& descriptors);
 
@@ -53,6 +60,10 @@ class CrosLanguageOptionsHandler
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
+  // "most relevant" languages, as set in initial_locale in VPD, will be first
+  // in the list.
+  // An entry with "code" attribute set to kVendorOtherLanguagesListDivider is
+  // used as a divider to separate "most relevant" languages against other.
   static base::ListValue* GetUILanguageList(
       const input_method::InputMethodDescriptors& descriptors);
 
@@ -88,9 +99,13 @@ class CrosLanguageOptionsHandler
 
   // Gets the list of languages with |descriptors| based on
   // |base_language_codes|.
+  // |insert_divider| means to insert entry with "code" attribute set to
+  // kVendorOtherLanguagesListDivider between "most relevant" languages and
+  // other.
   static base::ListValue* GetLanguageListInternal(
       const input_method::InputMethodDescriptors& descriptors,
-      const std::vector<std::string>& base_language_codes);
+      const std::vector<std::string>& base_language_codes,
+      bool insert_divider);
 
   // OptionsPageUIHandler implementation.
   virtual void InitializePage() OVERRIDE;
