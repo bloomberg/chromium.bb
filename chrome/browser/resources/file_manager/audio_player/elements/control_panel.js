@@ -148,7 +148,7 @@
      * Invoked when the previous button is clicked.
      */
     previousClick: function() {
-      this.fire('next-clicked');
+      this.fire('previous-clicked');
     },
 
     /**
