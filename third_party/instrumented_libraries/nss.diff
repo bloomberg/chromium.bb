@@ -1,0 +1,15 @@
+diff -rupN ./nss/lib/freebl/Makefile ../nss-3.15.4-patched/nss/lib/freebl/Makefile
+--- ./nss/lib/freebl/Makefile	2014-01-03 23:59:10.000000000 +0400
++++ ../nss-3.15.4-patched/nss/lib/freebl/Makefile	2014-01-31 00:15:56.495855749 +0400
+@@ -186,8 +186,9 @@ ifeq ($(CPU_ARCH),x86_64)
+     DEFINES += -DMP_CHAR_STORE_SLOW -DMP_IS_LITTLE_ENDIAN
+ #   DEFINES += -DMPI_AMD64_ADD
+     # comment the next two lines to turn off intel HW accelleration
+-    DEFINES += -DUSE_HW_AES
+-    ASFILES += intel-aes.s intel-gcm.s
++#    Disable inline asm in instrumented builds.
++#    DEFINES += -DUSE_HW_AES
++#    ASFILES += intel-aes.s intel-gcm.s
+     EXTRA_SRCS += intel-gcm-wrap.c
+     INTEL_GCM = 1
+     MPI_SRCS += mpi_amd64.c mp_comba.c

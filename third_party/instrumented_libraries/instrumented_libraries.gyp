@@ -284,6 +284,7 @@
       'dependencies=': [
         '<(_sanitizer_type)-libnspr4',
       ],
+      'run_before_build': 'nss.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
