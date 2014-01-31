@@ -292,7 +292,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
   EnsureMediaDirectoriesExists mock_gallery_locations_;
 
-#if defined OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedTestUserManager test_user_manager_;
@@ -307,12 +307,11 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPreferencesTest);
 };
 
-base::FilePath MakePath(std::string dir) {
+base::FilePath MakePath(const std::string& dir) {
 #if defined(OS_WIN)
-  return
-      base::FilePath(FILE_PATH_LITERAL("C:\\")).Append(base::UTF8ToWide(dir));
+  return base::FilePath(FILE_PATH_LITERAL("C:\\")).AppendASCII(dir);
 #elif defined(OS_POSIX)
-  return base::FilePath(FILE_PATH_LITERAL("/")).Append(dir);
+  return base::FilePath(FILE_PATH_LITERAL("/")).AppendASCII(dir);
 #else
   NOTREACHED();
 #endif

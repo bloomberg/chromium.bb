@@ -263,6 +263,14 @@ class ProfileState {
   DISALLOW_COPY_AND_ASSIGN(ProfileState);
 };
 
+base::string16 GetExpectedFolderName(const base::FilePath& path) {
+#if defined(OS_CHROMEOS)
+  return path.BaseName().LossyDisplayName();
+#else
+  return path.LossyDisplayName();
+#endif
+}
+
 }  // namespace
 
 class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
@@ -360,7 +368,7 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
 
   // Needed for extension service & friends to work.
 
-#if defined OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
@@ -1018,41 +1026,20 @@ TEST_F(MediaFileSystemRegistryTest, TestNameConstruction) {
   std::vector<MediaFileSystemInfo> one_expectation;
   one_expectation.push_back(added_info);
 
-  profile_state->AddNameForReadCompare(
-#if defined(OS_CHROMEOS)
-      empty_dir().BaseName().LossyDisplayName());
-#else
-      empty_dir().LossyDisplayName());
-#endif
-  profile_state->AddNameForAllCompare(
-#if defined(OS_CHROMEOS)
-      empty_dir().BaseName().LossyDisplayName());
-#else
-      empty_dir().LossyDisplayName());
-#endif
+  base::string16 empty_dir_name = GetExpectedFolderName(empty_dir());
+  profile_state->AddNameForReadCompare(empty_dir_name);
+  profile_state->AddNameForAllCompare(empty_dir_name);
 
   // This part of the test is conditional on default directories existing
   // on the test platform. In ChromeOS, these directories do not exist.
   base::FilePath path;
   if (num_auto_galleries() > 0) {
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_MUSIC, &path));
-#if defined(OS_CHROMEOS)
-    profile_state->AddNameForAllCompare(path.BaseName().LossyDisplayName());
-#else
-    profile_state->AddNameForAllCompare(path.LossyDisplayName());
-#endif
+    profile_state->AddNameForAllCompare(GetExpectedFolderName(path));
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_PICTURES, &path));
-#if defined(OS_CHROMEOS)
-    profile_state->AddNameForAllCompare(path.BaseName().LossyDisplayName());
-#else
-    profile_state->AddNameForAllCompare(path.LossyDisplayName());
-#endif
+    profile_state->AddNameForAllCompare(GetExpectedFolderName(path));
     ASSERT_TRUE(PathService::Get(chrome::DIR_USER_VIDEOS, &path));
-#if defined(OS_CHROMEOS)
-    profile_state->AddNameForAllCompare(path.BaseName().LossyDisplayName());
-#else
-    profile_state->AddNameForAllCompare(path.LossyDisplayName());
-#endif
+    profile_state->AddNameForAllCompare(GetExpectedFolderName(path));
 
     profile_state->CheckGalleries("names-dir", one_expectation, auto_galleries);
   } else {
