@@ -70,12 +70,6 @@ public:
     operator T*() const { return m_ptr; }
     T& operator*() const { return *m_ptr; }
     T* operator->() const { return m_ptr; }
-    bool operator!() const { return !m_ptr; }
-
-    // This conversion operator allows implicit conversion to bool but
-    // not to other integer types.
-    typedef T* RawPtr::*UnspecifiedBoolType;
-    operator UnspecifiedBoolType() const { return m_ptr ? &m_ptr : 0; }
 
 private:
     T* m_ptr;
