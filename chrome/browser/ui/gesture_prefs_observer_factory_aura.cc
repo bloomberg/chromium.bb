@@ -27,9 +27,6 @@ using ui::GestureConfiguration;
 
 namespace {
 
-// TODO(tdresser): Remove this deprecated pref in M29. http://crbug.com/160243.
-const char kTouchScreenFlingAccelerationAdjustment[] =
-    "gesture.touchscreen_fling_acceleration_adjustment";
 // TODO(tdresser): Remove this deprecated pref. See crbug.com/339486.
 const char kMinScrollSuccessiveVelocityEvents[] =
     "gesture.min_scroll_successive_velocity_events";
@@ -141,7 +138,6 @@ const char* kFlingTouchscreenPrefs[] = {
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
   // Clear for migration.
-  prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
   prefs->ClearPref(kMinScrollSuccessiveVelocityEvents);
 
   // Clear temporary pref gesture.config_is_trustworthy, so that in M33, we can
@@ -446,10 +442,6 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Register for migration.
-  registry->RegisterDoublePref(
-      kTouchScreenFlingAccelerationAdjustment,
-      0.0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(
       kMinScrollSuccessiveVelocityEvents,
       0,
