@@ -390,10 +390,15 @@ void MarkupAccumulator::appendElement(StringBuilder& result, Element& element, N
     appendCloseTag(result, element);
 }
 
+static String nodeNamePreservingCase(const Element& element)
+{
+    return element.tagQName().toString();
+}
+
 void MarkupAccumulator::appendOpenTag(StringBuilder& result, const Element& element, Namespaces* namespaces)
 {
     result.append('<');
-    result.append(element.nodeNamePreservingCase());
+    result.append(nodeNamePreservingCase(element));
     if (!element.document().isHTMLDocument() && namespaces && shouldAddNamespaceElement(element))
         appendNamespace(result, element.prefix(), element.namespaceURI(), *namespaces);
 }
@@ -526,7 +531,7 @@ void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Node& node)
         return;
 
     result.appendLiteral("</");
-    result.append(toElement(node).nodeNamePreservingCase());
+    result.append(nodeNamePreservingCase(toElement(node)));
     result.append('>');
 }
 

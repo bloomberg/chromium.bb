@@ -245,7 +245,6 @@ public:
     void scheduleLayerUpdate();
 
     void normalizeAttributes();
-    String nodeNamePreservingCase() const;
 
     void setBooleanAttribute(const QualifiedName& name, bool);
 

@@ -1177,11 +1177,6 @@ String Element::nodeName() const
     return m_tagName.toString();
 }
 
-String Element::nodeNamePreservingCase() const
-{
-    return m_tagName.toString();
-}
-
 void Element::setPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
 {
     UseCounter::count(document(), UseCounter::ElementSetPrefix);
