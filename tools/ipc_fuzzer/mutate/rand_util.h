@@ -37,4 +37,4 @@ inline bool RandEvent(uint32 frequency) {
 
 }  // namespace ipc_fuzzer
 
-#endif TOOLS_IPC_FUZZER_MUTATE_RAND_UTIL_H_
+#endif  // TOOLS_IPC_FUZZER_MUTATE_RAND_UTIL_H_
