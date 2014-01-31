@@ -72,7 +72,7 @@ public:
     }
 
     // Will return null if there is no DOMWrapperWorld for the current v8::Context
-    static DOMWrapperWorld* current();
+    static DOMWrapperWorld* current(v8::Isolate*);
 
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered

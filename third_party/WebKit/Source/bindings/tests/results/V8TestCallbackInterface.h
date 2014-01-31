@@ -64,6 +64,7 @@ public:
 private:
     V8TestCallbackInterface(v8::Handle<v8::Function>, ExecutionContext*);
 
+    v8::Isolate* m_isolate;
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<DOMWrapperWorld> m_world;
 };

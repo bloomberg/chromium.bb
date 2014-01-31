@@ -4958,6 +4958,7 @@ END
     $header{classPrivate}->add(<<END);
     ${v8ClassName}(v8::Handle<v8::Function>, ExecutionContext*);
 
+    v8::Isolate* m_isolate;
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<DOMWrapperWorld> m_world;
 END
@@ -4977,8 +4978,9 @@ sub GenerateCallbackImplementation
     $implementation{nameSpaceWebCore}->add(<<END);
 ${v8ClassName}::${v8ClassName}(v8::Handle<v8::Function> callback, ExecutionContext* context)
     : ActiveDOMCallback(context)
-    , m_callback(toIsolate(context), callback)
-    , m_world(DOMWrapperWorld::current())
+    , m_isolate(toIsolate(context))
+    , m_callback(m_isolate, callback)
+    , m_world(DOMWrapperWorld::current(m_isolate))
 {
 }
 
@@ -5030,8 +5032,7 @@ END
             $code .= "{\n";
             $code .= "    if (!canInvokeCallback())\n";
             $code .= "        return${defaultReturn};\n\n";
-            $code .= "    v8::Isolate* isolate = v8::Isolate::GetCurrent();\n";
-            $code .= "    v8::HandleScope handleScope(isolate);\n\n";
+            $code .= "    v8::HandleScope handleScope(m_isolate);\n\n";
             $code .= "    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());\n";
             $code .= "    if (v8Context.IsEmpty())\n";
             $code .= "        return${defaultReturn};\n\n";
@@ -5051,7 +5052,7 @@ END
             @args = ();
             foreach my $param (@params) {
                 my $paramName = $param->name;
-                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "isolate", "") . "\n";
+                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "m_isolate", "") . "\n";
                 $code .= "    if (${paramName}Handle.IsEmpty()) {\n";
                 $code .= "        if (!isScriptControllerTerminating())\n";
                 $code .= "            CRASH();\n";
@@ -5071,7 +5072,7 @@ END
             if ($function->type eq "boolean") {
                 $code .= "return ";
             }
-            $code .= "invokeCallback(m_callback.newLocal(isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, executionContext(), isolate);\n";
+            $code .= "invokeCallback(m_callback.newLocal(m_isolate), ${thisObjectHandle}" . scalar(@args) . ", argv, executionContext(), m_isolate);\n";
             $code .= "}\n\n";
             $implementation{nameSpaceWebCore}->add($code);
         }

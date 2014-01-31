@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/events/ErrorEvent.h"
 
+#include "bindings/v8/V8Binding.h"
 #include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
@@ -54,7 +55,7 @@ ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializ
     , m_fileName(initializer.filename)
     , m_lineNumber(initializer.lineno)
     , m_columnNumber(initializer.colno)
-    , m_world(DOMWrapperWorld::current())
+    , m_world(DOMWrapperWorld::current(mainThreadIsolate()))
 {
     ScriptWrappable::init(this);
 }

@@ -134,7 +134,7 @@ template<typename T>
 void ScriptPromiseResolver::resolve(T* value, ExecutionContext* context)
 {
     ASSERT(m_isolate->InContext());
-    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current());
+    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(m_isolate));
     resolve(value, v8Context->Global());
 }
 
@@ -142,7 +142,7 @@ template<typename T>
 void ScriptPromiseResolver::reject(T* value, ExecutionContext* context)
 {
     ASSERT(m_isolate->InContext());
-    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current());
+    v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(m_isolate));
     reject(value, v8Context->Global());
 }
 

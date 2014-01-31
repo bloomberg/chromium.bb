@@ -38,7 +38,7 @@ namespace WebCore {
 V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, ExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     : ActiveDOMCallback(context)
     , m_callback(isolate, callback)
-    , m_world(DOMWrapperWorld::current())
+    , m_world(DOMWrapperWorld::current(isolate))
     , m_isolate(isolate)
 {
     setHiddenValue(m_isolate, owner, "callback", callback);

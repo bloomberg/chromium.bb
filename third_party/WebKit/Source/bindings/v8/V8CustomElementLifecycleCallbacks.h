@@ -66,6 +66,7 @@ private:
 
     V8PerContextData* creationContextData();
 
+    v8::Isolate* m_isolate;
     CustomElementDefinition* m_owner;
     RefPtr<DOMWrapperWorld> m_world;
     ScopedPersistent<v8::Object> m_prototype;

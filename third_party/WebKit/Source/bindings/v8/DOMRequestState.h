@@ -37,9 +37,9 @@ namespace WebCore {
 class DOMRequestState {
 public:
     explicit DOMRequestState(ExecutionContext* executionContext)
-        : m_executionContext(executionContext)
-        , m_world(DOMWrapperWorld::current())
-        , m_isolate(toIsolate(executionContext))
+        : m_isolate(toIsolate(executionContext))
+        , m_executionContext(executionContext)
+        , m_world(DOMWrapperWorld::current(m_isolate))
     {
         ASSERT(m_executionContext);
     }
@@ -76,9 +76,9 @@ public:
     bool isValid() const { return m_executionContext; }
 
 private:
+    v8::Isolate* m_isolate;
     ExecutionContext* m_executionContext;
     RefPtr<DOMWrapperWorld> m_world;
-    v8::Isolate* m_isolate;
 };
 
 }

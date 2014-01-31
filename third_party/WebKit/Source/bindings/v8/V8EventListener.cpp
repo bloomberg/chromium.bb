@@ -39,7 +39,7 @@
 namespace WebCore {
 
 V8EventListener::V8EventListener(v8::Local<v8::Object> listener, bool isAttribute, v8::Isolate* isolate)
-    : V8AbstractEventListener(isAttribute, DOMWrapperWorld::current(), isolate)
+    : V8AbstractEventListener(isAttribute, DOMWrapperWorld::current(isolate), isolate)
 {
     setListenerObject(listener);
 }

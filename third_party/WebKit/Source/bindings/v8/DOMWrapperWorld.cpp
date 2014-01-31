@@ -61,9 +61,8 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
         m_domDataStore = adoptPtr(new DOMDataStore(IsolatedWorld));
 }
 
-DOMWrapperWorld* DOMWrapperWorld::current()
+DOMWrapperWorld* DOMWrapperWorld::current(v8::Isolate* isolate)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     ASSERT(isolate->InContext());
     v8::Handle<v8::Context> context = isolate->GetCurrentContext();
     if (!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo))
