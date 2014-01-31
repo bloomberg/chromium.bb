@@ -1929,11 +1929,11 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kSearchButtonInOmniboxChoices)
   },
   {
-    "enable-ignore-autocomplete-off",
-    IDS_FLAGS_ENABLE_IGNORE_AUTOCOMPLETE_OFF_NAME,
-    IDS_FLAGS_ENABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION,
+    "disable-ignore-autocomplete-off",
+    IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_NAME,
+    IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(autofill::switches::kEnableIgnoreAutocompleteOff)
+    SINGLE_VALUE_TYPE(autofill::switches::kDisableIgnoreAutocompleteOff)
   },
 #if defined(USE_AURA) || defined(OS_WIN)
   {

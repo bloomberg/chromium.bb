@@ -9,11 +9,11 @@
 
 namespace autofill {
 
-// We ignore autocomplete='off' if the user has specified the command line
-// feature to enable it.
+// We ignore autocomplete='off' unless the user has specified the command line
+// flag instructing otherwise.
 bool ShouldIgnoreAutocompleteOffForPasswordFields() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableIgnoreAutocompleteOff);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableIgnoreAutocompleteOff);
 }
 
 }  // namespace autofill
