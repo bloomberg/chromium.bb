@@ -45,7 +45,7 @@ pushAllRegisters:
         stp x23, x24, [sp, #48]
         stp x25, x26, [sp, #32]
         stp x27, x28, [sp, #16]
-        stp x29, x30, [sp, #0]  // x30 is lr.
+        stp x30, x29, [sp, #0]  // x30 is lr.
 
         /* Pass the two first arguments unchanged (x0, x1)
          * and pass the stack pointer as third argument to the
@@ -58,6 +58,5 @@ pushAllRegisters:
         /* We don't restore all registers since they are callee saved (so
          * the callback didn't clobber them) and we didn't modify them either.
          */
-        ldp x29, x30, [sp]
-        add sp, sp, #96
+        ldr x30, [sp], #96
         ret
