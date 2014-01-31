@@ -17,6 +17,10 @@
 // media filesystem.
 class MediaPathFilter {
  public:
+  // Used to skip hidden folders and files. Returns true if the file specified
+  // by |path| should be skipped.
+  static bool ShouldSkip(const base::FilePath& path);
+
   MediaPathFilter();
   ~MediaPathFilter();
 

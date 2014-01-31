@@ -272,3 +272,20 @@ TEST_F(MediaFolderFinderTest, ScanMediaFiles) {
   RunLoopUntilReceivedCallback();
   DeleteMediaFolderFinder();
 }
+
+TEST_F(MediaFolderFinderTest, SkipHiddenFiles) {
+  MediaFolderFinder::MediaFolderFinderResults expected_results;
+  std::vector<base::FilePath> folders;
+  folders.push_back(fake_dir());
+
+  base::FilePath hidden_dir = fake_dir().AppendASCII(".hidden");
+
+  CreateTestFile(hidden_dir, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 2, true,
+                 &expected_results);
+  expected_results.erase(hidden_dir);
+
+  CreateMediaFolderFinder(folders, true, expected_results);
+  StartScan();
+  RunLoopUntilReceivedCallback();
+  DeleteMediaFolderFinder();
+}

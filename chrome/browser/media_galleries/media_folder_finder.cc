@@ -37,10 +37,17 @@ void ScanFolderOnBlockingPool(
   base::FileEnumerator enumerator(
       path,
       false, /* recursive? */
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES
+#if defined(OS_POSIX)
+      | base::FileEnumerator::SHOW_SYM_LINKS  // show symlinks, not follow.
+#endif
+      );
   while (!enumerator.Next().empty()) {
     base::FileEnumerator::FileInfo file_info = enumerator.GetInfo();
     base::FilePath full_path = path.Append(file_info.GetName());
+    if (MediaPathFilter::ShouldSkip(full_path))
+      continue;
+
     if (file_info.IsDirectory()) {
       new_folders->push_back(full_path);
       continue;
