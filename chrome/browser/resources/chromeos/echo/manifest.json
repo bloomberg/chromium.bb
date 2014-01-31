@@ -1,9 +1,9 @@
 {
   // chrome-extension://kddnkjkcjddckihglkfcickdhbmaodcn/
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCvO/P4dVdpUZlr+oT5s3ccPIOIxZl6fOch+sqcQWsROKNf+mvKZURGnVts8ttHH4oRt2+LW3I2M5PrkW9Q6ZPkOX5ZQFFuD7ujPSaUn8+Br5lC5TtlXsNzp1r+962Qaa1d8zCocwF/IZ+9M5bt61LUJ6Obe8lw+NRnC6CS6DuiewIDAQAB",
-  "name": "Chrome OS ECHO Extension",
+  "name": "Chrome Goodies",
   "version": "1.0.0",
-  "description": "Chrome OS ECHO Extension",
+  "description": "Chrome Goodies",
   "manifest_version": 2,
   "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
@@ -11,7 +11,6 @@
       "cookies",
       "chromeosInfoPrivate",
       "echoPrivate",
-      "experimental",  // TODO(andycai) remove this.
       "notifications",
       "https://*/*"
    ],
