@@ -318,6 +318,10 @@ content::WebContents* SimpleWebViewDialog::GetActiveWebContents() const {
   return web_view_->web_contents();
 }
 
+bool SimpleWebViewDialog::InTabbedBrowser() const {
+  return false;
+}
+
 void SimpleWebViewDialog::ExecuteCommandWithDisposition(
     int id,
     WindowOpenDisposition) {

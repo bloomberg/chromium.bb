@@ -158,6 +158,9 @@ struct TestItem {
 class ToolbarModelTest : public BrowserWithTestWindowTest {
  public:
   ToolbarModelTest();
+  ToolbarModelTest(Browser::Type browser_type,
+                   chrome::HostDesktopType host_desktop_type,
+                   bool hosted_app);
   virtual ~ToolbarModelTest();
 
   // BrowserWithTestWindowTest:
@@ -177,6 +180,15 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
 };
 
 ToolbarModelTest::ToolbarModelTest() {
+}
+
+ToolbarModelTest::ToolbarModelTest(
+    Browser::Type browser_type,
+    chrome::HostDesktopType host_desktop_type,
+    bool hosted_app)
+    : BrowserWithTestWindowTest(browser_type,
+                                host_desktop_type,
+                                hosted_app) {
 }
 
 ToolbarModelTest::~ToolbarModelTest() {
@@ -238,6 +250,22 @@ void ToolbarModelTest::NavigateAndCheckText(
   toolbar_model->set_input_in_progress(false);
 }
 
+class PopupToolbarModelTest : public ToolbarModelTest {
+ public:
+  PopupToolbarModelTest();
+  virtual ~PopupToolbarModelTest();
+
+  DISALLOW_COPY_AND_ASSIGN(PopupToolbarModelTest);
+};
+
+PopupToolbarModelTest::PopupToolbarModelTest()
+      : ToolbarModelTest(Browser::TYPE_POPUP,
+                         chrome::HOST_DESKTOP_TYPE_NATIVE,
+                         false) {
+}
+
+PopupToolbarModelTest::~PopupToolbarModelTest() {
+}
 
 // Actual tests ---------------------------------------------------------------
 
@@ -359,4 +387,54 @@ TEST_F(ToolbarModelTest, GoogleBaseURL) {
   NavigateAndCheckText(
       GURL("http://www.foo.com/search?q=tractor+supply&espv=1"),
       ASCIIToUTF16("tractor supply"), true, true);
+}
+
+// Popup windows don't have an origin chip, so test that URL display in a popup
+// ignores whether the origin chip is enabled and only respects the query
+// extraction flag.
+TEST_F(PopupToolbarModelTest, ShouldDisplayURL) {
+  AddTab(browser(), GURL(content::kAboutBlankURL));
+
+  // Check with neither query extraction nor the origin chip enabled.
+  EXPECT_FALSE(chrome::ShouldDisplayOriginChip());
+  EXPECT_FALSE(chrome::IsQueryExtractionEnabled());
+  for (size_t i = 0; i < arraysize(test_items); ++i) {
+    const TestItem& test_item = test_items[i];
+    NavigateAndCheckText(test_item.url,
+                         test_item.expected_text_url_replacement_inactive,
+                         false, test_item.should_display_url);
+  }
+
+  // Check with the origin chip enabled.
+  EnableOriginChipFieldTrial();
+  EXPECT_TRUE(chrome::ShouldDisplayOriginChip());
+  EXPECT_FALSE(chrome::IsQueryExtractionEnabled());
+  for (size_t i = 0; i < arraysize(test_items); ++i) {
+    const TestItem& test_item = test_items[i];
+    NavigateAndCheckText(test_item.url,
+                         test_item.expected_text_url_replacement_inactive,
+                         false, test_item.should_display_url);
+  }
+
+  // With both origin chip and query extraction enabled, only search term
+  // replacement should be performed.
+  chrome::EnableQueryExtractionForTesting();
+  EXPECT_TRUE(chrome::IsQueryExtractionEnabled());
+  EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
+  for (size_t i = 0; i < arraysize(test_items); ++i) {
+    const TestItem& test_item = test_items[i];
+    NavigateAndCheckText(test_item.url,
+                         test_item.expected_text_query_extraction,
+                         test_item.would_perform_search_term_replacement,
+                         test_item.should_display_url);
+  }
+
+  // Disabling URL replacement should reset to only showing URLs.
+  browser()->toolbar_model()->set_url_replacement_enabled(false);
+  for (size_t i = 0; i < arraysize(test_items); ++i) {
+    const TestItem& test_item = test_items[i];
+    NavigateAndCheckText(test_item.url,
+                         test_item.expected_text_url_replacement_inactive,
+                         false, test_item.should_display_url);
+  }
 }

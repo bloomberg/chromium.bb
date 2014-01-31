@@ -34,8 +34,9 @@ class ToolbarModelAndroid : public ToolbarModelDelegate {
       JNIEnv* env,
       jobject obj);
 
-  // ToolbarDelegate
+  // ToolbarDelegate:
   virtual content::WebContents* GetActiveWebContents() const OVERRIDE;
+  virtual bool InTabbedBrowser() const OVERRIDE;
 
   static bool RegisterToolbarModelAndroid(JNIEnv* env);
 

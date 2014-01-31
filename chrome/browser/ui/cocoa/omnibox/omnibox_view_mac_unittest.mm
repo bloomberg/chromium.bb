@@ -72,6 +72,9 @@ class TestingToolbarModelDelegate : public ToolbarModelDelegate {
   virtual content::WebContents* GetActiveWebContents() const OVERRIDE {
     return NULL;
   }
+  virtual bool InTabbedBrowser() const OVERRIDE {
+    return true;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingToolbarModelDelegate);

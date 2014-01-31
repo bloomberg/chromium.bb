@@ -260,9 +260,13 @@ class TestV2AppLauncherItemController : public LauncherItemController {
 
 class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
-  ChromeLauncherControllerTest() : test_controller_(NULL),
-                                   extension_service_(NULL) {
-    SetHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
+  ChromeLauncherControllerTest()
+      : BrowserWithTestWindowTest(
+            Browser::TYPE_TABBED,
+            chrome::HOST_DESKTOP_TYPE_ASH,
+            false),
+        test_controller_(NULL),
+        extension_service_(NULL) {
   }
 
   virtual ~ChromeLauncherControllerTest() {

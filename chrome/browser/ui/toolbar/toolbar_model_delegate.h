@@ -15,6 +15,9 @@ class ToolbarModelDelegate {
   // Returns active WebContents.
   virtual content::WebContents* GetActiveWebContents() const = 0;
 
+  // Returns whether the toolbar is hosted in a tabbed browser.
+  virtual bool InTabbedBrowser() const = 0;
+
  protected:
   virtual ~ToolbarModelDelegate() {}
 };

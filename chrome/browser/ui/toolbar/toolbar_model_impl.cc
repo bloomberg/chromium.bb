@@ -164,8 +164,8 @@ bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
     }
   }
 
-  return chrome::ShouldDisplayOriginChip() && ShouldDisplayURL() &&
-      url_replacement_enabled();
+  return chrome::ShouldDisplayOriginChip() && delegate_->InTabbedBrowser() &&
+      ShouldDisplayURL() && url_replacement_enabled();
 }
 
 bool ToolbarModelImpl::WouldPerformSearchTermReplacement(

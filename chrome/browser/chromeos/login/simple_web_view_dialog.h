@@ -90,6 +90,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
 
   // Implements ToolbarModelDelegate:
   virtual content::WebContents* GetActiveWebContents() const OVERRIDE;
+  virtual bool InTabbedBrowser() const OVERRIDE;
 
   // Implements CommandUpdaterDelegate:
   virtual void ExecuteCommandWithDisposition(

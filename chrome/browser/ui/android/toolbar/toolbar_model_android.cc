@@ -63,6 +63,10 @@ content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {
   return content::WebContents::FromJavaWebContents(jweb_contents.obj());
 }
 
+bool ToolbarModelAndroid::InTabbedBrowser() const {
+  return true;
+}
+
 // static
 bool ToolbarModelAndroid::RegisterToolbarModelAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);

@@ -25,7 +25,19 @@
 
 class ImmersiveModeControllerAshTest : public TestWithBrowserView {
  public:
-  ImmersiveModeControllerAshTest() {}
+  ImmersiveModeControllerAshTest()
+      : TestWithBrowserView(Browser::TYPE_TABBED,
+                            chrome::HOST_DESKTOP_TYPE_ASH,
+                            false) {
+  }
+  ImmersiveModeControllerAshTest(
+      Browser::Type browser_type,
+      chrome::HostDesktopType host_desktop_type,
+      bool hosted_app)
+      : TestWithBrowserView(browser_type,
+                            host_desktop_type,
+                            hosted_app) {
+  }
   virtual ~ImmersiveModeControllerAshTest() {}
 
   // TestWithBrowserView override:
@@ -253,7 +265,11 @@ TEST_F(ImmersiveModeControllerAshTest, TabAndBrowserFullscreen) {
 class ImmersiveModeControllerAshTestHostedApp
     : public ImmersiveModeControllerAshTest {
  public:
-  ImmersiveModeControllerAshTestHostedApp() {}
+  ImmersiveModeControllerAshTestHostedApp()
+      : ImmersiveModeControllerAshTest(Browser::TYPE_POPUP,
+                                       chrome::HOST_DESKTOP_TYPE_ASH,
+                                       true) {
+  }
   virtual ~ImmersiveModeControllerAshTestHostedApp() {}
 
   // ImmersiveModeControllerAshTest override:
@@ -261,17 +277,6 @@ class ImmersiveModeControllerAshTestHostedApp
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableImmersiveFullscreenForAllWindows);
     ImmersiveModeControllerAshTest::SetUp();
-  }
-
-  // BrowserWithTestWindowTest override:
-  virtual Browser* CreateBrowser(Profile* profile,
-                                 chrome::HostDesktopType host_desktop_type,
-                                 BrowserWindow* browser_window) OVERRIDE {
-    Browser::CreateParams params(profile, host_desktop_type);
-    params.type = Browser::TYPE_POPUP;
-    params.app_name = "Test";
-    params.window = browser_window;
-    return new Browser(params);
   }
 
  private:

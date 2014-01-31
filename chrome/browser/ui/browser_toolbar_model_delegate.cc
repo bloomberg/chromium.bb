@@ -18,3 +18,7 @@ content::WebContents*
 BrowserToolbarModelDelegate::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
+
+bool BrowserToolbarModelDelegate::InTabbedBrowser() const {
+  return browser_->is_type_tabbed();
+}

@@ -35,16 +35,21 @@ using content::RenderViewHostTester;
 using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
-    : host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE) {
+    : browser_type_(Browser::TYPE_TABBED),
+      host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
+      hosted_app_(false) {
+}
+
+BrowserWithTestWindowTest::BrowserWithTestWindowTest(
+    Browser::Type browser_type,
+    chrome::HostDesktopType host_desktop_type,
+    bool hosted_app)
+    : browser_type_(browser_type),
+      host_desktop_type_(host_desktop_type),
+      hosted_app_(hosted_app) {
 }
 
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
-}
-
-void BrowserWithTestWindowTest::SetHostDesktopType(
-    chrome::HostDesktopType host_desktop_type) {
-  DCHECK(!window_);
-  host_desktop_type_ = host_desktop_type;
 }
 
 void BrowserWithTestWindowTest::SetUp() {
@@ -74,7 +79,8 @@ void BrowserWithTestWindowTest::SetUp() {
   // is responsible for cleaning it up (usually by NativeWidget destruction).
   window_.reset(CreateBrowserWindow());
 
-  browser_.reset(CreateBrowser(profile(), host_desktop_type_, window_.get()));
+  browser_.reset(CreateBrowser(profile(), browser_type_, hosted_app_,
+                               host_desktop_type_, window_.get()));
 }
 
 void BrowserWithTestWindowTest::TearDown() {
@@ -210,10 +216,15 @@ BrowserWindow* BrowserWithTestWindowTest::CreateBrowserWindow() {
 
 Browser* BrowserWithTestWindowTest::CreateBrowser(
     Profile* profile,
+    Browser::Type browser_type,
+    bool hosted_app,
     chrome::HostDesktopType host_desktop_type,
     BrowserWindow* browser_window) {
   Browser::CreateParams params(profile, host_desktop_type);
+  params.type = browser_type;
   params.window = browser_window;
+  if (hosted_app)
+    params.app_name = "Test";
   return new Browser(params);
 }
 
