@@ -5,6 +5,7 @@
 
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="styles-test.js"></script>
 <script>
 
 function test()
@@ -196,18 +197,14 @@ function test()
                 loadAndDumpStyleSheet.bind(null, styleSheetId, test_changeSelector));
         }
 
-        function styleSheetInfosLoaded(error, infos)
+        function styleSheetInfosLoaded(styleSheets)
         {
-            if (error) {
-                InspectorTest.addResult("error: " + error);
-                return;
-            }
             InspectorTest.addResult("");
             InspectorTest.addResult("=== All stylesheets ===");
-            for (var i = 0; i < infos.length; ++i)
-                loadAndDumpStyleSheet(infos[i].styleSheetId, (i < infos.length - 1) ? null : patchStyleSheet.bind(null, infos[i].styleSheetId));
+            for (var i = 0; i < styleSheets.length; ++i)
+                loadAndDumpStyleSheet(styleSheets[i].id, (i < styleSheets.length - 1) ? null : patchStyleSheet.bind(null, styleSheets[i].id));
         }
-        CSSAgent.getAllStyleSheets(styleSheetInfosLoaded);
+        InspectorTest.waitForStylesheetsOnFrontend(4, styleSheetInfosLoaded);
     }
 
     function test_changeSelector(styleSheet)

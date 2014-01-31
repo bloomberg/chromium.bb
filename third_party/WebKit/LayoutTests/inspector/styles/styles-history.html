@@ -6,6 +6,7 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script src="../../http/tests/inspector/resources-test.js"></script>
+<script src="styles-test.js"></script>
 <script>
 
 function test()
@@ -86,21 +87,15 @@ function test()
 
     function styleSheetForResource(callback)
     {
-        CSSAgent.getAllStyleSheets(didGetAllStyleSheets.bind(this));
+        InspectorTest.waitForStylesheetsOnFrontend(1, didGetAllStyleSheets.bind(this));
 
-        function didGetAllStyleSheets(error, infos)
+        function didGetAllStyleSheets(styleSheets)
         {
-            if (error) {
-                InspectorTest.addResult("Error:" + error);
-                callback(null);
-                return;
-            }
-
-            for (var i = 0; i < infos.length; ++i) {
-                var info = infos[i];
-                if (info.sourceURL.indexOf("styles-history.css") === -1)
+            for (var i = 0; i < styleSheets.length; ++i) {
+                var styleSheet = styleSheets[i];
+                if (styleSheet.sourceURL.indexOf("styles-history.css") === -1)
                     continue;
-                WebInspector.CSSStyleSheet.createForId(info.styleSheetId, callback);
+                WebInspector.CSSStyleSheet.createForId(styleSheet.id, callback);
                 return;
             }
             callback(null);

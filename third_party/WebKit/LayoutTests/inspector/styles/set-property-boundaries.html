@@ -9,23 +9,18 @@ h1 {
 
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="styles-test.js"></script>
 <script>
 
 function test()
 {
     WebInspector.showPanel("elements");
-    CSSAgent.getAllStyleSheets(styleSheetInfosLoaded);
+    InspectorTest.waitForStylesheetsOnFrontend(1, styleSheetInfosLoaded);
 
-    function styleSheetInfosLoaded(error, infos)
+    function styleSheetInfosLoaded(styleSheets)
     {
-        if (error) {
-            InspectorTest.addResult("error: " + error);
-            InspectorTest.completeTest();
-            return;
-        }
-
-        for (var i = 0; i < infos.length; ++i)
-            CSSAgent.getStyleSheet(infos[i].styleSheetId, styleSheetLoaded);
+        for (var i = 0; i < styleSheets.length; ++i)
+            CSSAgent.getStyleSheet(styleSheets[i].id, styleSheetLoaded);
     }
 
     function styleSheetLoaded(error, styleSheet)

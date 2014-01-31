@@ -1,5 +1,4 @@
 This test checks that style sheets hosted inside shadow roots are reported in CSS.getAllStyleSheets protocol method.
 
-Loaded style sheets count: 1
 Loaded style sheet text:  .red { color: red; } 
 

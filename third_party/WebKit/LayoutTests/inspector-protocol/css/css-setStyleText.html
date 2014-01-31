@@ -9,25 +9,18 @@ body {
 <script>
 function test()
 {
-    InspectorTest.sendCommand("CSS.getAllStyleSheets", {}, onGotStyleSheets);
-    var styleId;
+    InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+    InspectorTest.sendCommand("CSS.enable", {}, null);
 
-    function onGotStyleSheets(msg) {
-        if (msg.error) {
-            InspectorTest.log(msg.error.message);
-            InspectorTest.completeTest();
+    var styleId;
+    function styleSheetAdded(msg)
+    {
+        var header = msg.params.header;
+        if (header.origin !== "regular")
             return;
-        }
-        var headers = msg.result.headers;
-        for (var i = 0; i < headers.length; ++i) {
-            if (headers[i].origin === "regular") {
-                styleId = { "styleSheetId": headers[i].styleSheetId, "ordinal": 0 };
-                InspectorTest.sendCommand("CSS.setStyleText", { "styleId": styleId, "text": "color: red;" }, onTextSet);
-                return;
-            }
-        }
-        InspectorTest.log("Regular stylesheet not found");
-        InspectorTest.completeTest();
+        delete InspectorTest.eventHandler["CSS.styleSheetAdded"];
+        styleId = { "styleSheetId": header.styleSheetId, "ordinal": 0 };
+        InspectorTest.sendCommand("CSS.setStyleText", { "styleId": styleId, "text": "color: red;" }, onTextSet);
     }
 
     function onTextSet(msg) {

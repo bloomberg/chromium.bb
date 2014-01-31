@@ -151,6 +151,70 @@ NotSupportedError
 
 === All stylesheets ===
 
+StyleSheet: '@import url(styles-new-API-2.css);
+
+@page { margin: 2cm } /* All margins set to 2cm */
+
+@page :first {
+  margin-top: 10cm    /* Top margin on first page 10cm */
+}
+
+@media screen {
+
+#absent-id {
+}
+
+@font-face {
+    font-family: 'TheFont';
+    src: url('font.url');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    property: imported-media-screen-stylesheet;
+}
+
+}
+'
+#absent-id: [regular, 10:0-10:10] {
+}
+body: [regular, 20:0-20:4] {
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+}
+
+StyleSheet: '@import url(styles-new-API-1.css);
+
+@page { margin: 2cm } /* All margins set to 2cm */
+
+@page :first {
+  margin-top: 10cm    /* Top margin on first page 10cm */
+}
+
+@media screen {
+
+#absent-id {
+}
+
+@font-face {
+    font-family: 'TheFont';
+    src: url('font.url');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    property: imported-media-screen-stylesheet;
+}
+
+}
+'
+#absent-id: [regular, 10:0-10:10] {
+}
+body: [regular, 20:0-20:4] {
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+}
+
 StyleSheet: '@charset "UTF-8";
 
 @import url("styles-new-API-1.css");
@@ -245,70 +309,6 @@ h1: [regular, 30:0-30:2] {
     ['border-right-width':'0px'] @[undefined-undefined] style
     ['border-bottom-width':'0px'] @[undefined-undefined] style
     ['border-left-width':'0px'] @[undefined-undefined] style
-}
-
-StyleSheet: '@import url(styles-new-API-2.css);
-
-@page { margin: 2cm } /* All margins set to 2cm */
-
-@page :first {
-  margin-top: 10cm    /* Top margin on first page 10cm */
-}
-
-@media screen {
-
-#absent-id {
-}
-
-@font-face {
-    font-family: 'TheFont';
-    src: url('font.url');
-    font-weight: normal;
-    font-style: normal;
-}
-
-body {
-    property: imported-media-screen-stylesheet;
-}
-
-}
-'
-#absent-id: [regular, 10:0-10:10] {
-}
-body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
-}
-
-StyleSheet: '@import url(styles-new-API-1.css);
-
-@page { margin: 2cm } /* All margins set to 2cm */
-
-@page :first {
-  margin-top: 10cm    /* Top margin on first page 10cm */
-}
-
-@media screen {
-
-#absent-id {
-}
-
-@font-face {
-    font-family: 'TheFont';
-    src: url('font.url');
-    font-weight: normal;
-    font-style: normal;
-}
-
-body {
-    property: imported-media-screen-stylesheet;
-}
-
-}
-'
-#absent-id: [regular, 10:0-10:10] {
-}
-body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
 }
 
 StyleSheet: '

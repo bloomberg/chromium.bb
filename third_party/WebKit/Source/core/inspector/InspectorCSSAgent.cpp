@@ -1083,15 +1083,6 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     }
 }
 
-void InspectorCSSAgent::getAllStyleSheets(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader> >& styleInfos)
-{
-    styleInfos = TypeBuilder::Array<TypeBuilder::CSS::CSSStyleSheetHeader>::create();
-    Vector<InspectorStyleSheet*> styleSheets;
-    collectAllStyleSheets(styleSheets);
-    for (size_t i = 0; i < styleSheets.size(); ++i)
-        styleInfos->addItem(styleSheets.at(i)->buildObjectForStyleSheetInfo());
-}
-
 void InspectorCSSAgent::getStyleSheet(ErrorString* errorString, const String& styleSheetId, RefPtr<TypeBuilder::CSS::CSSStyleSheetBody>& styleSheetObject)
 {
     InspectorStyleSheet* inspectorStyleSheet = assertStyleSheetForId(errorString, styleSheetId);

@@ -2,33 +2,27 @@
 <html>
 <head>
 <script type="text/javascript" src="../http/tests/inspector-protocol/resources/protocol-test.js"></script>
-<script>
+<script type="text/javascript">
 function pageLoaded()
 {
-    var template = document.querySelector('#tmpl');
-    var root = document.querySelector('#host').webkitCreateShadowRoot();
+    var template = document.querySelector("#tmpl");
+    var root = document.querySelector("#host").webkitCreateShadowRoot();
     root.appendChild(template.content.cloneNode(true));
     runTest();
 }
 
 function test()
 {
-    InspectorTest.sendCommand("CSS.enable", {}, step1);
-    
-    function step1()
+    InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
+    InspectorTest.sendCommand("CSS.enable", {}, null);
+
+    function styleSheetAdded(msg)
     {
-        InspectorTest.sendCommand("CSS.getAllStyleSheets", {}, step2);
+        var styleSheetHeader = msg.params.header;
+        InspectorTest.sendCommand("CSS.getStyleSheetText", {"styleSheetId": styleSheetHeader.styleSheetId}, onStyleSheetText);
     }
-    
-    function step2(payload)
-    {
-        var headers = payload.result.headers
-        InspectorTest.log("Loaded style sheets count: " + headers.length);
-        var styleSheetHeader = headers[0];
-        InspectorTest.sendCommand("CSS.getStyleSheetText", {"styleSheetId": styleSheetHeader.styleSheetId}, step3);
-    }
-    
-    function step3(payload)
+
+    function onStyleSheetText(payload)
     {
         InspectorTest.log("Loaded style sheet text: " + payload.result.text);
         InspectorTest.completeTest();

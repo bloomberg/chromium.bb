@@ -2,24 +2,19 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="styles-test.js"></script>
 <script>
 
 function test()
 {
     WebInspector.showPanel("elements");
 
-    CSSAgent.getAllStyleSheets(headersCallback);
+    InspectorTest.waitForStylesheetsOnFrontend(14, headersCallback);
 
-    function headersCallback(error, headers)
+    function headersCallback(headers)
     {
-        if (error) {
-            InspectorTest.addResult("Error loading stylesheet headers: " + error);
-            InspectorTest.completeTest();
-            return;
-        }
-
         for (var i = 0; i < headers.length; ++i)
-            CSSAgent.getStyleSheet(headers[i].styleSheetId, styleSheetCallback.bind(null, i === headers.length - 1));
+            CSSAgent.getStyleSheet(headers[i].id, styleSheetCallback.bind(null, i === headers.length - 1));
     }
 
     function styleSheetCallback(isLast, error, styleSheet)
