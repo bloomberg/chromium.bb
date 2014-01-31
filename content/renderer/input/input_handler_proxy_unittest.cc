@@ -138,6 +138,17 @@ class MockInputHandlerProxyClient
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClient);
 };
 
+WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
+                                  float y) {
+  WebTouchPoint point;
+  point.state = state;
+  point.screenPosition.x = x;
+  point.screenPosition.y = y;
+  point.position.x = x;
+  point.position.y = y;
+  return point;
+}
+
 class InputHandlerProxyTest : public testing::Test {
  public:
   InputHandlerProxyTest()
@@ -1170,18 +1181,9 @@ TEST_F(InputHandlerProxyTest, MultiTouchPointHitTestNegative) {
   touch.type = WebInputEvent::TouchStart;
 
   touch.touchesLength = 3;
-  touch.touches[0].state = WebTouchPoint::StateStationary;
-  touch.touches[0].screenPosition = WebPoint();
-  touch.touches[0].position = WebPoint();
-
-  touch.touches[1].state = WebTouchPoint::StatePressed;
-  touch.touches[1].screenPosition = WebPoint(10, 10);
-  touch.touches[1].position = WebPoint(10, 10);
-
-  touch.touches[2].state = WebTouchPoint::StatePressed;
-  touch.touches[2].screenPosition = WebPoint(-10, 10);
-  touch.touches[2].position = WebPoint(-10, 10);
-
+  touch.touches[0] = CreateWebTouchPoint(WebTouchPoint::StateStationary, 0, 0);
+  touch.touches[1] = CreateWebTouchPoint(WebTouchPoint::StatePressed, 10, 10);
+  touch.touches[2] = CreateWebTouchPoint(WebTouchPoint::StatePressed, -10, 10);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(touch));
 }
 
@@ -1206,18 +1208,9 @@ TEST_F(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
   touch.type = WebInputEvent::TouchStart;
 
   touch.touchesLength = 3;
-  touch.touches[0].state = WebTouchPoint::StatePressed;
-  touch.touches[0].screenPosition = WebPoint();
-  touch.touches[0].position = WebPoint();
-
-  touch.touches[1].state = WebTouchPoint::StatePressed;
-  touch.touches[1].screenPosition = WebPoint(10, 10);
-  touch.touches[1].position = WebPoint(10, 10);
-
-  touch.touches[2].state = WebTouchPoint::StatePressed;
-  touch.touches[2].screenPosition = WebPoint(-10, 10);
-  touch.touches[2].position = WebPoint(-10, 10);
-
+  touch.touches[0] = CreateWebTouchPoint(WebTouchPoint::StatePressed, 0, 0);
+  touch.touches[1] = CreateWebTouchPoint(WebTouchPoint::StatePressed, 10, 10);
+  touch.touches[2] = CreateWebTouchPoint(WebTouchPoint::StatePressed, -10, 10);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(touch));
 }
 

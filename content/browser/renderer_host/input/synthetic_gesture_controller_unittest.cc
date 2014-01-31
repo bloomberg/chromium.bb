@@ -218,8 +218,10 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
     if (!started_) {
       ASSERT_EQ(touch_event.type, WebInputEvent::TouchStart);
 
-      start_0_ = gfx::Point(touch_event.touches[0].position);
-      start_1_ = gfx::Point(touch_event.touches[1].position);
+      start_0_ = gfx::PointF(touch_event.touches[0].position.x,
+                             touch_event.touches[0].position.y);
+      start_1_ = gfx::PointF(touch_event.touches[1].position.x,
+                             touch_event.touches[1].position.y);
       last_pointer_distance_ = (start_0_ - start_1_).Length();
 
       started_ = true;
@@ -227,8 +229,10 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
       ASSERT_NE(touch_event.type, WebInputEvent::TouchStart);
       ASSERT_NE(touch_event.type, WebInputEvent::TouchCancel);
 
-      gfx::PointF current_0 = gfx::Point(touch_event.touches[0].position);
-      gfx::PointF current_1 = gfx::Point(touch_event.touches[1].position);
+      gfx::PointF current_0 = gfx::PointF(touch_event.touches[0].position.x,
+                                          touch_event.touches[0].position.y);
+      gfx::PointF current_1 = gfx::PointF(touch_event.touches[1].position.x,
+                                          touch_event.touches[1].position.y);
 
       total_num_pixels_covered_ =
           (current_0 - start_0_).Length() + (current_1 - start_1_).Length();
@@ -273,7 +277,7 @@ class MockSyntheticTapGestureTarget : public MockSyntheticGestureTarget {
   virtual ~MockSyntheticTapGestureTarget() {}
 
   bool GestureFinished() const { return state_ == FINISHED; }
-  gfx::Point position() const { return position_; }
+  gfx::PointF position() const { return position_; }
   base::TimeDelta GetDuration() const { return stop_time_ - start_time_; }
 
  protected:
@@ -283,7 +287,9 @@ class MockSyntheticTapGestureTarget : public MockSyntheticGestureTarget {
     FINISHED
   };
 
-  gfx::Point position_;
+  // TODO(tdresser): clean up accesses to position_ once WebTouchPoint stores
+  // its location as a WebFloatPoint. See crbug.com/336807.
+  gfx::PointF position_;
   base::TimeDelta start_time_;
   base::TimeDelta stop_time_;
   GestureState state_;
@@ -303,14 +309,16 @@ class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
     switch (state_) {
       case NOT_STARTED:
         EXPECT_EQ(touch_event.type, WebInputEvent::TouchStart);
-        position_ = gfx::Point(touch_event.touches[0].position);
+        position_ = gfx::PointF(touch_event.touches[0].position.x,
+                                touch_event.touches[0].position.y);
         start_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64>(touch_event.timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
         EXPECT_EQ(touch_event.type, WebInputEvent::TouchEnd);
-        EXPECT_EQ(position_, gfx::Point(touch_event.touches[0].position));
+        EXPECT_EQ(position_, gfx::PointF(touch_event.touches[0].position.x,
+                                         touch_event.touches[0].position.y));
         stop_time_ = base::TimeDelta::FromMilliseconds(
             static_cast<int64>(touch_event.timeStampSeconds * 1000));
         state_ = FINISHED;
