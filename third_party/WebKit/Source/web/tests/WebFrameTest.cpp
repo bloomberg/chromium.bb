@@ -4635,6 +4635,32 @@ TEST_F(WebFrameTest, BackToReload)
     EXPECT_EQ(WebURLRequest::ReloadIgnoringCacheData, frame->dataSource()->request().cachePolicy());
 }
 
+TEST_F(WebFrameTest, BackDuringChildFrameReload)
+{
+    registerMockedHttpURLLoad("page_with_blank_iframe.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "page_with_blank_iframe.html", true);
+    WebFrame* mainFrame = webViewHelper.webView()->mainFrame();
+    WebFrame* childFrame = mainFrame->firstChild();
+    ASSERT_TRUE(childFrame);
+
+    // Start a history navigation, then have a different frame commit a navigation.
+    // In this case, reload an about:blank frame, which will commit synchronously.
+    // After the history navigation completes, both the appropriate document url and
+    // the current history item should reflect the history navigation.
+    registerMockedHttpURLLoad("white-1x1.png");
+    WebHistoryItem item;
+    item.initialize();
+    WebURL historyURL(toKURL(m_baseURL + "white-1x1.png"));
+    item.setURLString(historyURL.string());
+    mainFrame->loadHistoryItem(item);
+
+    childFrame->reload();
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_EQ(item.urlString(), mainFrame->document().url().string());
+    EXPECT_EQ(item.urlString(), mainFrame->currentHistoryItem().urlString());
+}
+
 TEST_F(WebFrameTest, ReloadPost)
 {
     registerMockedHttpURLLoad("reload_post.html");
