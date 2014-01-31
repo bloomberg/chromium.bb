@@ -14,7 +14,8 @@ var remoting = remoting || {};
 
 /**
  * @type {boolean} Whether or not the last share was cancelled by the user.
- *     This controls what screen is shown when the host signals completion.
+ *     This controls what screen is shown when the host plugin signals
+ *     completion.
  * @private
  */
 var lastShareWasCancelled_ = false;
@@ -41,38 +42,31 @@ remoting.tryShareWithToken_ = function(token) {
   disableTimeoutCountdown_();
 
   var div = document.getElementById('host-plugin-container');
-  // TODO(weitaosu): Unlike the npapi plugin, the it2me native messaging host
-  // can be long-lived and will create an it2me host on demand.  We should also
-  // keep the HostSession and HostIt2MeDispatcher object alive to avoid repeated
-  // creation of the native messaging host.
   remoting.hostSession = new remoting.HostSession();
-  remoting.hostSession.createDispatcherAndConnect(
+  remoting.hostSession.createPluginAndConnect(
       document.getElementById('host-plugin-container'),
       /** @type {string} */(remoting.identity.getCachedEmail()),
       token,
-      onHostStateChanged_,
       onNatTraversalPolicyChanged_,
-      logDebugInfo_,
-      it2meConnectFailed_);
+      onHostStateChanged_,
+      logDebugInfo_);
 };
 
 /**
  * Callback for the host plugin to notify the web app of state changes.
  * @param {remoting.HostSession.State} state The new state of the plugin.
- * @return {void} Nothing.
- * @private
  */
 function onHostStateChanged_(state) {
   if (state == remoting.HostSession.State.STARTING) {
     // Nothing to do here.
-    console.log('Host state: STARTING');
+    console.log('Host plugin state: STARTING');
 
   } else if (state == remoting.HostSession.State.REQUESTED_ACCESS_CODE) {
     // Nothing to do here.
-    console.log('Host state: REQUESTED_ACCESS_CODE');
+    console.log('Host plugin state: REQUESTED_ACCESS_CODE');
 
   } else if (state == remoting.HostSession.State.RECEIVED_ACCESS_CODE) {
-    console.log('Host state: RECEIVED_ACCESS_CODE');
+    console.log('Host plugin state: RECEIVED_ACCESS_CODE');
     var accessCode = remoting.hostSession.getAccessCode();
     var accessCodeDisplay = document.getElementById('access-code-display');
     accessCodeDisplay.innerText = '';
@@ -86,7 +80,8 @@ function onHostStateChanged_(state) {
     }
     accessCodeExpiresIn_ = remoting.hostSession.getAccessCodeLifetime();
     if (accessCodeExpiresIn_ > 0) {  // Check it hasn't expired.
-      accessCodeTimerId_ = setInterval(decrementAccessCodeTimeout_, 1000);
+      accessCodeTimerId_ = setInterval(
+          remoting.decrementAccessCodeTimeout_, 1000);
       timerRunning_ = true;
       updateAccessCodeTimeoutElement_();
       updateTimeoutStyles_();
@@ -99,7 +94,7 @@ function onHostStateChanged_(state) {
     }
 
   } else if (state == remoting.HostSession.State.CONNECTED) {
-    console.log('Host state: CONNECTED');
+    console.log('Host plugin state: CONNECTED');
     var element = document.getElementById('host-shared-message');
     var client = remoting.hostSession.getClient();
     l10n.localizeElement(element, client);
@@ -107,10 +102,10 @@ function onHostStateChanged_(state) {
     disableTimeoutCountdown_();
 
   } else if (state == remoting.HostSession.State.DISCONNECTING) {
-    console.log('Host state: DISCONNECTING');
+    console.log('Host plugin state: DISCONNECTING');
 
   } else if (state == remoting.HostSession.State.DISCONNECTED) {
-    console.log('Host state: DISCONNECTED');
+    console.log('Host plugin state: DISCONNECTED');
     if (remoting.currentMode != remoting.AppMode.HOST_SHARE_FAILED) {
       // If an error is being displayed, then the plugin should not be able to
       // hide it by setting the state. Errors must be dismissed by the user
@@ -121,13 +116,13 @@ function onHostStateChanged_(state) {
         remoting.setMode(remoting.AppMode.HOST_SHARE_FINISHED);
       }
     }
-    remoting.hostSession.cleanup();
+    remoting.hostSession.removePlugin();
 
   } else if (state == remoting.HostSession.State.ERROR) {
-    console.error('Host state: ERROR');
+    console.error('Host plugin state: ERROR');
     showShareError_(remoting.Error.UNEXPECTED);
   } else if (state == remoting.HostSession.State.INVALID_DOMAIN_ERROR) {
-    console.error('Host state: INVALID_DOMAIN_ERROR');
+    console.error('Host plugin state: INVALID_DOMAIN_ERROR');
     showShareError_(remoting.Error.INVALID_HOST_DOMAIN);
   } else {
     console.error('Unknown state -> ' + state);
@@ -138,7 +133,6 @@ function onHostStateChanged_(state) {
  * This is the callback that the host plugin invokes to indicate that there
  * is additional debug log info to display.
  * @param {string} msg The message (which will not be localized) to be logged.
- * @private
  */
 function logDebugInfo_(msg) {
   console.log('plugin: ' + msg);
@@ -149,7 +143,6 @@ function logDebugInfo_(msg) {
  *
  * @param {string} errorTag The error message to be localized and displayed.
  * @return {void} Nothing.
- * @private
  */
 function showShareError_(errorTag) {
   var errorDiv = document.getElementById('host-plugin-error');
@@ -159,21 +152,7 @@ function showShareError_(errorTag) {
 }
 
 /**
- * Show a sharing error with error code UNEXPECTED .
- *
- * @return {void} Nothing.
- * @private
- */
-function it2meConnectFailed_() {
-  // TODO (weitaosu): Instruct the user to install the native messaging host.
-  // We probably want to add a new error code (with the corresponding error
-  // message for sharing error.
-  console.error('Cannot share desktop.');
-  showShareError_(remoting.Error.UNEXPECTED);
-}
-
-/**
- * Cancel an active or pending it2me share operation.
+ * Cancel an active or pending share operation.
  *
  * @return {void} Nothing.
  */
@@ -187,7 +166,7 @@ remoting.cancelShare = function() {
     // Hack to force JSCompiler type-safety.
     var errorTyped = /** @type {{description: string}} */ error;
     console.error('Error disconnecting: ' + errorTyped.description +
-                  '. The host probably crashed.');
+                '. The host plugin probably crashed.');
     // TODO(jamiewalch): Clean this up. We should have a class representing
     // the host plugin, like we do for the client, which should handle crash
     // reporting and it should use a more detailed error message than the
@@ -216,19 +195,17 @@ var accessCodeTimerId_ = 0;
 var accessCodeExpiresIn_ = 0;
 
 /**
- * The timer callback function
- * @return {void} Nothing.
+ * The timer callback function, which needs to be visible from the global
+ * namespace.
  * @private
  */
-function decrementAccessCodeTimeout_() {
+remoting.decrementAccessCodeTimeout_ = function() {
   --accessCodeExpiresIn_;
   updateAccessCodeTimeoutElement_();
 };
 
 /**
  * Stop the access code timeout countdown if it is running.
- * @return {void} Nothing.
- * @private
  */
 function disableTimeoutCountdown_() {
   if (timerRunning_) {
@@ -251,7 +228,6 @@ var ACCESS_CODE_RED_THRESHOLD_ = 10;
  *
  * @return {boolean} True if the timeout is in progress, false if it has
  * expired.
- * @private
  */
 function updateTimeoutStyles_() {
   if (timerRunning_) {
@@ -275,8 +251,6 @@ function updateTimeoutStyles_() {
 /**
  * Update the text and appearance of the access code timeout element to
  * reflect the time remaining.
- * @return {void} Nothing.
- * @private
  */
 function updateAccessCodeTimeoutElement_() {
   var pad = (accessCodeExpiresIn_ < 10) ? '0:0' : '0:';
@@ -291,7 +265,6 @@ function updateAccessCodeTimeoutElement_() {
  * Callback to show or hide the NAT traversal warning when the policy changes.
  * @param {boolean} enabled True if NAT traversal is enabled.
  * @return {void} Nothing.
- * @private
  */
 function onNatTraversalPolicyChanged_(enabled) {
   var natBox = document.getElementById('nat-box');
