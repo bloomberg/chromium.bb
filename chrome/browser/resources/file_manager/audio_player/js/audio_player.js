@@ -17,6 +17,16 @@ function AudioPlayer(container) {
   this.currentTrackIndex_ = -1;
   this.playlistGeneration_ = 0;
 
+  /**
+   * Whether if the playlist is expanded or not. This value is changed by
+   * this.syncExpanded().
+   * True: expanded, false: collapsed, null: unset.
+   *
+   * @type {?boolean}
+   * @private
+   */
+  this.isExpanded_ = null;  // Initial value is null. It'll be set in load().
+
   this.player_ = document.querySelector('audio-player');
   this.trackListItems_ = [];
   this.player_.tracks = this.trackListItems_;
@@ -90,6 +100,8 @@ AudioPlayer.prototype.load = function(playlist) {
   window.appState = playlist;
   util.saveAppState();
 
+  this.syncExpanded();
+
   // Resolving entries has to be done after the volume manager is initialized.
   this.volumeManager_.ensureInitialized(function() {
     util.URLsToEntries(playlist.items, function(entries) {
@@ -97,8 +109,6 @@ AudioPlayer.prototype.load = function(playlist) {
 
       var position = playlist.position || 0;
       var time = playlist.time || 0;
-
-      this.syncHeight_();
 
       if (this.entries_.length == 0)
         return;
@@ -214,14 +224,6 @@ AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
 };
 
 /**
- * @return {boolean} True if the player is be displayed in compact mode.
- * @private
- */
-AudioPlayer.prototype.isExpanded_ = function() {
-  return this.player_.isExpanded();
-};
-
-/**
  * Media error handler.
  * @private
  */
@@ -315,7 +317,8 @@ AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.CONTROLS_HEIGHT +
  * Sets the correct player window height.
  */
 AudioPlayer.prototype.syncExpanded = function() {
-  if (this.isExpanded_ == this.player_.isExpanded())
+  if (this.isExpanded_ !== null &&
+      this.isExpanded_ == this.player_.isExpanded())
     return;
 
   if (this.isExpanded_ && !this.player_.isExpanded())
@@ -339,6 +342,7 @@ AudioPlayer.prototype.syncHeight_ = function() {
         Math.min(this.entries_.length, AudioPlayer.DEFAULT_EXPANDED_ITEMS) *
                                        AudioPlayer.TRACK_HEIGHT;
       targetHeight = AudioPlayer.CONTROLS_HEIGHT + expandedListHeight;
+      this.lastExpandedHeight_ = targetHeight;
     } else {
       targetHeight = this.lastExpandedHeight_;
     }

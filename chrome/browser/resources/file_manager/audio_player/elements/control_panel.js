@@ -85,7 +85,7 @@
      * Flag whether the playlist is expanded or not.
      * @type {boolean}
      */
-    playlistExpanded: true,
+    playlistExpanded: false,
 
     /**
      * Flag whether the volume slider is expanded or not.
