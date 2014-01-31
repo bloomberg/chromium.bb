@@ -1529,6 +1529,7 @@ pointer_cursor_surface_configure(struct weston_surface *es,
 	weston_view_set_position(pointer->sprite, x, y);
 
 	empty_region(&es->pending.input);
+	empty_region(&es->input);
 
 	if (!weston_surface_is_mapped(es)) {
 		wl_list_insert(&es->compositor->cursor_layer.view_list,

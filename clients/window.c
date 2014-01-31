@@ -3458,13 +3458,13 @@ input_set_pointer_image_index(struct input *input, int index)
 	if (!buffer)
 		return;
 
-	wl_pointer_set_cursor(input->pointer, input->pointer_enter_serial,
-			      input->pointer_surface,
-			      image->hotspot_x, image->hotspot_y);
 	wl_surface_attach(input->pointer_surface, buffer, 0, 0);
 	wl_surface_damage(input->pointer_surface, 0, 0,
 			  image->width, image->height);
 	wl_surface_commit(input->pointer_surface);
+	wl_pointer_set_cursor(input->pointer, input->pointer_enter_serial,
+			      input->pointer_surface,
+			      image->hotspot_x, image->hotspot_y);
 }
 
 static const struct wl_callback_listener pointer_surface_listener;
