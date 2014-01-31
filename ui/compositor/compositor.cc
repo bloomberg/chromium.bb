@@ -40,7 +40,6 @@ const double kTestRefreshRate = 200.0;
 
 enum SwapType {
   DRAW_SWAP,
-  READPIXELS_SWAP,
 };
 
 bool g_compositor_initialized = false;
@@ -395,21 +394,6 @@ void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
   scoped_ptr<cc::SwapPromise> swap_promise(
       new cc::LatencyInfoSwapPromise(latency_info));
   host_->QueueSwapPromise(swap_promise.Pass());
-}
-
-bool Compositor::ReadPixels(SkBitmap* bitmap,
-                            const gfx::Rect& bounds_in_pixel) {
-  if (bounds_in_pixel.right() > size().width() ||
-      bounds_in_pixel.bottom() > size().height())
-    return false;
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    bounds_in_pixel.width(), bounds_in_pixel.height());
-  bitmap->allocPixels();
-  SkAutoLockPixels lock_image(*bitmap);
-  unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
-  CancelCompositorLock();
-  PendingSwap pending_swap(READPIXELS_SWAP, posted_swaps_.get());
-  return host_->CompositeAndReadback(pixels, bounds_in_pixel);
 }
 
 void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {

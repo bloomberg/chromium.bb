@@ -209,11 +209,6 @@ class COMPOSITOR_EXPORT Compositor
 
   void SetLatencyInfo(const LatencyInfo& latency_info);
 
-  // Reads the region |bounds_in_pixel| of the contents of the last rendered
-  // frame into the given bitmap.
-  // Returns false if the pixels could not be read.
-  bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds_in_pixel);
-
   // Sets the compositor's device scale factor and size.
   void SetScaleAndSize(float scale, const gfx::Size& size_in_pixel);
 
