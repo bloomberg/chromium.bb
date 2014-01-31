@@ -288,7 +288,14 @@ void ThreadState::attach()
 void ThreadState::detach()
 {
     ThreadState* state = current();
+    // Enter safe point before trying to acquire threadAttachMutex
+    // to avoid dead lock if another thread is preparing for GC, has acquired
+    // threadAttachMutex and waiting for other threads to pause or reach a
+    // safepoint.
+    if (!state->isAtSafePoint())
+        state->enterSafePointWithoutPointers();
     MutexLocker locker(threadAttachMutex());
+    state->leaveSafePoint();
     attachedThreads().remove(state);
     delete state;
 }

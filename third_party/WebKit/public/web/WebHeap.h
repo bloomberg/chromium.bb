@@ -40,20 +40,22 @@ public:
     // Attach thread to the garbage collector managed heap. Thread can
     // allocate or use garbage collector managed objects only while it is
     // attached.
-    BLINK_EXPORT void attachThread();
+    BLINK_EXPORT static void attachThread();
 
     // Detach thread from the garbage collector managed heap. Thread can
     // no longer allocate or use garbage collector managed objects.
-    BLINK_EXPORT void detachThread();
+    BLINK_EXPORT static void detachThread();
 
-    // Mark thread as being at safepoint. It can't manipulate garbage
-    // collector managed objects until it leaves safepoint.
-    BLINK_EXPORT void enterSafePoint();
-
-    // Mark thread as not being at safepoint. It can manipulate garbage
-    // collector managed objects, but should not block indefinitely because
+    // While this object is active on the stack current thread is marked as
+    // being at safepoint. It can't manipulate garbage collector managed objects
+    // until it leaves safepoint, but it can block indefinitely.
+    // When thread is not at safe-point it must not block indefinitely because
     // garbage collector might want to stop it.
-    BLINK_EXPORT void leaveSafePoint();
+    class SafePointScope {
+    public:
+        BLINK_EXPORT SafePointScope();
+        BLINK_EXPORT ~SafePointScope();
+    };
 };
 
 } // namespace blink

@@ -35,16 +35,6 @@
 
 namespace blink {
 
-void WebHeap::enterSafePoint()
-{
-    WebCore::ThreadState::current()->enterSafePointWithoutPointers();
-}
-
-void WebHeap::leaveSafePoint()
-{
-    WebCore::ThreadState::current()->leaveSafePoint();
-}
-
 void WebHeap::attachThread()
 {
     WebCore::ThreadState::attach();
@@ -53,6 +43,16 @@ void WebHeap::attachThread()
 void WebHeap::detachThread()
 {
     WebCore::ThreadState::detach();
+}
+
+WebHeap::SafePointScope::SafePointScope()
+{
+    WebCore::ThreadState::current()->enterSafePointWithPointers(this);
+}
+
+WebHeap::SafePointScope::~SafePointScope()
+{
+    WebCore::ThreadState::current()->leaveSafePoint();
 }
 
 } // namespace blink
