@@ -27,7 +27,7 @@ namespace {
 
 class SymKeyHandle : public blink::WebCryptoKeyHandle {
  public:
-  SymKeyHandle(const unsigned char* key_data, unsigned key_data_size)
+  SymKeyHandle(const unsigned char* key_data, unsigned int key_data_size)
       : key_(key_data, key_data + key_data_size) {}
 
   const std::vector<unsigned char>& key() const { return key_; }
@@ -38,7 +38,7 @@ class SymKeyHandle : public blink::WebCryptoKeyHandle {
   DISALLOW_COPY_AND_ASSIGN(SymKeyHandle);
 };
 
-const EVP_CIPHER* GetAESCipherByKeyLength(unsigned key_length_bytes) {
+const EVP_CIPHER* GetAESCipherByKeyLength(unsigned int key_length_bytes) {
   // OpenSSL supports AES CBC ciphers for only 3 key lengths: 128, 192, 256 bits
   switch (key_length_bytes) {
     case 16:
@@ -62,7 +62,7 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const unsigned char* data,
-                            unsigned data_size,
+                            unsigned int data_size,
                             blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdAesCbc, algorithm.id());
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
@@ -104,7 +104,7 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
   // According to the openssl docs, the amount of data written may be as large
   // as (data_size + cipher_block_size - 1), constrained to a multiple of
   // cipher_block_size.
-  unsigned output_max_len = data_size + AES_BLOCK_SIZE - 1;
+  unsigned int output_max_len = data_size + AES_BLOCK_SIZE - 1;
   const unsigned remainder = output_max_len % AES_BLOCK_SIZE;
   if (remainder != 0)
     output_max_len += AES_BLOCK_SIZE - remainder;
@@ -125,9 +125,9 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
     return Status::Error();
   }
 
-  const unsigned final_output_len =
-      static_cast<unsigned>(output_len) +
-      static_cast<unsigned>(final_output_chunk_len);
+  const unsigned int final_output_len =
+      static_cast<unsigned int>(output_len) +
+      static_cast<unsigned int>(final_output_chunk_len);
   DCHECK_LE(final_output_len, output_max_len);
 
   webcrypto::ShrinkBuffer(buffer, final_output_len);
@@ -165,7 +165,7 @@ Status WebCryptoImpl::EncryptInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
@@ -179,7 +179,7 @@ Status WebCryptoImpl::DecryptInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
@@ -191,7 +191,7 @@ Status WebCryptoImpl::DecryptInternal(
 
 Status WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
                                      const unsigned char* data,
-                                     unsigned data_size,
+                                     unsigned int data_size,
                                      blink::WebArrayBuffer* buffer) {
 
   crypto::OpenSSLErrStackTracer(FROM_HERE);
@@ -238,7 +238,7 @@ Status WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
   unsigned char* const hash_buffer =
       reinterpret_cast<unsigned char* const>(buffer->data());
 
-  unsigned hash_size = 0;
+  unsigned int hash_size = 0;
   if (!EVP_DigestFinal_ex(digest_context.get(), hash_buffer, &hash_size) ||
       static_cast<int>(hash_size) != hash_expected_size) {
     buffer->reset();
@@ -254,7 +254,7 @@ Status WebCryptoImpl::GenerateSecretKeyInternal(
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) {
 
-  unsigned keylen_bytes = 0;
+  unsigned int keylen_bytes = 0;
   blink::WebCryptoKeyType key_type;
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdAesCbc: {
@@ -313,7 +313,7 @@ Status WebCryptoImpl::GenerateKeyPairInternal(
 Status WebCryptoImpl::ImportKeyInternal(
     blink::WebCryptoKeyFormat format,
     const unsigned char* key_data,
-    unsigned key_data_size,
+    unsigned int key_data_size,
     const blink::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -338,7 +338,7 @@ Status WebCryptoImpl::ImportKeyInternal(
   blink::WebCryptoKeyType type = blink::WebCryptoKeyTypeSecret;
 
   const unsigned char* raw_key_data;
-  unsigned raw_key_data_size;
+  unsigned int raw_key_data_size;
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
       raw_key_data = key_data;
@@ -386,7 +386,7 @@ Status WebCryptoImpl::SignInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
 
   blink::WebArrayBuffer result;
@@ -474,9 +474,9 @@ Status WebCryptoImpl::VerifySignatureInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* signature,
-    unsigned signature_size,
+    unsigned int signature_size,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     bool* signature_match) {
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdHmac: {
@@ -503,9 +503,9 @@ Status WebCryptoImpl::VerifySignatureInternal(
 
 Status WebCryptoImpl::ImportRsaPublicKeyInternal(
     const unsigned char* modulus_data,
-    unsigned modulus_size,
+    unsigned int modulus_size,
     const unsigned char* exponent_data,
-    unsigned exponent_size,
+    unsigned int exponent_size,
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,

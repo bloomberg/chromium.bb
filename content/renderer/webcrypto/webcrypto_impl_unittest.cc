@@ -102,7 +102,7 @@ void RestoreJwkOctDictionary(base::DictionaryValue* dict) {
 blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
     const std::vector<uint8>& iv,
     const std::vector<uint8>& additional_data,
-    unsigned tag_length_bits) {
+    unsigned int tag_length_bits) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdAesGcm,
       new blink::WebCryptoAesGcmParams(
@@ -187,7 +187,7 @@ blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
 // (private key) representations of the key pair provided in Example 1 of the
 // NIST test vectors at
 // ftp://ftp.rsa.com/pub/rsalabs/tmp/pkcs1v15sign-vectors.txt
-const unsigned kModulusLength = 1024;
+const unsigned int kModulusLength = 1024;
 const char* const kPublicKeySpkiDerHex =
     "30819f300d06092a864886f70d010101050003818d0030818902818100a5"
     "6e4a0e701017589a5187dc7ea841d156f2ec0e36ad52a44dfeb1e61f7ad9"
@@ -310,7 +310,7 @@ class WebCryptoImplTest : public testing::Test {
   Status AesGcmEncrypt(const blink::WebCryptoKey& key,
                        const std::vector<uint8>& iv,
                        const std::vector<uint8>& additional_data,
-                       unsigned tag_length_bits,
+                       unsigned int tag_length_bits,
                        const std::vector<uint8>& plain_text,
                        std::vector<uint8>* cipher_text,
                        std::vector<uint8>* authentication_tag) {
@@ -342,7 +342,7 @@ class WebCryptoImplTest : public testing::Test {
   Status AesGcmDecrypt(const blink::WebCryptoKey& key,
                        const std::vector<uint8>& iv,
                        const std::vector<uint8>& additional_data,
-                       unsigned tag_length_bits,
+                       unsigned int tag_length_bits,
                        const std::vector<uint8>& cipher_text,
                        const std::vector<uint8>& authentication_tag,
                        blink::WebArrayBuffer* plain_text) {
@@ -428,7 +428,7 @@ class WebCryptoImplTest : public testing::Test {
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* signature,
-      unsigned signature_size,
+      unsigned int signature_size,
       const std::vector<uint8>& data,
       bool* signature_match) {
     return crypto_.VerifySignatureInternal(algorithm,
@@ -460,7 +460,7 @@ class WebCryptoImplTest : public testing::Test {
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebArrayBuffer* buffer) {
     return crypto_.EncryptInternal(algorithm, key, data, data_size, buffer);
   }
@@ -478,7 +478,7 @@ class WebCryptoImplTest : public testing::Test {
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebArrayBuffer* buffer) {
     return crypto_.DecryptInternal(algorithm, key, data, data_size, buffer);
   }
@@ -844,7 +844,7 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
     // is special cased; the implementation shouldn't actually dereference the
     // data.
     const unsigned char* input = &iv[0];
-    unsigned input_len = INT_MAX - 3;
+    unsigned int input_len = INT_MAX - 3;
 
     EXPECT_STATUS(Status::ErrorDataTooLarge(), EncryptInternal(
         webcrypto::CreateAesCbcAlgorithm(iv), key, input, input_len, &output));
@@ -996,7 +996,7 @@ TEST_F(WebCryptoImplTest, MAYBE(AesCbcSampleSets)) {
                         &output));
     ExpectArrayBufferMatchesHex(test.plain_text, output);
 
-    const unsigned kAesCbcBlockSize = 16;
+    const unsigned int kAesCbcBlockSize = 16;
 
     // Decrypt with a padding error by stripping the last block. This also ends
     // up testing decryption over empty cipher text.
@@ -1592,7 +1592,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   // Note: using unrealistic short key lengths here to avoid bogging down tests.
 
   // Successful WebCryptoAlgorithmIdRsaEsPkcs1v1_5 key generation.
-  const unsigned modulus_length = 256;
+  const unsigned int modulus_length = 256;
   const std::vector<uint8> public_exponent = HexStringToBytes("010001");
   blink::WebCryptoAlgorithm algorithm = webcrypto::CreateRsaKeyGenAlgorithm(
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
@@ -1620,7 +1620,7 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
       algorithm, extractable, usage_mask, &public_key, &private_key));
 
   // Fail with bad exponent: larger than unsigned long.
-  unsigned exponent_length = sizeof(unsigned long) + 1;  // NOLINT
+  unsigned int exponent_length = sizeof(unsigned long) + 1;  // NOLINT
   const std::vector<uint8> long_exponent(exponent_length, 0x01);
   algorithm = webcrypto::CreateRsaKeyGenAlgorithm(
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
@@ -1726,9 +1726,9 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsRoundTrip)) {
 
   // Make a maximum-length data message. RSAES can operate on messages up to
   // length of k - 11 bytes, where k is the octet length of the RSA modulus.
-  const unsigned kMaxMsgSizeBytes = kModulusLength / 8 - 11;
+  const unsigned int kMaxMsgSizeBytes = kModulusLength / 8 - 11;
   // There are two hex chars for each byte.
-  const unsigned kMsgHexSize = kMaxMsgSizeBytes * 2;
+  const unsigned int kMsgHexSize = kMaxMsgSizeBytes * 2;
   char max_data_hex[kMsgHexSize+1];
   std::fill(&max_data_hex[0], &max_data_hex[0] + kMsgHexSize, 'a');
   max_data_hex[kMsgHexSize] = '\0';
@@ -1904,7 +1904,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsFailures)) {
 
   // Fail encrypt with message too large. RSAES can operate on messages up to
   // length of k - 11 bytes, where k is the octet length of the RSA modulus.
-  const unsigned kMaxMsgSizeBytes = kModulusLength / 8 - 11;
+  const unsigned int kMaxMsgSizeBytes = kModulusLength / 8 - 11;
   EXPECT_STATUS(
       Status::ErrorDataTooLarge(),
       EncryptInternal(algorithm,
@@ -2004,7 +2004,7 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
   EXPECT_FALSE(signature_match);
 
   // Ensure signatures that are greater than the modulus size fail.
-  const unsigned long_message_size_bytes = 1024;
+  const unsigned int long_message_size_bytes = 1024;
   DCHECK_GT(long_message_size_bytes, kModulusLength/8);
   const unsigned char kLongSignature[long_message_size_bytes] = { 0 };
   EXPECT_STATUS_SUCCESS(VerifySignatureInternal(
@@ -2530,7 +2530,7 @@ TEST_F(WebCryptoImplTest, MAYBE(AesGcmSampleSets)) {
         HexStringToBytes(test.plain_text);
     const std::vector<uint8> test_authentication_tag =
         HexStringToBytes(test.authentication_tag);
-    const unsigned test_tag_size_bits = test_authentication_tag.size() * 8;
+    const unsigned int test_tag_size_bits = test_authentication_tag.size() * 8;
     const std::vector<uint8> test_cipher_text =
         HexStringToBytes(test.cipher_text);
 
@@ -2573,7 +2573,7 @@ TEST_F(WebCryptoImplTest, MAYBE(AesGcmSampleSets)) {
     // Try different incorrect tag lengths
     uint8 kAlternateTagLengths[] = {8, 96, 120, 128, 160, 255};
     for (size_t tag_i = 0; tag_i < arraysize(kAlternateTagLengths); ++tag_i) {
-      unsigned wrong_tag_size_bits = kAlternateTagLengths[tag_i];
+      unsigned int wrong_tag_size_bits = kAlternateTagLengths[tag_i];
       if (test_tag_size_bits == wrong_tag_size_bits)
         continue;
       EXPECT_STATUS_ERROR(AesGcmDecrypt(key, test_iv, test_additional_data,

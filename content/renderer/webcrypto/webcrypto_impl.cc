@@ -179,7 +179,7 @@ void WebCryptoImpl::encrypt(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
@@ -194,7 +194,7 @@ void WebCryptoImpl::decrypt(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
@@ -208,7 +208,7 @@ void WebCryptoImpl::decrypt(
 void WebCryptoImpl::digest(
     const blink::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
@@ -262,7 +262,7 @@ void WebCryptoImpl::generateKey(
 void WebCryptoImpl::importKey(
     blink::WebCryptoKeyFormat format,
     const unsigned char* key_data,
-    unsigned key_data_size,
+    unsigned int key_data_size,
     const blink::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -311,7 +311,7 @@ void WebCryptoImpl::sign(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
@@ -326,9 +326,9 @@ void WebCryptoImpl::verifySignature(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* signature,
-    unsigned signature_size,
+    unsigned int signature_size,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebCryptoResult result) {
   DCHECK(!algorithm.isNull());
   bool signature_match = false;
@@ -347,7 +347,7 @@ void WebCryptoImpl::verifySignature(
 
 Status WebCryptoImpl::ImportKeyJwk(
     const unsigned char* key_data,
-    unsigned key_data_size,
+    unsigned int key_data_size,
     const blink::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,

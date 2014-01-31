@@ -183,10 +183,11 @@ CONTENT_EXPORT const uint8* Uint8VectorStart(const std::vector<uint8>& data);
 // Shrinks a WebArrayBuffer to a new size.
 // TODO(eroman): This works by re-allocating a new buffer. It would be better if
 //               the WebArrayBuffer could just be truncated instead.
-void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size);
+void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned int new_size);
 
 // Creates a WebArrayBuffer from a uint8 byte array
-blink::WebArrayBuffer CreateArrayBuffer(const uint8* data, unsigned data_size);
+blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
+                                        unsigned int data_size);
 
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
@@ -215,7 +216,7 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashId(
 // The key_length_bytes parameter is optional, with zero meaning unspecified.
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId hash_id,
-    unsigned key_length_bytes);
+    unsigned int key_length_bytes);
 
 // Creates an RSASSA-PKCS1-v1_5 algorithm. It is an error to call this with a
 // hash_id that is not a SHA*.
@@ -231,7 +232,7 @@ blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
 // compatible with key generation.
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId algorithm_id,
-    unsigned modulus_length,
+    unsigned int modulus_length,
     const std::vector<uint8>& public_exponent);
 
 // Creates an AES-CBC algorithm.

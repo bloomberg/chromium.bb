@@ -22,18 +22,18 @@ class CONTENT_EXPORT WebCryptoImpl
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebCryptoResult result);
   virtual void decrypt(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebCryptoResult result);
   virtual void digest(
       const blink::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebCryptoResult result);
   virtual void generateKey(
       const blink::WebCryptoAlgorithm& algorithm,
@@ -43,7 +43,7 @@ class CONTENT_EXPORT WebCryptoImpl
   virtual void importKey(
       blink::WebCryptoKeyFormat format,
       const unsigned char* key_data,
-      unsigned key_data_size,
+      unsigned int key_data_size,
       const blink::WebCryptoAlgorithm& algorithm_or_null,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
@@ -56,15 +56,15 @@ class CONTENT_EXPORT WebCryptoImpl
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebCryptoResult result);
   virtual void verifySignature(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* signature,
-      unsigned signature_size,
+      unsigned int signature_size,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebCryptoResult result);
 
 
@@ -77,18 +77,18 @@ class CONTENT_EXPORT WebCryptoImpl
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebArrayBuffer* buffer);
   webcrypto::Status DecryptInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebArrayBuffer* buffer);
   webcrypto::Status DigestInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebArrayBuffer* buffer);
   webcrypto::Status GenerateSecretKeyInternal(
       const blink::WebCryptoAlgorithm& algorithm,
@@ -104,7 +104,7 @@ class CONTENT_EXPORT WebCryptoImpl
   webcrypto::Status ImportKeyInternal(
       blink::WebCryptoKeyFormat format,
       const unsigned char* key_data,
-      unsigned key_data_size,
+      unsigned int key_data_size,
       const blink::WebCryptoAlgorithm& algorithm_or_null,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
@@ -117,29 +117,29 @@ class CONTENT_EXPORT WebCryptoImpl
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       blink::WebArrayBuffer* buffer);
   webcrypto::Status VerifySignatureInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
       const unsigned char* signature,
-      unsigned signature_size,
+      unsigned int signature_size,
       const unsigned char* data,
-      unsigned data_size,
+      unsigned int data_size,
       bool* signature_match);
 
   webcrypto::Status ImportKeyJwk(
       const unsigned char* key_data,
-      unsigned key_data_size,
+      unsigned int key_data_size,
       const blink::WebCryptoAlgorithm& algorithm_or_null,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* key);
   webcrypto::Status ImportRsaPublicKeyInternal(
       const unsigned char* modulus_data,
-      unsigned modulus_size,
+      unsigned int modulus_size,
       const unsigned char* exponent_data,
-      unsigned exponent_size,
+      unsigned int exponent_size,
       const blink::WebCryptoAlgorithm& algorithm,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,

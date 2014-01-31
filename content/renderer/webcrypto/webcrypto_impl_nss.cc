@@ -197,7 +197,7 @@ Status AesCbcEncryptDecrypt(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdAesCbc, algorithm.id());
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
@@ -226,7 +226,7 @@ Status AesCbcEncryptDecrypt(
     return Status::Error();
 
   // Oddly PK11_CipherOp takes input and output lengths as "int" rather than
-  // "unsigned". Do some checks now to avoid integer overflowing.
+  // "unsigned int". Do some checks now to avoid integer overflowing.
   if (data_size >= INT_MAX - AES_BLOCK_SIZE) {
     // TODO(eroman): Handle this by chunking the input fed into NSS. Right now
     // it doesn't make much difference since the one-shot API would end up
@@ -244,7 +244,7 @@ Status AesCbcEncryptDecrypt(
 
   // TODO(eroman): Refine the output buffer size. It can be computed exactly for
   //               encryption, and can be smaller for decryption.
-  unsigned output_max_len = data_size + AES_BLOCK_SIZE;
+  unsigned int output_max_len = data_size + AES_BLOCK_SIZE;
   CHECK_GT(output_max_len, data_size);
 
   *buffer = blink::WebArrayBuffer::create(output_max_len, 1);
@@ -281,7 +281,7 @@ Status AesGcmEncryptDecrypt(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdAesGcm, algorithm.id());
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
@@ -299,14 +299,14 @@ Status AesGcmEncryptDecrypt(
   // TODO(eroman): The spec doesn't define the default value. Assume 128 for now
   // since that is the maximum tag length:
   // http://www.w3.org/2012/webcrypto/track/issues/46
-  unsigned tag_length_bits = 128;
+  unsigned int tag_length_bits = 128;
   if (params->hasTagLengthBits())
     tag_length_bits = params->optionalTagLengthBits();
 
   if (tag_length_bits > 128 || (tag_length_bits % 8) != 0)
     return Status::ErrorInvalidAesGcmTagLength();
 
-  unsigned tag_length_bytes = tag_length_bits / 8;
+  unsigned int tag_length_bytes = tag_length_bits / 8;
 
   CK_GCM_PARAMS gcm_params = {0};
   gcm_params.pIv =
@@ -324,7 +324,7 @@ Status AesGcmEncryptDecrypt(
   param.data = reinterpret_cast<unsigned char*>(&gcm_params);
   param.len = sizeof(gcm_params);
 
-  unsigned buffer_size = 0;
+  unsigned int buffer_size = 0;
 
   // Calculate the output buffer size.
   if (encrypt) {
@@ -386,7 +386,7 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
 // Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
 // to unsigned long.
 bool BigIntegerToLong(const uint8* data,
-                      unsigned data_size,
+                      unsigned int data_size,
                       unsigned long* result) {
   // TODO(padolph): Is it correct to say that empty data is an error, or does it
   // mean value 0? See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23655
@@ -413,7 +413,7 @@ bool IsAlgorithmRsa(const blink::WebCryptoAlgorithm& algorithm) {
 
 Status ImportKeyInternalRaw(
     const unsigned char* key_data,
-    unsigned key_data_size,
+    unsigned int key_data_size,
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -566,7 +566,7 @@ blink::WebCryptoAlgorithm ResolveNssKeyTypeWithInputAlgorithm(
 
 Status ImportKeyInternalSpki(
     const unsigned char* key_data,
-    unsigned key_data_size,
+    unsigned int key_data_size,
     const blink::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -637,7 +637,7 @@ Status ExportKeyInternalSpki(
 
 Status ImportKeyInternalPkcs8(
     const unsigned char* key_data,
-    unsigned key_data_size,
+    unsigned int key_data_size,
     const blink::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -694,7 +694,7 @@ Status SignHmac(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdHmac, algorithm.id());
 
@@ -745,9 +745,9 @@ Status VerifyHmac(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* signature,
-    unsigned signature_size,
+    unsigned int signature_size,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     bool* signature_match) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdHmac, algorithm.id());
 
@@ -775,7 +775,7 @@ Status EncryptRsaEsPkcs1v1_5(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, algorithm.id());
 
@@ -790,7 +790,7 @@ Status EncryptRsaEsPkcs1v1_5(
   PublicKeyHandle* const public_key =
       reinterpret_cast<PublicKeyHandle*>(key.handle());
 
-  const unsigned encrypted_length_bytes =
+  const unsigned int encrypted_length_bytes =
       SECKEY_PublicKeyStrength(public_key->key());
 
   // RSAES can operate on messages up to a length of k - 11, where k is the
@@ -816,7 +816,7 @@ Status DecryptRsaEsPkcs1v1_5(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, algorithm.id());
 
@@ -835,13 +835,13 @@ Status DecryptRsaEsPkcs1v1_5(
       PK11_GetPrivateModulusLen(private_key->key());
   if (modulus_length_bytes <= 0)
     return Status::ErrorUnexpected();
-  const unsigned max_output_length_bytes = modulus_length_bytes;
+  const unsigned int max_output_length_bytes = modulus_length_bytes;
 
   *buffer = blink::WebArrayBuffer::create(max_output_length_bytes, 1);
   unsigned char* const buffer_data =
       reinterpret_cast<unsigned char*>(buffer->data());
 
-  unsigned output_length_bytes = 0;
+  unsigned int output_length_bytes = 0;
   if (PK11_PrivDecryptPKCS1(private_key->key(),
                             buffer_data,
                             &output_length_bytes,
@@ -863,7 +863,7 @@ Status SignRsaSsaPkcs1v1_5(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, algorithm.id());
 
@@ -919,9 +919,9 @@ Status VerifyRsaSsaPkcs1v1_5(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* signature,
-    unsigned signature_size,
+    unsigned int signature_size,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     bool* signature_match) {
   DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, algorithm.id());
 
@@ -1058,7 +1058,7 @@ Status GenerateRsaKeyPair(
 // Get the secret key length in bytes from generation parameters. This resolves
 // any defaults.
 Status GetGenerateSecretKeyLength(const blink::WebCryptoAlgorithm& algorithm,
-                                  unsigned* keylen_bytes) {
+                                  unsigned int* keylen_bytes) {
   *keylen_bytes = 0;
 
   switch (algorithm.id()) {
@@ -1105,7 +1105,7 @@ Status WebCryptoImpl::EncryptInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
 
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
@@ -1130,7 +1130,7 @@ Status WebCryptoImpl::DecryptInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
 
   DCHECK_EQ(algorithm.id(), key.algorithm().id());
@@ -1154,7 +1154,7 @@ Status WebCryptoImpl::DecryptInternal(
 Status WebCryptoImpl::DigestInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
   HASH_HashType hash_type = WebCryptoAlgorithmToNSSHashType(algorithm);
   if (hash_type == HASH_AlgNULL)
@@ -1168,14 +1168,14 @@ Status WebCryptoImpl::DigestInternal(
 
   HASH_Update(context, data, data_size);
 
-  unsigned hash_result_length = HASH_ResultLenContext(context);
+  unsigned int hash_result_length = HASH_ResultLenContext(context);
   DCHECK_LE(hash_result_length, static_cast<size_t>(HASH_LENGTH_MAX));
 
   *buffer = blink::WebArrayBuffer::create(hash_result_length, 1);
 
   unsigned char* digest = reinterpret_cast<unsigned char*>(buffer->data());
 
-  unsigned result_length = 0;
+  unsigned int result_length = 0;
   HASH_End(context, digest, &result_length, hash_result_length);
 
   HASH_Destroy(context);
@@ -1240,7 +1240,7 @@ Status WebCryptoImpl::GenerateKeyPairInternal(
 Status WebCryptoImpl::ImportKeyInternal(
     blink::WebCryptoKeyFormat format,
     const unsigned char* key_data,
-    unsigned key_data_size,
+    unsigned int key_data_size,
     const blink::WebCryptoAlgorithm& algorithm_or_null,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
@@ -1298,7 +1298,7 @@ Status WebCryptoImpl::SignInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     blink::WebArrayBuffer* buffer) {
 
   // Note: It is not an error to sign empty data.
@@ -1320,9 +1320,9 @@ Status WebCryptoImpl::VerifySignatureInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const unsigned char* signature,
-    unsigned signature_size,
+    unsigned int signature_size,
     const unsigned char* data,
-    unsigned data_size,
+    unsigned int data_size,
     bool* signature_match) {
 
   if (!signature_size) {
@@ -1349,9 +1349,9 @@ Status WebCryptoImpl::VerifySignatureInternal(
 
 Status WebCryptoImpl::ImportRsaPublicKeyInternal(
     const unsigned char* modulus_data,
-    unsigned modulus_size,
+    unsigned int modulus_size,
     const unsigned char* exponent_data,
-    unsigned exponent_size,
+    unsigned int exponent_size,
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,

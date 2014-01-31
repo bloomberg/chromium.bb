@@ -161,7 +161,7 @@ const uint8* Uint8VectorStart(const std::vector<uint8>& data) {
   return &data[0];
 }
 
-void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size) {
+void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned int new_size) {
   DCHECK_LE(new_size, buffer->byteLength());
 
   if (new_size == buffer->byteLength())
@@ -173,7 +173,8 @@ void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size) {
   *buffer = new_buffer;
 }
 
-blink::WebArrayBuffer CreateArrayBuffer(const uint8* data, unsigned data_size) {
+blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
+                                        unsigned int data_size) {
   blink::WebArrayBuffer buffer = blink::WebArrayBuffer::create(data_size, 1);
   DCHECK(!buffer.isNull());
   if (data_size)  // data_size == 0 might mean the data pointer is invalid
@@ -240,7 +241,7 @@ blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashId(
 
 blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId hash_id,
-    unsigned key_length_bytes) {
+    unsigned int key_length_bytes) {
   DCHECK(IsHashAlgorithm(hash_id));
   // key_length_bytes == 0 means unspecified
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
@@ -268,7 +269,7 @@ blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
 
 blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId algorithm_id,
-    unsigned modulus_length,
+    unsigned int modulus_length,
     const std::vector<uint8>& public_exponent) {
   DCHECK(algorithm_id == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
          algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
