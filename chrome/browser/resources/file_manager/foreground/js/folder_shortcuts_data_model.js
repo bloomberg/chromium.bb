@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 /**
+ * The drive mount path used in the storage. It must be '/drive'.
+ * @type {string}
+ */
+var STORED_DRIVE_MOUNT_PATH = '/drive';
+
+/**
  * Model for the folder shortcuts. This object is cr.ui.ArrayDataModel-like
  * object with additional methods for the folder shortcut feature.
  * This uses chrome.storage as backend. Items are always sorted by URL.
@@ -16,6 +22,7 @@ function FolderShortcutsDataModel(volumeManager) {
   this.array_ = [];
   this.pendingPaths_ = {};  // Hash map for easier deleting.
   this.unresolvablePaths_ = {};
+  this.driveVolumeInfo_ = null;
 
   // Process changes only after initial loading is finished.
   var queue = new AsyncUtil.Queue();
@@ -30,15 +37,13 @@ function FolderShortcutsDataModel(volumeManager) {
     for (var index = 0; index < list.length; index++) {
       var path = list[index];
       group.add(function(path, callback) {
-        // TODO(mtomasz): Migrate to URL.
-        // TODO(mtomasz): Do not resolve, if volumeInfo for Drive is missing.
-        var url = util.makeFilesystemUrl(path);
+        var url = this.convertStoredPathToUrl_(path);
         webkitResolveLocalFileSystemURL(url, function(entry) {
           if (entry.fullPath in this.pendingPaths_)
             delete this.pendingPaths_[entry.fullPath];
           this.addInternal_(entry);
           callback();
-        }.bind(this), function(error) {
+        }.bind(this), function() {
           if (path in this.pendingPaths_)
             delete this.pendingPaths_[path];
           // Remove the shortcut on error, only if Drive is fully online.
@@ -46,8 +51,7 @@ function FolderShortcutsDataModel(volumeManager) {
           // does not exist anymore.
           if (volumeManager.getDriveConnectionState().type !==
               util.DriveConnectionType.ONLINE) {
-            // TODO(mtomasz): Add support for multi-profile.
-            this.unresolvablePaths_.push(path);
+            this.unresolvablePaths_[path] = true;
           }
           // Not adding to the model nor to the |unresolvablePaths_| means
           // that it will be removed from the storage permanently after the
@@ -65,21 +69,63 @@ function FolderShortcutsDataModel(volumeManager) {
 
   // Loads the contents from the storage to initialize the array.
   queue.run(function(queueCallback) {
-    chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
-      if (!(FolderShortcutsDataModel.NAME in value)) {
+    var shortcutPaths = null;
+
+    // Process both (1) and (2) before processing paths.
+    var group = new AsyncUtil.Group();
+
+    // (1) Get the stored shortcuts from chrome.storage.
+    group.add(function(callback) {
+      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+        if (!(FolderShortcutsDataModel.NAME in value)) {
+          // If no shortcuts are stored, shortcutPaths is kept as null.
+          callback();
+          return;
+        }
+
+        // Since the value comes from outer resource, we have to check it just
+        // in case.
+        shortcutPaths = value[FolderShortcutsDataModel.NAME];
+
+        // Record metrics.
+        metrics.recordSmallCount('FolderShortcut.Count', shortcutPaths.length);
+
+        callback();
+      }.bind(this));
+    }.bind(this));
+
+    // (2) Get the volume info of the 'drive' volume.
+    group.add(function(callback) {
+      this.volumeManager_.ensureInitialized(function() {
+        this.driveVolumeInfo_ = this.volumeManager_.getCurrentProfileVolumeInfo(
+            util.VolumeType.DRIVE);
+        callback();
+      }.bind(this));
+    }.bind(this));
+
+    // Process shortcuts' paths after both (1) and (2) are finished.
+    group.run(function() {
+      // No shortcuts are stored.
+      if (!shortcutPaths) {
         queueCallback();
         return;
       }
 
-      // Since the value comes from outer resource, we have to check it just in
-      // case.
-      var list = value[FolderShortcutsDataModel.NAME];
+      if (!this.driveVolumeInfo_) {
+        // Drive is unavailable.
+        shortcutPaths.forEach(function(path) {
+          this.unresolvablePaths_[path] = true;
+       }, this);
 
-      // Record metrics.
-      metrics.recordSmallCount('FolderShortcut.Count', list.length);
+        // TODO(mtomasz): Reload shortcuts when Drive goes back available.
+        // http://crbug.com/333090
+
+        queueCallback();
+        return;
+      }
 
       // Convert the paths to Entries and add to the model.
-      processPaths(list, queueCallback);
+      processPaths(shortcutPaths, queueCallback);
     }.bind(this));
   }.bind(this));
 
@@ -93,6 +139,20 @@ function FolderShortcutsDataModel(volumeManager) {
       }
 
       var list = changes[FolderShortcutsDataModel.NAME].newValue;
+
+      if (!this.driveVolumeInfo_) {
+        // Drive is unavailable.
+        list.forEach(function(path) {
+          this.unresolvablePaths_[path] = true;
+        }, this);
+
+        // TODO(mtomasz): Reload shortcuts when Drive goes back available.
+        // http://crbug.com/333090
+
+        queueCallback();
+        return;
+      }
+
       processPaths(list, queueCallback);
     }.bind(this));
   }.bind(this));
@@ -271,11 +331,27 @@ FolderShortcutsDataModel.prototype = {
           {usage: 'sort', numeric: true});
     };
 
+    // TODO(mtomasz): remove it once the shortcut reload logic is implemented.
+    // http://crbug.com/333090
+    if (!this.driveVolumeInfo_) {
+      this.driveVolumeInfo_ = this.volumeManager_.getCurrentProfileVolumeInfo(
+          util.VolumeType.DRIVE);
+
+      // Returns without saving, because the drive has been unavailable since
+      // Files.app opens and we can't retrieve the drive info.
+      // It doesn't cause problem since the user can't change the shortcuts
+      // when the Drive is unavailable.
+      if (!this.driveVolumeInfo_)
+        return;
+    }
+
     // TODO(mtomasz): Migrate to URL.
-    var paths = this.array_.map(function(entry) {
-      return entry.fullPath;
-    }).concat(Object.keys(this.pendingPaths_)).concat(
-        Object.keys(this.unresolvablePaths_)).sort(compareByPath);
+    var paths = this.array_.
+                map(function(entry) { return entry.toURL(); }).
+                map(this.convertUrlToStoredPath_.bind(this)).
+                concat(Object.keys(this.pendingPaths_)).
+                concat(Object.keys(this.unresolvablePaths_)).
+                sort(compareByPath);
 
     var prefs = {};
     prefs[FolderShortcutsDataModel.NAME] = paths;
@@ -346,7 +422,7 @@ FolderShortcutsDataModel.prototype = {
   },
 
   /**
-   * Called externally when one od the items is not found on the filesystem.
+   * Called externally when one of the items is not found on the filesystem.
    * @param {Entry} entry The entry which is not found.
    */
   onItemNotFoundError: function(entry) {
@@ -354,9 +430,52 @@ FolderShortcutsDataModel.prototype = {
     // delete from model and add to |unresolvablePaths_|.
     if (this.volumeManager_.getDriveConnectionState().type !==
         util.DriveConnectionType.ONLINE) {
+      var path = this.convertUrlToStoredPath_(entry.toURL());
       // TODO(mtomasz): Add support for multi-profile.
-      this.unresolvablePaths_.push(path);
+      this.unresolvablePaths_[path] = true;
     }
     this.remove(entry);
-  }
+  },
+
+  /**
+   * Converts the given "stored path" to the URL
+   *
+   * This conversion is necessary because the shortcuts are not stored with
+   * stored-formatted mount paths for compatibility. See http://crbug.com/336155
+   * for detail.
+   *
+   * @param {string} path Path in Drive with the stored drive mount path.
+   * @return {string} URL of the given path.
+   * @private
+   */
+  convertStoredPathToUrl_: function(path) {
+    if (path.indexOf(STORED_DRIVE_MOUNT_PATH + '/') !== 0) {
+      console.warn(path + ' is neither a drive mount path nor a stored path.');
+      return null;
+    }
+
+    var url = this.driveVolumeInfo_.root.toURL() +
+              path.substr(STORED_DRIVE_MOUNT_PATH.length);
+    return url;
+  },
+
+  /**
+   * Converts the URL to the stored-formatted path.
+   *
+   * See the comment of convertStoredPathToUrl_() for further information.
+   *
+   * @param {string} url URL of the directory in Drive.
+   * @return {string} Path with the stored drive mount path.
+   * @private
+   */
+  convertUrlToStoredPath_: function(url) {
+    var rootUrl = this.driveVolumeInfo_.root.toURL();
+    if (url.indexOf(rootUrl + '/') !== 0) {
+      console.warn(url + ' is not a drive URL.');
+      return null;
+    }
+
+    var storedPath = STORED_DRIVE_MOUNT_PATH + url.substr(rootUrl.length);
+    return storedPath;
+  },
 };
