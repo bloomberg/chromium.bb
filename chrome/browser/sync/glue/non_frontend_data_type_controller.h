@@ -14,8 +14,8 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "components/sync_driver/data_type_error_handler.h"
 
 class Profile;
 class ProfileSyncService;

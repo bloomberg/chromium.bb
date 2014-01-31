@@ -21,10 +21,10 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/favicon_cache.h"
-#include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/glue/tab_node_pool.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
+#include "components/sync_driver/model_associator.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 class PrefServiceSyncable;

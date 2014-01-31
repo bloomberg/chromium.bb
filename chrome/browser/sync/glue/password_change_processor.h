@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "components/sync_driver/data_type_error_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"

@@ -112,6 +112,9 @@
             # Dependencies of signin
             'components.gyp:signin_core',
 
+            # Dependencies of sync_driver
+            'components.gyp:sync_driver_test_support',
+
             # Dependencies of translate.
             'components.gyp:translate_core_browser',
             'components.gyp:translate_core_common',

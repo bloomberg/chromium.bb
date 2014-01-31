@@ -13,8 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
-#include "chrome/browser/sync/glue/model_associator.h"
+#include "components/sync_driver/data_type_error_handler.h"
+#include "components/sync_driver/model_associator.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
 class BookmarkModel;

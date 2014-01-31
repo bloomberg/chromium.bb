@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "components/sync_driver/model_associator.h"
 
 using browser_sync::AssociatorInterface;
 using browser_sync::ChangeProcessor;

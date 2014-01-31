@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "components/sync_driver/data_type_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

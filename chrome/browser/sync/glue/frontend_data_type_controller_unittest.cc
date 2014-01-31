@@ -14,10 +14,10 @@
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller_mock.h"
-#include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
+#include "components/sync_driver/model_associator_mock.h"
 #include "content/public/test/test_browser_thread.h"
 
 using browser_sync::ChangeProcessorMock;

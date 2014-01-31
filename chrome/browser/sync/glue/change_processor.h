@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_H_
 #define CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_H_
 
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "components/sync_driver/data_type_error_handler.h"
 #include "sync/internal_api/public/change_record.h"
 
 class Profile;

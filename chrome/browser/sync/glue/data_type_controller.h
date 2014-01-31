@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
+#include "components/sync_driver/data_type_error_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/base/model_type.h"

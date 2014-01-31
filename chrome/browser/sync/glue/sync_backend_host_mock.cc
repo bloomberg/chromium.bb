@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 
-#include "chrome/browser/sync/glue/sync_frontend.h"
+#include "components/sync_driver/sync_frontend.h"
 
 namespace browser_sync {
 

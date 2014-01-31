@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
+#include "components/sync_driver/data_type_error_handler.h"
 
 class Profile;
 class ProfileSyncService;

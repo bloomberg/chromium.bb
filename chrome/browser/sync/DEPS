@@ -1,4 +1,6 @@
 include_rules = [
+  "+components/sync_driver",
+
   # Used by tests.
   "+google/cacheinvalidation",
 

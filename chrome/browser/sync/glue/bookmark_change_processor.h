@@ -11,8 +11,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "components/sync_driver/data_type_error_handler.h"
 
 namespace base {
 class RefCountedMemory;

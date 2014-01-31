@@ -15,8 +15,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/model_association_manager.h"
+#include "components/sync_driver/backend_data_type_configurer.h"
 
 namespace syncer {
 struct DataTypeConfigurationStats;

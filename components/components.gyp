@@ -43,5 +43,12 @@
         'wifi.gypi',
       ],
     }],
+    ['android_webview_build == 0', {
+      # Android WebView fails to build if a dependency on sync.gyp:sync is
+      # introduced.
+      'includes': [
+        'sync_driver.gypi',
+      ],
+    }],
   ],
 }

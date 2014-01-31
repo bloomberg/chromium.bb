@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
+#include "components/sync_driver/data_type_error_handler.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"

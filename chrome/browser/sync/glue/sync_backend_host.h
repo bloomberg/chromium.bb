@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sync/glue/backend_data_type_configurer.h"
+#include "components/sync_driver/backend_data_type_configurer.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"

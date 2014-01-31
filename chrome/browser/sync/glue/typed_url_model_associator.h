@@ -14,8 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/sync/glue/data_type_error_handler.h"
-#include "chrome/browser/sync/glue/model_associator.h"
+#include "components/sync_driver/data_type_error_handler.h"
+#include "components/sync_driver/model_associator.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 
 class GURL;

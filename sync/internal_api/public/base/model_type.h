@@ -137,10 +137,10 @@ enum ModelType {
 
   // If you are adding a new sync datatype that is exposed to the user via the
   // sync preferences UI, be sure to update the list in
-  // chrome/browser/sync/user_selectable_sync_type.h so that the UMA histograms
-  // for sync include your new type.
-  // In this case, be sure to also update the UserSelectableTypes() definition
-  // in sync/syncable/model_type.cc.
+  // components/sync_driver/user_selectable_sync_type.h so that the UMA
+  // histograms for sync include your new type.  In this case, be sure to also
+  // update the UserSelectableTypes() definition in
+  // sync/syncable/model_type.cc.
 
   MODEL_TYPE_COUNT,
 };
