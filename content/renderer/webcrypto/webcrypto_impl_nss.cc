@@ -300,13 +300,12 @@ Status AesGcmEncryptDecrypt(
   // since that is the maximum tag length:
   // http://www.w3.org/2012/webcrypto/track/issues/46
   unsigned tag_length_bits = 128;
-  if (params->hasTagLengthBits()) {
+  if (params->hasTagLengthBits())
     tag_length_bits = params->optionalTagLengthBits();
-  }
 
-  if (tag_length_bits > 128 || (tag_length_bits % 8) != 0) {
+  if (tag_length_bits > 128 || (tag_length_bits % 8) != 0)
     return Status::ErrorInvalidAesGcmTagLength();
-  }
+
   unsigned tag_length_bytes = tag_length_bits / 8;
 
   CK_GCM_PARAMS gcm_params = {0};
@@ -445,14 +444,12 @@ Status ImportKeyInternalRaw(
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdHmac: {
       const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
-      if (!params) {
+      if (!params)
         return Status::ErrorUnexpected();
-      }
 
       mechanism = WebCryptoHashToHMACMechanism(params->hash());
-      if (mechanism == CKM_INVALID_MECHANISM) {
+      if (mechanism == CKM_INVALID_MECHANISM)
         return Status::ErrorUnsupported();
-      }
 
       flags |= CKF_SIGN | CKF_VERIFY;
 
@@ -498,9 +495,8 @@ Status ImportKeyInternalRaw(
                                  flags,
                                  false,
                                  NULL));
-  if (!pk11_sym_key.get()) {
+  if (!pk11_sym_key.get())
     return Status::Error();
-  }
 
   *key = blink::WebCryptoKey::create(new SymKeyHandle(pk11_sym_key.Pass()),
                                       type, extractable, algorithm, usage_mask);
@@ -703,9 +699,8 @@ Status SignHmac(
   DCHECK_EQ(blink::WebCryptoAlgorithmIdHmac, algorithm.id());
 
   const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
-  if (!params) {
+  if (!params)
     return Status::ErrorUnexpected();
-  }
 
   SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
 
@@ -758,9 +753,8 @@ Status VerifyHmac(
 
   blink::WebArrayBuffer result;
   Status status = SignHmac(algorithm, key, data, data_size, &result);
-  if (status.IsError()) {
+  if (status.IsError())
     return status;
-  }
 
   // Handling of truncated signatures is underspecified in the WebCrypto
   // spec, so here we fail verification if a truncated signature is being
@@ -1042,9 +1036,8 @@ Status GenerateRsaKeyPair(
                                       operation_flags,
                                       operation_flags_mask,
                                       NULL));
-  if (!private_key) {
+  if (!private_key)
     return Status::Error();
-  }
 
   *public_key = blink::WebCryptoKey::create(
       new PublicKeyHandle(crypto::ScopedSECKEYPublicKey(sec_public_key)),
@@ -1085,11 +1078,10 @@ Status GetGenerateSecretKeyLength(const blink::WebCryptoAlgorithm& algorithm,
     case blink::WebCryptoAlgorithmIdHmac: {
       const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
       DCHECK(params);
-      if (params->hasLengthBytes()) {
+      if (params->hasLengthBytes())
         *keylen_bytes = params->optionalLengthBytes();
-      } else {
+      else
         *keylen_bytes = webcrypto::ShaBlockSizeBytes(params->hash().id());
-      }
       break;
     }
 
@@ -1097,9 +1089,8 @@ Status GetGenerateSecretKeyLength(const blink::WebCryptoAlgorithm& algorithm,
       return Status::ErrorUnsupported();
   }
 
-  if (*keylen_bytes == 0) {
+  if (*keylen_bytes == 0)
     return Status::ErrorGenerateKeyLength();
-  }
 
   return Status::Success();
 }
@@ -1166,14 +1157,12 @@ Status WebCryptoImpl::DigestInternal(
     unsigned data_size,
     blink::WebArrayBuffer* buffer) {
   HASH_HashType hash_type = WebCryptoAlgorithmToNSSHashType(algorithm);
-  if (hash_type == HASH_AlgNULL) {
+  if (hash_type == HASH_AlgNULL)
     return Status::ErrorUnsupported();
-  }
 
   HASHContext* context = HASH_Create(hash_type);
-  if (!context) {
+  if (!context)
     return Status::Error();
-  }
 
   HASH_Begin(context);
 
@@ -1191,9 +1180,8 @@ Status WebCryptoImpl::DigestInternal(
 
   HASH_Destroy(context);
 
-  if (result_length != hash_result_length) {
+  if (result_length != hash_result_length)
     return Status::ErrorUnexpected();
-  }
   return Status::Success();
 }
 
@@ -1206,9 +1194,8 @@ Status WebCryptoImpl::GenerateSecretKeyInternal(
   CK_MECHANISM_TYPE mech = WebCryptoAlgorithmToGenMechanism(algorithm);
   blink::WebCryptoKeyType key_type = blink::WebCryptoKeyTypeSecret;
 
-  if (mech == CKM_INVALID_MECHANISM) {
+  if (mech == CKM_INVALID_MECHANISM)
     return Status::ErrorUnsupported();
-  }
 
   unsigned int keylen_bytes = 0;
   Status status = GetGenerateSecretKeyLength(algorithm, &keylen_bytes);
@@ -1216,16 +1203,14 @@ Status WebCryptoImpl::GenerateSecretKeyInternal(
     return status;
 
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
-  if (!slot) {
+  if (!slot)
     return Status::Error();
-  }
 
   crypto::ScopedPK11SymKey pk11_key(
       PK11_KeyGen(slot.get(), mech, NULL, keylen_bytes, NULL));
 
-  if (!pk11_key) {
+  if (!pk11_key)
     return Status::Error();
-  }
 
   *key = blink::WebCryptoKey::create(
       new SymKeyHandle(pk11_key.Pass()),

@@ -301,9 +301,8 @@ class WebCryptoImplTest : public testing::Test {
         blink::WebCryptoKeyUsageEncrypt,
         &key);
 
-    if (status.IsError()) {
+    if (status.IsError())
       EXPECT_EQ(Status::ErrorUnsupported().ToString(), status.ToString());
-    }
     return status.IsSuccess();
 
   }
@@ -320,9 +319,8 @@ class WebCryptoImplTest : public testing::Test {
 
     blink::WebArrayBuffer output;
     Status status = EncryptInternal(algorithm, key, plain_text, &output);
-    if (status.IsError()) {
+    if (status.IsError())
       return status;
-    }
 
     if (output.byteLength() * 8 < tag_length_bits) {
       EXPECT_TRUE(false);

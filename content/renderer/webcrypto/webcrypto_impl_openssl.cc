@@ -121,8 +121,9 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
     return Status::Error();
   int final_output_chunk_len = 0;
   if (!EVP_CipherFinal_ex(
-          context.get(), buffer_data + output_len, &final_output_chunk_len))
+          context.get(), buffer_data + output_len, &final_output_chunk_len)) {
     return Status::Error();
+  }
 
   const unsigned final_output_len =
       static_cast<unsigned>(output_len) +
@@ -219,9 +220,8 @@ Status WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
 
   crypto::ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> digest_context(
       EVP_MD_CTX_create());
-  if (!digest_context.get()) {
+  if (!digest_context.get())
     return Status::Error();
-  }
 
   if (!EVP_DigestInit_ex(digest_context.get(), digest_algorithm, NULL) ||
       !EVP_DigestUpdate(digest_context.get(), data, data_size)) {
@@ -264,20 +264,18 @@ Status WebCryptoImpl::GenerateSecretKeyInternal(
       if (params->lengthBits() % 8)
         return Status::ErrorGenerateKeyLength();
       keylen_bytes = params->lengthBits() / 8;
-      if (!GetAESCipherByKeyLength(keylen_bytes)) {
+      if (!GetAESCipherByKeyLength(keylen_bytes))
         return Status::Error();
-      }
       key_type = blink::WebCryptoKeyTypeSecret;
       break;
     }
     case blink::WebCryptoAlgorithmIdHmac: {
       const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
       DCHECK(params);
-      if (params->hasLengthBytes()) {
+      if (params->hasLengthBytes())
         keylen_bytes = params->optionalLengthBytes();
-      } else {
+      else
         keylen_bytes = webcrypto::ShaBlockSizeBytes(params->hash().id());
-      }
       key_type = blink::WebCryptoKeyTypeSecret;
       break;
     }
@@ -285,16 +283,14 @@ Status WebCryptoImpl::GenerateSecretKeyInternal(
     default: { return Status::ErrorUnsupported(); }
   }
 
-  if (keylen_bytes == 0) {
+  if (keylen_bytes == 0)
     return Status::ErrorGenerateKeyLength();
-  }
 
   crypto::OpenSSLErrStackTracer(FROM_HERE);
 
   std::vector<unsigned char> random_bytes(keylen_bytes, 0);
-  if (!(RAND_bytes(&random_bytes[0], keylen_bytes))) {
+  if (!(RAND_bytes(&random_bytes[0], keylen_bytes)))
     return Status::Error();
-  }
 
   *key = blink::WebCryptoKey::create(
       new SymKeyHandle(&random_bytes[0], random_bytes.size()),
@@ -486,9 +482,8 @@ Status WebCryptoImpl::VerifySignatureInternal(
     case blink::WebCryptoAlgorithmIdHmac: {
       blink::WebArrayBuffer result;
       Status status = SignInternal(algorithm, key, data, data_size, &result);
-      if (status.IsError()) {
+      if (status.IsError())
         return status;
-      }
 
       // Handling of truncated signatures is underspecified in the WebCrypto
       // spec, so here we fail verification if a truncated signature is being

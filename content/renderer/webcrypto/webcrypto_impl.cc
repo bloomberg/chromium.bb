@@ -184,11 +184,10 @@ void WebCryptoImpl::encrypt(
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = EncryptInternal(algorithm, key, data, data_size, &buffer);
-  if (status.IsError()) {
+  if (status.IsError())
     CompleteWithError(status, &result);
-  } else {
+  else
     result.completeWithBuffer(buffer);
-  }
 }
 
 void WebCryptoImpl::decrypt(
@@ -200,11 +199,10 @@ void WebCryptoImpl::decrypt(
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = DecryptInternal(algorithm, key, data, data_size, &buffer);
-  if (status.IsError()) {
+  if (status.IsError())
     CompleteWithError(status, &result);
-  } else {
+  else
     result.completeWithBuffer(buffer);
-  }
 }
 
 void WebCryptoImpl::digest(
@@ -215,11 +213,10 @@ void WebCryptoImpl::digest(
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = DigestInternal(algorithm, data, data_size, &buffer);
-  if (status.IsError()) {
+  if (status.IsError())
     CompleteWithError(status, &result);
-  } else {
+  else
     result.completeWithBuffer(buffer);
-  }
 }
 
 void WebCryptoImpl::generateKey(
@@ -304,11 +301,10 @@ void WebCryptoImpl::exportKey(
     blink::WebCryptoResult result) {
   blink::WebArrayBuffer buffer;
   Status status = ExportKeyInternal(format, key, &buffer);
-  if (status.IsError()) {
+  if (status.IsError())
     CompleteWithError(status, &result);
-  } else {
+  else
     result.completeWithBuffer(buffer);
-  }
 }
 
 void WebCryptoImpl::sign(
@@ -320,11 +316,10 @@ void WebCryptoImpl::sign(
   DCHECK(!algorithm.isNull());
   blink::WebArrayBuffer buffer;
   Status status = SignInternal(algorithm, key, data, data_size, &buffer);
-  if (status.IsError()) {
+  if (status.IsError())
     CompleteWithError(status, &result);
-  } else {
+  else
     result.completeWithBuffer(buffer);
-  }
 }
 
 void WebCryptoImpl::verifySignature(
@@ -344,11 +339,10 @@ void WebCryptoImpl::verifySignature(
                                           data,
                                           data_size,
                                           &signature_match);
-  if (status.IsError()) {
+  if (status.IsError())
     CompleteWithError(status, &result);
-  } else {
+  else
     result.completeWithBoolean(signature_match);
-  }
 }
 
 Status WebCryptoImpl::ImportKeyJwk(
