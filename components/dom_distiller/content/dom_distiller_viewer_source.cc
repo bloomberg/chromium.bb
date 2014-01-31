@@ -102,7 +102,9 @@ DomDistillerViewerSource::DomDistillerViewerSource(
 
 DomDistillerViewerSource::~DomDistillerViewerSource() {}
 
-std::string DomDistillerViewerSource::GetSource() const { return scheme_; }
+std::string DomDistillerViewerSource::GetSource() const {
+  return scheme_ + "://";
+}
 
 void DomDistillerViewerSource::StartDataRequest(
     const std::string& path,

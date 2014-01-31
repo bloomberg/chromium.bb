@@ -580,7 +580,7 @@ URLDataSourceImpl* URLDataManagerBackend::GetDataSourceFromURL(
 
   // No match using the host of the URL, so do a lookup using the scheme for
   // URLs on the form source_name://extra_bits/foo .
-  i = data_sources_.find(url.scheme());
+  i = data_sources_.find(url.scheme() + "://");
   if (i != data_sources_.end())
     return i->second.get();
 

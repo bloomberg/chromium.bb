@@ -36,7 +36,11 @@ class CONTENT_EXPORT URLDataSource {
 
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
-  // specific resources like "favicon/34" getting sent to this source.
+  // specific resources like "favicon/34" getting sent to this source. For
+  // sources where a scheme is used instead of the hostname as the unique
+  // identifier, the suffix "://" must be added to the return value, eg. for a
+  // URLDataSource which would display resources with URLs on the form
+  // your-scheme://anything , GetSource() must return "your-scheme://".
   virtual std::string GetSource() const = 0;
 
   // Used by StartDataRequest so that the child class can return the data when
