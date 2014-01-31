@@ -673,7 +673,7 @@ class MainTest(TestCase):
     with self.assertRaises(SystemExit):
       main([
             'trigger', '--swarming', 'https://host',
-            '--isolate-server', 'https://host',
+            '--isolate-server', 'https://host', '-T', 'foo',
           ])
     self._check_output(
         '',
@@ -693,7 +693,7 @@ class MainTest(TestCase):
   def test_trigger_no_swarming_env_var(self):
     with self.assertRaises(SystemExit):
       with test_utils.EnvVars({'ISOLATE_SERVER': 'https://host'}):
-        main(['trigger'])
+        main(['trigger', '-T' 'foo', 'foo.isolated'])
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
@@ -703,7 +703,7 @@ class MainTest(TestCase):
   def test_trigger_no_isolate_env_var(self):
     with self.assertRaises(SystemExit):
       with test_utils.EnvVars({'SWARMING_SERVER': 'https://host'}):
-        main(['trigger'])
+        main(['trigger', 'T', 'foo', 'foo.isolated'])
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
@@ -714,12 +714,24 @@ class MainTest(TestCase):
     with self.assertRaises(SystemExit):
       with test_utils.EnvVars({'ISOLATE_SERVER': 'https://host',
                                'SWARMING_SERVER': 'https://host'}):
-        main(['trigger'])
+        main(['trigger', '-T', 'foo'])
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
         'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
         '\n')
+
+  def test_trigger_no_task(self):
+    with self.assertRaises(SystemExit):
+      main([
+            'trigger', '--swarming', 'https://host',
+            '--isolate-server', 'https://host', 'foo.isolated',
+          ])
+    self._check_output(
+        '',
+        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'swarming.py: error: --task-name is required. It should be '
+        '<base_name>/<OS>/<isolated>\n')
 
   def test_trigger_env(self):
     self.mock(swarming.isolateserver, 'get_storage',

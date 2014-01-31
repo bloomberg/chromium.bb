@@ -517,6 +517,9 @@ def process_trigger_options(parser, options, args):
   options.isolate_server = options.isolate_server.rstrip('/')
   if not options.isolate_server:
     parser.error('--isolate-server is required.')
+  if not options.task_name:
+    parser.error(
+        '--task-name is required. It should be <base_name>/<OS>/<isolated>')
   if len(args) != 1:
     parser.error('Must pass one .isolated file or its hash (sha1).')
   options.dimensions = dict(options.dimensions)
