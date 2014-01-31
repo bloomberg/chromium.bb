@@ -18,12 +18,17 @@ const uint64 kAuthToken = 12345;
 
 // Build a login request protobuf.
 TEST(MCSUtilTest, BuildLoginRequest) {
+  std::vector<int64> user_serial_numbers;
+  user_serial_numbers.push_back(1LL);
+  user_serial_numbers.push_back(2LL);
   scoped_ptr<mcs_proto::LoginRequest> login_request =
-      BuildLoginRequest(kAuthId, kAuthToken);
+      BuildLoginRequest(kAuthId, kAuthToken, user_serial_numbers);
   ASSERT_EQ("login-1", login_request->id());
   ASSERT_EQ(base::Uint64ToString(kAuthToken), login_request->auth_token());
   ASSERT_EQ(base::Uint64ToString(kAuthId), login_request->user());
   ASSERT_EQ("android-3d5c23dac2a1fa7c", login_request->device_id());
+  ASSERT_EQ("u:f", login_request->setting(0).name());
+  ASSERT_EQ("1,2", login_request->setting(0).value());
   // TODO(zea): test the other fields once they have valid values.
 }
 

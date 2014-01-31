@@ -63,6 +63,7 @@ const uint16 kMCSServerPort = 5228;
 const char kRMQFileName[] = "rmq_file";
 const char kAndroidIdSwitch[] = "android_id";
 const char kSecretSwitch[] = "secret";
+const char kEnableMultiUserSwitch[] = "enable-multi-user";
 const char kLogFileSwitch[] = "log-file";
 const char kIgnoreCertSwitch[] = "ignore-certs";
 const char kServerHostSwitch[] = "host";
@@ -185,6 +186,7 @@ class MCSProbe {
   void UpdateCallback(bool success);
   void ErrorCallback();
   void OnCheckInCompleted(uint64 android_id, uint64 secret);
+  void StartMCSLogin();
 
   base::DefaultClock clock_;
 
@@ -195,6 +197,7 @@ class MCSProbe {
   uint64 secret_;
   std::string server_host_;
   int server_port_;
+  bool enable_multi_user_;
 
   // Network state.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
@@ -231,6 +234,7 @@ MCSProbe::MCSProbe(
       android_id_(0),
       secret_(0),
       server_port_(0),
+      enable_multi_user_(false),
       url_request_context_getter_(url_request_context_getter),
       file_thread_("FileThread") {
   if (command_line.HasSwitch(kRMQFileName)) {
@@ -243,6 +247,9 @@ MCSProbe::MCSProbe(
   if (command_line.HasSwitch(kSecretSwitch)) {
     base::StringToUint64(command_line.GetSwitchValueASCII(kSecretSwitch),
                          &secret_);
+  }
+  if (command_line.HasSwitch(kEnableMultiUserSwitch)) {
+    enable_multi_user_ = true;
   }
   server_host_ = kMCSServerHost;
   if (command_line.HasSwitch(kServerHostSwitch)) {
@@ -308,7 +315,7 @@ void MCSProbe::LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result) {
     return;
   }
 
-  mcs_client_->Login(android_id_, secret_);
+  StartMCSLogin();
 }
 
 void MCSProbe::UpdateCallback(bool success) {
@@ -415,8 +422,16 @@ void MCSProbe::OnCheckInCompleted(uint64 android_id, uint64 secret) {
                                    base::Bind(&MCSProbe::UpdateCallback,
                                               base::Unretained(this)));
 
+  StartMCSLogin();
+}
+
+void MCSProbe::StartMCSLogin() {
   LOG(INFO) << "MCS login initiated.";
-  mcs_client_->Login(android_id_, secret_);
+
+  std::vector<int64> user_serial_numbers;
+  if (enable_multi_user_)
+    user_serial_numbers.push_back(1LL);
+  mcs_client_->Login(android_id_, secret_, user_serial_numbers);
 }
 
 int MCSProbeMain(int argc, char* argv[]) {

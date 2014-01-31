@@ -55,6 +55,9 @@ class GCM_EXPORT UserList {
   // kInvalidSerialNumber.
   int64 GetSerialNumberForUsername(const std::string& username) const;
 
+  // Returns serial numbers of all active users.
+  std::vector<int64> GetAllActiveUserSerialNumbers() const;
+
  private:
   friend class UserListTest;
 
@@ -66,6 +69,7 @@ class GCM_EXPORT UserList {
     ~UserInfo();
 
     int64 serial_number;
+    bool active;
     // Delegate related to the username. Not owned by the UserDelegate.
     GCMClient::Delegate* delegate;
     SetDelegateCallback callback;

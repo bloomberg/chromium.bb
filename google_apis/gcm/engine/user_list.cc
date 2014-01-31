@@ -21,17 +21,21 @@ const int64 kInvalidSerialNumber = -1;
 
 UserList::UserInfo::UserInfo()
     : serial_number(kInvalidSerialNumber),
+      // TODO(jianli): support setting active state.
+      active(true),
       delegate(NULL) {
 }
 
 UserList::UserInfo::UserInfo(int64 serial_number)
     : serial_number(serial_number),
+      active(true),
       delegate(NULL) {
 }
 
 UserList::UserInfo::UserInfo(GCMClient::Delegate* delegate,
                              const SetDelegateCallback& callback)
     : serial_number(kInvalidSerialNumber),
+      active(true),
       delegate(delegate),
       callback(callback) {
 }
@@ -202,6 +206,17 @@ int64 UserList::GetSerialNumberForUsername(const std::string& username) const {
   UserInfoMap::const_iterator iter = delegates_.find(username);
   return iter != delegates_.end() ? iter->second.serial_number
                                   : kInvalidSerialNumber;
+}
+
+std::vector<int64> UserList::GetAllActiveUserSerialNumbers() const {
+  std::vector<int64> user_serial_numbers;
+  for (UserInfoMap::const_iterator iter = delegates_.begin();
+       iter != delegates_.end(); ++iter) {
+    if (iter->second.active &&
+        iter->second.serial_number != kInvalidSerialNumber)
+      user_serial_numbers.push_back(iter->second.serial_number);
+  }
+  return user_serial_numbers;
 }
 
 }  // namespace gcm

@@ -65,7 +65,9 @@ class FakeMCSClient : public MCSClient {
   FakeMCSClient(base::Clock* clock,
                 ConnectionFactory* connection_factory);
   virtual ~FakeMCSClient();
-  virtual void Login(uint64 android_id, uint64 security_token) OVERRIDE;
+  virtual void Login(uint64 android_id,
+                      uint64 security_token,
+                      const std::vector<int64>& user_serial_numbers) OVERRIDE;
   virtual void SendMessage(const MCSMessage& message) OVERRIDE;
   void set_gcm_store(GCMStore* gcm_store);
 
@@ -98,7 +100,9 @@ void FakeMCSClient::set_gcm_store(GCMStore* gcm_store) {
   SetGCMStoreForTesting(gcm_store);
 }
 
-void FakeMCSClient::Login(uint64 android_id, uint64 security_token) {
+void FakeMCSClient::Login(uint64 android_id,
+                          uint64 security_token,
+                          const std::vector<int64>& user_serial_numbers) {
   last_android_id_ = android_id;
   last_security_token_ = security_token;
 }

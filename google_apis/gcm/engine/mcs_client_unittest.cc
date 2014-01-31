@@ -91,6 +91,11 @@ class MCSClientTest : public testing::Test {
     return &connection_factory_;
   }
   bool init_success() const { return init_success_; }
+  std::vector<int64> user_serial_numbers() const {
+    std::vector<int64> user_serial_numbers;
+    user_serial_numbers.push_back(1LL);
+    return user_serial_numbers;
+  }
   uint64 restored_android_id() const { return restored_android_id_; }
   uint64 restored_security_token() const { return restored_security_token_; }
   MCSMessage* received_message() const { return received_message_.get(); }
@@ -176,13 +181,13 @@ void MCSClientTest::InitializeClient() {
 void MCSClientTest::LoginClient(
     const std::vector<std::string>& acknowledged_ids) {
   scoped_ptr<mcs_proto::LoginRequest> login_request =
-      BuildLoginRequest(kAndroidId, kSecurityToken);
+      BuildLoginRequest(kAndroidId, kSecurityToken, user_serial_numbers());
   for (size_t i = 0; i < acknowledged_ids.size(); ++i)
     login_request->add_received_persistent_id(acknowledged_ids[i]);
   GetFakeHandler()->ExpectOutgoingMessage(
       MCSMessage(kLoginRequestTag,
                  login_request.PassAs<const google::protobuf::MessageLite>()));
-  mcs_client_->Login(kAndroidId, kSecurityToken);
+  mcs_client_->Login(kAndroidId, kSecurityToken, user_serial_numbers());
   run_loop_->Run();
   run_loop_.reset(new base::RunLoop());
 }
@@ -335,9 +340,10 @@ TEST_F(MCSClientTest, SendMessageRMQWhileDisconnected) {
   GetFakeHandler()->ExpectOutgoingMessage(message);
   // The login request.
   GetFakeHandler()->ExpectOutgoingMessage(
-      MCSMessage(kLoginRequestTag,
-                 BuildLoginRequest(kAndroidId, kSecurityToken).
-                     PassAs<const google::protobuf::MessageLite>()));
+      MCSMessage(
+          kLoginRequestTag,
+          BuildLoginRequest(kAndroidId, kSecurityToken, user_serial_numbers()).
+              PassAs<const google::protobuf::MessageLite>()));
   // The second (re)send.
   MCSMessage message2(BuildDataMessage("from",
                                        "category",

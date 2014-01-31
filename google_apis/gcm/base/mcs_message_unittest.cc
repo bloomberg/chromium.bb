@@ -35,8 +35,9 @@ TEST_F(MCSMessageTest, Invalid) {
 }
 
 TEST_F(MCSMessageTest, InitInferTag) {
+  std::vector<int64> user_serial_numbers;
   scoped_ptr<mcs_proto::LoginRequest> login_request(
-      BuildLoginRequest(kAndroidId, kSecret));
+      BuildLoginRequest(kAndroidId, kSecret, user_serial_numbers));
   scoped_ptr<google::protobuf::MessageLite> login_copy(
       new mcs_proto::LoginRequest(*login_request));
   MCSMessage message(*login_copy);
@@ -53,8 +54,9 @@ TEST_F(MCSMessageTest, InitInferTag) {
 }
 
 TEST_F(MCSMessageTest, InitWithTag) {
+  std::vector<int64> user_serial_numbers;
   scoped_ptr<mcs_proto::LoginRequest> login_request(
-      BuildLoginRequest(kAndroidId, kSecret));
+      BuildLoginRequest(kAndroidId, kSecret, user_serial_numbers));
   scoped_ptr<google::protobuf::MessageLite> login_copy(
       new mcs_proto::LoginRequest(*login_request));
   MCSMessage message(kLoginRequestTag, *login_copy);
@@ -71,8 +73,9 @@ TEST_F(MCSMessageTest, InitWithTag) {
 }
 
 TEST_F(MCSMessageTest, InitPassOwnership) {
+  std::vector<int64> user_serial_numbers;
   scoped_ptr<mcs_proto::LoginRequest> login_request(
-      BuildLoginRequest(kAndroidId, kSecret));
+      BuildLoginRequest(kAndroidId, kSecret, user_serial_numbers));
   scoped_ptr<google::protobuf::MessageLite> login_copy(
       new mcs_proto::LoginRequest(*login_request));
   MCSMessage message(kLoginRequestTag,

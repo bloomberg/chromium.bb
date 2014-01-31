@@ -102,12 +102,15 @@ class GCM_EXPORT MCSClient {
 
   // Logs the client into the server. Client must be initialized.
   // |android_id| and |security_token| are optional if this is not a new
-  // client, else they must be non-zero.
+  // client, else they must be non-zero. |user_serial_numbers| contains the
+  // serial numbers of all active users.
   // Successful login will result in |message_received_callback| being invoked
   // with a valid LoginResponse.
   // Login failure (typically invalid id/token) will shut down the client, and
   // |initialization_callback| to be invoked with |success = false|.
-  virtual void Login(uint64 android_id, uint64 security_token);
+  virtual void Login(uint64 android_id,
+                      uint64 security_token,
+                      const std::vector<int64>& user_serial_numbers);
 
   // Sends a message, with or without reliable message queueing (RMQ) support.
   // Will asynchronously invoke the OnMessageSent callback regardless.
@@ -202,6 +205,9 @@ class GCM_EXPORT MCSClient {
   // The android id and security token in use by this device.
   uint64 android_id_;
   uint64 security_token_;
+
+  // The list of serial numbers of all active users when login occurs.
+  std::vector<int64> user_serial_numbers_;
 
   // Factory for creating new connections and connection handlers.
   ConnectionFactory* connection_factory_;

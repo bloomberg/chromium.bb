@@ -192,7 +192,9 @@ void MCSClient::Initialize(
   }
 }
 
-void MCSClient::Login(uint64 android_id, uint64 security_token) {
+void MCSClient::Login(uint64 android_id,
+                      uint64 security_token,
+                      const std::vector<int64>& user_serial_numbers) {
   DCHECK_EQ(state_, LOADED);
   DCHECK(android_id_ == 0 || android_id_ == android_id);
   DCHECK(security_token_ == 0 || security_token_ == security_token);
@@ -203,6 +205,7 @@ void MCSClient::Login(uint64 android_id, uint64 security_token) {
     android_id_ = android_id;
     security_token_ = security_token;
   }
+  user_serial_numbers_ = user_serial_numbers;
 
   DCHECK(android_id_ != 0 || restored_unackeds_server_ids_.empty());
 
@@ -287,7 +290,8 @@ void MCSClient::ResetStateAndBuildLoginRequest(
   acked_server_ids_.clear();
 
   // Then build the request, consuming all pending acknowledgments.
-  request->Swap(BuildLoginRequest(android_id_, security_token_).get());
+  request->Swap(BuildLoginRequest(
+      android_id_, security_token_, user_serial_numbers_).get());
   for (PersistentIdList::const_iterator iter =
            restored_unackeds_server_ids_.begin();
        iter != restored_unackeds_server_ids_.end(); ++iter) {

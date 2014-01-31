@@ -43,16 +43,19 @@ COMPILE_ASSERT(arraysize(kProtoNames) == kNumProtoTypes,
 const char kLoginId[] = "login-1";
 const char kLoginDomain[] = "mcs.android.com";
 const char kLoginDeviceIdPrefix[] = "android-";
-const char kLoginSettingName[] = "new_vc";
-const char kLoginSettingValue[] = "1";
+const char kLoginSettingDefaultName[] = "new_vc";
+const char kLoginSettingDefaultValue[] = "1";
+const char kLoginSettingMultiUserName[] = "u:f";
 
 // Maximum amount of time to save an unsent outgoing message for.
 const int kMaxTTLSeconds = 4 * 7 * 24 * 60 * 60;  // 4 weeks.
 
 }  // namespace
 
-scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(uint64 auth_id,
-                                                      uint64 auth_token) {
+scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(
+    uint64 auth_id,
+    uint64 auth_token,
+    const std::vector<int64>& user_serial_numbers) {
   // Create a hex encoded auth id for the device id field.
   std::string auth_id_hex;
   auth_id_hex = base::StringPrintf("%" PRIx64, auth_id);
@@ -76,9 +79,21 @@ scoped_ptr<mcs_proto::LoginRequest> BuildLoginRequest(uint64 auth_id,
   login_request->set_user(auth_id_str);
   login_request->set_use_rmq2(true);
 
+  std::string setting_name, setting_value;
+  if (user_serial_numbers.empty()) {
+    setting_name = kLoginSettingDefaultName;
+    setting_value = kLoginSettingDefaultValue;
+  } else {
+    setting_name = kLoginSettingMultiUserName;
+    for (size_t i = 0; i < user_serial_numbers.size(); ++i) {
+      if (i > 0)
+        setting_value += ",";
+      setting_value += base::Int64ToString(user_serial_numbers[i]);
+    }
+  }
   login_request->add_setting();
-  login_request->mutable_setting(0)->set_name(kLoginSettingName);
-  login_request->mutable_setting(0)->set_value(kLoginSettingValue);
+  login_request->mutable_setting(0)->set_name(setting_name);
+  login_request->mutable_setting(0)->set_value(setting_value);
   return login_request.Pass();
 }
 
