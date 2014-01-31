@@ -91,7 +91,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
                      const GURL& frame_url);
   void CreateSession(int media_keys_id,
                      uint32 session_id,
-                     const std::string& type,
+                     MediaKeysHostMsg_CreateSession_Type type,
                      const std::vector<uint8>& init_data);
   void UpdateSession(int media_keys_id,
                      uint32 session_id,
@@ -165,7 +165,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void OnSessionMessage(int media_keys_id,
                         uint32 session_id,
                         const std::vector<uint8>& message,
-                        const std::string& destination_url);
+                        const GURL& destination_url);
   void OnSessionReady(int media_keys_id, uint32 session_id);
   void OnSessionClosed(int media_keys_id, uint32 session_id);
   void OnSessionError(int media_keys_id,

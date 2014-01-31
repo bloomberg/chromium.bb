@@ -65,6 +65,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(MediaPlayerHostMsg_Initialize_Type)
+IPC_ENUM_TRAITS(MediaKeysHostMsg_CreateSession_Type)
 
 // Chrome for Android seek message sequence is:
 // 1. Renderer->Browser MediaPlayerHostMsg_Seek
@@ -286,9 +287,8 @@ IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_InitializeCDM,
 IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_CreateSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
-                    std::string /* type */,
+                    MediaKeysHostMsg_CreateSession_Type /* type */,
                     std::vector<uint8> /* init_data */)
-// TODO(jrummell): Use enum for type (http://crbug.com/327449)
 
 IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_UpdateSession,
                     int /* media_keys_id */,
@@ -311,8 +311,7 @@ IPC_MESSAGE_ROUTED4(MediaKeysMsg_SessionMessage,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
                     std::vector<uint8> /* message */,
-                    std::string /* destination_url */)
-// TODO(jrummell): Use GURL for destination_url (http://crbug.com/326663)
+                    GURL /* destination_url */)
 
 IPC_MESSAGE_ROUTED2(MediaKeysMsg_SessionReady,
                     int /* media_keys_id */,

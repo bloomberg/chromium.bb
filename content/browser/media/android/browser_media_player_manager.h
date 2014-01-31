@@ -101,7 +101,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnSessionMessage(int media_keys_id,
                                 uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const std::string& destination_url) OVERRIDE;
+                                const GURL& destination_url) OVERRIDE;
   virtual void OnSessionReady(int media_keys_id, uint32 session_id) OVERRIDE;
   virtual void OnSessionClosed(int media_keys_id, uint32 session_id) OVERRIDE;
   virtual void OnSessionError(int media_keys_id,
@@ -142,7 +142,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                        const GURL& frame_url);
   void OnCreateSession(int media_keys_id,
                        uint32 session_id,
-                       const std::string& type,
+                       MediaKeysHostMsg_CreateSession_Type type,
                        const std::vector<uint8>& init_data);
   void OnUpdateSession(int media_keys_id,
                        uint32 session_id,

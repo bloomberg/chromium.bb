@@ -39,7 +39,6 @@ static const int kMediaPlayerThreshold = 1;
 // prevent unnecessarily large messages from being passed around, and the sizes
 // are somewhat arbitrary as the EME specification doesn't specify any limits.
 static const size_t kEmeUuidSize = 16;
-static const size_t kEmeTypeMaximum = 50;  // Type is a MIME type.
 static const size_t kEmeInitDataMaximum = 10240;  // 10 KB
 static const size_t kEmeResponseMaximum = 10240;  // 10 KB
 
@@ -427,7 +426,7 @@ void BrowserMediaPlayerManager::OnSessionMessage(
     int media_keys_id,
     uint32 session_id,
     const std::vector<uint8>& message,
-    const std::string& destination_url) {
+    const GURL& destination_url) {
   Send(new MediaKeysMsg_SessionMessage(
       routing_id(), media_keys_id, session_id, message, destination_url));
 }
@@ -607,22 +606,34 @@ void BrowserMediaPlayerManager::OnInitializeCDM(
 void BrowserMediaPlayerManager::OnCreateSession(
     int media_keys_id,
     uint32 session_id,
-    const std::string& type,
+    MediaKeysHostMsg_CreateSession_Type type,
     const std::vector<uint8>& init_data) {
-  if (type.length() > kEmeTypeMaximum) {
-    OnSessionError(
-        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
-    return;
-  }
   if (init_data.size() > kEmeInitDataMaximum) {
     OnSessionError(
         media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
+  // Convert the session type into a MIME type. "audio" and "video" don't
+  // matter, so using "video" for the MIME type.
+  // Ref: https://dvcs.w3.org/hg/html-media/raw-file/tip/encrypted-media/encrypted-media.html#dom-createsession
+  std::string mime_type;
+  switch (type) {
+    case CREATE_SESSION_TYPE_WEBM:
+      mime_type = "video/webm";
+      break;
+    case CREATE_SESSION_TYPE_MP4:
+      mime_type = "video/mp4";
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
   if (CommandLine::ForCurrentProcess()
       ->HasSwitch(switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    CreateSessionIfPermitted(media_keys_id, session_id, type, init_data, true);
+    CreateSessionIfPermitted(
+        media_keys_id, session_id, mime_type, init_data, true);
     return;
   }
 
@@ -652,7 +663,7 @@ void BrowserMediaPlayerManager::OnCreateSession(
                  weak_ptr_factory_.GetWeakPtr(),
                  media_keys_id,
                  session_id,
-                 type,
+                 mime_type,
                  init_data));
 }
 

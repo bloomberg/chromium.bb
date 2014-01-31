@@ -50,10 +50,21 @@ bool ProxyMediaKeys::CreateSession(uint32 session_id,
                                    const std::string& type,
                                    const uint8* init_data,
                                    int init_data_length) {
+  MediaKeysHostMsg_CreateSession_Type session_type;
+  if (type == "audio/mp4" || type == "video/mp4") {
+    session_type = CREATE_SESSION_TYPE_MP4;
+  } else if (type == "audio/webm" || type == "video/webm") {
+    session_type = CREATE_SESSION_TYPE_WEBM;
+  } else {
+    DLOG(ERROR) << "Unsupported EME CreateSession type of " << type;
+    OnSessionError(session_id, media::MediaKeys::kUnknownError, 0);
+    return false;
+  }
+
   manager_->CreateSession(
       media_keys_id_,
       session_id,
-      type,
+      session_type,
       std::vector<uint8>(init_data, init_data + init_data_length));
   return true;
 }

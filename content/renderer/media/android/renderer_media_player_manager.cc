@@ -17,7 +17,6 @@
 // are somewhat arbitrary as the EME specification doesn't specify any limits.
 static const size_t kEmeWebSessionIdMaximum = 512;
 static const size_t kEmeMessageMaximum = 10240;  // 10 KB
-static const size_t kEmeDestinationUrlMaximum = 2048;  // 2 KB
 
 namespace content {
 
@@ -247,7 +246,7 @@ void RendererMediaPlayerManager::InitializeCDM(int media_keys_id,
 void RendererMediaPlayerManager::CreateSession(
     int media_keys_id,
     uint32 session_id,
-    const std::string& type,
+    MediaKeysHostMsg_CreateSession_Type type,
     const std::vector<uint8>& init_data) {
   Send(new MediaKeysHostMsg_CreateSession(
       routing_id(), media_keys_id, session_id, type, init_data));
@@ -292,13 +291,8 @@ void RendererMediaPlayerManager::OnSessionMessage(
     int media_keys_id,
     uint32 session_id,
     const std::vector<uint8>& message,
-    const std::string& destination_url) {
+    const GURL& destination_url) {
   if (message.size() > kEmeMessageMaximum) {
-    OnSessionError(
-        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
-    return;
-  }
-  if (destination_url.length() > kEmeDestinationUrlMaximum) {
     OnSessionError(
         media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
@@ -306,7 +300,7 @@ void RendererMediaPlayerManager::OnSessionMessage(
 
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnSessionMessage(session_id, message, destination_url);
+    media_keys->OnSessionMessage(session_id, message, destination_url.spec());
 }
 
 void RendererMediaPlayerManager::OnSessionReady(int media_keys_id,
