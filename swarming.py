@@ -317,7 +317,7 @@ def archive(isolate_server, isolated, algo, verbose):
       sys.executable,
       os.path.join(ROOT_DIR, 'isolate.py'),
       'archive',
-      '--outdir', isolate_server,
+      '--isolate-server', isolate_server,
       '--isolated', isolated,
     ]
     cmd.extend(['--verbose'] * verbose)

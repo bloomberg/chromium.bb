@@ -9,6 +9,7 @@ import logging
 import os
 import StringIO
 import sys
+import tempfile
 import threading
 import unittest
 
@@ -155,6 +156,7 @@ class TestCase(auto_stub.TestCase):
     self.requests = []
     self.mock(swarming.net, 'url_open', self._url_open)
     self.mock(swarming.time, 'sleep', lambda x: None)
+    self.mock(swarming.subprocess, 'call', lambda *_: self.fail())
     self.mock(sys, 'stdout', StringIO.StringIO())
     self.mock(sys, 'stderr', StringIO.StringIO())
 
@@ -632,6 +634,38 @@ class ManifestTest(TestCase):
         priority=101,
         algo=ALGO)
     self.assertEqual(0, result)
+
+  def test_isolated_to_hash(self):
+    calls = []
+    self.mock(swarming.subprocess, 'call', lambda *c: calls.append(c))
+    content = '{}'
+    expected_hash = hashlib.sha1(content).hexdigest()
+    handle, isolated = tempfile.mkstemp(
+        prefix='swarming_test_', suffix='.isolated')
+    os.close(handle)
+    try:
+      with open(isolated, 'w') as f:
+        f.write(content)
+      hash_value = swarming.isolated_to_hash(
+          'http://localhost:1', isolated, hashlib.sha1, False)
+    finally:
+      os.remove(isolated)
+    self.assertEqual(expected_hash, hash_value)
+    expected_calls = [
+        (
+          [
+            sys.executable,
+            os.path.join(ROOT_DIR, 'isolate.py'),
+            'archive',
+            '--isolate-server',
+            'http://localhost:1',
+            '--isolated',
+            isolated,
+          ],
+          False,
+        ),
+    ]
+    self.assertEqual(expected_calls, calls)
 
 
 class MainTest(TestCase):
