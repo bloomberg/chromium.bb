@@ -9,6 +9,7 @@ import glob
 import logging
 import os
 import shutil
+import socket
 import stat
 import tempfile
 import time
@@ -23,6 +24,7 @@ TEST_PRIVATE_KEY = os.path.normpath(
     os.path.join(_path, '../ssh_keys/testing_rsa'))
 del _path
 
+LOCALHOST = 'localhost'
 LOCALHOST_IP = '127.0.0.1'
 
 REBOOT_MARKER = '/tmp/awaiting_reboot'
@@ -32,6 +34,51 @@ REBOOT_SSH_CONNECT_ATTEMPTS = 2
 CHECK_INTERVAL = 5
 DEFAULT_SSH_PORT = 22
 SSH_ERROR_CODE = 255
+
+
+def NormalizePort(port, str_ok=True):
+  """Checks if |port| is a valid port number and returns the number.
+
+  Args:
+    port: The port to normalize.
+    str_ok: Accept |port| in string. If set False, only accepts
+      an integer. Defaults to True.
+
+  Returns:
+    A port number (integer).
+  """
+  err_msg = '%s is not a valid port number.' % port
+
+  if not str_ok and not isinstance(port, int):
+    raise ValueError(err_msg)
+
+  port = int(port)
+  if port <= 0 or port >= 65536:
+    raise ValueError(err_msg)
+
+  return port
+
+
+def GetUnusedPort(ip=LOCALHOST, family=socket.AF_INET,
+                  stype=socket.SOCK_STREAM):
+  """Returns a currently unused port.
+
+  Args:
+    ip: IP to use to bind the port.
+    family: Address family.
+    stype: Socket type.
+
+  Returns:
+    A port number (integer).
+  """
+  s = None
+  try:
+    s = socket.socket(family, stype)
+    s.bind((ip, 0))
+    return s.getsockname()[1]
+  except (socket.error, OSError):
+    if s:
+      s.close()
 
 
 def RunCommandFuncWrapper(func, msg, *args, **kwargs):

@@ -21,6 +21,24 @@ from chromite.lib import remote_access
 # pylint: disable=W0212
 
 
+class TestNormalizePort(cros_test_lib.TestCase):
+  """Verifies we normalize port."""
+
+  def testNormalizePortStrOK(self):
+    """Tests that string will be converted to integer."""
+    self.assertEqual(remote_access.NormalizePort('123'), 123)
+
+  def testNormalizePortStrNotOK(self):
+    """Tests that error is raised if port is string and str_ok=False."""
+    self.assertRaises(
+        ValueError, remote_access.NormalizePort, '123', str_ok=False)
+
+  def testNormalizePortOutOfRange(self):
+    """Tests that error is rasied when port is out of range."""
+    self.assertRaises(ValueError, remote_access.NormalizePort, '-1')
+    self.assertRaises(ValueError, remote_access.NormalizePort, 99999)
+
+
 class RemoteShMock(partial_mock.PartialCmdMock):
   """Mocks the RemoteSh function."""
   TARGET = 'chromite.lib.remote_access.RemoteAccess'
