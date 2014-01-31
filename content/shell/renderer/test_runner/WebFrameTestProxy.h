@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace WebTestRunner {
 
@@ -41,6 +42,13 @@ public:
     }
 
     // WebFrameClient implementation.
+    virtual bool canCreatePluginWithoutRenderer(const blink::WebString& mimeType)
+    {
+        using blink::WebString;
+
+        const CR_DEFINE_STATIC_LOCAL(WebString, suffix, ("-can-create-without-renderer"));
+        return mimeType.utf8().find(suffix.utf8()) != std::string::npos;
+    }
     virtual void didStartProvisionalLoad(blink::WebFrame* frame)
     {
         if (m_version > 2)

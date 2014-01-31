@@ -37,6 +37,9 @@ public:
     virtual ~TestPlugin();
 
     static const blink::WebString& mimeType();
+    static const blink::WebString& canCreateWithoutRendererMimeType();
+    static const blink::WebString& pluginPersistsMimeType();
+    static bool isSupportedMimeType(const blink::WebString& mimeType);
 
     // WebPlugin methods:
     virtual bool initialize(blink::WebPluginContainer*);
@@ -130,6 +133,9 @@ private:
     bool m_printEventDetails;
     bool m_printUserGestureStatus;
     bool m_canProcessDrag;
+
+    bool m_isPersistent;
+    bool m_canCreateWithoutRenderer;
 
     DISALLOW_COPY_AND_ASSIGN(TestPlugin);
 };

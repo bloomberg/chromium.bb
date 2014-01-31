@@ -127,7 +127,6 @@ void deferredDelete(void* context)
 
 }
 
-
 TestPlugin::TestPlugin(WebFrame* frame, const WebPluginParams& params, WebTestDelegate* delegate)
     : m_frame(frame)
     , m_delegate(delegate)
@@ -141,6 +140,8 @@ TestPlugin::TestPlugin(WebFrame* frame, const WebPluginParams& params, WebTestDe
     , m_printEventDetails(false)
     , m_printUserGestureStatus(false)
     , m_canProcessDrag(false)
+    , m_isPersistent(params.mimeType == pluginPersistsMimeType())
+    , m_canCreateWithoutRenderer(params.mimeType == canCreateWithoutRendererMimeType())
 {
     const CR_DEFINE_STATIC_LOCAL(WebString, kAttributePrimitive, ("primitive"));
     const CR_DEFINE_STATIC_LOCAL(WebString, kAttributeBackgroundColor, ("background-color"));
@@ -177,6 +178,8 @@ TestPlugin::TestPlugin(WebFrame* frame, const WebPluginParams& params, WebTestDe
         else if (attributeName == kAttributePrintUserGestureStatus)
             m_printUserGestureStatus = parseBoolean(attributeValue);
     }
+    if (m_canCreateWithoutRenderer)
+        m_delegate->printMessage(std::string("TestPlugin: canCreateWithoutRenderer\n"));
 }
 
 TestPlugin::~TestPlugin()
@@ -545,6 +548,8 @@ bool TestPlugin::handleInputEvent(const WebInputEvent& event, WebCursorInfo& inf
         printEventDetails(m_delegate, event);
     if (m_printUserGestureStatus)
         m_delegate->printMessage(std::string("* ") + (WebUserGestureIndicator::isProcessingUserGesture() ? "" : "not ") + "handling user gesture\n");
+    if (m_isPersistent)
+        m_delegate->printMessage(std::string("TestPlugin: isPersistent\n"));
     return false;
 }
 
@@ -580,6 +585,25 @@ const WebString& TestPlugin::mimeType()
 {
     const CR_DEFINE_STATIC_LOCAL(WebString, kMimeType, ("application/x-webkit-test-webplugin"));
     return kMimeType;
+}
+
+const WebString& TestPlugin::canCreateWithoutRendererMimeType()
+{
+    const CR_DEFINE_STATIC_LOCAL(WebString, kCanCreateWithoutRendererMimeType, ("application/x-webkit-test-webplugin-can-create-without-renderer"));
+    return kCanCreateWithoutRendererMimeType;
+}
+
+const WebString& TestPlugin::pluginPersistsMimeType()
+{
+    const CR_DEFINE_STATIC_LOCAL(WebString, kPluginPersistsMimeType, ("application/x-webkit-test-webplugin-persistent"));
+    return kPluginPersistsMimeType;
+}
+
+bool TestPlugin::isSupportedMimeType(const WebString& mimeType)
+{
+    return mimeType == TestPlugin::mimeType()
+           || mimeType == pluginPersistsMimeType()
+           || mimeType == canCreateWithoutRendererMimeType();
 }
 
 }

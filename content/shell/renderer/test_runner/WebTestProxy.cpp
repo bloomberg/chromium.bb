@@ -896,7 +896,7 @@ bool WebTestProxyBase::createView(WebFrame*, const WebURLRequest& request, const
 
 WebPlugin* WebTestProxyBase::createPlugin(WebFrame* frame, const WebPluginParams& params)
 {
-    if (params.mimeType == TestPlugin::mimeType())
+    if (TestPlugin::isSupportedMimeType(params.mimeType))
         return TestPlugin::create(frame, params, m_delegate);
     return 0;
 }
