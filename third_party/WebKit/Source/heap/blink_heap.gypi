@@ -50,6 +50,11 @@
           'asm/SaveRegisters_arm.S',
         ],
       }],
+      ['target_arch == "a64"', {
+        'heap_asm_files': [
+          'asm/SaveRegisters_a64.S',
+        ],
+      }],
       ['target_arch == "mipsel"', {
         'heap_asm_files': [
           'asm/SaveRegisters_mips.S',
