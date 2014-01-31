@@ -44,6 +44,16 @@ bool ScanResultsComparator(
 
 }  // namespace
 
+// static
+size_t MediaGalleriesScanResultDialogController::ScanResultCountForExtension(
+    MediaGalleriesPreferences* preferences,
+    const extensions::Extension* extension) {
+  ScanResults scan_results;
+  UpdateScanResultsFromPreferences(preferences, extension,
+                                   MediaGalleryPrefIdSet(), &scan_results);
+  return scan_results.size();
+}
+
 MediaGalleriesScanResultDialogController::
 MediaGalleriesScanResultDialogController(
     content::WebContents* web_contents,
@@ -199,20 +209,15 @@ ui::MenuModel* MediaGalleriesScanResultDialogController::GetContextMenu(
   return context_menu_.get();
 }
 
-void MediaGalleriesScanResultDialogController::OnPreferencesInitialized() {
-  preferences_->AddGalleryChangeObserver(this);
-  StorageMonitor::GetInstance()->AddObserver(this);
-  UpdateFromPreferences();
-
-  // TODO(vandebo): Remove the conditional after the cocoa version is done.
-  if (!create_dialog_callback_.is_null())
-    dialog_.reset(create_dialog_callback_.Run(this));
-}
-
-void MediaGalleriesScanResultDialogController::UpdateFromPreferences() {
-  const MediaGalleriesPrefInfoMap& galleries = preferences_->known_galleries();
+// static
+void MediaGalleriesScanResultDialogController::UpdateScanResultsFromPreferences(
+    MediaGalleriesPreferences* preferences,
+    const extensions::Extension* extension,
+    MediaGalleryPrefIdSet ignore_list, ScanResults* scan_results) {
+  DCHECK(preferences->IsInitialized());
+  const MediaGalleriesPrefInfoMap& galleries = preferences->known_galleries();
   MediaGalleryPrefIdSet permitted =
-      preferences_->GalleriesForExtension(*extension_);
+      preferences->GalleriesForExtension(*extension);
 
   // Add or update any scan results that the extension doesn't already have
   // access to or isn't in |results_to_remove_|.
@@ -222,11 +227,11 @@ void MediaGalleriesScanResultDialogController::UpdateFromPreferences() {
     const MediaGalleryPrefInfo& gallery = it->second;
     if (gallery.type == MediaGalleryPrefInfo::kScanResult &&
         !ContainsKey(permitted, gallery.pref_id) &&
-        !ContainsKey(results_to_remove_, gallery.pref_id)) {
-      ScanResults::iterator existing = scan_results_.find(gallery.pref_id);
-      if (existing == scan_results_.end()) {
+        !ContainsKey(ignore_list, gallery.pref_id)) {
+      ScanResults::iterator existing = scan_results->find(gallery.pref_id);
+      if (existing == scan_results->end()) {
         // Default to selected.
-        scan_results_[gallery.pref_id] = ScanResult(gallery, true);
+        (*scan_results)[gallery.pref_id] = ScanResult(gallery, true);
       } else {
         // Update pref_info, in case anything has been updated.
         existing->second.pref_info = gallery;
@@ -237,8 +242,8 @@ void MediaGalleriesScanResultDialogController::UpdateFromPreferences() {
   // Remove anything from |scan_results_| that's no longer valid or the user
   // already has access to.
   std::list<ScanResults::iterator> to_remove;
-  for (ScanResults::iterator it = scan_results_.begin();
-       it != scan_results_.end();
+  for (ScanResults::iterator it = scan_results->begin();
+       it != scan_results->end();
        ++it) {
     MediaGalleriesPrefInfoMap::const_iterator pref_gallery =
         galleries.find(it->first);
@@ -249,9 +254,20 @@ void MediaGalleriesScanResultDialogController::UpdateFromPreferences() {
     }
   }
   while (!to_remove.empty()) {
-    scan_results_.erase(to_remove.front());
+    scan_results->erase(to_remove.front());
     to_remove.pop_front();
   }
+}
+
+void MediaGalleriesScanResultDialogController::OnPreferencesInitialized() {
+  preferences_->AddGalleryChangeObserver(this);
+  StorageMonitor::GetInstance()->AddObserver(this);
+  UpdateScanResultsFromPreferences(preferences_, extension_, results_to_remove_,
+                                   &scan_results_);
+
+  // TODO(vandebo): Remove the conditional after the cocoa version is done.
+  if (!create_dialog_callback_.is_null())
+    dialog_.reset(create_dialog_callback_.Run(this));
 }
 
 void MediaGalleriesScanResultDialogController::OnPreferenceUpdate(
@@ -262,7 +278,8 @@ void MediaGalleriesScanResultDialogController::OnPreferenceUpdate(
     if (it == preferences_->known_galleries().end() ||
         it->second.type == MediaGalleryPrefInfo::kScanResult ||
         it->second.type == MediaGalleryPrefInfo::kRemovedScan) {
-      UpdateFromPreferences();
+      UpdateScanResultsFromPreferences(preferences_, extension_,
+                                       results_to_remove_, &scan_results_);
       dialog_->UpdateResults();
     }
   }

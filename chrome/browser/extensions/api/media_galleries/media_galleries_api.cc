@@ -681,6 +681,9 @@ bool MediaGalleriesAddScanResultsFunction::RunImpl() {
     // We don't fire a scan progress error here, as it would be unintuitive.
     return false;
   }
+  if (!user_gesture())
+    return false;
+
   return Setup(GetProfile(), &error_, base::Bind(
       &MediaGalleriesAddScanResultsFunction::OnPreferencesInit, this));
 }
@@ -688,6 +691,14 @@ bool MediaGalleriesAddScanResultsFunction::RunImpl() {
 void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const Extension* extension = GetExtension();
+  MediaGalleriesPreferences * preferences =
+      media_file_system_registry()->GetPreferences(GetProfile());
+  if (MediaGalleriesScanResultDialogController::ScanResultCountForExtension(
+          preferences, extension) == 0) {
+    GetAndReturnGalleries();
+    return;
+  }
+
   WebContents* contents =
       GetWebContents(render_view_host(), GetProfile(), extension->id());
   if (!contents) {

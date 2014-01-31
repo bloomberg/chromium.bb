@@ -56,12 +56,17 @@ class MediaGalleriesScanResultDialogController
         : pref_info(pref_info),
           selected(selected) {
     }
-    ScanResult() {}
+    ScanResult() : selected(false) {}
 
     MediaGalleryPrefInfo pref_info;
     bool selected;
   };
   typedef std::vector<ScanResult> OrderedScanResults;
+
+  // |preferences| must be already initialized.
+  static size_t ScanResultCountForExtension(
+      MediaGalleriesPreferences* preferences,
+      const extensions::Extension* extension);
 
   // The constructor creates a dialog controller which owns itself.
   MediaGalleriesScanResultDialogController(
@@ -101,6 +106,14 @@ class MediaGalleriesScanResultDialogController
   typedef base::Callback<MediaGalleriesScanResultDialog* (
       MediaGalleriesScanResultDialogController*)> CreateDialogCallback;
 
+  // Updates |results| from |preferences|. Will not add galleries from
+  // |ignore_list| onto |results|.
+  static void UpdateScanResultsFromPreferences(
+      MediaGalleriesPreferences* preferences,
+      const extensions::Extension* extension,
+      MediaGalleryPrefIdSet ignore_list,
+      ScanResults* scan_results);
+
   // Used for unit tests.
   MediaGalleriesScanResultDialogController(
       const extensions::Extension& extension,
@@ -112,9 +125,6 @@ class MediaGalleriesScanResultDialogController
 
   // Bottom half of constructor -- called when |preferences_| is initialized.
   void OnPreferencesInitialized();
-
-  // Update the controller state from preferences.
-  void UpdateFromPreferences();
 
   // Used to keep the dialog in sync with the preferences.
   void OnPreferenceUpdate(const std::string& extension_id,
