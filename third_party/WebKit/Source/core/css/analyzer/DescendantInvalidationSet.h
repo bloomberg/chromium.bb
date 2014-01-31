@@ -57,8 +57,11 @@ public:
     void addId(const AtomicString& id);
     void addTagName(const AtomicString& tagName);
 
-    void setWholeSubtreeInvalid() { m_allDescendantsMightBeInvalid = true; };
+    // Appends the classes in this DescendantInvalidationSet to the vector.
+    void getClasses(Vector<AtomicString>& classes);
 
+    void setWholeSubtreeInvalid() { m_allDescendantsMightBeInvalid = true; };
+    bool wholeSubtreeInvalid() { return m_allDescendantsMightBeInvalid; }
 private:
     DescendantInvalidationSet();
 

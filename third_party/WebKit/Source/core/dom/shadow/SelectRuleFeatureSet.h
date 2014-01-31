@@ -36,6 +36,9 @@
 
 namespace WebCore {
 
+class Element;
+class SpaceSplitString;
+
 class SelectRuleFeatureSet {
 public:
     SelectRuleFeatureSet();
@@ -57,6 +60,9 @@ public:
     bool hasSelectorForVisited() const { return hasSelectorFor(AffectedSelectorVisited); }
 
     bool hasSelectorFor(AffectedSelectorMask features) const { return m_featureFlags & features; }
+
+    bool checkSelectorsForClassChange(const SpaceSplitString& changedClasses) const;
+    bool checkSelectorsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses) const;
 
 private:
     void setSelectRuleFeature(AffectedSelectorType feature) { m_featureFlags |= feature; }

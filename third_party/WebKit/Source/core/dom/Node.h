@@ -371,6 +371,13 @@ public:
     void clearChildNeedsDistributionRecalc()  { clearFlag(ChildNeedsDistributionRecalc); }
     void markAncestorsWithChildNeedsDistributionRecalc();
 
+    bool childNeedsStyleInvalidation() const { return getFlag(ChildNeedsStyleInvalidation); }
+    void setChildNeedsStyleInvalidation()  { setFlag(ChildNeedsStyleInvalidation); }
+    void clearChildNeedsStyleInvalidation()  { clearFlag(ChildNeedsStyleInvalidation); }
+    void markAncestorsWithChildNeedsStyleInvalidation();
+    bool needsStyleInvalidation() { return getFlag(NeedsStyleInvalidation); }
+    void setNeedsStyleInvalidation();
+
     void recalcDistribution();
 
     bool shouldNotifyRendererWithIdenticalStyles() const { return getFlag(NotifyRendererWithIdenticalStyles); }
@@ -715,10 +722,13 @@ private:
         CustomElement = 1 << 27,
         CustomElementUpgraded = 1 << 28,
 
+        ChildNeedsStyleInvalidation = 1 << 29,
+        NeedsStyleInvalidation = 1 << 30,
+
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
     };
 
-    // 4 bits remaining.
+    // 2 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }

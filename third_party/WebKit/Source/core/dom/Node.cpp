@@ -639,6 +639,20 @@ void Node::setIsLink(bool isLink)
     setFlag(isLink && !SVGImage::isInSVGImage(toElement(this)), IsLinkFlag);
 }
 
+void Node::setNeedsStyleInvalidation()
+{
+    setFlag(NeedsStyleInvalidation);
+    markAncestorsWithChildNeedsStyleInvalidation();
+}
+
+void Node::markAncestorsWithChildNeedsStyleInvalidation()
+{
+    for (Node* node = this; node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
+        node->setChildNeedsStyleInvalidation();
+    if (document().childNeedsStyleInvalidation())
+        document().scheduleStyleRecalc();
+}
+
 void Node::markAncestorsWithChildNeedsDistributionRecalc()
 {
     for (Node* node = this; node && !node->childNeedsDistributionRecalc(); node = node->parentOrShadowHostNode())

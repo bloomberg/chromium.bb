@@ -29,10 +29,13 @@
 
 namespace WebCore {
 
+class Document;
+class ShadowRoot;
 class StyleRule;
 class CSSSelector;
 class CSSSelectorList;
 class RuleData;
+class SpaceSplitString;
 
 struct RuleFeature {
     RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocumentSecurityOrigin)
@@ -48,7 +51,7 @@ struct RuleFeature {
 
 class RuleFeatureSet {
 public:
-    RuleFeatureSet() { }
+    RuleFeatureSet();
 
     void add(const RuleFeatureSet&);
     void clear();
@@ -79,6 +82,11 @@ public:
         return m_metadata.idsInRules.contains(idValue);
     }
 
+    void scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element*);
+    void scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element*);
+
+    void computeStyleInvalidation(Document&);
+
     int hasIdsInSelectors() const
     {
         return m_metadata.idsInRules.size() > 0;
@@ -93,6 +101,8 @@ public:
 
 private:
     typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
+    typedef Vector<DescendantInvalidationSet*> InvalidationList;
+    typedef HashMap<Element*, InvalidationList*> PendingInvalidationMap;
     struct FeatureMetadata {
         FeatureMetadata()
             : usesFirstLineRules(false)
@@ -110,13 +120,28 @@ private:
         HashSet<AtomicString> attrsInRules;
     };
 
+    // These return true if setNeedsStyleRecalc() should be run on the Element, as a fallback.
+    bool computeInvalidationSetsForClassChange(const SpaceSplitString& changedClasses, Element*);
+    bool computeInvalidationSetsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element*);
+
     void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&);
     void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&);
+
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
     bool updateClassInvalidationSets(const CSSSelector&);
 
-    InvalidationSetMap m_classInvalidationSets;
+    void addClassToInvalidationSet(const AtomicString& className, Element*);
+
+    bool invalidateStyleForClassChange(Element*, Vector<AtomicString>&, bool foundInvalidationSet);
+    bool invalidateStyleForClassChangeOnChildren(Element*, Vector<AtomicString>& invalidationClasses, bool foundInvalidationSet);
+
+    InvalidationList& ensurePendingInvalidationList(Element*);
+
     FeatureMetadata m_metadata;
+    InvalidationSetMap m_classInvalidationSets;
+    PendingInvalidationMap m_pendingInvalidationMap;
+
+    bool m_targetedStyleRecalcEnabled;
 };
 
 } // namespace WebCore

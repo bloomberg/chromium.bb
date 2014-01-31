@@ -76,4 +76,10 @@ void DescendantInvalidationSet::addTagName(const AtomicString& tagName)
     m_tagNames.add(tagName);
 }
 
+void DescendantInvalidationSet::getClasses(Vector<AtomicString>& classes)
+{
+    for (HashSet<AtomicString>::const_iterator it = m_classes.begin(); it != m_classes.end(); ++it)
+        classes.append(*it);
+}
+
 } // namespace WebCore

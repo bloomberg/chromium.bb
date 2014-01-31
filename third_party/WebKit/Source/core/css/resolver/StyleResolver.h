@@ -203,7 +203,7 @@ public:
     // Exposed for RenderStyle::isStyleAvilable().
     static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
 
-    const RuleFeatureSet& ensureRuleFeatureSet()
+    RuleFeatureSet& ensureRuleFeatureSet()
     {
         if (hasPendingAuthorStyleSheets())
             appendPendingAuthorStyleSheets();

@@ -1045,77 +1045,27 @@ static inline bool classStringHasClassName(const AtomicString& newClassString)
     return classStringHasClassName(newClassString.characters16(), length);
 }
 
-template<typename Checker>
-static bool checkSelectorForClassChange(const SpaceSplitString& changedClasses, const Checker& checker)
-{
-    unsigned changedSize = changedClasses.size();
-    for (unsigned i = 0; i < changedSize; ++i) {
-        if (checker.hasSelectorForClass(changedClasses[i]))
-            return true;
-    }
-    return false;
-}
-
-template<typename Checker>
-static bool checkSelectorForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, const Checker& checker)
-{
-    if (!oldClasses.size())
-        return checkSelectorForClassChange(newClasses, checker);
-
-    // Class vectors tend to be very short. This is faster than using a hash table.
-    BitVector remainingClassBits;
-    remainingClassBits.ensureSize(oldClasses.size());
-
-    for (unsigned i = 0; i < newClasses.size(); ++i) {
-        bool found = false;
-        for (unsigned j = 0; j < oldClasses.size(); ++j) {
-            if (newClasses[i] == oldClasses[j]) {
-                // Mark each class that is still in the newClasses so we can skip doing
-                // an n^2 search below when looking for removals. We can't break from
-                // this loop early since a class can appear more than once.
-                remainingClassBits.quickSet(j);
-                found = true;
-            }
-        }
-        // Class was added.
-        if (!found && checker.hasSelectorForClass(newClasses[i]))
-            return true;
-    }
-
-    for (unsigned i = 0; i < oldClasses.size(); ++i) {
-        if (remainingClassBits.quickGet(i))
-            continue;
-        // Class was removed.
-        if (checker.hasSelectorForClass(oldClasses[i]))
-            return true;
-    }
-
-    return false;
-}
-
 void Element::classAttributeChanged(const AtomicString& newClassString)
 {
     StyleResolver* styleResolver = document().styleResolver();
     bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
-    bool shouldInvalidateStyle = false;
 
     if (classStringHasClassName(newClassString)) {
         const bool shouldFoldCase = document().inQuirksMode();
         const SpaceSplitString oldClasses = elementData()->classNames();
         elementData()->setClass(newClassString, shouldFoldCase);
         const SpaceSplitString& newClasses = elementData()->classNames();
-        shouldInvalidateStyle = testShouldInvalidateStyle && checkSelectorForClassChange(oldClasses, newClasses, styleResolver->ensureRuleFeatureSet());
+        if (testShouldInvalidateStyle)
+            styleResolver->ensureRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, newClasses, this);
     } else {
         const SpaceSplitString& oldClasses = elementData()->classNames();
-        shouldInvalidateStyle = testShouldInvalidateStyle && checkSelectorForClassChange(oldClasses, styleResolver->ensureRuleFeatureSet());
+        if (testShouldInvalidateStyle)
+            styleResolver->ensureRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, this);
         elementData()->clearClass();
     }
 
     if (hasRareData())
         elementRareData()->clearClassListValueForQuirksMode();
-
-    if (shouldInvalidateStyle)
-        setNeedsStyleRecalc();
 }
 
 bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* elementShadow, const QualifiedName& name, const AtomicString& newValue)
@@ -1140,11 +1090,11 @@ bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* el
             const bool shouldFoldCase = document().inQuirksMode();
             const SpaceSplitString& oldClasses = elementData()->classNames();
             const SpaceSplitString newClasses(newClassString, shouldFoldCase);
-            if (checkSelectorForClassChange(oldClasses, newClasses, featureSet))
+            if (featureSet.checkSelectorsForClassChange(oldClasses, newClasses))
                 return true;
         } else {
             const SpaceSplitString& oldClasses = elementData()->classNames();
-            if (checkSelectorForClassChange(oldClasses, featureSet))
+            if (featureSet.checkSelectorsForClassChange(oldClasses))
                 return true;
         }
     }

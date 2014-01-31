@@ -1065,6 +1065,7 @@ private:
     virtual EventQueue* eventQueue() const OVERRIDE FINAL;
 
     void updateDistributionIfNeeded();
+    void updateStyleInvalidationIfNeeded();
 
     void updateUseShadowTrees();
 

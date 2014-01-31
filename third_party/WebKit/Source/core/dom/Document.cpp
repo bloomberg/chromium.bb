@@ -1575,7 +1575,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 
 bool Document::shouldCallRecalcStyleForDocument()
 {
-    return needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty();
+    return needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty() || childNeedsStyleInvalidation();
 }
 
 void Document::scheduleStyleRecalc()
@@ -1611,6 +1611,21 @@ void Document::updateDistributionIfNeeded()
         return;
     TRACE_EVENT0("webkit", "Document::recalcDistribution");
     recalcDistribution();
+}
+
+void Document::updateStyleInvalidationIfNeeded()
+{
+    if (!childNeedsStyleInvalidation())
+        return;
+    TRACE_EVENT0("webkit", "Document::computeNeedsStyleRecalcState");
+    if (!styleResolver()) {
+        clearChildNeedsStyleInvalidation();
+        return;
+    }
+
+    // FIXME: the style resolver can be deleted at present. Either resolve
+    // crbug.com/335964 or move the invalidation data elsewhere.
+    styleResolver()->ensureRuleFeatureSet().computeStyleInvalidation(*this);
 }
 
 void Document::updateDistributionForNodeIfNeeded(Node* node)
@@ -1701,6 +1716,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 }
 
+// FIXME: need a better name than recalcStyle. It's performing style invalidation, style recalc, and distribution.
 void Document::recalcStyle(StyleRecalcChange change)
 {
     // we should not enter style recalc while painting
@@ -1720,6 +1736,7 @@ void Document::recalcStyle(StyleRecalcChange change)
 
     updateDistributionIfNeeded();
     updateUseShadowTrees();
+    updateStyleInvalidationIfNeeded();
 
     if (m_evaluateMediaQueriesOnStyleRecalc) {
         m_evaluateMediaQueriesOnStyleRecalc = false;
@@ -1825,7 +1842,7 @@ void Document::updateStyleForNodeIfNeeded(Node* node)
     // the path from 'node' to the root needs style recalc.
 
     // Global needed.
-    bool needsRecalc = needsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty();
+    bool needsRecalc = needsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty() || childNeedsStyleInvalidation();
 
     // On the path.
     for (Node* ancestor = node; ancestor && !needsRecalc; ancestor = ancestor->parentOrShadowHostNode())
