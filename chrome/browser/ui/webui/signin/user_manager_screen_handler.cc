@@ -313,7 +313,18 @@ void UserManagerScreenHandler::OnClientLoginSuccess(
 
 void UserManagerScreenHandler::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
-  ReportAuthenticationResult(false, ProfileMetrics::AUTH_FAILED);
+  const GoogleServiceAuthError::State state = error.state();
+  // Some "error" results mean the password was correct but some other action
+  // should be taken.  For our purposes, we only care that the password was
+  // correct so count those as a success.
+  bool success = (state == GoogleServiceAuthError::NONE ||
+                  state == GoogleServiceAuthError::CAPTCHA_REQUIRED ||
+                  state == GoogleServiceAuthError::TWO_FACTOR ||
+                  state == GoogleServiceAuthError::ACCOUNT_DELETED ||
+                  state == GoogleServiceAuthError::ACCOUNT_DISABLED);
+  ReportAuthenticationResult(success,
+                             success ? ProfileMetrics::AUTH_ONLINE
+                                     : ProfileMetrics::AUTH_FAILED);
 }
 
 void UserManagerScreenHandler::RegisterMessages() {
