@@ -45,10 +45,7 @@ void WebCryptoResult::completeWithError()
 
 void WebCryptoResult::completeWithError(const WebString& errorDetails)
 {
-    // FIXME: The error details are being temporarily discarded. Once the
-    // Chromium side has been updated to emit error details, this should be
-    // enabled and the layouttests rebaselined.
-    m_impl->completeWithError(/*errorDetails*/);
+    m_impl->completeWithError(errorDetails);
     reset();
 }
 

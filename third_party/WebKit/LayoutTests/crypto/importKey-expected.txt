@@ -1,3 +1,4 @@
+CONSOLE ERROR: The key's algorithm must be specified when importing raw-formatted key.
 CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary
 Tests cypto.subtle.importKey.
 
