@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media_galleries/media_folder_finder.h"
 
+#include <algorithm>
+#include <set>
+
 #include "base/files/file_enumerator.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -14,6 +17,10 @@ using content::BrowserThread;
 
 namespace {
 
+const int64 kMinimumImageSize = 200 * 1024;    // 200 KB
+const int64 kMinimumAudioSize = 500 * 1024;    // 500 KB
+const int64 kMinimumVideoSize = 1024 * 1024;   // 1 MB
+
 bool IsValidScanPath(const base::FilePath& path) {
   return !path.empty() && path.IsAbsolute();
 }
@@ -22,6 +29,24 @@ MediaGalleryScanFileType FilterPath(MediaPathFilter* filter,
                                     const base::FilePath& path) {
   DCHECK(IsValidScanPath(path));
   return filter->GetType(path);
+}
+
+bool FileMeetsSizeRequirement(bool requirement_met,
+                              MediaGalleryScanFileType type,
+                              int64 size) {
+  if (requirement_met)
+    return true;
+
+  if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE)
+    if (size >= kMinimumImageSize)
+      return true;
+  if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_AUDIO)
+    if (size >= kMinimumAudioSize)
+      return true;
+  if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_VIDEO)
+    if (size >= kMinimumVideoSize)
+      return true;
+  return false;
 }
 
 void ScanFolderOnBlockingPool(
@@ -34,6 +59,7 @@ void ScanFolderOnBlockingPool(
   DCHECK(new_folders);
   DCHECK(IsEmptyScanResult(*scan_result));
 
+  bool folder_meets_size_requirement = false;
   base::FileEnumerator enumerator(
       path,
       false, /* recursive? */
@@ -52,18 +78,26 @@ void ScanFolderOnBlockingPool(
       new_folders->push_back(full_path);
       continue;
     }
-    // TODO(thestig) Make sure there is at least 1 file above a size threshold:
-    // images >= 200KB, videos >= 1MB, music >= 500KB.
     MediaGalleryScanFileType type = filter_callback_.Run(full_path);
     if (type == MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN)
       continue;
 
+    // Make sure there is at least 1 file above a size threshold.
     if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE)
       scan_result->image_count += 1;
     if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_AUDIO)
       scan_result->audio_count += 1;
     if (type & MEDIA_GALLERY_SCAN_FILE_TYPE_VIDEO)
       scan_result->video_count += 1;
+    folder_meets_size_requirement =
+        FileMeetsSizeRequirement(folder_meets_size_requirement,
+                                 type,
+                                 file_info.GetSize());
+  }
+  if (!folder_meets_size_requirement) {
+    scan_result->image_count = 0;
+    scan_result->audio_count = 0;
+    scan_result->video_count = 0;
   }
 }
 
@@ -77,13 +111,39 @@ MediaFolderFinder::MediaFolderFinder(
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  std::set<base::FilePath> valid_roots;
   for (size_t i = 0; i < roots.size(); ++i) {
+    // Skip if |path| is invalid or redundant.
     const base::FilePath& path = roots[i];
     if (!IsValidScanPath(path))
       continue;
-    // TODO(thestig) Check |path| for overlap with the rest of |roots|.
-    folders_to_scan_.push(path);
+    if (ContainsKey(valid_roots, path))
+      continue;
+
+    // Check for overlap.
+    bool valid_roots_contains_path = false;
+    std::vector<base::FilePath> overlapping_paths_to_remove;
+    for (std::set<base::FilePath>::iterator it = valid_roots.begin();
+         it != valid_roots.end(); ++it) {
+      if (it->IsParent(path)) {
+        valid_roots_contains_path = true;
+        break;
+      }
+      const base::FilePath& other_path = *it;
+      if (path.IsParent(other_path))
+        overlapping_paths_to_remove.push_back(other_path);
+    }
+    if (valid_roots_contains_path)
+      continue;
+    // Remove anything |path| overlaps from |valid_roots|.
+    for (size_t i = 0; i < overlapping_paths_to_remove.size(); ++i)
+      valid_roots.erase(overlapping_paths_to_remove[i]);
+
+    valid_roots.insert(path);
   }
+
+  std::copy(valid_roots.begin(), valid_roots.end(),
+            std::back_inserter(folders_to_scan_));
 }
 
 MediaFolderFinder::~MediaFolderFinder() {
@@ -123,8 +183,8 @@ void MediaFolderFinder::ScanFolder() {
   DCHECK(token_.IsValid());
   DCHECK(!filter_callback_.is_null());
 
-  base::FilePath folder_to_scan = folders_to_scan_.top();
-  folders_to_scan_.pop();
+  base::FilePath folder_to_scan = folders_to_scan_.back();
+  folders_to_scan_.pop_back();
   MediaGalleryScanResult* scan_result = new MediaGalleryScanResult();
   std::vector<base::FilePath>* new_folders = new std::vector<base::FilePath>();
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -157,11 +217,9 @@ void MediaFolderFinder::GotScanResults(
   if (!IsEmptyScanResult(*scan_result))
     results_[path] = *scan_result;
 
-  // Push new folders to the |folders_to_scan_| stack in reverse order.
-  for (size_t i = new_folders->size(); i > 0; --i) {
-    const base::FilePath& path_to_add = (*new_folders)[i - 1];
-    folders_to_scan_.push(path_to_add);
-  }
+  // Push new folders to the |folders_to_scan_| in reverse order.
+  std::copy(new_folders->rbegin(), new_folders->rend(),
+            std::back_inserter(folders_to_scan_));
 
   ScanFolder();
 }

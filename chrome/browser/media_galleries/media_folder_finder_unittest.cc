@@ -289,3 +289,54 @@ TEST_F(MediaFolderFinderTest, SkipHiddenFiles) {
   RunLoopUntilReceivedCallback();
   DeleteMediaFolderFinder();
 }
+
+TEST_F(MediaFolderFinderTest, ScanIgnoresSmallMediaFiles) {
+  MediaFolderFinder::MediaFolderFinderResults expected_results;
+  std::vector<base::FilePath> folders;
+  folders.push_back(fake_dir());
+
+  base::FilePath dir1 = fake_dir().AppendASCII("dir1");
+  base::FilePath dir2 = fake_dir().AppendASCII("dir2");
+  base::FilePath dir_empty = fake_dir().AppendASCII("dir_empty");
+
+  CreateTestFile(dir1, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 2, true,
+                 &expected_results);
+  CreateTestFile(dir1, MEDIA_GALLERY_SCAN_FILE_TYPE_VIDEO, 1, false,
+                 &expected_results);
+  CreateTestFile(dir1, MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN, 1, false,
+                 &expected_results);
+  CreateTestFile(dir2, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, false,
+                 &expected_results);
+  CreateTestFile(dir2, MEDIA_GALLERY_SCAN_FILE_TYPE_AUDIO, 3, false,
+                 &expected_results);
+  CreateTestFile(dir2, MEDIA_GALLERY_SCAN_FILE_TYPE_VIDEO, 5, false,
+                 &expected_results);
+  CreateTestFile(dir2, MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN, 1, true,
+                 &expected_results);
+  CreateTestDir(dir_empty);
+  ASSERT_EQ(1U, expected_results.erase(dir2));
+
+  CreateMediaFolderFinder(folders, true, expected_results);
+  StartScan();
+  RunLoopUntilReceivedCallback();
+  DeleteMediaFolderFinder();
+}
+
+TEST_F(MediaFolderFinderTest, Overlap) {
+  MediaFolderFinder::MediaFolderFinderResults expected_results;
+  std::vector<base::FilePath> folders;
+  folders.push_back(fake_dir());
+  folders.push_back(fake_dir());
+
+  base::FilePath dir1 = fake_dir().AppendASCII("dir1");
+  folders.push_back(dir1);
+  folders.push_back(dir1);
+
+  CreateTestFile(dir1, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
+                 &expected_results);
+
+  CreateMediaFolderFinder(folders, true, expected_results);
+  StartScan();
+  RunLoopUntilReceivedCallback();
+  DeleteMediaFolderFinder();
+}

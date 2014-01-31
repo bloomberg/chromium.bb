@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_FOLDER_FINDER_H_
 
 #include <map>
-#include <stack>
 #include <vector>
 
 #include "base/callback.h"
@@ -58,7 +57,7 @@ class MediaFolderFinder {
   const MediaFolderFinderResultsCallback results_callback_;
   MediaFolderFinderResults results_;
 
-  std::stack<base::FilePath> folders_to_scan_;
+  std::vector<base::FilePath> folders_to_scan_;
   ScanState scan_state_;
 
   // Token to make sure all calls with |filter_callback_| are on the same
