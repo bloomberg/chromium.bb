@@ -7,8 +7,7 @@ BUILT_SOURCES =
 
 SUBDIRS =					\
 	shared					\
-	clients					\
-	tests
+	clients
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
 
@@ -23,8 +22,12 @@ weston.ini : $(srcdir)/weston.ini.in
 
 all-local : weston.ini validate-protocol-xml
 
+AM_CFLAGS = $(GCC_CFLAGS)
+
 AM_CPPFLAGS = 					\
+	-I$(top_srcdir)/src			\
 	-I$(top_builddir)/src			\
+	-I$(top_builddir)/tests			\
 	-I$(top_srcdir)/shared			\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
@@ -441,6 +444,157 @@ BUILT_SOURCES +=				\
 	xwayland/xserver-server-protocol.h
 endif
 
+
+#
+# tests subdirectory
+#
+
+TESTS = $(shared_tests) $(module_tests) $(weston_tests)
+
+shared_tests =					\
+	config-parser.test			\
+	vertex-clip.test
+
+module_tests =					\
+	surface-test.la				\
+	surface-global-test.la
+
+weston_tests =					\
+	bad_buffer.weston			\
+	keyboard.weston				\
+	event.weston				\
+	button.weston				\
+	text.weston				\
+	subsurface.weston
+
+
+AM_TESTS_ENVIRONMENT = \
+	abs_builddir='$(abs_builddir)'; export abs_builddir;
+
+TEST_EXTENSIONS = .la .weston
+LA_LOG_COMPILER = $(srcdir)/tests/weston-tests-env
+WESTON_LOG_COMPILER = $(srcdir)/tests/weston-tests-env
+
+clean-local:
+	-rm -rf tests/logs
+
+# To remove when automake 1.11 support is dropped
+export abs_builddir
+
+noinst_LTLIBRARIES +=			\
+	weston-test.la			\
+	$(module_tests)			\
+	libtest-runner.la		\
+	libtest-client.la
+
+noinst_PROGRAMS +=			\
+	$(setbacklight)			\
+	$(shared_tests)			\
+	$(weston_tests)			\
+	matrix-test
+
+test_module_ldflags = \
+	-module -avoid-version -rpath $(libdir) $(COMPOSITOR_LIBS)
+
+surface_global_test_la_SOURCES = tests/surface-global-test.c
+surface_global_test_la_LDFLAGS = $(test_module_ldflags)
+surface_global_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+
+surface_test_la_SOURCES = tests/surface-test.c
+surface_test_la_LDFLAGS = $(test_module_ldflags)
+surface_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+
+weston_test_la_LIBADD = $(COMPOSITOR_LIBS) shared/libshared.la
+weston_test_la_LDFLAGS = $(test_module_ldflags)
+weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+weston_test_la_SOURCES =			\
+	tests/weston-test.c			\
+	tests/wayland-test-protocol.c		\
+	tests/wayland-test-server-protocol.h
+
+if ENABLE_EGL
+weston_test_la_CFLAGS += $(EGL_TESTS_CFLAGS)
+weston_test_la_LDFLAGS += $(EGL_TESTS_LIBS)
+endif
+
+libtest_runner_la_SOURCES =			\
+	tests/weston-test-runner.c		\
+	tests/weston-test-runner.h
+libtest_runner_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+
+config_parser_test_SOURCES = tests/config-parser-test.c
+config_parser_test_LDADD = shared/libshared.la libtest-runner.la $(COMPOSITOR_LIBS)
+
+vertex_clip_test_SOURCES =			\
+	tests/vertex-clip-test.c		\
+	src/vertex-clipping.c			\
+	src/vertex-clipping.h
+vertex_clip_test_LDADD = libtest-runner.la -lm -lrt
+
+libtest_client_la_SOURCES =		\
+	tests/weston-test-client-helper.c	\
+	tests/weston-test-client-helper.h	\
+	tests/wayland-test-protocol.c		\
+	tests/wayland-test-client-protocol.h
+libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) shared/libshared.la libtest-runner.la
+
+bad_buffer_weston_SOURCES = tests/bad-buffer-test.c
+bad_buffer_weston_LDADD = libtest-client.la
+
+keyboard_weston_SOURCES = tests/keyboard-test.c
+keyboard_weston_LDADD = libtest-client.la
+
+event_weston_SOURCES = tests/event-test.c
+event_weston_LDADD = libtest-client.la
+
+button_weston_SOURCES = tests/button-test.c
+button_weston_LDADD = libtest-client.la
+
+text_weston_SOURCES = tests/text-test.c tests/text-protocol.c
+text_weston_LDADD = libtest-client.la
+
+subsurface_weston_SOURCES = tests/subsurface-test.c
+subsurface_weston_LDADD = libtest-client.la
+
+if ENABLE_EGL
+weston_tests += buffer-count.weston
+buffer_count_weston_SOURCES = tests/buffer-count-test.c
+buffer_count_weston_CFLAGS = $(GCC_CFLAGS) $(EGL_TESTS_CFLAGS)
+buffer_count_weston_LDADD = libtest-client.la $(EGL_TESTS_LIBS)
+endif
+
+if ENABLE_XWAYLAND_TEST
+weston_tests +=	xwayland.weston
+xwayland_weston_SOURCES = tests/xwayland-test.c
+xwayland_weston_CFLAGS = $(GCC_CFLAGS) $(XWAYLAND_TEST_CFLAGS)
+xwayland_weston_LDADD = libtest-client.la $(XWAYLAND_TEST_LIBS)
+endif
+
+matrix_test_SOURCES =				\
+	tests/matrix-test.c			\
+	shared/matrix.c				\
+	shared/matrix.h
+matrix_test_CPPFLAGS = -DUNIT_TEST
+matrix_test_LDADD = -lm -lrt
+
+if BUILD_SETBACKLIGHT
+noinst_PROGRAMS += setbacklight
+setbacklight_SOURCES =				\
+	tests/setbacklight.c			\
+	src/libbacklight.c			\
+	src/libbacklight.h
+setbacklight_CFLAGS = $(AM_CFLAGS) $(SETBACKLIGHT_CFLAGS)
+setbacklight_LDADD = $(SETBACKLIGHT_LIBS)
+endif
+
+EXTRA_DIST += tests/weston-tests-env
+
+BUILT_SOURCES +=				\
+	tests/wayland-test-protocol.c		\
+	tests/wayland-test-server-protocol.h	\
+	tests/wayland-test-client-protocol.h	\
+	tests/text-protocol.c			\
+	tests/text-client-protocol.h
 
 protocol_sources =				\
 	protocol/desktop-shell.xml		\

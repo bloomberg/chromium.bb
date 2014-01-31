@@ -488,8 +488,7 @@ AC_CONFIG_FILES([Makefile
 		 shared/Makefile
 		 src/version.h
 		 src/weston.pc
-		 clients/Makefile
-		 tests/Makefile])
+		 clients/Makefile])
 AC_OUTPUT
 
 AC_MSG_RESULT([

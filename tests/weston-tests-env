@@ -7,7 +7,7 @@ if test -z "$TESTNAME"; then
 	exit 1;
 fi
 
-WESTON=$abs_builddir/../src/weston
+WESTON=$abs_builddir/weston
 LOGDIR=$abs_builddir/logs
 
 mkdir -p "$LOGDIR"
@@ -18,11 +18,11 @@ OUTLOG="$LOGDIR/$1-log.txt"
 rm -f "$SERVERLOG"
 
 if test x$WAYLAND_DISPLAY != x; then
-	BACKEND=$abs_builddir/../src/.libs/wayland-backend.so
+	BACKEND=$abs_builddir/.libs/wayland-backend.so
 elif test x$DISPLAY != x; then
-	BACKEND=$abs_builddir/../src/.libs/x11-backend.so
+	BACKEND=$abs_builddir/.libs/x11-backend.so
 else
-	BACKEND=$abs_builddir/../src/.libs/wayland-backend.so
+	BACKEND=$abs_builddir/.libs/wayland-backend.so
 fi
 
 case $TESTNAME in
