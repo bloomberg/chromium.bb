@@ -61,12 +61,11 @@ function test()
 
     function runTests(callback)
     {
-        setTimeout(callback, 1000);
         InspectorTest.eventHandler["CSS.styleSheetAdded"] = styleSheetAdded;
         InspectorTest.eventHandler["CSS.styleSheetRemoved"] = styleSheetRemoved;
         var headersAdded = [];
         var headersRemoved = [];
-    
+
         function styleSheetAdded(response)
         {
             headersAdded.push(response.params.header);
