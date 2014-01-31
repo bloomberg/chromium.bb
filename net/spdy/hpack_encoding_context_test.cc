@@ -88,6 +88,36 @@ TEST(HpackEncodingContextTest, IndexedHeaderStaticCopyDoesNotFit) {
   EXPECT_EQ(0u, encoding_context.GetMutableEntryCount());
 }
 
+// Add a bunch of new headers and then try to process an indexed
+// header with index 0. That should clear the reference set.
+TEST(HpackEncodingContextTest, IndexedHeaderZero) {
+  HpackEncodingContext encoding_context;
+
+  uint32 kEntryCount = 50;
+  std::vector<uint32> expected_removed_referenced_indices;
+
+  for (uint32 i = 1; i <= kEntryCount; ++i) {
+    uint32 new_index = 0;
+    std::vector<uint32> removed_referenced_indices;
+    EXPECT_TRUE(
+        encoding_context.ProcessIndexedHeader(i,
+                                              &new_index,
+                                              &removed_referenced_indices));
+    EXPECT_EQ(1u, new_index);
+    EXPECT_TRUE(removed_referenced_indices.empty());
+    EXPECT_EQ(i, encoding_context.GetMutableEntryCount());
+    expected_removed_referenced_indices.push_back(i);
+  }
+
+  uint32 new_index = 0;
+  std::vector<uint32> removed_referenced_indices;
+  EXPECT_TRUE(
+      encoding_context.ProcessIndexedHeader(0, &new_index,
+                                            &removed_referenced_indices));
+  EXPECT_EQ(0u, new_index);
+  EXPECT_EQ(expected_removed_referenced_indices, removed_referenced_indices);
+}
+
 // NOTE: It's too onerous to try to test invalid input to
 // ProcessLiteralHeaderWithIncrementalIndexing(); that would require
 // making a really large (>4GB of memory) string.

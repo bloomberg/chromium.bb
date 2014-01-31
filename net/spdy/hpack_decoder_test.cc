@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/strings/string_piece.h"
 #include "net/spdy/hpack_encoder.h"
 #include "net/spdy/hpack_input_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,6 +50,64 @@ TEST(HpackDecoderTest, DecodeNextNameInvalidIndex) {
 
   StringPiece string_piece;
   EXPECT_FALSE(decoder.DecodeNextNameForTest(&input_stream, &string_piece));
+}
+
+// Utility function to decode a string into a header set, assuming
+// that the emitted headers have unique names.
+std::map<string, string> DecodeUniqueHeaderSet(
+    HpackDecoder* decoder, StringPiece str) {
+  HpackHeaderPairVector header_list;
+  EXPECT_TRUE(decoder->DecodeHeaderSet(str, &header_list));
+  std::map<string, string> header_set(
+      header_list.begin(), header_list.end());
+  // Make sure |header_list| has no duplicates.
+  EXPECT_EQ(header_set.size(), header_list.size());
+  return header_set;
+}
+
+// Decoding an indexed header should toggle the index's presence in
+// the reference set, making a copy of static table entries if
+// necessary. It should also emit the header if toggled on (and only
+// as many times as it was toggled on).
+TEST(HpackDecoderTest, IndexedHeaderBasic) {
+  HpackDecoder decoder(kuint32max);
+
+  // Toggle on static table entry #2 (and make a copy at index #1),
+  // then toggle on static table entry #5 (which is now #6 because of
+  // the copy of #2).
+  std::map<string, string> header_set1 =
+      DecodeUniqueHeaderSet(&decoder, "\x82\x86");
+  std::map<string, string> expected_header_set1;
+  expected_header_set1[":method"] = "GET";
+  expected_header_set1[":path"] = "/index.html";
+  EXPECT_EQ(expected_header_set1, header_set1);
+
+  std::map<string, string> expected_header_set2;
+  expected_header_set2[":path"] = "/index.html";
+  // Toggle off the copy of static table entry #5.
+  std::map<string, string> header_set2 =
+      DecodeUniqueHeaderSet(&decoder, "\x82");
+  EXPECT_EQ(expected_header_set2, header_set2);
+}
+
+// Decoding an indexed header with index 0 should clear the reference
+// set.
+TEST(HpackDecoderTest, IndexedHeaderZero) {
+  HpackDecoder decoder(kuint32max);
+
+  // Toggle on a couple of headers.
+  std::map<string, string> header_set1 =
+      DecodeUniqueHeaderSet(&decoder, "\x82\x86");
+  std::map<string, string> expected_header_set1;
+  expected_header_set1[":method"] = "GET";
+  expected_header_set1[":path"] = "/index.html";
+  EXPECT_EQ(expected_header_set1, header_set1);
+
+  // Toggle index 0 to clear the reference set.
+  std::map<string, string> header_set2 =
+      DecodeUniqueHeaderSet(&decoder, "\x80");
+  std::map<string, string> expected_header_set2;
+  EXPECT_EQ(expected_header_set2, header_set2);
 }
 
 // Decoding two valid encoded literal headers with no indexing should

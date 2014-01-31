@@ -30,6 +30,9 @@ class NET_EXPORT_PRIVATE HpackOutputStream {
   explicit HpackOutputStream(uint32 max_string_literal_size);
   ~HpackOutputStream();
 
+  // Corresponds to 4.2.
+  void AppendIndexedHeader(uint32 index_or_zero);
+
   // Corresponds to 4.3.1 (second form). Returns whether or not the
   // append was successful; if the append was unsuccessful, no other
   // member function may be called.

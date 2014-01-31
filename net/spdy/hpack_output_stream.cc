@@ -18,6 +18,11 @@ HpackOutputStream::HpackOutputStream(uint32 max_string_literal_size)
 
 HpackOutputStream::~HpackOutputStream() {}
 
+void HpackOutputStream::AppendIndexedHeader(uint32 index_or_zero) {
+  AppendPrefix(kIndexedOpcode);
+  AppendUint32(index_or_zero);
+}
+
 bool HpackOutputStream::AppendLiteralHeaderNoIndexingWithName(
     StringPiece name, StringPiece value) {
   AppendPrefix(kLiteralNoIndexOpcode);

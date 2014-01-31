@@ -24,6 +24,9 @@ struct HpackPrefix {
 // without Huffman encoding) (from 4.1.2).
 const HpackPrefix kStringLiteralIdentityEncoded = { 0x0, 1 };
 
+// The opcode for an indexed header field (from 4.2).
+const HpackPrefix kIndexedOpcode = { 0x1, 1 };
+
 // The opcode for a literal header field without indexing (from
 // 4.3.1).
 const HpackPrefix kLiteralNoIndexOpcode = { 0x01, 2 };

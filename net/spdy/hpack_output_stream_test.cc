@@ -266,6 +266,16 @@ TEST(HpackOutputStreamTest, AppendStringLiteralTooLong) {
       base::StringPiece(NULL, kuint32max)));
 }
 
+// Test that encoding an indexed header simply encodes the index.
+TEST(HpackOutputStreamTest, AppendIndexedHeader) {
+  HpackOutputStream output_stream(kuint32max);
+  output_stream.AppendIndexedHeader(0xffffffff);
+
+  string str;
+  output_stream.TakeString(&str);
+  EXPECT_EQ("\xff\x80\xff\xff\xff\x0f", str);
+}
+
 // Test that encoding a literal header without indexing with a name
 // encodes both the name and value as string literals.
 TEST(HpackOutputStreamTest, AppendLiteralHeaderNoIndexingWithName) {

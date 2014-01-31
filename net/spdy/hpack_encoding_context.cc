@@ -169,11 +169,27 @@ void HpackEncodingContext::SetMaxSize(uint32 max_size) {
 }
 
 bool HpackEncodingContext::ProcessIndexedHeader(
-    uint32 index,
+    uint32 index_or_zero,
     uint32* new_index,
     std::vector<uint32>* removed_referenced_indices) {
-  if (index < 1 || index > GetEntryCount())
+  if (index_or_zero > GetEntryCount())
     return false;
+
+  if (index_or_zero == 0) {
+    *new_index = 0;
+    removed_referenced_indices->clear();
+    // Empty the reference set.
+    for (size_t i = 1; i <= header_table_.GetEntryCount(); ++i) {
+      HpackEntry* entry = header_table_.GetMutableEntry(i);
+      if (entry->IsReferenced()) {
+        removed_referenced_indices->push_back(i);
+        entry->SetReferenced(false);
+      }
+    }
+    return true;
+  }
+
+  uint32 index = index_or_zero;
 
   if (index <= header_table_.GetEntryCount()) {
     *new_index = index;

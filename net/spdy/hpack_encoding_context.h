@@ -77,11 +77,12 @@ class NET_EXPORT_PRIVATE HpackEncodingContext {
   // if an error was encountered.
 
   // Tries to update the encoding context given an indexed header
-  // opcode for the given index as described in 3.2.1. new_index is
-  // filled in with the index of a mutable entry, or 0 if one was not
-  // able to be created. removed_referenced_indices is filled in with
-  // the indices of all entries removed from the reference set.
-  bool ProcessIndexedHeader(uint32 index,
+  // opcode for the given index (or zero) as described in
+  // 3.2.1. new_index is filled in with the index of a mutable entry,
+  // or 0 if one was not created. removed_referenced_indices is filled
+  // in with the indices of all entries removed from the reference
+  // set.
+  bool ProcessIndexedHeader(uint32 index_or_zero,
                             uint32* new_index,
                             std::vector<uint32>* removed_referenced_indices);
 

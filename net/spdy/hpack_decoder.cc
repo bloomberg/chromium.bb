@@ -43,6 +43,40 @@ bool HpackDecoder::DecodeHeaderSet(StringPiece input,
 
 bool HpackDecoder::ProcessNextHeaderRepresentation(
     HpackInputStream* input_stream, HpackHeaderPairVector* header_list) {
+  // Touches are used below to track which headers have been emitted.
+
+  // Implements 4.2. Indexed Header Field Representation.
+  if (input_stream->MatchPrefixAndConsume(kIndexedOpcode)) {
+    uint32 index_or_zero = 0;
+    if (!input_stream->DecodeNextUint32(&index_or_zero))
+      return false;
+
+    if (index_or_zero > context_.GetEntryCount())
+      return false;
+
+    bool emitted = false;
+    if (index_or_zero > 0) {
+      uint32 index = index_or_zero;
+      // The index will be put into the reference set.
+      if (!context_.IsReferencedAt(index)) {
+        header_list->push_back(
+            HpackHeaderPair(context_.GetNameAt(index).as_string(),
+                            context_.GetValueAt(index).as_string()));
+        emitted = true;
+      }
+    }
+
+    uint32 new_index = 0;
+    std::vector<uint32> removed_referenced_indices;
+    context_.ProcessIndexedHeader(
+        index_or_zero, &new_index, &removed_referenced_indices);
+
+    if (emitted && new_index > 0)
+      context_.AddTouchesAt(new_index, 0);
+
+    return true;
+  }
+
   // Implements 4.3.1. Literal Header Field without Indexing.
   if (input_stream->MatchPrefixAndConsume(kLiteralNoIndexOpcode)) {
     StringPiece name;
