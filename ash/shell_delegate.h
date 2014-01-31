@@ -138,6 +138,9 @@ class ASH_EXPORT ShellDelegate {
   // value.
   virtual WindowTreeHostFactory* CreateWindowTreeHostFactory() = 0;
 
+  // Creates a GPU support object. Shell takes ownership of the object.
+  virtual GPUSupport* CreateGPUSupport() = 0;
+
   // Get the product name.
   virtual base::string16 GetProductName() const = 0;
 };

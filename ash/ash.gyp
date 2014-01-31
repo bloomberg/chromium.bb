@@ -150,6 +150,8 @@
         'focus_cycler.cc',
         'focus_cycler.h',
         'gpu_support.h',
+        'gpu_support_stub.cc',
+        'gpu_support_stub.h',
         'high_contrast/high_contrast_controller.cc',
         'high_contrast/high_contrast_controller.h',
         'host/root_window_host_factory.cc',
@@ -685,8 +687,6 @@
       ],
       'sources': [
         'content_support/ash_with_content_export.h',
-        'content_support/inject.cc',
-        'content_support/inject.h',
         'content_support/gpu_support_impl.cc',
         'content_support/gpu_support_impl.h',
         'screensaver/screensaver_view.cc',

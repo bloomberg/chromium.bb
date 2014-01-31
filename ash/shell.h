@@ -543,7 +543,6 @@ class ASH_EXPORT Shell
 #endif  // defined(OS_CHROMEOS)
 
   GPUSupport* gpu_support() { return gpu_support_.get(); }
-  void SetGPUSupport(scoped_ptr<GPUSupport> gpu_support);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);

@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_CONTENT_SUPPORT_GPU_SUPPORT_IMPL_H_
-#define ASH_CONTENT_SUPPORT_GPU_SUPPORT_IMPL_H_
+#ifndef ASH_GPU_SUPPORT_STUB_H_
+#define ASH_GPU_SUPPORT_STUB_H_
 
-#include "ash/content_support/ash_with_content_export.h"
+#include "ash/ash_export.h"
 #include "ash/gpu_support.h"
+#include "base/compiler_specific.h"
 
 namespace ash {
 
-// Support for a real GPU, which relies on access to src/content.
-class ASH_WITH_CONTENT_EXPORT GPUSupportImpl : public GPUSupport {
+// A GPUSupport object that does not depend on src/content.
+class ASH_EXPORT GPUSupportStub : public GPUSupport {
  public:
-  GPUSupportImpl();
-  virtual ~GPUSupportImpl();
+  GPUSupportStub();
+  virtual ~GPUSupportStub();
 
  private:
   // Overridden from GPUSupport:
@@ -23,9 +24,9 @@ class ASH_WITH_CONTENT_EXPORT GPUSupportImpl : public GPUSupport {
   virtual void GetGpuProcessHandles(
       const GetGpuProcessHandlesCallback& callback) const OVERRIDE;
 
-  DISALLOW_COPY_AND_ASSIGN(GPUSupportImpl);
+  DISALLOW_COPY_AND_ASSIGN(GPUSupportStub);
 };
 
 }  // namespace ash
 
-#endif  // ASH_CONTENT_SUPPORT_GPU_SUPPORT_IMPL_H_
+#endif  // ASH_GPU_SUPPORT_STUB_H_

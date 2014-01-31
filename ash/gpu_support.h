@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "ash/ash_export.h"
 #include "base/callback_forward.h"
 #include "base/process/process.h"
 
@@ -14,7 +15,7 @@ namespace ash {
 
 // An interface to allow use of content::GpuDataManager to be injected in
 // configurations that permit a dependency on content.
-class GPUSupport {
+class ASH_EXPORT GPUSupport {
  public:
   typedef base::Callback<void(const std::list<base::ProcessHandle>&)>
       GetGpuProcessHandlesCallback;

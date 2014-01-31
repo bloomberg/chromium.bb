@@ -158,23 +158,6 @@ class AshVisibilityController : public views::corewm::VisibilityController {
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
 
-class DefaultGPUSupportImpl : public GPUSupport {
- public:
-  DefaultGPUSupportImpl() {}
-  virtual ~DefaultGPUSupportImpl() {}
-
- private:
-  // Overridden from GPUSupport:
-  virtual bool IsPanelFittingDisabled() const OVERRIDE {
-    return false;
-  }
-  virtual void DisableGpuWatchdog() OVERRIDE {}
-  virtual void GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const OVERRIDE {}
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultGPUSupportImpl);
-};
-
 }  // namespace
 
 // static
@@ -577,10 +560,6 @@ void Shell::DoInitialWorkspaceAnimation() {
       DoInitialAnimation();
 }
 
-void Shell::SetGPUSupport(scoped_ptr<GPUSupport> gpu_support) {
-  gpu_support_ = gpu_support.Pass();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
@@ -597,12 +576,13 @@ Shell::Shell(ShellDelegate* delegate)
       cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
           native_cursor_manager_)),
       simulate_modal_window_open_for_testing_(false),
-      is_touch_hud_projection_enabled_(false),
-      gpu_support_(new DefaultGPUSupportImpl) {
+      is_touch_hud_projection_enabled_(false) {
   DCHECK(delegate_.get());
+  gpu_support_.reset(delegate_->CreateGPUSupport());
   display_manager_.reset(new internal::DisplayManager);
   display_controller_.reset(new DisplayController);
 #if defined(OS_CHROMEOS) && defined(USE_X11)
+  // TODO: Move this initialization into Shell::Init().
   output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
   user_metrics_recorder_.reset(new UserMetricsRecorder);
 

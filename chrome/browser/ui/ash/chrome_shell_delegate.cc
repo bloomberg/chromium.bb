@@ -6,6 +6,7 @@
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "ash/content_support/gpu_support_impl.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/wm/window_state.h"
@@ -145,6 +146,11 @@ ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
 
 ash::WindowTreeHostFactory* ChromeShellDelegate::CreateWindowTreeHostFactory() {
   return ash::WindowTreeHostFactory::Create();
+}
+
+ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {
+  // Chrome uses real GPU support.
+  return new ash::GPUSupportImpl;
 }
 
 base::string16 ChromeShellDelegate::GetProductName() const {
