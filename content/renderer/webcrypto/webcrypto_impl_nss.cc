@@ -690,6 +690,420 @@ Status ImportKeyInternalPkcs8(
   return Status::Success();
 }
 
+// -----------------------------------
+// Hmac
+// -----------------------------------
+
+Status SignHmac(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    blink::WebArrayBuffer* buffer) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdHmac, algorithm.id());
+
+  const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
+  if (!params) {
+    return Status::ErrorUnexpected();
+  }
+
+  SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
+
+  DCHECK_EQ(PK11_GetMechanism(sym_key->key()),
+            WebCryptoHashToHMACMechanism(params->hash()));
+
+  SECItem param_item = { siBuffer, NULL, 0 };
+  SECItem data_item = {
+    siBuffer,
+    const_cast<unsigned char*>(data),
+    data_size
+  };
+  // First call is to figure out the length.
+  SECItem signature_item = { siBuffer, NULL, 0 };
+
+  if (PK11_SignWithSymKey(sym_key->key(),
+                          PK11_GetMechanism(sym_key->key()),
+                          &param_item,
+                          &signature_item,
+                          &data_item) != SECSuccess) {
+    return Status::Error();
+  }
+
+  DCHECK_NE(0u, signature_item.len);
+
+  *buffer = blink::WebArrayBuffer::create(signature_item.len, 1);
+  signature_item.data = reinterpret_cast<unsigned char*>(buffer->data());
+
+  if (PK11_SignWithSymKey(sym_key->key(),
+                          PK11_GetMechanism(sym_key->key()),
+                          &param_item,
+                          &signature_item,
+                          &data_item) != SECSuccess) {
+    return Status::Error();
+  }
+
+  DCHECK_EQ(buffer->byteLength(), signature_item.len);
+  return Status::Success();
+}
+
+Status VerifyHmac(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* signature,
+    unsigned signature_size,
+    const unsigned char* data,
+    unsigned data_size,
+    bool* signature_match) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdHmac, algorithm.id());
+
+  blink::WebArrayBuffer result;
+  Status status = SignHmac(algorithm, key, data, data_size, &result);
+  if (status.IsError()) {
+    return status;
+  }
+
+  // Handling of truncated signatures is underspecified in the WebCrypto
+  // spec, so here we fail verification if a truncated signature is being
+  // verified.
+  // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23097
+  *signature_match =
+    result.byteLength() == signature_size &&
+    crypto::SecureMemEqual(result.data(), signature, signature_size);
+
+  return Status::Success();
+}
+
+// -----------------------------------
+// RsaEsPkcs1v1_5
+// -----------------------------------
+
+Status EncryptRsaEsPkcs1v1_5(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    blink::WebArrayBuffer* buffer) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, algorithm.id());
+
+  // RSAES encryption does not support empty input
+  if (!data_size)
+    return Status::Error();
+  DCHECK(data);
+
+  if (key.type() != blink::WebCryptoKeyTypePublic)
+    return Status::ErrorUnexpectedKeyType();
+
+  PublicKeyHandle* const public_key =
+      reinterpret_cast<PublicKeyHandle*>(key.handle());
+
+  const unsigned encrypted_length_bytes =
+      SECKEY_PublicKeyStrength(public_key->key());
+
+  // RSAES can operate on messages up to a length of k - 11, where k is the
+  // octet length of the RSA modulus.
+  if (encrypted_length_bytes < 11 || encrypted_length_bytes - 11 < data_size)
+    return Status::ErrorDataTooLarge();
+
+  *buffer = blink::WebArrayBuffer::create(encrypted_length_bytes, 1);
+  unsigned char* const buffer_data =
+      reinterpret_cast<unsigned char*>(buffer->data());
+
+  if (PK11_PubEncryptPKCS1(public_key->key(),
+                           buffer_data,
+                           const_cast<unsigned char*>(data),
+                           data_size,
+                           NULL) != SECSuccess) {
+    return Status::Error();
+  }
+  return Status::Success();
+}
+
+Status DecryptRsaEsPkcs1v1_5(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    blink::WebArrayBuffer* buffer) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, algorithm.id());
+
+  // RSAES decryption does not support empty input
+  if (!data_size)
+    return Status::Error();
+  DCHECK(data);
+
+  if (key.type() != blink::WebCryptoKeyTypePrivate)
+    return Status::ErrorUnexpectedKeyType();
+
+  PrivateKeyHandle* const private_key =
+      reinterpret_cast<PrivateKeyHandle*>(key.handle());
+
+  const int modulus_length_bytes =
+      PK11_GetPrivateModulusLen(private_key->key());
+  if (modulus_length_bytes <= 0)
+    return Status::ErrorUnexpected();
+  const unsigned max_output_length_bytes = modulus_length_bytes;
+
+  *buffer = blink::WebArrayBuffer::create(max_output_length_bytes, 1);
+  unsigned char* const buffer_data =
+      reinterpret_cast<unsigned char*>(buffer->data());
+
+  unsigned output_length_bytes = 0;
+  if (PK11_PrivDecryptPKCS1(private_key->key(),
+                            buffer_data,
+                            &output_length_bytes,
+                            max_output_length_bytes,
+                            const_cast<unsigned char*>(data),
+                            data_size) != SECSuccess) {
+    return Status::Error();
+  }
+  DCHECK_LE(output_length_bytes, max_output_length_bytes);
+  webcrypto::ShrinkBuffer(buffer, output_length_bytes);
+  return Status::Success();
+}
+
+// -----------------------------------
+// RsaSsaPkcs1v1_5
+// -----------------------------------
+
+Status SignRsaSsaPkcs1v1_5(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    blink::WebArrayBuffer* buffer) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, algorithm.id());
+
+  if (key.type() != blink::WebCryptoKeyTypePrivate)
+    return Status::ErrorUnexpectedKeyType();
+
+  if (webcrypto::GetInnerHashAlgorithm(algorithm).isNull())
+    return Status::ErrorUnexpected();
+
+  PrivateKeyHandle* const private_key =
+      reinterpret_cast<PrivateKeyHandle*>(key.handle());
+  DCHECK(private_key);
+  DCHECK(private_key->key());
+
+  // Pick the NSS signing algorithm by combining RSA-SSA (RSA PKCS1) and the
+  // inner hash of the input Web Crypto algorithm.
+  SECOidTag sign_alg_tag;
+  switch (webcrypto::GetInnerHashAlgorithm(algorithm).id()) {
+    case blink::WebCryptoAlgorithmIdSha1:
+      sign_alg_tag = SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
+      break;
+    case blink::WebCryptoAlgorithmIdSha224:
+      sign_alg_tag = SEC_OID_PKCS1_SHA224_WITH_RSA_ENCRYPTION;
+      break;
+    case blink::WebCryptoAlgorithmIdSha256:
+      sign_alg_tag = SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+      break;
+    case blink::WebCryptoAlgorithmIdSha384:
+      sign_alg_tag = SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
+      break;
+    case blink::WebCryptoAlgorithmIdSha512:
+      sign_alg_tag = SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
+      break;
+    default:
+      return Status::ErrorUnsupported();
+  }
+
+  crypto::ScopedSECItem signature_item(SECITEM_AllocItem(NULL, NULL, 0));
+  if (SEC_SignData(signature_item.get(),
+                   data,
+                   data_size,
+                   private_key->key(),
+                   sign_alg_tag) != SECSuccess) {
+    return Status::Error();
+  }
+
+  *buffer = webcrypto::CreateArrayBuffer(signature_item->data,
+                                         signature_item->len);
+  return Status::Success();
+}
+
+Status VerifyRsaSsaPkcs1v1_5(
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* signature,
+    unsigned signature_size,
+    const unsigned char* data,
+    unsigned data_size,
+    bool* signature_match) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, algorithm.id());
+
+  if (key.type() != blink::WebCryptoKeyTypePublic)
+    return Status::ErrorUnexpectedKeyType();
+
+  PublicKeyHandle* const public_key =
+      reinterpret_cast<PublicKeyHandle*>(key.handle());
+  DCHECK(public_key);
+  DCHECK(public_key->key());
+
+  const SECItem signature_item = {
+      siBuffer,
+      const_cast<unsigned char*>(signature),
+      signature_size
+  };
+
+  SECOidTag hash_alg_tag;
+  switch (webcrypto::GetInnerHashAlgorithm(algorithm).id()) {
+    case blink::WebCryptoAlgorithmIdSha1:
+      hash_alg_tag = SEC_OID_SHA1;
+      break;
+    case blink::WebCryptoAlgorithmIdSha224:
+      hash_alg_tag = SEC_OID_SHA224;
+      break;
+    case blink::WebCryptoAlgorithmIdSha256:
+      hash_alg_tag = SEC_OID_SHA256;
+      break;
+    case blink::WebCryptoAlgorithmIdSha384:
+      hash_alg_tag = SEC_OID_SHA384;
+      break;
+    case blink::WebCryptoAlgorithmIdSha512:
+      hash_alg_tag = SEC_OID_SHA512;
+      break;
+    default:
+      return Status::ErrorUnsupported();
+  }
+
+  *signature_match =
+      SECSuccess == VFY_VerifyDataDirect(data,
+                                         data_size,
+                                         public_key->key(),
+                                         &signature_item,
+                                         SEC_OID_PKCS1_RSA_ENCRYPTION,
+                                         hash_alg_tag,
+                                         NULL,
+                                         NULL);
+  return Status::Success();
+}
+
+// -----------------------------------
+// Key generation
+// -----------------------------------
+
+Status GenerateRsaKeyPair(
+    const blink::WebCryptoAlgorithm& algorithm,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* public_key,
+    blink::WebCryptoKey* private_key) {
+  const blink::WebCryptoRsaKeyGenParams* const params =
+      algorithm.rsaKeyGenParams();
+  DCHECK(params);
+
+  crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
+  if (!slot)
+    return Status::Error();
+
+  unsigned long public_exponent;
+  if (!params->modulusLengthBits())
+    return Status::ErrorGenerateRsaZeroModulus();
+
+  if (!BigIntegerToLong(params->publicExponent().data(),
+                        params->publicExponent().size(),
+                        &public_exponent) || !public_exponent) {
+    return Status::ErrorGenerateKeyPublicExponent();
+  }
+
+  PK11RSAGenParams rsa_gen_params;
+  rsa_gen_params.keySizeInBits = params->modulusLengthBits();
+  rsa_gen_params.pe = public_exponent;
+
+  // Flags are verified at the Blink layer; here the flags are set to all
+  // possible operations for the given key type.
+  CK_FLAGS operation_flags;
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+    case blink::WebCryptoAlgorithmIdRsaOaep:
+      operation_flags = CKF_ENCRYPT | CKF_DECRYPT | CKF_WRAP | CKF_UNWRAP;
+      break;
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      operation_flags = CKF_SIGN | CKF_VERIFY;
+      break;
+    default:
+      NOTREACHED();
+      return Status::ErrorUnexpected();
+  }
+  const CK_FLAGS operation_flags_mask = CKF_ENCRYPT | CKF_DECRYPT |
+                                        CKF_SIGN | CKF_VERIFY | CKF_WRAP |
+                                        CKF_UNWRAP;
+  const PK11AttrFlags attribute_flags = 0;  // Default all PK11_ATTR_ flags.
+
+  // Note: NSS does not generate an sec_public_key if the call below fails,
+  // so there is no danger of a leaked sec_public_key.
+  SECKEYPublicKey* sec_public_key;
+  crypto::ScopedSECKEYPrivateKey scoped_sec_private_key(
+      PK11_GenerateKeyPairWithOpFlags(slot.get(),
+                                      CKM_RSA_PKCS_KEY_PAIR_GEN,
+                                      &rsa_gen_params,
+                                      &sec_public_key,
+                                      attribute_flags,
+                                      operation_flags,
+                                      operation_flags_mask,
+                                      NULL));
+  if (!private_key) {
+    return Status::Error();
+  }
+
+  *public_key = blink::WebCryptoKey::create(
+      new PublicKeyHandle(crypto::ScopedSECKEYPublicKey(sec_public_key)),
+      blink::WebCryptoKeyTypePublic,
+      true,
+      algorithm,
+      usage_mask);
+  *private_key = blink::WebCryptoKey::create(
+      new PrivateKeyHandle(scoped_sec_private_key.Pass()),
+      blink::WebCryptoKeyTypePrivate,
+      extractable,
+      algorithm,
+      usage_mask);
+
+  return Status::Success();
+}
+
+// Get the secret key length in bytes from generation parameters. This resolves
+// any defaults.
+Status GetGenerateSecretKeyLength(const blink::WebCryptoAlgorithm& algorithm,
+                                  unsigned* keylen_bytes) {
+  *keylen_bytes = 0;
+
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesGcm:
+    case blink::WebCryptoAlgorithmIdAesKw: {
+      const blink::WebCryptoAesKeyGenParams* params =
+          algorithm.aesKeyGenParams();
+      DCHECK(params);
+      // Ensure the key length is a multiple of 8 bits. Let NSS verify further
+      // algorithm-specific length restrictions.
+      if (params->lengthBits() % 8)
+        return Status::ErrorGenerateKeyLength();
+      *keylen_bytes = params->lengthBits() / 8;
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdHmac: {
+      const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+      DCHECK(params);
+      if (params->hasLengthBytes()) {
+        *keylen_bytes = params->optionalLengthBytes();
+      } else {
+        *keylen_bytes = webcrypto::ShaBlockSizeBytes(params->hash().id());
+      }
+      break;
+    }
+
+    default:
+      return Status::ErrorUnsupported();
+  }
+
+  if (*keylen_bytes == 0) {
+    return Status::ErrorGenerateKeyLength();
+  }
+
+  return Status::Success();
+}
+
 }  // namespace
 
 void WebCryptoImpl::Init() {
@@ -707,49 +1121,18 @@ Status WebCryptoImpl::EncryptInternal(
   DCHECK(key.handle());
   DCHECK(buffer);
 
-  // TODO(eroman): Use a switch() statement.
-  if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
-    return AesCbcEncryptDecrypt(
-        CKA_ENCRYPT, algorithm, key, data, data_size, buffer);
-  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdAesGcm) {
-    return AesGcmEncryptDecrypt(
-        true, algorithm, key, data, data_size, buffer);
-  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
-
-    // RSAES encryption does not support empty input
-    if (!data_size)
-      return Status::Error();
-    DCHECK(data);
-
-    if (key.type() != blink::WebCryptoKeyTypePublic)
-      return Status::ErrorUnexpectedKeyType();
-
-    PublicKeyHandle* const public_key =
-        reinterpret_cast<PublicKeyHandle*>(key.handle());
-
-    const unsigned encrypted_length_bytes =
-        SECKEY_PublicKeyStrength(public_key->key());
-
-    // RSAES can operate on messages up to a length of k - 11, where k is the
-    // octet length of the RSA modulus.
-    if (encrypted_length_bytes < 11 || encrypted_length_bytes - 11 < data_size)
-      return Status::ErrorDataTooLarge();
-
-    *buffer = blink::WebArrayBuffer::create(encrypted_length_bytes, 1);
-    unsigned char* const buffer_data =
-        reinterpret_cast<unsigned char*>(buffer->data());
-
-    if (PK11_PubEncryptPKCS1(public_key->key(),
-                             buffer_data,
-                             const_cast<unsigned char*>(data),
-                             data_size,
-                             NULL) != SECSuccess) {
-      return Status::Error();
-    }
-    return Status::Success();
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdAesCbc:
+      return AesCbcEncryptDecrypt(
+          CKA_ENCRYPT, algorithm, key, data, data_size, buffer);
+    case blink::WebCryptoAlgorithmIdAesGcm:
+      return AesGcmEncryptDecrypt(
+          true, algorithm, key, data, data_size, buffer);
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+      return EncryptRsaEsPkcs1v1_5(algorithm, key, data, data_size, buffer);
+    default:
+      return Status::ErrorUnsupported();
   }
-
-  return Status::ErrorUnsupported();
 }
 
 Status WebCryptoImpl::DecryptInternal(
@@ -763,51 +1146,18 @@ Status WebCryptoImpl::DecryptInternal(
   DCHECK(key.handle());
   DCHECK(buffer);
 
-  // TODO(eroman): Use a switch() statement.
-  if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
-    return AesCbcEncryptDecrypt(
-        CKA_DECRYPT, algorithm, key, data, data_size, buffer);
-  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdAesGcm) {
-    return AesGcmEncryptDecrypt(
-        false, algorithm, key, data, data_size, buffer);
-  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
-
-    // RSAES decryption does not support empty input
-    if (!data_size)
-      return Status::Error();
-    DCHECK(data);
-
-    if (key.type() != blink::WebCryptoKeyTypePrivate)
-      return Status::ErrorUnexpectedKeyType();
-
-    PrivateKeyHandle* const private_key =
-        reinterpret_cast<PrivateKeyHandle*>(key.handle());
-
-    const int modulus_length_bytes =
-        PK11_GetPrivateModulusLen(private_key->key());
-    if (modulus_length_bytes <= 0)
-      return Status::ErrorUnexpected();
-    const unsigned max_output_length_bytes = modulus_length_bytes;
-
-    *buffer = blink::WebArrayBuffer::create(max_output_length_bytes, 1);
-    unsigned char* const buffer_data =
-        reinterpret_cast<unsigned char*>(buffer->data());
-
-    unsigned output_length_bytes = 0;
-    if (PK11_PrivDecryptPKCS1(private_key->key(),
-                              buffer_data,
-                              &output_length_bytes,
-                              max_output_length_bytes,
-                              const_cast<unsigned char*>(data),
-                              data_size) != SECSuccess) {
-      return Status::Error();
-    }
-    DCHECK_LE(output_length_bytes, max_output_length_bytes);
-    webcrypto::ShrinkBuffer(buffer, output_length_bytes);
-    return Status::Success();
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdAesCbc:
+      return AesCbcEncryptDecrypt(
+          CKA_DECRYPT, algorithm, key, data, data_size, buffer);
+    case blink::WebCryptoAlgorithmIdAesGcm:
+      return AesGcmEncryptDecrypt(
+          false, algorithm, key, data, data_size, buffer);
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+      return DecryptRsaEsPkcs1v1_5(algorithm, key, data, data_size, buffer);
+    default:
+      return Status::ErrorUnsupported();
   }
-
-  return Status::ErrorUnsupported();
 }
 
 Status WebCryptoImpl::DigestInternal(
@@ -847,56 +1197,23 @@ Status WebCryptoImpl::DigestInternal(
   return Status::Success();
 }
 
-Status WebCryptoImpl::GenerateKeyInternal(
+Status WebCryptoImpl::GenerateSecretKeyInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) {
 
   CK_MECHANISM_TYPE mech = WebCryptoAlgorithmToGenMechanism(algorithm);
-  unsigned int keylen_bytes = 0;
   blink::WebCryptoKeyType key_type = blink::WebCryptoKeyTypeSecret;
 
   if (mech == CKM_INVALID_MECHANISM) {
     return Status::ErrorUnsupported();
   }
 
-  switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdAesCbc:
-    case blink::WebCryptoAlgorithmIdAesGcm:
-    case blink::WebCryptoAlgorithmIdAesKw: {
-      const blink::WebCryptoAesKeyGenParams* params =
-          algorithm.aesKeyGenParams();
-      DCHECK(params);
-      // Ensure the key length is a multiple of 8 bits. Let NSS verify further
-      // algorithm-specific length restrictions.
-      if (params->lengthBits() % 8)
-        return Status::ErrorGenerateKeyLength();
-      keylen_bytes = params->lengthBits() / 8;
-      key_type = blink::WebCryptoKeyTypeSecret;
-      break;
-    }
-    case blink::WebCryptoAlgorithmIdHmac: {
-      const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
-      DCHECK(params);
-      if (params->hasLengthBytes()) {
-        keylen_bytes = params->optionalLengthBytes();
-      } else {
-        keylen_bytes = webcrypto::ShaBlockSizeBytes(params->hash().id());
-      }
-
-      key_type = blink::WebCryptoKeyTypeSecret;
-      break;
-    }
-
-    default: {
-      return Status::ErrorUnsupported();
-    }
-  }
-
-  if (keylen_bytes == 0) {
-    return Status::ErrorGenerateKeyLength();
-  }
+  unsigned int keylen_bytes = 0;
+  Status status = GetGenerateSecretKeyLength(algorithm, &keylen_bytes);
+  if (status.IsError())
+    return status;
 
   crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
   if (!slot) {
@@ -917,7 +1234,7 @@ Status WebCryptoImpl::GenerateKeyInternal(
 }
 
 Status WebCryptoImpl::GenerateKeyPairInternal(
-   const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* public_key,
@@ -927,80 +1244,9 @@ Status WebCryptoImpl::GenerateKeyPairInternal(
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
     case blink::WebCryptoAlgorithmIdRsaOaep:
-    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
-      const blink::WebCryptoRsaKeyGenParams* const params =
-          algorithm.rsaKeyGenParams();
-      DCHECK(params);
-
-      crypto::ScopedPK11Slot slot(PK11_GetInternalKeySlot());
-      if (!slot)
-        return Status::Error();
-
-      unsigned long public_exponent;
-      if (!params->modulusLengthBits())
-        return Status::ErrorGenerateRsaZeroModulus();
-
-      if (!BigIntegerToLong(params->publicExponent().data(),
-                            params->publicExponent().size(),
-                            &public_exponent) || !public_exponent) {
-        return Status::ErrorGenerateKeyPublicExponent();
-      }
-
-      PK11RSAGenParams rsa_gen_params;
-      rsa_gen_params.keySizeInBits = params->modulusLengthBits();
-      rsa_gen_params.pe = public_exponent;
-
-      // Flags are verified at the Blink layer; here the flags are set to all
-      // possible operations for the given key type.
-      CK_FLAGS operation_flags;
-      switch (algorithm.id()) {
-        case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-        case blink::WebCryptoAlgorithmIdRsaOaep:
-          operation_flags = CKF_ENCRYPT | CKF_DECRYPT | CKF_WRAP | CKF_UNWRAP;
-          break;
-        case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-          operation_flags = CKF_SIGN | CKF_VERIFY;
-          break;
-        default:
-          NOTREACHED();
-          return Status::ErrorUnexpected();
-      }
-      const CK_FLAGS operation_flags_mask = CKF_ENCRYPT | CKF_DECRYPT |
-                                            CKF_SIGN | CKF_VERIFY | CKF_WRAP |
-                                            CKF_UNWRAP;
-      const PK11AttrFlags attribute_flags = 0;  // Default all PK11_ATTR_ flags.
-
-      // Note: NSS does not generate an sec_public_key if the call below fails,
-      // so there is no danger of a leaked sec_public_key.
-      SECKEYPublicKey* sec_public_key;
-      crypto::ScopedSECKEYPrivateKey scoped_sec_private_key(
-          PK11_GenerateKeyPairWithOpFlags(slot.get(),
-                                          CKM_RSA_PKCS_KEY_PAIR_GEN,
-                                          &rsa_gen_params,
-                                          &sec_public_key,
-                                          attribute_flags,
-                                          operation_flags,
-                                          operation_flags_mask,
-                                          NULL));
-      if (!private_key) {
-        return Status::Error();
-      }
-
-      *public_key = blink::WebCryptoKey::create(
-          new PublicKeyHandle(crypto::ScopedSECKEYPublicKey(sec_public_key)),
-          blink::WebCryptoKeyTypePublic,
-          true,
-          algorithm,
-          usage_mask);
-      *private_key = blink::WebCryptoKey::create(
-          new PrivateKeyHandle(scoped_sec_private_key.Pass()),
-          blink::WebCryptoKeyTypePrivate,
-          extractable,
-          algorithm,
-          usage_mask);
-
-      return Status::Success();
-    }
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      return GenerateRsaKeyPair(algorithm, extractable, usage_mask,
+                                public_key, private_key);
     default:
       return Status::ErrorUnsupported();
   }
@@ -1075,109 +1321,14 @@ Status WebCryptoImpl::SignInternal(
   DCHECK(buffer);
   DCHECK_NE(0, key.usages() & blink::WebCryptoKeyUsageSign);
 
-  blink::WebArrayBuffer result;
-
   switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdHmac: {
-      const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
-      if (!params) {
-        return Status::ErrorUnexpected();
-      }
-
-      SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
-
-      DCHECK_EQ(PK11_GetMechanism(sym_key->key()),
-                WebCryptoHashToHMACMechanism(params->hash()));
-
-      SECItem param_item = { siBuffer, NULL, 0 };
-      SECItem data_item = {
-        siBuffer,
-        const_cast<unsigned char*>(data),
-        data_size
-      };
-      // First call is to figure out the length.
-      SECItem signature_item = { siBuffer, NULL, 0 };
-
-      if (PK11_SignWithSymKey(sym_key->key(),
-                              PK11_GetMechanism(sym_key->key()),
-                              &param_item,
-                              &signature_item,
-                              &data_item) != SECSuccess) {
-        return Status::Error();
-      }
-
-      DCHECK_NE(0u, signature_item.len);
-
-      result = blink::WebArrayBuffer::create(signature_item.len, 1);
-      signature_item.data = reinterpret_cast<unsigned char*>(result.data());
-
-      if (PK11_SignWithSymKey(sym_key->key(),
-                              PK11_GetMechanism(sym_key->key()),
-                              &param_item,
-                              &signature_item,
-                              &data_item) != SECSuccess) {
-        return Status::Error();
-      }
-
-      DCHECK_EQ(result.byteLength(), signature_item.len);
-
-      break;
-    }
-    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
-      if (key.type() != blink::WebCryptoKeyTypePrivate)
-        return Status::ErrorUnexpectedKeyType();
-
-      if (webcrypto::GetInnerHashAlgorithm(algorithm).isNull())
-        return Status::ErrorUnexpected();
-
-      PrivateKeyHandle* const private_key =
-          reinterpret_cast<PrivateKeyHandle*>(key.handle());
-      DCHECK(private_key);
-      DCHECK(private_key->key());
-
-      // Pick the NSS signing algorithm by combining RSA-SSA (RSA PKCS1) and the
-      // inner hash of the input Web Crypto algorithm.
-      SECOidTag sign_alg_tag;
-      switch (webcrypto::GetInnerHashAlgorithm(algorithm).id()) {
-        case blink::WebCryptoAlgorithmIdSha1:
-          sign_alg_tag = SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
-          break;
-        case blink::WebCryptoAlgorithmIdSha224:
-          sign_alg_tag = SEC_OID_PKCS1_SHA224_WITH_RSA_ENCRYPTION;
-          break;
-        case blink::WebCryptoAlgorithmIdSha256:
-          sign_alg_tag = SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
-          break;
-        case blink::WebCryptoAlgorithmIdSha384:
-          sign_alg_tag = SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
-          break;
-        case blink::WebCryptoAlgorithmIdSha512:
-          sign_alg_tag = SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
-          break;
-        default:
-          return Status::ErrorUnsupported();
-      }
-
-      crypto::ScopedSECItem signature_item(SECITEM_AllocItem(NULL, NULL, 0));
-      if (SEC_SignData(signature_item.get(),
-                       data,
-                       data_size,
-                       private_key->key(),
-                       sign_alg_tag) != SECSuccess) {
-        return Status::Error();
-      }
-
-      result = webcrypto::CreateArrayBuffer(signature_item->data,
-                                            signature_item->len);
-
-      break;
-    }
+    case blink::WebCryptoAlgorithmIdHmac:
+      return SignHmac(algorithm, key, data, data_size, buffer);
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      return SignRsaSsaPkcs1v1_5(algorithm, key, data, data_size, buffer);
     default:
       return Status::ErrorUnsupported();
   }
-
-  *buffer = result;
-  return Status::Success();
 }
 
 Status WebCryptoImpl::VerifySignatureInternal(
@@ -1200,76 +1351,15 @@ Status WebCryptoImpl::VerifySignatureInternal(
   DCHECK(signature);
 
   switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdHmac: {
-      blink::WebArrayBuffer result;
-      Status status = SignInternal(algorithm, key, data, data_size, &result);
-      if (status.IsError()) {
-        return status;
-      }
-
-      // Handling of truncated signatures is underspecified in the WebCrypto
-      // spec, so here we fail verification if a truncated signature is being
-      // verified.
-      // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=23097
-      *signature_match =
-          result.byteLength() == signature_size &&
-          crypto::SecureMemEqual(result.data(), signature, signature_size);
-
-      break;
-    }
-    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
-      if (key.type() != blink::WebCryptoKeyTypePublic)
-        return Status::ErrorUnexpectedKeyType();
-
-      PublicKeyHandle* const public_key =
-          reinterpret_cast<PublicKeyHandle*>(key.handle());
-      DCHECK(public_key);
-      DCHECK(public_key->key());
-
-      const SECItem signature_item = {
-          siBuffer,
-          const_cast<unsigned char*>(signature),
-          signature_size
-      };
-
-      SECOidTag hash_alg_tag;
-      switch (webcrypto::GetInnerHashAlgorithm(algorithm).id()) {
-        case blink::WebCryptoAlgorithmIdSha1:
-          hash_alg_tag = SEC_OID_SHA1;
-          break;
-        case blink::WebCryptoAlgorithmIdSha224:
-          hash_alg_tag = SEC_OID_SHA224;
-          break;
-        case blink::WebCryptoAlgorithmIdSha256:
-          hash_alg_tag = SEC_OID_SHA256;
-          break;
-        case blink::WebCryptoAlgorithmIdSha384:
-          hash_alg_tag = SEC_OID_SHA384;
-          break;
-        case blink::WebCryptoAlgorithmIdSha512:
-          hash_alg_tag = SEC_OID_SHA512;
-          break;
-        default:
-          return Status::ErrorUnsupported();
-      }
-
-      *signature_match =
-          SECSuccess == VFY_VerifyDataDirect(data,
-                                             data_size,
-                                             public_key->key(),
-                                             &signature_item,
-                                             SEC_OID_PKCS1_RSA_ENCRYPTION,
-                                             hash_alg_tag,
-                                             NULL,
-                                             NULL);
-
-      break;
-    }
+    case blink::WebCryptoAlgorithmIdHmac:
+      return VerifyHmac(algorithm, key, signature, signature_size,
+                        data, data_size, signature_match);
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      return VerifyRsaSsaPkcs1v1_5(algorithm, key, signature, signature_size,
+                                   data, data_size, signature_match);
     default:
       return Status::ErrorUnsupported();
   }
-
-  return Status::Success();
 }
 
 Status WebCryptoImpl::ImportRsaPublicKeyInternal(

@@ -90,7 +90,7 @@ class CONTENT_EXPORT WebCryptoImpl
       const unsigned char* data,
       unsigned data_size,
       blink::WebArrayBuffer* buffer);
-  webcrypto::Status GenerateKeyInternal(
+  webcrypto::Status GenerateSecretKeyInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,

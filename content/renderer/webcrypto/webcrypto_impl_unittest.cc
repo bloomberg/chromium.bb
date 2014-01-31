@@ -380,7 +380,7 @@ class WebCryptoImplTest : public testing::Test {
       blink::WebCryptoKey* key) {
     bool extractable = true;
     blink::WebCryptoKeyUsageMask usage_mask = 0;
-    return crypto_.GenerateKeyInternal(
+    return crypto_.GenerateSecretKeyInternal(
         algorithm, extractable, usage_mask, key);
   }
 

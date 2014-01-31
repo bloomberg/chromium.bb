@@ -248,7 +248,7 @@ void WebCryptoImpl::generateKey(
     }
   } else {
     blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-    Status status = GenerateKeyInternal(
+    Status status = GenerateSecretKeyInternal(
         algorithm, extractable, usage_mask, &key);
     if (status.IsError()) {
       CompleteWithError(status, &result);

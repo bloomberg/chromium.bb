@@ -248,7 +248,7 @@ Status WebCryptoImpl::DigestInternal(const blink::WebCryptoAlgorithm& algorithm,
   return Status::Success();
 }
 
-Status WebCryptoImpl::GenerateKeyInternal(
+Status WebCryptoImpl::GenerateSecretKeyInternal(
     const blink::WebCryptoAlgorithm& algorithm,
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
