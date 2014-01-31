@@ -16,6 +16,7 @@ which whitelists indicidual files which contain third-party code but which
 aren't in a third-party directory with a README.chromium file.
 """
 
+import glob
 import optparse
 import os
 import re
@@ -34,7 +35,7 @@ import known_issues
 
 def GetIncompatibleDirectories():
   """Gets a list of third-party directories which use licenses incompatible
-  with Android. This is used by the snapshot tool and the AOSP bot.
+  with Android. This is used by the snapshot tool.
   Returns:
     A list of directories.
   """
@@ -75,6 +76,28 @@ def GetIncompatibleDirectories():
         result.append(directory)
         break
   return result
+
+def GetUnknownIncompatibleDirectories():
+  """Gets a list of third-party directories which use licenses incompatible
+  with Android which are not present in the known_issues.py file.
+  This is used by the AOSP bot.
+  Returns:
+    A list of directories.
+  """
+  incompatible_directories = frozenset(GetIncompatibleDirectories())
+  known_incompatible = []
+  for path, exclude_list in known_issues.KNOWN_INCOMPATIBLE.iteritems():
+    for exclude in exclude_list:
+      if glob.has_magic(exclude):
+        exclude_dirname = os.path.dirname(exclude)
+        if glob.has_magic(exclude_dirname):
+          print ('Exclude path %s contains an unexpected glob expression,' \
+                 ' skipping.' % exclude)
+        exclude = exclude_dirname
+      known_incompatible.append(os.path.normpath(os.path.join(path, exclude)))
+  known_incompatible = frozenset(known_incompatible)
+  return incompatible_directories.difference(known_incompatible)
+
 
 class ScanResult(object):
   Ok, Warnings, Errors = range(3)
@@ -301,7 +324,7 @@ def main():
     print GenerateNoticeFile()
     return ScanResult.Ok
   elif args[0] == 'incompatible_directories':
-    incompatible_directories = GetIncompatibleDirectories()
+    incompatible_directories = GetUnknownIncompatibleDirectories()
     if incompatible_directories:
       print ("Incompatibly licensed directories found:\n" +
              "\n".join(sorted(incompatible_directories)))
