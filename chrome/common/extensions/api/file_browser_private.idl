@@ -615,9 +615,9 @@ interface Functions {
   static void cancelCopy(long copyId, optional SimpleCallback callback);
 
   // Retrieves total and remaining size of a mount point.
-  // |mountPath| Mount point path.
+  // |volumeId| ID of the volume to be checked.
   // |callback|
-  static void getSizeStats(DOMString mountPath, GetSizeStatsCallback callback);
+  static void getSizeStats(DOMString volumeId, GetSizeStatsCallback callback);
 
   // Formats a mounted volume.
   // |volumeId| ID of the volume to be formatted.

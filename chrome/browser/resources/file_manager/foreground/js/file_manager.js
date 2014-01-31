@@ -2306,7 +2306,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var currentVolumeInfo = this.currentVolumeInfo_;
     chrome.fileBrowserPrivate.getSizeStats(
-        currentVolumeInfo.root.toURL(), function(result) {
+        currentVolumeInfo.volumeId, function(result) {
           var volumeInfo = this.volumeManager_.getVolumeInfo(
               this.directoryModel_.getCurrentDirEntry());
           if (currentVolumeInfo !== this.currentVolumeInfo_)

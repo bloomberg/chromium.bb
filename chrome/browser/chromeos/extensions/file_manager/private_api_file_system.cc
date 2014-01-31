@@ -357,12 +357,17 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  base::FilePath file_path = file_manager::util::GetLocalPathFromURL(
-      render_view_host(), GetProfile(), GURL(params->mount_path));
-  if (file_path.empty())
+  using file_manager::VolumeManager;
+  using file_manager::VolumeInfo;
+  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  if (!volume_manager)
     return false;
 
-  if (drive::util::IsUnderDriveMountPoint(file_path)) {
+  VolumeInfo volume_info;
+  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info))
+    return false;
+
+  if (volume_info.type == file_manager::VOLUME_TYPE_GOOGLE_DRIVE) {
     drive::FileSystemInterface* file_system =
         drive::util::GetFileSystemByProfile(GetProfile());
     if (!file_system) {
@@ -383,7 +388,7 @@ bool FileBrowserPrivateGetSizeStatsFunction::RunImpl() {
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&GetSizeStatsOnBlockingPool,
-                   file_path.value(),
+                   volume_info.mount_path.value(),
                    total_size,
                    remaining_size),
         base::Bind(&FileBrowserPrivateGetSizeStatsFunction::

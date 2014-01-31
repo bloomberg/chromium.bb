@@ -348,7 +348,7 @@ FileListBannerController.prototype.checkSpaceAndMaybeShowWelcomeBanner_ =
       // Current directory must be set, since this code is called after
       // scaning is completed. However, the volumeInfo may be gone.
       chrome.fileBrowserPrivate.getSizeStats(
-          driveVolume.root.toURL(),
+          driveVolume.volumeId,
           function(result) {
             if (result && result.totalSize >= offerSize * 1024 * 1024 * 1024)
               this.usePromoWelcomeBanner_ = false;
