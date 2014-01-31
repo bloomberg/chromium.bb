@@ -56,10 +56,10 @@ public:
     virtual bool formControlValueMatchesRenderer() const { return m_valueMatchesRenderer; }
     virtual void setFormControlValueMatchesRenderer(bool b) { m_valueMatchesRenderer = b; }
 
-    virtual bool wasChangedSinceLastFormControlChangeEvent() const OVERRIDE FINAL;
-    virtual void setChangedSinceLastFormControlChangeEvent(bool) OVERRIDE FINAL;
+    bool wasChangedSinceLastFormControlChangeEvent() const { return m_wasChangedSinceLastFormControlChangeEvent; }
+    void setChangedSinceLastFormControlChangeEvent(bool);
 
-    virtual void dispatchFormControlChangeEvent() OVERRIDE;
+    virtual void dispatchFormControlChangeEvent();
     void dispatchChangeEvent();
     void dispatchFormControlInputEvent();
 
@@ -73,7 +73,7 @@ public:
 
     const AtomicString& type() const { return formControlType(); }
 
-    virtual const AtomicString& formControlType() const OVERRIDE = 0;
+    virtual const AtomicString& formControlType() const = 0;
 
     virtual bool canTriggerImplicitSubmission() const { return false; }
 
@@ -108,6 +108,8 @@ public:
     static HTMLFormControlElement* enclosingFormControlElement(Node*);
 
     String nameForAutofill() const;
+
+    virtual void setFocus(bool flag) OVERRIDE;
 
     using Node::ref;
     using Node::deref;

@@ -58,12 +58,6 @@ bool HTMLOptGroupElement::rendererIsFocusable() const
     return renderStyle() && renderStyle()->display() != NONE;
 }
 
-const AtomicString& HTMLOptGroupElement::formControlType() const
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, optgroup, ("optgroup", AtomicString::ConstructFromLiteral));
-    return optgroup;
-}
-
 void HTMLOptGroupElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     recalcSelectOptions();

@@ -468,13 +468,6 @@ public:
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return true; }
 
-    virtual const AtomicString& formControlType() const { return nullAtom; }
-
-    // FIXME: Only HTMLInputElement uses these, they don't need to be virtual.
-    virtual bool wasChangedSinceLastFormControlChangeEvent() const { return false; }
-    virtual void setChangedSinceLastFormControlChangeEvent(bool) { }
-    virtual void dispatchFormControlChangeEvent() { }
-
     // Used for disabled form elements; if true, prevents mouse events from being dispatched
     // to event listeners, and prevents DOMActivate events from being sent at all.
     virtual bool isDisabledFormControl() const { return false; }

@@ -42,7 +42,6 @@ public:
 private:
     explicit HTMLOptGroupElement(Document&);
 
-    virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool rendererIsFocusable() const OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }

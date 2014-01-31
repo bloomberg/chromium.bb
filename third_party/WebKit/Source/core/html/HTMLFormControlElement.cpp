@@ -254,11 +254,6 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
     FormAssociatedElement::removedFrom(insertionPoint);
 }
 
-bool HTMLFormControlElement::wasChangedSinceLastFormControlChangeEvent() const
-{
-    return m_wasChangedSinceLastFormControlChangeEvent;
-}
-
 void HTMLFormControlElement::setChangedSinceLastFormControlChangeEvent(bool changed)
 {
     m_wasChangedSinceLastFormControlChangeEvent = changed;
@@ -505,6 +500,14 @@ String HTMLFormControlElement::nameForAutofill() const
     fullName = getIdAttribute();
     trimmedName = fullName.stripWhiteSpace();
     return trimmedName;
+}
+
+void HTMLFormControlElement::setFocus(bool flag)
+{
+    LabelableElement::setFocus(flag);
+
+    if (!flag && wasChangedSinceLastFormControlChangeEvent())
+        dispatchFormControlChangeEvent();
 }
 
 } // namespace Webcore

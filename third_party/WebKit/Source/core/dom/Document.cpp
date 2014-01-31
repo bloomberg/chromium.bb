@@ -3411,10 +3411,6 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
 
         oldFocusedElement->setFocus(false);
 
-        // Dispatch a change event for text fields or textareas that have been edited
-        if (oldFocusedElement->wasChangedSinceLastFormControlChangeEvent())
-            oldFocusedElement->dispatchFormControlChangeEvent();
-
         // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
         // If page lost focus, blur event will have already been dispatched
         if (page() && (page()->focusController().isFocused())) {
