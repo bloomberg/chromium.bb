@@ -37,10 +37,6 @@ select[size="1"] {
     background-color: ButtonFace;
 }
 
-select:disabled option:checked, option:disabled:checked {
-    color: GrayText;
-}
-
 input[type=range] {
     color: #9d968E;
 }

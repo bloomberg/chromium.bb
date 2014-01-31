@@ -120,10 +120,6 @@ option {
     font: inherit !important;
 }
 
-select:disabled option:checked, option:disabled:checked {
-    color: #d2d2d2
-}
-
 textarea {
   font-family: monospace;
 }

@@ -229,6 +229,7 @@ crbug.com/332311 fast/forms/textarea/textarea-appearance-basic.html [ NeedsManua
 crbug.com/332311 fast/forms/select/listbox-appearance-basic.html [ NeedsManualRebaseline ]
 crbug.com/332311 fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
 crbug.com/332311 fast/forms/basic-selects.html [ NeedsManualRebaseline ]
+crbug.com/339316 [ Win ] fast/forms/disabled-select-change-index.html [ NeedsRebaseline ]
 
 # Untriaged pixel diffs, unclear if aura-related?
 crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
