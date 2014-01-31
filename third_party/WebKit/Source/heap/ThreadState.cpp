@@ -517,8 +517,37 @@ void ThreadState::safePoint(StackState stackState)
     m_stackState = HeapPointersOnStack;
 }
 
+#ifdef ADDRESS_SANITIZER
+// When we are running under AddressSanitizer with detect_stack_use_after_return=1
+// then stack marker obtained from SafePointScope will point into a fake stack.
+// Detect this case by checking if it falls in between current stack frame
+// and stack start and use an arbitrary high enough value for it.
+// Don't adjust stack marker in any other case to match behavior of code running
+// without AddressSanitizer.
+NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(void* scopeMarker)
+{
+    Address start = reinterpret_cast<Address>(getStackStart());
+    Address end = reinterpret_cast<Address>(&start);
+    RELEASE_ASSERT(end < start);
+
+    if (end <= scopeMarker && scopeMarker < start)
+        return scopeMarker;
+
+    // 256 is as good an approximation as any else.
+    const size_t bytesToCopy = sizeof(Address) * 256;
+    if (start - end < bytesToCopy)
+        return start;
+
+    return end + bytesToCopy;
+}
+#endif
+
 void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
 {
+#ifdef ADDRESS_SANITIZER
+    if (stackState == HeapPointersOnStack)
+        scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
+#endif
     ASSERT(stackState == NoHeapPointersOnStack || scopeMarker);
     if (stackState == NoHeapPointersOnStack && gcRequested())
         Heap::collectGarbage(NoHeapPointersOnStack);
