@@ -79,13 +79,13 @@ const char kUrlQueryName[] = "u";
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
 
-// The field trial name to compare Translate infobar and bubble.
-const char kFieldTrialNameForUX[] = "TranslateInfobarVsBubble";
-
 }  // namespace
 
 TranslateManager::~TranslateManager() {
 }
+
+// static
+bool TranslateManager::use_infobar_ = false;
 
 // static
 TranslateManager* TranslateManager::GetInstance() {
@@ -792,14 +792,21 @@ std::string TranslateManager::GetAutoTargetLanguage(
 
 // static
 bool TranslateManager::IsTranslateBubbleEnabled() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTranslateNewUX)) {
-    return true;
-  }
+#if defined(USE_AURA)
+  return !use_infobar_;
+#elif defined(OS_MACOSX)
+  // The bubble UX is experimental on Mac OS X.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTranslateNewUX);
+#else
+  // The bubble UX is not implemented on the non-Aura platforms.
+  return false;
+#endif
+}
 
-  std::string group_name = base::FieldTrialList::FindFullName(
-      kFieldTrialNameForUX);
-  return group_name == "Bubble";
+// static
+void TranslateManager::SetUseInfobar(bool value) {
+  use_infobar_ = value;
 }
 
 // static

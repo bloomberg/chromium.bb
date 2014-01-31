@@ -205,6 +205,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   virtual void SetUpOnMainThread() OVERRIDE {
+    TranslateManager::SetUseInfobar(true);
+
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile());
 
