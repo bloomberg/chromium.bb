@@ -1558,6 +1558,7 @@
         'browser/ui/cocoa/extensions/extension_install_view_controller_unittest.mm',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller_unittest.mm',
         'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_unittest.mm',
+        'browser/ui/cocoa/extensions/media_galleries_scan_result_dialog_cocoa_unittest.mm',
         'browser/ui/cocoa/fast_resize_view_unittest.mm',
         'browser/ui/cocoa/find_bar/find_bar_bridge_unittest.mm',
         'browser/ui/cocoa/find_bar/find_bar_cocoa_controller_unittest.mm',

@@ -88,7 +88,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   base::scoped_nsobject<NSView> checkbox_container_;
 
   // Container view for the main dialog contents.
-  base::scoped_nsobject<NSBox> accessory_;
+  base::scoped_nsobject<NSBox> main_container_;
 
   // An Objective-C class to route callbacks from Cocoa code.
   base::scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller_;

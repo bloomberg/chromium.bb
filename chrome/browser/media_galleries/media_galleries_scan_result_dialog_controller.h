@@ -99,12 +99,10 @@ class MediaGalleriesScanResultDialogController
 
   ui::MenuModel* GetContextMenu(MediaGalleryPrefId id);
 
- private:
-  friend class MediaGalleriesScanResultDialogControllerTest;
-
-  typedef std::map<MediaGalleryPrefId, ScanResult> ScanResults;
+ protected:
   typedef base::Callback<MediaGalleriesScanResultDialog* (
       MediaGalleriesScanResultDialogController*)> CreateDialogCallback;
+  typedef std::map<MediaGalleryPrefId, ScanResult> ScanResults;
 
   // Updates |results| from |preferences|. Will not add galleries from
   // |ignore_list| onto |results|.
@@ -122,6 +120,10 @@ class MediaGalleriesScanResultDialogController
       const base::Closure& on_finish);
 
   virtual ~MediaGalleriesScanResultDialogController();
+
+ private:
+  friend class MediaGalleriesScanResultDialogControllerTest;
+  friend class MediaGalleriesScanResultDialogCocoaTest;
 
   // Bottom half of constructor -- called when |preferences_| is initialized.
   void OnPreferencesInitialized();

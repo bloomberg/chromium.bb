@@ -62,11 +62,10 @@ MediaGalleriesScanResultDialogController(
       : web_contents_(web_contents),
         extension_(&extension),
         on_finish_(on_finish) {
-  // TODO(vandebo): Put this in the intializer list after the cocoa version is
-  // done.
-#if defined(USE_AURA)
+  // TODO(vandebo): Put this in the intializer list after GTK is removed.
+#if defined(USE_AURA) || defined(OS_MACOSX)
   create_dialog_callback_ = base::Bind(&MediaGalleriesScanResultDialog::Create);
-#endif  // USE_AURA
+#endif  // USE_AURA || OS_MACOSX
   preferences_ =
       g_browser_process->media_file_system_registry()->GetPreferences(
           GetProfile());
@@ -99,7 +98,9 @@ MediaGalleriesScanResultDialogController(
 
 MediaGalleriesScanResultDialogController::
 ~MediaGalleriesScanResultDialogController() {
-  preferences_->RemoveGalleryChangeObserver(this);
+  // |preferences_| may be NULL in tests.
+  if (preferences_)
+    preferences_->RemoveGalleryChangeObserver(this);
   if (StorageMonitor::GetInstance())
     StorageMonitor::GetInstance()->RemoveObserver(this);
 }
@@ -175,7 +176,9 @@ void MediaGalleriesScanResultDialogController::DidForgetGallery(
 void MediaGalleriesScanResultDialogController::DialogFinished(bool accepted) {
   // No longer interested in preference updates (and the below code generates
   // some).
-  preferences_->RemoveGalleryChangeObserver(this);
+  // |preferences_| may be NULL in tests.
+  if (preferences_)
+    preferences_->RemoveGalleryChangeObserver(this);
 
   if (accepted) {
     DCHECK(preferences_);
@@ -260,12 +263,16 @@ void MediaGalleriesScanResultDialogController::UpdateScanResultsFromPreferences(
 }
 
 void MediaGalleriesScanResultDialogController::OnPreferencesInitialized() {
-  preferences_->AddGalleryChangeObserver(this);
-  StorageMonitor::GetInstance()->AddObserver(this);
-  UpdateScanResultsFromPreferences(preferences_, extension_, results_to_remove_,
-                                   &scan_results_);
+  // These may be NULL in tests.
+  if (StorageMonitor::GetInstance())
+    StorageMonitor::GetInstance()->AddObserver(this);
+  if (preferences_) {
+    preferences_->AddGalleryChangeObserver(this);
+    UpdateScanResultsFromPreferences(preferences_, extension_,
+                                     results_to_remove_, &scan_results_);
+  }
 
-  // TODO(vandebo): Remove the conditional after the cocoa version is done.
+  // TODO(vandebo): Remove the conditional after GTK is removed.
   if (!create_dialog_callback_.is_null())
     dialog_.reset(create_dialog_callback_.Run(this));
 }
