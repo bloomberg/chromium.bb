@@ -209,6 +209,8 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
     if (candidate.shadow() && candidate.shadow()->containsActiveStyles() && !sharingCandidateShadowHasSharedStyleSheetContents(candidate))
         return false;
+    if (candidate.isInTopLayer() != element().isInTopLayer())
+        return false;
 
     bool isControl = candidate.isFormControlElement();
 
