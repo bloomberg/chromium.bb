@@ -51,8 +51,6 @@ _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
-_DISTRIBUTED_TYPES = [constants.PFQ_TYPE, constants.CANARY_TYPE,
-                      constants.CHROME_PFQ_TYPE, constants.PALADIN_TYPE]
 _BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
 _API_VERSION_ATTR = 'api_version'
 
@@ -744,24 +742,37 @@ def _BackupPreviousLog(log_file, backup_limit=25):
     os.rename(log_file, log_file + '.' + str(last + 1))
 
 
+def _IsDistributedBuilder(options, chrome_rev, build_config):
+  """Determines whether the builder should be a DistributedBuilder.
+
+  Args:
+    options: options passed on the commandline.
+    chrome_rev: Chrome revision to build.
+    build_config: Builder configuration dictionary.
+
+  Returns:
+    True if the builder should be a distributed_builder
+  """
+  if build_config['pre_cq'] or options.pre_cq:
+    return True
+  elif not options.buildbot:
+    return False
+  elif chrome_rev in (constants.CHROME_REV_TOT,
+                      constants.CHROME_REV_LOCAL,
+                      constants.CHROME_REV_SPEC):
+    # We don't do distributed logic to TOT Chrome PFQ's, nor local
+    # chrome roots (e.g. chrome try bots)
+    # TODO(davidjames): Update any builders that rely on this logic to use
+    # manifest_version=False instead.
+    return False
+  elif build_config['manifest_version']:
+    return True
+
+  return False
+
+
 def _RunBuildStagesWrapper(options, build_config):
   """Helper function that wraps RunBuildStages()."""
-  def IsDistributedBuilder():
-    """Determines whether the build_config should be a DistributedBuilder."""
-    if build_config['pre_cq'] or options.pre_cq:
-      return True
-    elif not options.buildbot:
-      return False
-    elif build_config['build_type'] in _DISTRIBUTED_TYPES:
-      # We don't do distributed logic to TOT Chrome PFQ's, nor local
-      # chrome roots (e.g. chrome try bots)
-      if chrome_rev not in [constants.CHROME_REV_TOT,
-                            constants.CHROME_REV_LOCAL,
-                            constants.CHROME_REV_SPEC]:
-        return True
-
-    return False
-
   cros_build_lib.Info('cbuildbot was executed with args %s' %
                       cros_build_lib.CmdToStr(sys.argv))
 
@@ -799,7 +810,10 @@ def _RunBuildStagesWrapper(options, build_config):
   options.Freeze()
 
   builder_run = cbuildbot_run.BuilderRun(options, build_config)
-  builder_cls = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
+  if _IsDistributedBuilder(options, chrome_rev, build_config):
+    builder_cls = DistributedBuilder
+  else:
+    builder_cls = SimpleBuilder
   builder = builder_cls(builder_run)
   if not builder.Run():
     sys.exit(1)
