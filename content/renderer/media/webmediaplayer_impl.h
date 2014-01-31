@@ -29,7 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
-#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
@@ -77,12 +77,15 @@ class WebTextTrackImpl;
 class WebMediaPlayerImpl
     : public blink::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public content::RenderFrameObserver,
+      public content::RenderViewObserver,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
+  // |render_view| is passed only for the purpose of registering |this| as an
+  // observer of it.
   // |delegate| may be null.
   WebMediaPlayerImpl(
+      content::RenderView* render_view,
       blink::WebFrame* frame,
       blink::WebMediaPlayerClient* client,
       base::WeakPtr<WebMediaPlayerDelegate> delegate,
@@ -177,7 +180,7 @@ class WebMediaPlayerImpl
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm);
 
-  // RenderFrameObserver implementation.
+  // content::RenderViewObserver implementation.
   virtual void OnDestruct() OVERRIDE;
 
   // Notifies blink that the entire media element region has been invalidated.

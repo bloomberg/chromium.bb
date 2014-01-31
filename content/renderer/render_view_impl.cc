@@ -2988,7 +2988,7 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(render_frame)),
       sink);
-  return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
+  return new WebMediaPlayerImpl(this, frame, client, AsWeakPtr(), params);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -5887,13 +5887,13 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
   }
 
   return new WebMediaPlayerAndroid(
-      frame,
-      client,
-      AsWeakPtr(),
-      media_player_manager_,
-      stream_texture_factory.release(),
-      RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
-      new RenderMediaLog());
+          frame,
+          client,
+          AsWeakPtr(),
+          media_player_manager_,
+          stream_texture_factory.release(),
+          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
+          new RenderMediaLog());
 }
 
 #endif  // defined(OS_ANDROID)

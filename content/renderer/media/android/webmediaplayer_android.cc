@@ -11,12 +11,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_client.h"
-#include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
@@ -83,8 +81,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     StreamTextureFactory* factory,
     const scoped_refptr<base::MessageLoopProxy>& media_loop,
     media::MediaLog* media_log)
-    : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
-      frame_(frame),
+    : frame_(frame),
       client_(client),
       delegate_(delegate),
       buffered_(1u),
@@ -121,6 +118,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
+  // We want to be notified of |main_loop_| destruction.
+  base::MessageLoop::current()->AddDestructionObserver(this);
+
   player_id_ = manager_->RegisterMediaPlayer(this);
 
 #if defined(VIDEO_HOLE)
@@ -147,6 +147,9 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     stream_texture_factory_->ContextGL()->
         DeleteTextures(1, &remote_playback_texture_id_);
   }
+
+  if (base::MessageLoop::current())
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
 
   if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE && delegate_)
     delegate_->PlayerGone(this);
@@ -809,7 +812,7 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
   OnPlayerReleased();
 }
 
-void WebMediaPlayerAndroid::OnDestruct() {
+void WebMediaPlayerAndroid::WillDestroyCurrentMessageLoop() {
   if (manager_)
     manager_->UnregisterMediaPlayer(player_id_);
   Detach();
@@ -862,7 +865,7 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
   paint.setAntiAlias(true);
   paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
   const SkBitmap* icon_bitmap =
-      GetContentClient()
+      content::GetContentClient()
           ->GetNativeImageNamed(IDR_MEDIAPLAYER_REMOTE_PLAYBACK_ICON)
           .ToSkBitmap();
   // In order to get a reasonable margin around the icon:
