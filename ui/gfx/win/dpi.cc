@@ -52,6 +52,52 @@ float GetModernUIScaleWrapper() {
   return result;
 }
 
+// Duplicated from Win8.1 SDK ShellScalingApi.h
+typedef enum PROCESS_DPI_AWARENESS {
+    PROCESS_DPI_UNAWARE = 0,
+    PROCESS_SYSTEM_DPI_AWARE = 1,
+    PROCESS_PER_MONITOR_DPI_AWARE = 2
+} PROCESS_DPI_AWARENESS;
+
+typedef enum MONITOR_DPI_TYPE {
+    MDT_EFFECTIVE_DPI = 0,
+    MDT_ANGULAR_DPI = 1,
+    MDT_RAW_DPI = 2,
+    MDT_DEFAULT = MDT_EFFECTIVE_DPI
+} MONITOR_DPI_TYPE;
+
+// Win8.1 supports monitor-specific DPI scaling.
+bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
+  typedef BOOL(WINAPI *SetProcessDpiAwarenessPtr)(PROCESS_DPI_AWARENESS);
+  SetProcessDpiAwarenessPtr set_process_dpi_awareness_func =
+      reinterpret_cast<SetProcessDpiAwarenessPtr>(
+          GetProcAddress(GetModuleHandleA("user32.dll"),
+                          "SetProcessDpiAwarenessInternal"));
+  if (set_process_dpi_awareness_func) {
+    HRESULT hr = set_process_dpi_awareness_func(value);
+    if (SUCCEEDED(hr)) {
+      VLOG(1) << "SetProcessDpiAwareness succeeded.";
+      return true;
+    } else if (hr == E_ACCESSDENIED) {
+      LOG(ERROR) << "Access denied error from SetProcessDpiAwareness. "
+          "Function called twice, or manifest was used.";
+    }
+  }
+  return false;
+}
+
+// This function works for Windows Vista through Win8. Win8.1 must use
+// SetProcessDpiAwareness[Wrapper]
+BOOL SetProcessDPIAwareWrapper() {
+  typedef BOOL(WINAPI *SetProcessDPIAwarePtr)(VOID);
+  SetProcessDPIAwarePtr set_process_dpi_aware_func =
+      reinterpret_cast<SetProcessDPIAwarePtr>(
+      GetProcAddress(GetModuleHandleA("user32.dll"),
+                      "SetProcessDPIAware"));
+  return set_process_dpi_aware_func &&
+    set_process_dpi_aware_func();
+}
+
 }  // namespace
 
 namespace gfx {
@@ -108,13 +154,9 @@ bool IsInHighDPIMode() {
 void EnableHighDPISupport() {
   if (IsHighDPIEnabled() &&
       (base::win::GetVersion() < base::win::VERSION_WIN8_1)) {
-    typedef BOOL(WINAPI *SetProcessDPIAwarePtr)(VOID);
-    SetProcessDPIAwarePtr set_process_dpi_aware_func =
-        reinterpret_cast<SetProcessDPIAwarePtr>(
-            GetProcAddress(GetModuleHandleA("user32.dll"),
-                           "SetProcessDPIAware"));
-    if (set_process_dpi_aware_func)
-      set_process_dpi_aware_func();
+    if (!SetProcessDpiAwarenessWrapper(PROCESS_SYSTEM_DPI_AWARE)) {
+      SetProcessDPIAwareWrapper();
+    }
   }
 }
 
