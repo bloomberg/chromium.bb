@@ -78,7 +78,7 @@ void DesktopResizerMac::SetResolution(const ScreenResolution& resolution) {
   CGDisplayModeRef best_mode = NULL;
   for (std::list<ScreenResolution>::const_iterator i = resolutions.begin();
        i != resolutions.end(); ++i, ++index) {
-    if (!i->Equals(resolution)) {
+    if (i->Equals(resolution)) {
       CGDisplayModeRef mode = const_cast<CGDisplayModeRef>(
           static_cast<const CGDisplayMode*>(
               CFArrayGetValueAtIndex(modes, index)));
