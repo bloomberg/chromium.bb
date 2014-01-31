@@ -59,7 +59,7 @@ static inline FrameView* mainFrameView(Page* page)
 
 void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
 {
-    FrameView* view = mainFrameView(page);
+    RefPtr<FrameView> view = mainFrameView(page);
     if (!view)
         return;
     page->autoscrollController().animate(monotonicFrameBeginTime);
@@ -68,7 +68,7 @@ void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
 
 void PageWidgetDelegate::layout(Page* page)
 {
-    FrameView* view = mainFrameView(page);
+    RefPtr<FrameView> view = mainFrameView(page);
     if (!view)
         return;
     // In order for our child HWNDs (NativeWindowWidgets) to update properly,
@@ -86,7 +86,8 @@ void PageWidgetDelegate::layout(Page* page)
     // For now, as we know this is the point in code where the compositor has
     // actually asked for Blink to update the composited layer tree. So finally
     // do all the deferred work for updateCompositingLayers() here.
-    view->renderView()->compositor()->updateCompositingLayers();
+    if (RenderView* renderView = view->renderView())
+        renderView->compositor()->updateCompositingLayers();
 }
 
 void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background)
