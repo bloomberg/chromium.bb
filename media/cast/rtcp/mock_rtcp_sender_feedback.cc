@@ -7,11 +7,9 @@
 namespace media {
 namespace cast {
 
-MockRtcpSenderFeedback::MockRtcpSenderFeedback() {
-}
+MockRtcpSenderFeedback::MockRtcpSenderFeedback() {}
 
-MockRtcpSenderFeedback::~MockRtcpSenderFeedback() {
-}
+MockRtcpSenderFeedback::~MockRtcpSenderFeedback() {}
 
 }  // namespace cast
 }  // namespace media

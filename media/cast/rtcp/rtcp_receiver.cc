@@ -40,7 +40,7 @@ media::cast::CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event) {
 }
 
 media::cast::transport::RtcpSenderFrameStatus
-    TranslateToFrameStatusFromWireFormat(uint8 status) {
+TranslateToFrameStatusFromWireFormat(uint8 status) {
   switch (status) {
     case 0:
       return media::cast::transport::kRtcpSenderFrameStatusUnknown;
@@ -78,9 +78,7 @@ RtcpReceiver::RtcpReceiver(scoped_refptr<CastEnvironment> cast_environment,
 
 RtcpReceiver::~RtcpReceiver() {}
 
-void RtcpReceiver::SetRemoteSSRC(uint32 ssrc) {
-  remote_ssrc_ = ssrc;
-}
+void RtcpReceiver::SetRemoteSSRC(uint32 ssrc) { remote_ssrc_ = ssrc; }
 
 void RtcpReceiver::IncomingRtcpPacket(RtcpParser* rtcp_parser) {
   RtcpFieldTypes field_type = rtcp_parser->Begin();
@@ -166,8 +164,7 @@ void RtcpReceiver::HandleSenderReport(RtcpParser* rtcp_parser) {
         rtcp_field.sender_report.ntp_most_significant;
     remote_sender_info.ntp_fraction =
         rtcp_field.sender_report.ntp_least_significant;
-    remote_sender_info.rtp_timestamp =
-        rtcp_field.sender_report.rtp_timestamp;
+    remote_sender_info.rtp_timestamp = rtcp_field.sender_report.rtp_timestamp;
     remote_sender_info.send_packet_count =
         rtcp_field.sender_report.sender_packet_count;
     remote_sender_info.send_octet_count =
@@ -220,10 +217,9 @@ void RtcpReceiver::HandleReportBlock(const RtcpField* rtcp_field,
   }
   VLOG(1) << "Cast RTCP received RB from SSRC " << remote_ssrc;
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertGenericEvent(now, kPacketLoss,
-                                                   rb.fraction_lost);
-  cast_environment_->Logging()->InsertGenericEvent(now, kJitterMs,
-                                                   rb.jitter);
+  cast_environment_->Logging()->InsertGenericEvent(
+      now, kPacketLoss, rb.fraction_lost);
+  cast_environment_->Logging()->InsertGenericEvent(now, kJitterMs, rb.jitter);
 
   transport::RtcpReportBlock report_block;
   report_block.remote_ssrc = remote_ssrc;
@@ -237,9 +233,8 @@ void RtcpReceiver::HandleReportBlock(const RtcpField* rtcp_field,
   report_block.delay_since_last_sr = rb.delay_last_sender_report;
 
   if (rtt_feedback_) {
-    rtt_feedback_->OnReceivedDelaySinceLastReport(rb.ssrc,
-                                                  rb.last_sender_report,
-                                                  rb.delay_last_sender_report);
+    rtt_feedback_->OnReceivedDelaySinceLastReport(
+        rb.ssrc, rb.last_sender_report, rb.delay_last_sender_report);
   }
 }
 
@@ -458,8 +453,8 @@ void RtcpReceiver::HandleApplicationSpecificCastReceiverLog(
 
     field_type = rtcp_parser->Iterate();
     while (field_type == kRtcpApplicationSpecificCastReceiverLogEventCode) {
-      HandleApplicationSpecificCastReceiverEventLog(rtcp_parser,
-          &frame_log.event_log_messages_);
+      HandleApplicationSpecificCastReceiverEventLog(
+          rtcp_parser, &frame_log.event_log_messages_);
       field_type = rtcp_parser->Iterate();
     }
     receiver_log.push_back(frame_log);
@@ -476,16 +471,16 @@ void RtcpReceiver::HandleApplicationSpecificCastReceiverEventLog(
   const RtcpField& rtcp_field = rtcp_parser->Field();
 
   RtcpReceiverEventLogMessage event_log;
-  event_log.type = TranslateToLogEventFromWireFormat(
-      rtcp_field.cast_receiver_log.event);
-  event_log.event_timestamp = base::TimeTicks() +
+  event_log.type =
+      TranslateToLogEventFromWireFormat(rtcp_field.cast_receiver_log.event);
+  event_log.event_timestamp =
+      base::TimeTicks() +
       base::TimeDelta::FromMilliseconds(
           rtcp_field.cast_receiver_log.event_timestamp_base +
           rtcp_field.cast_receiver_log.event_timestamp_delta);
   event_log.delay_delta = base::TimeDelta::FromMilliseconds(
       rtcp_field.cast_receiver_log.delay_delta_or_packet_id);
-  event_log.packet_id =
-      rtcp_field.cast_receiver_log.delay_delta_or_packet_id;
+  event_log.packet_id = rtcp_field.cast_receiver_log.delay_delta_or_packet_id;
   event_log_messages->push_back(event_log);
 }
 
@@ -584,7 +579,8 @@ void RtcpReceiver::HandleFIR(RtcpParser* rtcp_parser) {
 
 void RtcpReceiver::HandleFIRItem(const RtcpField* rtcp_field) {
   // Is it our sender that is requested to generate a new keyframe.
-  if (ssrc_ != rtcp_field->fir_item.ssrc) return;
+  if (ssrc_ != rtcp_field->fir_item.ssrc)
+    return;
 
   VLOG(1) << "Cast RTCP received FIR on our SSRC " << ssrc_;
 }

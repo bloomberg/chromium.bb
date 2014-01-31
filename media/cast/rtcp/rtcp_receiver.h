@@ -60,8 +60,7 @@ class RtcpReceiver {
 
   void HandleReceiverReport(RtcpParser* rtcp_parser);
 
-  void HandleReportBlock(const RtcpField* rtcp_field,
-                         uint32 remote_ssrc);
+  void HandleReportBlock(const RtcpField* rtcp_field, uint32 remote_ssrc);
 
   void HandleSDES(RtcpParser* rtcp_parser);
   void HandleSDESChunk(RtcpParser* rtcp_parser);

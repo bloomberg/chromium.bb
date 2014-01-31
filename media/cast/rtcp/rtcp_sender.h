@@ -38,21 +38,22 @@ class RtcpSender {
                                const RtcpCastMessage* cast_message,
                                RtcpReceiverLogMessage* receiver_log);
   enum RtcpPacketType {
-    kRtcpSr     = 0x0002,
-    kRtcpRr     = 0x0004,
-    kRtcpBye    = 0x0008,
-    kRtcpPli    = 0x0010,
-    kRtcpNack   = 0x0020,
-    kRtcpFir    = 0x0040,
-    kRtcpSrReq  = 0x0200,
-    kRtcpDlrr   = 0x0400,
-    kRtcpRrtr   = 0x0800,
-    kRtcpRpsi   = 0x8000,
-    kRtcpRemb   = 0x10000,
-    kRtcpCast   = 0x20000,
+    kRtcpSr = 0x0002,
+    kRtcpRr = 0x0004,
+    kRtcpBye = 0x0008,
+    kRtcpPli = 0x0010,
+    kRtcpNack = 0x0020,
+    kRtcpFir = 0x0040,
+    kRtcpSrReq = 0x0200,
+    kRtcpDlrr = 0x0400,
+    kRtcpRrtr = 0x0800,
+    kRtcpRpsi = 0x8000,
+    kRtcpRemb = 0x10000,
+    kRtcpCast = 0x20000,
     kRtcpSenderLog = 0x40000,
     kRtcpReceiverLog = 0x80000,
   };
+
  private:
   void BuildRR(const transport::RtcpReportBlock* report_block,
                Packet* packet) const;
@@ -62,25 +63,20 @@ class RtcpSender {
 
   void BuildSdec(Packet* packet) const;
 
-  void BuildPli(uint32 remote_ssrc,
-                Packet* packet) const;
+  void BuildPli(uint32 remote_ssrc, Packet* packet) const;
 
-  void BuildRemb(const RtcpRembMessage* remb,
-                 Packet* packet) const;
+  void BuildRemb(const RtcpRembMessage* remb, Packet* packet) const;
 
-  void BuildRpsi(const RtcpRpsiMessage* rpsi,
-                 Packet* packet) const;
+  void BuildRpsi(const RtcpRpsiMessage* rpsi, Packet* packet) const;
 
-  void BuildNack(const RtcpNackMessage* nack,
-                 Packet* packet) const;
+  void BuildNack(const RtcpNackMessage* nack, Packet* packet) const;
 
   void BuildBye(Packet* packet) const;
 
   void BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
                  Packet* packet) const;
 
-  void BuildCast(const RtcpCastMessage* cast_message,
-                 Packet* packet) const;
+  void BuildCast(const RtcpCastMessage* cast_message, Packet* packet) const;
 
   void BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
                         Packet* packet) const;

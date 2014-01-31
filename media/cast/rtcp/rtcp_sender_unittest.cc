@@ -25,8 +25,7 @@ static const std::string kCName("test@10.1.1.1");
 
 class TestRtcpTransport : public transport::PacedPacketSender {
  public:
-  TestRtcpTransport() : packet_count_(0) {
-  }
+  TestRtcpTransport() : packet_count_(0) {}
 
   virtual bool SendRtcpPacket(const Packet& packet) OVERRIDE {
     EXPECT_EQ(expected_packet_.size(), packet.size());
@@ -35,9 +34,7 @@ class TestRtcpTransport : public transport::PacedPacketSender {
     return true;
   }
 
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    return false;
-  }
+  virtual bool SendPackets(const PacketList& packets) OVERRIDE { return false; }
 
   virtual bool ResendPackets(const PacketList& packets) OVERRIDE {
     return false;
@@ -52,6 +49,8 @@ class TestRtcpTransport : public transport::PacedPacketSender {
  private:
   Packet expected_packet_;
   int packet_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRtcpTransport);
 };
 
 class RtcpSenderTest : public ::testing::Test {
@@ -61,19 +60,25 @@ class RtcpSenderTest : public ::testing::Test {
         task_runner_(new test::FakeTaskRunner(testing_clock_)),
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
-            task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, task_runner_, GetDefaultCastSenderLoggingConfig())),
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            task_runner_,
+            GetDefaultCastSenderLoggingConfig())),
         rtcp_sender_(new RtcpSender(cast_environment_,
                                     &test_transport_,
                                     kSendingSsrc,
-                                    kCName)) {
-  }
+                                    kCName)) {}
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestRtcpTransport test_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<RtcpSender> rtcp_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtcpSenderTest);
 };
 
 TEST_F(RtcpSenderTest, RtcpReceiverReport) {
@@ -83,8 +88,8 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   p1.AddSdesCname(kSendingSsrc, kCName);
   test_transport_.SetExpectedRtcpPacket(p1.GetPacket());
 
-  rtcp_sender_->SendRtcpFromRtpReceiver(RtcpSender::kRtcpRr,
-      NULL, NULL, NULL, NULL);
+  rtcp_sender_->SendRtcpFromRtpReceiver(
+      RtcpSender::kRtcpRr, NULL, NULL, NULL, NULL);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 
@@ -106,8 +111,8 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   report_block.last_sr = kLastSr;
   report_block.delay_since_last_sr = kDelayLastSr;
 
-  rtcp_sender_->SendRtcpFromRtpReceiver(RtcpSender::kRtcpRr, &report_block,
-                                        NULL, NULL, NULL);
+  rtcp_sender_->SendRtcpFromRtpReceiver(
+      RtcpSender::kRtcpRr, &report_block, NULL, NULL, NULL);
 
   EXPECT_EQ(2, test_transport_.packet_count());
 }
@@ -279,12 +284,11 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
       RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
-      RtcpSender::kRtcpReceiverLog,
+          RtcpSender::kRtcpReceiverLog,
       &report_block,
       &rrtr,
       &cast_message,
       &receiver_log);
-
 
   base::SimpleTestTickClock testing_clock;
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
@@ -314,7 +318,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
       RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
-      RtcpSender::kRtcpReceiverLog,
+          RtcpSender::kRtcpReceiverLog,
       &report_block,
       &rrtr,
       &cast_message,
@@ -352,8 +356,8 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
 
   p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs);
   p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
-  p.AddReceiverFrameLog(kRtpTimestamp + 2345,
-      kRtcpMaxReceiverLogMessages, kTimeBaseMs);
+  p.AddReceiverFrameLog(
+      kRtpTimestamp + 2345, kRtcpMaxReceiverLogMessages, kTimeBaseMs);
 
   for (size_t i = 0; i < kRtcpMaxReceiverLogMessages; ++i) {
     p.AddReceiverEventLog(
@@ -424,7 +428,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
   p.AddReceiverLog(kSendingSsrc);
 
   for (int i = 0; i < 119; ++i) {
-    p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs +  i * kTimeDelayMs);
+    p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs + i * kTimeDelayMs);
     p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
   }
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());

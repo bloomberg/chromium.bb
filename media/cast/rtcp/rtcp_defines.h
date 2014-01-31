@@ -23,9 +23,13 @@ class RtcpCastMessage {
   explicit RtcpCastMessage(uint32 media_ssrc);
   ~RtcpCastMessage();
 
+  void Copy(const RtcpCastMessage& cast_message);
+
   uint32 media_ssrc_;
   uint32 ack_frame_id_;
   MissingFramesAndPacketsMap missing_frames_and_packets_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtcpCastMessage);
 };
 
 // Log messages from receiver to sender.
@@ -45,6 +49,10 @@ class RtcpReceiverFrameLogMessage {
 
   uint32 rtp_timestamp_;
   RtcpReceiverEventLogMessages event_log_messages_;
+
+  // TODO(mikhal): Investigate what's the best way to allow adding
+  // DISALLOW_COPY_AND_ASSIGN, as currently it contradicts the implementation
+  // and possible changes have a big impact on design.
 };
 
 typedef std::list<RtcpReceiverFrameLogMessage> RtcpReceiverLogMessage;
@@ -62,6 +70,8 @@ class RtcpNackMessage {
 
   uint32 remote_ssrc;
   std::list<uint16> nack_list;
+
+  DISALLOW_COPY_AND_ASSIGN(RtcpNackMessage);
 };
 
 class RtcpRembMessage {
@@ -71,6 +81,8 @@ class RtcpRembMessage {
 
   uint32 remb_bitrate;
   std::list<uint32> remb_ssrcs;
+
+  DISALLOW_COPY_AND_ASSIGN(RtcpRembMessage);
 };
 
 struct RtcpReceiverReferenceTimeReport {
@@ -82,8 +94,8 @@ struct RtcpReceiverReferenceTimeReport {
 inline bool operator==(RtcpReceiverReferenceTimeReport lhs,
                        RtcpReceiverReferenceTimeReport rhs) {
   return lhs.remote_ssrc == rhs.remote_ssrc &&
-      lhs.ntp_seconds == rhs.ntp_seconds &&
-      lhs.ntp_fraction == rhs.ntp_fraction;
+         lhs.ntp_seconds == rhs.ntp_seconds &&
+         lhs.ntp_fraction == rhs.ntp_fraction;
 }
 
 }  // namespace cast

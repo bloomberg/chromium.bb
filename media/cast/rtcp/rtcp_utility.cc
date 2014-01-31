@@ -26,13 +26,9 @@ RtcpParser::RtcpParser(const uint8* rtcpData, size_t rtcpDataLength)
 
 RtcpParser::~RtcpParser() {}
 
-RtcpFieldTypes RtcpParser::FieldType() const {
-  return field_type_;
-}
+RtcpFieldTypes RtcpParser::FieldType() const { return field_type_; }
 
-const RtcpField& RtcpParser::Field() const {
-  return field_;
-}
+const RtcpField& RtcpParser::Field() const { return field_; }
 
 RtcpFieldTypes RtcpParser::Begin() {
   rtcp_data_ = rtcp_data_begin_;
@@ -43,7 +39,8 @@ RtcpFieldTypes RtcpParser::Iterate() {
   // Reset packet type
   field_type_ = kRtcpNotValidCode;
 
-  if (!IsValid()) return kRtcpNotValidCode;
+  if (!IsValid())
+    return kRtcpNotValidCode;
 
   switch (state_) {
     case kStateTopLevel:
@@ -103,11 +100,13 @@ void RtcpParser::IterateTopLevel() {
     RtcpCommonHeader header;
 
     bool success = RtcpParseCommonHeader(rtcp_data_, rtcp_data_end_, &header);
-    if (!success) return;
+    if (!success)
+      return;
 
     rtcp_block_end_ = rtcp_data_ + header.length_in_octets;
 
-    if (rtcp_block_end_ > rtcp_data_end_) return;  // Bad block!
+    if (rtcp_block_end_ > rtcp_data_end_)
+      return;  // Bad block!
 
     switch (header.PT) {
       case transport::kPacketTypeSenderReport:
@@ -162,103 +161,117 @@ void RtcpParser::IterateTopLevel() {
 
 void RtcpParser::IterateReportBlockItem() {
   bool success = ParseReportBlockItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateSdesItem() {
   bool success = ParseSdesItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateByeItem() {
   bool success = ParseByeItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateExtendedReportItem() {
   bool success = ParseExtendedReportItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateExtendedReportDelaySinceLastReceiverReportItem() {
   bool success = ParseExtendedReportDelaySinceLastReceiverReport();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateNackItem() {
   bool success = ParseNackItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateRpsiItem() {
   bool success = ParseRpsiItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateFirItem() {
   bool success = ParseFirItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IteratePayloadSpecificAppItem() {
   bool success = ParsePayloadSpecificAppItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IteratePayloadSpecificRembItem() {
   bool success = ParsePayloadSpecificRembItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IteratePayloadSpecificCastItem() {
   bool success = ParsePayloadSpecificCastItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IteratePayloadSpecificCastNackItem() {
   bool success = ParsePayloadSpecificCastNackItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateCastReceiverLogFrame() {
   bool success = ParseCastReceiverLogFrameItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateCastReceiverLogEvent() {
   bool success = ParseCastReceiverLogEventItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::IterateCastSenderLog() {
   bool success = ParseCastSenderLogItem();
-  if (!success) Iterate();
+  if (!success)
+    Iterate();
 }
 
 void RtcpParser::Validate() {
-  if (rtcp_data_ == NULL) return;  // NOT VALID
+  if (rtcp_data_ == NULL)
+    return;  // NOT VALID
 
   RtcpCommonHeader header;
-  bool success = RtcpParseCommonHeader(rtcp_data_begin_, rtcp_data_end_,
-                                       &header);
+  bool success =
+      RtcpParseCommonHeader(rtcp_data_begin_, rtcp_data_end_, &header);
 
-  if (!success) return;  // NOT VALID!
+  if (!success)
+    return;  // NOT VALID!
 
   valid_packet_ = true;
 }
 
-bool RtcpParser::IsValid() const {
-  return valid_packet_;
-}
+bool RtcpParser::IsValid() const { return valid_packet_; }
 
-void RtcpParser::EndCurrentBlock() {
-  rtcp_data_ = rtcp_block_end_;
-}
+void RtcpParser::EndCurrentBlock() { rtcp_data_ = rtcp_block_end_; }
 
 bool RtcpParser::RtcpParseCommonHeader(const uint8* data_begin,
                                        const uint8* data_end,
                                        RtcpCommonHeader* parsed_header) const {
-  if (!data_begin || !data_end) return false;
+  if (!data_begin || !data_end)
+    return false;
 
   //  0                   1                   2                   3
   //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -268,27 +281,31 @@ bool RtcpParser::RtcpParseCommonHeader(const uint8* data_begin,
   //
   // Common header for all Rtcp packets, 4 octets.
 
-  if ((data_end - data_begin) < 4) return false;
+  if ((data_end - data_begin) < 4)
+    return false;
 
-  parsed_header->V  = data_begin[0] >> 6;
-  parsed_header->P  = ((data_begin[0] & 0x20) == 0) ? false : true;
+  parsed_header->V = data_begin[0] >> 6;
+  parsed_header->P = ((data_begin[0] & 0x20) == 0) ? false : true;
   parsed_header->IC = data_begin[0] & 0x1f;
   parsed_header->PT = data_begin[1];
 
   parsed_header->length_in_octets =
       ((data_begin[2] << 8) + data_begin[3] + 1) * 4;
 
-  if (parsed_header->length_in_octets == 0) return false;
+  if (parsed_header->length_in_octets == 0)
+    return false;
 
   // Check if RTP version field == 2.
-  if (parsed_header->V != 2) return false;
+  if (parsed_header->V != 2)
+    return false;
 
   return true;
 }
 
 bool RtcpParser::ParseRR() {
   ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
-  if (length < 8) return false;
+  if (length < 8)
+    return false;
 
   field_type_ = kRtcpRrCode;
 
@@ -618,8 +635,8 @@ bool RtcpParser::ParseCastSenderLogItem() {
 
 bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
   DCHECK((header.PT == transport::kPacketTypeGenericRtpFeedback) ||
-         (header.PT == transport::kPacketTypePayloadSpecific)) <<
-          "Invalid state";
+         (header.PT == transport::kPacketTypePayloadSpecific))
+      << "Invalid state";
 
   ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
 
@@ -644,7 +661,7 @@ bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
         // Nack
         field_type_ = kRtcpGenericRtpFeedbackNackCode;
         field_.nack.sender_ssrc = sender_ssrc;
-        field_.nack.media_ssrc  = media_ssrc;
+        field_.nack.media_ssrc = media_ssrc;
         state_ = kStateGenericRtpFeedbackNack;
         return true;
       case 2:
@@ -677,7 +694,7 @@ bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
         // PLI
         field_type_ = kRtcpPayloadSpecificPliCode;
         field_.pli.sender_ssrc = sender_ssrc;
-        field_.pli.media_ssrc  = media_ssrc;
+        field_.pli.media_ssrc = media_ssrc;
 
         // Note: No state transition, PLI FCI is empty!
         return true;
@@ -687,7 +704,7 @@ bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
       case 3:
         field_type_ = kRtcpPayloadSpecificRpsiCode;
         field_.rpsi.sender_ssrc = sender_ssrc;
-        field_.rpsi.media_ssrc  = media_ssrc;
+        field_.rpsi.media_ssrc = media_ssrc;
         state_ = kStatePayloadSpecificRpsi;
         return true;
       case 4:
@@ -696,7 +713,7 @@ bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
       case 15:
         field_type_ = kRtcpPayloadSpecificAppCode;
         field_.application_specific.sender_ssrc = sender_ssrc;
-        field_.application_specific.media_ssrc  = media_ssrc;
+        field_.application_specific.media_ssrc = media_ssrc;
         state_ = kStatePayloadSpecificApplication;
         return true;
       default:
@@ -900,7 +917,8 @@ bool RtcpParser::ParseFirItem() {
 
 bool RtcpParser::ParseExtendedReport() {
   ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
-  if (length < 8) return false;
+  if (length < 8)
+    return false;
 
   field_type_ = kRtcpXrCode;
 

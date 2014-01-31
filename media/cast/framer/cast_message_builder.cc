@@ -144,7 +144,7 @@ bool CastMessageBuilder::UpdateCastMessageInternal(RtcpCastMessage* message) {
 
   UpdateAckMessage();  // Needed to cover when a frame is skipped.
   BuildPacketList();
-  *message = cast_msg_;
+  message->Copy(cast_msg_);
   return true;
 }
 

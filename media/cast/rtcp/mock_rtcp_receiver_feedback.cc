@@ -7,17 +7,13 @@
 namespace media {
 namespace cast {
 
-MockRtcpReceiverFeedback::MockRtcpReceiverFeedback() {
-}
+MockRtcpReceiverFeedback::MockRtcpReceiverFeedback() {}
 
-MockRtcpReceiverFeedback::~MockRtcpReceiverFeedback() {
-}
+MockRtcpReceiverFeedback::~MockRtcpReceiverFeedback() {}
 
-MockRtcpRttFeedback::MockRtcpRttFeedback() {
-}
+MockRtcpRttFeedback::MockRtcpRttFeedback() {}
 
-MockRtcpRttFeedback::~MockRtcpRttFeedback() {
-}
+MockRtcpRttFeedback::~MockRtcpRttFeedback() {}
 
 }  // namespace cast
 }  // namespace media

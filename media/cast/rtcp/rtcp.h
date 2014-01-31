@@ -69,7 +69,7 @@ class Rtcp {
   Rtcp(scoped_refptr<CastEnvironment> cast_environment,
        RtcpSenderFeedback* sender_feedback,
        transport::CastTransportSender* const transport_sender,  // Send-side.
-       transport::PacedPacketSender* paced_packet_sender,  // Receive side.
+       transport::PacedPacketSender* paced_packet_sender,       // Receive side.
        RtpSenderStatistics* rtp_sender_statistics,
        RtpReceiverStatistics* rtp_receiver_statistics,
        RtcpMode rtcp_mode,
@@ -105,15 +105,16 @@ class Rtcp {
                                RtcpReceiverLogMessage* receiver_log);
 
   void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
-  bool Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
-           base::TimeDelta* min_rtt,  base::TimeDelta* max_rtt) const;
+  bool Rtt(base::TimeDelta* rtt,
+           base::TimeDelta* avg_rtt,
+           base::TimeDelta* min_rtt,
+           base::TimeDelta* max_rtt) const;
   bool RtpTimestampInSenderTime(int frequency,
                                 uint32 rtp_timestamp,
                                 base::TimeTicks* rtp_timestamp_in_ticks) const;
 
  protected:
-  int CheckForWrapAround(uint32 new_timestamp,
-                         uint32 old_timestamp) const;
+  int CheckForWrapAround(uint32 new_timestamp, uint32 old_timestamp) const;
 
   void OnReceivedLipSyncInfo(uint32 rtp_timestamp,
                              uint32 ntp_seconds,
@@ -141,7 +142,8 @@ class Rtcp {
 
   void UpdateNextTimeToSendRtcp();
 
-  void SaveLastSentNtpTime(const base::TimeTicks& now, uint32 last_ntp_seconds,
+  void SaveLastSentNtpTime(const base::TimeTicks& now,
+                           uint32 last_ntp_seconds,
                            uint32 last_ntp_fraction);
 
   void SendRtcpFromRtpSenderOnTransportThread(
