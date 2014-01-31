@@ -36,7 +36,6 @@
 #include "bindings/v8/RetainedDOMInfo.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
 #include "core/inspector/BindingVisitors.h"
@@ -166,15 +165,12 @@ class GlobalObjectNameResolver FINAL : public v8::HeapProfiler::ObjectNameResolv
 public:
     virtual const char* GetName(v8::Handle<v8::Object> object) OVERRIDE
     {
-        if (V8DOMWrapper::isWrapperOfType(object, &V8Window::wrapperTypeInfo)) {
-            DOMWindow* window = V8Window::toNative(object);
-            if (window) {
-                CString url = window->document()->url().string().utf8();
-                m_strings.append(url);
-                return url.data();
-            }
-        }
-        return 0;
+        DOMWindow* window = toDOMWindow(object, v8::Isolate::GetCurrent());
+        if (!window)
+            return 0;
+        CString url = window->document()->url().string().utf8();
+        m_strings.append(url);
+        return url.data();
     }
 
 private:

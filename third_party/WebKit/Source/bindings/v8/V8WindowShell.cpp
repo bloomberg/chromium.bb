@@ -309,6 +309,11 @@ void V8WindowShell::createContext()
     blink::Platform::current()->histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 }
 
+static v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> context)
+{
+    return v8::Handle<v8::Object>::Cast(context->Global()->GetPrototype());
+}
+
 bool V8WindowShell::installDOMWindow()
 {
     DOMWindow* window = m_frame->domWindow();
@@ -517,7 +522,7 @@ bool V8WindowShell::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
     // validate the context.
     if (contextBeingInitialized)
         return true;
-    return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo);
+    return !!toDOMWindow(context);
 }
 
 } // WebCore

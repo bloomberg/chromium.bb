@@ -65,7 +65,7 @@ DOMWrapperWorld* DOMWrapperWorld::current(v8::Isolate* isolate)
 {
     ASSERT(isolate->InContext());
     v8::Handle<v8::Context> context = isolate->GetCurrentContext();
-    if (!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo))
+    if (!toDOMWindow(context))
         return 0;
     ASSERT(isMainThread());
     if (DOMWrapperWorld* world = isolatedWorld(context))

@@ -480,11 +480,6 @@ PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::I
     return resolver;
 }
 
-v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> context)
-{
-    return v8::Handle<v8::Object>::Cast(context->Global()->GetPrototype());
-}
-
 DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     if (value.IsEmpty() || !value->IsObject())

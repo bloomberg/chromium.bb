@@ -50,7 +50,6 @@ struct WrapperTypeInfo;
         static inline void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
 
         static bool isDOMWrapper(v8::Handle<v8::Value>);
-        static bool isWrapperOfType(v8::Handle<v8::Value>, const WrapperTypeInfo*);
     };
 
     inline void V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* type, void* object)

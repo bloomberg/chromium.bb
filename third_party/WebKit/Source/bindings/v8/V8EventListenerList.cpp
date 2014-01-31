@@ -49,7 +49,7 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
         ASSERT(!isAttribute);
         return V8EventListenerList::findWrapper(value, isolate);
     }
-    if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo))
+    if (toDOMWindow(context))
         return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, isolate);
     return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, isolate);
 }
