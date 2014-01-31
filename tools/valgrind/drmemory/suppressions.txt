@@ -123,7 +123,6 @@ WARNING
 name=http://crbug.com/223255 - prefetches in vp8
 instruction=prefetch*
 ffmpegsumo.dll!ff_prefetch_mmxext
-ffmpegsumo.dll!vp8_decode_mb_row_no_filter
 
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
