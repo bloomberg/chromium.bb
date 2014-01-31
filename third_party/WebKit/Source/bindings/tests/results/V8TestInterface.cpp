@@ -411,76 +411,6 @@ static void Node13AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::V
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
-#if ENABLE(CONDITION_PARTIAL)
-static void Node14AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, TestPartialInterface::node14(imp), imp);
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void Node14AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node14AttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void Node14AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    TestPartialInterface::setNode14(imp, WTF::getPtr(cppValue));
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void Node14AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node14AttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void Node15AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueFast(info, TestPartialInterface::node15(imp), imp);
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void Node15AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfaceV8Internal::Node15AttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void Node15AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    TestPartialInterface::setNode15(imp, WTF::getPtr(cppValue));
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void Node15AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfaceV8Internal::Node15AttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
 static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
@@ -850,21 +780,6 @@ bool V8TestInterface::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* is
 {
     return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
         || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
-}
-
-void V8TestInterface::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, TestInterface* impl, v8::Isolate* isolate)
-{
-    v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
-    if (ContextFeatures::condition14Enabled(impl->document())) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"Node14", TestInterfaceV8Internal::Node14AttributeGetterCallback, TestInterfaceV8Internal::Node14AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
-    }
-    if (ContextFeatures::condition16Enabled(impl->document())) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"Node15", TestInterfaceV8Internal::Node15AttributeGetterCallback, TestInterfaceV8Internal::Node15AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
-    }
 }
 
 ActiveDOMObject* V8TestInterface::toActiveDOMObject(v8::Handle<v8::Object> wrapper)

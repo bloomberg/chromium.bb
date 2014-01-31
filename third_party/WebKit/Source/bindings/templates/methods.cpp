@@ -315,6 +315,9 @@ static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Lo
 {% macro generate_constructor(constructor) %}
 static void constructor{{constructor.overload_index}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    {% if is_constructor_raises_exception %}
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {% endif %}
     {% if interface_length and not constructor.overload_index %}
     {# FIXME: remove this UNLIKELY: constructors are heavy, so no difference. #}
     if (UNLIKELY(info.Length() < {{interface_length}})) {
@@ -323,9 +326,6 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
                 interface_length) | indent(8)}}
         return;
     }
-    {% endif %}
-    {% if is_constructor_raises_exception %}
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% for argument in constructor.arguments %}
     {{generate_argument(constructor, argument) | indent}}

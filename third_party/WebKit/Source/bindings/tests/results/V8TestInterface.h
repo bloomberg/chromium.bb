@@ -69,7 +69,7 @@ public:
     {
         return static_cast<TestInterface*>(object);
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterface*, v8::Isolate*);
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterface*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
