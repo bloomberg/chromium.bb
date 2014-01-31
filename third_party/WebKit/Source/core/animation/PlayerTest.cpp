@@ -260,14 +260,14 @@ TEST_F(AnimationPlayerTest, SetStartTimeWhilePaused)
 }
 
 
-TEST_F(AnimationPlayerTest, PauseUnpause)
+TEST_F(AnimationPlayerTest, PausePlay)
 {
     updateTimeline(10);
-    player->setPaused(true);
+    player->pause();
     EXPECT_TRUE(player->paused());
     EXPECT_EQ(10, player->currentTime());
     updateTimeline(20);
-    player->setPaused(false);
+    player->play();
     EXPECT_FALSE(player->paused());
     EXPECT_EQ(10, player->currentTime());
     updateTimeline(30);
@@ -277,12 +277,12 @@ TEST_F(AnimationPlayerTest, PauseUnpause)
 TEST_F(AnimationPlayerTest, PauseBeforeTimelineStarted)
 {
     setUpWithoutStartingTimeline();
-    player->setPaused(true);
+    player->pause();
     EXPECT_TRUE(player->paused());
-    player->setPaused(false);
+    player->play();
     EXPECT_FALSE(player->paused());
 
-    player->setPaused(true);
+    player->pause();
     startTimeline();
     updateTimeline(100);
     EXPECT_TRUE(player->paused());
@@ -294,15 +294,60 @@ TEST_F(AnimationPlayerTest, PauseBeforeStartTimeSet)
     player = Player::create(*timeline, 0);
     player->setSource(makeAnimation().get());
     updateTimeline(100);
-    player->setPaused(true);
+    player->pause();
     updateTimeline(200);
     EXPECT_EQ(0, player->currentTime());
 
     player->setStartTime(150);
-    player->setPaused(false);
+    player->play();
     EXPECT_EQ(0, player->currentTime());
     updateTimeline(220);
     EXPECT_EQ(20, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, PlayRewindsToStart)
+{
+    player->setCurrentTime(30);
+    player->play();
+    EXPECT_EQ(0, player->currentTime());
+
+    player->setCurrentTime(40);
+    player->play();
+    EXPECT_EQ(0, player->currentTime());
+
+    player->setCurrentTime(-10);
+    player->play();
+    EXPECT_EQ(0, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, PlayRewindsToEnd)
+{
+    player->setPlaybackRate(-1);
+    player->play();
+    EXPECT_EQ(30, player->currentTime());
+
+    player->setCurrentTime(40);
+    player->play();
+    EXPECT_EQ(30, player->currentTime());
+
+    player->setCurrentTime(-10);
+    player->play();
+    EXPECT_EQ(30, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, PlayWithPlaybackRateZeroDoesNotSeek)
+{
+    player->setPlaybackRate(0);
+    player->play();
+    EXPECT_EQ(0, player->currentTime());
+
+    player->setCurrentTime(40);
+    player->play();
+    EXPECT_EQ(40, player->currentTime());
+
+    player->setCurrentTime(-10);
+    player->play();
+    EXPECT_EQ(-10, player->currentTime());
 }
 
 
@@ -360,10 +405,10 @@ TEST_F(AnimationPlayerTest, SetPlaybackRateBeforeTimelineStarted)
 TEST_F(AnimationPlayerTest, SetPlaybackRateWhilePaused)
 {
     updateTimeline(10);
-    player->setPaused(true);
+    player->pause();
     player->setPlaybackRate(2);
     updateTimeline(20);
-    player->setPaused(false);
+    player->play();
     EXPECT_EQ(10, player->currentTime());
     updateTimeline(25);
     EXPECT_EQ(20, player->currentTime());

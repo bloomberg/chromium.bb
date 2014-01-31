@@ -457,7 +457,10 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter) {
             Player* player = iter->get();
             ASSERT(player->paused() == isFirstPlayerPaused);
-            player->setPaused(!isFirstPlayerPaused);
+            if (isFirstPlayerPaused)
+                player->unpause();
+            else
+                player->pause();
         }
     }
 
@@ -470,7 +473,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             // rely on the behavior of OwnPtr::release() to achieve this.
             RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specified(), Animation::DefaultPriority, eventDelegate.release());
             Player* player = element->document().timeline()->createPlayer(animation.get());
-            player->setPaused(inertAnimation->paused());
+            if (inertAnimation->paused())
+                player->pause();
             element->document().cssPendingAnimations().add(player);
             player->update();
             players.add(player);

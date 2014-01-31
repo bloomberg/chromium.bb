@@ -157,17 +157,34 @@ void Player::setSource(TimedItem* newSource)
     updateTimingState(storedCurrentTime);
 }
 
-void Player::setPaused(bool newPaused)
+void Player::pause()
 {
-    if (pausedInternal() == newPaused)
+    if (m_paused)
         return;
-
-    m_paused = newPaused;
+    m_paused = true;
     updateTimingState(currentTime());
-    if (newPaused) {
-        // FIXME: resume compositor animation rather than pull back to main-thread
-        cancelAnimationOnCompositor();
-    }
+    // FIXME: resume compositor animation rather than pull back to main-thread
+    cancelAnimationOnCompositor();
+}
+
+void Player::unpause()
+{
+    if (!m_paused)
+        return;
+    m_paused = false;
+    updateTimingState(currentTime());
+}
+
+void Player::play()
+{
+    unpause();
+    if (!m_content)
+        return;
+    double currentTime = this->currentTime();
+    if (m_playbackRate > 0 && (currentTime < 0 || currentTime >= sourceEnd()))
+        setCurrentTime(0);
+    else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd()))
+        setCurrentTime(sourceEnd());
 }
 
 void Player::setPlaybackRate(double playbackRate)
@@ -241,7 +258,7 @@ void Player::pauseForTesting(double pauseTime)
     if (!m_isPausedForTesting && hasActiveAnimationsOnCompositor())
         toAnimation(m_content.get())->pauseAnimationForTestingOnCompositor(currentTime());
     m_isPausedForTesting = true;
-    setPaused(true);
+    pause();
 }
 
 } // namespace

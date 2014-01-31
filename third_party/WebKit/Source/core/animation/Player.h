@@ -57,9 +57,8 @@ public:
     void setCurrentTime(double newCurrentTime);
 
     bool paused() const { return m_paused && !m_isPausedForTesting; }
-    void setPaused(bool);
-    void pause() { setPaused(true); }
-
+    void pause();
+    void play();
     bool finished() { return limited(currentTime()); }
 
     double playbackRate() const { return m_playbackRate; }
@@ -78,8 +77,10 @@ public:
     double timeLag() { return currentTimeWithoutLag() - currentTime(); }
 
     // Pausing via this method is not reflected in the value returned by
-    // paused() and must never overlap with pausing via setPaused().
+    // paused() and must never overlap with pausing via pause().
     void pauseForTesting(double pauseTime);
+    // This should only be used for CSS
+    void unpause();
 
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
@@ -94,9 +95,6 @@ private:
     void updateTimingState(double newCurrentTime);
     void updateCurrentTimingState();
 
-    // Reflects all pausing, including via pauseForTesting().
-    bool pausedInternal() const { return m_paused; }
-
     double m_playbackRate;
     double m_startTime;
     double m_holdTime;
@@ -104,6 +102,7 @@ private:
 
     RefPtr<TimedItem> m_content;
     DocumentTimeline& m_timeline;
+    // Reflects all pausing, including via pauseForTesting().
     bool m_paused;
     bool m_held;
     bool m_isPausedForTesting;
