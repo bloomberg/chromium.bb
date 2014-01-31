@@ -880,3 +880,4 @@ crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pa
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
+crbug.com/331302 plugins/plugin-javascript-access.html [ NeedsManualRebaseline ]
