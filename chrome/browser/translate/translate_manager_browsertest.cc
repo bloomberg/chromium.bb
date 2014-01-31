@@ -240,6 +240,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     TranslateManager::GetInstance()->
         SetTranslateScriptExpirationDelay(60 * 60 * 1000);
     TranslateManager::GetInstance()->set_translate_max_reload_attemps(0);
+    TranslateManager::SetUseInfobar(true);
 
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
@@ -1472,12 +1473,11 @@ TEST_F(TranslateManagerBrowserTest, DownloadsAndHistoryNotTranslated) {
       GURL(chrome::kChromeUIHistoryURL)));
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(USE_AURA)
 
 TEST_F(TranslateManagerBrowserTest, BubbleNormalTranslate) {
   // Prepare for the bubble
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableTranslateNewUX);
+  TranslateManager::SetUseInfobar(false);
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
   TranslateBubbleFactory::SetFactory(factory);
@@ -1518,8 +1518,7 @@ TEST_F(TranslateManagerBrowserTest, BubbleNormalTranslate) {
 
 TEST_F(TranslateManagerBrowserTest, BubbleTranslateScriptNotAvailable) {
   // Prepare for the bubble
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableTranslateNewUX);
+  TranslateManager::SetUseInfobar(false);
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
   TranslateBubbleFactory::SetFactory(factory);
@@ -1551,8 +1550,7 @@ TEST_F(TranslateManagerBrowserTest, BubbleTranslateScriptNotAvailable) {
 
 TEST_F(TranslateManagerBrowserTest, BubbleUnknownLanguage) {
   // Prepare for the bubble
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableTranslateNewUX);
+  TranslateManager::SetUseInfobar(false);
   MockTranslateBubbleFactory* factory = new MockTranslateBubbleFactory;
   scoped_ptr<TranslateBubbleFactory> factory_ptr(factory);
   TranslateBubbleFactory::SetFactory(factory);
@@ -1579,7 +1577,7 @@ TEST_F(TranslateManagerBrowserTest, BubbleUnknownLanguage) {
             bubble->GetViewState());
 }
 
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // defined(USE_AURA)
 
 // Test is flaky on Win http://crbug.com/166334
 #if defined(OS_WIN)

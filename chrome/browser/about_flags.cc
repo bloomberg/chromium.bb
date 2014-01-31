@@ -1867,13 +1867,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableIMEModeIndicator)
   },
 #endif
+#if defined(OS_MACOSX)
   {
     "enable-translate-new-ux",
     IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME,
     IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION,
-    kOsDesktop,
+    kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableTranslateNewUX)
   },
+#endif
 #if defined(TOOLKIT_VIEWS)
   {
     "disable-views-rect-based-targeting",  // FLAGS:RECORD_UMA
