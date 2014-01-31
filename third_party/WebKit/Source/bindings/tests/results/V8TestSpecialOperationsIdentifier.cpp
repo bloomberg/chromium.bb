@@ -265,6 +265,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
     if (info.Holder()->HasRealNamedProperty(name))
         return;
+
     TestSpecialOperationsIdentifier* collection = V8TestSpecialOperationsIdentifier::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, jsValue);

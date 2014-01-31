@@ -4057,8 +4057,8 @@ sub GenerateImplementationNamedPropertyGetter
         $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
         $code .= "        return;\n";
+        $code .= "\n";
     }
-    $code .= "\n";
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     if ($raisesExceptions) {
@@ -4104,6 +4104,7 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
         $code .= "        return;\n";
+        $code .= "\n";
     }
 
     my $extraArguments = "";

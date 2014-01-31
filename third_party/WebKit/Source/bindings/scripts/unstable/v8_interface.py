@@ -506,6 +506,7 @@ def property_getter(getter):
             getter, 'Custom', 'PropertyQuery'),
         'is_enumerable': 'NotEnumerable' not in extended_attributes,
         'is_null_expression': is_null_expression(idl_type),
+        'is_override_builtins': 'OverrideBuiltins' in extended_attributes,
         'name': cpp_name(getter),
         'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
     }
@@ -520,6 +521,7 @@ def property_setter(setter):
             v8_types.is_wrapper_type(idl_type),
         'idl_type': idl_type,
         'is_custom': 'Custom' in extended_attributes,
+        'is_override_builtins': 'OverrideBuiltins' in extended_attributes,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
             idl_type, extended_attributes, 'jsValue', 'propertyValue'),
