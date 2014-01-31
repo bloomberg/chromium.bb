@@ -80,9 +80,11 @@ public:
     void clearForClose(bool destroyGlobal);
 
     DOMWrapperWorld* world() { return m_world.get(); }
+    static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
 
 private:
     V8WindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+    bool initialize();
 
     enum GlobalDetachmentBehavior {
         DoNotDetachGlobal,

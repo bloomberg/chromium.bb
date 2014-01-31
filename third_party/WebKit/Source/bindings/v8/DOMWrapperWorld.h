@@ -110,14 +110,12 @@ public:
     }
     v8::Handle<v8::Context> context(ScriptController&);
 
-    static void setInitializingWindow(bool);
-
 private:
     static unsigned isolatedWorldCount;
     static PassRefPtr<DOMWrapperWorld> createMainWorld();
-    static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
 
     DOMWrapperWorld(int worldId, int extensionGroup);
+    static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
 
     const int m_worldId;
     const int m_extensionGroup;

@@ -47,12 +47,6 @@
 namespace WebCore {
 
 unsigned DOMWrapperWorld::isolatedWorldCount = 0;
-static bool initializingWindow = false;
-
-void DOMWrapperWorld::setInitializingWindow(bool initializing)
-{
-    initializingWindow = initializing;
-}
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::createMainWorld()
 {
@@ -85,14 +79,6 @@ DOMWrapperWorld* mainThreadNormalWorld()
     ASSERT(isMainThread());
     DEFINE_STATIC_REF(DOMWrapperWorld, cachedNormalWorld, (DOMWrapperWorld::createMainWorld()));
     return cachedNormalWorld;
-}
-
-bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
-{
-    ASSERT(isMainThread());
-    if (initializingWindow)
-        return true;
-    return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo);
 }
 
 void DOMWrapperWorld::setIsolatedWorldField(v8::Handle<v8::Context> context)
@@ -242,6 +228,11 @@ V8DOMActivityLogger* DOMWrapperWorld::activityLogger(int worldId)
     DOMActivityLoggerMap& loggers = domActivityLoggers();
     DOMActivityLoggerMap::iterator it = loggers.find(worldId);
     return it == loggers.end() ? 0 : it->value.get();
+}
+
+bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
+{
+    return V8WindowShell::contextHasCorrectPrototype(context);
 }
 
 } // namespace WebCore

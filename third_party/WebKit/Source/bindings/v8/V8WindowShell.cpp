@@ -65,6 +65,8 @@
 
 namespace WebCore {
 
+static bool contextBeingInitialized = false;
+
 static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* document)
 {
     ASSERT(V8Document::toNative(wrapper) == document);
@@ -184,12 +186,22 @@ bool V8WindowShell::initializeIfNeeded()
     if (m_contextHolder)
         return true;
 
-    TRACE_EVENT0("v8", "V8WindowShell::initializeIfNeeded");
+    ASSERT(!contextBeingInitialized);
+    contextBeingInitialized = true;
+    bool result = initialize();
+    contextBeingInitialized = false;
+    return result;
+}
+
+bool V8WindowShell::initialize()
+{
+    TRACE_EVENT0("v8", "V8WindowShell::initialize");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "InitializeWindow");
 
     v8::HandleScope handleScope(m_isolate);
 
     createContext();
+
     if (!m_contextHolder)
         return false;
 
@@ -284,7 +296,6 @@ void V8WindowShell::createContext()
     }
     v8::ExtensionConfiguration extensionConfiguration(index, extensionNames.get());
 
-    v8::HandleScope handleScope(m_isolate);
     v8::Handle<v8::Context> context = v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.newLocal(m_isolate));
     if (!context.IsEmpty()) {
         m_contextHolder = adoptPtr(new gin::ContextHolder(m_isolate));
@@ -300,7 +311,6 @@ void V8WindowShell::createContext()
 
 bool V8WindowShell::installDOMWindow()
 {
-    DOMWrapperWorld::setInitializingWindow(true);
     DOMWindow* window = m_frame->domWindow();
     v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(V8PerContextData::from(m_contextHolder->context())->constructorForType(&V8Window::wrapperTypeInfo));
     if (windowWrapper.IsEmpty())
@@ -327,7 +337,6 @@ bool V8WindowShell::installDOMWindow()
     V8DOMWrapper::setNativeInfo(innerGlobalObject, &V8Window::wrapperTypeInfo, window);
     innerGlobalObject->SetPrototype(windowWrapper);
     V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtr<DOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
-    DOMWrapperWorld::setInitializingWindow(false);
     return true;
 }
 
@@ -499,6 +508,16 @@ void V8WindowShell::updateSecurityOrigin(SecurityOrigin* origin)
         return;
     v8::HandleScope handleScope(m_isolate);
     setSecurityToken(origin);
+}
+
+bool V8WindowShell::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
+{
+    ASSERT(isMainThread());
+    // We're initializing the context, so it is not yet in a status where we can
+    // validate the context.
+    if (contextBeingInitialized)
+        return true;
+    return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::wrapperTypeInfo);
 }
 
 } // WebCore
