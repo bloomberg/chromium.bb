@@ -102,7 +102,7 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
         effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement->primitiveUnitsCurrentValue(), targetBoundingBox));
         effect->setOperatingColorSpace(
             effectElement->renderer()->style()->svgStyle()->colorInterpolationFilters() == CI_LINEARRGB ? ColorSpaceLinearRGB : ColorSpaceDeviceRGB);
-        builder->add(AtomicString(effectElement->resultCurrentValue()), effect);
+        builder->add(AtomicString(effectElement->result()->currentValue()->value()), effect);
     }
     return builder.release();
 }

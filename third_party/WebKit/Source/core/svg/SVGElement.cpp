@@ -52,10 +52,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGElement, HTMLNames::classAttr, ClassName, className)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGElement)
-REGISTER_LOCAL_ANIMATED_PROPERTY(className)
 END_REGISTER_ANIMATED_PROPERTIES
 
 using namespace HTMLNames;
@@ -73,6 +71,7 @@ void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyName
 
 SVGElement::SVGElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : Element(tagName, &document, constructionType)
+    , m_className(SVGAnimatedString::create(this, HTMLNames::classAttr, SVGString::create()))
 #if !ASSERT_DISABLED
     , m_inRelativeLengthClientsInvalidation(false)
 #endif
@@ -81,6 +80,7 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
     , m_hasSVGRareData(false)
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_className);
     registerAnimatedPropertiesForSVGElement();
     setHasCustomStyleCallbacks();
 }
@@ -657,7 +657,9 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         // the className here. svgAttributeChanged actually causes the resulting
         // style updates (instead of Element::parseAttribute). We don't
         // tell Element about the change to avoid parsing the class list twice
-        setClassNameBaseValue(value);
+        SVGParsingError parseError = NoError;
+        m_className->setBaseValueAsString(value, parseError);
+        reportAttributeParsingError(parseError, name, value);
     } else if (name.matches(XMLNames::langAttr) || name.matches(XMLNames::spaceAttr)) {
     } else {
         // standard events
@@ -969,7 +971,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (attrName == HTMLNames::classAttr) {
-        classAttributeChanged(AtomicString(classNameCurrentValue()));
+        classAttributeChanged(AtomicString(m_className->currentValue()->value()));
         SVGElementInstance::invalidateAllInstancesOfElement(this);
         return;
     }

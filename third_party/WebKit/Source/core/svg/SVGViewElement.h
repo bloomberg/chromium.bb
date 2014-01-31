@@ -27,7 +27,7 @@
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGStringList.h"
+#include "core/svg/SVGStaticStringList.h"
 #include "core/svg/SVGZoomAndPan.h"
 
 namespace WebCore {
@@ -43,7 +43,7 @@ public:
 
     SVGAnimatedRect* viewBox() { return m_viewBox.get(); }
 
-    SVGStringList& viewTarget() { return m_viewTarget; }
+    SVGStringListTearOff* viewTarget() { return m_viewTarget->tearOff(); }
     SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
     void setZoomAndPan(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
@@ -59,11 +59,11 @@ private:
 
     RefPtr<SVGAnimatedRect> m_viewBox;
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+    RefPtr<SVGStaticStringList> m_viewTarget;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGViewElement)
     END_DECLARE_ANIMATED_PROPERTIES
 
     SVGZoomAndPanType m_zoomAndPan;
-    SVGStringList m_viewTarget;
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGViewElement, hasTagName(SVGNames::viewTag));

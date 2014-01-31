@@ -54,8 +54,6 @@ public:
             return adoptPtr(new SVGAnimatedIntegerOptionalIntegerAnimator(animationElement, contextElement));
         case AnimatedPath:
             return adoptPtr(new SVGAnimatedPathAnimator(animationElement, contextElement));
-        case AnimatedString:
-            return adoptPtr(new SVGAnimatedStringAnimator(animationElement, contextElement));
         case AnimatedTransformList:
             return adoptPtr(new SVGAnimatedTransformListAnimator(animationElement, contextElement));
         // Below properties have migrated to new property implementation.
@@ -66,13 +64,15 @@ public:
         case AnimatedNumberOptionalNumber:
         case AnimatedLength:
         case AnimatedLengthList:
-        case AnimatedRect:
         case AnimatedPoints:
         case AnimatedPreserveAspectRatio:
+        case AnimatedRect:
+        case AnimatedString:
             return adoptPtr(new SVGAnimatedNewPropertyAnimator(attributeType, animationElement, contextElement));
 
-        // SVGAnimatedPoint does not exist.
+        // SVGAnimatedPoint/SVGAnimatedStringList does not exist.
         case AnimatedPoint:
+        case AnimatedStringList:
             ASSERT_NOT_REACHED();
 
         case AnimatedUnknown:

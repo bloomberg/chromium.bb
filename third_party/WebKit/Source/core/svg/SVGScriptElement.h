@@ -43,6 +43,7 @@ public:
     void setType(const String&);
 
     ScriptLoader* loader() const { return m_loader.get(); }
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
@@ -77,8 +78,8 @@ private:
 
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
 
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGScriptElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 
     String m_type;

@@ -71,6 +71,8 @@ public:
     static ChannelSelectorType stringToChannel(const String&);
 
     SVGAnimatedNumber* scale() { return m_scale.get(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
+    SVGAnimatedString* in2() { return m_in2.get(); }
 
 private:
     SVGFEDisplacementMapElement(Document&);
@@ -82,9 +84,9 @@ private:
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
     RefPtr<SVGAnimatedNumber> m_scale;
+    RefPtr<SVGAnimatedString> m_in1;
+    RefPtr<SVGAnimatedString> m_in2;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEDisplacementMapElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
-        DECLARE_ANIMATED_STRING(In2, in2)
         DECLARE_ANIMATED_ENUMERATION(XChannelSelector, xChannelSelector, ChannelSelectorType)
         DECLARE_ANIMATED_ENUMERATION(YChannelSelector, yChannelSelector, ChannelSelectorType)
     END_DECLARE_ANIMATED_PROPERTIES

@@ -84,6 +84,8 @@ public:
 
     Vector<Gradient::ColorStop> buildStops();
 
+    SVGAnimatedString* href() { return m_href.get(); }
+
 protected:
     SVGGradientElement(const QualifiedName&, Document&);
 
@@ -96,11 +98,11 @@ private:
 
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE FINAL;
 
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGradientElement)
         DECLARE_ANIMATED_ENUMERATION(SpreadMethod, spreadMethod, SVGSpreadMethodType)
         DECLARE_ANIMATED_ENUMERATION(GradientUnits, gradientUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_TRANSFORM_LIST(GradientTransform, gradientTransform)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

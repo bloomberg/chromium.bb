@@ -28,28 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedString_h
-#define SVGAnimatedString_h
-
-#include "core/svg/SVGString.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "config.h"
+#include "core/svg/SVGStringListTearOff.h"
 
 namespace WebCore {
 
-class SVGAnimatedString FINAL : public NewSVGAnimatedProperty<SVGString> {
-public:
-    static PassRefPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
-    {
-        return adoptRef(new SVGAnimatedString(contextElement, attributeName, initialValue));
-    }
+SVGStringListTearOff::SVGStringListTearOff(PassRefPtr<SVGStringList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+    : NewSVGPropertyTearOff<SVGStringList>(target, contextElement, propertyIsAnimVal, attributeName)
+{
+    ScriptWrappable::init(this);
+}
 
-protected:
-    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
-        : NewSVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
-    {
-    }
-};
-
-} // namespace WebCore
-
-#endif // SVGAnimatedString_h
+}

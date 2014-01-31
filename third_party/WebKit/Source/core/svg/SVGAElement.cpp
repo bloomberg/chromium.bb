@@ -55,19 +55,19 @@ namespace WebCore {
 using namespace HTMLNames;
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGAElement, SVGNames::targetAttr, SVGTarget, svgTarget)
-DEFINE_ANIMATED_STRING(SVGAElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGAElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(svgTarget)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(SVGNames::aTag, document)
+    , m_svgTarget(SVGAnimatedString::create(this, SVGNames::targetAttr, SVGString::create()))
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_svgTarget);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGAElement();
 }
 
@@ -104,15 +104,16 @@ void SVGAElement::parseAttribute(const QualifiedName& name, const AtomicString& 
         return;
     }
 
-    if (name == SVGNames::targetAttr) {
-        setSVGTargetBaseValue(value);
-        return;
-    }
+    SVGParsingError parseError = NoError;
 
-    if (SVGURIReference::parseAttribute(name, value))
-        return;
+    if (name == SVGNames::targetAttr)
+        m_svgTarget->setBaseValueAsString(value, parseError);
+    else if (name.matches(XLinkNames::hrefAttr))
+        m_href->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
 
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -128,7 +129,7 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
     // as none of the other properties changes the linking behaviour for our <a> element.
     if (SVGURIReference::isKnownAttribute(attrName)) {
         bool wasLink = isLink();
-        setIsLink(!hrefCurrentValue().isNull());
+        setIsLink(!m_href->currentValue()->value().isNull());
 
         if (wasLink != isLink())
             setNeedsStyleRecalc();
@@ -153,7 +154,7 @@ void SVGAElement::defaultEventHandler(Event* event)
         }
 
         if (isLinkClick(event)) {
-            String url = stripLeadingAndTrailingHTMLSpaces(hrefCurrentValue());
+            String url = stripLeadingAndTrailingHTMLSpaces(m_href->currentValue()->value());
 
             if (url[0] == '#') {
                 Element* targetElement = treeScope().getElementById(AtomicString(url.substring(1)));
@@ -167,7 +168,7 @@ void SVGAElement::defaultEventHandler(Event* event)
                     return;
             }
 
-            AtomicString target(svgTargetCurrentValue());
+            AtomicString target(m_svgTarget->currentValue()->value());
             if (target.isEmpty() && fastGetAttribute(XLinkNames::showAttr) == "new")
                 target = AtomicString("_blank", AtomicString::ConstructFromLiteral);
             event->setDefaultHandled();

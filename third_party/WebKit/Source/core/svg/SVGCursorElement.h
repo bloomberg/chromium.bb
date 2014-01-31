@@ -45,6 +45,7 @@ public:
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGCursorElement(Document&);
@@ -59,14 +60,9 @@ private:
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGCursorElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
-
-    // SVGTests
-    virtual void synchronizeRequiredFeatures() OVERRIDE { SVGTests::synchronizeRequiredFeatures(this); }
-    virtual void synchronizeRequiredExtensions() OVERRIDE { SVGTests::synchronizeRequiredExtensions(this); }
-    virtual void synchronizeSystemLanguage() OVERRIDE { SVGTests::synchronizeSystemLanguage(this); }
 
     HashSet<SVGElement*> m_clients;
 };

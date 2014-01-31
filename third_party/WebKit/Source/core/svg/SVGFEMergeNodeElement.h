@@ -30,6 +30,7 @@ namespace WebCore {
 class SVGFEMergeNodeElement FINAL : public SVGElement {
 public:
     static PassRefPtr<SVGFEMergeNodeElement> create(Document&);
+    SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:
     explicit SVGFEMergeNodeElement(Document&);
@@ -40,8 +41,8 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
+    RefPtr<SVGAnimatedString> m_in1;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEMergeNodeElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

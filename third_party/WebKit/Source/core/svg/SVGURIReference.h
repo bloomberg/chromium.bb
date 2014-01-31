@@ -32,7 +32,6 @@ class SVGURIReference {
 public:
     virtual ~SVGURIReference() { }
 
-    bool parseAttribute(const QualifiedName&, const AtomicString&);
     bool isKnownAttribute(const QualifiedName&);
     void addSupportedAttributes(HashSet<QualifiedName>&);
 
@@ -49,9 +48,6 @@ public:
         KURL url = document.completeURL(uri);
         return !equalIgnoringFragmentIdentifier(url, document.url());
     }
-
-protected:
-    virtual void setHrefBaseValue(const String&) = 0;
 };
 
 } // namespace WebCore

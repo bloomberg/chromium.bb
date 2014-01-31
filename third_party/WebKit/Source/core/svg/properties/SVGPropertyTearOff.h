@@ -27,6 +27,8 @@
 
 namespace WebCore {
 
+class SVGTransform;
+
 class SVGPropertyTearOffBase : public SVGProperty {
 public:
     virtual void setValueForMatrixIfNeeded(SVGTransform*) { }

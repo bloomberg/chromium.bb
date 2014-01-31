@@ -218,12 +218,11 @@ public:
         }
 
         this->baseValue()->setValue(value);
+        m_baseValueUpdated = true;
 
         ASSERT(this->attributeName() != nullQName());
         this->contextElement()->invalidateSVGAttributes();
         this->contextElement()->svgAttributeChanged(this->attributeName());
-
-        m_baseValueUpdated = true;
     }
 
     PrimitiveType animVal()

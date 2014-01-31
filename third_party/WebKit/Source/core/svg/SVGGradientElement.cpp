@@ -39,22 +39,22 @@ namespace WebCore {
 DEFINE_ANIMATED_ENUMERATION(SVGGradientElement, SVGNames::spreadMethodAttr, SpreadMethod, spreadMethod, SVGSpreadMethodType)
 DEFINE_ANIMATED_ENUMERATION(SVGGradientElement, SVGNames::gradientUnitsAttr, GradientUnits, gradientUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_TRANSFORM_LIST(SVGGradientElement, SVGNames::gradientTransformAttr, GradientTransform, gradientTransform)
-DEFINE_ANIMATED_STRING(SVGGradientElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGradientElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(spreadMethod)
     REGISTER_LOCAL_ANIMATED_PROPERTY(gradientUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(gradientTransform)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_spreadMethod(SVGSpreadMethodPad)
     , m_gradientUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGGradientElement();
 }
 
@@ -99,10 +99,14 @@ void SVGGradientElement::parseAttribute(const QualifiedName& name, const AtomicS
         return;
     }
 
-    if (SVGURIReference::parseAttribute(name, value))
-        return;
+    SVGParsingError parseError = NoError;
 
-    ASSERT_NOT_REACHED();
+    if (name.matches(XLinkNames::hrefAttr))
+        m_href->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
+
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)

@@ -32,6 +32,8 @@ class SVGAElement FINAL : public SVGGraphicsElement,
                           public SVGURIReference {
 public:
     static PassRefPtr<SVGAElement> create(Document&);
+    SVGAnimatedString* svgTarget() { return m_svgTarget.get(); }
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGAElement(Document&);
@@ -56,11 +58,11 @@ private:
 
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
 
+    RefPtr<SVGAnimatedString> m_svgTarget;
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAElement)
         // This declaration used to define a non-virtual "String& target() const" method, that clashes with "virtual String Element::target() const".
         // That's why it has been renamed to "svgTarget", the CodeGenerators take care of calling svgTargetAnimated() instead of targetAnimated(), see CodeGenerator.pm.
-        DECLARE_ANIMATED_STRING(SVGTarget, svgTarget)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

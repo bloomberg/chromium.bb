@@ -41,6 +41,7 @@ public:
     SVGAnimatedNumber* surfaceScale() { return m_surfaceScale.get(); }
     SVGAnimatedNumber* kernelUnitLengthX() { return m_kernelUnitLength->firstNumber(); }
     SVGAnimatedNumber* kernelUnitLengthY() { return m_kernelUnitLength->secondNumber(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
 private:
     explicit SVGFESpecularLightingElement(Document&);
 
@@ -57,8 +58,8 @@ private:
     RefPtr<SVGAnimatedNumber> m_specularExponent;
     RefPtr<SVGAnimatedNumber> m_surfaceScale;
     RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
+    RefPtr<SVGAnimatedString> m_in1;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFESpecularLightingElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

@@ -44,6 +44,7 @@ public:
     void setFormat(const AtomicString&, ExceptionState&);
 
     bool hasValidGlyphElements(Vector<AtomicString>& glyphNames) const;
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGAltGlyphElement(Document&);
@@ -51,8 +52,8 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
 
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAltGlyphElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

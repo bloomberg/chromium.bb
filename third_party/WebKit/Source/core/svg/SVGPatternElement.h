@@ -55,6 +55,7 @@ public:
     SVGAnimatedLength* height() const { return m_height.get(); }
     SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGPatternElement(Document&);
@@ -77,17 +78,12 @@ private:
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedRect> m_viewBox;
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPatternElement)
         DECLARE_ANIMATED_ENUMERATION(PatternUnits, patternUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_ENUMERATION(PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_TRANSFORM_LIST(PatternTransform, patternTransform)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
-
-    // SVGTests
-    virtual void synchronizeRequiredFeatures() OVERRIDE { SVGTests::synchronizeRequiredFeatures(this); }
-    virtual void synchronizeRequiredExtensions() OVERRIDE { SVGTests::synchronizeRequiredExtensions(this); }
-    virtual void synchronizeSystemLanguage() OVERRIDE { SVGTests::synchronizeSystemLanguage(this); }
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGPatternElement, hasTagName(SVGNames::patternTag));

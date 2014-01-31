@@ -141,11 +141,11 @@ static inline AtomicString targetReferenceFromResource(SVGElement* element)
 {
     String target;
     if (element->hasTagName(SVGNames::patternTag))
-        target = toSVGPatternElement(element)->hrefCurrentValue();
+        target = toSVGPatternElement(element)->href()->currentValue()->value();
     else if (element->hasTagName(SVGNames::linearGradientTag) || element->hasTagName(SVGNames::radialGradientTag))
-        target = toSVGGradientElement(element)->hrefCurrentValue();
+        target = toSVGGradientElement(element)->href()->currentValue()->value();
     else if (element->hasTagName(SVGNames::filterTag))
-        target = toSVGFilterElement(element)->hrefCurrentValue();
+        target = toSVGFilterElement(element)->href()->currentValue()->value();
     else
         ASSERT_NOT_REACHED();
 

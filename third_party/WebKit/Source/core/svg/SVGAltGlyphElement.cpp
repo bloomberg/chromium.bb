@@ -36,17 +36,17 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGAltGlyphElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGAltGlyphElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTextPositioningElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
     : SVGTextPositioningElement(SVGNames::altGlyphTag, document)
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGAltGlyphElement();
 }
 

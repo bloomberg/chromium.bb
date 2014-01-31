@@ -31,10 +31,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFEDiffuseLightingElement, SVGNames::inAttr, In1, in1)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEDiffuseLightingElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -43,12 +41,14 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& docume
     , m_diffuseConstant(SVGAnimatedNumber::create(this, SVGNames::diffuseConstantAttr, SVGNumber::create(1)))
     , m_surfaceScale(SVGAnimatedNumber::create(this, SVGNames::surfaceScaleAttr, SVGNumber::create(1)))
     , m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::kernelUnitLengthAttr))
+    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_diffuseConstant);
     addToPropertyMap(m_surfaceScale);
     addToPropertyMap(m_kernelUnitLength);
+    addToPropertyMap(m_in1);
     registerAnimatedPropertiesForSVGFEDiffuseLightingElement();
 }
 
@@ -77,14 +77,11 @@ void SVGFEDiffuseLightingElement::parseAttribute(const QualifiedName& name, cons
         return;
     }
 
-    if (name == SVGNames::inAttr) {
-        setIn1BaseValue(value);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::diffuseConstantAttr)
+    if (name == SVGNames::inAttr)
+        m_in1->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::diffuseConstantAttr)
         m_diffuseConstant->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::surfaceScaleAttr)
         m_surfaceScale->setBaseValueAsString(value, parseError);
@@ -177,7 +174,7 @@ void SVGFEDiffuseLightingElement::lightElementAttributeChanged(const SVGFELightE
 
 PassRefPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
         return 0;

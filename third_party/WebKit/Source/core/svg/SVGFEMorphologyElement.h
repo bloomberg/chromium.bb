@@ -64,6 +64,7 @@ public:
 
     SVGAnimatedNumber* radiusX() { return m_radius->firstNumber(); }
     SVGAnimatedNumber* radiusY() { return m_radius->secondNumber(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:
     explicit SVGFEMorphologyElement(Document&);
@@ -75,8 +76,8 @@ private:
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
     RefPtr<SVGAnimatedNumberOptionalNumber> m_radius;
+    RefPtr<SVGAnimatedString> m_in1;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEMorphologyElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
         DECLARE_ANIMATED_ENUMERATION(SVGOperator, svgOperator, MorphologyOperatorType)
     END_DECLARE_ANIMATED_PROPERTIES
 };

@@ -42,11 +42,11 @@ namespace WebCore {
 // Animated property definitions
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGAnimationElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document& document)
     : SVGSMILElement(tagName, document)
+    , SVGTests(this)
     , m_fromPropertyValueType(RegularPropertyValue)
     , m_toPropertyValueType(RegularPropertyValue)
     , m_animationValid(false)

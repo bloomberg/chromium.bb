@@ -37,14 +37,12 @@ DEFINE_ANIMATED_ENUMERATION(SVGFilterElement, SVGNames::filterUnitsAttr, FilterU
 DEFINE_ANIMATED_ENUMERATION(SVGFilterElement, SVGNames::primitiveUnitsAttr, PrimitiveUnits, primitiveUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResXIdentifier(), FilterResX, filterResX)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResYIdentifier(), FilterResY, filterResY)
-DEFINE_ANIMATED_STRING(SVGFilterElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(primitiveUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterResX)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterResY)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFilterElement::SVGFilterElement(Document& document)
@@ -53,6 +51,7 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_filterUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_primitiveUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
@@ -69,6 +68,7 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGFilterElement();
 }
 
@@ -143,7 +143,8 @@ void SVGFilterElement::parseAttribute(const QualifiedName& name, const AtomicStr
             setFilterResXBaseValue(x);
             setFilterResYBaseValue(y);
         }
-    } else if (SVGURIReference::parseAttribute(name, value)) {
+    } else if (name.matches(XLinkNames::hrefAttr)) {
+        m_href->setBaseValueAsString(value, parseError);
     } else
         ASSERT_NOT_REACHED();
 

@@ -55,7 +55,6 @@ private:
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGForeignObjectElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

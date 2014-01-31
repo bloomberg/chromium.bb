@@ -29,14 +29,10 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFEDisplacementMapElement, SVGNames::inAttr, In1, in1)
-DEFINE_ANIMATED_STRING(SVGFEDisplacementMapElement, SVGNames::in2Attr, In2, in2)
 DEFINE_ANIMATED_ENUMERATION(SVGFEDisplacementMapElement, SVGNames::xChannelSelectorAttr, XChannelSelector, xChannelSelector, ChannelSelectorType)
 DEFINE_ANIMATED_ENUMERATION(SVGFEDisplacementMapElement, SVGNames::yChannelSelectorAttr, YChannelSelector, yChannelSelector, ChannelSelectorType)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEDisplacementMapElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in2)
     REGISTER_LOCAL_ANIMATED_PROPERTY(xChannelSelector)
     REGISTER_LOCAL_ANIMATED_PROPERTY(yChannelSelector)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
@@ -45,12 +41,16 @@ END_REGISTER_ANIMATED_PROPERTIES
 inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDisplacementMapTag, document)
     , m_scale(SVGAnimatedNumber::create(this, SVGNames::scaleAttr, SVGNumber::create(0)))
+    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
+    , m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr, SVGString::create()))
     , m_xChannelSelector(CHANNEL_A)
     , m_yChannelSelector(CHANNEL_A)
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_scale);
+    addToPropertyMap(m_in1);
+    addToPropertyMap(m_in2);
     registerAnimatedPropertiesForSVGFEDisplacementMapElement();
 }
 
@@ -93,19 +93,13 @@ void SVGFEDisplacementMapElement::parseAttribute(const QualifiedName& name, cons
         return;
     }
 
-    if (name == SVGNames::inAttr) {
-        setIn1BaseValue(value);
-        return;
-    }
-
-    if (name == SVGNames::in2Attr) {
-        setIn2BaseValue(value);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::scaleAttr)
+    if (name == SVGNames::inAttr)
+        m_in1->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::in2Attr)
+        m_in2->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::scaleAttr)
         m_scale->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
@@ -151,8 +145,8 @@ void SVGFEDisplacementMapElement::svgAttributeChanged(const QualifiedName& attrN
 
 PassRefPtr<FilterEffect> SVGFEDisplacementMapElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
-    FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(in2CurrentValue()));
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
+    FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(m_in2->currentValue()->value()));
 
     if (!input1 || !input2)
         return 0;

@@ -29,67 +29,16 @@
 
 namespace WebCore {
 
-// Define custom non-animated property 'requiredFeatures'.
-const SVGPropertyInfo* SVGTests::requiredFeaturesPropertyInfo()
+SVGTests::SVGTests(SVGElement* contextElement)
+    : m_requiredFeatures(SVGStaticStringList::create(contextElement, SVGNames::requiredFeaturesAttr))
+    , m_requiredExtensions(SVGStaticStringList::create(contextElement, SVGNames::requiredExtensionsAttr))
+    , m_systemLanguage(SVGStaticStringList::create(contextElement, SVGNames::systemLanguageAttr))
 {
-    static const SVGPropertyInfo* s_propertyInfo = 0;
-    if (!s_propertyInfo) {
-        s_propertyInfo = new SVGPropertyInfo(AnimatedUnknown,
-                                             PropertyIsReadWrite,
-                                             SVGNames::requiredFeaturesAttr,
-                                             SVGNames::requiredFeaturesAttr.localName(),
-                                             &SVGElement::synchronizeRequiredFeatures,
-                                             0);
-    }
-    return s_propertyInfo;
-}
+    ASSERT(contextElement);
 
-// Define custom non-animated property 'requiredExtensions'.
-const SVGPropertyInfo* SVGTests::requiredExtensionsPropertyInfo()
-{
-    static const SVGPropertyInfo* s_propertyInfo = 0;
-    if (!s_propertyInfo) {
-        s_propertyInfo = new SVGPropertyInfo(AnimatedUnknown,
-                                             PropertyIsReadWrite,
-                                             SVGNames::requiredExtensionsAttr,
-                                             SVGNames::requiredExtensionsAttr.localName(),
-                                             &SVGElement::synchronizeRequiredExtensions,
-                                             0);
-    }
-    return s_propertyInfo;
-}
-
-// Define custom non-animated property 'systemLanguage'.
-const SVGPropertyInfo* SVGTests::systemLanguagePropertyInfo()
-{
-    static const SVGPropertyInfo* s_propertyInfo = 0;
-    if (!s_propertyInfo) {
-        s_propertyInfo = new SVGPropertyInfo(AnimatedUnknown,
-                                             PropertyIsReadWrite,
-                                             SVGNames::systemLanguageAttr,
-                                             SVGNames::systemLanguageAttr.localName(),
-                                             &SVGElement::synchronizeSystemLanguage,
-                                             0);
-    }
-    return s_propertyInfo;
-}
-
-SVGTests::SVGTests()
-    : m_requiredFeatures(SVGNames::requiredFeaturesAttr)
-    , m_requiredExtensions(SVGNames::requiredExtensionsAttr)
-    , m_systemLanguage(SVGNames::systemLanguageAttr)
-{
-}
-
-SVGAttributeToPropertyMap& SVGTests::attributeToPropertyMap()
-{
-    DEFINE_STATIC_LOCAL(SVGAttributeToPropertyMap, map, ());
-    if (!map.isEmpty())
-        return map;
-    map.addProperty(requiredFeaturesPropertyInfo());
-    map.addProperty(requiredExtensionsPropertyInfo());
-    map.addProperty(systemLanguagePropertyInfo());
-    return map;
+    contextElement->addToPropertyMap(m_requiredFeatures);
+    contextElement->addToPropertyMap(m_requiredExtensions);
+    contextElement->addToPropertyMap(m_systemLanguage);
 }
 
 bool SVGTests::hasExtension(const String&) const
@@ -100,21 +49,34 @@ bool SVGTests::hasExtension(const String&) const
 
 bool SVGTests::isValid() const
 {
-    unsigned featuresSize = m_requiredFeatures.value.size();
-    for (unsigned i = 0; i < featuresSize; ++i) {
-        String value = m_requiredFeatures.value.at(i);
-        if (value.isEmpty() || !DOMImplementation::hasFeature(value, String()))
+    if (m_requiredFeatures->isSpecified()) {
+        const Vector<String>& requiredFeatures = m_requiredFeatures->value()->values();
+        Vector<String>::const_iterator it = requiredFeatures.begin();
+        Vector<String>::const_iterator itEnd = requiredFeatures.end();
+        for (; it != itEnd; ++it) {
+            if (it->isEmpty() || !DOMImplementation::hasFeature(*it, String()))
+                return false;
+        }
+    }
+
+    if (m_systemLanguage->isSpecified()) {
+        bool matchFound = false;
+
+        const Vector<String>& systemLanguage = m_systemLanguage->value()->values();
+        Vector<String>::const_iterator it = systemLanguage.begin();
+        Vector<String>::const_iterator itEnd = systemLanguage.end();
+        for (; it != itEnd; ++it) {
+            if (*it == defaultLanguage().string().substring(0, 2)) {
+                matchFound = true;
+                break;
+            }
+        }
+
+        if (!matchFound)
             return false;
     }
 
-    unsigned systemLanguageSize = m_systemLanguage.value.size();
-    for (unsigned i = 0; i < systemLanguageSize; ++i) {
-        String value = m_systemLanguage.value.at(i);
-        if (value != defaultLanguage().string().substring(0, 2))
-            return false;
-    }
-
-    if (!m_requiredExtensions.value.isEmpty())
+    if (!m_requiredExtensions->value()->values().isEmpty())
         return false;
 
     return true;
@@ -122,20 +84,22 @@ bool SVGTests::isValid() const
 
 bool SVGTests::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == SVGNames::requiredFeaturesAttr) {
-        m_requiredFeatures.value.reset(value);
-        return true;
-    }
-    if (name == SVGNames::requiredExtensionsAttr) {
-        m_requiredExtensions.value.reset(value);
-        return true;
-    }
-    if (name == SVGNames::systemLanguageAttr) {
-        m_systemLanguage.value.reset(value);
-        return true;
-    }
+    // FIXME: Should handle exceptions here.
+    // This is safe as of now, as the current impl of SVGStringList::setValueAsString never fails.
+    SVGParsingError parseError = NoError;
 
-    return false;
+    if (name == SVGNames::requiredFeaturesAttr)
+        m_requiredFeatures->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::requiredExtensionsAttr)
+        m_requiredExtensions->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::systemLanguageAttr)
+        m_systemLanguage->setBaseValueAsString(value, parseError);
+    else
+        return false;
+
+    ASSERT(parseError == NoError);
+
+    return true;
 }
 
 bool SVGTests::isKnownAttribute(const QualifiedName& attrName)
@@ -150,51 +114,6 @@ void SVGTests::addSupportedAttributes(HashSet<QualifiedName>& supportedAttribute
     supportedAttributes.add(SVGNames::requiredFeaturesAttr);
     supportedAttributes.add(SVGNames::requiredExtensionsAttr);
     supportedAttributes.add(SVGNames::systemLanguageAttr);
-}
-
-void SVGTests::synchronizeRequiredFeatures(SVGElement* contextElement)
-{
-    ASSERT(contextElement);
-    if (!m_requiredFeatures.shouldSynchronize)
-        return;
-    AtomicString value(m_requiredFeatures.value.valueAsString());
-    m_requiredFeatures.synchronize(contextElement, requiredFeaturesPropertyInfo()->attributeName, value);
-}
-
-void SVGTests::synchronizeRequiredExtensions(SVGElement* contextElement)
-{
-    ASSERT(contextElement);
-    if (!m_requiredExtensions.shouldSynchronize)
-        return;
-    AtomicString value(m_requiredExtensions.value.valueAsString());
-    m_requiredExtensions.synchronize(contextElement, requiredExtensionsPropertyInfo()->attributeName, value);
-}
-
-void SVGTests::synchronizeSystemLanguage(SVGElement* contextElement)
-{
-    ASSERT(contextElement);
-    if (!m_systemLanguage.shouldSynchronize)
-        return;
-    AtomicString value(m_systemLanguage.value.valueAsString());
-    m_systemLanguage.synchronize(contextElement, systemLanguagePropertyInfo()->attributeName, value);
-}
-
-SVGStringList& SVGTests::requiredFeatures()
-{
-    m_requiredFeatures.shouldSynchronize = true;
-    return m_requiredFeatures.value;
-}
-
-SVGStringList& SVGTests::requiredExtensions()
-{
-    m_requiredExtensions.shouldSynchronize = true;
-    return m_requiredExtensions.value;
-}
-
-SVGStringList& SVGTests::systemLanguage()
-{
-    m_systemLanguage.shouldSynchronize = true;
-    return m_systemLanguage.value;
 }
 
 }

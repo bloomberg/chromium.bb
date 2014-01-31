@@ -49,9 +49,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedPath:
         delete m_data.path;
         break;
-    case AnimatedString:
-        delete m_data.string;
-        break;
     case AnimatedTransformList:
         delete m_data.transformList;
         break;
@@ -66,6 +63,8 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedPoints:
     case AnimatedPreserveAspectRatio:
     case AnimatedRect:
+    case AnimatedString:
+    case AnimatedStringList:
         // handled by RefPtr
         break;
 
@@ -120,14 +119,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPath(PassOwnPtr<SVGPathByteSt
     return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createString(String* string)
-{
-    ASSERT(string);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedString));
-    animatedType->m_data.string = string;
-    return animatedType.release();
-}
-
 PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createTransformList(SVGTransformList* transformList)
 {
     ASSERT(transformList);
@@ -147,10 +138,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createNewProperty(PassRefPtr<NewSVG
 String SVGAnimatedType::valueAsString()
 {
     switch (m_type) {
-    case AnimatedString:
-        ASSERT(m_data.string);
-        return *m_data.string;
-
     // Below properties have migrated to new property implementation.
     case AnimatedColor:
     case AnimatedNumber:
@@ -161,6 +148,8 @@ String SVGAnimatedType::valueAsString()
     case AnimatedPoints:
     case AnimatedPreserveAspectRatio:
     case AnimatedRect:
+    case AnimatedString:
+    case AnimatedStringList:
         return m_newProperty->valueAsString();
 
     // These types don't appear in the table in SVGElement::cssPropertyToTypeMap() and thus don't need valueAsString() support.
@@ -184,11 +173,6 @@ String SVGAnimatedType::valueAsString()
 bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const String& value)
 {
     switch (m_type) {
-    case AnimatedString:
-        ASSERT(m_data.string);
-        *m_data.string = value;
-        break;
-
     // Below properties have migrated to new property implementation.
     case AnimatedColor:
     case AnimatedNumber:
@@ -199,6 +183,8 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     case AnimatedPoints:
     case AnimatedPreserveAspectRatio:
     case AnimatedRect:
+    case AnimatedString:
+    case AnimatedStringList:
         // Always use createForAnimation call path for these implementations.
         return false;
 

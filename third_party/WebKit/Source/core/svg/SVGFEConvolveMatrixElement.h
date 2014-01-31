@@ -77,6 +77,7 @@ public:
     SVGAnimatedNumber* kernelUnitLengthX() { return m_kernelUnitLength->firstNumber(); }
     SVGAnimatedNumber* kernelUnitLengthY() { return m_kernelUnitLength->secondNumber(); }
     SVGAnimatedNumberList* kernelMatrix() { return m_kernelMatrix.get(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:
     explicit SVGFEConvolveMatrixElement(Document&);
@@ -95,8 +96,8 @@ private:
     RefPtr<SVGAnimatedNumber> m_bias;
     RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
     RefPtr<SVGAnimatedNumberList> m_kernelMatrix;
+    RefPtr<SVGAnimatedString> m_in1;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
         DECLARE_ANIMATED_INTEGER(OrderX, orderX)
         DECLARE_ANIMATED_INTEGER(OrderY, orderY)
         DECLARE_ANIMATED_INTEGER(TargetX, targetX)

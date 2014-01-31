@@ -33,6 +33,7 @@ public:
 
     SVGAnimatedNumber* dx() { return m_dx.get(); }
     SVGAnimatedNumber* dy() { return m_dy.get(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
 private:
     explicit SVGFEOffsetElement(Document&);
 
@@ -43,8 +44,8 @@ private:
 
     RefPtr<SVGAnimatedNumber> m_dx;
     RefPtr<SVGAnimatedNumber> m_dy;
+    RefPtr<SVGAnimatedString> m_in1;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEOffsetElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

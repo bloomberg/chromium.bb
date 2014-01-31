@@ -35,25 +35,24 @@ namespace WebCore {
 DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternUnitsAttr, PatternUnits, patternUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternContentUnitsAttr, PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_TRANSFORM_LIST(SVGPatternElement, SVGNames::patternTransformAttr, PatternTransform, patternTransform)
-DEFINE_ANIMATED_STRING(SVGPatternElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPatternElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternContentUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternTransform)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGPatternElement::SVGPatternElement(Document& document)
     : SVGElement(SVGNames::patternTag, document)
+    , SVGTests(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
@@ -65,6 +64,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_height);
     addToPropertyMap(m_viewBox);
     addToPropertyMap(m_preserveAspectRatio);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGPatternElement();
 }
 
@@ -121,8 +121,9 @@ void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicSt
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (SVGURIReference::parseAttribute(name, value)
-             || SVGTests::parseAttribute(name, value)
+    else if (name.matches(XLinkNames::hrefAttr))
+        m_href->setBaseValueAsString(value, parseError);
+    else if (SVGTests::parseAttribute(name, value)
              || SVGFitToViewBox::parseAttribute(this, name, value)) {
     } else
         ASSERT_NOT_REACHED();
@@ -212,7 +213,7 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
         processedPatterns.add(current);
 
         // Respect xlink:href, take attributes from referenced element
-        Node* refNode = SVGURIReference::targetElementFromIRIString(current->hrefCurrentValue(), document());
+        Node* refNode = SVGURIReference::targetElementFromIRIString(current->m_href->currentValue()->value(), document());
         if (refNode && refNode->hasTagName(SVGNames::patternTag)) {
             current = toSVGPatternElement(const_cast<const Node*>(refNode));
 

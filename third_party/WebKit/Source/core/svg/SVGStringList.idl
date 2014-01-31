@@ -25,6 +25,8 @@
 
 [
     StrictTypeChecking,
+    SetWrapperReferenceTo(SVGElement contextElement),
+    ImplementedAs=SVGStringListTearOff
 ] interface SVGStringList {
     readonly attribute unsigned long numberOfItems;
 

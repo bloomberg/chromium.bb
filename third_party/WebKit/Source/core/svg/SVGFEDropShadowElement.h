@@ -37,6 +37,7 @@ public:
     SVGAnimatedNumber* dy() { return m_dy.get(); }
     SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
     SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:
     explicit SVGFEDropShadowElement(Document&);
@@ -52,8 +53,8 @@ private:
     RefPtr<SVGAnimatedNumber> m_dx;
     RefPtr<SVGAnimatedNumber> m_dy;
     RefPtr<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
+    RefPtr<SVGAnimatedString> m_in1;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEDropShadowElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

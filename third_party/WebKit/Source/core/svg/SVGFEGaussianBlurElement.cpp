@@ -31,20 +31,20 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFEGaussianBlurElement, SVGNames::inAttr, In1, in1)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEGaussianBlurElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feGaussianBlurTag, document)
     , m_stdDeviation(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::stdDeviationAttr, 0, 0))
+    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_stdDeviation);
+    addToPropertyMap(m_in1);
     registerAnimatedPropertiesForSVGFEGaussianBlurElement();
 }
 
@@ -77,14 +77,11 @@ void SVGFEGaussianBlurElement::parseAttribute(const QualifiedName& name, const A
         return;
     }
 
-    if (name == SVGNames::inAttr) {
-        setIn1BaseValue(value);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::stdDeviationAttr)
+    if (name == SVGNames::inAttr)
+        m_in1->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::stdDeviationAttr)
         m_stdDeviation->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
@@ -111,7 +108,7 @@ void SVGFEGaussianBlurElement::svgAttributeChanged(const QualifiedName& attrName
 
 PassRefPtr<FilterEffect> SVGFEGaussianBlurElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
         return 0;

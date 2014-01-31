@@ -32,10 +32,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFilterPrimitiveStandardAttributes, SVGNames::resultAttr, Result, result)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(result)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -45,6 +43,7 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(const
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
+    , m_result(SVGAnimatedString::create(this, SVGNames::resultAttr, SVGString::create()))
 {
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "0%" were specified.
     m_x->setDefaultValueAsString("0%");
@@ -58,6 +57,7 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(const
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
+    addToPropertyMap(m_result);
     registerAnimatedPropertiesForSVGFilterPrimitiveStandardAttributes();
 }
 
@@ -89,7 +89,7 @@ void SVGFilterPrimitiveStandardAttributes::parseAttribute(const QualifiedName& n
     else if (name == SVGNames::heightAttr)
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::resultAttr)
-        setResultBaseValue(value);
+        m_result->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
 

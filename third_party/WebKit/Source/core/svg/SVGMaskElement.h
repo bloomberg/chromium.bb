@@ -63,11 +63,6 @@ private:
         DECLARE_ANIMATED_ENUMERATION(MaskUnits, maskUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_ENUMERATION(MaskContentUnits, maskContentUnits, SVGUnitTypes::SVGUnitType)
     END_DECLARE_ANIMATED_PROPERTIES
-
-    // SVGTests
-    virtual void synchronizeRequiredFeatures() OVERRIDE { SVGTests::synchronizeRequiredFeatures(this); }
-    virtual void synchronizeRequiredExtensions() OVERRIDE { SVGTests::synchronizeRequiredExtensions(this); }
-    virtual void synchronizeSystemLanguage() OVERRIDE { SVGTests::synchronizeSystemLanguage(this); }
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGMaskElement, hasTagName(SVGNames::maskTag));

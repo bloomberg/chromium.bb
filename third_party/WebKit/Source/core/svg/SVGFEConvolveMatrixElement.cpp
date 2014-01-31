@@ -33,7 +33,6 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFEConvolveMatrixElement, SVGNames::inAttr, In1, in1)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFEConvolveMatrixElement, SVGNames::orderAttr, orderXIdentifier(), OrderX, orderX)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFEConvolveMatrixElement, SVGNames::orderAttr, orderYIdentifier(), OrderY, orderY)
 DEFINE_ANIMATED_INTEGER(SVGFEConvolveMatrixElement, SVGNames::targetXAttr, TargetX, targetX)
@@ -41,7 +40,6 @@ DEFINE_ANIMATED_INTEGER(SVGFEConvolveMatrixElement, SVGNames::targetYAttr, Targe
 DEFINE_ANIMATED_ENUMERATION(SVGFEConvolveMatrixElement, SVGNames::edgeModeAttr, EdgeMode, edgeMode, EdgeModeType)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orderX)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orderY)
     REGISTER_LOCAL_ANIMATED_PROPERTY(targetX)
@@ -57,6 +55,7 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     , m_bias(SVGAnimatedNumber::create(this, SVGNames::biasAttr, SVGNumber::create()))
     , m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::kernelUnitLengthAttr))
     , m_kernelMatrix(SVGAnimatedNumberList::create(this, SVGNames::kernelMatrixAttr, SVGNumberList::create()))
+    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
     , m_edgeMode(EDGEMODE_DUPLICATE)
 {
     ScriptWrappable::init(this);
@@ -66,6 +65,7 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     addToPropertyMap(m_bias);
     addToPropertyMap(m_kernelUnitLength);
     addToPropertyMap(m_kernelMatrix);
+    addToPropertyMap(m_in1);
     registerAnimatedPropertiesForSVGFEConvolveMatrixElement();
 }
 
@@ -111,11 +111,6 @@ void SVGFEConvolveMatrixElement::parseAttribute(const QualifiedName& name, const
         return;
     }
 
-    if (name == SVGNames::inAttr) {
-        setIn1BaseValue(value);
-        return;
-    }
-
     if (name == SVGNames::orderAttr) {
         float x, y;
         if (parseNumberOptionalNumber(value, x, y) && x >= 1 && y >= 1) {
@@ -152,7 +147,9 @@ void SVGFEConvolveMatrixElement::parseAttribute(const QualifiedName& name, const
 
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::divisorAttr)
+    if (name == SVGNames::inAttr)
+        m_in1->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::divisorAttr)
         m_divisor->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::biasAttr)
         m_bias->setBaseValueAsString(value, parseError);
@@ -236,7 +233,7 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
 
 PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
         return 0;

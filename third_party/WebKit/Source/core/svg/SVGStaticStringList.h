@@ -28,28 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedString_h
-#define SVGAnimatedString_h
+#ifndef SVGStaticStringList_h
+#define SVGStaticStringList_h
 
-#include "core/svg/SVGString.h"
+#include "core/svg/SVGStringListTearOff.h"
 #include "core/svg/properties/NewSVGAnimatedProperty.h"
 
 namespace WebCore {
 
-class SVGAnimatedString FINAL : public NewSVGAnimatedProperty<SVGString> {
+class SVGElement;
+
+// SVGStringList property implementations for SVGTests properties.
+// Inherits SVGAnimatedPropertyBase to enable XML attribute synchronization, but this is never animated.
+class SVGStaticStringList FINAL : public NewSVGAnimatedPropertyBase {
 public:
-    static PassRefPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
+    static PassRefPtr<SVGStaticStringList> create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
-        return adoptRef(new SVGAnimatedString(contextElement, attributeName, initialValue));
+        return adoptRef(new SVGStaticStringList(contextElement, attributeName));
     }
 
-protected:
-    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
-        : NewSVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
-    {
-    }
+    virtual ~SVGStaticStringList();
+
+    // NewSVGAnimatedPropertyBase:
+    virtual NewSVGPropertyBase* currentValueBase() OVERRIDE;
+    virtual void animationStarted() OVERRIDE;
+    virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue() OVERRIDE;
+    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) OVERRIDE;
+    virtual void animationEnded() OVERRIDE;
+    virtual void animValWillChange() OVERRIDE;
+    virtual void animValDidChange() OVERRIDE;
+    virtual bool needsSynchronizeAttribute() OVERRIDE;
+
+    void setBaseValueAsString(const String& value, SVGParsingError& parseError);
+
+    SVGStringList* value() { return m_value.get(); }
+    SVGStringListTearOff* tearOff();
+
+private:
+    SVGStaticStringList(SVGElement*, const QualifiedName&);
+
+    RefPtr<SVGStringList> m_value;
+    RefPtr<SVGStringListTearOff> m_tearOff;
 };
 
-} // namespace WebCore
+}
 
-#endif // SVGAnimatedString_h
+#endif

@@ -31,10 +31,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGForeignObjectElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGForeignObjectElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -51,7 +49,6 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-
     registerAnimatedPropertiesForSVGForeignObjectElement();
 }
 

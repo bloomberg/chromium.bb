@@ -30,16 +30,16 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGMPathElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMPathElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMPathElement::SVGMPathElement(Document& document)
     : SVGElement(SVGNames::mpathTag, document)
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGMPathElement();
 }
 
@@ -60,7 +60,7 @@ void SVGMPathElement::buildPendingResource()
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(m_href->currentValue()->value(), document(), &id);
     if (!target) {
         // Do not register as pending if we are already pending this resource.
         if (document().accessSVGExtensions()->isElementPendingResource(this, id))
@@ -111,15 +111,17 @@ bool SVGMPathElement::isSupportedAttribute(const QualifiedName& attrName)
 
 void SVGMPathElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
+    SVGParsingError parseError = NoError;
+
     if (!isSupportedAttribute(name)) {
         SVGElement::parseAttribute(name, value);
-        return;
+    } else if (name.matches(XLinkNames::hrefAttr)) {
+        m_href->setBaseValueAsString(value, parseError);
+    } else {
+        ASSERT_NOT_REACHED();
     }
 
-    if (SVGURIReference::parseAttribute(name, value))
-        return;
-
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -141,7 +143,7 @@ void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
 SVGPathElement* SVGMPathElement::pathElement()
 {
-    Element* target = targetElementFromIRIString(hrefCurrentValue(), document());
+    Element* target = targetElementFromIRIString(m_href->currentValue()->value(), document());
     if (target && target->hasTagName(SVGNames::pathTag))
         return toSVGPathElement(target);
     return 0;

@@ -28,28 +28,79 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedString_h
-#define SVGAnimatedString_h
-
-#include "core/svg/SVGString.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "config.h"
+#include "core/svg/SVGStaticStringList.h"
 
 namespace WebCore {
 
-class SVGAnimatedString FINAL : public NewSVGAnimatedProperty<SVGString> {
-public:
-    static PassRefPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
-    {
-        return adoptRef(new SVGAnimatedString(contextElement, attributeName, initialValue));
-    }
+SVGStaticStringList::SVGStaticStringList(SVGElement* contextElement, const QualifiedName& attributeName)
+    : NewSVGAnimatedPropertyBase(AnimatedStringList, contextElement, attributeName)
+    , m_value(SVGStringList::create())
+{
+    ASSERT(contextElement);
+}
 
-protected:
-    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
-        : NewSVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
-    {
-    }
-};
+SVGStaticStringList::~SVGStaticStringList()
+{
+}
 
-} // namespace WebCore
+NewSVGPropertyBase* SVGStaticStringList::currentValueBase()
+{
+    return m_value.get();
+}
 
-#endif // SVGAnimatedString_h
+void SVGStaticStringList::animationStarted()
+{
+    ASSERT_NOT_REACHED();
+}
+
+PassRefPtr<NewSVGPropertyBase> SVGStaticStringList::createAnimatedValue()
+{
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+void SVGStaticStringList::setAnimatedValue(PassRefPtr<NewSVGPropertyBase>)
+{
+    ASSERT_NOT_REACHED();
+}
+
+void SVGStaticStringList::animationEnded()
+{
+    ASSERT_NOT_REACHED();
+}
+
+void SVGStaticStringList::animValWillChange()
+{
+    ASSERT_NOT_REACHED();
+}
+
+void SVGStaticStringList::animValDidChange()
+{
+    ASSERT_NOT_REACHED();
+}
+
+bool SVGStaticStringList::needsSynchronizeAttribute()
+{
+    return m_tearOff;
+}
+
+SVGStringListTearOff* SVGStaticStringList::tearOff()
+{
+    if (!m_tearOff)
+        m_tearOff = SVGStringListTearOff::create(m_value, contextElement(), PropertyIsNotAnimVal, attributeName());
+
+    return m_tearOff.get();
+}
+
+void SVGStaticStringList::setBaseValueAsString(const String& value, SVGParsingError& parseError)
+{
+    TrackExceptionState es;
+
+    m_value->setValueAsString(value, es);
+
+    if (es.hadException())
+        parseError = ParsingAttributeFailedError;
+}
+
+}

@@ -47,6 +47,7 @@ public:
     SVGAnimatedLength* y() const { return m_y.get(); }
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
+    SVGAnimatedString* result() { return m_result.get(); }
 
 protected:
     SVGFilterPrimitiveStandardAttributes(const QualifiedName&, Document&);
@@ -75,8 +76,8 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
+    RefPtr<SVGAnimatedString> m_result;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
-        DECLARE_ANIMATED_STRING(Result, result)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

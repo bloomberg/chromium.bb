@@ -30,11 +30,9 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFEColorMatrixElement, SVGNames::inAttr, In1, in1)
 DEFINE_ANIMATED_ENUMERATION(SVGFEColorMatrixElement, SVGNames::typeAttr, Type, type, ColorMatrixType)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEColorMatrixElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
     REGISTER_LOCAL_ANIMATED_PROPERTY(type)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
@@ -42,11 +40,13 @@ END_REGISTER_ANIMATED_PROPERTIES
 inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feColorMatrixTag, document)
     , m_values(SVGAnimatedNumberList::create(this, SVGNames::valuesAttr, SVGNumberList::create()))
+    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
     , m_type(FECOLORMATRIX_TYPE_MATRIX)
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_values);
+    addToPropertyMap(m_in1);
     registerAnimatedPropertiesForSVGFEColorMatrixElement();
 }
 
@@ -80,14 +80,11 @@ void SVGFEColorMatrixElement::parseAttribute(const QualifiedName& name, const At
         return;
     }
 
-    if (name == SVGNames::inAttr) {
-        setIn1BaseValue(value);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::valuesAttr)
+    if (name == SVGNames::inAttr)
+        m_in1->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::valuesAttr)
         m_values->setBaseValueAsString(value, parseError);
     else
         ASSERT_NOT_REACHED();
@@ -131,7 +128,7 @@ void SVGFEColorMatrixElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
         return 0;

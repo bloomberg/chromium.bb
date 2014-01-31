@@ -54,11 +54,12 @@ public:
     SVGAnimatedLength* height() const { return m_height.get(); }
 
     virtual void buildPendingResource() OVERRIDE;
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
-    virtual bool isStructurallyExternal() const OVERRIDE { return !hrefCurrentValue().isNull() && isExternalURIReference(hrefCurrentValue(), document()); }
+    virtual bool isStructurallyExternal() const OVERRIDE { return !m_href->currentValue()->value().isNull() && isExternalURIReference(m_href->currentValue()->value(), document()); }
 
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
@@ -103,8 +104,8 @@ private:
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGUseElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 
     bool resourceIsStillLoading();

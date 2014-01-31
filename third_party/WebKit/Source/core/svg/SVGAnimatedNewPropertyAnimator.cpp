@@ -38,6 +38,7 @@
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumber.h"
 #include "core/svg/SVGPointList.h"
+#include "core/svg/SVGString.h"
 
 namespace WebCore {
 
@@ -90,6 +91,11 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
         property->setValueAsString(value, IGNORE_EXCEPTION);
         return property.release();
     }
+    case AnimatedString: {
+        RefPtr<SVGString> property = SVGString::create();
+        property->setValueAsString(value, IGNORE_EXCEPTION);
+        return property.release();
+    }
 
     // These types don't appear in the table in SVGElement::cssPropertyToTypeMap() and thus don't need support.
     case AnimatedBoolean:
@@ -107,7 +113,7 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     case AnimatedIntegerOptionalInteger:
     case AnimatedPath:
     case AnimatedPreserveAspectRatio:
-    case AnimatedString:
+    case AnimatedStringList:
     case AnimatedTransformList:
         ASSERT_NOT_REACHED();
 

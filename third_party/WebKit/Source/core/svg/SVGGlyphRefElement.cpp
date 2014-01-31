@@ -29,21 +29,21 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGGlyphRefElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGlyphRefElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGGlyphRefElement::SVGGlyphRefElement(Document& document)
     : SVGElement(SVGNames::glyphRefTag, document)
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_x(0)
     , m_y(0)
     , m_dx(0)
     , m_dy(0)
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGGlyphRefElement();
 }
 
@@ -77,9 +77,11 @@ void SVGGlyphRefElement::parseAttributeInternal(const QualifiedName& name, const
         parseNumber(ptr, end, m_dx);
     } else if (name == SVGNames::dyAttr) {
         parseNumber(ptr, end, m_dy);
+    } else if (name.matches(XLinkNames::hrefAttr)) {
+        SVGParsingError parseError = NoError;
+        m_href->setBaseValueAsString(value, parseError);
+        reportAttributeParsingError(parseError, name, value);
     } else {
-        if (SVGURIReference::parseAttribute(name, value))
-            return;
         SVGElement::parseAttribute(name, value);
     }
 }

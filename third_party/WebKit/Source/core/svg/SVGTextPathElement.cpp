@@ -32,24 +32,24 @@ namespace WebCore {
 // Animated property definitions
 DEFINE_ANIMATED_ENUMERATION(SVGTextPathElement, SVGNames::methodAttr, Method, method, SVGTextPathMethodType)
 DEFINE_ANIMATED_ENUMERATION(SVGTextPathElement, SVGNames::spacingAttr, Spacing, spacing, SVGTextPathSpacingType)
-DEFINE_ANIMATED_STRING(SVGTextPathElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextPathElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(method)
     REGISTER_LOCAL_ANIMATED_PROPERTY(spacing)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTextContentElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(SVGNames::textPathTag, document)
     , m_startOffset(SVGAnimatedLength::create(this, SVGNames::startOffsetAttr, SVGLength::create(LengthModeOther)))
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_method(SVGTextPathMethodAlign)
     , m_spacing(SVGTextPathSpacingExact)
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_startOffset);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGTextPathElement();
 }
 
@@ -96,7 +96,8 @@ void SVGTextPathElement::parseAttribute(const QualifiedName& name, const AtomicS
         SVGTextPathSpacingType propertyValue = SVGPropertyTraits<SVGTextPathSpacingType>::fromString(value);
         if (propertyValue > 0)
             setSpacingBaseValue(propertyValue);
-    } else if (SVGURIReference::parseAttribute(name, value)) {
+    } else if (name.matches(XLinkNames::hrefAttr)) {
+        m_href->setBaseValueAsString(value, parseError);
     } else
         ASSERT_NOT_REACHED();
 
@@ -146,7 +147,7 @@ void SVGTextPathElement::buildPendingResource()
         return;
 
     AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id);
+    Element* target = SVGURIReference::targetElementFromIRIString(m_href->currentValue()->value(), document(), &id);
     if (!target) {
         // Do not register as pending if we are already pending this resource.
         if (document().accessSVGExtensions()->isElementPendingResource(this, id))

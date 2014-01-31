@@ -106,7 +106,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
         float y = roundf(cursorElement->y()->currentValue()->value(lengthContext));
         m_hotSpot.setY(static_cast<int>(y));
 
-        if (cachedImageURL() != element->document().completeURL(cursorElement->hrefCurrentValue()))
+        if (cachedImageURL() != element->document().completeURL(cursorElement->href()->currentValue()->value()))
             clearImageResource();
 
         SVGElement* svgElement = toSVGElement(element);
@@ -134,7 +134,7 @@ StyleImage* CSSCursorImageValue::cachedImage(ResourceFetcher* loader, float devi
             RefPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
             if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), *loader->document())) {
-                RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(loader->document()->completeURL(cursorElement->hrefCurrentValue()));
+                RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(loader->document()->completeURL(cursorElement->href()->currentValue()->value()));
                 StyleFetchedImage* cachedImage = svgImageValue->cachedImage(loader);
                 m_image = cachedImage;
                 return cachedImage;

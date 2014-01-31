@@ -33,10 +33,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGImageElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGImageElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -47,6 +45,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
     , m_imageLoader(this)
 {
     ScriptWrappable::init(this);
@@ -57,6 +56,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
     addToPropertyMap(m_height);
 
     addToPropertyMap(m_preserveAspectRatio);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGImageElement();
 }
 
@@ -122,10 +122,11 @@ void SVGImageElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
-    else if (name == SVGNames::preserveAspectRatioAttr) {
+    else if (name == SVGNames::preserveAspectRatioAttr)
         m_preserveAspectRatio->setBaseValueAsString(value, parseError);
-    } else if (SVGURIReference::parseAttribute(name, value)) {
-    } else
+    else if (name.matches(XLinkNames::hrefAttr))
+        m_href->setBaseValueAsString(value, parseError);
+    else
         ASSERT_NOT_REACHED();
 
     reportAttributeParsingError(parseError, name, value);
@@ -214,7 +215,7 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* 
 
 const AtomicString SVGImageElement::imageSourceURL() const
 {
-    return AtomicString(hrefCurrentValue());
+    return AtomicString(m_href->currentValue()->value());
 }
 
 void SVGImageElement::didMoveToNewDocument(Document& oldDocument)

@@ -150,7 +150,11 @@ public:
     bool isContextElement() const { return m_isContextElement; }
     void setContextElement() { m_isContextElement = true; }
 
+    void addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase>);
+
     virtual bool childShouldCreateRenderer(const Node& child) const { return true; }
+
+    SVGAnimatedString* className() { return m_className.get(); }
 
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
@@ -205,8 +209,6 @@ protected:
         SVGElement* m_owner;
     };
 
-    void addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase>);
-
 private:
     friend class SVGElementInstance;
 
@@ -231,8 +233,8 @@ private:
 
     typedef HashMap<QualifiedName, RefPtr<NewSVGAnimatedPropertyBase> > AttributeToPropertyMap;
     AttributeToPropertyMap m_newAttributeToPropertyMap;
+    RefPtr<SVGAnimatedString> m_className;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGElement)
-        DECLARE_ANIMATED_STRING(ClassName, className)
     END_DECLARE_ANIMATED_PROPERTIES
 
 #if !ASSERT_DISABLED

@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGViewElement.h"
 
-
 namespace WebCore {
 
 // Animated property definitions
@@ -35,13 +34,14 @@ inline SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(SVGNames::viewTag, document)
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
+    , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
     , m_zoomAndPan(SVGZoomAndPanMagnify)
-    , m_viewTarget(SVGNames::viewTargetAttr)
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_viewBox);
     addToPropertyMap(m_preserveAspectRatio);
+    addToPropertyMap(m_viewTarget);
     registerAnimatedPropertiesForSVGViewElement();
 }
 
@@ -68,17 +68,19 @@ void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         return;
     }
 
-    if (name == SVGNames::viewTargetAttr) {
-        viewTarget().reset(value);
-        return;
-    }
-
     if (SVGFitToViewBox::parseAttribute(this, name, value))
         return;
     if (SVGZoomAndPan::parseAttribute(this, name, value))
         return;
 
-    ASSERT_NOT_REACHED();
+    SVGParsingError parseError = NoError;
+
+    if (name == SVGNames::viewTargetAttr)
+        m_viewTarget->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
+
+    reportAttributeParsingError(parseError, name, value);
 }
 
 }

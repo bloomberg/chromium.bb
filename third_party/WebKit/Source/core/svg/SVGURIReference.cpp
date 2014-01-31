@@ -27,16 +27,6 @@
 
 namespace WebCore {
 
-bool SVGURIReference::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    if (name.matches(XLinkNames::hrefAttr)) {
-        setHrefBaseValue(value);
-        return true;
-    }
-
-    return false;
-}
-
 bool SVGURIReference::isKnownAttribute(const QualifiedName& attrName)
 {
     return attrName.matches(XLinkNames::hrefAttr);

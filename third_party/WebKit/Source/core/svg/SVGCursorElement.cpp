@@ -30,22 +30,22 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGCursorElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCursorElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)
+    , SVGTests(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_href(SVGAnimatedString::create(this, XLinkNames::hrefAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
+    addToPropertyMap(m_href);
     registerAnimatedPropertiesForSVGCursorElement();
 }
 
@@ -83,8 +83,9 @@ void SVGCursorElement::parseAttribute(const QualifiedName& name, const AtomicStr
         m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
         m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
-    else if (SVGTests::parseAttribute(name, value)
-             || SVGURIReference::parseAttribute(name, value)) {
+    else if (name.matches(XLinkNames::hrefAttr))
+        m_href->setBaseValueAsString(value, parseError);
+    else if (SVGTests::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
 

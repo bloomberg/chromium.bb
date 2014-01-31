@@ -81,6 +81,8 @@ public:
     SVGAnimatedNumber* k2() { return m_k2.get(); }
     SVGAnimatedNumber* k3() { return m_k3.get(); }
     SVGAnimatedNumber* k4() { return m_k4.get(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
+    SVGAnimatedString* in2() { return m_in2.get(); }
 
 private:
     explicit SVGFECompositeElement(Document&);
@@ -95,9 +97,9 @@ private:
     RefPtr<SVGAnimatedNumber> m_k2;
     RefPtr<SVGAnimatedNumber> m_k3;
     RefPtr<SVGAnimatedNumber> m_k4;
+    RefPtr<SVGAnimatedString> m_in1;
+    RefPtr<SVGAnimatedString> m_in2;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFECompositeElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
-        DECLARE_ANIMATED_STRING(In2, in2)
         DECLARE_ANIMATED_ENUMERATION(SVGOperator, svgOperator, CompositeOperationType)
     END_DECLARE_ANIMATED_PROPERTIES
 };

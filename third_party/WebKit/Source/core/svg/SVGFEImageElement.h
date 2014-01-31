@@ -43,6 +43,7 @@ public:
 
     virtual ~SVGFEImageElement();
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGFEImageElement(Document&);
@@ -62,8 +63,8 @@ private:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEImageElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 
     ResourcePtr<ImageResource> m_cachedImage;

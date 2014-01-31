@@ -33,17 +33,17 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFEComponentTransferElement, SVGNames::inAttr, In1, in1)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEComponentTransferElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feComponentTransferTag, document)
+    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_in1);
     registerAnimatedPropertiesForSVGFEComponentTransferElement();
 }
 
@@ -67,17 +67,19 @@ void SVGFEComponentTransferElement::parseAttribute(const QualifiedName& name, co
         return;
     }
 
-    if (name == SVGNames::inAttr) {
-        setIn1BaseValue(value);
-        return;
-    }
+    SVGParsingError parseError = NoError;
 
-    ASSERT_NOT_REACHED();
+    if (name == SVGNames::inAttr)
+        m_in1->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
+
+    reportAttributeParsingError(parseError, name, value);
 }
 
 PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
         return 0;

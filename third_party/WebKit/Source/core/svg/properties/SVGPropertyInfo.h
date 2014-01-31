@@ -51,6 +51,7 @@ enum AnimatedPropertyType {
     AnimatedPreserveAspectRatio,
     AnimatedRect,
     AnimatedString,
+    AnimatedStringList,
     AnimatedTransformList,
     AnimatedUnknown
 };

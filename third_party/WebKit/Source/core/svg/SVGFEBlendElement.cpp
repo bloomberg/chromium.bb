@@ -30,22 +30,22 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_STRING(SVGFEBlendElement, SVGNames::inAttr, In1, in1)
-DEFINE_ANIMATED_STRING(SVGFEBlendElement, SVGNames::in2Attr, In2, in2)
 DEFINE_ANIMATED_ENUMERATION(SVGFEBlendElement, SVGNames::modeAttr, Mode, mode, BlendModeType)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEBlendElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(in2)
     REGISTER_LOCAL_ANIMATED_PROPERTY(mode)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feBlendTag, document)
+    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
+    , m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr, SVGString::create()))
     , m_mode(FEBLEND_MODE_NORMAL)
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_in1);
+    addToPropertyMap(m_in2);
     registerAnimatedPropertiesForSVGFEBlendElement();
 }
 
@@ -79,17 +79,16 @@ void SVGFEBlendElement::parseAttribute(const QualifiedName& name, const AtomicSt
         return;
     }
 
-    if (name == SVGNames::inAttr) {
-        setIn1BaseValue(value);
-        return;
-    }
+    SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::in2Attr) {
-        setIn2BaseValue(value);
-        return;
-    }
+    if (name == SVGNames::inAttr)
+        m_in1->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::in2Attr)
+        m_in2->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
 
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 bool SVGFEBlendElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
@@ -126,8 +125,8 @@ void SVGFEBlendElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFEBlendElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
-    FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(in2CurrentValue()));
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
+    FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(m_in2->currentValue()->value()));
 
     if (!input1 || !input2)
         return 0;

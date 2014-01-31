@@ -61,7 +61,7 @@ PassRefPtr<CSSFontFaceSrcValue> SVGFontFaceUriElement::srcValue() const
 
 void SVGFontFaceUriElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == XLinkNames::hrefAttr)
+    if (name.matches(XLinkNames::hrefAttr))
         loadFont();
     else
         SVGElement::parseAttribute(name, value);

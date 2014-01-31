@@ -40,6 +40,7 @@ public:
     SVGPathElement* pathElement();
 
     void targetPathChanged();
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGMPathElement(Document&);
@@ -56,8 +57,8 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
     void notifyParentOfPathChange(ContainerNode*);
 
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMPathElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

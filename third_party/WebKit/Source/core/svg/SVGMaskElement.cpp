@@ -38,11 +38,11 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMaskElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(maskUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(maskContentUnits)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
-    REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMaskElement::SVGMaskElement(Document& document)
     : SVGElement(SVGNames::maskTag, document)
+    , SVGTests(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))

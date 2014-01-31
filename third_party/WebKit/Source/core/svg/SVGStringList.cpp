@@ -27,66 +27,158 @@
 
 namespace WebCore {
 
-void SVGStringList::commitChange(SVGElement* contextElement)
+SVGStringList::SVGStringList()
+    : NewSVGPropertyBase(classType())
 {
-    ASSERT(contextElement);
-    contextElement->invalidateSVGAttributes();
-    contextElement->svgAttributeChanged(m_attributeName);
 }
 
-void SVGStringList::reset(const String& string)
+SVGStringList::~SVGStringList()
 {
-    parse(string, ' ');
+}
 
-    // Add empty string, if list is empty.
-    if (isEmpty())
-        append(emptyString());
+void SVGStringList::initialize(const String& item)
+{
+    m_values.clear();
+    m_values.append(item);
+}
+
+String SVGStringList::getItem(size_t index, ExceptionState& exceptionState)
+{
+    if (!checkIndexBound(index, exceptionState))
+        return String();
+
+    return m_values.at(index);
+}
+
+void SVGStringList::insertItemBefore(const String& newItem, size_t index)
+{
+    // Spec: If the index is greater than or equal to numberOfItems, then the new item is appended to the end of the list.
+    if (index > m_values.size())
+        index = m_values.size();
+
+    // Spec: Inserts a new item into the list at the specified position. The index of the item before which the new item is to be
+    // inserted. The first item is number 0. If the index is equal to 0, then the new item is inserted at the front of the list.
+    m_values.insert(index, newItem);
+}
+
+String SVGStringList::removeItem(size_t index, ExceptionState& exceptionState)
+{
+    if (!checkIndexBound(index, exceptionState))
+        return String();
+
+    String oldItem = m_values.at(index);
+    m_values.remove(index);
+    return oldItem;
+}
+
+void SVGStringList::appendItem(const String& newItem)
+{
+    m_values.append(newItem);
+}
+
+void SVGStringList::replaceItem(const String& newItem, size_t index, ExceptionState& exceptionState)
+{
+    if (!checkIndexBound(index, exceptionState))
+        return;
+
+    // Update the value at the desired position 'index'.
+    m_values[index] = newItem;
 }
 
 template<typename CharType>
-void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end, UChar delimiter)
+void SVGStringList::parseInternal(const CharType*& ptr, const CharType* end)
 {
+    const UChar delimiter = ' ';
+
     while (ptr < end) {
         const CharType* start = ptr;
         while (ptr < end && *ptr != delimiter && !isSVGSpace(*ptr))
             ptr++;
         if (ptr == start)
             break;
-        append(String(start, ptr - start));
+        m_values.append(String(start, ptr - start));
         skipOptionalSVGSpacesOrDelimiter(ptr, end, delimiter);
     }
 }
 
-void SVGStringList::parse(const String& data, UChar delimiter)
+PassRefPtr<SVGStringList> SVGStringList::clone()
+{
+    RefPtr<SVGStringList> svgStringList = create();
+    svgStringList->m_values = m_values;
+    return svgStringList.release();
+}
+
+void SVGStringList::setValueAsString(const String& data, ExceptionState&)
 {
     // FIXME: Add more error checking and reporting.
-    clear();
+    m_values.clear();
     if (data.isEmpty())
         return;
     if (data.is8Bit()) {
         const LChar* ptr = data.characters8();
         const LChar* end = ptr + data.length();
-        parseInternal(ptr, end, delimiter);
+        parseInternal(ptr, end);
     } else {
         const UChar* ptr = data.characters16();
         const UChar* end = ptr + data.length();
-        parseInternal(ptr, end, delimiter);
+        parseInternal(ptr, end);
     }
+}
+
+PassRefPtr<NewSVGPropertyBase> SVGStringList::cloneForAnimation(const String& string) const
+{
+    RefPtr<SVGStringList> svgStringList = create();
+    svgStringList->setValueAsString(string, IGNORE_EXCEPTION);
+    return svgStringList.release();
 }
 
 String SVGStringList::valueAsString() const
 {
     StringBuilder builder;
 
-    unsigned size = this->size();
-    for (unsigned i = 0; i < size; ++i) {
-        if (i > 0)
-            builder.append(' ');
+    Vector<String>::const_iterator it = m_values.begin();
+    Vector<String>::const_iterator itEnd = m_values.end();
+    if (it != itEnd) {
+        builder.append(*it);
+        ++it;
 
-        builder.append(at(i));
+        for (; it != itEnd; ++it) {
+            builder.append(' ');
+            builder.append(*it);
+        }
     }
 
     return builder.toString();
+}
+
+bool SVGStringList::checkIndexBound(size_t index, ExceptionState& exceptionState)
+{
+    if (index >= m_values.size()) {
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
+        return false;
+    }
+
+    return true;
+}
+
+void SVGStringList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+{
+    // SVGStringList is never animated.
+    ASSERT_NOT_REACHED();
+}
+
+void SVGStringList::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    // SVGStringList is never animated.
+    ASSERT_NOT_REACHED();
+}
+
+float SVGStringList::calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    // SVGStringList is never animated.
+    ASSERT_NOT_REACHED();
+
+    return -1.0f;
 }
 
 }

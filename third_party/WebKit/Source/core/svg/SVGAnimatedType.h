@@ -42,7 +42,6 @@ public:
     static PassOwnPtr<SVGAnimatedType> createInteger(int*);
     static PassOwnPtr<SVGAnimatedType> createIntegerOptionalInteger(std::pair<int, int>*);
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
-    static PassOwnPtr<SVGAnimatedType> createString(String*);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
     // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
     static PassOwnPtr<SVGAnimatedType> createNewProperty(PassRefPtr<NewSVGPropertyBase>);
@@ -86,12 +85,6 @@ public:
         return m_data.path;
     }
 
-    String& string()
-    {
-        ASSERT(m_type == AnimatedString);
-        return *m_data.string;
-    }
-
     SVGTransformList& transformList()
     {
         ASSERT(m_type == AnimatedTransformList);
@@ -123,7 +116,6 @@ private:
         int* integer;
         std::pair<int, int>* integerOptionalInteger;
         SVGPathByteStream* path;
-        String* string;
         SVGTransformList* transformList;
     } m_data;
     RefPtr<NewSVGPropertyBase> m_newProperty;

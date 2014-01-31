@@ -168,7 +168,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
         ColorSpace colorSpace = filterColorSpace;
         if (useFilterColorSpace || getSVGElementColorSpace(effectElement, colorSpace))
             effect->setOperatingColorSpace(colorSpace);
-        builder->add(AtomicString(effectElement->resultCurrentValue()), effect);
+        builder->add(AtomicString(effectElement->result()->currentValue()->value()), effect);
     }
     return builder->lastEffect();
 }

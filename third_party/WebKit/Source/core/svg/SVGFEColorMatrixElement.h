@@ -70,6 +70,7 @@ public:
     static PassRefPtr<SVGFEColorMatrixElement> create(Document&);
 
     SVGAnimatedNumberList* values() { return m_values.get(); }
+    SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:
     explicit SVGFEColorMatrixElement(Document&);
@@ -81,8 +82,8 @@ private:
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
     RefPtr<SVGAnimatedNumberList> m_values;
+    RefPtr<SVGAnimatedString> m_in1;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEColorMatrixElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
         DECLARE_ANIMATED_ENUMERATION(Type, type, ColorMatrixType)
     END_DECLARE_ANIMATED_PROPERTIES
 };

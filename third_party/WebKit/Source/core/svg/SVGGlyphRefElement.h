@@ -46,6 +46,7 @@ public:
     void setDx(float);
     float dy() const { return m_dy; }
     void setDy(float);
+    SVGAnimatedString* href() { return m_href.get(); }
 
 private:
     explicit SVGGlyphRefElement(Document&);
@@ -55,8 +56,8 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
+    RefPtr<SVGAnimatedString> m_href;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGlyphRefElement)
-        DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 
     float m_x;

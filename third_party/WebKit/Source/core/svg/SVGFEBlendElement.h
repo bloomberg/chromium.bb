@@ -71,6 +71,8 @@ struct SVGPropertyTraits<BlendModeType> {
 class SVGFEBlendElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
     static PassRefPtr<SVGFEBlendElement> create(Document&);
+    SVGAnimatedString* in1() { return m_in1.get(); }
+    SVGAnimatedString* in2() { return m_in2.get(); }
 
 private:
     explicit SVGFEBlendElement(Document&);
@@ -81,9 +83,9 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
+    RefPtr<SVGAnimatedString> m_in1;
+    RefPtr<SVGAnimatedString> m_in2;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEBlendElement)
-        DECLARE_ANIMATED_STRING(In1, in1)
-        DECLARE_ANIMATED_STRING(In2, in2)
         DECLARE_ANIMATED_ENUMERATION(Mode, mode, BlendModeType)
     END_DECLARE_ANIMATED_PROPERTIES
 };

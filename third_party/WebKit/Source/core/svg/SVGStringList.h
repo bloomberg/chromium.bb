@@ -1,61 +1,100 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
- * Copyright (C) 2004, 2005, 2006 Rob Buis <buis@kde.org>
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SVGStringList_h
 #define SVGStringList_h
 
-#include "core/dom/QualifiedName.h"
-#include "core/svg/properties/SVGPropertyTraits.h"
-#include "wtf/Vector.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/svg/SVGString.h"
+#include "core/svg/properties/NewSVGListPropertyHelper.h"
 
 namespace WebCore {
 
-class SVGElement;
+class SVGStringListTearOff;
 
-class SVGStringList : public Vector<String> {
+// Implementation of SVGStringList spec:
+// http://www.w3.org/TR/SVG/single-page.html#types-InterfaceSVGStringList
+// See SVGStringListTearOff for actual Javascript interface.
+// Unlike other SVG*List implementations, SVGStringList is NOT tied to SVGString.
+// SVGStringList operates directly on DOMString.
+//
+// In short:
+//   SVGStringList has_a Vector<String>.
+//   SVGStringList items are exposed to Javascript as DOMString (not SVGString) as in the spec.
+//   SVGString is used only for boxing values for non-list string property SVGAnimatedString,
+//   and not used for SVGStringList.
+class SVGStringList FINAL : public NewSVGPropertyBase {
 public:
-    SVGStringList(const QualifiedName& attributeName)
-        : m_attributeName(attributeName)
+    typedef SVGStringListTearOff TearOffType;
+
+    static PassRefPtr<SVGStringList> create()
     {
+        return adoptRef(new SVGStringList());
     }
 
-    void reset(const String&);
-    void parse(const String&, UChar delimiter = ',');
+    virtual ~SVGStringList();
 
-    // Only used by SVGStringListPropertyTearOff.
-    void commitChange(SVGElement* contextElement);
+    const Vector<String>& values() const { return m_values; }
 
-    String valueAsString() const;
+    // SVGStringList DOM Spec implementation. These are only to be called from SVGStringListTearOff:
+    unsigned long numberOfItems() { return m_values.size(); }
+    void clear() { m_values.clear(); }
+    void initialize(const String&);
+    String getItem(size_t, ExceptionState&);
+    void insertItemBefore(const String&, size_t);
+    String removeItem(size_t, ExceptionState&);
+    void appendItem(const String&);
+    void replaceItem(const String&, size_t, ExceptionState&);
+
+    // NewSVGPropertyBase:
+    PassRefPtr<SVGStringList> clone();
+    void setValueAsString(const String&, ExceptionState&);
+    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+    virtual String valueAsString() const OVERRIDE;
+
+    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+
+    static AnimatedPropertyType classType() { return AnimatedStringList; }
 
 private:
-    template<typename CharType>
-    void parseInternal(const CharType*& ptr, const CharType* end, UChar delimiter);
+    SVGStringList();
 
-    const QualifiedName& m_attributeName;
-};
+    template <typename CharType>
+    void parseInternal(const CharType*& ptr, const CharType* end);
+    bool checkIndexBound(size_t, ExceptionState&);
 
-template<>
-struct SVGPropertyTraits<SVGStringList> {
-    typedef String ListItemType;
+    Vector<String> m_values;
 };
 
 } // namespace WebCore
 
-#endif
+#endif // SVGStringList_h
