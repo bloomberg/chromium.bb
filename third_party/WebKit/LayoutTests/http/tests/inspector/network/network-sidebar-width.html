@@ -12,7 +12,8 @@ function test()
     function step2()
     {
         var panel = WebInspector.panel("network");
-        var setting = WebInspector.settings[panel._sidebarWidthSettingName()];
+        var setting = WebInspector.settings.createSetting(panel._panelName + "SidebarWidth", undefined);
+        WebInspector.settings[panel._panelName + "SidebarWidth"] = setting;
         var request = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
 
         oldSetting = setting.get();
@@ -20,12 +21,12 @@ function test()
 
         setting.set(undefined);
         panel._showRequest(request);
-        InspectorTest.addResult("Sidebar width: " + panel.splitView.sidebarElement().offsetWidth);
+        InspectorTest.addResult("Sidebar width: " + panel._splitView.sidebarElement().offsetWidth);
         panel._toggleGridMode();
 
         setting.set(242);
         panel._showRequest(request);
-        InspectorTest.addResult("Sidebar width: " + panel.splitView.sidebarElement().offsetWidth);
+        InspectorTest.addResult("Sidebar width: " + panel._splitView.sidebarElement().offsetWidth);
         panel._closeVisibleRequest(request);
 
         setting.set(oldSetting);
