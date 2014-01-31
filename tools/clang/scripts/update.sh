@@ -43,9 +43,15 @@ run_tests=
 bootstrap=
 with_android=yes
 chrome_tools="plugins"
+gcc_toolchain=
 
 if [[ "${OS}" = "Darwin" ]]; then
   with_android=
+fi
+if [ "${OS}" = "FreeBSD" ]; then
+  MAKE=gmake
+else
+  MAKE=make
 fi
 
 while [[ $# > 0 ]]; do
@@ -252,7 +258,7 @@ set -x
 NUM_JOBS=3
 if [[ "${OS}" = "Linux" ]]; then
   NUM_JOBS="$(grep -c "^processor" /proc/cpuinfo)"
-elif [ "${OS}" = "Darwin" ]; then
+elif [ "${OS}" = "Darwin" -o "${OS}" = "FreeBSD" ]; then
   NUM_JOBS="$(sysctl -n hw.ncpu)"
 fi
 
@@ -293,9 +299,9 @@ if [[ -n "${bootstrap}" ]]; then
   fi
 
 
-  MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}"
+  MACOSX_DEPLOYMENT_TARGET=10.5 ${MAKE} -j"${NUM_JOBS}"
   if [[ -n "${run_tests}" ]]; then
-    make check-all
+    ${MAKE} check-all
   fi
   cd -
   export CC="${PWD}/${LLVM_BOOTSTRAP_DIR}/Release+Asserts/bin/clang"
@@ -331,7 +337,7 @@ if [[ -n "${gcc_toolchain}" ]]; then
   cp -v "$(${CXX} ${CXXFLAGS} -print-file-name=libstdc++.so.6)" \
     Release+Asserts/lib/
 fi
-MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}"
+MACOSX_DEPLOYMENT_TARGET=10.5 ${MAKE} -j"${NUM_JOBS}"
 STRIP_FLAGS=
 if [ "${OS}" = "Darwin" ]; then
   # See http://crbug.com/256342
@@ -352,7 +358,7 @@ if [[ -n "${with_android}" ]]; then
   # Note: LLVM_ANDROID_TOOLCHAIN_DIR is not relative to PWD, but to where we
   # build the runtime, i.e. third_party/llvm/projects/compiler-rt.
   cd "${LLVM_BUILD_DIR}"
-  make -C tools/clang/runtime/ \
+  ${MAKE} -C tools/clang/runtime/ \
     LLVM_ANDROID_TOOLCHAIN_DIR="../../../llvm-build/android-toolchain"
   cd -
 fi
@@ -370,7 +376,7 @@ for CHROME_TOOL_DIR in ${chrome_tools}; do
   rm -rf "${TOOL_BUILD_DIR}"
   mkdir -p "${TOOL_BUILD_DIR}"
   cp "${TOOL_SRC_DIR}/Makefile" "${TOOL_BUILD_DIR}"
-  MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}" -C "${TOOL_BUILD_DIR}"
+  MACOSX_DEPLOYMENT_TARGET=10.5 ${MAKE} -j"${NUM_JOBS}" -C "${TOOL_BUILD_DIR}"
 done
 
 if [[ -n "$run_tests" ]]; then
@@ -382,7 +388,7 @@ if [[ -n "$run_tests" ]]; then
     fi
   done
   cd "${LLVM_BUILD_DIR}"
-  make check-all
+  ${MAKE} check-all
   cd -
 fi
 
