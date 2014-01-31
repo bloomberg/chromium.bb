@@ -70,7 +70,7 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
                          AudioSenderConfig* config) {
   config->sender_ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
-  config->rtp_payload_type = params.payload.payload_type;
+  config->rtp_config.payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
   config->channels = params.payload.channels;
@@ -87,7 +87,7 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
                          VideoSenderConfig* config) {
   config->sender_ssrc = params.payload.ssrc;
   config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
-  config->rtp_payload_type = params.payload.payload_type;
+  config->rtp_config.payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
   config->width = params.payload.width;
   config->height = params.payload.height;

@@ -145,7 +145,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
     audio_config.frequency = kDefaultAudioSamplingRate;
     audio_config.channels = 2;
     audio_config.bitrate = kDefaultAudioEncoderBitrate;
-    audio_config.rtp_payload_type = 127;
+    audio_config.rtp_config.payload_type = 127;
 
     audio_bus_factory_.reset(
         new TestAudioBusFactory(audio_config.channels,

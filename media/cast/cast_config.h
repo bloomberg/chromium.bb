@@ -33,9 +33,7 @@ struct AudioSenderConfig {
   std::string rtcp_c_name;
   RtcpMode rtcp_mode;
 
-  int rtp_history_ms;  // The time RTP packets are stored for retransmissions.
-  int rtp_max_delay_ms;
-  int rtp_payload_type;
+  transport::RtpConfig rtp_config;
 
   bool use_external_encoder;
   int frequency;
@@ -54,9 +52,7 @@ struct VideoSenderConfig {
   std::string rtcp_c_name;
   RtcpMode rtcp_mode;
 
-  int rtp_history_ms;  // The time RTP packets are stored for retransmissions.
-  int rtp_max_delay_ms;
-  int rtp_payload_type;
+  transport::RtpConfig rtp_config;
 
   bool use_external_encoder;
   int width;  // Incoming frames will be scaled to this size.

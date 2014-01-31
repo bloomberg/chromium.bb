@@ -13,17 +13,16 @@ const int kDefaultRtpHistoryMs = 1000;
 const int kDefaultRtpMaxDelayMs = 100;
 }  // namespace
 
+RtpConfig::RtpConfig()
+    : history_ms(kDefaultRtpHistoryMs),
+      max_delay_ms(kDefaultRtpMaxDelayMs),
+      payload_type(0) {}
+
 CastTransportConfig::CastTransportConfig()
     : audio_ssrc(0),
       video_ssrc(0),
       video_codec(kVp8),
       audio_codec(kOpus),
-      audio_rtp_history_ms(kDefaultRtpHistoryMs),
-      video_rtp_history_ms(kDefaultRtpHistoryMs),
-      audio_rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
-      video_rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
-      audio_rtp_payload_type(0),
-      video_rtp_payload_type(0),
       audio_frequency(0),
       audio_channels(0),
       aes_key (""),

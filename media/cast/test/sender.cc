@@ -114,7 +114,7 @@ void GetSsrcs(VideoSenderConfig* video_config) {
 void GetPayloadtype(AudioSenderConfig* audio_config) {
   test::InputBuilder input("Choose audio sender payload type.",
       DEFAULT_AUDIO_PAYLOAD_TYPE, 96, 127);
-  audio_config->rtp_payload_type = input.GetIntInput();
+  audio_config->rtp_config.payload_type = input.GetIntInput();
 }
 
 AudioSenderConfig GetAudioSenderConfig() {
@@ -137,7 +137,7 @@ AudioSenderConfig GetAudioSenderConfig() {
 void GetPayloadtype(VideoSenderConfig* video_config) {
   test::InputBuilder input("Choose video sender payload type.",
       DEFAULT_VIDEO_PAYLOAD_TYPE, 96, 127);
-  video_config->rtp_payload_type = input.GetIntInput();
+  video_config->rtp_config.payload_type = input.GetIntInput();
 }
 
 void GetVideoCodecSize(VideoSenderConfig* video_config) {
@@ -343,8 +343,8 @@ int main(int argc, char** argv) {
                                            local_port);
   config.audio_ssrc = audio_config.sender_ssrc;
   config.video_ssrc = video_config.sender_ssrc;
-  config.audio_rtp_payload_type = audio_config.rtp_payload_type;
-  config.video_rtp_payload_type = video_config.rtp_payload_type;
+  config.audio_rtp_config = audio_config.rtp_config;
+  config.video_rtp_config = video_config.rtp_config;
 
   scoped_ptr<media::cast::transport::CastTransportSender> transport_sender(
       media::cast::transport::

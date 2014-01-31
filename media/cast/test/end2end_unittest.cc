@@ -347,7 +347,7 @@ class End2EndTest : public ::testing::Test {
                    int max_number_of_video_buffers_used) {
     audio_sender_config_.sender_ssrc = 1;
     audio_sender_config_.incoming_feedback_ssrc = 2;
-    audio_sender_config_.rtp_payload_type = 96;
+    audio_sender_config_.rtp_config.payload_type = 96;
     audio_sender_config_.use_external_encoder = false;
     audio_sender_config_.frequency = audio_sampling_frequency;
     audio_sender_config_.channels = kAudioChannels;
@@ -359,7 +359,7 @@ class End2EndTest : public ::testing::Test {
     audio_receiver_config_.incoming_ssrc =
         audio_sender_config_.sender_ssrc;
     audio_receiver_config_.rtp_payload_type =
-        audio_sender_config_.rtp_payload_type;
+        audio_sender_config_.rtp_config.payload_type;
     audio_receiver_config_.use_external_decoder = external_audio_decoder;
     audio_receiver_config_.frequency = audio_sender_config_.frequency;
     audio_receiver_config_.channels = kAudioChannels;
@@ -370,7 +370,7 @@ class End2EndTest : public ::testing::Test {
 
     video_sender_config_.sender_ssrc = 3;
     video_sender_config_.incoming_feedback_ssrc = 4;
-    video_sender_config_.rtp_payload_type = 97;
+    video_sender_config_.rtp_config.payload_type = 97;
     video_sender_config_.use_external_encoder = false;
     video_sender_config_.width = kVideoWidth;
     video_sender_config_.height = kVideoHeight;
@@ -390,7 +390,7 @@ class End2EndTest : public ::testing::Test {
     video_receiver_config_.incoming_ssrc =
         video_sender_config_.sender_ssrc;
     video_receiver_config_.rtp_payload_type =
-        video_sender_config_.rtp_payload_type;
+        video_sender_config_.rtp_config.payload_type;
     video_receiver_config_.use_external_decoder = false;
     video_receiver_config_.codec = video_sender_config_.codec;
 
@@ -398,16 +398,10 @@ class End2EndTest : public ::testing::Test {
     transport_config_.video_ssrc = video_sender_config_.sender_ssrc;
     transport_config_.video_codec = video_sender_config_.codec;
     transport_config_.audio_codec = audio_sender_config_.codec;
-    transport_config_.video_rtp_payload_type =
-        video_sender_config_.rtp_payload_type;
-    transport_config_.audio_rtp_payload_type =
-        audio_sender_config_.rtp_payload_type;
+    transport_config_.video_rtp_config = video_sender_config_.rtp_config;
+    transport_config_.audio_rtp_config = audio_sender_config_.rtp_config;
     transport_config_.audio_frequency = audio_sender_config_.frequency;
     transport_config_.audio_channels = audio_sender_config_.channels;
-    transport_config_.video_rtp_max_delay_ms =
-        video_sender_config_.rtp_max_delay_ms;
-    transport_config_.audio_rtp_max_delay_ms =
-        audio_sender_config_.rtp_max_delay_ms;
   }
 
   void Create() {
@@ -736,7 +730,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 // This tests a network glitch lasting for 10 video frames.
 TEST_F(End2EndTest, GlitchWith3Buffers) {
   SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 3);
-  video_sender_config_.rtp_max_delay_ms = 67;
+  video_sender_config_.rtp_config.max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
 
@@ -785,7 +779,7 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
 
 TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
   SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 3);
-  video_sender_config_.rtp_max_delay_ms = 67;
+  video_sender_config_.rtp_config.max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
   sender_to_receiver_.DropAllPacketsBelongingToOddFrames();
@@ -818,7 +812,7 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
 
 TEST_F(End2EndTest, ResetReferenceFrameId) {
   SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 3);
-  video_sender_config_.rtp_max_delay_ms = 67;
+  video_sender_config_.rtp_config.max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
   sender_to_receiver_.AlwaysResetReferenceFrameId();

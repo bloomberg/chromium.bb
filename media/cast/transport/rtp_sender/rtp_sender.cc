@@ -22,17 +22,19 @@ RtpSender::RtpSender(base::TickClock* clock,
       transport_(transport) {
   // Store generic cast config and create packetizer config.
   if (is_audio) {
-    storage_.reset(new PacketStorage(clock, config.audio_rtp_history_ms));
+    storage_.reset(
+        new PacketStorage(clock, config.audio_rtp_config.history_ms));
     config_.audio = true;
     config_.ssrc = config.audio_ssrc;
-    config_.payload_type = config.audio_rtp_payload_type;
+    config_.payload_type = config.audio_rtp_config.payload_type;
     config_.frequency = config.audio_frequency;
     config_.audio_codec = config.audio_codec;
   } else {
-    storage_.reset(new PacketStorage(clock, config.audio_rtp_history_ms));
+    storage_.reset(
+        new PacketStorage(clock, config.audio_rtp_config.history_ms));
     config_.audio = false;
     config_.ssrc = config.video_ssrc;
-    config_.payload_type = config.video_rtp_payload_type;
+    config_.payload_type = config.video_rtp_config.payload_type;
     config_.frequency = kVideoFrequency;
     config_.video_codec = config.video_codec;
   }

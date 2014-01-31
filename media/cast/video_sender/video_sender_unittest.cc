@@ -113,7 +113,7 @@ class VideoSenderTest : public ::testing::Test {
     video_config.sender_ssrc = 1;
     video_config.incoming_feedback_ssrc = 2;
     video_config.rtcp_c_name = "video_test@10.1.1.1";
-    video_config.rtp_payload_type = 127;
+    video_config.rtp_config.payload_type = 127;
     video_config.use_external_encoder = external;
     video_config.width = kWidth;
     video_config.height = kHeight;

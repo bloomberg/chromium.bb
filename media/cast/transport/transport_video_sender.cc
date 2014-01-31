@@ -22,8 +22,8 @@ TransportVideoSender::TransportVideoSender(
     const CastTransportConfig& config,
     base::TickClock* clock,
     PacedSender* const paced_packet_sender)
-    : rtp_max_delay_(
-          base::TimeDelta::FromMilliseconds(config.video_rtp_max_delay_ms)),
+    : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
+          config.video_rtp_config.max_delay_ms)),
       rtp_sender_(clock, config, false, paced_packet_sender),
     initialized_(true) {
   if (config.aes_iv_mask.size() == kAesKeySize &&

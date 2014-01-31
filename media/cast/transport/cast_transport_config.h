@@ -34,6 +34,13 @@ enum AudioCodec {
   kExternalAudio,
 };
 
+struct RtpConfig {
+  RtpConfig();
+  int history_ms;  // The time RTP packets are stored for retransmissions.
+  int max_delay_ms;
+  int payload_type;
+};
+
 struct CastTransportConfig {
   CastTransportConfig();
   ~CastTransportConfig();
@@ -49,12 +56,8 @@ struct CastTransportConfig {
   AudioCodec audio_codec;
 
   // RTP.
-  int audio_rtp_history_ms;
-  int video_rtp_history_ms;
-  int audio_rtp_max_delay_ms;
-  int video_rtp_max_delay_ms;
-  int audio_rtp_payload_type;
-  int video_rtp_payload_type;
+  RtpConfig audio_rtp_config;
+  RtpConfig video_rtp_config;
 
   int audio_frequency;
   int audio_channels;

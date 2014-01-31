@@ -65,7 +65,7 @@ class VideoEncoderImplTest : public ::testing::Test {
       : test_video_encoder_callback_(new TestVideoEncoderCallback()) {
     video_config_.sender_ssrc = 1;
     video_config_.incoming_feedback_ssrc = 2;
-    video_config_.rtp_payload_type = 127;
+    video_config_.rtp_config.payload_type = 127;
     video_config_.use_external_encoder = false;
     video_config_.width = 320;
     video_config_.height = 240;

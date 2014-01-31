@@ -56,8 +56,8 @@ VideoSender::VideoSender(
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
     const CastInitializationCallback& initialization_status,
     transport::CastTransportSender* const transport_sender)
-    : rtp_max_delay_(
-          base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
+    : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
+          video_config.rtp_config.max_delay_ms)),
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
       transport_sender_(transport_sender),
@@ -73,7 +73,8 @@ VideoSender::VideoSender(
                           video_config.start_bitrate),
       initialized_(false),
       weak_factory_(this) {
-  max_unacked_frames_ = static_cast<uint8>(video_config.rtp_max_delay_ms *
+  max_unacked_frames_ = static_cast<uint8>(
+      video_config.rtp_config.max_delay_ms *
       video_config.max_frame_rate / 1000) + 1;
   VLOG(1) << "max_unacked_frames " << static_cast<int>(max_unacked_frames_);
   DCHECK_GT(max_unacked_frames_, 0) << "Invalid argument";

@@ -75,10 +75,10 @@ class AudioSenderTest : public ::testing::Test {
     audio_config_.frequency = kDefaultAudioSamplingRate;
     audio_config_.channels = 2;
     audio_config_.bitrate = kDefaultAudioEncoderBitrate;
-    audio_config_.rtp_payload_type = 127;
+    audio_config_.rtp_config.payload_type = 127;
 
     transport::CastTransportConfig transport_config;
-    transport_config.audio_rtp_payload_type = 127;
+    transport_config.audio_rtp_config.payload_type = 127;
     transport_config.audio_channels = 2;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         testing_clock_,
