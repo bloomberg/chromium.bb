@@ -32,19 +32,35 @@
 #define AddressSanitizer_h
 
 #ifdef ADDRESS_SANITIZER
-#include <sanitizer/asan_interface.h>
-#define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+extern "C" {
+    // Marks memory region [addr, addr+size) as unaddressable.
+    // This memory must be previously allocated by the user program. Accessing
+    // addresses in this region from instrumented code is forbidden until
+    // this region is unpoisoned. This function is not guaranteed to poison
+    // the whole region - it may poison only subregion of [addr, addr+size) due
+    // to ASan alignment restrictions.
+    // Method is NOT thread-safe in the sense that no two threads can
+    // (un)poison memory in the same memory region simultaneously.
+    void __asan_poison_memory_region(void const volatile*, size_t);
+    // Marks memory region [addr, addr+size) as addressable.
+    // This memory must be previously allocated by the user program. Accessing
+    // addresses in this region is allowed until this region is poisoned again.
+    // This function may unpoison a superregion of [addr, addr+size) due to
+    // ASan alignment restrictions.
+    // Method is NOT thread-safe in the sense that no two threads can
+    // (un)poison memory in the same memory region simultaneously.
+    void __asan_unpoison_memory_region(void const volatile*, size_t);
 
-// When running with ASAN support free heap regions are not added to
-// freelists until they have been free for asanDeferMemoryReuseCount
-// garbage collections. This leaves the memory poisoned for longer to
-// make it more likely that we catch use-after-free situations.
-//
-// The counter is embedded in freelist entries as the last bits of a
-// magic value. See FreeListEntry::shouldAddToFreeList for details.
-const size_t asanMagic = 0xabefeed0;
-const size_t asanDeferMemoryReuseCount = 2;
-const size_t asanDeferMemoryReuseMask = 0x3;
+    // User code should use macros instead of functions.
+#define ASAN_POISON_MEMORY_REGION(addr, size)   \
+    __asan_poison_memory_region((addr), (size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
+    __asan_unpoison_memory_region((addr), (size))
+#define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+    const size_t asanMagic = 0xabefeed0;
+    const size_t asanDeferMemoryReuseCount = 2;
+    const size_t asanDeferMemoryReuseMask = 0x3;
+}
 #else
 #define ASAN_POISON_MEMORY_REGION(addr, size)   \
     ((void)(addr), (void)(size))
