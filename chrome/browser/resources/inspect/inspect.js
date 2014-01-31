@@ -722,7 +722,7 @@ function validatePort(input) {
 }
 
 function validateLocation(input) {
-  var match = input.value.match(/^([a-zA-Z0-9\.]+):(\d+)$/);
+  var match = input.value.match(/^([a-zA-Z0-9\.\-_]+):(\d+)$/);
   if (!match)
     return false;
   var port = parseInt(match[2]);
