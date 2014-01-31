@@ -508,7 +508,6 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
   if (it2me_host_.get()) {
     it2me_host_->Disconnect();
     it2me_host_ = NULL;
-    host_context_.reset();
   }
 
   return true;

@@ -141,16 +141,6 @@ remoting.init = function() {
 };
 
 /**
- * Returns whether or not IT2Me is supported via the host NPAPI plugin.
- *
- * @return {boolean}
- */
-function isIT2MeSupported_() {
-  // Currently, IT2Me on Chromebooks is not supported.
-  return !remoting.runningOnChromeOS();
-}
-
-/**
  * Display the user's email address and allow access to the rest of the app,
  * including parsing URL parameters.
  *
@@ -162,6 +152,21 @@ remoting.onEmail = function(email) {
   document.getElementById('get-started-it2me').disabled = false;
   document.getElementById('get-started-me2me').disabled = false;
 };
+
+/**
+ * Returns whether or not IT2Me is supported via the host NPAPI plugin.
+ *
+ * @return {boolean}
+ */
+function isIT2MeSupported_() {
+  var container = document.getElementById('host-plugin-container');
+  /** @type {remoting.HostPlugin} */
+  var plugin = remoting.HostSession.createPlugin();
+  container.appendChild(plugin);
+  var result = plugin.hasOwnProperty('REQUESTED_ACCESS_CODE');
+  container.removeChild(plugin);
+  return result;
+}
 
 /**
  * initHomeScreenUi is called if the app is not starting up in session mode,
