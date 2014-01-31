@@ -4,9 +4,6 @@ include_rules = [
   "+chrome/browser/drive",
   "+content/public/browser",
   "+content/public/test",
-  # This should be changed to "+google_apis" once
-  # //chrome/browser/google_apis is moved to //google_apis. crbug.com/146989
-  "!chrome/browser/google_apis",
 ]
 
 # The following dependencies should be removed to componentize this
