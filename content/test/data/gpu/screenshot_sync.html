@@ -129,7 +129,7 @@
 
             capturing = false;
 
-            if (testCount < totalTests /*&& window.__testSuccess*/) {
+            if (testCount < totalTests && window.__testSuccess) {
               if (window.__testSuccess)
                 setTimeout(testSnapshot, testInterval);
             } else {
