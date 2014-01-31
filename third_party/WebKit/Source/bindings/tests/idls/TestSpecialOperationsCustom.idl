@@ -27,7 +27,7 @@
  */
 
 interface TestSpecialOperationsCustom {
-    [Custom/*, NotEnumerable */] getter boolean (unsigned long index);
+    [Custom] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom] deleter boolean (unsigned long index);
     [Custom=PropertyGetter|PropertyEnumerator|PropertyQuery] getter Node (DOMString name);

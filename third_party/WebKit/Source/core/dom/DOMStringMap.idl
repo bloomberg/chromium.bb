@@ -27,8 +27,8 @@
     SetWrapperReferenceFrom=element,
 ] interface DOMStringMap {
     [NotEnumerable] getter DOMString (unsigned long index);
-    [NotEnumerable, RaisesException] setter DOMString (unsigned long index, DOMString value);
-    [NotEnumerable] deleter boolean (unsigned long index);
+    [RaisesException] setter DOMString (unsigned long index, DOMString value);
+    deleter boolean (unsigned long index);
     [ImplementedAs=item, OverrideBuiltins] getter DOMString (DOMString name);
     [RaisesException, OverrideBuiltins] setter DOMString (DOMString name, DOMString value);
     deleter boolean (DOMString name);

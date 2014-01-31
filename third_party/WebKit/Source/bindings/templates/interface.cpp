@@ -301,7 +301,7 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 {##############################################################################}
 {% block named_property_query %}
-{% if named_property_getter and
+{% if named_property_getter and named_property_getter.is_enumerable and
       not named_property_getter.is_custom_property_query %}
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
@@ -322,7 +322,7 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 
 {##############################################################################}
 {% block named_property_query_callback %}
-{% if named_property_getter %}
+{% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
 static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
@@ -378,7 +378,7 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 {##############################################################################}
 {% block named_property_enumerator %}
-{% if named_property_getter and
+{% if named_property_getter and named_property_getter.is_enumerable and
       not named_property_getter.is_custom_property_enumerator %}
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
@@ -400,7 +400,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 
 {##############################################################################}
 {% block named_property_enumerator_callback %}
-{% if named_property_getter %}
+{% if named_property_getter and named_property_getter.is_enumerable %}
 {% set getter = named_property_getter %}
 static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
@@ -795,7 +795,10 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% set indexed_property_deleter_callback =
            '%sV8Internal::indexedPropertyDeleterCallback' % cpp_class
            if indexed_property_deleter else '0' %}
-    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, indexedPropertyEnumerator<{{cpp_class}}>);
+    {% set indexed_property_enumerator_callback =
+           'indexedPropertyEnumerator<%s>' % cpp_class
+           if indexed_property_getter.is_enumerable else '0' %}
+    functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler({{indexed_property_getter_callback}}, {{indexed_property_setter_callback}}, {{indexed_property_query_callback}}, {{indexed_property_deleter_callback}}, {{indexed_property_enumerator_callback}});
     {% endif %}
     {% if named_property_getter %}
     {# if have named properties, MUST have a named property getter #}
@@ -805,12 +808,14 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
            '%sV8Internal::namedPropertySetterCallback' % cpp_class
            if named_property_setter else '0' %}
     {% set named_property_query_callback =
-           '%sV8Internal::namedPropertyQueryCallback' % cpp_class %}
+           '%sV8Internal::namedPropertyQueryCallback' % cpp_class
+           if named_property_getter.is_enumerable else '0' %}
     {% set named_property_deleter_callback =
            '%sV8Internal::namedPropertyDeleterCallback' % cpp_class
            if named_property_deleter else '0' %}
     {% set named_property_enumerator_callback =
-           '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class %}
+           '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class
+           if named_property_getter.is_enumerable else '0' %}
     functionTemplate->InstanceTemplate()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
     {% endif %}
     {% if has_custom_legacy_call_as_function %}

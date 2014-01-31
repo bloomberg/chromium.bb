@@ -504,6 +504,7 @@ def property_getter(getter):
             getter, 'Custom', 'PropertyEnumerator'),
         'is_custom_property_query': has_extended_attribute_value(
             getter, 'Custom', 'PropertyQuery'),
+        'is_enumerable': 'NotEnumerable' not in extended_attributes,
         'is_null_expression': is_null_expression(idl_type),
         'name': cpp_name(getter),
         'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
