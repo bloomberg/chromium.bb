@@ -293,8 +293,6 @@ crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ Imag
 
 # Untriaged Mavericks failures
 
-crbug.com/314947 [ Mavericks ] crash/array-splice.html [ Timeout ]
-crbug.com/314947 [ Mavericks ] crash/string-replacement-outofmemory.html [ Timeout ]
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-mouse-events.html [ Failure ]
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure ]

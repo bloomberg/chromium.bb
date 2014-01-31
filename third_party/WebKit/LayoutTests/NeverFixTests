@@ -110,9 +110,6 @@ platform/linux/fast/text/subpixel/chromium-linux-text-subpixel-positioning.html 
 # We only run it through the virtual gpu test suite.
 fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 
-# We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
-Bug(thisistoavoidlinterror) crash [ Crash ]
-
 # Chrome Linux doesn't support NPAPI plugins anymore.
 [ Linux ] http/tests/plugins/interrupted-get-url.html [ WontFix ]
 [ Linux ] http/tests/plugins/third-party-cookie-accept-policy.html [ WontFix ]
