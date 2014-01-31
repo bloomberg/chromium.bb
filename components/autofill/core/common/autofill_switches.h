@@ -16,7 +16,7 @@ extern const char kDisablePasswordGeneration[];
 extern const char kEnableIgnoreAutocompleteOff[];
 extern const char kEnableInteractiveAutocomplete[];
 extern const char kEnablePasswordGeneration[];
-extern const char kNoAutofillNecessaryForPasswordGeneration[];
+extern const char kLocalHeuristicsOnlyForPasswordGeneration[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kWalletSecureServiceUrl[];
 extern const char kWalletServiceUrl[];

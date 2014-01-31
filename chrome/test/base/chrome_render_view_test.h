@@ -14,6 +14,7 @@
 namespace autofill {
 class AutofillAgent;
 class TestPasswordAutofillAgent;
+class TestPasswordGenerationAgent;
 }
 
 namespace extensions {
@@ -34,6 +35,7 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   extensions::Dispatcher* extension_dispatcher_;
 
   autofill::TestPasswordAutofillAgent* password_autofill_;
+  autofill::TestPasswordGenerationAgent* password_generation_;
   autofill::AutofillAgent* autofill_agent_;
 
   // Naked pointer as ownership is with content::RenderViewTest::render_thread_.

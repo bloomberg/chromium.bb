@@ -14,6 +14,7 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
+#include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -40,6 +41,7 @@ using blink::WebString;
 using blink::WebURLRequest;
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
+using autofill::PasswordGenerationAgent;
 
 ChromeRenderViewTest::ChromeRenderViewTest() : extension_dispatcher_(NULL) {
 }
@@ -60,11 +62,13 @@ void ChromeRenderViewTest::SetUp() {
 
   content::RenderViewTest::SetUp();
 
-  // RenderView doesn't expose its PasswordAutofillAgent or AutofillAgent
-  // objects, because it has no need to store them directly (they're stored as
-  // RenderViewObserver*).  So just create another set.
+  // RenderView doesn't expose its Agent objects, because it has no need to
+  // store them directly (they're stored as RenderViewObserver*).  So just
+  // create another set.
   password_autofill_ = new autofill::TestPasswordAutofillAgent(view_);
-  autofill_agent_ = new AutofillAgent(view_, password_autofill_);
+  password_generation_ = new autofill::TestPasswordGenerationAgent(view_);
+  autofill_agent_ =
+      new AutofillAgent(view_, password_autofill_, password_generation_);
 }
 
 void ChromeRenderViewTest::TearDown() {

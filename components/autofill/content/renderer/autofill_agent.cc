@@ -15,6 +15,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -109,20 +110,14 @@ void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
   }
 }
 
-gfx::RectF GetScaledBoundingBox(float scale, WebInputElement* element) {
-  gfx::Rect bounding_box(element->boundsInViewportSpace());
-  return gfx::RectF(bounding_box.x() * scale,
-                    bounding_box.y() * scale,
-                    bounding_box.width() * scale,
-                    bounding_box.height() * scale);
-}
-
 }  // namespace
 
 AutofillAgent::AutofillAgent(content::RenderView* render_view,
-                             PasswordAutofillAgent* password_autofill_agent)
+                             PasswordAutofillAgent* password_autofill_agent,
+                             PasswordGenerationAgent* password_generation_agent)
     : content::RenderViewObserver(render_view),
       password_autofill_agent_(password_autofill_agent),
+      password_generation_agent_(password_generation_agent),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
       web_view_(render_view->GetWebView()),
@@ -333,6 +328,11 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
   // required to properly handle IME interactions.
   if (!element.focused())
     return;
+
+  if (password_generation_agent_ &&
+      password_generation_agent_->TextDidChangeInTextField(element)) {
+    return;
+  }
 
   if (password_autofill_agent_->TextDidChangeInTextField(element)) {
     element_ = element;
