@@ -161,7 +161,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.idl_type != 'EventHandler' %}
     {{attribute.v8_value_to_local_cpp_value}};
     {% elif not is_node %}{# EventHandler hack #}
-    moveHiddenValueInArray(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
+    moveEventListenerToNewWrapper(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
     {% if attribute.enum_validation_expression %}
     {# Setter ignores invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
