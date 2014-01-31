@@ -61,11 +61,14 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
+    const DeviceMotionHardwareBuffer* null_buffer = NULL;
     listener_.reset(new MockDeviceMotionListener);
     motion_pump_.reset(new DeviceMotionEventPumpForTesting);
     buffer_ = static_cast<DeviceMotionHardwareBuffer*>(shared_memory_.memory());
+    ASSERT_NE(null_buffer, buffer_);
     memset(buffer_, 0, sizeof(DeviceMotionHardwareBuffer));
-    shared_memory_.ShareToProcess(base::kNullProcessHandle, &handle_);
+    ASSERT_TRUE(shared_memory_.ShareToProcess(base::GetCurrentProcessHandle(),
+        &handle_));
   }
 
   void InitBuffer(bool allAvailableSensorsActive) {
@@ -86,13 +89,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
   DeviceMotionHardwareBuffer* buffer_;
 };
 
-// Always failing in the win try bot. See http://crbug.com/256782.
-#if defined(OS_WIN)
-#define MAYBE_DidStartPolling DISABLED_DidStartPolling
-#else
-#define MAYBE_DidStartPolling DidStartPolling
-#endif
-TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
+TEST_F(DeviceMotionEventPumpTest, DidStartPolling) {
   base::MessageLoopForUI loop;
 
   InitBuffer(true);
@@ -119,16 +116,7 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
   EXPECT_FALSE(received_data.hasRotationRateGamma);
 }
 
-// Although this test passes on windows builds it is not certain if it does
-// so for the right reason. See http://crbug.com/256782.
-#if defined(OS_WIN)
-#define MAYBE_DidStartPollingNotAllSensorsActive \
-    DISABLED_DidStartPollingNotAllSensorsActive
-#else
-#define MAYBE_DidStartPollingNotAllSensorsActive \
-    DidStartPollingNotAllSensorsActive
-#endif
-TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPollingNotAllSensorsActive) {
+TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
   base::MessageLoopForUI loop;
 
   InitBuffer(false);
