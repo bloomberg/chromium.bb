@@ -16,7 +16,6 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/control.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -33,7 +32,6 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   MOCK_METHOD0(CreateInputInjectorPtr, InputInjector*());
   MOCK_METHOD0(CreateScreenControlsPtr, ScreenControls*());
   MOCK_METHOD0(CreateVideoCapturerPtr, webrtc::ScreenCapturer*());
-  MOCK_METHOD0(CreateMouseCursorMonitorPtr, webrtc::MouseCursorMonitor*());
   MOCK_CONST_METHOD0(GetCapabilities, std::string());
   MOCK_METHOD1(SetCapabilities, void(const std::string&));
 
@@ -42,8 +40,6 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
   virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
-  virtual scoped_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
-      OVERRIDE;
 };
 
 class MockClientSessionControl : public ClientSessionControl {
@@ -128,18 +124,6 @@ class MockHostStatusObserver : public HostStatusObserver {
                     const protocol::TransportRoute& route));
   MOCK_METHOD1(OnStart, void(const std::string& xmpp_login));
   MOCK_METHOD0(OnShutdown, void());
-};
-
-class MockMouseCursorMonitor : public webrtc::MouseCursorMonitor {
- public:
-  MockMouseCursorMonitor();
-  virtual ~MockMouseCursorMonitor();
-
-  MOCK_METHOD2(Init, void(Callback* callback, Mode mode));
-  MOCK_METHOD0(Capture, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockMouseCursorMonitor);
 };
 
 }  // namespace remoting

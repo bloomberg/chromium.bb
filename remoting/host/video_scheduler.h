@@ -15,7 +15,6 @@
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/capture_scheduler.h"
 #include "remoting/proto/video.pb.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace base {
@@ -75,7 +74,7 @@ class VideoStub;
 
 class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
                        public webrtc::DesktopCapturer::Callback,
-                       public webrtc::MouseCursorMonitor::Callback {
+                       public webrtc::ScreenCapturer::MouseShapeObserver {
  public:
   // Creates a VideoScheduler running capture, encode and network tasks on the
   // supplied TaskRunners.  Video and cursor shape updates will be pumped to
@@ -86,7 +85,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
       scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_ptr<webrtc::ScreenCapturer> capturer,
-      scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
       scoped_ptr<VideoEncoder> encoder,
       protocol::CursorShapeStub* cursor_stub,
       protocol::VideoStub* video_stub);
@@ -95,12 +93,9 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
 
-  // webrtc::MouseCursorMonitor::Callback implementation.
-  virtual void OnMouseCursor(
-      webrtc::MouseCursor* mouse_cursor) OVERRIDE;
-  virtual void OnMouseCursorPosition(
-      webrtc::MouseCursorMonitor::CursorState state,
-      const webrtc::DesktopVector& position) OVERRIDE;
+  // webrtc::ScreenCapturer::MouseShapeObserver implementation.
+  virtual void OnCursorShapeChanged(
+      webrtc::MouseCursorShape* cursor_shape) OVERRIDE;
 
   // Starts scheduling frame captures.
   void Start();
@@ -166,9 +161,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Used to capture frames. Always accessed on the capture thread.
   scoped_ptr<webrtc::ScreenCapturer> capturer_;
-
-  // Used to capture mouse cursor shapes. Always accessed on the capture thread.
-  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
 
   // Used to encode captured frames. Always accessed on the encode thread.
   scoped_ptr<VideoEncoder> encoder_;

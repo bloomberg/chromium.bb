@@ -39,11 +39,6 @@ MockDesktopEnvironment::CreateVideoCapturer() {
   return scoped_ptr<webrtc::ScreenCapturer>(CreateVideoCapturerPtr());
 }
 
-scoped_ptr<webrtc::MouseCursorMonitor>
-MockDesktopEnvironment::CreateMouseCursorMonitor() {
-  return scoped_ptr<webrtc::MouseCursorMonitor>(CreateMouseCursorMonitorPtr());
-}
-
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}
 
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
@@ -73,9 +68,5 @@ MockClientSessionEventHandler::~MockClientSessionEventHandler() {}
 MockHostStatusObserver::MockHostStatusObserver() {}
 
 MockHostStatusObserver::~MockHostStatusObserver() {}
-
-MockMouseCursorMonitor::MockMouseCursorMonitor() {}
-
-MockMouseCursorMonitor::~MockMouseCursorMonitor() {}
 
 }  // namespace remoting

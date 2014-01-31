@@ -11,8 +11,6 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace remoting {
@@ -39,14 +37,6 @@ scoped_ptr<ScreenControls> BasicDesktopEnvironment::CreateScreenControls() {
   return scoped_ptr<ScreenControls>();
 }
 
-scoped_ptr<webrtc::MouseCursorMonitor>
-BasicDesktopEnvironment::CreateMouseCursorMonitor() {
-  return scoped_ptr<webrtc::MouseCursorMonitor>(
-      webrtc::MouseCursorMonitor::CreateForScreen(
-          *desktop_capture_options_,
-          webrtc::kFullDesktopScreenId));
-}
-
 std::string BasicDesktopEnvironment::GetCapabilities() const {
   return std::string();
 }
@@ -60,8 +50,7 @@ BasicDesktopEnvironment::CreateVideoCapturer() {
 
   // The basic desktop environment does not use X DAMAGE, since it is
   // broken on many systems - see http://crbug.com/73423.
-  return scoped_ptr<webrtc::ScreenCapturer>(
-      webrtc::ScreenCapturer::Create(*desktop_capture_options_));
+  return scoped_ptr<webrtc::ScreenCapturer>(webrtc::ScreenCapturer::Create());
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(
@@ -70,10 +59,7 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
-      ui_task_runner_(ui_task_runner),
-      desktop_capture_options_(
-          new webrtc::DesktopCaptureOptions(
-              webrtc::DesktopCaptureOptions::CreateDefault())) {
+      ui_task_runner_(ui_task_runner) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
