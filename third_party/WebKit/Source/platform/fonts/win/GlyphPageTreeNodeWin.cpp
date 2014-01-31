@@ -32,6 +32,7 @@
 #include "config.h"
 #include <vector>
 
+#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -162,7 +163,7 @@ static bool fillBMPGlyphs(unsigned offset,
         // When this character should be a space, we ignore whatever the font
         // says and use a space. Otherwise, if fonts don't map one of these
         // space or zero width glyphs, we will get a box.
-        if (Font::treatAsSpace(c)) {
+        if (Character::treatAsSpace(c)) {
             // Hard code the glyph indices for characters that should be
             // treated like spaces.
             if (!spaceGlyphInitialized) {

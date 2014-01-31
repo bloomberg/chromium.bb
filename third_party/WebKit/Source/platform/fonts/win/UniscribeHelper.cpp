@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/fonts/win/UniscribeHelper.h"
 
+#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/skia/SkiaFontWin.h"
 #include "platform/fonts/win/FontFallbackWin.h"
@@ -573,7 +574,7 @@ void UniscribeHelper::fillRuns()
                     // Do not pack with whitespace characters at the head.
                     // Otherwise whole the run is rendered as a whitespace.
                     WCHAR ch = m_input[m_runs[i].iCharPos];
-                    if (m_scriptTags[i] == SCRIPT_TAG_UNKNOWN && !Font::treatAsSpace(ch) && !Font::treatAsZeroWidthSpace(ch)) {
+                    if (m_scriptTags[i] == SCRIPT_TAG_UNKNOWN && !Character::treatAsSpace(ch) && !Character::treatAsZeroWidthSpace(ch)) {
                         int j = 1;
                         while (i + j < numberOfItems && m_scriptTags[i + j] == SCRIPT_TAG_UNKNOWN)
                             ++j;
@@ -1015,8 +1016,8 @@ void UniscribeHelper::adjustSpaceAdvances()
         // of complex script blocks in Plane 1.
         for (int i = 0; i < shaping.charLength(); i++) {
             UChar c = m_input[m_runs[run].iCharPos + i];
-            bool treatAsSpace = Font::treatAsSpace(c);
-            if (!treatAsSpace && !Font::treatAsZeroWidthSpaceInComplexScript(c))
+            bool treatAsSpace = Character::treatAsSpace(c);
+            if (!treatAsSpace && !Character::treatAsZeroWidthSpaceInComplexScript(c))
                 continue;
 
             int glyphIndex = shaping.m_logs[i];
@@ -1095,7 +1096,7 @@ void UniscribeHelper::applySpacing()
         // extra wordspacing amount for the glyphs they correspond to.
         if (m_wordSpacing != 0) {
             for (int i = 0; i < shaping.charLength(); i++) {
-                if (!Font::treatAsSpace(m_input[m_runs[run].iCharPos + i]))
+                if (!Character::treatAsSpace(m_input[m_runs[run].iCharPos + i]))
                     continue;
 
                 // The char in question is a word separator...
@@ -1168,7 +1169,7 @@ bool UniscribeHelper::containsMissingGlyphs(const Shaping& shaping,
         UChar c = m_input[run.iCharPos + i];
         // Skip zero-width space characters because they're not considered to
         // be missing in a font.
-        if (Font::treatAsZeroWidthSpaceInComplexScript(c))
+        if (Character::treatAsZeroWidthSpaceInComplexScript(c))
             continue;
         int glyphIndex = shaping.m_logs[i];
         WORD glyph = shaping.m_glyphs[glyphIndex];
@@ -1178,7 +1179,7 @@ bool UniscribeHelper::containsMissingGlyphs(const Shaping& shaping,
         // is not a zero width whitespace.
         if (glyph == properties->wgDefault
             || (glyph == properties->wgInvalid && glyph != properties->wgBlank)
-            || (glyph == properties->wgBlank && shaping.m_visualAttributes[glyphIndex].fZeroWidth && !Font::treatAsZeroWidthSpace(c)))
+            || (glyph == properties->wgBlank && shaping.m_visualAttributes[glyphIndex].fZeroWidth && !Character::treatAsZeroWidthSpace(c)))
             return true;
     }
     return false;

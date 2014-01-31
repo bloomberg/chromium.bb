@@ -26,6 +26,7 @@
 #include "platform/fonts/mac/ComplexTextController.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/text/TextBreakIterator.h"
@@ -82,9 +83,9 @@ ComplexTextController::ComplexTextController(const Font* font, const TextRun& ru
         bool isAfterExpansion = m_afterExpansion;
         unsigned expansionOpportunityCount;
         if (m_run.is8Bit())
-            expansionOpportunityCount = Font::expansionOpportunityCount(m_run.characters8(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion);
+            expansionOpportunityCount = Character::expansionOpportunityCount(m_run.characters8(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion);
          else
-             expansionOpportunityCount = Font::expansionOpportunityCount(m_run.characters16(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion);
+            expansionOpportunityCount = Character::expansionOpportunityCount(m_run.characters16(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion);
         if (isAfterExpansion && !m_run.allowsTrailingExpansion())
             expansionOpportunityCount--;
 
@@ -551,13 +552,13 @@ void ComplexTextController::adjustGlyphsAndAdvances()
             else
                 nextCh = *(m_complexTextRuns[r + 1]->characters() + m_complexTextRuns[r + 1]->indexAt(0));
 
-            bool treatAsSpace = Font::treatAsSpace(ch);
+            bool treatAsSpace = Character::treatAsSpace(ch);
             CGGlyph glyph = treatAsSpace ? fontData->spaceGlyph() : glyphs[i];
             CGSize advance = treatAsSpace ? CGSizeMake(spaceWidth, advances[i].height) : advances[i];
 
-            if (ch == '\t' && m_run.allowTabs())
+            if (ch == '\t' && m_run.allowTabs()) {
                 advance.width = m_font.tabWidth(*fontData, m_run.tabSize(), m_run.xPos() + m_totalWidth + widthSinceLastCommit);
-            else if (Font::treatAsZeroWidthSpace(ch) && !treatAsSpace) {
+            } else if (Character::treatAsZeroWidthSpace(ch) && !treatAsSpace) {
                 advance.width = 0;
                 glyph = fontData->spaceGlyph();
             }
@@ -583,7 +584,7 @@ void ComplexTextController::adjustGlyphsAndAdvances()
                     advance.width += m_font.letterSpacing();
 
                 // Handle justification and word-spacing.
-                if (treatAsSpace || Font::isCJKIdeographOrSymbol(ch)) {
+                if (treatAsSpace || Character::isCJKIdeographOrSymbol(ch)) {
                     // Distribute the run's total expansion evenly over all expansion opportunities in the run.
                     if (m_expansion) {
                         float previousExpansion = m_expansion;
@@ -617,12 +618,12 @@ void ComplexTextController::adjustGlyphsAndAdvances()
             // We adjust the width of the last character of a "word" to ensure an integer width.
             // Force characters that are used to determine word boundaries for the rounding hack
             // to be integer width, so the following words will start on an integer boundary.
-            if (m_run.applyWordRounding() && Font::isRoundingHackCharacter(ch))
+            if (m_run.applyWordRounding() && Character::isRoundingHackCharacter(ch))
                 advance.width = ceilCGFloat(advance.width);
 
             // Check to see if the next character is a "rounding hack character", if so, adjust the
             // width so that the total run width will be on an integer boundary.
-            if ((m_run.applyWordRounding() && !lastGlyph && Font::isRoundingHackCharacter(nextCh)) || (m_run.applyRunRounding() && lastGlyph)) {
+            if ((m_run.applyWordRounding() && !lastGlyph && Character::isRoundingHackCharacter(nextCh)) || (m_run.applyRunRounding() && lastGlyph)) {
                 CGFloat totalWidth = widthSinceLastCommit + advance.width;
                 widthSinceLastCommit = ceilCGFloat(totalWidth);
                 CGFloat extraWidth = widthSinceLastCommit - totalWidth;
@@ -641,7 +642,7 @@ void ComplexTextController::adjustGlyphsAndAdvances()
                 widthSinceLastCommit += advance.width;
 
             // FIXME: Combining marks should receive a text emphasis mark if they are combine with a space.
-            if (m_forTextEmphasis && (!Font::canReceiveTextEmphasis(ch) || (U_GET_GC_MASK(ch) & U_GC_M_MASK)))
+            if (m_forTextEmphasis && (!Character::canReceiveTextEmphasis(ch) || (U_GET_GC_MASK(ch) & U_GC_M_MASK)))
                 glyph = 0;
 
             advance.height *= -1;

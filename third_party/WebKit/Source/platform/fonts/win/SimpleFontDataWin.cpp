@@ -36,7 +36,6 @@
 #include <objidl.h>
 #include <unicode/uchar.h>
 #include <unicode/unorm.h>
-#include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/win/FontPlatformDataWin.h"

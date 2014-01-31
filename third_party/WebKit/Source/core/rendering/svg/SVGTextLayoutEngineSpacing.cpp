@@ -23,6 +23,7 @@
 
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/svg/SVGLengthContext.h"
+#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 
 #if ENABLE(SVG_FONTS)
@@ -98,7 +99,7 @@ float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderS
 
     float spacing = m_font.letterSpacing() + kerning;
     if (currentCharacter && lastCharacter && m_font.wordSpacing()) {
-        if (Font::treatAsSpace(currentCharacter) && !Font::treatAsSpace(lastCharacter))
+        if (Character::treatAsSpace(currentCharacter) && !Character::treatAsSpace(lastCharacter))
             spacing += m_font.wordSpacing();
     }
 

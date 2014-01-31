@@ -34,6 +34,7 @@
 
 #include "platform/NotImplemented.h"
 #include "platform/fonts/FontFallbackList.h"
+#include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/skia/SkiaFontWin.h"
@@ -47,12 +48,12 @@ using namespace std;
 
 namespace WebCore {
 
-bool Font::canReturnFallbackFontsForComplexText()
+bool FontPlatformFeatures::canReturnFallbackFontsForComplexText()
 {
     return false;
 }
 
-bool Font::canExpandAroundIdeographsInComplexText()
+bool FontPlatformFeatures::canExpandAroundIdeographsInComplexText()
 {
     return false;
 }

@@ -22,6 +22,8 @@
 #include "config.h"
 #include "platform/fonts/WidthIterator.h"
 
+#include "platform/fonts/Character.h"
+#include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/Latin1TextIterator.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -57,7 +59,7 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
         m_expansionPerOpportunity = 0;
     else {
         bool isAfterExpansion = m_isAfterExpansion;
-        unsigned expansionOpportunityCount = m_run.is8Bit() ? Font::expansionOpportunityCount(m_run.characters8(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion) : Font::expansionOpportunityCount(m_run.characters16(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion);
+        unsigned expansionOpportunityCount = m_run.is8Bit() ? Character::expansionOpportunityCount(m_run.characters8(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion) : Character::expansionOpportunityCount(m_run.characters16(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion);
         if (isAfterExpansion && !m_run.allowsTrailingExpansion())
             expansionOpportunityCount--;
 
@@ -205,9 +207,9 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
             if (width && m_font->letterSpacing())
                 width += m_font->letterSpacing();
 
-            static bool expandAroundIdeographs = Font::canExpandAroundIdeographsInComplexText();
-            bool treatAsSpace = Font::treatAsSpace(character);
-            if (treatAsSpace || (expandAroundIdeographs && Font::isCJKIdeographOrSymbol(character))) {
+            static bool expandAroundIdeographs = FontPlatformFeatures::canExpandAroundIdeographsInComplexText();
+            bool treatAsSpace = Character::treatAsSpace(character);
+            if (treatAsSpace || (expandAroundIdeographs && Character::isCJKIdeographOrSymbol(character))) {
                 // Distribute the run's total expansion evenly over all expansion opportunities in the run.
                 if (m_expansion) {
                     float previousExpansion = m_expansion;
@@ -244,7 +246,7 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
                 m_isAfterExpansion = false;
         }
 
-        if (shouldApplyFontTransforms() && glyphBuffer && Font::treatAsSpace(character))
+        if (shouldApplyFontTransforms() && glyphBuffer && Character::treatAsSpace(character))
             charactersTreatedAsSpace.append(make_pair(glyphBuffer->size(),
                 OriginalAdvancesForCharacterTreatedAsSpace(character == ' ', glyphBuffer->size() ? glyphBuffer->advanceAt(glyphBuffer->size() - 1) : 0, width)));
 
@@ -254,7 +256,7 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
                 m_firstGlyphOverflow = max<float>(0, -bounds.x());
         }
 
-        if (m_forTextEmphasis && !Font::canReceiveTextEmphasis(character))
+        if (m_forTextEmphasis && !Character::canReceiveTextEmphasis(character))
             glyph = 0;
 
         // Advance past the character we just dealt with.
@@ -264,7 +266,7 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
 
         // Force characters that are used to determine word boundaries for the rounding hack
         // to be integer width, so following words will start on an integer boundary.
-        if (m_run.applyWordRounding() && Font::isRoundingHackCharacter(character)) {
+        if (m_run.applyWordRounding() && Character::isRoundingHackCharacter(character)) {
             width = ceilf(width);
 
             // Since widthSinceLastRounding can lose precision if we include measurements for
@@ -277,7 +279,7 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
         } else {
             // Check to see if the next character is a "rounding hack character", if so, adjust
             // width so that the total run width will be on an integer boundary.
-            if ((m_run.applyWordRounding() && textIterator.currentCharacter() < m_run.length() && Font::isRoundingHackCharacter(*(textIterator.characters())))
+            if ((m_run.applyWordRounding() && textIterator.currentCharacter() < m_run.length() && Character::isRoundingHackCharacter(*(textIterator.characters())))
                 || (m_run.applyRunRounding() && textIterator.currentCharacter() >= m_run.length())) {
                 float totalWidth = widthSinceLastRounding + width;
                 widthSinceLastRounding = ceilf(totalWidth);

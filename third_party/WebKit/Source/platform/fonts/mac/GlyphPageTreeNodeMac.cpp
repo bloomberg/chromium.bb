@@ -30,6 +30,7 @@
 #include "platform/fonts/GlyphPageTreeNode.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/SimpleFontData.h"
 
@@ -48,7 +49,7 @@ static bool shouldUseCoreText(UChar* buffer, unsigned bufferLength, const Simple
     if (fontData->platformData().widthVariant() != RegularWidth || fontData->hasVerticalGlyphs()) {
         // Ideographs don't have a vertical variant or width variants.
         for (unsigned i = 0; i < bufferLength; ++i) {
-            if (!Font::isCJKIdeograph(buffer[i]))
+            if (!Character::isCJKIdeograph(buffer[i]))
                 return true;
         }
     }

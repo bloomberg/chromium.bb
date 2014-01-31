@@ -24,6 +24,7 @@
 #include "platform/fonts/Font.h"
 
 #include "platform/LayoutUnit.h"
+#include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
@@ -202,7 +203,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
                     return make_pair(data, page);
 
                 if (data.fontData) {
-                    if (isCJKIdeographOrSymbol(c)) {
+                    if (Character::isCJKIdeographOrSymbol(c)) {
                         if (!data.fontData->hasVerticalGlyphs()) {
                             // Use the broken ideograph font data. The broken ideograph font will use the horizontal width of glyphs
                             // to make sure you get a square (even for broken glyphs like symbols used for punctuation).
@@ -276,11 +277,11 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
     // Doing so changes fast/text/international/plane2-diffs.html
     UChar32 characterToRender = c;
     if (characterToRender <=  0xFFFF)
-        characterToRender = Font::normalizeSpaces(characterToRender);
+        characterToRender = Character::normalizeSpaces(characterToRender);
     const SimpleFontData* fontDataToSubstitute = fontDataAt(0)->fontDataForCharacter(characterToRender);
     RefPtr<SimpleFontData> characterFontData = FontCache::fontCache()->platformFallbackForCharacter(m_fontDescription, characterToRender, fontDataToSubstitute);
     if (characterFontData) {
-        if (characterFontData->platformData().orientation() == Vertical && !characterFontData->hasVerticalGlyphs() && isCJKIdeographOrSymbol(c))
+        if (characterFontData->platformData().orientation() == Vertical && !characterFontData->hasVerticalGlyphs() && Character::isCJKIdeographOrSymbol(c))
             variant = BrokenIdeographVariant;
         if (variant != NormalVariant)
             characterFontData = characterFontData->variantFontData(m_fontDescription, variant);
@@ -293,7 +294,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
         if (variant == NormalVariant) {
             page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
             data.fontData->setMaxGlyphPageTreeLevel(max(data.fontData->maxGlyphPageTreeLevel(), node->level()));
-            if (!isCJKIdeographOrSymbol(c) && data.fontData->platformData().orientation() != Horizontal && !data.fontData->isTextOrientationFallback())
+            if (!Character::isCJKIdeographOrSymbol(c) && data.fontData->platformData().orientation() != Horizontal && !data.fontData->isTextOrientationFallback())
                 return glyphDataAndPageForNonCJKCharacterWithGlyphOrientation(c, m_fontDescription.nonCJKGlyphOrientation(), data, fallbackPage, pageNumber);
         }
         return make_pair(data, page);

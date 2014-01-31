@@ -30,6 +30,7 @@
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGGlyphElement.h"
+#include "platform/fonts/Character.h"
 #include "platform/fonts/SVGGlyph.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/WidthIterator.h"
@@ -142,10 +143,10 @@ bool SVGFontData::applySVGGlyphSelection(WidthIterator& iterator, GlyphData& gly
 
     if (run.is8Bit()) {
         remainingTextInRun = String(run.data8(currentCharacter), run.charactersLength() - currentCharacter);
-        remainingTextInRun = Font::normalizeSpaces(remainingTextInRun.characters8(), remainingTextInRun.length());
+        remainingTextInRun = Character::normalizeSpaces(remainingTextInRun.characters8(), remainingTextInRun.length());
     } else {
         remainingTextInRun = String(run.data16(currentCharacter), run.charactersLength() - currentCharacter);
-        remainingTextInRun = Font::normalizeSpaces(remainingTextInRun.characters16(), remainingTextInRun.length());
+        remainingTextInRun = Character::normalizeSpaces(remainingTextInRun.characters16(), remainingTextInRun.length());
     }
 
     if (mirror)

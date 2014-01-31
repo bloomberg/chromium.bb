@@ -25,6 +25,7 @@
 #include "config.h"
 #include "platform/fonts/Font.h"
 
+#include "platform/fonts/Character.h"
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -176,7 +177,7 @@ const SimpleFontData* Font::fontDataForCombiningCharacterSequence(const UChar* c
         const SimpleFontData* simpleFontData = fontData->fontDataForCharacter(baseCharacter);
         if (variant == NormalVariant) {
             if (simpleFontData->platformData().orientation() == Vertical) {
-                if (isCJKIdeographOrSymbol(baseCharacter) && !simpleFontData->hasVerticalGlyphs()) {
+                if (Character::isCJKIdeographOrSymbol(baseCharacter) && !simpleFontData->hasVerticalGlyphs()) {
                     variant = BrokenIdeographVariant;
                     simpleFontData = simpleFontData->brokenIdeographFontData().get();
                 } else if (m_fontDescription.nonCJKGlyphOrientation() == NonCJKGlyphOrientationVerticalRight) {

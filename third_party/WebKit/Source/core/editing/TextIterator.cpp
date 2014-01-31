@@ -43,6 +43,7 @@
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
+#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/TextBoundaries.h"
 #include "platform/text/TextBreakIteratorInternalICU.h"
@@ -1894,7 +1895,7 @@ inline bool SearchBuffer::isWordStartMatch(size_t start, size_t length) const
 
     // Chinese and Japanese lack word boundary marks, and there is no clear agreement on what constitutes
     // a word, so treat the position before any CJK character as a word start.
-    if (Font::isCJKIdeographOrSymbol(firstCharacter))
+    if (Character::isCJKIdeographOrSymbol(firstCharacter))
         return true;
 
     size_t wordBreakSearchStart = start + length;

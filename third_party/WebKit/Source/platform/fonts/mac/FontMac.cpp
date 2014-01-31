@@ -32,6 +32,7 @@
 #include "platform/fonts/Font.h"
 
 #include "platform/LayoutTestSupport.h"
+#include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -43,12 +44,12 @@
 
 namespace WebCore {
 
-bool Font::canReturnFallbackFontsForComplexText()
+bool FontPlatformFeatures::canReturnFallbackFontsForComplexText()
 {
     return true;
 }
 
-bool Font::canExpandAroundIdeographsInComplexText()
+bool FontPlatformFeatures::canExpandAroundIdeographsInComplexText()
 {
     return true;
 }

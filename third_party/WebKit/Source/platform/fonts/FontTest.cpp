@@ -27,6 +27,7 @@
 
 #include "config.h"
 
+#include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 
 #include <gtest/gtest.h>
@@ -47,17 +48,17 @@ static void TestSpecificUCharRange(UChar rangeStart, UChar rangeEnd)
     end[0] = rangeEnd;
     above[0] = rangeEnd + 1;
 
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(below, 1));
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(start, 1));
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(midway, 1));
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(end, 1));
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(above, 1));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(below, 1));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(start, 1));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(midway, 1));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(end, 1));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(above, 1));
 }
 
 TEST(FontTest, TestCharacterRangeCodePath)
 {
     static UChar c1[] = { 0x0 };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c1, 1));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c1, 1));
 
     TestSpecificUCharRange(0x2E5, 0x2E9);
     TestSpecificUCharRange(0x300, 0x36F);
@@ -72,19 +73,19 @@ TEST(FontTest, TestCharacterRangeCodePath)
     TestSpecificUCharRange(0x1A00, 0x1CFF);
 
     static UChar c2[] = { 0x1DBF };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c2, 1));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c2, 1));
     static UChar c3[] = { 0x1DC0 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c3, 1));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c3, 1));
     static UChar c4[] = { 0x1DD0 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c4, 1));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c4, 1));
     static UChar c5[] = { 0x1DFF };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c5, 1));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c5, 1));
     static UChar c6[] = { 0x1E00 };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c6, 1));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c6, 1));
     static UChar c7[] = { 0x2000 };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c7, 1));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c7, 1));
     static UChar c8[] = { 0x2001 };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c8, 1));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c8, 1));
 
     TestSpecificUCharRange(0x20D0, 0x20FF);
     TestSpecificUCharRange(0x2CEF, 0x2CF1);
@@ -107,84 +108,84 @@ TEST(FontTest, TestCharacterRangeCodePathSurrogate1)
 
     /* The following 5 should all be Simple because they are not surrogate. */
     static UChar c1[] = { 0xD800, 0xDBFE };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c1, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c1, 2));
     static UChar c2[] = { 0xD800, 0xE000 };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c2, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c2, 2));
     static UChar c3[] = { 0xDBFF, 0xDBFE };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c3, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c3, 2));
     static UChar c4[] = { 0xDBFF, 0xE000 };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c4, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c4, 2));
     static UChar c5[] = { 0xDC00, 0xDBFF };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c5, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c5, 2));
 
     /* To be Complex, the Supplementary Character must be in either */
     /* U+1F1E6 through U+1F1FF or U+E0100 through U+E01EF. */
     /* That is, a lead of 0xD83C with trail 0xDDE6 .. 0xDDFF or */
     /* a lead of 0xDB40 with trail 0xDD00 .. 0xDDEF. */
     static UChar c6[] = { 0xD83C, 0xDDE5 };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c6, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c6, 2));
     static UChar c7[] = { 0xD83C, 0xDDE6 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c7, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c7, 2));
     static UChar c8[] = { 0xD83C, 0xDDF0 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c8, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c8, 2));
     static UChar c9[] = { 0xD83C, 0xDDFF };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c9, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c9, 2));
     static UChar c10[] = { 0xD83C, 0xDE00 };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c10, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c10, 2));
 
     static UChar c11[] = { 0xDB40, 0xDCFF };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c11, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c11, 2));
     static UChar c12[] = { 0xDB40, 0xDD00 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c12, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c12, 2));
     static UChar c13[] = { 0xDB40, 0xDDED };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c13, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c13, 2));
     static UChar c14[] = { 0xDB40, 0xDDEF };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c14, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c14, 2));
     static UChar c15[] = { 0xDB40, 0xDDF0 };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c15, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c15, 2));
 }
 
 TEST(FontTest, TestCharacterRangeCodePathString)
 {
     // Simple-Simple is still simple
     static UChar c1[] = { 0x2FF, 0x2FF };
-    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c1, 2));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c1, 2));
     // Complex-Simple is Complex
     static UChar c2[] = { 0x300, 0x2FF };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c2, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c2, 2));
     // Simple-Complex is Complex
     static UChar c3[] = { 0x2FF, 0x330 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c3, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c3, 2));
     // Complex-Complex is Complex
     static UChar c4[] = { 0x36F, 0x330 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c4, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c4, 2));
     // SimpleWithGlyphOverflow-Simple is SimpleWithGlyphOverflow
     static UChar c5[] = { 0x1E00, 0x2FF };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c5, 2));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c5, 2));
     // Simple-SimpleWithGlyphOverflow is SimpleWithGlyphOverflow
     static UChar c6[] = { 0x2FF, 0x2000 };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c6, 2));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c6, 2));
     // SimpleWithGlyphOverflow-Complex is Complex
     static UChar c7[] = { 0x1E00, 0x330 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c7, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c7, 2));
     // Complex-SimpleWithGlyphOverflow is Complex
     static UChar c8[] = { 0x330, 0x2000 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c8, 2));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c8, 2));
     // Surrogate-Complex is Complex
     static UChar c9[] = { 0xD83C, 0xDDE5, 0x330 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c9, 3));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c9, 3));
     // Complex-Surrogate is Complex
     static UChar c10[] = { 0x330, 0xD83C, 0xDDE5 };
-    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c10, 3));
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c10, 3));
 }
 
 static void TestSpecificUChar32RangeIdeograph(UChar32 rangeStart, UChar32 rangeEnd)
 {
-    EXPECT_FALSE(Font::isCJKIdeograph(rangeStart - 1));
-    EXPECT_TRUE(Font::isCJKIdeograph(rangeStart));
-    EXPECT_TRUE(Font::isCJKIdeograph((UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
-    EXPECT_TRUE(Font::isCJKIdeograph(rangeEnd));
-    EXPECT_FALSE(Font::isCJKIdeograph(rangeEnd + 1));
+    EXPECT_FALSE(Character::isCJKIdeograph(rangeStart - 1));
+    EXPECT_TRUE(Character::isCJKIdeograph(rangeStart));
+    EXPECT_TRUE(Character::isCJKIdeograph((UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
+    EXPECT_TRUE(Character::isCJKIdeograph(rangeEnd));
+    EXPECT_FALSE(Character::isCJKIdeograph(rangeEnd + 1));
 }
 
 TEST(FontTest, TestIsCJKIdeograph)
@@ -210,149 +211,149 @@ TEST(FontTest, TestIsCJKIdeograph)
 
 static void TestSpecificUChar32RangeIdeographSymbol(UChar32 rangeStart, UChar32 rangeEnd)
 {
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(rangeStart - 1));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(rangeStart));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol((UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(rangeEnd));
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(rangeEnd + 1));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(rangeStart - 1));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(rangeStart));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol((UChar32)((uint64_t)rangeStart + (uint64_t)rangeEnd) / 2));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(rangeEnd));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(rangeEnd + 1));
 }
 
 TEST(FontTest, TestIsCJKIdeographOrSymbol)
 {
     // CJK Compatibility Ideographs Supplement.
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2C7));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2CA));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2CB));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2D9));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2C7));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2CA));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2CB));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2D9));
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2020));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2021));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2030));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x203B));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x203C));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2042));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2047));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2048));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2049));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2051));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x20DD));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x20DE));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2100));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2103));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2105));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2109));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x210A));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2113));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2116));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2121));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x212B));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x213B));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2150));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2151));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2152));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2020));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2021));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2030));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x203B));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x203C));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2042));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2047));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2048));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2049));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2051));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x20DD));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x20DE));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2100));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2103));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2105));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2109));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x210A));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2113));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2116));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2121));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x212B));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x213B));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2150));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2151));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2152));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2156, 0x215A);
     TestSpecificUChar32RangeIdeographSymbol(0x2160, 0x216B);
     TestSpecificUChar32RangeIdeographSymbol(0x2170, 0x217B);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x217F));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2189));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2307));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2312));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x217F));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2189));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2307));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2312));
 
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0x23BD));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x23BE));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x23C4));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x23CC));
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0x23CD));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x23CE));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2423));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x23BD));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23BE));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23C4));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23CC));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x23CD));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x23CE));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2423));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2460, 0x2492);
     TestSpecificUChar32RangeIdeographSymbol(0x249C, 0x24FF);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25A0));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25A1));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25A2));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25AA));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25AB));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25B1));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25B2));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25B3));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25B6));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25B7));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25BC));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25BD));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25C0));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25C1));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25C6));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25C7));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25C9));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25CB));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25CC));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25A0));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25A1));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25A2));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25AA));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25AB));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B1));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B2));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B3));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B6));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25B7));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25BC));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25BD));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C0));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C1));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C6));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C7));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25C9));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25CB));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25CC));
 
     TestSpecificUChar32RangeIdeographSymbol(0x25CE, 0x25D3);
     TestSpecificUChar32RangeIdeographSymbol(0x25E2, 0x25E6);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x25EF));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x25EF));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2600, 0x2603);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2605));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2606));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x260E));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2616));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2617));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2640));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2642));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2605));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2606));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x260E));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2616));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2617));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2640));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2642));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2660, 0x266F);
     TestSpecificUChar32RangeIdeographSymbol(0x2672, 0x267D);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x26A0));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x26BD));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x26BE));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2713));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x271A));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x273F));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2740));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2756));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x26A0));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x26BD));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x26BE));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2713));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x271A));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x273F));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2740));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2756));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2776, 0x277F);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x2B1A));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2B1A));
 
     TestSpecificUChar32RangeIdeographSymbol(0x2FF0, 0x302F);
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x3031));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x312F));
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0x3130));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3031));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x312F));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x3130));
 
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0x318F));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x3190));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x319F));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x31BF));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x318F));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3190));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x319F));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x31BF));
 
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0x31FF));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x3200));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x3300));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x33FF));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0x31FF));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3200));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x3300));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x33FF));
 
     TestSpecificUChar32RangeIdeographSymbol(0xF860, 0xF862);
     TestSpecificUChar32RangeIdeographSymbol(0xFE30, 0xFE4F);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0xFE10));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0xFE11));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0xFE12));
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0xFE19));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE10));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE11));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE12));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0xFE19));
 
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0xFF0D));
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0xFF1B));
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0xFF1C));
-    EXPECT_FALSE(Font::isCJKIdeographOrSymbol(0xFF1E));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF0D));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF1B));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF1C));
+    EXPECT_FALSE(Character::isCJKIdeographOrSymbol(0xFF1E));
 
     TestSpecificUChar32RangeIdeographSymbol(0xFF00, 0xFFEF);
 
-    EXPECT_TRUE(Font::isCJKIdeographOrSymbol(0x1F100));
+    EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x1F100));
 
     TestSpecificUChar32RangeIdeographSymbol(0x1F110, 0x1F129);
     TestSpecificUChar32RangeIdeographSymbol(0x1F130, 0x1F149);

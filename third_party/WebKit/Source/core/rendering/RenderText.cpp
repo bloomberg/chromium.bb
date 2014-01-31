@@ -39,6 +39,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/break_lines.h"
+#include "platform/fonts/Character.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextBreakIterator.h"
@@ -1832,7 +1833,7 @@ bool RenderText::computeCanUseSimpleFontCodePath() const
 {
     if (isAllASCII() || m_text.is8Bit())
         return true;
-    return Font::characterRangeCodePath(characters16(), length()) == SimplePath;
+    return Character::characterRangeCodePath(characters16(), length()) == SimplePath;
 }
 
 #ifndef NDEBUG
