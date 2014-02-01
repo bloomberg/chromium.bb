@@ -10,6 +10,7 @@ A comprehensive HTTP client library in Python.
 
 Local Modifications:
 Only python2 version is kept. Test and packaging code stripped.
+Appengine related code is removed. See MODIFICATIONS.diff.
 
 Notes:
 Required by oauth2client library.
