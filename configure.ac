@@ -474,15 +474,6 @@ if test x$wayland_scanner = x; then
 fi
 
 PKG_CHECK_MODULES(WAYLAND_SCANNER, wayland-scanner)
-AC_PATH_PROG(XMLLINT, xmllint)
-AC_ARG_WITH([dtddir],
-	    AS_HELP_STRING([--with-dtddir],
-			   [Directory containing the Wayland
-			    protocol DTD @<:@default=from pkgconfig@:>@]),
-	    [dtddir="$withval"],
-	    [dtddir=$($PKG_CONFIG --variable=pkgdatadir wayland-scanner)])
-AC_SUBST([dtddir])
-AM_CONDITIONAL([HAVE_XMLLINT], [test "x$XMLLINT" != "x" -a "x$dtddir" != "x"])
 
 AC_CONFIG_FILES([Makefile src/version.h src/weston.pc])
 

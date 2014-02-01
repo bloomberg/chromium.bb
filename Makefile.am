@@ -17,7 +17,7 @@ weston.ini : $(srcdir)/weston.ini.in
 		-e 's|@libexecdir[@]|$(libexecdir)|g' \
 		$< > $@
 
-all-local : weston.ini validate-protocol-xml
+all-local : weston.ini
 
 AM_CFLAGS = $(GCC_CFLAGS)
 
@@ -892,7 +892,7 @@ BUILT_SOURCES +=				\
 	tests/text-protocol.c			\
 	tests/text-client-protocol.h
 
-protocol_sources =				\
+EXTRA_DIST +=					\
 	protocol/desktop-shell.xml		\
 	protocol/screenshooter.xml		\
 	protocol/xserver.xml			\
@@ -903,20 +903,6 @@ protocol_sources =				\
 	protocol/wayland-test.xml		\
 	protocol/xdg-shell.xml			\
 	protocol/scaler.xml
-
-if HAVE_XMLLINT
-.PHONY : validate-protocol-xml
-
-.%.xml.valid : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(XMLLINT) --noout --dtdvalid $(dtddir)/wayland.dtd $^ > $@
-
-validate-protocol-xml : $(protocol_sources:protocol/%.xml=.%.xml.valid)
-
-CLEANFILES += $(protocol_sources:protocol/%.xml=.%.xml.valid)
-EXTRA_DIST += $(protocol_sources)
-
-endif
-
 
 man_MANS = weston.1 weston.ini.5
 
