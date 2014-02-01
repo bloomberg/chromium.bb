@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/session_state_observer.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -26,7 +25,6 @@ class Profile;
 
 namespace aura {
 class Window;
-class WindowObserver;
 }
 
 namespace chrome {
@@ -49,7 +47,6 @@ class AppObserver;
 class MultiUserWindowManagerChromeOS
     : public MultiUserWindowManager,
       public ash::SessionStateObserver,
-      public ash::wm::WindowStateObserver,
       public aura::WindowObserver,
       public content::NotificationObserver,
       public views::corewm::TransientWindowObserver {
@@ -88,11 +85,6 @@ class MultiUserWindowManagerChromeOS
                                      aura::Window* transient) OVERRIDE;
   virtual void OnTransientChildRemoved(aura::Window* window,
                                        aura::Window* transient) OVERRIDE;
-
-  // Window .. overrides:
-  virtual void OnWindowShowTypeChanged(
-      ash::wm::WindowState* state,
-      ash::wm::WindowShowType old_type) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

@@ -295,9 +295,9 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, TeleportedWindows) {
   EXPECT_EQ(1, GetStateChangedCountAndReset());
 
   ash::wm::GetWindowState(w23.get())->Minimize();
-  EXPECT_EQ(u2, multi_user_window_manager->GetUserPresentingWindow(w23.get()));
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_EQ(u1, multi_user_window_manager->GetUserPresentingWindow(w23.get()));
+  EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
-  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
 }

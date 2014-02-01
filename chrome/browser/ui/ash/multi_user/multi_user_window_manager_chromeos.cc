@@ -258,10 +258,10 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
 
 MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   // Remove all window observers.
-  WindowToEntryMap::iterator window_observer = window_to_entry_.begin();
-  while (window_observer != window_to_entry_.end()) {
-    OnWindowDestroyed(window_observer->first);
-    window_observer = window_to_entry_.begin();
+  WindowToEntryMap::iterator window = window_to_entry_.begin();
+  while (window != window_to_entry_.end()) {
+    OnWindowDestroyed(window->first);
+    window = window_to_entry_.begin();
   }
 
   // Remove all app observers.
@@ -299,7 +299,6 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
 
   // Add observers to track state changes.
   window->AddObserver(this);
-  ash::wm::GetWindowState(window)->AddObserver(this);
   views::corewm::TransientWindowManager::Get(window)->AddObserver(this);
 
   // Check if this window was created due to a user interaction. If it was,
@@ -466,7 +465,6 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
     RemoveTransientOwnerRecursive(window);
     return;
   }
-  ash::wm::GetWindowState(window)->RemoveObserver(this);
   views::corewm::TransientWindowManager::Get(window)->RemoveObserver(this);
   // Remove the window from the owners list.
   delete window_to_entry_[window];
@@ -540,19 +538,6 @@ void MultiUserWindowManagerChromeOS::OnTransientChildRemoved(
     RemoveTransientOwnerRecursive(transient_window);
 }
 
-void MultiUserWindowManagerChromeOS::OnWindowShowTypeChanged(
-    ash::wm::WindowState* window_state,
-    ash::wm::WindowShowType old_type) {
-  if (!window_state->IsMinimized())
-    return;
-
-  aura::Window* window = window_state->window();
-  // If the window was shown on a different users desktop: move it back.
-  const std::string& owner = GetWindowOwner(window);
-  if (!IsWindowOnDesktopOfUser(window, owner))
-    ShowWindowForUser(window, owner);
-}
-
 void MultiUserWindowManagerChromeOS::Observe(
     int type,
     const content::NotificationSource& source,
@@ -605,9 +590,18 @@ void MultiUserWindowManagerChromeOS::TransitionUser(
             it_map->second->show_for_user() == current_user_id_ &&
             it_map->second->show();
         bool is_visible = window->IsVisible();
-        if (should_be_visible != is_visible &&
-            should_be_visible == (animation_step == SHOW_NEW_USER))
+        ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+        if (animation_step == SHOW_NEW_USER &&
+            it_map->second->owner() == current_user_id_ &&
+            it_map->second->show_for_user() != current_user_id_ &&
+            window_state->IsMinimized()) {
+          // Pull back minimized visiting windows to the owners desktop.
+          ShowWindowForUser(window, current_user_id_);
+          window_state->Unminimize();
+        } else if (should_be_visible != is_visible &&
+                   should_be_visible == (animation_step == SHOW_NEW_USER)) {
           SetWindowVisibility(window, should_be_visible, kUserFadeTimeMS);
+        }
       }
     }
   }

@@ -412,7 +412,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, PreserveWindowVisibilityTests) {
 }
 
 // Check that minimizing a window which is owned by another user will move it
-// back.
+// back and gets restored upon switching back to the original user.
 TEST_F(MultiUserWindowManagerChromeOSTest, MinimizeChangesOwnershipBack) {
   SetUpForThisManyWindows(4);
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
@@ -423,15 +423,16 @@ TEST_F(MultiUserWindowManagerChromeOSTest, MinimizeChangesOwnershipBack) {
   EXPECT_TRUE(multi_user_window_manager()->IsWindowOnDesktopOfUser(window(1),
                                                                    "A"));
   wm::GetWindowState(window(1))->Minimize();
-  EXPECT_EQ("S[A], H[B], H[B], S[]", GetStatus());
-  EXPECT_FALSE(multi_user_window_manager()->IsWindowOnDesktopOfUser(window(1),
-                                                                    "A"));
-
+  // At this time the window is still on the desktop of that user, but the user
+  // does not have a way to get to it.
+  EXPECT_EQ("S[A], H[B,A], H[B], S[]", GetStatus());
+  EXPECT_TRUE(multi_user_window_manager()->IsWindowOnDesktopOfUser(window(1),
+                                                                   "A"));
+  EXPECT_TRUE(wm::GetWindowState(window(1))->IsMinimized());
   // Change to user B and make sure that minimizing does not change anything.
   multi_user_window_manager()->ActiveUserChanged("B");
-  EXPECT_EQ("H[A], H[B], S[B], S[]", GetStatus());
-  wm::GetWindowState(window(1))->Minimize();
-  EXPECT_EQ("H[A], H[B], S[B], S[]", GetStatus());
+  EXPECT_EQ("H[A], S[B], S[B], S[]", GetStatus());
+  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMinimized());
 }
 
 // Check that we cannot transfer the ownership of a minimized window.
