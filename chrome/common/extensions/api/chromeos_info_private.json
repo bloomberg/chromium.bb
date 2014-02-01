@@ -38,6 +38,12 @@
                   "initialLocale" : {"type": "string", "optional": "true", "description": "Initial locale for the device"},
                   "isOwner" : {"type": "boolean", "optional": "true", "description": "True if current logged in user is device owner"},
                   "timezone" : {"type": "string", "optional": "true", "description": "Timezone"},
+                  "a11yLargeCursorEnabled" : {"type": "boolean", "optional": "true", "description": "If true, ChromeOS is showing enlarged cursor."},
+                  "a11yStickyKeysEnabled" : {"type": "boolean", "optional": "true", "description": "If true, sticky keys are turned on."},
+                  "a11ySpokenFeedbackEnabled" : {"type": "boolean", "optional": "true", "description": "If enabled, ChromeOS text-to-speech feature is turned on."},
+                  "a11yHighContrastEnabled" : {"type": "boolean", "optional": "true", "description": "If true, all displays have high contrast mode turned on."},
+                  "a11yScreenMagnifierEnabled" : {"type": "boolean", "optional": "true", "description": "If true, all displays have screen magnifier turned on."},
+                  "a11yAutoClickEnabled" : {"type": "boolean", "optional": "true", "description": "If true, auto mouse click accessibility feature is turned on."},
                   "supportedTimezones" : {
                     "type": "array",
                     "items": {
@@ -61,12 +67,18 @@
           {
             "name": "propertyName",
             "type": "string",
-            "enum": ["timezone"],
+            "enum": ["timezone",
+                     "a11yLargeCursorEnabled",
+                     "a11yStickyKeysEnabled",
+                     "a11ySpokenFeedbackEnabled",
+                     "a11yHighContrastEnabled",
+                     "a11yScreenMagnifierEnabled",
+                     "a11yAutoClickEnabled"],
             "description": "Chrome OS system property name"
           },
           {
-            "name": "propertyVame",
-            "type": "string",
+            "name": "propertyValue",
+            "type": "any",
             "description": "Chrome OS system property value"
           }
         ]

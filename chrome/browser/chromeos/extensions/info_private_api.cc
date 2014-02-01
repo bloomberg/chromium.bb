@@ -4,12 +4,16 @@
 
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
 
+#include "base/basictypes.h"
+#include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -46,8 +50,49 @@ const char kPropertyTimezone[] = "timezone";
 // Key which corresponds to the timezone property in JS.
 const char kPropertySupportedTimezones[] = "supportedTimezones";
 
+// Key which corresponds to the large cursor A11Y property in JS.
+const char kPropertyLargeCursorEnabled[] = "a11yLargeCursorEnabled";
+
+// Key which corresponds to the sticky keys A11Y property in JS.
+const char kPropertyStickyKeysEnabled[] = "a11yStickyKeysEnabled";
+
+// Key which corresponds to the spoken feedback A11Y property in JS.
+const char kPropertySpokenFeedbackEnabled[] = "a11ySpokenFeedbackEnabled";
+
+// Key which corresponds to the high contrast mode A11Y property in JS.
+const char kPropertyHighContrastEnabled[] = "a11yHighContrastEnabled";
+
+// Key which corresponds to the screen magnifier A11Y property in JS.
+const char kPropertyScreenMagnifierEnabled[] = "a11yScreenMagnifierEnabled";
+
+// Key which corresponds to the auto click A11Y property in JS.
+const char kPropertyAutoclickEnabled[] = "a11yAutoClickEnabled";
+
 // Property not found error message.
 const char kPropertyNotFound[] = "Property '*' does not exist.";
+
+const struct {
+  const char* api_name;
+  const char* preference_name;
+} kPreferencesMap[] = {
+    { kPropertyLargeCursorEnabled, prefs::kLargeCursorEnabled },
+    { kPropertyStickyKeysEnabled, prefs::kStickyKeysEnabled },
+    { kPropertySpokenFeedbackEnabled, prefs::kSpokenFeedbackEnabled },
+    { kPropertyHighContrastEnabled, prefs::kHighContrastEnabled },
+    { kPropertyScreenMagnifierEnabled, prefs::kScreenMagnifierEnabled },
+    { kPropertyAutoclickEnabled, prefs::kAutoclickEnabled }
+};
+
+const char* GetBoolPrefNameForApiProperty(const char* api_name) {
+  for (size_t i = 0;
+       i < (sizeof(kPreferencesMap)/sizeof(*kPreferencesMap));
+       i++) {
+    if (strcmp(kPreferencesMap[i].api_name, api_name) == 0)
+      return kPreferencesMap[i].preference_name;
+  }
+
+  return NULL;
+}
 
 }  // namespace
 
@@ -103,12 +148,19 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   } else if (property_name == kPropertySupportedTimezones) {
     scoped_ptr<base::ListValue> values = chromeos::system::GetTimezoneList();
     return values.release();
+  } else {
+    const char* pref_name =
+        GetBoolPrefNameForApiProperty(property_name.c_str());
+    if (pref_name) {
+      return base::Value::CreateBooleanValue(
+          Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
+              pref_name));
+    }
   }
 
   DLOG(ERROR) << "Unknown property request: " << property_name;
   return NULL;
 }
-
 
 ChromeosInfoPrivateSetFunction::ChromeosInfoPrivateSetFunction() {
 }
@@ -125,8 +177,17 @@ bool ChromeosInfoPrivateSetFunction::RunImpl() {
     chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
                                        base::StringValue(param_value));
   } else {
-    error_ = ErrorUtils::FormatErrorMessage(kPropertyNotFound, param_name);
-    return false;
+    const char* pref_name = GetBoolPrefNameForApiProperty(param_name.c_str());
+    if (pref_name) {
+      bool param_value;
+      EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &param_value));
+      Profile::FromBrowserContext(context_)->GetPrefs()->SetBoolean(
+          pref_name,
+          param_value);
+    } else {
+      error_ = ErrorUtils::FormatErrorMessage(kPropertyNotFound, param_name);
+      return false;
+    }
   }
 
   return true;
