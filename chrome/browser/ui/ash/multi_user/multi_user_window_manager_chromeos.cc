@@ -329,42 +329,16 @@ const std::string& MultiUserWindowManagerChromeOS::GetWindowOwner(
 void MultiUserWindowManagerChromeOS::ShowWindowForUser(
     aura::Window* window,
     const std::string& user_id) {
-  // If there is either no owner, or the owner is the current user, no action
-  // is required.
-  const std::string& owner = GetWindowOwner(window);
-  if (owner.empty() ||
-      (owner == user_id && IsWindowOnDesktopOfUser(window, user_id)))
+  std::string previous_owner(GetUserPresentingWindow(window));
+  if (!ShowWindowForUserIntern(window, user_id))
     return;
-
-  bool minimized = ash::wm::GetWindowState(window)->IsMinimized();
-  // Check that we are not trying to transfer ownership of a minimized window.
-  if (user_id != owner && minimized)
+  // The window switched to a new desktop and we have to switch to that desktop,
+  // but only when it was on the visible desktop and the the target is not the
+  // visible desktop.
+  if (user_id == current_user_id_ || previous_owner != current_user_id_)
     return;
-
-  if (minimized) {
-    // If it is minimized it falls back to the original desktop.
-    ash::MultiProfileUMA::RecordTeleportAction(
-        ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_MINIMIZE);
-  } else {
-    // If the window was transferred without getting minimized, we should record
-    // the window type.
-    RecordUMAForTransferredWindowType(window);
-  }
-
-  WindowToEntryMap::iterator it = window_to_entry_.find(window);
-  it->second->set_show_for_user(user_id);
-
-  // Show the window if the added user is the current one.
-  if (user_id == current_user_id_) {
-    // Only show the window if it should be shown according to its state.
-    if (it->second->show())
-      SetWindowVisibility(window, true, kTeleportAnimationTimeMS);
-  } else {
-    SetWindowVisibility(window, false, kTeleportAnimationTimeMS);
-  }
-
-  // TODO(skuhne): replace this by observer when another one needs this event.
-  notification_blocker_->UpdateWindowOwners();
+  ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(
+      user_id);
 }
 
 bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() {
@@ -554,6 +528,52 @@ bool MultiUserWindowManagerChromeOS::IsAnimationRunningForTest() {
   return user_changed_animation_timer_.get() != NULL;
 }
 
+const std::string& MultiUserWindowManagerChromeOS::GetCurrentUserForTest() {
+  return current_user_id_;
+}
+
+bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
+    aura::Window* window,
+    const std::string& user_id) {
+  // If there is either no owner, or the owner is the current user, no action
+  // is required.
+  const std::string& owner = GetWindowOwner(window);
+  if (owner.empty() ||
+      (owner == user_id && IsWindowOnDesktopOfUser(window, user_id)))
+    return false;
+
+  bool minimized = ash::wm::GetWindowState(window)->IsMinimized();
+  // Check that we are not trying to transfer ownership of a minimized window.
+  if (user_id != owner && minimized)
+    return false;
+
+  if (minimized) {
+    // If it is minimized it falls back to the original desktop.
+    ash::MultiProfileUMA::RecordTeleportAction(
+        ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_MINIMIZE);
+  } else {
+    // If the window was transferred without getting minimized, we should record
+    // the window type.
+    RecordUMAForTransferredWindowType(window);
+  }
+
+  WindowToEntryMap::iterator it = window_to_entry_.find(window);
+  it->second->set_show_for_user(user_id);
+
+  // Show the window if the added user is the current one.
+  if (user_id == current_user_id_) {
+    // Only show the window if it should be shown according to its state.
+    if (it->second->show())
+      SetWindowVisibility(window, true, kTeleportAnimationTimeMS);
+  } else {
+    SetWindowVisibility(window, false, kTeleportAnimationTimeMS);
+  }
+
+  // TODO(skuhne): replace this by observer when another one needs this event.
+  notification_blocker_->UpdateWindowOwners();
+  return true;
+}
+
 void MultiUserWindowManagerChromeOS::TransitionUser(
     MultiUserWindowManagerChromeOS::AnimationStep animation_step) {
   TransitionWallpaper(animation_step);
@@ -596,7 +616,7 @@ void MultiUserWindowManagerChromeOS::TransitionUser(
             it_map->second->show_for_user() != current_user_id_ &&
             window_state->IsMinimized()) {
           // Pull back minimized visiting windows to the owners desktop.
-          ShowWindowForUser(window, current_user_id_);
+          ShowWindowForUserIntern(window, current_user_id_);
           window_state->Unminimize();
         } else if (should_be_visible != is_visible &&
                    should_be_visible == (animation_step == SHOW_NEW_USER)) {

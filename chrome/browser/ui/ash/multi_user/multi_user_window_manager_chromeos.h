@@ -25,7 +25,13 @@ class Profile;
 
 namespace aura {
 class Window;
-}
+}  // namespace aura
+
+namespace ash {
+namespace test {
+class MultiUserWindowManagerChromeOSTest;
+}  // namespace test
+}  // namespace ash
 
 namespace chrome {
 
@@ -97,8 +103,12 @@ class MultiUserWindowManagerChromeOS
   // Returns true when a user switch animation is running. For unit tests.
   bool IsAnimationRunningForTest();
 
+  // Returns the current user for unit tests.
+  const std::string& GetCurrentUserForTest();
+
  private:
   friend class ::MultiUserNotificationBlockerChromeOSTest;
+  friend class ash::test::MultiUserWindowManagerChromeOSTest;
 
   class WindowEntry {
    public:
@@ -149,6 +159,11 @@ class MultiUserWindowManagerChromeOS
     HIDE_OLD_USER,
     SHOW_NEW_USER
   };
+
+  // Show a window for a user without switching the user.
+  // Returns true when the window moved to a new desktop.
+  bool ShowWindowForUserIntern(aura::Window* window,
+                               const std::string& user_id);
 
   // Start the user change animation required for |animation_step|.
   // Note that a call with SHOW_NEW_USER will finalize the animation and kill
