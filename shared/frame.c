@@ -578,6 +578,14 @@ frame_opaque_rect(struct frame *frame, int32_t *x, int32_t *y,
 		*height = frame->height - frame->opaque_margin * 2;
 }
 
+int
+frame_get_shadow_margin(struct frame *frame)
+{
+	frame_refresh_geometry(frame);
+
+	return frame->shadow_margin;
+}
+
 uint32_t
 frame_status(struct frame *frame)
 {

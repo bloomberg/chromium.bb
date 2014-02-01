@@ -3172,6 +3172,18 @@ xdg_surface_pong(struct wl_client *client,
 }
 
 static void
+xdg_surface_set_margin(struct wl_client *client,
+			     struct wl_resource *resource,
+			     int32_t left,
+			     int32_t right,
+			     int32_t top,
+			     int32_t bottom)
+{
+	/* Do nothing, Weston doesn't try to constrain or place
+	 * surfaces in any special manner... */
+}
+
+static void
 xdg_surface_set_app_id(struct wl_client *client,
 		       struct wl_resource *resource,
 		       const char *app_id)
@@ -3309,6 +3321,7 @@ xdg_surface_unset_maximized(struct wl_client *client,
 static const struct xdg_surface_interface xdg_surface_implementation = {
 	xdg_surface_destroy,
 	xdg_surface_set_transient_for,
+	xdg_surface_set_margin,
 	xdg_surface_set_title,
 	xdg_surface_set_app_id,
 	xdg_surface_pong,

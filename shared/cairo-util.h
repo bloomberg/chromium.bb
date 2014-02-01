@@ -165,6 +165,9 @@ void
 frame_opaque_rect(struct frame *frame, int32_t *x, int32_t *y,
 		  int32_t *width, int32_t *height);
 
+int
+frame_get_shadow_margin(struct frame *frame);
+
 uint32_t
 frame_status(struct frame *frame);
 

@@ -3938,6 +3938,27 @@ window_sync_transient_for(struct window *window)
 }
 
 static void
+window_sync_margin(struct window *window)
+{
+	int margin;
+
+	if (!window->xdg_surface)
+		return;
+
+	if (!window->frame)
+		return;
+
+	margin = frame_get_shadow_margin(window->frame->frame);
+
+	/* Shadow size is the same on every side. */
+	xdg_surface_set_margin(window->xdg_surface,
+				     margin,
+				     margin,
+				     margin,
+				     margin);
+}
+
+static void
 window_flush(struct window *window)
 {
 	struct surface *surface;
@@ -3953,6 +3974,7 @@ window_flush(struct window *window)
 						 &xdg_surface_listener, window);
 
 			window_sync_transient_for(window);
+			window_sync_margin(window);
 		}
 	}
 
