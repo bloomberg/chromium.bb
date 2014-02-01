@@ -1,13 +1,12 @@
 bin_PROGRAMS =
 noinst_PROGRAMS =
+libexec_PROGRAMS =
 moduledir = $(libdir)/weston
 module_LTLIBRARIES =
 noinst_LTLIBRARIES =
 BUILT_SOURCES =
 
-SUBDIRS =					\
-	shared					\
-	clients
+SUBDIRS = shared
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
 
@@ -27,11 +26,13 @@ AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = 					\
 	-I$(top_srcdir)/src			\
 	-I$(top_builddir)/src			\
+	-I$(top_builddir)/clients		\
 	-I$(top_builddir)/tests			\
 	-I$(top_srcdir)/shared			\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
-	-DLIBEXECDIR='"$(libexecdir)"'
+	-DLIBEXECDIR='"$(libexecdir)"'		\
+	-DBINDIR='"$(bindir)"'
 
 CLEANFILES = weston.ini $(BUILT_SOURCES)
 
@@ -342,6 +343,258 @@ BUILT_SOURCES +=					\
 	src/scaler-server-protocol.h			\
 	src/scaler-protocol.c				\
 	src/git-version.h
+
+if BUILD_CLIENTS
+
+bin_PROGRAMS += weston-terminal weston-info
+
+libexec_PROGRAMS +=				\
+	weston-desktop-shell			\
+	weston-screenshooter			\
+	weston-keyboard				\
+	weston-simple-im
+
+demo_clients =					\
+	weston-flower				\
+	weston-image				\
+	weston-cliptest				\
+	weston-dnd				\
+	weston-smoke				\
+	weston-resizor				\
+	weston-eventdemo			\
+	weston-clickdot				\
+	weston-transformed			\
+	weston-fullscreen			\
+	weston-stacking				\
+	weston-calibrator			\
+	weston-scaler
+
+if INSTALL_DEMO_CLIENTS
+bin_PROGRAMS += $(demo_clients)
+else
+noinst_PROGRAMS += $(demo_clients)
+endif
+
+
+if BUILD_SIMPLE_CLIENTS
+demo_clients +=					\
+	weston-simple-shm			\
+	weston-simple-touch			\
+	weston-multi-resource
+
+weston_simple_shm_SOURCES =			\
+	clients/simple-shm.c			\
+	shared/os-compatibility.c		\
+	shared/os-compatibility.h
+weston_simple_shm_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
+
+weston_simple_touch_SOURCES =			\
+	clients/simple-touch.c			\
+	shared/os-compatibility.c		\
+	shared/os-compatibility.h
+weston_simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
+
+weston_multi_resource_SOURCES =			\
+	clients/multi-resource.c		\
+	shared/os-compatibility.c		\
+	shared/os-compatibility.h
+weston_multi_resource_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
+endif
+
+if BUILD_SIMPLE_EGL_CLIENTS
+demo_clients += weston-simple-egl
+weston_simple_egl_SOURCES = clients/simple-egl.c
+weston_simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
+weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+endif
+
+noinst_LTLIBRARIES += libtoytoolkit.la
+
+libtoytoolkit_la_SOURCES =				\
+	clients/window.c				\
+	clients/window.h				\
+	clients/text-cursor-position-protocol.c		\
+	clients/text-cursor-position-client-protocol.h	\
+	clients/scaler-protocol.c			\
+	clients/scaler-client-protocol.h		\
+	clients/workspaces-protocol.c			\
+	clients/workspaces-client-protocol.h
+
+libtoytoolkit_la_LIBADD =			\
+	$(CLIENT_LIBS)				\
+	$(CAIRO_EGL_LIBS)			\
+	shared/libshared-cairo.la -lrt -lm
+libtoytoolkit_la_CFLAGS = $(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
+
+weston_flower_SOURCES = clients/flower.c
+weston_flower_LDADD = libtoytoolkit.la
+weston_flower_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_screenshooter_SOURCES =			\
+	clients/screenshot.c				\
+	clients/screenshooter-protocol.c		\
+	clients/screenshooter-client-protocol.h		\
+	shared/os-compatibility.c		\
+	shared/os-compatibility.h
+weston_screenshooter_LDADD = $(CLIENT_LIBS)
+weston_screenshooter_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_terminal_SOURCES = clients/terminal.c
+weston_terminal_LDADD = libtoytoolkit.la -lutil
+weston_terminal_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_image_SOURCES = clients/image.c
+weston_image_LDADD = libtoytoolkit.la
+weston_image_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_cliptest_SOURCES = clients/cliptest.c
+weston_cliptest_CFLAGS = $(AM_CPPFLAGS) $(CLIENT_CFLAGS)
+weston_cliptest_LDADD = libtoytoolkit.la
+
+weston_dnd_SOURCES = clients/dnd.c
+weston_dnd_LDADD = libtoytoolkit.la
+weston_dnd_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_smoke_SOURCES = clients/smoke.c
+weston_smoke_LDADD = libtoytoolkit.la
+weston_smoke_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_resizor_SOURCES = clients/resizor.c
+weston_resizor_LDADD = libtoytoolkit.la
+weston_resizor_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_scaler_SOURCES = clients/scaler.c
+weston_scaler_LDADD = libtoytoolkit.la
+weston_scaler_CFLAGS = $(CLIENT_CFLAGS)
+
+if HAVE_CAIRO_GLESV2
+demo_clients += weston-nested weston-nested-client
+
+weston_nested_SOURCES = clients/nested.c
+weston_nested_LDADD = libtoytoolkit.la $(SERVER_LIBS)
+weston_nested_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_nested_client_SOURCES = clients/nested-client.c
+weston_nested_client_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+endif
+
+weston_eventdemo_SOURCES = clients/eventdemo.c
+weston_eventdemo_LDADD = libtoytoolkit.la
+weston_eventdemo_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_clickdot_SOURCES = clients/clickdot.c
+weston_clickdot_LDADD = libtoytoolkit.la
+weston_clickdot_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_transformed_SOURCES = clients/transformed.c
+weston_transformed_LDADD = libtoytoolkit.la
+weston_transformed_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_fullscreen_SOURCES = clients/fullscreen.c
+weston_fullscreen_LDADD = libtoytoolkit.la
+weston_fullscreen_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_stacking_SOURCES = clients/stacking.c
+weston_stacking_LDADD = libtoytoolkit.la
+weston_stacking_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_calibrator_SOURCES = clients/calibrator.c	\
+	shared/matrix.c					\
+	shared/matrix.h
+weston_calibrator_LDADD = libtoytoolkit.la
+weston_calibrator_CFLAGS = $(CLIENT_CFLAGS)
+
+if BUILD_SUBSURFACES_CLIENT
+demo_clients += weston-subsurfaces
+weston_subsurfaces_SOURCES = clients/subsurfaces.c
+weston_subsurfaces_CFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS) $(CLIENT_CFLAGS)
+weston_subsurfaces_LDADD = libtoytoolkit.la $(SIMPLE_EGL_CLIENT_LIBS) -lm
+endif
+
+if HAVE_PANGO
+demo_clients += weston-editor
+weston_editor_SOURCES =				\
+	clients/editor.c			\
+	clients/text-protocol.c			\
+	clients/text-client-protocol.h
+weston_editor_LDADD = libtoytoolkit.la $(PANGO_LIBS)
+weston_editor_CFLAGS = $(CLIENT_CFLAGS) $(PANGO_CFLAGS)
+endif
+
+weston_keyboard_SOURCES =			\
+	clients/keyboard.c			\
+	clients/desktop-shell-client-protocol.h	\
+	clients/desktop-shell-protocol.c	\
+	clients/input-method-protocol.c		\
+	clients/input-method-client-protocol.h
+weston_keyboard_LDADD = libtoytoolkit.la
+weston_keyboard_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_simple_im_SOURCES =			\
+	clients/weston-simple-im.c		\
+	clients/input-method-protocol.c		\
+	clients/input-method-client-protocol.h
+weston_simple_im_LDADD = $(CLIENT_LIBS)
+weston_simple_im_CFLAGS = $(CLIENT_CFLAGS)
+
+weston_info_SOURCES =				\
+	clients/weston-info.c			\
+	shared/os-compatibility.c		\
+	shared/os-compatibility.h
+weston_info_LDADD = $(WESTON_INFO_LIBS)
+
+weston_desktop_shell_SOURCES =			\
+	clients/desktop-shell.c			\
+	clients/desktop-shell-client-protocol.h	\
+	clients/desktop-shell-protocol.c
+weston_desktop_shell_LDADD = libtoytoolkit.la
+weston_desktop_shell_CFLAGS = $(CLIENT_CFLAGS)
+
+if BUILD_FULL_GL_CLIENTS
+demo_clients += weston-gears
+weston_gears_SOURCES = clients/gears.c
+weston_gears_LDADD = libtoytoolkit.la
+weston_gears_CFLAGS = $(CLIENT_CFLAGS)
+
+if HAVE_GLU
+libexec_PROGRAMS += weston-screensaver
+weston_screensaver_SOURCES =			\
+	clients/wscreensaver.c			\
+	clients/wscreensaver.h			\
+	clients/desktop-shell-client-protocol.h	\
+	clients/desktop-shell-protocol.c	\
+	clients/wscreensaver-glue.c		\
+	clients/wscreensaver-glue.h		\
+	clients/glmatrix.c			\
+	clients/matrix3.xpm
+weston_screensaver_LDADD = libtoytoolkit.la $(GLU_LIBS)
+weston_screensaver_CFLAGS = $(GLU_CFLAGS) $(CLIENT_CFLAGS)
+
+endif
+
+endif
+
+endif
+
+BUILT_SOURCES +=					\
+	clients/screenshooter-client-protocol.h		\
+	clients/screenshooter-protocol.c		\
+	clients/text-cursor-position-client-protocol.h	\
+	clients/text-cursor-position-protocol.c		\
+	clients/text-protocol.c				\
+	clients/text-client-protocol.h			\
+	clients/input-method-protocol.c			\
+	clients/input-method-client-protocol.h		\
+	clients/desktop-shell-client-protocol.h		\
+	clients/desktop-shell-protocol.c		\
+	clients/scaler-client-protocol.h		\
+	clients/scaler-protocol.c			\
+	clients/workspaces-client-protocol.h		\
+	clients/workspaces-protocol.c
+
 
 westondatadir = $(datadir)/weston
 dist_westondata_DATA =				\

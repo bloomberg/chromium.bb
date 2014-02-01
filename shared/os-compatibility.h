@@ -25,7 +25,7 @@
 
 #include <sys/types.h>
 
-#include "../config.h"
+#include "config.h"
 
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
