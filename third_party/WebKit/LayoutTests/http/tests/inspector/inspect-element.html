@@ -14,7 +14,7 @@ function test()
         if (!node)
             return;
         if (node.getAttribute("id") == "div") {
-            InspectorTest.addResult(WebInspector.DOMPresentationUtils.appropriateSelectorFor(node));
+            InspectorTest.addResult(WebInspector.DOMPresentationUtils.fullQualifiedSelector(node));
             InspectorTest.completeTest();
         }
     }

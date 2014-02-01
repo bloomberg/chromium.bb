@@ -11,7 +11,7 @@ function initialize_LayerTreeTests()
     InspectorTest.labelForLayer = function(layer)
     {
         var node = WebInspector.domAgent.nodeForId(layer.nodeIdForSelfOrAncestor());
-        var label = WebInspector.DOMPresentationUtils.appropriateSelectorFor(node, false);
+        var label = WebInspector.DOMPresentationUtils.fullQualifiedSelector(node, false);
         var height = layer.height();
         var width = layer.width();
         if (height <= 200 && width <= 200)

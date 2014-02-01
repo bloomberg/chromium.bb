@@ -1,8 +1,12 @@
 Tests DOMNode.cssPath()
 
+
 ид
+  
 класс
-   html
+   
+   
+  html
     head
       head > meta
       #script-id
@@ -12,6 +16,7 @@ Tests DOMNode.cssPath()
       body > p
       body > article:nth-child(2)
       body > article:nth-child(3)
+      body > input[type="number"]
       #ids
         #ids > div:nth-child(1)
         #ids > div:nth-child(2)
@@ -25,6 +30,8 @@ Tests DOMNode.cssPath()
         #\2d 0
         #\37
         #ид
+        #input-id
+        #ids > input[type="text"]:nth-child(14)
         #ids > p
       #classes
         #classes > div.foo.bar
@@ -40,6 +47,8 @@ Tests DOMNode.cssPath()
         #classes > div.__proto__.foo
         #classes > span
         #id-with-class
+        #classes > input.input-class-one
+        #classes > input.input-class-two
       #non-unique-classes
         #non-unique-classes > span:nth-child(1)
         #non-unique-classes > span:nth-child(2)
@@ -51,5 +60,7 @@ Tests DOMNode.cssPath()
         #non-unique-classes > div.c3.c2
         #non-unique-classes > div.c3.c4
         #non-unique-classes > div.c1.c4
-        #non-unique-classes > div:nth-child(11)
+        #non-unique-classes > input:nth-child(11)
+        #non-unique-classes > input:nth-child(12)
+        #non-unique-classes > div:nth-child(13)
 
