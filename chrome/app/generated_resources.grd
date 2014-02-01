@@ -10362,6 +10362,68 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
           Search settings
         </message>
+
+        <!-- Reset Profile Settings strings -->
+        <message name="IDS_RESET_PROFILE_SETTINGS_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that the settings might have been changed without the user's knowledge.">
+          Some of your settings may have been changed without your knowledge.
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE" desc="The title of the section in chrome://settings that allows resetting some settings in a profile">
+          Reset browser settings
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="A label describing the purpose of the 'reset profile settings' feature">
+          Restore browser settings to their original defaults.
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_EXPLANATION" desc="A label describing the consequences of the 'reset profile settings' feature">
+          Your browser settings will be restored to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
+          Reset browser settings
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title">
+          Reset browser settings
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
+          Reset
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
+          Help make Google Chrome better by reporting the current settings
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_LOCALE" desc="Locale field in the feedback details of the Reset Profile Settings dialog">
+          Locale
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_USER_AGENT" desc="User Agent field in the feedback details of the Reset Profile Settings dialog">
+          User Agent
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS" desc="Startup URLs tag in the feedback details of the Reset Profile Settings dialog">
+          Startup URLs
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_STARTUP_TYPE" desc="Startup type tag in the feedback details of the Reset Profile Settings dialog">
+          Startup type
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE" desc="Homepage tag in the feedback details of the Reset Profile Settings dialog">
+          Homepage
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP" desc="Tag in the feedback details of the Reset Profile Settings dialog">
+          Homepage is the New Tab page
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
+          Yes
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
+          No
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_DSE" desc="Default search engine in the feedback details of the Reset Profile Settings dialog">
+          Default search engine
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_EXTENSIONS" desc="Extensions tag in the feedback details of the Reset Profile Settings dialog">
+          Extensions
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_SHORTCUTS" desc="List of Chrome shortcuts in the feedback details of the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
+          Shortcut targets
+        </message>
+        <message name="IDS_RESET_PROFILE_SETTINGS_PROCESSING_SHORTCUTS" desc="A placeholder for the actual shortcuts in the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
+          Processing shortcuts...
+        </message>
       </if>
 
       <!-- chrome://settings strings that are used by all platforms including Android -->
@@ -14445,68 +14507,6 @@ Do you accept?
     </message>
     <message name="IDS_PASSWORD_GENERATION_BUTTON_TEXT" desc="The text on the button that users click to accept the generated password">
       Try it
-    </message>
-
-    <!-- Reset Profile Settings strings -->
-    <message name="IDS_RESET_PROFILE_SETTINGS_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that the settings might have been changed without the user's knowledge.">
-      Some of your settings may have been changed without your knowledge.
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE" desc="The title of the section in chrome://settings that allows resetting some settings in a profile">
-      Reset browser settings
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="A label describing the purpose of the 'reset profile settings' feature">
-      Restore browser settings to their original defaults.
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_EXPLANATION" desc="A label describing the consequences of the 'reset profile settings' feature">
-      Your browser settings will be restored to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
-      Reset browser settings
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title">
-      Reset browser settings
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
-      Reset
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_FEEDBACK" desc="Feedback label in the Reset Profile Settings dialog">
-      Help make Google Chrome better by reporting the current settings
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_LOCALE" desc="Locale field in the feedback details of the Reset Profile Settings dialog">
-      Locale
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_USER_AGENT" desc="User Agent field in the feedback details of the Reset Profile Settings dialog">
-      User Agent
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS" desc="Startup URLs tag in the feedback details of the Reset Profile Settings dialog">
-      Startup URLs
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_STARTUP_TYPE" desc="Startup type tag in the feedback details of the Reset Profile Settings dialog">
-      Startup type
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE" desc="Homepage tag in the feedback details of the Reset Profile Settings dialog">
-      Homepage
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP" desc="Tag in the feedback details of the Reset Profile Settings dialog">
-      Homepage is the New Tab page
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
-      Yes
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE" desc="Value of HOMEPAGE_IS_NTP in the feedback details of the Reset Profile Settings dialog">
-      No
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_DSE" desc="Default search engine in the feedback details of the Reset Profile Settings dialog">
-      Default search engine
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_EXTENSIONS" desc="Extensions tag in the feedback details of the Reset Profile Settings dialog">
-      Extensions
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_SHORTCUTS" desc="List of Chrome shortcuts in the feedback details of the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
-      Shortcut targets
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_PROCESSING_SHORTCUTS" desc="A placeholder for the actual shortcuts in the Reset Profile Settings dialog (shortcut refers to the desktop icon on windows)">
-      Processing shortcuts...
     </message>
 
     <!-- Identity internals strings -->
