@@ -264,7 +264,11 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
         } else
             repaintRect = contentBoxRect();
 
-        repaintRectangle(repaintRect);
+        {
+            // FIXME: We should not be allowing repaint during layout. crbug.com/339584
+            AllowRepaintScope scoper(frameView());
+            repaintRectangle(repaintRect);
+        }
 
         // Tell any potential compositing layers that the image needs updating.
         contentChanged(ImageChanged);

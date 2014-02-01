@@ -92,6 +92,9 @@ public:
     bool layoutPending() const;
     bool isInPerformLayout() const { return m_inPerformLayout; }
 
+    void setCanRepaintDuringPerformLayout(bool b) { m_canRepaintDuringPerformLayout = b; }
+    bool canRepaintDuringPerformLayout() const { return m_canRepaintDuringPerformLayout; }
+
     RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
     void clearLayoutSubtreeRoot() { m_layoutSubtreeRoot = 0; }
     int layoutCount() const { return m_layoutCount; }
@@ -411,6 +414,13 @@ private:
     void setLayoutSizeInternal(const IntSize&);
 
     bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
+    bool repaintAllowed() const
+    {
+        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+            return true;
+
+        return !m_inPerformLayout || canRepaintDuringPerformLayout();
+    }
 
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
     static bool s_inPaintContents;
@@ -439,6 +449,7 @@ private:
 
     bool m_layoutSchedulingEnabled;
     bool m_inPerformLayout;
+    bool m_canRepaintDuringPerformLayout;
     bool m_doingPreLayoutStyleUpdate;
     bool m_inSynchronousPostLayout;
     int m_layoutCount;
@@ -537,6 +548,30 @@ inline void FrameView::incrementVisuallyNonEmptyPixelCount(const IntSize& size)
 }
 
 DEFINE_TYPE_CASTS(FrameView, Widget, widget, widget->isFrameView(), widget.isFrameView());
+
+class AllowRepaintScope {
+public:
+    explicit AllowRepaintScope(FrameView* view)
+        : m_view(view)
+    {
+        if (!m_view)
+            return;
+
+        m_originalValue = m_view->canRepaintDuringPerformLayout();
+        m_view->setCanRepaintDuringPerformLayout(true);
+    }
+
+    ~AllowRepaintScope()
+    {
+        if (!m_view)
+            return;
+
+        m_view->setCanRepaintDuringPerformLayout(m_originalValue);
+    }
+private:
+    FrameView* m_view;
+    bool m_originalValue;
+};
 
 } // namespace WebCore
 

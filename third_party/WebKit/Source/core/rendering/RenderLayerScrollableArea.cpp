@@ -630,9 +630,14 @@ void RenderLayerScrollableArea::updateAfterLayout()
 
     updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
 
-    // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
-    if (m_box->view() && m_box->view()->compositor()->updateLayerCompositingState(m_box->layer()))
-        m_box->view()->compositor()->setCompositingLayersNeedRebuild();
+    {
+        // FIXME: We should not be allowing repaint during layout. crbug.com/336251
+        AllowRepaintScope scoper(m_box->view()->frameView());
+
+        // Composited scrolling may need to be enabled or disabled if the amount of overflow changed.
+        if (m_box->view() && m_box->view()->compositor()->updateLayerCompositingState(m_box->layer()))
+            m_box->view()->compositor()->setCompositingLayersNeedRebuild();
+    }
 }
 
 bool RenderLayerScrollableArea::hasHorizontalOverflow() const

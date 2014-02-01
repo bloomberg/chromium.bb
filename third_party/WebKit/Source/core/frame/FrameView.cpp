@@ -227,6 +227,7 @@ void FrameView::reset()
     m_doFullRepaint = true;
     m_layoutSchedulingEnabled = true;
     m_inPerformLayout = false;
+    m_canRepaintDuringPerformLayout = false;
     m_doingPreLayoutStyleUpdate = false;
     m_inSynchronousPostLayout = false;
     m_layoutCount = 0;
@@ -1748,6 +1749,7 @@ HostWindow* FrameView::hostWindow() const
 
 void FrameView::repaintContentRectangle(const IntRect& r)
 {
+    ASSERT(repaintAllowed());
     ASSERT(!m_frame->ownerElement());
 
     if (m_isTrackingRepaints) {
