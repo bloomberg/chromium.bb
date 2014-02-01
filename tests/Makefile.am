@@ -52,7 +52,6 @@ AM_CPPFLAGS =					\
 	-I$(top_srcdir)/src			\
 	-I$(top_srcdir)/shared			\
 	-I$(top_builddir)/src			\
-	-DUNIT_TEST				\
 	$(COMPOSITOR_CFLAGS)
 
 surface_global_test_la_SOURCES = surface-global-test.c
@@ -133,16 +132,17 @@ if ENABLE_XWAYLAND_TEST
 xwayland_test = xwayland.weston
 endif
 
+matrix_test_CPPFLAGS = -DUNIT_TEST
 matrix_test_SOURCES =				\
 	matrix-test.c				\
-	$(top_srcdir)/shared/matrix.c		\
-	$(top_srcdir)/shared/matrix.h
+	../shared/matrix.c			\
+	../shared/matrix.h
 matrix_test_LDADD = -lm -lrt
 
 setbacklight_SOURCES =				\
 	setbacklight.c				\
-	$(top_srcdir)/src/libbacklight.c	\
-	$(top_srcdir)/src/libbacklight.h
+	../src/libbacklight.c			\
+	..//src/libbacklight.h
 
 setbacklight_CFLAGS = $(AM_CFLAGS) $(SETBACKLIGHT_CFLAGS)
 setbacklight_LDADD = $(SETBACKLIGHT_LIBS)
