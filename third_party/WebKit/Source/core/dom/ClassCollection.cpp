@@ -28,28 +28,23 @@
  */
 
 #include "config.h"
-#include "core/dom/ClassNodeList.h"
+#include "core/dom/ClassCollection.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/NodeRareData.h"
 
 namespace WebCore {
 
-ClassNodeList::ClassNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicString& classNames)
-    : LiveNodeList(rootNode, ClassNodeListType, InvalidateOnClassAttrChange)
+ClassCollection::ClassCollection(ContainerNode* rootNode, const AtomicString& classNames)
+    : HTMLCollection(rootNode, ClassCollectionType, DoesNotOverrideItemAfter)
     , m_classNames(classNames, document().inQuirksMode())
     , m_originalClassNames(classNames)
 {
 }
 
-ClassNodeList::~ClassNodeList()
+ClassCollection::~ClassCollection()
 {
-    ownerNode()->nodeLists()->removeCacheWithAtomicName(this, ClassNodeListType, m_originalClassNames);
-}
-
-bool ClassNodeList::nodeMatches(const Element& testNode) const
-{
-    return nodeMatchesInlined(testNode);
+    ownerNode()->nodeLists()->removeCacheWithAtomicName(this, ClassCollectionType, m_originalClassNames);
 }
 
 } // namespace WebCore

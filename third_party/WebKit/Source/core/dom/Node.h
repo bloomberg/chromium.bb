@@ -47,7 +47,7 @@
 namespace WebCore {
 
 class Attribute;
-class ClassNodeList;
+class ClassCollection;
 class ContainerNode;
 class DOMSettableTokenList;
 class Document;
@@ -80,7 +80,7 @@ class RenderBoxModelObject;
 class RenderObject;
 class RenderStyle;
 class ShadowRoot;
-class TagNodeList;
+class TagCollection;
 class Text;
 class TouchEvent;
 

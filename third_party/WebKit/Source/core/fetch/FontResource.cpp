@@ -37,7 +37,7 @@
 
 #if ENABLE(SVG_FONTS)
 #include "SVGNames.h"
-#include "core/dom/NodeList.h"
+#include "core/html/HTMLCollection.h"
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGFontElement.h"
 #endif
@@ -127,26 +127,26 @@ bool FontResource::ensureSVGFontData()
 
 SVGFontElement* FontResource::getSVGFontById(const String& fontName) const
 {
-    RefPtr<NodeList> list = m_externalSVGDocument->getElementsByTagNameNS(SVGNames::fontTag.namespaceURI(), SVGNames::fontTag.localName());
-    if (!list)
+    RefPtr<HTMLCollection> collection = m_externalSVGDocument->getElementsByTagNameNS(SVGNames::fontTag.namespaceURI(), SVGNames::fontTag.localName());
+    if (!collection)
         return 0;
 
-    unsigned listLength = list->length();
-    if (!listLength)
+    unsigned collectionLength = collection->length();
+    if (!collectionLength)
         return 0;
 
 #ifndef NDEBUG
-    for (unsigned i = 0; i < listLength; ++i) {
-        ASSERT(list->item(i));
-        ASSERT(list->item(i)->hasTagName(SVGNames::fontTag));
+    for (unsigned i = 0; i < collectionLength; ++i) {
+        ASSERT(collection->item(i));
+        ASSERT(collection->item(i)->hasTagName(SVGNames::fontTag));
     }
 #endif
 
     if (fontName.isEmpty())
-        return toSVGFontElement(list->item(0));
+        return toSVGFontElement(collection->item(0));
 
-    for (unsigned i = 0; i < listLength; ++i) {
-        SVGFontElement* element = toSVGFontElement(list->item(i));
+    for (unsigned i = 0; i < collectionLength; ++i) {
+        SVGFontElement* element = toSVGFontElement(collection->item(i));
         if (element->getIdAttribute() == fontName)
             return element;
     }

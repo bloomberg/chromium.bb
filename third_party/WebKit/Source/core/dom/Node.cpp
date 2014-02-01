@@ -48,7 +48,6 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Range.h"
 #include "core/dom/StaticNodeList.h"
-#include "core/dom/TagNodeList.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
 #include "core/dom/TreeScopeAdopter.h"
@@ -1924,8 +1923,8 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
     if (attrName)
         return;
 
-    TagNodeListCacheNS::iterator tagCacheEnd = m_tagNodeListCacheNS.end();
-    for (TagNodeListCacheNS::iterator it = m_tagNodeListCacheNS.begin(); it != tagCacheEnd; ++it)
+    TagCollectionCacheNS::iterator tagCacheEnd = m_tagCollectionCacheNS.end();
+    for (TagCollectionCacheNS::iterator it = m_tagCollectionCacheNS.begin(); it != tagCacheEnd; ++it)
         it->value->invalidateCache();
 }
 

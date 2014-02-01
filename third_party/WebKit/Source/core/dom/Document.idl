@@ -36,7 +36,7 @@ callback CustomElementConstructor = Element ();
     [RaisesException, MeasureAs=DocumentCreateCDATASection] CDATASection createCDATASection([Default=Undefined] optional DOMString data); // Removed from DOM4.
     [RaisesException] ProcessingInstruction createProcessingInstruction(DOMString target, DOMString data);
     [RaisesException, MeasureAs=DocumentCreateAttribute] Attr createAttribute([Default=Undefined] optional DOMString name); // Removed from DOM4.
-    [PerWorldBindings] NodeList getElementsByTagName(DOMString localName);
+    [PerWorldBindings] HTMLCollection getElementsByTagName(DOMString localName);
 
     // Introduced in DOM Level 2:
 
@@ -44,7 +44,7 @@ callback CustomElementConstructor = Element ();
     [CustomElementCallbacks, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName);
     [RaisesException, MeasureAs=DocumentCreateAttributeNS] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                                                   [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName); // Removed from DOM4.
-    NodeList getElementsByTagNameNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
+    HTMLCollection getElementsByTagNameNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString localName);
     [PerWorldBindings] Element getElementById(DOMString elementId);
 
     // DOM Level 3 Core
@@ -146,7 +146,7 @@ callback CustomElementConstructor = Element ();
     CanvasRenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 
     // HTML 5
-    NodeList getElementsByClassName(DOMString classNames);
+    HTMLCollection getElementsByClassName(DOMString classNames);
     readonly attribute Element activeElement;
     boolean hasFocus();
 

@@ -34,5 +34,5 @@
     [NotEnumerable] getter (NodeList or Element) (DOMString name);
     [Custom] Element namedItem(DOMString name);
     // FIXME: This should return an HTMLAllCollection.
-    [MeasureAs=DocumentAllTags] NodeList tags(DOMString name);
+    [MeasureAs=DocumentAllTags] HTMLCollection tags(DOMString name);
 };
