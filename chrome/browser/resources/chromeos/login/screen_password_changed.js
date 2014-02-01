@@ -140,6 +140,13 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     },
 
     /**
+     * Event handler that is invoked just before the screen is hidden.
+     */
+    onBeforeHide: function() {
+      $('login-header-bar').disabled = false;
+    },
+
+    /**
      * Starts migration process by removing old cryptohome and re-syncing data.
      */
     resync: function() {

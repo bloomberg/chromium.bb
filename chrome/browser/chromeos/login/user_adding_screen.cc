@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
@@ -50,6 +52,9 @@ void UserAddingScreenImpl::Start() {
 
 void UserAddingScreenImpl::Cancel() {
   CHECK(IsRunning());
+
+  // Make sure that system tray is enabled after this flow.
+  ash::Shell::GetInstance()->GetPrimarySystemTray()->SetEnabled(true);
   display_host_->Finalize();
 }
 
