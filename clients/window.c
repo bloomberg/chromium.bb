@@ -1363,6 +1363,15 @@ window_has_focus(struct window *window)
 	return window->focused;
 }
 
+static void
+window_close(struct window *window)
+{
+	if (window->close_handler)
+		window->close_handler(window->user_data);
+	else
+		display_exit(window->display);
+}
+
 struct display *
 window_get_display(struct window *window)
 {
@@ -2261,10 +2270,7 @@ frame_menu_func(struct window *window,
 
 	switch (index) {
 	case 0: /* close */
-		if (window->close_handler)
-			window->close_handler(window->user_data);
-		else
-			display_exit(window->display);
+		window_close(window);
 		break;
 	case 1: /* move to workspace above */
 		display = window->display;
@@ -2378,10 +2384,7 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 	}
 
 	if (status & FRAME_STATUS_CLOSE) {
-		if (window->close_handler)
-			window->close_handler(window->user_data);
-		else
-			display_exit(window->display);
+		window_close(window);
 		return;
 	}
 
@@ -2909,10 +2912,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	} else if (sym == XKB_KEY_F4 &&
 		   input->modifiers == MOD_ALT_MASK &&
 		   state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		if (window->close_handler)
-			window->close_handler(window->user_data);
-		else
-			display_exit(window->display);
+		window_close(window);
 	} else if (window->key_handler) {
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
@@ -3902,6 +3902,13 @@ handle_surface_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surf
 	window_set_fullscreen(window, 0);
 }
 
+static void
+handle_surface_delete(void *data, struct xdg_surface *xdg_surface)
+{
+	struct window *window = data;
+	window_close(window);
+}
+
 static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_ping,
 	handle_surface_configure,
@@ -3911,6 +3918,7 @@ static const struct xdg_surface_listener xdg_surface_listener = {
 	handle_surface_request_unset_fullscreen,
 	handle_surface_focused_set,
 	handle_surface_focused_unset,
+	handle_surface_delete,
 };
 
 static void
