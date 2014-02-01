@@ -27,6 +27,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeList.h"
+#include "core/html/CollectionIndexCache.h"
 #include "core/html/CollectionType.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
@@ -51,8 +52,6 @@ public:
     LiveNodeListBase(ContainerNode* ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
         bool shouldOnlyIncludeDirectChildren, CollectionType collectionType, ItemAfterOverrideType itemAfterOverrideType)
         : m_ownerNode(ownerNode)
-        , m_cachedItem(0)
-        , m_isLengthCacheValid(false)
         , m_rootType(rootType)
         , m_invalidationType(invalidationType)
         , m_shouldOnlyIncludeDirectChildren(shouldOnlyIncludeDirectChildren)
@@ -75,8 +74,9 @@ public:
             document().unregisterNodeList(this);
     }
 
-    unsigned length() const;
-    Node* item(unsigned offset) const;
+    ContainerNode& rootNode() const;
+    bool overridesItemAfter() const { return m_overridesItemAfter; }
+    Node* itemBefore(const Node* previousItem) const;
 
     ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
@@ -90,48 +90,21 @@ public:
         else if (hasIdNameCache() && (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr))
             invalidateIdNameCacheMaps();
     }
-    virtual void invalidateCache() const;
+    virtual void invalidateCache() const = 0;
 
     static bool shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType, const QualifiedName&);
 
 protected:
     Document& document() const { return m_ownerNode->document(); }
-    ContainerNode& rootNode() const;
-    bool overridesItemAfter() const { return m_overridesItemAfter; }
-
-    ALWAYS_INLINE Node* cachedItem() const { return m_cachedItem; }
-    ALWAYS_INLINE unsigned cachedItemOffset() const { ASSERT(cachedItem()); return m_cachedItemOffset; }
-
-    ALWAYS_INLINE bool isLengthCacheValid() const { return m_isLengthCacheValid; }
-    ALWAYS_INLINE unsigned cachedLength() const { return m_cachedLength; }
-    ALWAYS_INLINE void setLengthCache(unsigned length) const
-    {
-        m_cachedLength = length;
-        m_isLengthCacheValid = true;
-    }
-    ALWAYS_INLINE void setItemCache(Node* item, unsigned offset) const
-    {
-        ASSERT(item);
-        m_cachedItem = item;
-        m_cachedItemOffset = offset;
-    }
 
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
     bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
 
 private:
-    Node* itemBeforeOrAfterCachedItem(unsigned offset, const ContainerNode& root) const;
-    bool isLastItemCloserThanLastOrCachedItem(unsigned offset) const;
-    bool isFirstItemCloserThanCachedItem(unsigned offset) const;
     Node* iterateForPreviousNode(Node* current) const;
-    Node* itemBefore(const Node* previousItem) const;
     void invalidateIdNameCacheMaps() const;
 
     RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
-    mutable Node* m_cachedItem;
-    mutable unsigned m_cachedLength;
-    mutable unsigned m_cachedItemOffset;
-    mutable unsigned m_isLengthCacheValid : 1;
     const unsigned m_rootType : 2;
     const unsigned m_invalidationType : 4;
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
@@ -173,18 +146,23 @@ public:
         collectionType, DoesNotOverrideItemAfter)
     { }
 
-    virtual unsigned length() const OVERRIDE FINAL { return LiveNodeListBase::length(); }
-    virtual Node* item(unsigned offset) const OVERRIDE FINAL { return LiveNodeListBase::item(offset); }
+    virtual unsigned length() const OVERRIDE FINAL { return m_collectionIndexCache.nodeCount(*this); }
+    virtual Node* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
     virtual Node* namedItem(const AtomicString&) const OVERRIDE FINAL;
     virtual bool nodeMatches(const Element&) const = 0;
     // Avoid ambiguity since both NodeList and LiveNodeListBase have an ownerNode() method.
     using LiveNodeListBase::ownerNode;
 
+    virtual void invalidateCache() const OVERRIDE FINAL;
+
+    // Collection IndexCache API.
     Node* traverseToFirstElement(const ContainerNode& root) const;
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
 
 private:
     virtual bool isLiveNodeList() const OVERRIDE FINAL { return true; }
+
+    mutable CollectionIndexCache<LiveNodeList> m_collectionIndexCache;
 };
 
 } // namespace WebCore

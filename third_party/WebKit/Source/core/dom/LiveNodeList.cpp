@@ -35,16 +35,15 @@ ContainerNode& LiveNodeListBase::rootNode() const
     return *m_ownerNode;
 }
 
-void LiveNodeListBase::invalidateCache() const
-{
-    m_cachedItem = 0;
-    m_isLengthCacheValid = false;
-}
-
 void LiveNodeListBase::invalidateIdNameCacheMaps() const
 {
     ASSERT(hasIdNameCache());
     static_cast<const HTMLCollection*>(this)->invalidateIdNameCacheMaps();
+}
+
+void LiveNodeList::invalidateCache() const
+{
+    m_collectionIndexCache.invalidate();
 }
 
 Node* LiveNodeList::namedItem(const AtomicString& elementId) const

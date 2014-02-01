@@ -38,31 +38,20 @@ public:
     virtual void invalidateCache() const OVERRIDE;
 
     // DOM API
+    unsigned length() const { return m_collectionIndexCache.nodeCount(*this); }
+    Node* item(unsigned offset) const { return m_collectionIndexCache.nodeAt(*this, offset); }
     virtual Element* namedItem(const AtomicString& name) const;
 
     // Non-DOM API
     void namedItems(const AtomicString& name, Vector<RefPtr<Element> >&) const;
-    bool isEmpty() const
-    {
-        if (isLengthCacheValid())
-            return !cachedLength();
-        if (cachedItem())
-            return false;
-        return !item(0);
-    }
-    bool hasExactlyOneItem() const
-    {
-        if (isLengthCacheValid())
-            return cachedLength() == 1;
-        if (cachedItem())
-            return !cachedItemOffset() && !item(1);
-        return item(0) && !item(1);
-    }
+    bool isEmpty() const { return m_collectionIndexCache.isEmpty(*this); }
+    bool hasExactlyOneItem() const { return m_collectionIndexCache.hasExactlyOneNode(*this); }
 
     virtual Element* virtualItemAfter(Element*) const;
 
+    // CollectionIndexCache API.
     Element* traverseToFirstElement(const ContainerNode& root) const;
-    Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
+    Element* traverseForwardToOffset(unsigned offset, Node& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
 
 protected:
     HTMLCollection(ContainerNode* base, CollectionType, ItemAfterOverrideType);
@@ -92,6 +81,7 @@ private:
     mutable unsigned m_isNameCacheValid : 1;
     mutable NodeCacheMap m_idCache;
     mutable NodeCacheMap m_nameCache;
+    mutable CollectionIndexCache<HTMLCollection> m_collectionIndexCache;
 
     friend class LiveNodeListBase;
 };
