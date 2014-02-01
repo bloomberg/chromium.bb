@@ -90,6 +90,7 @@ class APIPermission {
     kFullscreen,
     kGcm,
     kGeolocation,
+    kHid,
     kHistory,
     kHomepage,
     kIdentity,

@@ -70,6 +70,7 @@
               'font_settings.json',
               'gcm.json',
               'hangouts_private.idl',
+              'hid.idl',
               'history.json',
               'i18n.json',
               'identity.idl',
