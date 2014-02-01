@@ -410,7 +410,16 @@
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
           ],
+          'conditions': [
+            ['disable_nacl==0 and disable_nacl_untrusted==0', {
+              'dependencies': [
+                '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
+                '../components/nacl.gyp:nacl_helper',
+              ],
+            }],
+          ],
           'sources': [
+            'browser/chromeos/accessibility/spoken_feedback_browsertest.cc',
             'browser/chromeos/accessibility/sticky_keys_browsertest.cc',
             'browser/chromeos/input_method/textinput_browsertest.cc',
             'browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc',
