@@ -10,7 +10,9 @@
 class ChromeAppViewFactory
     : public mswr::RuntimeClass<winapp::Core::IFrameworkViewSource> {
  public:
-  ChromeAppViewFactory(winapp::Core::ICoreApplication* icore_app);
+  ChromeAppViewFactory(winapp::Core::ICoreApplication* icore_app,
+                       LPTHREAD_START_ROUTINE host_main,
+                       void* host_context);
   IFACEMETHOD(CreateView)(winapp::Core::IFrameworkView** view);
 };
 

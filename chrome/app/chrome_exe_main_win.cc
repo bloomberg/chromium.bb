@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/app/chrome_breakpad_client.h"
 #include "chrome/app/client_util.h"
+#include "chrome/app/metro_driver_win.h"
 #include "chrome/browser/chrome_process_finder_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_constants.h"
@@ -38,6 +39,36 @@ void CheckSafeModeLaunch() {
   const unsigned short kPressedMask = 0x8000;
   if ((k1 & kPressedMask) && (k2 & kPressedMask))
     ::SetEnvironmentVariableA(chrome::kSafeModeEnvVar, "1");
+}
+
+int RunChrome(HINSTANCE instance) {
+  breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
+
+  CheckSafeModeLaunch();
+
+  bool exit_now = true;
+  // We restarted because of a previous crash. Ask user if we should relaunch.
+  // Only show this for the browser process. See crbug.com/132119.
+  const std::string process_type =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+  if (process_type.empty()) {
+    if (breakpad::ShowRestartDialogIfCrashed(&exit_now)) {
+      if (exit_now)
+        return content::RESULT_CODE_NORMAL_EXIT;
+    }
+  }
+
+  // Initialize the sandbox services.
+  sandbox::SandboxInterfaceInfo sandbox_info = {0};
+  content::InitializeSandboxInfo(&sandbox_info);
+
+  // Load and launch the chrome dll. *Everything* happens inside.
+  MainDllLoader* loader = MakeMainDllLoader();
+  int rc = loader->Launch(instance, &sandbox_info);
+  loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
+  delete loader;
+  return rc;
 }
 
 // List of switches that it's safe to rendezvous early with. Fast start should
@@ -104,29 +135,9 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
   if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
     return 0;
 
-  breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
-  CheckSafeModeLaunch();
-
-  bool exit_now = true;
-  // We restarted because of a previous crash. Ask user if we should relaunch.
-  // Only show this for the browser process. See crbug.com/132119.
-  bool const is_browser =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType).empty();
-  if (is_browser) {
-    if (breakpad::ShowRestartDialogIfCrashed(&exit_now)) {
-      if (exit_now)
-        return content::RESULT_CODE_NORMAL_EXIT;
-    }
-  }
-
-  // Initialize the sandbox services.
-  sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  content::InitializeSandboxInfo(&sandbox_info);
-  // Load and launch the chrome dll. *Everything* happens inside.
-  MainDllLoader* loader = MakeMainDllLoader();
-  int rc = loader->Launch(instance, &sandbox_info);
-  loader->RelaunchChromeBrowserWithNewCommandLineIfNeeded();
-  delete loader;
-  return rc;
+  MetroDriver metro_driver;
+  if (metro_driver.in_metro_mode())
+    return metro_driver.RunInMetro(instance, &RunChrome);
+  // Not in metro mode, proceed as normal.
+  return RunChrome(instance);
 }
