@@ -29,7 +29,7 @@ var ui = ui || {};
 
 ui.displayURLForBuilder = function(builderName)
 {
-    return config.kPlatforms[config.currentPlatform].waterfallURL + '?' + $.param({
+    return config.waterfallURL + '?' + $.param({
         'builder': builderName
     });
 }

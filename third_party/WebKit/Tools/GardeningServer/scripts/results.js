@@ -79,11 +79,6 @@ results.kAudioType = 'audio'
 results.kTextType = 'text'
 // FIXME: There are more types of tests.
 
-function layoutTestResultsURL(platform)
-{
-    return config.kPlatforms[platform].layoutTestResultsURL;
-}
-
 function possibleSuffixListFor(failureTypeList)
 {
     var suffixList = [];
@@ -170,39 +165,34 @@ results.failureTypeList = function(failureBlob)
     return failureBlob.split(' ');
 };
 
-results.directoryForBuilder = function(builderName)
-{
-    return config.kPlatforms[config.currentPlatform].resultsDirectoryNameFromBuilderName(builderName);
-}
-
-function resultsDirectoryURL(platform, builderName)
+function resultsDirectoryURL(builderName)
 {
     if (config.useLocalResults)
         return '/localresult?path=';
-    return layoutTestResultsURL(platform) + '/' + results.directoryForBuilder(builderName) + '/results/layout-test-results/';
+    return config.layoutTestResultsURL + '/' + config.resultsDirectoryNameFromBuilderName(builderName) + '/results/layout-test-results/';
 }
 
-function resultsPrefixListingURL(platform, builderName, marker)
+function resultsPrefixListingURL(builderName, marker)
 {
-    var url =  layoutTestResultsURL(platform) + '/?prefix=' + results.directoryForBuilder(builderName) + '/&delimiter=/';
+    var url =  config.layoutTestResultsURL + '/?prefix=' + config.resultsDirectoryNameFromBuilderName(builderName) + '/&delimiter=/';
     if (marker)
         return url + '&marker=' + marker;
     return url;
 }
 
-function resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber)
+function resultsDirectoryURLForBuildNumber(builderName, buildNumber)
 {
-    return layoutTestResultsURL(platform) + '/' + results.directoryForBuilder(builderName) + '/' + buildNumber + '/' ;
+    return config.layoutTestResultsURL + '/' + config.resultsDirectoryNameFromBuilderName(builderName) + '/' + buildNumber + '/' ;
 }
 
-function resultsSummaryURL(platform, builderName)
+function resultsSummaryURL(builderName)
 {
-    return resultsDirectoryURL(platform, builderName) + kResultsName;
+    return resultsDirectoryURL(builderName) + kResultsName;
 }
 
-function resultsSummaryURLForBuildNumber(platform, builderName, buildNumber)
+function resultsSummaryURLForBuildNumber(builderName, buildNumber)
 {
-    return resultsDirectoryURLForBuildNumber(platform, builderName, buildNumber) + kResultsName;
+    return resultsDirectoryURLForBuildNumber(builderName, buildNumber) + kResultsName;
 }
 
 var g_resultsCache = new base.AsynchronousCache(function (key, callback) {
@@ -323,39 +313,39 @@ results.collectUnexpectedResults = function(dictionaryOfResultNodes)
 };
 
 // Callback data is [{ buildNumber:, url: }]
-function historicalResultsLocations(platform, builderName, callback)
+function historicalResultsLocations(builderName, callback)
 {
     var historicalResultsData = [];
 
     function parseListingDocument(prefixListingDocument) {
         $(prefixListingDocument).find("Prefix").each(function() {
-            var buildString = this.textContent.replace(results.directoryForBuilder(builderName) + '/', '');
+            var buildString = this.textContent.replace(config.resultsDirectoryNameFromBuilderName(builderName) + '/', '');
             if (buildString.match(/\d+\//)) {
                 var buildNumber = parseInt(buildString);
                 var resultsData = {
                     'buildNumber': buildNumber,
-                    'url': resultsSummaryURLForBuildNumber(platform, builderName, buildNumber)
+                    'url': resultsSummaryURLForBuildNumber(builderName, buildNumber)
                 };
                 historicalResultsData.unshift(resultsData);
            }
         });
         var nextMarker = $(prefixListingDocument).find('NextMarker').get();
         if (nextMarker.length) {
-            var nextListingURL = resultsPrefixListingURL(platform, builderName, nextMarker[0].textContent);
+            var nextListingURL = resultsPrefixListingURL(builderName, nextMarker[0].textContent);
             net.get(nextListingURL, parseListingDocument);
         } else {
             callback(historicalResultsData);
         }
     }
 
-    builders.mostRecentBuildForBuilder(platform, builderName, function (mostRecentBuildNumber) {
-        var marker = results.directoryForBuilder(builderName) + "/" + (mostRecentBuildNumber - 100) + "/";
-        var listingURL = resultsPrefixListingURL(platform, builderName, marker);
+    builders.mostRecentBuildForBuilder(builderName, function (mostRecentBuildNumber) {
+        var marker = config.resultsDirectoryNameFromBuilderName(builderName) + "/" + (mostRecentBuildNumber - 100) + "/";
+        var listingURL = resultsPrefixListingURL(builderName, marker);
         net.get(listingURL, parseListingDocument);
     });
 }
 
-function walkHistory(platform, builderName, testName, callback)
+function walkHistory(builderName, testName, callback)
 {
     var indexOfNextKeyToFetch = 0;
     var keyList = [];
@@ -390,7 +380,7 @@ function walkHistory(platform, builderName, testName, callback)
         continueWalk();
     }
 
-    historicalResultsLocations(platform, builderName, function(resultsLocations) {
+    historicalResultsLocations(builderName, function(resultsLocations) {
         keyList = resultsLocations;
         continueWalk();
     });
@@ -401,8 +391,7 @@ results.regressionRangeForFailure = function(builderName, testName, callback)
     var oldestFailingRevision = 0;
     var newestPassingRevision = 0;
 
-    // FIXME: should treat {platform, builderName} as a tuple
-    walkHistory(config.currentPlatform, builderName, testName, function(revision, resultNode) {
+    walkHistory(builderName, testName, function(revision, resultNode) {
         if (!revision) {
             callback(oldestFailingRevision, newestPassingRevision);
             return false;
@@ -519,7 +508,7 @@ function sortResultURLsBySuffix(urls)
 results.fetchResultsURLs = function(failureInfo, callback)
 {
     var testNameStem = base.trimExtension(failureInfo.testName);
-    var urlStem = resultsDirectoryURL(config.currentPlatform, failureInfo.builderName);
+    var urlStem = resultsDirectoryURL(failureInfo.builderName);
 
     var suffixList = possibleSuffixListFor(failureInfo.failureTypeList);
     var resultURLs = [];
@@ -547,7 +536,7 @@ results.fetchResultsByBuilder = function(builderNameList, callback)
         callback(resultsByBuilder);
     });
     $.each(builderNameList, function(index, builderName) {
-        var resultsURL = resultsSummaryURL(config.currentPlatform, builderName);
+        var resultsURL = resultsSummaryURL(builderName);
         net.jsonp(resultsURL, function(resultsTree) {
             resultsByBuilder[builderName] = resultsTree;
             tracker.requestComplete();

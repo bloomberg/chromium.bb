@@ -167,8 +167,7 @@ model.latestRevisionByBuilder = function()
 
 model.updateResultsByBuilder = function(callback)
 {
-    var platformBuilders = config.currentBuilders();
-    results.fetchResultsByBuilder(Object.keys(platformBuilders), function(resultsByBuilder) {
+    results.fetchResultsByBuilder(Object.keys(config.builders), function(resultsByBuilder) {
         model.state.resultsByBuilder = resultsByBuilder;
         callback();
     });

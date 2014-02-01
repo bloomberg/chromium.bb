@@ -27,63 +27,48 @@ var config = config || {};
 
 (function() {
 
-config.kBuildNumberLimit = 20;
+config = {
+    kBuildNumberLimit: 20,
+    kRelativeTimeUpdateFrequency: 1000 * 60,
+    kTreeStatusUpdateFrequency: 1000 * 30,
+    kUpdateFrequency: 10 * 60 * 1000,
 
-config.kPlatforms = {
-    'chromium' : {
-        label : 'Chromium',
-        buildConsoleURL: 'http://build.chromium.org/p/chromium.webkit',
+    kBlinkSvnURL: 'svn://svn.chromium.org/blink/trunk',
+    kBlinkRevisionURL: 'http://src.chromium.org/viewvc/blink',
+    kSvnLogURL: 'http://build.chromium.org/cgi-bin/svn-log',
+    kRietveldURL: 'https://codereview.chromium.org',
 
-        layoutTestResultsURL: 'https://storage.googleapis.com/chromium-layout-test-archives',
-        waterfallURL: 'http://build.chromium.org/p/chromium.webkit/waterfall',
-        builders: {
-            'WebKit XP': {version: 'xp'},
-            'WebKit Win7': {version: 'win7'},
-            'WebKit Win7 (dbg)': {version: 'win7', debug: true},
-            'WebKit Linux': {version: 'lucid', is64bit: true},
+    buildConsoleURL: 'http://build.chromium.org/p/chromium.webkit',
+
+    layoutTestResultsURL: 'https://storage.googleapis.com/chromium-layout-test-archives',
+    waterfallURL: 'http://build.chromium.org/p/chromium.webkit/waterfall',
+    builders: {
+        'WebKit XP': {version: 'xp'},
+        'WebKit Win7': {version: 'win7'},
+        'WebKit Win7 (dbg)': {version: 'win7', debug: true},
+        'WebKit Linux': {version: 'lucid', is64bit: true},
 // FIXME: Temporarily disabled, because it makes garden-o-matic unusably slow.
 //            'WebKit Linux ASAN': {version: 'lucid', is64bit: true},
-            'WebKit Linux 32': {version: 'lucid'},
-            'WebKit Linux (dbg)': {version: 'lucid', is64bit: true, debug: true},
-            'WebKit Mac10.6': {version: 'snowleopard'},
-            'WebKit Mac10.6 (dbg)': {version: 'snowleopard', debug: true},
-            'WebKit Mac10.7': {version: 'lion'},
-            'WebKit Mac10.7 (dbg)': {version: 'lion', debug: true},
-            'WebKit Mac10.8': {version: 'mountainlion'},
-            'WebKit Mac10.8 (retina)': {version: 'retina'},
-            'WebKit Mac10.9': {version: 'mavericks'},
-            'WebKit Android (Nexus4)': {version: 'android'},
-        },
-        resultsDirectoryNameFromBuilderName: function(builderName) {
-            return base.underscoredBuilderName(builderName);
-        },
-        _builderApplies: function(builderName) {
-            // FIXME: Remove the Perf check once the bots are gone.
-            return builderName.indexOf('GPU') == -1 &&
-                   builderName.indexOf('Perf') == -1;
-        },
+        'WebKit Linux 32': {version: 'lucid'},
+        'WebKit Linux (dbg)': {version: 'lucid', is64bit: true, debug: true},
+        'WebKit Mac10.6': {version: 'snowleopard'},
+        'WebKit Mac10.6 (dbg)': {version: 'snowleopard', debug: true},
+        'WebKit Mac10.7': {version: 'lion'},
+        'WebKit Mac10.7 (dbg)': {version: 'lion', debug: true},
+        'WebKit Mac10.8': {version: 'mountainlion'},
+        'WebKit Mac10.8 (retina)': {version: 'retina'},
+        'WebKit Mac10.9': {version: 'mavericks'},
+        'WebKit Android (Nexus4)': {version: 'android'},
     },
+    resultsDirectoryNameFromBuilderName: function(builderName) {
+        return base.underscoredBuilderName(builderName);
+    },
+    builderApplies: function(builderName) {
+        // FIXME: Remove the Perf check once the bots are gone.
+        return builderName.indexOf('GPU') == -1 &&
+               builderName.indexOf('Perf') == -1;
+    },
+    useLocalResults: !!base.getURLParameter('useLocalResults') || false,
 };
-
-config.currentPlatform = 'chromium';
-config.kBlinkSvnURL = 'svn://svn.chromium.org/blink/trunk';
-config.kBlinkRevisionURL = 'http://src.chromium.org/viewvc/blink';
-config.kSvnLogURL = 'http://build.chromium.org/cgi-bin/svn-log';
-config.kRietveldURL = "https://codereview.chromium.org";
-
-var kTenMinutesInMilliseconds = 10 * 60 * 1000;
-config.kUpdateFrequency = kTenMinutesInMilliseconds;
-config.kRelativeTimeUpdateFrequency = 1000 * 60;
-config.kTreeStatusUpdateFrequency = 1000 * 30;
-
-config.currentBuilders = function() {
-    return config.kPlatforms[config.currentPlatform].builders;
-};
-
-config.builderApplies = function(builderName) {
-    return config.kPlatforms[config.currentPlatform]._builderApplies(builderName);
-};
-
-config.useLocalResults = Boolean(base.getURLParameter('useLocalResults')) || false;
 
 })();
