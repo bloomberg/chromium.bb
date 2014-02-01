@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 import os
 
+import screenshot_sync_expectations as expectations
+
 from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_set
@@ -29,6 +31,9 @@ class ScreenshotSyncProcess(test.Test):
   they were requested"""
   test = ScreenshotSyncValidator
 
+  def CreateExpectations(self, page_set):
+    return expectations.ScreenshotSyncExpectations()
+
   def CreatePageSet(self, options):
     page_set_dict = {
       'description': 'Test cases for screenshot synchronization',
@@ -41,7 +46,8 @@ class ScreenshotSyncProcess(test.Test):
           'navigate_steps': [
             { 'action': 'navigate' },
             { 'action': 'wait',
-              'javascript': 'window.__testComplete' }
+              'javascript': 'window.__testComplete',
+              'timeout': 120 }
           ]
         }
       ]
