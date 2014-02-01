@@ -657,7 +657,28 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         final long downTime1 = SystemClock.uptimeMillis();
         final long downTime2 = downTime1 + 100;
 
-        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime1, downTime1);
+        PointerProperties pp0 = new PointerProperties();
+        pp0.id = 0;
+        pp0.toolType = MotionEvent.TOOL_TYPE_FINGER;
+        PointerProperties pp1 = new PointerProperties();
+        pp1.id = 1;
+        pp1.toolType = MotionEvent.TOOL_TYPE_FINGER;
+
+        PointerCoords pc0 = new PointerCoords();
+        pc0.x = FAKE_COORD_X;
+        pc0.y = FAKE_COORD_Y;
+        pc0.pressure = 1;
+        pc0.size = 1;
+        PointerCoords pc1 = new PointerCoords();
+        pc1.x = FAKE_COORD_X + 50;
+        pc1.y = FAKE_COORD_Y + 50;
+        pc1.pressure = 1;
+        pc1.size = 1;
+
+        MotionEvent event = MotionEvent.obtain(
+                downTime1, downTime1, MotionEvent.ACTION_DOWN,
+                1, new PointerProperties[] { pp0 }, new PointerCoords[] { pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
 
         mGestureHandler.sendShowPressedStateGestureForTesting();
@@ -669,7 +690,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         event = MotionEvent.obtain(
                 downTime1, downTime1 + 5, MotionEvent.ACTION_UP,
-                FAKE_COORD_X, FAKE_COORD_Y, 0);
+                1, new PointerProperties[] { pp0 }, new PointerCoords[] { pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
         mGestureHandler.onTouchEvent(event);
         assertEquals("A GESTURE_SINGLE_TAP_UNCONFIRMED event should have been sent",
                 ContentViewGestureHandler.GESTURE_SINGLE_TAP_UNCONFIRMED,
@@ -682,7 +704,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         event = MotionEvent.obtain(
                 downTime2, downTime2, MotionEvent.ACTION_DOWN,
-                FAKE_COORD_X, FAKE_COORD_Y, 0);
+                1, new PointerProperties[] { pp0 }, new PointerCoords[] { pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertEquals("GESTURE_TAP_DOWN should have been sent",
                 ContentViewGestureHandler.GESTURE_TAP_DOWN,
@@ -694,9 +717,12 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 "GESTURE_TAP_DOWN should have been sent",
                 5, mMockMotionEventDelegate.mGestureTypeList.size());
 
+        pc0.y = pc0.y - 30;
+
         event = MotionEvent.obtain(
-                downTime2, downTime2 + 5, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X, FAKE_COORD_Y + 100, 0);
+                downTime2, downTime2 + 50, MotionEvent.ACTION_MOVE,
+                1, new PointerProperties[] { pp0 }, new PointerCoords[] { pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertTrue("GESTURE_SCROLL_START should have been sent",
                 mMockMotionEventDelegate.mGestureTypeList.contains(
@@ -716,8 +742,9 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 8, mMockMotionEventDelegate.mGestureTypeList.size());
 
         event = MotionEvent.obtain(
-                downTime2, downTime2 + 10, MotionEvent.ACTION_POINTER_DOWN,
-                FAKE_COORD_X, FAKE_COORD_Y + 200, 0);
+                downTime2, downTime2 + 100, MotionEvent.ACTION_POINTER_DOWN,
+                2, new PointerProperties[] { pp1, pp0 }, new PointerCoords[] { pc1, pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
         mGestureHandler.onTouchEvent(event);
         assertTrue("GESTURE_PINCH_END should have been sent",
                 mMockMotionEventDelegate.mGestureTypeList.contains(
@@ -738,15 +765,17 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 10, mMockMotionEventDelegate.mGestureTypeList.size());
 
         event = MotionEvent.obtain(
-                downTime2, downTime2 + 15, MotionEvent.ACTION_POINTER_UP,
-                FAKE_COORD_X, FAKE_COORD_Y + 200, 0);
+                downTime2, downTime2 + 150, MotionEvent.ACTION_POINTER_UP,
+                2, new PointerProperties[] { pp1, pp0 }, new PointerCoords[] { pc1, pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
         mGestureHandler.onTouchEvent(event);
         assertEquals("No new gestures should have been sent",
                 10, mMockMotionEventDelegate.mGestureTypeList.size());
 
         event = MotionEvent.obtain(
-                downTime2, downTime2 + 20, MotionEvent.ACTION_UP,
-                FAKE_COORD_X, FAKE_COORD_Y + 200, 0);
+                downTime2, downTime2 + 250, MotionEvent.ACTION_UP,
+                1, new PointerProperties[] { pp0 }, new PointerCoords[] { pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
         mGestureHandler.onTouchEvent(event);
         assertEquals("No new gestures should have been sent",
                 10, mMockMotionEventDelegate.mGestureTypeList.size());
