@@ -53,4 +53,18 @@
 crbug.com/339090 svg/W3C-SVG-1.1/paths-data-02-t.svg [ ImageOnlyFailure ]
 crbug.com/339090 svg/W3C-SVG-1.1/text-path-01-b.svg [ ImageOnlyFailure ]
 
+# Skia r13238 (Fast blurred rectangles on GPU) resulted in minor image
+# differences in the following layout tests:
+crbug.com/339806 fast/box-shadow/scaled-box-shadow.html [ ImageOnlyFailure ]
+crbug.com/339806 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ ImageOnlyFailure ]
+
+# Skia r13252 (remove unnecessary SkScalar macros) introduced minor changes 
+# to the following Windows layout tests:
+crbug.com/339852 fast/borders/border-image-outset-in-shorthand.html [ ImageOnlyFailure ]
+crbug.com/339852 fast/borders/border-image-outset.html [ ImageOnlyFailure ]
+crbug.com/339852 svg/W3C-SVG-1.1/masking-intro-01-f.svg [ ImageOnlyFailure ]
+crbug.com/339852 virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
+crbug.com/339852 virtual/softwarecompositing/perpendicular-layer-sorting.html [ ImageOnlyFailure ]
+crbug.com/339852 fast/canvas/image-pattern-rotate.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
