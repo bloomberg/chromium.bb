@@ -13,10 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/media/media_player_messages_enums_android.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/renderer/media/android/media_source_delegate.h"
 #include "content/renderer/media/android/stream_texture_factory_android.h"
@@ -30,6 +30,10 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "ui/gfx/rect_f.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace media {
 class MediaLog;
@@ -54,24 +58,22 @@ class RendererMediaPlayerManager;
 class WebMediaPlayerAndroid
     : public blink::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public base::MessageLoop::DestructionObserver,
+      public RenderFrameObserver,
       public base::SupportsWeakPtr<WebMediaPlayerAndroid> {
  public:
-  // Construct a WebMediaPlayerAndroid object. This class communicates
-  // with the MediaPlayerAndroid object in the browser process through
-  // |proxy|.
+  // Construct a WebMediaPlayerAndroid object. This class communicates with the
+  // MediaPlayerAndroid object in the browser process through |proxy|.
   // TODO(qinmin): |frame| argument is used to determine whether the current
   // player can enter fullscreen. This logic should probably be moved into
   // blink, so that enterFullscreen() will not be called if another video is
   // already in fullscreen.
-  WebMediaPlayerAndroid(
-      blink::WebFrame* frame,
-      blink::WebMediaPlayerClient* client,
-      base::WeakPtr<WebMediaPlayerDelegate> delegate,
-      RendererMediaPlayerManager* manager,
-      StreamTextureFactory* factory,
-      const scoped_refptr<base::MessageLoopProxy>& media_loop,
-      media::MediaLog* media_log);
+  WebMediaPlayerAndroid(blink::WebFrame* frame,
+                        blink::WebMediaPlayerClient* client,
+                        base::WeakPtr<WebMediaPlayerDelegate> delegate,
+                        RendererMediaPlayerManager* manager,
+                        StreamTextureFactory* factory,
+                        const scoped_refptr<base::MessageLoopProxy>& media_loop,
+                        media::MediaLog* media_log);
   virtual ~WebMediaPlayerAndroid();
 
   // blink::WebMediaPlayer implementation.
@@ -177,8 +179,8 @@ class WebMediaPlayerAndroid
   // However, the actual GlTexture is not released to keep the video screenshot.
   virtual void ReleaseMediaResources();
 
-  // Method inherited from DestructionObserver.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+  // RenderFrameObserver implementation.
+  virtual void OnDestruct() OVERRIDE;
 
   // Detach the player from its manager.
   void Detach();

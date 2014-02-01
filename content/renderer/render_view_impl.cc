@@ -2988,7 +2988,7 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(render_frame)),
       sink);
-  return new WebMediaPlayerImpl(this, frame, client, AsWeakPtr(), params);
+  return new WebMediaPlayerImpl(frame, client, AsWeakPtr(), params);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -4192,19 +4192,15 @@ void RenderViewImpl::DidStopLoading() {
 }
 
 void RenderViewImpl::DidPlay(blink::WebMediaPlayer* player) {
-  Send(new ViewHostMsg_MediaNotification(routing_id_,
-                                         reinterpret_cast<int64>(player),
-                                         player->hasVideo(),
-                                         player->hasAudio(),
-                                         true));
+  Send(new ViewHostMsg_MediaPlayingNotification(routing_id_,
+                                                reinterpret_cast<int64>(player),
+                                                player->hasVideo(),
+                                                player->hasAudio()));
 }
 
 void RenderViewImpl::DidPause(blink::WebMediaPlayer* player) {
-  Send(new ViewHostMsg_MediaNotification(routing_id_,
-                                         reinterpret_cast<int64>(player),
-                                         player->hasVideo(),
-                                         player->hasAudio(),
-                                         false));
+  Send(new ViewHostMsg_MediaPausedNotification(
+      routing_id_, reinterpret_cast<int64>(player)));
 }
 
 void RenderViewImpl::PlayerGone(blink::WebMediaPlayer* player) {
@@ -5887,13 +5883,13 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
   }
 
   return new WebMediaPlayerAndroid(
-          frame,
-          client,
-          AsWeakPtr(),
-          media_player_manager_,
-          stream_texture_factory.release(),
-          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
-          new RenderMediaLog());
+      frame,
+      client,
+      AsWeakPtr(),
+      media_player_manager_,
+      stream_texture_factory.release(),
+      RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
+      new RenderMediaLog());
 }
 
 #endif  // defined(OS_ANDROID)

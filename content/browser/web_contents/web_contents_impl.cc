@@ -476,7 +476,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(JavaBridgeHostMsg_GetChannelHandle,
                                     OnJavaBridgeGetChannelHandle)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPlayingNotification,
+                        OnMediaPlayingNotification)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaPausedNotification,
+                        OnMediaPausedNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
@@ -2402,36 +2405,36 @@ void WebContentsImpl::OnUpdateFaviconURL(
                     DidUpdateFaviconURL(page_id, candidates));
 }
 
-void WebContentsImpl::OnMediaNotification(int64 player_cookie,
-                                          bool has_video,
-                                          bool has_audio,
-                                          bool is_playing) {
+void WebContentsImpl::OnMediaPlayingNotification(int64 player_cookie,
+                                                 bool has_video,
+                                                 bool has_audio) {
+// Chrome OS does its own detection of audio and video.
+#if !defined(OS_CHROMEOS)
+  scoped_ptr<PowerSaveBlocker> blocker;
+  if (has_video) {
+    blocker = PowerSaveBlocker::Create(
+        PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep, "Playing video");
+#if defined(OS_ANDROID)
+    static_cast<PowerSaveBlockerImpl*>(blocker.get())
+        ->InitDisplaySleepBlocker(GetView()->GetNativeView());
+#endif
+  } else if (has_audio) {
+    blocker = PowerSaveBlocker::Create(
+        PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension, "Playing audio");
+  }
+
+  if (blocker) {
+    power_save_blockers_[render_view_message_source_][player_cookie] =
+        blocker.release();
+  }
+#endif  // !defined(OS_CHROMEOS)
+}
+
+void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
   // Chrome OS does its own detection of audio and video.
 #if !defined(OS_CHROMEOS)
-  if (is_playing) {
-    scoped_ptr<PowerSaveBlocker> blocker;
-    if (has_video) {
-      blocker = PowerSaveBlocker::Create(
-          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-          "Playing video");
-#if defined(OS_ANDROID)
-      static_cast<PowerSaveBlockerImpl*>(blocker.get())->
-          InitDisplaySleepBlocker(GetView()->GetNativeView());
-#endif
-    } else if (has_audio) {
-      blocker = PowerSaveBlocker::Create(
-          PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-          "Playing audio");
-    }
-
-    if (blocker) {
-      power_save_blockers_[render_view_message_source_][player_cookie] =
-          blocker.release();
-    }
-  } else {
-    delete power_save_blockers_[render_view_message_source_][player_cookie];
-    power_save_blockers_[render_view_message_source_].erase(player_cookie);
-  }
+  delete power_save_blockers_[render_view_message_source_][player_cookie];
+  power_save_blockers_[render_view_message_source_].erase(player_cookie);
 #endif  // !defined(OS_CHROMEOS)
 }
 

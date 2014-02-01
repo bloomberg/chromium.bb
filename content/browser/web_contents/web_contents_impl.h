@@ -722,10 +722,10 @@ class CONTENT_EXPORT WebContentsImpl
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates);
   void OnFirstVisuallyNonEmptyPaint(int32 page_id);
-  void OnMediaNotification(int64 player_cookie,
-                           bool has_video,
-                           bool has_audio,
-                           bool is_playing);
+  void OnMediaPlayingNotification(int64 player_cookie,
+                                  bool has_video,
+                                  bool has_audio);
+  void OnMediaPausedNotification(int64 player_cookie);
   void OnShowValidationMessage(const gfx::Rect& anchor_in_root_view,
                                const base::string16& main_text,
                                const base::string16& sub_text);
