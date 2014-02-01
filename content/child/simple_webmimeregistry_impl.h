@@ -1,19 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_SIMPLE_WEBMIMEREGISTRY_IMPL_H_
-#define WEBKIT_GLUE_SIMPLE_WEBMIMEREGISTRY_IMPL_H_
+#ifndef CONTENT_CHILD_SIMPLE_WEBMIMEREGISTRY_IMPL_H_
+#define CONTENT_CHILD_SIMPLE_WEBMIMEREGISTRY_IMPL_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
-#include "webkit/glue/webkit_glue_export.h"
 
-namespace webkit_glue {
+namespace content {
 
-class WEBKIT_GLUE_EXPORT SimpleWebMimeRegistryImpl :
+class CONTENT_EXPORT SimpleWebMimeRegistryImpl :
     NON_EXPORTED_BASE(public blink::WebMimeRegistry) {
  public:
   SimpleWebMimeRegistryImpl() {}
@@ -44,6 +44,6 @@ class WEBKIT_GLUE_EXPORT SimpleWebMimeRegistryImpl :
   virtual blink::WebString mimeTypeFromFile(const blink::WebString&);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_SIMPLE_WEBMIMEREGISTRY_IMPL_H_
+#endif  // CONTENT_CHILD_SIMPLE_WEBMIMEREGISTRY_IMPL_H_

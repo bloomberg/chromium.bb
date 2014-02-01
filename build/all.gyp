@@ -103,7 +103,6 @@
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../tools/telemetry/telemetry.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
-            '../webkit/glue/webkit_glue.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:*',
             '<(libjpeg_gyp_path):*',
           ],

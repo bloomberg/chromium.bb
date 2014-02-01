@@ -460,11 +460,6 @@
             '<(DEPTH)/printing/printing.gyp:printing',
           ],
         }],
-        ['OS!="ios" and chrome_multiple_dll!=1', {
-          'dependencies': [
-            '<(DEPTH)/webkit/glue/webkit_glue.gyp:glue',
-          ],
-        }],
         ['OS=="android"', {
           'sources/': [
             ['exclude', '^common/chrome_version_info_posix.cc'],

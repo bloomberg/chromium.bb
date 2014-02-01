@@ -7,12 +7,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "content/child/simple_webmimeregistry_impl.h"
+#include "content/child/webfileutilities_impl.h"
 #include "content/child/webkitplatformsupport_child_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
-#include "webkit/glue/simple_webmimeregistry_impl.h"
-#include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 namespace blink {
@@ -97,9 +97,9 @@ class TestWebKitPlatformSupport
   virtual blink::WebData readFromFile(const blink::WebString& path);
 
  private:
-  webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
+  SimpleWebMimeRegistryImpl mime_registry_;
   scoped_ptr<MockWebClipboardImpl> mock_clipboard_;
-  webkit_glue::WebFileUtilitiesImpl file_utilities_;
+  WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir file_system_root_;
   scoped_ptr<WebURLLoaderMockFactory> url_loader_factory_;
   webkit::WebCompositorSupportImpl compositor_support_;

@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_local.h"
+#include "content/child/blink_glue.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilewriter_impl.h"
@@ -23,7 +24,6 @@
 #include "webkit/child/worker_task_runner.h"
 #include "webkit/common/fileapi/directory_entry.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebFileInfo;
 using blink::WebFileSystemCallbacks;
@@ -188,7 +188,7 @@ void ReadMetadataCallbackAdapter(int thread_id, int callbacks_id,
                                  WaitableCallbackResults* waitable_results,
                                  const base::File::Info& file_info) {
   WebFileInfo web_file_info;
-  webkit_glue::FileInfoToWebFileInfo(file_info, &web_file_info);
+  FileInfoToWebFileInfo(file_info, &web_file_info);
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
       &WebFileSystemCallbacks::didReadMetadata,
@@ -265,7 +265,7 @@ void DidCreateSnapshotFile(
       filesystem->GetAndUnregisterCallbacks(callbacks_id);
 
   WebFileInfo web_file_info;
-  webkit_glue::FileInfoToWebFileInfo(file_info, &web_file_info);
+  FileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = platform_path.AsUTF16Unsafe();
   callbacks.didCreateSnapshotFile(web_file_info);
 

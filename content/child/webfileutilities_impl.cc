@@ -1,22 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webfileutilities_impl.h"
+#include "content/child/webfileutilities_impl.h"
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "content/child/blink_glue.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebString;
 
-namespace webkit_glue {
+namespace content {
 
 WebFileUtilitiesImpl::WebFileUtilitiesImpl()
     : sandbox_enabled_(true) {
@@ -37,7 +37,7 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
                          reinterpret_cast<base::File::Info*>(&file_info)))
     return false;
 
-  webkit_glue::FileInfoToWebFileInfo(file_info, &web_file_info);
+  FileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = path;
   return true;
 }
@@ -84,4 +84,4 @@ int WebFileUtilitiesImpl::readFromFile(base::PlatformFile handle,
   return base::ReadPlatformFileCurPosNoBestEffort(handle, data, length);
 }
 
-}  // namespace webkit_glue
+}  // namespace content

@@ -391,8 +391,8 @@
     'common/url_schemes.cc',
     'common/url_schemes.h',
     'common/utility_messages.h',
-    'common/view_messages.h',
     'common/view_message_enums.h',
+    'common/view_messages.h',
     'common/webplugin_geometry.cc',
     'common/webplugin_geometry.h',
     'common/websocket.cc',
@@ -454,11 +454,6 @@
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-      ],
-    }],
-    ['OS!="ios" and chrome_multiple_dll!=1', {
-      'dependencies': [
-        '../webkit/glue/webkit_glue.gyp:glue',
       ],
     }],
     ['OS=="mac"', {

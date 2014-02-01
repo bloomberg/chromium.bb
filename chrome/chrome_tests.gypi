@@ -2882,7 +2882,6 @@
             '../base/base.gyp:test_support_perf',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
-            '../webkit/glue/webkit_glue.gyp:glue',
           ],
           'sources': [
             'test/perf/perftests.cc',

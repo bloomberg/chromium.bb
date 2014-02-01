@@ -638,7 +638,6 @@
             ['component=="shared_library"', {
               'dependencies': [
                 '../content/content.gyp:content_plugin',
-                '../webkit/glue/webkit_glue.gyp:glue',
               ],
               'xcode_settings': {
                 'LD_RUNPATH_SEARCH_PATHS': [

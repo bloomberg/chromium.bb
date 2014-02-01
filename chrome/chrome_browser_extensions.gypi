@@ -1181,11 +1181,6 @@
             'browser/extensions/window_controller_list.cc',
           ],
         }],
-        ['chrome_multiple_dll!=1', {
-          'dependencies': [
-            '../webkit/glue/webkit_glue.gyp:glue',
-          ],
-        }],
         ['use_brlapi==1', {
           'sources!': [
             'browser/extensions/api/braille_display_private/braille_controller_stub.cc',

@@ -9,7 +9,6 @@
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../webkit/glue/webkit_glue.gyp:glue',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',

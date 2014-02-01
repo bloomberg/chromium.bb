@@ -25,11 +25,6 @@
         'sessions/serialized_navigation_entry.h',
       ],
       'conditions': [
-        ['OS != "ios" and chrome_multiple_dll != 1', {
-          'dependencies': [
-            '../webkit/glue/webkit_glue.gyp:glue',
-          ]
-        }],
         ['android_webview_build == 0', {
           'dependencies': [
              '../sync/sync.gyp:sync',

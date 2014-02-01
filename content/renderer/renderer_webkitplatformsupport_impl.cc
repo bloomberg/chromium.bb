@@ -14,15 +14,18 @@
 #include "base/platform_file.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/blink_glue.h"
 #include "content/child/database_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/webidbfactory_impl.h"
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
+#include "content/child/simple_webmimeregistry_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
 #include "content/child/webblobregistry_impl.h"
+#include "content/child/webfileutilities_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -73,9 +76,6 @@
 #include "url/gurl.h"
 #include "webkit/common/gpu/context_provider_web_context.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/glue/simple_webmimeregistry_impl.h"
-#include "webkit/glue/webfileutilities_impl.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -140,7 +140,7 @@ base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
 //------------------------------------------------------------------------------
 
 class RendererWebKitPlatformSupportImpl::MimeRegistry
-    : public webkit_glue::SimpleWebMimeRegistryImpl {
+    : public SimpleWebMimeRegistryImpl {
  public:
   virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const blink::WebString& mime_type,
@@ -155,7 +155,7 @@ class RendererWebKitPlatformSupportImpl::MimeRegistry
 };
 
 class RendererWebKitPlatformSupportImpl::FileUtilities
-    : public webkit_glue::WebFileUtilitiesImpl {
+    : public WebFileUtilitiesImpl {
  public:
   explicit FileUtilities(ThreadSafeSender* sender)
       : thread_safe_sender_(sender) {}
@@ -486,7 +486,7 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
       status != base::File::FILE_OK) {
     return false;
   }
-  webkit_glue::FileInfoToWebFileInfo(file_info, &web_file_info);
+  FileInfoToWebFileInfo(file_info, &web_file_info);
   web_file_info.platformPath = path;
   return true;
 }

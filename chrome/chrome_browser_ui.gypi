@@ -2695,11 +2695,6 @@
             '../printing/printing.gyp:printing',
           ],
         }],
-        ['OS!="ios" and chrome_multiple_dll!=1', {
-          'dependencies': [
-            '../webkit/glue/webkit_glue.gyp:glue',
-          ],
-        }],
         ['OS == "android"', {
           'dependencies': [
             '../third_party/openssl/openssl.gyp:openssl',

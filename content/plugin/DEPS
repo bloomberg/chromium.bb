@@ -5,6 +5,5 @@ include_rules = [
   "+sandbox/win/src",
   "+skia/ext",
   "+third_party/npapi",
-  "+webkit/glue",
 ]
 

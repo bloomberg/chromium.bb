@@ -34,7 +34,6 @@
 #include "v8/include/v8.h"
 #include "webkit/browser/database/vfs_backend.h"
 #include "webkit/child/webkitplatformsupport_impl.h"
-#include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 
 #if defined(OS_WIN)
