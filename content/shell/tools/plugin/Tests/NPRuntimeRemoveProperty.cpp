@@ -92,7 +92,7 @@ private:
         {
         }
 
-        ~PluginObject()
+        virtual ~PluginObject()
         {
             if (m_testObject)
                 pluginTest()->NPN_ReleaseObject(m_testObject);
@@ -159,8 +159,7 @@ private:
         NPObject* m_testObject;
     };
 
-    virtual NPError NPP_GetValue(NPPVariable variable, void *value)
-    {
+    virtual NPError NPP_GetValue(NPPVariable variable, void* value) OVERRIDE {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;
 

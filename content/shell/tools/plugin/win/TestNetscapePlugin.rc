@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileOpenName", "test netscape content|PNG image"
             VALUE "LegalCopyright", "Copyright Apple Inc. 2007-2009"
             VALUE "MIMEType", "application/x-webkit-test-netscape|image/png"
-            VALUE "OriginalFilename", "npTestNetscapePlugin.dll"
+            VALUE "OriginalFilename", "np_test_netscape_plugin.dll"
             VALUE "ProductName", "WebKit Test PlugIn"
         END
     END

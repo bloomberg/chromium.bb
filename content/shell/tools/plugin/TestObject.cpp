@@ -160,6 +160,12 @@ static bool testGetProperty(NPObject* npobj,
     STRINGZ_TO_NPVARIANT(mem, *result);
     return true;
   }
+  if (name == testIdentifiers[ID_PROPERTY_BAR]) {
+    char* mem = static_cast<char*>(browser->memalloc(4));
+    strcpy(mem, "bar");
+    STRINGZ_TO_NPVARIANT(mem, *result);
+    return true;
+  }
   if (name == testIdentifiers[ID_PROPERTY_OBJECT_POINTER]) {
     int32_t objectPointer =
         static_cast<int32_t>(reinterpret_cast<long long>(npobj));

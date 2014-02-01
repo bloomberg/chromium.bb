@@ -33,6 +33,7 @@
 
 #include "PluginTest.h"
 #include "TestObject.h"
+#include "base/strings/string_util.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1447,14 +1448,14 @@ void handleCallback(PluginObject* object,
 void notifyStream(PluginObject* object, const char* url, const char* headers) {
   if (!object->firstUrl) {
     if (url)
-      object->firstUrl = strdup(url);
+      object->firstUrl = base::strdup(url);
     if (headers)
-      object->firstHeaders = strdup(headers);
+      object->firstHeaders = base::strdup(headers);
   } else {
     free(object->lastUrl);
     free(object->lastHeaders);
-    object->lastUrl = (url ? strdup(url) : 0);
-    object->lastHeaders = (headers ? strdup(headers) : 0);
+    object->lastUrl = (url ? base::strdup(url) : 0);
+    object->lastHeaders = (headers ? base::strdup(headers) : 0);
   }
 }
 

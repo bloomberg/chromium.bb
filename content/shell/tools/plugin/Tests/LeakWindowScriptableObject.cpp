@@ -14,8 +14,12 @@ public:
     }
 
 private:
-    virtual NPError NPP_New(NPMIMEType pluginType, uint16_t mode, int16_t argc, char *argn[], char *argv[], NPSavedData *saved)
-    {
+ virtual NPError NPP_New(NPMIMEType pluginType,
+                         uint16_t mode,
+                         int16_t argc,
+                         char* argn[],
+                         char* argv[],
+                         NPSavedData* saved) OVERRIDE {
         // Get a new reference to the window script object.
         NPObject* window;
         if (NPN_GetValue(NPNVWindowNPObject, &window) != NPERR_NO_ERROR) {

@@ -30,6 +30,7 @@
 #include "PluginObject.h"
 
 #include "PluginTest.h"
+#include "base/strings/string_util.h"
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -206,11 +207,11 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
         if (strcasecmp(argn[i], "test") == 0)
             testIdentifier = argv[i];
         if (strcasecmp(argn[i], "onstreamload") == 0 && !obj->onStreamLoad)
-            obj->onStreamLoad = strdup(argv[i]);
+            obj->onStreamLoad = base::strdup(argv[i]);
         else if (strcasecmp(argn[i], "onStreamDestroy") == 0 && !obj->onStreamDestroy)
-            obj->onStreamDestroy = strdup(argv[i]);
+            obj->onStreamDestroy = base::strdup(argv[i]);
         else if (strcasecmp(argn[i], "onURLNotify") == 0 && !obj->onURLNotify)
-            obj->onURLNotify = strdup(argv[i]);
+            obj->onURLNotify = base::strdup(argv[i]);
         else if (strcasecmp(argn[i], "src") == 0 &&
                  strcasecmp(argv[i], "data:application/x-webkit-test-netscape,returnerrorfromnewstream") == 0)
             obj->returnErrorFromNewStream = true;
@@ -229,11 +230,11 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
               }
             }
         } else if (strcasecmp(argn[i], "onSetWindow") == 0 && !obj->onSetWindow)
-            obj->onSetWindow = strdup(argv[i]);
+            obj->onSetWindow = base::strdup(argv[i]);
         else if (strcasecmp(argn[i], "onNew") == 0 && !onNewScript)
             onNewScript = argv[i];
         else if (strcasecmp(argn[i], "onPaintEvent") == 0 && !obj->onPaintEvent)
-            obj->onPaintEvent = strdup(argv[i]);
+            obj->onPaintEvent = base::strdup(argv[i]);
         else if (strcasecmp(argn[i], "logfirstsetwindow") == 0)
             obj->logSetWindow = true;
         else if (strcasecmp(argn[i], "testnpruntime") == 0)
@@ -245,7 +246,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
         } else if (strcasecmp(argn[i], "cleardocumentduringnew") == 0)
             executeScript(obj, "document.body.innerHTML = ''");
         else if (!strcasecmp(argn[i], "ondestroy"))
-            obj->onDestroy = strdup(argv[i]);
+            obj->onDestroy = base::strdup(argv[i]);
         else if (strcasecmp(argn[i], "testwindowopen") == 0)
             obj->testWindowOpen = true;
         else if (strcasecmp(argn[i], "drawingmodel") == 0) {
@@ -275,9 +276,9 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
             char* script = argv[i];
             if (script == strstr(script, "mouse::")) {
                 obj->mouseDownForEvaluateScript = true;
-                obj->evaluateScriptOnMouseDownOrKeyDown = strdup(script + sizeof("mouse::") - 1);
+                obj->evaluateScriptOnMouseDownOrKeyDown = base::strdup(script + sizeof("mouse::") - 1);
             } else if (script == strstr(script, "key::")) {
-                obj->evaluateScriptOnMouseDownOrKeyDown = strdup(script + sizeof("key::") - 1);
+                obj->evaluateScriptOnMouseDownOrKeyDown = base::strdup(script + sizeof("key::") - 1);
             }
             // When testing evaluate script on mouse-down or key-down, allow event logging to handle events.
             if (obj->evaluateScriptOnMouseDownOrKeyDown)

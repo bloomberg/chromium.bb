@@ -27,11 +27,12 @@ _EXCLUDED_PATHS = (
     r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
 )
 
-# TestRunner library is temporarily excluded from pan-project checks until
-# it's transitioned to chromium coding style.
+# TestRunner and NetscapePlugIn library is temporarily excluded from pan-project
+# checks until it's transitioned to chromium coding style.
 _TESTRUNNER_PATHS = (
     r"^content[\\\/]shell[\\\/]renderer[\\\/]test_runner[\\\/].*",
     r"^content[\\\/]shell[\\\/]common[\\\/]test_runner[\\\/].*",
+    r"^content[\\\/]shell[\\\/]tools[\\\/]plugin[\\\/].*",
 )
 
 # Fragment of a regular expression that matches C++ and Objective-C++

@@ -45,14 +45,17 @@ public:
     }
 
 private:
-
-    virtual NPError NPP_New(NPMIMEType pluginType, uint16_t mode, int16_t argc, char *argn[], char *argv[], NPSavedData *saved)
-    {
+ virtual NPError NPP_New(NPMIMEType pluginType,
+                         uint16_t mode,
+                         int16_t argc,
+                         char* argn[],
+                         char* argv[],
+                         NPSavedData* saved) OVERRIDE {
         NPN_GetURLNotify(urlThatFailsToLoad, 0, reinterpret_cast<void*>(0x12345678));
         return NPERR_NO_ERROR;
     }
 
-    bool NPP_URLNotify(const char* url, NPReason reason, void* notifyData)
+    virtual bool NPP_URLNotify(const char* url, NPReason reason, void* notifyData) OVERRIDE
     {
         bool didFail = false;
 

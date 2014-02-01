@@ -44,7 +44,7 @@ private:
     // This is the test object.
     class TestObject : public Object<TestObject> {
     public:
-        ~TestObject()
+        virtual ~TestObject()
         {
             if (wasShutdownCalled)
                 indicateTestFailure();
@@ -70,14 +70,18 @@ private:
         }
     };
 
-    virtual NPError NPP_New(NPMIMEType pluginType, uint16_t mode, int16_t argc, char *argn[], char *argv[], NPSavedData *saved)
-    {
+    virtual NPError NPP_New(NPMIMEType pluginType,
+                            uint16_t mode,
+                            int16_t argc,
+                            char* argn[],
+                            char* argv[],
+                            NPSavedData* saved) OVERRIDE {
         registerNPShutdownFunction(shutdown);
 
         return NPERR_NO_ERROR;
     }
 
-    virtual NPError NPP_GetValue(NPPVariable variable, void *value)
+    virtual NPError NPP_GetValue(NPPVariable variable, void *value) OVERRIDE
     {
         if (variable != NPPVpluginScriptableNPObject)
             return NPERR_GENERIC_ERROR;

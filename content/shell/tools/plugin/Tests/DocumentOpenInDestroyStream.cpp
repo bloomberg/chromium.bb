@@ -44,7 +44,7 @@ public:
     }
 
 private:
-    virtual NPError NPP_DestroyStream(NPStream*, NPReason)
+    virtual NPError NPP_DestroyStream(NPStream*, NPReason) OVERRIDE
     {
         if (m_shouldOpen) {
             testDocumentOpen(m_npp);

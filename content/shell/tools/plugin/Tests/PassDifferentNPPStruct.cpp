@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    virtual NPError NPP_SetWindow(NPWindow* window)
+    virtual NPError NPP_SetWindow(NPWindow* window) OVERRIDE
     {
         if (m_didReceiveInitialSetWindowCall)
             return NPERR_NO_ERROR;

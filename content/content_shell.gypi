@@ -35,9 +35,10 @@
         'content.gyp:content_renderer',
         'content.gyp:content_utility',
         'content.gyp:content_worker',
-        'content_shell_resources',
-        'test_support_content',
         'content_resources.gyp:content_resources',
+        'content_shell_resources',
+        'copy_test_netscape_plugin',
+        'test_support_content',
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../components/components.gyp:breakpad_component',
@@ -48,7 +49,6 @@
         '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
         '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_support',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
@@ -297,7 +297,7 @@
             'content_shell_jni_headers',
           ],
           'dependencies!': [
-            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
+            'copy_test_netscape_plugin',
           ],
         }, {  # else: OS!="android"
           'dependencies': [
@@ -351,7 +351,7 @@
         # The test plugin relies on X11.
         ['OS=="linux" and use_x11==0', {
           'dependencies!': [
-            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
+            'copy_test_netscape_plugin',
           ],
         }],
         ['chromeos==1', {
@@ -684,6 +684,109 @@
         }],
       ],
     },
+    {
+      'target_name': 'test_netscape_plugin',
+      'type': 'loadable_module',
+      'sources': [
+        'shell/tools/plugin/PluginObject.cpp',
+        'shell/tools/plugin/PluginObject.h',
+        'shell/tools/plugin/PluginObjectMac.mm',
+        'shell/tools/plugin/PluginTest.cpp',
+        'shell/tools/plugin/PluginTest.h',
+        'shell/tools/plugin/TestObject.cpp',
+        'shell/tools/plugin/TestObject.h',
+        'shell/tools/plugin/Tests/DocumentOpenInDestroyStream.cpp',
+        'shell/tools/plugin/Tests/EvaluateJSAfterRemovingPluginElement.cpp',
+        'shell/tools/plugin/Tests/FormValue.cpp',
+        'shell/tools/plugin/Tests/GetURLNotifyWithURLThatFailsToLoad.cpp',
+        'shell/tools/plugin/Tests/GetURLWithJavaScriptURL.cpp',
+        'shell/tools/plugin/Tests/GetURLWithJavaScriptURLDestroyingPlugin.cpp',
+        'shell/tools/plugin/Tests/GetUserAgentWithNullNPPFromNPPNew.cpp',
+        'shell/tools/plugin/Tests/LeakWindowScriptableObject.cpp',
+        'shell/tools/plugin/Tests/LogNPPSetWindow.cpp',
+        'shell/tools/plugin/Tests/NPDeallocateCalledBeforeNPShutdown.cpp',
+        'shell/tools/plugin/Tests/NPPNewFails.cpp',
+        'shell/tools/plugin/Tests/NPRuntimeCallsWithNullNPP.cpp',
+        'shell/tools/plugin/Tests/NPRuntimeObjectFromDestroyedPlugin.cpp',
+        'shell/tools/plugin/Tests/NPRuntimeRemoveProperty.cpp',
+        'shell/tools/plugin/Tests/NullNPPGetValuePointer.cpp',
+        'shell/tools/plugin/Tests/PassDifferentNPPStruct.cpp',
+        'shell/tools/plugin/Tests/PluginScriptableNPObjectInvokeDefault.cpp',
+        'shell/tools/plugin/Tests/PluginScriptableObjectOverridesAllProperties.cpp',
+        'shell/tools/plugin/main.cpp',
+      ],
+      'include_dirs': [
+        '<(DEPTH)',
+        '<(DEPTH)/content/shell/tools/plugin/',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../third_party/npapi/npapi.gyp:npapi',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'mac_bundle': 1,
+          'product_extension': 'plugin',
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ]
+          },
+          'xcode_settings': {
+            'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+            'INFOPLIST_FILE': 'shell/tools/plugin/mac/Info.plist',
+          },
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'cflags': [
+            '-fvisibility=default',
+          ],
+        }],
+        ['OS=="win"', {
+          'defines': [
+            # This seems like a hack, but this is what Safari Win does.
+            'snprintf=_snprintf',
+          ],
+          'sources': [
+            'shell/tools/plugin/win/TestNetscapePlugin.def',
+            'shell/tools/plugin/win/TestNetscapePlugin.rc',
+          ],
+          # The .rc file requires that the name of the dll is np_test_netscape_plugin.dll.
+          'product_name': 'np_test_netscape_plugin',
+          # Disable c4267 warnings until we fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267, ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'copy_test_netscape_plugin',
+      'type': 'none',
+      'dependencies': [
+        'test_netscape_plugin',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)/plugins',
+            'files': ['<(PRODUCT_DIR)/np_test_netscape_plugin.dll'],
+          }],
+        }],
+        ['OS=="mac"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)/plugins/',
+            'files': ['<(PRODUCT_DIR)/test_netscape_plugin.plugin/'],
+          }],
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)/plugins',
+            'files': ['<(PRODUCT_DIR)/libtest_netscape_plugin.so'],
+          }],
+        }],
+      ],
+    }
   ],
   'conditions': [
     ['OS=="mac"', {

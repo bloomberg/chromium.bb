@@ -40,8 +40,8 @@ public:
     NullNPPGetValuePointer(NPP, const string& identifier);
 
 private:
-    virtual NPError NPP_Destroy(NPSavedData**);
-    virtual NPError NPP_GetValue(NPPVariable, void* value);
+    virtual NPError NPP_Destroy(NPSavedData**) OVERRIDE;
+    virtual NPError NPP_GetValue(NPPVariable, void* value) OVERRIDE;
 
     NPP_GetValueProcPtr m_originalNPPGetValuePointer;
 };
