@@ -574,7 +574,7 @@ void ToplevelWindowEventHandler::SetWindowShowTypeFromGesture(
     case wm::SHOW_TYPE_MINIMIZED:
       if (window_state->CanMinimize()) {
         window_state->Minimize();
-        window_state->set_always_restores_to_restore_bounds(true);
+        window_state->set_unminimize_to_restore_bounds(true);
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
       }
       break;

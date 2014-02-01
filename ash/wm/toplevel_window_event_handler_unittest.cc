@@ -479,7 +479,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(window_state->IsMinimized());
-  EXPECT_TRUE(window_state->always_restores_to_restore_bounds());
+  EXPECT_TRUE(window_state->unminimize_to_restore_bounds());
   EXPECT_EQ(old_bounds.ToString(),
             window_state->GetRestoreBoundsInScreen().ToString());
 }
@@ -533,7 +533,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsMinimized());
-  EXPECT_TRUE(window_state->always_restores_to_restore_bounds());
+  EXPECT_TRUE(window_state->unminimize_to_restore_bounds());
   EXPECT_EQ(old_bounds.ToString(),
             window_state->GetRestoreBoundsInScreen().ToString());
 }

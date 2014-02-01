@@ -213,6 +213,8 @@ const AcceleratorData kDesktopAcceleratorData[] = {
       CYCLE_BACKWARD_MRU },
   { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_DESKTOP_BACKGROUND_MODE },
+  { true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    TOGGLE_FULLSCREEN },
 };
 
 const size_t kDesktopAcceleratorDataLength = arraysize(kDesktopAcceleratorData);

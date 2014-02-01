@@ -187,10 +187,8 @@ void BaseLayoutManager::ShowTypeChanged(
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window_state->window()->Show();
-    if (last_show_type == wm::SHOW_TYPE_MINIMIZED &&
-        !window_state->IsMaximizedOrFullscreen()) {
-      window_state->set_always_restores_to_restore_bounds(false);
-    }
+    if (last_show_type == wm::SHOW_TYPE_MINIMIZED)
+      window_state->set_unminimize_to_restore_bounds(false);
   }
 }
 

@@ -182,7 +182,7 @@ void WorkspaceLayoutManager::OnWindowShowTypeChanged(
   if (old_type == wm::SHOW_TYPE_MINIMIZED &&
       window_state->IsNormalShowState() &&
       window_state->HasRestoreBounds() &&
-      !window_state->always_restores_to_restore_bounds()) {
+      !window_state->unminimize_to_restore_bounds()) {
     restore = window_state->GetRestoreBoundsInScreen();
     window_state->SaveCurrentBoundsForRestore();
   }

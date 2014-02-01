@@ -117,16 +117,14 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Deletes and clears the restore bounds property on the window.
   void ClearRestoreBounds();
 
-  // Sets whether the window should always be restored to the restore bounds
-  // (sometimes the workspace layout manager restores the window to its original
-  // bounds instead of the restore bounds. Setting this key overrides that
-  // behaviour). The flag is reset to the default value after the window is
-  // restored.
-  bool always_restores_to_restore_bounds() const {
-    return always_restores_to_restore_bounds_;
+  // True if the window should be unminimized to the restore bounds, as
+  // opposed to the window's current bounds. |unminimized_to_restore_bounds_| is
+  // reset to the default value after the window is unminimized.
+  bool unminimize_to_restore_bounds() const {
+    return unminimize_to_restore_bounds_;
   }
-  void set_always_restores_to_restore_bounds(bool value) {
-    always_restores_to_restore_bounds_ = value;
+  void set_unminimize_to_restore_bounds(bool value) {
+    unminimize_to_restore_bounds_ = value;
   }
 
   // Gets/sets whether the shelf should be hidden when this window is
@@ -272,7 +270,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool top_row_keys_are_function_keys_;
   scoped_ptr<DragDetails> drag_details_;
 
-  bool always_restores_to_restore_bounds_;
+  bool unminimize_to_restore_bounds_;
   bool hide_shelf_when_fullscreen_;
   bool animate_to_fullscreen_;
   bool minimum_visibility_;

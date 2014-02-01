@@ -33,7 +33,7 @@ WindowState::WindowState(aura::Window* window)
       ignored_by_shelf_(false),
       can_consume_system_keys_(false),
       top_row_keys_are_function_keys_(false),
-      always_restores_to_restore_bounds_(false),
+      unminimize_to_restore_bounds_(false),
       hide_shelf_when_fullscreen_(true),
       animate_to_fullscreen_(true),
       minimum_visibility_(false),
