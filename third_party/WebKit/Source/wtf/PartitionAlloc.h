@@ -191,11 +191,7 @@ static const size_t kMaxFreeableSpans = 16;
 // These two byte values match tcmalloc.
 static const unsigned char kUninitializedByte = 0xAB;
 static const unsigned char kFreedByte = 0xCD;
-#if CPU(64BIT)
-static const uintptr_t kCookieValue = 0xDEADBEEFDEADBEEFul;
-#else
-static const uintptr_t kCookieValue = 0xDEADBEEFu;
-#endif
+static const uint64_t kCookieValue = 0xDEADBEEFDEADBEEFull;
 #endif
 
 struct PartitionBucket;
@@ -330,8 +326,8 @@ ALWAYS_INLINE size_t partitionCookieSizeAdjustAdd(size_t size)
 {
 #ifndef NDEBUG
     // Add space for cookies, checking for integer overflow.
-    ASSERT(size + (2 * sizeof(uintptr_t)) > size);
-    size += 2 * sizeof(uintptr_t);
+    ASSERT(size + (2 * sizeof(uint64_t)) > size);
+    size += 2 * sizeof(uint64_t);
 #endif
     return size;
 }
@@ -340,8 +336,8 @@ ALWAYS_INLINE size_t partitionCookieSizeAdjustSubtract(size_t size)
 {
 #ifndef NDEBUG
     // Remove space for cookies.
-    ASSERT(size >= 2 * sizeof(uintptr_t));
-    size -= 2 * sizeof(uintptr_t);
+    ASSERT(size >= 2 * sizeof(uint64_t));
+    size -= 2 * sizeof(uint64_t);
 #endif
     return size;
 }
@@ -350,7 +346,7 @@ ALWAYS_INLINE void* partitionCookieFreePointerAdjust(void* ptr)
 {
 #ifndef NDEBUG
     // The value given to the application is actually just after the cookie.
-    ptr = static_cast<uintptr_t*>(ptr) - 1;
+    ptr = static_cast<uint64_t*>(ptr) - 1;
 #endif
     return ptr;
 }
@@ -437,11 +433,11 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, siz
     page = partitionPointerToPage(ret);
     size_t bucketSize = page->bucket->slotSize;
     memset(ret, kUninitializedByte, bucketSize);
-    *(static_cast<uintptr_t*>(ret)) = kCookieValue;
+    *(static_cast<uint64_t*>(ret)) = kCookieValue;
     void* retEnd = static_cast<char*>(ret) + bucketSize;
-    *(static_cast<uintptr_t*>(retEnd) - 1) = kCookieValue;
+    *(static_cast<uint64_t*>(retEnd) - 1) = kCookieValue;
     // The value given to the application is actually just after the cookie.
-    ret = static_cast<uintptr_t*>(ret) + 1;
+    ret = static_cast<uint64_t*>(ret) + 1;
 #endif
     return ret;
 }
@@ -469,8 +465,8 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
 #ifndef NDEBUG
     size_t bucketSize = page->bucket->slotSize;
     void* ptrEnd = static_cast<char*>(ptr) + bucketSize;
-    ASSERT(*(static_cast<uintptr_t*>(ptr)) == kCookieValue);
-    ASSERT(*(static_cast<uintptr_t*>(ptrEnd) - 1) == kCookieValue);
+    ASSERT(*(static_cast<uint64_t*>(ptr)) == kCookieValue);
+    ASSERT(*(static_cast<uint64_t*>(ptrEnd) - 1) == kCookieValue);
     memset(ptr, kFreedByte, bucketSize);
 #endif
     ASSERT(page->numAllocatedSlots);

@@ -54,13 +54,13 @@ static const size_t kTestMaxAllocation = 4096;
 static SizeSpecificPartitionAllocator<kTestMaxAllocation> allocator;
 static PartitionAllocatorGeneric genericAllocator;
 
-static const size_t kTestAllocSize = sizeof(void*);
+static const size_t kTestAllocSize = sizeof(uint64_t);
 #ifdef NDEBUG
 static const size_t kPointerOffset = 0;
 static const size_t kExtraAllocSize = 0;
 #else
-static const size_t kPointerOffset = sizeof(uintptr_t);
-static const size_t kExtraAllocSize = sizeof(uintptr_t) * 2;
+static const size_t kPointerOffset = sizeof(uint64_t);
+static const size_t kExtraAllocSize = sizeof(uint64_t) * 2;
 #endif
 static const size_t kRealAllocSize = kTestAllocSize + kExtraAllocSize;
 static const size_t kTestBucketIndex = kRealAllocSize >> WTF::kBucketShift;
@@ -689,7 +689,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     EXPECT_TRUE(page->freelistHead);
     EXPECT_EQ(0, page->numAllocatedSlots);
 
-    size_t verySmallSize = (WTF::kAllocationGranularity * 2) - kExtraAllocSize;
+    size_t verySmallSize = (sizeof(uint64_t) * 2) - kExtraAllocSize;
     bucketIdx = (verySmallSize + kExtraAllocSize) >> WTF::kBucketShift;
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->freePagesHead);
