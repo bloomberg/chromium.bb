@@ -23,7 +23,7 @@ base::string16 GetExecutablePath();
 // string if none found.
 base::string16 GetCurrentModuleVersion();
 
-// Implements the common aspects of loading chrome.dll for both chrome and
+// Implements the common aspects of loading the main dll for both chrome and
 // chromium scenarios, which are in charge of implementing two abstract
 // methods: GetRegistryPath() and OnBeforeLaunch().
 class MainDllLoader {
@@ -42,28 +42,25 @@ class MainDllLoader {
   // persistent mode an upgrade is detected.
   void RelaunchChromeBrowserWithNewCommandLineIfNeeded();
 
+ protected:
   // Called after chrome.dll has been loaded but before the entry point
   // is invoked. Derived classes can implement custom actions here.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual void OnBeforeLaunch(const base::string16& dll_path) {}
+  virtual void OnBeforeLaunch(const base::string16& dll_path) = 0;
 
   // Called after the chrome.dll entry point returns and before terminating
   // this process. The return value will be used as the process return code.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual int OnBeforeExit(int return_code, const base::string16& dll_path) {
-    return return_code;
-  }
-
- protected:
-  // Derived classes must return the relative registry path that holds the
-  // most current version of chrome.dll.
-  virtual base::string16 GetRegistryPath() = 0;
-
-  HMODULE Load(base::string16* out_version, base::string16* out_file);
+  virtual int OnBeforeExit(int return_code, const base::string16& dll_path) = 0;
 
  private:
-  // Chrome.dll handle.
+  HMODULE Load(const wchar_t* dll_name,
+               base::string16* out_version,
+               base::string16* out_file);
+
+ private:
   HMODULE dll_;
+  const bool metro_mode_;
 };
 
 // Factory for the MainDllLoader. Caller owns the pointer and should call

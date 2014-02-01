@@ -59,8 +59,6 @@
         'app/chrome_exe_resource.h',
         'app/client_util.cc',
         'app/client_util.h',
-        'app/metro_driver_win.cc',
-        'app/metro_driver_win.h',
         'app/signature_validator_win.cc',
         'app/signature_validator_win.h',
         '<(DEPTH)/content/app/startup_helper_win.cc',
