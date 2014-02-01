@@ -196,6 +196,56 @@ extensions::StackTrace GetStackTraceFromMessage(
   return result;
 }
 
+#if defined(OS_ANDROID)
+// Parses the DOM for a <meta> tag with a particular name.
+// |meta_tag_content| is set to the contents of the 'content' attribute.
+// |found_tag| is set to true if the tag was successfully found.
+// Returns true if the document was parsed without errors.
+bool RetrieveMetaTagContent(const WebFrame* main_frame,
+                            const GURL& expected_url,
+                            const std::string& meta_tag_name,
+                            bool* found_tag,
+                            std::string* meta_tag_content) {
+  WebDocument document =
+      main_frame ? main_frame->document() : WebDocument();
+  WebElement head = document.isNull() ? WebElement() : document.head();
+  GURL document_url = document.isNull() ? GURL() : GURL(document.url());
+
+  // Search the DOM for the <meta> tag with the given name.
+  *found_tag = false;
+  *meta_tag_content = "";
+  if (!head.isNull()) {
+    WebNodeList children = head.childNodes();
+    for (unsigned i = 0; i < children.length(); ++i) {
+      WebNode child = children.item(i);
+      if (!child.isElementNode())
+        continue;
+      WebElement elem = child.to<WebElement>();
+      if (elem.hasTagName("meta")) {
+        if (elem.hasAttribute("name") && elem.hasAttribute("content")) {
+          std::string name = elem.getAttribute("name").utf8();
+          if (name == meta_tag_name) {
+            *meta_tag_content = elem.getAttribute("content").utf8();
+            *found_tag = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Make sure we're checking the right page and that the length of the content
+  // string is reasonable.
+  bool success = document_url == expected_url;
+  if (meta_tag_content->size() > chrome::kMaxMetaTagAttributeLength) {
+    *meta_tag_content = "";
+    success = false;
+  }
+
+  return success;
+}
+#endif
+
 }  // namespace
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
@@ -233,6 +283,8 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateTopControlsState)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RetrieveWebappInformation,
                         OnRetrieveWebappInformation)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_RetrieveMetaTagContent,
+                        OnRetrieveMetaTagContent)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetWindowFeatures, OnSetWindowFeatures)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -273,42 +325,28 @@ void ChromeRenderViewObserver::OnUpdateTopControlsState(
 void ChromeRenderViewObserver::OnRetrieveWebappInformation(
     const GURL& expected_url) {
   WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
-  WebDocument document =
-      main_frame ? main_frame->document() : WebDocument();
+  bool found_tag;
+  std::string content_str;
 
-  WebElement head = document.isNull() ? WebElement() : document.head();
-  GURL document_url = document.isNull() ? GURL() : GURL(document.url());
+  // Search for the "mobile-web-app-capable" tag.
+  bool mobile_parse_success = RetrieveMetaTagContent(
+      main_frame,
+      expected_url,
+      "mobile-web-app-capable",
+      &found_tag,
+      &content_str);
+  bool is_mobile_webapp_capable = mobile_parse_success && found_tag &&
+      LowerCaseEqualsASCII(content_str, "yes");
 
-  // Make sure we're checking the right page.
-  bool success = document_url == expected_url;
-
-  bool is_mobile_webapp_capable = false;
-  bool is_apple_mobile_webapp_capable = false;
-
-  // Search the DOM for the webapp <meta> tags.
-  if (!head.isNull()) {
-    WebNodeList children = head.childNodes();
-    for (unsigned i = 0; i < children.length(); ++i) {
-      WebNode child = children.item(i);
-      if (!child.isElementNode())
-        continue;
-      WebElement elem = child.to<WebElement>();
-
-      if (elem.hasTagName("meta") && elem.hasAttribute("name")) {
-        std::string name = elem.getAttribute("name").utf8();
-        WebString content = elem.getAttribute("content");
-        if (LowerCaseEqualsASCII(content, "yes")) {
-          if (name == "mobile-web-app-capable") {
-            is_mobile_webapp_capable = true;
-          } else if (name == "apple-mobile-web-app-capable") {
-            is_apple_mobile_webapp_capable = true;
-          }
-        }
-      }
-    }
-  } else {
-    success = false;
-  }
+  // Search for the "apple-mobile-web-app-capable" tag.
+  bool apple_parse_success = RetrieveMetaTagContent(
+      main_frame,
+      expected_url,
+      "apple-mobile-web-app-capable",
+      &found_tag,
+      &content_str);
+  bool is_apple_mobile_webapp_capable = apple_parse_success && found_tag &&
+      LowerCaseEqualsASCII(content_str, "yes");
 
   bool is_only_apple_mobile_webapp_capable =
       is_apple_mobile_webapp_capable && !is_mobile_webapp_capable;
@@ -324,9 +362,29 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
 
   Send(new ChromeViewHostMsg_DidRetrieveWebappInformation(
       routing_id(),
-      success,
+      mobile_parse_success && apple_parse_success,
       is_mobile_webapp_capable,
       is_apple_mobile_webapp_capable,
+      expected_url));
+}
+
+void ChromeRenderViewObserver::OnRetrieveMetaTagContent(
+    const GURL& expected_url,
+    const std::string tag_name) {
+  bool found_tag;
+  std::string content_str;
+  bool parsed_successfully = RetrieveMetaTagContent(
+      render_view()->GetWebView()->mainFrame(),
+      expected_url,
+      tag_name,
+      &found_tag,
+      &content_str);
+
+  Send(new ChromeViewHostMsg_DidRetrieveMetaTagContent(
+      routing_id(),
+      parsed_successfully && found_tag,
+      tag_name,
+      content_str,
       expected_url));
 }
 #endif

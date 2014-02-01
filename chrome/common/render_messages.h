@@ -403,6 +403,11 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
 // be treated as a webapp.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_RetrieveWebappInformation,
                     GURL /* expected_url */)
+
+// Asks the renderer to return information about the given meta tag.
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_RetrieveMetaTagContent,
+                    GURL /* expected_url */,
+                    std::string /* tag_name */ )
 #endif  // defined(OS_ANDROID)
 
 // chrome.principals messages ------------------------------------------------
@@ -653,6 +658,12 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DidRetrieveWebappInformation,
                     bool /* success */,
                     bool /* is_mobile_webapp_capable */,
                     bool /* is_apple_mobile_webapp_capable */,
+                    GURL /* expected_url */)
+
+IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DidRetrieveMetaTagContent,
+                    bool /* success */,
+                    std::string /* tag_name */,
+                    std::string /* tag_content */,
                     GURL /* expected_url */)
 #endif  // defined(OS_ANDROID)
 

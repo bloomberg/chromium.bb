@@ -155,6 +155,11 @@ extern const char kTestUserProfileDir[];
 // Used to identify the application to the system AV function in Windows.
 extern const char kApplicationClientIDStringForAVScanning[];
 
+#if defined(OS_ANDROID)
+// The largest reasonable length we'd assume for a meta tag attribute.
+extern const size_t kMaxMetaTagAttributeLength;
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_

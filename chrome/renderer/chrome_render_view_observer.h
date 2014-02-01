@@ -82,6 +82,8 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
                                 content::TopControlsState current,
                                 bool animate);
   void OnRetrieveWebappInformation(const GURL& expected_url);
+  void OnRetrieveMetaTagContent(const GURL& expected_url,
+                                const std::string tag_name);
 #endif
   void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);
 

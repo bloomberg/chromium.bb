@@ -121,6 +121,8 @@
         'browser/android/field_trial_helper.h',
         'browser/android/foreign_session_helper.cc',
         'browser/android/foreign_session_helper.h',
+        'browser/android/meta_tag_observer.cc',
+        'browser/android/meta_tag_observer.h',
         'browser/android/new_tab_page_prefs.cc',
         'browser/android/new_tab_page_prefs.h',
         'browser/android/google_location_settings_helper.h',
