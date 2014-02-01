@@ -1979,22 +1979,6 @@ create_keyboard_focus_listener(struct weston_seat *seat)
 	wl_signal_add(&seat->keyboard->focus_signal, listener);
 }
 
-static void
-xdg_surface_set_transient_for(struct wl_client *client,
-                             struct wl_resource *resource,
-                             struct wl_resource *parent_resource)
-{
-	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-	struct weston_surface *parent;
-
-	if (parent_resource)
-		parent = wl_resource_get_user_data(parent_resource);
-	else
-		parent = NULL;
-
-	shell_surface_set_parent(shsurf, parent);
-}
-
 static struct shell_client *
 get_shell_client(struct wl_client *client)
 {
@@ -3177,6 +3161,22 @@ xdg_surface_destroy(struct wl_client *client,
 		    struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
+}
+
+static void
+xdg_surface_set_transient_for(struct wl_client *client,
+                             struct wl_resource *resource,
+                             struct wl_resource *parent_resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	struct weston_surface *parent;
+
+	if (parent_resource)
+		parent = wl_resource_get_user_data(parent_resource);
+	else
+		parent = NULL;
+
+	shell_surface_set_parent(shsurf, parent);
 }
 
 static void

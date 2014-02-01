@@ -3837,20 +3837,6 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 }
 
 static void
-handle_surface_focused_set(void *data, struct xdg_surface *xdg_surface)
-{
-	struct window *window = data;
-	window->focused = 1;
-}
-
-static void
-handle_surface_focused_unset(void *data, struct xdg_surface *xdg_surface)
-{
-	struct window *window = data;
-	window->focused = 0;
-}
-
-static void
 handle_surface_request_set_maximized(void *data, struct xdg_surface *xdg_surface)
 {
 	struct window *window = data;
@@ -3876,6 +3862,20 @@ handle_surface_request_unset_fullscreen(void *data, struct xdg_surface *xdg_surf
 {
 	struct window *window = data;
 	window_set_fullscreen(window, 0);
+}
+
+static void
+handle_surface_focused_set(void *data, struct xdg_surface *xdg_surface)
+{
+	struct window *window = data;
+	window->focused = 1;
+}
+
+static void
+handle_surface_focused_unset(void *data, struct xdg_surface *xdg_surface)
+{
+	struct window *window = data;
+	window->focused = 0;
 }
 
 static void
