@@ -33,3 +33,4 @@ Makefile
 Makefile.in
 TAGS
 protocol/.*.valid
+protocol/src/

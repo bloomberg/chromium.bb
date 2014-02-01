@@ -21,22 +21,8 @@ weston-subsurfaces
 weston-transformed
 weston-view
 
-desktop-shell-client-protocol.h
-desktop-shell-protocol.c
-input-method-protocol.c
-input-method-client-protocol.h
 weston-keyboard
 libtoytoolkit.a
-screenshooter-client-protocol.h
-screenshooter-protocol.c
-scaler-client-protocol.h
-scaler-protocol.c
-tablet-shell-client-protocol.h
-tablet-shell-protocol.c
-text-client-protocol.h
-text-cursor-position-client-protocol.h
-text-cursor-position-protocol.c
-text-protocol.c
 weston-desktop-shell
 weston-info
 weston-screensaver
@@ -44,8 +30,4 @@ weston-screenshooter
 weston-tablet-shell
 weston-terminal
 weston-multi-resource
-workspaces-client-protocol.h
-workspaces-protocol.c
 weston-simple-im
-xdg-shell-client-protocol.h
-xdg-shell-protocol.c

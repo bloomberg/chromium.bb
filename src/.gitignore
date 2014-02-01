@@ -2,16 +2,4 @@ git-version.h
 version.h
 weston
 weston-launch
-screenshooter-protocol.c
-screenshooter-server-protocol.h
 spring-tool
-text-cursor-position-protocol.c
-text-cursor-position-server-protocol.h
-text-protocol.c
-text-server-protocol.h
-workspaces-protocol.c
-workspaces-server-protocol.h
-input-method-protocol.c
-input-method-server-protocol.h
-scaler-server-protocol.h
-scaler-protocol.c
