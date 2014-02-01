@@ -5127,6 +5127,9 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseInsetRoundedCorners(PassRefPtr<CS
 {
     CSSParserValue* argument = args->next();
 
+    if (!argument)
+        return 0;
+
     CSSParserValueList radiusArguments;
     while (argument) {
         radiusArguments.addValue(*argument);
@@ -5190,41 +5193,47 @@ PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeInset(CSSParserValueLis
 
     RefPtr<CSSBasicShapeInset> shape = CSSBasicShapeInset::create();
 
-    unsigned argumentNumber = 0;
     CSSParserValue* argument = args->current();
+    Vector<RefPtr<CSSPrimitiveValue> > widthArguments;
+    bool hasRoundedInset = false;
+
     while (argument) {
-        if (argument->unit == CSSPrimitiveValue::CSS_IDENT) {
-            if (argumentNumber > 0 && equalIgnoringCase(argument->string, "round"))
-                return parseInsetRoundedCorners(shape.release(), args);
-            return 0;
+        if (argument->unit == CSSPrimitiveValue::CSS_IDENT && equalIgnoringCase(argument->string, "round")) {
+            hasRoundedInset = true;
+            break;
         }
 
         Units unitFlags = FLength | FPercent;
-        if (!validUnit(argument, unitFlags) || argumentNumber > 3)
+        if (!validUnit(argument, unitFlags) || widthArguments.size() > 4)
             return 0;
 
-        RefPtr<CSSPrimitiveValue> length = createPrimitiveNumericValue(argument);
-        switch (argumentNumber) {
-        case 0:
-            shape->setTop(length);
-            break;
-        case 1:
-            shape->setRight(length);
-            break;
-        case 2:
-            shape->setBottom(length);
-            break;
-        case 3:
-            shape->setLeft(length);
-            break;
-        }
+        widthArguments.append(createPrimitiveNumericValue(argument));
         argument = args->next();
-        argumentNumber++;
     }
 
-    if (!argumentNumber)
+    switch (widthArguments.size()) {
+    case 1: {
+        shape->updateShapeSize1Value(widthArguments[0].get());
+        break;
+    }
+    case 2: {
+        shape->updateShapeSize2Values(widthArguments[0].get(), widthArguments[1].get());
+        break;
+        }
+    case 3: {
+        shape->updateShapeSize3Values(widthArguments[0].get(), widthArguments[1].get(), widthArguments[2].get());
+        break;
+    }
+    case 4: {
+        shape->updateShapeSize4Values(widthArguments[0].get(), widthArguments[1].get(), widthArguments[2].get(), widthArguments[3].get());
+        break;
+    }
+    default:
         return 0;
+    }
 
+    if (hasRoundedInset)
+        return parseInsetRoundedCorners(shape, args);
     return shape;
 }
 
