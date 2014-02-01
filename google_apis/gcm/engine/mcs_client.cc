@@ -250,7 +250,13 @@ void MCSClient::SendMessage(const MCSMessage& message) {
     NotifyMessageSendStatus(message.GetProtobuf(), NO_CONNECTION_ON_ZERO_TTL);
     return;
   }
+
   to_send_.push_back(make_linked_ptr(packet_info.release()));
+
+  // Notify that the messages has been succsfully queued for sending.
+  // TODO(jianli): We should report QUEUED after writing to GCM store succeeds.
+  NotifyMessageSendStatus(message.GetProtobuf(), QUEUED);
+
   MaybeSendMessage();
 }
 
@@ -639,7 +645,7 @@ void MCSClient::HandleStreamAck(StreamId last_stream_id_received) {
     const MCSPacketInternal& outgoing_packet = to_resend_.front();
     acked_outgoing_persistent_ids.push_back(outgoing_packet->persistent_id);
     acked_outgoing_stream_ids.push_back(outgoing_packet->stream_id);
-    NotifyMessageSendStatus(*outgoing_packet->protobuf, SUCCESS);
+    NotifyMessageSendStatus(*outgoing_packet->protobuf, SENT);
     to_resend_.pop_front();
   }
 
@@ -662,7 +668,7 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
   for (; iter != id_list.end() && !to_resend_.empty(); ++iter) {
     const MCSPacketInternal& outgoing_packet = to_resend_.front();
     DCHECK_EQ(outgoing_packet->persistent_id, *iter);
-    NotifyMessageSendStatus(*outgoing_packet->protobuf, SUCCESS);
+    NotifyMessageSendStatus(*outgoing_packet->protobuf, SENT);
 
     // No need to re-acknowledge any server messages this message already
     // acknowledged.
@@ -678,7 +684,7 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
   for (; iter != id_list.end() && !to_send_.empty(); ++iter) {
     const MCSPacketInternal& outgoing_packet = to_send_.front();
     DCHECK_EQ(outgoing_packet->persistent_id, *iter);
-    NotifyMessageSendStatus(*outgoing_packet->protobuf, SUCCESS);
+    NotifyMessageSendStatus(*outgoing_packet->protobuf, SENT);
 
     // No need to re-acknowledge any server messages this message already
     // acknowledged.

@@ -52,8 +52,10 @@ class GCM_EXPORT MCSClient {
   };
 
   enum MessageSendStatus {
-    // Message sent succcessfully.
-    SUCCESS,
+    // Message was queued succcessfully.
+    QUEUED,
+    // Message was sent to the server and the ACK was received.
+    SENT,
     // Message not saved, because total queue size limit reached.
     QUEUE_SIZE_LIMIT_REACHED,
     // Messgae not saved, because app queue size limit reached.

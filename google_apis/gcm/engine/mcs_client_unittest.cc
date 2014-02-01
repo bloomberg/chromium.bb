@@ -141,7 +141,7 @@ MCSClientTest::MCSClientTest()
       init_success_(true),
       restored_android_id_(0),
       restored_security_token_(0),
-      message_send_status_(MCSClient::SUCCESS) {
+      message_send_status_(MCSClient::SENT) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
   run_loop_.reset(new base::RunLoop());
 
@@ -355,6 +355,8 @@ TEST_F(MCSClientTest, SendMessageRMQWhileDisconnected) {
                                        kTTLValue - 1));
   GetFakeHandler()->ExpectOutgoingMessage(message2);
   mcs_client()->SendMessage(message);
+  PumpLoop();         // Wait for the queuing to happen.
+  EXPECT_EQ(MCSClient::QUEUED, message_send_status());
   EXPECT_FALSE(GetFakeHandler()->AllOutgoingMessagesReceived());
   GetFakeHandler()->set_fail_send(false);
   clock()->Advance(base::TimeDelta::FromSeconds(kTTLValue - 1));
@@ -378,6 +380,7 @@ TEST_F(MCSClientTest, SendMessageRMQOnRestart) {
   GetFakeHandler()->ExpectOutgoingMessage(message);
   GetFakeHandler()->set_fail_send(false);
   mcs_client()->SendMessage(message);
+  PumpLoop();
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
   // Rebuild the client, which should resend the old message.
@@ -420,6 +423,7 @@ TEST_F(MCSClientTest, SendMessageRMQWithStreamAck) {
                          0));
     GetFakeHandler()->ExpectOutgoingMessage(message);
     mcs_client()->SendMessage(message);
+    PumpLoop();
   }
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
@@ -461,6 +465,7 @@ TEST_F(MCSClientTest, SendMessageRMQAckOnReconnect) {
                              0));
     GetFakeHandler()->ExpectOutgoingMessage(message);
     mcs_client()->SendMessage(message);
+    PumpLoop();
   }
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
@@ -500,6 +505,7 @@ TEST_F(MCSClientTest, SendMessageRMQPartialAckOnReconnect) {
                          0));
     GetFakeHandler()->ExpectOutgoingMessage(message);
     mcs_client()->SendMessage(message);
+    PumpLoop();
   }
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
@@ -698,6 +704,7 @@ TEST_F(MCSClientTest, ExpiredTTLOnRestart) {
   GetFakeHandler()->ExpectOutgoingMessage(message);
   GetFakeHandler()->set_fail_send(false);
   mcs_client()->SendMessage(message);
+  PumpLoop();
   EXPECT_TRUE(GetFakeHandler()->AllOutgoingMessagesReceived());
 
   // Move the clock forward and rebuild the client, which should fail the

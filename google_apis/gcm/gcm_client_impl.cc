@@ -46,7 +46,7 @@ const char kSendMessageFromValue[] = "gcm@chrome.com";
 
 GCMClient::Result ToGCMClientResult(MCSClient::MessageSendStatus status) {
   switch (status) {
-    case MCSClient::SUCCESS:
+    case MCSClient::QUEUED:
       return GCMClient::SUCCESS;
     case MCSClient::QUEUE_SIZE_LIMIT_REACHED:
       return GCMClient::NETWORK_ERROR;
@@ -58,6 +58,7 @@ GCMClient::Result ToGCMClientResult(MCSClient::MessageSendStatus status) {
       return GCMClient::NETWORK_ERROR;
     case MCSClient::TTL_EXCEEDED:
       return GCMClient::NETWORK_ERROR;
+    case MCSClient::SENT:
     default:
       NOTREACHED();
       break;
@@ -456,9 +457,12 @@ void GCMClientImpl::OnMessageSentToMCS(int64 user_serial_number,
   // asynchronous callback.
   // It is expected that TTL_EXCEEDED will be issued for a message that was
   // previously issued |OnSendFinished| with status SUCCESS.
+  // For now, we do not report that the message has been sent and acked
+  // successfully.
+  // TODO(jianli): Consider adding UMA for this status.
   if (status == MCSClient::TTL_EXCEEDED)
     delegate->OnMessageSendError(app_id, message_id, GCMClient::TTL_EXCEEDED);
-  else
+  else if (status != MCSClient::SENT)
     delegate->OnSendFinished(app_id, message_id, ToGCMClientResult(status));
 }
 
