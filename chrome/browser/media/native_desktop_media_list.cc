@@ -188,7 +188,6 @@ void NativeDesktopMediaList::Worker::Refresh(
         if (!screen_capturer_->SelectScreen(source.id.id))
           continue;
         screen_capturer_->Capture(webrtc::DesktopRegion());
-        DCHECK(current_frame_);
         break;
 
       case DesktopMediaID::TYPE_WINDOW:
