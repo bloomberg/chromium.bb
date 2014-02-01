@@ -214,6 +214,31 @@ void MapperDragonRiseGeneric(
   mapped->axesLength = kNumAxes;
 }
 
+void MapperOnLiveWireless(
+    const blink::WebGamepad& input,
+    blink::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[kButtonPrimary] = input.buttons[0];
+  mapped->buttons[kButtonSecondary] = input.buttons[1];
+  mapped->buttons[kButtonTertiary] = input.buttons[3];
+  mapped->buttons[kButtonQuaternary] = input.buttons[4];
+  mapped->buttons[kButtonLeftShoulder] = input.buttons[6];
+  mapped->buttons[kButtonRightShoulder] = input.buttons[7];
+  mapped->buttons[kButtonLeftTrigger] = AxisToButton(input.axes[2]);
+  mapped->buttons[kButtonRightTrigger] = AxisToButton(input.axes[5]);
+  mapped->buttons[kButtonBackSelect] = input.buttons[10];
+  mapped->buttons[kButtonStart] = input.buttons[11];
+  mapped->buttons[kButtonLeftThumbstick] = input.buttons[13];
+  mapped->buttons[kButtonRightThumbstick] = input.buttons[14];
+  mapped->buttons[kButtonMeta] = input.buttons[12];
+  mapped->axes[kAxisRightStickX] = input.axes[3];
+  mapped->axes[kAxisRightStickY] = input.axes[4];
+  DpadFromAxis(mapped, input.axes[9]);
+
+  mapped->buttonsLength = kNumButtons;
+  mapped->axesLength = kNumAxes;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -232,6 +257,8 @@ struct MappingData {
   { "0e8f", "0003", MapperXGEAR },              // XFXforce XGEAR PS2 Controller
   { "2222", "0060", MapperDirectInputStyle },   // Macally iShockX, analog mode
   { "2222", "4010", MapperMacallyIShock },      // Macally iShock
+  { "2378", "1008", MapperOnLiveWireless },     // OnLive Controller (Bluetooth)
+  { "2378", "100a", MapperOnLiveWireless },     // OnLive Controller (Wired)
 };
 
 }  // namespace
