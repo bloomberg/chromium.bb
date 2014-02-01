@@ -87,8 +87,8 @@ enum CoreAnimationStatus {
 };
 
 static CoreAnimationStatus GetCoreAnimationStatus() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseCoreAnimation)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCoreAnimation)) {
     return CORE_ANIMATION_ENABLED;
   }
   return CORE_ANIMATION_DISABLED;
