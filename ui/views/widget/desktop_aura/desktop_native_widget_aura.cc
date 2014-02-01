@@ -511,6 +511,11 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       new corewm::ShadowController(
           aura::client::GetActivationClient(root_window_->window())));
 
+  content_window_->SetProperty(aura::client::kCanMaximizeKey,
+                               GetWidget()->widget_delegate()->CanMaximize());
+  content_window_->SetProperty(aura::client::kCanResizeKey,
+                               GetWidget()->widget_delegate()->CanResize());
+
   window_reorderer_.reset(new WindowReorderer(content_window_,
       GetWidget()->GetRootView()));
 }

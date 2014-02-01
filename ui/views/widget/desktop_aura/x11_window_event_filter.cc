@@ -9,6 +9,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -106,10 +107,12 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (component == HTCLIENT)
     return;
 
-  if (event->flags() & ui::EF_IS_DOUBLE_CLICK && component == HTCAPTION) {
-    // Our event is a double click in the caption area. We are responsible for
-    // dispatching this as a minimize/maximize on X11 (Windows converts this to
-    // min/max events for us).
+  if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
+      component == HTCAPTION &&
+      target->GetProperty(aura::client::kCanMaximizeKey)) {
+    // Our event is a double click in the caption area in a window that can be
+    // maximized. We are responsible for dispatching this as a minimize/
+    // maximize on X11 (Windows converts this to min/max events for us).
     if (root_window_host_->IsMaximized())
       root_window_host_->Restore();
     else
@@ -122,8 +125,11 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->native_event()) {
     const gfx::Point x_root_location =
         ui::EventSystemLocationFromNative(event->native_event());
-    if (DispatchHostWindowDragMovement(component, x_root_location))
+    if ((component == HTCAPTION ||
+         target->GetProperty(aura::client::kCanResizeKey)) &&
+        DispatchHostWindowDragMovement(component, x_root_location)) {
       event->StopPropagation();
+    }
   }
 }
 
