@@ -56,6 +56,11 @@ h6 {
     font-size: 14px;
 }
 
+.viewchanges {
+    margin-left: 15px;
+    font-size: 14px;
+}
+
 #activebranches p, #activebranches ul {
     margin-left: 20px;
 }
@@ -92,33 +97,53 @@ we will probably not be able to send <em>everything</em> upstream.</p>
 
 <div id="activebranches">
 
-<h3><a name="bugfix-anonymousPseudoStyle">bugfix/anonymousPseudoStyle</a> (Shezan Baig; D39210769; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=110648">110648</a>)</h3>
+<h3>
+    <a name="bugfix-anonymousPseudoStyle">bugfix/anonymousPseudoStyle</a>
+    (Shezan Baig; D39210769; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=110648">110648</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FanonymousPseudoStyle">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/anonymousPseudoStyle.html">this link</a> in Chrome.
 The selection gaps after "hello" and "world" do not honor the selection
 background color specified in the CSS.</p>
 
-<h3><a name="bugfix-badquerycommand">bugfix/badquerycommand</a> (Shezan Baig; D32128551)</h3>
+<h3>
+    <a name="bugfix-badquerycommand">bugfix/badquerycommand</a>
+    (Shezan Baig; D32128551)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Fbadquerycommand">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/badquerycommand.html">this link</a> in Chrome, click
 the yellow div and hit <code>&lt;enter&gt;</code> a bunch of times. Then
 <code>&lt;shift&gt;</code>+<code>&lt;up&gt;</code> a bunch of times. Each time
 you press <code>&lt;up&gt;</code>, the result of
 <code>queryCommandValue('bold')</code> changes inconsistently.<p>
 
-<h3><a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a> (Shezan Baig; D34079255)</h3>
+<h3>
+    <a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a>
+    (Shezan Baig; D34079255)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FcellInMulticol">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/cellInMulticol.html">this link</a> in Chrome and keep
 resizing the window. You will see that the table cells get split when they
 reach column boundaries.</p>
 <p>This is a rather complicated patch and requires a bunch of additional work
 before it can be sent upstream.</p>
 
-<h3><a name="bugfix-clearDragCaret">bugfix/clearDragCaret</a> (Shezan Baig; D31916022)</h3>
+<h3>
+    <a name="bugfix-clearDragCaret">bugfix/clearDragCaret</a>
+    (Shezan Baig; D31916022)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FclearDragCaret">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/clearDragCaret.html">this link</a> in Chrome, then
 select some text from another tab, and try to drag it into the editable div.
 Before you drop, you will see a caret at the place where the text should go.
 When you drop however, <code>event.preventDefault()</code> is called, so the
 text does not get inserted. However, the drag caret remains visible.</p>
 
-<h3><a name="bugfix-cleartypecanvas">bugfix/cleartypecanvas</a> (Shezan Baig; D32281407; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86776">86776</a>)</h3>
+<h3>
+    <a name="bugfix-cleartypecanvas">bugfix/cleartypecanvas</a>
+    (Shezan Baig; D32281407; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86776">86776</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Fcleartypecanvas">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/cleartypecanvas">this link</a> in Chrome, and notice
 that the canvas element does not use ClearType fonts even though
 <code>subpixel-antialiased</code> is used.</p> <p>Note that when painting to an
@@ -135,7 +160,11 @@ This is the change that is being tracked upstream by WebKit bug
 This is not yet being tracked upstream.</p></li>
 </ul>
 
-<h3><a name="bugfix-cursorContext">bugfix/cursorContext</a> (Shezan Baig; D35952365)</h3>
+<h3>
+    <a name="bugfix-cursorContext">bugfix/cursorContext</a>
+    (Shezan Baig; D35952365)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FcursorContext">view changes</a>]</span>
+</h3>
 <p>It is somewhat hard to reproduce, the window height needs to be just about
 right.</p>
 <p>Open <a href="repros/cursorContext.html">this link</a> in Chrome, and hit
@@ -157,7 +186,11 @@ contenteditable.  However, a proper fix would be to make the last line scroll
 completely, taking the padding into account.  We haven't gotten around to this
 yet.</p>
 
-<h3><a name="bugfix-deleteBackspace">bugfix/deleteBackspace</a> (Shezan Baig; D32947240, D38514960)</h3>
+<h3>
+    <a name="bugfix-deleteBackspace">bugfix/deleteBackspace</a>
+    (Shezan Baig; D32947240, D38514960)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FdeleteBackspace">view changes</a>]</span>
+</h3>
 <p>This branch consists of multiple fixes that were merged together:</p>
 <ul><li><b>backspaceIntoTable (D32947240)</b><br>
     Open <a href="repros/backspaceIntoTable.html">this link</a> in Chrome, and
@@ -187,22 +220,38 @@ yet.</p>
     </li>
 </ul>
 
-<h3><a name="bugfix-dontDeleteAfterPrune">bugfix/dontDeleteAfterPrune</a> (Calum Robinson; D47079091)</h3>
+<h3>
+    <a name="bugfix-dontDeleteAfterPrune">bugfix/dontDeleteAfterPrune</a>
+    (Calum Robinson; D47079091)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FdontDeleteAfterPrune">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/dontDeleteAfterPrune.html">this link</a> in Chrome, and
 press Ctrl+X to Cut.  The renderer will crash because a node that gets pruned
 during merge paragraphs is being deleted again.</p>
 
-<h3><a name="bugfix-emptycellcaret">bugfix/emptycellcaret</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85385">85385</a>)</h3>
+<h3>
+    <a name="bugfix-emptycellcaret">bugfix/emptycellcaret</a>
+    (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85385">85385</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Femptycellcaret">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/emptycellcaret.html">this link</a> in Chrome, and put
 the caret inside an empty table cell.  The caret's <code>y-position</code> is
 outside the <code>table-cell</code>.</p>
 
-<h3><a name="bugfix-iframeZoom">bugfix/iframeZoom</a> (Shezan Baig; D34484409)</h3>
+<h3>
+    <a name="bugfix-iframeZoom">bugfix/iframeZoom</a>
+    (Shezan Baig; D34484409)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FiframeZoom">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/iframeZoom.html">this link</a> in Chrome, and zoom the
 page in and out.  The content outside the <code>iframe</code> zooms, but the
 content inside the <code>iframe</code> does not zoom.</p>
 
-<h3><a name="bugfix-justifyprewrap">bugfix/justifyprewrap</a> (Shezan Baig; D31916947; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=84448">84448</a>)</h3>
+<h3>
+    <a name="bugfix-justifyprewrap">bugfix/justifyprewrap</a>
+    (Shezan Baig; D31916947; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=84448">84448</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Fjustifyprewrap">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/justifyprewrap.html">this link</a> in Chrome.  The
 second paragraph will not be justified, even though
 <code>text-align:justify</code> is specified.</p>
@@ -213,20 +262,32 @@ enable the existing justification logic in elements that have
 modification to the justification logic itself to match how Microsoft Word
 software works.</p>
 
-<h3><a name="bugfix-listifySpans">bugfix/listifySpans</a> (Shezan Baig; D37507315)</h3>
+<h3>
+    <a name="bugfix-listifySpans">bugfix/listifySpans</a>
+    (Shezan Baig; D37507315)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FlistifySpans">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/listifySpans.html">this link</a> in Chrome.  The second
 and third list items will be selected.  Click on the <code>OL</code> button to
 convert these items to an ordered list.  The second and third list items get
 placed into separate lists, but they should be on the same list.  Note that
 this doesn't happen if the first and second items are selected instead.</p>
 
-<h3><a name="bugfix-noBRAtStartOfPara">bugfix/noBRAtStartOfPara</a> (Shezan Baig; D36813987)</h3>
+<h3>
+    <a name="bugfix-noBRAtStartOfPara">bugfix/noBRAtStartOfPara</a>
+    (Shezan Baig; D36813987)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FnoBRAtStartOfPara">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/noBRAtStartOfPara.html">this link</a> in Chrome.  The
 contents of the table will be selected on load.  Hit the "List" button multiple
 times.  Each click executes the <code>insertOrderedList</code> command.</p>
 <p>On every second click, the table will move down.</p>
 
-<h3><a name="bugfix-nonWindowContexts">bugfix/nonWindowContexts</a> (Shezan Baig)</h3>
+<h3>
+    <a name="bugfix-nonWindowContexts">bugfix/nonWindowContexts</a>
+    (Shezan Baig)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FnonWindowContexts">view changes</a>]</span>
+</h3>
 <p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
 that we wanted specifically for our product, so it is unlikely that we will
 send this upstream.</p>
@@ -234,10 +295,18 @@ send this upstream.</p>
 associated with it.  This is necessary for our product because we have multiple
 V8 contexts living in the same process that need to share data with each other.</p>
 
-<h3><a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a> (Tianyin Zhang; D38695085;)</h3>
+<h3>
+    <a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a>
+    (Tianyin Zhang; D38695085)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FremoveSpellingMarker">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/removeSpellingMarker.html">this link</a> in chrome, place the cursor inside the contenteditable and make sure some mispelling markers show up. Then click on the button to switch the contenteditable to false. Note that the misspelling markers aren't removed. </p>
 
-<h3><a name="bugfix-scrollClipRect">bugfix/scrollClipRect</a> (Shezan Baig; D32861389)</h3>
+<h3>
+    <a name="bugfix-scrollClipRect">bugfix/scrollClipRect</a>
+    (Shezan Baig; D32861389)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FscrollClipRect">view changes</a>]</span>
+</h3>
 <p>This bug is somewhat hard to reproduce, the window size needs to be just
 about right.</p>
 <p>Open <a href="repros/scrollClipRect.html">this link</a> in Chrome, and
@@ -248,12 +317,20 @@ mouse wheel to scroll the contents of the iframe.</p>
 iframe scrolls.  This is because the clipRect is not being calculated correctly
 due to the scale transform being applied.</p>
 
-<h3><a name="bugfix-scrollOverflowHidden">bugfix/scrollOverflowHidden</a> (Antonio Gomes &lt;tonikitoo@webkit.org&gt;; D42789626; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=119760">119760</a>)</h3>
+<h3>
+    <a name="bugfix-scrollOverflowHidden">bugfix/scrollOverflowHidden</a>
+    (Antonio Gomes &lt;tonikitoo@webkit.org&gt;; D42789626; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=119760">119760</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FscrollOverflowHidden">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/scrollOverflowHidden.html">this link</a> in Chrome, and
 click inside the "abcdef" entry, and drag to the far right.  The elements will
 start scrolling unexpectedly.</p>
 
-<h3><a name="bugfix-selrectantialias">bugfix/selrectantialias</a> (Shezan Baig; D32113976; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87157">87157</a>)</h3>
+<h3>
+    <a name="bugfix-selrectantialias">bugfix/selrectantialias</a>
+    (Shezan Baig; D32113976; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=87157">87157</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Fselrectantialias">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/selrectantialias.html">this link</a> in Chrome.  You
 will see "gaps" between the lines and the spans on the first line.</p>
 <p>The issue is that the selection highlight is drawn for each text run with
@@ -261,24 +338,44 @@ anti-aliasing on.  This causes "gaps" to appear around the edges where the
 filled rects got blended.  The solution was to simply turn off anti-aliasing
 when filling selection rects.</p>
 
-<h3><a name="bugfix-singleCellDelete">bugfix/singleCellDelete</a> (Shezan Baig; D37576223)</h3>
+<h3>
+    <a name="bugfix-singleCellDelete">bugfix/singleCellDelete</a>
+    (Shezan Baig; D37576223)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FsingleCellDelete">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/singleCellDelete.html">this link</a> in Chrome, and
 delete the text in the single table cell.  The entire table will get deleted,
 but we only expect the text inside the cell to be deleted.</p>
 
-<h3><a name="bugfix-tooltip_refresh">bugfix/tooltip_refresh</a> (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=84375">84375</a>)</h3>
+<h3>
+    <a name="bugfix-tooltip_refresh">bugfix/tooltip_refresh</a>
+    (Shezan Baig; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=84375">84375</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2Ftooltip_refresh">view changes</a>]</span>
+</h3>
 <p>Open <a href="repros/tooltip_refresh.html">this link</a> in Chrome.  Each
 line has a tooltip set.  However, when the first tooltip shows up, and you move
 the mouse away from it, it doesn't move the tooltip to the element where the
 mouse is.</p>
 
-<h3><a name="feature-blpwtk2">feature/blpwtk2</a> (Multiple Authors)</h3>
+<h3>
+    <a name="feature-blpwtk2">feature/blpwtk2</a>
+    (Multiple Authors)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2Fblpwtk2">view changes</a>]</span>
+</h3>
 <p>This is our chromium embedding layer.</p>
 
-<h3><a name="feature-bbEnhancements">feature/bbEnhancements</a> (Lilit Darbinyan)</h3>
+<h3>
+    <a name="feature-bbEnhancements">feature/bbEnhancements</a>
+    (Lilit Darbinyan)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FbbEnhancements">view changes</a>]</span>
+</h3>
 <p>These are extensions to the Web platform that we use in our products.</p>
 
-<h3><a name="feature-caretColor">feature/caretColor</a> (Claudio Saavedra &lt;csaavedra@igalia.com&gt;; D38294226)</h3>
+<h3>
+    <a name="feature-caretColor">feature/caretColor</a>
+    (Claudio Saavedra &lt;csaavedra@igalia.com&gt;; D38294226)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FcaretColor">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>We needed to be able to modify the caret color independently of the font
@@ -287,7 +384,11 @@ color.</p>
 patch, the caret color in the entry fields will be as specified, otherwise they
 will be just black.</p>
 
-<h3><a name="feature-colorDocumentMarkers">feature/colorDocumentMarkers</a> (Shezan Baig; D32415776)</h3>
+<h3>
+    <a name="feature-colorDocumentMarkers">feature/colorDocumentMarkers</a>
+    (Shezan Baig; D32415776)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FcolorDocumentMarkers">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>We needed extra control of the color of the document markers (i.e. the
@@ -299,11 +400,19 @@ With this patch, the mis-spelled words will be underlined in the specified
 colors.</p>
 <p>TODO: make this a CSS property instead of a DOM attribute.</p>
 
-<h3><a name="feature-customSandboxLevels">feature/customSandboxLevels</a> (Tomy Jacob)</h3>
+<h3>
+    <a name="feature-customSandboxLevels">feature/customSandboxLevels</a>
+    (Tomy Jacob)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FcustomSandboxLevels">view changes</a>]</span>
+</h3>
 <p>These are extensions to the different sandboxing levels provided by the
 Chromium sandbox library.  These levels are used by internal apps.</p>
 
-<h3><a name="feature-fileEnhancements">feature/fileEnhancements</a> (Shezan Baig; D40335184)</h3>
+<h3>
+    <a name="feature-fileEnhancements">feature/fileEnhancements</a>
+    (Shezan Baig; D40335184)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FfileEnhancements">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>We needed to expose the full path to a dragged file object.  Open
@@ -311,7 +420,11 @@ send this upstream.</p>
 Windows Explorer into the page.  The DragOver and Drop events should print out
 the full path to the file.</p>
 
-<h3><a name="feature-indentOutdentBlock">feature/indentOutdentBlock</a> (Shezan Baig; D39558769)</h3>
+<h3>
+    <a name="feature-indentOutdentBlock">feature/indentOutdentBlock</a>
+    (Shezan Baig; D39558769)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FindentOutdentBlock">view changes</a>]</span>
+</h3>
 <p>This is a complete reimplementation of the "Indent" and "Outdent" algorithm,
 called "IndentBlock" and "OutdentBlock".  Instead of cloning paragraphs, and
 deleting the old paragraphs, this algorithm just moves blocks in and out of
@@ -343,7 +456,11 @@ applied, and when it isn't (e.g. with upstream Chrome):</p>
     for this.</li>
 </ul>
 
-<h3><a name="feature-insertHTMLNested">feature/insertHTMLNested</a> (Shezan Baig; D37136356)</h3>
+<h3>
+    <a name="feature-insertHTMLNested">feature/insertHTMLNested</a>
+    (Shezan Baig; D37136356)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FinsertHTMLNested">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>We needed to modify the behavior of the <code>InsertHTML</code> command.
@@ -354,7 +471,11 @@ allows the HTML to be nested inside style spans.</p>
 this patch, the "Insert HTML Nested" button works to preserve the font setting.
 The default "Insert HTML" button doesn't preserve it.</p>
 
-<h3><a name="feature-listMarkerEnhancements">feature/listMarkerEnhancements</a> (Shezan Baig; D37088493; D32534047; D32422051; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)</h3>
+<h3>
+    <a name="feature-listMarkerEnhancements">feature/listMarkerEnhancements</a>
+    (Shezan Baig; D37088493; D32534047; D32422051; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=21709">21709</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FlistMarkerEnhancements">view changes</a>]</span>
+</h3>
 <p>This branch makes a bunch of enhancements to list markers that were needed
 in our product, so it is unlikely that many of them will be sent upstream.</p>
 <p>The following changes are included in this branch:
@@ -395,7 +516,11 @@ in our product, so it is unlikely that many of them will be sent upstream.</p>
 </p>
 <p>
 
-<h3><a name="feature-nColumnSpan">feature/nColumnSpan</a> (Shezan Baig; D33399541, D36821222)</h3>
+<h3>
+    <a name="feature-nColumnSpan">feature/nColumnSpan</a>
+    (Shezan Baig; D33399541, D36821222)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FnColumnSpan">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>When using the multicolumn feature, there is a way to make an element span
@@ -410,7 +535,11 @@ branch just hacks it in.</p>
 patch applied, the title will occupy two columns.  The button allows toggling
 between two and three columns.</p>
 
-<h3><a name="feature-preserveSelDirection">feature/preserveSelDirection</a> (Shezan Baig; D36076457)</h3>
+<h3>
+    <a name="feature-preserveSelDirection">feature/preserveSelDirection</a>
+    (Shezan Baig; D36076457)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FpreserveSelDirection">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>This branch makes it so that when text is selected inside a contenteditable,
@@ -421,7 +550,11 @@ With this patch applied, the anchor offset would be 5 positions higher than the
 focus offset.  Without the patch, the anchor offset and focus offset will be
 switched.</p>
 
-<h3><a name="feature-removeIMEUnderlineColor">feature/removeIMEUnderlineColor</a> (Calum Robinson; D47474798)</h3>
+<h3>
+    <a name="feature-removeIMEUnderlineColor">feature/removeIMEUnderlineColor</a>
+    (Calum Robinson; D47474798)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FremoveIMEUnderlineColor">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>By default, Chrome shows a black underline while composing in IME mode.
@@ -432,7 +565,11 @@ color property from the <code>CompositionUnderline</code> object, and makes
 and type in Japanese.  Without this patch, the underline color will be black,
 but it will be yellow once the patch is applied.</p>
 
-<h3><a name="feature-setDataNoRelayout">feature/setDataNoRelayout</a> (Shezan Baig; D42070031)</h3>
+<h3>
+    <a name="feature-setDataNoRelayout">feature/setDataNoRelayout</a>
+    (Shezan Baig; D42070031)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FsetDataNoRelayout">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>There are situations where we want to update a span, and because we know the
@@ -443,7 +580,11 @@ take a while to finish loading).  With this patch applied, there will be a
 noticable difference in the time taken to execute the button click, depending
 on whether the "norelayout" checkbox is enabled or disabled.</p>
 
-<h3><a name="feature-tableEditing">feature/tableEditing</a> (Shezan Baig; D37611655)</h3>
+<h3>
+    <a name="feature-tableEditing">feature/tableEditing</a>
+    (Shezan Baig; D37611655)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FtableEditing">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
 <p>Right now, this branch consists of changes to the way text highlighting
@@ -460,7 +601,11 @@ selection extends outside the table cell.</p>
 <p>Open <a href="repros/tableEditing.html">this link</a> and compare the
 behavior with and without the patch applied.</p>
 
-<h3><a name="feature-wordBreakKeepAll">feature/wordBreakKeepAll</a> (Shezan Baig; D41784575; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=43917">43917</a>)</h3>
+<h3>
+    <a name="feature-wordBreakKeepAll">feature/wordBreakKeepAll</a>
+    (Shezan Baig; D41784575; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=43917">43917</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...feature%2FwordBreakKeepAll">view changes</a>]</span>
+</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.  Note: we may upstream <code>word-break: keep-all</code>,
 but probably not <code>word-break: -bb-keep-all-if-korean</code>.</p>
