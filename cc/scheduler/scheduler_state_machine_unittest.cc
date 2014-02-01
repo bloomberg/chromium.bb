@@ -174,7 +174,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
 }
 
 TEST(SchedulerStateMachineTest,
-     TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain) {
+     TestFailedDrawForAnimationCheckerboardSetsNeedsCommitAndDoesNotDrawAgain) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -204,6 +204,37 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_TRUE(state.RedrawPending());
+  EXPECT_TRUE(state.CommitPending());
+}
+
+TEST(SchedulerStateMachineTest, TestFailedDrawForMissingHighResDoesNothing) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+  state.SetNeedsRedraw(true);
+  EXPECT_TRUE(state.RedrawPending());
+  EXPECT_TRUE(state.BeginImplFrameNeeded());
+
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_FALSE(state.RedrawPending());
+  EXPECT_FALSE(state.CommitPending());
+
+  // Missing high res content requires a commit (but not a redraw)
+  state.DidDrawIfPossibleCompleted(
+      DrawSwapReadbackResult::DRAW_ABORTED_MISSING_HIGH_RES_CONTENT);
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_FALSE(state.RedrawPending());
   EXPECT_TRUE(state.CommitPending());
 }
 

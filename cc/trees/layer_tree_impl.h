@@ -203,6 +203,10 @@ class CC_EXPORT LayerTreeImpl {
   void SetContentsTexturesPurged();
   void ResetContentsTexturesPurged();
 
+  void SetRequiresHighResToDraw();
+  void ResetRequiresHighResToDraw();
+  bool RequiresHighResToDraw() const;
+
   // Set on the active tree when the viewport size recently changed
   // and the active tree's size is now out of date.
   bool ViewportSizeInvalid() const;
@@ -278,6 +282,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplList render_surface_layer_list_;
 
   bool contents_textures_purged_;
+  bool requires_high_res_to_draw_;
   bool viewport_size_invalid_;
   bool needs_update_draw_properties_;
 

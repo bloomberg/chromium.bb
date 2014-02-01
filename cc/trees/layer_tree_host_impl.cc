@@ -871,8 +871,12 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       }
     }
 
-    if (append_quads_data.had_incomplete_tile)
+    if (append_quads_data.had_incomplete_tile) {
       frame->contains_incomplete_tile = true;
+      if (active_tree()->RequiresHighResToDraw())
+        draw_result =
+            DrawSwapReadbackResult::DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
+    }
 
     occlusion_tracker.LeaveLayer(it);
   }
@@ -1460,6 +1464,7 @@ LayerTreeHostImpl::GetRendererCapabilities() const {
 }
 
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
+  active_tree()->ResetRequiresHighResToDraw();
   if (frame.has_no_damage) {
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     return false;
@@ -1640,8 +1645,10 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   DidVisibilityChange(this, visible_);
   EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
 
-  if (!visible_)
+  if (!visible_) {
+    active_tree()->SetRequiresHighResToDraw();
     EvictAllUIResources();
+  }
 
   // Evict tiles immediately if invisible since this tab may never get another
   // draw or timer tick.

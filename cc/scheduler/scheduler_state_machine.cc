@@ -1051,6 +1051,13 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(
         forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
       }
       break;
+    case DrawSwapReadbackResult::DRAW_ABORTED_MISSING_HIGH_RES_CONTENT:
+      // It's not clear whether this missing content is because of missing
+      // pictures (which requires a commit) or because of memory pressure
+      // removing textures (which might not).  To be safe, request a commit
+      // anyway.
+      needs_commit_ = true;
+      break;
   }
 }
 

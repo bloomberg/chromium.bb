@@ -90,11 +90,11 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       max_page_scale_factor_(0),
       scrolling_layer_id_from_previous_tree_(0),
       contents_textures_purged_(false),
+      requires_high_res_to_draw_(false),
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true),
-      next_activation_forces_redraw_(false) {
-}
+      next_activation_forces_redraw_(false) {}
 
 LayerTreeImpl::~LayerTreeImpl() {
   // Need to explicitly clear the tree prior to destroying this so that
@@ -216,6 +216,10 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->SetContentsTexturesPurged();
   else
     target_tree->ResetContentsTexturesPurged();
+
+  // Always reset this flag on activation, as we would only have activated
+  // if we were in a good state.
+  target_tree->ResetRequiresHighResToDraw();
 
   if (ViewportSizeInvalid())
     target_tree->SetViewportSizeInvalid();
@@ -562,6 +566,18 @@ void LayerTreeImpl::ResetContentsTexturesPurged() {
     return;
   contents_textures_purged_ = false;
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
+}
+
+void LayerTreeImpl::SetRequiresHighResToDraw() {
+  requires_high_res_to_draw_ = true;
+}
+
+void LayerTreeImpl::ResetRequiresHighResToDraw() {
+  requires_high_res_to_draw_ = false;
+}
+
+bool LayerTreeImpl::RequiresHighResToDraw() const {
+  return requires_high_res_to_draw_;
 }
 
 bool LayerTreeImpl::ViewportSizeInvalid() const {

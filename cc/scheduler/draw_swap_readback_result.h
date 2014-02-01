@@ -12,6 +12,7 @@ struct DrawSwapReadbackResult {
     INVALID_RESULT,
     DRAW_SUCCESS,
     DRAW_ABORTED_CHECKERBOARD_ANIMATIONS,
+    DRAW_ABORTED_MISSING_HIGH_RES_CONTENT,
   };
 
   DrawSwapReadbackResult()

@@ -756,6 +756,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   // them and only allow activating to high res tiles, since tiles on each layer
   // will be in different places on screen.
   if (!twin_high_res || !twin_low_res ||
+      twin_layer_->layer_tree_impl()->RequiresHighResToDraw() ||
       draw_properties().screen_space_transform !=
           twin_layer_->draw_properties().screen_space_transform) {
     twin_high_res = NULL;

@@ -1276,6 +1276,27 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenUnsharedActiveAllReady) {
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
+TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
+  gfx::Size layer_bounds(400, 400);
+  gfx::Size tile_size(100, 100);
+  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
+
+  // All tiles shared (no invalidation).
+  CreateHighLowResAndSetAllTilesVisible();
+
+  // Verify active tree not ready.
+  Tile* some_active_tile =
+      active_layer_->HighResTiling()->AllTilesForTesting()[0];
+  EXPECT_FALSE(some_active_tile->IsReadyToDraw());
+
+  // When high res are required, even if the active tree is not ready,
+  // the high res tiles must be ready.
+  host_impl_.active_tree()->SetRequiresHighResToDraw();
+  pending_layer_->MarkVisibleResourcesAsRequired();
+  AssertAllTilesRequired(pending_layer_->HighResTiling());
+  AssertNoTilesRequired(pending_layer_->LowResTiling());
+}
+
 TEST_F(PictureLayerImplTest, NothingRequiredIfAllHighResTilesShared) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
