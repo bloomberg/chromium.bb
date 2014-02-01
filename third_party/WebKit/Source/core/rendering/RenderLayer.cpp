@@ -3924,6 +3924,13 @@ void RenderLayer::filterNeedsRepaint()
 
 void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
 {
+    computeSelfHitTestRects(rects);
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
+        child->addLayerHitTestRects(rects);
+}
+
+void RenderLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
+{
     if (!size().isEmpty()) {
         Vector<LayoutRect> rect;
 
@@ -3949,9 +3956,6 @@ void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
             rects.set(this, rect);
         }
     }
-
-    for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
-        child->addLayerHitTestRects(rects);
 }
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()

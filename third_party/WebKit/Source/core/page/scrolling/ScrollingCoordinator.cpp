@@ -755,8 +755,24 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
                 if (targets->contains(ancestor))
                     hasTouchEventTargetAncestor = true;
             }
-            if (!hasTouchEventTargetAncestor)
+            if (!hasTouchEventTargetAncestor) {
+                // Walk up the tree to the outermost non-composited scrollable layer.
+                RenderLayer* enclosingNonCompositedScrollLayer = 0;
+                for (RenderLayer* parent = renderer->enclosingLayer(); parent && parent->compositingState() == NotComposited; parent = parent->parent()) {
+                    if (parent->scrollsOverflow())
+                        enclosingNonCompositedScrollLayer = parent;
+                }
+
+                // Report the whole non-composited scroll layer as a touch hit rect because any
+                // rects inside of it may move around relative to their enclosing composited layer
+                // without causing the rects to be recomputed. Non-composited scrolling occurs on
+                // the main thread, so we're not getting much benefit from compositor touch hit
+                // testing in this case anyway.
+                if (enclosingNonCompositedScrollLayer)
+                    enclosingNonCompositedScrollLayer->computeSelfHitTestRects(rects);
+
                 renderer->computeLayerHitTestRects(rects);
+            }
         }
     }
 
