@@ -42,7 +42,7 @@ GIT_REVISIONS = {
         'upstream-base': '9bcca88e24e64d4e23636aafa3404088b13bcb0e',
         },
     'newlib': {
-        'rev': 'cc9ce45891a45ecfbc671f4a6f1b06ba60a55ad9',
+        'rev': '41e7008e8fab0e1b2d9b3e7a996db2fe02e9ca66',
         'upstream-branch': 'upstream/master',
         'upstream-name': 'newlib-2.0.0',
         # Upstream tag newlib_2_0_0:
