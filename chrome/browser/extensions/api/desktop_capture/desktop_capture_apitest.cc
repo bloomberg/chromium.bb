@@ -17,6 +17,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 
 namespace extensions {
 
@@ -167,10 +168,12 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
       content::DesktopMediaID() },
     // chooseMediaAndGetStream()
     { true, true,
-      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+                              webrtc::kFullDesktopScreenId) },
     // chooseMediaAndTryGetStreamWithInvalidId()
     { true, true,
-      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
+                              webrtc::kFullDesktopScreenId) },
     // cancelDialog()
     { true, true,
       content::DesktopMediaID(), true },
