@@ -46,6 +46,7 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
 #endif
     , m_gcEventData(adoptPtr(new GCEventData()))
     , m_shouldCollectGarbageSoon(false)
+    , m_performingMicrotaskCheckpoint(false)
 {
 }
 

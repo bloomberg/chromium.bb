@@ -74,6 +74,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/MainThreadTaskRunner.h"
+#include "core/dom/MutationObserver.h"
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
@@ -4809,6 +4810,8 @@ void Document::tasksWereResumed()
         m_parser->resumeScheduledTasks();
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->resume();
+
+    MutationObserver::resumeSuspendedObservers();
 }
 
 // FIXME: suspendScheduledTasks(), resumeScheduledTasks(), tasksNeedSuspension()

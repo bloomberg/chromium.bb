@@ -33,9 +33,12 @@
 
 namespace WebCore {
 
+typedef void (*MicrotaskCallback)();
+
 class Microtask {
 public:
     static void performCheckpoint();
+    static void enqueueMicrotask(MicrotaskCallback);
 
 private:
     explicit Microtask();

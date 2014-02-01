@@ -71,7 +71,8 @@ public:
     };
 
     static PassRefPtr<MutationObserver> create(PassOwnPtr<MutationCallback>);
-    static void deliverAllMutations();
+    static void resumeSuspendedObservers();
+    static void deliverMutations();
 
     ~MutationObserver();
 

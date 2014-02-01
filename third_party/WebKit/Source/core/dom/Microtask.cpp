@@ -31,26 +31,46 @@
 #include "config.h"
 #include "core/dom/Microtask.h"
 
+#include "bindings/v8/V8PerIsolateData.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/custom/CustomElementScheduler.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+typedef Vector<MicrotaskCallback> MicrotaskQueue;
+
+static MicrotaskQueue& microtaskQueue()
+{
+    DEFINE_STATIC_LOCAL(MicrotaskQueue, microtaskQueue, ());
+    return microtaskQueue;
+}
+
 void Microtask::performCheckpoint()
 {
-    static bool performingCheckpoint = false;
-    if (performingCheckpoint)
+    V8PerIsolateData* isolateData = V8PerIsolateData::current();
+    ASSERT(isolateData);
+    if (isolateData->performingMicrotaskCheckpoint())
         return;
-    performingCheckpoint = true;
+    isolateData->setPerformingMicrotaskCheckpoint(true);
 
-    bool anyWorkDone;
-    do {
-        MutationObserver::deliverAllMutations();
-        anyWorkDone = CustomElementScheduler::dispatchMicrotaskProcessingSteps();
-    } while (anyWorkDone);
+    // FIXME: Custom element's callbacks need to be refactored to enqueueMicrotask()
+    while (CustomElementScheduler::dispatchMicrotaskProcessingSteps() || !microtaskQueue().isEmpty()) {
+        if (microtaskQueue().isEmpty())
+            continue;
+        Vector<MicrotaskCallback> microtasks;
+        microtasks.swap(microtaskQueue());
+        for (size_t i = 0; i < microtasks.size(); ++i) {
+            microtasks[i]();
+        }
+    }
 
-    performingCheckpoint = false;
+    isolateData->setPerformingMicrotaskCheckpoint(false);
+}
+
+void Microtask::enqueueMicrotask(MicrotaskCallback callback)
+{
+    microtaskQueue().append(callback);
 }
 
 } // namespace WebCore

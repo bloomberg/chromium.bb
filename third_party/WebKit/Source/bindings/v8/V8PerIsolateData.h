@@ -104,6 +104,9 @@ public:
     int incrementRecursionLevel() { return ++m_recursionLevel; }
     int decrementRecursionLevel() { return --m_recursionLevel; }
 
+    bool performingMicrotaskCheckpoint() const { return m_performingMicrotaskCheckpoint; }
+    void setPerformingMicrotaskCheckpoint(bool performingMicrotaskCheckpoint) { m_performingMicrotaskCheckpoint = performingMicrotaskCheckpoint; }
+
 #ifndef NDEBUG
     int internalScriptRecursionLevel() const { return m_internalScriptRecursionLevel; }
     int incrementInternalScriptRecursionLevel() { return ++m_internalScriptRecursionLevel; }
@@ -163,6 +166,7 @@ private:
 #endif
     OwnPtr<GCEventData> m_gcEventData;
     bool m_shouldCollectGarbageSoon;
+    bool m_performingMicrotaskCheckpoint;
 };
 
 } // namespace WebCore
