@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -35,6 +36,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_validator.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/load_rules_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
@@ -65,17 +68,19 @@ class WalletSigninHelper;
 
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
-class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
-                                     public AutofillDialogController,
-                                     public AutofillPopupDelegate,
-                                     public content::NotificationObserver,
-                                     public content::WebContentsObserver,
-                                     public SuggestionsMenuModelDelegate,
-                                     public wallet::WalletClientDelegate,
-                                     public wallet::WalletSigninHelperDelegate,
-                                     public PersonalDataManagerObserver,
-                                     public AccountChooserModelDelegate,
-                                     public gfx::AnimationDelegate {
+class AutofillDialogControllerImpl
+    : public AutofillDialogViewDelegate,
+      public AutofillDialogController,
+      public AutofillPopupDelegate,
+      public content::NotificationObserver,
+      public content::WebContentsObserver,
+      public SuggestionsMenuModelDelegate,
+      public wallet::WalletClientDelegate,
+      public wallet::WalletSigninHelperDelegate,
+      public PersonalDataManagerObserver,
+      public AccountChooserModelDelegate,
+      public gfx::AnimationDelegate,
+      public ::i18n::addressinput::LoadRulesDelegate {
  public:
   virtual ~AutofillDialogControllerImpl();
 
@@ -216,6 +221,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
+  // ::i18n::addressinput::LoadRulesDelegate implementation.
+  virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
+                                              bool success) OVERRIDE;
+
  protected:
   enum DialogSignedInState {
     NOT_CHECKED,
@@ -242,6 +251,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Returns the PersonalDataManager for |profile_|.
   virtual PersonalDataManager* GetManager() const;
+
+  // Returns an address validation helper. May be NULL during tests.
+  virtual ::i18n::addressinput::AddressValidator* GetValidator();
 
   // Returns the WalletClient* this class uses to talk to Online Wallet. Exposed
   // for testing.
@@ -315,6 +327,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   DialogSignedInState SignedInState() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerI18nTest,
+                           CorrectCountryFromInputs);
+
   // Initializes or updates |suggested_cc_| et al.
   void SuggestionsUpdated();
 
@@ -611,6 +626,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;
 
+  // A helper to validate international address input.
+  scoped_ptr< ::i18n::addressinput::AddressValidator> validator_;
+
   // True if |this| has ever called GetWalletItems().
   bool wallet_items_requested_;
 
@@ -696,8 +714,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // A NotificationRegistrar for tracking the completion of sign-in.
   content::NotificationRegistrar signin_registrar_;
 
-  base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
-
   // Set to true when the user presses the sign in link, until we're ready to
   // show the normal dialog again. This is used to hide the buttons while
   // the spinner is showing after an explicit sign in.
@@ -773,6 +789,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // A username string we display in the card scrambling/generated overlay.
   base::string16 submitted_cardholder_name_;
+
+  base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

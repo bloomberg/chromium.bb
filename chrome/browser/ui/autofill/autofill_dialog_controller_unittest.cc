@@ -5,6 +5,8 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
@@ -50,6 +52,8 @@
 #include "grit/webkit_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_validator.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
@@ -63,6 +67,12 @@ namespace autofill {
 
 namespace {
 
+using ::i18n::addressinput::AddressData;
+using ::i18n::addressinput::AddressProblemFilter;
+using ::i18n::addressinput::AddressProblems;
+using ::i18n::addressinput::AddressValidator;
+using testing::AtLeast;
+using testing::Return;
 using testing::_;
 
 const char kFakeEmail[] = "user@chromium.org";
@@ -233,6 +243,23 @@ class TestAutofillDialogView : public AutofillDialogView {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
 };
 
+class MockAddressValidator : public AddressValidator {
+ public:
+  MockAddressValidator() {
+    ON_CALL(*this, ValidateAddress(_, _, _)).WillByDefault(Return(SUCCESS));
+  }
+
+  virtual ~MockAddressValidator() {}
+
+  MOCK_METHOD1(LoadRules, void(const std::string& country_code));
+
+  MOCK_CONST_METHOD3(ValidateAddress,
+      ::i18n::addressinput::AddressValidator::Status(
+          const AddressData& address,
+          const AddressProblemFilter& filter,
+          AddressProblems* problems));
+};
+
 class TestAutofillDialogController
     : public AutofillDialogControllerImpl,
       public base::SupportsWeakPtr<TestAutofillDialogController> {
@@ -276,6 +303,10 @@ class TestAutofillDialogController
 
   TestPersonalDataManager* GetTestingManager() {
     return &test_manager_;
+  }
+
+  MockAddressValidator* GetMockValidator() {
+    return &mock_validator_;
   }
 
   wallet::MockWalletClient* GetTestingWalletClient() {
@@ -324,6 +355,10 @@ class TestAutofillDialogController
         GetTestingManager();
   }
 
+  virtual AddressValidator* GetValidator() OVERRIDE {
+    return &mock_validator_;
+  }
+
   virtual wallet::WalletClient* GetWalletClient() OVERRIDE {
     return &mock_wallet_client_;
   }
@@ -355,6 +390,11 @@ class TestAutofillDialogController
   const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
   testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
+
+  // A mock validator object to prevent network requests and track when
+  // validation rules are loaded or validation attempts occur.
+  testing::NiceMock<MockAddressValidator> mock_validator_;
+
   GURL open_tab_url_;
   MockNewCreditCardBubbleController* mock_new_card_bubble_controller_;
 
@@ -2933,12 +2973,17 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
   }
 }
 
-TEST_F(AutofillDialogControllerTest, CountryChangeUpdatesSection) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
+class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
+ public:
+  // AutofillDialogControllerTest implementation.
+  virtual void SetUp() OVERRIDE {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
+    AutofillDialogControllerTest::SetUp();
+  }
+};
 
-  Reset();
-
+TEST_F(AutofillDialogControllerI18nTest, CountryChangeUpdatesSection) {
   TestAutofillDialogView* view = controller()->GetView();
   view->ClearSectionUpdates();
 
@@ -2976,6 +3021,41 @@ TEST_F(AutofillDialogControllerTest, CountryChangeUpdatesSection) {
   updates = view->section_updates();
   EXPECT_EQ(1U, updates[SECTION_BILLING]);
   EXPECT_EQ(1U, updates.size());
+}
+
+MATCHER_P(CountryCode, country_code, "Checks country code of an AddressData") {
+  // |arg| is an AddressData object.
+  return arg.country_code == country_code;
+}
+
+TEST_F(AutofillDialogControllerI18nTest, CorrectCountryFromInputs) {
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              ValidateAddress(CountryCode("CN"), _, _));
+
+  FieldValueMap billing_inputs;
+  billing_inputs[ADDRESS_BILLING_COUNTRY] = ASCIIToUTF16("China");
+  controller()->InputsAreValid(SECTION_BILLING, billing_inputs);
+
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              ValidateAddress(CountryCode("FR"), _, _));
+
+  FieldValueMap shipping_inputs;
+  shipping_inputs[ADDRESS_HOME_COUNTRY] = ASCIIToUTF16("France");
+  controller()->InputsAreValid(SECTION_SHIPPING, shipping_inputs);
+}
+
+TEST_F(AutofillDialogControllerI18nTest, LoadValidationRules) {
+  ResetControllerWithFormData(DefaultFormData());
+  EXPECT_CALL(*controller()->GetMockValidator(), LoadRules("US"));
+  controller()->Show();
+
+  EXPECT_CALL(*controller()->GetMockValidator(), LoadRules("FR"));
+  controller()->UserEditedOrActivatedInput(SECTION_CC_BILLING,
+                                           ADDRESS_BILLING_COUNTRY,
+                                           gfx::NativeView(),
+                                           gfx::Rect(),
+                                           ASCIIToUTF16("France"),
+                                           true);
 }
 
 }  // namespace autofill

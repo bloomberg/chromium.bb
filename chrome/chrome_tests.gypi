@@ -931,6 +931,7 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
@@ -2070,6 +2071,11 @@
             'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
             'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
           ]
+        }],
+        ['enable_autofill_dialog!=1 or OS=="android" or OS=="ios"', {
+          '!dependencies': [
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+          ],
         }],
       ],  # conditions
     },  # target browser_tests

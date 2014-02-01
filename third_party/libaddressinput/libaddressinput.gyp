@@ -103,6 +103,10 @@
         '<(DEPTH)/base/base.gyp:base',
       ],
       'direct_dependent_settings': {
+        'defines': [
+          'CUSTOM_BASICTYPES="base/basictypes.h"',
+          'CUSTOM_SCOPED_PTR="base/memory/scoped_ptr.h"',
+        ],
         'include_dirs': [
           '<(libaddressinput_dir)/cpp/include/',
         ],

@@ -232,25 +232,4 @@ TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {
 
 }
 
-TEST(FieldMapWrapperTest, BothShippingAndBillingCanCoexist) {
-  DetailInputs inputs;
-
-  DetailInput billing_street;
-  billing_street.type = ADDRESS_BILLING_STREET_ADDRESS;
-  inputs.push_back(billing_street);
-
-  DetailInput shipping_street;
-  shipping_street.type = ADDRESS_HOME_STREET_ADDRESS;
-  inputs.push_back(shipping_street);
-
-  FieldValueMap outputs;
-  outputs[inputs[0].type] = ASCIIToUTF16("123 billing street");
-  outputs[inputs[1].type] = ASCIIToUTF16("123 shipping street");
-
-  FieldMapWrapper wrapper(outputs);
-  wrapper.FillInputs(&inputs);
-
-  EXPECT_NE(inputs[0].initial_value, inputs[1].initial_value);
-}
-
 }  // namespace autofill

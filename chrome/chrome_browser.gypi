@@ -224,6 +224,8 @@
         'browser/autofill/autofill_cc_infobar_delegate.h',
         'browser/autofill/personal_data_manager_factory.cc',
         'browser/autofill/personal_data_manager_factory.h',
+        'browser/autofill/validation_rules_storage_factory.cc',
+        'browser/autofill/validation_rules_storage_factory.h',
         'browser/auto_launch_trial.cc',
         'browser/auto_launch_trial.h',
         'browser/automation/automation_browser_tracker.cc',
@@ -2648,6 +2650,7 @@
             '../third_party/expat/expat.gyp:expat',
             '../third_party/hunspell/hunspell.gyp:hunspell',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
             '../third_party/libusb/libusb.gyp:libusb',
             '../third_party/libyuv/libyuv.gyp:libyuv',
             '../third_party/npapi/npapi.gyp:npapi',
@@ -3226,6 +3229,7 @@
           ],
           'dependencies!': [
             '../components/components.gyp:web_modal',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
             '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources': [
@@ -3504,23 +3508,29 @@
           ]
         }],
         ['enable_mdns==1', {
-            'sources' : [
-              'browser/local_discovery/privet_http_asynchronous_factory.cc',
-              'browser/local_discovery/privet_http_asynchronous_factory.h',
-              'browser/local_discovery/privet_notifications.cc',
-              'browser/local_discovery/privet_notifications.h',
-              'browser/local_discovery/privet_notifications_factory.cc',
-              'browser/local_discovery/privet_notifications_factory.h',
-              'browser/local_discovery/privet_traffic_detector.cc',
-              'browser/local_discovery/privet_traffic_detector.h',
-              'browser/local_discovery/service_discovery_client_mdns.cc',
-              'browser/local_discovery/service_discovery_client_mdns.h',
-              'browser/local_discovery/service_discovery_host_client.cc',
-              'browser/local_discovery/service_discovery_host_client.h',
-              'browser/local_discovery/privet_local_printer_lister.h',
-              'browser/local_discovery/privet_local_printer_lister.cc'
-            ]
-        }]
+          'sources' : [
+            'browser/local_discovery/privet_http_asynchronous_factory.cc',
+            'browser/local_discovery/privet_http_asynchronous_factory.h',
+            'browser/local_discovery/privet_notifications.cc',
+            'browser/local_discovery/privet_notifications.h',
+            'browser/local_discovery/privet_notifications_factory.cc',
+            'browser/local_discovery/privet_notifications_factory.h',
+            'browser/local_discovery/privet_traffic_detector.cc',
+            'browser/local_discovery/privet_traffic_detector.h',
+            'browser/local_discovery/service_discovery_client_mdns.cc',
+            'browser/local_discovery/service_discovery_client_mdns.h',
+            'browser/local_discovery/service_discovery_host_client.cc',
+            'browser/local_discovery/service_discovery_host_client.h',
+            'browser/local_discovery/privet_local_printer_lister.h',
+            'browser/local_discovery/privet_local_printer_lister.cc'
+          ]
+        }],
+        ['enable_autofill_dialog!=1 or OS=="android" or OS=="ios"', {
+          'sources!': [
+            'browser/autofill/validation_rules_storage_factory.cc',
+            'browser/autofill/validation_rules_storage_factory.h',
+          ],
+        }],
       ],
     },
     {

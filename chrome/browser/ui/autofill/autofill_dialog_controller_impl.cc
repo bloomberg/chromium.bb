@@ -13,6 +13,7 @@
 #include "apps/ui/native_app_window.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -26,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
@@ -79,6 +81,10 @@
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
 #include "net/cert/cert_status_flags.h"
+#include "third_party/libaddressinput/chromium/chrome_downloader_impl.h"
+#include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_problem.h"
 #include "ui/base/base_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -87,6 +93,13 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
+
+using ::i18n::addressinput::AddressData;
+using ::i18n::addressinput::AddressField;
+using ::i18n::addressinput::AddressProblem;
+using ::i18n::addressinput::AddressProblemFilter;
+using ::i18n::addressinput::AddressProblems;
+using ::i18n::addressinput::AddressValidator;
 
 namespace autofill {
 
@@ -143,6 +156,28 @@ class ScopedViewUpdates {
 
 base::string16 NullGetInfo(const AutofillType& type) {
   return base::string16();
+}
+
+// Extract |type| from |inputs| using |section| to determine whether the info
+// should be billing or shipping specific (for sections with address info).
+base::string16 GetInfoFromInputs(const FieldValueMap& inputs,
+                                 DialogSection section,
+                                 const AutofillType& type) {
+  ServerFieldType field_type = type.GetStorableType();
+  if (section != SECTION_SHIPPING)
+    field_type = AutofillType::GetEquivalentBillingFieldType(field_type);
+
+  base::string16 info;
+  FieldValueMap::const_iterator it = inputs.find(field_type);
+  if (it != inputs.end())
+    info = it->second;
+
+  if (!info.empty() && type.html_type() == HTML_TYPE_COUNTRY_CODE) {
+    info = base::ASCIIToUTF16(AutofillCountry::GetCountryCode(
+        info, g_browser_process->GetApplicationLocale()));
+  }
+
+  return info;
 }
 
 // Returns true if |input| should be used to fill a site-requested |field| which
@@ -617,6 +652,17 @@ void AutofillDialogControllerImpl::Show() {
 
   if (account_chooser_model_->WalletIsSelected())
     FetchWalletCookie();
+
+  if (i18ninput::Enabled()) {
+    scoped_ptr< ::i18n::addressinput::Downloader> downloader(
+        new autofill::ChromeDownloaderImpl(profile_->GetRequestContext()));
+    validator_ = AddressValidator::Build(
+        downloader.Pass(),
+        ValidationRulesStorageFactory::CreateStorage(),
+        this);
+    GetValidator()->LoadRules(
+        GetManager()->GetDefaultCountryCodeForNewAddress());
+  }
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
@@ -1162,20 +1208,18 @@ void AutofillDialogControllerImpl::RestoreUserInputFromSnapshot(
   if (snapshot.empty())
     return;
 
-  FieldMapWrapper wrapper(snapshot);
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
     if (!SectionIsActive(section))
       continue;
 
     DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-    wrapper.FillInputs(inputs);
-
     for (size_t i = 0; i < inputs->size(); ++i) {
-      if (InputWasEdited((*inputs)[i].type, (*inputs)[i].initial_value)) {
+      DetailInput* input = &(*inputs)[i];
+      input->initial_value =
+          GetInfoFromInputs(snapshot, section, AutofillType(input->type));
+      if (InputWasEdited(input->type, input->initial_value))
         SuggestionsMenuModelForSection(section)->SetCheckedItem(kAddNewItemKey);
-        break;
-      }
     }
   }
 }
@@ -1648,7 +1692,16 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
     }
   }
 
-  switch (AutofillType(type).GetStorableType()) {
+  AutofillType autofill_type(type);
+  if (i18ninput::Enabled() &&
+      (autofill_type.group() == ADDRESS_HOME ||
+       autofill_type.group() == ADDRESS_BILLING)) {
+    // TODO(dbeam): delete all US-specific address validation when
+    // --enable-autofill-address-i18n is removed.
+    return base::string16();
+  }
+
+  switch (autofill_type.GetStorableType()) {
     case EMAIL_ADDRESS:
       if (!value.empty() && !IsValidEmailAddress(value)) {
         return l10n_util::GetStringUTF16(
@@ -1699,8 +1752,9 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
       break;
 
     case ADDRESS_HOME_STATE:
-      if (!value.empty() && !autofill::IsValidState(value) &&
+      if (!value.empty() &&!autofill::IsValidState(value) &&
           CountryCodeForSection(section) == "US") {
+        DCHECK(!i18ninput::Enabled());
         return l10n_util::GetStringUTF16(
             IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_REGION);
       }
@@ -1709,6 +1763,7 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
     case ADDRESS_HOME_ZIP:
       if (!value.empty() && !autofill::IsValidZip(value) &&
           CountryCodeForSection(section) == "US") {
+        DCHECK(!i18ninput::Enabled());
         return l10n_util::GetStringUTF16(
             IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_ZIP_CODE);
       }
@@ -1745,10 +1800,41 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     DialogSection section,
     const FieldValueMap& inputs) {
   ValidityMessages messages;
+  if (inputs.empty())
+    return messages;
+
   FieldValueMap field_values;
+
+  if (i18ninput::Enabled() && section != SECTION_CC) {
+    AddressData address_data;
+    i18ninput::CreateAddressData(
+        base::Bind(&GetInfoFromInputs, base::ConstRef(inputs), section),
+        &address_data);
+
+    AddressProblems problems;
+    if (GetValidator()->ValidateAddress(
+            address_data,
+            AddressProblemFilter(),
+            &problems) == AddressValidator::SUCCESS) {
+      common::AddressType address_type = section == SECTION_SHIPPING ?
+          common::ADDRESS_TYPE_SHIPPING : common::ADDRESS_TYPE_BILLING;
+      for (size_t i = 0; i < problems.size(); ++i) {
+        const AddressProblem& problem = problems[i];
+        bool sure = problem.type != AddressProblem::MISSING_REQUIRED_FIELD;
+        base::string16 text = l10n_util::GetStringUTF16(problem.description_id);
+        messages.Set(i18ninput::TypeForField(problem.field, address_type),
+                     ValidityMessage(text, sure));
+      }
+    } else {
+      // TODO(dbeam): disable submit button until able to successfully validate.
+    }
+  }
+
   for (FieldValueMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
     const ServerFieldType type = iter->first;
+    if (!messages.GetMessageOrDefault(type).text.empty())
+      continue;
 
     base::string16 text = InputValidityMessage(section, type, iter->second);
 
@@ -1854,11 +1940,17 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   ScopedViewUpdates updates(view_.get());
 
   if (type == ADDRESS_BILLING_COUNTRY || type == ADDRESS_HOME_COUNTRY) {
+    DCHECK(i18ninput::Enabled());
+
     const FieldValueMap snapshot = TakeUserInputSnapshot();
+
     // Clobber the inputs because the view's already been updated.
     RebuildInputsForCountry(section, field_contents, true);
     RestoreUserInputFromSnapshot(snapshot);
     UpdateSection(section);
+
+    GetValidator()->LoadRules(AutofillCountry::GetCountryCode(
+        field_contents, g_browser_process->GetApplicationLocale()));
   }
 
   // The rest of this method applies only to textfields. If a combobox, bail.
@@ -2575,7 +2667,6 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       suggested_shipping_(this),
       cares_about_shipping_(true),
       popup_input_type_(UNKNOWN_TYPE),
-      weak_ptr_factory_(this),
       waiting_for_explicit_sign_in_response_(false),
       has_accepted_legal_documents_(false),
       is_submitting_(false),
@@ -2583,7 +2674,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       wallet_server_validation_recoverable_(true),
       data_was_passed_back_(false),
       was_ui_latency_logged_(false),
-      card_generated_animation_(2000, 60, this) {
+      card_generated_animation_(2000, 60, this),
+      weak_ptr_factory_(this) {
   // TODO(estade): remove duplicates from |form_structure|?
   DCHECK(!callback_.is_null());
 }
@@ -2594,6 +2686,10 @@ AutofillDialogView* AutofillDialogControllerImpl::CreateView() {
 
 PersonalDataManager* AutofillDialogControllerImpl::GetManager() const {
   return PersonalDataManagerFactory::GetForProfile(profile_);
+}
+
+AddressValidator* AutofillDialogControllerImpl::GetValidator() {
+  return validator_.get();
 }
 
 const wallet::WalletClient* AutofillDialogControllerImpl::GetWalletClient()
@@ -3073,15 +3169,19 @@ std::vector<ServerFieldType> AutofillDialogControllerImpl::
 
 std::string AutofillDialogControllerImpl::CountryCodeForSection(
     DialogSection section) {
+  base::string16 country;
+
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper) {
-    return AutofillCountry::GetCountryCode(
-        wrapper->GetInfo(AutofillType(CountryTypeForSection(section))),
-        g_browser_process->GetApplicationLocale());
+    country = wrapper->GetInfo(AutofillType(CountryTypeForSection(section)));
+  } else {
+    FieldValueMap outputs;
+    view_->GetUserInput(section, &outputs);
+    country = outputs[CountryTypeForSection(section)];
   }
 
-  CountryComboboxModel* model = CountryComboboxModelForSection(section);
-  return model ? model->GetDefaultCountryCode() : std::string();
+  return AutofillCountry::GetCountryCode(
+      country, g_browser_process->GetApplicationLocale());
 }
 
 bool AutofillDialogControllerImpl::RebuildInputsForCountry(
@@ -3396,6 +3496,14 @@ void AutofillDialogControllerImpl::AnimationEnded(
     const gfx::Animation* animation) {
   DCHECK_EQ(animation, &card_generated_animation_);
   DoFinishSubmit();
+}
+
+void AutofillDialogControllerImpl::OnAddressValidationRulesLoaded(
+    const std::string& country_code,
+    bool success) {
+  // TODO(dbeam): should we retry on failure?
+  // TODO(dbeam): disable the submit button until rules are successfully loaded.
+  // TODO(dbeam): ask |view_| to re-validate its contents if necessary.
 }
 
 void AutofillDialogControllerImpl::DoFinishSubmit() {

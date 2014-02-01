@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
@@ -60,28 +61,9 @@ bool DataModelWrapper::GetDisplayText(
 
   // Format the address.
   ::i18n::addressinput::AddressData address_data;
-  address_data.recipient = UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(NAME_FULL)));
-  address_data.country_code = UTF16ToASCII(
-      GetInfoForDisplay(AutofillType(HTML_TYPE_COUNTRY_CODE,
-                                     HTML_MODE_SHIPPING)));
-  address_data.administrative_area = UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_STATE)));
-  address_data.locality = UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_CITY)));
-  address_data.dependent_locality = UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY)));
-  address_data.sorting_code = UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_SORTING_CODE)));
-  address_data.postal_code = UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_ZIP)));
-
-  address_data.address_lines.push_back(UTF16ToUTF8(
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE1))));
-  base::string16 address2 = GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE2));
-  if (!address2.empty())
-    address_data.address_lines.push_back(UTF16ToUTF8(address2));
-
+  i18ninput::CreateAddressData(
+      base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)),
+      &address_data);
   std::vector<std::string> lines;
   address_data.FormatForDisplay(&lines);
 
@@ -360,16 +342,6 @@ base::string16 FullWalletShippingWrapper::GetInfo(
     const AutofillType& type) const {
   return full_wallet_->shipping_address()->GetInfo(
       type, g_browser_process->GetApplicationLocale());
-}
-
-FieldMapWrapper::FieldMapWrapper(const FieldValueMap& field_map)
-    : field_map_(field_map) {}
-
-FieldMapWrapper::~FieldMapWrapper() {}
-
-base::string16 FieldMapWrapper::GetInfo(const AutofillType& type) const {
-  FieldValueMap::const_iterator it = field_map_.find(type.server_type());
-  return it != field_map_.end() ? it->second : base::string16();
 }
 
 }  // namespace autofill

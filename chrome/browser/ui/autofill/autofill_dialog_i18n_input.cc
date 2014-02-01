@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "grit/component_strings.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui_component.h"
@@ -21,35 +23,10 @@ namespace i18ninput {
 
 namespace {
 
+using base::UTF16ToUTF8;
+using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::AddressUiComponent;
-
-ServerFieldType AddressFieldToServerFieldType(AddressField address_field,
-                                              bool billing) {
-  switch (address_field) {
-    case ::i18n::addressinput::COUNTRY:
-      return billing ? ADDRESS_BILLING_COUNTRY : ADDRESS_HOME_COUNTRY;
-    case ::i18n::addressinput::ADMIN_AREA:
-      return billing ? ADDRESS_BILLING_STATE : ADDRESS_HOME_STATE;
-    case ::i18n::addressinput::LOCALITY:
-      return billing ? ADDRESS_BILLING_CITY : ADDRESS_HOME_CITY;
-    case ::i18n::addressinput::DEPENDENT_LOCALITY:
-      return billing ? ADDRESS_BILLING_DEPENDENT_LOCALITY :
-                       ADDRESS_HOME_DEPENDENT_LOCALITY;
-    case ::i18n::addressinput::POSTAL_CODE:
-      return billing ? ADDRESS_BILLING_ZIP : ADDRESS_HOME_ZIP;
-    case ::i18n::addressinput::SORTING_CODE:
-      return billing ? ADDRESS_BILLING_SORTING_CODE : ADDRESS_HOME_SORTING_CODE;
-    case ::i18n::addressinput::STREET_ADDRESS:
-      return billing ? ADDRESS_BILLING_LINE1 : ADDRESS_HOME_LINE1;
-    case ::i18n::addressinput::RECIPIENT:
-      return billing ? NAME_BILLING_FULL : NAME_FULL;
-    case ::i18n::addressinput::ORGANIZATION:
-      return COMPANY_NAME;
-  }
-  NOTREACHED();
-  return UNKNOWN_TYPE;
-}
 
 DetailInput::Length LengthFromHint(AddressUiComponent::LengthHint hint) {
   if (hint == AddressUiComponent::HINT_SHORT)
@@ -80,8 +57,7 @@ void BuildAddressInputs(common::AddressType address_type,
       continue;
     }
 
-    ServerFieldType server_type = AddressFieldToServerFieldType(component.field,
-                                                                billing);
+    ServerFieldType server_type = TypeForField(component.field, address_type);
     DetailInput::Length length = LengthFromHint(component.length_hint);
     base::string16 placeholder = l10n_util::GetStringUTF16(component.name_id);
     DetailInput input = { length, server_type, placeholder };
@@ -137,7 +113,7 @@ bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile) {
 
   for (size_t i = 0; i < required_fields.size(); ++i) {
     ServerFieldType type =
-        AddressFieldToServerFieldType(required_fields[i], false);
+        TypeForField(required_fields[i], common::ADDRESS_TYPE_SHIPPING);
     if (profile.GetRawInfo(type).empty())
       return false;
   }
@@ -154,6 +130,57 @@ bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile) {
   }
 
   return true;
+}
+
+ServerFieldType TypeForField(AddressField address_field,
+                             common::AddressType address_type) {
+  bool billing = address_type == common::ADDRESS_TYPE_BILLING;
+  switch (address_field) {
+    case ::i18n::addressinput::COUNTRY:
+      return billing ? ADDRESS_BILLING_COUNTRY : ADDRESS_HOME_COUNTRY;
+    case ::i18n::addressinput::ADMIN_AREA:
+      return billing ? ADDRESS_BILLING_STATE : ADDRESS_HOME_STATE;
+    case ::i18n::addressinput::LOCALITY:
+      return billing ? ADDRESS_BILLING_CITY : ADDRESS_HOME_CITY;
+    case ::i18n::addressinput::DEPENDENT_LOCALITY:
+      return billing ? ADDRESS_BILLING_DEPENDENT_LOCALITY :
+                       ADDRESS_HOME_DEPENDENT_LOCALITY;
+    case ::i18n::addressinput::POSTAL_CODE:
+      return billing ? ADDRESS_BILLING_ZIP : ADDRESS_HOME_ZIP;
+    case ::i18n::addressinput::SORTING_CODE:
+      return billing ? ADDRESS_BILLING_SORTING_CODE : ADDRESS_HOME_SORTING_CODE;
+    case ::i18n::addressinput::STREET_ADDRESS:
+      return billing ? ADDRESS_BILLING_LINE1 : ADDRESS_HOME_LINE1;
+    case ::i18n::addressinput::RECIPIENT:
+      return billing ? NAME_BILLING_FULL : NAME_FULL;
+    case ::i18n::addressinput::ORGANIZATION:
+      return COMPANY_NAME;
+  }
+  NOTREACHED();
+  return UNKNOWN_TYPE;
+}
+
+void CreateAddressData(
+    const base::Callback<base::string16(const AutofillType&)>& get_info,
+    AddressData* address_data) {
+  address_data->recipient = UTF16ToUTF8(get_info.Run(AutofillType(NAME_FULL)));
+  address_data->country_code = UTF16ToUTF8(
+      get_info.Run(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_SHIPPING)));
+  DCHECK_EQ(2U, address_data->country_code.size());
+  address_data->administrative_area = UTF16ToUTF8(
+      get_info.Run(AutofillType(ADDRESS_HOME_STATE)));
+  address_data->locality = UTF16ToUTF8(
+      get_info.Run(AutofillType(ADDRESS_HOME_CITY)));
+  address_data->dependent_locality = UTF16ToUTF8(
+      get_info.Run(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY)));
+  address_data->sorting_code = UTF16ToUTF8(
+      get_info.Run(AutofillType(ADDRESS_HOME_SORTING_CODE)));
+  address_data->postal_code = UTF16ToUTF8(
+      get_info.Run(AutofillType(ADDRESS_HOME_ZIP)));
+  base::SplitString(
+      UTF16ToUTF8(get_info.Run(AutofillType(ADDRESS_HOME_STREET_ADDRESS))),
+      '\n',
+      &address_data->address_lines);
 }
 
 }  // namespace i18ninput

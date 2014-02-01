@@ -31,10 +31,10 @@ class Downloader;
 class Storage;
 
 // Manages downloading data and caching it locally. Sample usage:
-//    Storage* storage = ...;
-//    Downloader* downloader = ...;
+//    scoped_ptr<Downloader> downloader(new Downloader);
+//    scoped_ptr<Storage> storage(new Storage);
 //    Retriever retriever("https://i18napis.appspot.com/ssl-aggregate-address/",
-//                        downloader, storage);
+//                        downloader.Pass(), storage.Pass());
 //    retriever.Retrieve("data/CA/AB--fr",
 //                       BuildCallback(this, &MyClass::OnDataRetrieved));
 class Retriever {

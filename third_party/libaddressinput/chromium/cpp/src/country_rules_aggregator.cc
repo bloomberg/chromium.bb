@@ -48,7 +48,7 @@ void CountryRulesAggregator::AggregateRules(const std::string& country_code,
                                             scoped_ptr<Callback> rules_ready) {
   Reset();
   country_code_ = country_code;
-  rules_ready_.reset(rules_ready.release());
+  rules_ready_ = rules_ready.Pass();
 
   // Key construction:
   // https://code.google.com/p/libaddressinput/wiki/AddressValidationMetadata
