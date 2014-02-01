@@ -485,6 +485,9 @@ AC_SUBST([dtddir])
 AM_CONDITIONAL([HAVE_XMLLINT], [test "x$XMLLINT" != "x" -a "x$dtddir" != "x"])
 
 AC_CONFIG_FILES([Makefile src/version.h src/weston.pc])
+
+AM_CONDITIONAL([HAVE_GIT_REPO], [test -f $srcdir/.git/logs/HEAD])
+
 AC_OUTPUT
 
 AC_MSG_RESULT([

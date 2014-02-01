@@ -77,6 +77,12 @@ weston_SOURCES =					\
 	shared/zalloc.h					\
 	src/weston-egl-ext.h
 
+# Track this dependency explicitly instead of using BUILT_SOURCES.  We
+# add BUILT_SOURCES to CLEANFILES, but we want to keep git-version.h
+# in case we're building from tarballs.
+
+src/compositor.c : $(top_builddir)/src/git-version.h
+
 noinst_LTLIBRARIES +=				\
 	libsession-helper.la
 
@@ -99,10 +105,10 @@ libsession_helper_la_LIBADD += $(SYSTEMD_LOGIN_LIBS) $(DBUS_LIBS)
 endif
 endif
 
-src/git-version.h : .FORCE
-	$(AM_V_GEN)(echo "#define BUILD_ID \"$(shell git --git-dir=$(top_srcdir)/.git describe --always --dirty) $(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%s (%ci)')\"" > $@-new; \
-	cmp -s $@ $@-new || cp $@-new $@; \
-	rm $@-new)
+if HAVE_GIT_REPO
+src/git-version.h : $(top_srcdir)/.git/logs/HEAD
+	$(AM_V_GEN)echo "#define BUILD_ID \"$(shell git --git-dir=$(top_srcdir)/.git describe --always --dirty) $(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%s (%ci)')\"" > $@
+endif
 
 .FORCE :
 
@@ -339,8 +345,7 @@ BUILT_SOURCES +=					\
 	src/workspaces-server-protocol.h		\
 	src/workspaces-protocol.c			\
 	src/scaler-server-protocol.h			\
-	src/scaler-protocol.c				\
-	src/git-version.h
+	src/scaler-protocol.c
 
 if BUILD_CLIENTS
 
