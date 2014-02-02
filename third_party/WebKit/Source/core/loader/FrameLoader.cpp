@@ -309,7 +309,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPoli
     m_currentItem->setTargetFrameID(m_frame->frameID());
     m_currentItem->setOriginalURLString(originalURL.string());
     m_currentItem->setStateObject(stateObject);
-    m_currentItem->setReferrer(Referrer(m_documentLoader->request().httpReferrer(), m_frame->document()->referrerPolicy()));
+    m_currentItem->setReferrer(Referrer(m_documentLoader->request().httpReferrer(), m_documentLoader->request().referrerPolicy()));
     m_currentItem->setFormInfoFromRequest(isPushOrReplaceState ? ResourceRequest() : m_documentLoader->request());
 }
 
