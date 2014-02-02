@@ -1497,6 +1497,9 @@ void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
 
 void RenderWidgetHostViewMac::SetOverlayView(
     RenderWidgetHostViewMac* overlay, const gfx::Point& offset) {
+  if (use_core_animation_)
+    return;
+
   if (overlay_view_)
     overlay_view_->underlay_view_.reset();
 
@@ -1510,6 +1513,9 @@ void RenderWidgetHostViewMac::SetOverlayView(
 }
 
 void RenderWidgetHostViewMac::RemoveOverlayView() {
+  if (use_core_animation_)
+    return;
+
   if (overlay_view_) {
     overlay_view_->underlay_view_.reset();
     overlay_view_.reset();
