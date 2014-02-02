@@ -62,11 +62,14 @@ def FindClangFormatToolInChromiumTree():
 
 def FindClangFormatScriptInChromiumTree(script_name):
   """Return a path to a clang-format helper script, or die trying."""
-  # The binaries in platform-specific subdirectories in src/tools/gn/bin.
   script_path = os.path.join(_FindChromiumTree(), 'src', 'third_party',
-                             'clang_format', 'scripts', script_name)
+                             'clang_format', 'script', script_name)
   if not os.path.exists(script_path):
-    raise NotFoundError('File does not exist: %s' % script_path)
+    # TODO(thakis): Remove the fallback to the old location after a few weeks.
+    script_path = os.path.join(_FindChromiumTree(), 'src', 'third_party',
+                               'clang_format', 'scripts', script_name)
+    if not os.path.exists(script_path):
+      raise NotFoundError('File does not exist: %s' % script_path)
   return script_path
 
 
