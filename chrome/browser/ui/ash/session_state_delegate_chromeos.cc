@@ -30,8 +30,6 @@ SessionStateDelegateChromeos::~SessionStateDelegateChromeos() {
 }
 
 int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {
-  // TODO(nkostylev): Show some UI messages why no more users could be added
-  // to this session. http://crbug.com/230863
   // We limit list of logged in users to 10 due to memory constraints.
   // Note that 10 seems excessive, but we want to test how many users are
   // actually added to a session.
