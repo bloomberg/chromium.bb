@@ -91,8 +91,7 @@ struct MediaStreamRequest;
 class CONTENT_EXPORT BrowserPluginGuest
     : public JavaScriptDialogManager,
       public WebContentsDelegate,
-      public WebContentsObserver,
-      public base::SupportsWeakPtr<BrowserPluginGuest> {
+      public WebContentsObserver {
  public:
   typedef base::Callback<void(bool)> GeolocationCallback;
   virtual ~BrowserPluginGuest();
@@ -115,6 +114,9 @@ class CONTENT_EXPORT BrowserPluginGuest
       bool has_render_view,
       WebContentsImpl* web_contents,
       BrowserPluginGuest* opener);
+
+  // Returns a WeakPtr to this BrowserPluginGuest.
+  base::WeakPtr<BrowserPluginGuest> AsWeakPtr();
 
   // Called when the embedder WebContents is destroyed to give the
   // BrowserPluginGuest an opportunity to clean up after itself.

@@ -502,6 +502,10 @@ BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
   return new_guest;
 }
 
+base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void BrowserPluginGuest::EmbedderDestroyed() {
   embedder_web_contents_ = NULL;
   if (delegate_)
