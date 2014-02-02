@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -67,6 +68,23 @@ bool IsProfileFromActiveUser(Profile* profile) {
   // In non Chrome OS configurations this will be always true since this only
   // makes sense in separate desktop mode.
   return true;
+#endif
+}
+
+const std::string& GetCurrentUserId() {
+#if defined(OS_CHROMEOS)
+  return chromeos::UserManager::Get()->GetActiveUser()->email();
+#else
+  return base::EmptyString();
+#endif
+}
+
+// Move the window to the current user's desktop.
+void MoveWindowToCurrentDesktop(aura::Window* window) {
+#if defined(OS_CHROMEOS)
+  chrome::MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+      window,
+      GetCurrentUserId());
 #endif
 }
 

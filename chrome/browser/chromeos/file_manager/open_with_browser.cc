@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -107,6 +108,11 @@ void OpenNewTab(Profile* profile, const GURL& url) {
       profile, chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::AddSelectedTabWithURL(displayer.browser(), url,
       content::PAGE_TRANSITION_LINK);
+
+  // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
+  // browser will be shown on the active desktop, we ensure the visibility.
+  multi_user_util::MoveWindowToCurrentDesktop(
+      displayer.browser()->window()->GetNativeWindow());
 }
 
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL

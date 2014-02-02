@@ -32,6 +32,13 @@ Profile* GetProfileFromWindow(aura::Window* window);
 // return false.
 bool IsProfileFromActiveUser(Profile* profile);
 
+// Gets the current user. Note that this will only return for ChromeOS a string.
+// All other operating systems will get an empty string.
+const std::string& GetCurrentUserId();
+
+// Move the window to the current user's desktop.
+void MoveWindowToCurrentDesktop(aura::Window* window);
+
 }  // namespace multi_user_util
 
 #endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_UTIL_H_
