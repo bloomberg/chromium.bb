@@ -561,6 +561,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'remoting_base',
+            'remoting_breakpad',
             'remoting_host',
             'remoting_it2me_host_static',
             'remoting_native_messaging_base',
@@ -570,10 +571,31 @@
             'host/it2me/it2me_native_messaging_host_main.cc',
           ],
           'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                # Always use GTK on Linux, even for Aura builds.
+                '../build/linux/system.gyp:gtk',
+              ],
+            }],
             ['OS=="linux" and linux_use_tcmalloc==1', {
               'dependencies': [
                 '../base/allocator/allocator.gyp:allocator',
               ],
+            }],
+            ['OS=="win"', {
+              'msvs_settings': {
+                'VCManifestTool': {
+                  'EmbedManifest': 'true',
+                  'AdditionalManifestFiles': [
+                    'host/win/common-controls.manifest',
+                  ],
+                },
+                'VCLinkerTool': {
+                  'AdditionalDependencies': [
+                    'comctl32.lib',
+                  ],
+                },
+              },
             }],
           ],
         },  # end of target 'remoting_it2me_native_messaging_host'
