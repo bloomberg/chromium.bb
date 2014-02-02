@@ -16,24 +16,34 @@
 #include "media/midi/midi_port_info.h"
 
 namespace media {
-namespace {
-const char kUnknown[] = "[unknown]";
-}  // namespace
 
 class MIDIManagerAlsa::MIDIDeviceInfo
     : public base::RefCounted<MIDIDeviceInfo> {
  public:
   MIDIDeviceInfo(MIDIManagerAlsa* manager,
-                 const std::string& card,
+                 const std::string& bus_id,
+                 snd_ctl_card_info_t* card,
                  const snd_rawmidi_info_t* midi,
                  int device) {
-    opened_ = !snd_rawmidi_open(&midi_in_, &midi_out_, card.c_str(), 0);
+    opened_ = !snd_rawmidi_open(&midi_in_, &midi_out_, bus_id.c_str(), 0);
     if (!opened_)
       return;
 
+    const std::string id = base::StringPrintf("%s:%d", bus_id.c_str(), device);
     const std::string name = snd_rawmidi_info_get_name(midi);
-    const std::string id = base::StringPrintf("%s:%d", card.c_str(), device);
-    port_info_ = MIDIPortInfo(id, kUnknown, name, kUnknown);
+    // We assume that card longname is in the format of
+    // "<manufacturer> <name> at <bus>". Otherwise, we give up to detect
+    // a manufacturer name here.
+    std::string manufacturer;
+    const std::string card_name = snd_ctl_card_info_get_longname(card);
+    size_t name_index = card_name.find(name);
+    if (std::string::npos != name_index)
+      manufacturer = card_name.substr(0, name_index - 1);
+    const std::string version =
+        base::StringPrintf("%s / ALSA library version %d.%d.%d",
+                           snd_ctl_card_info_get_driver(card),
+                           SND_LIB_MAJOR, SND_LIB_MINOR, SND_LIB_SUBMINOR);
+    port_info_ = MIDIPortInfo(id, manufacturer, name, version);
   }
 
   void Send(MIDIManagerClient* client, const std::vector<uint8>& data) {
@@ -113,8 +123,8 @@ bool MIDIManagerAlsa::Initialize() {
       input = snd_ctl_rawmidi_info(handle, midi_in) == 0;
       if (!output && !input)
         continue;
-      scoped_refptr<MIDIDeviceInfo> port =
-          new MIDIDeviceInfo(this, id, output ? midi_out : midi_in, device);
+      scoped_refptr<MIDIDeviceInfo> port = new MIDIDeviceInfo(
+          this, id, card, output ? midi_out : midi_in, device);
       if (!port->IsOpened()) {
         DLOG(ERROR) << "MIDIDeviceInfo open fails";
         continue;
