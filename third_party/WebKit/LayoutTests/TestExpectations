@@ -291,18 +291,6 @@ crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
-crbug.com/311372 fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
-crbug.com/311372 fast/text/international/alef-connected.html [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] fast/css/text-rendering.html [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] fast/text/capitalize-boundaries.html [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] fast/text/drawBidiText.html [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] fast/text/emphasis.html [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] fast/text/justify-ideograph-complex.html [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] svg/W3C-SVG-1.1-SE/text-intro-05-t.svg [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] svg/W3C-SVG-1.1/text-intro-05-t.svg [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] svg/text/text-intro-05-t.svg [ NeedsRebaseline ]
-crbug.com/311372 [ Win ] fast/text/atsui-rtl-override-selection.html [ NeedsRebaseline ]
-
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]

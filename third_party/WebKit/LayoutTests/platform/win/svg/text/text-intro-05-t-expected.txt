@@ -3,9 +3,9 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderSVGRoot {svg} at (0,0) size 800x600
     RenderSVGContainer {g} at (12,78) size 755x335
-      RenderSVGText {text} at (98,47) size 362x46 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 362x46
-          chunk 1 (end anchor) text run 1 at (98.12,80.00) startOffset 0 endOffset 37 width 361.88 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
+      RenderSVGText {text} at (110,47) size 350x46 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 350x46
+          chunk 1 (end anchor) text run 1 at (110.42,80.00) startOffset 0 endOffset 37 width 349.58 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
       RenderSVGText {text} at (7,127) size 453x42 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,0) size 453x41
           chunk 1 (end anchor) text run 1 at (7.60,160.00) startOffset 0 endOffset 37 width 452.40 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
