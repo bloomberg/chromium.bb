@@ -3,7 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Bootstraps gn.
+
+It is done by first building it manually in a temporary directory, then building
+it with its own BUILD.gn to the final destination.
+"""
+
 import contextlib
+import logging
 import optparse
 import os
 import shutil
@@ -11,19 +18,18 @@ import subprocess
 import sys
 import tempfile
 
-
-GN_ROOT = os.path.abspath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..'))
-
-SRC_ROOT = os.path.abspath(os.path.join(
-    GN_ROOT, '..', '..'))
-
-BUILD_ROOT = os.path.abspath(os.path.join(
-    SRC_ROOT, 'out', 'Release'))
+BOOTSTRAP_DIR = os.path.dirname(os.path.abspath(__file__))
+GN_ROOT = os.path.dirname(BOOTSTRAP_DIR)
+SRC_ROOT = os.path.dirname(os.path.dirname(GN_ROOT))
 
 
 def is_linux():
   return sys.platform.startswith('linux')
+
+
+def check_call(cmd, **kwargs):
+  logging.debug('Running: %s', ' '.join(cmd))
+  subprocess.check_call(cmd, cwd=GN_ROOT, **kwargs)
 
 
 @contextlib.contextmanager
@@ -36,34 +42,46 @@ def scoped_tempdir():
 
 
 def main(argv):
-  parser = optparse.OptionParser()
+  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
+  parser.add_option('-d', '--debug', action='store_true',
+                    help='Do a debug build. Defaults to release build.')
   parser.add_option('-o', '--output',
                     help='place output in PATH', metavar='PATH')
+  parser.add_option('-v', '--verbose', action='store_true',
+                    help='Log more details')
   options, args = parser.parse_args(argv)
-
-  if not options.output:
-    parser.error('Please specify --output.')
 
   if args:
     parser.error('Unrecognized command line arguments: %s.' % ', '.join(args))
 
-  with scoped_tempdir() as tempdir:
-    print 'Building gn manually...'
-    write_ninja(os.path.join(tempdir, 'build.ninja'))
-    subprocess.check_call(['ninja', '-C', tempdir, 'gn'])
+  logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
 
-    print 'Building gn using itself...'
-    subprocess.check_call([
-        os.path.join(tempdir, 'gn'),
-        '--args=is_debug=false',
-        '--output=%s' % os.path.relpath(BUILD_ROOT, SRC_ROOT)])
-    subprocess.check_call(['ninja', '-C', BUILD_ROOT, 'gn'])
-    subprocess.check_call(['strip', os.path.join(BUILD_ROOT, 'gn')])
+  if options.debug:
+    build_rel = os.path.join('out', 'Debug')
+  else:
+    build_rel = os.path.join('out', 'Release')
+  build_root = os.path.join(SRC_ROOT, build_rel)
 
-    # Preserve the executable permission bit.
-    shutil.copy2(os.path.join(BUILD_ROOT, 'gn'), options.output)
+  try:
+    with scoped_tempdir() as tempdir:
+      print 'Building gn manually in a temporary directory for bootstrapping...'
+      build_gn_with_ninja_manually(tempdir)
 
+      print 'Building gn using itself to %s...' % build_rel
+      build_gn_with_gn(os.path.join(tempdir, 'gn'), build_root, options.debug)
+
+      if options.output:
+        # Preserve the executable permission bit.
+        shutil.copy2(os.path.join(build_root, 'gn'), options.output)
+  except subprocess.CalledProcessError as e:
+    print >> sys.stderr, str(e)
+    return 1
   return 0
+
+
+def build_gn_with_ninja_manually(tempdir):
+  write_ninja(os.path.join(tempdir, 'build.ninja'))
+  check_call(['ninja', '-C', tempdir, 'gn'])
 
 
 def write_ninja(path):
@@ -265,7 +283,7 @@ def write_ninja(path):
     ninja_template = f.read()
 
   def src_to_obj(path):
-    return '%s' % os.path.splitext(src_file)[0] + '.o'
+    return '%s' % os.path.splitext(path)[0] + '.o'
 
   ninja_lines = []
   for library, settings in static_libraries.iteritems():
@@ -295,6 +313,16 @@ def write_ninja(path):
 
   with open(path, 'w') as f:
     f.write(ninja_template + '\n'.join(ninja_lines))
+
+
+def build_gn_with_gn(temp_gn, build_dir, debug):
+  cmd = [temp_gn, '--output=%s' % build_dir]
+  if not debug:
+    cmd.append('--args=is_debug=false')
+  check_call(cmd)
+  check_call(['ninja', '-C', build_dir, 'gn'])
+  if not debug:
+    check_call(['strip', os.path.join(build_dir, 'gn')])
 
 
 if __name__ == '__main__':
