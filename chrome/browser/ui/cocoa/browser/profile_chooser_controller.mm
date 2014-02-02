@@ -177,8 +177,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSING, type);
-    if (browser_ == content::Source<Browser>(source).ptr())
+    if (browser_ == content::Source<Browser>(source).ptr()) {
       RemoveTokenServiceObserver();
+      // Clean up the bubble's WebContents (used by the Gaia embedded view), to
+      // make sure the guest profile doesn't have any dangling host renderers.
+      // This can happen if Chrome is quit using Command-Q while the bubble is
+      // still open, which won't give the bubble a chance to be closed and
+      // clean up the WebContents itself.
+      [controller_ cleanUpEmbeddedViewContents];
+    }
   }
 
   ProfileChooserController* controller_;  // Weak; owns this.
@@ -583,6 +590,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   std::string account = currentProfileAccounts_[[sender tag]];
   ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
       browser_->profile())->RevokeCredentials(account);
+}
+
+- (void)cleanUpEmbeddedViewContents {
+  webContents_.reset();
 }
 
 - (id)initWithBrowser:(Browser*)browser anchoredAt:(NSPoint)point {

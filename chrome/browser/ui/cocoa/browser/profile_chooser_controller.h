@@ -94,6 +94,9 @@ class WebContents;
 
 // Deletes an account from the active profile.
 - (IBAction)removeAccount:(id)sender;
+
+// Reset the WebContents used by the Gaia embedded view.
+- (void)cleanUpEmbeddedViewContents;
 @end
 
 // Testing API /////////////////////////////////////////////////////////////////
