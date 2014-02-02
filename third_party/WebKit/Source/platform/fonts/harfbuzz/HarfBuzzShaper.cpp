@@ -587,17 +587,26 @@ static inline int handleMultipleUChar(
     return 0;
 }
 
-bool HarfBuzzShaper::createHarfBuzzRuns()
+struct CandidateRun {
+    UChar32 character;
+    unsigned start;
+    unsigned end;
+    const SimpleFontData* fontData;
+    UScriptCode script;
+};
+
+static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
+    size_t bufferLength, const Font* font, Vector<CandidateRun>* runs)
 {
-    const UChar* normalizedBufferEnd = m_normalizedBuffer.get() + m_normalizedBufferLength;
-    SurrogatePairAwareTextIterator iterator(m_normalizedBuffer.get(), 0, m_normalizedBufferLength, m_normalizedBufferLength);
+    const UChar* normalizedBufferEnd = normalizedBuffer + bufferLength;
+    SurrogatePairAwareTextIterator iterator(normalizedBuffer, 0, bufferLength, bufferLength);
     UChar32 character;
     unsigned clusterLength = 0;
     unsigned startIndexOfCurrentRun = 0;
     if (!iterator.consume(character, clusterLength))
         return false;
 
-    const SimpleFontData* nextFontData = m_font->glyphDataForCharacter(character, false).fontData;
+    const SimpleFontData* nextFontData = font->glyphDataForCharacter(character, false).fontData;
     UErrorCode errorCode = U_ZERO_ERROR;
     UScriptCode nextScript = uscript_getScript(character, &errorCode);
     if (U_FAILURE(errorCode))
@@ -618,21 +627,131 @@ bool HarfBuzzShaper::createHarfBuzzRuns()
                 continue;
             }
 
-            nextFontData = m_font->glyphDataForCharacter(character, false).fontData;
+            nextFontData = font->glyphDataForCharacter(character, false).fontData;
             nextScript = uscript_getScript(character, &errorCode);
             if (U_FAILURE(errorCode))
                 return false;
             if ((nextFontData != currentFontData) || ((currentScript != nextScript) && (nextScript != USCRIPT_INHERITED) && (!uscript_hasScript(character, currentScript))))
                 break;
-            if (nextScript == USCRIPT_INHERITED)
-                nextScript = currentScript;
             currentCharacterPosition = iterator.characters();
         }
-        addHarfBuzzRun(startIndexOfCurrentRun, iterator.currentCharacter(), currentFontData, currentScript);
+
+        CandidateRun run = { character, startIndexOfCurrentRun, iterator.currentCharacter(), currentFontData, currentScript };
+        runs->append(run);
+
         currentFontData = nextFontData;
         startIndexOfCurrentRun = iterator.currentCharacter();
     } while (iterator.consume(character, clusterLength));
 
+    return true;
+}
+
+static inline bool matchesAdjacentRun(UScriptCode* scriptExtensions, int length,
+    CandidateRun& adjacentRun)
+{
+    for (int i = 0; i < length; i++) {
+        if (scriptExtensions[i] == adjacentRun.script)
+            return true;
+    }
+    return false;
+}
+
+static inline void resolveRunBasedOnScriptExtensions(Vector<CandidateRun>& runs,
+    CandidateRun& run, size_t i, size_t length, UScriptCode* scriptExtensions,
+    int extensionsLength, size_t& nextResolvedRun)
+{
+    // If uscript_getScriptExtensions returns 1 it only contains the script value,
+    // we only care about ScriptExtensions which is indicated by a value >= 2.
+    if (extensionsLength <= 1)
+        return;
+
+    if (i > 0 && matchesAdjacentRun(scriptExtensions, extensionsLength, runs[i - 1])) {
+        run.script = runs[i - 1].script;
+        return;
+    }
+
+    for (size_t j = i + 1; j < length; j++) {
+        if (runs[j].script != USCRIPT_COMMON
+            && runs[j].script != USCRIPT_INHERITED
+            && matchesAdjacentRun(scriptExtensions, extensionsLength, runs[j])) {
+            nextResolvedRun = j;
+            break;
+        }
+    }
+}
+
+static inline void resolveRunBasedOnScriptValue(Vector<CandidateRun>& runs,
+    CandidateRun& run, size_t i, size_t length, size_t& nextResolvedRun)
+{
+    if (run.script != USCRIPT_COMMON)
+        return;
+
+    if (i > 0 && runs[i - 1].script != USCRIPT_COMMON) {
+        run.script = runs[i - 1].script;
+        return;
+    }
+
+    for (size_t j = i + 1; j < length; j++) {
+        if (runs[j].script != USCRIPT_COMMON
+            && runs[j].script != USCRIPT_INHERITED) {
+            nextResolvedRun = j;
+            break;
+        }
+    }
+}
+
+static inline bool resolveCandidateRuns(Vector<CandidateRun>& runs)
+{
+    UScriptCode scriptExtensions[8];
+    UErrorCode errorCode = U_ZERO_ERROR;
+    size_t length = runs.size();
+    size_t nextResolvedRun = 0;
+    for (size_t i = 0; i < length; i++) {
+        CandidateRun& run = runs[i];
+        nextResolvedRun = 0;
+
+        if (run.script == USCRIPT_INHERITED)
+            run.script = i > 0 ? runs[i - 1].script : USCRIPT_COMMON;
+
+        int extensionsLength = uscript_getScriptExtensions(run.character,
+            scriptExtensions, sizeof(scriptExtensions), &errorCode);
+        if (U_FAILURE(errorCode))
+            return false;
+
+        resolveRunBasedOnScriptExtensions(runs, run, i, length,
+            scriptExtensions, extensionsLength, nextResolvedRun);
+        resolveRunBasedOnScriptValue(runs, run, i, length,
+            nextResolvedRun);
+        for (size_t j = i; j < nextResolvedRun; j++)
+            runs[j].script = runs[nextResolvedRun].script;
+
+        i = std::max(i, nextResolvedRun);
+    }
+    return true;
+}
+
+bool HarfBuzzShaper::createHarfBuzzRuns()
+{
+    Vector<CandidateRun> candidateRuns;
+    if (!collectCandidateRuns(m_normalizedBuffer.get(),
+        m_normalizedBufferLength, m_font, &candidateRuns))
+        return false;
+
+    if (!resolveCandidateRuns(candidateRuns))
+        return false;
+
+    size_t length = candidateRuns.size();
+    for (size_t i = 0; i < length; ) {
+        CandidateRun& run = candidateRuns[i];
+        CandidateRun lastMatchingRun = run;
+        for (i++; i < length; i++) {
+            if (candidateRuns[i].script != run.script
+                || candidateRuns[i].fontData != run.fontData)
+                break;
+            lastMatchingRun = candidateRuns[i];
+        }
+        addHarfBuzzRun(run.start, lastMatchingRun.end, run.fontData, run.script);
+    }
     return !m_harfBuzzRuns.isEmpty();
 }
 
