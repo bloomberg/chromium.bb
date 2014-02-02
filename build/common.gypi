@@ -1125,7 +1125,7 @@
     'linux_link_gsettings%': 0,
 
     # Default arch variant for MIPS.
-    'mips_arch_variant%': 'mips32r2',
+    'mips_arch_variant%': 'mips32r1',
 
     # Enable use of OpenMAX DL FFT routines.
     'use_openmax_dl_fft%': '<(use_openmax_dl_fft)',
