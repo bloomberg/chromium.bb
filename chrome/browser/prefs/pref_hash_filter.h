@@ -11,9 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_filter.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
+#include "chrome/browser/prefs/tracked/tracked_preference.h"
 
 class PrefStore;
 
@@ -36,16 +38,26 @@ class PrefHashFilter : public PrefFilter {
     ENFORCE_NO_SEEDING_NO_MIGRATION,
     // ENFORCE_ALL must always remain last; it is meant to be used when the
     // desired level is underdetermined and the caller wants to enforce the
-    // strongest setting to be safe.
+    // strongest level to be safe.
     ENFORCE_ALL
   };
 
-  struct TrackedPreference {
+  enum PrefTrackingStrategy {
+    // Atomic preferences are tracked as a whole.
+    TRACKING_STRATEGY_ATOMIC,
+    // Split preferences are dictionaries for which each top-level entry is
+    // tracked independently. Note: preferences using this strategy must be kept
+    // in sync with TrackedSplitPreferences in histograms.xml.
+    TRACKING_STRATEGY_SPLIT,
+  };
+
+  struct TrackedPreferenceMetadata {
     size_t reporting_id;
     const char* name;
     // Whether to actually reset this specific preference when everything else
     // indicates that it should be.
     bool allow_enforcement;
+    PrefTrackingStrategy strategy;
   };
 
   // Constructs a PrefHashFilter tracking the specified |tracked_preferences|
@@ -55,7 +67,7 @@ class PrefHashFilter : public PrefFilter {
   // filter will enforce factory defaults upon detecting an untrusted preference
   // value.
   PrefHashFilter(scoped_ptr<PrefHashStore> pref_hash_store,
-                 const TrackedPreference tracked_preferences[],
+                 const TrackedPreferenceMetadata tracked_preferences[],
                  size_t tracked_preferences_size,
                  size_t reporting_ids_count,
                  EnforcementLevel enforcement_level);
@@ -74,24 +86,26 @@ class PrefHashFilter : public PrefFilter {
       const base::DictionaryValue* pref_store_contents) OVERRIDE;
 
  private:
-  typedef std::map<std::string, const TrackedPreference> TrackedPreferencesMap;
+  // A map of paths to TrackedPreferences; this map owns this individual
+  // TrackedPreference objects.
+  typedef base::ScopedPtrHashMap<std::string, TrackedPreference>
+      TrackedPreferencesMap;
+  // A map from changed paths to their corresponding TrackedPreferences (which
+  // aren't owned by this map).
+  typedef std::map<std::string, const TrackedPreference*> ChangedPathsMap;
 
-  scoped_ptr<PrefHashStore> pref_hash_store_;
+  // |pref_hash_store_| is owned by this PrefHashFilter, but this PrefHashFilter
+  // should never interact directly with the PrefHashStore (hence why it's
+  // const). The non-const PrefHashStore was passed down to this
+  // PrefHashFilter's TrackedPreferences which are meant to handle the
+  // interaction with the PrefHashStore.
+  scoped_ptr<const PrefHashStore> pref_hash_store_;
 
   TrackedPreferencesMap tracked_paths_;
 
   // The set of all paths whose value has changed since the last call to
   // FilterSerializeData.
-  std::set<std::string> changed_paths_;
-
-  size_t reporting_ids_count_;
-
-  // Prevent setting changes.
-  bool enforce_;
-  // Do not seed unknown values.
-  bool no_seeding_;
-  // Do not migrate values validated by the old MAC algorithm.
-  bool no_migration_;
+  ChangedPathsMap changed_paths_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilter);
 };

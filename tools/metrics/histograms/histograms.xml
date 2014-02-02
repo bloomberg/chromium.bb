@@ -17617,6 +17617,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.TrackedSplitPreferenceChangedCount">
+  <summary>
+    The number of items that had changed in a dictionary pref when
+    Settings.TrackedPreferenceChanged is reported for that pref.
+  </summary>
+</histogram>
+
 <histogram name="SettingsResetBubble.NumNoThanksPerReset">
   <summary>
     Counts the number of times the user clicked on the No Thanks button of the
@@ -34801,6 +34808,11 @@ other types of suffix sets.
   <group name="XP_PreRead_100"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserOpenTabs"/>
+</fieldtrial>
+
+<fieldtrial name="TrackedSplitPreferences" separator=".">
+  <group name="extension.settings" label="Extension IDs dictionary"/>
+  <affected-histogram name="Settings.TrackedSplitPreferenceChangedCount"/>
 </fieldtrial>
 
 <fieldtrial name="WebStoreLinkExperiment">

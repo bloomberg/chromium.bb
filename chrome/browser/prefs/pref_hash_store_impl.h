@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/pref_hash_calculator.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
 
@@ -17,8 +17,9 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
+class DictionaryValue;
 class Value;
-}  // namespace base
+}
 
 // Implements PrefHashStoreImpl by storing preference hashes in a PrefService.
 class PrefHashStoreImpl : public PrefHashStore {
@@ -49,8 +50,35 @@ class PrefHashStoreImpl : public PrefHashStore {
                                 const base::Value* value) const OVERRIDE;
   virtual void StoreHash(const std::string& path,
                          const base::Value* value) OVERRIDE;
+  virtual ValueState CheckSplitValue(
+      const std::string& path,
+      const base::DictionaryValue* initial_split_value,
+      std::vector<std::string>* invalid_keys) const OVERRIDE;
+  virtual void StoreSplitHash(
+      const std::string& path,
+      const base::DictionaryValue* split_value) OVERRIDE;
 
  private:
+  // Clears any hashes stored for |path| through |update|.
+  void ClearPath(const std::string& path,
+                 DictionaryPrefUpdate* update);
+
+  // Returns true if there are split hashes stored for |path|.
+  bool HasSplitHashesAtPath(const std::string& path) const;
+
+  // Used by StoreHash and StoreSplitHash to store the hash of |new_value| at
+  // |path| under |update|. Allows multiple hashes to be stored under the same
+  // |update|.
+  void StoreHashInternal(const std::string& path,
+                         const base::Value* new_value,
+                         DictionaryPrefUpdate* update);
+
+  // Updates kHashOfHashesPref to reflect the last changes to the |hashes_dict|.
+  // Must be called after every change to the |hashes_dict|, within the scope of
+  // |update|.
+  void UpdateHashOfHashes(const base::DictionaryValue* hashes_dict,
+                          DictionaryPrefUpdate* update);
+
   // Returns true if the dictionary of hashes stored for |hash_store_id_| is
   // trusted (which implies unknown values can be trusted as newly tracked
   // values).

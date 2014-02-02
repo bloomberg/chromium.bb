@@ -54,23 +54,65 @@ namespace {
 // tools/metrics/histograms/histograms.xml. To add a new preference, append it
 // to the array and add a corresponding value to the histogram enum. Each
 // tracked preference must be given a unique reporting ID.
-const PrefHashFilter::TrackedPreference kTrackedPrefs[] = {
-  { 0, prefs::kShowHomeButton, true },
-  { 1, prefs::kHomePageIsNewTabPage, true },
-  { 2, prefs::kHomePage, true },
-  { 3, prefs::kRestoreOnStartup, true },
-  { 4, prefs::kURLsToRestoreOnStartup, true },
-  { 5, extensions::pref_names::kExtensions, false },
-  { 6, prefs::kGoogleServicesLastUsername, true },
-  { 7, prefs::kSearchProviderOverrides, true },
-  { 8, prefs::kDefaultSearchProviderSearchURL, true },
-  { 9, prefs::kDefaultSearchProviderKeyword, true },
-  { 10, prefs::kDefaultSearchProviderName, true },
+const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
+  {
+    0, prefs::kShowHomeButton, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    1, prefs::kHomePageIsNewTabPage, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    2, prefs::kHomePage, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    3, prefs::kRestoreOnStartup, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    4, prefs::kURLsToRestoreOnStartup, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    5, extensions::pref_names::kExtensions, false,
+    PrefHashFilter::TRACKING_STRATEGY_SPLIT
+  },
+  {
+    6, prefs::kGoogleServicesLastUsername, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    7, prefs::kSearchProviderOverrides, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    8, prefs::kDefaultSearchProviderSearchURL, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    9, prefs::kDefaultSearchProviderKeyword, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    10, prefs::kDefaultSearchProviderName, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
 #if !defined(OS_ANDROID)
-  { 11, prefs::kPinnedTabs, true },
+  {
+    11, prefs::kPinnedTabs, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
 #endif
-  { 12, extensions::pref_names::kKnownDisabled, true },
-  { 13, prefs::kProfileResetPromptMemento, true },
+  {
+    12, extensions::pref_names::kKnownDisabled, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
+  {
+    13, prefs::kProfileResetPromptMemento, true,
+    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
+  },
 };
 
 // The count of tracked preferences IDs across all platforms.
@@ -101,6 +143,10 @@ PrefHashFilter::EnforcementLevel GetSettingsEnforcementLevel() {
       PrefHashFilter::ENFORCE_NO_SEEDING_NO_MIGRATION
     },
   };
+  COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kEnforcementLevelMap) ==
+                     (PrefHashFilter::ENFORCE_ALL -
+                      PrefHashFilter::NO_ENFORCEMENT),
+                 missing_enforcement_level);
 
   base::FieldTrial* trial =
       base::FieldTrialList::Find(kSettingsEnforcementExperiment);
