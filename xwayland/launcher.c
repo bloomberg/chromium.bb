@@ -251,7 +251,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 	snprintf(lockfile, lsize, "/tmp/.X%d-lock", display);
 	fd = open(lockfile, O_WRONLY | O_CLOEXEC | O_CREAT | O_EXCL, 0444);
 	if (fd < 0 && errno == EEXIST) {
-		fd = open(lockfile, O_CLOEXEC, O_RDONLY);
+		fd = open(lockfile, O_CLOEXEC | O_RDONLY);
 		if (fd < 0 || read(fd, pid, 11) != 11) {
 			weston_log("can't read lock file %s: %s\n",
 				lockfile, strerror(errno));
