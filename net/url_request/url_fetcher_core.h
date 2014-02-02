@@ -80,7 +80,6 @@ class URLFetcherCore
   void SetReferrerPolicy(URLRequest::ReferrerPolicy referrer_policy);
   void SetExtraRequestHeaders(const std::string& extra_request_headers);
   void AddExtraRequestHeader(const std::string& header_line);
-  void GetExtraRequestHeaders(HttpRequestHeaders* headers) const;
   void SetRequestContext(URLRequestContextGetter* request_context_getter);
   // Set the URL that should be consulted for the third-party cookie
   // blocking policy.

@@ -221,11 +221,6 @@ void URLFetcherCore::AddExtraRequestHeader(const std::string& header_line) {
   extra_request_headers_.AddHeaderFromString(header_line);
 }
 
-void URLFetcherCore::GetExtraRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  headers->CopyFrom(extra_request_headers_);
-}
-
 void URLFetcherCore::SetRequestContext(
     URLRequestContextGetter* request_context_getter) {
   DCHECK(!request_context_getter_.get());

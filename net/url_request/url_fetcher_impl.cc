@@ -79,11 +79,6 @@ void URLFetcherImpl::AddExtraRequestHeader(const std::string& header_line) {
   core_->AddExtraRequestHeader(header_line);
 }
 
-void URLFetcherImpl::GetExtraRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  GetExtraRequestHeaders(headers);
-}
-
 void URLFetcherImpl::SetRequestContext(
     URLRequestContextGetter* request_context_getter) {
   core_->SetRequestContext(request_context_getter);

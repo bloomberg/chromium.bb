@@ -105,11 +105,6 @@ void TestURLFetcher::AddExtraRequestHeader(const std::string& header_line) {
   fake_extra_request_headers_.AddHeaderFromString(header_line);
 }
 
-void TestURLFetcher::GetExtraRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  *headers = fake_extra_request_headers_;
-}
-
 void TestURLFetcher::SetRequestContext(
     URLRequestContextGetter* request_context_getter) {
 }
@@ -215,6 +210,11 @@ bool TestURLFetcher::GetResponseAsFilePath(
 
   *out_response_path = fake_response_file_path_;
   return true;
+}
+
+void TestURLFetcher::GetExtraRequestHeaders(
+    HttpRequestHeaders* headers) const {
+  *headers = fake_extra_request_headers_;
 }
 
 void TestURLFetcher::set_status(const URLRequestStatus& status) {

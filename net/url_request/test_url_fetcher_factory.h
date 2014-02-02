@@ -109,8 +109,6 @@ class TestURLFetcher : public URLFetcher {
   virtual void SetExtraRequestHeaders(
       const std::string& extra_request_headers) OVERRIDE;
   virtual void AddExtraRequestHeader(const std::string& header_line) OVERRIDE;
-  virtual void GetExtraRequestHeaders(
-      HttpRequestHeaders* headers) const OVERRIDE;
   virtual void SetRequestContext(
       URLRequestContextGetter* request_context_getter) OVERRIDE;
   virtual void SetFirstPartyForCookies(
@@ -150,6 +148,8 @@ class TestURLFetcher : public URLFetcher {
       std::string* out_response_string) const OVERRIDE;
   virtual bool GetResponseAsFilePath(
       bool take_ownership, base::FilePath* out_response_path) const OVERRIDE;
+
+  void GetExtraRequestHeaders(HttpRequestHeaders* headers) const;
 
   // Sets owner of this class.  Set it to a non-NULL value if you want
   // to automatically unregister this fetcher from the owning factory

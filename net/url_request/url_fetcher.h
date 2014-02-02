@@ -187,9 +187,6 @@ class NET_EXPORT URLFetcher {
   // This appends the header to the current extra request headers.
   virtual void AddExtraRequestHeader(const std::string& header_line) = 0;
 
-  virtual void GetExtraRequestHeaders(
-      HttpRequestHeaders* headers) const = 0;
-
   // Set the URLRequestContext on the request.  Must be called before the
   // request is started.
   virtual void SetRequestContext(
