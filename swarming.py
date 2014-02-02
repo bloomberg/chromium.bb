@@ -26,6 +26,7 @@ from utils import threading_utils
 from utils import tools
 from utils import zip_package
 
+import auth
 import isolateserver
 import run_isolated
 
@@ -647,6 +648,7 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
         metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
         help='Swarming server to use')
     self.add_option_group(self.server_group)
+    auth.add_auth_options(self)
 
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(
@@ -654,6 +656,7 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
     options.swarming = options.swarming.rstrip('/')
     if not options.swarming:
       self.error('--swarming is required.')
+    auth.process_auth_options(options)
     return options, args
 
 

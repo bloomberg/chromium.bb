@@ -16,6 +16,7 @@ import random
 import re
 import socket
 import ssl
+import sys
 import threading
 import time
 import urllib
@@ -111,7 +112,7 @@ class NetError(IOError):
 
   def format(self, verbose=False):
     """Human readable description with detailed information about the error."""
-    out = ['Exception: %s' % (self.inner_exc,)]
+    out = [str(self.inner_exc)]
     if verbose:
       headers = None
       body = None
@@ -331,11 +332,24 @@ class HttpService(object):
     assert encoder, ('Unknown content type %s' % content_type)
     return encoder(body)
 
-  def login(self):
-    """Runs authentication flow to refresh short lived access token."""
+  def login(self, allow_user_interaction):
+    """Runs authentication flow to refresh short lived access token.
+
+    Authentication flow may need to interact with the user (read username from
+    stdin, open local browser for OAuth2, etc.). If interaction is required and
+    |allow_user_interaction| is False, the login will silently be considered
+    failed (i.e. this function returns False).
+
+    'request' method always uses non-interactive login, so long-lived
+    authentication tokens (cookie, OAuth2 refresh token, etc) have to be set up
+    manually by developer (by calling 'auth.py login' perhaps) prior running
+    any swarming or isolate scripts.
+    """
     # Use global lock to ensure two authentication flows never run in parallel.
     with _auth_lock:
-      return self.authenticator.login() if self.authenticator else False
+      if self.authenticator:
+        return self.authenticator.login(allow_user_interaction)
+      return False
 
   def logout(self):
     """Purges access credentials from local cache."""
@@ -449,21 +463,22 @@ class HttpService(object):
 
         # Access denied -> authenticate.
         if e.code in (401, 403):
-          logging.error(
+          logging.warning(
               'Authentication is required for %s on attempt %d.\n%s',
               request.get_full_url(), attempt.attempt, e.format())
           # Try to authenticate only once. If it doesn't help, then server does
           # not support authentication or user doesn't have required access.
           if not auth_attempted:
             auth_attempted = True
-            if self.login():
+            if self.login(allow_user_interaction=False):
               # Success! Run request again immediately.
               attempt.skip_sleep = True
               continue
           # Authentication attempt was unsuccessful.
           logging.error(
-              'Unable to authenticate to %s.\n%s',
-              request.get_full_url(), e.format(verbose=True))
+              'Unable to authenticate to %s (%s). Use auth.py to login: '
+              'python auth.py login --service=%s',
+              self.urlhost, e.format(), self.urlhost)
           return None
 
         # Hit a error that can not be retried -> stop retry loop.
@@ -631,7 +646,7 @@ class Authenticator(object):
   def authorize(self, request):
     """Add authentication information to the request."""
 
-  def login(self):
+  def login(self, allow_user_interaction):
     """Run interactive authentication flow."""
     raise NotImplementedError()
 
@@ -717,7 +732,11 @@ class CookieBasedAuthenticator(Authenticator):
         for cookie in self.cookie_jar:
           request.cookies.set_cookie(cookie)
 
-  def login(self):
+  def login(self, allow_user_interaction):
+    # Cookie authentication is always interactive (it asks for user name).
+    if not allow_user_interaction:
+      print >> sys.stderr, 'Cookie authentication requires interactive login'
+      return False
     # To be used from inside AuthServer.
     cookie_jar = self.cookie_jar
     # RPC server that uses AuthenticationSupport's cookie jar.
@@ -825,9 +844,10 @@ class OAuthAuthenticator(Authenticator):
       if self._access_token:
         request.headers['Authorization'] = 'Bearer %s' % self._access_token
 
-  def login(self):
+  def login(self, allow_user_interaction):
     with self._lock:
-      self._access_token = oauth.create_access_token(self.urlhost, self.options)
+      self._access_token = oauth.create_access_token(
+          self.urlhost, self.options, allow_user_interaction)
       return self._access_token is not None
 
   def logout(self):

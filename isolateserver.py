@@ -31,6 +31,8 @@ from utils import net
 from utils import threading_utils
 from utils import tools
 
+import auth
+
 
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
@@ -923,7 +925,7 @@ class IsolateServer(StorageApi):
         headers={'Range': 'bytes=%d-' % offset} if offset else None)
 
     if not connection:
-      raise IOError('Unable to open connection to %s' % source_url)
+      raise IOError('Request failed - %s' % source_url)
 
     # If |offset| is used, verify server respects it by checking Content-Range.
     if offset:
@@ -2053,6 +2055,7 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
     self.add_option(
         '--namespace', default='default-gzip',
         help='The namespace to use on the server, default: %default')
+    auth.add_auth_options(self)
 
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(
@@ -2060,6 +2063,7 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
     options.isolate_server = options.isolate_server.rstrip('/')
     if not options.isolate_server:
       self.error('--isolate-server is required.')
+    auth.process_auth_options(options)
     return options, args
 
 

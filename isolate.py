@@ -22,6 +22,7 @@ import re
 import subprocess
 import sys
 
+import auth
 import isolate_format
 import isolateserver
 import run_isolated
@@ -1061,7 +1062,9 @@ def CMDarchive(parser, args):
   parser.add_option(
       '--namespace', metavar='NAME', default='default-gzip',
       help='Namespace to use on the isolate server')
+  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  auth.process_auth_options(options)
   if args:
     parser.error('Unsupported argument: %s' % args)
   if not options.isolate_server:

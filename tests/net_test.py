@@ -112,8 +112,8 @@ class HttpServiceTest(RetryLoopMockedTest):
     class MockedAuthenticator(net.Authenticator):
       def authorize(self, request):
         return authorize(request) if authorize else None
-      def login(self):
-        return login() if login else False
+      def login(self, allow_user_interaction):
+        return login(allow_user_interaction) if login else False
 
     class MockedRequestEngine(object):
       def perform_request(self, request):
@@ -269,7 +269,8 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_authorize(request):
       calls.append('authorize')
 
-    def mock_login():
+    def mock_login(allow_user_interaction):
+      self.assertFalse(allow_user_interaction)
       calls.append('login')
       return True
 
@@ -289,7 +290,8 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(_request):
       raise net.HttpError(403)
 
-    def mock_login():
+    def mock_login(allow_user_interaction):
+      self.assertFalse(allow_user_interaction)
       count.append(1)
       return False
 

@@ -29,6 +29,7 @@ from utils import threading_utils
 from utils import tools
 from utils import zip_package
 
+import auth
 import isolateserver
 
 
@@ -82,6 +83,7 @@ def get_as_zip_package(executable=True):
   package = zip_package.ZipPackage(root=BASE_DIR)
   package.add_python_file(THIS_FILE_PATH, '__main__.py' if executable else None)
   package.add_python_file(os.path.join(BASE_DIR, 'isolateserver.py'))
+  package.add_python_file(os.path.join(BASE_DIR, 'auth.py'))
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
   package.add_directory(os.path.join(BASE_DIR, 'utils'))
   return package
@@ -758,7 +760,9 @@ def main(args):
            'default=%default')
   parser.add_option_group(group)
 
+  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  auth.process_auth_options(options)
 
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')

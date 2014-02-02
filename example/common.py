@@ -41,12 +41,12 @@ def parse_args(use_isolate_server, use_swarming):
   if use_isolate_server:
     parser.add_option(
         '-I', '--isolate-server',
-        metavar='URL', default='',
+        metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
         help='Isolate server to use')
   if use_swarming:
     parser.add_option(
         '-S', '--swarming',
-        metavar='URL', default='',
+        metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
         help='Swarming server to use')
     parser.add_option(
         '-o', '--os', default=sys.platform,

@@ -68,8 +68,14 @@ def load_access_token(urlhost, options):
   return credentials.access_token
 
 
-def create_access_token(urlhost, options):
+def create_access_token(urlhost, options, allow_user_interaction):
   """Mints and caches new access_token, launching OAuth2 dance if necessary.
+
+  Args:
+    urlhost: base URL of a host to make OAuth2 token for.
+    options: OptionParser instance with options added by 'add_oauth_options'.
+    allow_user_interaction: if False, do not use interactive browser based
+        flow (return None instead if it is required).
 
   Returns:
     access_token on success.
@@ -80,14 +86,18 @@ def create_access_token(urlhost, options):
 
   # refresh_token is missing, need to go through full flow.
   if credentials is None or credentials.invalid:
-    return _run_oauth_dance(urlhost, storage, options)
+    if allow_user_interaction:
+      return _run_oauth_dance(urlhost, storage, options)
+    return None
 
   # refresh_token is ok, use it.
   try:
     credentials.refresh(httplib2.Http())
   except client.Error as err:
     logging.error('OAuth error: %s', err)
-    return _run_oauth_dance(urlhost, storage, options)
+    if allow_user_interaction:
+      return _run_oauth_dance(urlhost, storage, options)
+    return None
 
   # Success.
   logging.info('OAuth access_token refreshed. Expires in %s.',

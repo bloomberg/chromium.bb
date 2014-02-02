@@ -24,7 +24,7 @@ def add_auth_options(parser):
   parser.auth_group = optparse.OptionGroup(parser, 'Authentication')
   parser.auth_group.add_option(
       '--use-cookie-auth', action='store_true',
-      help='Use cookie-based authentication instead of OAuth.')
+      help='Use cookie authentication instead of OAuth2.')
   parser.add_option_group(parser.auth_group)
   oauth.add_oauth_options(parser)
 
@@ -45,9 +45,9 @@ class AuthService(object):
   def __init__(self, url):
     self._service = net.get_http_service(url)
 
-  def login(self):
+  def login(self, allow_user_interaction):
     """Refreshes cached access token or creates a new one."""
-    return self._service.login()
+    return self._service.login(allow_user_interaction)
 
   def logout(self):
     """Purges cached access token."""
@@ -69,11 +69,11 @@ class AuthService(object):
 
 @subcommand.usage('[options]')
 def CMDlogin(parser, args):
-  """Refreshes short lived authentication token."""
+  """Runs interactive login flow and stores auth token/cookie on disk."""
   (options, args) = parser.parse_args(args)
   process_auth_options(options)
   service = AuthService(options.service)
-  if service.login():
+  if service.login(True):
     print 'Logged in as \'%s\'.' % service.get_current_identity()
     return 0
   else:
@@ -83,20 +83,23 @@ def CMDlogin(parser, args):
 
 @subcommand.usage('[options]')
 def CMDlogout(parser, args):
-  """Purges cached credentials."""
+  """Purges cached auth token/cookie."""
   (options, args) = parser.parse_args(args)
   process_auth_options(options)
   service = AuthService(options.service)
   service.logout()
+  return 0
 
 
 @subcommand.usage('[options]')
 def CMDcheck(parser, args):
-  """Shows identity associated with currently cached credentials."""
+  """Shows identity associated with currently cached auth token/cookie."""
   (options, args) = parser.parse_args(args)
   process_auth_options(options)
   service = AuthService(options.service)
+  service.login(False)
   print service.get_current_identity()
+  return 0
 
 
 class OptionParserAuth(tools.OptionParserWithLogging):
