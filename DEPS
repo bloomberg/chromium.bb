@@ -17,6 +17,7 @@ vars = {
   # If you do not know, use the full path while defining your new deps entry.
   "googlecode_url": "http://%s.googlecode.com/svn",
   "sourceforge_url": "http://svn.code.sf.net/p/%(repo)s/code",
+  "llvm_url": "http://src.chromium.org/llvm-project",
   "llvm_git": "https://llvm.googlesource.com",
   "libcxx_revision": "8f48c23568a122de6088455700e9d197b79bd8f8",
   "libcxxabi_revision": "753a30dd68ae008948d48f16bc942d5963fe65a1",
@@ -119,9 +120,11 @@ deps = {
   "src/third_party/leveldatabase/src":
     (Var("googlecode_url") % "leveldb") + "/trunk@78",
 
+  # TODO(thakis): Pull from svn instead, http://crbug.com/333071
   "src/third_party/libc++/trunk":
     Var("llvm_git") + "/libcxx.git@" + Var("libcxx_revision"),
 
+  # TODO(thakis): Pull from svn instead, http://crbug.com/333071
   "src/third_party/libc++abi/trunk":
     Var("llvm_git") + "/libcxxabi.git@" + Var("libcxxabi_revision"),
 
@@ -271,6 +274,9 @@ deps = {
 
   "src/tools/deps2git":
     "/trunk/tools/deps2git@248305",
+
+  "src/third_party/clang_format/script":
+    Var("llvm_url") + "/cfe/trunk/tools/clang-format@198831",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@537",
