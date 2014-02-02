@@ -129,6 +129,9 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
     std::string package_hash;
     std::string version;
     std::set<int> request_ids;
+
+    // Indicates whether or not the fetch is known to require credentials.
+    bool is_protected;
   };
 
   // Helper for AddExtension() and AddPendingExtension().

@@ -78,14 +78,15 @@ const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
 
 #define RETRY_HISTOGRAM(name, retry_count, url) \
-    if ((url).DomainIs("google.com")) \
+    if ((url).DomainIs("google.com")) { \
       UMA_HISTOGRAM_CUSTOM_COUNTS( \
           "Extensions." name "RetryCountGoogleUrl", retry_count, 1, \
           kMaxRetries, kMaxRetries+1); \
-    else \
+    } else { \
       UMA_HISTOGRAM_CUSTOM_COUNTS( \
           "Extensions." name "RetryCountOtherUrl", retry_count, 1, \
-          kMaxRetries, kMaxRetries+1)
+          kMaxRetries, kMaxRetries+1); \
+    }
 
 bool ShouldRetryRequest(const net::URLRequestStatus& status,
                         int response_code) {
@@ -102,7 +103,8 @@ UpdateDetails::UpdateDetails(const std::string& id, const Version& version)
 
 UpdateDetails::~UpdateDetails() {}
 
-ExtensionDownloader::ExtensionFetch::ExtensionFetch() : url() {}
+ExtensionDownloader::ExtensionFetch::ExtensionFetch()
+    : url(), is_protected(false) {}
 
 ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const std::string& id,
@@ -111,7 +113,7 @@ ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const std::string& version,
     const std::set<int>& request_ids)
     : id(id), url(url), package_hash(package_hash), version(version),
-      request_ids(request_ids) {}
+      request_ids(request_ids), is_protected(false) {}
 
 ExtensionDownloader::ExtensionFetch::~ExtensionFetch() {}
 
@@ -657,23 +659,25 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
 }
 
 void ExtensionDownloader::CreateExtensionFetcher() {
+  const ExtensionFetch* fetch = extensions_queue_.active_request();
+  int load_flags = net::LOAD_DISABLE_CACHE;
+  if (!fetch->is_protected || !fetch->url.SchemeIs("https")) {
+      load_flags |= net::LOAD_DO_NOT_SEND_COOKIES |
+                    net::LOAD_DO_NOT_SAVE_COOKIES;
+  }
   extension_fetcher_.reset(net::URLFetcher::Create(
-      kExtensionFetcherId, extensions_queue_.active_request()->url,
-      net::URLFetcher::GET, this));
+      kExtensionFetcherId, fetch->url, net::URLFetcher::GET, this));
   extension_fetcher_->SetRequestContext(request_context_);
-  extension_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                   net::LOAD_DO_NOT_SAVE_COOKIES |
-                                   net::LOAD_DISABLE_CACHE);
+  extension_fetcher_->SetLoadFlags(load_flags);
   extension_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   // Download CRX files to a temp file. The blacklist is small and will be
   // processed in memory, so it is fetched into a string.
-  if (extensions_queue_.active_request()->id != kBlacklistAppID) {
+  if (fetch->id != kBlacklistAppID) {
     extension_fetcher_->SaveResponseToTemporaryFile(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   }
 
-  VLOG(2) << "Starting fetch of " << extensions_queue_.active_request()->url
-          << " for " << extensions_queue_.active_request()->id;
+  VLOG(2) << "Starting fetch of " << fetch->url << " for " << fetch->id;
 
   extension_fetcher_->Start();
 }
@@ -703,6 +707,12 @@ void ExtensionDownloader::OnCRXFetchComplete(
     } else {
       NotifyDelegateDownloadFinished(fetch_data.Pass(), crx_path, true);
     }
+  } else if (status.status() == net::URLRequestStatus::SUCCESS &&
+             (response_code == 401 || response_code == 403) &&
+             !extensions_queue_.active_request()->is_protected) {
+    // On 401 or 403, requeue this fetch with cookies enabled.
+    extensions_queue_.active_request()->is_protected = true;
+    extensions_queue_.RetryRequest(backoff_delay);
   } else {
     const std::set<int>& request_ids =
         extensions_queue_.active_request()->request_ids;

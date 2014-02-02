@@ -116,6 +116,8 @@ int kExpectedLoadFlags =
     net::LOAD_DO_NOT_SAVE_COOKIES |
     net::LOAD_DISABLE_CACHE;
 
+int kExpectedLoadFlagsForProtectedDownload = net::LOAD_DISABLE_CACHE;
+
 const ManifestFetchData::PingData kNeverPingedData(
     ManifestFetchData::kNeverPinged, ManifestFetchData::kNeverPinged, true);
 
@@ -1047,6 +1049,89 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_EQ(extension_file_path, tmpfile_path);
   }
 
+  // Update a single extension in an environment where the download request
+  // initially responds with a 403 status. Expect the fetcher to automatically
+  // retry with cookies enabled.
+  void TestSingleProtectedExtensionDownloading(bool use_https, bool fail) {
+    net::TestURLFetcherFactory factory;
+    net::TestURLFetcher* fetcher = NULL;
+    scoped_ptr<ServiceForDownloadTests> service(
+        new ServiceForDownloadTests(prefs_.get()));
+    ExtensionUpdater updater(service.get(), service->extension_prefs(),
+                             service->pref_service(),
+                             service->profile(),
+                             kUpdateFrequencySecs,
+                             NULL);
+    updater.Start();
+    ResetDownloader(
+        &updater,
+        new ExtensionDownloader(&updater, service->request_context()));
+    updater.downloader_->extensions_queue_.set_backoff_policy(
+        &kNoBackoffPolicy);
+
+    GURL test_url(use_https ? "https://localhost/extension.crx" :
+                              "http://localhost/extension.crx");
+
+    std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    std::string hash;
+    Version version("0.0.1");
+    std::set<int> requests;
+    requests.insert(0);
+    scoped_ptr<ExtensionDownloader::ExtensionFetch> fetch(
+        new ExtensionDownloader::ExtensionFetch(
+            id, test_url, hash, version.GetString(), requests));
+    updater.downloader_->FetchUpdatedExtension(fetch.Pass());
+
+    fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
+    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+
+    // Fake a 403 response.
+    fetcher->set_url(test_url);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(403);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    RunUntilIdle();
+
+    // Verify that the fetcher has been switched to protected download mode
+    // so that cookies would be sent with the next request (https only).
+    fetcher = factory.GetFetcherByID(ExtensionDownloader::kExtensionFetcherId);
+    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    if (use_https) {
+      EXPECT_TRUE(
+          fetcher->GetLoadFlags() == kExpectedLoadFlagsForProtectedDownload);
+    } else {
+      EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+    }
+
+    // Attempt to fetch again after the auth failure.
+    if (fail) {
+      // Fail and verify that the fetch queue is cleared.
+      fetcher->set_url(test_url);
+      fetcher->set_status(net::URLRequestStatus());
+      fetcher->set_response_code(403);
+      fetcher->delegate()->OnURLFetchComplete(fetcher);
+      RunUntilIdle();
+      EXPECT_EQ(0U, updater.downloader_->extensions_queue_.active_request());
+    } else {
+      // Succeed
+      base::FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
+      fetcher->set_url(test_url);
+      fetcher->set_status(net::URLRequestStatus());
+      fetcher->set_response_code(200);
+      fetcher->SetResponseFilePath(extension_file_path);
+      fetcher->delegate()->OnURLFetchComplete(fetcher);
+      RunUntilIdle();
+
+      // Verify installation would proceed as normal.
+      EXPECT_EQ(id, service->extension_id());
+      base::FilePath tmpfile_path = service->install_path();
+      EXPECT_FALSE(tmpfile_path.empty());
+      EXPECT_EQ(test_url, service->download_url());
+      EXPECT_EQ(extension_file_path, tmpfile_path);
+    }
+  }
+
   // Two extensions are updated.  If |updates_start_running| is true, the
   // mock extensions service has UpdateExtension(...) return true, and
   // the test is responsible for creating fake CrxInstallers.  Otherwise,
@@ -1452,6 +1537,18 @@ TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingWithRetry) {
 
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingPendingWithRetry) {
   TestSingleExtensionDownloading(true, true);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleProtectedExtensionDownloading) {
+  TestSingleProtectedExtensionDownloading(true, false);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleProtectedExtensionDownloadingFailure) {
+  TestSingleProtectedExtensionDownloading(true, true);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleProtectedExtensionDownloadingNoHTTPS) {
+  TestSingleProtectedExtensionDownloading(false, false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesFail) {
