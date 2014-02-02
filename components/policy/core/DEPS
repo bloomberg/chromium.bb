@@ -8,6 +8,7 @@ include_rules = [
   # components/policy/resources/policy_templates.json.
   "+policy/policy_constants.h",
   "+policy/proto/chrome_extension_policy.pb.h",
+  "+policy/proto/policy_signing_key.pb.h",
   "+policy/proto/cloud_policy.pb.h",
   "+policy/proto/device_management_backend.pb.h",
 ]

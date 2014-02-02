@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
@@ -46,6 +47,12 @@ class OwnerKey : public base::RefCountedThreadSafe<OwnerKey> {
   const std::vector<uint8>* public_key() {
     return public_key_.get();
   }
+
+  std::string public_key_as_string() {
+    return std::string(reinterpret_cast<const char*>(
+        vector_as_array(public_key_.get())), public_key_->size());
+  }
+
   crypto::RSAPrivateKey* private_key() {
     return private_key_.get();
   }

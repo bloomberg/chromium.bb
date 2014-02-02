@@ -73,7 +73,8 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
 
   // Creates a CloudPolicyClient for this client. Used in situations where
   // callers want to create a DMToken without actually initializing the
-  // profile's policy infrastructure.
+  // profile's policy infrastructure (for example, during signin when we
+  // want to check if the user's domain requires policy).
   static scoped_ptr<CloudPolicyClient> CreateCloudPolicyClient(
       DeviceManagementService* device_management_service,
       scoped_refptr<net::URLRequestContextGetter> request_context);

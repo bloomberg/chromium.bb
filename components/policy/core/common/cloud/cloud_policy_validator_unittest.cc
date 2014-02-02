@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
@@ -57,10 +58,17 @@ class CloudPolicyValidatorTest : public testing::Test {
   }
 
   scoped_ptr<UserCloudPolicyValidator> CreateValidator() {
-    std::vector<uint8> public_key;
+    std::vector<uint8> public_key_bytes;
     EXPECT_TRUE(
-        PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(&public_key));
+        PolicyBuilder::CreateTestSigningKey()->ExportPublicKey(
+            &public_key_bytes));
     policy_.Build();
+
+    // Convert from bytes to string format (which is what ValidateSignature()
+    // takes).
+    std::string public_key = std::string(
+        reinterpret_cast<const char*>(vector_as_array(&public_key_bytes)),
+        public_key_bytes.size());
 
     UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
         policy_.GetCopy(), base::MessageLoopProxy::current());
@@ -71,9 +79,12 @@ class CloudPolicyValidatorTest : public testing::Test {
     validator->ValidateDMToken(existing_dm_token_, ignore_missing_dm_token_);
     validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
     validator->ValidatePayload();
-    validator->ValidateSignature(public_key, allow_key_rotation_);
+    validator->ValidateSignature(public_key,
+                                 GetPolicyVerificationKey(),
+                                 PolicyBuilder::GetTestSigningKeySignature(),
+                                 allow_key_rotation_);
     if (allow_key_rotation_)
-      validator->ValidateInitialKey();
+      validator->ValidateInitialKey(GetPolicyVerificationKey());
     return make_scoped_ptr(validator);
   }
 

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 #include "components/policy/policy_export.h"
+#include "policy/proto/policy_signing_key.pb.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -29,6 +30,8 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // it) user.
   UserCloudPolicyStore(
       const base::FilePath& policy_file,
+      const base::FilePath& key_file,
+      const std::string& verification_key,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   virtual ~UserCloudPolicyStore();
 
@@ -36,6 +39,7 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // |profile_path|.
   static scoped_ptr<UserCloudPolicyStore> Create(
       const base::FilePath& profile_path,
+      const std::string& verification_key,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   // Sets the username from signin for validation of the policy.
@@ -53,6 +57,10 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   virtual void Store(
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
 
+  // The key used to sign the current policy (empty if there either is no
+  // loaded policy yet, or if the policy is unsigned).
+  const std::string& policy_key() { return policy_key_; }
+
  protected:
   std::string signin_username_;
 
@@ -69,12 +77,14 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // thread).
   void Validate(
       scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+      scoped_ptr<enterprise_management::PolicySigningKey> key,
       bool validate_in_background,
       const UserCloudPolicyValidator::CompletionCallback& callback);
 
   // Callback invoked to install a just-loaded policy after validation has
   // finished.
-  void InstallLoadedPolicyAfterValidation(UserCloudPolicyValidator* validator);
+  void InstallLoadedPolicyAfterValidation(const std::string& signing_key,
+                                          UserCloudPolicyValidator* validator);
 
   // Callback invoked to store the policy after validation has finished.
   void StorePolicyAfterValidation(UserCloudPolicyValidator* validator);
@@ -82,8 +92,17 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // WeakPtrFactory used to create callbacks for validating and storing policy.
   base::WeakPtrFactory<UserCloudPolicyStore> weak_factory_;
 
+  // The key used to verify signatures of cached policy.
+  std::string policy_key_;
+
   // Path to file where we store persisted policy.
-  base::FilePath backing_file_path_;
+  base::FilePath policy_path_;
+
+  // Path to file where we store the signing key for the policy blob.
+  base::FilePath key_path_;
+
+  // The hard-coded key used to verify new signing keys.
+  const std::string verification_key_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStore);
 };

@@ -115,7 +115,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
                              CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();
-  validator->ValidateInitialKey();
+  validator->ValidateInitialKey(GetPolicyVerificationKey());
   validator.release()->StartValidation(
       base::Bind(&EnrollmentHandlerChromeOS::PolicyValidated,
                  weak_ptr_factory_.GetWeakPtr()));

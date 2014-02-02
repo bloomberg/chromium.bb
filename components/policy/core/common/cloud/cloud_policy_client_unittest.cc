@@ -83,11 +83,8 @@ class CloudPolicyClientTest : public testing::Test {
     em::PolicyFetchRequest* policy_fetch_request =
         policy_request_.mutable_policy_request()->add_request();
     policy_fetch_request->set_policy_type(dm_protocol::kChromeUserPolicyType);
-#if defined(OS_CHROMEOS)
     policy_fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
-#else
-    policy_fetch_request->set_signature_type(em::PolicyFetchRequest::NONE);
-#endif
+    policy_fetch_request->set_verification_key_hash(kPolicyVerificationKeyHash);
     policy_response_.mutable_policy_response()->add_response()->set_policy_data(
         CreatePolicyData("fake-policy-data"));
 
@@ -122,6 +119,7 @@ class CloudPolicyClientTest : public testing::Test {
     request_context_ = new net::TestURLRequestContextGetter(
         loop_.message_loop_proxy());
     client_.reset(new CloudPolicyClient(kMachineID, kMachineModel,
+                                        kPolicyVerificationKeyHash,
                                         user_affiliation, &status_provider_,
                                         &service_,
                                         request_context_));

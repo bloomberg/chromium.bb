@@ -199,6 +199,7 @@
             'policy/proto/chrome_extension_policy.proto',
             'policy/proto/device_management_backend.proto',
             'policy/proto/device_management_local.proto',
+            'policy/proto/policy_signing_key.proto',
           ],
           'variables': {
             'proto_in_dir': 'policy/proto',

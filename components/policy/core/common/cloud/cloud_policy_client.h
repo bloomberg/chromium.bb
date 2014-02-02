@@ -87,9 +87,12 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // |provider| and |service| are weak pointers and it's the caller's
   // responsibility to keep them valid for the lifetime of CloudPolicyClient.
+  // |verification_key_hash| contains an identifier telling the DMServer which
+  // verification key to use.
   CloudPolicyClient(
       const std::string& machine_id,
       const std::string& machine_model,
+      const std::string& verification_key_hash,
       UserAffiliation user_affiliation,
       StatusProvider* provider,
       DeviceManagementService* service,
@@ -255,6 +258,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // Data necessary for constructing policy requests.
   const std::string machine_id_;
   const std::string machine_model_;
+  const std::string verification_key_hash_;
   const UserAffiliation user_affiliation_;
   NamespaceSet namespaces_to_fetch_;
 

@@ -190,7 +190,10 @@ void DeviceLocalAccountPolicyStore::Validate(
           : CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED,
       CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidatePayload();
-  validator->ValidateSignature(*key->public_key(), false);
+  validator->ValidateSignature(key->public_key_as_string(),
+                               GetPolicyVerificationKey(),
+                               std::string(),
+                               false);
   validator.release()->StartValidation(callback);
 }
 

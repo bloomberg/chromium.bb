@@ -104,8 +104,10 @@ PolicyHeaderServiceFactory::BuildServiceInstanceFor(
 #endif
 
   scoped_ptr<PolicyHeaderService> service = make_scoped_ptr(
-      new PolicyHeaderService(
-          device_management_service->GetServerUrl(), user_store, device_store));
+      new PolicyHeaderService(device_management_service->GetServerUrl(),
+                              kPolicyVerificationKeyHash,
+                              user_store,
+                              device_store));
   return new PolicyHeaderServiceWrapper(service.Pass());
 }
 

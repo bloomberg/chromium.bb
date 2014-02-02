@@ -51,6 +51,11 @@ enum PolicyFetchStatus {
 
 }  // namespace dm_protocol
 
+// Information about the verification key used to verify that policy signing
+// keys are valid.
+POLICY_EXPORT std::string GetPolicyVerificationKey();
+POLICY_EXPORT extern const char kPolicyVerificationKeyHash[];
+
 // Describes the affiliation of a user w.r.t. the device owner.
 enum UserAffiliation {
   // User is on the same domain the device was registered with.

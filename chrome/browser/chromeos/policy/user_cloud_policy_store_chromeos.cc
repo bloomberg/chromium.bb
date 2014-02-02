@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_token_loader.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "policy/proto/device_management_local.pb.h"
@@ -255,7 +256,11 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
                       CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidateUsername(username_);
   const bool allow_rotation = false;
-  validator->ValidateSignature(policy_key_, allow_rotation);
+  validator->ValidateSignature(
+      policy_key_,
+      GetPolicyVerificationKey(),
+      std::string(), // No signature verification needed.
+      allow_rotation);
   validator->RunValidation();
   OnRetrievedPolicyValidated(validator.get());
 }
@@ -268,10 +273,13 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
                       CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidateUsername(username_);
   if (policy_key_.empty()) {
-    validator->ValidateInitialKey();
+    validator->ValidateInitialKey(GetPolicyVerificationKey());
   } else {
     const bool allow_rotation = true;
-    validator->ValidateSignature(policy_key_, allow_rotation);
+    validator->ValidateSignature(policy_key_,
+                                 GetPolicyVerificationKey(),
+                                 std::string(),
+                                 allow_rotation);
   }
 
   // Start validation. The Validator will delete itself once validation is
@@ -288,7 +296,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
   UMA_HISTOGRAM_ENUMERATION(
       "Enterprise.UserPolicyValidationStoreStatus",
       validation_status_,
-      UserCloudPolicyValidator::VALIDATION_POLICY_PARSE_ERROR + 1);
+      UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
 
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
@@ -367,7 +375,10 @@ void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
                       CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
   validator->ValidateUsername(username_);
   const bool allow_rotation = false;
-  validator->ValidateSignature(policy_key_, allow_rotation);
+  validator->ValidateSignature(policy_key_,
+                               GetPolicyVerificationKey(),
+                               std::string(),
+                               allow_rotation);
   // Start validation. The Validator will delete itself once validation is
   // complete.
   validator.release()->StartValidation(
@@ -382,7 +393,7 @@ void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(
   UMA_HISTOGRAM_ENUMERATION(
       "Enterprise.UserPolicyValidationLoadStatus",
       validation_status_,
-      UserCloudPolicyValidator::VALIDATION_POLICY_PARSE_ERROR + 1);
+      UserCloudPolicyValidator::VALIDATION_STATUS_SIZE);
 
   if (!validator->success()) {
     status_ = STATUS_VALIDATION_ERROR;
@@ -475,7 +486,7 @@ void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(
 
 void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
     const base::Closure& callback) {
-  std::vector<uint8>* key = new std::vector<uint8>();
+  std::string* key = new std::string();
   background_task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&UserCloudPolicyStoreChromeOS::LoadPolicyKey,
@@ -489,7 +500,7 @@ void UserCloudPolicyStoreChromeOS::ReloadPolicyKey(
 
 // static
 void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
-                                                 std::vector<uint8>* key) {
+                                                 std::string* key) {
   if (!base::PathExists(path)) {
     // There is no policy key the first time that a user fetches policy. If
     // |path| does not exist then that is the most likely scenario, so there's
@@ -499,17 +510,18 @@ void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
   }
 
   int64 size;
+  key->clear();
   if (!base::GetFileSize(path, &size)) {
     LOG(ERROR) << "Could not get size of " << path.value();
   } else if (size == 0 || size > kKeySizeLimit) {
     LOG(ERROR) << "Key at " << path.value() << " has bad size " << size;
   } else {
-    key->resize(size);
-    int read_size = base::ReadFile(
-        path, reinterpret_cast<char*>(vector_as_array(key)), size);
+    char buf[size];
+    int read_size = base::ReadFile(path, buf, size);
     if (read_size != size) {
       LOG(ERROR) << "Failed to read key at " << path.value();
-      key->clear();
+    } else {
+      key->append(buf, size);
     }
   }
 
@@ -518,9 +530,9 @@ void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
 }
 
 void UserCloudPolicyStoreChromeOS::OnPolicyKeyReloaded(
-    std::vector<uint8>* key,
+    std::string* key,
     const base::Closure& callback) {
-  policy_key_.swap(*key);
+  policy_key_ = *key;
   policy_key_loaded_ = true;
   callback.Run();
 }

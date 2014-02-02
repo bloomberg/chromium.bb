@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -32,6 +33,8 @@ void RunUntilIdle() {
   run_loop.RunUntilIdle();
 }
 
+}  // namespace
+
 class UserCloudPolicyStoreTest : public testing::Test {
  public:
   UserCloudPolicyStoreTest() {}
@@ -39,15 +42,21 @@ class UserCloudPolicyStoreTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
     store_.reset(
-        new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+        new UserCloudPolicyStore(policy_file(),
+                                 key_file(),
+                                 GetPolicyVerificationKey(),
+                                 loop_.message_loop_proxy()));
     external_data_manager_.reset(new MockCloudExternalDataManager);
     external_data_manager_->SetPolicyStore(store_.get());
     store_->SetSigninUsername(PolicyBuilder::kFakeUsername);
     store_->AddObserver(&observer_);
 
-    policy_.payload().mutable_passwordmanagerenabled()->set_value(true);
-    policy_.payload().mutable_urlblacklist()->mutable_value()->add_entries(
-        "chromium.org");
+    // Install an initial public key, so that by default the validation of
+    // the stored/loaded policy blob succeeds (it looks like a new key
+    // provision).
+    policy_.SetDefaultInitialSigningKey();
+
+    InitPolicyPayload(&policy_.payload());
 
     policy_.Build();
   }
@@ -59,8 +68,18 @@ class UserCloudPolicyStoreTest : public testing::Test {
     RunUntilIdle();
   }
 
+  void InitPolicyPayload(enterprise_management::CloudPolicySettings* payload) {
+    payload->mutable_passwordmanagerenabled()->set_value(true);
+    payload->mutable_urlblacklist()->mutable_value()->add_entries(
+        "chromium.org");
+  }
+
   base::FilePath policy_file() {
     return tmp_dir_.path().AppendASCII("policy");
+  }
+
+  base::FilePath key_file() {
+    return tmp_dir_.path().AppendASCII("policy_key");
   }
 
   // Verifies that store_->policy_map() has the appropriate entries.
@@ -79,6 +98,18 @@ class UserCloudPolicyStoreTest : public testing::Test {
                 OnStoreError(AllOf(Eq(store),
                                    Property(&CloudPolicyStore::status,
                                             Eq(error)))));
+  }
+
+  void StorePolicyAndEnsureLoaded(
+      const enterprise_management::PolicyFetchResponse& policy) {
+    Sequence s;
+    EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+    EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
+    store_->Store(policy);
+    RunUntilIdle();
+    Mock::VerifyAndClearExpectations(external_data_manager_.get());
+    Mock::VerifyAndClearExpectations(&observer_);
+    ASSERT_TRUE(store_->policy());
   }
 
   UserPolicyBuilder policy_;
@@ -162,20 +193,54 @@ TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithInvalidFile) {
   EXPECT_TRUE(store_->policy_map().empty());
 }
 
+// Load file from cache with no key data, then migrate to have a key.
+TEST_F(UserCloudPolicyStoreTest, Migration) {
+  UserPolicyBuilder unsigned_builder;
+  unsigned_builder.UnsetSigningKey();
+  InitPolicyPayload(&unsigned_builder.payload());
+  unsigned_builder.Build();
+  // Policy should be unsigned.
+  EXPECT_FALSE(unsigned_builder.policy().has_policy_data_signature());
+
+  // Write policy to disk.
+  std::string data;
+  ASSERT_TRUE(unsigned_builder.policy().SerializeToString(&data));
+  ASSERT_TRUE(base::CreateDirectory(policy_file().DirName()));
+  int size = data.size();
+  ASSERT_EQ(size, file_util::WriteFile(policy_file(), data.c_str(), size));
+
+  // Now make sure the data can get loaded.
+  Sequence s;
+  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
+  store_->LoadImmediately();  // Should load without running the message loop.
+  Mock::VerifyAndClearExpectations(external_data_manager_.get());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  ASSERT_TRUE(store_->policy());
+  EXPECT_EQ(unsigned_builder.policy_data().SerializeAsString(),
+            store_->policy()->SerializeAsString());
+  VerifyPolicyMap(store_.get());
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+  EXPECT_TRUE(store_->policy_key().empty());
+  EXPECT_FALSE(base::PathExists(key_file()));
+
+  // Now mimic a new policy coming down - this should result in a new key
+  // being installed.
+  StorePolicyAndEnsureLoaded(policy_.policy());
+  EXPECT_EQ(policy_.policy().new_public_key(), store_->policy_key());
+  EXPECT_TRUE(base::PathExists(key_file()));
+}
+
 TEST_F(UserCloudPolicyStoreTest, Store) {
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
 
   // Store a simple policy and make sure it ends up as the currently active
   // policy.
-  Sequence s;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
-  store_->Store(policy_.policy());
-  RunUntilIdle();
+  StorePolicyAndEnsureLoaded(policy_.policy());
 
   // Policy should be decoded and stored.
-  ASSERT_TRUE(store_->policy());
   EXPECT_EQ(policy_.policy_data().SerializeAsString(),
             store_->policy()->SerializeAsString());
   VerifyPolicyMap(store_.get());
@@ -188,17 +253,8 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenClear) {
 
   // Store a simple policy and make sure the file exists.
   // policy.
-  Sequence s1;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s1);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s1);
-  store_->Store(policy_.policy());
-  RunUntilIdle();
-
-  EXPECT_TRUE(store_->policy());
+  StorePolicyAndEnsureLoaded(policy_.policy());
   EXPECT_FALSE(store_->policy_map().empty());
-
-  Mock::VerifyAndClearExpectations(external_data_manager_.get());
-  Mock::VerifyAndClearExpectations(&observer_);
 
   // Policy file should exist.
   ASSERT_TRUE(base::PathExists(policy_file()));
@@ -218,6 +274,47 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenClear) {
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
 }
 
+TEST_F(UserCloudPolicyStoreTest, StoreRotatedKey) {
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+
+  // Store a simple policy and make sure it ends up as the currently active
+  // policy.
+  StorePolicyAndEnsureLoaded(policy_.policy());
+  EXPECT_FALSE(policy_.policy().has_new_public_key_signature());
+  std::string original_policy_key = policy_.policy().new_public_key();
+  EXPECT_EQ(original_policy_key, store_->policy_key());
+
+  // Now do key rotation.
+  policy_.SetDefaultSigningKey();
+  policy_.SetDefaultNewSigningKey();
+  policy_.Build();
+  EXPECT_TRUE(policy_.policy().has_new_public_key_signature());
+  EXPECT_NE(original_policy_key, policy_.policy().new_public_key());
+  StorePolicyAndEnsureLoaded(policy_.policy());
+  EXPECT_EQ(policy_.policy().new_public_key(), store_->policy_key());
+}
+
+TEST_F(UserCloudPolicyStoreTest, ProvisionKeyTwice) {
+  EXPECT_FALSE(store_->policy());
+  EXPECT_TRUE(store_->policy_map().empty());
+
+  // Store a simple policy and make sure it ends up as the currently active
+  // policy.
+  StorePolicyAndEnsureLoaded(policy_.policy());
+
+  // Now try sending down policy signed with a different key (i.e. do key
+  // rotation with a key not signed with the original signing key).
+  policy_.UnsetSigningKey();
+  policy_.SetDefaultNewSigningKey();
+  policy_.Build();
+  EXPECT_FALSE(policy_.policy().has_new_public_key_signature());
+
+  ExpectError(store_.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
+  store_->Store(policy_.policy());
+  RunUntilIdle();
+}
+
 TEST_F(UserCloudPolicyStoreTest, StoreTwoTimes) {
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
@@ -225,28 +322,20 @@ TEST_F(UserCloudPolicyStoreTest, StoreTwoTimes) {
   // Store a simple policy then store a second policy before the first one
   // finishes validating, and make sure the second policy ends up as the active
   // policy.
-  Sequence s1;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s1);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s1);
-
   UserPolicyBuilder first_policy;
+  first_policy.SetDefaultInitialSigningKey();
   first_policy.payload().mutable_passwordmanagerenabled()->set_value(false);
   first_policy.Build();
-  store_->Store(first_policy.policy());
-  RunUntilIdle();
+  StorePolicyAndEnsureLoaded(first_policy.policy());
 
-  Mock::VerifyAndClearExpectations(external_data_manager_.get());
-  Mock::VerifyAndClearExpectations(&observer_);
-
-  Sequence s2;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s2);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s2);
-
-  store_->Store(policy_.policy());
-  RunUntilIdle();
+  // Rebuild policy with the same signing key as |first_policy| (no rotation).
+  policy_.UnsetNewSigningKey();
+  policy_.SetDefaultSigningKey();
+  policy_.Build();
+  ASSERT_FALSE(policy_.policy().has_new_public_key());
+  StorePolicyAndEnsureLoaded(policy_.policy());
 
   // Policy should be decoded and stored.
-  ASSERT_TRUE(store_->policy());
   EXPECT_EQ(policy_.policy_data().SerializeAsString(),
             store_->policy()->SerializeAsString());
   VerifyPolicyMap(store_.get());
@@ -256,15 +345,15 @@ TEST_F(UserCloudPolicyStoreTest, StoreTwoTimes) {
 TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   // Store a simple policy and make sure it can be read back in.
   // policy.
-  Sequence s;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
-  store_->Store(policy_.policy());
-  RunUntilIdle();
+  StorePolicyAndEnsureLoaded(policy_.policy());
+  EXPECT_FALSE(store_->policy_key().empty());
 
   // Now, make sure the policy can be read back in from a second store.
   scoped_ptr<UserCloudPolicyStore> store2(
-      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+      new UserCloudPolicyStore(policy_file(),
+                               key_file(),
+                               GetPolicyVerificationKey(),
+                               loop_.message_loop_proxy()));
   store2->SetSigninUsername(PolicyBuilder::kFakeUsername);
   store2->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
@@ -277,20 +366,21 @@ TEST_F(UserCloudPolicyStoreTest, StoreThenLoad) {
   VerifyPolicyMap(store2.get());
   EXPECT_EQ(CloudPolicyStore::STATUS_OK, store2->status());
   store2->RemoveObserver(&observer_);
+  // Make sure that we properly resurrected the keys.
+  EXPECT_EQ(store2->policy_key(), store_->policy_key());
 }
 
 TEST_F(UserCloudPolicyStoreTest, StoreThenLoadImmediately) {
   // Store a simple policy and make sure it can be read back in.
   // policy.
-  Sequence s;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
-  store_->Store(policy_.policy());
-  RunUntilIdle();
+  StorePolicyAndEnsureLoaded(policy_.policy());
 
   // Now, make sure the policy can be read back in from a second store.
   scoped_ptr<UserCloudPolicyStore> store2(
-      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+      new UserCloudPolicyStore(policy_file(),
+                               key_file(),
+                               GetPolicyVerificationKey(),
+                               loop_.message_loop_proxy()));
   store2->SetSigninUsername(PolicyBuilder::kFakeUsername);
   store2->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store2.get()));
@@ -316,18 +406,28 @@ TEST_F(UserCloudPolicyStoreTest, StoreValidationError) {
   ASSERT_FALSE(store_->policy());
 }
 
-TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
-  // Force a validation error by changing the username after policy is stored.
-  Sequence s;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
+TEST_F(UserCloudPolicyStoreTest, StoreUnsigned) {
+  // Create unsigned policy, try to store it, should get a validation error.
+  policy_.policy().mutable_policy_data_signature()->clear();
+
+  // Store policy.
+  ExpectError(store_.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
   store_->Store(policy_.policy());
   RunUntilIdle();
+  ASSERT_FALSE(store_->policy());
+}
+
+TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
+  // Force a validation error by changing the username after policy is stored.
+  StorePolicyAndEnsureLoaded(policy_.policy());
 
   // Sign out, and sign back in as a different user, and try to load the profile
   // data (should fail due to mismatched username).
   scoped_ptr<UserCloudPolicyStore> store2(
-      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+      new UserCloudPolicyStore(policy_file(),
+                               key_file(),
+                               GetPolicyVerificationKey(),
+                               loop_.message_loop_proxy()));
   store2->SetSigninUsername("foobar@foobar.com");
   store2->AddObserver(&observer_);
   ExpectError(store2.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
@@ -340,7 +440,10 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
   // Sign out - we should be able to load the policy (don't check usernames
   // when signed out).
   scoped_ptr<UserCloudPolicyStore> store3(
-      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+      new UserCloudPolicyStore(policy_file(),
+                               key_file(),
+                               GetPolicyVerificationKey(),
+                               loop_.message_loop_proxy()));
   store3->AddObserver(&observer_);
   EXPECT_CALL(observer_, OnStoreLoaded(store3.get()));
   store3->Load();
@@ -351,7 +454,10 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
 
   // Now start a signin as a different user - this should fail validation.
   scoped_ptr<UserCloudPolicyStore> store4(
-      new UserCloudPolicyStore(policy_file(), loop_.message_loop_proxy()));
+      new UserCloudPolicyStore(policy_file(),
+                               key_file(),
+                               GetPolicyVerificationKey(),
+                               loop_.message_loop_proxy()));
   store4->SetSigninUsername("foobar@foobar.com");
   store4->AddObserver(&observer_);
   ExpectError(store4.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
@@ -362,6 +468,8 @@ TEST_F(UserCloudPolicyStoreTest, LoadValidationError) {
   store4->RemoveObserver(&observer_);
 }
 
-}  // namespace
+// TODO(atwilson): Add a test to detect tampered policy
+// (new_public_key_verification_signature() doesn't match the right key -
+// http://crbug.com/275291).
 
 }  // namespace policy

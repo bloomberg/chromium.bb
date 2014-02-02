@@ -13,6 +13,7 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 #include "content/public/browser/browser_context.h"
@@ -143,7 +144,9 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
   DCHECK(!testing_factory_);
 
   scoped_ptr<UserCloudPolicyStore> store(
-      UserCloudPolicyStore::Create(context->GetPath(), background_task_runner));
+      UserCloudPolicyStore::Create(context->GetPath(),
+                                   GetPolicyVerificationKey(),
+                                   background_task_runner));
   if (force_immediate_load)
     store->LoadImmediately();
 

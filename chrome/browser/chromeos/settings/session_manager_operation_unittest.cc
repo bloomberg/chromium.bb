@@ -263,7 +263,16 @@ TEST_F(SessionManagerOperationTest, SignAndStoreSettings) {
   validator->ValidatePayload();
   std::vector<uint8> public_key;
   policy_.GetSigningKey()->ExportPublicKey(&public_key);
-  validator->ValidateSignature(public_key, false);
+  // Convert from bytes to string format (which is what ValidateSignature()
+  // takes).
+  std::string public_key_as_string = std::string(
+      reinterpret_cast<const char*>(vector_as_array(&public_key)),
+      public_key.size());
+  validator->ValidateSignature(
+      public_key_as_string,
+      policy::GetPolicyVerificationKey(),
+      policy::PolicyBuilder::GetTestSigningKeySignature(),
+      false);
   validator->StartValidation(
       base::Bind(&SessionManagerOperationTest::CheckSuccessfulValidation,
                  base::Unretained(this)));

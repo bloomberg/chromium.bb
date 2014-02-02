@@ -73,6 +73,10 @@ int GetIDSForValidationStatus(CloudPolicyValidatorBase::Status status) {
       return IDS_POLICY_VALIDATION_BAD_USERNAME;
     case CloudPolicyValidatorBase::VALIDATION_POLICY_PARSE_ERROR:
       return IDS_POLICY_VALIDATION_POLICY_PARSE_ERROR;
+    case CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE:
+      return IDS_POLICY_VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE;
+    case CloudPolicyValidatorBase::VALIDATION_STATUS_SIZE:
+      NOTREACHED();
   }
   NOTREACHED() << "Unhandled validation status " << status;
   return IDS_POLICY_VALIDATION_UNKNOWN_ERROR;

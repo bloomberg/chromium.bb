@@ -105,10 +105,10 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
 
   // Reads the contents of |path| into |key|.
   static void LoadPolicyKey(const base::FilePath& path,
-                            std::vector<uint8>* key);
+                            std::string* key);
 
   // Callback for the key reloading.
-  void OnPolicyKeyReloaded(std::vector<uint8>* key,
+  void OnPolicyKeyReloaded(std::string* key,
                            const base::Closure& callback);
 
   // Invokes |callback| after creating |policy_key_|, if it hasn't been created
@@ -135,7 +135,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
 
   bool policy_key_loaded_;
   base::FilePath policy_key_path_;
-  std::vector<uint8> policy_key_;
+  std::string policy_key_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreChromeOS);
 };

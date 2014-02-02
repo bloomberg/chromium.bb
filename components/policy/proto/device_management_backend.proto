@@ -172,6 +172,13 @@ message PolicyFetchRequest {
   // payload delivered with the invalidation. The server interprets this value
   // and the value of invalidation_version to fetch the up-to-date policy.
   optional bytes invalidation_payload = 8;
+
+  // Hash string for the chrome policy verification public key which is embedded
+  // into Chrome binary. Matching private key will be used by the server
+  // to sign per-domain policy keys during key rotation. If server does not
+  // have the key which matches this hash string, that could indicate malicious
+  // or out-of-date Chrome client.
+  optional string verification_key_hash = 9;
 }
 
 // This message is included in serialized form in PolicyFetchResponse
@@ -283,6 +290,27 @@ message PolicyFetchResponse {
   // on old public key), then |new_public_key_signature| is empty.
   optional bytes new_public_key = 5;
   optional bytes new_public_key_signature = 6;
+
+  // If new_public_key is specified, this field contains a signature
+  // of that key, signed using a key only available to DMServer.  
+  // The public key portion of this well-known key is embedded into the
+  // Chrome binary. The hash of that embedded key is passed to DMServer
+  // as verification_key_hash field in PolicyFetchRequest. DMServer will
+  // pick a private key on the server which matches the hash (matches public
+  // key on the client). If DMServer is unable to find matching key, it will
+  // return an error instead of policy data.
+  // In case hash was not specified, DMServer will leave verification signature
+  // field empty (legacy behavior).  
+  // In addition to the checks between new_public_key
+  // and new_public_key_signature described above, Chrome also verifies
+  // new_public_key with the embedded public key and 
+  // new_public_key_verification_signature.
+  optional bytes new_public_key_verification_signature = 7;
+
+  // Server-provided identifier of the fetched policy. This is to be used
+  // by the client when requesting Policy Posture assertion through an API
+  // call or SAML flow.
+  optional bytes policy_token = 8;
 }
 
 // Request from device to server for reading policies.

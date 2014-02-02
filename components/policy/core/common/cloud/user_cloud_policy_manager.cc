@@ -72,6 +72,7 @@ UserCloudPolicyManager::CreateCloudPolicyClient(
       new CloudPolicyClient(
           std::string(),
           std::string(),
+          kPolicyVerificationKeyHash,
           USER_AFFILIATION_NONE,
           NULL,
           device_management_service,

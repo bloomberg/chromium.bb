@@ -144,6 +144,13 @@ void PolicyBuilder::SetDefaultNewSigningKey() {
   raw_new_signing_key_.swap(key);
 }
 
+void PolicyBuilder::SetDefaultInitialSigningKey() {
+  std::vector<uint8> key(kSigningKey,
+                         kSigningKey + arraysize(kSigningKey));
+  raw_new_signing_key_.swap(key);
+  UnsetSigningKey();
+}
+
 void PolicyBuilder::UnsetNewSigningKey() {
   raw_new_signing_key_.clear();
 }
@@ -169,6 +176,10 @@ void PolicyBuilder::Build() {
                policy_.mutable_new_public_key_signature());
     }
   } else {
+    // No new signing key, so clear the old public key (this allows us to
+    // reuse the same PolicyBuilder to build multiple policy blobs).
+    policy_.clear_new_public_key();
+    policy_.clear_new_public_key_signature();
     policy_signing_key = GetSigningKey();
   }
 
@@ -203,6 +214,18 @@ scoped_ptr<crypto::RSAPrivateKey> PolicyBuilder::CreateTestOtherSigningKey() {
       kNewSigningKey, kNewSigningKey + arraysize(kNewSigningKey));
   return scoped_ptr<crypto::RSAPrivateKey>(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(raw_new_signing_key));
+}
+
+// static
+std::string PolicyBuilder::GetTestSigningKeySignature() {
+  // TODO(atwilson): Return a real verification signature when one is available.
+  return std::string();
+}
+
+// static
+std::string PolicyBuilder::GetTestOtherSigningKeySignature() {
+  // TODO(atwilson): Return a real verification signature when one is available.
+  return std::string();
 }
 
 void PolicyBuilder::SignData(const std::string& data,

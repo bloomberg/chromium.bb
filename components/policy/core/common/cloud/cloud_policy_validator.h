@@ -46,9 +46,9 @@ namespace policy {
 // RunValidation() can be used to perform validation on the current thread.
 class POLICY_EXPORT CloudPolicyValidatorBase {
  public:
-  // Validation result codes. These values are also used for UMA histograms;
-  // they must stay stable, and the UMA counters must be updated if new elements
-  // are appended at the end.
+  // Validation result codes. These values are also used for UMA histograms by
+  // UserCloudPolicyStoreChromeOS and must stay stable - new elements should
+  // be added at the end before VALIDATION_STATUS_SIZE.
   enum Status {
     // Indicates successful validation.
     VALIDATION_OK,
@@ -72,6 +72,10 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATION_BAD_USERNAME,
     // Policy payload protobuf parse error.
     VALIDATION_POLICY_PARSE_ERROR,
+    // Policy key signature could not be verified using the hard-coded
+    // verification key.
+    VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
+    VALIDATION_STATUS_SIZE  // MUST BE LAST
   };
 
   enum ValidateDMTokenOption {
@@ -143,19 +147,25 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // Validates that the payload can be decoded successfully.
   void ValidatePayload();
 
-  // Verifies that the signature on the policy blob verifies against |key|. If |
+  // Verifies that the signature on the policy blob verifies against |key|. If
   // |allow_key_rotation| is true and there is a key rotation present in the
   // policy blob, this checks the signature on the new key against |key| and the
-  // policy blob against the new key.
-  void ValidateSignature(const std::vector<uint8>& key,
+  // policy blob against the new key. New key is also validated using the passed
+  // |verification_key| and the |new_public_key_verification_signature| field.
+  // If |key_signature| is non-empty, then |key| is also verified against that
+  // signature (useful when dealing with cached keys from untrusted sources).
+  void ValidateSignature(const std::string& key,
+                         const std::string& verification_key,
+                         const std::string& key_signature,
                          bool allow_key_rotation);
 
-  // Similar to StartSignatureVerification(), this checks the signature on the
+  // Similar to ValidateSignature(), this checks the signature on the
   // policy blob. However, this variant expects a new policy key set in the
   // policy blob and makes sure the policy is signed using that key. This should
   // be called at setup time when there is no existing policy key present to
-  // check against.
-  void ValidateInitialKey();
+  // check against. New key is validated using the passed |verification_key| and
+  // the new_public_key_verification_signature field.
+  void ValidateInitialKey(const std::string& verification_key);
 
   // Convenience helper that configures timestamp and token validation based on
   // the current policy blob. |policy_data| may be NULL, in which case the
@@ -195,6 +205,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATE_PAYLOAD     = 1 << 6,
     VALIDATE_SIGNATURE   = 1 << 7,
     VALIDATE_INITIAL_KEY = 1 << 8,
+    VALIDATE_SIGNED_KEY  = 1 << 9,
   };
 
   // Performs validation, called on a background thread.
@@ -209,6 +220,21 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
 
   // Invokes all the checks and reports the result.
   void RunChecks();
+
+  // Helper routine that verifies that the new public key in the policy blob
+  // is properly signed by the |verification_key_|.
+  bool CheckNewPublicKeyVerificationSignature();
+
+  // Helper routine that performs a verification-key-based signature check,
+  // which includes the domain name associated with this policy. Returns true
+  // if the verification succeeds, or if |signature| is empty.
+  bool CheckVerificationKeySignature(const std::string& key_to_verify,
+                                     const std::string& server_key,
+                                     const std::string& signature);
+
+  // Sets the key used to verify new public keys, and ensures that callers
+  // don't try to set conflicting keys.
+  void set_verification_key(const std::string& verification_key);
 
   // Helper functions implementing individual checks.
   Status CheckTimestamp();
@@ -242,6 +268,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   std::string policy_type_;
   std::string settings_entity_id_;
   std::string key_;
+  std::string key_signature_;
+  std::string verification_key_;
   bool allow_key_rotation_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 

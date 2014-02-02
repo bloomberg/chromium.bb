@@ -12,14 +12,19 @@
 
 namespace {
 const char kUserDMTokenKey[] = "user_dmtoken";
+const char kUserPolicyTokenKey[] = "user_policy_token";
+const char kVerificationKeyHashKey[] = "verification_key_hash";
 }
 
 namespace policy {
 
-PolicyHeaderService::PolicyHeaderService(const std::string& server_url,
-                                         CloudPolicyStore* user_policy_store,
-                                         CloudPolicyStore* device_policy_store)
+PolicyHeaderService::PolicyHeaderService(
+    const std::string& server_url,
+    const std::string& verification_key_hash,
+    CloudPolicyStore* user_policy_store,
+    CloudPolicyStore* device_policy_store)
     : server_url_(server_url),
+      verification_key_hash_(verification_key_hash),
       user_policy_store_(user_policy_store),
       device_policy_store_(device_policy_store) {
   user_policy_store_->AddObserver(this);
@@ -54,10 +59,20 @@ std::string PolicyHeaderService::CreateHeaderValue() {
   // {
   //   user_dmtoken: <dm_token>
   //   user_policy_token: <policy_token>
+  //   verification_key_hash: <key_hash>
   // }
   std::string user_dm_token = user_policy_store_->policy()->request_token();
   base::DictionaryValue value;
   value.SetString(kUserDMTokenKey, user_dm_token);
+  // TODO(atwilson): Enable this once policy token is available.
+  //if (user_policy_store_->policy()->has_policy_token()) {
+  //    value.SetString(kUserPolicyTokenKey,
+  //                    user_policy_store_->policy()->policy_token());
+  //}
+  value.SetString(kUserPolicyTokenKey, "");
+  if (!verification_key_hash_.empty())
+    value.SetString(kVerificationKeyHashKey, verification_key_hash_);
+
   // TODO(atwilson): add user_policy_token once the server starts sending it
   // down (http://crbug.com/326799).
   std::string json;

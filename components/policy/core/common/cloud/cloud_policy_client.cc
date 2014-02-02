@@ -50,12 +50,14 @@ CloudPolicyClient::StatusProvider::~StatusProvider() {}
 CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_id,
     const std::string& machine_model,
+    const std::string& verification_key_hash,
     UserAffiliation user_affiliation,
     StatusProvider* status_provider,
     DeviceManagementService* service,
     scoped_refptr<net::URLRequestContextGetter> request_context)
     : machine_id_(machine_id),
       machine_model_(machine_model),
+      verification_key_hash_(verification_key_hash),
       user_affiliation_(user_affiliation),
       device_mode_(DEVICE_MODE_NOT_SET),
       submit_machine_id_(false),
@@ -161,15 +163,13 @@ void CloudPolicyClient::FetchPolicy() {
     if (!it->second.empty())
       fetch_request->set_settings_entity_id(it->second);
 
-#if defined(OS_CHROMEOS)
-    // All policy types on ChromeOS ask for a signed policy blob.
+    // Request signed policy blobs to help prevent tampering on the client.
     fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
-#else
-    // Don't request signed blobs for desktop policy.
-    fetch_request->set_signature_type(em::PolicyFetchRequest::NONE);
-#endif
     if (public_key_version_valid_)
       fetch_request->set_public_key_version(public_key_version_);
+
+    if (!verification_key_hash_.empty())
+      fetch_request->set_verification_key_hash(verification_key_hash_);
 
     // These fields are included only in requests for chrome policy.
     if (IsChromePolicy(it->first)) {

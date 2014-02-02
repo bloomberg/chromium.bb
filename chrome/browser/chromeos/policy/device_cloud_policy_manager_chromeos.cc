@@ -251,6 +251,7 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
 
   return make_scoped_ptr(
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),
+                            kPolicyVerificationKeyHash,
                             USER_AFFILIATION_NONE,
                             device_status_provider_.get(),
                             device_management_service_,

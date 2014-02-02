@@ -13,6 +13,7 @@ namespace policy {
 MockCloudPolicyClient::MockCloudPolicyClient()
     : CloudPolicyClient(std::string(),
                         std::string(),
+                        std::string(),
                         USER_AFFILIATION_NONE,
                         NULL,
                         NULL,
