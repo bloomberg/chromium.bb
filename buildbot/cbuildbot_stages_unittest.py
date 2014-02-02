@@ -2192,6 +2192,13 @@ class MockPatch(mock.MagicMock):
   project = 'chromiumos/chromite'
   status = 'NEW'
   internal = False
+  current_patch_set = {
+    'number': patch_number,
+    'draft': False,
+  }
+  patch_dict = {
+    'currentPatchSet': current_patch_set,
+  }
 
 
 class BaseCQTest(StageTest):

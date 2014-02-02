@@ -1213,6 +1213,7 @@ class GerritPatch(GitRepoPatch):
           'ref': current_revision_info['fetch']['http']['ref'],
           'revision': current_revision,
           'number': str(current_revision_info['_number']),
+          'draft': current_revision_info.get('draft', False),
       }
 
       current_commit = current_revision_info.get('commit')

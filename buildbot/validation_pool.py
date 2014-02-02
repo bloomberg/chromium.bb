@@ -110,6 +110,13 @@ class PatchNotCommitReady(cros_patch.PatchException):
     return 'isn\'t marked as Commit-Ready anymore.'
 
 
+class PatchNotPublished(cros_patch.PatchException):
+  """Raised if a patch is not published."""
+
+  def ShortExplanation(self):
+    return 'has not been published.'
+
+
 class PatchRejected(cros_patch.PatchException):
   """Raised if a patch was rejected by the CQ because the CQ failed."""
 
@@ -1353,6 +1360,24 @@ class ValidationPool(object):
             self.pre_cq))
 
   @classmethod
+  def FilterDraftChanges(cls, changes):
+    """Filter out draft changes based on the status of the latest patch set.
+
+    Our Gerrit query cannot exclude changes whose latest patch set has
+    not yet been published as long as there is one published patchset
+    in the change. Such changes will fail when we try to merge them,
+    which may lead to undesirable consequence (e.g. dependencies not
+    respected).
+
+    Args:
+      changes: List of changes to filter.
+
+    Returns:
+      List of published changes.
+    """
+    return [x for x in changes if not x.patch_dict['currentPatchSet']['draft']]
+
+  @classmethod
   def FilterNonMatchingChanges(cls, changes):
     """Filter out changes that don't actually match our query.
 
@@ -1461,6 +1486,7 @@ class ValidationPool(object):
       pool = ValidationPool(overlays, repo.directory, build_number,
                             builder_name, True, dryrun)
 
+      draft_changes = []
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
         raw_changes = helper.Query(query, sort='lastUpdated')
@@ -1475,12 +1501,17 @@ class ValidationPool(object):
         # been marked as CQ+1 out from under us, but still end up being picked
         # up in a throttled CQ run.
         if using_default_query:
-          raw_changes = cls.FilterNonMatchingChanges(raw_changes)
+          published_changes = cls.FilterDraftChanges(raw_changes)
+          draft_changes.extend(set(raw_changes) - set(published_changes))
+          raw_changes = cls.FilterNonMatchingChanges(published_changes)
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
             raw_changes, git.ManifestCheckout.Cached(repo.directory))
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
+
+      for change in draft_changes:
+        pool.HandleDraftChange(change)
 
       # Filter out unwanted changes.
       pool.changes, pool.non_manifest_changes = change_filter(
@@ -1847,8 +1878,14 @@ class ValidationPool(object):
     # that occurs below will be mostly up-to-date.
     errors = {}
     changes = list(self.ReloadChanges(changes))
-    filtered_changes = self.FilterNonMatchingChanges(changes)
-    for change in set(changes) - set(filtered_changes):
+    # Filter out the draft changes here to prevent the race condition
+    # where user uploads a new draft patch set during the CQ run.
+    published_changes = self.FilterDraftChanges(changes)
+    for change in set(changes) - set(published_changes):
+      errors[change] = PatchNotPublished(change)
+
+    filtered_changes = self.FilterNonMatchingChanges(published_changes)
+    for change in set(published_changes) - set(filtered_changes):
       errors[change] = PatchNotCommitReady(change)
 
     patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
@@ -2035,6 +2072,21 @@ class ValidationPool(object):
            '  %(failure)s')
     self.SendNotification(failure.patch, msg, failure=failure)
     self.RemoveCommitReady(failure.patch)
+
+  def HandleDraftChange(self, change):
+    """Handler for when the latest patch set of |change| is not published.
+
+    This handler removes the commit ready bit from the specified changes and
+    sends the developer a message explaining why.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    msg = ('%(queue)s could not apply your change because the latest patch '
+           'set is not published. Please publish your draft patch set before '
+           'marking your commit as ready.')
+    self.SendNotification(change, msg)
+    self.RemoveCommitReady(change)
 
   def HandleValidationTimeout(self, changes=None, sanity=True):
     """Handles changes that timed out.

@@ -307,7 +307,8 @@ _GERRIT_QUERY_TEMPLATE = ('status:open AND '
                           'label:Code-Review=+2 AND '
                           'label:Verified=+1 AND '
                           'label:Commit-Queue>=%+i AND '
-                          'NOT ( label:CodeReview=-2 OR label:Verified=-1 )')
+                          'NOT ( label:CodeReview=-2 OR label:Verified=-1 OR '
+                          'is:draft )')
 
 # Default gerrit query used to find changes for CQ.
 # Permits CQ+1 or CQ+2 changes.

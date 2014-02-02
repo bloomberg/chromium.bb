@@ -84,7 +84,7 @@ class Base(cros_test_lib.MockTestCase):
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
-                tracking_branch='refs/heads/master'):
+                tracking_branch='refs/heads/master', is_draft=False):
     """Helper function to create mock GerritPatch objects."""
     if change_id is None:
       change_id = self._patch_counter()
@@ -97,6 +97,7 @@ class Base(cros_test_lib.MockTestCase):
     current_patch_set = {
       'number': patch_number,
       'revision': sha1,
+      'draft': is_draft,
     }
     patch_dict = {
       'currentPatchSet': current_patch_set,
@@ -107,7 +108,7 @@ class Base(cros_test_lib.MockTestCase):
       'owner': {'email': 'elmer.fudd@chromium.org'},
       'remote': remote,
       'status': 'MERGED' if is_merged else 'NEW',
-      'url': '%s/%s' % (fake_url, change_id)
+      'url': '%s/%s' % (fake_url, change_id),
     }
 
     return cros_patch.GerritPatch(patch_dict, remote, fake_url)
