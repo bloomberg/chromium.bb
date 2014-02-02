@@ -386,9 +386,10 @@ crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-b
 # Also svg/hixie/text/001.xml and fullscreen/parent-flow-inline-with-block-child.html but they have other lines in this file.
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
-crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
-crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
-crbug.com/306929 [ Win7 Debug ] fast/js/JSON-stringify.html [ Failure ]
+# TODO(machenbach): Commented out until crbug.com/340105 is resolved
+# crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
+# crbug.com/306929 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
+# crbug.com/306929 [ Win7 Debug ] fast/js/JSON-stringify.html [ Failure ]
 
 crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 
@@ -881,3 +882,25 @@ crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Ti
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/331302 plugins/plugin-javascript-access.html [ NeedsManualRebaseline ]
+
+crbug.com/340105 css3/selectors3/xhtml/css3-modsel-15c.xml [ NeedsManualRebaseline ]
+crbug.com/340105 css3/selectors3/xml/css3-modsel-15c.xml [ NeedsManualRebaseline ]
+crbug.com/340105 dom/svg/level3/xpath/XPathEvaluator_evaluate_NOT_SUPPORTED_ERR.svg [ NeedsManualRebaseline ]
+crbug.com/340105 dom/svg/level3/xpath/XPathExpression_evaluate_NOT_SUPPORTED_ERR.svg [ NeedsManualRebaseline ]
+crbug.com/340105 dom/xhtml/level1/core/hc_attrgetvalue2.xhtml [ NeedsManualRebaseline ]
+crbug.com/340105 dom/xhtml/level1/core/hc_nodevalue03.xhtml [ NeedsManualRebaseline ]
+crbug.com/340105 fast/dom/SelectorAPI/dumpNodeList-almost-strict.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/dom/SelectorAPI/dumpNodeList.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/dom/setPrimitiveValue-exceptions.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/events/window-onerror-12.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/forms/selection-wrongtype.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/images/support-broken-image-delegate.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/js/JSON-stringify.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/notifications/notifications-cancel-request-permission.html [ NeedsManualRebaseline ]
+crbug.com/340105 fast/workers/worker-onerror-09.html [ NeedsManualRebaseline ]
+crbug.com/340105 inspector/debugger/debugger-no-pause-on-antibreakpoint.html [ NeedsManualRebaseline ]
+crbug.com/340105 plugins/npp-set-window-called-during-destruction.html [ NeedsManualRebaseline ]
+crbug.com/340105 svg/custom/createelement.svg [ NeedsManualRebaseline ]
+crbug.com/340105 svg/dom/svgpath-out-of-bounds-getPathSeg.html [ NeedsManualRebaseline ]
+crbug.com/340105 virtual/deferred/fast/images/support-broken-image-delegate.html [ NeedsManualRebaseline ]
