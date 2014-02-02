@@ -771,14 +771,6 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         mGestureHandler.onTouchEvent(event);
         assertEquals("No new gestures should have been sent",
                 10, mMockMotionEventDelegate.mGestureTypeList.size());
-
-        event = MotionEvent.obtain(
-                downTime2, downTime2 + 250, MotionEvent.ACTION_UP,
-                1, new PointerProperties[] { pp0 }, new PointerCoords[] { pc0 },
-                0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_CLASS_POINTER, 0);
-        mGestureHandler.onTouchEvent(event);
-        assertEquals("No new gestures should have been sent",
-                10, mMockMotionEventDelegate.mGestureTypeList.size());
     }
 
     /**

@@ -504,7 +504,9 @@ class ContentViewGestureHandler {
             // ScaleGestureDetector's "QuickScale" feature was introduced in KitKat.
             // As ContentViewGestureHandler already implements this feature,
             // explicitly disable it to prevent double-handling of the gesture.
-            disableQuickScale(mMultiTouchDetector);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                disableQuickScale(mMultiTouchDetector);
+            }
         } finally {
             TraceEvent.end();
         }
