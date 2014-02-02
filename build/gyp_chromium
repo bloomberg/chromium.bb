@@ -77,8 +77,9 @@ def FormatKeyForGN(key):
 
 def EscapeStringForGN(s):
   """Converts a string to a GN string literal."""
-  # Escape $ characters which have special meaning to GN.
-  return '"' + s.replace('$', '\\$').replace('"', '\\"') + '"'
+  for old, new in [('\\', '\\\\'), ('$', '\\$'), ('"', '\\"')]:
+    s = s.replace(old, new)
+  return '"' + s + '"'
 
 
 def ProcessGypDefinesItems(items):
