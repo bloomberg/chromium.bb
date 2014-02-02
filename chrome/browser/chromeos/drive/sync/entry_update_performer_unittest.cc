@@ -415,6 +415,71 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_UploadNewFile) {
   test_util::RunBlockingPoolTask();
   EXPECT_TRUE(success);
   EXPECT_FALSE(cache_entry.is_dirty());
+
+  // Make sure that we really created a file.
+  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  fake_service()->GetResourceEntry(
+      entry.resource_id(),
+      google_apis::test_util::CreateCopyResultCallback(&status,
+                                                       &resource_entry));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_FALSE(resource_entry->is_folder());
+}
+
+TEST_F(EntryUpdatePerformerTest, UpdateEntry_CreateDirectory) {
+  // Create a new directory locally.
+  const base::FilePath kPath(FILE_PATH_LITERAL("drive/root/New Directory"));
+
+  ResourceEntry parent;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kPath.DirName(), &parent));
+
+  ResourceEntry entry;
+  entry.set_parent_local_id(parent.local_id());
+  entry.set_title(kPath.BaseName().AsUTF8Unsafe());
+  entry.mutable_file_info()->set_is_directory(true);
+  entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+
+  FileError error = FILE_ERROR_FAILED;
+  std::string local_id;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::AddEntry,
+                 base::Unretained(metadata()),
+                 entry,
+                 &local_id),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Update. This should result in creating a new directory on the server.
+  error = FILE_ERROR_FAILED;
+  performer_->UpdateEntry(
+      local_id,
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // The entry got a resource ID.
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kPath, &entry));
+  EXPECT_FALSE(entry.resource_id().empty());
+  EXPECT_EQ(ResourceEntry::CLEAN, entry.metadata_edit_state());
+
+  // Make sure that we really created a directory.
+  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  fake_service()->GetResourceEntry(
+      entry.resource_id(),
+      google_apis::test_util::CreateCopyResultCallback(&status,
+                                                       &resource_entry));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_TRUE(resource_entry->is_folder());
 }
 
 }  // namespace internal

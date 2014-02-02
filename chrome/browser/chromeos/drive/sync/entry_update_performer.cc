@@ -55,7 +55,8 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
 
   FileCacheEntry cache_entry;
   cache->GetCacheEntry(local_id, &cache_entry);
-  if (!cache_entry.is_present() && local_state->entry.resource_id().empty()) {
+  if (!local_state->entry.file_info().is_directory() &&
+      !cache_entry.is_present() && local_state->entry.resource_id().empty()) {
     // Locally created file with no cache file, store an empty file.
     base::FilePath empty_file;
     if (!base::CreateTemporaryFile(&empty_file))
@@ -263,11 +264,31 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     return;
   }
 
+  if (local_state->entry.file_info().is_directory() &&
+      local_state->entry.resource_id().empty()) {
+    // Lock the loader to avoid race conditions.
+    scoped_ptr<base::ScopedClosureRunner> loader_lock =
+        loader_controller_->GetLock();
+
+    scheduler_->AddNewDirectory(
+        local_state->parent_entry.resource_id(),
+        local_state->entry.title(),
+        base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   context,
+                   callback,
+                   local_state->entry.local_id(),
+                   base::Passed(&loader_lock)));
+    return;
+  }
+
   // No need to perform update.
   if (local_state->entry.metadata_edit_state() == ResourceEntry::CLEAN) {
     callback.Run(FILE_ERROR_OK);
     return;
   }
+
+  DCHECK(!local_state->entry.resource_id().empty());
 
   // Perform metadata update.
   scheduler_->UpdateResource(
