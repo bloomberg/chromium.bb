@@ -10,8 +10,6 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
 #include <stdlib.h>
 #include <Unknwn.h>
 #include <WinDef.h>
@@ -37,8 +35,6 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   // XInput-specific implementation for GetGamepadData.
   bool GetXInputGamepadData(blink::WebGamepads* pads,
                             bool devices_changed_hint);
-  bool GetDirectInputGamepadData(blink::WebGamepads* pads,
-                                 bool devices_changed_hint);
 
   // The three function types we use from xinput1_3.dll.
   typedef void (WINAPI *XInputEnableFunc)(BOOL enable);
@@ -58,15 +54,12 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   bool GetXInputPadConnectivity(int i, blink::WebGamepad* pad) const;
 
   void GetXInputPadData(int i, blink::WebGamepad* pad);
-  void GetDirectInputPadData(int i, blink::WebGamepad* pad);
 
   int FirstAvailableGamepadId() const;
   bool HasXInputGamepad(int index) const;
-  bool HasDirectInputGamepad(const GUID &guid) const;
 
   base::ScopedNativeLibrary xinput_dll_;
   bool xinput_available_;
-  bool directinput_available_;
 
   // Function pointers to XInput functionality, retrieved in
   // |GetXinputDllFunctions|.
@@ -74,20 +67,14 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   XInputGetCapabilitiesFunc xinput_get_capabilities_;
   XInputGetStateFunc xinput_get_state_;
 
-  IDirectInput8* directinput_interface_;
-
   enum PadConnectionStatus {
     DISCONNECTED,
-    XINPUT_CONNECTED,
-    DIRECTINPUT_CONNECTED
+    XINPUT_CONNECTED
   };
 
   struct PadState {
     PadConnectionStatus status;
     int xinput_index;  // XInput-only.
-    // Fields below are for DirectInput devices only.
-    GUID guid;
-    IDirectInputDevice8* directinput_gamepad;
     GamepadStandardMappingFunction mapper;
   };
   PadState pad_state_[blink::WebGamepads::itemsLengthCap];
