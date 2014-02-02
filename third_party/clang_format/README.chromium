@@ -3,7 +3,7 @@ Short Name: clang-format
 URL: http://llvm.org/viewvc/llvm-project/cfe/trunk/tools/clang-format/
 Version: 3.5
 Date: 8 January 2014
-Revision: 198831
+Revision: See DEPS
 License: University of Illinois/NCSA Open Source License
 License File: NOT_SHIPPED
 Security Critical: No
