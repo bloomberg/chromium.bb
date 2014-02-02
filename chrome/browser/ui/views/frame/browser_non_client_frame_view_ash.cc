@@ -8,6 +8,7 @@
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/frame_border_hit_test_controller.h"
 #include "ash/wm/header_painter.h"
+#include "base/command_line.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_label.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ash_resources.h"
 #include "grit/theme_resources.h"
@@ -101,7 +103,7 @@ void BrowserNonClientFrameViewAsh::Init() {
   // Create incognito icon if necessary.
   UpdateAvatarInfo();
 
-  // Frame painter handles layout.
+  // HeaderPainter handles layout.
   header_painter_->Init(frame(), this, window_icon_, caption_button_container_);
 }
 
@@ -131,7 +133,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset() const {
     return 0;
 
   if (browser_view()->IsTabStripVisible()) {
-    if (UseShortHeader())
+    if (frame()->IsMaximized() || frame()->IsFullscreen())
       return kTabstripTopSpacingShort;
     else
       return kTabstripTopSpacingTall;
@@ -143,7 +145,9 @@ int BrowserNonClientFrameViewAsh::GetTopInset() const {
   if (browser_view()->IsToolbarVisible())
     return caption_buttons_bottom - kContentShadowHeight;
 
-  return caption_buttons_bottom + kClientEdgeThickness;
+  int separator_thickness = UsePackagedAppHeaderStyle() ?
+      header_painter_->HeaderContentSeparatorSize() : kClientEdgeThickness;
+  return caption_buttons_bottom + separator_thickness;
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
@@ -200,7 +204,7 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
 }
 
 void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
-                                                  gfx::Path* window_mask) {
+                                                 gfx::Path* window_mask) {
   // Aura does not use window masks.
 }
 
@@ -264,7 +268,9 @@ void BrowserNonClientFrameViewAsh::Layout() {
   // The header must be laid out before computing |header_height| because the
   // computation of |header_height| for app and popup windows depends on the
   // position of the window controls.
-  header_painter_->LayoutHeader(UseShortHeader());
+  header_painter_->LayoutHeader(UsePackagedAppHeaderStyle() ||
+                                frame()->IsMaximized() ||
+                                frame()->IsFullscreen());
 
   int header_height = 0;
   if (browser_view()->IsTabStripVisible()) {
@@ -369,20 +375,21 @@ int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   return header_painter_->GetRightInset() + kTabstripRightSpacing;
 }
 
-bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
-  // Restored browser windows use the tall header. All other windows use the
-  // short header.
-  return frame()->IsMaximized() ||
-         frame()->IsFullscreen() ||
-         browser_view()->browser()->is_app();
-}
-
 bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
   ImmersiveModeController* immersive_controller =
       browser_view()->immersive_mode_controller();
   return immersive_controller->IsEnabled() &&
       !immersive_controller->IsRevealed() &&
       browser_view()->IsTabStripVisible();
+}
+
+bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
+  // Non streamlined hosted apps do not have a toolbar or tabstrip. Their header
+  // should look the same as the header for packaged apps. Streamlined hosted
+  // apps have a toolbar so should use the browser header style.
+  return browser_view()->browser()->is_app() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps);
 }
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {
@@ -507,10 +514,14 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
-  canvas->FillRect(gfx::Rect(0, caption_button_container_->bounds().bottom(),
-                             width(), kClientEdgeThickness),
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  if (UsePackagedAppHeaderStyle()) {
+    header_painter_->PaintHeaderContentSeparator(canvas);
+  } else {
+    canvas->FillRect(gfx::Rect(0, caption_button_container_->bounds().bottom(),
+                               width(), kClientEdgeThickness),
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  }
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {

@@ -145,7 +145,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
 
   // End the reveal. When in both immersive browser fullscreen and tab
@@ -171,7 +170,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_FALSE(frame_view->UseImmersiveLightbarHeaderStyle());
   EXPECT_LT(Tab::GetImmersiveHeight(),
             frame_view->header_painter_->header_height());
@@ -181,7 +179,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   revealed_lock.reset();
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_FALSE(frame_view->caption_button_container_->visible());
-  EXPECT_TRUE(frame_view->UseShortHeader());
   EXPECT_TRUE(frame_view->UseImmersiveLightbarHeaderStyle());
   EXPECT_EQ(Tab::GetImmersiveHeight(),
             frame_view->header_painter_->header_height());
