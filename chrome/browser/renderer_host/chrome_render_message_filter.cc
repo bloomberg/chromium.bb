@@ -30,10 +30,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 
 #if defined(USE_TCMALLOC)
@@ -112,27 +109,9 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnOpenChannelToNativeApp)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ExtensionHostMsg_GetMessageBundle,
                                     OnGetExtensionMessageBundle)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener, OnExtensionAddListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,
-                        OnExtensionRemoveListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddLazyListener,
-                        OnExtensionAddLazyListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveLazyListener,
-                        OnExtensionRemoveLazyListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddFilteredListener,
-                        OnExtensionAddFilteredListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveFilteredListener,
-                        OnExtensionRemoveFilteredListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ShouldSuspendAck,
-                        OnExtensionShouldSuspendAck)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_GenerateUniqueID,
-                        OnExtensionGenerateUniqueID)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_SuspendAck, OnExtensionSuspendAck)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ResumeRequests,
-                        OnExtensionResumeRequests);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddAPIActionToActivityLog,
                         OnAddAPIActionToExtensionActivityLog);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddDOMActionToActivityLog,
@@ -157,15 +136,7 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
     case ChromeViewHostMsg_ResourceTypeStats::ID:
-    case ExtensionHostMsg_AddListener::ID:
-    case ExtensionHostMsg_RemoveListener::ID:
-    case ExtensionHostMsg_AddLazyListener::ID:
-    case ExtensionHostMsg_RemoveLazyListener::ID:
-    case ExtensionHostMsg_AddFilteredListener::ID:
-    case ExtensionHostMsg_RemoveFilteredListener::ID:
     case ExtensionHostMsg_CloseChannel::ID:
-    case ExtensionHostMsg_ShouldSuspendAck::ID:
-    case ExtensionHostMsg_SuspendAck::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
@@ -379,75 +350,6 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
   Send(reply_msg);
 }
 
-void ChromeRenderMessageFilter::OnExtensionAddListener(
-    const std::string& extension_id,
-    const std::string& event_name) {
-  content::RenderProcessHost* process =
-      content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !extensions::ExtensionSystem::Get(profile_)->event_router())
-    return;
-
-  extensions::ExtensionSystem::Get(profile_)->event_router()->AddEventListener(
-      event_name, process, extension_id);
-}
-
-void ChromeRenderMessageFilter::OnExtensionRemoveListener(
-    const std::string& extension_id,
-    const std::string& event_name) {
-  content::RenderProcessHost* process =
-      content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !extensions::ExtensionSystem::Get(profile_)->event_router())
-    return;
-
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      RemoveEventListener(event_name, process, extension_id);
-}
-
-void ChromeRenderMessageFilter::OnExtensionAddLazyListener(
-    const std::string& extension_id, const std::string& event_name) {
-  if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        AddLazyEventListener(event_name, extension_id);
-  }
-}
-
-void ChromeRenderMessageFilter::OnExtensionRemoveLazyListener(
-    const std::string& extension_id, const std::string& event_name) {
-  if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        RemoveLazyEventListener(event_name, extension_id);
-  }
-}
-
-void ChromeRenderMessageFilter::OnExtensionAddFilteredListener(
-    const std::string& extension_id,
-    const std::string& event_name,
-    const base::DictionaryValue& filter,
-    bool lazy) {
-  content::RenderProcessHost* process =
-      content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !extensions::ExtensionSystem::Get(profile_)->event_router())
-    return;
-
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      AddFilteredEventListener(event_name, process, extension_id, filter, lazy);
-}
-
-void ChromeRenderMessageFilter::OnExtensionRemoveFilteredListener(
-    const std::string& extension_id,
-    const std::string& event_name,
-    const base::DictionaryValue& filter,
-    bool lazy) {
-  content::RenderProcessHost* process =
-      content::RenderProcessHost::FromID(render_process_id_);
-  if (!process || !extensions::ExtensionSystem::Get(profile_)->event_router())
-    return;
-
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      RemoveFilteredEventListener(event_name, process, extension_id, filter,
-                                  lazy);
-}
-
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(
     int port_id,
     const std::string& error_message) {
@@ -468,32 +370,6 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
   ExtensionFunctionDispatcher::DispatchOnIOThread(
       extension_info_map_.get(), profile_, render_process_id_,
       weak_ptr_factory_.GetWeakPtr(), routing_id, params);
-}
-
-void ChromeRenderMessageFilter::OnExtensionShouldSuspendAck(
-     const std::string& extension_id, int sequence_id) {
-  if (extensions::ExtensionSystem::Get(profile_)->process_manager()) {
-    extensions::ExtensionSystem::Get(profile_)->process_manager()->
-        OnShouldSuspendAck(extension_id, sequence_id);
-  }
-}
-
-void ChromeRenderMessageFilter::OnExtensionSuspendAck(
-     const std::string& extension_id) {
-  if (extensions::ExtensionSystem::Get(profile_)->process_manager()) {
-    extensions::ExtensionSystem::Get(profile_)->process_manager()->
-        OnSuspendAck(extension_id);
-  }
-}
-
-void ChromeRenderMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {
-  static int next_unique_id = 0;
-  *unique_id = ++next_unique_id;
-}
-
-void ChromeRenderMessageFilter::OnExtensionResumeRequests(int route_id) {
-  content::ResourceDispatcherHost::Get()->ResumeBlockedRequestsForRoute(
-      render_process_id_, route_id);
 }
 
 void ChromeRenderMessageFilter::OnAddAPIActionToExtensionActivityLog(

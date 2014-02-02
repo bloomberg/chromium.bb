@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_map.h"
@@ -40,6 +41,13 @@ content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   browser_main_parts_ = new ShellBrowserMainParts(parameters);
   return browser_main_parts_;
+}
+
+void ShellContentBrowserClient::RenderProcessWillLaunch(
+    content::RenderProcessHost* host) {
+  int render_process_id = host->GetID();
+  host->AddFilter(new extensions::ExtensionMessageFilter(
+      render_process_id, browser_main_parts_->browser_context()));
 }
 
 net::URLRequestContextGetter*

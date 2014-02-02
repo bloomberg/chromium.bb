@@ -89,6 +89,11 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnUpdatedCacheStats(const blink::WebCache::UsageStats& stats);
   void OnFPS(int routing_id, float fps);
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
+
+  // TODO(jamescook): Move these functions into the extensions module. Ideally
+  // this would be in extensions::ExtensionMessageFilter but that will require
+  // resolving the MessageService and ActivityLog dependencies on src/chrome.
+  // http://crbug.com/339637
   void OnOpenChannelToExtension(int routing_id,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name,
@@ -123,31 +128,10 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
       const std::string& extension_id,
       const std::string& default_locale,
       IPC::Message* reply_msg);
-  void OnExtensionAddListener(const std::string& extension_id,
-                              const std::string& event_name);
-  void OnExtensionRemoveListener(const std::string& extension_id,
-                                 const std::string& event_name);
-  void OnExtensionAddLazyListener(const std::string& extension_id,
-                                  const std::string& event_name);
-  void OnExtensionRemoveLazyListener(const std::string& extension_id,
-                                     const std::string& event_name);
-  void OnExtensionAddFilteredListener(const std::string& extension_id,
-                                      const std::string& event_name,
-                                      const base::DictionaryValue& filter,
-                                      bool lazy);
-  void OnExtensionRemoveFilteredListener(const std::string& extension_id,
-                                         const std::string& event_name,
-                                         const base::DictionaryValue& filter,
-                                         bool lazy);
   void OnExtensionCloseChannel(int port_id, const std::string& error_message);
   void OnExtensionRequestForIOThread(
       int routing_id,
       const ExtensionHostMsg_Request_Params& params);
-  void OnExtensionShouldSuspendAck(const std::string& extension_id,
-                                   int sequence_id);
-  void OnExtensionSuspendAck(const std::string& extension_id);
-  void OnExtensionGenerateUniqueID(int* unique_id);
-  void OnExtensionResumeRequests(int route_id);
   void OnAddAPIActionToExtensionActivityLog(
       const std::string& extension_id,
       const ExtensionHostMsg_APIActionOrEvent_Params& params);

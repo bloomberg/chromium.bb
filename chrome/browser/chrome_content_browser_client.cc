@@ -123,6 +123,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
+#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
@@ -903,6 +904,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       profile->GetRequestContextForRenderProcess(id);
 
   host->AddFilter(new ChromeRenderMessageFilter(id, profile, context));
+  host->AddFilter(new extensions::ExtensionMessageFilter(id, profile));
 #if defined(ENABLE_PLUGINS)
   host->AddFilter(new PluginInfoMessageFilter(id, profile));
 #endif

@@ -179,6 +179,8 @@
         'browser/extension_error.h',
         'browser/extension_function.cc',
         'browser/extension_function.h',
+        'browser/extension_message_filter.cc',
+        'browser/extension_message_filter.h',
         'browser/extension_pref_store.cc',
         'browser/extension_pref_store.h',
         'browser/extension_pref_value_map.cc',

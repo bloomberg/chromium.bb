@@ -17,6 +17,7 @@ class Extension;
 namespace apps {
 class ShellBrowserMainParts;
 
+// Content module browser process support for app_shell.
 class ShellContentBrowserClient : public content::ContentBrowserClient {
  public:
   ShellContentBrowserClient();
@@ -25,6 +26,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   // content::ContentBrowserClient overrides.
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
+  virtual void RenderProcessWillLaunch(
+      content::RenderProcessHost* host) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
