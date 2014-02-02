@@ -319,10 +319,12 @@ void Me2MeNativeMessagingHostTest::StartHost() {
   scoped_ptr<NativeMessagingChannel> channel(
       new NativeMessagingChannel(input_read_handle, output_write_handle));
 
-  host_.reset(new Me2MeNativeMessagingHost(channel.Pass(),
-                                      daemon_controller,
-                                      pairing_registry,
-                                      scoped_ptr<remoting::OAuthClient>()));
+  host_.reset(new Me2MeNativeMessagingHost(
+        false,
+        channel.Pass(),
+        daemon_controller,
+        pairing_registry,
+        scoped_ptr<remoting::OAuthClient>()));
   host_->Start(base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
                           base::Unretained(this)));
 

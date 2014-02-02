@@ -24,6 +24,10 @@ class GaiaOAuthClient;
 
 namespace remoting {
 
+const char kElevatingSwitchName[] = "elevate";
+const char kInputSwitchName[] = "input";
+const char kOutputSwitchName[] = "output";
+
 namespace protocol {
 class PairingRegistry;
 }  // namespace protocol
@@ -34,6 +38,7 @@ class Me2MeNativeMessagingHost {
   typedef NativeMessagingChannel::SendMessageCallback SendMessageCallback;
 
   Me2MeNativeMessagingHost(
+      bool needs_elevation,
       scoped_ptr<NativeMessagingChannel> channel,
       scoped_refptr<DaemonController> daemon_controller,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
@@ -43,55 +48,55 @@ class Me2MeNativeMessagingHost {
   void Start(const base::Closure& quit_closure);
 
  private:
-  void ProcessMessage(scoped_ptr<base::DictionaryValue> message);
+  void ProcessRequest(scoped_ptr<base::DictionaryValue> message);
 
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
   void ProcessHello(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessClearPairedClients(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessDeletePairedClient(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetHostName(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetPinHash(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGenerateKeyPair(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessUpdateDaemonConfig(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetDaemonConfig(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetPairedClients(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetUsageStatsConsent(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessStartDaemon(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessStopDaemon(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetDaemonState(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetHostClientId(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetCredentialsFromAuthCode(
-      const base::DictionaryValue& message,
+      scoped_ptr<base::DictionaryValue> message,
       scoped_ptr<base::DictionaryValue> response);
 
   // These Send... methods get called on the DaemonController's internal thread,
@@ -115,6 +120,23 @@ class Me2MeNativeMessagingHost {
 
   void OnError();
 
+  void Stop();
+
+  void DelegateToElevatedHost(scoped_ptr<base::DictionaryValue> message,
+                              scoped_ptr<base::DictionaryValue> response);
+
+#if defined(OS_WIN)
+  void Me2MeNativeMessagingHost::EnsureElevatedHostCreated();
+  void ProcessDelegateResponse(scoped_ptr<base::DictionaryValue> message);
+
+  // input/output handles for the channel to the elevated host.
+  base::win::ScopedHandle delegate_write_handle_;
+  base::win::ScopedHandle delegate_read_handle_;
+  scoped_ptr<NativeMessagingChannel> elevated_channel_;
+#endif  // defined(OS_WIN)
+
+  bool needs_elevation_;
+  base::Closure quit_closure_;
   scoped_ptr<NativeMessagingChannel> channel_;
   scoped_refptr<DaemonController> daemon_controller_;
 
