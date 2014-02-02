@@ -1,0 +1,42 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.hotwordPrivate</code> API allows extensions to access and
+// mutate the preference for enabling hotword search. It also provides
+// information on whether the hotword search is available. This API provides an
+// event interface to transmit to the extension a signal that the preference fo
+// hotword search has change.
+//
+// For an FYI, visit http://goo.gl/AyHbkH
+
+[nodoc] namespace hotwordPrivate {
+
+  dictionary StatusDetails {
+    // If the hotword extension is enabled. Will always be false if |available|
+    // is false.
+    boolean enabled;
+
+    // Whether the hotword extension is available to be enabled
+    boolean available;
+  };
+
+  callback GenericDoneCallback = void ();
+  callback StatusDetailsCallback = void(StatusDetails result);
+
+  interface Functions {
+    // Sets the current enabled state of hotword search.
+    // True: enable hotword search. False: disable hotword search.
+    static void setEnabled(boolean state, optional GenericDoneCallback callback);
+
+    // Retrieves the current state of hotword search.
+    // The result is put into a StatusDetails object.
+    static void getStatus(StatusDetailsCallback callback);
+
+  };
+
+  interface Events {
+    // Fired when the hotword search enabled preference is changed.
+    static void onEnabledChanged();
+  };
+};

@@ -290,6 +290,8 @@
         'browser/extensions/api/hid/hid_device_resource.h',
         'browser/extensions/api/history/history_api.h',
         'browser/extensions/api/history/history_api.cc',
+        'browser/extensions/api/hotword_private/hotword_private_api.h',
+        'browser/extensions/api/hotword_private/hotword_private_api.cc',
         'browser/extensions/api/i18n/i18n_api.cc',
         'browser/extensions/api/i18n/i18n_api.h',
         'browser/extensions/api/identity/account_tracker.cc',

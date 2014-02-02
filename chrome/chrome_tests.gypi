@@ -1143,6 +1143,7 @@
         'browser/extensions/api/font_settings/font_settings_apitest.cc',
         'browser/extensions/api/gcm/gcm_apitest.cc',
         'browser/extensions/api/history/history_apitest.cc',
+        'browser/extensions/api/hotword_private/hotword_private_apitest.cc',
         'browser/extensions/api/i18n/i18n_apitest.cc',
         'browser/extensions/api/identity/identity_apitest.cc',
         'browser/extensions/api/idle/idle_apitest.cc',

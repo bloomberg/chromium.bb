@@ -72,6 +72,7 @@
               'hangouts_private.idl',
               'hid.idl',
               'history.json',
+              'hotword_private.idl',
               'i18n.json',
               'identity.idl',
               'identity_private.idl',

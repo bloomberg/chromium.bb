@@ -27,6 +27,10 @@ class HotwordService : public BrowserContextKeyedService {
   // kHotwordOptInPopupTimesShown is also incremented.
   void ShowOptInPopup();
 
+  // Checks for whether all the necessary files have downloaded to allow for
+  // using the extension.
+  virtual bool IsServiceAvailable();
+
  private:
   Profile* profile_;
 

@@ -1,0 +1,11 @@
+{
+  "key" : "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUPrZoII3A4g9EIM+/jixinHPFAZFZmJ0BVIqwGgfYJs4HUT8ODNFMHDoyTJIimf6W3118TiAiDag3VlRPCfgwP7y4nA1JIwLraMX53Hbcdexw1uNhNvA9RBnpKziGRp04gfcvMpC7FxGyktx5dIZNkD7aorCNGVG/yCPBRx29pQIDAQAB",
+  "name": "Hotword Private Test Extension",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Browser tests for chrome.hotword_private API",
+  "background" : {
+    "scripts": ["test.js"]
+  },
+  "permissions": ["hotwordPrivate"]
+}

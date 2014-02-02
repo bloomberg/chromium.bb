@@ -44,3 +44,9 @@ void HotwordService::ShowOptInPopup() {
                                    ++number_shown);
   // TODO(rlp): actually show opt in popup when linked up to extension.
 }
+
+bool HotwordService::IsServiceAvailable() {
+  return true;
+  // TODO(rlp): Determine if service is available based on field trials,
+  // language, and download state. Coming soon to a CL near you!
+}

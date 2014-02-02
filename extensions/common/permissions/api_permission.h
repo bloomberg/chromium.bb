@@ -93,6 +93,7 @@ class APIPermission {
     kHid,
     kHistory,
     kHomepage,
+    kHotwordPrivate,
     kIdentity,
     kIdentityPrivate,
     kIdltest,

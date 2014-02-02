@@ -192,6 +192,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kFileBrowserPrivate, "fileBrowserPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kHotwordPrivate, "hotwordPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kIdentityPrivate, "identityPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kLogPrivate, "logPrivate"},
