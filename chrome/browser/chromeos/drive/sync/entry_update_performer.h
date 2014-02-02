@@ -76,7 +76,13 @@ class EntryUpdatePerformer {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
+  // Part of UpdateEntry(). Called after FinishUpdate is completed.
+  void UpdateEntryAfterFinish(const FileOperationCallback& callback,
+                              const base::FilePath* changed_directory,
+                              FileError error);
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  file_system::OperationObserver* observer_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
   FileCache* cache_;

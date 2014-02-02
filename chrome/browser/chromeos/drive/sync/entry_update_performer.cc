@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -112,9 +113,32 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
 FileError FinishUpdate(ResourceMetadata* metadata,
                        FileCache* cache,
                        const std::string& local_id,
-                       scoped_ptr<google_apis::ResourceEntry> resource_entry) {
+                       scoped_ptr<google_apis::ResourceEntry> resource_entry,
+                       base::FilePath* changed_directory) {
+  // When creating new entries, update check may add a new entry with the same
+  // resource ID before us. If such an entry exists, remove it.
+  std::string existing_local_id;
+  FileError error = metadata->GetIdByResourceId(
+      resource_entry->resource_id(), &existing_local_id);
+  switch (error) {
+    case FILE_ERROR_OK:
+      if (existing_local_id != local_id) {
+        base::FilePath existing_entry_path =
+            metadata->GetFilePath(existing_local_id);
+        error = metadata->RemoveEntry(existing_local_id);
+        if (error != FILE_ERROR_OK)
+          return error;
+        *changed_directory = existing_entry_path.DirName();
+      }
+      break;
+    case FILE_ERROR_NOT_FOUND:
+      break;
+    default:
+      return error;
+  }
+
   ResourceEntry entry;
-  FileError error = metadata->GetResourceEntryById(local_id, &entry);
+  error = metadata->GetResourceEntryById(local_id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -156,6 +180,7 @@ EntryUpdatePerformer::EntryUpdatePerformer(
     FileCache* cache,
     LoaderController* loader_controller)
     : blocking_task_runner_(blocking_task_runner),
+      observer_(observer),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
@@ -220,9 +245,10 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   // Perform content update.
   if (local_state->should_content_update) {
     if (local_state->entry.resource_id().empty()) {
-      // Lock the loader to avoid race conditions.
-      scoped_ptr<base::ScopedClosureRunner> loader_lock =
-          loader_controller_->GetLock();
+      // Not locking the loader intentionally here to avoid making the UI
+      // unresponsive while uploading large files.
+      // FinishUpdate() is responsible to resolve conflicts caused by this.
+      scoped_ptr<base::ScopedClosureRunner> null_loader_lock;
 
       drive::DriveUploader::UploadNewFileOptions options;
       options.modified_date = last_modified;
@@ -240,7 +266,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
                      context,
                      callback,
                      local_state->entry.local_id(),
-                     base::Passed(&loader_lock)));
+                     base::Passed(&null_loader_lock)));
     } else {
       drive::DriveUploader::UploadExistingFileOptions options;
       options.title = local_state->entry.title();
@@ -309,6 +335,7 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (status == google_apis::HTTP_FORBIDDEN) {
     // Editing this entry is not allowed, revert local changes.
@@ -322,12 +349,28 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     return;
   }
 
+  base::FilePath* changed_directory = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FinishUpdate,
-                 metadata_, cache_, local_id, base::Passed(&resource_entry)),
-      callback);
+                 metadata_, cache_, local_id, base::Passed(&resource_entry),
+                 changed_directory),
+      base::Bind(&EntryUpdatePerformer::UpdateEntryAfterFinish,
+                 weak_ptr_factory_.GetWeakPtr(), callback,
+                 base::Owned(changed_directory)));
+}
+
+void EntryUpdatePerformer::UpdateEntryAfterFinish(
+    const FileOperationCallback& callback,
+    const base::FilePath* changed_directory,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!changed_directory->empty())
+    observer_->OnDirectoryChangedByOperation(*changed_directory);
+  callback.Run(error);
 }
 
 }  // namespace internal
