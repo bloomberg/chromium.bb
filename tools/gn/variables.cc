@@ -155,7 +155,7 @@ const char kRootGenDir_Help[] =
     "\n"
     "  This is primarily useful for setting up include paths for generated\n"
     "  files. If you are passing this to a script, you will want to pass it\n"
-    "  through to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  through rebase_path() (see \"gn help rebase_path\") to convert it\n"
     "  to be relative to the build directory.\n"
     "\n"
     "  See also \"target_gen_dir\" which is usually a better location for\n"
@@ -173,7 +173,7 @@ const char kRootOutDir_Help[] =
     "\n"
     "  This is primarily useful for setting up script calls. If you are\n"
     "  passing this to a script, you will want to pass it through\n"
-    "  to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  rebase_path() (see \"gn help rebase_path\") to convert it\n"
     "  to be relative to the build directory.\n"
     "\n"
     "  See also \"target_out_dir\" which is usually a better location for\n"
@@ -183,7 +183,7 @@ const char kRootOutDir_Help[] =
     "\n"
     "  custom(\"myscript\") {\n"
     "    # Pass the output dir to the script.\n"
-    "    args = [ \"-o\", to_build_path(root_out_dir) ]\n"
+    "    args = [ \"-o\", rebase_path(root_out_dir, \".\", root_build_dir) ]\n"
     "  }\n";
 
 const char kTargetGenDir[] = "target_gen_dir";
@@ -199,7 +199,7 @@ const char kTargetGenDir_Help[] =
     "\n"
     "  This is primarily useful for setting up include paths for generated\n"
     "  files. If you are passing this to a script, you will want to pass it\n"
-    "  through to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  through rebase_path() (see \"gn help rebase_path\") to convert it\n"
     "  to be relative to the build directory.\n"
     "\n"
     "  See also \"gn help root_gen_dir\".\n"
@@ -208,7 +208,8 @@ const char kTargetGenDir_Help[] =
     "\n"
     "  custom(\"myscript\") {\n"
     "    # Pass the generated output dir to the script.\n"
-    "    args = [ \"-o\", to_build_path(target_gen_dir) ]\n"
+    "    args = [ \"-o\", rebase_path(target_gen_dir, \".\", root_build_dir) ]"
+    "\n"
     "  }\n";
 
 const char kTargetOutDir[] = "target_out_dir";
@@ -224,7 +225,7 @@ const char kTargetOutDir_Help[] =
     "\n"
     "  This is primarily useful for setting up arguments for calling\n"
     "  scripts. If you are passing this to a script, you will want to pass it\n"
-    "  through to_build_path() (see \"gn help to_build_path\") to convert it\n"
+    "  through rebase_path() (see \"gn help rebase_path\") to convert it\n"
     "  to be relative to the build directory.\n"
     "\n"
     "  See also \"gn help root_out_dir\".\n"
@@ -233,7 +234,8 @@ const char kTargetOutDir_Help[] =
     "\n"
     "  custom(\"myscript\") {\n"
     "    # Pass the output dir to the script.\n"
-    "    args = [ \"-o\", to_build_path(target_out_dir) ]\n"
+    "    args = [ \"-o\", rebase_path(target_out_dir, \".\", root_build_dir) ]"
+    "\n"
     "  }\n";
 
 // Target variables ------------------------------------------------------------

@@ -585,7 +585,7 @@ Value RunFunction(Scope* scope,
   FunctionInfoMap::const_iterator found_function =
       function_map.find(name.value());
   if (found_function == function_map.end()) {
-    // No build-in function matching this, check for a template.
+    // No built-in function matching this, check for a template.
     const FunctionCallNode* rule =
         scope->GetTemplate(function->function().value().as_string());
     if (rule) {

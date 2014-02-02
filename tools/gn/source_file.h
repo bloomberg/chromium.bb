@@ -28,7 +28,7 @@ class SourceFile {
   bool is_null() const { return value_.empty(); }
   const std::string& value() const { return value_; }
 
-  // Returns everythign after the last slash.
+  // Returns everything after the last slash.
   std::string GetName() const;
   SourceDir GetDir() const;
 
