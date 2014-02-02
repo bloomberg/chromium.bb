@@ -28,6 +28,8 @@ import unittest_util
 
 _ISOLATE_FILE_PATHS = {
     'base_unittests': 'base/base_unittests.isolate',
+    'blink_heap_unittests':
+      'third_party/WebKit/Source/heap/blink_heap_unittests.isolate',
     'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
     'cc_perftests': 'cc/cc_perftests.isolate',
     'components_unittests': 'components/components_unittests.isolate',
