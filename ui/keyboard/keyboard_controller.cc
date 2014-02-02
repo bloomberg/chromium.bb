@@ -14,6 +14,8 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -26,6 +28,13 @@
 namespace {
 
 const int kHideKeyboardDelayMs = 100;
+
+// The virtual keyboard show/hide animation duration.
+const int kAnimationDurationMs = 200;
+
+// The opacity of virtual keyboard container when show animation starts or
+// hide animation finishes.
+const float kAnimationStartOrAfterHideOpacity = 0.2f;
 
 gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds) {
   const float kKeyboardHeightRatio =
@@ -117,6 +126,50 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 }  // namespace
 
 namespace keyboard {
+
+// Observer for both keyboard show and hide animations. It should be owned by
+// KeyboardController.
+class CallbackAnimationObserver : public ui::LayerAnimationObserver {
+ public:
+  CallbackAnimationObserver(ui::LayerAnimator* animator,
+                            base::Callback<void(void)> callback);
+  virtual ~CallbackAnimationObserver();
+
+ private:
+  // Overridden from ui::LayerAnimationObserver:
+  virtual void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) OVERRIDE;
+  virtual void OnLayerAnimationAborted(
+      ui::LayerAnimationSequence* seq) OVERRIDE;
+  virtual void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* seq) OVERRIDE {}
+
+  ui::LayerAnimator* animator_;
+  base::Callback<void(void)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
+};
+
+CallbackAnimationObserver::CallbackAnimationObserver(
+    ui::LayerAnimator* animator, base::Callback<void(void)> callback)
+    : animator_(animator), callback_(callback) {
+}
+
+CallbackAnimationObserver::~CallbackAnimationObserver() {
+  animator_->RemoveObserver(this);
+}
+
+void CallbackAnimationObserver::OnLayerAnimationEnded(
+    ui::LayerAnimationSequence* seq) {
+  if (animator_->is_animating())
+    return;
+  animator_->RemoveObserver(this);
+  callback_.Run();
+}
+
+void CallbackAnimationObserver::OnLayerAnimationAborted(
+    ui::LayerAnimationSequence* seq) {
+  animator_->RemoveObserver(this);
+}
 
 // LayoutManager for the virtual keyboard container.  Manages a single window
 // (the virtual keyboard) and keeps it positioned at the bottom of the
@@ -218,7 +271,21 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
   NotifyKeyboardBoundsChanging(gfx::Rect());
 
-  proxy_->HideKeyboardContainer(container_.get());
+  ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
+  animation_observer_.reset(new CallbackAnimationObserver(
+      container_animator,
+      base::Bind(&KeyboardController::HideAnimationFinished,
+                 base::Unretained(this))));
+  container_animator->AddObserver(animation_observer_.get());
+
+  ui::ScopedLayerAnimationSettings settings(container_animator);
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  gfx::Transform transform;
+  transform.Translate(0, proxy_->GetKeyboardWindow()->bounds().height());
+  container_->SetTransform(transform);
+  container_->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
 }
 
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
@@ -314,17 +381,61 @@ void KeyboardController::OnShowImeIfNeeded() {
   // point, it may in the process of hiding. We still need to show keyboard
   // container in this case.
   if (container_->IsVisible() &&
-      !container_->layer()->GetAnimator()->is_animating()) {
+      !container_->layer()->GetAnimator()->is_animating())
     return;
+
+  ShowKeyboard();
+}
+
+void KeyboardController::ShowKeyboard() {
+  ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
+
+  // If the container is not animating, makes sure the position and opacity
+  // are at begin states for animation.
+  if (!container_animator->is_animating()) {
+    gfx::Transform transform;
+    transform.Translate(0, proxy_->GetKeyboardWindow()->bounds().height());
+    container_->SetTransform(transform);
+    container_->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
   }
 
-  NotifyKeyboardBoundsChanging(container_->children()[0]->bounds());
+  container_animator->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation_observer_.reset(new CallbackAnimationObserver(
+      container_animator,
+      base::Bind(&KeyboardController::ShowAnimationFinished,
+                 base::Unretained(this))));
+  container_animator->AddObserver(animation_observer_.get());
+
+  {
+    // Scope the following animation settings as we don't want to animate
+    // visibility change that triggered by a call to the base class function
+    // ShowKeyboardContainer with these settings. The container should become
+    // visible immediately.
+    ui::ScopedLayerAnimationSettings settings(container_animator);
+    settings.SetTweenType(gfx::Tween::EASE_IN);
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+    container_->SetTransform(gfx::Transform());
+    container_->layer()->SetOpacity(1.0);
+  }
 
   proxy_->ShowKeyboardContainer(container_.get());
 }
 
 bool KeyboardController::WillHideKeyboard() const {
   return weak_factory_.HasWeakPtrs();
+}
+
+void KeyboardController::ShowAnimationFinished() {
+  // Notify observers after animation finished to prevent reveal desktop
+  // background during animation.
+  NotifyKeyboardBoundsChanging(proxy_->GetKeyboardWindow()->bounds());
+  proxy_->EnsureCaretInWorkArea();
+}
+
+void KeyboardController::HideAnimationFinished() {
+  proxy_->HideKeyboardContainer(container_.get());
 }
 
 }  // namespace keyboard

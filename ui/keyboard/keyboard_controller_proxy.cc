@@ -184,6 +184,9 @@ void KeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   }
 }
 
+void KeyboardControllerProxy::EnsureCaretInWorkArea() {
+}
+
 void KeyboardControllerProxy::SetupWebContents(content::WebContents* contents) {
 }
 

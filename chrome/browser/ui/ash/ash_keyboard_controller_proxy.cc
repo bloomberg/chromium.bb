@@ -38,13 +38,6 @@ namespace {
 
 const char* kVirtualKeyboardExtensionID = "mppnpdlheglhdfmldimlhpnegondlapf";
 
-// The virtual keyboard show/hide animation duration.
-const int kAnimationDurationMs = 200;
-
-// The opacity of virtual keyboard container when show animation starts or
-// hide animation finishes.
-const float kAnimationStartOrAfterHideOpacity = 0.2f;
-
 Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
   switch (type) {
     case ui::TEXT_INPUT_TYPE_NONE:
@@ -79,8 +72,7 @@ Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
 
 }  // namespace
 
-AshKeyboardControllerProxy::AshKeyboardControllerProxy()
-  : animation_window_(NULL) {}
+AshKeyboardControllerProxy::AshKeyboardControllerProxy() {}
 
 AshKeyboardControllerProxy::~AshKeyboardControllerProxy() {}
 
@@ -155,81 +147,18 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
   if (container->GetRootWindow() != ash::Shell::GetPrimaryRootWindow())
     NOTIMPLEMENTED();
 
-  ui::LayerAnimator* container_animator = container->layer()->GetAnimator();
-  // If the container is not animating, makes sure the position and opacity
-  // are at begin states for animation.
-  if (!container_animator->is_animating()) {
-    gfx::Transform transform;
-    transform.Translate(0, GetKeyboardWindow()->bounds().height());
-    container->SetTransform(transform);
-    container->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
-  }
-
-  container_animator->set_preemption_strategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-  {
-    // Scope the following animation settings as we don't want to animate
-    // visibility change that triggered by a call to the base class function
-    // ShowKeyboardContainer with these settings. The container should become
-    // visible immediately.
-    ui::ScopedLayerAnimationSettings settings(container_animator);
-    settings.SetTweenType(gfx::Tween::EASE_IN);
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
-    container->SetTransform(gfx::Transform());
-    container->layer()->SetOpacity(1.0);
-  }
-
-  // TODO(bshe): Add animation observer and do the workspace resizing after
-  // animation finished.
   KeyboardControllerProxy::ShowKeyboardContainer(container);
-  // GetTextInputClient may return NULL when keyboard-usability-experiment flag
-  // is set.
+}
+
+void AshKeyboardControllerProxy::EnsureCaretInWorkArea() {
+  // GetTextInputClient may return NULL when keyboard-usability-experiment
+  // flag is set.
   if (GetInputMethod()->GetTextInputClient()) {
     gfx::Rect showing_area =
         ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
     GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(showing_area);
   }
 }
-
-void AshKeyboardControllerProxy::HideKeyboardContainer(
-    aura::Window* container) {
-  // The following animation settings should persist within this function scope.
-  // Otherwise, a call to base class function HideKeyboardContainer will hide
-  // the container immediately.
-  ui::LayerAnimator* container_animator = container->layer()->GetAnimator();
-  container_animator->AddObserver(this);
-  animation_window_ = container;
-  ui::ScopedLayerAnimationSettings settings(container_animator);
-  settings.SetTweenType(gfx::Tween::EASE_OUT);
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
-  gfx::Transform transform;
-  transform.Translate(0, GetKeyboardWindow()->bounds().height());
-  container->SetTransform(transform);
-  container->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
-}
-
-void AshKeyboardControllerProxy::OnLayerAnimationEnded(
-    ui::LayerAnimationSequence* sequence) {
-  if (!animation_window_)
-    return;
-  ui::LayerAnimator* animator = animation_window_->layer()->GetAnimator();
-  if (!animator->is_animating()) {
-    KeyboardControllerProxy::HideKeyboardContainer(animation_window_);
-    animator->RemoveObserver(this);
-    animation_window_ = NULL;
-  }
-};
-
-void AshKeyboardControllerProxy::OnLayerAnimationAborted(
-    ui::LayerAnimationSequence* sequence) {
-  if (!animation_window_)
-    return;
-  animation_window_->layer()->GetAnimator()->RemoveObserver(this);
-  animation_window_ = NULL;
-};
 
 void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   // TODO(bshe): Need to check the affected window's profile once multi-profile

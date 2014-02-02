@@ -74,6 +74,10 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // type the of focused input box.
   virtual void SetUpdateInputType(ui::TextInputType type);
 
+  // Ensures caret in current work area (not occluded by virtual keyboard
+  // window).
+  virtual void EnsureCaretInWorkArea();
+
  protected:
   // Gets the BrowserContext to use for creating the WebContents hosting the
   // keyboard.

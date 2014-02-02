@@ -27,6 +27,7 @@ class TextInputClient;
 
 namespace keyboard {
 
+class CallbackAnimationObserver;
 class KeyboardControllerObserver;
 class KeyboardControllerProxy;
 class KeyboardLayoutManager;
@@ -99,11 +100,23 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
       const ui::InputMethod* input_method) OVERRIDE;
   virtual void OnShowImeIfNeeded() OVERRIDE;
 
+  // Show virtual keyboard immediately with animation.
+  void ShowKeyboard();
+
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;
 
+  // Called when show and hide animation finished successfully. If the animation
+  // is aborted, it won't be called.
+  void ShowAnimationFinished();
+  void HideAnimationFinished();
+
   scoped_ptr<KeyboardControllerProxy> proxy_;
   scoped_ptr<aura::Window> container_;
+  // CallbackAnimationObserver should destructed before container_ because it
+  // uses container_'s animator.
+  scoped_ptr<CallbackAnimationObserver> animation_observer_;
+
   ui::InputMethod* input_method_;
   bool keyboard_visible_;
   bool lock_keyboard_;

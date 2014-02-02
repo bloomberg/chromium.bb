@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 
 class ExtensionFunctionDispatcher;
@@ -32,8 +31,7 @@ class InputMethod;
 class AshKeyboardControllerProxy
     : public keyboard::KeyboardControllerProxy,
       public content::WebContentsObserver,
-      public ExtensionFunctionDispatcher::Delegate,
-      public ui::LayerAnimationObserver {
+      public ExtensionFunctionDispatcher::Delegate {
  public:
   AshKeyboardControllerProxy();
   virtual ~AshKeyboardControllerProxy();
@@ -51,7 +49,7 @@ class AshKeyboardControllerProxy
       const content::MediaResponseCallback& callback) OVERRIDE;
   virtual void SetupWebContents(content::WebContents* contents) OVERRIDE;
   virtual void ShowKeyboardContainer(aura::Window* container) OVERRIDE;
-  virtual void HideKeyboardContainer(aura::Window* container) OVERRIDE;
+  virtual void EnsureCaretInWorkArea() OVERRIDE;
 
   // The overridden implementation dispatches
   // chrome.virtualKeyboardPrivate.onTextInputBoxFocused event to extension to
@@ -70,17 +68,7 @@ class AshKeyboardControllerProxy
   // content::WebContentsObserver overrides
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // ui::LayerAnimationObserver overrides
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE;
-  virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
-
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
-  // The keyboard container window for animation.
-  aura::Window* animation_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerProxy);
 };
