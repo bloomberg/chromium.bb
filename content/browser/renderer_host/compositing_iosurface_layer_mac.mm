@@ -134,8 +134,7 @@
   // current window size and block until a frame of the right size comes in.
   // This makes the window content not lag behind the resize (at the cost of
   // blocking on the browser's main thread).
-  if (cached_view->render_widget_host_ &&
-      !cached_view->render_widget_host_->is_hidden()) {
+  if (cached_view->render_widget_host_) {
     cached_view->about_to_validate_and_paint_ = true;
     (void)cached_view->render_widget_host_->GetBackingStore(true);
     cached_view->about_to_validate_and_paint_ = false;

@@ -90,8 +90,8 @@
 
 - (void)cr_setWantsLayer:(BOOL)wantsLayer
            withSquashing:(BOOL)squashing {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCoreAnimation))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseCoreAnimation))
     return;
   [self setWantsLayer:wantsLayer];
 
