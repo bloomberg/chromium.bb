@@ -53,21 +53,9 @@ weston_SOURCES =					\
 	src/filter.c					\
 	src/filter.h					\
 	src/screenshooter.c				\
-	protocol/screenshooter-protocol.c		\
-	protocol/screenshooter-server-protocol.h	\
 	src/clipboard.c					\
-	protocol/text-cursor-position-protocol.c	\
-	protocol/text-cursor-position-server-protocol.h	\
 	src/zoom.c					\
 	src/text-backend.c				\
-	protocol/text-protocol.c			\
-	protocol/text-server-protocol.h			\
-	protocol/input-method-protocol.c		\
-	protocol/input-method-server-protocol.h		\
-	protocol/workspaces-protocol.c			\
-	protocol/workspaces-server-protocol.h		\
-	protocol/scaler-protocol.c			\
-	protocol/scaler-server-protocol.h		\
 	src/bindings.c					\
 	src/animation.c					\
 	src/noop-renderer.c				\
@@ -77,6 +65,22 @@ weston_SOURCES =					\
 	shared/matrix.h					\
 	shared/zalloc.h					\
 	src/weston-egl-ext.h
+
+nodist_weston_SOURCES =					\
+	protocol/screenshooter-protocol.c		\
+	protocol/screenshooter-server-protocol.h	\
+	protocol/text-cursor-position-protocol.c	\
+	protocol/text-cursor-position-server-protocol.h	\
+	protocol/text-protocol.c			\
+	protocol/text-server-protocol.h			\
+	protocol/input-method-protocol.c		\
+	protocol/input-method-server-protocol.h		\
+	protocol/workspaces-protocol.c			\
+	protocol/workspaces-server-protocol.h		\
+	protocol/scaler-protocol.c			\
+	protocol/scaler-server-protocol.h
+
+BUILT_SOURCES += $(nodist_weston_SOURCES)
 
 # Track this dependency explicitly instead of using BUILT_SOURCES.  We
 # add BUILT_SOURCES to CLEANFILES, but we want to keep git-version.h
@@ -334,20 +338,6 @@ spring_tool_SOURCES =				\
 	shared/matrix.h				\
 	src/compositor.h
 
-BUILT_SOURCES +=					\
-	protocol/screenshooter-server-protocol.h	\
-	protocol/screenshooter-protocol.c		\
-	protocol/text-cursor-position-server-protocol.h	\
-	protocol/text-cursor-position-protocol.c	\
-	protocol/text-protocol.c			\
-	protocol/text-server-protocol.h			\
-	protocol/input-method-protocol.c		\
-	protocol/input-method-server-protocol.h		\
-	protocol/workspaces-server-protocol.h		\
-	protocol/workspaces-protocol.c			\
-	protocol/scaler-server-protocol.h		\
-	protocol/scaler-protocol.c
-
 if BUILD_CLIENTS
 
 bin_PROGRAMS += weston-terminal weston-info
@@ -419,7 +409,9 @@ noinst_LTLIBRARIES += libtoytoolkit.la
 
 libtoytoolkit_la_SOURCES =				\
 	clients/window.c				\
-	clients/window.h				\
+	clients/window.h
+
+nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/scaler-protocol.c			\
@@ -428,6 +420,8 @@ libtoytoolkit_la_SOURCES =				\
 	protocol/workspaces-client-protocol.h		\
 	protocol/xdg-shell-protocol.c			\
 	protocol/xdg-shell-client-protocol.h
+
+BUILT_SOURCES += $(nodist_libtoytoolkit_la_SOURCES)
 
 
 libtoytoolkit_la_LIBADD =			\
@@ -442,10 +436,11 @@ weston_flower_CFLAGS = $(CLIENT_CFLAGS)
 
 weston_screenshooter_SOURCES =				\
 	clients/screenshot.c				\
-	protocol/screenshooter-protocol.c		\
-	protocol/screenshooter-client-protocol.h	\
 	shared/os-compatibility.c			\
 	shared/os-compatibility.h
+nodist_weston_screenshooter_SOURCES =			\
+	protocol/screenshooter-protocol.c		\
+	protocol/screenshooter-client-protocol.h
 weston_screenshooter_LDADD = $(CLIENT_LIBS)
 weston_screenshooter_CFLAGS = $(CLIENT_CFLAGS)
 
@@ -523,16 +518,16 @@ endif
 
 if HAVE_PANGO
 demo_clients += weston-editor
-weston_editor_SOURCES =				\
-	clients/editor.c			\
+weston_editor_SOURCES = clients/editor.c
+nodist_weston_editor_SOURCES =			\
 	protocol/text-protocol.c		\
 	protocol/text-client-protocol.h
 weston_editor_LDADD = libtoytoolkit.la $(PANGO_LIBS)
 weston_editor_CFLAGS = $(CLIENT_CFLAGS) $(PANGO_CFLAGS)
 endif
 
-weston_keyboard_SOURCES =				\
-	clients/keyboard.c				\
+weston_keyboard_SOURCES = clients/keyboard.c
+nodist_weston_keyboard_SOURCES =			\
 	protocol/desktop-shell-client-protocol.h	\
 	protocol/desktop-shell-protocol.c		\
 	protocol/input-method-protocol.c		\
@@ -540,8 +535,8 @@ weston_keyboard_SOURCES =				\
 weston_keyboard_LDADD = libtoytoolkit.la
 weston_keyboard_CFLAGS = $(CLIENT_CFLAGS)
 
-weston_simple_im_SOURCES =			\
-	clients/weston-simple-im.c		\
+weston_simple_im_SOURCES = clients/weston-simple-im.c
+nodist_weston_simple_im_SOURCES =		\
 	protocol/input-method-protocol.c	\
 	protocol/input-method-client-protocol.h
 weston_simple_im_LDADD = $(CLIENT_LIBS)
@@ -553,8 +548,8 @@ weston_info_SOURCES =				\
 	shared/os-compatibility.h
 weston_info_LDADD = $(WESTON_INFO_LIBS)
 
-weston_desktop_shell_SOURCES =				\
-	clients/desktop-shell.c				\
+weston_desktop_shell_SOURCES = clients/desktop-shell.c
+nodist_weston_desktop_shell_SOURCES =			\
 	protocol/desktop-shell-client-protocol.h	\
 	protocol/desktop-shell-protocol.c
 weston_desktop_shell_LDADD = libtoytoolkit.la
@@ -571,12 +566,14 @@ libexec_PROGRAMS += weston-screensaver
 weston_screensaver_SOURCES =				\
 	clients/wscreensaver.c				\
 	clients/wscreensaver.h				\
-	protocol/desktop-shell-client-protocol.h	\
-	protocol/desktop-shell-protocol.c		\
 	clients/wscreensaver-glue.c			\
 	clients/wscreensaver-glue.h			\
 	clients/glmatrix.c				\
 	clients/matrix3.xpm
+nodist_weston_screensaver_SOURCES =			\
+	protocol/desktop-shell-client-protocol.h	\
+	protocol/desktop-shell-protocol.c
+
 weston_screensaver_LDADD = libtoytoolkit.la $(GLU_LIBS)
 weston_screensaver_CFLAGS = $(GLU_CFLAGS) $(CLIENT_CFLAGS)
 
@@ -587,8 +584,8 @@ endif
 endif
 
 BUILT_SOURCES +=					\
-	protocol/screenshooter-client-protocol.h	\
 	protocol/screenshooter-protocol.c		\
+	protocol/screenshooter-client-protocol.h	\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-protocol.c			\
@@ -654,17 +651,14 @@ desktop_shell_la_SOURCES =				\
 	desktop-shell/shell.h				\
 	desktop-shell/shell.c				\
 	desktop-shell/exposay.c				\
-	desktop-shell/input-panel.c			\
+	desktop-shell/input-panel.c
+nodist_desktop_shell_la_SOURCES =			\
 	protocol/desktop-shell-protocol.c		\
 	protocol/desktop-shell-server-protocol.h	\
 	protocol/xdg-shell-protocol.c			\
 	protocol/xdg-shell-server-protocol.h
 
-BUILT_SOURCES +=					\
-	protocol/desktop-shell-protocol.c		\
-	protocol/desktop-shell-server-protocol.h	\
-	protocol/xdg-shell-protocol.c			\
-	protocol/xdg-shell-server-protocol.h
+BUILT_SOURCES += $(nodist_desktop_shell_la_SOURCES)
 endif
 
 
@@ -698,14 +692,13 @@ xwayland_la_SOURCES =				\
 	xwayland/selection.c			\
 	xwayland/dnd.c				\
 	xwayland/launcher.c			\
-	protocol/xserver-protocol.c		\
-	protocol/xserver-server-protocol.h	\
 	xwayland/hash.c				\
 	xwayland/hash.h
-
-BUILT_SOURCES +=				\
+nodist_xwayland_la_SOURCES =			\
 	protocol/xserver-protocol.c		\
 	protocol/xserver-server-protocol.h
+
+BUILT_SOURCES += $(nodist_xwayland_la_SOURCES)
 endif
 
 
@@ -811,8 +804,8 @@ surface_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_test_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 weston_test_la_LDFLAGS = $(test_module_ldflags)
 weston_test_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
-weston_test_la_SOURCES =			\
-	tests/weston-test.c			\
+weston_test_la_SOURCES = tests/weston-test.c
+nodist_weston_test_la_SOURCES =			\
 	protocol/wayland-test-protocol.c	\
 	protocol/wayland-test-server-protocol.h
 
@@ -837,7 +830,8 @@ vertex_clip_test_LDADD = libtest-runner.la -lm -lrt
 
 libtest_client_la_SOURCES =			\
 	tests/weston-test-client-helper.c	\
-	tests/weston-test-client-helper.h	\
+	tests/weston-test-client-helper.h
+nodist_libtest_client_la_SOURCES =		\
 	protocol/wayland-test-protocol.c	\
 	protocol/wayland-test-client-protocol.h
 libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
@@ -854,7 +848,10 @@ event_weston_LDADD = libtest-client.la
 button_weston_SOURCES = tests/button-test.c
 button_weston_LDADD = libtest-client.la
 
-text_weston_SOURCES = tests/text-test.c protocol/text-protocol.c
+text_weston_SOURCES = tests/text-test.c
+nodist_text_weston_SOURCES =			\
+	protocol/text-protocol.c		\
+	protocol/text-client-protocol.h
 text_weston_LDADD = libtest-client.la
 
 subsurface_weston_SOURCES = tests/subsurface-test.c
