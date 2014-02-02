@@ -42,17 +42,21 @@ bool JavaBitmap::RegisterJavaBitmap(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-static ScopedJavaLocalRef<jobject> CreateJavaBitmap(const gfx::Size& size) {
+static ScopedJavaLocalRef<jobject> CreateJavaBitmap(const gfx::Size& size,
+                                                    bool is565_config) {
   return Java_BitmapHelper_createBitmap(AttachCurrentThread(),
-      size.width(), size.height());
+      size.width(), size.height(), is565_config);
 }
 
 ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   DCHECK(skbitmap);
-  DCHECK_EQ(skbitmap->bytesPerPixel(), 4);
-
+  SkBitmap::Config config = skbitmap->getConfig();
+  DCHECK((config == SkBitmap::kRGB_565_Config) ||
+         (config == SkBitmap::kARGB_8888_Config));
+  // If the Config is not RGB565 it is default i.e ARGB8888
   ScopedJavaLocalRef<jobject> jbitmap =
-      CreateJavaBitmap(gfx::Size(skbitmap->width(), skbitmap->height()));
+      CreateJavaBitmap(gfx::Size(skbitmap->width(), skbitmap->height()),
+                       (config == SkBitmap::kRGB_565_Config));
   SkAutoLockPixels src_lock(*skbitmap);
   JavaBitmap dst_lock(jbitmap.obj());
   void* src_pixels = skbitmap->getPixels();

@@ -17,7 +17,12 @@ import org.chromium.base.JNINamespace;
 @JNINamespace("gfx")
 public class BitmapHelper {
     @CalledByNative
-    public static Bitmap createBitmap(int width, int height) {
+    private static Bitmap createBitmap(int width,
+                                      int height,
+                                      boolean is565Config) {
+        if (is565Config) {
+            return Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        }
         return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     }
 
