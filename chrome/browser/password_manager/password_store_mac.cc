@@ -997,11 +997,13 @@ void PasswordStoreMac::GetLoginsImpl(
            database_forms.begin();
        db_form != database_forms.end();
        ++db_form) {
+    // TODO(vabr): We should not be getting different schemes here.
+    // http://crbug.com/340112
+    if (form.scheme != (*db_form)->scheme)
+      continue;  // Forms with different schemes never match.
     const std::string& original_singon_realm((*db_form)->original_signon_realm);
-    if (!original_singon_realm.empty()) {
+    if (!original_singon_realm.empty())
       realm_set.insert(original_singon_realm);
-      CHECK_EQ(form.scheme, (*db_form)->scheme);
-    }
   }
   std::vector<PasswordForm*> keychain_forms;
   for (std::set<std::string>::const_iterator realm = realm_set.begin();
