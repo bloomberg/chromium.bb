@@ -51,6 +51,8 @@ deps = {
         Var('git_url') + '/external/font-compression-reference.git@dfc5a9f2151a7c88914c236c7db8fa119fee249c',
     'src/third_party/cacheinvalidation/src':
         Var('git_url') + '/external/google-cache-invalidation-api/src.git@c13bf5d713f7a892613a097ea8f5c5d46fe502cb',
+    'src/third_party/clang_format/script':
+        Var('git_url') + '/chromium/llvm-project/cfe/tools/clang-format.git@436d02ff288c8d4a7e5fdaff5c46d4632ed88908',
     'src/third_party/cld_2/src':
         Var('git_url') + '/external/cld2.git@b17c3c025db379fbeb56c4215bc1eb8737576f4c',
     'src/third_party/ffmpeg':
