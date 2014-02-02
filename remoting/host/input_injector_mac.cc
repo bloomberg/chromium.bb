@@ -26,6 +26,15 @@ namespace remoting {
 
 namespace {
 
+void SetOrClearBit(uint64_t &value, uint64_t bit, bool set_bit) {
+  value = set_bit ? (value | bit) : (value & ~bit);
+}
+
+// This value is not defined. Give it the obvious name so that if it is ever
+// added there will be a handy compilation error to remind us to remove this
+// definition.
+const int kVK_RightCommand = 0x36;
+
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
@@ -74,6 +83,8 @@ class InputInjectorMac : public InputInjector {
     webrtc::DesktopVector mouse_pos_;
     uint32 mouse_button_state_;
     scoped_ptr<Clipboard> clipboard_;
+    CGEventFlags left_modifiers_;
+    CGEventFlags right_modifiers_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -113,7 +124,9 @@ InputInjectorMac::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       mouse_button_state_(0),
-      clipboard_(Clipboard::Create()) {
+      clipboard_(Clipboard::Create()),
+      left_modifiers_(0),
+      right_modifiers_(0) {
   // Ensure that local hardware events are not suppressed after injecting
   // input events.  This allows LocalInputMonitor to detect if the local mouse
   // is being moved whilst a remote user is connected.
@@ -154,14 +167,36 @@ void InputInjectorMac::Core::InjectKeyEvent(const KeyEvent& event) {
   if (keycode == key_converter->InvalidNativeKeycode())
     return;
 
+  // If this is a modifier key, remember its new state so that it can be
+  // correctly applied to subsequent events.
+  if (keycode == kVK_Command) {
+    SetOrClearBit(left_modifiers_, kCGEventFlagMaskCommand, event.pressed());
+  } else if (keycode == kVK_Shift) {
+    SetOrClearBit(left_modifiers_, kCGEventFlagMaskShift, event.pressed());
+  } else if (keycode == kVK_Control) {
+    SetOrClearBit(left_modifiers_, kCGEventFlagMaskControl, event.pressed());
+  } else if (keycode == kVK_Option) {
+    SetOrClearBit(left_modifiers_, kCGEventFlagMaskAlternate, event.pressed());
+  } else if (keycode == kVK_RightCommand) {
+    SetOrClearBit(right_modifiers_, kCGEventFlagMaskCommand, event.pressed());
+  } else if (keycode == kVK_RightShift) {
+    SetOrClearBit(right_modifiers_, kCGEventFlagMaskShift, event.pressed());
+  } else if (keycode == kVK_RightControl) {
+    SetOrClearBit(right_modifiers_, kCGEventFlagMaskControl, event.pressed());
+  } else if (keycode == kVK_RightOption) {
+    SetOrClearBit(right_modifiers_, kCGEventFlagMaskAlternate, event.pressed());
+  }
+
   base::ScopedCFTypeRef<CGEventRef> eventRef(
       CGEventCreateKeyboardEvent(NULL, keycode, event.pressed()));
 
   if (eventRef) {
-    // We only need to manually set CapsLock: Mac ignores NumLock.
-    // Modifier keys work correctly already via press/release event injection.
+    // In addition to the modifier keys pressed right now, we also need to set
+    // AlphaShift if caps lock was active at the client (Mac ignores NumLock).
+    uint64_t flags = left_modifiers_ | right_modifiers_;
     if (event.lock_states() & protocol::KeyEvent::LOCK_STATES_CAPSLOCK)
-      CGEventSetFlags(eventRef, kCGEventFlagMaskAlphaShift);
+      flags |= kCGEventFlagMaskAlphaShift;
+    CGEventSetFlags(eventRef, flags);
 
     // Post the event to the current session.
     CGEventPost(kCGSessionEventTap, eventRef);
