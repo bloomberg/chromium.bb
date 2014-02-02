@@ -67,6 +67,8 @@ public:
             append(*it);
     }
     void clear() { m_data.clear(); }
+    void reserveInitialCapacity(size_t size) { m_data.reserveInitialCapacity(size); }
+    void shrinkToFit() { m_data.shrinkToFit(); }
     bool isEmpty() const { return !m_data.size(); }
     unsigned size() const { return m_data.size(); }
 

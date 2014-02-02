@@ -228,12 +228,18 @@ bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream* result
     if (d.isEmpty())
         return false;
 
+    // The string length is typically a minor overestimate of eventual byte stream size, so it avoids us a lot of reallocs.
+    result->reserveInitialCapacity(d.length());
+
     SVGPathByteStreamBuilder* builder = globalSVGPathByteStreamBuilder(result);
 
     OwnPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
     SVGPathParser* parser = globalSVGPathParser(source.get(), builder);
     bool ok = parser->parsePathDataFromSource(parsingMode);
     parser->cleanup();
+
+    result->shrinkToFit();
+
     return ok;
 }
 
