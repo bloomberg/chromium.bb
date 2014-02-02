@@ -163,6 +163,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 
     # http://crbug.com/333508
+    'third_party/clang_format/script': [
+        'UNKNOWN',
+    ],
     'third_party/clang_format/scripts': [
         'UNKNOWN',
     ],
