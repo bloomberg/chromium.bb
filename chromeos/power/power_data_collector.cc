@@ -44,13 +44,20 @@ PowerDataCollector* PowerDataCollector::Get() {
 
 void PowerDataCollector::PowerChanged(
     const power_manager::PowerSupplyProperties& prop) {
-  PowerSupplySnapshot snapshot;
-  snapshot.time = base::TimeTicks::Now();
-  snapshot.external_power = (prop.external_power() !=
+  PowerSupplySample sample;
+  sample.time = base::Time::Now();
+  sample.external_power = (prop.external_power() !=
       power_manager::PowerSupplyProperties::DISCONNECTED);
-  snapshot.battery_percent = prop.battery_percent();
-  snapshot.battery_discharge_rate = prop.battery_discharge_rate();
-  AddSnapshot(snapshot);
+  sample.battery_percent = prop.battery_percent();
+  sample.battery_discharge_rate = prop.battery_discharge_rate();
+  AddSample(&power_supply_data_, sample);
+}
+
+void PowerDataCollector::SystemResumed(const base::TimeDelta& sleep_duration) {
+  SystemResumedSample sample;
+  sample.time = base::Time::Now();
+  sample.sleep_duration = sleep_duration;
+  AddSample(&system_resumed_data_, sample);
 }
 
 PowerDataCollector::PowerDataCollector() {
@@ -63,24 +70,13 @@ PowerDataCollector::~PowerDataCollector() {
   dbus_manager->GetPowerManagerClient()->RemoveObserver(this);
 }
 
-void PowerDataCollector::AddSnapshot(const PowerSupplySnapshot& snapshot) {
-  while (!power_supply_data_.empty()) {
-    const PowerSupplySnapshot& first = power_supply_data_.front();
-    if (snapshot.time - first.time >
-        base::TimeDelta::FromSeconds(kSampleTimeLimitSec)) {
-      power_supply_data_.pop_front();
-    } else {
-      break;
-    }
-  }
-  power_supply_data_.push_back(snapshot);
+PowerDataCollector::PowerSupplySample::PowerSupplySample()
+    : external_power(false),
+      battery_percent(0.0),
+      battery_discharge_rate(0.0) {
 }
 
-PowerDataCollector::PowerSupplySnapshot::PowerSupplySnapshot()
-    : time(base::TimeTicks::Now()),
-      external_power(false),
-      battery_percent(0),
-      battery_discharge_rate(0.0) {
+PowerDataCollector::SystemResumedSample::SystemResumedSample() {
 }
 
 }  // namespace chromeos

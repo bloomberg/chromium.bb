@@ -54,25 +54,36 @@ void PowerMessageHandler::RegisterMessages() {
 }
 
 void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
-  const std::deque<PowerDataCollector::PowerSupplySnapshot>& power_supply =
+  const std::deque<PowerDataCollector::PowerSupplySample>& power_supply =
       PowerDataCollector::Get()->power_supply_data();
-  base::ListValue data;
-
-  for (unsigned int i = 0; i < power_supply.size(); ++i) {
-    const PowerDataCollector::PowerSupplySnapshot& snapshot = power_supply[i];
-    base::Time time = base::Time::Now() -
-        (base::TimeTicks::Now() - snapshot.time);
+  base::ListValue js_power_supply_data;
+  for (size_t i = 0; i < power_supply.size(); ++i) {
+    const PowerDataCollector::PowerSupplySample& sample = power_supply[i];
     scoped_ptr<base::DictionaryValue> element(new base::DictionaryValue);
-    element->SetDouble("battery_percent", snapshot.battery_percent);
-    element->SetDouble("battery_discharge_rate",
-                       snapshot.battery_discharge_rate);
-    element->SetBoolean("external_power", snapshot.external_power);
-    element->SetDouble("time", time.ToJsTime());
+    element->SetDouble("batteryPercent", sample.battery_percent);
+    element->SetDouble("batteryDischargeRate", sample.battery_discharge_rate);
+    element->SetBoolean("externalPower", sample.external_power);
+    element->SetDouble("time", sample.time.ToJsTime());
 
-    data.Append(element.release());
+    js_power_supply_data.Append(element.release());
   }
 
-  web_ui()->CallJavascriptFunction(kOnRequestBatteryChargeDataFunction, data);
+  const std::deque<PowerDataCollector::SystemResumedSample>& system_resumed =
+      PowerDataCollector::Get()->system_resumed_data();
+  base::ListValue js_system_resumed_data;
+  for (size_t i = 0; i < system_resumed.size(); ++i) {
+    const PowerDataCollector::SystemResumedSample& sample = system_resumed[i];
+    scoped_ptr<base::DictionaryValue> element(new base::DictionaryValue);
+    element->SetDouble("sleepDuration",
+                       sample.sleep_duration.InMillisecondsF());
+    element->SetDouble("time", sample.time.ToJsTime());
+
+    js_system_resumed_data.Append(element.release());
+  }
+
+  web_ui()->CallJavascriptFunction(kOnRequestBatteryChargeDataFunction,
+                                   js_power_supply_data,
+                                   js_system_resumed_data);
 }
 
 }  // namespace
@@ -94,8 +105,8 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
                            IDS_ABOUT_POWER_NEGATIVE_DISCHARGE_RATE_INFO);
   html->AddLocalizedString("notEnoughDataAvailableYet",
                            IDS_ABOUT_POWER_NOT_ENOUGH_DATA);
-  html->AddLocalizedString("timeAndPlotDataMismatch",
-                           IDS_ABOUT_POWER_TIME_AND_PLOT_DATA_MISMATCH);
+  html->AddLocalizedString("systemSuspended",
+                           IDS_ABOUT_POWER_SYSTEM_SUSPENDED);
   html->SetJsonPath(kStringsJsFile);
 
   html->AddResourcePath("power.css", IDR_ABOUT_POWER_CSS);

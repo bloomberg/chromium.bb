@@ -39,7 +39,7 @@ TEST_F(PowerDataCollectorTest, PowerChanged) {
   prop1.set_external_power(power_manager::PowerSupplyProperties::DISCONNECTED);
   prop1.set_battery_percent(20.00);
   power_data_collector_->PowerChanged(prop1);
-  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data1 =
+  const std::deque<PowerDataCollector::PowerSupplySample>& data1 =
       power_data_collector_->power_supply_data();
   ASSERT_EQ(static_cast<size_t>(1), data1.size());
   EXPECT_DOUBLE_EQ(prop1.battery_percent(), data1[0].battery_percent);
@@ -48,30 +48,41 @@ TEST_F(PowerDataCollectorTest, PowerChanged) {
   prop2.set_external_power(power_manager::PowerSupplyProperties::AC);
   prop2.set_battery_percent(100.00);
   power_data_collector_->PowerChanged(prop2);
-  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data2 =
+  const std::deque<PowerDataCollector::PowerSupplySample>& data2 =
       power_data_collector_->power_supply_data();
   ASSERT_EQ(static_cast<size_t>(2), data2.size());
   EXPECT_DOUBLE_EQ(prop2.battery_percent(), data2[1].battery_percent);
   EXPECT_TRUE(data2[1].external_power);
 }
 
-TEST_F(PowerDataCollectorTest, AddSnapshot) {
-  PowerDataCollector::PowerSupplySnapshot snapshot1, snapshot2;
+TEST_F(PowerDataCollectorTest, SystemResumed) {
+  power_data_collector_->SystemResumed(base::TimeDelta::FromSeconds(10));
+  const std::deque<PowerDataCollector::SystemResumedSample>& data1 =
+      power_data_collector_->system_resumed_data();
+  ASSERT_EQ(static_cast<size_t>(1), data1.size());
+  ASSERT_EQ(static_cast<int64>(10), data1[0].sleep_duration.InSeconds());
 
-  snapshot1.time = base::TimeTicks::FromInternalValue(1000);
-  snapshot2.time = snapshot1.time +
+  power_data_collector_->SystemResumed(base::TimeDelta::FromSeconds(20));
+  const std::deque<PowerDataCollector::SystemResumedSample>& data2 =
+      power_data_collector_->system_resumed_data();
+  ASSERT_EQ(static_cast<size_t>(2), data2.size());
+  ASSERT_EQ(static_cast<int64>(20), data2[1].sleep_duration.InSeconds());
+}
+
+TEST_F(PowerDataCollectorTest, AddSample) {
+  std::deque<PowerDataCollector::PowerSupplySample> sample_deque;
+  PowerDataCollector::PowerSupplySample sample1, sample2;
+  sample1.time = base::Time::FromInternalValue(1000);
+  sample2.time = sample1.time +
       base::TimeDelta::FromSeconds(PowerDataCollector::kSampleTimeLimitSec + 1);
 
-  power_data_collector_->AddSnapshot(snapshot1);
-  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data1 =
-      power_data_collector_->power_supply_data();
-  ASSERT_EQ(static_cast<size_t>(1), data1.size());
+  AddSample(&sample_deque, sample1);
+  ASSERT_EQ(static_cast<size_t>(1), sample_deque.size());
 
-  power_data_collector_->AddSnapshot(snapshot2);
-  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data2 =
-      power_data_collector_->power_supply_data();
-  ASSERT_EQ(static_cast<size_t>(1), data2.size());
-  EXPECT_EQ(snapshot2.time.ToInternalValue(), data2[0].time.ToInternalValue());
+  AddSample(&sample_deque, sample2);
+  ASSERT_EQ(static_cast<size_t>(1), sample_deque.size());
+  EXPECT_EQ(sample2.time.ToInternalValue(),
+            sample_deque[0].time.ToInternalValue());
 }
 
 }  // namespace chromeos

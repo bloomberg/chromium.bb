@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -27,13 +26,15 @@ namespace chromeos {
 // DBusThreadManager which it depends on.
 class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
  public:
-  struct PowerSupplySnapshot {
-    PowerSupplySnapshot();
+  struct PowerSupplySample {
+    PowerSupplySample();
 
-    // Time when the snapshot was captured.
-    base::TimeTicks time;
+    // Time when the sample was captured. We use base::Time instead of
+    // base::TimeTicks because the latter does not advance when the system is
+    // suspended.
+    base::Time time;
 
-    // True if connected to external power at the time of the snapshot.
+    // True if connected to external power at the time of the sample.
     bool external_power;
 
     // The battery charge as a percentage of full charge in range [0.0, 100.00].
@@ -44,8 +45,22 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
     double battery_discharge_rate;
   };
 
-  const std::deque<PowerSupplySnapshot>& power_supply_data() const {
+  struct SystemResumedSample {
+    SystemResumedSample();
+
+    // Time when the system resumed.
+    base::Time time;
+
+    // The duration for which the system was in sleep/suspend state.
+    base::TimeDelta sleep_duration;
+  };
+
+  const std::deque<PowerSupplySample>& power_supply_data() const {
     return power_supply_data_;
+  }
+
+  const std::deque<SystemResumedSample>& system_resumed_data() const {
+    return system_resumed_data_;
   }
 
   // Can be called only after DBusThreadManager is initialized.
@@ -61,26 +76,39 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
   // PowerManagerClient::Observer implementation:
   virtual void PowerChanged(
       const power_manager::PowerSupplyProperties& prop) OVERRIDE;
+  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // Only those power data samples which fall within the last
   // |kSampleTimeLimitSec| are stored in memory.
   static const int kSampleTimeLimitSec;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PowerDataCollectorTest, AddSnapshot);
-
   PowerDataCollector();
 
   virtual ~PowerDataCollector();
 
-  // Adds a snapshot to |power_supply_data_|.
-  // It dumps snapshots |kSampleTimeLimitSec| or more older than |snapshot|.
-  void AddSnapshot(const PowerSupplySnapshot& snapshot);
-
-  std::deque<PowerSupplySnapshot> power_supply_data_;
+  std::deque<PowerSupplySample> power_supply_data_;
+  std::deque<SystemResumedSample> system_resumed_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerDataCollector);
 };
+
+// Adds |sample| to |sample_deque|.
+// It dumps samples |PowerDataCollector::kSampleTimeLimitSec| or more older than
+// |sample|.
+template <typename SampleType>
+void AddSample(std::deque<SampleType>* sample_queue, const SampleType& sample) {
+  while (!sample_queue->empty()) {
+    const SampleType& first = sample_queue->front();
+    if (sample.time - first.time >
+        base::TimeDelta::FromSeconds(PowerDataCollector::kSampleTimeLimitSec)) {
+      sample_queue->pop_front();
+    } else {
+      break;
+    }
+  }
+  sample_queue->push_back(sample);
+}
 
 }  // namespace chromeos
 

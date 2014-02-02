@@ -14736,8 +14736,8 @@ Do you accept?
       <message name="IDS_ABOUT_POWER_NOT_ENOUGH_DATA" desc="String to display when enough plot data is not available">
         Not enough data available yet.
       </message>
-      <message name="IDS_ABOUT_POWER_TIME_AND_PLOT_DATA_MISMATCH" desc="String to display when there is a mismatch between time and plot data">
-        Mismatch in time and plot data.
+      <message name="IDS_ABOUT_POWER_SYSTEM_SUSPENDED" desc="String to display on plots for sleep duration">
+        Suspended
       </message>
     </if>
 

@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
- /**
-  * Plot a line graph of data versus time on a HTML canvas element.
-  *
-  * @param {HTMLCanvasElement} canvas The canvas on which the line graph is
-  *     drawn.
-  * @param {Array.<number>} tData The time (in seconds) in the past when the
-  *     corresponding data in plots was sampled.
-  * @param {Array.<Object>} plots An array of objects with fields 'data' and
-  *     'color'. The field 'data' is an array of samples to be plotted as a
-  *     line graph with 'color'. The elements in the 'data' array are ordered
-  *     corresponding to their sampling time in the argument 'tData'. Also,
-  *     the number of elements in the data array should be the same as in the
-  *     time array 'tData' above.
-  * @param {number} yMin Minimum bound of y-axis
-  * @param {number} yMax Maximum bound of y-axis.
-  * @param {integer} yPrecision An integer value representing the number of
-  *     digits of precision the y-axis data should be printed with.
-  */
+/**
+ * Plot a line graph of data versus time on a HTML canvas element.
+ *
+ * @param {HTMLCanvasElement} canvas The canvas on which the line graph is
+ *     drawn.
+ * @param {Array.<number>} tData The time (in seconds) in the past when the
+ *     corresponding data in plots was sampled.
+ * @param {Array.<{data: Array.<number>, color: string}>} plots An
+ *     array of plots to plot on the canvas. The field 'data' of a plot is an
+ *     array of samples to be plotted as a line graph with color speficied by
+ *     the field 'color'. The elements in the 'data' array are ordered
+ *     corresponding to their sampling time in the argument 'tData'. Also, the
+ *     number of elements in the 'data' array should be the same as in the time
+ *     array 'tData' above.
+ * @param {number} yMin Minimum bound of y-axis
+ * @param {number} yMax Maximum bound of y-axis.
+ * @param {integer} yPrecision An integer value representing the number of
+ *     digits of precision the y-axis data should be printed with.
+ */
 function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
   var textFont = '12px Arial';
   var textHeight = 12;
@@ -47,8 +48,7 @@ function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
 
   for (var count = 0; count < plots.length; count++) {
     if (plots[count].data.length != size) {
-      printErrorText(loadTimeData.getString('timeAndPlotDataMismatch'));
-      return;
+      throw new Error('Mismatch in time and plot data.');
     }
   }
 
@@ -132,13 +132,13 @@ function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
              yOrigin + height + textHeight);
 
     // Draw y-level (horizontal) lines.
-    drawLine(xOrigin, yOrigin + height / 4,
-             xOrigin + width - 1, yOrigin + height / 4,
+    drawLine(xOrigin + 1, yOrigin + height / 4,
+             xOrigin + width - 2, yOrigin + height / 4,
              gridColor);
-    drawLine(xOrigin, yOrigin + height / 2,
-             xOrigin + width - 1, yOrigin + height / 2, gridColor);
-    drawLine(xOrigin, yOrigin + 3 * height / 4,
-             xOrigin + width - 1, yOrigin + 3 * height / 4,
+    drawLine(xOrigin + 1, yOrigin + height / 2,
+             xOrigin + width - 2, yOrigin + height / 2, gridColor);
+    drawLine(xOrigin + 1, yOrigin + 3 * height / 4,
+             xOrigin + width - 2, yOrigin + 3 * height / 4,
              gridColor);
 
     // Draw half-level value.
@@ -153,18 +153,61 @@ function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
       var yData = plot.data;
       ctx.strokeStyle = plot.color;
       ctx.beginPath();
+      var beginPath = true;
       for (var i = 0; i < size; i++) {
-        var xPos = xOrigin + Math.floor(i / (size - 1) * (width - 1));
         var val = yData[i];
+        if (typeof val === 'string') {
+          // Stroke the plot drawn so far and begin a fresh plot.
+          ctx.stroke();
+          ctx.beginPath();
+          beginPath = true;
+          continue;
+        }
+        var xPos = xOrigin + Math.floor(i / (size - 1) * (width - 1));
         var yPos = yOrigin + height - 1 -
                    Math.round((val - yMin) / yValRange * (height - 1));
-        if (i == 0) {
+        if (beginPath) {
           ctx.moveTo(xPos, yPos);
+          // A simple move to does not print anything. Hence, draw a little
+          // square here to mark a beginning.
+          ctx.fillStyle = '#000';
+          ctx.fillRect(xPos - 1, yPos - 1, 2, 2);
+          beginPath = false;
         } else {
           ctx.lineTo(xPos, yPos);
+          if (i === size - 1 || typeof yData[i + 1] === 'string') {
+            // Draw a little square to mark an end to go with the start
+            // markers from above.
+            ctx.fillStyle = '#000';
+            ctx.fillRect(xPos - 1, yPos - 1, 2, 2);
+          }
         }
       }
       ctx.stroke();
+    }
+
+    // Paint the missing time intervals with |gridColor|.
+    // Pick one of the plots to look for missing time intervals.
+    var inMissingInterval = false;
+    var intervalStart;
+    for (var i = 0; i < size; i++) {
+      if (typeof plots[0].data[i] === 'string') {
+        if (!inMissingInterval) {
+          inMissingInterval = true;
+          // The missing interval should actually start from the previous
+          // sample.
+          intervalStart = Math.max(i - 1, 0);
+        }
+      } else if (inMissingInterval) {
+        inMissingInterval = false;
+        var xLeft = xOrigin +
+            Math.floor(intervalStart / (size - 1) * (width - 1));
+        var xRight = xOrigin + Math.floor(i / (size - 1) * (width - 1));
+        ctx.fillStyle = gridColor;
+        // The x offsets below are present so that the blank space starts
+        // and ends between two valid samples.
+        ctx.fillRect(xLeft + 1, yOrigin, xRight - xLeft - 2, height - 1);
+      }
     }
   }
 
@@ -181,13 +224,19 @@ function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
       // Draw small black square on the plot where the time guide intersects
       // it.
       var val = yData[tDataIndex];
-      var yPos = yOrigin + height - 1 -
-                 Math.round((val - yMin) / (yMax - yMin) * (height - 1));
+      var yPos, valStr;
+      if (typeof val === 'string') {
+        yPos = yOrigin + Math.round(height / 2);
+        valStr = val;
+      } else {
+        yPos = yOrigin + height - 1 -
+            Math.round((val - yMin) / (yMax - yMin) * (height - 1));
+        valStr = valueToString(val);
+      }
       ctx.fillStyle = '#000';
       ctx.fillRect(x - 2, yPos - 2, 4, 4);
 
       // Draw the val to right of the intersection.
-      var valStr = valueToString(val);
       var yLoc;
       if (yPos - textHeight / 2 < yOrigin) {
         yLoc = yOrigin + textHeight;
@@ -228,21 +277,105 @@ function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
   canvas.addEventListener('mouseout', onMouseOut);
 }
 
+var sleepSampleInterval = 30 * 1000; // in milliseconds.
+var sleepText = loadTimeData.getString('systemSuspended');
+
+/**
+ * Add samples in |sampleArray| to individual plots in |plots|. If the system
+ * resumed from a sleep/suspend, then "suspended" sleep samples are added to
+ * the plot for the sleep duration.
+ *
+ * @param {Array.<{data: Array.<number>, color: string}>} plots An
+ *     array of plots to plot on the canvas. The field 'data' of a plot is an
+ *     array of samples to be plotted as a line graph with color speficied by
+ *     the field 'color'. The elements in the 'data' array are ordered
+ *     corresponding to their sampling time in the argument 'tData'. Also, the
+ *     number of elements in the 'data' array should be the same as in the time
+ *     array 'tData' below.
+ * @param {Array.<number>} tData The time (in seconds) in the past when the
+ *     corresponding data in plots was sampled.
+ * @param {Array.<number>} sampleArray The array of samples wherein each
+ *     element corresponds to the individual plot in |plots|.
+ * @param {number} sampleTime Time in milliseconds since the epoch when the
+ *     samples in |sampleArray| were captured.
+ * @param {number} previousSampleTime Time in milliseconds since the epoch
+ *     when the sample prior to the current sample was captured.
+ * @param {Array.<{time: number, sleepDuration: number}>} systemResumedArray An
+ *     array objects corresponding to system resume events. The 'time' field is
+ *     for the time in milliseconds since the epoch when the system resumed. The
+ *     'sleepDuration' field is for the time in milliseconds the system spent
+ *     in sleep/suspend state.
+ */
+function addTimeDataSample(plots, tData, sampleArray,
+                           sampleTime, previousSampleTime,
+                           systemResumedArray) {
+  for (var i = 0; i < plots.length; i++) {
+    if (plots[i].data.length != tData.length) {
+      throw new Error('Mismatch in time and plot data.');
+    }
+  }
+
+  var time;
+  if (tData.length == 0) {
+    time = new Date(sampleTime);
+    tData[0] = time.toLocaleTimeString();
+    for (var i = 0; i < plots.length; i++) {
+      plots[i].data[0] = sampleArray[i];
+    }
+    return;
+  }
+
+  for (var i = 0; i < systemResumedArray.length; i++) {
+    var resumeTime = systemResumedArray[i].time;
+    var sleepDuration = systemResumedArray[i].sleepDuration;
+    var sleepStartTime = resumeTime - sleepDuration;
+    if (resumeTime < sampleTime && sleepStartTime > previousSampleTime) {
+      // Add sleep samples for every |sleepSampleInterval|.
+      var sleepSampleTime = sleepStartTime;
+      while (sleepSampleTime < resumeTime) {
+        time = new Date(sleepSampleTime);
+        tData.push(time.toLocaleTimeString());
+        for (var j = 0; j < plots.length; j++) {
+          plots[j].data.push(sleepText);
+        }
+        sleepSampleTime += sleepSampleInterval;
+      }
+    }
+  }
+
+  time = new Date(sampleTime);
+  tData.push(time.toLocaleTimeString());
+  for (var i = 0; i < plots.length; i++) {
+    plots[i].data.push(sampleArray[i]);
+  }
+}
+
 /**
  * Display the battery charge vs time on a line graph.
  *
- * @param {Array.<Object>} powerSupplyArray An array of objects with fields
- *     representing the battery charge, time when the charge measurement was
- *     taken, and whether there was external power connected at that time.
+ * @param {Array.<{time: number,
+ *                 batteryPercent: number,
+ *                 batteryDischargeRate: number,
+ *                 externalPower: number}>} powerSupplyArray An array of objects
+ *     with fields representing the battery charge, time when the charge
+ *     measurement was taken, and whether there was external power connected at
+ *     that time.
+ * @param {Array.<{time: ?, sleepDuration: ?}>} systemResumedArray An array
+ *     objects with fields 'time' and 'sleepDuration'. Each object corresponds
+ *     to a system resume event. The 'time' field is for the time in
+ *     milliseconds since the epoch when the system resumed. The 'sleepDuration'
+ *     field is for the time in milliseconds the system spent in sleep/suspend
+ *     state.
  */
-function showBatteryChargeData(powerSupplyArray) {
-  var tData = [];
+function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
+  var chargeTimeData = [];
   var chargePlot = [
     {
       color: '#0000FF',
       data: []
     }
   ];
+  var dischargeRateTimeData = [];
   var dischargeRatePlot = [
     {
       color: '#FF0000',
@@ -252,15 +385,23 @@ function showBatteryChargeData(powerSupplyArray) {
   var minDischargeRate = 1000;  // A high unrealistic number to begin with.
   var maxDischargeRate = -1000; // A low unrealistic number to begin with.
   for (var i = 0; i < powerSupplyArray.length; i++) {
-    var time = new Date(powerSupplyArray[i].time);
-    tData[i] = time.toLocaleTimeString();
+    var j = Math.max(i - 1, 0);
 
-    chargePlot[0].data[i] = powerSupplyArray[i].battery_percent;
+    addTimeDataSample(chargePlot, chargeTimeData,
+                      [powerSupplyArray[i].batteryPercent],
+                      powerSupplyArray[i].time,
+                      powerSupplyArray[j].time,
+                      systemResumedArray);
 
-    var dischargeRate = powerSupplyArray[i].battery_discharge_rate;
-    dischargeRatePlot[0].data[i] = dischargeRate;
+    var dischargeRate = powerSupplyArray[i].batteryDischargeRate;
     minDischargeRate = Math.min(dischargeRate, minDischargeRate);
     maxDischargeRate = Math.max(dischargeRate, maxDischargeRate);
+    addTimeDataSample(dischargeRatePlot,
+                      dischargeRateTimeData,
+                      [dischargeRate],
+                      powerSupplyArray[i].time,
+                      powerSupplyArray[j].time,
+                      systemResumedArray);
   }
   if (minDischargeRate == maxDischargeRate) {
     // This means that all the samples had the same value. Hence, offset the
@@ -271,9 +412,9 @@ function showBatteryChargeData(powerSupplyArray) {
 
   var chargeCanvas = $('battery-charge-percentage-canvas');
   var dischargeRateCanvas = $('battery-discharge-rate-canvas');
-  plotLineGraph(chargeCanvas, tData, chargePlot, 0.00, 100.00, 3);
+  plotLineGraph(chargeCanvas, chargeTimeData, chargePlot, 0.00, 100.00, 3);
   plotLineGraph(dischargeRateCanvas,
-                tData,
+                dischargeRateTimeData,
                 dischargeRatePlot,
                 minDischargeRate,
                 maxDischargeRate,
