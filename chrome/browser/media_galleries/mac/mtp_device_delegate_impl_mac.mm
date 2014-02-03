@@ -258,7 +258,7 @@ void MTPDeviceDelegateImplMac::ReadDirectoryTimeout(
   for (ReadDirTransactionList::iterator iter = read_dir_transactions_.begin();
        iter != read_dir_transactions_.end();) {
     if (iter->directory != root) {
-      iter++;
+      ++iter;
       continue;
     }
     iter->error_callback.Run(base::File::FILE_ERROR_ABORT);

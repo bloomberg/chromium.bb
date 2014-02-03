@@ -362,11 +362,10 @@ base::string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
 
 #if defined(OS_CHROMEOS)
     // See chrome/browser/chromeos/fileapi/file_system_backend.cc
-    base::FilePath home_path;
-    if (PathService::Get(base::DIR_HOME, &home_path)) {
-      home_path = home_path.AppendASCII("Downloads");
+    base::FilePath download_path;
+    if (PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &download_path)) {
       base::FilePath relative;
-      if (home_path.AppendRelativePath(path, &relative))
+      if (download_path.AppendRelativePath(path, &relative))
         return relative.LossyDisplayName();
     }
     return path.BaseName().LossyDisplayName();
@@ -487,7 +486,7 @@ Profile* MediaGalleriesPreferences::profile() { return profile_; }
 
 void MediaGalleriesPreferences::OnInitializationCallbackReturned() {
   DCHECK(!IsInitialized());
-  DCHECK(pre_initialization_callbacks_waiting_ > 0);
+  DCHECK_GT(pre_initialization_callbacks_waiting_, 0);
   if (--pre_initialization_callbacks_waiting_ == 0)
     FinishInitialization();
 }
