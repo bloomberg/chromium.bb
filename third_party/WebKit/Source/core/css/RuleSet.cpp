@@ -219,24 +219,60 @@ void RuleSet::addToRuleSet(StringImpl* key, PendingRuleMap& map, const RuleData&
     rules->push(ruleData);
 }
 
+static void extractValuesforSelector(const CSSSelector* selector, AtomicString& id, AtomicString& className, AtomicString& customPseudoElementName, AtomicString& tagName)
+{
+    switch (selector->m_match) {
+    case CSSSelector::Id:
+        id = selector->value();
+        break;
+    case CSSSelector::Class:
+        className = selector->value();
+        break;
+    case CSSSelector::Tag:
+        if (selector->tagQName().localName() != starAtom)
+            tagName = selector->tagQName().localName();
+        break;
+    }
+    if (selector->isCustomPseudoElement())
+        customPseudoElementName = selector->value();
+}
+
 bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& ruleData)
 {
-    if (component.m_match == CSSSelector::Id) {
-        addToRuleSet(component.value().impl(), ensurePendingRules()->idRules, ruleData);
+    AtomicString id;
+    AtomicString className;
+    AtomicString customPseudoElementName;
+    AtomicString tagName;
+
+    const CSSSelector* it = &component;
+    for (; it->relation() == CSSSelector::SubSelector; it = it->tagHistory()) {
+        extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
+    }
+    extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
+
+    // Prefer rule sets in order of most likely to apply infrequently.
+    if (!id.isEmpty()) {
+        addToRuleSet(id.impl(), ensurePendingRules()->idRules, ruleData);
         return true;
     }
-    if (component.m_match == CSSSelector::Class) {
-        addToRuleSet(component.value().impl(), ensurePendingRules()->classRules, ruleData);
+    if (!className.isEmpty()) {
+        addToRuleSet(className.impl(), ensurePendingRules()->classRules, ruleData);
         return true;
     }
-    if (component.isCustomPseudoElement()) {
-        addToRuleSet(component.value().impl(), ensurePendingRules()->shadowPseudoElementRules, ruleData);
+    if (!customPseudoElementName.isEmpty()) {
+        // Custom pseudos come before ids and classes in the order of tagHistory, and have a relation of
+        // ShadowPseudo between them. Therefore we should never be a situation where extractValuesforSelector
+        // finsd id and className in addition to custom pseudo.
+        ASSERT(id.isEmpty() && className.isEmpty());
+        addToRuleSet(customPseudoElementName.impl(), ensurePendingRules()->shadowPseudoElementRules, ruleData);
         return true;
     }
+
     if (component.pseudoType() == CSSSelector::PseudoCue) {
         m_cuePseudoRules.append(ruleData);
         return true;
     }
+
     if (SelectorChecker::isCommonPseudoClassSelector(component)) {
         switch (component.pseudoType()) {
         case CSSSelector::PseudoLink:
@@ -253,18 +289,11 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         }
     }
 
-    if (component.m_match == CSSSelector::Tag) {
-        if (component.tagQName().localName() != starAtom) {
-            // If this is part of a subselector chain, recurse ahead to find a narrower set (ID/class.)
-            if (component.relation() == CSSSelector::SubSelector
-                && (component.tagHistory()->m_match == CSSSelector::Class || component.tagHistory()->m_match == CSSSelector::Id || SelectorChecker::isCommonPseudoClassSelector(*component.tagHistory()))
-                && findBestRuleSetAndAdd(*component.tagHistory(), ruleData))
-                return true;
-
-            addToRuleSet(component.tagQName().localName().impl(), ensurePendingRules()->tagRules, ruleData);
-            return true;
-        }
+    if (!tagName.isEmpty()) {
+        addToRuleSet(component.tagQName().localName().impl(), ensurePendingRules()->tagRules, ruleData);
+        return true;
     }
+
     return false;
 }
 

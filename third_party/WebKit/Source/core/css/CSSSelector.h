@@ -213,6 +213,10 @@ namespace WebCore {
         const AtomicString& argument() const { return m_hasRareData ? m_data.m_rareData->m_argument : nullAtom; }
         const CSSSelectorList* selectorList() const { return m_hasRareData ? m_data.m_rareData->m_selectorList.get() : 0; }
 
+#ifndef NDEBUG
+        void show() const;
+#endif
+
         void setValue(const AtomicString&);
         void setAttribute(const QualifiedName&);
         void setArgument(const AtomicString&);
@@ -232,6 +236,8 @@ namespace WebCore {
         bool isContentPseudoElement() const;
         bool isHostPseudoClass() const;
 
+        // FIXME: selectors with no tagHistory() get a relation() of Descendant. It should instead be
+        // None.
         Relation relation() const { return static_cast<Relation>(m_relation); }
 
         bool isLastInSelectorList() const { return m_isLastInSelectorList; }

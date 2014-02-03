@@ -164,6 +164,7 @@ public:
     Vector<RuleSetSelectorPair> m_regionSelectorsAndRuleSets;
 
 private:
+    // FIXME: change these to HashMap<AtomicString, ... >
     typedef HashMap<StringImpl*, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
     typedef HashMap<StringImpl*, OwnPtr<RuleData> > CompactRuleMap;
 

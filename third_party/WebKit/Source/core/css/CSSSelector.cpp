@@ -36,6 +36,10 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 
+#ifndef NDEBUG
+#include <stdio.h>
+#endif
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -437,6 +441,30 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
     }
     return nameToPseudoType;
 }
+
+#ifndef NDEBUG
+void CSSSelector::show() const
+{
+    printf("\nCSSSelector::show()\n");
+    printf("selectorText: %s\n", selectorText().ascii().data());
+    printf("m_match: %d\n", m_match);
+    printf("isCustomPseudoElement(): %d\n", isCustomPseudoElement());
+    if (m_match != Tag)
+        printf("value(): %s\n", value().ascii().data());
+    printf("relation(): %d\n", relation());
+    printf("pseudoType(): %d\n", pseudoType());
+    if (m_match == Tag)
+        printf("tagQName().localName: %s\n", tagQName().localName().ascii().data());
+    printf("isAttributeSelector(): %d\n", isAttributeSelector());
+    if (isAttributeSelector())
+        printf("attribute(): %s\n", attribute().localName().ascii().data());
+    printf("argument(): %s\n", argument().ascii().data());
+    if (tagHistory()) {
+        printf("\n");
+        tagHistory()->show();
+    }
+}
+#endif
 
 CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name)
 {
