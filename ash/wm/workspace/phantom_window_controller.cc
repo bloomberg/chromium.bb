@@ -37,7 +37,7 @@ const float kAlternateCaptionButtonStyleAnimationInitialBoundsRatio = 0.85f;
 // The amount of pixels that the phantom window's shadow should extend past
 // the bounds passed into Show(). There is no shadow when not using the
 // alternate caption button style.
-const int kShadowThickness = 60;
+const int kShadowThickness = 15;
 
 // Converts the bounds of a phantom window without a shadow to those of a
 // phantom window with a shadow.
