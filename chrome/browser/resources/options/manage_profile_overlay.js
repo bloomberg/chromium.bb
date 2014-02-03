@@ -296,7 +296,8 @@ cr.define('options', function() {
       if (newName == oldName && mode == 'manage') {
         this.hideErrorBubble_(mode);
       } else if (mode == 'create' &&
-                 loadTimeData.getBoolean('allowCreateExistingManagedUsers') &&
+                 !loadTimeData.getBoolean(
+                     'disableCreateExistingManagedUsers') &&
                  $('create-profile-managed').checked) {
         options.ManagedUserListData.requestExistingManagedUsers().then(
             this.receiveExistingManagedUsers_.bind(this),
@@ -567,7 +568,7 @@ cr.define('options', function() {
       $('create-profile-ok').disabled = true;
 
       $('create-profile-managed').checked = false;
-      if (loadTimeData.getBoolean('allowCreateExistingManagedUsers')) {
+      if (!loadTimeData.getBoolean('disableCreateExistingManagedUsers')) {
         $('import-existing-managed-user-link').hidden = false;
         $('create-profile-managed').onchange = function() {
           ManageProfileOverlay.getInstance().onNameChanged_('create');

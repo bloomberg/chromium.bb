@@ -22,7 +22,7 @@ namespace switches {
 // -----------------------------------------------------------------------------
 
 // Allows choosing an existing managed user profile during the managed
-// user creation flow.
+// user creation flow. Is only used on ChromeOS.
 const char kAllowCreateExistingManagedUsers[] =
     "allow-create-existing-managed-users";
 
@@ -303,6 +303,11 @@ const char kDisableComponentUpdate[]        = "disable-component-update";
 // Disables establishing certificate revocation information by downloading a
 // set of CRLs rather than performing on-line checks.
 const char kDisableCRLSets[]                = "disable-crl-sets";
+
+// Disables choosing an existing managed user profile during the managed
+// user creation flow.
+const char kDisableCreateExistingManagedUsers[] =
+    "disable-create-exsting-managed-users";
 
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";

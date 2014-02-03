@@ -122,9 +122,9 @@ void ManageProfileHandler::GetLocalizedValues(
                                 ProfileShortcutManager::IsFeatureEnabled());
 
   localized_strings->SetBoolean(
-      "allowCreateExistingManagedUsers",
+      "disableCreateExistingManagedUsers",
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowCreateExistingManagedUsers));
+          switches::kDisableCreateExistingManagedUsers));
 }
 
 void ManageProfileHandler::InitializeHandler() {

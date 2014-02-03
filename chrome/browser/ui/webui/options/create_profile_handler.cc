@@ -412,8 +412,8 @@ bool CreateProfileHandler::IsValidExistingManagedUserId(
   if (existing_managed_user_id.empty())
     return true;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowCreateExistingManagedUsers)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCreateExistingManagedUsers)) {
     return false;
   }
 

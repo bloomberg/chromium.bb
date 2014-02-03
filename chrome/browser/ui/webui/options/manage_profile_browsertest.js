@@ -5,9 +5,6 @@
 // None of these tests is relevant for Chrome OS.
 GEN('#if !defined(OS_CHROMEOS)');
 
-GEN('#include "base/command_line.h"');
-GEN('#include "chrome/common/chrome_switches.h"');
-
 /**
  * TestFixture for ManageProfileOverlay and CreateProfileOverlay WebUI testing.
  * @extends {testing.Test}
@@ -27,12 +24,6 @@ ManageProfileUITest.prototype = {
    * @override
    */
   runAccessibilityChecks: false,
-
-  /** @override */
-  testGenPreamble: function() {
-    GEN('CommandLine::ForCurrentProcess()->' +
-        'AppendSwitch(switches::kAllowCreateExistingManagedUsers);');
-  },
 
   /**
    * Returns a test profile-info object with configurable "managed" status.
