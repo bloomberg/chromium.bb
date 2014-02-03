@@ -30,12 +30,19 @@ int ConvertRGBToV(const uint8* rgb, int size) {
 
 }  // namespace
 
+// Assembly code confuses MemorySanitizer. Do not run it in MSan builds.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_SideBySideRGB DISABLED_SideBySideRGB
+#else
+#define MAYBE_SideBySideRGB SideBySideRGB
+#endif
+
 // A side-by-side test that verifies our ASM functions that convert RGB pixels
 // to YUV pixels can output the expected results. This test converts RGB pixels
 // to YUV pixels with our ASM functions (which use SSE, SSE2, SSE3, and SSSE3)
 // and compare the output YUV pixels with the ones calculated with out reference
 // functions implemented in C++.
-TEST(YUVConvertTest, SideBySideRGB) {
+TEST(YUVConvertTest, MAYBE_SideBySideRGB) {
   // We skip this test on PCs which does not support SSE3 because this test
   // needs it.
   base::CPU cpu;

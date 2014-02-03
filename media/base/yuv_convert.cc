@@ -132,7 +132,8 @@ void InitializeCPUSpecificYUVConversions() {
   g_convert_yuva_to_argb_proc_ = ConvertYUVAToARGB_C;
   g_empty_register_state_proc_ = EmptyRegisterStateStub;
 
-#if defined(ARCH_CPU_X86_FAMILY)
+  // Assembly code confuses MemorySanitizer.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(MEMORY_SANITIZER)
   base::CPU cpu;
   if (cpu.has_mmx()) {
     g_convert_yuv_to_rgb32_row_proc_ = ConvertYUVToRGB32Row_MMX;
