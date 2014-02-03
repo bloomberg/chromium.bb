@@ -148,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed1) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed1) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
