@@ -34,7 +34,7 @@ var test = function()
 
             function pausedInF1(callFrames)
             {
-                dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
                 InspectorTest.resumeExecution(resumed);
             }
 
@@ -54,9 +54,9 @@ var test = function()
 
             function pausedInF1Again(callFrames)
             {
-                dumpBreakpointSidebarPane("while paused in pretty printed");
+                InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
                 sourceFrame._uiSourceCode.setFormatted(false);
-                dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
                 InspectorTest.removeBreakpoint(sourceFrame, 11);
                 InspectorTest.resumeExecution(next);
             }
@@ -93,7 +93,7 @@ var test = function()
             }
         },
 
-        function testBreakpointsSetInFormattedSource(next)
+        function testBreakpointsSetAndRemoveInFormattedSource(next)
         {
             InspectorTest.showScriptSource("unformatted.js", didShowScriptSource);
 
@@ -114,21 +114,44 @@ var test = function()
 
             function pausedInF2(callFrames)
             {
-                dumpBreakpointSidebarPane("while paused in pretty printed");
+                InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
                 InspectorTest.removeBreakpoint(sourceFrame, 3);
                 sourceFrame._uiSourceCode.setFormatted(false);
-                dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.resumeExecution(next);
+            }
+        },
+
+        function testBreakpointsSetInFormattedAndRemoveInOriginalSource(next)
+        {
+            InspectorTest.showScriptSource("unformatted.js", didShowScriptSource);
+
+            function didShowScriptSource(frame)
+            {
+                sourceFrame = frame;
+                sourceFrame._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
+                sourceFrame._uiSourceCode.setFormatted(true);
+            }
+                
+            function didFormatPage()
+            {
+                sourceFrame._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, didFormatPage, this);
+                InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
+                InspectorTest.waitUntilPaused(pausedInF2);
+                InspectorTest.evaluateInPageWithTimeout("f2()");
+            }
+
+            function pausedInF2(callFrames)
+            {
+                InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
+                sourceFrame._uiSourceCode.setFormatted(false);
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.removeBreakpoint(sourceFrame, 2);
+                InspectorTest.dumpBreakpointSidebarPane("after removed");
                 InspectorTest.resumeExecution(next);
             }
         }
     ]);
-
-    function dumpBreakpointSidebarPane(title)
-    {
-        var paneElement = WebInspector.panels.sources.sidebarPanes.jsBreakpoints.listElement
-        InspectorTest.addResult("Breakpoint sidebar pane " + title);
-        InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
-    }
 }
 
 </script>

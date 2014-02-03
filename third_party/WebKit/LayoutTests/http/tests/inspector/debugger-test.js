@@ -293,6 +293,13 @@ InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
     sourceFrame._breakpointManager.findBreakpoint(sourceFrame._uiSourceCode, lineNumber).remove();
 };
 
+InspectorTest.dumpBreakpointSidebarPane = function(title)
+{
+    var paneElement = WebInspector.panels.sources.sidebarPanes.jsBreakpoints.listElement;
+    InspectorTest.addResult("Breakpoint sidebar pane " + (title || ""));
+    InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
+};
+
 InspectorTest.expandProperties = function(properties, callback)
 {
     var index = 0;
