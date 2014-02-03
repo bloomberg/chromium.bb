@@ -834,27 +834,34 @@ libtest_client_la_SOURCES =			\
 nodist_libtest_client_la_SOURCES =		\
 	protocol/wayland-test-protocol.c	\
 	protocol/wayland-test-client-protocol.h
+libtest_client_la_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
 libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
 
 bad_buffer_weston_SOURCES = tests/bad-buffer-test.c
+bad_buffer_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
 bad_buffer_weston_LDADD = libtest-client.la
 
 keyboard_weston_SOURCES = tests/keyboard-test.c
+keyboard_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
 keyboard_weston_LDADD = libtest-client.la
 
 event_weston_SOURCES = tests/event-test.c
+event_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
 event_weston_LDADD = libtest-client.la
 
 button_weston_SOURCES = tests/button-test.c
+button_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
 button_weston_LDADD = libtest-client.la
 
 text_weston_SOURCES = tests/text-test.c
 nodist_text_weston_SOURCES =			\
 	protocol/text-protocol.c		\
 	protocol/text-client-protocol.h
+text_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
 text_weston_LDADD = libtest-client.la
 
 subsurface_weston_SOURCES = tests/subsurface-test.c
+subsurface_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
 subsurface_weston_LDADD = libtest-client.la
 
 if ENABLE_EGL
