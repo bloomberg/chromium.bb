@@ -66,11 +66,8 @@ void WVTestLicenseServerConfig::AppendCommandLineArgs(
 }
 
 bool WVTestLicenseServerConfig::IsPlatformSupported() {
-#if defined(OS_LINUX)
-  return true;
-#else
+  // TODO(shadi): Enable on Linux once crbug.com/339983 is resolved.
   return false;
-#endif  // defined(OS_LINUX)
 }
 
 std::string WVTestLicenseServerConfig::GetServerURL() {
