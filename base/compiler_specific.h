@@ -199,9 +199,7 @@
 
 // MemorySanitizer annotations.
 #ifdef MEMORY_SANITIZER
-extern "C" {
-void __msan_unpoison(const void *p, unsigned long s);
-}  // extern "C"
+#include <sanitizer/msan_interface.h>
 
 // Mark a memory region fully initialized.
 // Use this to annotate code that deliberately reads uninitialized data, for
