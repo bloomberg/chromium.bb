@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/RenderGrid.h"
 
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -902,6 +903,8 @@ void RenderGrid::layoutGridItems()
     populateGridPositions(sizingData);
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+        LayoutRectRecorder recorder(*child);
+
         // Because the grid area cannot be styled, we don't need to adjust
         // the grid breadth to account for 'box-sizing'.
         LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child->hasOverrideContainingBlockLogicalWidth() ? child->overrideContainingBlockContentLogicalWidth() : LayoutUnit();
