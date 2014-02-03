@@ -646,7 +646,7 @@
             'action': [
               'python', '<(remoting_localize_path)',
               '--define', 'ME2ME_HOST_PATH=<(me2me_host_path)',
-              '--define', 'IT2ME_HOST_PATH=<(me2me_host_path)',
+              '--define', 'IT2ME_HOST_PATH=<(it2me_host_path)',
               '--variables', '<(branding_path)',
               '--template', '<(RULE_INPUT_PATH)',
               '--locale_output', '<@(_outputs)',
