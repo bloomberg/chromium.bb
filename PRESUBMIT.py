@@ -522,6 +522,8 @@ def _CheckUnwantedDependencies(input_api, output_api):
 
 def _CheckFilePermissions(input_api, output_api):
   """Check that all files have their permissions properly set."""
+  if input_api.platform == 'win32':
+    return []
   args = [sys.executable, 'tools/checkperms/checkperms.py', '--root',
           input_api.change.RepositoryRoot()]
   for f in input_api.AffectedFiles():
