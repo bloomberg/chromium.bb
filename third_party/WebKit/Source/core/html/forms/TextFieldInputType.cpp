@@ -43,7 +43,6 @@
 #include "core/events/TextEvent.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
-#include "core/frame/Settings.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
@@ -135,18 +134,9 @@ bool TextFieldInputType::isTextField() const
     return true;
 }
 
-static inline bool shouldIgnoreRequiredAttribute(const HTMLInputElement& input)
-{
-    if (!input.document().settings() || !input.document().settings()->needsSiteSpecificQuirks())
-        return false;
-    if (!equalIgnoringCase(input.document().url().host(), "egov.uscis.gov"))
-        return false;
-    return input.fastGetAttribute(requiredAttr) == "no";
-}
-
 bool TextFieldInputType::valueMissing(const String& value) const
 {
-    return !shouldIgnoreRequiredAttribute(element()) && element().isRequired() && value.isEmpty();
+    return element().isRequired() && value.isEmpty();
 }
 
 bool TextFieldInputType::canSetSuggestedValue()
