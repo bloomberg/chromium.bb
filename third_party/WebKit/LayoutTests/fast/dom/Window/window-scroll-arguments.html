@@ -25,7 +25,8 @@
     reset();
 
     description("This test makes sure that calling the window scrolling\
-    methods with less than 2 arguments throws exception.");
+    methods with less than 2 arguments or with an invalid third argument\
+    throws an exception.");
 
     // scrollTo /////////////////////////
     debug('');
@@ -40,11 +41,16 @@
     shouldThrow('window.scrollTo(x)');;
     reset();
 
-    debug("Testing - scrollTo with more than 2 arguments");
-    window.scrollTo(x, y, 200, "text");
-    shouldBe('window.scrollX', 'x');
-    shouldBe('window.scrollY', 'y');
-    reset();
+    debug("Testing - scrollTo with a valid ScrollOptions argument");
+    shouldNotThrow('window.scrollTo(x, y, { })');
+    shouldNotThrow('window.scrollTo(x, y, { behavior: "auto" })');
+    shouldNotThrow('window.scrollTo(x, y, { behavior: "instant" })');
+    shouldNotThrow('window.scrollTo(x, y, { behavior: "smooth" })');
+
+    debug("Testing - scrollTo with an invalid ScrollOptions argument");
+    shouldThrow('window.scrollTo(x, y, { behavior: "" })');
+    shouldThrow('window.scrollTo(x, y, { behavior: "abcd" })');
+    shouldThrow('window.scrollTo(x, y, 200, "text")');
 
     // scroll /////////////////////////
     debug('');
@@ -59,11 +65,16 @@
     shouldThrow('window.scroll(x)');
     reset();
 
-    debug("Testing - scroll with more than 2 arguments");
-    window.scroll(x, y, 200, "text");
-    shouldBe('window.scrollX', 'x');
-    shouldBe('window.scrollY', 'y');
-    reset();
+    debug("Testing - scroll with a valid ScrollOptions argument");
+    shouldNotThrow('window.scroll(x, y, { })');
+    shouldNotThrow('window.scroll(x, y, { behavior: "auto" })');
+    shouldNotThrow('window.scroll(x, y, { behavior: "instant" })');
+    shouldNotThrow('window.scroll(x, y, { behavior: "smooth" })');
+
+    debug("Testing - scroll with an invalid ScrollOptions argument");
+    shouldThrow('window.scroll(x, y, { behavior: "" })');
+    shouldThrow('window.scroll(x, y, { behavior: "abcd" })');
+    shouldThrow('window.scroll(x, y, 200, "text")');
 
     // scrollBy /////////////////////////
     debug('');
@@ -78,11 +89,16 @@
     shouldThrow('window.scrollBy(x)');
     reset();
 
-    debug("Testing - scrollBy with more than 2 arguments");
-    window.scrollBy(x, y, 200, "text");
-    shouldBe('window.scrollX', 'resetX + x');
-    shouldBe('window.scrollY', 'resetY + y');
-    reset();
+    debug("Testing - scrollBy with a valid ScrollOptions argument");
+    shouldNotThrow('window.scrollBy(x, y, { })');
+    shouldNotThrow('window.scrollBy(x, y, { behavior: "auto" })');
+    shouldNotThrow('window.scrollBy(x, y, { behavior: "instant" })');
+    shouldNotThrow('window.scrollBy(x, y, { behavior: "smooth" })');
+
+    debug("Testing - scrollBy with an invalid ScrollOptions argument");
+    shouldThrow('window.scrollBy(x, y, { behavior: "" })');
+    shouldThrow('window.scrollBy(x, y, { behavior: "abcd" })');
+    shouldThrow('window.scrollBy(x, y, 200, "text")');
 </script>
 </body>
 </html>

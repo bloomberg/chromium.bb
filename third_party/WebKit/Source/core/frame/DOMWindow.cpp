@@ -1385,8 +1385,27 @@ double DOMWindow::devicePixelRatio() const
     return m_frame->devicePixelRatio();
 }
 
-void DOMWindow::scrollBy(int x, int y) const
+static bool scrollBehaviorFromScrollOptions(const Dictionary& scrollOptions, ScrollBehavior& scrollBehavior, ExceptionState& exceptionState)
 {
+    String scrollBehaviorString;
+    if (!scrollOptions.get("behavior", scrollBehaviorString)) {
+        scrollBehavior = ScrollBehaviorAuto;
+        return true;
+    }
+
+    if (ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior))
+        return true;
+
+    exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
+    return false;
+}
+
+void DOMWindow::scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState &exceptionState) const
+{
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && !scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
+        return;
+
     if (!isCurrentlyDisplayedInFrame())
         return;
 
@@ -1396,13 +1415,17 @@ void DOMWindow::scrollBy(int x, int y) const
     if (!view)
         return;
 
-
     IntSize scaledOffset(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
+    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
     view->scrollBy(scaledOffset);
 }
 
-void DOMWindow::scrollTo(int x, int y) const
+void DOMWindow::scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const
 {
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && !scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
+        return;
+
     if (!isCurrentlyDisplayedInFrame())
         return;
 
@@ -1413,6 +1436,7 @@ void DOMWindow::scrollTo(int x, int y) const
         return;
 
     IntPoint layoutPos(x * m_frame->pageZoomFactor(), y * m_frame->pageZoomFactor());
+    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
     view->setScrollPosition(layoutPos);
 }
 

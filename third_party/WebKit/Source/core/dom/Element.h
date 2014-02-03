@@ -186,7 +186,9 @@ public:
     virtual int scrollLeft();
     virtual int scrollTop();
     virtual void setScrollLeft(int);
+    virtual void setScrollLeft(const Dictionary& scrollOptionsHorizontal, ExceptionState&);
     virtual void setScrollTop(int);
+    virtual void setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionState&);
     virtual int scrollWidth();
     virtual int scrollHeight();
 

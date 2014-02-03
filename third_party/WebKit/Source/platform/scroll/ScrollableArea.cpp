@@ -192,6 +192,20 @@ void ScrollableArea::scrollPositionChanged(const IntPoint& position)
         scrollAnimator()->notifyContentAreaScrolled(scrollPosition() - oldPosition);
 }
 
+bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, ScrollBehavior& behavior)
+{
+    if (behaviorString == "auto")
+        behavior = ScrollBehaviorAuto;
+    else if (behaviorString == "instant")
+        behavior = ScrollBehaviorInstant;
+    else if (behaviorString == "smooth")
+        behavior = ScrollBehaviorSmooth;
+    else
+        return false;
+
+    return true;
+}
+
 bool ScrollableArea::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     return scrollAnimator()->handleWheelEvent(wheelEvent);

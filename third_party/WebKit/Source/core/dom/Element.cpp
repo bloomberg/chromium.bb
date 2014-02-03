@@ -30,6 +30,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
@@ -95,6 +96,7 @@
 #include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
+#include "platform/scroll/ScrollableArea.h"
 #include "wtf/BitVector.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/text/CString.h"
@@ -744,6 +746,27 @@ void Element::setScrollLeft(int newLeft)
     }
 }
 
+void Element::setScrollLeft(const Dictionary& scrollOptionsHorizontal, ExceptionState& exceptionState)
+{
+    String scrollBehaviorString;
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    if (scrollOptionsHorizontal.get("behavior", scrollBehaviorString)) {
+        if (!ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior)) {
+            exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
+            return;
+        }
+    }
+
+    int position;
+    if (!scrollOptionsHorizontal.get("x", position)) {
+        exceptionState.throwTypeError("ScrollOptionsHorizontal must include an 'x' member.");
+        return;
+    }
+
+    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
+    setScrollLeft(position);
+}
+
 void Element::setScrollTop(int newTop)
 {
     document().updateLayoutIgnorePendingStylesheets();
@@ -767,6 +790,27 @@ void Element::setScrollTop(int newTop)
 
         view->setScrollPosition(IntPoint(view->scrollX(), static_cast<int>(newTop * frame->pageZoomFactor())));
     }
+}
+
+void Element::setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionState& exceptionState)
+{
+    String scrollBehaviorString;
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    if (scrollOptionsVertical.get("behavior", scrollBehaviorString)) {
+        if (!ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior)) {
+            exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
+            return;
+        }
+    }
+
+    int position;
+    if (!scrollOptionsVertical.get("y", position)) {
+        exceptionState.throwTypeError("ScrollOptionsVertical must include a 'y' member.");
+        return;
+    }
+
+    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
+    setScrollTop(position);
 }
 
 int Element::scrollWidth()

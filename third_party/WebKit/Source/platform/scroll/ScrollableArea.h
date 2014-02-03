@@ -62,6 +62,8 @@ public:
     // is updated on the scrolling thread and we need to notify the main thread.
     void notifyScrollPositionChanged(const IntPoint&);
 
+    static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
+
     bool handleWheelEvent(const PlatformWheelEvent&);
 
     // Functions for controlling if you can scroll past the end of the document.

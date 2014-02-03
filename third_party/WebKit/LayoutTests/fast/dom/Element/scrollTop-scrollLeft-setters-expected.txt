@@ -1,0 +1,55 @@
+This test makes sure setting scrollLeft or scrollTop to an invalid value throws an exception.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+scrollLeft Tests
+
+Testing - setting scrollLeft to a valid value
+PASS element.scrollLeft = 32 did not throw exception.
+PASS element.scrollLeft = 32.1 did not throw exception.
+PASS element.scrollLeft = "string" did not throw exception.
+PASS element.scrollLeft = null did not throw exception.
+PASS element.scrollLeft = undefined did not throw exception.
+PASS element.scrollLeft = Infinity did not throw exception.
+PASS element.scrollLeft = NaN did not throw exception.
+PASS element.scrollLeft = { x: 42 } did not throw exception.
+PASS element.scrollLeft = { x: 42, behavior: "auto" } did not throw exception.
+PASS element.scrollLeft = { x: 42, behavior: "instant" } did not throw exception.
+PASS element.scrollLeft = { x: 42, behavior: "smooth" } did not throw exception.
+Testing - setting scrollLeft to an invalid value
+PASS element.scrollLeft = { } threw exception TypeError: Failed to set the 'scrollLeft' property on 'Element': ScrollOptionsHorizontal must include an 'x' member..
+PASS element.scrollLeft = { x: 42, behavior: "" } threw exception TypeError: Failed to set the 'scrollLeft' property on 'Element': The ScrollBehavior provided is invalid..
+PASS element.scrollLeft = { x: 42, behavior: "abcd" } threw exception TypeError: Failed to set the 'scrollLeft' property on 'Element': The ScrollBehavior provided is invalid..
+PASS element.scrollLeft = { behavior: "abcd" } threw exception TypeError: Failed to set the 'scrollLeft' property on 'Element': The ScrollBehavior provided is invalid..
+PASS element.scrollLeft = { behavior: "smooth" } threw exception TypeError: Failed to set the 'scrollLeft' property on 'Element': ScrollOptionsHorizontal must include an 'x' member..
+PASS element.scrollLeft = { behavior: "instant" } threw exception TypeError: Failed to set the 'scrollLeft' property on 'Element': ScrollOptionsHorizontal must include an 'x' member..
+PASS element.scrollLeft = { behavior: "smooth" } threw exception TypeError: Failed to set the 'scrollLeft' property on 'Element': ScrollOptionsHorizontal must include an 'x' member..
+
+scrollTop Tests
+
+Testing - setting scrollTop to a valid value
+PASS element.scrollTop = 32 did not throw exception.
+PASS element.scrollTop = 32.1 did not throw exception.
+PASS element.scrollTop = "string" did not throw exception.
+PASS element.scrollTop = null did not throw exception.
+PASS element.scrollTop = undefined did not throw exception.
+PASS element.scrollTop = Infinity did not throw exception.
+PASS element.scrollTop = NaN did not throw exception.
+PASS element.scrollTop = { y: 42 } did not throw exception.
+PASS element.scrollTop = { y: 42, behavior: "auto" } did not throw exception.
+PASS element.scrollTop = { y: 42, behavior: "instant" } did not throw exception.
+PASS element.scrollTop = { y: 42, behavior: "smooth" } did not throw exception.
+Testing - setting scrollTop to an invalid value
+PASS element.scrollTop = { } threw exception TypeError: Failed to set the 'scrollTop' property on 'Element': ScrollOptionsVertical must include a 'y' member..
+PASS element.scrollTop = { y: 42, behavior: "" } threw exception TypeError: Failed to set the 'scrollTop' property on 'Element': The ScrollBehavior provided is invalid..
+PASS element.scrollTop = { y: 42, behavior: "abcd" } threw exception TypeError: Failed to set the 'scrollTop' property on 'Element': The ScrollBehavior provided is invalid..
+PASS element.scrollTop = { behavior: "abcd" } threw exception TypeError: Failed to set the 'scrollTop' property on 'Element': The ScrollBehavior provided is invalid..
+PASS element.scrollTop = { behavior: "smooth" } threw exception TypeError: Failed to set the 'scrollTop' property on 'Element': ScrollOptionsVertical must include a 'y' member..
+PASS element.scrollTop = { behavior: "instant" } threw exception TypeError: Failed to set the 'scrollTop' property on 'Element': ScrollOptionsVertical must include a 'y' member..
+PASS element.scrollTop = { behavior: "smooth" } threw exception TypeError: Failed to set the 'scrollTop' property on 'Element': ScrollOptionsVertical must include a 'y' member..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+This box should force the container div to have a scrollable area to test.

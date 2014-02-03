@@ -1,4 +1,4 @@
-This test makes sure that calling the window scrolling methods with less than 2 arguments throws exception.
+This test makes sure that calling the window scrolling methods with less than 2 arguments or with an invalid third argument throws an exception.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -10,9 +10,15 @@ Testing - scrollTo with 0 arguments
 PASS window.scrollTo() threw exception TypeError: Failed to execute 'scrollTo' on 'Window': 2 arguments required, but only 0 present..
 Testing - scrollTo with 1 argument
 PASS window.scrollTo(x) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': 2 arguments required, but only 1 present..
-Testing - scrollTo with more than 2 arguments
-PASS window.scrollX is x
-PASS window.scrollY is y
+Testing - scrollTo with a valid ScrollOptions argument
+PASS window.scrollTo(x, y, { }) did not throw exception.
+PASS window.scrollTo(x, y, { behavior: "auto" }) did not throw exception.
+PASS window.scrollTo(x, y, { behavior: "instant" }) did not throw exception.
+PASS window.scrollTo(x, y, { behavior: "smooth" }) did not throw exception.
+Testing - scrollTo with an invalid ScrollOptions argument
+PASS window.scrollTo(x, y, { behavior: "" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The ScrollBehavior provided is invalid..
+PASS window.scrollTo(x, y, { behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The ScrollBehavior provided is invalid..
+PASS window.scrollTo(x, y, 200, "text") threw exception TypeError: Failed to execute 'scrollTo' on 'Window': parameter 3 ('scrollOptions') is not an object..
 
 window.scroll Tests
 
@@ -20,9 +26,15 @@ Testing - scroll with 0 arguments
 PASS window.scroll() threw exception TypeError: Failed to execute 'scroll' on 'Window': 2 arguments required, but only 0 present..
 Testing - scroll with 1 argument
 PASS window.scroll(x) threw exception TypeError: Failed to execute 'scroll' on 'Window': 2 arguments required, but only 1 present..
-Testing - scroll with more than 2 arguments
-PASS window.scrollX is x
-PASS window.scrollY is y
+Testing - scroll with a valid ScrollOptions argument
+PASS window.scroll(x, y, { }) did not throw exception.
+PASS window.scroll(x, y, { behavior: "auto" }) did not throw exception.
+PASS window.scroll(x, y, { behavior: "instant" }) did not throw exception.
+PASS window.scroll(x, y, { behavior: "smooth" }) did not throw exception.
+Testing - scroll with an invalid ScrollOptions argument
+PASS window.scroll(x, y, { behavior: "" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The ScrollBehavior provided is invalid..
+PASS window.scroll(x, y, { behavior: "abcd" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The ScrollBehavior provided is invalid..
+PASS window.scroll(x, y, 200, "text") threw exception TypeError: Failed to execute 'scroll' on 'Window': parameter 3 ('scrollOptions') is not an object..
 
 window.scrollBy Tests
 
@@ -30,9 +42,15 @@ Testing - scrollBy with 0 arguments
 PASS window.scrollBy() threw exception TypeError: Failed to execute 'scrollBy' on 'Window': 2 arguments required, but only 0 present..
 Testing - scrollBy with 1 argument
 PASS window.scrollBy(x) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': 2 arguments required, but only 1 present..
-Testing - scrollBy with more than 2 arguments
-PASS window.scrollX is resetX + x
-PASS window.scrollY is resetY + y
+Testing - scrollBy with a valid ScrollOptions argument
+PASS window.scrollBy(x, y, { }) did not throw exception.
+PASS window.scrollBy(x, y, { behavior: "auto" }) did not throw exception.
+PASS window.scrollBy(x, y, { behavior: "instant" }) did not throw exception.
+PASS window.scrollBy(x, y, { behavior: "smooth" }) did not throw exception.
+Testing - scrollBy with an invalid ScrollOptions argument
+PASS window.scrollBy(x, y, { behavior: "" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The ScrollBehavior provided is invalid..
+PASS window.scrollBy(x, y, { behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The ScrollBehavior provided is invalid..
+PASS window.scrollBy(x, y, 200, "text") threw exception TypeError: Failed to execute 'scrollBy' on 'Window': parameter 3 ('scrollOptions') is not an object..
 PASS successfullyParsed is true
 
 TEST COMPLETE

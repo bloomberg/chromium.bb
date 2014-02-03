@@ -70,8 +70,13 @@
     [PerWorldBindings] readonly attribute long clientTop;
     [PerWorldBindings] readonly attribute long clientWidth;
     [PerWorldBindings] readonly attribute long clientHeight;
-    [PerWorldBindings] attribute long scrollLeft;
-    [PerWorldBindings] attribute long scrollTop;
+
+    // FIXME: should be:
+    // [PerWorldBindings] attribute (Dictionary or long) scrollLeft;
+    // [PerWorldBindings] attribute (Dictionary or long) scrollTop;
+    // http://crbug.com/240176
+    [PerWorldBindings, Custom=Setter] attribute long scrollLeft;
+    [PerWorldBindings, Custom=Setter] attribute long scrollTop;
     [PerWorldBindings] readonly attribute long scrollWidth;
     [PerWorldBindings] readonly attribute long scrollHeight;
 

@@ -27,6 +27,7 @@
 #ifndef DOMWindow_h
 #define DOMWindow_h
 
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/FrameDestructionObserver.h"
@@ -227,9 +228,9 @@ enum PageshowEventPersistence {
         void postMessageTimerFired(PassOwnPtr<PostMessageTimer>);
         void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtr<Event>, PassRefPtr<ScriptCallStack>);
 
-        void scrollBy(int x, int y) const;
-        void scrollTo(int x, int y) const;
-        void scroll(int x, int y) const { scrollTo(x, y); }
+        void scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
+        void scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
+        void scroll(int x, int y, const Dictionary& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
 
         void moveBy(float x, float y) const;
         void moveTo(float x, float y) const;
