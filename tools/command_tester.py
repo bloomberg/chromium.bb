@@ -109,6 +109,10 @@ def ResetGlobalSettings():
       # against golden files, special exit_status signals, etc.
       # When this option is '0', stdout and stderr will be streamed out.
       'capture_output': '1',
+      # This option must be '1' for the stderr to be captured with stdout
+      # (it's ignored if capture_output == 0).  If this option is '0' only
+      # stdout will be captured and stderr will be streamed out.
+      'capture_stderr': '1',
 
       'filter_regex': None,
       'filter_inverse': False,
@@ -576,7 +580,7 @@ def DoRun(command, stdin_data):
   else:
     (total_time, exit_status,
      failed, stdout, stderr) = test_lib.RunTestWithInputOutput(
-         command, stdin_data)
+         command, stdin_data, int(GlobalSettings['capture_stderr']))
     PrintTotalTime(total_time)
     # CheckExitStatus may spew stdout/stderr when there is an error.
     # Otherwise, we do not spew stdout/stderr in this case (capture_output).

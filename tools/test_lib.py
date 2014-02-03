@@ -134,7 +134,7 @@ def RunTestWithInput(cmd, input_data):
   return (timer.ElapsedCpuTime(p), retcode, failed)
 
 
-def RunTestWithInputOutput(cmd, input_data):
+def RunTestWithInputOutput(cmd, input_data, capture_stderr=True):
   """Run a test where we also care about stdin/stdout/stderr.
 
   NOTE: this function may have problems with arbitrarily
@@ -164,11 +164,14 @@ def RunTestWithInputOutput(cmd, input_data):
     else:
       no_pipe = None
 
+    # Only capture stderr if capture_stderr is true
+    stderr = subprocess.PIPE if capture_stderr else None
+
     if type(input_data) == str:
       p = subprocess.Popen(cmd,
                            bufsize=PopenBufSize(),
                            stdin=subprocess.PIPE,
-                           stderr=subprocess.PIPE,
+                           stderr=stderr,
                            stdout=subprocess.PIPE,
                            preexec_fn = no_pipe)
       stdout, stderr = p.communicate(input_data)
@@ -177,7 +180,7 @@ def RunTestWithInputOutput(cmd, input_data):
       p = subprocess.Popen(cmd,
                            bufsize=PopenBufSize(),
                            stdin=input_data,
-                           stderr=subprocess.PIPE,
+                           stderr=stderr,
                            stdout=subprocess.PIPE,
                            preexec_fn = no_pipe)
       stdout, stderr = p.communicate()

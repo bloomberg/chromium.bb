@@ -1699,8 +1699,8 @@ def ApplyTestWrapperCommand(command_args, extra_deps):
 
 def CommandTest(env, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, capture_output=True,
-                wrapper_program_prefix=None, scale_timeout=None,
-                **extra):
+                capture_stderr=True, wrapper_program_prefix=None,
+                scale_timeout=None, **extra):
   if not name.endswith('.out') or name.startswith('$'):
     raise Exception('ERROR: bad test filename for test output %r' % name)
 
@@ -1806,6 +1806,8 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   # Other extra flags
   if not capture_output:
     script_flags.extend(['--capture_output', '0'])
+  if not capture_stderr:
+    script_flags.extend(['--capture_stderr', '0'])
 
   # Set command_tester.py's output filename.  We skip this when using
   # test_wrapper because the run_test_via_ssh.py wrapper does not have
