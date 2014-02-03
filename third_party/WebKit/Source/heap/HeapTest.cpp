@@ -1300,6 +1300,7 @@ TEST(HeapTest, HashMapOfMembers)
         IntWrapper* one(IntWrapper::create(1));
         IntWrapper* anotherOne(IntWrapper::create(1));
         map->add(one, one);
+
         HeapStats afterOneAdd;
         getHeapStats(&afterOneAdd);
         EXPECT_TRUE(afterOneAdd.totalObjectSpace() > afterGC.totalObjectSpace());
@@ -1310,6 +1311,15 @@ TEST(HeapTest, HashMapOfMembers)
         ++it2;
 
         map->add(anotherOne, one);
+
+        // the addition above can cause an allocation of a new
+        // backing store. We therefore garbage collect before
+        // taking the heap stats in order to get rid of the old
+        // backing store.
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        HeapStats afterAddAndGC;
+        getHeapStats(&afterAddAndGC);
+        EXPECT_TRUE(afterAddAndGC.totalObjectSpace() >= afterOneAdd.totalObjectSpace());
 
         EXPECT_EQ(map->size(), 2u); // Two different wrappings of '1' are distinct.
 
@@ -1323,7 +1333,7 @@ TEST(HeapTest, HashMapOfMembers)
 
         HeapStats afterGC2;
         getHeapStats(&afterGC2);
-        EXPECT_EQ(afterGC2.totalObjectSpace(), afterOneAdd.totalObjectSpace());
+        EXPECT_EQ(afterGC2.totalObjectSpace(), afterAddAndGC.totalObjectSpace());
 
         IntWrapper* dozen = 0;
 
