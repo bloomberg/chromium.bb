@@ -44,6 +44,8 @@ NewSVGAnimatedPropertyBase::NewSVGAnimatedPropertyBase(AnimatedPropertyType type
 {
     ASSERT(m_contextElement);
     ASSERT(m_attributeName != nullQName());
+    // FIXME: setContextElement should be delayed until V8 wrapper is created.
+    // FIXME: oilpan: or we can remove this backref ptr hack in oilpan.
     m_contextElement->setContextElement();
 }
 

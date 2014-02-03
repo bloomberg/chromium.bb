@@ -71,13 +71,14 @@ void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyName
 
 SVGElement::SVGElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : Element(tagName, &document, constructionType)
-    , m_className(SVGAnimatedString::create(this, HTMLNames::classAttr, SVGString::create()))
 #if !ASSERT_DISABLED
     , m_inRelativeLengthClientsInvalidation(false)
 #endif
     , m_animatedPropertiesDestructed(false)
+    // |m_isContextElement| must be initialized before |m_className|, as SVGAnimatedString tear-off c-tor currently set this to true.
     , m_isContextElement(false)
     , m_hasSVGRareData(false)
+    , m_className(SVGAnimatedString::create(this, HTMLNames::classAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_className);

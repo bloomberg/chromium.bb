@@ -233,9 +233,6 @@ private:
 
     typedef HashMap<QualifiedName, RefPtr<NewSVGAnimatedPropertyBase> > AttributeToPropertyMap;
     AttributeToPropertyMap m_newAttributeToPropertyMap;
-    RefPtr<SVGAnimatedString> m_className;
-    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGElement)
-    END_DECLARE_ANIMATED_PROPERTIES
 
 #if !ASSERT_DISABLED
     bool m_inRelativeLengthClientsInvalidation;
@@ -243,6 +240,10 @@ private:
     unsigned m_animatedPropertiesDestructed : 1;
     unsigned m_isContextElement : 1;
     unsigned m_hasSVGRareData : 1;
+
+    RefPtr<SVGAnimatedString> m_className;
+    BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGElement)
+    END_DECLARE_ANIMATED_PROPERTIES
 };
 
 struct SVGAttributeHashTranslator {
