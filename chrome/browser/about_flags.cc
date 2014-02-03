@@ -1521,7 +1521,7 @@ const Experiment kExperiments[] = {
     "enable-google-now",
     IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_NAME,
     IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_DESCRIPTION,
-    kOsWin | kOsCrOS | kOsMac,
+    kOsDesktop,
     ENABLE_DISABLE_VALUE_TYPE(
         switches::kEnableGoogleNowIntegration,
         switches::kDisableGoogleNowIntegration)
