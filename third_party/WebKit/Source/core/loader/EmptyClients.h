@@ -79,7 +79,6 @@ public:
     virtual FloatRect pageRect() OVERRIDE { return FloatRect(); }
 
     virtual void focus() OVERRIDE { }
-    virtual void unfocus() OVERRIDE { }
 
     virtual bool canTakeFocus(FocusDirection) OVERRIDE { return false; }
     virtual void takeFocus(FocusDirection) OVERRIDE { }
@@ -119,8 +118,6 @@ public:
 
     virtual bool hasOpenedPopup() const OVERRIDE { return false; }
     virtual PassRefPtr<PopupMenu> createPopupMenu(Frame&, PopupMenuClient*) const OVERRIDE;
-    virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect&) OVERRIDE { return 0; }
-    virtual void closePagePopup(PagePopup*) OVERRIDE { }
     virtual void setPagePopupDriver(PagePopupDriver*) OVERRIDE { }
     virtual void resetPagePopupDriver() OVERRIDE { }
 
@@ -135,7 +132,6 @@ public:
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) OVERRIDE { }
     virtual void scheduleAnimation() OVERRIDE { }
 
-    virtual IntPoint screenToRootView(const IntPoint& p) const OVERRIDE { return p; }
     virtual IntRect rootViewToScreen(const IntRect& r) const OVERRIDE { return r; }
     virtual blink::WebScreenInfo screenInfo() const OVERRIDE { return blink::WebScreenInfo(); }
     virtual void contentsSizeChanged(Frame*, const IntSize&) const OVERRIDE { }
@@ -159,7 +155,6 @@ public:
     virtual void setCursor(const Cursor&) OVERRIDE { }
 
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) OVERRIDE { }
-    virtual void scheduleCompositingLayerFlush() OVERRIDE { }
 
     virtual void needTouchEvents(bool) OVERRIDE { }
     virtual void setTouchAction(TouchAction touchAction) OVERRIDE { };
@@ -167,8 +162,6 @@ public:
     virtual void numWheelEventHandlersChanged(unsigned) OVERRIDE { }
 
     virtual bool shouldRubberBandInDirection(WebCore::ScrollDirection) const OVERRIDE { return false; }
-
-    virtual bool isEmptyChromeClient() const OVERRIDE { return true; }
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) OVERRIDE { }
 

@@ -55,8 +55,7 @@ public:
     // Requests the host invalidate the contents, not the root view. This is the slow path for scrolling.
     virtual void invalidateContentsForSlowScroll(const IntRect& updateRect) = 0;
 
-    // Methods for doing coordinate conversions to and from screen coordinates.
-    virtual IntPoint screenToRootView(const IntPoint&) const = 0;
+    // Methods for doing coordinate conversions to screen coordinates.
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
 
     virtual blink::WebScreenInfo screenInfo() const = 0;

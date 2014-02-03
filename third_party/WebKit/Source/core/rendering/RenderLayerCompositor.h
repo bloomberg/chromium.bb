@@ -86,9 +86,6 @@ public:
     void setCompositingLayersNeedRebuild(bool needRebuild = true);
     bool compositingLayersNeedRebuild() const { return m_compositingLayersNeedRebuild; }
 
-    // Called when something outside WebKit affects the visible rect (e.g. delegated scrolling). Might schedule a layer flush.
-    void didChangeVisibleRect();
-
     // Updating properties required for determining if compositing is necessary.
     void updateCompositingRequirementsState();
     void setNeedsUpdateCompositingRequirementsState() { m_needsUpdateCompositingRequirementsState = true; }

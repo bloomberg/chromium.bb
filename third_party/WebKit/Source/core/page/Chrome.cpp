@@ -80,11 +80,6 @@ void Chrome::scroll(const IntSize& scrollDelta, const IntRect& rectToScroll, con
     InspectorInstrumentation::didScroll(m_page);
 }
 
-IntPoint Chrome::screenToRootView(const IntPoint& point) const
-{
-    return m_client->screenToRootView(point);
-}
-
 IntRect Chrome::rootViewToScreen(const IntRect& rect) const
 {
     return m_client->rootViewToScreen(rect);
@@ -98,11 +93,6 @@ blink::WebScreenInfo Chrome::screenInfo() const
 void Chrome::contentsSizeChanged(Frame* frame, const IntSize& size) const
 {
     m_client->contentsSizeChanged(frame, size);
-}
-
-void Chrome::layoutUpdated(Frame* frame) const
-{
-    m_client->layoutUpdated(frame);
 }
 
 void Chrome::setWindowRect(const FloatRect& rect) const
@@ -123,11 +113,6 @@ FloatRect Chrome::pageRect() const
 void Chrome::focus() const
 {
     m_client->focus();
-}
-
-void Chrome::unfocus() const
-{
-    m_client->unfocus();
 }
 
 bool Chrome::canTakeFocus(FocusDirection direction) const

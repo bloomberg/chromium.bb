@@ -430,12 +430,6 @@ void WebPopupMenuImpl::scroll(const IntSize& scrollDelta, const IntRect& scrollR
         m_rootLayer->layer()->invalidateRect(FloatRect(clipRect));
 }
 
-IntPoint WebPopupMenuImpl::screenToRootView(const IntPoint& point) const
-{
-    notImplemented();
-    return IntPoint();
-}
-
 IntRect WebPopupMenuImpl::rootViewToScreen(const IntRect& rect) const
 {
     notImplemented();

@@ -89,7 +89,6 @@ public:
     virtual FloatRect pageRect() = 0;
 
     virtual void focus() = 0;
-    virtual void unfocus() = 0;
 
     virtual bool canTakeFocus(FocusDirection) = 0;
     virtual void takeFocus(FocusDirection) = 0;
@@ -144,7 +143,6 @@ public:
     virtual void invalidateContentsAndRootView(const IntRect&) = 0;
     virtual void invalidateContentsForSlowScroll(const IntRect&) = 0;
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) = 0;
-    virtual IntPoint screenToRootView(const IntPoint&) const = 0;
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
     virtual blink::WebScreenInfo screenInfo() const = 0;
     virtual void setCursor(const Cursor&) = 0;
@@ -194,12 +192,6 @@ public:
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     virtual void attachRootGraphicsLayer(Frame*, GraphicsLayer*) = 0;
-    // Sets a flag to specify that the view needs to be updated, so we need
-    // to do an eager layout before the drawing.
-    virtual void scheduleCompositingLayerFlush() = 0;
-    // Returns whether or not the client can render the composited layer,
-    // regardless of the settings.
-    virtual bool allowsAcceleratedCompositing() const { return true; }
 
     enum CompositingTrigger {
         ThreeDTransformTrigger = 1 << 0,
@@ -226,10 +218,6 @@ public:
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
     virtual PassRefPtr<PopupMenu> createPopupMenu(Frame&, PopupMenuClient*) const = 0;
-    // Creates a PagePopup object, and shows it beside originBoundsInRootView.
-    // The return value can be 0.
-    virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) = 0;
-    virtual void closePagePopup(PagePopup*) = 0;
     // For testing.
     virtual void setPagePopupDriver(PagePopupDriver*) = 0;
     virtual void resetPagePopupDriver() = 0;
@@ -255,11 +243,9 @@ public:
 
     virtual bool requestPointerLock() { return false; }
     virtual void requestPointerUnlock() { }
-    virtual bool isPointerLocked() { return false; }
 
     virtual FloatSize minimumWindowSize() const { return FloatSize(100, 100); };
 
-    virtual bool isEmptyChromeClient() const { return false; }
     virtual bool isChromeClientImpl() const { return false; }
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) { };

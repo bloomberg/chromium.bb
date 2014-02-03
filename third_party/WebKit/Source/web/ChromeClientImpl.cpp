@@ -192,12 +192,6 @@ void ChromeClientImpl::focus()
         m_webView->client()->didFocus();
 }
 
-void ChromeClientImpl::unfocus()
-{
-    if (m_webView->client())
-        m_webView->client()->didBlur();
-}
-
 bool ChromeClientImpl::canTakeFocus(FocusDirection)
 {
     // For now the browser can always take focus if we're not running layout
@@ -512,18 +506,6 @@ void ChromeClientImpl::scroll(
         m_webView->scrollRootLayerRect(scrollDelta, clipRect);
 }
 
-IntPoint ChromeClientImpl::screenToRootView(const IntPoint& point) const
-{
-    IntPoint windowPoint(point);
-
-    if (m_webView->client()) {
-        WebRect windowRect = m_webView->client()->windowRect();
-        windowPoint.move(-windowRect.x, -windowRect.y);
-    }
-
-    return windowPoint;
-}
-
 IntRect ChromeClientImpl::rootViewToScreen(const IntRect& rect) const
 {
     IntRect screenRect(rect);
@@ -804,11 +786,6 @@ void ChromeClientImpl::attachRootGraphicsLayer(Frame* frame, GraphicsLayer* grap
     m_webView->setRootGraphicsLayer(graphicsLayer);
 }
 
-void ChromeClientImpl::scheduleCompositingLayerFlush()
-{
-    m_webView->scheduleCompositingLayerSync();
-}
-
 ChromeClient::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTriggers() const
 {
     if (!m_webView->allowsAcceleratedCompositing())
@@ -952,11 +929,6 @@ bool ChromeClientImpl::requestPointerLock()
 void ChromeClientImpl::requestPointerUnlock()
 {
     return m_webView->requestPointerUnlock();
-}
-
-bool ChromeClientImpl::isPointerLocked()
-{
-    return m_webView->isPointerLocked();
 }
 
 void ChromeClientImpl::annotatedRegionsChanged()

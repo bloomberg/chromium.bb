@@ -124,7 +124,6 @@ public:
     virtual void scroll(
         const WebCore::IntSize& scrollDelta, const WebCore::IntRect& scrollRect,
         const WebCore::IntRect& clipRect) OVERRIDE FINAL;
-    virtual WebCore::IntPoint screenToRootView(const WebCore::IntPoint&) const OVERRIDE FINAL;
     virtual WebCore::IntRect rootViewToScreen(const WebCore::IntRect&) const OVERRIDE FINAL;
     virtual WebScreenInfo screenInfo() const OVERRIDE FINAL;
 

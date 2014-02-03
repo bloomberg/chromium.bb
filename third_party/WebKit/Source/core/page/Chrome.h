@@ -64,14 +64,12 @@ public:
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
     virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE;
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) OVERRIDE;
-    virtual IntPoint screenToRootView(const IntPoint&) const OVERRIDE;
     virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE;
     virtual blink::WebScreenInfo screenInfo() const OVERRIDE;
 
     virtual void scheduleAnimation() OVERRIDE;
 
     void contentsSizeChanged(Frame*, const IntSize&) const;
-    void layoutUpdated(Frame*) const;
 
     void setCursor(const Cursor&);
 
@@ -81,7 +79,6 @@ public:
     FloatRect pageRect() const;
 
     void focus() const;
-    void unfocus() const;
 
     bool canTakeFocus(FocusDirection) const;
     void takeFocus(FocusDirection) const;

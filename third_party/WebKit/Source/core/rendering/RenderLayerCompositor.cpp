@@ -296,23 +296,6 @@ void RenderLayerCompositor::setCompositingLayersNeedRebuild(bool needRebuild)
         m_compositingLayersNeedRebuild = needRebuild;
 }
 
-void RenderLayerCompositor::didChangeVisibleRect()
-{
-    GraphicsLayer* rootLayer = rootGraphicsLayer();
-    if (!rootLayer)
-        return;
-
-    FrameView* frameView = m_renderView ? m_renderView->frameView() : 0;
-    if (!frameView)
-        return;
-
-    IntRect visibleRect = m_containerLayer ? IntRect(IntPoint(), frameView->contentsSize()) : frameView->visibleContentRect();
-    if (rootLayer->visibleRectChangeRequiresFlush(visibleRect)) {
-        if (Page* page = this->page())
-            page->chrome().client().scheduleCompositingLayerFlush();
-    }
-}
-
 void RenderLayerCompositor::updateCompositingRequirementsState()
 {
     if (!m_needsUpdateCompositingRequirementsState)

@@ -79,7 +79,6 @@ public:
     virtual WebCore::FloatRect windowRect() OVERRIDE;
     virtual WebCore::FloatRect pageRect() OVERRIDE;
     virtual void focus() OVERRIDE;
-    virtual void unfocus() OVERRIDE;
     virtual bool canTakeFocus(WebCore::FocusDirection) OVERRIDE;
     virtual void takeFocus(WebCore::FocusDirection) OVERRIDE;
     virtual void focusedNodeChanged(WebCore::Node*) OVERRIDE;
@@ -120,7 +119,6 @@ public:
     virtual void scroll(
         const WebCore::IntSize& scrollDelta, const WebCore::IntRect& rectToScroll,
         const WebCore::IntRect& clipRect) OVERRIDE;
-    virtual WebCore::IntPoint screenToRootView(const WebCore::IntPoint&) const OVERRIDE;
     virtual WebCore::IntRect rootViewToScreen(const WebCore::IntRect&) const OVERRIDE;
     virtual WebScreenInfo screenInfo() const OVERRIDE;
     virtual void contentsSizeChanged(WebCore::Frame*, const WebCore::IntSize&) const OVERRIDE;
@@ -148,10 +146,6 @@ public:
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     virtual void attachRootGraphicsLayer(WebCore::Frame*, WebCore::GraphicsLayer*) OVERRIDE;
 
-    // Sets a flag to specify that the view needs to be updated, so we need
-    // to do an eager layout before the drawing.
-    virtual void scheduleCompositingLayerFlush() OVERRIDE;
-
     virtual CompositingTriggerFlags allowedCompositingTriggers() const OVERRIDE;
 
     virtual void enterFullScreenForElement(WebCore::Element*) OVERRIDE;
@@ -171,8 +165,8 @@ public:
 
     virtual bool hasOpenedPopup() const OVERRIDE;
     virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::Frame&, WebCore::PopupMenuClient*) const OVERRIDE;
-    virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect&) OVERRIDE;
-    virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
+    WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect&);
+    void closePagePopup(WebCore::PagePopup*);
     virtual void setPagePopupDriver(WebCore::PagePopupDriver*) OVERRIDE;
     virtual void resetPagePopupDriver() OVERRIDE;
 
@@ -186,7 +180,6 @@ public:
 
     virtual bool requestPointerLock() OVERRIDE;
     virtual void requestPointerUnlock() OVERRIDE;
-    virtual bool isPointerLocked() OVERRIDE;
 
     virtual void didAssociateFormControls(const Vector<RefPtr<WebCore::Element> >&) OVERRIDE;
     virtual void didChangeValueInTextField(WebCore::HTMLInputElement&) OVERRIDE;

@@ -185,9 +185,8 @@ public:
     IntRect windowToContents(const IntRect&) const;
     IntRect contentsToWindow(const IntRect&) const;
 
-    // Functions for converting to and from screen coordinates.
+    // Functions for converting to screen coordinates.
     IntRect contentsToScreen(const IntRect&) const;
-    IntPoint screenToContents(const IntPoint&) const;
 
     // These functions are used to enable scrollbars to avoid window resizer controls that overlap the scroll view. This happens on Mac
     // for example.
