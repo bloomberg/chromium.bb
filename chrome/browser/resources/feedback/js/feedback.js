@@ -21,7 +21,7 @@ var FEEDBACK_MIN_WIDTH = 500;
  * @type {number}
  * @const
  */
-var FEEDBACK_MIN_HEIGHT = 625;
+var FEEDBACK_MIN_HEIGHT = 585;
 
 /** @type {number}
  * @const
