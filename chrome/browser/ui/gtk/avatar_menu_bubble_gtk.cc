@@ -93,7 +93,8 @@ void AvatarMenuBubbleGtk::OpenProfile(size_t profile_index) {
   gtk_get_current_event_state(&modifier_state);
   guint modifier_state_uint = modifier_state;
   avatar_menu_->SwitchToProfile(profile_index,
-      event_utils::DispositionFromGdkState(modifier_state_uint) == NEW_WINDOW);
+      event_utils::DispositionFromGdkState(modifier_state_uint) == NEW_WINDOW,
+      ProfileMetrics::SWITCH_PROFILE_ICON);
   CloseBubble();
 }
 
