@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -86,6 +87,33 @@ const char kEmbeddedSearchFieldTrialName[] = "EmbeddedSearch";
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
 
+// Status of the New Tab URL for the default Search provider. NOTE: Used in a
+// UMA histogram so values should only be added at the end and not reordered.
+enum NewTabURLState {
+  // Valid URL that should be used.
+  NEW_TAB_URL_VALID = 0,
+
+  // Corrupt state (e.g. no profile or template url).
+  NEW_TAB_URL_BAD = 1,
+
+  // URL should not be used because in incognito window.
+  NEW_TAB_URL_INCOGNITO = 2,
+
+  // No New Tab URL set for provider.
+  NEW_TAB_URL_NOT_SET = 3,
+
+  // URL is not secure.
+  NEW_TAB_URL_INSECURE = 4,
+
+  // URL should not be used because Suggest is disabled.
+  NEW_TAB_URL_SUGGEST_OFF = 5,
+
+  // URL should not be used because it is blocked for a supervised user.
+  NEW_TAB_URL_BLOCKED = 6,
+
+  NEW_TAB_URL_MAX
+};
+
 // Used to set the Instant support state of the Navigation entry.
 const char kInstantSupportStateKey[] = "instant_support_state";
 
@@ -115,10 +143,12 @@ base::string16 InstantSupportStateToString(InstantSupportState state) {
 }
 
 TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  if (template_url_service)
-    return template_url_service->GetDefaultSearchProvider();
+  if (profile) {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile);
+    if (template_url_service)
+      return template_url_service->GetDefaultSearchProvider();
+  }
   return NULL;
 }
 
@@ -258,6 +288,54 @@ bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
 #endif
   return true;
 }
+
+// Returns whether |new_tab_url| can be used as a URL for the New Tab page.
+// NEW_TAB_URL_VALID means a valid URL; other enum values imply an invalid URL.
+NewTabURLState IsValidNewTabURL(Profile* profile, const GURL& new_tab_url) {
+  if (profile->IsOffTheRecord())
+    return NEW_TAB_URL_INCOGNITO;
+  if (!new_tab_url.is_valid())
+    return NEW_TAB_URL_NOT_SET;
+  if (!new_tab_url.SchemeIsSecure())
+    return NEW_TAB_URL_INSECURE;
+  if (!IsSuggestPrefEnabled(profile))
+    return NEW_TAB_URL_SUGGEST_OFF;
+  if (!IsURLAllowedForSupervisedUser(new_tab_url, profile))
+    return NEW_TAB_URL_BLOCKED;
+  return NEW_TAB_URL_VALID;
+}
+
+// Used to look up the URL to use for the New Tab page. Also tracks how we
+// arrived at that URL so it can be logged with UMA.
+struct NewTabURLDetails {
+  NewTabURLDetails(const GURL& url, NewTabURLState state)
+      : url(url), state(state) {}
+
+  static NewTabURLDetails ForProfile(Profile* profile) {
+    const GURL local_url(chrome::kChromeSearchLocalNtpUrl);
+    TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+    if (!profile || !template_url)
+      return NewTabURLDetails(local_url, NEW_TAB_URL_BAD);
+
+    GURL search_provider_url = TemplateURLRefToGURL(
+        template_url->new_tab_url_ref(), kDisableStartMargin, false, false);
+    NewTabURLState state = IsValidNewTabURL(profile, search_provider_url);
+    switch (state) {
+      case NEW_TAB_URL_VALID:
+        // We can use the search provider's page.
+        return NewTabURLDetails(search_provider_url, state);
+      case NEW_TAB_URL_INCOGNITO:
+        // Incognito has its own New Tab.
+        return NewTabURLDetails(GURL(), state);
+      default:
+        // Use the local New Tab otherwise.
+        return NewTabURLDetails(local_url, state);
+    };
+  }
+
+  GURL url;
+  NewTabURLState state;
+};
 
 }  // namespace
 
@@ -451,25 +529,7 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
 }
 
 GURL GetNewTabPageURL(Profile* profile) {
-  if (!profile || profile->IsOffTheRecord())
-    return GURL();
-
-  if (!IsSuggestPrefEnabled(profile))
-    return GURL(chrome::kChromeSearchLocalNtpUrl);
-
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return GURL(chrome::kChromeSearchLocalNtpUrl);
-
-  GURL url(TemplateURLRefToGURL(template_url->new_tab_url_ref(),
-                                kDisableStartMargin, false, false));
-  if (!url.is_valid() || !url.SchemeIsSecure())
-    return GURL(chrome::kChromeSearchLocalNtpUrl);
-
-  if (!IsURLAllowedForSupervisedUser(url, profile))
-    return GURL(chrome::kChromeSearchLocalNtpUrl);
-
-  return url;
+  return NewTabURLDetails::ForProfile(profile).url;
 }
 
 GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
@@ -594,12 +654,14 @@ bool HandleNewTabURLRewrite(GURL* url,
     return false;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  GURL new_tab_url(GetNewTabPageURL(profile));
-  if (!new_tab_url.is_valid())
-    return false;
-
-  *url = new_tab_url;
-  return true;
+  NewTabURLDetails details(NewTabURLDetails::ForProfile(profile));
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.URLState",
+                            details.state, NEW_TAB_URL_MAX);
+  if (details.url.is_valid()) {
+    *url = details.url;
+    return true;
+  }
+  return false;
 }
 
 bool HandleNewTabURLReverseRewrite(GURL* url,
@@ -607,14 +669,25 @@ bool HandleNewTabURLReverseRewrite(GURL* url,
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
+  // Do nothing in incognito.
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  GURL new_tab_url(GetNewTabPageURL(profile));
-  if (!new_tab_url.is_valid() ||
-      !search::MatchesOriginAndPath(new_tab_url, *url))
+  if (profile && profile->IsOffTheRecord())
     return false;
 
-  *url = GURL(chrome::kChromeUINewTabURL);
-  return true;
+  if (search::MatchesOriginAndPath(
+      GURL(chrome::kChromeSearchLocalNtpUrl), *url)) {
+    *url = GURL(chrome::kChromeUINewTabURL);
+    return true;
+  }
+
+  GURL new_tab_url(GetNewTabPageURL(profile));
+  if (new_tab_url.is_valid() &&
+      search::MatchesOriginAndPath(new_tab_url, *url)) {
+    *url = GURL(chrome::kChromeUINewTabURL);
+    return true;
+  }
+
+  return false;
 }
 
 void SetInstantSupportStateInNavigationEntry(InstantSupportState state,

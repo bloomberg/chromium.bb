@@ -521,9 +521,12 @@ TEST_F(SearchTest, InstantCacheableNTPNavigationEntryNewProfile) {
                                    controller.GetLastCommittedEntry()));
 }
 
-TEST_F(SearchTest, UseLocalNTPInIncognito) {
-  EXPECT_EQ(GURL(), chrome::GetNewTabPageURL(
-      profile()->GetOffTheRecordProfile()));
+TEST_F(SearchTest, NoRewriteInIncognito) {
+  profile()->ForceIncognito(true);
+  EXPECT_EQ(GURL(), chrome::GetNewTabPageURL(profile()));
+  GURL new_tab_url(chrome::kChromeUINewTabURL);
+  EXPECT_FALSE(HandleNewTabURLRewrite(&new_tab_url, profile()));
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), new_tab_url);
 }
 
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsInsecure) {
@@ -531,6 +534,9 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsInsecure) {
   SetSearchProvider(true, true);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             chrome::GetNewTabPageURL(profile()));
+  GURL new_tab_url(chrome::kChromeUINewTabURL);
+  EXPECT_TRUE(HandleNewTabURLRewrite(&new_tab_url, profile()));
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
 }
 
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
@@ -538,6 +544,9 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
   SetSearchProvider(false, true);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             chrome::GetNewTabPageURL(profile()));
+  GURL new_tab_url(chrome::kChromeUINewTabURL);
+  EXPECT_TRUE(HandleNewTabURLRewrite(&new_tab_url, profile()));
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
 }
 
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
@@ -552,6 +561,9 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
 
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             chrome::GetNewTabPageURL(profile()));
+  GURL new_tab_url(chrome::kChromeUINewTabURL);
+  EXPECT_TRUE(HandleNewTabURLRewrite(&new_tab_url, profile()));
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
   EXPECT_EQ(GURL(), GetInstantURL(profile(), kDisableStartMargin, false));
 }
 

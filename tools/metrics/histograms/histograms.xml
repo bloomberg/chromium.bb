@@ -6066,6 +6066,10 @@ other types of suffix sets.
 
 <histogram name="InstantExtended.FallbackToLocalOverlay"
     enum="InstantExtended_FallbackCause">
+  <obsolete>
+    Depcreated as of 10/2013. No longer relevant since the HTML overlay was
+    abandoned.
+  </obsolete>
   <summary>
     Records the cause for falling back to a local overlay at the time of
     fallback.
@@ -12129,6 +12133,12 @@ other types of suffix sets.
     are made to load thumbnails at different times during the NTP's lifetime.
     Each NTP session's error rate is logged after the user navigates to a new
     URL from that NTP.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.URLState" enum="NewTabURLState">
+  <summary>
+    Records the status of the New Tab page URL when an NTP is opened.
   </summary>
 </histogram>
 
@@ -28377,6 +28387,16 @@ other types of suffix sets.
   <int value="2" label="Shown from sync promo page"/>
   <int value="3" label="User pressed 'Try Chrome'"/>
   <int value="4" label="User dismissed the promo"/>
+</enum>
+
+<enum name="NewTabURLState" type="int">
+  <int value="0" label="Valid URL was used"/>
+  <int value="1" label="Corrupt state"/>
+  <int value="2" label="Incognito window"/>
+  <int value="3" label="No URL for default provider"/>
+  <int value="4" label="Insecure URL"/>
+  <int value="5" label="Suggest is disabled"/>
+  <int value="6" label="URL blocked for supervised user"/>
 </enum>
 
 <enum name="NotificationActionType" type="int">
