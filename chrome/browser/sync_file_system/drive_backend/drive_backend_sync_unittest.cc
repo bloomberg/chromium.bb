@@ -38,10 +38,14 @@ namespace drive_backend {
 
 typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
-class DriveBackendSyncTest : public testing::Test {
+class DriveBackendSyncTest : public testing::Test,
+                             public LocalFileSyncService::Observer,
+                             public RemoteFileSyncService::Observer {
  public:
   DriveBackendSyncTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        pending_remote_changes_(0),
+        pending_local_changes_(0) {}
   virtual ~DriveBackendSyncTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -56,6 +60,7 @@ class DriveBackendSyncTest : public testing::Test {
     RegisterSyncableFileSystem();
     local_sync_service_ = LocalFileSyncService::CreateForTesting(
         &profile_, in_memory_env_.get());
+    local_sync_service_->AddChangeObserver(this);
 
     scoped_ptr<drive::FakeDriveService> drive_service(
         new drive::FakeDriveService());
@@ -75,6 +80,7 @@ class DriveBackendSyncTest : public testing::Test {
         drive_service.PassAs<drive::DriveServiceInterface>(),
         uploader.Pass(),
         NULL, NULL, NULL, in_memory_env_.get()));
+    remote_sync_service_->AddServiceObserver(this);
     remote_sync_service_->Initialize();
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
@@ -99,6 +105,14 @@ class DriveBackendSyncTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
     RevokeSyncableFileSystem();
+  }
+
+  virtual void OnRemoteChangeQueueUpdated(int64 pending_changes_hint) OVERRIDE {
+    pending_remote_changes_ = pending_changes_hint;
+  }
+
+  virtual void OnLocalChangeAvailable(int64 pending_changes_hint) OVERRIDE {
+    pending_local_changes_ = pending_changes_hint;
   }
 
  protected:
@@ -247,18 +261,27 @@ class DriveBackendSyncTest : public testing::Test {
     while (true) {
       local_sync_status = ProcessLocalChange();
       if (local_sync_status != SYNC_STATUS_OK &&
-          local_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
+          local_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC &&
+          local_sync_status != SYNC_STATUS_FILE_BUSY)
         return local_sync_status;
 
       remote_sync_status = ProcessRemoteChange();
       if (remote_sync_status != SYNC_STATUS_OK &&
-          remote_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC)
+          remote_sync_status != SYNC_STATUS_NO_CHANGE_TO_SYNC &&
+          remote_sync_status != SYNC_STATUS_FILE_BUSY)
         return remote_sync_status;
 
       if (local_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC &&
           remote_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
-        if (metadata_database()->GetLargestFetchedChangeID() !=
-            GetLargestChangeID()) {
+        remote_sync_service_->PromoteDemotedChanges();
+        local_sync_service_->PromoteDemotedChanges();
+
+        if (pending_remote_changes_ || pending_local_changes_)
+          continue;
+
+        int64 largest_fetched_change_id =
+            metadata_database()->GetLargestFetchedChangeID();
+        if (largest_fetched_change_id != GetLargestChangeID()) {
           FetchRemoteChanges();
           continue;
         }
@@ -456,6 +479,9 @@ class DriveBackendSyncTest : public testing::Test {
 
   scoped_ptr<SyncEngine> remote_sync_service_;
   scoped_ptr<LocalFileSyncService> local_sync_service_;
+
+  int64 pending_remote_changes_;
+  int64 pending_local_changes_;
 
   scoped_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
   std::map<std::string, CannedSyncableFileSystem*> file_systems_;
