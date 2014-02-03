@@ -679,6 +679,8 @@ crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
 # all platforms then restore the expected Crash line for Mac.
 Bug(falken) fullscreen/parent-flow-inline-with-block-child.html [ Pass Failure Crash NeedsManualRebaseline ]
 
+crbug.com/340351 fullscreen/full-screen-video-has-backdrop.html [ ImageOnlyFailure Pass ]
+
 crbug.com/308952 [ XP ] inspector/editor/text-editor-reveal-line.html [ Failure ]
 crbug.com/310992 virtual/legacy-animations-engine/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
