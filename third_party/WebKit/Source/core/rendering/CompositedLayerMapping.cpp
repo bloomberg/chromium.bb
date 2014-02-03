@@ -2080,10 +2080,10 @@ void CompositedLayerMapping::addRenderLayerToSquashingGraphicsLayer(RenderLayer*
     // FIXME: Perhaps we can find a tighter more clever mechanism later.
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
         if (m_squashedLayers[nextSquashedLayerIndex].renderLayer != layer) {
-            m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
             if (m_squashingLayer)
                 m_squashingLayer->setNeedsDisplay();
         }
+        m_squashedLayers[nextSquashedLayerIndex] = paintInfo;
     } else {
         m_squashedLayers.append(paintInfo);
         if (m_squashingLayer)
