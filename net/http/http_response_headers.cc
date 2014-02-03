@@ -113,6 +113,14 @@ void CheckDoesNotHaveEmbededNulls(const std::string& str) {
   CHECK(str.find('\0') == std::string::npos);
 }
 
+bool ShouldShowHttpHeaderValue(const std::string& header_name) {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  if (header_name == "Proxy-Authenticate")
+    return false;
+#endif
+  return true;
+}
+
 }  // namespace
 
 const char HttpResponseHeaders::kContentRange[] = "Content-Range";
@@ -1311,9 +1319,11 @@ base::Value* HttpResponseHeaders::NetLogCallback(
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
     headers->Append(
-      new base::StringValue(base::StringPrintf("%s: %s",
-                                               name.c_str(),
-                                               value.c_str())));
+      new base::StringValue(
+          base::StringPrintf("%s: %s",
+                             name.c_str(),
+                             (ShouldShowHttpHeaderValue(name) ?
+                                 value.c_str() : "[elided]"))));
   }
   dict->Set("headers", headers);
   return dict;

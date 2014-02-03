@@ -11,6 +11,18 @@
 #include "base/values.h"
 #include "net/http/http_util.h"
 
+namespace {
+
+bool ShouldShowHttpHeaderValue(const std::string& header_name) {
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  if (header_name == "Proxy-Authorization")
+    return false;
+#endif
+  return true;
+}
+
+}  // namespace
+
 namespace net {
 
 const char HttpRequestHeaders::kGetMethod[] = "GET";
@@ -191,10 +203,11 @@ base::Value* HttpRequestHeaders::NetLogCallback(
   base::ListValue* headers = new base::ListValue();
   for (HeaderVector::const_iterator it = headers_.begin();
        it != headers_.end(); ++it) {
-    headers->Append(
-        new base::StringValue(base::StringPrintf("%s: %s",
-                                                 it->key.c_str(),
-                                                 it->value.c_str())));
+    headers->Append(new base::StringValue(
+        base::StringPrintf("%s: %s",
+                           it->key.c_str(),
+                           (ShouldShowHttpHeaderValue(it->key) ?
+                               it->value.c_str() : "[elided]"))));
   }
   dict->Set("headers", headers);
   return dict;
