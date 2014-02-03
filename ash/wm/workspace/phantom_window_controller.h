@@ -44,6 +44,14 @@ class ASH_EXPORT PhantomWindowController {
  private:
   friend class PhantomWindowControllerTest;
 
+  // Animates the phantom window towards |bounds_in_screen| when the alternate
+  // caption button style is used.
+  void ShowAlternate(const gfx::Rect& bounds_in_screen);
+
+  // Animates the phantom window towards |bounds_in_screen| when the legacy
+  // caption button style is used.
+  void ShowLegacy(const gfx::Rect& bounds_in_screen);
+
   // Creates, shows and returns a phantom widget at |bounds|
   // with kShellWindowId_ShelfContainer in |root_window| as a parent.
   scoped_ptr<views::Widget> CreatePhantomWidget(
