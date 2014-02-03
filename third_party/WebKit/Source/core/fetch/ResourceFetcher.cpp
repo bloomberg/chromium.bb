@@ -935,6 +935,12 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (existingResource->isLoading())
         return Use;
 
+    // If any of the redirects in the chain to loading the resource were not cacheable, we cannot reuse our cached resource.
+    if (!existingResource->canReuseRedirectChain()) {
+        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to an uncacheable redirect");
+        return Reload;
+    }
+
     // Check if the cache headers requires us to revalidate (cache expiration for example).
     if (cachePolicy == CachePolicyRevalidate || existingResource->mustRevalidateDueToCacheHeaders()) {
         // See if the resource has usable ETag or Last-modified headers.

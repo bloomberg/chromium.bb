@@ -54,20 +54,6 @@ private:
     virtual void responseReceived(const ResourceResponse&) OVERRIDE;
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
     virtual void didDownloadData(int) OVERRIDE;
-
-    struct RedirectPair {
-    public:
-        explicit RedirectPair(const ResourceRequest& request, const ResourceResponse& redirectResponse)
-            : m_request(request)
-            , m_redirectResponse(redirectResponse)
-        {
-        }
-
-        const ResourceRequest m_request;
-        const ResourceResponse m_redirectResponse;
-    };
-
-    Vector<RedirectPair> m_redirectChain;
 };
 
 #ifdef SECURITY_ASSERT_ENABLED

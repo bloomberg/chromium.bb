@@ -57,15 +57,15 @@ void RawResource::didAddClient(ResourceClient* c)
     // so a protector is necessary.
     ResourcePtr<RawResource> protect(this);
     RawResourceClient* client = static_cast<RawResourceClient*>(c);
-    size_t redirectCount = m_redirectChain.size();
+    size_t redirectCount = redirectChain().size();
     for (size_t i = 0; i < redirectCount; i++) {
-        RedirectPair redirect = m_redirectChain[i];
+        RedirectPair redirect = redirectChain()[i];
         ResourceRequest request(redirect.m_request);
         client->redirectReceived(this, request, redirect.m_redirectResponse);
         if (!hasClient(c))
             return;
     }
-    ASSERT(redirectCount == m_redirectChain.size());
+    ASSERT(redirectCount == redirectChain().size());
 
     if (!m_response.isNull())
         client->responseReceived(this, m_response);
@@ -85,7 +85,6 @@ void RawResource::willSendRequest(ResourceRequest& request, const ResourceRespon
         ResourceClientWalker<RawResourceClient> w(m_clients);
         while (RawResourceClient* c = w.next())
             c->redirectReceived(this, request, response);
-        m_redirectChain.append(RedirectPair(request, response));
     }
     Resource::willSendRequest(request, response);
 }
@@ -176,11 +175,6 @@ bool RawResource::canReuse(const ResourceRequest& newRequest) const
     for (HTTPHeaderMap::const_iterator i = oldHeaders.begin(); i != end; ++i) {
         AtomicString headerName = i->key;
         if (!shouldIgnoreHeaderForCacheReuse(headerName) && i->value != newHeaders.get(headerName))
-            return false;
-    }
-
-    for (size_t i = 0; i < m_redirectChain.size(); i++) {
-        if (m_redirectChain[i].m_redirectResponse.cacheControlContainsNoStore())
             return false;
     }
 
