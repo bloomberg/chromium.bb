@@ -3,7 +3,7 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script src="../http/tests/inspector/workspace-test.js"></script>
 <script src="../http/tests/inspector/debugger-test.js"></script>
-<script src="resources/blink-fs.js"></script>
+<script src="resources/example-fileset-for-test.js"></script>
 <script src="editor/editor-test.js"></script>
 <script>
 function test()
@@ -59,7 +59,7 @@ function test()
     InspectorTest.runTestSuite([
         function testSimpleMovements(next)
         {
-            InspectorTest.showScriptSource("blink-fs.js", onContentLoaded);
+            InspectorTest.showScriptSource("example-fileset-for-test.js", onContentLoaded);
 
             function onContentLoaded()
             {
@@ -236,7 +236,7 @@ function test()
         {
             dumpSelection(panel.visibleView.textEditor, "Initial state");
 
-            InspectorTest.waitForScriptSource("blink-fs.js", onScriptSourceLoaded);
+            InspectorTest.waitForScriptSource("example-fileset-for-test.js", onScriptSourceLoaded);
             function onScriptSourceLoaded(uiSourceCode)
             {
                 var jumps = [20, 10, 30];
