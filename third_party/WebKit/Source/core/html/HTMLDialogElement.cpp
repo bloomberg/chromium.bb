@@ -94,6 +94,7 @@ HTMLDialogElement::HTMLDialogElement(Document& document)
     , m_centeringMode(Uninitialized)
     , m_centeredPosition(0)
     , m_returnValue("")
+    , m_modal(false)
 {
     ScriptWrappable::init(this);
 }
@@ -112,6 +113,13 @@ void HTMLDialogElement::close(const String& returnValue, ExceptionState& excepti
     closeDialog(returnValue);
 }
 
+void HTMLDialogElement::removedFrom(ContainerNode* insertionPoint)
+{
+    // FIXME: We should call inertSubtreesChanged if needed here.
+    m_modal = false;
+    HTMLElement::removedFrom(insertionPoint);
+}
+
 void HTMLDialogElement::closeDialog(const String& returnValue)
 {
     if (!fastHasAttribute(openAttr))
@@ -119,6 +127,7 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
     setBooleanAttribute(openAttr, false);
 
     HTMLDialogElement* activeModalDialog = document().activeModalDialog();
+    m_modal = false;
     document().removeFromTopLayer(this);
     if (activeModalDialog == this)
         inertSubtreesChanged(document());
@@ -156,6 +165,7 @@ void HTMLDialogElement::showModal(ExceptionState& exceptionState)
         return;
     }
 
+    m_modal = true;
     document().addToTopLayer(this);
     setBooleanAttribute(openAttr, true);
 

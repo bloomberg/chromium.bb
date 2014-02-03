@@ -69,11 +69,6 @@ private:
     virtual LayoutUnit computeReplacedLogicalHeight() const OVERRIDE;
     virtual LayoutUnit minimumReplacedHeight() const OVERRIDE;
 
-    virtual LayoutUnit offsetLeft() const OVERRIDE;
-    virtual LayoutUnit offsetTop() const OVERRIDE;
-    virtual LayoutUnit offsetWidth() const OVERRIDE;
-    virtual LayoutUnit offsetHeight() const OVERRIDE;
-
     void updatePlayer();
 
     bool acceleratedRenderingInUse();

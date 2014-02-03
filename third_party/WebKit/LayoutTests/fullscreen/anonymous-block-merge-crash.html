@@ -5,10 +5,16 @@
   } else {
     var span = document.getElementsByTagName('span')[0];
 
+    count = 0;
     document.onwebkitfullscreenchange = function(event) {
-      document.body.appendChild(document.createElement('div'));
-      document.webkitCancelFullScreen();
-      testRunner.notifyDone();
+      count++;
+      if (count == 1) {
+          document.body.appendChild(document.createElement('div'));
+          document.webkitCancelFullScreen();
+          return;
+      }
+      if (testRunner && count == 2)
+          testRunner.notifyDone();
     };
 
     runWithKeyDown(function(){span.webkitRequestFullScreen()});
