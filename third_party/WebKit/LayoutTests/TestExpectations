@@ -641,6 +641,7 @@ crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html
 # Test results depends on image caching behavior in Blink/Skia. This is being
 # worked on actively. Rebaseline after impl-side painting becomes stable.
 crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Failure Pass Slow ]
+crbug.com/298188 [ Linux Debug ] virtual/implsidepainting/inspector/timeline/timeline-dom-content-loaded-event.html [ Pass Crash ]
 
 crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure Pass ]
 
