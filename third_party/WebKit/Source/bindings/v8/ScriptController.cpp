@@ -90,7 +90,7 @@ ScriptController::ScriptController(Frame* frame)
     : m_frame(frame)
     , m_sourceURL(0)
     , m_isolate(v8::Isolate::GetCurrent())
-    , m_windowShell(V8WindowShell::create(frame, mainThreadNormalWorld(), m_isolate))
+    , m_windowShell(V8WindowShell::create(frame, DOMWrapperWorld::mainWorld(), m_isolate))
     , m_windowScriptNPObject(0)
 {
 }
@@ -221,7 +221,7 @@ bool ScriptController::initializeMainWorld()
 {
     if (m_windowShell->isContextInitialized())
         return false;
-    return windowShell(mainThreadNormalWorld())->isContextInitialized();
+    return windowShell(DOMWrapperWorld::mainWorld())->isContextInitialized();
 }
 
 V8WindowShell* ScriptController::existingWindowShell(DOMWrapperWorld* world)
@@ -282,12 +282,12 @@ static inline v8::Local<v8::Context> contextForWorld(ScriptController& scriptCon
 v8::Local<v8::Context> ScriptController::currentWorldContextOrMainWorldContext()
 {
     if (!isolate()->InContext())
-        return contextForWorld(*this, mainThreadNormalWorld());
+        return contextForWorld(*this, DOMWrapperWorld::mainWorld());
 
     v8::Handle<v8::Context> context = isolate()->GetEnteredContext();
     DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(context);
     if (!isolatedWorld)
-        return contextForWorld(*this, mainThreadNormalWorld());
+        return contextForWorld(*this, DOMWrapperWorld::mainWorld());
 
     Frame* frame = toFrameIfNotDetached(context);
     if (m_frame == frame)
@@ -298,7 +298,7 @@ v8::Local<v8::Context> ScriptController::currentWorldContextOrMainWorldContext()
 
 v8::Local<v8::Context> ScriptController::mainWorldContext()
 {
-    return contextForWorld(*this, mainThreadNormalWorld());
+    return contextForWorld(*this, DOMWrapperWorld::mainWorld());
 }
 
 v8::Local<v8::Context> ScriptController::mainWorldContext(Frame* frame)
@@ -306,7 +306,7 @@ v8::Local<v8::Context> ScriptController::mainWorldContext(Frame* frame)
     if (!frame)
         return v8::Local<v8::Context>();
 
-    return contextForWorld(frame->script(), mainThreadNormalWorld());
+    return contextForWorld(frame->script(), DOMWrapperWorld::mainWorld());
 }
 
 // Create a V8 object with an interceptor of NPObjectPropertyGetter.
@@ -531,17 +531,17 @@ void ScriptController::updateDocument()
         return;
 
     if (!initializeMainWorld())
-        windowShell(mainThreadNormalWorld())->updateDocument();
+        windowShell(DOMWrapperWorld::mainWorld())->updateDocument();
 }
 
 void ScriptController::namedItemAdded(HTMLDocument* doc, const AtomicString& name)
 {
-    windowShell(mainThreadNormalWorld())->namedItemAdded(doc, name);
+    windowShell(DOMWrapperWorld::mainWorld())->namedItemAdded(doc, name);
 }
 
 void ScriptController::namedItemRemoved(HTMLDocument* doc, const AtomicString& name)
 {
-    windowShell(mainThreadNormalWorld())->namedItemRemoved(doc, name);
+    windowShell(DOMWrapperWorld::mainWorld())->namedItemRemoved(doc, name);
 }
 
 bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reason)

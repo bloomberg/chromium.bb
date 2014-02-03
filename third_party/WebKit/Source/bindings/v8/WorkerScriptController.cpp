@@ -69,8 +69,8 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
     v8::V8::Initialize();
     m_isolateHolder = adoptPtr(new gin::IsolateHolder(isolate));
     V8PerIsolateData* data = V8PerIsolateData::create(isolate);
-    m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
-    data->setWorkerDOMDataStore(m_domDataStore.get());
+    m_world = DOMWrapperWorld::create(WorkerWorldId, 0);
+    data->setWorkerDOMDataStore(m_world->domDataStore());
     m_interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
     ThreadState::current()->addInterruptor(m_interruptor.get());
 }
@@ -79,7 +79,8 @@ WorkerScriptController::~WorkerScriptController()
 {
     ThreadState::current()->removeInterruptor(m_interruptor.get());
 
-    m_domDataStore.clear();
+    // ~DOMWrapperWorld() must be called before disposing the isolate.
+    m_world = 0;
 
     // The corresponding call to didStartWorkerRunLoop is in
     // WorkerThread::workerThread().

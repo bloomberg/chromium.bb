@@ -48,20 +48,24 @@ class ExecutionContext;
 
 enum WorldIdConstants {
     MainWorldId = 0,
+    // Embedder isolated worlds can use IDs in [1, 1<<29).
     EmbedderWorldIdLimit = (1 << 29),
-    ScriptPreprocessorIsolatedWorldId
+    ScriptPreprocessorIsolatedWorldId,
+    WorkerWorldId,
 };
 
 // This class represent a collection of DOM wrappers for a specific world.
 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
+    static PassRefPtr<DOMWrapperWorld> create(int worldId, int extensionGroup);
+
     static const int mainWorldExtensionGroup = 0;
     static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(int worldId, int extensionGroup);
     ~DOMWrapperWorld();
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
-    static bool isIsolatedWorldId(int worldId) { return worldId > MainWorldId; }
-    static void getAllWorlds(Vector<RefPtr<DOMWrapperWorld> >& worlds);
+    static bool isIsolatedWorldId(int worldId) { return worldId != MainWorldId && worldId != WorkerWorldId; }
+    static void getAllWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
     void setIsolatedWorldField(v8::Handle<v8::Context>);
 
@@ -73,6 +77,7 @@ public:
 
     // Will return null if there is no DOMWrapperWorld for the current v8::Context
     static DOMWrapperWorld* current(v8::Isolate*);
+    static DOMWrapperWorld* mainWorld();
 
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered
@@ -99,7 +104,8 @@ public:
     static V8DOMActivityLogger* activityLogger(int worldId);
 
     bool isMainWorld() const { return m_worldId == MainWorldId; }
-    bool isIsolatedWorld() const { return isIsolatedWorldId(m_worldId); }
+    bool isWorkerWorld() const { return m_worldId == WorkerWorldId; }
+    bool isIsolatedWorld() const { return !isMainWorld() && !isWorkerWorld(); }
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
@@ -110,9 +116,11 @@ public:
     }
     v8::Handle<v8::Context> context(ScriptController&);
 
+    // FIXME: Remove this once we remove V8PerIsolateData::m_workerDataStore.
+    DOMDataStore* domDataStore() { return m_domDataStore.get(); }
+
 private:
     static unsigned isolatedWorldCount;
-    static PassRefPtr<DOMWrapperWorld> createMainWorld();
 
     DOMWrapperWorld(int worldId, int extensionGroup);
     static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
@@ -120,11 +128,7 @@ private:
     const int m_worldId;
     const int m_extensionGroup;
     OwnPtr<DOMDataStore> m_domDataStore;
-
-    friend DOMWrapperWorld* mainThreadNormalWorld();
 };
-
-DOMWrapperWorld* mainThreadNormalWorld();
 
 } // namespace WebCore
 

@@ -118,7 +118,7 @@ namespace WebCore {
         OwnPtr<gin::ContextHolder> m_contextHolder;
         OwnPtr<V8PerContextData> m_perContextData;
         String m_disableEvalPending;
-        OwnPtr<DOMDataStore> m_domDataStore;
+        RefPtr<DOMWrapperWorld> m_world;
         bool m_executionForbidden;
         bool m_executionScheduledToTerminate;
         mutable Mutex m_scheduledTerminationMutex;
