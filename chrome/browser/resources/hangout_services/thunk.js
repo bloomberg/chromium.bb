@@ -119,6 +119,11 @@ chrome.runtime.onMessageExternal.addListener(
       // chrome.runtime.lastError.
       doSendResponse();
       return false;
+    } else if (method == 'getNaclArchitecture') {
+      chrome.runtime.getPlatformInfo(function(obj) {
+        doSendResponse(obj.nacl_arch);
+      });
+      return true;
     }
     throw new Error('Unknown method: ' + method);
   } catch (e) {
