@@ -36,9 +36,16 @@ const int kAnimationDurationMs = 200;
 // hide animation finishes.
 const float kAnimationStartOrAfterHideOpacity = 0.2f;
 
+float GetKeyboardHeightRatio(){
+  if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
+    return 1.0f;
+  } else if (keyboard::GetAccessibilityKeyboardEnabled()) {
+    return 0.4f;
+  }
+  return 0.3f;
+}
 gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds) {
-  const float kKeyboardHeightRatio =
-      keyboard::IsKeyboardUsabilityExperimentEnabled() ? 1.0f : 0.3f;
+  const float kKeyboardHeightRatio = GetKeyboardHeightRatio();
   return gfx::Rect(
       window_bounds.x(),
       window_bounds.y() + window_bounds.height() * (1 - kKeyboardHeightRatio),
