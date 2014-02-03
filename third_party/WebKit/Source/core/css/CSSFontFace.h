@@ -28,6 +28,7 @@
 
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/FontFace.h"
+#include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -47,7 +48,6 @@ public:
 
     CSSFontFace(FontFace* fontFace)
         : m_segmentedFontFace(0)
-        , m_activeSource(0)
         , m_fontFace(fontFace)
     {
         ASSERT(m_fontFace);
@@ -60,8 +60,7 @@ public:
     void setSegmentedFontFace(CSSSegmentedFontFace*);
     void clearSegmentedFontFace() { m_segmentedFontFace = 0; }
 
-    bool isLoaded() const;
-    bool isValid() const;
+    bool isValid() const { return !m_sources.isEmpty(); }
 
     void addSource(PassOwnPtr<CSSFontFaceSource>);
 
@@ -106,8 +105,7 @@ private:
 
     UnicodeRangeSet m_ranges;
     CSSSegmentedFontFace* m_segmentedFontFace;
-    Vector<OwnPtr<CSSFontFaceSource> > m_sources;
-    CSSFontFaceSource* m_activeSource;
+    Deque<OwnPtr<CSSFontFaceSource> > m_sources;
     FontFace* m_fontFace;
 };
 

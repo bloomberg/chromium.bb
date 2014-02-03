@@ -35,26 +35,6 @@
 
 namespace WebCore {
 
-bool CSSFontFace::isLoaded() const
-{
-    size_t size = m_sources.size();
-    for (size_t i = 0; i < size; i++) {
-        if (!m_sources[i]->isLoaded())
-            return false;
-    }
-    return true;
-}
-
-bool CSSFontFace::isValid() const
-{
-    size_t size = m_sources.size();
-    for (size_t i = 0; i < size; i++) {
-        if (m_sources[i]->isValid())
-            return true;
-    }
-    return false;
-}
-
 void CSSFontFace::addSource(PassOwnPtr<CSSFontFaceSource> source)
 {
     source->setFontFace(this);
@@ -84,9 +64,8 @@ void CSSFontFace::beginLoadIfNeeded(CSSFontFaceSource* source, CSSFontSelector* 
 
 void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
 {
-    if (source != m_activeSource)
+    if (!isValid() || source != m_sources.first())
         return;
-    m_activeSource = 0;
 
     if (loadStatus() == FontFace::Loading) {
         if (source->ensureFontData()) {
@@ -94,9 +73,11 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
             Document* document = m_segmentedFontFace ? m_segmentedFontFace->fontSelector()->document() : 0;
             if (document && source->isSVGFontFaceSource())
                 UseCounter::count(*document, UseCounter::SVGFontInCSS);
+        } else {
+            m_sources.removeFirst();
+            if (!isValid())
+                setLoadStatus(FontFace::Error);
         }
-        else if (!isValid())
-            setLoadStatus(FontFace::Error);
     }
 
     if (m_segmentedFontFace)
@@ -105,20 +86,19 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
 
 PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontDescription)
 {
-    m_activeSource = 0;
     if (!isValid())
         return 0;
 
-    size_t size = m_sources.size();
-    for (size_t i = 0; i < size; ++i) {
-        if (RefPtr<SimpleFontData> result = m_sources[i]->getFontData(fontDescription)) {
-            m_activeSource = m_sources[i].get();
-            if (loadStatus() == FontFace::Unloaded && (m_sources[i]->isLoading() || m_sources[i]->isLoaded()))
+    while (!m_sources.isEmpty()) {
+        OwnPtr<CSSFontFaceSource>& source = m_sources.first();
+        if (RefPtr<SimpleFontData> result = source->getFontData(fontDescription)) {
+            if (loadStatus() == FontFace::Unloaded && (source->isLoading() || source->isLoaded()))
                 setLoadStatus(FontFace::Loading);
-            if (loadStatus() == FontFace::Loading && m_sources[i]->isLoaded())
+            if (loadStatus() == FontFace::Loading && source->isLoaded())
                 setLoadStatus(FontFace::Loaded);
             return result.release();
         }
+        m_sources.removeFirst();
     }
 
     if (loadStatus() == FontFace::Unloaded)
@@ -146,24 +126,24 @@ void CSSFontFace::load(const FontDescription& fontDescription, CSSFontSelector* 
         return;
     setLoadStatus(FontFace::Loading);
 
-    size_t size = m_sources.size();
-    for (size_t i = 0; i < size; ++i) {
-        if (!m_sources[i]->isValid())
-            continue;
-        if (m_sources[i]->isLocal()) {
-            if (m_sources[i]->isLocalFontAvailable(fontDescription)) {
-                setLoadStatus(FontFace::Loaded);
+    while (!m_sources.isEmpty()) {
+        OwnPtr<CSSFontFaceSource>& source = m_sources.first();
+        if (source->isValid()) {
+            if (source->isLocal()) {
+                if (source->isLocalFontAvailable(fontDescription)) {
+                    setLoadStatus(FontFace::Loaded);
+                    return;
+                }
+            } else {
+                if (!source->isLoaded()) {
+                    beginLoadIfNeeded(source.get(), fontSelector);
+                } else {
+                    setLoadStatus(FontFace::Loaded);
+                }
                 return;
             }
-        } else {
-            if (!m_sources[i]->isLoaded()) {
-                m_activeSource = m_sources[i].get();
-                beginLoadIfNeeded(m_activeSource, fontSelector);
-            } else {
-                setLoadStatus(FontFace::Loaded);
-            }
-            return;
         }
+        m_sources.removeFirst();
     }
     setLoadStatus(FontFace::Error);
 }
