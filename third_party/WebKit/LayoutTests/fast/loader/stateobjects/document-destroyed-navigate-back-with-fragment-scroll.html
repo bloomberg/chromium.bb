@@ -18,23 +18,12 @@ function hashOf(url)
 {
     return url.substring(url.lastIndexOf('#'));
 }
- 
+
 function runFirstStageOfTest()
-{   
+{
     history.replaceState("FirstEntry", null, "#FirstEntry");
     history.pushState("SecondEntry", null, "#SecondEntry");
     history.back();
-}
-
-function runSecondStageOfTest()
-{
-    alert("Last path component of location is " + lastPathComponent(location.href));
-    setTimeout("history.back();", 0);
-}
-
-function runThirdStageOfTest()
-{
-    alert("Final stage of test loaded");
 }
 
 function runTest()
@@ -42,10 +31,6 @@ function runTest()
     alert("LOADED");
     if (!sessionStorage.stage)
         runFirstStageOfTest();
-    else if (sessionStorage.stage == 2)
-        runSecondStageOfTest();
-    else if (sessionStorage.stage == 3)
-        runThirdStageOfTest();
 }
 
 onpopstate = function()
