@@ -27,7 +27,7 @@
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebNodeList.h"
+#include "third_party/WebKit/public/web/WebNodeCollection.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/url_canon.h"
@@ -58,10 +58,9 @@ blink::WebNode GetImgChild(const blink::WebNode& node) {
   // This implementation is incomplete (for example if is an area tag) but
   // matches the original WebViewClassic implementation.
 
-  blink::WebNodeList list = node.getElementsByTagName("img");
-  if (list.length() > 0)
-    return list.item(0);
-  return blink::WebNode();
+  blink::WebNodeCollection collection = node.getElementsByTagName("img");
+  DCHECK(!collection.isNull());
+  return collection.firstItem();
 }
 
 bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
