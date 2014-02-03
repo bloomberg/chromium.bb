@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/web/WebHeap.h"
 #include "url/gurl.h"
 #include "webkit/child/worker_task_runner.h"
 #include "webkit/common/fileapi/directory_entry.h"
@@ -56,7 +57,10 @@ class WaitableCallbackResults {
   }
 
   void WaitAndRun() {
-    event_->Wait();
+    {
+      blink::WebHeap::SafePointScope safe_point;
+      event_->Wait();
+    }
     DCHECK(!results_closure_.is_null());
     results_closure_.Run();
   }
