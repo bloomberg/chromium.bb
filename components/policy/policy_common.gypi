@@ -172,12 +172,6 @@
             'core/common/cloud/user_cloud_policy_store.h',
           ],
         }],
-        ['OS=="ios"', {
-          'sources': [
-            'core/common/proxy_policy_provider.cc',
-            'core/common/proxy_policy_provider.h',
-          ],
-        }],
       ],
     }, {  # configuration_policy==0
       # Some of the policy code is always enabled, so that other parts of
