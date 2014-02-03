@@ -136,24 +136,20 @@ class DriveBackendSyncTest : public testing::Test,
     return true;
   }
 
-  bool GetFileIDByPath(const std::string& app_id,
-                       const base::FilePath::StringType& path,
-                       std::string* file_id) {
-    return GetFileIDByPath(app_id, base::FilePath(path), file_id);
+  std::string GetFileIDByPath(const std::string& app_id,
+                              const base::FilePath::StringType& path) {
+    return GetFileIDByPath(app_id, base::FilePath(path));
   }
 
-  bool GetFileIDByPath(const std::string& app_id,
-                       const base::FilePath& path,
-                       std::string* file_id) {
+  std::string GetFileIDByPath(const std::string& app_id,
+                              const base::FilePath& path) {
     FileTracker tracker;
     base::FilePath result_path;
     base::FilePath normalized_path = path.NormalizePathSeparators();
-    if (!metadata_database()->FindNearestActiveAncestor(
-            app_id, normalized_path, &tracker, &result_path) ||
-        normalized_path != result_path)
-      return false;
-    *file_id = tracker.file_id();
-    return true;
+    EXPECT_TRUE(metadata_database()->FindNearestActiveAncestor(
+        app_id, normalized_path, &tracker, &result_path));
+    EXPECT_EQ(normalized_path, result_path);
+    return tracker.file_id();
   }
 
   SyncStatusCode RegisterApp(const std::string& app_id) {
@@ -617,8 +613,7 @@ TEST_F(DriveBackendSyncTest, RemoteFileDeletionTest) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_id;
-  EXPECT_TRUE(GetFileIDByPath(app_id, base::FilePath(path), &file_id));
+  std::string file_id = GetFileIDByPath(app_id, path);
   EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
             fake_drive_service_helper()->DeleteResource(file_id));
 
@@ -642,8 +637,7 @@ TEST_F(DriveBackendSyncTest, RemoteRenameTest) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_id;
-  EXPECT_TRUE(GetFileIDByPath(app_id, base::FilePath(path), &file_id));
+  std::string file_id = GetFileIDByPath(app_id, path);
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->RenameResource(
                 file_id, "renamed_file"));
@@ -669,8 +663,7 @@ TEST_F(DriveBackendSyncTest, RemoteRenameAndRevertTest) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_id;
-  EXPECT_TRUE(GetFileIDByPath(app_id, base::FilePath(path), &file_id));
+  std::string file_id = GetFileIDByPath(app_id, path);
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->RenameResource(
                 file_id, "renamed_file"));
@@ -706,12 +699,9 @@ TEST_F(DriveBackendSyncTest, ReorganizeToOtherFolder) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_id;
-  std::string src_folder_id;
-  std::string dest_folder_id;
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_src/file"), &file_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_src"), &src_folder_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_dest"), &dest_folder_id));
+  std::string file_id = GetFileIDByPath(app_id, FPL("folder_src/file"));
+  std::string src_folder_id = GetFileIDByPath(app_id, FPL("folder_src"));
+  std::string dest_folder_id = GetFileIDByPath(app_id, FPL("folder_dest"));
   EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
             fake_drive_service_helper()->RemoveResourceFromDirectory(
                 src_folder_id, file_id));
@@ -744,13 +734,9 @@ TEST_F(DriveBackendSyncTest, ReorganizeToOtherApp) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_id;
-  std::string src_folder_id;
-  std::string dest_folder_id;
-  EXPECT_TRUE(GetFileIDByPath(src_app_id, FPL("folder_src/file"), &file_id));
-  EXPECT_TRUE(GetFileIDByPath(src_app_id, FPL("folder_src"), &src_folder_id));
-  EXPECT_TRUE(
-      GetFileIDByPath(dest_app_id, FPL("folder_dest"), &dest_folder_id));
+  std::string file_id = GetFileIDByPath(src_app_id, FPL("folder_src/file"));
+  std::string src_folder_id = GetFileIDByPath(src_app_id, FPL("folder_src"));
+  std::string dest_folder_id = GetFileIDByPath(dest_app_id, FPL("folder_dest"));
   EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
             fake_drive_service_helper()->RemoveResourceFromDirectory(
                 src_folder_id, file_id));
@@ -784,22 +770,15 @@ TEST_F(DriveBackendSyncTest, ReorganizeToUnmanagedArea) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_orphaned_id;
-  std::string file_under_sync_root_id;
-  std::string file_under_drive_root_id;
+  std::string file_orphaned_id =
+      GetFileIDByPath(app_id, FPL("folder_src/file_orphaned"));
+  std::string file_under_sync_root_id =
+      GetFileIDByPath(app_id, FPL("folder_src/file_under_sync_root"));
+  std::string file_under_drive_root_id =
+      GetFileIDByPath(app_id, FPL("folder_src/file_under_drive_root"));
 
-  std::string folder_id;
+  std::string folder_id = GetFileIDByPath(app_id, FPL("folder_src"));
   std::string sync_root_folder_id;
-
-  EXPECT_TRUE(GetFileIDByPath(
-      app_id, FPL("folder_src/file_orphaned"), &file_orphaned_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id,
-                              FPL("folder_src/file_under_sync_root"),
-                              &file_under_sync_root_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id,
-                              FPL("folder_src/file_under_drive_root"),
-                              &file_under_drive_root_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_src"), &folder_id));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->GetSyncRootFolderID(
                 &sync_root_folder_id));
@@ -844,10 +823,8 @@ TEST_F(DriveBackendSyncTest, ReorganizeToMultipleParents) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_id;
-  std::string parent2_folder_id;
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("parent1/file"), &file_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("parent2"), &parent2_folder_id));
+  std::string file_id = GetFileIDByPath(app_id, FPL("parent1/file"));
+  std::string parent2_folder_id = GetFileIDByPath(app_id, FPL("parent2"));
   EXPECT_EQ(google_apis::HTTP_SUCCESS,
             fake_drive_service_helper()->AddResourceToDirectory(
                 parent2_folder_id, file_id));
@@ -875,12 +852,9 @@ TEST_F(DriveBackendSyncTest, ReorganizeAndRevert) {
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
-  std::string file_id;
-  std::string folder_id;
-  std::string folder_temp_id;
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder/file"), &file_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder"), &folder_id));
-  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_temp"), &folder_temp_id));
+  std::string file_id = GetFileIDByPath(app_id, FPL("folder/file"));
+  std::string folder_id = GetFileIDByPath(app_id, FPL("folder"));
+  std::string folder_temp_id = GetFileIDByPath(app_id, FPL("folder_temp"));
   EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
             fake_drive_service_helper()->RemoveResourceFromDirectory(
                 folder_id, file_id));
