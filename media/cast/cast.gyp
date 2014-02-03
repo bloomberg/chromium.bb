@@ -48,7 +48,6 @@
             'transport/cast_transport.gyp:cast_transport',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
             '<(DEPTH)/base/base.gyp:test_support_base',
-            '<(DEPTH)/crypto/crypto.gyp:crypto',
             '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',

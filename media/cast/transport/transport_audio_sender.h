@@ -10,11 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
-
-namespace crypto {
-class Encryptor;
-class SymmetricKey;
-}
+#include "media/cast/transport/utility/transport_encryption_handler.h"
 
 namespace media {
 namespace cast {
@@ -54,10 +50,9 @@ class TransportAudioSender : public base::NonThreadSafe {
                          EncodedAudioFrame* encrypted_frame);
 
   RtpSender rtp_sender_;
+  TransportEncryptionHandler encryptor_;
   bool initialized_;
-  scoped_ptr<crypto::SymmetricKey> key_;
-  scoped_ptr<crypto::Encryptor> encryptor_;
-  std::string iv_mask_;
+
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TransportAudioSender);
 };

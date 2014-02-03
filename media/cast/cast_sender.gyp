@@ -21,7 +21,6 @@
         'cast_sender_impl.h',
       ], # source
       'dependencies': [
-        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
         'audio_sender',
         'congestion_control',

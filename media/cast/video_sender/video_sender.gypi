@@ -23,7 +23,6 @@
         'video_sender.cc',
       ], # source
       'dependencies': [
-        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/media/cast/rtcp/rtcp.gyp:*',
         '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
         '<(DEPTH)/media/media.gyp:media',

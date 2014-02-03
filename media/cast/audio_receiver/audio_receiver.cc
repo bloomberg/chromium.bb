@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "crypto/encryptor.h"
-#include "crypto/symmetric_key.h"
+#include "base/strings/string_piece.h"
 #include "media/cast/audio_receiver/audio_decoder.h"
 #include "media/cast/framer/framer.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
+#include "media/cast/transport/cast_transport_defines.h"
 
 // Max time we wait until an audio frame is due to be played out is released.
 static const int64 kMaxAudioFrameWaitMs = 20;
@@ -100,19 +100,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
     audio_decoder_.reset(new AudioDecoder(
         cast_environment, audio_config, incoming_payload_feedback_.get()));
   }
-  if (audio_config.aes_iv_mask.size() == kAesKeySize &&
-      audio_config.aes_key.size() == kAesKeySize) {
-    iv_mask_ = audio_config.aes_iv_mask;
-    decryption_key_.reset(crypto::SymmetricKey::Import(
-        crypto::SymmetricKey::AES, audio_config.aes_key));
-    decryptor_.reset(new crypto::Encryptor());
-    decryptor_->Init(
-        decryption_key_.get(), crypto::Encryptor::CTR, std::string());
-  } else if (audio_config.aes_iv_mask.size() != 0 ||
-             audio_config.aes_key.size() != 0) {
-    DCHECK(false) << "Invalid crypto configuration";
-  }
-
+  decryptor_.Initialize(audio_config.aes_key, audio_config.aes_iv_mask);
   rtp_receiver_.reset(new RtpReceiver(cast_environment->Clock(),
                                       &audio_config,
                                       NULL,
@@ -167,21 +155,17 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
 
   if (audio_decoder_) {
     DCHECK(!audio_buffer_) << "Invalid internal state";
-    std::string plaintext(reinterpret_cast<const char*>(payload_data),
-                          payload_size);
-    if (decryptor_) {
-      plaintext.clear();
-      if (!decryptor_->SetCounter(GetAesNonce(rtp_header.frame_id, iv_mask_))) {
-        NOTREACHED() << "Failed to set counter";
-        return;
-      }
-      if (!decryptor_->Decrypt(
+    std::string plaintext;
+    if (decryptor_.initialized()) {
+      if (!decryptor_.Decrypt(
+               rtp_header.frame_id,
                base::StringPiece(reinterpret_cast<const char*>(payload_data),
                                  payload_size),
-               &plaintext)) {
-        VLOG(1) << "Decryption error";
+               &plaintext))
         return;
-      }
+    } else {
+      plaintext.append(reinterpret_cast<const char*>(payload_data),
+                       payload_size);
     }
     audio_decoder_->IncomingParsedRtpPacket(
         reinterpret_cast<const uint8*>(plaintext.data()),
@@ -327,7 +311,7 @@ void AudioReceiver::PlayoutTimeout() {
     return;
   }
 
-  if (decryptor_ && !DecryptAudioFrame(&encoded_frame)) {
+  if (decryptor_.initialized() && !DecryptAudioFrame(&encoded_frame)) {
     // Logging already done.
     return;
   }
@@ -358,7 +342,7 @@ void AudioReceiver::GetEncodedAudioFrame(
     queued_encoded_callbacks_.push_back(callback);
     return;
   }
-  if (decryptor_ && !DecryptAudioFrame(&encoded_frame)) {
+  if (decryptor_.initialized() && !DecryptAudioFrame(&encoded_frame)) {
     // Logging already done.
     queued_encoded_callbacks_.push_back(callback);
     return;
@@ -494,17 +478,14 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
 
 bool AudioReceiver::DecryptAudioFrame(
     scoped_ptr<transport::EncodedAudioFrame>* audio_frame) {
-  DCHECK(decryptor_) << "Invalid state";
-
-  if (!decryptor_->SetCounter(
-           GetAesNonce((*audio_frame)->frame_id, iv_mask_))) {
-    NOTREACHED() << "Failed to set counter";
+  if (!decryptor_.initialized())
     return false;
-  }
+
   std::string decrypted_audio_data;
-  if (!decryptor_->Decrypt((*audio_frame)->data, &decrypted_audio_data)) {
-    VLOG(1) << "Decryption error";
-    // Give up on this frame, release it from jitter buffer.
+  if (!decryptor_.Decrypt((*audio_frame)->frame_id,
+                          (*audio_frame)->data,
+                          &decrypted_audio_data)) {
+    // Give up on this frame, release it from the jitter buffer.
     audio_buffer_->ReleaseFrame((*audio_frame)->frame_id);
     return false;
   }

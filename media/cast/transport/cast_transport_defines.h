@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
@@ -29,6 +30,26 @@ const size_t kMaxIpPacketSize = 1500;
 typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.
 typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
+
+// Crypto.
+const size_t kAesBlockSize = 16;
+const size_t kAesKeySize = 16;
+
+inline std::string GetAesNonce(uint32 frame_id, const std::string& iv_mask) {
+  std::string aes_nonce(kAesBlockSize, 0);
+
+  // Serializing frame_id in big-endian order (aes_nonce[8] is the most
+  // significant byte of frame_id).
+  aes_nonce[11] = frame_id & 0xff;
+  aes_nonce[10] = (frame_id >> 8) & 0xff;
+  aes_nonce[9] = (frame_id >> 16) & 0xff;
+  aes_nonce[8] = (frame_id >> 24) & 0xff;
+
+  for (size_t i = 0; i < kAesBlockSize; ++i) {
+    aes_nonce[i] ^= iv_mask[i];
+  }
+  return aes_nonce;
+}
 
 // Rtcp defines.
 

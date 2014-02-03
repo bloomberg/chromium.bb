@@ -19,11 +19,7 @@
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
-
-namespace crypto {
-class Encryptor;
-class SymmetricKey;
-}
+#include "media/cast/transport/utility/transport_encryption_handler.h"
 
 namespace media {
 namespace cast {
@@ -114,9 +110,7 @@ class VideoReceiver : public base::NonThreadSafe,
   scoped_ptr<RtpReceiverStatistics> rtp_video_receiver_statistics_;
   base::TimeTicks time_last_sent_cast_message_;
   base::TimeDelta time_offset_;  // Sender-receiver offset estimation.
-  scoped_ptr<crypto::Encryptor> decryptor_;
-  scoped_ptr<crypto::SymmetricKey> decryption_key_;
-  std::string iv_mask_;
+  transport::TransportEncryptionHandler decryptor_;
   std::list<VideoFrameEncodedCallback> queued_encoded_callbacks_;
   bool time_incoming_packet_updated_;
   base::TimeTicks time_incoming_packet_;

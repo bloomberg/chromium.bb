@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "crypto/encryptor.h"
-#include "crypto/symmetric_key.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/framer/framer.h"
 #include "media/cast/rtcp/rtcp_sender.h"
@@ -100,6 +98,7 @@ VideoReceiver::VideoReceiver(
                       incoming_payload_callback_.get()),
         rtp_video_receiver_statistics_(
             new LocalRtpReceiverStatistics(&rtp_receiver_)),
+        decryptor_(),
         time_incoming_packet_updated_(false),
         incoming_rtp_timestamp_(0),
         weak_factory_(this) {
@@ -107,20 +106,7 @@ VideoReceiver::VideoReceiver(
       video_config.max_frame_rate / 1000;
   DCHECK(max_unacked_frames) << "Invalid argument";
 
-  if (video_config.aes_iv_mask.size() == kAesKeySize &&
-      video_config.aes_key.size() == kAesKeySize) {
-    iv_mask_ = video_config.aes_iv_mask;
-    decryption_key_.reset(crypto::SymmetricKey::Import(
-        crypto::SymmetricKey::AES, video_config.aes_key));
-    decryptor_.reset(new crypto::Encryptor());
-    decryptor_->Init(decryption_key_.get(),
-                     crypto::Encryptor::CTR,
-                     std::string());
-  } else if (video_config.aes_iv_mask.size() != 0 ||
-             video_config.aes_key.size() != 0) {
-    DCHECK(false) << "Invalid crypto configuration";
-  }
-
+  decryptor_.Initialize(video_config.aes_key, video_config.aes_iv_mask);
   framer_.reset(new Framer(cast_environment->Clock(),
                            incoming_payload_feedback_.get(),
                            video_config.incoming_ssrc,
@@ -191,16 +177,14 @@ void VideoReceiver::DecodeVideoFrameThread(
 bool VideoReceiver::DecryptVideoFrame(
     scoped_ptr<transport::EncodedVideoFrame>* video_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  DCHECK(decryptor_) << "Invalid state";
 
-  if (!decryptor_->SetCounter(GetAesNonce((*video_frame)->frame_id,
-                                          iv_mask_))) {
-    NOTREACHED() << "Failed to set counter";
+  if (!decryptor_.initialized())
     return false;
-  }
+
   std::string decrypted_video_data;
-  if (!decryptor_->Decrypt((*video_frame)->data, &decrypted_video_data)) {
-    VLOG(1) << "Decryption error";
+  if (!decryptor_.Decrypt((*video_frame)->frame_id,
+                          (*video_frame)->data,
+                          &decrypted_video_data)) {
     // Give up on this frame, release it from jitter buffer.
     framer_->ReleaseFrame((*video_frame)->frame_id);
     return false;
@@ -225,7 +209,7 @@ void VideoReceiver::GetEncodedVideoFrame(
     return;
   }
 
-  if (decryptor_ && !DecryptVideoFrame(&encoded_frame)) {
+  if (decryptor_.initialized() && !DecryptVideoFrame(&encoded_frame)) {
     // Logging already done.
     queued_encoded_callbacks_.push_back(callback);
     return;
@@ -320,7 +304,7 @@ void VideoReceiver::PlayoutTimeout() {
   VLOG(1) << "PlayoutTimeout retrieved frame "
           << static_cast<int>(encoded_frame->frame_id);
 
-  if (decryptor_ && !DecryptVideoFrame(&encoded_frame)) {
+  if (decryptor_.initialized() && !DecryptVideoFrame(&encoded_frame)) {
     // Logging already done.
     return;
   }

@@ -12,11 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
-
-namespace crypto {
-class Encryptor;
-class SymmetricKey;
-}
+#include "media/cast/transport/utility/transport_encryption_handler.h"
 
 namespace media {
 class VideoFrame;
@@ -58,12 +54,8 @@ class TransportVideoSender : public base::NonThreadSafe {
                          EncodedVideoFrame* encrypted_video_frame);
 
   const base::TimeDelta rtp_max_delay_;
-
+  TransportEncryptionHandler encryptor_;
   RtpSender rtp_sender_;
-  scoped_ptr<crypto::SymmetricKey> key_;
-  scoped_ptr<crypto::Encryptor> encryptor_;
-  std::string iv_mask_;
-
   bool initialized_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TransportVideoSender);
