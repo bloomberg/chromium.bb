@@ -4022,7 +4022,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyRequiresEnable) {
 #else
 #define MAYBE_ExternalExtensionAutoAcknowledgement ExternalExtensionAutoAcknowledgement
 #endif
-TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
+TEST_F(ExtensionServiceTest, MAYBE_ExternalExtensionAutoAcknowledgement) {
   InitializeEmptyExtensionService();
   set_extensions_enabled(true);
 
