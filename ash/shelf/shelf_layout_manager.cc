@@ -1136,6 +1136,7 @@ void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
     TargetBounds target_bounds;
     CalculateTargetBounds(state_, &target_bounds);
     UpdateBoundsAndOpacity(target_bounds, true, NULL);
+    UpdateVisibilityState();
   }
 }
 
