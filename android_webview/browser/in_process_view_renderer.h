@@ -61,6 +61,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual skia::RefPtr<SkPicture> CapturePicture(int width,
                                                  int height) OVERRIDE;
   virtual void EnableOnNewPicture(bool enabled) OVERRIDE;
+  virtual void ClearView() OVERRIDE;
   virtual void SetIsPaused(bool paused) OVERRIDE;
   virtual void SetViewVisibility(bool visible) OVERRIDE;
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
@@ -137,6 +138,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   float dip_scale_;
   float page_scale_factor_;
   bool on_new_picture_enable_;
+  bool clear_view_;
 
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation. This value is set by the compositor and should always

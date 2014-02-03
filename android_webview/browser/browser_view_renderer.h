@@ -124,6 +124,8 @@ class BrowserViewRenderer {
   virtual skia::RefPtr<SkPicture> CapturePicture(int width, int height) = 0;
   virtual void EnableOnNewPicture(bool enabled) = 0;
 
+  virtual void ClearView() = 0;
+
   // View update notifications.
   virtual void SetIsPaused(bool paused) = 0;
   virtual void SetViewVisibility(bool visible) = 0;

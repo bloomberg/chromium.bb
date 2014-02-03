@@ -229,6 +229,7 @@ InProcessViewRenderer::InProcessViewRenderer(
       dip_scale_(0.0),
       page_scale_factor_(1.0),
       on_new_picture_enable_(false),
+      clear_view_(false),
       compositor_needs_continuous_invalidate_(false),
       block_invalidates_(false),
       width_(0),
@@ -375,6 +376,8 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
                                    const gfx::Vector2d& scroll,
                                    const gfx::Rect& clip) {
   scroll_at_start_of_frame_  = scroll;
+  if (clear_view_)
+    return false;
   if (is_hardware_canvas && attached_to_window_ && HardwareEnabled()) {
     // We should be performing a hardware draw here. If we don't have the
     // comositor yet or if RequestDrawGL fails, it means we failed this draw and
@@ -627,6 +630,18 @@ void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {
   EnsureContinuousInvalidation(NULL, false);
 }
 
+void InProcessViewRenderer::ClearView() {
+  TRACE_EVENT_INSTANT0("android_webview",
+                       "InProcessViewRenderer::ClearView",
+                       TRACE_EVENT_SCOPE_THREAD);
+  if (clear_view_)
+    return;
+
+  clear_view_ = true;
+  // Always invalidate ignoring the compositor to actually clear the webview.
+  EnsureContinuousInvalidation(NULL, true);
+}
+
 void InProcessViewRenderer::SetIsPaused(bool paused) {
   TRACE_EVENT_INSTANT1("android_webview",
                        "InProcessViewRenderer::SetIsPaused",
@@ -792,6 +807,11 @@ void InProcessViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
 }
 
 void InProcessViewRenderer::DidUpdateContent() {
+  TRACE_EVENT_INSTANT0("android_webview",
+                       "InProcessViewRenderer::DidUpdateContent",
+                       TRACE_EVENT_SCOPE_THREAD);
+  clear_view_ = false;
+  EnsureContinuousInvalidation(NULL, false);
   if (on_new_picture_enable_)
     client_->OnNewPicture();
 }
@@ -883,6 +903,8 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
   if (!need_invalidate || block_invalidates_)
     return;
 
+  // Always call view invalidate. We rely the Android framework to ignore the
+  // invalidate when it's not needed such as when view is not visible.
   if (draw_info) {
     draw_info->dirty_left = cached_global_visible_rect_.x();
     draw_info->dirty_top = cached_global_visible_rect_.y();
@@ -893,8 +915,14 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
     client_->PostInvalidate();
   }
 
-  bool throttle_fallback_tick = (is_paused_ && !on_new_picture_enable_) ||
-                                (attached_to_window_ && !window_visible_);
+  // Stop fallback ticks when one of these is true.
+  // 1) Webview is paused. Also need to check we are not in clear view since
+  // paused, offscreen still expect clear view to recover.
+  // 2) If we are attached to window and the window is not visible (eg when
+  // app is in the background). We are sure in this case the webview is used
+  // "on-screen" but that updates are not needed when in the background.
+  bool throttle_fallback_tick =
+      (is_paused_ && !clear_view_) || (attached_to_window_ && !window_visible_);
   if (throttle_fallback_tick)
     return;
 
@@ -977,6 +1005,7 @@ std::string InProcessViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
                       overscroll_rounding_error_.ToString().c_str());
   base::StringAppendF(
       &str, "on_new_picture_enable: %d ", on_new_picture_enable_);
+  base::StringAppendF(&str, "clear_view: %d ", clear_view_);
   if (draw_info) {
     base::StringAppendF(&str,
                         "clip left top right bottom: [%d %d %d %d] ",

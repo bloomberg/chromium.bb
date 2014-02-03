@@ -182,9 +182,6 @@ public class AwContents {
     private boolean mContainerViewFocused;
     private boolean mWindowFocused;
 
-    private boolean mClearViewActive;
-    private boolean mPictureListenerEnabled;
-
     // These come from the compositor and are updated immediately (in contrast to the values in
     // ContentViewCore, which are updated at end of every frame).
     private float mPageScaleFactor = 1.0f;
@@ -742,13 +739,12 @@ public class AwContents {
         mScrollOffsetManager.syncScrollOffsetFromOnDraw();
         canvas.getClipBounds(mClipBoundsTemporary);
 
-        if (mClearViewActive) {
-            canvas.drawColor(getEffectiveBackgroundColor());
-        } else if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
+        if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
                 mContainerView.getScrollX(), mContainerView.getScrollY(),
                 mClipBoundsTemporary.left, mClipBoundsTemporary.top,
                 mClipBoundsTemporary.right, mClipBoundsTemporary.bottom)) {
-            Log.w(TAG, "nativeOnDraw failed; clearing to background color.");
+            // Can happen during initialization when compositor is not set up. Or when clearView
+            // is in effect. Just draw background color instead.
             canvas.drawColor(getEffectiveBackgroundColor());
         }
 
@@ -779,9 +775,8 @@ public class AwContents {
     }
 
     public void clearView() {
-        mClearViewActive = true;
-        syncOnNewPictureStateToNative();
-        mContainerView.invalidate();
+        if (mNativeAwContents == 0) return;
+        nativeClearView(mNativeAwContents);
     }
 
     /**
@@ -801,13 +796,7 @@ public class AwContents {
                 }
             };
         }
-        mPictureListenerEnabled = enabled;
-        syncOnNewPictureStateToNative();
-    }
-
-    private void syncOnNewPictureStateToNative() {
-        if (mNativeAwContents == 0) return;
-        nativeEnableOnNewPicture(mNativeAwContents, mPictureListenerEnabled || mClearViewActive);
+        nativeEnableOnNewPicture(mNativeAwContents, enabled);
     }
 
     public void findAllAsync(String searchString) {
@@ -1835,13 +1824,6 @@ public class AwContents {
 
     @CalledByNative
     public void onNewPicture() {
-        // Clear up any results from a previous clearView call
-        if (mClearViewActive) {
-            mClearViewActive = false;
-            mContainerView.invalidate();
-            syncOnNewPictureStateToNative();
-        }
-
         // Don't call capturePicture() here but instead defer it until the posted task runs within
         // the callback helper, to avoid doubling back into the renderer compositor in the middle
         // of the notification it is sending up to here.
@@ -2066,6 +2048,7 @@ public class AwContents {
     private native int nativeGetAwDrawGLViewContext(long nativeAwContents);
     private native long nativeCapturePicture(long nativeAwContents, int width, int height);
     private native void nativeEnableOnNewPicture(long nativeAwContents, boolean enabled);
+    private native void nativeClearView(long nativeAwContents);
     private native void nativeSetExtraHeadersForUrl(long nativeAwContents,
             String url, String extraHeaders);
 

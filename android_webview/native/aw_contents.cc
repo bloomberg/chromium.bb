@@ -983,6 +983,11 @@ void AwContents::EnableOnNewPicture(JNIEnv* env,
   browser_view_renderer_->EnableOnNewPicture(enabled);
 }
 
+void AwContents::ClearView(JNIEnv* env, jobject obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  browser_view_renderer_->ClearView();
+}
+
 void AwContents::SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
                                        jstring url, jstring jextra_headers) {
   std::string extra_headers;
