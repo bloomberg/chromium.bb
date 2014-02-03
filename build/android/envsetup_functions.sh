@@ -186,9 +186,7 @@ sdk_build_init() {
   else
     sdk_defines+=" android_sdk_version=${ANDROID_SDK_VERSION}"
   fi
-  local sdk_suffix=platforms/android-${ANDROID_SDK_VERSION}
-  if [[ -z "${ANDROID_SDK_ROOT}" || \
-       ! -d "${ANDROID_SDK_ROOT}/${sdk_suffix}" ]]; then
+  if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
     export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
   else
     sdk_defines+=" android_sdk_root=${ANDROID_SDK_ROOT}"
