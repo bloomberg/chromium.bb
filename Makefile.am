@@ -384,28 +384,28 @@ weston_simple_shm_SOURCES =			\
 	clients/simple-shm.c			\
 	shared/os-compatibility.c		\
 	shared/os-compatibility.h
-weston_simple_shm_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_simple_shm_CFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
 
 weston_simple_touch_SOURCES =			\
 	clients/simple-touch.c			\
 	shared/os-compatibility.c		\
 	shared/os-compatibility.h
-weston_simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_simple_touch_CFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
 
 weston_multi_resource_SOURCES =			\
 	clients/multi-resource.c		\
 	shared/os-compatibility.c		\
 	shared/os-compatibility.h
-weston_multi_resource_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_multi_resource_CFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 weston_multi_resource_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
 demo_clients += weston-simple-egl
 weston_simple_egl_SOURCES = clients/simple-egl.c
-weston_simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
+weston_simple_egl_CFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
 weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
@@ -457,7 +457,7 @@ weston_image_LDADD = libtoytoolkit.la
 weston_image_CFLAGS = $(CLIENT_CFLAGS)
 
 weston_cliptest_SOURCES = clients/cliptest.c
-weston_cliptest_CFLAGS = $(AM_CPPFLAGS) $(CLIENT_CFLAGS)
+weston_cliptest_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 weston_cliptest_LDADD = libtoytoolkit.la
 
 weston_dnd_SOURCES = clients/dnd.c
@@ -839,34 +839,34 @@ libtest_client_la_SOURCES =			\
 nodist_libtest_client_la_SOURCES =		\
 	protocol/wayland-test-protocol.c	\
 	protocol/wayland-test-client-protocol.h
-libtest_client_la_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
+libtest_client_la_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
 
 bad_buffer_weston_SOURCES = tests/bad-buffer-test.c
-bad_buffer_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
+bad_buffer_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 bad_buffer_weston_LDADD = libtest-client.la
 
 keyboard_weston_SOURCES = tests/keyboard-test.c
-keyboard_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
+keyboard_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 keyboard_weston_LDADD = libtest-client.la
 
 event_weston_SOURCES = tests/event-test.c
-event_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
+event_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 event_weston_LDADD = libtest-client.la
 
 button_weston_SOURCES = tests/button-test.c
-button_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
+button_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 button_weston_LDADD = libtest-client.la
 
 text_weston_SOURCES = tests/text-test.c
 nodist_text_weston_SOURCES =			\
 	protocol/text-protocol.c		\
 	protocol/text-client-protocol.h
-text_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
+text_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 text_weston_LDADD = libtest-client.la
 
 subsurface_weston_SOURCES = tests/subsurface-test.c
-subsurface_weston_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CLIENT_CFLAGS)
+subsurface_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 subsurface_weston_LDADD = libtest-client.la
 
 if ENABLE_EGL
