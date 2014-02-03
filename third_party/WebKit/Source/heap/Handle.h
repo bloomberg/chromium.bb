@@ -258,6 +258,13 @@ public:
         return *this;
     }
 
+    template<typename U>
+    Persistent& operator=(const RawPtr<U>& other)
+    {
+        m_raw = other;
+        return *this;
+    }
+
     T* get() const { return m_raw; }
 
 private:
@@ -323,12 +330,6 @@ public:
         return *this;
     }
 
-    Member& operator=(const Member& other)
-    {
-        m_raw = other;
-        return *this;
-    }
-
     template<typename U>
     Member& operator=(const Member<U>& other)
     {
@@ -338,6 +339,13 @@ public:
 
     template<typename U>
     Member& operator=(U* other)
+    {
+        m_raw = other;
+        return *this;
+    }
+
+    template<typename U>
+    Member& operator=(RawPtr<U> other)
     {
         m_raw = other;
         return *this;
@@ -407,6 +415,13 @@ public:
 
     template<typename U>
     WeakMember& operator=(U* other)
+    {
+        this->m_raw = other;
+        return *this;
+    }
+
+    template<typename U>
+    WeakMember& operator=(const RawPtr<U>& other)
     {
         this->m_raw = other;
         return *this;

@@ -105,7 +105,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestObjectPython* obj
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestObjectPython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObjectPython::domTemplate, V8TestObjectPython::derefObject, 0, 0, 0, V8TestObjectPython::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestObjectPython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObjectPython::domTemplate, V8TestObjectPython::derefObject, 0, 0, 0, V8TestObjectPython::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, false };
 
 namespace TestObjectPythonV8Internal {
 

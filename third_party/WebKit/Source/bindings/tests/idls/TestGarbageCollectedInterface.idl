@@ -28,63 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_RawPtr_h
-#define WTF_RawPtr_h
-
-// Ptr is a simple wrapper for a raw pointer that provides the
-// interface (get, clear) of other pointer types such as RefPtr,
-// Persistent and Member. This is used for the Blink garbage
-// collection work in order to be able to write shared code that will
-// use reference counting or garbage collection based on a
-// compile-time flag.
-
-namespace WTF {
-
-template<typename T>
-class RawPtr {
-public:
-    RawPtr(T* ptr) : m_ptr(ptr) { }
-    RawPtr(std::nullptr_t) : m_ptr(0) { }
-
-    template<typename U>
-    RawPtr(const RawPtr<U>& other)
-        : m_ptr(other.get())
-    {
-    }
-
-    T* get() const { return m_ptr; }
-    // FIXME: oilpan: Remove this once we remove RefPtrWillBeRawPtr.
-    T* release() const { return m_ptr; }
-    void clear() { m_ptr = 0; }
-
-    RawPtr& operator=(T* ptr)
-    {
-        m_ptr = ptr;
-        return *this;
-    }
-
-    RawPtr& operator=(const RawPtr<T>& ptr)
-    {
-        m_ptr = ptr.get();
-        return *this;
-    }
-
-    RawPtr& operator=(std::nullptr_t)
-    {
-        m_ptr = 0;
-        return *this;
-    }
-
-    operator T*() const { return m_ptr; }
-    T& operator*() const { return *m_ptr; }
-    T* operator->() const { return m_ptr; }
-
-private:
-    T* m_ptr;
+[
+    GarbageCollected,
+    Constructor(DOMString str)
+] interface TestGarbageCollectedInterface {
+    attribute TestGarbageCollectedInterface attr1;
+    void func(TestGarbageCollectedInterface arg);
 };
-
-} // namespace WTF
-
-using WTF::RawPtr;
-
-#endif

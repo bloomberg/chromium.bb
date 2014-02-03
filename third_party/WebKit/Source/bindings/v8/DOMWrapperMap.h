@@ -97,12 +97,13 @@ public:
 
     void clear()
     {
+        v8::HandleScope scope(m_isolate);
         while (!m_map.isEmpty()) {
             // Swap out m_map on each iteration to ensure any wrappers added due to side effects of the loop are cleared.
             MapType map;
             map.swap(m_map);
             for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
-                toWrapperTypeInfo(*(it->value.persistent()))->derefObject(it->key);
+                releaseObject(it->value.newLocal(m_isolate));
                 it->value.dispose();
             }
         }
@@ -126,12 +127,10 @@ private:
 template<>
 inline void DOMWrapperMap<void>::setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<void> >& data)
 {
-    const WrapperTypeInfo* type = toWrapperTypeInfo(data.GetValue());
-    ASSERT(type->derefObjectFunction);
     void* key = static_cast<void*>(toNative(data.GetValue()));
-    ASSERT(*(data.GetParameter()->m_map.get(key).persistent()) == data.GetValue());
+    ASSERT(*data.GetParameter()->m_map.get(key).persistent() == data.GetValue());
     data.GetParameter()->removeAndDispose(key);
-    type->derefObject(key);
+    releaseObject(data.GetValue());
 }
 
 } // namespace WebCore

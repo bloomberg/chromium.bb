@@ -725,6 +725,7 @@ sub GenerateHeader
     AddToHeaderIncludes("bindings/v8/WrapperTypeInfo.h");
     AddToHeaderIncludes("bindings/v8/V8Binding.h");
     AddToHeaderIncludes("bindings/v8/V8DOMWrapper.h");
+    AddToHeaderIncludes("heap/Handle.h");
     AddToHeaderIncludes(HeaderFilesForInterface($interfaceName, $implClassName));
     foreach my $headerInclude (sort keys(%headerIncludes)) {
         $header{includes}->add("#include \"${headerInclude}\"\n");
@@ -763,9 +764,10 @@ END
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
-    static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
 END
+
+    $header{classPublic}->add("    static void derefObject(void*);\n");
 
     if (NeedsVisitDOMWrapper($interface)) {
         $header{classPublic}->add("    static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);\n");
@@ -914,11 +916,11 @@ END
     $header{classPublic}->add("\n");  # blank line to separate classPrivate
 
     my $customToV8 = ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "ToV8");
+    my $passRefPtrType = GetPassRefPtrType($interface);
     if (!$customToV8) {
-        my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
         $header{classPrivate}->add(<<END);
     friend v8::Handle<v8::Object> wrap(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper(${createWrapperArgumentType}, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper(${passRefPtrType}, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 END
     }
 
@@ -1029,25 +1031,25 @@ END
 
     $header{nameSpaceWebCore}->add(<<END);
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr<${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8($passRefPtrType impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, $passRefPtrType impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, $passRefPtrType impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<${nativeType} > impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, $passRefPtrType impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
@@ -1064,6 +1066,11 @@ sub GetInternalFields
     my $interface = shift;
 
     my @customInternalFields = ();
+    # If we have persistentHandleIndex, it should be at the first index of the custom
+    # internal fileds.
+    if (IsGarbageCollectedType($interface->name)) {
+        push(@customInternalFields, "persistentHandleIndex");
+    }
     # Event listeners on DOM nodes are explicitly supported in the GC controller.
     if (!InheritsInterface($interface, "Node") &&
         InheritsInterface($interface, "EventTarget")) {
@@ -3157,18 +3164,12 @@ sub GenerateNamedConstructor
     my @beforeArgumentList;
     my @afterArgumentList;
 
-    my $toActiveDOMObject = "0";
-    if (InheritsExtendedAttribute($interface, "ActiveDOMObject")) {
-        $toActiveDOMObject = "${v8ClassName}::toActiveDOMObject";
-    }
-
-    my $toEventTarget = "0";
-    if (InheritsInterface($interface, "EventTarget")) {
-        $toEventTarget = "${v8ClassName}::toEventTarget";
-    }
+    my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
+    my $toEventTarget = InheritsInterface($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
+    my $derefObject = "${v8ClassName}::derefObject";
 
     $implementation{nameSpaceWebCore}->add(<<END);
-const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}Constructor::domTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}Constructor::domTemplate, $derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, false };
 
 END
 
@@ -4300,6 +4301,7 @@ sub GenerateImplementation
     my $toActiveDOMObject = InheritsExtendedAttribute($interface, "ActiveDOMObject") ? "${v8ClassName}::toActiveDOMObject" : "0";
     my $toEventTarget = InheritsInterface($interface, "EventTarget") ? "${v8ClassName}::toEventTarget" : "0";
     my $visitDOMWrapper = NeedsVisitDOMWrapper($interface) ? "${v8ClassName}::visitDOMWrapper" : "0";
+    my $derefObject = "${v8ClassName}::derefObject";
 
     # Find the super descriptor.
     my $parentClass = "";
@@ -4347,8 +4349,10 @@ END
         $implementation{nameSpaceWebCore}->addHeader($code);
     }
 
-    my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}::domTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
-    $code .= "$visitDOMWrapper, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype };\n";
+    my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { gin::kEmbedderBlink, ${v8ClassName}::domTemplate, $derefObject, $toActiveDOMObject, $toEventTarget, ";
+    $code .= "$visitDOMWrapper, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype, ";
+    $code .= IsGarbageCollectedType($interfaceName) ? "true" : "false";
+    $code .=  " };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
     $implementation{nameSpaceInternal}->add("template <typename T> void V8_USE(T) { }\n\n");
@@ -4870,8 +4874,8 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
 END
     }
 
-    GenerateSpecialWrap($interface, $v8ClassName, $nativeType);
-    GenerateToV8Converters($interface, $v8ClassName, $nativeType);
+    GenerateSpecialWrap($interface, $v8ClassName);
+    GenerateToV8Converters($interface, $v8ClassName);
 
     $implementation{nameSpaceWebCore}->add(<<END);
 void ${v8ClassName}::derefObject(void* object)
@@ -4879,6 +4883,9 @@ void ${v8ClassName}::derefObject(void* object)
     fromInternalPointer(object)->deref();
 }
 
+END
+
+    $implementation{nameSpaceWebCore}->add(<<END);
 template<>
 v8::Handle<v8::Value> toV8NoInline(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -5077,7 +5084,7 @@ sub GenerateSpecialWrap
 {
     my $interface = shift;
     my $v8ClassName = shift;
-    my $nativeType = shift;
+    my $nativeType = GetNativeTypeForConversions($interface);
 
     my $specialWrap = $interface->extendedAttributes->{"SpecialWrapFor"};
     my $isDocument = InheritsInterface($interface, "Document");
@@ -5127,14 +5134,13 @@ sub GenerateToV8Converters
 {
     my $interface = shift;
     my $v8ClassName = shift;
-    my $nativeType = shift;
     my $interfaceName = $interface->name;
 
     if (ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "ToV8")) {
         return;
     }
 
-    my $createWrapperArgumentType = GetPassRefPtrType($nativeType);
+    my $createWrapperArgumentType = GetPassRefPtrType($interface);
 
     # FIXME: Do we really need to treat /SVG/ as dependent DOM objects?
     my $wrapperConfiguration = "WrapperConfiguration::Independent";
@@ -5454,7 +5460,13 @@ sub GetNativeType
     if (IsWrapperType($type)) {
         my $interface = ParseInterface($type);
         my $implClassName = GetImplName($interface);
-        return $isParameter ? "${implClassName}*" : "RefPtr<${implClassName}>";
+        if ($isParameter) {
+            return "$implClassName*";
+        } elsif (IsGarbageCollectedType($interface->name)) {
+            return "RefPtrWillBeRawPtr<$implClassName>";
+        } else {
+            return "RefPtr<$implClassName>";
+        }
     }
     return "RefPtr<$type>" if IsRefPtrType($type) and (not $isParameter or $nonWrapperTypes{$type});
 
@@ -5890,10 +5902,12 @@ sub GetContextEnabledFunctionName
 
 sub GetPassRefPtrType
 {
-    my $v8ClassName = shift;
+    my $interface = shift;
+    my $nativeType = GetNativeTypeForConversions($interface);
 
-    my $angleBracketSpace = $v8ClassName =~ />$/ ? " " : "";
-    return "PassRefPtr<${v8ClassName}${angleBracketSpace}>";
+    my $willBe = IsGarbageCollectedType($interface->name) ? "WillBeRawPtr" : "";
+    my $extraSpace = $nativeType =~ />$/ ? " " : "";
+    return "PassRefPtr${willBe}<${nativeType}${extraSpace}>";
 }
 
 sub WriteFileIfChanged
@@ -5997,6 +6011,14 @@ sub IsTypedArrayType
     my $type = shift;
     return 1 if $typedArrayHash{$type};
     return 0;
+}
+
+sub IsGarbageCollectedType
+{
+    my $interfaceName = shift;
+    return 0 unless IsWrapperType($interfaceName);
+    my $interface = ParseInterface($interfaceName);
+    return $interface->extendedAttributes->{"GarbageCollected"};
 }
 
 sub IsRefPtrType
