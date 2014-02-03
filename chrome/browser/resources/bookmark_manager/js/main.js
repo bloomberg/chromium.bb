@@ -668,20 +668,7 @@ function updateEditingCommands() {
   });
 }
 
-function rateLimit(func, ms) {
-  if (func.rateLimitId_) {
-    clearTimeout(func.rateLimitId_);
-    delete func.rateLimitId_;
-  }
-  func.rateLimitId_ = setTimeout(func, ms);
-}
-
-function handleChangeForTree() {
-  // This should be rate limited based on the keyboard repeat rate.
-  rateLimit(handleChangeForTreeHelper, 50);
-}
-
-function handleChangeForTreeHelper() {
+function handleChangeForTree(e) {
   updateAllCommands();
   navigateTo(tree.selectedItem.bookmarkId, updateHash);
 }
