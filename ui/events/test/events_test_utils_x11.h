@@ -24,10 +24,6 @@ struct Valuator {
   double value;
 };
 
-struct XEventDeleter {
-  void operator()(XEvent* event);
-};
-
 class ScopedXI2Event {
  public:
   ScopedXI2Event();
@@ -77,7 +73,7 @@ class ScopedXI2Event {
 
   void SetUpValuators(const std::vector<Valuator>& valuators);
 
-  scoped_ptr<XEvent, XEventDeleter> event_;
+  scoped_ptr<XEvent> event_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedXI2Event);
 };
