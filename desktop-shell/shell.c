@@ -3138,9 +3138,13 @@ shell_get_shell_surface(struct wl_client *client,
 static bool
 shell_surface_is_wl_shell_surface(struct shell_surface *shsurf)
 {
-	return wl_resource_instance_of(shsurf->resource,
-				       &wl_shell_surface_interface,
-				       &shell_surface_implementation);
+	/* A shell surface without a resource is created from xwayland
+	 * and is considered a wl_shell surface for now. */
+
+	return shsurf->resource == NULL ||
+		wl_resource_instance_of(shsurf->resource,
+					&wl_shell_surface_interface,
+					&shell_surface_implementation);
 }
 
 static const struct wl_shell_interface shell_implementation = {
@@ -3395,9 +3399,10 @@ xdg_get_xdg_surface(struct wl_client *client,
 static bool
 shell_surface_is_xdg_surface(struct shell_surface *shsurf)
 {
-	return wl_resource_instance_of(shsurf->resource,
-				       &xdg_surface_interface,
-				       &xdg_surface_implementation);
+	return shsurf->resource &&
+		wl_resource_instance_of(shsurf->resource,
+					&xdg_surface_interface,
+					&xdg_surface_implementation);
 }
 
 /* xdg-popup implementation */
