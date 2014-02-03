@@ -148,7 +148,7 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
 
   EXPECT_EQ(0u, host_resolver.num_resolve());
 
-  EXPECT_EQ("Error: line 5: Uncaught TypeError: Cannot call method 'split' "
+  EXPECT_EQ("Error: line 5: Uncaught TypeError: Cannot read property 'split' "
             "of null\n", error_observer->GetOutput());
 
   // Check the NetLogs -- there was 1 alert and 1 javascript error, and they
@@ -169,7 +169,7 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
 
     EXPECT_EQ("{\"message\":\"Prepare to DIE!\"}", entries[0].GetParamsJson());
     EXPECT_EQ("{\"line_number\":5,\"message\":\"Uncaught TypeError: Cannot "
-              "call method 'split' of null\"}", entries[1].GetParamsJson());
+              "read property 'split' of null\"}", entries[1].GetParamsJson());
   }
 }
 

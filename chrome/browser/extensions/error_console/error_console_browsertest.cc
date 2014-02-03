@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIPermissionsRuntimeError) {
       extension->id(),
       script_url,
       false,  // not incognito
-      "Uncaught TypeError: Cannot call method 'addUrl' of undefined",
+      "Uncaught TypeError: Cannot read property 'addUrl' of undefined",
       logging::LOG_ERROR,
       extension->url().Resolve(kBackgroundPageName),
       1u);
