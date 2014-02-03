@@ -864,6 +864,37 @@
         <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_TOP_RIGHT" file="common/chip_malware_top_right.png" />
         <structure type="chrome_scaled_image" name="IDR_SITE_CHIP_MALWARE_TOP" file="common/chip_malware_top.png" />
       </if>
+      <if expr="pp_ifdef('toolkit_views') or is_macosx and not is_ios">
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_BOTTOM_LEFT" file="common/chip_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_BOTTOM" file="common/chip_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_BOTTOM_RIGHT" file="common/chip_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_LEFT" file="common/chip_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_CENTER" file="common/chip_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_RIGHT" file="common/chip_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_TOP_LEFT" file="common/chip_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_TOP" file="common/chip_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_NORMAL_TOP_RIGHT" file="common/chip_top_right.png" />
+
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_BOTTOM_LEFT" file="common/chip_pressed_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_BOTTOM" file="common/chip_pressed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_BOTTOM_RIGHT" file="common/chip_pressed_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_LEFT" file="common/chip_pressed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_CENTER" file="common/chip_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_RIGHT" file="common/chip_pressed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_TOP_LEFT" file="common/chip_pressed_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_TOP" file="common/chip_pressed_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_PRESSED_TOP_RIGHT" file="common/chip_pressed_top_right.png" />
+
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_BOTTOM_LEFT" file="common/chip_hover_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_BOTTOM" file="common/chip_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_BOTTOM_RIGHT" file="common/chip_hover_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_LEFT" file="common/chip_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_CENTER" file="common/chip_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_RIGHT" file="common/chip_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_TOP_LEFT" file="common/chip_hover_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_TOP" file="common/chip_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_ORIGIN_CHIP_HOVER_TOP_RIGHT" file="common/chip_hover_top_right.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_EMPTY" file="common/speech_input_mic_empty.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_FULL" file="common/speech_input_mic_full.png" />
