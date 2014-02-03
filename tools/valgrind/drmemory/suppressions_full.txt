@@ -809,6 +809,7 @@ name=http://crbug.com/110042
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=748
 system call NtDeviceIoControlFile InputBuffer
+...
 bcrypt.dll!BCryptUnregisterConfigChangeNotify
 bcrypt.dll!BCryptGetFipsAlgorithmMode
 ntdll.dll!RtlQueryEnvironmentVariable
