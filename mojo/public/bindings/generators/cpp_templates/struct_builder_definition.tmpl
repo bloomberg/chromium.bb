@@ -6,32 +6,55 @@
 {%-   set _ = dtor_name.append("NULL") %}
 {%- endif %}
 
-{%- macro set_default(field) -%}
-{%-   if field.kind|is_string_kind -%}
-set_{{field.name}}(mojo::String({{field.default}}));
-{%-   elif field.kind|is_array_kind -%}
+{%- macro set_default(kind, value, depth) -%}
+{#--- Strings ---#}
+{%-   if kind|is_string_kind -%}
+{{caller("mojo::String(" ~ value ~ ")")}}
+{#--- Arrays ---#}
+{%-   elif kind|is_array_kind %}
+{%-     set _ = value|verify_token_type("ARRAY") %}
 {
-  {{field.kind|cpp_wrapper_type}}::Builder tmp({{field.default|length}});
-{%-     for element in field.default %}
-  tmp[{{loop.index0}}] = {{element}};
-{%-     endfor %}
-  set_{{field.name}}(tmp.Finish());
+  {{kind|cpp_wrapper_type}}::Builder tmp{{depth}}({{value[1]|length}});
+{%-     for element in value[1] %}
+{%-       filter indent(2) %}
+{%-         call(result) set_default(kind.kind, element, depth+1) %}
+tmp{{depth}}[{{loop.index0}}] = {{result}};
+{%-         endcall %}
+{%-       endfilter %}
+{%-     endfor -%}
+  {{caller("tmp" ~ depth ~ ".Finish()")|indent(2)}}
 }
-{%-   elif field.kind|is_object_kind -%}
+{#--- Objects ---#}
+{%-   elif kind|is_object_kind %}
+{%-     set _ = value|verify_token_type("OBJECT") %}
 {
-  {{field.kind|cpp_wrapper_type}}::Builder tmp;
-  // TODO
-  set_{{field.name}}(tmp.Finish());
+  {{kind|cpp_wrapper_type}}::Builder tmp{{depth}};
+{%-   set struct = structs|struct_by_name(kind.name) %}
+{%-   for element in value[1] %}
+{#-     Use struct.packed_fields to order struct values by ordinal number #}
+{%-     set subfield = struct.fields[loop.index0] %}
+{%-     filter indent(2) %}
+{%-       call(result) set_default(subfield.kind, element, depth+1) %}
+tmp{{depth}}.set_{{subfield.name}}({{result}});
+{%-       endcall %}
+{%-     endfilter %}
+{%-   endfor -%}
+  {{caller("tmp" ~ depth ~ ".Finish()")|indent(2)}}
 }
+{#--- POD types ---#}
 {%-   else -%}
-set_{{field.name}}({{field.default}});
+{{caller(value)}}
 {%-   endif %}
 {%- endmacro %}
 
 {{class_name}}::Builder::Builder(mojo::Buffer* buf)
     : data_(Data::New(buf, {{dtor_name[0]}})) {
 {%- for pf in struct.packed.packed_fields if pf.field.default %}
-  {{set_default(pf.field)|indent(2)}}
+{%-   filter indent(2) %}
+{%-     call(result) set_default(pf.field.kind, pf.field.default, 0) %}
+set_{{pf.field.name}}({{result}});
+{%-     endcall %}
+{%-   endfilter %}
 {%- endfor %}
 }
 

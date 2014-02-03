@@ -111,7 +111,9 @@ class Generator(mojom_generator.Generator):
     "is_struct_with_handles": IsStructWithHandles,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "struct_from_method": mojom_generator.GetStructFromMethod,
+    "struct_by_name": mojom_generator.GetStructByName,
     "stylize_method": mojom_generator.StudlyCapsToCamel,
+    "verify_token_type": mojom_generator.VerifyTokenType,
   }
 
   @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)

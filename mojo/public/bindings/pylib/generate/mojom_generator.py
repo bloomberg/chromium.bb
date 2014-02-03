@@ -25,6 +25,12 @@ def GetStructInfo(exported, struct):
   struct.exported = exported
   return struct
 
+def GetStructByName(structs, name):
+  for struct in structs:
+    if struct.name == name:
+      return struct
+  return None
+
 def IsStringKind(kind):
   return kind.spec == 's'
 
@@ -40,6 +46,18 @@ def CamelToUnderscores(camel):
 
 def StudlyCapsToCamel(studly):
   return studly[0].lower() + studly[1:]
+
+def VerifyTokenType(token, expected):
+  """Used to check that arrays and objects are used correctly as default
+  values. Arrays are tokens that look like ('ARRAY', element0, element1...).
+  See mojom_parser.py for their representation.
+  """
+  if not isinstance(token, tuple):
+    raise Exception("Expected token type '%s'. Invalid token '%s'." %
+        (expected, token))
+  if token[0] != expected:
+    raise Exception("Expected token type '%s'. Got '%s'." %
+        (expected, token[0]))
 
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all

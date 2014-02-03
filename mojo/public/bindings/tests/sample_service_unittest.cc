@@ -326,6 +326,19 @@ TEST(BindingsSampleTest, DefaultValues) {
   EXPECT_EQ(1, foo.data()[0]);
   EXPECT_EQ(2, foo.data()[1]);
   EXPECT_EQ(3, foo.data()[2]);
+
+  DefaultsTestInner inner = DefaultsTestInner::Builder().Finish();
+  EXPECT_EQ(1u, inner.names().size());
+  EXPECT_EQ("Jim", inner.names()[0].To<std::string>());
+  EXPECT_EQ(6*12, inner.height());
+
+  DefaultsTest full = DefaultsTest::Builder().Finish();
+  EXPECT_EQ(1u, full.people().size());
+  EXPECT_EQ(32, full.people()[0].age());
+  EXPECT_EQ(2u, full.people()[0].names().size());
+  EXPECT_EQ("Bob", full.people()[0].names()[0].To<std::string>());
+  EXPECT_EQ("Bobby", full.people()[0].names()[1].To<std::string>());
+  EXPECT_EQ(6*12, full.people()[0].height());
 }
 
 }  // namespace sample

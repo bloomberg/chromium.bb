@@ -1,6 +1,56 @@
+{%- macro set_default(kind, value, depth) -%}
+{#--- Strings ---#}
+{%-   if kind|is_string_kind -%}
+{{caller(value)}}
+{#--- Arrays ---#}
+{%-   elif kind|is_array_kind %}
+{%-     set _ = value|verify_token_type("ARRAY") %}
+{
+  var tmp{{depth}} = [];
+{%-     for element in value[1] %}
+{%-       filter indent(2) %}
+{%-         call(result) set_default(kind.kind, element, depth+1) %}
+tmp{{depth}}[{{loop.index0}}] = {{result}};
+{%-         endcall %}
+{%-       endfilter %}
+{%-     endfor -%}
+  {{caller("tmp" ~ depth)|indent(2)}}
+}
+{#--- Objects ---#}
+{%-   elif kind|is_object_kind %}
+{%-     set _ = value|verify_token_type("OBJECT") %}
+{
+  var tmp{{depth}} = new {{kind.name}}();
+{%-   set struct = structs|struct_by_name(kind.name) %}
+{%-   for element in value[1] %}
+{#-     Use struct.packed_fields to order struct values by ordinal number #}
+{%-     set subfield = struct.fields[loop.index0] %}
+{%-     filter indent(2) %}
+{%-       call(result) set_default(subfield.kind, element, depth+1) %}
+tmp{{depth}}.{{subfield.name}} = {{result}};
+{%-       endcall %}
+{%-     endfilter %}
+{%-   endfor -%}
+  {{caller("tmp" ~ depth)|indent(2)}}
+}
+{#--- POD types ---#}
+{%-   else -%}
+{{caller(value)}}
+{%-   endif %}
+{%- endmacro %}
+
+
   function {{struct.name}}() {
 {%- for packed_field in struct.packed.packed_fields %}
+{%- if packed_field.field.default %}
+{%-   filter indent(4) %}
+{%-     call(result) set_default(packed_field.field.kind, packed_field.field.default, 0) %}
+this.{{packed_field.field.name}} = {{result}};
+{%-     endcall %}
+{%-   endfilter %}
+{%- else %}
     this.{{packed_field.field.name}} = {{packed_field.field|default_value}};
+{%- endif %}
 {%- endfor %}
   }
 

@@ -33,12 +33,7 @@ _kind_to_javascript_default_value = {
 
 def JavaScriptDefaultValue(field):
   if field.default:
-    if isinstance(field.default, list):
-      # TODO(mpcomplete): This will need to be more sophisticated to support
-      # arrays of objects/arrays.
-      return "[" + ", ".join(field.default) + "]"
-    else:
-      return field.default
+    raise Exception("Default values should've been handled in jinja.")
   if field.kind in mojom.PRIMITIVES:
     return _kind_to_javascript_default_value[field.kind]
   if isinstance(field.kind, mojom.Struct):
@@ -152,7 +147,12 @@ class Generator(mojom_generator.Generator):
     "payload_size": JavaScriptPayloadSize,
     "decode_snippet": JavaScriptDecodeSnippet,
     "encode_snippet": JavaScriptEncodeSnippet,
+    "is_object_kind": mojom_generator.IsObjectKind,
+    "is_string_kind": mojom_generator.IsStringKind,
+    "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
+    "struct_by_name": mojom_generator.GetStructByName,
     "stylize_method": mojom_generator.StudlyCapsToCamel,
+    "verify_token_type": mojom_generator.VerifyTokenType,
   }
 
   @UseJinja("js_templates/module.js.tmpl", filters=js_filters)

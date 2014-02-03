@@ -34,6 +34,17 @@ struct Foo {
   handle<data_pipe_producer>[] output_streams @11;
 };
 
+struct DefaultsTestInner {
+  int32 age @2;
+  string[] names = ["Jim"] @1;
+  int32 height = 6*12 @3;
+};
+
+struct DefaultsTest {
+  DefaultsTestInner[] people = [{32, ["Bob", "Bobby"]}] @1;
+  uint8[] data = [1, 2, 3] @2;
+};
+
 [Peer=ServiceClient]
 interface Service {
   enum BazOptions {

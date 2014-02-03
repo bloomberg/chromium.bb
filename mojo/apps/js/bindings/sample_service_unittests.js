@@ -98,6 +98,19 @@ define([
     expect(foo.data[0]).toBe(1);
     expect(foo.data[1]).toBe(2);
     expect(foo.data[2]).toBe(3);
+
+    var inner = new sample.DefaultsTestInner();
+    expect(inner.names.length).toBe(1);
+    expect(inner.names[0]).toBe("Jim");
+    expect(inner.height).toBe(6*12);
+
+    var full = new sample.DefaultsTest();
+    expect(full.people.length).toBe(1);
+    expect(full.people[0].age).toBe(32);
+    expect(full.people[0].names.length).toBe(2);
+    expect(full.people[0].names[0]).toBe("Bob");
+    expect(full.people[0].names[1]).toBe("Bobby");
+    expect(full.people[0].height).toBe(6*12);
   }
 
   function ServiceImpl() {
