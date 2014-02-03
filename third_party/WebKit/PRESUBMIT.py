@@ -274,6 +274,8 @@ def _CheckForFailInFile(input_api, f):
 
 def _CheckFilePermissions(input_api, output_api):
     """Check that all files have their permissions properly set."""
+    if input_api.platform == 'win32':
+        return []
     path = input_api.os_path.join(
         '..', '..', 'tools', 'checkperms', 'checkperms.py')
     args = [sys.executable, path, '--root', input_api.change.RepositoryRoot()]
