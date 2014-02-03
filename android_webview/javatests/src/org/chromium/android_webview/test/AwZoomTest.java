@@ -13,6 +13,7 @@ import android.view.ViewConfiguration;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.util.concurrent.Callable;
@@ -157,8 +158,12 @@ public class AwZoomTest extends AwTestBase {
         assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView"})
+    crbug.com/340327
+    */
+    @DisabledTest
     public void testMagnification() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setSupportZoom(true);
         runMagnificationTest();
