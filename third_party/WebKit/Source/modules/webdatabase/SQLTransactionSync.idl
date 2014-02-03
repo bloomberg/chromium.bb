@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
 ] interface SQLTransactionSync {
-    [Custom] SQLResultSet executeSql(DOMString sqlStatement, ObjectArray arguments);
+    [Custom] SQLResultSet executeSql(DOMString sqlStatement, object[] arguments);
 };

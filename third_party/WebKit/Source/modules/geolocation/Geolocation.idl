@@ -25,15 +25,17 @@
 
 // http://www.w3.org/TR/geolocation-API/#geolocation_interface
 [
-    NoInterfaceObject
+    NoInterfaceObject,
 ] interface Geolocation {
+    // FIXME: should be: PositionOptions options (need PositionOptions.idl)
     [Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void getCurrentPosition(PositionCallback successCallback,
                                      optional PositionErrorCallback errorCallback,
-                                     optional PositionOptions options);
+                                     optional object options);
 
+    // FIXME: should be: PositionOptions options (need PositionOptions.idl)
     [Custom, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] long watchPosition(PositionCallback successCallback,
                                 optional PositionErrorCallback errorCallback,
-                                optional PositionOptions options);
+                                optional object options);
 
     void clearWatch(long watchID);
 };

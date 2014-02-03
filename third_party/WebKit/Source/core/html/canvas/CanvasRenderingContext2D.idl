@@ -59,7 +59,7 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     attribute float lineDashOffset;
 
     // FIXME: These attributes should be implemented.
-    // [Custom] attribute Array webkitLineDash;
+    // [Custom] attribute float[] webkitLineDash;
     // attribute float webkitLineDashOffset;
 
     void clearRect(float x, float y, float width, float height);

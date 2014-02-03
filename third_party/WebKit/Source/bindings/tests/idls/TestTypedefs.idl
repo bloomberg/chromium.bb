@@ -39,7 +39,6 @@ typedef DOMString                  STRING;
 typedef DOMString[]                ARRAY_OF_STRINGS;
 typedef TestCallbackInterface      TEST_CALLBACK_INTERFACE;
 typedef TestSubObjConstructor      T;
-typedef Array                      ARRAY;
 typedef DOMException               E;
 
 [

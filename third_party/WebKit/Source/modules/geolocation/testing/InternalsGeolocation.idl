@@ -33,5 +33,5 @@ partial interface Internals {
     void setGeolocationPosition(Document document, double latitude, double longitude, double accuracy);
     void setGeolocationPositionUnavailableError(Document document, DOMString message);
     void setGeolocationPermission(Document document, boolean allowed);
-    int numberOfPendingGeolocationPermissionRequests(Document document);
+    long numberOfPendingGeolocationPermissionRequests(Document document);
 };

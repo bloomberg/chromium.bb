@@ -338,6 +338,7 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
 
 INCLUDES_FOR_TYPE = {
     'object': set(),
+    'CompareHow': set(),
     'Dictionary': set(['bindings/v8/Dictionary.h']),
     'EventHandler': set(['bindings/v8/V8AbstractEventListener.h',
                          'bindings/v8/V8EventListenerList.h']),

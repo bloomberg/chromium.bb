@@ -39,6 +39,7 @@
 {% for filename in cpp_includes %}
 #include "{{filename}}"
 {% endfor %}
+
 namespace WebCore {
 
 {{v8_class}}::{{v8_class}}(v8::Handle<v8::Function> callback, ExecutionContext* context)

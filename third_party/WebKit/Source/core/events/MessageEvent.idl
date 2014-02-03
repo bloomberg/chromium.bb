@@ -42,7 +42,7 @@
                                    [Default=Undefined] optional DOMString originArg,
                                    [Default=Undefined] optional DOMString lastEventIdArg,
                                    [Default=Undefined] optional Window sourceArg,
-                                   [Default=Undefined] optional Array messagePorts);
+                                   [Default=Undefined] optional MessagePort[] messagePorts);
 
     [Custom, MeasureAs=PrefixedInitMessageEvent] void webkitInitMessageEvent([Default=Undefined] optional DOMString typeArg,
                                          [Default=Undefined] optional boolean canBubbleArg,
@@ -51,6 +51,5 @@
                                          [Default=Undefined] optional DOMString originArg,
                                          [Default=Undefined] optional DOMString lastEventIdArg,
                                          [Default=Undefined] optional Window sourceArg,
-                                         [Default=Undefined] optional Array transferables);
+                                         [Default=Undefined] optional MessagePort[] transferables);
 };
-

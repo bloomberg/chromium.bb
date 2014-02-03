@@ -40,6 +40,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
+
 namespace WebCore {
 
 V8TestCallbackInterface::V8TestCallbackInterface(v8::Handle<v8::Function> callback, ExecutionContext* context)

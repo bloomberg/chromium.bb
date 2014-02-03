@@ -158,7 +158,7 @@
     [Replaceable] readonly attribute Console console;
 
     // cross-document messaging
-    [DoNotCheckSecurity, Custom, RaisesException] void postMessage(SerializedScriptValue message, DOMString targetOrigin, optional Array messagePorts);
+    [DoNotCheckSecurity, Custom, RaisesException] void postMessage(SerializedScriptValue message, DOMString targetOrigin, optional MessagePort[] messagePorts);
 
     [Replaceable] readonly attribute Performance performance;
 

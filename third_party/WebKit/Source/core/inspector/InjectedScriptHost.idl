@@ -41,8 +41,8 @@
     [Custom] boolean isHTMLAllCollection(any obj);
     [Custom] DOMString type(any obj);
     [Custom] any functionDetails(any obj);
-    [Custom] Array getInternalProperties(any obj);
-    [Custom] Array getEventListeners(EventTarget target);
+    [Custom] any[] getInternalProperties(any obj);
+    [Custom] EventListener[] getEventListeners(EventTarget target);
     [Custom] any evaluate(DOMString text);
     [Custom] DOMString databaseId(any database);
     [Custom] DOMString storageId(any storage);
@@ -52,5 +52,5 @@
     [Custom] void unmonitorFunction(any fn);
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined.
-    [Custom] any setFunctionVariableValue(any functionObject, int scopeIndex, DOMString variableName, any newValue);
+    [Custom] any setFunctionVariableValue(any functionObject, long scopeIndex, DOMString variableName, any newValue);
 };
