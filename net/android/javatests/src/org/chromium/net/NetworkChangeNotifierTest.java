@@ -15,6 +15,9 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.test.util.Feature;
 
+/**
+ * Tests for org.chromium.net.NetworkChangeNotifier.
+ */
 public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     /**
      * Listens for alerts fired by the NetworkChangeNotifier when network status changes.
@@ -80,6 +83,23 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     }
 
     /**
+     * Mocks out calls to the WifiManager.
+     */
+    class MockWifiManagerDelegate
+            extends NetworkChangeNotifierAutoDetect.WifiManagerDelegate {
+        private String mWifiSSID;
+
+        @Override
+        String getWifiSSID() {
+            return mWifiSSID;
+        }
+
+        void setWifiSSID(String wifiSSID) {
+            mWifiSSID = wifiSSID;
+        }
+    }
+
+    /**
      * Tests that when Chrome gets an intent indicating a change in network connectivity, it sends a
      * notification to Java observers.
      */
@@ -102,6 +122,10 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         connectivityDelegate.setNetworkSubtype(TelephonyManager.NETWORK_TYPE_UNKNOWN);
         receiver.setConnectivityManagerDelegateForTests(connectivityDelegate);
 
+        MockWifiManagerDelegate wifiDelegate = new MockWifiManagerDelegate();
+        wifiDelegate.setWifiSSID("foo");
+        receiver.setWifiManagerDelegateForTests(wifiDelegate);
+
         // Initialize the NetworkChangeNotifier with a connection.
         Intent connectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
         receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
@@ -109,6 +133,24 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // We shouldn't be re-notified if the connection hasn't actually changed.
         NetworkChangeNotifierTestObserver observer = new NetworkChangeNotifierTestObserver();
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
+        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertFalse(observer.hasReceivedNotification());
+
+        // We shouldn't be notified if we're connected to non-Wifi and the Wifi SSID changes.
+        wifiDelegate.setWifiSSID("bar");
+        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertFalse(observer.hasReceivedNotification());
+        // We should be notified when we change to Wifi.
+        connectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
+        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertTrue(observer.hasReceivedNotification());
+        observer.resetHasReceivedNotification();
+        // We should be notified when the Wifi SSID changes.
+        wifiDelegate.setWifiSSID("foo");
+        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertTrue(observer.hasReceivedNotification());
+        observer.resetHasReceivedNotification();
+        // We shouldn't be re-notified if the Wifi SSID hasn't actually changed.
         receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
         assertFalse(observer.hasReceivedNotification());
 
