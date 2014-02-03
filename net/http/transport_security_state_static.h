@@ -436,7 +436,6 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {12, true, "\006urchin\003com", false, kGooglePins, DOMAIN_URCHIN_COM },
   {8, true, "\003goo\002gl", false, kGooglePins, DOMAIN_GOO_GL },
   {6, true, "\001g\002co", false, kGooglePins, DOMAIN_G_CO },
-  {22, true, "\020googletagmanager\003com", false, kGooglePins, DOMAIN_GOOGLETAGMANAGER_COM },
   {11, true, "\006google\002ac", false, kGooglePins, DOMAIN_GOOGLE_AC },
   {11, true, "\006google\002ad", false, kGooglePins, DOMAIN_GOOGLE_AD },
   {11, true, "\006google\002ae", false, kGooglePins, DOMAIN_GOOGLE_AE },
@@ -901,8 +900,6 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {18, false, "\003www\010evernote\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {18, false, "\003app\010yinxiang\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {15, false, "\011neilwynne\003com", true, kNoPins, DOMAIN_NOT_PINNED },
-  {20, false, "\016calyxinstitute\003org", true, kNoPins, DOMAIN_NOT_PINNED },
-  {24, false, "\003www\016calyxinstitute\003org", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
