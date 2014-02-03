@@ -711,7 +711,7 @@ void BrowserOptionsHandler::RegisterMessages() {
   }
 #endif
   web_ui()->RegisterMessageCallback(
-      "requestHotwordAvailabile",
+      "requestHotwordAvailable",
       base::Bind(&BrowserOptionsHandler::HandleRequestHotwordAvailable,
                  base::Unretained(this)));
 }

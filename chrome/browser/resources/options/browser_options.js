@@ -128,7 +128,7 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('homePageOverlay');
       };
 
-      chrome.send('requestHotwordAvailabile');
+      chrome.send('requestHotwordAvailable');
 
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
