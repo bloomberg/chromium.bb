@@ -4165,6 +4165,22 @@ static Editor::Command command(Document* document, const String& commandName, bo
 
 bool Document::execCommand(const String& commandName, bool userInterface, const String& value)
 {
+    // We don't allow recusrive |execCommand()| to protect against attack code.
+    // Recursive call of |execCommand()| could be happened by moving iframe
+    // with script triggered by insertion, e.g. <iframe src="javascript:...">
+    // <iframe onload="...">. This usage is valid as of the specification
+    // although, it isn't common use case, rather it is used as attack code.
+    static bool inExecCommand = false;
+    if (inExecCommand) {
+        String message = "We don't execute document.execCommand() this time, because it is called recursively.";
+        addConsoleMessage(JSMessageSource, WarningMessageLevel, message);
+        return false;
+    }
+    TemporaryChange<bool> executeScope(inExecCommand, true);
+
+    // Postpone DOM mutation events, which can execute scripts and change
+    // DOM tree against implementation assumption.
+    EventQueueScope eventQueueScope;
     return command(this, commandName, userInterface).execute(value);
 }
 

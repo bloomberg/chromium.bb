@@ -1,6 +1,25 @@
-CONSOLE ERROR: line 19: Uncaught RangeError: Maximum call stack size exceeded.
-CONSOLE ERROR: line 19: Uncaught RangeError: Maximum call stack size exceeded.
-CONSOLE ERROR: line 19: Uncaught RangeError: Maximum call stack size exceeded.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: We don't execute document.execCommand() this time, because it is called recursively.
 x
 x This test passes if it doesn't crash.
-

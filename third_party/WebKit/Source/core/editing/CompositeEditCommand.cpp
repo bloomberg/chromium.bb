@@ -73,24 +73,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-namespace {
-class ReentrancyGuard {
-public:
-    static bool isRecursiveCall() { return s_nestingCounter; }
-
-    class Scope {
-    public:
-        Scope() { ++s_nestingCounter; }
-        ~Scope() { --s_nestingCounter; }
-    };
-    friend class Scope;
-
-private:
-    static int s_nestingCounter;
-};
-int ReentrancyGuard::s_nestingCounter;
-}
-
 PassRefPtr<EditCommandComposition> EditCommandComposition::create(Document* document,
     const VisibleSelection& startingSelection, const VisibleSelection& endingSelection, EditAction editAction)
 {
@@ -182,14 +164,6 @@ CompositeEditCommand::~CompositeEditCommand()
 
 void CompositeEditCommand::apply()
 {
-    // We don't allow recusrive |apply()| to protect against attack code.
-    // Recursive call of |apply()| could be happened by moving iframe
-    // with script triggered by insertion, e.g. <iframe src="javascript:...">
-    // <iframe onload="...">. This usage is valid as of the specification
-    // although, it isn't common use case, rather it is used as attack code.
-    if (ReentrancyGuard::isRecursiveCall())
-        return;
-
     if (!endingSelection().isContentRichlyEditable()) {
         switch (editingAction()) {
         case EditActionTyping:
@@ -215,7 +189,6 @@ void CompositeEditCommand::apply()
     ASSERT(frame);
     {
         EventQueueScope eventQueueScope;
-        ReentrancyGuard::Scope reentrancyGuardScope;
         doApply();
     }
 
