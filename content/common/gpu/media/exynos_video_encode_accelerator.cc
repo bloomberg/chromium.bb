@@ -1188,14 +1188,7 @@ bool ExynosVideoEncodeAccelerator::CreateGscInputBuffers() {
   memset(&control, 0, sizeof(control));
   control.id    = V4L2_CID_ALPHA_COMPONENT;
   control.value = 255;
-  if (HANDLE_EINTR(ioctl(gsc_fd_, VIDIOC_S_CTRL, &control)) != 0) {
-    // TODO(posciak): This is a  temporary hack and should be removed when
-    // all platforms migrate to kernel >=3.8.
-    memset(&control, 0, sizeof(control));
-    control.id    = V4L2_CID_GLOBAL_ALPHA;
-    control.value = 255;
-    IOCTL_OR_ERROR_RETURN_FALSE(gsc_fd_, VIDIOC_S_CTRL, &control);
-  }
+  IOCTL_OR_ERROR_RETURN_FALSE(gsc_fd_, VIDIOC_S_CTRL, &control);
 
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
