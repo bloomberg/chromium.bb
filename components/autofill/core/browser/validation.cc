@@ -128,10 +128,9 @@ bool IsValidCreditCardSecurityCode(const base::string16& text) {
 
 bool IsValidCreditCardSecurityCode(const base::string16& code,
                                    const base::string16& number) {
-  CreditCard card;
-  card.SetRawInfo(CREDIT_CARD_NUMBER, number);
+  std::string type = CreditCard::GetCreditCardType(number);
   size_t required_length = 3;
-  if (card.type() == kAmericanExpressCard)
+  if (type == kAmericanExpressCard)
     required_length = 4;
 
   return code.length() == required_length;

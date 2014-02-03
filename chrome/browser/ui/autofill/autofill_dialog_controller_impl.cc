@@ -1803,8 +1803,6 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
   if (inputs.empty())
     return messages;
 
-  FieldValueMap field_values;
-
   if (i18ninput::Enabled() && section != SECTION_CC) {
     AddressData address_data;
     i18ninput::CreateAddressData(
@@ -1833,9 +1831,6 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
   for (FieldValueMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
     const ServerFieldType type = iter->first;
-    if (!messages.GetMessageOrDefault(type).text.empty())
-      continue;
-
     base::string16 text = InputValidityMessage(section, type, iter->second);
 
     // Skip empty/unchanged fields in edit mode. Ignore country as it always has
@@ -1843,23 +1838,11 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     // it to be valid unless later proven otherwise.
     bool sure = InputWasEdited(type, iter->second) ||
                 AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY;
-
-    // Consider only individually valid fields for inter-field validation.
-    if (text.empty()) {
-      field_values[type] = iter->second;
-      // If the field is valid but can be invalidated by inter-field validation,
-      // assume it to be unsure.
-      if (type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
-          type == CREDIT_CARD_EXP_MONTH ||
-          type == CREDIT_CARD_VERIFICATION_CODE ||
-          type == PHONE_HOME_WHOLE_NUMBER ||
-          type == PHONE_BILLING_WHOLE_NUMBER) {
-        sure = false;
-      }
-    }
     messages.Set(type, ValidityMessage(text, sure));
   }
 
+  // For the convenience of using operator[].
+  FieldValueMap& field_values = const_cast<FieldValueMap&>(inputs);
   // Validate the date formed by month and year field. (Autofill dialog is
   // never supposed to have 2-digit years, so not checked).
   if (field_values.count(CREDIT_CARD_EXP_4_DIGIT_YEAR) &&

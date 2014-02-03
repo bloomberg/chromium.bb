@@ -214,6 +214,8 @@ class ValidityMessages {
   ValidityMessages();
   ~ValidityMessages();
 
+  // Sets the message for |field|, but will not overwrite a previous, invalid
+  // message.
   void Set(ServerFieldType field, const ValidityMessage& message);
   const ValidityMessage& GetMessageOrDefault(ServerFieldType field) const;
 
