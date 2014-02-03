@@ -469,10 +469,10 @@ class SyncerTest : public testing::Test,
   void ConfigureNoGetUpdatesRequired() {
     context_->set_server_enabled_pre_commit_update_avoidance(true);
     nudge_tracker_.OnInvalidationsEnabled();
-    nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+    nudge_tracker_.RecordSuccessfulSyncCycle();
 
     ASSERT_FALSE(context_->ShouldFetchUpdatesBeforeCommit());
-    ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+    ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
   }
 
   base::MessageLoop message_loop_;

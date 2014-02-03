@@ -36,14 +36,19 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
 
   // Returns true if there is a good reason for performing a get updates
   // request as part of the next sync cycle.
-  bool IsGetUpdatesRequired(base::TimeTicks now) const;
+  bool IsGetUpdatesRequired() const;
 
   // Return true if should perform a sync cycle for GU retry.
-  bool IsRetryRequired(base::TimeTicks now) const;
+  //
+  // This is sensitive to changes in 'current time'.  Its value can be affected
+  // by SetSyncCycleStartTime(), SetNextRetryTime(), and
+  // RecordSuccessfulSyncCycle().  Please refer to those functions for more
+  // information on how this flag is maintained.
+  bool IsRetryRequired() const;
 
   // Tells this class that all required update fetching or committing has
   // completed successfully.
-  void RecordSuccessfulSyncCycle(base::TimeTicks now);
+  void RecordSuccessfulSyncCycle();
 
   // Takes note of a local change.
   void RecordLocalChange(ModelTypeSet types);
@@ -105,12 +110,22 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
       ModelType type,
       sync_pb::DataTypeProgressMarker* progress) const;
 
+  // Flips the flag if we're due for a retry.
+  void SetSyncCycleStartTime(base::TimeTicks now);
+
   // Adjusts the number of hints that can be stored locally.
   void SetHintBufferSize(size_t size);
 
-  void set_next_retry_time(base::TimeTicks next_retry_time) {
-    next_retry_time_ = next_retry_time;
-  }
+  // Schedules a retry GetUpdate request for some time in the future.
+  //
+  // This is a request sent to us as part of a server response requesting
+  // that the client perform a GetUpdate request at |next_retry_time| to
+  // fetch any updates it may have missed in the first attempt.
+  //
+  // To avoid strange results from IsRetryRequired() during a sync cycle, the
+  // effects of this change are not guaranteed to take effect until
+  // SetSyncCycleStartTime() is called at the start of the *next* sync cycle.
+  void SetNextRetryTime(base::TimeTicks next_retry_time);
 
  private:
   typedef std::map<ModelType, DataTypeTracker> TypeTrackerMap;
@@ -139,8 +154,22 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
 
   base::TimeTicks last_successful_sync_time_;
 
-  // A retry GU should be issued after this time.
+  // A pending update to the current_retry_time_.
+  //
+  // The GU retry time is specified by a call to SetNextRetryTime, but we don't
+  // want that change to take effect right away, since it could happen in the
+  // middle of a sync cycle.  We delay the update until the start of the next
+  // sync cycle, which is indicated by a call to SetSyncCycleStartTime().
   base::TimeTicks next_retry_time_;
+
+  // The currently active retry GU time.  Will be null if there is no retry GU
+  // pending at this time.
+  base::TimeTicks current_retry_time_;
+
+  // The time when the sync cycle started.  This value is maintained by
+  // SetSyncCycleStartTime().  This may contain a stale value if we're not
+  // currently in a sync cycle.
+  base::TimeTicks sync_cycle_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NudgeTracker);
 };

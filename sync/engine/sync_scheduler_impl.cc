@@ -232,14 +232,16 @@ void SyncSchedulerImpl::Start(Mode mode) {
   mode_ = mode;
   AdjustPolling(UPDATE_INTERVAL);  // Will kick start poll timer if needed.
 
-  if (old_mode != mode_ &&
-      mode_ == NORMAL_MODE &&
-      (nudge_tracker_.IsSyncRequired() ||
-          nudge_tracker_.IsRetryRequired(base::TimeTicks::Now())) &&
-      CanRunNudgeJobNow(NORMAL_PRIORITY)) {
+  if (old_mode != mode_ && mode_ == NORMAL_MODE) {
     // We just got back to normal mode.  Let's try to run the work that was
     // queued up while we were configuring.
-    TrySyncSessionJob();
+
+    // Update our current time before checking IsRetryRequired().
+    nudge_tracker_.SetSyncCycleStartTime(base::TimeTicks::Now());
+    if ((nudge_tracker_.IsSyncRequired() || nudge_tracker_.IsRetryRequired()) &&
+        CanRunNudgeJobNow(NORMAL_PRIORITY)) {
+      TrySyncSessionJob();
+    }
   }
 }
 
@@ -470,13 +472,12 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
   if (success) {
     // That cycle took care of any outstanding work we had.
     SDVLOG(2) << "Nudge succeeded.";
-    nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+    nudge_tracker_.RecordSuccessfulSyncCycle();
     scheduled_nudge_time_ = base::TimeTicks();
 
     // If we're here, then we successfully reached the server.  End all backoff.
     wait_interval_.reset();
     NotifyRetryTime(base::Time());
-    return;
   } else {
     HandleFailure(session->status_controller().model_neutral_state());
   }
@@ -580,7 +581,7 @@ void SyncSchedulerImpl::DoRetrySyncSessionJob() {
                               session.get()) &&
       !sessions::HasSyncerError(
           session->status_controller().model_neutral_state())) {
-    nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+    nudge_tracker_.RecordSuccessfulSyncCycle();
   } else {
     HandleFailure(session->status_controller().model_neutral_state());
   }
@@ -687,6 +688,8 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
   JobPriority priority = next_sync_session_job_priority_;
   next_sync_session_job_priority_ = NORMAL_PRIORITY;
 
+  nudge_tracker_.SetSyncCycleStartTime(base::TimeTicks::Now());
+
   DCHECK(CalledOnValidThread());
   if (mode_ == CONFIGURATION_MODE) {
     if (pending_configure_params_) {
@@ -697,7 +700,7 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
     if (nudge_tracker_.IsSyncRequired()) {
       SDVLOG(2) << "Found pending nudge job";
       DoNudgeSyncSessionJob(priority);
-    } else if (nudge_tracker_.IsRetryRequired(base::TimeTicks::Now())) {
+    } else if (nudge_tracker_.IsRetryRequired()) {
       DoRetrySyncSessionJob();
     } else if (do_poll_after_credentials_updated_ ||
         ((base::TimeTicks::Now() - last_poll_reset_) >= GetPollInterval())) {
@@ -906,7 +909,7 @@ void SyncSchedulerImpl::OnSyncProtocolError(
 }
 
 void SyncSchedulerImpl::OnReceivedGuRetryDelay(const base::TimeDelta& delay) {
-  nudge_tracker_.set_next_retry_time(base::TimeTicks::Now() + delay);
+  nudge_tracker_.SetNextRetryTime(TimeTicks::Now() + delay);
   retry_timer_.Start(FROM_HERE, delay, this,
                      &SyncSchedulerImpl::RetryTimerCallback);
 }

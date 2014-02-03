@@ -1369,21 +1369,21 @@ TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
   scheduler()->ScheduleLocalRefreshRequest(zero(), ModelTypeSet(BOOKMARKS),
                                            FROM_HERE);
   scheduler()->OnReceivedGuRetryDelay(delay1);
+  EXPECT_EQ(delay1, GetRetryTimerDelay());
 
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(
           WithoutArgs(VerifyRetryTimerDelay(this, delay1)),
           WithArg<2>(sessions::test_util::SimulateGuRetryDelayCommand(delay2)),
-          WithoutArgs(VerifyRetryTimerDelay(this, delay2)),
           RecordSyncShare(&times)));
 
   // Run nudge GU.
   RunLoop();
+  EXPECT_EQ(delay2, GetRetryTimerDelay());
 
   EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
-      .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                RecordSyncShare(&times)));
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+                      RecordSyncShare(&times)));
 
   // Run to wait for retrying.
   RunLoop();

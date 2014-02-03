@@ -44,11 +44,11 @@ bool NudgeTracker::IsSyncRequired() const {
   return false;
 }
 
-bool NudgeTracker::IsGetUpdatesRequired(base::TimeTicks now) const {
+bool NudgeTracker::IsGetUpdatesRequired() const {
   if (invalidations_out_of_sync_)
     return true;
 
-  if (IsRetryRequired(now))
+  if (IsRetryRequired())
     return true;
 
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
@@ -60,16 +60,22 @@ bool NudgeTracker::IsGetUpdatesRequired(base::TimeTicks now) const {
   return false;
 }
 
-bool NudgeTracker::IsRetryRequired(base::TimeTicks now) const {
-  return !next_retry_time_.is_null() && next_retry_time_ < now;
+bool NudgeTracker::IsRetryRequired() const {
+  if (sync_cycle_start_time_.is_null())
+    return false;
+
+  if (current_retry_time_.is_null())
+    return false;
+
+  return current_retry_time_ < sync_cycle_start_time_;
 }
 
-void NudgeTracker::RecordSuccessfulSyncCycle(base::TimeTicks now) {
+void NudgeTracker::RecordSuccessfulSyncCycle() {
   updates_source_ = sync_pb::GetUpdatesCallerInfo::UNKNOWN;
-  last_successful_sync_time_ = now;
 
-  if (next_retry_time_ < now)
-    next_retry_time_ = base::TimeTicks();
+  // If a retry was required, we've just serviced it.  Unset the flag.
+  if (IsRetryRequired())
+    current_retry_time_ = base::TimeTicks();
 
   // A successful cycle while invalidations are enabled puts us back into sync.
   invalidations_out_of_sync_ = !invalidations_enabled_;
@@ -239,11 +245,38 @@ void NudgeTracker::FillProtoMessage(
   type_trackers_.find(type)->second.FillGetUpdatesTriggersMessage(msg);
 }
 
+void NudgeTracker::SetSyncCycleStartTime(base::TimeTicks now) {
+  sync_cycle_start_time_ = now;
+
+  // If current_retry_time_ is still set, that means we have an old retry time
+  // left over from a previous cycle.  For example, maybe we tried to perform
+  // this retry, hit a network connection error, and now we're in exponential
+  // backoff.  In that case, we want this sync cycle to include the GU retry
+  // flag so we leave this variable set regardless of whether or not there is an
+  // overwrite pending.
+  if (!current_retry_time_.is_null()) {
+    return;
+  }
+
+  // If do not have a current_retry_time_, but we do have a next_retry_time_ and
+  // it is ready to go, then we set it as the current_retry_time_.  It will stay
+  // there until a GU retry has succeeded.
+  if (!next_retry_time_.is_null() &&
+      next_retry_time_ < sync_cycle_start_time_) {
+    current_retry_time_ = next_retry_time_;
+    next_retry_time_ = base::TimeTicks();
+  }
+}
+
 void NudgeTracker::SetHintBufferSize(size_t size) {
   for (TypeTrackerMap::iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     it->second.UpdatePayloadBufferSize(size);
   }
+}
+
+void NudgeTracker::SetNextRetryTime(base::TimeTicks retry_time) {
+  next_retry_time_ = retry_time;
 }
 
 }  // namespace sessions

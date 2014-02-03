@@ -69,7 +69,7 @@ class NudgeTrackerTest : public ::testing::Test {
 
   void SetInvalidationsInSync() {
     nudge_tracker_.OnInvalidationsEnabled();
-    nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+    nudge_tracker_.RecordSuccessfulSyncCycle();
   }
 
  protected:
@@ -81,7 +81,7 @@ class NudgeTrackerTest : public ::testing::Test {
 TEST_F(NudgeTrackerTest, EmptyNudgeTracker) {
   // Now we're at the normal, "idle" state.
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
             nudge_tracker_.updates_source());
 
@@ -271,7 +271,7 @@ TEST_F(NudgeTrackerTest, DropHintsAtServer_Alone) {
   }
 
   // Clear status then verify.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   {
     sync_pb::GetUpdateTriggers gu_trigger;
     nudge_tracker_.FillProtoMessage(BOOKMARKS, &gu_trigger);
@@ -300,7 +300,7 @@ TEST_F(NudgeTrackerTest, DropHintsAtServer_WithOtherInvalidations) {
   }
 
   // Clear status then verify.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   {
     sync_pb::GetUpdateTriggers gu_trigger;
     nudge_tracker_.FillProtoMessage(BOOKMARKS, &gu_trigger);
@@ -315,34 +315,34 @@ TEST_F(NudgeTrackerTest, EnableDisableInvalidations) {
   // Start with invalidations offline.
   nudge_tracker_.OnInvalidationsDisabled();
   EXPECT_TRUE(InvalidationsOutOfSync());
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 
   // Simply enabling invalidations does not bring us back into sync.
   nudge_tracker_.OnInvalidationsEnabled();
   EXPECT_TRUE(InvalidationsOutOfSync());
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 
   // We must successfully complete a sync cycle while invalidations are enabled
   // to be sure that we're in sync.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(InvalidationsOutOfSync());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // If the invalidator malfunctions, we go become unsynced again.
   nudge_tracker_.OnInvalidationsDisabled();
   EXPECT_TRUE(InvalidationsOutOfSync());
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 
   // A sync cycle while invalidations are disabled won't reset the flag.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_TRUE(InvalidationsOutOfSync());
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 
   // Nor will the re-enabling of invalidations be sufficient, even now that
   // we've had a successful sync cycle.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_TRUE(InvalidationsOutOfSync());
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 }
 
 // Tests that locally modified types are correctly written out to the
@@ -356,7 +356,7 @@ TEST_F(NudgeTrackerTest, WriteLocallyModifiedTypesToProto) {
   EXPECT_EQ(1, ProtoLocallyModifiedCount(PREFERENCES));
 
   // Record a successful sync cycle.  Verify the count is cleared.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_EQ(0, ProtoLocallyModifiedCount(PREFERENCES));
 }
 
@@ -371,7 +371,7 @@ TEST_F(NudgeTrackerTest, WriteRefreshRequestedTypesToProto) {
   EXPECT_EQ(1, ProtoRefreshRequestedCount(SESSIONS));
 
   // Record a successful sync cycle.  Verify the count is cleared.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_EQ(0, ProtoRefreshRequestedCount(SESSIONS));
 }
 
@@ -382,13 +382,13 @@ TEST_F(NudgeTrackerTest, IsSyncRequired) {
   // Local changes.
   nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS));
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
   // Refresh requests.
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(SESSIONS));
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
   // Invalidations.
@@ -396,33 +396,33 @@ TEST_F(NudgeTrackerTest, IsSyncRequired) {
       BuildInvalidationMap(PREFERENCES, 1, "hint");
   nudge_tracker_.RecordRemoteInvalidation(invalidation_map);
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 }
 
 // Basic tests for the IsGetUpdatesRequired() flag.
 TEST_F(NudgeTrackerTest, IsGetUpdatesRequired) {
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // Local changes.
   nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS));
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // Refresh requests.
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(SESSIONS));
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // Invalidations.
   ObjectIdInvalidationMap invalidation_map =
       BuildInvalidationMap(PREFERENCES, 1, "hint");
   nudge_tracker_.RecordRemoteInvalidation(invalidation_map);
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 }
 
 // Test IsSyncRequired() responds correctly to data type throttling.
@@ -448,7 +448,7 @@ TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling) {
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
 
   // A successful sync cycle means we took care of bookmarks.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
   // But we still haven't dealt with sessions.  We'll need to remember
@@ -465,32 +465,32 @@ TEST_F(NudgeTrackerTest, IsGetUpdatesRequired_Throttling) {
   const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(10);
   const base::TimeTicks t1 = t0 + throttle_length;
 
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // A refresh request to sessions enables the flag.
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(SESSIONS));
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 
   // But the throttling of sessions unsets it.
   nudge_tracker_.SetTypesThrottledUntil(ModelTypeSet(SESSIONS),
                                        throttle_length,
                                        t0);
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // A refresh request for bookmarks means we have reason to sync again.
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(BOOKMARKS));
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 
   // A successful sync cycle means we took care of bookmarks.
-  nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // But we still haven't dealt with sessions.  We'll need to remember
   // that sessions are out of sync and re-enable the flag when their
   // throttling interval expires.
   nudge_tracker_.UpdateTypeThrottlingState(t1);
   EXPECT_FALSE(nudge_tracker_.IsTypeThrottled(SESSIONS));
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(base::TimeTicks::Now()));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 }
 
 // Tests throttling-related getter functions when no types are throttled.
@@ -567,22 +567,169 @@ TEST_F(NudgeTrackerTest, OverlappingThrottleIntervals) {
 }
 
 TEST_F(NudgeTrackerTest, Retry) {
-  const base::TimeTicks retry_time = base::TimeTicks::FromInternalValue(12345);
-  const base::TimeTicks pre_retry_time =
-      retry_time - base::TimeDelta::FromSeconds(1);
-  const base::TimeTicks post_retry_time =
-      retry_time + base::TimeDelta::FromSeconds(1);
-  nudge_tracker_.set_next_retry_time(retry_time);
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(12345);
+  const base::TimeTicks t3 = t0 + base::TimeDelta::FromSeconds(3);
+  const base::TimeTicks t4 = t0 + base::TimeDelta::FromSeconds(4);
 
-  EXPECT_FALSE(nudge_tracker_.IsRetryRequired(pre_retry_time));
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(pre_retry_time));
-  nudge_tracker_.RecordSuccessfulSyncCycle(pre_retry_time);
+  // Set retry for t3.
+  nudge_tracker_.SetNextRetryTime(t3);
 
-  EXPECT_TRUE(nudge_tracker_.IsRetryRequired(post_retry_time));
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(post_retry_time));
-  nudge_tracker_.RecordSuccessfulSyncCycle(post_retry_time);
-  EXPECT_FALSE(nudge_tracker_.IsRetryRequired(
-      post_retry_time + base::TimeDelta::FromSeconds(1)));
+  // Not due yet at t0.
+  nudge_tracker_.SetSyncCycleStartTime(t0);
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+
+  // Successful sync cycle at t0 changes nothing.
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+
+  // At t4, the retry becomes due.
+  nudge_tracker_.SetSyncCycleStartTime(t4);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
+
+  // A sync cycle unsets the flag.
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+
+  // It's still unset at the start of the next sync cycle.
+  nudge_tracker_.SetSyncCycleStartTime(t4);
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+}
+
+// Test a mid-cycle update when IsRetryRequired() was true before the cycle
+// began.
+TEST_F(NudgeTrackerTest, IsRetryRequired_MidCycleUpdate1) {
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(12345);
+  const base::TimeTicks t1 = t0 + base::TimeDelta::FromSeconds(1);
+  const base::TimeTicks t2 = t0 + base::TimeDelta::FromSeconds(2);
+  const base::TimeTicks t5 = t0 + base::TimeDelta::FromSeconds(5);
+  const base::TimeTicks t6 = t0 + base::TimeDelta::FromSeconds(6);
+
+  nudge_tracker_.SetNextRetryTime(t0);
+  nudge_tracker_.SetSyncCycleStartTime(t1);
+
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // Pretend that we were updated mid-cycle.  SetSyncCycleStartTime is
+  // called only at the start of the sync cycle, so don't call it here.
+  // The update should have no effect on IsRetryRequired().
+  nudge_tracker_.SetNextRetryTime(t5);
+
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // Verify that the successful sync cycle clears the flag.
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+
+  // Verify expecations around the new retry time.
+  nudge_tracker_.SetSyncCycleStartTime(t2);
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+
+  nudge_tracker_.SetSyncCycleStartTime(t6);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+}
+
+// Test a mid-cycle update when IsRetryRequired() was false before the cycle
+// began.
+TEST_F(NudgeTrackerTest, IsRetryRequired_MidCycleUpdate2) {
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(12345);
+  const base::TimeTicks t1 = t0 + base::TimeDelta::FromSeconds(1);
+  const base::TimeTicks t3 = t0 + base::TimeDelta::FromSeconds(3);
+  const base::TimeTicks t5 = t0 + base::TimeDelta::FromSeconds(5);
+  const base::TimeTicks t6 = t0 + base::TimeDelta::FromSeconds(6);
+
+  // Schedule a future retry, and a nudge unrelated to it.
+  nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+  nudge_tracker_.SetNextRetryTime(t1);
+  nudge_tracker_.SetSyncCycleStartTime(t0);
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+
+  // Pretend this happened in mid-cycle.  This should have no effect on
+  // IsRetryRequired().
+  nudge_tracker_.SetNextRetryTime(t5);
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+
+  // The cycle succeeded.
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+
+  // The time t3 is greater than the GU retry time scheduled at the beginning of
+  // the test, but later than the retry time that overwrote it during the
+  // pretend 'sync cycle'.
+  nudge_tracker_.SetSyncCycleStartTime(t3);
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+
+  // Finally, the retry established during the sync cycle becomes due.
+  nudge_tracker_.SetSyncCycleStartTime(t6);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+}
+
+// Simulate the case where a sync cycle fails.
+TEST_F(NudgeTrackerTest, IsRetryRequired_FailedCycle) {
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(12345);
+  const base::TimeTicks t1 = t0 + base::TimeDelta::FromSeconds(1);
+  const base::TimeTicks t2 = t0 + base::TimeDelta::FromSeconds(2);
+
+  nudge_tracker_.SetNextRetryTime(t0);
+  nudge_tracker_.SetSyncCycleStartTime(t1);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // The nudge tracker receives no notifications for a failed sync cycle.
+  // Pretend one happened here.
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // Think of this as the retry cycle.
+  nudge_tracker_.SetSyncCycleStartTime(t2);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // The second cycle is a success.
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+}
+
+// Simulate a partially failed sync cycle.  The callback to update the GU retry
+// was invoked, but the sync cycle did not complete successfully.
+TEST_F(NudgeTrackerTest, IsRetryRequired_FailedCycleIncludesUpdate) {
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(12345);
+  const base::TimeTicks t1 = t0 + base::TimeDelta::FromSeconds(1);
+  const base::TimeTicks t3 = t0 + base::TimeDelta::FromSeconds(3);
+  const base::TimeTicks t4 = t0 + base::TimeDelta::FromSeconds(4);
+  const base::TimeTicks t5 = t0 + base::TimeDelta::FromSeconds(5);
+  const base::TimeTicks t6 = t0 + base::TimeDelta::FromSeconds(6);
+
+  nudge_tracker_.SetNextRetryTime(t0);
+  nudge_tracker_.SetSyncCycleStartTime(t1);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // The cycle is in progress.  A new GU Retry time is received.
+  // The flag is not because this cycle is still in progress.
+  nudge_tracker_.SetNextRetryTime(t5);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // The nudge tracker receives no notifications for a failed sync cycle.
+  // Pretend the cycle failed here.
+
+  // The next sync cycle starts.  The new GU time has not taken effect by this
+  // time, but the NudgeTracker hasn't forgotten that we have not yet serviced
+  // the retry from the previous cycle.
+  nudge_tracker_.SetSyncCycleStartTime(t3);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+
+  // It succeeds.  The retry time is not updated, so it should remain at t5.
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+
+  // Another sync cycle.  This one is still before the scheduled retry.  It does
+  // not change the scheduled retry time.
+  nudge_tracker_.SetSyncCycleStartTime(t4);
+  EXPECT_FALSE(nudge_tracker_.IsRetryRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+
+  // The retry scheduled way back during the first cycle of this test finally
+  // becomes due.  Perform a successful sync cycle to service it.
+  nudge_tracker_.SetSyncCycleStartTime(t6);
+  EXPECT_TRUE(nudge_tracker_.IsRetryRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
 }
 
 class NudgeTrackerAckTrackingTest : public NudgeTrackerTest {
@@ -646,7 +793,7 @@ class NudgeTrackerAckTrackingTest : public NudgeTrackerTest {
   }
 
   void RecordSuccessfulSyncCycle() {
-    nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+    nudge_tracker_.RecordSuccessfulSyncCycle();
   }
 
  private:

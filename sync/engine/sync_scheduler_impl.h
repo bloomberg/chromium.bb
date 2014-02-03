@@ -113,20 +113,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   friend class SyncSchedulerWhiteboxTest;
   friend class SyncerTest;
 
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, NoNudgesInConfigureMode);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
-      DropNudgeWhileExponentialBackOff);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, SaveNudge);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
-                           SaveNudgeWhileTypeThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinueNudge);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinueConfiguration);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
-                           SaveConfigurationWhileThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
-                           SaveNudgeWhileThrottled);
-  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
-                           ContinueCanaryJobConfig);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, TransientPollFailure);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest,
                            ServerConnectionChangeDuringBackoff);
@@ -134,6 +120,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
                            ConnectionChangeCanaryPreemptedByNudge);
   FRIEND_TEST_ALL_PREFIXES(BackoffTriggersSyncSchedulerTest,
                            FailGetEncryptionKey);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, SuccessfulRetry);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, FailedRetry);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, ReceiveNewRetryDelay);
 
   struct SYNC_EXPORT_PRIVATE WaitInterval {
     enum Mode {
@@ -337,14 +326,14 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // It is reset back to NORMAL_PRIORITY on every call to TrySyncSessionJobImpl.
   JobPriority next_sync_session_job_priority_;
 
+  // One-shot timer for scheduling GU retry according to delay set by server.
+  base::OneShotTimer<SyncSchedulerImpl> retry_timer_;
+
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 
   // A second factory specially for weak_handle_this_, to allow the handle
   // to be const and alleviate threading concerns.
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_for_weak_handle_;
-
-  // One-shot timer for scheduling GU retry according to delay set by server.
-  base::OneShotTimer<SyncSchedulerImpl> retry_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSchedulerImpl);
 };

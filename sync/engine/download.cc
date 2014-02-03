@@ -144,8 +144,7 @@ void BuildNormalDownloadUpdatesImpl(
 
   // Set the new and improved version of source, too.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::GU_TRIGGER);
-  get_updates->set_is_retry(
-      nudge_tracker.IsRetryRequired(base::TimeTicks::Now()));
+  get_updates->set_is_retry(nudge_tracker.IsRetryRequired());
 
   // Fill in the notification hints.
   for (int i = 0; i < get_updates->from_progress_marker_size(); ++i) {

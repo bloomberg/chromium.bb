@@ -61,7 +61,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
   GetUpdatesProcessor get_updates_processor(
       session->context()->model_type_registry()->update_handler_map());
   VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
-  if (nudge_tracker.IsGetUpdatesRequired(base::TimeTicks::Now()) ||
+  if (nudge_tracker.IsGetUpdatesRequired() ||
       session->context()->ShouldFetchUpdatesBeforeCommit()) {
     if (!DownloadAndApplyUpdates(
             request_types,

@@ -25,7 +25,9 @@ using sessions::MockDebugInfoGetter;
 // A test fixture for tests exercising download updates functions.
 class DownloadUpdatesTest : public ::testing::Test {
  protected:
-  DownloadUpdatesTest() : update_handler_deleter_(&update_handler_map_) {}
+  DownloadUpdatesTest() :
+    kTestStartTime(base::TimeTicks::Now()),
+    update_handler_deleter_(&update_handler_map_) {}
 
   virtual void SetUp() {
     dir_maker_.SetUp();
@@ -63,6 +65,8 @@ class DownloadUpdatesTest : public ::testing::Test {
 
     response->set_changes_remaining(0);
   }
+
+  const base::TimeTicks kTestStartTime;
 
  private:
   void AddUpdateHandler(ModelType type, ModelSafeGroup group) {
@@ -244,8 +248,13 @@ TEST_F(DownloadUpdatesTest, RetryTest) {
 TEST_F(DownloadUpdatesTest, NudgeWithRetryTest) {
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
-  nudge_tracker.set_next_retry_time(
-      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1));
+
+  // Schedule a retry.
+  base::TimeTicks t1 = kTestStartTime;
+  nudge_tracker.SetNextRetryTime(t1);
+
+  // Get the nudge tracker to think the retry is due.
+  nudge_tracker.SetSyncCycleStartTime(t1 + base::TimeDelta::FromSeconds(1));
 
   sync_pb::ClientToServerMessage msg;
   download::BuildNormalDownloadUpdatesImpl(proto_request_types(),
