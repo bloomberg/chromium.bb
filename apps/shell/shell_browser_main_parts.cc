@@ -10,6 +10,7 @@
 #include "apps/shell/shell_extensions_client.h"
 #include "apps/shell/web_view_window.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -113,7 +114,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kAppSwitch)) {
     base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
-    extension_system_->LoadAndLaunchApp(app_dir);
+    base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);
+    extension_system_->LoadAndLaunchApp(app_absolute_dir);
   } else {
     // TODO(jamescook): For demo purposes create a window with a WebView just
     // to ensure that the content module is properly initialized.
