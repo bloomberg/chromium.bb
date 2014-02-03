@@ -1584,23 +1584,73 @@ def BuildImageZip(archive_dir, image_dir):
   return filename
 
 
-def BuildStandaloneImageTarball(archive_dir, image_bin):
-  """Create a compressed tarball from the specified image.
+def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
+  """Create a compressed archive from the specified image information.
+
+  The artifact info is derived from a JSON file in the board overlay. It
+  should be in the following format:
+  {
+  "artifacts": [
+    { artifact },
+    { artifact },
+    ...
+  ]
+  }
+  Each artifact can contain the following keys:
+  input - Required. A list of paths and globs that expands to
+      the list of files to archive.
+  output - the name of the archive to be created. If omitted,
+      it will default to the first filename, stripped of
+      extensions, plus the appropriate .tar.gz or other suffix.
+  archive - "tar" or "zip". If omitted, files will be uploaded
+      directly, without being archived together.
+  compress - a value cros_build_lib.CompressionStrToType knows about. Only
+      useful for tar. If omitted, an uncompressed tar will be created.
 
   Args:
     archive_dir: Directory to store image zip.
-    image_bin: Image to zip up.
+    image_dir: Base path for all inputs.
+    artifact_info: Extended archive configuration dictionary containing:
+      - paths - required, list of files to archive.
+      - output, archive & compress entries from the JSON file.
 
   Returns:
-    The base name of the tarball.
+    The base name of the archive.
+
+  Raises:
+    A ValueError if the compression or archive values are unknown.
+    A KeyError is a required field is missing from artifact_info.
   """
-  # Strip off the .bin from the filename.
-  image_dir, image_filename = os.path.split(image_bin)
-  filename = '%s.tar.xz' % os.path.splitext(image_filename)[0]
-  archive_filename = os.path.join(archive_dir, filename)
-  cros_build_lib.CreateTarball(archive_filename, image_dir,
-                               inputs=[image_filename])
-  return filename
+  if 'archive' not in artifact_info:
+    # Nothing to do, just return the list as-is.
+    return artifact_info['paths']
+
+  inputs = artifact_info['paths']
+  archive = artifact_info['archive']
+  compress = artifact_info.get('compress')
+  compress_type = cros_build_lib.CompressionStrToType(compress)
+  if compress_type is None:
+    raise ValueError('unknown compression type: %s' % compress)
+
+  # If the output is fixed, use that. Otherwise, construct it
+  # from the name of the first archived file, stripping extensions.
+  filename = artifact_info.get(
+      'output', '%s.%s' % (os.path.splitext(inputs[0])[0], archive))
+  if archive == 'tar':
+    # Add the .compress extension if we don't have a fixed name.
+    if 'output' not in artifact_info and compress:
+      filename = "%s.%s" % (filename, compress)
+    cros_build_lib.CreateTarball(
+        os.path.join(archive_dir, filename), image_dir,
+        inputs=inputs, compression=compress_type)
+  elif archive == 'zip':
+    cros_build_lib.RunCommand(
+        ['zip', os.path.join(archive_dir, filename), '-r'] + inputs,
+        cwd=image_dir, capture_output=True)
+  else:
+    raise ValueError('unknown archive type: %s' % archive)
+
+  return [filename]
 
 
 def BuildFirmwareArchive(buildroot, board, archive_dir):
