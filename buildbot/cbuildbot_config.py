@@ -1474,6 +1474,12 @@ internal_paladin.add_config('lumpy-paladin',
   upload_hw_test_artifacts=True,
 )
 
+internal_paladin.add_config('lumpy-incremental-paladin',
+  boards=['lumpy'],
+  paladin_builder_name='lumpy incremental paladin',
+  important=False,
+)
+
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
