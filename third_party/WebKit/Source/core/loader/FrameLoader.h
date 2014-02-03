@@ -187,10 +187,6 @@ public:
 
     bool allowPlugins(ReasonForCallingAllowPlugins);
 
-    enum UpdateBackForwardListPolicy {
-        UpdateBackForwardList,
-        DoNotUpdateBackForwardList
-    };
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
@@ -232,11 +228,7 @@ private:
     void closeAndRemoveChild(Frame*);
     void detachClient();
 
-    enum HistoryItemPolicy {
-        CreateNewHistoryItem,
-        DoNotCreateNewHistoryItem
-    };
-    void setHistoryItemStateForCommit(HistoryItemPolicy, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = 0);
+    void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = 0);
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, UpdateBackForwardListPolicy, ClientRedirectPolicy);
 

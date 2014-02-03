@@ -291,15 +291,13 @@ void FrameLoader::clear()
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
-void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPolicy, bool isPushOrReplaceState, PassRefPtr<SerializedScriptValue> stateObject)
+void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, bool isPushOrReplaceState, PassRefPtr<SerializedScriptValue> stateObject)
 {
     if (m_provisionalItem)
         m_currentItem = m_provisionalItem.release();
-    if (m_currentItem && historyItemPolicy != CreateNewHistoryItem && m_currentItem->url() == m_documentLoader->url() && !isPushOrReplaceState)
-        return;
-    if (!m_currentItem || historyItemPolicy == CreateNewHistoryItem)
+    if (!m_currentItem || historyCommitType == StandardCommit)
         m_currentItem = HistoryItem::create();
-    else if (!isPushOrReplaceState)
+    else if (!isPushOrReplaceState && m_documentLoader->url() != m_currentItem->url())
         m_currentItem->generateNewSequenceNumbers();
     const KURL& unreachableURL = m_documentLoader->unreachableURL();
     const KURL& url = unreachableURL.isEmpty() ? m_documentLoader->url() : unreachableURL;
@@ -308,16 +306,17 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPoli
     m_currentItem->setTarget(m_frame->tree().uniqueName());
     m_currentItem->setTargetFrameID(m_frame->frameID());
     m_currentItem->setOriginalURLString(originalURL.string());
-    m_currentItem->setStateObject(stateObject);
+    if (isPushOrReplaceState)
+        m_currentItem->setStateObject(stateObject);
     m_currentItem->setReferrer(Referrer(m_documentLoader->request().httpReferrer(), m_documentLoader->request().referrerPolicy()));
     m_currentItem->setFormInfoFromRequest(isPushOrReplaceState ? ResourceRequest() : m_documentLoader->request());
 }
 
-static HistoryCommitType loadTypeToCommitType(FrameLoadType type, bool isStandardLoadWithValidURL)
+static HistoryCommitType loadTypeToCommitType(FrameLoadType type, bool isValidHistoryURL)
 {
     switch (type) {
     case FrameLoadTypeStandard:
-        return isStandardLoadWithValidURL ? StandardCommit : HistoryInertCommit;
+        return isValidHistoryURL ? StandardCommit : HistoryInertCommit;
     case FrameLoadTypeInitialInChildFrame:
         return InitialCommitInChildFrame;
     case FrameLoadTypeBackForward:
@@ -332,16 +331,14 @@ void FrameLoader::receivedFirstData()
 {
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
-    HistoryItemPolicy historyItemPolicy = DoNotCreateNewHistoryItem;
-    bool isStandardLoadWithValidURL = m_loadType == FrameLoadTypeStandard && m_documentLoader->isURLValidForNewHistoryEntry();
-    if ((!m_currentItem && m_loadType == FrameLoadTypeInitialInChildFrame) || isStandardLoadWithValidURL)
-        historyItemPolicy = CreateNewHistoryItem;
-    setHistoryItemStateForCommit(historyItemPolicy);
+
+    HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType, m_documentLoader->isURLValidForNewHistoryEntry());
+    setHistoryItemStateForCommit(historyCommitType);
 
     if (!m_stateMachine.committedMultipleRealLoads() && m_loadType == FrameLoadTypeStandard)
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
 
-    m_client->dispatchDidCommitLoad(m_frame, m_currentItem.get(), loadTypeToCommitType(m_loadType, isStandardLoadWithValidURL));
+    m_client->dispatchDidCommitLoad(m_frame, m_currentItem.get(), historyCommitType);
 
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);
@@ -566,13 +563,8 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (m_frame->document()->loadEventFinished())
         m_client->postProgressStartedNotification(NavigationWithinSameDocument);
 
-    HistoryCommitType historyCommitType = HistoryInertCommit;
-    HistoryItemPolicy historyItemPolicy = DoNotCreateNewHistoryItem;
-    if (updateBackForwardList == UpdateBackForwardList || (sameDocumentNavigationSource == SameDocumentNavigationPushState && m_currentItem)) {
-        historyCommitType = StandardCommit;
-        historyItemPolicy = CreateNewHistoryItem;
-    }
-    setHistoryItemStateForCommit(historyItemPolicy, sameDocumentNavigationSource != SameDocumentNavigationDefault, data);
+    HistoryCommitType historyCommitType = updateBackForwardList == UpdateBackForwardList && m_currentItem ? StandardCommit : HistoryInertCommit;
+    setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi, data);
     m_client->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
     if (m_frame->document()->loadEventFinished())

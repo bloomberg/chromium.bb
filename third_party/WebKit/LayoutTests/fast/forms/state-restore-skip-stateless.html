@@ -44,15 +44,7 @@
 console.log('Test if state of stateless form control types are not saved.');
 jsTestIsAsync = true;
 
-if (sessionStorage.getItem("restore-skip-stateless") == null) {
-    sessionStorage.setItem("restore-skip-stateless", "true");
-    window.onload = function() {
-        setTimeout(function() {
-            location.reload();
-        }, 0);
-    };
-} else {
-    sessionStorage.removeItem("restore-skip-stateless");
+function dumpFormState() {
     if (window.internals) {
         var statefulTypes = ['hidden', 'text', 'tel', 'url', 'email', 'number', 'range', 'checkbox',
                              'radio', 'file', 'select-one', 'select-multiple', 'textarea'];
@@ -78,5 +70,15 @@ if (sessionStorage.getItem("restore-skip-stateless") == null) {
     document.body.removeChild(document.getElementById("elements"));
     finishJSTest();
 }
+
+window.onload = function() {
+    setTimeout(function() {
+        location.reload();
+    }, 0);
+};
+window.onunload = function() {
+    dumpFormState();
+    location.hash = "#done";
+};
 </script>
 </body>

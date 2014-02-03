@@ -69,7 +69,7 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
     History* history = V8History::toNative(info.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, exceptionState);
+    history->stateObjectAdded(historyState.release(), title, url, UpdateBackForwardList, exceptionState);
     deleteHiddenValue(info.GetIsolate(), info.Holder(), "state");
     exceptionState.throwIfNeeded();
 }
@@ -85,7 +85,7 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
     History* history = V8History::toNative(info.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, exceptionState);
+    history->stateObjectAdded(historyState.release(), title, url, DoNotUpdateBackForwardList, exceptionState);
     deleteHiddenValue(info.GetIsolate(), info.Holder(), "state");
     exceptionState.throwIfNeeded();
 }

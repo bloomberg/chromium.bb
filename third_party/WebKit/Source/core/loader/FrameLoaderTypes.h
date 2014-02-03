@@ -88,8 +88,7 @@ enum LoadStartType {
 
 enum SameDocumentNavigationSource {
     SameDocumentNavigationDefault,
-    SameDocumentNavigationPushState,
-    SameDocumentNavigationReplaceState
+    SameDocumentNavigationHistoryApi,
 };
 
 enum ClientRedirectPolicy {
@@ -109,6 +108,10 @@ enum HistoryCommitType {
     HistoryInertCommit
 };
 
+enum UpdateBackForwardListPolicy {
+    UpdateBackForwardList,
+    DoNotUpdateBackForwardList
+};
 }
 
 #endif

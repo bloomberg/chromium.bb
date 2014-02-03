@@ -55,7 +55,7 @@ public:
     bool stateChanged() const;
     bool isSameAsCurrentState(SerializedScriptValue*) const;
 
-    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, SameDocumentNavigationSource, ExceptionState&);
+    void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, UpdateBackForwardListPolicy, ExceptionState&);
 
 private:
     explicit History(Frame*);
