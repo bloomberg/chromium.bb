@@ -115,8 +115,6 @@ private:
     bool m_isAutoRepeat : 1;
 };
 
-KeyboardEvent* findKeyboardEvent(Event*);
-
 class KeyboardEventDispatchMediator : public EventDispatchMediator {
 public:
     static PassRefPtr<KeyboardEventDispatchMediator> create(PassRefPtr<KeyboardEvent>);

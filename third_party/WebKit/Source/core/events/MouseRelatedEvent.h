@@ -49,7 +49,6 @@ namespace WebCore {
         bool isSimulated() const { return m_isSimulated; }
         virtual int pageX() const OVERRIDE FINAL;
         virtual int pageY() const OVERRIDE FINAL;
-        const LayoutPoint& pageLocation() const;
         int x() const;
         int y() const;
 

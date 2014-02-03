@@ -208,11 +208,6 @@ int MouseRelatedEvent::pageY() const
     return m_pageLocation.y();
 }
 
-const LayoutPoint& MouseRelatedEvent::pageLocation() const
-{
-    return m_pageLocation;
-}
-
 int MouseRelatedEvent::x() const
 {
     // FIXME: This is not correct.

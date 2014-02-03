@@ -54,7 +54,6 @@ namespace WebCore {
 
         bool isLineBreak() const { return m_inputType == TextEventInputLineBreak; }
         bool isComposition() const { return m_inputType == TextEventInputComposition; }
-        bool isBackTab() const { return m_inputType == TextEventInputBackTab; }
         bool isPaste() const { return m_inputType == TextEventInputPaste; }
         bool isDrop() const { return m_inputType == TextEventInputDrop; }
 

@@ -217,15 +217,6 @@ int KeyboardEvent::which() const
     return keyCode();
 }
 
-KeyboardEvent* findKeyboardEvent(Event* event)
-{
-    for (Event* e = event; e; e = e->underlyingEvent()) {
-        if (e->isKeyboardEvent())
-            return toKeyboardEvent(e);
-    }
-    return 0;
-}
-
 PassRefPtr<KeyboardEventDispatchMediator> KeyboardEventDispatchMediator::create(PassRefPtr<KeyboardEvent> event)
 {
     return adoptRef(new KeyboardEventDispatchMediator(event));

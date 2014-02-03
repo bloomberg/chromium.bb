@@ -45,11 +45,6 @@ public:
         return adoptRef(new CompositionEvent);
     }
 
-    static PassRefPtr<CompositionEvent> create(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data)
-    {
-        return adoptRef(new CompositionEvent(type, view, data));
-    }
-
     static PassRefPtr<CompositionEvent> create(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
     {
         return adoptRef(new CompositionEvent(type, view, data, underlines));
@@ -73,7 +68,6 @@ public:
 
 private:
     CompositionEvent();
-    CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView>, const String&);
     CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView>, const String&, const Vector<CompositionUnderline>& underlines);
     CompositionEvent(const AtomicString& type, const CompositionEventInit&);
     void initializeSegments(const Vector<CompositionUnderline>* = 0);

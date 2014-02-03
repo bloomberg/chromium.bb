@@ -59,8 +59,6 @@ public:
         return adoptRef(new OverflowEvent(type, initializer));
     }
 
-    void initOverflowEvent(unsigned short orient, bool horizontalOverflow, bool verticalOverflow);
-
     unsigned short orient() const { return m_orient; }
     bool horizontalOverflow() const { return m_horizontalOverflow; }
     bool verticalOverflow() const { return m_verticalOverflow; }

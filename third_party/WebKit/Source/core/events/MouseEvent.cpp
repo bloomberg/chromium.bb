@@ -69,19 +69,6 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubb
     int detail, int screenX, int screenY, int pageX, int pageY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-    PassRefPtr<EventTarget> relatedTarget)
-
-{
-    return MouseEvent::create(type, canBubble, cancelable, view,
-        detail, screenX, screenY, pageX, pageY,
-        movementX, movementY,
-        ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, 0, false);
-}
-
-PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
-    int detail, int screenX, int screenY, int pageX, int pageY,
-    int movementX, int movementY,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
     PassRefPtr<EventTarget> relatedTarget, PassRefPtr<Clipboard> clipboard, bool isSimulated)
 {
     return adoptRef(new MouseEvent(type, canBubble, cancelable, view,

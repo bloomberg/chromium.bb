@@ -43,16 +43,6 @@ CompositionEvent::CompositionEvent()
     initializeSegments();
 }
 
-CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data)
-    : UIEvent(type, true, true, view, 0)
-    , m_data(data)
-    , m_activeSegmentStart(0)
-    , m_activeSegmentEnd(0)
-{
-    ScriptWrappable::init(this);
-    initializeSegments();
-}
-
 CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
     : UIEvent(type, true, true, view, 0)
     , m_data(data)

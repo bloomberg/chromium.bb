@@ -76,14 +76,4 @@ const AtomicString& OverflowEvent::interfaceName() const
     return EventNames::OverflowEvent;
 }
 
-void OverflowEvent::initOverflowEvent(unsigned short orient, bool horizontalOverflow, bool verticalOverflow)
-{
-    if (dispatched())
-        return;
-
-    m_orient = orient;
-    m_horizontalOverflow = horizontalOverflow;
-    m_verticalOverflow = verticalOverflow;
-}
-
 }

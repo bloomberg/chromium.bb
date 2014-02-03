@@ -34,16 +34,12 @@ namespace WebCore {
     public:
         virtual ~ClipboardEvent();
 
-        static PassRefPtr<ClipboardEvent> create()
-        {
-            return adoptRef(new ClipboardEvent);
-        }
         static PassRefPtr<ClipboardEvent> create(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtr<Clipboard> clipboardArg)
         {
             return adoptRef(new ClipboardEvent(type, canBubbleArg, cancelableArg, clipboardArg));
         }
 
-        virtual Clipboard* clipboard() const OVERRIDE { return m_clipboard.get(); }
+        Clipboard* clipboard() const { return m_clipboard.get(); }
 
     private:
         ClipboardEvent();

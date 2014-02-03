@@ -45,9 +45,7 @@ public:
     ~NodeEventContext();
 
     Node* node() const { return m_node.get(); }
-    EventTarget* currentTarget() const { return m_currentTarget.get(); }
 
-    TreeScopeEventContext* treeScopeEventContext() const { return m_treeScopeEventContext.get(); }
     void setTreeScopeEventContext(PassRefPtr<TreeScopeEventContext> prpTreeScopeEventContext) { m_treeScopeEventContext = prpTreeScopeEventContext; }
 
     EventTarget* target() const { return m_treeScopeEventContext->target(); }

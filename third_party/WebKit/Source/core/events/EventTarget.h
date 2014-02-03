@@ -126,7 +126,6 @@ public:
     Vector<AtomicString> eventTypes();
 
     bool fireEventListeners(Event*);
-    bool isFiringEventListeners();
 
 protected:
     virtual ~EventTarget();
@@ -202,14 +201,6 @@ private:
         if (recipient) \
             recipient->setAttributeEventListener(EventTypeNames::attribute, listener, isolatedWorld); \
     }
-
-inline bool EventTarget::isFiringEventListeners()
-{
-    EventTargetData* d = eventTargetData();
-    if (!d)
-        return false;
-    return d->firingEventIterators && !d->firingEventIterators->isEmpty();
-}
 
 inline bool EventTarget::hasEventListeners() const
 {

@@ -30,11 +30,6 @@
 
 namespace WebCore {
 
-PassRefPtr<GestureEvent> GestureEvent::create()
-{
-    return adoptRef(new GestureEvent);
-}
-
 PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, const PlatformGestureEvent& event)
 {
     AtomicString eventType;
@@ -71,24 +66,6 @@ PassRefPtr<GestureEvent> GestureEvent::create(PassRefPtr<AbstractView> view, con
         return 0;
     }
     return adoptRef(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), deltaX, deltaY));
-}
-
-void GestureEvent::initGestureEvent(const AtomicString& type, PassRefPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY)
-{
-    if (dispatched())
-        return;
-
-    initUIEvent(type, true, true, view, 0);
-    m_screenLocation = IntPoint(screenX, screenY);
-    m_ctrlKey = ctrlKey;
-    m_altKey = altKey;
-    m_shiftKey = shiftKey;
-    m_metaKey = metaKey;
-
-    m_deltaX = deltaX;
-    m_deltaY = deltaY;
-
-    initCoordinates(IntPoint(clientX, clientY));
 }
 
 const AtomicString& GestureEvent::interfaceName() const

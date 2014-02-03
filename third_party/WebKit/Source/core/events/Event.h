@@ -32,7 +32,6 @@
 
 namespace WebCore {
 
-class Clipboard;
 class EventTarget;
 class EventDispatcher;
 class HTMLIFrameElement;
@@ -131,8 +130,6 @@ public:
     bool legacyReturnValue() const { return !defaultPrevented(); }
     void setLegacyReturnValue(bool returnValue) { setDefaultPrevented(!returnValue); }
 
-    Clipboard* clipboardData() const { return isClipboardEvent() ? clipboard() : 0; }
-
     virtual const AtomicString& interfaceName() const;
     bool hasInterface(const AtomicString&) const;
 
@@ -178,8 +175,6 @@ public:
     EventPath& ensureEventPath();
 
     PassRefPtr<NodeList> path() const;
-
-    virtual Clipboard* clipboard() const { return 0; }
 
     bool isBeingDispatched() const { return eventPhase(); }
 
