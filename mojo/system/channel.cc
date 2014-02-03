@@ -139,7 +139,7 @@ void Channel::OnReadMessage(const MessageInTransit& message) {
     case MessageInTransit::kTypeMessagePipe:
       OnReadMessageForDownstream(message);
       break;
-    case MessageInTransit::TYPE_CHANNEL:
+    case MessageInTransit::kTypeChannel:
       OnReadMessageForChannel(message);
       break;
     default:

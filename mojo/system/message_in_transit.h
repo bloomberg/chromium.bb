@@ -24,7 +24,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Messages that are forwarded to |MessagePipe|s.
   static const Type kTypeMessagePipe = 1;
   // Messages that are consumed by the channel.
-  static const Type TYPE_CHANNEL = 2;
+  static const Type kTypeChannel = 2;
 
   typedef uint16_t Subtype;
   // Subtypes for type |kTypeMessagePipeEndpoint|:

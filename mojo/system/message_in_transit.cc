@@ -32,7 +32,7 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeMessagePipe;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::TYPE_CHANNEL;
+    MessageInTransit::kTypeChannel;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeMessagePipeEndpointData;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
