@@ -198,7 +198,7 @@ void ExtensionAccessibilityEventRouter::DispatchEventToChromeVox(
     return;
   scoped_ptr<extensions::Event> event(new extensions::Event(event_name,
                                                             event_args.Pass()));
-  system->event_router()->DispatchEventToExtension(
+  system->event_router()->DispatchEventWithLazyListener(
       extension_misc::kChromeVoxExtensionId, event.Pass());
 }
 
