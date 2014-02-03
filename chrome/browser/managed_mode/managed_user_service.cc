@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service.h"
@@ -21,6 +22,8 @@
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -624,6 +627,12 @@ void ManagedUserService::OnManagedUserRegistered(
         SigninManagerFactory::GetForProfile(custodian_profile);
     profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianEmail,
                                     signin->GetAuthenticatedUsername());
+
+    // The managed-user profile is now ready for use.
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+    size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+    cache.SetIsOmittedProfileAtIndex(index, false);
   } else {
     DCHECK_EQ(std::string(), token);
   }

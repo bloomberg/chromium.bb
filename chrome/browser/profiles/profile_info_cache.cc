@@ -50,6 +50,7 @@ const char kBackgroundAppsKey[] = "background_apps";
 const char kHasMigratedToGAIAInfoKey[] = "has_migrated_to_gaia_info";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
 const char kIsManagedKey[] = "is_managed";
+const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
 const char kSigninRequiredKey[] = "signin_required";
 const char kManagedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
@@ -218,6 +219,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   // Default value for whether background apps are running is false.
   info->SetBoolean(kBackgroundAppsKey, false);
   info->SetString(kManagedUserId, managed_user_id);
+  info->SetBoolean(kIsOmittedFromProfileListKey, !managed_user_id.empty());
   info->SetBoolean(kProfileIsEphemeral, false);
   cache->SetWithoutPathExpansion(key, info.release());
 
@@ -412,6 +414,13 @@ bool ProfileInfoCache::ProfileIsManagedAtIndex(size_t index) const {
   return !GetManagedUserIdOfProfileAtIndex(index).empty();
 }
 
+bool ProfileInfoCache::IsOmittedProfileAtIndex(size_t index) const {
+  bool value = false;
+  GetInfoForProfileAtIndex(index)->GetBoolean(kIsOmittedFromProfileListKey,
+                                              &value);
+  return value;
+}
+
 bool ProfileInfoCache::ProfileIsSigninRequiredAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kSigninRequiredKey, &value);
@@ -553,6 +562,17 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileAvatarChanged(profile_path));
+}
+
+void ProfileInfoCache::SetIsOmittedProfileAtIndex(size_t index,
+                                                  bool is_omitted) {
+  if (IsOmittedProfileAtIndex(index) == is_omitted)
+    return;
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetBoolean(kIsOmittedFromProfileListKey, is_omitted);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetManagedUserIdOfProfileAtIndex(size_t index,

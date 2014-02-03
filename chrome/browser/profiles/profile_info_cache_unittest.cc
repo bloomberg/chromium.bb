@@ -146,6 +146,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     EXPECT_EQ(icon->width(), actual_icon->width());
     EXPECT_EQ(icon->height(), actual_icon->height());
     EXPECT_EQ(i == 3, GetCache()->ProfileIsManagedAtIndex(i));
+    EXPECT_EQ(i == 3, GetCache()->IsOmittedProfileAtIndex(i));
     EXPECT_EQ(managed_user_id, GetCache()->GetManagedUserIdOfProfileAtIndex(i));
   }
 

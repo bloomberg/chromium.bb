@@ -73,6 +73,13 @@ class ProfileListDesktopTest : public testing::Test {
 
   TestingProfileManager* manager() { return &manager_; }
 
+  void AddOmittedProfile(std::string name) {
+    ProfileInfoCache* cache = manager()->profile_info_cache();
+    cache->AddProfileToCache(
+        cache->GetUserDataDir().AppendASCII(name), ASCIIToUTF16(name),
+        base::string16(), 0, "TEST_ID");
+  }
+
   int change_count() const { return mock_observer_->change_count(); }
 
  private:
@@ -84,15 +91,8 @@ class ProfileListDesktopTest : public testing::Test {
 };
 
 TEST_F(ProfileListDesktopTest, InitialCreation) {
-  base::string16 name1(ASCIIToUTF16("Test 1"));
-  base::string16 name2(ASCIIToUTF16("Test 2"));
-
-  manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string(),
-                                  TestingProfile::TestingFactories());
-  manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 1");
+  manager()->CreateTestingProfile("Test 2");
 
   AvatarMenu* model = GetAvatarMenu();
   EXPECT_EQ(0, change_count());
@@ -101,23 +101,96 @@ TEST_F(ProfileListDesktopTest, InitialCreation) {
 
   const AvatarMenu::Item& item1 = model->GetItemAt(0);
   EXPECT_EQ(0U, item1.menu_index);
-  EXPECT_EQ(name1, item1.name);
+  EXPECT_EQ(ASCIIToUTF16("Test 1"), item1.name);
 
   const AvatarMenu::Item& item2 = model->GetItemAt(1);
   EXPECT_EQ(1U, item2.menu_index);
-  EXPECT_EQ(name2, item2.name);
+  EXPECT_EQ(ASCIIToUTF16("Test 2"), item2.name);
+}
+
+TEST_F(ProfileListDesktopTest, NoOmittedProfiles) {
+  ProfileListDesktop profile_list(manager()->profile_info_cache());
+
+  // Profiles are stored and listed alphabetically.
+  manager()->CreateTestingProfile("1 included");
+  manager()->CreateTestingProfile("2 included");
+  manager()->CreateTestingProfile("3 included");
+  manager()->CreateTestingProfile("4 included");
+
+  profile_list.RebuildMenu();
+  ASSERT_EQ(4u, profile_list.GetNumberOfItems());
+
+  const AvatarMenu::Item& item1 = profile_list.GetItemAt(0);
+  EXPECT_EQ(0u, item1.menu_index);
+  EXPECT_EQ(0u, item1.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("1 included"), item1.name);
+
+  const AvatarMenu::Item& item2 = profile_list.GetItemAt(1);
+  EXPECT_EQ(1u, item2.menu_index);
+  EXPECT_EQ(1u, item2.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("2 included"), item2.name);
+
+  const AvatarMenu::Item& item3 = profile_list.GetItemAt(2);
+  EXPECT_EQ(2u, item3.menu_index);
+  EXPECT_EQ(2u, item3.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("3 included"), item3.name);
+
+  const AvatarMenu::Item& item4 = profile_list.GetItemAt(3);
+  EXPECT_EQ(3u, item4.menu_index);
+  EXPECT_EQ(3u, item4.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("4 included"), item4.name);
+
+  EXPECT_EQ(0u, profile_list.MenuIndexFromProfileIndex(0));
+  EXPECT_EQ(1u, profile_list.MenuIndexFromProfileIndex(1));
+  EXPECT_EQ(2u, profile_list.MenuIndexFromProfileIndex(2));
+  EXPECT_EQ(3u, profile_list.MenuIndexFromProfileIndex(3));
+}
+
+TEST_F(ProfileListDesktopTest, WithOmittedProfiles) {
+  ProfileListDesktop profile_list(manager()->profile_info_cache());
+
+  // Profiles are stored and listed alphabetically.
+  AddOmittedProfile("0 omitted");
+  manager()->CreateTestingProfile("1 included");
+  AddOmittedProfile("2 omitted");
+  manager()->CreateTestingProfile("3 included");
+  manager()->CreateTestingProfile("4 included");
+  AddOmittedProfile("5 omitted");
+  manager()->CreateTestingProfile("6 included");
+  AddOmittedProfile("7 omitted");
+
+  profile_list.RebuildMenu();
+  ASSERT_EQ(4u, profile_list.GetNumberOfItems());
+
+  const AvatarMenu::Item& item1 = profile_list.GetItemAt(0);
+  EXPECT_EQ(0u, item1.menu_index);
+  EXPECT_EQ(1u, item1.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("1 included"), item1.name);
+
+  const AvatarMenu::Item& item2 = profile_list.GetItemAt(1);
+  EXPECT_EQ(1u, item2.menu_index);
+  EXPECT_EQ(3u, item2.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("3 included"), item2.name);
+
+  const AvatarMenu::Item& item3 = profile_list.GetItemAt(2);
+  EXPECT_EQ(2u, item3.menu_index);
+  EXPECT_EQ(4u, item3.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("4 included"), item3.name);
+
+  const AvatarMenu::Item& item4 = profile_list.GetItemAt(3);
+  EXPECT_EQ(3u, item4.menu_index);
+  EXPECT_EQ(6u, item4.profile_index);
+  EXPECT_EQ(ASCIIToUTF16("6 included"), item4.name);
+
+  EXPECT_EQ(0u, profile_list.MenuIndexFromProfileIndex(1));
+  EXPECT_EQ(1u, profile_list.MenuIndexFromProfileIndex(3));
+  EXPECT_EQ(2u, profile_list.MenuIndexFromProfileIndex(4));
+  EXPECT_EQ(3u, profile_list.MenuIndexFromProfileIndex(6));
 }
 
 TEST_F(ProfileListDesktopTest, ActiveItem) {
-  base::string16 name1(ASCIIToUTF16("Test 1"));
-  base::string16 name2(ASCIIToUTF16("Test 2"));
-
-  manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string(),
-                                  TestingProfile::TestingFactories());
-  manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 1");
+  manager()->CreateTestingProfile("Test 2");
 
   AvatarMenu* model = GetAvatarMenu();
   ASSERT_EQ(2U, model->GetNumberOfItems());
@@ -127,16 +200,12 @@ TEST_F(ProfileListDesktopTest, ActiveItem) {
 }
 
 TEST_F(ProfileListDesktopTest, ModifyingNameResortsCorrectly) {
-  base::string16 name1(ASCIIToUTF16("Alpha"));
-  base::string16 name2(ASCIIToUTF16("Beta"));
-  base::string16 newname1(ASCIIToUTF16("Gamma"));
+  std::string name1("Alpha");
+  std::string name2("Beta");
+  std::string newname1("Gamma");
 
-  manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string(),
-                                  TestingProfile::TestingFactories());
-  manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile(name1);
+  manager()->CreateTestingProfile(name2);
 
   AvatarMenu* model = GetAvatarMenu();
   EXPECT_EQ(0, change_count());
@@ -145,44 +214,35 @@ TEST_F(ProfileListDesktopTest, ModifyingNameResortsCorrectly) {
 
   const AvatarMenu::Item& item1 = model->GetItemAt(0);
   EXPECT_EQ(0U, item1.menu_index);
-  EXPECT_EQ(name1, item1.name);
+  EXPECT_EQ(ASCIIToUTF16(name1), item1.name);
 
   const AvatarMenu::Item& item2 = model->GetItemAt(1);
   EXPECT_EQ(1U, item2.menu_index);
-  EXPECT_EQ(name2, item2.name);
+  EXPECT_EQ(ASCIIToUTF16(name2), item2.name);
 
   // Change name of the first profile, to trigger resorting of the profiles:
   // now the first model should be named "beta", and the second be "gamma".
-  manager()->profile_info_cache()->SetNameOfProfileAtIndex(0, newname1);
+  manager()->profile_info_cache()->SetNameOfProfileAtIndex(0,
+        ASCIIToUTF16(newname1));
   const AvatarMenu::Item& item1next = model->GetItemAt(0);
   EXPECT_GT(change_count(), 1);
   EXPECT_EQ(0U, item1next.menu_index);
-  EXPECT_EQ(name2, item1next.name);
+  EXPECT_EQ(ASCIIToUTF16(name2), item1next.name);
 
   const AvatarMenu::Item& item2next = model->GetItemAt(1);
   EXPECT_EQ(1U, item2next.menu_index);
-  EXPECT_EQ(newname1, item2next.name);
+  EXPECT_EQ(ASCIIToUTF16(newname1), item2next.name);
 }
 
 TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
-  base::string16 name1(ASCIIToUTF16("Test 1"));
-  base::string16 name2(ASCIIToUTF16("Test 2"));
-
-  manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string(),
-                                  TestingProfile::TestingFactories());
-  manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 1");
+  manager()->CreateTestingProfile("Test 2");
 
   AvatarMenu* model = GetAvatarMenu();
   EXPECT_EQ(0, change_count());
   EXPECT_EQ(2U, model->GetNumberOfItems());
 
-  base::string16 name3(ASCIIToUTF16("Test 3"));
-  manager()->CreateTestingProfile("p3", scoped_ptr<PrefServiceSyncable>(),
-                                  name3, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 3");
 
   // Four changes happened via the call to CreateTestingProfile: adding the
   // profile to the cache, setting the user name, rebuilding the list of
@@ -196,15 +256,15 @@ TEST_F(ProfileListDesktopTest, ChangeOnNotify) {
 
   const AvatarMenu::Item& item1 = model->GetItemAt(0);
   EXPECT_EQ(0U, item1.menu_index);
-  EXPECT_EQ(name1, item1.name);
+  EXPECT_EQ(ASCIIToUTF16("Test 1"), item1.name);
 
   const AvatarMenu::Item& item2 = model->GetItemAt(1);
   EXPECT_EQ(1U, item2.menu_index);
-  EXPECT_EQ(name2, item2.name);
+  EXPECT_EQ(ASCIIToUTF16("Test 2"), item2.name);
 
   const AvatarMenu::Item& item3 = model->GetItemAt(2);
   EXPECT_EQ(2U, item3.menu_index);
-  EXPECT_EQ(name3, item3.name);
+  EXPECT_EQ(ASCIIToUTF16("Test 3"), item3.name);
 }
 
 TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
@@ -224,10 +284,7 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenuInTrial) {
 }
 
 TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
-  base::string16 name1(ASCIIToUTF16("Test 1"));
-  manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 1");
 
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
 
@@ -236,10 +293,7 @@ TEST_F(ProfileListDesktopTest, DontShowAvatarMenu) {
   if (profiles::IsMultipleProfilesEnabled())
     return;
 
-  base::string16 name2(ASCIIToUTF16("Test 2"));
-  manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 2");
 
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
 }
@@ -249,15 +303,8 @@ TEST_F(ProfileListDesktopTest, ShowAvatarMenu) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  base::string16 name1(ASCIIToUTF16("Test 1"));
-  base::string16 name2(ASCIIToUTF16("Test 2"));
-
-  manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  name1, 0, std::string(),
-                                  TestingProfile::TestingFactories());
-  manager()->CreateTestingProfile("p2", scoped_ptr<PrefServiceSyncable>(),
-                                  name2, 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 1");
+  manager()->CreateTestingProfile("Test 2");
 
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(AvatarMenu::ShouldShowAvatarMenu());
@@ -271,15 +318,15 @@ TEST_F(ProfileListDesktopTest, SyncState) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
-  manager()->CreateTestingProfile("p1", scoped_ptr<PrefServiceSyncable>(),
-                                  ASCIIToUTF16("Test 1"), 0, std::string(),
-                                  TestingProfile::TestingFactories());
+  manager()->CreateTestingProfile("Test 1");
 
   // Add a managed user profile.
   ProfileInfoCache* cache = manager()->profile_info_cache();
-  manager()->profile_info_cache()->AddProfileToCache(
-      cache->GetUserDataDir().AppendASCII("p2"), ASCIIToUTF16("Test 2"),
-      base::string16(), 0, "TEST_ID");
+  base::FilePath path = cache->GetUserDataDir().AppendASCII("p2");
+  cache->AddProfileToCache(path, ASCIIToUTF16("Test 2"), base::string16(), 0,
+                           "TEST_ID");
+  cache->SetIsOmittedProfileAtIndex(cache->GetIndexOfProfileWithPath(path),
+                                    false);
 
   AvatarMenu* model = GetAvatarMenu();
   model->RebuildMenu();

@@ -12,7 +12,9 @@
 class Browser;
 class ProfileInfoInterface;
 
-// This model represents the profiles added to desktop Chrome.
+// This model represents the profiles added to desktop Chrome (as opposed to
+// Chrome OS). Profiles marked not to appear in the list will be omitted
+// throughout.
 class ProfileListDesktop : public ProfileList {
  public:
   explicit ProfileListDesktop(ProfileInfoInterface* profile_cache);
@@ -22,6 +24,9 @@ class ProfileListDesktop : public ProfileList {
   virtual size_t GetNumberOfItems() const OVERRIDE;
   virtual const AvatarMenu::Item& GetItemAt(size_t index) const OVERRIDE;
   virtual void RebuildMenu() OVERRIDE;
+  // Returns the menu index of the profile at |index| in the ProfileInfoCache.
+  // The profile index must exist, and it may not be marked as omitted from the
+  // menu.
   virtual size_t MenuIndexFromProfileIndex(size_t index) OVERRIDE;
   virtual void ActiveProfilePathChanged(base::FilePath& path) OVERRIDE;
 
@@ -36,6 +41,9 @@ class ProfileListDesktop : public ProfileList {
 
   // List of built "menu items."
   std::vector<AvatarMenu::Item*> items_;
+
+  // The number of profiles that were omitted from the list when it was built.
+  size_t omitted_item_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktop);
 };

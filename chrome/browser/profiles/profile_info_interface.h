@@ -64,6 +64,10 @@ class ProfileInfoInterface {
 
   virtual bool ProfileIsManagedAtIndex(size_t index) const = 0;
 
+  // Returns true if the profile should be omitted from the desktop profile
+  // list (see ProfileListDesktop), so it won't appear in the avatar menu.
+  virtual bool IsOmittedProfileAtIndex(size_t index) const = 0;
+
   virtual std::string GetManagedUserIdOfProfileAtIndex(size_t index) const = 0;
 
   // This profile is associated with an account but has been signed-out.

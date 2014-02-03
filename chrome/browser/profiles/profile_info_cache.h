@@ -39,7 +39,11 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual ~ProfileInfoCache();
 
   // This |is_managed| refers to local management (formerly "managed mode"),
-  // not enterprise management.
+  // not enterprise management. If the |managed_user_id| is non-empty, the
+  // profile will be marked to be omitted from the avatar-menu list on desktop
+  // versions. This is used while a managed user is in the process of being
+  // registered with the server. Use SetIsOmittedProfileAtIndex() to clear the
+  // flag when the profile is ready to be shown in the menu.
   void AddProfileToCache(const base::FilePath& profile_path,
                          const base::string16& name,
                          const base::string16& username,
@@ -82,6 +86,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual bool IsUsingGAIAPictureOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual bool ProfileIsManagedAtIndex(size_t index) const OVERRIDE;
+  virtual bool IsOmittedProfileAtIndex(size_t index) const OVERRIDE;
   virtual bool ProfileIsSigninRequiredAtIndex(size_t index) const OVERRIDE;
   virtual std::string GetManagedUserIdOfProfileAtIndex(size_t index) const
       OVERRIDE;
@@ -96,6 +101,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetUserNameOfProfileAtIndex(size_t index,
                                    const base::string16& user_name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
+  void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);
   void SetManagedUserIdOfProfileAtIndex(size_t index, const std::string& id);
   void SetLocalAuthCredentialsOfProfileAtIndex(size_t index,
                                                const std::string& auth);
