@@ -6,31 +6,70 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 #include "url/gurl.h"
 
 namespace autofill {
+
+namespace {
+
+// A URLFetcherResponseWriter that writes into a provided buffer.
+class UnownedStringWriter : public net::URLFetcherResponseWriter {
+ public:
+  UnownedStringWriter(std::string* data) : data_(data) {}
+  virtual ~UnownedStringWriter() {}
+
+  virtual int Initialize(const net::CompletionCallback& callback) OVERRIDE {
+    data_->clear();
+    return net::OK;
+  }
+
+  virtual int Write(net::IOBuffer* buffer,
+                    int num_bytes,
+                    const net::CompletionCallback& callback) OVERRIDE {
+    data_->append(buffer->data(), num_bytes);
+    return num_bytes;
+  }
+
+  virtual int Finish(const net::CompletionCallback& callback) OVERRIDE {
+    return net::OK;
+  }
+
+ private:
+  std::string* data_;  // weak reference.
+
+  DISALLOW_COPY_AND_ASSIGN(UnownedStringWriter);
+};
+
+}  // namespace
 
 ChromeDownloaderImpl::ChromeDownloaderImpl(net::URLRequestContextGetter* getter)
     : getter_(getter) {}
 
 ChromeDownloaderImpl::~ChromeDownloaderImpl() {
-  STLDeleteContainerPairPointers(requests_.begin(), requests_.end());
+  STLDeleteValues(&requests_);
 }
 
 void ChromeDownloaderImpl::Download(
     const std::string& url,
     scoped_ptr<Callback> downloaded) {
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this);
+  scoped_ptr<net::URLFetcher> fetcher(
+      net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this));
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetRequestContext(getter_);
 
-  requests_[fetcher] = new Request(url, downloaded.Pass());
-  fetcher->Start();
+  Request* request = new Request(url, fetcher.Pass(), downloaded.Pass());
+  request->fetcher->SaveResponseWithWriter(
+      scoped_ptr<net::URLFetcherResponseWriter>(
+          new UnownedStringWriter(&request->data)));
+  requests_[request->fetcher.get()] = request;
+  request->fetcher->Start();
 }
 
 void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -41,17 +80,18 @@ void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   bool ok = source->GetResponseCode() == net::HTTP_OK;
   scoped_ptr<std::string> data(new std::string());
   if (ok)
-    source->GetResponseAsString(data.get());
+    data->swap(request->second->data);
   (*request->second->callback)(ok, request->second->url, data.Pass());
 
-  delete request->first;
   delete request->second;
   requests_.erase(request);
 }
 
 ChromeDownloaderImpl::Request::Request(const std::string& url,
+                                       scoped_ptr<net::URLFetcher> fetcher,
                                        scoped_ptr<Callback> callback)
     : url(url),
+      fetcher(fetcher.Pass()),
       callback(callback.Pass()) {}
 
 }  // namespace autofill

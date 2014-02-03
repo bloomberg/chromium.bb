@@ -36,16 +36,21 @@ class ChromeDownloaderImpl : public ::i18n::addressinput::Downloader,
 
  private:
   struct Request {
-    Request(const std::string& url, scoped_ptr<Callback> callback);
+    Request(const std::string& url,
+            scoped_ptr<net::URLFetcher> fetcher,
+            scoped_ptr<Callback> callback);
 
     std::string url;
+    // The data that's received.
+    std::string data;
+    // The object that manages retrieving the data.
+    scoped_ptr<net::URLFetcher> fetcher;
     scoped_ptr<Callback> callback;
   };
 
   net::URLRequestContextGetter* const getter_;  // weak
 
-  // Maps from active url fetcher to request metadata. Both the key and value
-  // are owned.
+  // Maps from active url fetcher to request metadata. The value is owned.
   std::map<const net::URLFetcher*, Request*> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloaderImpl);

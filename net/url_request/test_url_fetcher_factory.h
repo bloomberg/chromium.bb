@@ -222,6 +222,7 @@ class TestURLFetcher : public URLFetcher {
   HttpRequestHeaders fake_extra_request_headers_;
   int fake_max_retries_;
   base::TimeDelta fake_backoff_delay_;
+  scoped_ptr<URLFetcherResponseWriter> response_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcher);
 };
