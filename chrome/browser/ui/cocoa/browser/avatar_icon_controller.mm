@@ -181,6 +181,12 @@ const CGFloat kAvatarLabelRightSpacing = 2;
 
 // Updates the avatar information from the profile cache.
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
+  // No updates are needed for an incognito or guest window, as the avatar
+  // is always fixed.
+  Profile* profile = browser_->profile();
+  if (profile->IsOffTheRecord() || profile->IsGuestSession())
+    return;
+
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index =

@@ -319,26 +319,23 @@ willPositionSheet:(NSWindow*)sheet
 
   // Lay out the icognito/avatar badge because calculating the indentation on
   // the right depends on it.
+  NSView* avatarButton = [avatarButtonController_ view];
   if ([self shouldShowAvatar]) {
-    NSView* avatarButton = [avatarButtonController_ view];
     CGFloat badgeXOffset = -kAvatarRightOffset;
     CGFloat badgeYOffset = 0;
-    CGFloat buttonHeight;
+    CGFloat buttonHeight = NSHeight([avatarButton frame]);
 
     if ([self shouldUseNewAvatarButton]) {
       // The fullscreen icon is displayed to the right of the avatar button.
       if (![self isFullscreen])
         badgeXOffset -= kFullscreenIconWidth;
-
       // Center the button vertically on the tabstrip.
-      buttonHeight = NSHeight([avatarButton frame]);
       badgeYOffset = (tabStripHeight - buttonHeight) / 2;
     } else {
-      buttonHeight = static_cast<CGFloat>(profiles::kAvatarIconHeight);
       // Actually place the badge *above* |maxY|, by +2 to miss the divider.
       badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
-
     }
+
     [avatarButton setFrameSize:NSMakeSize(NSWidth([avatarButton frame]),
         std::min(buttonHeight, tabStripHeight))];
     NSPoint origin =
@@ -358,18 +355,14 @@ willPositionSheet:(NSWindow*)sheet
     FramedBrowserWindow* window =
         static_cast<FramedBrowserWindow*>([self window]);
     rightIndent += -[window fullScreenButtonOriginAdjustment].x;
+
+    // The new avatar is wider than the default indentation, so we need to
+    // account for its width.
+    if ([self shouldUseNewAvatarButton])
+      rightIndent += NSWidth([avatarButton frame]) + kAvatarTabStripShrink;
   } else if ([self shouldShowAvatar]) {
-    rightIndent += kAvatarTabStripShrink;
-    if ([self shouldUseNewAvatarButton]) {
-      rightIndent += NSWidth([[avatarButtonController_ view] frame])
-        + kAvatarTabStripShrink;
-    } else {
-      NSButton* labelButton =
-          [static_cast<AvatarIconController*>(avatarButtonController_)
-              labelButtonView];
-      if (labelButton)
-        rightIndent += NSWidth([labelButton frame]) + kAvatarRightOffset;
-    }
+    rightIndent += kAvatarTabStripShrink +
+        NSWidth([avatarButton frame]) + kAvatarRightOffset;
   }
   [tabStripController_ setRightIndentForControls:rightIndent];
 
