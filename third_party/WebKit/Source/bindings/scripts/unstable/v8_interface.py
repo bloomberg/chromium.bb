@@ -39,7 +39,7 @@ import v8_attributes
 from v8_globals import includes
 import v8_methods
 import v8_types
-from v8_types import inherits_interface
+from v8_types import inherits_interface, is_interface_type
 import v8_utilities
 from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute_value, runtime_enabled_function_name
 
@@ -234,7 +234,6 @@ def generate_interface(interface):
         'named_property_getter': named_property_getter(interface),
         'named_property_setter': named_property_setter(interface),
         'named_property_deleter': named_property_deleter(interface),
-        'is_override_builtins': 'OverrideBuiltins' in extended_attributes,
     })
 
     return template_contents
@@ -383,7 +382,7 @@ def overload_check_argument(index, argument):
         if argument['is_nullable']:
             type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
         return type_check
-    if v8_types.is_interface_type(idl_type):
+    if is_interface_type(idl_type):
         # Non-wrapper types are just objects: we don't distinguish type
         type_check = '%s->IsObject()' % cpp_value
         if argument['is_nullable']:
@@ -492,10 +491,14 @@ def property_getter(getter):
     def is_null_expression(idl_type):
         if idl_type == 'DOMString':
             return 'element.isNull()'
-        return None
+        if is_interface_type(idl_type):
+            return '!element'
+        return ''
 
     idl_type = getter.idl_type
     extended_attributes = getter.extended_attributes
+    element = 'element.release()' if is_interface_type(idl_type) else 'element'
+
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
         'is_custom':
@@ -510,20 +513,23 @@ def property_getter(getter):
         'is_null_expression': is_null_expression(idl_type),
         'is_raises_exception': 'RaisesException' in extended_attributes,
         'name': cpp_name(getter),
-        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection'),
+        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, element, extended_attributes=extended_attributes, script_wrappable='collection'),
     }
 
 
 def property_setter(setter):
     idl_type = setter.arguments[1].idl_type
     extended_attributes = setter.extended_attributes
+    is_raises_exception = 'RaisesException' in extended_attributes
     return {
         'has_strict_type_checking':
             'StrictTypeChecking' in extended_attributes and
             v8_types.is_wrapper_type(idl_type),
         'idl_type': idl_type,
         'is_custom': 'Custom' in extended_attributes,
-        'is_raises_exception': 'RaisesException' in extended_attributes,
+        'has_exception_state': is_raises_exception or
+                               v8_types.is_integer_type(idl_type),
+        'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
             idl_type, extended_attributes, 'jsValue', 'propertyValue'),

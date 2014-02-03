@@ -34,12 +34,15 @@
 #include "V8TestSpecialOperationsIdentifierRaisesException.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/TraceEvent.h"
+#include "wtf/GetPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -79,10 +82,10 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
-    String result = imp->item(index, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = imp->item(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8SetReturnValueString(info, result, info.GetIsolate());
+    v8SetReturnValue(info, result.release());
 }
 
 static void itemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -149,10 +152,10 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     TestSpecialOperationsIdentifierRaisesException* imp = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, info[0]);
-    String result = imp->namedItem(name, exceptionState);
+    RefPtr<TestInterfaceEmpty> result = imp->namedItem(name, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8SetReturnValueString(info, result, info.GetIsolate());
+    v8SetReturnValue(info, result.release());
 }
 
 static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -213,12 +216,12 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 {
     TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    String element = collection->item(index, exceptionState);
+    RefPtr<TestInterfaceEmpty> element = collection->item(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (element.isNull())
+    if (!element)
         return;
-    v8SetReturnValueString(info, element, info.GetIsolate());
+    v8SetReturnValueFast(info, element.release(), collection);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -278,12 +281,12 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     TestSpecialOperationsIdentifierRaisesException* collection = V8TestSpecialOperationsIdentifierRaisesException::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    String element = collection->namedItem(propertyName, exceptionState);
+    RefPtr<TestInterfaceEmpty> element = collection->namedItem(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (element.isNull())
+    if (!element)
         return;
-    v8SetReturnValueString(info, element, info.GetIsolate());
+    v8SetReturnValueFast(info, element.release(), collection);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

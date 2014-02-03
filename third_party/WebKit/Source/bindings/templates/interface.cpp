@@ -151,7 +151,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
 {
     {{cpp_class}}* collection = {{v8_class}}::toNative(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
-    {% if setter.is_raises_exception %}
+    {% if setter.has_exception_state %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% if setter.has_strict_type_checking %}
@@ -319,7 +319,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     {{setter.v8_value_to_local_cpp_value}};
-    {% if setter.is_raises_exception %}
+    {% if setter.has_exception_state %}
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% set setter_name = setter.name or 'anonymousNamedSetter' %}
