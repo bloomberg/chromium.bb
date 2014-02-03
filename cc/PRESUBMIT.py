@@ -4,8 +4,8 @@
 
 """Top-level presubmit script for cc.
 
-See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
-details on the presubmit API built into gcl.
+See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
+for more details about the presubmit API built into depot_tools.
 """
 
 import re
@@ -227,8 +227,8 @@ def CheckChangeOnUpload(input_api, output_api):
 def GetPreferredTrySlaves(project, change):
   return [
     'linux_layout_rel',
-    'win_gpu',
     'linux_gpu',
     'mac_gpu',
     'mac_gpu_retina',
+    'win_gpu',
   ]
