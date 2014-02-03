@@ -4,4 +4,5 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/webrtc",
   "+third_party/zlib"
+  "+ui/gl/gl_switches.h"
 ]

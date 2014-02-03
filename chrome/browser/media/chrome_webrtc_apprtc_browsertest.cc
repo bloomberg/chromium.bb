@@ -20,7 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/python_utils.h"
-
+#include "ui/gl/gl_switches.h"
 
 // You need this solution to run this test. The solution will download appengine
 // and the apprtc code for you.

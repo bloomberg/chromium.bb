@@ -70,6 +70,7 @@
 #include "base/android/jni_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
+#include "ui/gl/gl_surface.h"
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -947,6 +948,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
+
+#if defined(OS_ANDROID)
+  // On Android, GLSurface::InitializeOneOff() must be called before initalizing
+  // the GpuDataManagerImpl as it uses the GL bindings. crbug.com/326295
+  if (!gfx::GLSurface::InitializeOneOff())
+    LOG(FATAL) << "GLSurface::InitializeOneOff failed";
+#endif
 
   // Initialize the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.

@@ -24,7 +24,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "ui/gfx/size.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_implementation.h"
 
 using gpu::gles2::GLES2Implementation;
 using gpu::GLInProcessContext;
@@ -74,12 +74,9 @@ scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     gfx::AcceleratedWidget window) {
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context;
-  if (gfx::GLSurface::InitializeOneOff()) {
-    context.reset(new WebGraphicsContext3DInProcessCommandBufferImpl(
+  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
+  return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
       scoped_ptr< ::gpu::GLInProcessContext>(), attributes, false, window));
-  }
-  return context.Pass();
 }
 
 // static
@@ -87,24 +84,21 @@ scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-                             scoped_ptr< ::gpu::GLInProcessContext>(),
-                             attributes,
-                             true,
-                             gfx::kNullAcceleratedWidget))
-      .Pass();
+      scoped_ptr< ::gpu::GLInProcessContext>(),
+      attributes,
+      true,
+      gfx::kNullAcceleratedWidget));
 }
 
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
     scoped_ptr< ::gpu::GLInProcessContext> context,
     const blink::WebGraphicsContext3D::Attributes& attributes) {
-  return make_scoped_ptr(
-      new WebGraphicsContext3DInProcessCommandBufferImpl(
-          context.Pass(),
-          attributes,
-          true /* is_offscreen. Not used. */,
-          gfx::kNullAcceleratedWidget /* window. Not used. */))
-      .Pass();
+  return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
+      context.Pass(),
+      attributes,
+      true /* is_offscreen. Not used. */,
+      gfx::kNullAcceleratedWidget /* window. Not used. */));
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::

@@ -7,7 +7,6 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 
 using ::gfx::MockGLInterface;
@@ -21,11 +20,6 @@ class GPUInfoCollectorTest : public testing::Test {
   virtual ~GPUInfoCollectorTest() { }
 
   virtual void SetUp() {
-    // TODO(kbr): make this setup robust in the case where
-    // GLSurface::InitializeOneOff() has already been called by
-    // another unit test. http://crbug.com/100285
-    gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-    gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 #if defined(OS_WIN)

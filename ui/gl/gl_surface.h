@@ -12,6 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_export.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gfx {
 
@@ -69,7 +70,14 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Copy part of the backbuffer to the frontbuffer.
   virtual bool PostSubBuffer(int x, int y, int width, int height);
 
+  // Initialize GL bindings.
   static bool InitializeOneOff();
+
+  // Unit tests should call these instead of InitializeOneOff() to set up
+  // GL bindings appropriate for tests.
+  static void InitializeOneOffForTests();
+  static void InitializeOneOffWithMockBindingsForTests();
+  static void InitializeDynamicMockBindingsForTests(GLContext* context);
 
   // Called after a context is made current with this surface. Returns false
   // on error.
@@ -109,6 +117,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
  protected:
   virtual ~GLSurface();
+  static bool InitializeOneOffImplementation(GLImplementation impl,
+                                             bool fallback_to_osmesa,
+                                             bool gpu_service_logging,
+                                             bool disable_gl_drawing);
   static bool InitializeOneOffInternal();
   static void SetCurrent(GLSurface* surface);
 

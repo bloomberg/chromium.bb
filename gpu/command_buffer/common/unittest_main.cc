@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_surface.h"
 
 namespace {
 
@@ -18,6 +19,13 @@ class NoAtExitBaseTestSuite : public base::TestSuite {
  public:
   NoAtExitBaseTestSuite(int argc, char** argv)
       : base::TestSuite(argc, argv, false) {
+  }
+
+  virtual void Initialize() OVERRIDE {
+    base::TestSuite::Initialize();
+    gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
+    gfx::GLSurface::InitializeOneOffWithMockBindingsForTests();
+    gfx::GLSurface::InitializeDynamicMockBindingsForTests(NULL);
   }
 };
 
@@ -35,9 +43,6 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 #endif
   CommandLine::Init(argc, argv);
-  gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-  gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
-  gfx::InitializeDynamicGLBindings(gfx::kGLImplementationMockGL, NULL);
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTests(argc,
                                argv,

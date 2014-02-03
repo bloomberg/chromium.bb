@@ -23,7 +23,6 @@
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_implementation.h"
 
 namespace cc {
 
@@ -118,8 +117,6 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
 }
 
 void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
-  CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
-
   output_surface_.reset(
       new PixelTestOutputSurface(new TestInProcessContextProvider));
   output_surface_->BindToClient(output_surface_client_.get());

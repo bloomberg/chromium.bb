@@ -929,9 +929,6 @@ const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 
-// Use hardware gpu, if available, for tests.
-const char kUseGpuInTests[]                 = "use-gpu-in-tests";
-
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 
