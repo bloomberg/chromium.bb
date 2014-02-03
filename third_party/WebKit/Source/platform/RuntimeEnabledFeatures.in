@@ -53,7 +53,7 @@ EncryptedMedia status=experimental
 EncryptedMediaAnyVersion status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
-ExperimentalWebSocket
+ExperimentalWebSocket status=test
 FileConstructor status=experimental
 FileSystem status=stable
 FontLoadEvents status=experimental

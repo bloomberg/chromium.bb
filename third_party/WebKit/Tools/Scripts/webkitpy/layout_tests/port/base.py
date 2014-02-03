@@ -1581,6 +1581,9 @@ class Port(object):
             VirtualTestSuite('serviceworker',
                              'http/tests/serviceworker',
                              ['--enable-service-worker']),
+            VirtualTestSuite('stable',
+                             'http/tests/websocket',
+                             ['--stable-release-mode']),
         ]
 
     @memoized
