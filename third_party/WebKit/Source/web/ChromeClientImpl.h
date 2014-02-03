@@ -45,6 +45,7 @@ class AXObject;
 class ColorChooser;
 class ColorChooserClient;
 class Element;
+class Event;
 class FileChooser;
 class GraphicsLayerFactory;
 class HTMLInputElement;
@@ -185,6 +186,10 @@ public:
     virtual void didChangeValueInTextField(WebCore::HTMLInputElement&) OVERRIDE;
     virtual void didEndEditingOnTextField(WebCore::HTMLInputElement&) OVERRIDE;
     virtual void handleKeyboardEventOnTextField(WebCore::HTMLInputElement&, WebCore::KeyboardEvent&) OVERRIDE;
+
+    // FIXME: Remove this method once we have input routing in the browser
+    // process. See http://crbug.com/339659.
+    virtual void forwardInputEvent(WebCore::Document*, WebCore::Event*) OVERRIDE;
 
     virtual void didCancelCompositionOnSelectionChange() OVERRIDE;
     virtual void willSetInputMethodState() OVERRIDE;

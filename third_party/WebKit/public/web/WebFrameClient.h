@@ -56,6 +56,7 @@ class WebDataSource;
 class WebDOMEvent;
 class WebFormElement;
 class WebFrame;
+class WebInputEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebServiceWorkerProvider;
@@ -372,6 +373,10 @@ public:
     // given reason (one of the GL_ARB_robustness status codes; see
     // Extensions3D.h in WebCore/platform/graphics).
     virtual void didLoseWebGLContext(WebFrame*, int) { }
+
+    // FIXME: Remove this method once we have input routing in the browser
+    // process. See http://crbug.com/339659.
+    virtual void forwardInputEvent(const WebInputEvent*) { }
 
 protected:
     ~WebFrameClient() { }

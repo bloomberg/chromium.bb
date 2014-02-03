@@ -74,6 +74,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFullscreen.h"
 #include "core/dom/Node.h"
+#include "core/events/KeyboardEvent.h"
+#include "core/events/MouseEvent.h"
+#include "core/events/WheelEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -966,6 +969,34 @@ void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputEle
     if (!m_webView->autofillClient())
         return;
     m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(&inputElement), WebKeyboardEventBuilder(event));
+}
+
+// FIXME: Remove this code once we have input routing in the browser
+// process. See http://crbug.com/339659.
+void ChromeClientImpl::forwardInputEvent(
+    WebCore::Document* document, WebCore::Event* event)
+{
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+
+    // This is only called when we have out-of-process iframes, which
+    // need to forward input events across processes.
+    // FIXME: Add a check for out-of-process iframes enabled.
+    if (event->isKeyboardEvent()) {
+        WebKeyboardEventBuilder webEvent(*static_cast<WebCore::KeyboardEvent*>(event));
+        webFrame->client()->forwardInputEvent(&webEvent);
+    } else if (event->isMouseEvent()) {
+        WebMouseEventBuilder webEvent(webFrame->frameView(), document->renderer(), *static_cast<WebCore::MouseEvent*>(event));
+        // Internal Blink events should not be forwarded.
+        if (webEvent.type == WebInputEvent::Undefined)
+            return;
+
+        webFrame->client()->forwardInputEvent(&webEvent);
+    } else if (event->isWheelEvent()) {
+        WebMouseWheelEventBuilder webEvent(webFrame->frameView(), document->renderer(), *static_cast<WebCore::WheelEvent*>(event));
+        if (webEvent.type == WebInputEvent::Undefined)
+            return;
+        webFrame->client()->forwardInputEvent(&webEvent);
+    }
 }
 
 void ChromeClientImpl::didChangeValueInTextField(HTMLInputElement& inputElement)

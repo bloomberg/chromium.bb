@@ -1045,6 +1045,10 @@ public:
     void registerVisibilityObserver(DocumentVisibilityObserver*);
     void unregisterVisibilityObserver(DocumentVisibilityObserver*);
 
+    // FIXME: Remove this method once we have input routing in the browser
+    // process. See http://crbug.com/339659.
+    virtual void defaultEventHandler(Event*) OVERRIDE;
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
