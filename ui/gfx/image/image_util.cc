@@ -12,6 +12,8 @@
 
 namespace gfx {
 
+const uint32_t kMinimumVisibleOpacity = 12;
+
 // The iOS implementations of the JPEG functions are in image_util_ios.mm.
 #if !defined(OS_IOS)
 Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
@@ -24,7 +26,7 @@ Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
 }
 
 bool JPEG1xEncodedDataFromImage(const Image& image, int quality,
-                              std::vector<unsigned char>* dst) {
+                                std::vector<unsigned char>* dst) {
   const gfx::ImageSkiaRep& image_skia_rep =
       image.AsImageSkia().GetRepresentation(1.0f);
   if (image_skia_rep.scale() != 1.0f)
@@ -45,4 +47,57 @@ bool JPEG1xEncodedDataFromImage(const Image& image, int quality,
 }
 #endif  // !defined(OS_IOS)
 
+bool VisibleMargins(const ImageSkia& image, int* leading, int* trailing) {
+  *leading = 0;
+  *trailing = std::max(1, image.width()) - 1;
+  if (!image.HasRepresentation(1.0))
+    return false;
+
+  const ImageSkiaRep& rep = image.GetRepresentation(1.0);
+  if (rep.is_null())
+    return false;
+
+  const SkBitmap& bitmap = rep.sk_bitmap();
+  if (bitmap.isNull() || bitmap.width() == 0)
+    return false;
+
+  if (bitmap.isOpaque())
+    return true;
+
+  SkAutoLockPixels l(bitmap);
+  int inner_min = bitmap.width();
+  for (int x = 0; x < bitmap.width(); ++x) {
+    for (int y = 0; y < bitmap.height(); ++y) {
+      if (SkColorGetA(bitmap.getColor(x, y)) > kMinimumVisibleOpacity) {
+        inner_min = x;
+        break;
+      }
+    }
+    if (inner_min < bitmap.width())
+      break;
+  }
+
+  int inner_max = -1;
+  for (int x = bitmap.width() - 1; x > inner_min; --x) {
+    for (int y = 0; y < bitmap.height(); ++y) {
+      if (SkColorGetA(bitmap.getColor(x, y)) > kMinimumVisibleOpacity) {
+        inner_max = x;
+        break;
+      }
+    }
+    if (inner_max > -1)
+      break;
+  }
+
+  if (inner_min == bitmap.width()) {
+    *leading = bitmap.width()/2;
+    *trailing = bitmap.width()/2 + 1;
+    return true;
+  }
+
+  *leading = inner_min;
+  *trailing = inner_max;
+  return true;
 }
+
+}  // namespace gfx

@@ -12,6 +12,7 @@
 
 namespace gfx {
 class Image;
+class ImageSkia;
 }
 
 namespace gfx {
@@ -30,6 +31,22 @@ GFX_EXPORT Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
 GFX_EXPORT bool JPEG1xEncodedDataFromImage(const Image& image,
                                            int quality,
                                            std::vector<unsigned char>* dst);
+
+// Returns the visible (non-transparent) width of the 1x rep of the given
+// image. If the image has no transparency, the leading value will be 0 and
+// the trailing will be the image width. Return values are in the 1x width
+// pixel units. Margins are given in 0-based column format. So if the image
+// has only transparent pixels in columns 0, 1, 2, 3, then the leading value
+// will be 4. Similarly, if there are all transparent pixels in column
+// width-2, width-1, then the trailing margin value will be width-3.
+// Returns true if the value is computed from opacity, false if it is a
+// default value because of null image, missing Rep, etc.
+// This method is only suitable for fairly small images (i.e. 16x16).
+// The margins for a completely transparent image will be w/2-1, w/2, but this
+// will be an expensive operation: it isn't expected that it will be frequently
+// calculated.
+GFX_EXPORT bool VisibleMargins(const ImageSkia& image,
+                               int* leading, int* trailing);
 
 }  // namespace gfx
 
