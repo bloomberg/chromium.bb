@@ -206,7 +206,7 @@ void FileInputType::setValue(const String&, bool valueChanged, TextFieldEventBeh
         return;
 
     m_fileList->clear();
-    element().setNeedsStyleRecalc();
+    element().setNeedsStyleRecalc(SubtreeStyleChange);
     element().setNeedsValidityCheck();
 }
 

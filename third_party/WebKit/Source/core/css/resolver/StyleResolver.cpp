@@ -356,7 +356,7 @@ void StyleResolver::clearStyleSharingList()
 void StyleResolver::fontsNeedUpdate(CSSFontSelector* fontSelector)
 {
     invalidateMatchedPropertiesCache();
-    m_document.setNeedsStyleRecalc();
+    m_document.setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void StyleResolver::pushParentElement(Element& parent)

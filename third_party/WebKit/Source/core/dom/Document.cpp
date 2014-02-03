@@ -1186,7 +1186,7 @@ void Document::setContentLanguage(const AtomicString& language)
     m_contentLanguage = language;
 
     // Document's style depends on the content language.
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void Document::setXMLVersion(const String& version, ExceptionState& exceptionState)
@@ -1682,7 +1682,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     // rare and just invalidate the cache for now.
     if (styleEngine()->usesRemUnits() && (documentElement()->needsAttach() || documentElement()->computedStyle()->fontSize() != documentElementStyle->fontSize())) {
         ensureStyleResolver().invalidateMatchedPropertiesCache();
-        documentElement()->setNeedsStyleRecalc();
+        documentElement()->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
     RefPtr<RenderStyle> documentStyle = renderView()->style();
@@ -1697,13 +1697,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     if (body) {
         if (RenderStyle* style = body->renderStyle()) {
             if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
-                body->setNeedsStyleRecalc();
+                body->setNeedsStyleRecalc(SubtreeStyleChange);
         }
     }
 
     if (RenderStyle* style = documentElement()->renderStyle()) {
         if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
-            documentElement()->setNeedsStyleRecalc();
+            documentElement()->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 
@@ -3304,7 +3304,7 @@ void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpd
         return;
 
     m_evaluateMediaQueriesOnStyleRecalc = true;
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 
     if (updateTime == RecalcStyleImmediately)
         updateStyleIfNeeded();
@@ -4116,7 +4116,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         // FIXME: How is possible to not have a renderer here?
         if (renderView())
             renderView()->style()->setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 
@@ -4276,7 +4276,7 @@ void Document::setDesignMode(InheritedBool value)
 {
     m_designMode = value;
     for (Frame* frame = m_frame; frame && frame->document(); frame = frame->tree().traverseNext(m_frame))
-        frame->document()->setNeedsStyleRecalc();
+        frame->document()->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 Document::InheritedBool Document::getDesignMode() const

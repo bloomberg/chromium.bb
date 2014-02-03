@@ -141,7 +141,7 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
         m_isReadOnly = !value.isNull();
         if (wasReadOnly != m_isReadOnly) {
             setNeedsWillValidateCheck();
-            setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
             if (renderer() && renderer()->style()->hasAppearance())
                 RenderTheme::theme().stateChanged(renderer(), ReadOnlyState);
         }
@@ -176,7 +176,7 @@ void HTMLFormControlElement::requiredAttributeChanged()
     setNeedsValidityCheck();
     // Style recalculation is needed because style selectors may include
     // :required and :optional pseudo-classes.
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 bool HTMLFormControlElement::supportsAutofocus() const
@@ -195,7 +195,7 @@ void HTMLFormControlElement::setAutofilled(bool autofilled)
         return;
 
     m_isAutofilled = autofilled;
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element)
@@ -396,7 +396,7 @@ void HTMLFormControlElement::setNeedsWillValidateCheck()
     m_willValidateInitialized = true;
     m_willValidate = newWillValidate;
     setNeedsValidityCheck();
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
     if (!m_willValidate)
         hideVisibleValidationMessage();
 }
@@ -448,7 +448,7 @@ void HTMLFormControlElement::setNeedsValidityCheck()
     bool newIsValid = valid();
     if (willValidate() && newIsValid != m_isValid) {
         // Update style for pseudo classes such as :valid :invalid.
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
     }
     m_isValid = newIsValid;
 

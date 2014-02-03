@@ -1049,7 +1049,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     shouldInvalidateStyle |= !styleResolver;
 
     if (shouldInvalidateStyle)
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->handleAttributeChanged(name, this);
@@ -1711,7 +1711,7 @@ void Element::checkForChildrenAdjacentRuleChanges()
         bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() >= SubtreeStyleChange;
 
         if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
-            element->setNeedsStyleRecalc();
+            element->setNeedsStyleRecalc(SubtreeStyleChange);
 
         if (forceCheckOfNextElementCount)
             forceCheckOfNextElementCount--;
@@ -1756,7 +1756,7 @@ ElementShadow& Element::ensureShadow()
 
 void Element::didAffectSelector(AffectedSelectorMask mask)
 {
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
     if (ElementShadow* elementShadow = shadowWhereNodeCanBeDistributed(*this))
         elementShadow->didAffectSelector(mask);
 }
@@ -1849,7 +1849,7 @@ void Element::checkForEmptyStyleChange(RenderStyle* style)
         return;
 
     if (!style || (styleAffectedByEmpty() && (!style->emptyState() || hasChildNodes())))
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -1873,7 +1873,7 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
     // For performance reasons we just mark the parent node as changed, since we don't want to make childrenChanged O(n^2) by crawling all our kids
     // here. recalcStyle will then force a walk of the children when it sees that this has happened.
     if ((childrenAffectedByForwardPositionalRules() && afterChange) || (childrenAffectedByBackwardPositionalRules() && beforeChange)) {
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
         return;
     }
 
@@ -1891,11 +1891,11 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
 
         // This is the insert/append case.
         if (newFirstChild != firstElementAfterInsertion && firstElementAfterInsertionStyle && firstElementAfterInsertionStyle->firstChildState())
-            firstElementAfterInsertion->setNeedsStyleRecalc();
+            firstElementAfterInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
 
         // We also have to handle node removal.
         if (childCountDelta < 0 && newFirstChild == firstElementAfterInsertion && newFirstChild && (!newFirstChildStyle || !newFirstChildStyle->firstChildState()))
-            newFirstChild->setNeedsStyleRecalc();
+            newFirstChild->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
     // :last-child.  In the parser callback case, we don't have to check anything, since we were right the first time.
@@ -1910,19 +1910,19 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
         RenderStyle* lastElementBeforeInsertionStyle = lastElementBeforeInsertion ? lastElementBeforeInsertion->renderStyle() : 0;
 
         if (newLastChild != lastElementBeforeInsertion && lastElementBeforeInsertionStyle && lastElementBeforeInsertionStyle->lastChildState())
-            lastElementBeforeInsertion->setNeedsStyleRecalc();
+            lastElementBeforeInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
 
         // We also have to handle node removal.  The parser callback case is similar to node removal as well in that we need to change the last child
         // to match now.
         if ((childCountDelta < 0 || finishedParsingCallback) && newLastChild == lastElementBeforeInsertion && newLastChild && (!newLastChildStyle || !newLastChildStyle->lastChildState()))
-            newLastChild->setNeedsStyleRecalc();
+            newLastChild->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 
     // The + selector.  We need to invalidate the first element following the insertion point.  It is the only possible element
     // that could be affected by this DOM change.
     if (childrenAffectedByDirectAdjacentRules() && afterChange) {
         if (Node* firstElementAfterInsertion = afterChange->isElementNode() ? afterChange : afterChange->nextElementSibling())
-            firstElementAfterInsertion->setNeedsStyleRecalc();
+            firstElementAfterInsertion->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 
@@ -3126,7 +3126,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
 
     if (oldValue != newValue) {
         if (inActiveDocument() && hasSelectorForAttribute(&document(), name.localName()))
-           setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
 
         if (isUpgradedCustomElement())
             CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);

@@ -649,7 +649,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // We only need to setChanged if the form is looking at the default value right now.
         if (!hasDirtyValue()) {
             updatePlaceholderVisibility(false);
-            setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
         }
         setFormControlValueMatchesRenderer(false);
         setNeedsValidityCheck();
@@ -688,10 +688,10 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // time to relayout for this change.
         if (m_maxResults != oldResults && (m_maxResults <= 0 || oldResults <= 0))
             lazyReattachIfAttached();
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
         UseCounter::count(document(), UseCounter::ResultsAttribute);
     } else if (name == incrementalAttr) {
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
     } else if (name == minAttr) {
         m_inputTypeView->minOrMaxAttributeChanged();
@@ -866,7 +866,7 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
 
     m_reflectsCheckedAttribute = false;
     m_isChecked = nowChecked;
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 
     if (CheckedRadioButtons* buttons = checkedRadioButtons())
             buttons->updateCheckedState(this);
@@ -978,7 +978,7 @@ void HTMLInputElement::setSuggestedValue(const String& value)
         return;
     setFormControlValueMatchesRenderer(false);
     m_suggestedValue = sanitizeValue(value);
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
     m_inputTypeView->updateView();
 }
 
@@ -1665,7 +1665,7 @@ void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value)
     m_maxLength = maxLength;
     if (oldMaxLength != maxLength)
         updateValueIfNeeded();
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
     setNeedsValidityCheck();
 }
 

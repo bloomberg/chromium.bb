@@ -216,7 +216,7 @@ void HTMLPlugInElement::finishParsingChildren()
 
     setNeedsWidgetUpdate(true);
     if (inDocument())
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void HTMLPlugInElement::resetInstance()

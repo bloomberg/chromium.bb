@@ -250,13 +250,13 @@ void RuleFeatureSet::clear()
 void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element* element)
 {
     if (computeInvalidationSetsForClassChange(changedClasses, element) && !m_targetedStyleRecalcEnabled)
-        element->setNeedsStyleRecalc();
+        element->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element* element)
 {
     if (computeInvalidationSetsForClassChange(oldClasses, newClasses, element) && !m_targetedStyleRecalcEnabled)
-        element->setNeedsStyleRecalc();
+        element->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 bool RuleFeatureSet::computeInvalidationSetsForClassChange(const SpaceSplitString& changedClasses, Element* element)

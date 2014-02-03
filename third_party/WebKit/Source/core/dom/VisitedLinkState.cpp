@@ -65,7 +65,7 @@ void VisitedLinkState::invalidateStyleForAllLinks()
         return;
     for (Element* element = ElementTraversal::firstWithin(m_document); element; element = ElementTraversal::next(*element)) {
         if (element->isLink())
-            element->setNeedsStyleRecalc();
+            element->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 
@@ -75,7 +75,7 @@ void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
         return;
     for (Element* element = ElementTraversal::firstWithin(m_document); element; element = ElementTraversal::next(*element)) {
         if (element->isLink() && linkHashForElement(*element) == linkHash)
-            element->setNeedsStyleRecalc();
+            element->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 

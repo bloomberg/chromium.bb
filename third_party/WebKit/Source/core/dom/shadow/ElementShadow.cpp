@@ -291,7 +291,7 @@ const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(c
 
 void ElementShadow::distribute()
 {
-    host()->setNeedsStyleRecalc();
+    host()->setNeedsStyleRecalc(SubtreeStyleChange);
     Vector<HTMLShadowElement*, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
 

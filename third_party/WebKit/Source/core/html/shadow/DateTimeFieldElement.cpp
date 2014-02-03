@@ -206,7 +206,7 @@ void DateTimeFieldElement::setDisabled()
 {
     // Set HTML attribute disabled to change apperance.
     setBooleanAttribute(disabledAttr, true);
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 bool DateTimeFieldElement::supportsFocus() const

@@ -3846,7 +3846,7 @@ void WebViewImpl::didExitCompositingMode()
     m_client->didInvalidateRect(IntRect(0, 0, m_size.width, m_size.height));
 
     // Force a style recalc to remove all the composited layers.
-    m_page->mainFrame()->document()->setNeedsStyleRecalc();
+    m_page->mainFrame()->document()->setNeedsStyleRecalc(SubtreeStyleChange);
 
     if (m_pageOverlays)
         m_pageOverlays->update();

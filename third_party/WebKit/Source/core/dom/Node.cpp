@@ -2567,7 +2567,7 @@ void Node::setCustomElementState(CustomElementState newState)
     setFlag(newState == Upgraded, CustomElementUpgraded);
 
     if (oldState == NotCustomElement || newState == Upgraded)
-        setNeedsStyleRecalc(); // :unresolved has changed
+        setNeedsStyleRecalc(SubtreeStyleChange); // :unresolved has changed
 }
 
 } // namespace WebCore

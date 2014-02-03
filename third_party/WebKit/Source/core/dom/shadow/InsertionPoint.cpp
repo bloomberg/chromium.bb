@@ -252,7 +252,7 @@ void InsertionPoint::parseAttribute(const QualifiedName& name, const AtomicStrin
     if (name == reset_style_inheritanceAttr) {
         if (!inDocument() || !isActive())
             return;
-        containingShadowRoot()->host()->setNeedsStyleRecalc();
+        containingShadowRoot()->host()->setNeedsStyleRecalc(SubtreeStyleChange);
     } else
         HTMLElement::parseAttribute(name, value);
 }

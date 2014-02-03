@@ -685,7 +685,7 @@ void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const
             if (childNode == lastChildToBeRemoved)
                 break;
         }
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 

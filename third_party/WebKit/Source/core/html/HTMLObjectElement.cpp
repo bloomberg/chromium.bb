@@ -281,7 +281,7 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
     }
     setNeedsWidgetUpdate(true);
     if (needsInvalidation)
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 // FIXME: This should be unified with HTMLEmbedElement::updateWidget and
@@ -360,7 +360,7 @@ void HTMLObjectElement::childrenChanged(bool changedByParser, Node* beforeChange
 {
     if (inDocument() && !useFallbackContent()) {
         setNeedsWidgetUpdate(true);
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
     }
     HTMLPlugInElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 }

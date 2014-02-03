@@ -808,7 +808,7 @@ void ContainerNode::focusStateChanged()
     // FIXME: This could probably setNeedsStyleRecalc(LocalStyleChange) in the affectedByFocus case
     // and only setNeedsStyleRecalc(SubtreeStyleChange) in the childrenAffectedByFocus case.
     if (renderStyle()->affectedByFocus() || (isElementNode() && toElement(this)->childrenAffectedByFocus()))
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), FocusState);
 }
@@ -823,7 +823,7 @@ void ContainerNode::setFocus(bool received)
     focusStateChanged();
     // If :focus sets display: none, we lose focus but still need to recalc our style.
     if (!renderer() && !received)
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void ContainerNode::setActive(bool down)
@@ -836,7 +836,7 @@ void ContainerNode::setActive(bool down)
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (renderer()) {
         if (renderStyle()->affectedByActive() || (isElementNode() && toElement(this)->childrenAffectedByActive()))
-            setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
         if (renderStyle()->hasAppearance())
             RenderTheme::theme().stateChanged(renderer(), PressedState);
     }
@@ -852,13 +852,13 @@ void ContainerNode::setHovered(bool over)
     // If :hover sets display: none we lose our hover but still need to recalc our style.
     if (!renderer()) {
         if (!over)
-            setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
         return;
     }
 
     if (renderer()) {
         if (renderStyle()->affectedByHover() || (isElementNode() && toElement(this)->childrenAffectedByHover()))
-            setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
         if (renderer() && renderer()->style()->hasAppearance())
             RenderTheme::theme().stateChanged(renderer(), HoverState);
     }

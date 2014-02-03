@@ -271,7 +271,7 @@ static bool setTableCellsChanged(Node* n)
     }
 
     if (cellChanged)
-       n->setNeedsStyleRecalc();
+        n->setNeedsStyleRecalc(SubtreeStyleChange);
 
     return cellChanged;
 }
@@ -411,7 +411,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
         for (Node* child = firstChild(); child; child = child->nextSibling())
             cellChanged |= setTableCellsChanged(child);
         if (cellChanged)
-            setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 

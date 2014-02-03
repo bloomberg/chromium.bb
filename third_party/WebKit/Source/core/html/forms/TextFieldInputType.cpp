@@ -513,7 +513,7 @@ void TextFieldInputType::subtreeHasChanged()
     element().setValueFromRenderer(sanitizeValue(convertFromVisibleValue(element().innerTextValue())));
     element().updatePlaceholderVisibility(false);
     // Recalc for :invalid change.
-    element().setNeedsStyleRecalc();
+    element().setNeedsStyleRecalc(SubtreeStyleChange);
 
     didSetValueByUserEdit(wasChanged ? ValueChangeStateChanged : ValueChangeStateNone);
 }

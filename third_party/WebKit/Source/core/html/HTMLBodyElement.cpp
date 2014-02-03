@@ -112,7 +112,7 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
             }
         }
 
-        setNeedsStyleRecalc();
+        setNeedsStyleRecalc(SubtreeStyleChange);
     } else if (name == onloadAttr)
         document().setWindowAttributeEventListener(EventTypeNames::load, createAttributeEventListener(document().frame(), name, value));
     else if (name == onbeforeunloadAttr)

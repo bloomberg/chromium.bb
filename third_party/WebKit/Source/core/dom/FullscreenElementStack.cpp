@@ -410,7 +410,7 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     m_areKeysEnabledInFullScreen = false;
 
     m_fullScreenElement = 0;
-    document()->setNeedsStyleRecalc();
+    document()->setNeedsStyleRecalc(SubtreeStyleChange);
 
     // When webkitCancelFullScreen is called, we call webkitExitFullScreen on the topDocument(). That
     // means that the events will be queued there. So if we have no events here, start the timer on

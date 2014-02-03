@@ -132,7 +132,7 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
         setIsLink(!m_href->currentValue()->value().isNull());
 
         if (wasLink != isLink())
-            setNeedsStyleRecalc();
+            setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 

@@ -185,7 +185,7 @@ void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
         input->setNeedsValidityCheck();
     } else {
         input->setValueInternal(newValue, DispatchNoEvent);
-        input->setNeedsStyleRecalc();
+        input->setNeedsStyleRecalc(SubtreeStyleChange);
         input->dispatchFormControlInputEvent();
     }
     input->notifyFormStateChanged();

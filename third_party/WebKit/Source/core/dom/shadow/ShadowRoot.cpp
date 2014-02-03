@@ -208,7 +208,7 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
     ASSERT(host());
     ASSERT(host()->shadow());
     if (host()->shadow()->didAffectApplyAuthorStyles())
-        host()->setNeedsStyleRecalc();
+        host()->setNeedsStyleRecalc(SubtreeStyleChange);
 
     // Since styles in shadow trees can select shadow hosts, set shadow host's needs-recalc flag true.
     // FIXME: host->setNeedsStyleRecalc() should take care of all elements in its shadow tree.
@@ -216,7 +216,7 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
     // no recalc style is invoked for any elements in its shadow tree.
     // This problem occurs when using getComputedStyle() API.
     // So currently host and shadow root's needsStyleRecalc flags are set to be true.
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void ShadowRoot::setResetStyleInheritance(bool value)
@@ -231,7 +231,7 @@ void ShadowRoot::setResetStyleInheritance(bool value)
     if (!isActive())
         return;
 
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void ShadowRoot::attach(const AttachContext& context)

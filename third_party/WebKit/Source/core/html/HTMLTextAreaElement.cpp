@@ -362,7 +362,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue)
     setInnerTextValue(m_value);
     setLastChangeWasNotUserEdit();
     updatePlaceholderVisibility(false);
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
     setFormControlValueMatchesRenderer(true);
 
     // Set the caret to the end of the text value.
@@ -438,7 +438,7 @@ void HTMLTextAreaElement::setSuggestedValue(const String& value)
     m_suggestedValue = value;
     setInnerTextValue(m_suggestedValue);
     updatePlaceholderVisibility(false);
-    setNeedsStyleRecalc();
+    setNeedsStyleRecalc(SubtreeStyleChange);
     setFormControlValueMatchesRenderer(true);
 }
 
