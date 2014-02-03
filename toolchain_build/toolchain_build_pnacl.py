@@ -314,6 +314,7 @@ def HostTools(host):
                    '--enable-shared',
                    '--disable-zlib',
                    '--disable-jit',
+                   '--disable-bindings', # ocaml is currently the only binding.
                    '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
                    '--enable-targets=x86,arm,mips',
                    '--program-prefix=',
