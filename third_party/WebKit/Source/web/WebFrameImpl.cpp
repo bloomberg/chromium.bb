@@ -826,7 +826,7 @@ void WebFrameImpl::collectGarbage()
 {
     if (!frame())
         return;
-    if (!frame()->settings()->isScriptEnabled())
+    if (!frame()->settings()->scriptEnabled())
         return;
     V8GCController::collectGarbage(v8::Isolate::GetCurrent());
 }

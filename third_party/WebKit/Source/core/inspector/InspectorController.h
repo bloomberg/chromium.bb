@@ -123,6 +123,8 @@ public:
 
     void processGPUEvent(double timestamp, int phase, bool foreign, size_t usedGPUMemoryBytes);
 
+    void scriptsEnabled(bool);
+
 private:
     InspectorController(Page*, InspectorClient*);
 

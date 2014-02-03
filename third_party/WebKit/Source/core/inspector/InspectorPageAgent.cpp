@@ -780,7 +780,7 @@ void InspectorPageAgent::getScriptExecutionStatus(ErrorString*, PageCommandHandl
     if (frame) {
         disabledByScriptController = !frame->script().canExecuteScripts(NotAboutToExecuteScript);
         if (frame->settings())
-            disabledInSettings = !frame->settings()->isScriptEnabled();
+            disabledInSettings = !frame->settings()->scriptEnabled();
     }
 
     if (!disabledByScriptController) {

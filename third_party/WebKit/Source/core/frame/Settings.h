@@ -39,8 +39,6 @@
 
 namespace WebCore {
 
-class Page; // For inspector, remove after http://crbug.com/327476
-
 enum EditableLinkBehavior {
     EditableLinkDefaultBehavior,
     EditableLinkAlwaysLive,
@@ -57,23 +55,11 @@ public:
     GenericFontFamilySettings& genericFontFamilySettings() { return m_genericFontFamilySettings; }
 
     void setTextAutosizingEnabled(bool);
-    bool textAutosizingEnabled() const;
-
-    // Compensates for poor text legibility on mobile devices. This value is
-    // multiplied by the font scale factor when performing text autosizing of
-    // websites that do not set an explicit viewport description.
-    void setDeviceScaleAdjustment(float);
-    float deviceScaleAdjustment() const;
+    bool textAutosizingEnabled() const { return m_textAutosizingEnabled; }
 
     // Only set by Layout Tests, and only used if textAutosizingEnabled() returns true.
     void setTextAutosizingWindowSizeOverride(const IntSize&);
     const IntSize& textAutosizingWindowSizeOverride() const { return m_textAutosizingWindowSizeOverride; }
-
-    // Clients that execute script should call ScriptController::canExecuteScripts()
-    // instead of this function. ScriptController::canExecuteScripts() checks the
-    // HTML sandbox, plug-in sandboxing, and other important details.
-    bool isScriptEnabled() const { return m_isScriptEnabled; }
-    void setScriptEnabled(bool);
 
     SETTINGS_GETTERS_AND_SETTERS
 
@@ -93,21 +79,14 @@ private:
 
     void invalidate(SettingsDelegate::ChangeType);
 
-    // FIXME: pageOfShame() is a hack for the inspector code:
-    // http://crbug.com/327476
-    Page* pageOfShame() const;
-
     SettingsDelegate* m_delegate;
 
     GenericFontFamilySettings m_genericFontFamilySettings;
-    float m_deviceScaleAdjustment;
+    bool m_openGLMultisamplingEnabled : 1;
     IntSize m_textAutosizingWindowSizeOverride;
     bool m_textAutosizingEnabled : 1;
 
     SETTINGS_MEMBER_VARIABLES
-
-    bool m_isScriptEnabled : 1;
-    bool m_openGLMultisamplingEnabled : 1;
 };
 
 } // namespace WebCore

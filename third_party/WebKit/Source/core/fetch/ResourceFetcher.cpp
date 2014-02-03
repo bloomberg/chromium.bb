@@ -506,7 +506,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
 
         if (frame()) {
             Settings* settings = frame()->settings();
-            if (!frame()->loader().client()->allowScriptFromSource(!settings || settings->isScriptEnabled(), url)) {
+            if (!frame()->loader().client()->allowScriptFromSource(!settings || settings->scriptEnabled(), url)) {
                 frame()->loader().client()->didNotAllowScript();
                 return false;
             }

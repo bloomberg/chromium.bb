@@ -25,8 +25,8 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
@@ -182,7 +182,11 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 {
     TRACE_EVENT0("webkit", "TextAutosizer::processSubtree");
 
-    if (!m_document->settings() || !m_document->settings()->textAutosizingEnabled() || layoutRoot->view()->document().printing() || !m_document->page())
+    if (!m_document->settings() || layoutRoot->view()->document().printing() || !m_document->page())
+        return false;
+
+    bool textAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(m_document->page(), m_document->settings()->textAutosizingEnabled());
+    if (!textAutosizingEnabled)
         return false;
 
     Frame* mainFrame = m_document->page()->mainFrame();
@@ -244,7 +248,8 @@ float TextAutosizer::clusterMultiplier(WritingMode writingMode, const TextAutosi
     // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
     const ViewportDescription& viewportDescription = m_document->page()->mainFrame()->document()->viewportDescription();
     if (!viewportDescription.isSpecifiedByAuthor()) {
-        multiplier *= m_document->settings()->deviceScaleAdjustment();
+        float deviceScaleAdjustment = InspectorInstrumentation::overrideFontScaleFactor(m_document->page(), m_document->settings()->deviceScaleAdjustment());
+        multiplier *= deviceScaleAdjustment;
     }
     return std::max(1.0f, multiplier);
 }

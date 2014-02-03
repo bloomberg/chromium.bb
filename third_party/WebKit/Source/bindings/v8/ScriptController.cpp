@@ -559,7 +559,7 @@ bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reaso
     }
 
     Settings* settings = m_frame->settings();
-    const bool allowed = m_frame->loader().client()->allowScript(settings && settings->isScriptEnabled());
+    const bool allowed = m_frame->loader().client()->allowScript(settings && settings->scriptEnabled());
     if (!allowed && reason == AboutToExecuteScript)
         m_frame->loader().client()->didNotAllowScript();
     return allowed;

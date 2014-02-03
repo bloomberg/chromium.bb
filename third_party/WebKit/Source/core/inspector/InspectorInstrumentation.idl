@@ -217,9 +217,6 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void didEvaluateScript(const InspectorInstrumentationCookie&);
 
-    [Page, Inline=FastReturn]
-    void scriptsEnabled(Page*, bool isEnabled);
-
     [PageRuntime, Inline=FastReturn]
     void didCreateIsolatedContext([Keep] Frame*, ScriptState*, SecurityOrigin*);
 

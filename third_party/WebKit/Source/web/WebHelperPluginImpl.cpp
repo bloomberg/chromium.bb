@@ -208,7 +208,7 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     pageClients.chromeClient = m_chromeClient.get();
 
     m_page = adoptPtr(new Page(pageClients));
-    ASSERT(!m_page->settings().isScriptEnabled());
+    ASSERT(!m_page->settings().scriptEnabled());
     m_page->settings().setPluginsEnabled(true);
 
     m_webView->client()->initializeHelperPluginWebFrame(this);

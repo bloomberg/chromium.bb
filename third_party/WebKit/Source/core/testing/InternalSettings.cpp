@@ -32,6 +32,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "platform/ColorChooser.h"
 #include "platform/Supplementable.h"
 #include "platform/text/LocaleToScriptMapping.h"
@@ -153,6 +154,7 @@ void InternalSettings::resetToConsistentState()
 
     m_backup.restoreTo(settings());
     m_backup = Backup(settings());
+    m_backup.m_originalTextAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(page(), settings()->textAutosizingEnabled());
 
     InternalSettingsGenerated::resetToConsistentState();
 }

@@ -507,6 +507,9 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         }
         setNeedsRecalcStyleInAllFrames();
         break;
+    case SettingsDelegate::ScriptEnableChange:
+        m_inspectorController->scriptsEnabled(settings().scriptEnabled());
+        break;
     }
 }
 

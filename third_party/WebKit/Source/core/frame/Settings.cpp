@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/frame/Settings.h"
 
-#include "core/inspector/InspectorInstrumentation.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace WebCore {
@@ -65,7 +64,7 @@ static const bool defaultSelectTrailingWhitespaceEnabled = false;
 #endif
 
 Settings::Settings()
-    : m_deviceScaleAdjustment(1.0f)
+    : m_openGLMultisamplingEnabled(false)
 #if HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP
     , m_textAutosizingWindowSizeOverride(320, 480)
     , m_textAutosizingEnabled(true)
@@ -73,8 +72,6 @@ Settings::Settings()
     , m_textAutosizingEnabled(false)
 #endif
     SETTINGS_INITIALIZER_LIST
-    , m_isScriptEnabled(false)
-    , m_openGLMultisamplingEnabled(false)
 {
 }
 
@@ -96,14 +93,6 @@ void Settings::invalidate(SettingsDelegate::ChangeType changeType)
         m_delegate->settingsChanged(changeType);
 }
 
-// This is a total hack and should be removed.
-Page* Settings::pageOfShame() const
-{
-    if (!m_delegate)
-        return 0;
-    return m_delegate->page();
-}
-
 void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled)
 {
     if (m_textAutosizingEnabled == textAutosizingEnabled)
@@ -111,11 +100,6 @@ void Settings::setTextAutosizingEnabled(bool textAutosizingEnabled)
 
     m_textAutosizingEnabled = textAutosizingEnabled;
     invalidate(SettingsDelegate::StyleChange);
-}
-
-bool Settings::textAutosizingEnabled() const
-{
-    return InspectorInstrumentation::overrideTextAutosizing(pageOfShame(), m_textAutosizingEnabled);
 }
 
 // FIXME: Move to Settings.in once make_settings can understand IntSize.
@@ -126,23 +110,6 @@ void Settings::setTextAutosizingWindowSizeOverride(const IntSize& textAutosizing
 
     m_textAutosizingWindowSizeOverride = textAutosizingWindowSizeOverride;
     invalidate(SettingsDelegate::StyleChange);
-}
-
-void Settings::setDeviceScaleAdjustment(float deviceScaleAdjustment)
-{
-    m_deviceScaleAdjustment = deviceScaleAdjustment;
-    invalidate(SettingsDelegate::TextAutosizingChange);
-}
-
-float Settings::deviceScaleAdjustment() const
-{
-    return InspectorInstrumentation::overrideFontScaleFactor(pageOfShame(), m_deviceScaleAdjustment);
-}
-
-void Settings::setScriptEnabled(bool isScriptEnabled)
-{
-    m_isScriptEnabled = isScriptEnabled;
-    InspectorInstrumentation::scriptsEnabled(pageOfShame(), m_isScriptEnabled);
 }
 
 void Settings::setMockScrollbarsEnabled(bool flag)

@@ -97,6 +97,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/UniqueIdentifier.h"
@@ -2902,7 +2903,8 @@ void WebViewImpl::updateMainFrameLayoutSize()
     if (settings()->viewportEnabled()) {
         layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
 
-        if (page()->settings().textAutosizingEnabled() && layoutSize.width != view->layoutSize().width()) {
+        bool textAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(page(), page()->settings().textAutosizingEnabled());
+        if (textAutosizingEnabled && layoutSize.width != view->layoutSize().width()) {
             TextAutosizer* textAutosizer = page()->mainFrame()->document()->textAutosizer();
             if (textAutosizer)
                 textAutosizer->recalculateMultipliers();

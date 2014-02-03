@@ -247,7 +247,6 @@ private:
     void setTimerAlignmentInterval(double);
 
     // SettingsDelegate overrides.
-    virtual Page* page() OVERRIDE { return this; }
     virtual void settingsChanged(SettingsDelegate::ChangeType) OVERRIDE;
 
     const OwnPtr<AutoscrollController> m_autoscrollController;

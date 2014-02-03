@@ -453,4 +453,10 @@ void InspectorController::processGPUEvent(double timestamp, int phase, bool fore
         timelineAgent->processGPUEvent(InspectorTimelineAgent::GPUEvent(timestamp, phase, foreign, usedGPUMemoryBytes));
 }
 
+void InspectorController::scriptsEnabled(bool  enabled)
+{
+    if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
+        pageAgent->scriptsEnabled(enabled);
+}
+
 } // namespace WebCore
