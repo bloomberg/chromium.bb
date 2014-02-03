@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/gpu_command_buffer_traits.h"
-#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 
 namespace IPC {
 
@@ -59,5 +59,25 @@ void ParamTraits<gpu::Mailbox>::Log(const param_type& p, std::string* l) {
     *l += base::StringPrintf("%02x", p.name[i]);
 }
 
+void ParamTraits<gpu::MailboxHolder>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.mailbox);
+  WriteParam(m, p.texture_target);
+  WriteParam(m, p.sync_point);
+}
+
+bool ParamTraits<gpu::MailboxHolder>::Read(const Message* m,
+                                           PickleIterator* iter,
+                                           param_type* p) {
+  if (!ReadParam(m, iter, &p->mailbox) ||
+      !ReadParam(m, iter, &p->texture_target) ||
+      !ReadParam(m, iter, &p->sync_point))
+    return false;
+  return true;
+}
+
+void ParamTraits<gpu::MailboxHolder>::Log(const param_type& p, std::string* l) {
+  ParamTraits<gpu::Mailbox>::Log(p.mailbox, l);
+  *l += base::StringPrintf(":%04x@%d", p.texture_target, p.sync_point);
+}
 
 }  // namespace IPC

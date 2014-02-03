@@ -28,6 +28,10 @@ namespace base {
 class MessageLoopProxy;
 };
 
+namespace gpu {
+struct MailboxHolder;
+}
+
 namespace media {
 class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
@@ -156,7 +160,8 @@ class CONTENT_EXPORT RTCVideoDecoder
   void ResetInternal();
 
   // Tells VDA that a picture buffer can be recycled.
-  void ReusePictureBuffer(int64 picture_buffer_id, uint32 sync_point);
+  void ReusePictureBuffer(int64 picture_buffer_id,
+                          scoped_ptr<gpu::MailboxHolder> mailbox_holder);
 
   void DestroyTextures();
   void DestroyVDA();

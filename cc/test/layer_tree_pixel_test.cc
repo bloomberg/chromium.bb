@@ -244,7 +244,7 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  gl->ConsumeTextureCHROMIUM(texture_mailbox.target(), texture_mailbox.data());
+  gl->ConsumeTextureCHROMIUM(texture_mailbox.target(), texture_mailbox.name());
   gl->BindTexture(GL_TEXTURE_2D, 0);
 
   GLuint fbo = 0;
@@ -364,7 +364,7 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
   gl->BindTexture(GL_TEXTURE_2D, 0);
   uint32 sync_point = gl->InsertSyncPointCHROMIUM();
 
-  *texture_mailbox = TextureMailbox(mailbox, sync_point);
+  *texture_mailbox = TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point);
   *release_callback = SingleReleaseCallback::Create(
       base::Bind(&LayerTreePixelTest::ReleaseTextureMailbox,
                  base::Unretained(this),

@@ -100,7 +100,8 @@ namespace content {
 namespace {
 
 void MailboxReleaseCallback(scoped_ptr<base::SharedMemory> shared_memory,
-                            unsigned sync_point, bool lost_resource) {
+                            uint32 sync_point,
+                            bool lost_resource) {
   // NOTE: shared_memory will get released when we go out of scope.
 }
 
@@ -1155,8 +1156,10 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
       ConvertRectToPixel(current_device_scale_factor_, src_subrect);
   request->set_area(src_subrect_in_pixel);
   if (subscriber_texture.get()) {
-    request->SetTextureMailbox(cc::TextureMailbox(
-        subscriber_texture->mailbox(), subscriber_texture->sync_point()));
+    request->SetTextureMailbox(
+        cc::TextureMailbox(subscriber_texture->mailbox(),
+                           subscriber_texture->target(),
+                           subscriber_texture->sync_point()));
   }
   RequestCopyOfOutput(request.Pass());
 }
@@ -1915,7 +1918,7 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
   ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox.name(),
+      texture_mailbox.mailbox(),
       texture_mailbox.sync_point(),
       result->size(),
       gfx::Rect(result->size()),
@@ -2116,11 +2119,10 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
       callback,
       subscriber_texture,
       base::Passed(&release_callback));
-  yuv_readback_pipeline->ReadbackYUV(
-      texture_mailbox.name(),
-      texture_mailbox.sync_point(),
-      video_frame.get(),
-      finished_callback);
+  yuv_readback_pipeline->ReadbackYUV(texture_mailbox.mailbox(),
+                                     texture_mailbox.sync_point(),
+                                     video_frame.get(),
+                                     finished_callback);
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {

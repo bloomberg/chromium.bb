@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "content/child/child_thread.h"
 #include "content/renderer/media/native_handle_impl.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/common_video/interface/texture_video_frame.h"
@@ -420,14 +421,11 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
       base::checked_cast<uint64_t>(timestamp) * 1000 / 90);
   return media::VideoFrame::WrapNativeTexture(
-      make_scoped_ptr(new media::VideoFrame::MailboxHolder(
-          pb.texture_mailbox(),
-          0,  // sync_point
-          media::BindToCurrentLoop(
-              base::Bind(&RTCVideoDecoder::ReusePictureBuffer,
-                         weak_this_,
-                         picture.picture_buffer_id())))),
-      decoder_texture_target_,
+      make_scoped_ptr(new gpu::MailboxHolder(
+          pb.texture_mailbox(), decoder_texture_target_, 0)),
+      media::BindToCurrentLoop(base::Bind(&RTCVideoDecoder::ReusePictureBuffer,
+                                          weak_this_,
+                                          picture.picture_buffer_id())),
       pb.size(),
       visible_rect,
       natural_size,
@@ -435,8 +433,7 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
       base::Bind(&media::GpuVideoAcceleratorFactories::ReadPixels,
                  factories_,
                  pb.texture_id(),
-                 natural_size),
-      base::Closure());
+                 natural_size));
 }
 
 void RTCVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
@@ -640,8 +637,9 @@ void RTCVideoDecoder::ResetInternal() {
     vda_->Reset();
 }
 
-void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id,
-                                         uint32 sync_point) {
+void RTCVideoDecoder::ReusePictureBuffer(
+    int64 picture_buffer_id,
+    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
   DCHECK(vda_task_runner_->BelongsToCurrentThread());
   DVLOG(3) << "ReusePictureBuffer. id=" << picture_buffer_id;
 
@@ -665,7 +663,7 @@ void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id,
     return;
   }
 
-  factories_->WaitSyncPoint(sync_point);
+  factories_->WaitSyncPoint(mailbox_holder->sync_point);
 
   vda_->ReusePictureBuffer(picture_buffer_id);
 }

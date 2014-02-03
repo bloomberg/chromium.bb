@@ -4,7 +4,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 
 namespace content {
 
@@ -18,10 +18,10 @@ class OwnedMailbox : public base::RefCounted<OwnedMailbox>,
  public:
   explicit OwnedMailbox(GLHelper* gl_helper);
 
+  const gpu::Mailbox& mailbox() const { return mailbox_holder_.mailbox; }
   uint32 texture_id() const { return texture_id_; }
-  uint32 sync_point() const { return sync_point_; }
-  const gpu::Mailbox& mailbox() const { return mailbox_; }
-
+  uint32 target() const { return mailbox_holder_.texture_target; }
+  uint32 sync_point() const { return mailbox_holder_.sync_point; }
   void UpdateSyncPoint(uint32 sync_point);
   void Destroy();
 
@@ -35,8 +35,7 @@ class OwnedMailbox : public base::RefCounted<OwnedMailbox>,
   friend class base::RefCounted<OwnedMailbox>;
 
   uint32 texture_id_;
-  gpu::Mailbox mailbox_;
-  uint32 sync_point_;
+  gpu::MailboxHolder mailbox_holder_;
   GLHelper* gl_helper_;
 };
 

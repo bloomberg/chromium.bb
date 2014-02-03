@@ -36,6 +36,7 @@
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/filter_collection.h"
@@ -605,7 +606,9 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     return false;
   if (video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
-  if (video_frame->texture_target() != GL_TEXTURE_2D)
+
+  gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  if (mailbox_holder->texture_target != GL_TEXTURE_2D)
     return false;
 
   // Since this method changes which texture is bound to the TEXTURE_2D target,
@@ -620,15 +623,12 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     DCHECK_EQ(static_cast<GLuint>(bound_texture), texture);
   }
 
-  media::VideoFrame::MailboxHolder* mailbox_holder =
-      video_frame->texture_mailbox();
-
   uint32 source_texture = web_graphics_context->createTexture();
 
-  web_graphics_context->waitSyncPoint(mailbox_holder->sync_point());
+  web_graphics_context->waitSyncPoint(mailbox_holder->sync_point);
   web_graphics_context->bindTexture(GL_TEXTURE_2D, source_texture);
   web_graphics_context->consumeTextureCHROMIUM(GL_TEXTURE_2D,
-                                               mailbox_holder->mailbox().name);
+                                               mailbox_holder->mailbox.name);
 
   // The video is stored in a unmultiplied format, so premultiply
   // if necessary.

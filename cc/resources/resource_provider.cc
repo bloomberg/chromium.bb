@@ -542,7 +542,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     GLC(gl, gl->DeleteBuffers(1, &resource->gl_pixel_buffer_id));
   }
   if (resource->mailbox.IsValid() && resource->origin == Resource::External) {
-    GLuint sync_point = resource->mailbox.sync_point();
+    uint32 sync_point = resource->mailbox.sync_point();
     if (resource->mailbox.IsTexture()) {
       lost_resource |= lost_output_surface_;
       GLES2Interface* gl = ContextGL();
@@ -753,13 +753,13 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
     DCHECK(gl);
     if (resource->mailbox.sync_point()) {
       GLC(gl, gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point()));
-      resource->mailbox.ResetSyncPoint();
+      resource->mailbox.set_sync_point(0);
     }
     resource->gl_id = texture_id_allocator_->NextId();
     GLC(gl, gl->BindTexture(resource->target, resource->gl_id));
     GLC(gl,
-        gl->ConsumeTextureCHROMIUM(resource->target,
-                                   resource->mailbox.data()));
+        gl->ConsumeTextureCHROMIUM(resource->mailbox.target(),
+                                   resource->mailbox.name()));
   }
 
   resource->lock_for_read_count++;
@@ -1034,7 +1034,7 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
        ++it) {
     TransferableResource resource;
     TransferResource(gl, *it, &resource);
-    if (!resource.sync_point && !resource.is_software)
+    if (!resource.mailbox_holder.sync_point && !resource.is_software)
       need_sync_point = true;
     ++resources_.find(*it)->second.exported_count;
     list->push_back(resource);
@@ -1044,8 +1044,8 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
     for (TransferableResourceArray::iterator it = list->begin();
          it != list->end();
          ++it) {
-      if (!it->sync_point)
-        it->sync_point = sync_point;
+      if (!it->mailbox_holder.sync_point)
+        it->mailbox_holder.sync_point = sync_point;
     }
   }
 }
@@ -1069,9 +1069,10 @@ void ResourceProvider::ReceiveFromChild(
     scoped_ptr<SharedBitmap> bitmap;
     uint8_t* pixels = NULL;
     if (it->is_software) {
-      if (shared_bitmap_manager_)
-        bitmap = shared_bitmap_manager_->GetSharedBitmapFromId(it->size,
-                                                               it->mailbox);
+      if (shared_bitmap_manager_) {
+        bitmap = shared_bitmap_manager_->GetSharedBitmapFromId(
+            it->size, it->mailbox_holder.mailbox);
+      }
       if (bitmap)
         pixels = bitmap->pixels();
     }
@@ -1092,14 +1093,15 @@ void ResourceProvider::ReceiveFromChild(
     } else {
       resource = Resource(0,
                           it->size,
-                          it->target,
+                          it->mailbox_holder.texture_target,
                           it->filter,
                           0,
                           GL_CLAMP_TO_EDGE,
                           TextureUsageAny,
                           it->format);
-      resource.mailbox =
-          TextureMailbox(it->mailbox, it->target, it->sync_point);
+      resource.mailbox = TextureMailbox(it->mailbox_holder.mailbox,
+                                        it->mailbox_holder.texture_target,
+                                        it->mailbox_holder.sync_point);
     }
     resource.child_id = child;
     resource.origin = Resource::Delegated;
@@ -1211,10 +1213,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
         // Because CreateResourceFromExternalTexture() never be called,
         // when enabling delegated compositor.
         DCHECK(!resource->gl_id);
-        resource->mailbox =
-            TextureMailbox(resource->mailbox.name(),
-                           resource->mailbox.target(),
-                           returned.sync_point);
+        resource->mailbox.set_sync_point(returned.sync_point);
       }
     }
 
@@ -1268,41 +1267,47 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   DCHECK_EQ(source->wrap_mode, GL_CLAMP_TO_EDGE);
   resource->id = id;
   resource->format = source->format;
-  resource->target = source->target;
+  resource->mailbox_holder.texture_target = source->target;
   resource->filter = source->filter;
   resource->size = source->size;
 
   if (source->shared_bitmap) {
-    resource->mailbox = source->shared_bitmap->id();
+    resource->mailbox_holder.mailbox = source->shared_bitmap->id();
     resource->is_software = true;
   } else if (!source->mailbox.IsValid()) {
     LazyCreate(source);
     DCHECK(source->gl_id);
     DCHECK(source->origin == Resource::Internal);
-    GLC(gl, gl->BindTexture(resource->target, source->gl_id));
+    GLC(gl,
+        gl->BindTexture(resource->mailbox_holder.texture_target,
+                        source->gl_id));
     if (source->image_id) {
       DCHECK(source->dirty_image);
       BindImageForSampling(source);
     }
     // This is a resource allocated by the compositor, we need to produce it.
     // Don't set a sync point, the caller will do it.
-    GLC(gl, gl->GenMailboxCHROMIUM(resource->mailbox.name));
+    GLC(gl, gl->GenMailboxCHROMIUM(resource->mailbox_holder.mailbox.name));
     GLC(gl,
-        gl->ProduceTextureCHROMIUM(resource->target, resource->mailbox.name));
-    source->mailbox.SetName(resource->mailbox);
+        gl->ProduceTextureCHROMIUM(resource->mailbox_holder.texture_target,
+                                   resource->mailbox_holder.mailbox.name));
+    source->mailbox = TextureMailbox(resource->mailbox_holder);
   } else {
     DCHECK(source->mailbox.IsTexture());
     if (source->image_id && source->dirty_image) {
       DCHECK(source->gl_id);
       DCHECK(source->origin == Resource::Internal);
-      GLC(gl, gl->BindTexture(resource->target, source->gl_id));
+      GLC(gl,
+          gl->BindTexture(resource->mailbox_holder.texture_target,
+                          source->gl_id));
       BindImageForSampling(source);
     }
     // This is either an external resource, or a compositor resource that we
     // already exported. Make sure to forward the sync point that we were given.
-    resource->mailbox = source->mailbox.name();
-    resource->sync_point = source->mailbox.sync_point();
-    source->mailbox.ResetSyncPoint();
+    resource->mailbox_holder.mailbox = source->mailbox.mailbox();
+    resource->mailbox_holder.texture_target = source->mailbox.target();
+    resource->mailbox_holder.sync_point = source->mailbox.sync_point();
+    source->mailbox.set_sync_point(0);
   }
 }
 

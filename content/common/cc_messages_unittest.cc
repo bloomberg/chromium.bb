@@ -198,13 +198,15 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const TransferableResource& a, const TransferableResource& b) {
     EXPECT_EQ(a.id, b.id);
-    EXPECT_EQ(a.sync_point, b.sync_point);
     EXPECT_EQ(a.format, b.format);
-    EXPECT_EQ(a.target, b.target);
     EXPECT_EQ(a.filter, b.filter);
     EXPECT_EQ(a.size.ToString(), b.size.ToString());
-    for (size_t i = 0; i < arraysize(a.mailbox.name); ++i)
-      EXPECT_EQ(a.mailbox.name[i], b.mailbox.name[i]);
+    for (size_t i = 0; i < arraysize(a.mailbox_holder.mailbox.name); ++i) {
+      EXPECT_EQ(a.mailbox_holder.mailbox.name[i],
+                b.mailbox_holder.mailbox.name[i]);
+    }
+    EXPECT_EQ(a.mailbox_holder.texture_target, b.mailbox_holder.texture_target);
+    EXPECT_EQ(a.mailbox_holder.sync_point, b.mailbox_holder.sync_point);
   }
 };
 
@@ -655,21 +657,21 @@ TEST_F(CCMessagesTest, Resources) {
 
   TransferableResource arbitrary_resource1;
   arbitrary_resource1.id = 2178312;
-  arbitrary_resource1.sync_point = arbitrary_uint1;
   arbitrary_resource1.format = cc::RGBA_8888;
-  arbitrary_resource1.target = GL_TEXTURE_2D;
   arbitrary_resource1.filter = 53;
   arbitrary_resource1.size = gfx::Size(37189, 123123);
-  arbitrary_resource1.mailbox.SetName(arbitrary_mailbox1);
+  arbitrary_resource1.mailbox_holder.mailbox.SetName(arbitrary_mailbox1);
+  arbitrary_resource1.mailbox_holder.texture_target = GL_TEXTURE_2D;
+  arbitrary_resource1.mailbox_holder.sync_point = arbitrary_uint1;
 
   TransferableResource arbitrary_resource2;
   arbitrary_resource2.id = 789132;
-  arbitrary_resource2.sync_point = arbitrary_uint2;
   arbitrary_resource2.format = cc::RGBA_4444;
-  arbitrary_resource2.target = GL_TEXTURE_EXTERNAL_OES;
   arbitrary_resource2.filter = 47;
   arbitrary_resource2.size = gfx::Size(89123, 23789);
-  arbitrary_resource2.mailbox.SetName(arbitrary_mailbox2);
+  arbitrary_resource2.mailbox_holder.mailbox.SetName(arbitrary_mailbox2);
+  arbitrary_resource2.mailbox_holder.texture_target = GL_TEXTURE_EXTERNAL_OES;
+  arbitrary_resource2.mailbox_holder.sync_point = arbitrary_uint2;
 
   scoped_ptr<RenderPass> renderpass_in = RenderPass::Create();
   renderpass_in->SetNew(

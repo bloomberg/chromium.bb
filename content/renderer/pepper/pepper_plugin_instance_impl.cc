@@ -110,6 +110,7 @@
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1884,7 +1885,7 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 #endif
 }
 
-static void IgnoreCallback(unsigned, bool) {}
+static void IgnoreCallback(uint32, bool) {}
 
 void PepperPluginInstanceImpl::UpdateLayer() {
   if (!container_)
@@ -1924,7 +1925,7 @@ void PepperPluginInstanceImpl::UpdateLayer() {
       texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
       opaque = bound_graphics_3d_->IsOpaque();
       texture_layer_->SetTextureMailbox(
-          cc::TextureMailbox(mailbox, 0),
+          cc::TextureMailbox(mailbox, GL_TEXTURE_2D, 0),
           cc::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
       plugin_layer = texture_layer_;
     } else {

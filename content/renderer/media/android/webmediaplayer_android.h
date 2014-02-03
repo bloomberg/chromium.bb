@@ -35,12 +35,16 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace media {
-class MediaLog;
-}
-
 namespace blink {
 class WebFrame;
+}
+
+namespace gpu {
+struct MailboxHolder;
+}
+
+namespace media {
+class MediaLog;
 }
 
 namespace webkit {
@@ -227,7 +231,7 @@ class WebMediaPlayerAndroid
   static void OnReleaseRemotePlaybackTexture(
       const scoped_refptr<base::MessageLoopProxy>& main_loop,
       const base::WeakPtr<WebMediaPlayerAndroid>& player,
-      uint32 sync_point);
+      scoped_ptr<gpu::MailboxHolder> mailbox_holder);
 
  protected:
   // Helper method to update the playing state.

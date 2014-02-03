@@ -10,6 +10,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/buffers.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -211,11 +212,12 @@ TEST(VideoFrame, CheckFrameExtents) {
       VideoFrame::YV16,   3, 1, "9bb99ac3ff350644ebff4d28dc01b461");
 }
 
-static void TextureCallback(uint32* called_sync_point, uint32 sync_point) {
-  *called_sync_point = sync_point;
+static void TextureCallback(uint32* called_sync_point,
+                            scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
+  *called_sync_point = mailbox_holder->sync_point;
 }
 
-// Verify the TextureNoLongerNeededCallback is called when VideoFrame is
+// Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
 // destroyed with the original sync point.
 TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
   uint32 sync_point = 7;
@@ -223,24 +225,20 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new VideoFrame::MailboxHolder(
-            gpu::Mailbox(),
-            sync_point,
-            base::Bind(&TextureCallback, &called_sync_point))),
-        5,                                        // texture_target
-        gfx::Size(10, 10),                        // coded_size
-        gfx::Rect(10, 10),                        // visible_rect
-        gfx::Size(10, 10),                        // natural_size
-        base::TimeDelta(),                        // timestamp
-        base::Callback<void(const SkBitmap&)>(),  // read_pixels_cb
-        base::Closure());                         // no_longer_needed_cb
+        make_scoped_ptr(new gpu::MailboxHolder(gpu::Mailbox(), 5, sync_point)),
+        base::Bind(&TextureCallback, &called_sync_point),
+        gfx::Size(10, 10),                         // coded_size
+        gfx::Rect(10, 10),                         // visible_rect
+        gfx::Size(10, 10),                         // natural_size
+        base::TimeDelta(),                         // timestamp
+        base::Callback<void(const SkBitmap&)>());  // read_pixels_cb
 
     EXPECT_EQ(0u, called_sync_point);
   }
   EXPECT_EQ(sync_point, called_sync_point);
 }
 
-// Verify the TextureNoLongerNeededCallback is called when VideoFrame is
+// Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
 // destroyed with the new sync point, when the mailbox is accessed by a caller.
 TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
   uint32 called_sync_point = 0;
@@ -252,27 +250,23 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new VideoFrame::MailboxHolder(
-            mailbox,
-            sync_point,
-            base::Bind(&TextureCallback, &called_sync_point))),
-        target,
-        gfx::Size(10, 10),                        // coded_size
-        gfx::Rect(10, 10),                        // visible_rect
-        gfx::Size(10, 10),                        // natural_size
-        base::TimeDelta(),                        // timestamp
-        base::Callback<void(const SkBitmap&)>(),  // read_pixels_cb
-        base::Closure());                         // no_longer_needed_cb
+        make_scoped_ptr(new gpu::MailboxHolder(mailbox, target, sync_point)),
+        base::Bind(&TextureCallback, &called_sync_point),
+        gfx::Size(10, 10),                         // coded_size
+        gfx::Rect(10, 10),                         // visible_rect
+        gfx::Size(10, 10),                         // natural_size
+        base::TimeDelta(),                         // timestamp
+        base::Callback<void(const SkBitmap&)>());  // read_pixels_cb
 
-    VideoFrame::MailboxHolder* mailbox_holder = frame->texture_mailbox();
+    gpu::MailboxHolder* mailbox_holder = frame->mailbox_holder();
 
-    EXPECT_EQ(mailbox.name[0], mailbox_holder->mailbox().name[0]);
-    EXPECT_EQ(sync_point, mailbox_holder->sync_point());
-    EXPECT_EQ(target, frame->texture_target());
+    EXPECT_EQ(mailbox.name[0], mailbox_holder->mailbox.name[0]);
+    EXPECT_EQ(target, mailbox_holder->texture_target);
+    EXPECT_EQ(sync_point, mailbox_holder->sync_point);
 
     // Finish using the mailbox_holder and drop our reference.
     sync_point = 10;
-    mailbox_holder->Resync(sync_point);
+    mailbox_holder->sync_point = sync_point;
   }
   EXPECT_EQ(sync_point, called_sync_point);
 }

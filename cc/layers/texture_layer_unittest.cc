@@ -41,6 +41,12 @@ using ::testing::AnyNumber;
 namespace cc {
 namespace {
 
+gpu::Mailbox MailboxFromString(const std::string& string) {
+  gpu::Mailbox mailbox;
+  mailbox.SetName(reinterpret_cast<const int8*>(string.data()));
+  return mailbox;
+}
+
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
@@ -315,12 +321,14 @@ TEST_F(TextureLayerTest, RateLimiter) {
 
 class MockMailboxCallback {
  public:
-  MOCK_METHOD3(Release, void(const std::string& mailbox,
-                             unsigned sync_point,
-                             bool lost_resource));
-  MOCK_METHOD3(Release2, void(base::SharedMemory* shared_memory,
-                              unsigned sync_point,
-                              bool lost_resource));
+  MOCK_METHOD3(Release,
+               void(const std::string& mailbox,
+                    uint32 sync_point,
+                    bool lost_resource));
+  MOCK_METHOD3(Release2,
+               void(base::SharedMemory* shared_memory,
+                    uint32 sync_point,
+                    bool lost_resource));
 };
 
 struct CommonMailboxObjects {
@@ -336,13 +344,12 @@ struct CommonMailboxObjects {
     release_mailbox2_ = base::Bind(&MockMailboxCallback::Release,
                                    base::Unretained(&mock_callback_),
                                    mailbox_name2_);
-    gpu::Mailbox m1;
-    m1.SetName(reinterpret_cast<const int8*>(mailbox_name1_.data()));
-    mailbox1_ = TextureMailbox(m1, sync_point1_);
-    gpu::Mailbox m2;
-    m2.SetName(reinterpret_cast<const int8*>(mailbox_name2_.data()));
-    mailbox2_ = TextureMailbox(m2, sync_point2_);
-
+    const uint32 arbitrary_target1 = 1;
+    const uint32 arbitrary_target2 = 2;
+    mailbox1_ = TextureMailbox(
+        MailboxFromString(mailbox_name1_), arbitrary_target1, sync_point1_);
+    mailbox2_ = TextureMailbox(
+        MailboxFromString(mailbox_name2_), arbitrary_target2, sync_point2_);
     gfx::Size size(128, 128);
     EXPECT_TRUE(shared_memory_->CreateAndMapAnonymous(4 * size.GetArea()));
     release_mailbox3_ = base::Bind(&MockMailboxCallback::Release2,
@@ -360,14 +367,14 @@ struct CommonMailboxObjects {
   TextureMailbox mailbox1_;
   TextureMailbox mailbox2_;
   TextureMailbox mailbox3_;
-  unsigned sync_point1_;
-  unsigned sync_point2_;
+  uint32 sync_point1_;
+  uint32 sync_point2_;
   scoped_ptr<base::SharedMemory> shared_memory_;
 };
 
-class TestMailboxHolder : public TextureLayer::MailboxHolder {
+class TestMailboxHolder : public TextureLayer::TextureMailboxHolder {
  public:
-  using TextureLayer::MailboxHolder::Create;
+  using TextureLayer::TextureMailboxHolder::Create;
 
  protected:
   virtual ~TestMailboxHolder() {}
@@ -754,7 +761,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         commit_count_(0) {}
 
   // Make sure callback is received on main and doesn't block the impl thread.
-  void ReleaseCallback(unsigned sync_point, bool lost_resource) {
+  void ReleaseCallback(uint32 sync_point, bool lost_resource) {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
     EXPECT_FALSE(lost_resource);
     ++callback_count_;
@@ -762,12 +769,14 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
 
   void SetMailbox(char mailbox_char) {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
-    TextureMailbox mailbox(std::string(64, mailbox_char));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(
             &TextureLayerImplWithMailboxThreadedCallback::ReleaseCallback,
             base::Unretained(this)));
-    layer_->SetTextureMailbox(mailbox, callback.Pass());
+    layer_->SetTextureMailbox(
+        TextureMailbox(
+            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        callback.Pass());
   }
 
   virtual void BeginTest() OVERRIDE {
@@ -977,14 +986,16 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
  protected:
   TextureLayerMailboxIsActivatedDuringCommit() : activate_count_(0) {}
 
-  static void ReleaseCallback(unsigned sync_point, bool lost_resource) {}
+  static void ReleaseCallback(uint32 sync_point, bool lost_resource) {}
 
   void SetMailbox(char mailbox_char) {
-    TextureMailbox mailbox(std::string(64, mailbox_char));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(
             &TextureLayerMailboxIsActivatedDuringCommit::ReleaseCallback));
-    layer_->SetTextureMailbox(mailbox, callback.Pass());
+    layer_->SetTextureMailbox(
+        TextureMailbox(
+            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        callback.Pass());
   }
 
   virtual void BeginTest() OVERRIDE {
@@ -1620,22 +1631,23 @@ class TextureLayerNoExtraCommitForMailboxTest
     return 0;
   }
   virtual bool PrepareTextureMailbox(
-      TextureMailbox* mailbox,
+      TextureMailbox* texture_mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE {
     if (layer_tree_host()->source_frame_number() == 1) {
-      *mailbox = TextureMailbox();
+      *texture_mailbox = TextureMailbox();
       return true;
     }
 
-    *mailbox = TextureMailbox(std::string(64, '1'));
+    *texture_mailbox = TextureMailbox(
+        MailboxFromString(std::string(64, '1')), GL_TEXTURE_2D, 0);
     *release_callback = SingleReleaseCallback::Create(
         base::Bind(&TextureLayerNoExtraCommitForMailboxTest::MailboxReleased,
                    base::Unretained(this)));
     return true;
   }
 
-  void MailboxReleased(unsigned sync_point, bool lost_resource) {
+  void MailboxReleased(uint32 sync_point, bool lost_resource) {
     EXPECT_EQ(2, layer_tree_host()->source_frame_number());
     EndTest();
   }
@@ -1739,10 +1751,11 @@ class TextureLayerChangeInvisibleMailboxTest
   }
 
   TextureMailbox MakeMailbox(char name) {
-    return TextureMailbox(std::string(64, name));
+    return TextureMailbox(
+        MailboxFromString(std::string(64, name)), GL_TEXTURE_2D, 0);
   }
 
-  void MailboxReleased(unsigned sync_point, bool lost_resource) {
+  void MailboxReleased(uint32 sync_point, bool lost_resource) {
     ++mailbox_returned_;
   }
 
@@ -1872,7 +1885,8 @@ class TextureLayerReleaseResourcesBase
       TextureMailbox* mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE {
-    *mailbox = TextureMailbox(std::string(64, '1'));
+    *mailbox = TextureMailbox(
+        MailboxFromString(std::string(64, '1')), GL_TEXTURE_2D, 0);
     *release_callback = SingleReleaseCallback::Create(
         base::Bind(&TextureLayerReleaseResourcesBase::MailboxReleased,
                    base::Unretained(this)));
@@ -2014,7 +2028,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(TextureLayerLostContextTest);
 
 class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
  public:
-  void ReleaseCallback(unsigned sync_point, bool lost_resource) {
+  void ReleaseCallback(uint32 sync_point, bool lost_resource) {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
     EXPECT_FALSE(lost_resource);
     ++callback_count_;
@@ -2023,12 +2037,14 @@ class TextureLayerWithMailboxMainThreadDeleted : public LayerTreeTest {
 
   void SetMailbox(char mailbox_char) {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
-    TextureMailbox mailbox(std::string(64, mailbox_char));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(
             &TextureLayerWithMailboxMainThreadDeleted::ReleaseCallback,
             base::Unretained(this)));
-    layer_->SetTextureMailbox(mailbox, callback.Pass());
+    layer_->SetTextureMailbox(
+        TextureMailbox(
+            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        callback.Pass());
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -2086,7 +2102,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 
 class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
  public:
-  void ReleaseCallback(unsigned sync_point, bool lost_resource) {
+  void ReleaseCallback(uint32 sync_point, bool lost_resource) {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
     EXPECT_FALSE(lost_resource);
     ++callback_count_;
@@ -2095,12 +2111,14 @@ class TextureLayerWithMailboxImplThreadDeleted : public LayerTreeTest {
 
   void SetMailbox(char mailbox_char) {
     EXPECT_EQ(true, main_thread_.CalledOnValidThread());
-    TextureMailbox mailbox(std::string(64, mailbox_char));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(
             &TextureLayerWithMailboxImplThreadDeleted::ReleaseCallback,
             base::Unretained(this)));
-    layer_->SetTextureMailbox(mailbox, callback.Pass());
+    layer_->SetTextureMailbox(
+        TextureMailbox(
+            MailboxFromString(std::string(64, mailbox_char)), GL_TEXTURE_2D, 0),
+        callback.Pass());
   }
 
   virtual void SetupTree() OVERRIDE {

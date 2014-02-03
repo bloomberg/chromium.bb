@@ -20,7 +20,7 @@ SingleReleaseCallback::~SingleReleaseCallback() {
       << "SingleReleaseCallback was never run.";
 }
 
-void SingleReleaseCallback::Run(unsigned sync_point, bool is_lost) {
+void SingleReleaseCallback::Run(uint32 sync_point, bool is_lost) {
   DCHECK(!has_been_run_) << "SingleReleaseCallback was run more than once.";
   has_been_run_ = true;
   callback_.Run(sync_point, is_lost);

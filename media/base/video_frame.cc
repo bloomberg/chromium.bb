@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/strings/string_piece.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -91,24 +92,22 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
-    scoped_ptr<MailboxHolder> mailbox_holder,
-    uint32 texture_target,
+    scoped_ptr<gpu::MailboxHolder> mailbox_holder,
+    const ReleaseMailboxCB& mailbox_holder_release_cb,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp,
-    const ReadPixelsCB& read_pixels_cb,
-    const base::Closure& no_longer_needed_cb) {
+    const ReadPixelsCB& read_pixels_cb) {
   scoped_refptr<VideoFrame> frame(new VideoFrame(NATIVE_TEXTURE,
                                                  coded_size,
                                                  visible_rect,
                                                  natural_size,
                                                  timestamp,
                                                  false));
-  frame->texture_mailbox_holder_ = mailbox_holder.Pass();
-  frame->texture_target_ = texture_target;
+  frame->mailbox_holder_ = mailbox_holder.Pass();
+  frame->mailbox_holder_release_cb_ = mailbox_holder_release_cb;
   frame->read_pixels_cb_ = read_pixels_cb;
-  frame->no_longer_needed_cb_ = no_longer_needed_cb;
 
   return frame;
 }
@@ -408,7 +407,6 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
       coded_size_(coded_size),
       visible_rect_(visible_rect),
       natural_size_(natural_size),
-      texture_target_(0),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
       timestamp_(timestamp),
       end_of_stream_(end_of_stream) {
@@ -417,6 +415,10 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
 }
 
 VideoFrame::~VideoFrame() {
+  if (!mailbox_holder_release_cb_.is_null()) {
+    base::ResetAndReturn(&mailbox_holder_release_cb_)
+        .Run(mailbox_holder_.Pass());
+  }
   if (!no_longer_needed_cb_.is_null())
     base::ResetAndReturn(&no_longer_needed_cb_).Run();
 }
@@ -487,14 +489,9 @@ uint8* VideoFrame::data(size_t plane) const {
   return data_[plane];
 }
 
-VideoFrame::MailboxHolder* VideoFrame::texture_mailbox() const {
+gpu::MailboxHolder* VideoFrame::mailbox_holder() const {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
-  return texture_mailbox_holder_.get();
-}
-
-uint32 VideoFrame::texture_target() const {
-  DCHECK_EQ(format_, NATIVE_TEXTURE);
-  return texture_target_;
+  return mailbox_holder_.get();
 }
 
 base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
@@ -511,19 +508,6 @@ void VideoFrame::HashFrameForTesting(base::MD5Context* context) {
           row_bytes(plane)));
     }
   }
-}
-
-VideoFrame::MailboxHolder::MailboxHolder(
-    const gpu::Mailbox& mailbox,
-    unsigned sync_point,
-    const TextureNoLongerNeededCallback& release_callback)
-    : mailbox_(mailbox),
-      sync_point_(sync_point),
-      release_callback_(release_callback) {}
-
-VideoFrame::MailboxHolder::~MailboxHolder() {
-  if (!release_callback_.is_null())
-    release_callback_.Run(sync_point_);
 }
 
 }  // namespace media

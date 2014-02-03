@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {
@@ -255,11 +256,11 @@ class CONTENT_EXPORT GLHelper {
   // Wait for the sync point before executing further GL commands.
   void WaitSyncPoint(uint32 sync_point);
 
-  // Creates a mailbox that is attached to the given texture id, and a sync
-  // point to wait on before using the mailbox. Returns an empty mailbox on
-  // failure.
+  // Creates a mailbox holder that is attached to the given texture id, with a
+  // sync point to wait on before using the mailbox. Returns a holder with an
+  // empty mailbox on failure.
   // Note the texture is assumed to be GL_TEXTURE_2D.
-  gpu::Mailbox ProduceMailboxFromTexture(GLuint texture_id, uint32* sync_point);
+  gpu::MailboxHolder ProduceMailboxHolderFromTexture(GLuint texture_id);
 
   // Creates a texture and consumes a mailbox into it. Returns 0 on failure.
   // Note the mailbox is assumed to be GL_TEXTURE_2D.

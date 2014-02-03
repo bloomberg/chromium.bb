@@ -1430,7 +1430,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   ignore_result(scoped_callback_runner.Release());
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox.name(),
+      texture_mailbox.mailbox(),
       texture_mailbox.sync_point(),
       result->size(),
       gfx::Rect(result->size()),

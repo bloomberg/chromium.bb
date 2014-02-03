@@ -343,9 +343,15 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
 
   gfx::Point cursor_position_in_frame = UpdateCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
-      texture_mailbox.name(), texture_mailbox.sync_point(), video_frame.get(),
-      base::Bind(&CopyOutputFinishedForVideo, start_time, capture_frame_cb,
-                 video_frame, scaled_cursor_bitmap_, cursor_position_in_frame,
+      texture_mailbox.mailbox(),
+      texture_mailbox.sync_point(),
+      video_frame.get(),
+      base::Bind(&CopyOutputFinishedForVideo,
+                 start_time,
+                 capture_frame_cb,
+                 video_frame,
+                 scaled_cursor_bitmap_,
+                 cursor_position_in_frame,
                  base::Passed(&release_callback)));
 }
 
