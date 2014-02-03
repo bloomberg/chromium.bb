@@ -43,12 +43,6 @@ class CatCommand(SubCommand):
     json_root = OrderedDict()
     json_root['version'] = 1
     json_root['run_id'] = None
-    for dump in dumps:
-      if json_root['run_id'] and json_root['run_id'] != dump.run_id:
-        LOGGER.error('Inconsistent heap profile dumps.')
-        json_root['run_id'] = ''
-        break
-      json_root['run_id'] = dump.run_id
     json_root['roots'] = []
     for sorter in sorters:
       if sorter.root:
@@ -72,6 +66,12 @@ class CatCommand(SubCommand):
     json_root['snapshots'] = []
 
     for dump in dumps:
+      if json_root['run_id'] and json_root['run_id'] != dump.run_id:
+        LOGGER.error('Inconsistent heap profile dumps.')
+        json_root['run_id'] = ''
+      else:
+        json_root['run_id'] = dump.run_id
+
       LOGGER.info('Sorting a dump %s...' % dump.path)
       json_root['snapshots'].append(
           self._fill_snapshot(dump, bucket_set, sorters))

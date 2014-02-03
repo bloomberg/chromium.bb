@@ -299,9 +299,12 @@ class CSVCommand(PolicyCommands):
           ','.join(components), ',' * (max_components - len(components))))
 
       LOGGER.info('Applying a policy %s to...' % label)
-      for dump in dumps:
+      for index, dump in enumerate(dumps):
+        if index == 0:
+          first_dump_time = dump.time
         component_sizes = self._apply_policy(
-            dump, pfn_counts_dict, policy_set[label], bucket_set, dumps[0].time)
+            dump, pfn_counts_dict, policy_set[label], bucket_set,
+            first_dump_time)
         s = []
         for c in components:
           if c in ('hour', 'minute', 'second'):
@@ -341,9 +344,12 @@ class JSONCommand(PolicyCommands):
       }
 
       LOGGER.info('Applying a policy %s to...' % label)
-      for dump in dumps:
+      for index, dump in enumerate(dumps):
+        if index == 0:
+          first_dump_time = dump.time
         component_sizes = self._apply_policy(
-            dump, pfn_counts_dict, policy_set[label], bucket_set, dumps[0].time)
+            dump, pfn_counts_dict, policy_set[label], bucket_set,
+            first_dump_time)
         component_sizes['dump_path'] = dump.path
         component_sizes['dump_time'] = datetime.datetime.fromtimestamp(
             dump.time).strftime('%Y-%m-%d %H:%M:%S')

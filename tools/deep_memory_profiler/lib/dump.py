@@ -407,28 +407,30 @@ class Dump(object):
 
 
 class DumpList(object):
-  """Represents a sequence of heap profile dumps."""
+  """Represents a sequence of heap profile dumps.
 
-  def __init__(self, dump_list):
-    self._dump_list = dump_list
+  Individual dumps are loaded into memory lazily as the sequence is accessed,
+  either while being iterated through or randomly accessed.  Loaded dumps are
+  not cached, meaning a newly loaded Dump object is returned every time an
+  element in the list is accessed.
+  """
+
+  def __init__(self, dump_path_list):
+    self._dump_path_list = dump_path_list
 
   @staticmethod
   def load(path_list):
-    LOGGER.info('Loading heap dump profiles.')
-    dump_list = []
-    for path in path_list:
-      dump_list.append(Dump.load(path, '  '))
-    return DumpList(dump_list)
+    return DumpList(path_list)
 
   def __len__(self):
-    return len(self._dump_list)
+    return len(self._dump_path_list)
 
   def __iter__(self):
-    for dump in self._dump_list:
-      yield dump
+    for dump in self._dump_path_list:
+      yield Dump.load(dump)
 
   def __getitem__(self, index):
-    return self._dump_list[index]
+    return Dump.load(self._dump_path_list[index])
 
 
 class ProcMapsEntryAttribute(ExclusiveRangeDict.RangeAttribute):
