@@ -25,6 +25,14 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   // Must be called before any other methods. (This method is not thread-safe.)
   void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
+  // Gets a dumb pointer to |message_pipe_|. This must be called under the
+  // |Dispatcher| lock (that it's a dumb pointer is okay since it's under lock).
+  // This is needed when sending handles across processes, where nontrivial,
+  // invasive work needs to be done.
+  MessagePipe* GetMessagePipeNoLock() const;
+  // Similarly for the port.
+  unsigned GetPortNoLock() const;
+
   virtual Type GetType() OVERRIDE;
 
  private:

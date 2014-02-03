@@ -6,9 +6,11 @@
 
 #include <string.h>
 
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/message_pipe_dispatcher.h"
 
 namespace mojo {
 namespace system {
@@ -63,7 +65,15 @@ MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
     const std::vector<Dispatcher*>* dispatchers) {
   DCHECK(!dispatchers || !dispatchers->empty());
 
-  MojoResult result = CanEnqueueDispatchers(dispatchers);
+  // No need to preflight if there are no dispatchers.
+  if (!dispatchers) {
+    EnqueueMessageInternal(message, NULL);
+    return MOJO_RESULT_OK;
+  }
+
+  std::vector<PreflightDispatcherInfo> preflight_dispatcher_infos;
+  MojoResult result = PreflightDispatchers(dispatchers,
+                                           &preflight_dispatcher_infos);
   if (result != MOJO_RESULT_OK) {
     message->Destroy();
     return result;
@@ -105,14 +115,68 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   paused_message_queue_.clear();
 }
 
-MojoResult ProxyMessagePipeEndpoint::CanEnqueueDispatchers(
-    const std::vector<Dispatcher*>* dispatchers) {
-  // TODO(vtl): Support sending handles over OS pipes.
-  if (dispatchers) {
-    NOTIMPLEMENTED();
-    return MOJO_RESULT_UNIMPLEMENTED;
+MojoResult ProxyMessagePipeEndpoint::PreflightDispatchers(
+    const std::vector<Dispatcher*>* dispatchers,
+    std::vector<PreflightDispatcherInfo>* preflight_dispatcher_infos) {
+  DCHECK(!dispatchers || !dispatchers->empty());
+  DCHECK(preflight_dispatcher_infos);
+  DCHECK(preflight_dispatcher_infos->empty());
+
+  // Size it to fit everything.
+  preflight_dispatcher_infos->resize(dispatchers->size());
+
+  // TODO(vtl): We'll begin with limited support for sending message pipe
+  // handles. We won't support:
+  //  - sending both handles (the |hash_set| below is to detect this case and
+  //    fail gracefully);
+  //  - sending a handle whose peer is remote.
+  base::hash_set<intptr_t> message_pipes;
+
+  for (size_t i = 0; i < dispatchers->size(); i++) {
+    Dispatcher* dispatcher = (*dispatchers)[i];
+    switch (dispatcher->GetType()) {
+      case Dispatcher::kTypeUnknown:
+        LOG(ERROR) << "Unknown dispatcher type";
+        return MOJO_RESULT_INTERNAL;
+
+      case Dispatcher::kTypeMessagePipe: {
+        MessagePipeDispatcher* mp_dispatcher =
+            static_cast<MessagePipeDispatcher*>(dispatcher);
+        (*preflight_dispatcher_infos)[i].message_pipe =
+            mp_dispatcher->GetMessagePipeNoLock();
+        DCHECK((*preflight_dispatcher_infos)[i].message_pipe);
+        (*preflight_dispatcher_infos)[i].port = mp_dispatcher->GetPortNoLock();
+
+        // Check for unsupported cases (see TODO above).
+        bool is_new_element = message_pipes.insert(reinterpret_cast<intptr_t>(
+            (*preflight_dispatcher_infos)[i].message_pipe)).second;
+        if (!is_new_element) {
+          NOTIMPLEMENTED()
+              << "Sending both sides of a message pipe not yet supported";
+          return MOJO_RESULT_UNIMPLEMENTED;
+        }
+        // TODO(vtl): Check that peer isn't remote (per above TODO).
+
+        break;
+      }
+
+      case Dispatcher::kTypeDataPipeProducer:
+        NOTIMPLEMENTED() << "Sending data pipe producers not yet supported";
+        return MOJO_RESULT_UNIMPLEMENTED;
+
+      case Dispatcher::kTypeDataPipeConsumer:
+        NOTIMPLEMENTED() << "Sending data pipe consumers not yet supported";
+        return MOJO_RESULT_UNIMPLEMENTED;
+
+      default:
+        LOG(ERROR) << "Invalid or unsupported dispatcher type";
+        return MOJO_RESULT_UNIMPLEMENTED;
+    }
   }
-  return MOJO_RESULT_OK;
+
+  // TODO(vtl): Support sending handles over OS pipes.
+  NOTIMPLEMENTED();
+  return MOJO_RESULT_UNIMPLEMENTED;
 }
 
 // Note: We may have to enqueue messages even when our (local) peer isn't open

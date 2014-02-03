@@ -27,6 +27,16 @@ void MessagePipeDispatcher::Init(scoped_refptr<MessagePipe> message_pipe,
   port_ = port;
 }
 
+MessagePipe* MessagePipeDispatcher::GetMessagePipeNoLock() const {
+  lock().AssertAcquired();
+  return message_pipe_.get();
+}
+
+unsigned MessagePipeDispatcher::GetPortNoLock() const {
+  lock().AssertAcquired();
+  return port_;
+}
+
 Dispatcher::Type MessagePipeDispatcher::GetType() {
   return kTypeMessagePipe;
 }
