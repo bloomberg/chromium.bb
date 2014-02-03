@@ -127,7 +127,7 @@ def GetParser():
   # Put options that control the mode of script into mutually exclusive group.
   mode = parser.add_mutually_exclusive_group(required=True)
   mode.add_argument('-c', '--compare', action='store',
-                    type=commandline.argparse.FileType('r'),
+                    type=commandline.argparse.FileType('rb'),
                     default=None, metavar='file_name',
                     help='Compare current config against a saved on disk '
                          'serialized (json) dump of a config.')
@@ -177,9 +177,7 @@ def main(argv):
         _DumpConfigJson(config)
     elif options.compare:
       # Load the previously saved build config for comparison.
-      with open(options.compare, 'rb') as f:
-        old_cfg = convert(json.load(f))
-
+      old_cfg = convert(json.load(options.compare))
       _CompareConfig(old_cfg, config)
 
   return 0

@@ -8,7 +8,6 @@
 
 import json
 import os
-import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
@@ -16,36 +15,93 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 
 from chromite.buildbot import constants
 from chromite.lib import cros_test_lib
+from chromite.scripts import cbuildbot_view_config
 
 
-class JsonDumpTest(cros_test_lib.TestCase):
+class JsonDumpTest(cros_test_lib.OutputTestCase):
   """Test the json dumping functionality of cbuildbot_view_config."""
 
   def setUp(self):
     bin_name = os.path.basename(__file__).rstrip('_unittest.py')
     self.bin_path = os.path.join(constants.CHROMITE_BIN_DIR, bin_name)
 
-  # TODO(build): Add test for compare functionality
   def testJSONDumpLoadable(self):
     """Make sure config export functionality works."""
     for args in (['--dump'], ['--dump', '--pretty']):
-      # TODO(build): Leverage cbuildbot_view_config.main() directly and
-      # capture output with cros_test_lib.OutputTestCase (or similar).
-      output = subprocess.Popen([self.bin_path] + args,
-                                stdout=subprocess.PIPE).communicate()[0]
-      configs = json.loads(output)
+      with self.OutputCapturer() as output:
+        cbuildbot_view_config.main(args)
+
+      configs = json.loads(output.GetStdout())
       self.assertFalse(not configs)
 
   def testJSONBuildbotDumpHasOrder(self):
     """Make sure config export functionality works."""
-    output = subprocess.Popen([self.bin_path, '--dump',
-                               '--for-buildbot'],
-                              stdout=subprocess.PIPE).communicate()[0]
-    configs = json.loads(output)
+    args = ['--dump', '--for-buildbot']
+    with self.OutputCapturer() as output:
+      cbuildbot_view_config.main(args)
+
+    configs = json.loads(output.GetStdout())
     for cfg in configs.itervalues():
       self.assertTrue(cfg['display_position'] is not None)
 
     self.assertFalse(not configs)
+
+
+class JsonCompareTest(cros_test_lib.TempDirTestCase,
+                      cros_test_lib.OutputTestCase):
+  """Test the json comparing functionality of cbuildbot_view_config."""
+
+  TARGET = 'x86-mario-paladin'
+  DUMPFILE = 'dump.json'
+
+  def _DumpTarget(self):
+    """Run cbuildbot_view_config.main with --dump to a temp file."""
+    path = os.path.join(self.tempdir, self.DUMPFILE)
+
+    # Call with --dump, capture output and save to path.
+    argv = ['--dump', self.TARGET]
+    with self.OutputCapturer() as dump_output:
+      self.assertEqual(0, cbuildbot_view_config.main(argv))
+
+    with open(path, 'w') as f:
+      f.write(dump_output.GetStdout())
+
+    return path
+
+  def testCompareSame(self):
+    """Run --compare with no config changes."""
+    path = self._DumpTarget()
+
+    # Run with --compare now.
+    argv = ['--compare', path, self.TARGET]
+    with self.OutputCapturer() as compare1_output:
+      self.assertEqual(0, cbuildbot_view_config.main(argv))
+
+    # Expect no output.
+    self.assertFalse(compare1_output.GetStdout().strip())
+    self.assertFalse(compare1_output.GetStderr().strip())
+
+  def testCompareDifferent(self):
+    """Run --compare with config changes."""
+    path = self._DumpTarget()
+
+    # Tweak the config value for TARGET and run comparison.
+    config = cbuildbot_view_config.cbuildbot_config.config
+    orig_name = config[self.TARGET]['name']
+    try:
+      config[self.TARGET]['name'] = 'FOO'
+
+      argv = ['--compare', path, self.TARGET]
+      with self.OutputCapturer() as compare2_output:
+        self.assertEqual(0, cbuildbot_view_config.main(argv))
+
+      # Expect output on stdout that mentions FOO.
+      self.assertTrue(compare2_output.GetStdout().strip())
+      self.assertFalse(compare2_output.GetStderr().strip())
+      self.assertTrue('FOO' in compare2_output.GetStdout())
+
+    finally:
+      config[self.TARGET]['name'] = orig_name
 
 
 if __name__ == '__main__':
