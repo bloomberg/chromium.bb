@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/password_manager/content_password_manager_driver.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -33,6 +34,7 @@ class PasswordManagerDelegateImpl
   friend class content::WebContentsUserData<PasswordManagerDelegateImpl>;
 
   content::WebContents* web_contents_;
+  ContentPasswordManagerDriver driver_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDelegateImpl);
 };

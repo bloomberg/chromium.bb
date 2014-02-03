@@ -16,21 +16,13 @@
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
-#include "components/autofill/content/common/autofill_messages.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_transition_types.h"
-#include "content/public/common/ssl_status.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/cert/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 
@@ -216,7 +208,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManagerDelegateImpl);
 
 PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents),
+      driver_(web_contents) {
 }
 
 PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
@@ -224,10 +217,7 @@ PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
 
 void PasswordManagerDelegateImpl::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
-  web_contents_->GetRenderViewHost()->Send(
-      new AutofillMsg_FillPasswordForm(
-          web_contents_->GetRenderViewHost()->GetRoutingID(),
-          form_data));
+  driver_.FillPasswordForm(form_data);
 }
 
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
@@ -245,12 +235,5 @@ Profile* PasswordManagerDelegateImpl::GetProfile() {
 }
 
 bool PasswordManagerDelegateImpl::DidLastPageLoadEncounterSSLErrors() {
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetActiveEntry();
-  if (!entry) {
-    NOTREACHED();
-    return false;
-  }
-
-  return net::IsCertStatusError(entry->GetSSL().cert_status);
+  return driver_.DidLastPageLoadEncounterSSLErrors();
 }
