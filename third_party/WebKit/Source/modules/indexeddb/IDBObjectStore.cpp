@@ -44,8 +44,9 @@
 #include "public/platform/WebIDBKey.h"
 #include "public/platform/WebIDBKeyRange.h"
 
-using blink::WebIDBDatabase;
 using blink::WebIDBCallbacks;
+using blink::WebIDBCursor;
+using blink::WebIDBDatabase;
 
 namespace WebCore {
 
@@ -424,7 +425,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
     if (exceptionState.hadException())
         return 0;
 
-    RefPtr<IDBRequest> indexRequest = openCursor(context, static_cast<IDBKeyRange*>(0), IndexedDB::CursorNext, WebIDBDatabase::PreemptiveTask);
+    RefPtr<IDBRequest> indexRequest = openCursor(context, static_cast<IDBKeyRange*>(0), blink::WebIDBCursor::Next, WebIDBDatabase::PreemptiveTask);
     indexRequest->preventPropagation();
 
     // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
@@ -523,7 +524,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, con
         return 0;
     }
 
-    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursor::Direction direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -534,7 +535,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, con
     return openCursor(context, keyRange, direction, WebIDBDatabase::NormalTask);
 }
 
-PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> range, IndexedDB::CursorDirection direction, WebIDBDatabase::TaskType taskType)
+PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> range, WebIDBCursor::Direction direction, WebIDBDatabase::TaskType taskType)
 {
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
@@ -559,7 +560,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openKeyCursor(ExecutionContext* context, 
         return 0;
     }
 
-    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursor::Direction direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 

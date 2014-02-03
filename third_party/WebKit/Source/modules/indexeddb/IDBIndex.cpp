@@ -37,8 +37,9 @@
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "public/platform/WebIDBKeyRange.h"
 
-using blink::WebIDBDatabase;
 using blink::WebIDBCallbacks;
+using blink::WebIDBCursor;
+using blink::WebIDBDatabase;
 
 namespace WebCore {
 
@@ -79,7 +80,7 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const Scr
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
-    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursor::Direction direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
@@ -90,7 +91,7 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const Scr
     return openCursor(context, keyRange.release(), direction);
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, IndexedDB::CursorDirection direction)
+PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, WebIDBCursor::Direction direction)
 {
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
@@ -138,7 +139,7 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const 
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
-    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    WebIDBCursor::Direction direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 

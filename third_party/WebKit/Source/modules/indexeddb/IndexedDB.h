@@ -30,19 +30,6 @@ namespace WebCore {
 
 namespace IndexedDB {
 
-enum TransactionMode {
-    TransactionReadOnly = 0,
-    TransactionReadWrite = 1,
-    TransactionVersionChange = 2
-};
-
-enum CursorDirection {
-    CursorNext = 0,
-    CursorNextNoDuplicate = 1,
-    CursorPrev = 2,
-    CursorPrevNoDuplicate = 3,
-};
-
 enum CursorType {
     CursorKeyAndValue = 0,
     CursorKeyOnly

@@ -39,9 +39,11 @@
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 #include "modules/indexeddb/IDBTracing.h"
 
+using blink::WebIDBDatabase;
+
 namespace WebCore {
 
-PassRefPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, IndexedDB::TransactionMode mode, IDBDatabase* db)
+PassRefPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBDatabase::TransactionMode mode, IDBDatabase* db)
 {
     IDBOpenDBRequest* openDBRequest = 0;
     RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, objectStoreNames, mode, db, openDBRequest, IDBDatabaseMetadata())));
@@ -51,7 +53,7 @@ PassRefPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int
 
 PassRefPtr<IDBTransaction> IDBTransaction::create(ExecutionContext* context, int64_t id, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
 {
-    RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, Vector<String>(), IndexedDB::TransactionVersionChange, db, openDBRequest, previousMetadata)));
+    RefPtr<IDBTransaction> transaction(adoptRef(new IDBTransaction(context, id, Vector<String>(), WebIDBDatabase::TransactionVersionChange, db, openDBRequest, previousMetadata)));
     transaction->suspendIfNeeded();
     return transaction.release();
 }
@@ -74,7 +76,7 @@ const AtomicString& IDBTransaction::modeVersionChange()
     return versionchange;
 }
 
-IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, IndexedDB::TransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
+IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, WebIDBDatabase::TransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
     : ActiveDOMObject(context)
     , m_id(id)
     , m_database(db)
@@ -87,7 +89,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vect
     , m_previousMetadata(previousMetadata)
 {
     ScriptWrappable::init(this);
-    if (mode == IndexedDB::TransactionVersionChange) {
+    if (mode == WebIDBDatabase::TransactionVersionChange) {
         // Not active until the callback.
         m_state = Inactive;
     }
@@ -294,30 +296,30 @@ bool IDBTransaction::hasPendingActivity() const
     return m_hasPendingActivity && !m_contextStopped;
 }
 
-IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
+WebIDBDatabase::TransactionMode IDBTransaction::stringToMode(const String& modeString, ExceptionState& exceptionState)
 {
     if (modeString.isNull()
         || modeString == IDBTransaction::modeReadOnly())
-        return IndexedDB::TransactionReadOnly;
+        return WebIDBDatabase::TransactionReadOnly;
     if (modeString == IDBTransaction::modeReadWrite())
-        return IndexedDB::TransactionReadWrite;
+        return WebIDBDatabase::TransactionReadWrite;
 
     exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
-    return IndexedDB::TransactionReadOnly;
+    return WebIDBDatabase::TransactionReadOnly;
 }
 
-const AtomicString& IDBTransaction::modeToString(IndexedDB::TransactionMode mode)
+const AtomicString& IDBTransaction::modeToString(WebIDBDatabase::TransactionMode mode)
 {
     switch (mode) {
-    case IndexedDB::TransactionReadOnly:
+    case WebIDBDatabase::TransactionReadOnly:
         return IDBTransaction::modeReadOnly();
         break;
 
-    case IndexedDB::TransactionReadWrite:
+    case WebIDBDatabase::TransactionReadWrite:
         return IDBTransaction::modeReadWrite();
         break;
 
-    case IndexedDB::TransactionVersionChange:
+    case WebIDBDatabase::TransactionVersionChange:
         return IDBTransaction::modeVersionChange();
         break;
     }

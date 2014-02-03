@@ -43,6 +43,8 @@
 
 using namespace WebCore;
 
+using blink::WebIDBDatabase;
+
 namespace {
 
 class IDBTransactionTest : public testing::Test {
@@ -96,7 +98,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
-    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, IndexedDB::TransactionReadOnly, db.get());
+    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, blink::WebIDBDatabase::TransactionReadOnly, db.get());
 
     // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
     EXPECT_EQ(3, transaction->refCount());
@@ -123,7 +125,7 @@ TEST_F(IDBTransactionTest, TransactionFinish)
 
     const int64_t transactionId = 1234;
     const Vector<String> transactionScope;
-    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, IndexedDB::TransactionReadOnly, db.get());
+    RefPtr<IDBTransaction> transaction = IDBTransaction::create(executionContext(), transactionId, transactionScope, blink::WebIDBDatabase::TransactionReadOnly, db.get());
 
     // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
     EXPECT_EQ(3, transaction->refCount());

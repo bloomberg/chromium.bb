@@ -269,7 +269,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
         return 0;
     }
 
-    IndexedDB::TransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
+    blink::WebIDBDatabase::TransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
     if (exceptionState.hadException())
         return 0;
 

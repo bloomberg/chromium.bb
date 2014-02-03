@@ -59,6 +59,7 @@
 #include "modules/indexeddb/IDBTransaction.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebIDBCursor.h"
 #include "wtf/Vector.h"
 
 using WebCore::TypeBuilder::Array;
@@ -506,9 +507,9 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IndexedDB::CursorNext);
+            idbRequest = idbIndex->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), blink::WebIDBCursor::Next);
         } else {
-            idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), IndexedDB::CursorNext);
+            idbRequest = idbObjectStore->openCursor(context(), PassRefPtr<IDBKeyRange>(m_idbKeyRange), blink::WebIDBCursor::Next);
         }
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }

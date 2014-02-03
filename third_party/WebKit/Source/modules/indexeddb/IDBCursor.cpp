@@ -41,11 +41,12 @@
 #include "public/platform/WebIDBKeyRange.h"
 #include <limits>
 
+using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 
 namespace WebCore {
 
-PassRefPtr<IDBCursor> IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+PassRefPtr<IDBCursor> IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return adoptRef(new IDBCursor(backend, direction, request, source, transaction));
 }
@@ -74,7 +75,7 @@ const AtomicString& IDBCursor::directionPrevUnique()
     return prevunique;
 }
 
-IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, WebIDBCursor::Direction direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : m_backend(backend)
     , m_request(request)
     , m_direction(direction)
@@ -219,7 +220,7 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> prim
 
     if (key) {
         ASSERT(m_key);
-        if (m_direction == IndexedDB::CursorNext || m_direction == IndexedDB::CursorNextNoDuplicate) {
+        if (m_direction == WebIDBCursor::Next || m_direction == WebIDBCursor::NextNoDuplicate) {
             const bool ok = m_key->isLessThan(key.get())
                 || (primaryKey && m_key->isEqual(key.get()) && m_primaryKey->isLessThan(primaryKey.get()));
             if (!ok) {
@@ -380,34 +381,34 @@ bool IDBCursor::isDeleted() const
     return m_source->idbIndex()->isDeleted();
 }
 
-IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
+WebIDBCursor::Direction IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
 {
     if (directionString.isNull() || directionString == IDBCursor::directionNext())
-        return IndexedDB::CursorNext;
+        return WebIDBCursor::Next;
     if (directionString == IDBCursor::directionNextUnique())
-        return IndexedDB::CursorNextNoDuplicate;
+        return WebIDBCursor::NextNoDuplicate;
     if (directionString == IDBCursor::directionPrev())
-        return IndexedDB::CursorPrev;
+        return WebIDBCursor::Prev;
     if (directionString == IDBCursor::directionPrevUnique())
-        return IndexedDB::CursorPrevNoDuplicate;
+        return WebIDBCursor::PrevNoDuplicate;
 
     exceptionState.throwTypeError("The direction provided ('" + directionString + "') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.");
-    return IndexedDB::CursorNext;
+    return WebIDBCursor::Next;
 }
 
 const AtomicString& IDBCursor::directionToString(unsigned short direction)
 {
     switch (direction) {
-    case IndexedDB::CursorNext:
+    case WebIDBCursor::Next:
         return IDBCursor::directionNext();
 
-    case IndexedDB::CursorNextNoDuplicate:
+    case WebIDBCursor::NextNoDuplicate:
         return IDBCursor::directionNextUnique();
 
-    case IndexedDB::CursorPrev:
+    case WebIDBCursor::Prev:
         return IDBCursor::directionPrev();
 
-    case IndexedDB::CursorPrevNoDuplicate:
+    case WebIDBCursor::PrevNoDuplicate:
         return IDBCursor::directionPrevUnique();
 
     default:

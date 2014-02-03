@@ -40,6 +40,8 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "platform/SharedBuffer.h"
 
+using blink::WebIDBCursor;
+
 namespace WebCore {
 
 PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBTransaction* transaction)
@@ -61,7 +63,7 @@ IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDB
     , m_source(source)
     , m_hasPendingActivity(true)
     , m_cursorType(IndexedDB::CursorKeyAndValue)
-    , m_cursorDirection(IndexedDB::CursorNext)
+    , m_cursorDirection(blink::WebIDBCursor::Next)
     , m_pendingCursor(0)
     , m_didFireUpgradeNeededEvent(false)
     , m_preventPropagation(false)
@@ -138,7 +140,7 @@ void IDBRequest::abort()
     m_requestAborted = true;
 }
 
-void IDBRequest::setCursorDetails(IndexedDB::CursorType cursorType, IndexedDB::CursorDirection direction)
+void IDBRequest::setCursorDetails(IndexedDB::CursorType cursorType, WebIDBCursor::Direction direction)
 {
     ASSERT(m_readyState == PENDING);
     ASSERT(!m_pendingCursor);

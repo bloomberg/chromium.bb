@@ -36,6 +36,7 @@
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -83,7 +84,7 @@ public:
     PassRefPtr<IDBRequest> put(blink::WebIDBDatabase::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, PassRefPtr<IDBKey>, ExceptionState&);
 
     // Used internally and by InspectorIndexedDBAgent:
-    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, IndexedDB::CursorDirection, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
+    PassRefPtr<IDBRequest> openCursor(ExecutionContext*, PassRefPtr<IDBKeyRange>, blink::WebIDBCursor::Direction, blink::WebIDBDatabase::TaskType = blink::WebIDBDatabase::NormalTask);
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const { return m_deleted; }

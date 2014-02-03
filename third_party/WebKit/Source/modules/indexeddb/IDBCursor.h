@@ -52,10 +52,10 @@ public:
     static const AtomicString& directionPrev();
     static const AtomicString& directionPrevUnique();
 
-    static IndexedDB::CursorDirection stringToDirection(const String& modeString, ExceptionState&);
+    static blink::WebIDBCursor::Direction stringToDirection(const String& modeString, ExceptionState&);
     static const AtomicString& directionToString(unsigned short mode);
 
-    static PassRefPtr<IDBCursor> create(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static PassRefPtr<IDBCursor> create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
 
     // Implement the IDL
@@ -93,7 +93,7 @@ public:
     }
 
 protected:
-    IDBCursor(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    IDBCursor(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
 
 private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore() const;
@@ -103,7 +103,7 @@ private:
 
     OwnPtr<blink::WebIDBCursor> m_backend;
     RefPtr<IDBRequest> m_request;
-    const IndexedDB::CursorDirection m_direction;
+    const blink::WebIDBCursor::Direction m_direction;
     RefPtr<IDBAny> m_source;
     RefPtr<IDBTransaction> m_transaction;
     bool m_gotValue;

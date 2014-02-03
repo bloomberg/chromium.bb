@@ -39,7 +39,7 @@ class IDBTransaction;
 
 class IDBCursorWithValue FINAL : public IDBCursor {
 public:
-    static PassRefPtr<IDBCursorWithValue> create(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static PassRefPtr<IDBCursorWithValue> create(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursorWithValue();
 
     // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via
@@ -49,7 +49,7 @@ public:
     virtual bool isCursorWithValue() const OVERRIDE { return true; }
 
 private:
-    IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor>, blink::WebIDBCursor::Direction, IDBRequest*, IDBAny* source, IDBTransaction*);
 };
 
 DEFINE_TYPE_CASTS(IDBCursorWithValue, IDBCursor, cursor, cursor->isCursorWithValue(), cursor.isCursorWithValue());

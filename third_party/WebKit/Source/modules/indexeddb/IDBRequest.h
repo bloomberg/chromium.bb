@@ -90,7 +90,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    void setCursorDetails(IndexedDB::CursorType, IndexedDB::CursorDirection);
+    void setCursorDetails(IndexedDB::CursorType, blink::WebIDBCursor::Direction);
     void setPendingCursor(PassRefPtr<IDBCursor>);
     void abort();
 
@@ -163,7 +163,7 @@ private:
 
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;
-    IndexedDB::CursorDirection m_cursorDirection;
+    blink::WebIDBCursor::Direction m_cursorDirection;
     // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
     RefPtr<IDBCursor> m_pendingCursor;
     // New state is not applied to the cursor object until the event is dispatched.
