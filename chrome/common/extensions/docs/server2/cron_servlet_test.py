@@ -120,6 +120,7 @@ class CronServletTest(unittest.TestCase):
             'manifest.json': '{}',
             'permissions.json': '{}',
             'strings.json': '{}',
+            'whats_new.json': '{}',
           },
         }
       }
