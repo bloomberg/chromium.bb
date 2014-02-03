@@ -571,7 +571,7 @@ sub parselicense($) {
 	$license = "SGI Free Software License B $license";
     }
 
-    if ($licensetext =~ /in the public domain/i) {
+    if ($licensetext =~ /(in|into) the public domain/i) {
 	$license = "Public domain $license";
     }
 
