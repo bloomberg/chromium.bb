@@ -176,22 +176,24 @@ void OneClickSigninBubbleView::Init() {
 void OneClickSigninBubbleView::InitBubbleContent(views::GridLayout* layout) {
   layout->set_minimum_size(gfx::Size(kMinBubbleWidth, 0));
 
-  // Add title message.
-  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_TITLE_BAR);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
-                views::GridLayout::USE_PREF, 0, 0);
-  {
-    layout->StartRow(0, COLUMN_SET_TITLE_BAR);
+  // If no error occurred, add title message.
+  if (error_message_.empty()) {
+    views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_TITLE_BAR);
+    cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+                  views::GridLayout::USE_PREF, 0, 0);
+    {
+      layout->StartRow(0, COLUMN_SET_TITLE_BAR);
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    views::Label* label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW),
-        rb.GetFontList(ui::ResourceBundle::MediumFont));
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->AddView(label);
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      views::Label* label = new views::Label(
+          l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW),
+          rb.GetFontList(ui::ResourceBundle::MediumFont));
+      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      layout->AddView(label);
+    }
+
+    layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
   }
-
-  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
 
   // Add main text description.
   layout->StartRow(0, COLUMN_SET_FILL_ALIGN);
@@ -281,7 +283,8 @@ void OneClickSigninBubbleView::InitButtons(views::GridLayout* layout) {
 
 void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
                                           views::LabelButton** undo_button) {
-  base::string16 ok_label =
+  base::string16 ok_label = !error_message_.empty() ?
+      l10n_util::GetStringUTF16(IDS_OK) :
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);
 
   *ok_button = new views::LabelButton(this, ok_label);

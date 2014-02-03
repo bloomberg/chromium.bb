@@ -21,6 +21,10 @@
 
 namespace {
 
+// The margin between the top edge of the border and the error message text in
+// the sign-in bubble, in the case of an error.
+const CGFloat kTopErrorMessageMargin = 12;
+
 // Shift the origin of |view|'s frame by the given amount in the
 // positive y direction (up).
 void ShiftOriginY(NSView* view, CGFloat amount) {
@@ -152,6 +156,14 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   }
 
   if (informativePlaceholderTextField_) {
+    if (!isSyncDialog_ && ([errorMessage_ length] != 0)) {
+      // Move up the "Learn more" origin in error case to account for the
+      // smaller bubble.
+      NSRect frame = [informativePlaceholderTextField_ frame];
+      frame = NSOffsetRect(frame, 0, NSHeight([titleTextField_ frame]));
+      [informativePlaceholderTextField_ setFrame:frame];
+    }
+
     ShiftOriginY(informativePlaceholderTextField_, totalYOffset);
     totalYOffset += [self initializeInformativeTextView];
   }
@@ -166,16 +178,30 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
       [GTMUILocalizerAndLayoutTweaker
           sizeToFitFixedWidthTextField:titleTextField_];
 
-  if (closeButton_)
-    ShiftOriginY(closeButton_, totalYOffset);
-
   NSSize delta = NSMakeSize(0.0, totalYOffset);
 
   if (isSyncDialog_) {
     [messageTextField_ setStringValue:l10n_util::GetNSStringWithFixup(
         IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW)];
   } else if ([errorMessage_ length] != 0) {
+    [titleTextField_ setHidden:YES];
     [messageTextField_ setStringValue:errorMessage_];
+
+    // Make the bubble less tall, as the title text will be hidden.
+    NSSize size = [[self view] frame].size;
+    size.height = size.height - NSHeight([titleTextField_ frame]);
+    [[self view] setFrameSize:size];
+
+    // Shift the message text up to where the title text used to be.
+    NSPoint origin = [titleTextField_ frame].origin;
+    [messageTextField_ setFrameOrigin:origin];
+    ShiftOriginY(messageTextField_, -kTopErrorMessageMargin);
+
+    // Use "OK" instead of "OK, got it" in the error case, and size the button
+    // accordingly.
+    [closeButton_ setTitle:l10n_util::GetNSStringWithFixup(
+        IDS_OK)];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:[closeButton_ superview]];
   }
 
   // Resize bubble and window to hold the controls.

@@ -81,6 +81,7 @@
 							</object>
 						</object>
 						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+						<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
 					</object>
 					<object class="NSTextField" id="183093009">
 						<reference key="NSNextResponder" ref="1005"/>
@@ -104,6 +105,7 @@
 							<reference key="NSTextColor" ref="309737032"/>
 						</object>
 						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+						<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
 					</object>
 					<object class="NSButton" id="622132191">
 						<reference key="NSNextResponder" ref="1005"/>
@@ -146,6 +148,7 @@
 							<reference key="NSTextColor" ref="309737032"/>
 						</object>
 						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+						<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
 					</object>
 					<object class="NSCustomView" id="363067414">
 						<reference key="NSNextResponder" ref="1005"/>
@@ -154,11 +157,10 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSButton" id="372230085">
 								<reference key="NSNextResponder" ref="363067414"/>
-								<int key="NSvFlags">268</int>
+								<int key="NSvFlags">289</int>
 								<string key="NSFrame">{{35, -6}, {72, 32}}</string>
 								<reference key="NSSuperview" ref="363067414"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSButtonCell" key="NSCell" id="433442515">
 									<int key="NSCellFlags">67108864</int>
@@ -254,6 +256,14 @@
 						<reference key="destination" ref="693971134"/>
 					</object>
 					<int key="connectionID">139</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">closeButton_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="372230085"/>
+					</object>
+					<int key="connectionID">140</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -480,7 +490,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">139</int>
+			<int key="maxID">140</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
