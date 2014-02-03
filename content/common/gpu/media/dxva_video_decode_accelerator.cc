@@ -433,6 +433,14 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
 bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   DCHECK(CalledOnValidThread());
 
+  // Not all versions of Windows 7 and later include Media Foundation DLLs.
+  // Instead of crashing while delay loading the DLL when calling MFStartup()
+  // below, probe whether we can successfully load the DLL now.
+  //
+  // See http://crbug.com/339678 for details.
+  HMODULE mfplat_dll = ::LoadLibrary(L"MFPlat.dll");
+  RETURN_ON_FAILURE(mfplat_dll, "MFPlat.dll is required for decoding", false);
+
   // TODO(ananta)
   // H264PROFILE_HIGH video decoding is janky at times. Needs more
   // investigation.
