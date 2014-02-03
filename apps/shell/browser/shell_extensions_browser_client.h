@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
-#define APPS_SHELL_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
+#ifndef APPS_SHELL_BROWSER_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
+#define APPS_SHELL_BROWSER_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -63,4 +63,4 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
 
 }  // namespace extensions
 
-#endif  // APPS_SHELL_SHELL_EXTENSIONS_BROWSER_CLIENT_H_
+#endif  // APPS_SHELL_BROWSER_SHELL_EXTENSIONS_BROWSER_CLIENT_H_

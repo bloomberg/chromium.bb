@@ -4,7 +4,7 @@
 
 #include "apps/shell/renderer/shell_content_renderer_client.h"
 
-#include "apps/shell/shell_extensions_client.h"
+#include "apps/shell/common/shell_extensions_client.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_thread.h"

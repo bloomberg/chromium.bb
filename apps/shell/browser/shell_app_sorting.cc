@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/shell_app_sorting.h"
+#include "apps/shell/browser/shell_app_sorting.h"
 
 #include "sync/api/string_ordinal.h"
 

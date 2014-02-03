@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_SHELL_BROWSER_CONTEXT_H_
-#define APPS_SHELL_SHELL_BROWSER_CONTEXT_H_
+#ifndef APPS_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_
+#define APPS_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_
 
 #include "base/compiler_specific.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -41,4 +41,4 @@ class ShellBrowserContext : public content::ShellBrowserContext {
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_SHELL_BROWSER_CONTEXT_H_
+#endif  // APPS_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_

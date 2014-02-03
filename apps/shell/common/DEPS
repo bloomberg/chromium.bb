@@ -1,0 +1,13 @@
+include_rules = [
+  # TODO(jamescook): Remove these. http://crbug.com/305404
+  # Chrome pieces for app_shell bring-up.
+  "+chrome/common/extensions/features/base_feature_provider.h",
+  "+chrome/common/extensions/permissions/chrome_api_permissions.h",
+
+  # Override apps/DEPS to be more selective about content includes.
+  "-content",
+  "+content/public/common",
+  "+content/public/test",
+
+  "+webkit/common/user_agent/user_agent_util.h",
+]

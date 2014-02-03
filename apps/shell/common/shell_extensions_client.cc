@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/shell_extensions_client.h"
+#include "apps/shell/common/shell_extensions_client.h"
 
 #include "base/logging.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"

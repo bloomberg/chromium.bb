@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/shell_browser_main_parts.h"
+#include "apps/shell/browser/shell_browser_main_parts.h"
 
-#include "apps/shell/shell_browser_context.h"
-#include "apps/shell/shell_extension_system.h"
-#include "apps/shell/shell_extensions_browser_client.h"
-#include "apps/shell/shell_extensions_client.h"
-#include "apps/shell/web_view_window.h"
+#include "apps/shell/browser/shell_browser_context.h"
+#include "apps/shell/browser/shell_extension_system.h"
+#include "apps/shell/browser/shell_extensions_browser_client.h"
+#include "apps/shell/browser/web_view_window.h"
+#include "apps/shell/common/shell_extensions_client.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"

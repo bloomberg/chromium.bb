@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_SHELL_CONTENT_CLIENT_H_
-#define APPS_SHELL_SHELL_CONTENT_CLIENT_H_
+#ifndef APPS_SHELL_COMMON_SHELL_CONTENT_CLIENT_H_
+#define APPS_SHELL_COMMON_SHELL_CONTENT_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "content/public/common/content_client.h"
@@ -30,4 +30,4 @@ class ShellContentClient : public content::ContentClient {
 
 }  // namespace apps
 
-#endif  // APPS_SHELL_SHELL_CONTENT_CLIENT_H_
+#endif  // APPS_SHELL_COMMON_SHELL_CONTENT_CLIENT_H_

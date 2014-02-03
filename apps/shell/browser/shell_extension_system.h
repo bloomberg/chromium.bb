@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_SHELL_SHELL_EXTENSION_SYSTEM_H_
-#define APPS_SHELL_SHELL_EXTENSION_SYSTEM_H_
+#ifndef APPS_SHELL_BROWSER_SHELL_EXTENSION_SYSTEM_H_
+#define APPS_SHELL_BROWSER_SHELL_EXTENSION_SYSTEM_H_
 
 #include <vector>
 
@@ -89,4 +89,4 @@ class ShellExtensionSystem : public ExtensionSystem {
 
 }  // namespace extensions
 
-#endif  // APPS_SHELL_SHELL_EXTENSION_SYSTEM_H_
+#endif  // APPS_SHELL_BROWSER_SHELL_EXTENSION_SYSTEM_H_

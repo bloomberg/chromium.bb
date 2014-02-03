@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/shell/shell_extensions_browser_client.h"
+#include "apps/shell/browser/shell_extensions_browser_client.h"
 
-#include "apps/shell/shell_app_sorting.h"
-#include "apps/shell/shell_extension_system.h"
+#include "apps/shell/browser/shell_app_sorting.h"
+#include "apps/shell/browser/shell_extension_system.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"

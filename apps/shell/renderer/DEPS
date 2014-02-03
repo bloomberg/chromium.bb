@@ -1,6 +1,6 @@
 include_rules = [
   # Only allow includes the renderer can use.
-  "-content/public/browser",
+  "-content",
   "+content/public/common",
   "+content/public/renderer",
   "+content/public/test",
