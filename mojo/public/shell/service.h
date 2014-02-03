@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojom/shell.h"
@@ -71,10 +72,8 @@ class ServiceFactory : public ServiceFactoryBase {
   }
 
   virtual ~ServiceFactory() {
-    for (typename ServiceList::iterator it = services_.begin();
-         it != services_.end(); ++it) {
-      delete *it;
-    }
+    while (!services_.empty())
+      delete services_.front();
   }
 
   virtual void AcceptConnection(ScopedMessagePipeHandle client_handle)

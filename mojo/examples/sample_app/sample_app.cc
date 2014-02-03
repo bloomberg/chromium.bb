@@ -67,7 +67,10 @@ class SampleApp : public ShellClient {
       viewport_->CreateGLES2Context(pipe.handle1.Pass());
     }
 
-    virtual ~NativeViewportClientImpl() {}
+    virtual ~NativeViewportClientImpl() {
+      // TODO(darin): Fix shutdown so we don't need to leak this.
+      MOJO_ALLOW_UNUSED GLES2ClientImpl* leaked = gles2_client_.release();
+    }
 
     virtual void OnCreated() MOJO_OVERRIDE {
     }
@@ -106,7 +109,7 @@ extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
 
   mojo::examples::SampleApp app(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
-  loop.Run();
 
+  loop.Run();
   return MOJO_RESULT_OK;
 }

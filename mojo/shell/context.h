@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_CONTEXT_H_
 #define MOJO_SHELL_CONTEXT_H_
 
+#include "mojo/shell/keep_alive.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/service_connector.h"
 #include "mojo/shell/storage.h"
@@ -28,6 +29,7 @@ class Context {
   Storage* storage() { return &storage_; }
   Loader* loader() { return &loader_; }
   ServiceConnector* service_connector() { return &service_connector_; }
+  KeepAliveCounter* keep_alive_counter() { return &keep_alive_counter_; }
 
 #if defined(OS_ANDROID)
   jobject activity() const { return activity_.obj(); }
@@ -44,6 +46,8 @@ class Context {
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;
 #endif  // defined(OS_ANDROID)
+
+  KeepAliveCounter keep_alive_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

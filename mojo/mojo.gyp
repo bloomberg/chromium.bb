@@ -321,6 +321,8 @@
         'shell/dynamic_service_loader.h',
         'shell/init.cc',
         'shell/init.h',
+        'shell/keep_alive.cc',
+        'shell/keep_alive.h',
         'shell/loader.cc',
         'shell/loader.h',
         'shell/network_delegate.cc',

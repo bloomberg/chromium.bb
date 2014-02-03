@@ -198,6 +198,7 @@ extern "C" MOJO_NATIVE_VIEWPORT_EXPORT MojoResult MojoMain(
   mojo::ServiceFactory<mojo::services::NativeViewportImpl,
                        mojo::shell::Context> app(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
+
   base::MessageLoop::current()->Run();
   return MOJO_RESULT_OK;
 }

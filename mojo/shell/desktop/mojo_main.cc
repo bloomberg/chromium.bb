@@ -24,6 +24,5 @@ int main(int argc, char** argv) {
   message_loop.PostTask(FROM_HERE, base::Bind(mojo::shell::Run, &context));
 
   message_loop.Run();
-
   return 0;
 }

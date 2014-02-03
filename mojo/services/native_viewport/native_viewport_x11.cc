@@ -32,9 +32,11 @@ class NativeViewportX11 : public NativeViewport,
   // Overridden from NativeViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
     XDisplay* display = gfx::GetXDisplay();
+
     XSetWindowAttributes swa;
     memset(&swa, 0, sizeof(swa));
     swa.override_redirect = False;
+
     bounds_ = bounds;
     window_ = XCreateWindow(
         display,
@@ -44,7 +46,12 @@ class NativeViewportX11 : public NativeViewport,
         CopyFromParent,  // depth
         InputOutput,
         CopyFromParent,  // visual
-        CWBackPixmap | CWOverrideRedirect, &swa);
+        CWBackPixmap | CWOverrideRedirect,
+        &swa);
+
+    atom_wm_protocols_ = XInternAtom(display, "WM_PROTOCOLS", 1);
+    atom_wm_delete_window_ = XInternAtom(display, "WM_DELETE_WINDOW", 1);
+    XSetWMProtocols(display, window_, &atom_wm_delete_window_, 1);
 
     base::MessagePumpX11::Current()->AddDispatcherForWindow(this, window_);
     base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
@@ -86,12 +93,24 @@ class NativeViewportX11 : public NativeViewport,
 
   // Overridden from base::MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE {
+    switch (event->type) {
+      case ClientMessage: {
+        if (event->xclient.message_type == atom_wm_protocols_) {
+          Atom protocol = static_cast<Atom>(event->xclient.data.l[0]);
+          if (protocol == atom_wm_delete_window_)
+            delegate_->OnDestroyed();
+        }
+        break;
+      }
+    }
     return true;
   }
 
   NativeViewportDelegate* delegate_;
   gfx::Rect bounds_;
   XID window_;
+  Atom atom_wm_protocols_;
+  Atom atom_wm_delete_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportX11);
 };

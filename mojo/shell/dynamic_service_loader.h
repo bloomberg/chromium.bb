@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/public/system/core_cpp.h"
+#include "mojo/shell/keep_alive.h"
 #include "mojo/shell/service_connector.h"
 #include "url/gurl.h"
 
@@ -24,9 +25,6 @@ class DynamicServiceLoader : public ServiceConnector::Loader {
   explicit DynamicServiceLoader(Context* context);
   virtual ~DynamicServiceLoader();
 
- private:
-  class LoadContext;
-
   // Initiates the dynamic load. If the url is a mojo: scheme then the name
   // specified will be modified to the platform's naming scheme. Also the
   // value specified to the --origin command line argument will be used as the
@@ -34,9 +32,15 @@ class DynamicServiceLoader : public ServiceConnector::Loader {
   virtual void Load(const GURL& url,
                     ScopedMessagePipeHandle service_handle) MOJO_OVERRIDE;
 
+ private:
+  class LoadContext;
+
+  void AppCompleted(const GURL& url);
+
   typedef std::map<GURL, LoadContext*> LoadContextMap;
   LoadContextMap url_to_load_context_;
   Context* context_;
+
   DISALLOW_COPY_AND_ASSIGN(DynamicServiceLoader);
 };
 

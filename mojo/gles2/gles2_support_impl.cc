@@ -54,7 +54,7 @@ void GLES2SupportImpl::Initialize(MojoAsyncWaiter* async_waiter) {
 }
 
 void GLES2SupportImpl::Terminate() {
-  DCHECK(!async_waiter_);
+  DCHECK(async_waiter_);
   async_waiter_ = NULL;
 }
 

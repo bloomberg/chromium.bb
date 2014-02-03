@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/shell/context.h"
+#include "mojo/shell/keep_alive.h"
 #include "mojo/shell/service_connector.h"
 #include "mojo/shell/switches.h"
 #include "url/gurl.h"
@@ -16,12 +17,13 @@ namespace mojo {
 namespace shell {
 
 void Run(Context* context) {
+  KeepAlive keep_alive(context);
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   CommandLine::StringVector args = command_line.GetArgs();
 
   if (args.empty()) {
     LOG(ERROR) << "No app path specified.";
-    base::MessageLoop::current()->Quit();
     return;
   }
 
@@ -30,13 +32,12 @@ void Run(Context* context) {
     GURL url(*it);
     if (url.scheme() == "mojo" && !command_line.HasSwitch(switches::kOrigin)) {
       LOG(ERROR) << "mojo: url passed with no --origin specified.";
-      base::MessageLoop::current()->Quit();
       return;
     }
     ScopedMessagePipeHandle no_handle;
     context->service_connector()->Connect(GURL(*it), no_handle.Pass());
   }
-  // TODO(davemoore): Currently we leak |service_manager|.
+  // TODO(davemoore): Currently we leak |service_connector|.
 }
 
 }  // namespace shell
