@@ -113,6 +113,10 @@ endif
 if HAVE_GIT_REPO
 src/git-version.h : $(top_srcdir)/.git/logs/HEAD
 	$(AM_V_GEN)echo "#define BUILD_ID \"$(shell git --git-dir=$(top_srcdir)/.git describe --always --dirty) $(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%s (%ci)')\"" > $@
+else
+src/git-version.h :
+	$(AM_V_GEN)echo "#define BUILD_ID \"unknown (not built from git or tarball)\"" > $@
+
 endif
 
 .FORCE :
