@@ -164,10 +164,29 @@ FileTransferController.prototype = {
     dataTransfer.setData('fs/sources', sourceURLs.join('\n'));
     dataTransfer.effectAllowed = effectAllowed;
     dataTransfer.setData('fs/effectallowed', effectAllowed);
+    dataTransfer.setData('fs/missingFileContents',
+                         !this.isAllSelectedFilesAvailable_());
 
     for (var i = 0; i < this.selectedFileObjects_.length; i++) {
       dataTransfer.items.add(this.selectedFileObjects_[i]);
     }
+  },
+
+  /**
+   * @this {FileTransferController}
+   * @return {Object.<string, string>} Drag and drop global data object.
+   */
+  getDragAndDropGlobalData_: function() {
+    if (window[DRAG_AND_DROP_GLOBAL_DATA])
+      return window[DRAG_AND_DROP_GLOBAL_DATA];
+
+    // Dragging from other tabs/windows.
+    var views = chrome && chrome.extension ? chrome.extension.getViews() : [];
+    for (var i = 0; i < views.length; i++) {
+      if (views[i][DRAG_AND_DROP_GLOBAL_DATA])
+        return views[i][DRAG_AND_DROP_GLOBAL_DATA];
+    }
+    return null;
   },
 
   /**
@@ -183,18 +202,28 @@ FileTransferController.prototype = {
       return sourceRootURL;
 
     // |dataTransfer| in protected mode.
-    if (window[DRAG_AND_DROP_GLOBAL_DATA])
-      return window[DRAG_AND_DROP_GLOBAL_DATA].sourceRootURL;
-
-    // Dragging from other tabs/windows.
-    var views = chrome && chrome.extension ? chrome.extension.getViews() : [];
-    for (var i = 0; i < views.length; i++) {
-      if (views[i][DRAG_AND_DROP_GLOBAL_DATA])
-        return views[i][DRAG_AND_DROP_GLOBAL_DATA].sourceRootURL;
-    }
+    var globalData = this.getDragAndDropGlobalData_();
+    if (globalData)
+      return globalData.sourceRootURL;
 
     // Unknown source.
     return '';
+  },
+
+  /**
+   * @this {FileTransferController}
+   * @param {DataTransfer} dataTransfer DataTransfer object from the event.
+   * @return {boolean} Returns true when missing some file contents.
+   */
+  isMissingFileContents_: function(dataTransfer) {
+    var data = dataTransfer.getData('fs/missingFileContents');
+    if (!data) {
+      // |dataTransfer| in protected mode.
+      var globalData = this.getDragAndDropGlobalData_();
+      if (globalData)
+        data = globalData.missingFileContents;
+    }
+    return data === 'true';
   },
 
   /**
@@ -325,12 +354,16 @@ FileTransferController.prototype = {
     }
 
     var dt = event.dataTransfer;
-
-    if (this.canCopyOrDrag_(dt)) {
-      if (this.canCutOrDrag_(dt))
+    var canCopy = this.canCopyOrDrag_(dt);
+    var canCut = this.canCutOrDrag_(dt);
+    if (canCopy || canCut) {
+      if (canCopy && canCut) {
         this.cutOrCopy_(dt, 'copyMove');
-      else
+      } else if (canCopy) {
         this.cutOrCopy_(dt, 'copy');
+      } else {
+        this.cutOrCopy_(dt, 'move');
+      }
     } else {
       event.preventDefault();
       return;
@@ -339,12 +372,9 @@ FileTransferController.prototype = {
     var dragThumbnail = this.renderThumbnail_();
     dt.setDragImage(dragThumbnail, 1000, 1000);
 
-    // The volume must be available, since canCopyOrDrag() and/or canCutOrDrag()
-    // are called before this.
-    var volumeInfo = this.volumeManager_.getVolumeInfo(
-        this.currentDirectoryContentEntry);
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
-      sourceRootURL: volumeInfo.root.toURL()
+      sourceRootURL: dt.getData('fs/sourceRootURL'),
+      missingFileContents: dt.getData('fs/missingFileContents'),
     };
   },
 
@@ -584,10 +614,10 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @return {boolean} Returns true if some files are selected and all the file
-   *     on drive is available to be copied. Otherwise, returns false.
+   * @return {boolean} Returns true if all selected files are available to be
+   *     copied.
    */
-  canCopyOrDrag_: function() {
+  isAllSelectedFilesAvailable_: function() {
     if (!this.currentDirectoryContentEntry)
       return false;
     var volumeInfo = this.volumeManager_.getVolumeInfo(
@@ -600,7 +630,17 @@ FileTransferController.prototype = {
         isDriveOffline &&
         !this.allDriveFilesAvailable)
       return false;
-    return this.selectedEntries_.length > 0;
+    return true;
+  },
+
+  /**
+   * @this {FileTransferController}
+   * @return {boolean} Returns true if some files are selected and all the file
+   *     on drive is available to be copied. Otherwise, returns false.
+   */
+  canCopyOrDrag_: function() {
+    return this.isAllSelectedFilesAvailable_() &&
+        this.selectedEntries_.length > 0;
   },
 
   /**
@@ -629,11 +669,10 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @return {boolean} Returns true if some files are selected and all the file
-   *     on drive is available to be cut. Otherwise, returns false.
+   * @return {boolean} Returns true if the current directory is not read only.
    */
   canCutOrDrag_: function() {
-    return !this.readonly && this.canCopyOrDrag_();
+    return !this.readonly && this.selectedEntries_.length > 0;
   },
 
   /**
@@ -682,10 +721,18 @@ FileTransferController.prototype = {
   canPasteOrDrop_: function(dataTransfer, destinationEntry) {
     if (!destinationEntry)
       return false;
-    if (this.volumeManager_.getLocationInfo(destinationEntry).isReadOnly)
+    var destinationLocationInfo =
+        this.volumeManager_.getLocationInfo(destinationEntry);
+    if (destinationLocationInfo.isReadOnly)
       return false;
     if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') === -1)
       return false;  // Unsupported type of content.
+
+    // Copying between different sources requires all files to be available.
+    if (this.getSourceRootURL_(dataTransfer) !==
+        destinationLocationInfo.volumeInfo.root.toURL() &&
+        this.isMissingFileContents_(dataTransfer))
+      return false;
 
     return true;
   },
@@ -864,6 +911,8 @@ FileTransferController.prototype = {
       return 'none';
     if (destinationLocationInfo.isReadOnly)
       return 'none';
+    if (event.dataTransfer.effectAllowed === 'move')
+      return 'move';
     // TODO(mtomasz): Use volumeId instead of comparing roots, as soon as
     // volumeId gets unique.
     if (event.dataTransfer.effectAllowed === 'copyMove' &&
