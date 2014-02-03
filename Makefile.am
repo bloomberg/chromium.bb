@@ -547,6 +547,7 @@ weston_info_SOURCES =				\
 	shared/os-compatibility.c		\
 	shared/os-compatibility.h
 weston_info_LDADD = $(WESTON_INFO_LIBS)
+weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_desktop_shell_SOURCES = clients/desktop-shell.c
 nodist_weston_desktop_shell_SOURCES =			\
