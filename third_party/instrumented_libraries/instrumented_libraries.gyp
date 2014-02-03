@@ -66,6 +66,7 @@
         '<(_sanitizer_type)-libfontconfig1',
         '<(_sanitizer_type)-pulseaudio',
         '<(_sanitizer_type)-libasound2',
+        '<(_sanitizer_type)-libcups2',
       ],
       'conditions': [
         ['asan==1', {
@@ -298,6 +299,21 @@
       'library_name': 'libasound2',
       'dependencies=': [],
       'run_before_build': 'libasound2.sh',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libcups2',
+      'dependencies=': [],
+      'run_before_build': 'libcups2.sh',
+      'custom_configure_flags': [
+        # Do not touch system-wide directories.
+        '--with-rcdir=no',
+        '--with-xinetd=no',
+        '--with-dbusdir=no',
+        '--with-menudir=no',
+        '--with-icondir=no',
+        '--with-docdir=no'
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
