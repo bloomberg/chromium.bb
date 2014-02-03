@@ -3601,10 +3601,6 @@ sub GenerateImplementationIndexedPropertyAccessors
         # includes for return type even if custom
         my $returnType = $indexedGetterFunction->type;
         AddIncludesForType($returnType);
-        if (IsRefPtrType($returnType)) {
-            AddToImplIncludes("wtf/RefPtr.h");
-            AddToImplIncludes("wtf/GetPtr.h");
-        }
         my $hasCustomIndexedGetter = $indexedGetterFunction->extendedAttributes->{"Custom"};
         if (!$hasCustomIndexedGetter) {
             GenerateImplementationIndexedPropertyGetter($interface, $indexedGetterFunction);
@@ -3827,10 +3823,6 @@ sub GenerateImplementationNamedPropertyAccessors
         # includes for return type even if custom
         my $returnType = $namedGetterFunction->type;
         AddIncludesForType($returnType);
-        if (IsRefPtrType($returnType)) {
-            AddToImplIncludes("wtf/RefPtr.h");
-            AddToImplIncludes("wtf/GetPtr.h");
-        }
         my $hasCustomNamedGetter = HasCustomPropertyGetter($namedGetterFunction->extendedAttributes);
         if (!$hasCustomNamedGetter) {
             GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
@@ -4279,6 +4271,8 @@ sub GenerateImplementation
     AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("core/dom/Document.h");
     AddToImplIncludes("platform/TraceEvent.h");
+    AddToImplIncludes("wtf/GetPtr.h");
+    AddToImplIncludes("wtf/RefPtr.h");
 
     AddIncludesForType($interfaceName);
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
@@ -4961,6 +4955,8 @@ sub GenerateCallbackImplementation
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8Callback.h");
     AddToImplIncludes("wtf/Assertions.h");
+    AddToImplIncludes("wtf/GetPtr.h");
+    AddToImplIncludes("wtf/RefPtr.h");
 
     $implementation{nameSpaceWebCore}->add(<<END);
 ${v8ClassName}::${v8ClassName}(v8::Handle<v8::Function> callback, ExecutionContext* context)
@@ -5802,9 +5798,6 @@ sub NativeToJSValue
         return "${indent}v8SetReturnValue(${getCallbackInfo}, $returnValue);" if $isReturnValue;
         return "$indent$receiver $returnValue;";
     }
-
-    AddToImplIncludes("wtf/RefPtr.h");
-    AddToImplIncludes("wtf/GetPtr.h");
 
     if ($getScriptWrappable) {
         # FIXME: Use safe handles

@@ -44,6 +44,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "platform/TraceEvent.h"
+#include "wtf/GetPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

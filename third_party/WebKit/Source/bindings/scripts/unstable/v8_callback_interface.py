@@ -49,6 +49,8 @@ CALLBACK_INTERFACE_CPP_INCLUDES = set([
     'bindings/v8/V8Callback.h',
     'core/dom/ExecutionContext.h',
     'wtf/Assertions.h',
+    'wtf/GetPtr.h',  # FIXME: remove if can eliminate WTF::getPtr
+    'wtf/RefPtr.h',
 ])
 
 

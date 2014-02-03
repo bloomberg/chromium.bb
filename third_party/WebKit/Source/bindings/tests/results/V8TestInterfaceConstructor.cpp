@@ -43,6 +43,8 @@
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
+#include "wtf/GetPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

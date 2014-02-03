@@ -544,8 +544,6 @@ def v8_conversion_type(idl_type, extended_attributes):
         return idl_type
 
     # Pointer type
-    includes.add('wtf/GetPtr.h')  # FIXME: remove if can eliminate WTF::getPtr
-    includes.add('wtf/RefPtr.h')
     return 'DOMWrapper'
 
 

@@ -57,6 +57,8 @@ INTERFACE_CPP_INCLUDES = set([
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'platform/TraceEvent.h',
+    'wtf/GetPtr.h',  # FIXME: remove if can eliminate WTF::getPtr
+    'wtf/RefPtr.h',
 ])
 
 
