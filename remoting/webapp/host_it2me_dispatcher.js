@@ -38,6 +38,8 @@ remoting.HostIt2MeDispatcher = function() {
  *     invoke when the host state changes.
  * @param {function(boolean):void} onNatPolicyChanged Callback to invoke when
  *     the nat traversal policy changes.
+ * @param {function(string):void} logDebugInfo Callback allowing the plugin
+ *     to log messages to the debug log.
  * @param {string} xmppServerAddress XMPP server host name (or IP address) and
  *     port.
  * @param {boolean} xmppServerUseTls Whether to use TLS on connections to the
@@ -49,9 +51,11 @@ remoting.HostIt2MeDispatcher = function() {
  */
 remoting.HostIt2MeDispatcher.prototype.initAndConnect =
     function(createPluginCallback, email, authServiceWithToken, onStateChanged,
-             onNatPolicyChanged, xmppServerAddress, xmppServerUseTls,
-             directoryBotJid, onError) {
+             onNatPolicyChanged, logDebugInfo, xmppServerAddress,
+             xmppServerUseTls, directoryBotJid, onError) {
+  /** @type {remoting.HostIt2MeDispatcher} */
   var that = this;
+
   function onNativeMessagingStarted() {
     console.log('Native Messaging supported.');
     that.nativeMessagingHost_.connect(
@@ -69,7 +73,7 @@ remoting.HostIt2MeDispatcher.prototype.initAndConnect =
       that.npapiHost_.xmppServerUseTls = xmppServerUseTls;
       that.npapiHost_.directoryBotJid = directoryBotJid;
       that.npapiHost_.onStateChanged = onStateChanged;
-      that.npapiHost_.onNatTraversalPolicyChanged = onNatTraversalPolicyChanged;
+      that.npapiHost_.onNatTraversalPolicyChanged = onNatPolicyChanged;
       that.npapiHost_.logDebugInfo = logDebugInfo;
       that.npapiHost_.localize(chrome.i18n.getMessage);
       that.npapiHost_.connect(email, authServiceWithToken);

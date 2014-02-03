@@ -94,9 +94,8 @@ remoting.HostSession.prototype.createDispatcherAndConnect =
   };
 
   this.hostDispatcher_.initAndConnect(
-      createPluginForIt2Me,
-      email, 'oauth2:' + accessToken,
-      onStateChanged, onNatTraversalPolicyChanged,
+      createPluginForIt2Me, email, 'oauth2:' + accessToken,
+      onStateChanged, onNatTraversalPolicyChanged, logDebugInfo,
       remoting.settings.XMPP_SERVER_ADDRESS,
       remoting.settings.XMPP_SERVER_USE_TLS,
       remoting.settings.DIRECTORY_BOT_JID,

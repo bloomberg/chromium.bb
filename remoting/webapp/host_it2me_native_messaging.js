@@ -14,10 +14,6 @@ var remoting = remoting || {};
 
 /**
  * @constructor
- * @param {function(remoting.HostSession.State):void} onStateChanged Callback to
- *     invoke when the host state changes.
- * @param {function(boolean):void} onNatPolicyChanged Callback to invoke when
- *     the nat traversal policy changes.
  */
 remoting.HostIt2MeNativeMessaging = function() {
   /**
@@ -149,6 +145,7 @@ remoting.HostIt2MeNativeMessaging.prototype.postMessage_ =
  */
 remoting.HostIt2MeNativeMessaging.prototype.onIncomingMessage_ =
     function(message) {
+  /** @type {string} */
   var type = message['type'];
   if (!checkType_('type', type, 'string')) {
     this.onError_();
