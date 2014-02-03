@@ -35,6 +35,11 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
+namespace {
+// For breaking deep recursion.
+int g_depth = 0;
+}  // namespace
+
 namespace ipc_fuzzer {
 
 // Interface implemented by those who generate basic types.  The types all
@@ -345,16 +350,15 @@ struct GenerateTraits<Tuple5<A, B, C, D, E> > {
 template <class A>
 struct GenerateTraits<std::vector<A> > {
   static bool Generate(std::vector<A>* p, Generator* generator) {
-    static int depth = 0;
-    size_t count = ++depth > 3 ? 0 : RandInRange(20);
+    size_t count = ++g_depth > 3 ? 0 : RandInRange(20);
     p->resize(count);
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&p->at(i), generator)) {
-        --depth;
+        --g_depth;
         return false;
       }
     }
-    --depth;
+    --g_depth;
     return true;
   }
 };
@@ -362,17 +366,17 @@ struct GenerateTraits<std::vector<A> > {
 template <class A>
 struct GenerateTraits<std::set<A> > {
   static bool Generate(std::set<A>* p, Generator* generator) {
-    static int depth = 0;
-    size_t count = ++depth > 3 ? 0 : RandInRange(20);
+    static int g_depth = 0;
+    size_t count = ++g_depth > 3 ? 0 : RandInRange(20);
     A a;
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&a, generator)) {
-        --depth;
+        --g_depth;
         return false;
       }
       p->insert(a);
     }
-    --depth;
+    --g_depth;
     return true;
   }
 };
@@ -381,17 +385,17 @@ struct GenerateTraits<std::set<A> > {
 template <class A, class B>
 struct GenerateTraits<std::map<A, B> > {
   static bool Generate(std::map<A, B>* p, Generator* generator) {
-    static int depth = 0;
-    size_t count = ++depth > 3 ? 0 : RandInRange(20);
+    static int g_depth = 0;
+    size_t count = ++g_depth > 3 ? 0 : RandInRange(20);
     std::pair<A, B> place_holder;
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&place_holder, generator)) {
-        --depth;
+        --g_depth;
         return false;
       }
       p->insert(place_holder);
     }
-    --depth;
+    --g_depth;
     return true;
   }
 };
@@ -469,6 +473,134 @@ struct GenerateTraits<base::PlatformFileInfo> {
         GenerateParam(&p->last_modified, generator) &&
         GenerateParam(&p->last_accessed, generator) &&
         GenerateParam(&p->creation_time, generator);
+  }
+};
+
+
+template <>
+struct GenerateTraits<base::ListValue> {
+  static bool Generate(base::ListValue* p, Generator* generator) {
+    ++g_depth;
+    size_t list_length = g_depth > 3 ? 0 : RandInRange(8);
+    for (size_t index = 0; index < list_length; ++index) {
+      switch (RandInRange(8))
+      {
+        case base::Value::TYPE_BOOLEAN: {
+          bool tmp;
+          generator->GenerateBool(&tmp);
+          p->Set(index, new base::FundamentalValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_INTEGER: {
+          int tmp;
+          generator->GenerateInt(&tmp);
+          p->Set(index, new base::FundamentalValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_DOUBLE: {
+          double tmp;
+          generator->GenerateDouble(&tmp);
+          p->Set(index, new base::FundamentalValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_STRING: {
+          std::string tmp;
+          generator->GenerateString(&tmp);
+          p->Set(index, new base::StringValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_BINARY: {
+          char tmp[200];
+          size_t bin_length = RandInRange(sizeof(tmp));
+          generator->GenerateData(tmp, bin_length);
+          p->Set(index,
+                 base::BinaryValue::CreateWithCopiedBuffer(tmp, bin_length));
+          break;
+        }
+        case base::Value::TYPE_DICTIONARY: {
+          base::DictionaryValue* tmp = new base::DictionaryValue();
+          GenerateParam(tmp, generator);
+          p->Set(index, tmp);
+          break;
+        }
+        case base::Value::TYPE_LIST: {
+          base::ListValue* tmp = new base::ListValue();
+          GenerateParam(tmp, generator);
+          p->Set(index, tmp);
+          break;
+        }
+        case base::Value::TYPE_NULL:
+        default:
+          break;
+      }
+    }
+    --g_depth;
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<base::DictionaryValue> {
+  static bool Generate(base::DictionaryValue* p, Generator* generator) {
+    ++g_depth;
+    size_t dict_length = g_depth > 3 ? 0 : RandInRange(8);
+    for (size_t index = 0; index < dict_length; ++index) {
+      std::string property;
+      generator->GenerateString(&property);
+      switch (RandInRange(8))
+      {
+        case base::Value::TYPE_BOOLEAN: {
+          bool tmp;
+          generator->GenerateBool(&tmp);
+          p->SetWithoutPathExpansion(property, new base::FundamentalValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_INTEGER: {
+          int tmp;
+          generator->GenerateInt(&tmp);
+          p->SetWithoutPathExpansion(property, new base::FundamentalValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_DOUBLE: {
+          double tmp;
+          generator->GenerateDouble(&tmp);
+          p->SetWithoutPathExpansion(property, new base::FundamentalValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_STRING: {
+          std::string tmp;
+          generator->GenerateString(&tmp);
+          p->SetWithoutPathExpansion(property, new base::StringValue(tmp));
+          break;
+        }
+        case base::Value::TYPE_BINARY: {
+          char tmp[200];
+          size_t bin_length = RandInRange(sizeof(tmp));
+          generator->GenerateData(tmp, bin_length);
+          p->SetWithoutPathExpansion(
+              property,
+              base::BinaryValue::CreateWithCopiedBuffer(tmp, bin_length));
+          break;
+        }
+        case base::Value::TYPE_DICTIONARY: {
+          base::DictionaryValue* tmp = new base::DictionaryValue();
+          GenerateParam(tmp, generator);
+          p->SetWithoutPathExpansion(property, tmp);
+          break;
+        }
+        case base::Value::TYPE_LIST: {
+          base::ListValue* tmp = new base::ListValue();
+          GenerateParam(tmp, generator);
+          p->SetWithoutPathExpansion(property, tmp);
+          break;
+        }
+        case base::Value::TYPE_NULL:
+        default:
+          break;
+      }
+    }
+    --g_depth;
+    return true;
   }
 };
 
@@ -877,7 +1009,7 @@ int GenerateMain(int argc, char** argv) {
   }
   std::string output_file_name = args[0];
 
-  int message_count = 10000;
+  int message_count = 1000;
   if (cmd->HasSwitch(kCountSwitch))
     message_count = atoi(cmd->GetSwitchValueASCII(kCountSwitch).c_str());
 
