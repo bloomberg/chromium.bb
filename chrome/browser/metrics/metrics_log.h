@@ -18,14 +18,14 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "ui/gfx/size.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/metrics/perf_provider_chromeos.h"
-#endif
-
 class MetricsNetworkObserver;
 struct OmniboxLog;
 class PrefService;
 class PrefRegistrySimple;
+
+#if defined(OS_CHROMEOS)
+class MetricsLogChromeOS;
+#endif
 
 namespace base {
 class DictionaryValue;
@@ -33,10 +33,6 @@ class DictionaryValue;
 
 namespace content {
 struct WebPluginInfo;
-}
-
-namespace device {
-class BluetoothAdapter;
 }
 
 namespace tracked_objects {
@@ -145,6 +141,11 @@ class MetricsLog : public MetricsLogBase {
   virtual void GetFieldTrialIds(
       std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const;
 
+  // Exposed to allow dependency injection for tests.
+#if defined(OS_CHROMEOS)
+  scoped_ptr<MetricsLogChromeOS> metrics_log_chromeos_;
+#endif
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
 
@@ -176,31 +177,8 @@ class MetricsLog : public MetricsLogBase {
   // This is a no-op if called on a non-Windows platform.
   void WriteGoogleUpdateProto(const GoogleUpdateMetrics& google_update_metrics);
 
-  // Sets the Bluetooth Adapter instance used for the WriteBluetoothProto()
-  // call.
-  void SetBluetoothAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
-
-  // Writes info about paired Bluetooth devices on this system.
-  // This is a no-op if called on a non-Chrome OS platform.
-  virtual void WriteBluetoothProto(
-      metrics::SystemProfileProto::Hardware* hardware);
-
-#if defined(OS_CHROMEOS)
-  // Update the number of users logged into a multi-profile session.
-  // If the number of users change while the log is open, the call invalidates
-  // the user count value.
-  void UpdateMultiProfileUserCount();
-#endif
-
   // Observes network state to provide values for SystemProfile::Network.
   MetricsNetworkObserver network_observer_;
-
-#if defined(OS_CHROMEOS)
-  metrics::PerfProvider perf_provider_;
-#endif
-
-  // Bluetooth Adapter instance for collecting information about paired devices.
-  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;

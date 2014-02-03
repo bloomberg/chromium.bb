@@ -41,6 +41,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/metrics/metrics_log_chromeos.h"
 #endif  // OS_CHROMEOS
 
 using base::TimeDelta;
@@ -89,12 +90,31 @@ content::WebPluginInfo CreateFakePluginInfo(
 }
 #endif  // defined(ENABLE_PLUGINS)
 
+#if defined(OS_CHROMEOS)
+class TestMetricsLogChromeOS : public MetricsLogChromeOS {
+ public:
+  explicit TestMetricsLogChromeOS(
+      metrics::ChromeUserMetricsExtension* uma_proto)
+      : MetricsLogChromeOS(uma_proto) {
+  }
+
+ protected:
+  // Don't touch bluetooth information, as it won't be correctly initialized.
+  virtual void WriteBluetoothProto() OVERRIDE {
+  }
+};
+#endif  // OS_CHROMEOS
+
 class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id, int session_id)
       : MetricsLog(client_id, session_id),
         prefs_(&scoped_prefs_),
         brand_for_testing_(kBrandForTesting) {
+#if defined(OS_CHROMEOS)
+    metrics_log_chromeos_.reset(new TestMetricsLogChromeOS(
+        MetricsLog::uma_proto()));
+#endif  // OS_CHROMEOS
     chrome::RegisterLocalState(scoped_prefs_.registry());
     InitPrefs();
   }
@@ -106,6 +126,10 @@ class TestMetricsLog : public MetricsLog {
       : MetricsLog(client_id, session_id),
         prefs_(prefs),
         brand_for_testing_(kBrandForTesting) {
+#if defined(OS_CHROMEOS)
+    metrics_log_chromeos_.reset(new TestMetricsLogChromeOS(
+        MetricsLog::uma_proto()));
+#endif  // OS_CHROMEOS
     InitPrefs();
   }
   virtual ~TestMetricsLog() {}
@@ -155,10 +179,6 @@ class TestMetricsLog : public MetricsLog {
 
   virtual int GetScreenCount() const OVERRIDE {
     return kScreenCount;
-  }
-
-  virtual void WriteBluetoothProto(
-      metrics::SystemProfileProto::Hardware* hardware) OVERRIDE {
   }
 
   // Scoped PrefsService, which may not be used if |prefs_ != &scoped_prefs|.
