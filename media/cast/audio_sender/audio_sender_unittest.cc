@@ -84,8 +84,8 @@ class AudioSenderTest : public ::testing::Test {
         testing_clock_,
         transport_config,
         base::Bind(&UpdateCastTransportStatus),
-        task_runner_));
-    transport_sender_->InsertFakeTransportForTesting(&transport_);
+        task_runner_,
+        &transport_));
     audio_sender_.reset(new AudioSender(
         cast_environment_, audio_config_, transport_sender_.get()));
     task_runner_->RunTasks();

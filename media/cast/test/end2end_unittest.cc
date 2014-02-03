@@ -426,8 +426,8 @@ class End2EndTest : public ::testing::Test {
         testing_clock_,
         transport_config_,
         base::Bind(&UpdateCastTransportStatus),
-        transport_task_runner_));
-    transport_sender_->InsertFakeTransportForTesting(&sender_to_receiver_);
+        transport_task_runner_,
+        &sender_to_receiver_));
 
     cast_sender_.reset(CastSender::CreateCastSender(
         cast_environment_,

@@ -40,26 +40,18 @@ class PacedSender : public PacedPacketSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<PacedSender> {
  public:
-  // The |external_transport| should only be used by the Cast receiver and for
-  // testing.
   PacedSender(base::TickClock* clock,
-              const CastTransportConfig* const config,
-              PacketSender* external_transport,
-              const scoped_refptr<base::TaskRunner>& transport_task_runner,
-              const CastTransportStatusCallback& status_callback);
+              PacketSender* transport,
+              const scoped_refptr<base::TaskRunner>& transport_task_runner);
 
   virtual ~PacedSender();
 
   // PacedPacketSender implementation.
-  virtual void SetPacketReceiver(const PacketReceiverCallback& packet_receiver);
-
   virtual bool SendPackets(const PacketList& packets) OVERRIDE;
 
   virtual bool ResendPackets(const PacketList& packets) OVERRIDE;
 
   virtual bool SendRtcpPacket(const Packet& packet) OVERRIDE;
-
-  void InsertFakeTransportForTesting(PacketSender* fake_transport);
 
  protected:
   // Schedule a delayed task on the main cast thread when it's time to send the
@@ -73,17 +65,14 @@ class PacedSender : public PacedPacketSender,
   bool SendPacketsToTransport(const PacketList& packets,
                               PacketList* packets_not_sent);
 
-  // Actually sends the packets to the transport. When set, packets will be sent
-  // to the external transport.
+  // Actually sends the packets to the transport.
   bool TransmitPackets(const PacketList& packets);
   void SendStoredPackets();
   void UpdateBurstSize(size_t num_of_packets);
 
   // Not owned by this class.
   base::TickClock* const clock_;
-  scoped_ptr<UdpTransport> transport_;
-  PacketSender* external_transport_;  // Not owned by this class.
-  const CastTransportConfig* const config_;  // Not owned by this class.
+  PacketSender* transport_;  // Not owned by this class.
   scoped_refptr<base::TaskRunner> transport_task_runner_;
 
   size_t burst_size_;

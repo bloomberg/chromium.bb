@@ -47,12 +47,9 @@ class PacedSenderTest : public ::testing::Test {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    paced_sender_.reset(new PacedSender(
-        &testing_clock_,
-        NULL,
-        &mock_transport_,
-        task_runner_,
-        base::Bind(&UpdateCastTransportStatus)));
+    paced_sender_.reset(new PacedSender(&testing_clock_,
+                                        &mock_transport_,
+                                        task_runner_));
   }
 
   virtual ~PacedSenderTest() {}

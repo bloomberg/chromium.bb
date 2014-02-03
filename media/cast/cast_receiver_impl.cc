@@ -88,10 +88,10 @@ CastReceiverImpl::CastReceiverImpl(
     const AudioReceiverConfig& audio_config,
     const VideoReceiverConfig& video_config,
     transport::PacketSender* const packet_sender)
-    : pacer_(cast_environment->Clock(), NULL, packet_sender,
+    : pacer_(cast_environment->Clock(),
+             packet_sender,
              cast_environment->GetMessageTaskRunnerForThread(
-             CastEnvironment::TRANSPORT),
-             base::Bind(&DoNothingCastTransportStatus)),
+                 CastEnvironment::TRANSPORT)),
       audio_receiver_(cast_environment, audio_config, &pacer_),
       video_receiver_(cast_environment, video_config, &pacer_),
       frame_receiver_(new LocalFrameReceiver(cast_environment,

@@ -101,9 +101,9 @@ class RtpPacketizerTest : public ::testing::Test {
     config_.payload_type = kPayload;
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
-    pacer_.reset(new PacedSender(&testing_clock_, NULL, transport_.get(),
-                                 task_runner_,
-                                 base::Bind(UpdateCastTransportStatus)));
+    pacer_.reset(new PacedSender(&testing_clock_,
+                                 transport_.get(),
+                                 task_runner_));
     rtp_packetizer_.reset(new RtpPacketizer(pacer_.get(), &packet_storage_,
                                             config_));
     video_frame_.key_frame = false;
@@ -120,9 +120,6 @@ class RtpPacketizerTest : public ::testing::Test {
       testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
     }
-  }
-  static void UpdateCastTransportStatus(CastTransportStatus status) {
-    EXPECT_EQ(status, TRANSPORT_INITIALIZED);
   }
 
   base::SimpleTestTickClock testing_clock_;

@@ -92,9 +92,11 @@ class VideoSenderTest : public ::testing::Test {
         task_runner_, task_runner_, GetDefaultCastSenderLoggingConfig());
     transport::CastTransportConfig transport_config;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
-        testing_clock_, transport_config,
-        base::Bind(&UpdateCastTransportStatus), task_runner_));
-    transport_sender_->InsertFakeTransportForTesting(&transport_);
+        testing_clock_,
+        transport_config,
+        base::Bind(&UpdateCastTransportStatus),
+        task_runner_,
+        &transport_));
   }
 
   virtual ~VideoSenderTest() {}

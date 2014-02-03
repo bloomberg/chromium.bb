@@ -17,16 +17,27 @@ CastTransportSender* CastTransportSender::CreateCastTransportSender(
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
     const scoped_refptr<base::TaskRunner>& transport_task_runner) {
-  return new CastTransportSenderImpl(clock, config, status_callback,
-                                     transport_task_runner.get());
+  return new CastTransportSenderImpl(clock,
+                                     config,
+                                     status_callback,
+                                     transport_task_runner.get(),
+                                     NULL);
 }
 
 CastTransportSenderImpl::CastTransportSenderImpl(
     base::TickClock* clock,
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
-    const scoped_refptr<base::TaskRunner>& transport_task_runner)
-    : pacer_(clock, &config, NULL, transport_task_runner, status_callback),
+    const scoped_refptr<base::TaskRunner>& transport_task_runner,
+    PacketSender* external_transport)
+    : transport_(external_transport ? NULL :
+                 new UdpTransport(transport_task_runner,
+                                  config.local_endpoint,
+                                  config.receiver_endpoint,
+                                  status_callback)),
+      pacer_(clock,
+             external_transport ? external_transport : transport_.get(),
+             transport_task_runner),
       rtcp_builder_(&pacer_),
       audio_sender_(config, clock, &pacer_),
       video_sender_(config, clock, &pacer_) {
@@ -42,7 +53,7 @@ CastTransportSenderImpl::~CastTransportSenderImpl() {
 
 void CastTransportSenderImpl::SetPacketReceiver(
     const PacketReceiverCallback& packet_receiver) {
-  pacer_.SetPacketReceiver(packet_receiver);
+  transport_->StartReceiving(packet_receiver);
 }
 
 void CastTransportSenderImpl::InsertCodedAudioFrame(
@@ -91,11 +102,6 @@ void CastTransportSenderImpl::RtpVideoStatistics(
     const base::TimeTicks& now,
     RtcpSenderInfo* sender_info) {
   video_sender_.GetStatistics(now, sender_info);
-}
-
-void CastTransportSenderImpl::InsertFakeTransportForTesting(
-    PacketSender* fake_transport) {
-  pacer_.InsertFakeTransportForTesting(fake_transport);
 }
 
 }  // namespace transport

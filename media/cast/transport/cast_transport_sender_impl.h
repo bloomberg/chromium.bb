@@ -23,11 +23,15 @@ namespace transport {
 
 class CastTransportSenderImpl : public CastTransportSender {
  public:
+  // external_transport is only used for testing.
+  // Note that SetPacketReceiver does not work if an external
+  // transport is provided.
   CastTransportSenderImpl(
       base::TickClock* clock,
       const CastTransportConfig& config,
       const CastTransportStatusCallback& status_callback,
-      const scoped_refptr<base::TaskRunner>& transport_task_runner);
+      const scoped_refptr<base::TaskRunner>& transport_task_runner,
+      PacketSender* external_transport);
 
   virtual ~CastTransportSenderImpl();
 
@@ -61,9 +65,8 @@ class CastTransportSenderImpl : public CastTransportSender {
   virtual void RtpVideoStatistics(const base::TimeTicks& now,
                                   RtcpSenderInfo* sender_info) OVERRIDE;
 
-  void InsertFakeTransportForTesting(PacketSender* fake_transport);
-
  private:
+  scoped_ptr<UdpTransport> transport_;
   PacedSender pacer_;
   RtcpBuilder rtcp_builder_;
   TransportAudioSender audio_sender_;

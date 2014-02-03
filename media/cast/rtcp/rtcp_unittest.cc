@@ -163,8 +163,8 @@ class RtcpTest : public ::testing::Test {
         testing_clock_,
         transport_config,
         base::Bind(&UpdateCastTransportStatus),
-        task_runner_));
-    transport_sender_->InsertFakeTransportForTesting(&sender_to_receiver_);
+        task_runner_,
+        &sender_to_receiver_));
     EXPECT_CALL(mock_sender_feedback_, OnReceivedCastFeedback(_)).Times(0);
   }
 
