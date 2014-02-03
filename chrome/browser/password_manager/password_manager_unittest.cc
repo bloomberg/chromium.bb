@@ -10,6 +10,7 @@
 #include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/pref_names.h"
@@ -35,9 +36,14 @@ namespace {
 
 class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
-  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AddSavePasswordInfoBarIfPermitted, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfile, Profile*());
+  MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
+};
+
+class MockPasswordManagerDriver : public PasswordManagerDriver {
+ public:
+  MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
 };
 
@@ -83,9 +89,10 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
             profile(), MockPasswordStore::Build).get());
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
+    EXPECT_CALL(delegate_, GetDriver()).WillRepeatedly(Return(&driver_));
     manager_ = TestPasswordManager::CreateForWebContentsAndDelegate(
         web_contents(), &delegate_);
-    EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
+    EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
   }
 
@@ -183,6 +190,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<MockPasswordStore> store_;
   TestPasswordManager* manager_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.
+  MockPasswordManagerDriver driver_;
   PasswordForm submitted_form_;
 };
 
@@ -200,7 +208,7 @@ MATCHER_P(FormMatches, form, "") {
 TEST_F(PasswordManagerTest, FormSubmitEmptyStore) {
   // Test that observing a newly submitted form shows the save password bar.
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -232,7 +240,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // This test is the same FormSubmitEmptyStore, except that it simulates the
   // user generating the password through the browser.
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -266,7 +274,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   PasswordForm* existing_different = new PasswordForm(MakeSimpleForm());
   existing_different->username_value = ASCIIToUTF16("google2");
   result.push_back(existing_different);
-  EXPECT_CALL(delegate_, FillPasswordForm(_));
+  EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
 
@@ -296,7 +304,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
 
 TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -317,7 +325,7 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
   // Test that navigating a subframe does not prevent us from showing the save
   // password infobar.
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -353,7 +361,7 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
 // This test verifies a fix for http://crbug.com/236673
 TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   PasswordForm first_form(MakeSimpleForm());
@@ -405,7 +413,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
 
 TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -426,7 +434,7 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   // Tests fix of issue 28911: if the login form reappears on the subsequent
   // page, but is invisible, it shouldn't count as a failed login.
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -459,7 +467,7 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
   std::vector<PasswordForm*> result;
   PasswordForm* existing = new PasswordForm(MakeSimpleForm());
   result.push_back(existing);
-  EXPECT_CALL(delegate_, FillPasswordForm(_));
+  EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -494,7 +502,7 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   TestingPrefServiceSyncable* prefService = profile()->GetTestingPrefService();
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
                            base::Value::CreateBooleanValue(false));
-  EXPECT_CALL(delegate_, FillPasswordForm(_));
+  EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_.get(),
               GetLogins(_, testing::Eq(PasswordStore::DISALLOW_PROMPT), _))
       .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
@@ -508,7 +516,7 @@ TEST_F(PasswordManagerTest, FormNotSavedAutocompleteOff) {
   // Test password form with non-generated password will not be saved if
   // autocomplete=off.
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -536,7 +544,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   // Test password form with generated password will still be saved if
   // autocomplete=off.
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;
@@ -576,7 +584,7 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   // is at least one visible password form in the next page that
   // means that our previous login attempt failed.
   std::vector<PasswordForm*> result;  // Empty password store.
-  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(0);
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillRepeatedly(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
   std::vector<PasswordForm> observed;

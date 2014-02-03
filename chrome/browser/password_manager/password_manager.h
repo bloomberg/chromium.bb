@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class PasswordManagerDelegate;
+class PasswordManagerDriver;
 class PasswordManagerTest;
 class PasswordFormManager;
 class PrefRegistrySimple;
@@ -162,9 +163,11 @@ class PasswordManager : public LoginModel,
   // time a user submits a login form and gets to the next page.
   scoped_ptr<PasswordFormManager> provisional_save_manager_;
 
-  // Our delegate for carrying out external operations.  This is typically the
-  // containing WebContents.
+  // The embedder-level client. Must outlive this class.
   PasswordManagerDelegate* const delegate_;
+
+  // The platform-level driver. Must outlive this class.
+  PasswordManagerDriver* const driver_;
 
   // Set to false to disable the password manager (will no longer ask if you
   // want to save passwords but will continue to fill passwords).

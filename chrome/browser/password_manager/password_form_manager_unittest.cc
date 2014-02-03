@@ -11,6 +11,7 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store.h"
@@ -26,19 +27,27 @@ using ::testing::Eq;
 
 namespace {
 
+class TestPasswordManagerDriver : public PasswordManagerDriver {
+ public:
+  TestPasswordManagerDriver() {}
+
+  virtual void FillPasswordForm(
+      const autofill::PasswordFormFillData& form_data) OVERRIDE {}
+  virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE { return false; }
+};
+
 class TestPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   explicit TestPasswordManagerDelegate(Profile* profile) : profile_(profile) {}
 
-  virtual void FillPasswordForm(
-      const autofill::PasswordFormFillData& form_data) OVERRIDE {}
   virtual void AddSavePasswordInfoBarIfPermitted(
       PasswordFormManager* form_to_save) OVERRIDE {}
   virtual Profile* GetProfile() OVERRIDE { return profile_; }
-  virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE { return false; }
+  virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
 
  private:
   Profile* profile_;
+  TestPasswordManagerDriver driver_;
 };
 
 class TestPasswordManager : public PasswordManager {

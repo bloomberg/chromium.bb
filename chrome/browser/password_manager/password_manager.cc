@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
+#include "chrome/browser/password_manager/password_manager_driver.h"
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,8 +113,10 @@ void PasswordManager::CreateForWebContentsAndDelegate(
 PasswordManager::PasswordManager(WebContents* web_contents,
                                  PasswordManagerDelegate* delegate)
     : content::WebContentsObserver(web_contents),
-      delegate_(delegate) {
+      delegate_(delegate),
+      driver_(delegate->GetDriver()) {
   DCHECK(delegate_);
+  DCHECK(driver_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
                                  delegate_->GetProfile()->GetPrefs());
 
@@ -138,7 +141,7 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
   bool ssl_valid = (form.origin.SchemeIsSecure() &&
-                    !delegate_->DidLastPageLoadEncounterSSLErrors());
+                    !driver_->DidLastPageLoadEncounterSSLErrors());
   PasswordFormManager* manager =
       new PasswordFormManager(delegate_->GetProfile(),
                               this,
@@ -234,7 +237,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid = form.origin.SchemeIsSecure() &&
-      !delegate_->DidLastPageLoadEncounterSSLErrors();
+      !driver_->DidLastPageLoadEncounterSSLErrors();
   provisionally_saved_form.preferred = true;
   PasswordFormManager::OtherPossibleUsernamesAction action =
       PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES;
@@ -309,7 +312,7 @@ void PasswordManager::OnPasswordFormSubmitted(
 void PasswordManager::OnPasswordFormsParsed(
     const std::vector<PasswordForm>& forms) {
   // Ask the SSLManager for current security.
-  bool had_ssl_error = delegate_->DidLastPageLoadEncounterSSLErrors();
+  bool had_ssl_error = driver_->DidLastPageLoadEncounterSSLErrors();
 
   for (std::vector<PasswordForm>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
@@ -452,7 +455,7 @@ void PasswordManager::Autofill(
                                wait_for_username,
                                OtherPossibleUsernamesEnabled(),
                                &fill_data);
-      delegate_->FillPasswordForm(fill_data);
+      driver_->FillPasswordForm(fill_data);
       break;
     }
     default:

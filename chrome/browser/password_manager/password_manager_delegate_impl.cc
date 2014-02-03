@@ -215,11 +215,6 @@ PasswordManagerDelegateImpl::PasswordManagerDelegateImpl(
 PasswordManagerDelegateImpl::~PasswordManagerDelegateImpl() {
 }
 
-void PasswordManagerDelegateImpl::FillPasswordForm(
-    const autofill::PasswordFormFillData& form_data) {
-  driver_.FillPasswordForm(form_data);
-}
-
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
     PasswordFormManager* form_to_save) {
   std::string uma_histogram_suffix(
@@ -234,6 +229,6 @@ Profile* PasswordManagerDelegateImpl::GetProfile() {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
-bool PasswordManagerDelegateImpl::DidLastPageLoadEncounterSSLErrors() {
-  return driver_.DidLastPageLoadEncounterSSLErrors();
+PasswordManagerDriver* PasswordManagerDelegateImpl::GetDriver() {
+  return &driver_;
 }

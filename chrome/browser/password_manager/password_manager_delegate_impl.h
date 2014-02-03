@@ -22,12 +22,10 @@ class PasswordManagerDelegateImpl
   virtual ~PasswordManagerDelegateImpl();
 
   // PasswordManagerDelegate implementation.
-  virtual void FillPasswordForm(
-      const autofill::PasswordFormFillData& form_data) OVERRIDE;
   virtual void AddSavePasswordInfoBarIfPermitted(
       PasswordFormManager* form_to_save) OVERRIDE;
   virtual Profile* GetProfile() OVERRIDE;
-  virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
+  virtual PasswordManagerDriver* GetDriver() OVERRIDE;
 
  private:
   explicit PasswordManagerDelegateImpl(content::WebContents* web_contents);
