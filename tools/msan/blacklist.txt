@@ -6,3 +6,6 @@
 
 # V8 is blacklisted until it can properly support MSan. http://crbug.com/330709
 src:*/v8/src/*
+
+# False positive in ffmpeg due to assembly code.
+fun:ff_get_cpu_flags_x86
