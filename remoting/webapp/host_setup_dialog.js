@@ -27,7 +27,7 @@ remoting.HostSetupFlow.State = {
   // Dialog states.
   ASK_PIN: 1,
 
-  // Used on Mac OS X to prompt the user to manually install a .dmg package.
+  // Prompts the user to install the host package.
   INSTALL_HOST: 2,
 
   // Processing states.
@@ -223,6 +223,7 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
   this.hostController_.getConsent(onGetConsent, onError);
 
   var flow = [
+      remoting.HostSetupFlow.State.INSTALL_HOST,
       remoting.HostSetupFlow.State.ASK_PIN,
       remoting.HostSetupFlow.State.STARTING_HOST,
       remoting.HostSetupFlow.State.HOST_STARTED];
@@ -231,8 +232,12 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
       state != remoting.HostController.State.NOT_INSTALLED &&
       state != remoting.HostController.State.INSTALLING;
 
-  if (navigator.platform.indexOf('Mac') != -1 && !installed) {
-    flow.unshift(remoting.HostSetupFlow.State.INSTALL_HOST);
+  // Skip the installation step when the host is already installed or when using
+  // NPAPI plugin on Windows (because on Windows the plugin takes care of
+  // installation).
+  if (installed || (navigator.platform == 'Win32' &&
+                    this.hostController_.usingNpapiPlugin())) {
+    flow.shift();
   }
 
   this.startNewFlow_(flow);
@@ -325,8 +330,7 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
     remoting.setMode(remoting.AppMode.HOST_SETUP_ASK_PIN);
   } else if (state == remoting.HostSetupFlow.State.INSTALL_HOST) {
     remoting.setMode(remoting.AppMode.HOST_SETUP_INSTALL);
-    window.location =
-        'https://dl.google.com/chrome-remote-desktop/chromeremotedesktop.dmg';
+    this.installHost_();
   } else if (state == remoting.HostSetupFlow.State.STARTING_HOST) {
     showProcessingMessage(/*i18n-content*/'HOST_SETUP_STARTING');
     this.startHost_();
@@ -355,6 +359,36 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
     showErrorMessage(/*i18n-content*/'HOST_SETUP_STOP_FAILED');
   }
 };
+
+/**
+ * Installs Host component.
+ */
+remoting.HostSetupDialog.prototype.installHost_ = function() {
+  var hostPackageUrl = '';
+  switch (navigator.platform) {
+    case 'Win32':
+      hostPackageUrl = 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/chromeremotedesktophost.msi';
+      break;
+    case 'MacIntel':
+      hostPackageUrl = 'https://dl.google.com/chrome-remote-desktop/chromeremotedesktop.dmg';
+      break;
+    case 'Linux x86_64':
+      hostPackageUrl = 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb';
+      break;
+    case 'Linux i386':
+      hostPackageUrl = 'https://dl.google.com/linux/direct/chrome-remote-desktop_current_i386.deb';
+      break;
+    default:
+      // We never expect to get in this state. Host controls should not be shown
+      // on unsupported platform.
+      this.flow_.switchToErrorState(remoting.Error.UNEXPECTED);
+      this.updateState_();
+      return;
+  }
+
+  // Start downloading the package.
+  window.location = hostPackageUrl;
+}
 
 /**
  * Registers and starts the host.

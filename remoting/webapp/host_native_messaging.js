@@ -365,11 +365,13 @@ remoting.HostNativeMessaging.prototype.onDisconnect_ = function() {
   console.error('Native Message port disconnected');
 
   // Notify the error-handlers of any requests that are still outstanding.
-  for (var id in this.pendingReplies_) {
-    this.pendingReplies_[/** @type {number} */(id)].onError(
+  var pendingReplies = this.pendingReplies_;
+  this.pendingReplies_ = {};
+
+  for (var id in pendingReplies) {
+    pendingReplies[/** @type {number} */(id)].onError(
         remoting.Error.UNEXPECTED);
   }
-  this.pendingReplies_ = {};
 }
 
 /**

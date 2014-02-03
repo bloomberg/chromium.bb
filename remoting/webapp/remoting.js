@@ -150,6 +150,26 @@ function isIT2MeSupported_() {
   return !remoting.runningOnChromeOS();
 }
 
+// TODO(sergeyu): We want to show Me2Me host controls only on some Linux
+// distributions that we know work properly with the chromoting host. Implement
+// dome detection mechanism and apply it here.
+/** @type {boolean} */
+remoting.supportedLinuxDistibutionDetected_ = false;
+
+/**
+ * @return {boolean}
+ */
+remoting.isMe2MeSupported = function isMe2MeSupported() {
+  /** @type {string} */
+  var platform = navigator.platform;
+
+  // Currently Me2Me is supported on Windows, OSX and some versions of Linux.
+  return platform == 'Win32' || platform == 'MacIntel' ||
+           ((platform == 'Linux x86_64' || platform == 'Linux i386') &&
+            remoting.supportedLinuxDistibutionDetected_ &&
+            !remoting.runningOnChromeOS());
+}
+
 /**
  * Display the user's email address and allow access to the rest of the app,
  * including parsing URL parameters.

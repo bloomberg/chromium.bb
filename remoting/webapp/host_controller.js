@@ -15,6 +15,10 @@ remoting.HostController = function() {
     /** @type {HTMLElement} @private */
     var container = document.getElementById('daemon-plugin-container');
     container.appendChild(plugin);
+    if (plugin.hasOwnProperty('REQUESTED_ACCESS_CODE')) {
+      container.removeChild(plugin);
+      return null;
+    }
     return plugin;
   };
 
@@ -471,6 +475,14 @@ remoting.HostController.prototype.clearPairedClients = function(
     onDone, onError) {
   this.hostDispatcher_.clearPairedClients(onDone, onError);
 };
+
+/**
+ * Returns true if the NPAPI plugin is being used.
+ * @return {boolean}
+ */
+remoting.HostController.prototype.usingNpapiPlugin = function() {
+  return this.hostDispatcher_.usingNpapiPlugin();
+}
 
 /** @type {remoting.HostController} */
 remoting.hostController = null;

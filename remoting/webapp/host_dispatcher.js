@@ -28,9 +28,6 @@ var remoting = remoting || {};
  *     unsupported.
  */
 remoting.HostDispatcher = function(createPluginCallback) {
-  /** @type {remoting.HostDispatcher} */
-  var that = this;
-
   /** @type {remoting.HostNativeMessaging} @private */
   this.nativeMessagingHost_ = new remoting.HostNativeMessaging();
 
@@ -43,35 +40,49 @@ remoting.HostDispatcher = function(createPluginCallback) {
   /** @type {Array.<function()>} */
   this.pendingRequests_ = [];
 
-  function sendPendingRequests() {
-    for (var i = 0; i < that.pendingRequests_.length; i++) {
-      that.pendingRequests_[i]();
-    }
-    that.pendingRequests_ = null;
-  }
+  this.createPluginCallback_ = createPluginCallback;
 
-  function onNativeMessagingInit() {
-    console.log('Native Messaging supported.');
-    that.state_ = remoting.HostDispatcher.State.NATIVE_MESSAGING;
-    sendPendingRequests();
-  }
-
-  function onNativeMessagingFailed(error) {
-    console.log('Native Messaging unsupported, falling back to NPAPI.');
-    that.npapiHost_ = createPluginCallback();
-    that.state_ = remoting.HostDispatcher.State.NPAPI;
-    sendPendingRequests();
-  }
-
-  this.nativeMessagingHost_.initialize(onNativeMessagingInit,
-                                       onNativeMessagingFailed);
-};
+  this.tryToInitialize_();
+}
 
 /** @enum {number} */
 remoting.HostDispatcher.State = {
   UNKNOWN: 0,
   NATIVE_MESSAGING: 1,
-  NPAPI: 2
+  NPAPI: 2,
+  NOT_INSTALLED: 3
+};
+
+remoting.HostDispatcher.prototype.tryToInitialize_ = function() {
+  /** @type {remoting.HostDispatcher} */
+  var that = this;
+
+  if (this.state_ != remoting.HostDispatcher.State.UNKNOWN)
+    return;
+
+  function sendPendingRequests() {
+    var pendingRequests = that.pendingRequests_;
+    that.pendingRequests_ = [];
+    for (var i = 0; i < pendingRequests.length; i++) {
+      pendingRequests[i]();
+    }
+  }
+
+  function onNativeMessagingInit() {
+    that.state_ = remoting.HostDispatcher.State.NATIVE_MESSAGING;
+    sendPendingRequests();
+  }
+
+  function onNativeMessagingFailed(error) {
+    that.npapiHost_ = that.createPluginCallback_();
+
+    that.state_ = that.npapiHost_ ? remoting.HostDispatcher.State.NPAPI
+                                  : remoting.HostDispatcher.State.NOT_INSTALLED;
+    sendPendingRequests();
+  }
+
+  this.nativeMessagingHost_.initialize(onNativeMessagingInit,
+                                       onNativeMessagingFailed);
 };
 
 /**
@@ -98,6 +109,9 @@ remoting.HostDispatcher.prototype.hasFeature = function(
       }
       onDone(supportedFeatures.indexOf(feature) >= 0);
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onDone(false);
+      break;
   }
 };
 
@@ -121,6 +135,9 @@ remoting.HostDispatcher.prototype.getHostName = function(onDone, onError) {
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
@@ -149,6 +166,9 @@ remoting.HostDispatcher.prototype.getPinHash =
         onError(remoting.Error.MISSING_PLUGIN);
       }
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
+      break;
   }
 };
 
@@ -172,6 +192,9 @@ remoting.HostDispatcher.prototype.generateKeyPair = function(onDone, onError) {
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
@@ -198,6 +221,9 @@ remoting.HostDispatcher.prototype.updateDaemonConfig =
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
@@ -238,6 +264,9 @@ remoting.HostDispatcher.prototype.getDaemonConfig = function(onDone, onError) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onDone({});
+      break;
   }
 };
 
@@ -261,6 +290,9 @@ remoting.HostDispatcher.prototype.getDaemonVersion = function(onDone, onError) {
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
@@ -286,6 +318,9 @@ remoting.HostDispatcher.prototype.getUsageStatsConsent =
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
@@ -314,6 +349,9 @@ remoting.HostDispatcher.prototype.startDaemon =
         onError(remoting.Error.MISSING_PLUGIN);
       }
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
+      break;
   }
 };
 
@@ -337,6 +375,9 @@ remoting.HostDispatcher.prototype.stopDaemon = function(onDone, onError) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
+      break;
   }
 };
 
@@ -346,10 +387,27 @@ remoting.HostDispatcher.prototype.stopDaemon = function(onDone, onError) {
  * @return {void}
  */
 remoting.HostDispatcher.prototype.getDaemonState = function(onDone, onError) {
+  // If the host was in not-initialized state try initializing it again in case
+  // it was installed.
+  if (this.state_ == remoting.HostDispatcher.State.NOT_INSTALLED) {
+    this.state_ = remoting.HostDispatcher.State.UNKNOWN;
+    this.tryToInitialize_();
+  }
+
+  this.getDaemonStateInternal_(onDone, onError);
+}
+
+/**
+ * @param {function(remoting.HostController.State):void} onDone
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.getDaemonStateInternal_ =
+    function(onDone, onError) {
   switch (this.state_) {
     case remoting.HostDispatcher.State.UNKNOWN:
       this.pendingRequests_.push(
-          this.getDaemonState.bind(this, onDone, onError));
+          this.getDaemonStateInternal_.bind(this, onDone, onError));
       break;
     case remoting.HostDispatcher.State.NATIVE_MESSAGING:
       this.nativeMessagingHost_.getDaemonState(onDone, onError);
@@ -363,6 +421,9 @@ remoting.HostDispatcher.prototype.getDaemonState = function(onDone, onError) {
       } else {
         onDone(state);
       }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onDone(remoting.HostController.State.NOT_INSTALLED);
       break;
   }
 };
@@ -403,6 +464,9 @@ remoting.HostDispatcher.prototype.getPairedClients = function(onDone, onError) {
       } catch (err) {
         onError(remoting.Error.MISSING_PLUGIN);
       }
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
@@ -449,6 +513,9 @@ remoting.HostDispatcher.prototype.clearPairedClients =
         onError(remoting.Error.MISSING_PLUGIN);
       }
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
+      break;
   }
 };
 
@@ -477,6 +544,9 @@ remoting.HostDispatcher.prototype.deletePairedClient =
         onError(remoting.Error.MISSING_PLUGIN);
       }
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
+      break;
   }
 };
 
@@ -499,6 +569,9 @@ remoting.HostDispatcher.prototype.getHostClientId =
       // The NPAPI plugin is packaged with the webapp, not the host, so it
       // doesn't have access to the API keys baked into the installed host.
       onError(remoting.Error.UNEXPECTED);
+      break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
       break;
   }
 };
@@ -526,5 +599,16 @@ remoting.HostDispatcher.prototype.getCredentialsFromAuthCode =
       // doesn't have access to the API keys baked into the installed host.
       onError(remoting.Error.UNEXPECTED);
       break;
+    case remoting.HostDispatcher.State.NOT_INSTALLED:
+      onError(remoting.Error.MISSING_PLUGIN);
+      break;
   }
 };
+
+/**
+ * Returns true if the NPAPI plugin is being used.
+ * @return {boolean}
+ */
+remoting.HostDispatcher.prototype.usingNpapiPlugin = function() {
+  return this.state_ == remoting.HostDispatcher.State.NPAPI;
+}
