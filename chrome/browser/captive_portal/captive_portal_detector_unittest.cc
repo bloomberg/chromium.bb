@@ -23,8 +23,7 @@ namespace {
 class CaptivePortalClient {
  public:
   explicit CaptivePortalClient(CaptivePortalDetector* captive_portal_detector)
-      : captive_portal_detector_(captive_portal_detector),
-        num_results_received_(0) {
+      : num_results_received_(0) {
   }
 
   void OnPortalDetectionCompleted(
@@ -40,8 +39,6 @@ class CaptivePortalClient {
   int num_results_received() const { return num_results_received_; }
 
  private:
-  CaptivePortalDetector* captive_portal_detector_;
-
   CaptivePortalDetector::Results results_;
   int num_results_received_;
 

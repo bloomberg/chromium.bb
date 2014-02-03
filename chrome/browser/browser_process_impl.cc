@@ -162,8 +162,6 @@ BrowserProcessImpl::BrowserProcessImpl(
       created_safe_browsing_service_(false),
       module_ref_count_(0),
       did_start_(false),
-      checked_for_new_frames_(false),
-      using_new_frames_(false),
       render_widget_snapshot_taker_(new RenderWidgetSnapshotTaker),
       download_status_updater_(new DownloadStatusUpdater),
       local_state_task_runner_(local_state_task_runner) {

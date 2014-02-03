@@ -151,8 +151,6 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
 
 }  // namespace
 
-const int AutocompleteController::kNoItemSelected = -1;
-
 AutocompleteController::AutocompleteController(
     Profile* profile,
     AutocompleteControllerDelegate* delegate,

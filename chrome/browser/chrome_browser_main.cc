@@ -525,11 +525,19 @@ void InitializeAllPrefHashStores() {
 }  // namespace
 
 namespace chrome_browser {
+
 // This error message is not localized because we failed to load the
 // localization data files.
+#if defined(OS_WIN)
 const char kMissingLocaleDataTitle[] = "Missing File Error";
+#endif
+
+#if defined(OS_WIN) || defined(TOOLKIT_GTK)
+// TODO(port) This should be used on Linux Aura as well. http://crbug.com/338969
 const char kMissingLocaleDataMessage[] =
     "Unable to find locale data files. Please reinstall.";
+#endif
+
 }  // namespace chrome_browser
 
 // BrowserMainParts ------------------------------------------------------------

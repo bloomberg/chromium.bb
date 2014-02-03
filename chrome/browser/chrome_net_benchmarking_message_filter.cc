@@ -33,11 +33,9 @@ void ClearCacheCallback(ChromeNetBenchmarkingMessageFilter* filter,
 }  // namespace
 
 ChromeNetBenchmarkingMessageFilter::ChromeNetBenchmarkingMessageFilter(
-    int render_process_id,
     Profile* profile,
     net::URLRequestContextGetter* request_context)
-    : render_process_id_(render_process_id),
-      profile_(profile),
+    : profile_(profile),
       request_context_(request_context) {
 }
 

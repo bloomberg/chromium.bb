@@ -689,10 +689,6 @@ class SearchProvider : public AutocompleteProvider,
   // session.
   bool field_trial_triggered_in_session_;
 
-  // If true, search history query suggestions will score low enough that
-  // they will not be inlined.
-  bool prevent_search_history_inlining_;
-
   GURL current_page_url_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);

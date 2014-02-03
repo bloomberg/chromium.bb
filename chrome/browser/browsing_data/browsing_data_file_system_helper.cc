@@ -188,12 +188,10 @@ BrowsingDataFileSystemHelper* BrowsingDataFileSystemHelper::Create(
 }
 
 CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper(
-    Profile* profile)
-    : is_fetching_(false) {
+    Profile* profile) {
 }
 
-CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper()
-    : is_fetching_(false) {
+CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper() {
 }
 
 CannedBrowsingDataFileSystemHelper::~CannedBrowsingDataFileSystemHelper() {}

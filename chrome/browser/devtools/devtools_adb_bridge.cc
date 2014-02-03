@@ -298,7 +298,7 @@ AdbPagesCommand::AdbPagesCommand(
     const Callback& callback)
     : adb_thread_(adb_thread),
       callback_(callback),
-      device_providers_(device_providers){
+      device_providers_(device_providers) {
   remote_devices_.reset(new DevToolsAdbBridge::RemoteDevices());
 
   ProcessDeviceProviders();
@@ -730,11 +730,11 @@ DevToolsAdbBridge::Factory::BuildServiceInstanceFor(
 class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
                           public AdbWebSocket::Delegate {
  public:
-   static void Create(const std::string& id,
-                      scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
-                      const std::string& debug_url,
-                      const std::string& frontend_url,
-                      Profile* profile) {
+  static void Create(const std::string& id,
+                     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> browser,
+                     const std::string& debug_url,
+                     const std::string& frontend_url,
+                     Profile* profile) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     AgentHostDelegates::iterator it =
         g_host_delegates.Get().find(id);
@@ -758,7 +758,6 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
       Profile* profile)
       : id_(id),
         frontend_url_(frontend_url),
-        adb_message_loop_(adb_message_loop),
         profile_(profile) {
     web_socket_ = new AdbWebSocket(
         device, socket_name, debug_url, adb_message_loop, this);
@@ -815,7 +814,6 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
 
   const std::string id_;
   const std::string frontend_url_;
-  base::MessageLoop* adb_message_loop_;
   Profile* profile_;
 
   scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;

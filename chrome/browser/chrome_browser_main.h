@@ -31,8 +31,13 @@ class ThreeDAPIObserver;
 
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
+#if defined(OS_WIN)
 extern const char kMissingLocaleDataTitle[];
+#endif
+
+#if defined(OS_WIN) || defined(TOOLKIT_GTK)
 extern const char kMissingLocaleDataMessage[];
+#endif
 }
 
 namespace chrome_browser_metrics {

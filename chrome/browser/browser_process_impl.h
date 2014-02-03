@@ -241,9 +241,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::string locale_;
 
-  bool checked_for_new_frames_;
-  bool using_new_frames_;
-
   // This service just sits around and makes snapshots for renderers. It does
   // nothing in the constructor so we don't have to worry about lazy init.
   scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;

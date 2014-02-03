@@ -918,8 +918,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(OS_MACOSX)
   host->AddFilter(new SpellCheckMessageFilterMac(id));
 #endif
-  host->AddFilter(new ChromeNetBenchmarkingMessageFilter(
-      id, profile, context));
+  host->AddFilter(new ChromeNetBenchmarkingMessageFilter(profile, context));
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
   host->AddFilter(new TtsMessageFilter(id, profile));
 #if defined(ENABLE_WEBRTC)
@@ -1559,7 +1558,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
       switches::kCloudPrintServiceURL,
-      switches::kDebugPrint,
       switches::kDisableBundledPpapiFlash,
       switches::kDisableExtensionsResourceWhitelist,
       switches::kDisablePnacl,

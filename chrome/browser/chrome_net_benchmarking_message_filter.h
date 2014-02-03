@@ -19,7 +19,6 @@ class ChromeNetBenchmarkingMessageFilter
     : public content::BrowserMessageFilter {
  public:
   ChromeNetBenchmarkingMessageFilter(
-      int render_process_id,
       Profile* profile,
       net::URLRequestContextGetter* request_context);
 
@@ -40,8 +39,6 @@ class ChromeNetBenchmarkingMessageFilter
 
   // Returns true if benchmarking is enabled for chrome.
   bool CheckBenchmarkingEnabled() const;
-
-  int render_process_id_;
 
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!

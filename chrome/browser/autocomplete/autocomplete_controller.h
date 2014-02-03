@@ -45,9 +45,6 @@ class ZeroSuggestProvider;
 // matches from a series of providers into one AutocompleteResult.
 class AutocompleteController : public AutocompleteProviderListener {
  public:
-  // Used to indicate an index that is not selected in a call to Update().
-  static const int kNoItemSelected;
-
   // |provider_types| is a bitmap containing AutocompleteProvider::Type values
   // that will (potentially, depending on platform, flags, etc.) be
   // instantiated.
