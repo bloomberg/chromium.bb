@@ -39,7 +39,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
                                           public aura::WindowObserver {
  public:
   ShellWindowLauncherItemController(Type type,
-                                    const std::string& app_launcher_id,
+                                    const std::string& app_shelf_id,
                                     const std::string& app_id,
                                     ChromeLauncherController* controller);
 
@@ -52,7 +52,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
 
   void SetActiveWindow(aura::Window* window);
 
-  const std::string& app_launcher_id() const { return app_launcher_id_; }
+  const std::string& app_shelf_id() const { return app_shelf_id_; }
 
   // LauncherItemController overrides:
   virtual bool IsOpen() const OVERRIDE;
@@ -96,8 +96,8 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   apps::ShellWindow* last_active_shell_window_;
 
   // The launcher id associated with this set of windows. There is one
-  // AppLauncherItemController for each |app_launcher_id_|.
-  const std::string app_launcher_id_;
+  // AppLauncherItemController for each |app_shelf_id_|.
+  const std::string app_shelf_id_;
 
   // Scoped list of observed windows (for removal on destruction)
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_;

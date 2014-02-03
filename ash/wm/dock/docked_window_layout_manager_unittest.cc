@@ -73,7 +73,7 @@ class DockedWindowLayoutManagerTest
     if (window_type_ == ui::wm::WINDOW_TYPE_PANEL) {
       test::TestShelfDelegate* shelf_delegate =
           test::TestShelfDelegate::instance();
-      shelf_delegate->AddLauncherItem(window);
+      shelf_delegate->AddShelfItem(window);
       PanelLayoutManager* manager =
           static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
               layout_manager());
@@ -90,7 +90,7 @@ class DockedWindowLayoutManagerTest
     if (window_type_ == ui::wm::WINDOW_TYPE_PANEL) {
       test::TestShelfDelegate* shelf_delegate =
           test::TestShelfDelegate::instance();
-      shelf_delegate->AddLauncherItem(window);
+      shelf_delegate->AddShelfItem(window);
       PanelLayoutManager* manager =
           static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
               layout_manager());

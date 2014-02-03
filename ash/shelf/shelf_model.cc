@@ -58,7 +58,7 @@ int ShelfItemTypeToWeight(ShelfItemType type) {
   return 1;
 }
 
-bool CompareByWeight(const LauncherItem& a, const LauncherItem& b) {
+bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
   return ShelfItemTypeToWeight(a.type) < ShelfItemTypeToWeight(b.type);
 }
 
@@ -70,11 +70,11 @@ ShelfModel::ShelfModel() : next_id_(1), status_(STATUS_NORMAL) {
 ShelfModel::~ShelfModel() {
 }
 
-int ShelfModel::Add(const LauncherItem& item) {
+int ShelfModel::Add(const ShelfItem& item) {
   return AddAt(items_.size(), item);
 }
 
-int ShelfModel::AddAt(int index, const LauncherItem& item) {
+int ShelfModel::AddAt(int index, const ShelfItem& item) {
   index = ValidateInsertionIndex(item.type, index);
   items_.insert(items_.begin() + index, item);
   items_[index].id = next_id_++;
@@ -87,7 +87,7 @@ void ShelfModel::RemoveItemAt(int index) {
   // The app list and browser shortcut can't be removed.
   DCHECK(items_[index].type != TYPE_APP_LIST &&
          items_[index].type != TYPE_BROWSER_SHORTCUT);
-  LauncherID id = items_[index].id;
+  ShelfID id = items_[index].id;
   items_.erase(items_.begin() + index);
   FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
                     ShelfItemRemoved(index, id));
@@ -97,19 +97,19 @@ void ShelfModel::Move(int index, int target_index) {
   if (index == target_index)
     return;
   // TODO: this needs to enforce valid ranges.
-  LauncherItem item(items_[index]);
+  ShelfItem item(items_[index]);
   items_.erase(items_.begin() + index);
   items_.insert(items_.begin() + target_index, item);
   FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
                     ShelfItemMoved(index, target_index));
 }
 
-void ShelfModel::Set(int index, const LauncherItem& item) {
+void ShelfModel::Set(int index, const ShelfItem& item) {
   DCHECK(index >= 0 && index < item_count());
   int new_index = item.type == items_[index].type ?
       index : ValidateInsertionIndex(item.type, index);
 
-  LauncherItem old_item(items_[index]);
+  ShelfItem old_item(items_[index]);
   items_[index] = item;
   items_[index].id = old_item.id;
   FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
@@ -130,8 +130,8 @@ void ShelfModel::Set(int index, const LauncherItem& item) {
   }
 }
 
-int ShelfModel::ItemIndexByID(LauncherID id) const {
-  LauncherItems::const_iterator i = ItemByID(id);
+int ShelfModel::ItemIndexByID(ShelfID id) const {
+  ShelfItems::const_iterator i = ItemByID(id);
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
 
@@ -143,8 +143,8 @@ int ShelfModel::GetItemIndexForType(ShelfItemType type) {
   return -1;
 }
 
-LauncherItems::const_iterator ShelfModel::ItemByID(int id) const {
-  for (LauncherItems::const_iterator i = items_.begin();
+ShelfItems::const_iterator ShelfModel::ItemByID(int id) const {
+  for (ShelfItems::const_iterator i = items_.begin();
        i != items_.end(); ++i) {
     if (i->id == id)
       return i;
@@ -157,14 +157,14 @@ int ShelfModel::FirstRunningAppIndex() const {
   // to explicitly change different running application types.
   DCHECK_EQ(ShelfItemTypeToWeight(TYPE_WINDOWED_APP),
             ShelfItemTypeToWeight(TYPE_PLATFORM_APP));
-  LauncherItem weight_dummy;
+  ShelfItem weight_dummy;
   weight_dummy.type = TYPE_WINDOWED_APP;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
                           CompareByWeight) - items_.begin();
 }
 
 int ShelfModel::FirstPanelIndex() const {
-  LauncherItem weight_dummy;
+  ShelfItem weight_dummy;
   weight_dummy.type = TYPE_APP_PANEL;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
                           CompareByWeight) - items_.begin();
@@ -191,14 +191,14 @@ int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
       (ash::switches::UseAlternateShelfLayout() ? 1 : 0));
 
   // Clamp |index| to the allowed range for the type as determined by |weight|.
-  LauncherItem weight_dummy;
+  ShelfItem weight_dummy;
   weight_dummy.type = type;
   index = std::max(std::lower_bound(items_.begin(), items_.end(), weight_dummy,
                                     CompareByWeight) - items_.begin(),
-                   static_cast<LauncherItems::difference_type>(index));
+                   static_cast<ShelfItems::difference_type>(index));
   index = std::min(std::upper_bound(items_.begin(), items_.end(), weight_dummy,
                                     CompareByWeight) - items_.begin(),
-                   static_cast<LauncherItems::difference_type>(index));
+                   static_cast<ShelfItems::difference_type>(index));
 
   return index;
 }

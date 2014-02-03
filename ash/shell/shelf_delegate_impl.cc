@@ -27,11 +27,11 @@ void ShelfDelegateImpl::OnShelfCreated(Shelf* shelf) {
 void ShelfDelegateImpl::OnShelfDestroyed(Shelf* shelf) {
 }
 
-LauncherID ShelfDelegateImpl::GetLauncherIDForAppID(const std::string& app_id) {
+ShelfID ShelfDelegateImpl::GetShelfIDForAppID(const std::string& app_id) {
   return 0;
 }
 
-const std::string& ShelfDelegateImpl::GetAppIDForLauncherID(LauncherID id) {
+const std::string& ShelfDelegateImpl::GetAppIDForShelfID(ShelfID id) {
   return base::EmptyString();
 }
 

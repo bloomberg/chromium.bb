@@ -8,7 +8,7 @@
 #include <map>
 
 #include "ash/ash_export.h"
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -32,32 +32,32 @@ class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
   virtual ~ShelfItemDelegateManager();
 
   // Set |item_delegate| for |id| and take an ownership.
-  void SetShelfItemDelegate(LauncherID id,
+  void SetShelfItemDelegate(ShelfID id,
                             scoped_ptr<ShelfItemDelegate> item_delegate);
 
   // Returns ShelfItemDelegate for |item_type|. Always returns non-NULL.
-  ShelfItemDelegate* GetShelfItemDelegate(LauncherID id);
+  ShelfItemDelegate* GetShelfItemDelegate(ShelfID id);
 
   // ShelfModelObserver overrides:
   virtual void ShelfItemAdded(int model_index) OVERRIDE;
-  virtual void ShelfItemRemoved(int index, LauncherID id) OVERRIDE;
+  virtual void ShelfItemRemoved(int index, ShelfID id) OVERRIDE;
   virtual void ShelfItemMoved(int start_index, int targetindex) OVERRIDE;
   virtual void ShelfItemChanged(int index,
-                                const LauncherItem& old_item) OVERRIDE;
+                                const ShelfItem& old_item) OVERRIDE;
   virtual void ShelfStatusChanged() OVERRIDE;
 
  private:
   friend class test::ShelfItemDelegateManagerTestAPI;
 
-  typedef std::map<LauncherID, ShelfItemDelegate*> LauncherIDToItemDelegateMap;
+  typedef std::map<ShelfID, ShelfItemDelegate*> ShelfIDToItemDelegateMap;
 
   // Remove and destroy ShelfItemDelegate for |id|.
-  void RemoveShelfItemDelegate(LauncherID id);
+  void RemoveShelfItemDelegate(ShelfID id);
 
   // Owned by Shell.
   ShelfModel* model_;
 
-  LauncherIDToItemDelegateMap id_to_item_delegate_map_;
+  ShelfIDToItemDelegateMap id_to_item_delegate_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemDelegateManager);
 };

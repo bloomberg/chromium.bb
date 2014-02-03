@@ -57,7 +57,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root_window,
       ash::ShelfItemDelegate* item_delegate,
-      ash::LauncherItem* item) OVERRIDE;
+      ash::ShelfItem* item) OVERRIDE;
   virtual WindowTreeHostFactory* CreateWindowTreeHostFactory() OVERRIDE;
   virtual GPUSupport* CreateGPUSupport() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;

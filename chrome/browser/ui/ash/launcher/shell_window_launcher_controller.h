@@ -76,7 +76,7 @@ class ShellWindowLauncherController
  private:
   typedef std::map<std::string, ShellWindowLauncherItemController*>
       AppControllerMap;
-  typedef std::map<aura::Window*, std::string> WindowToAppLauncherIdMap;
+  typedef std::map<aura::Window*, std::string> WindowToAppShelfIdMap;
 
   ShellWindowLauncherItemController* ControllerForWindow(aura::Window* window);
 
@@ -90,8 +90,8 @@ class ShellWindowLauncherController
   // Map of app launcher id to controller.
   AppControllerMap app_controller_map_;
 
-  // Allows us to get from an aura::Window to the app launcher id.
-  WindowToAppLauncherIdMap window_to_app_launcher_id_map_;
+  // Allows us to get from an aura::Window to the app shelf id.
+  WindowToAppShelfIdMap window_to_app_shelf_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowLauncherController);
 };

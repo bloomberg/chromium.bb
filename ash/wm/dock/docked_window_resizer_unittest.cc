@@ -81,7 +81,7 @@ class DockedWindowResizerTest
     if (window_type_ == ui::wm::WINDOW_TYPE_PANEL) {
       test::TestShelfDelegate* shelf_delegate =
           test::TestShelfDelegate::instance();
-      shelf_delegate->AddLauncherItem(window);
+      shelf_delegate->AddShelfItem(window);
       PanelLayoutManager* manager =
           static_cast<PanelLayoutManager*>(
               Shell::GetContainer(window->GetRootWindow(),

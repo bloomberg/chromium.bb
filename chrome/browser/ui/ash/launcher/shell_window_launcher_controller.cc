@@ -22,7 +22,7 @@ using apps::ShellWindow;
 
 namespace {
 
-std::string GetAppLauncherId(ShellWindow* shell_window) {
+std::string GetAppShelfId(ShellWindow* shell_window) {
   if (shell_window->window_type_is_panel())
     return base::StringPrintf("panel:%d", shell_window->session_id().id());
   return shell_window->extension()->id();
@@ -60,9 +60,9 @@ ShellWindowLauncherController::~ShellWindowLauncherController() {
 
   if (activation_client_)
     activation_client_->RemoveObserver(this);
-  for (WindowToAppLauncherIdMap::iterator iter =
-           window_to_app_launcher_id_map_.begin();
-       iter != window_to_app_launcher_id_map_.end(); ++iter) {
+  for (WindowToAppShelfIdMap::iterator iter =
+           window_to_app_shelf_id_map_.begin();
+       iter != window_to_app_shelf_id_map_.end(); ++iter) {
     iter->first->RemoveObserver(this);
   }
 }
@@ -95,13 +95,13 @@ void ShellWindowLauncherController::OnShellWindowIconChanged(
   if (!ControlsWindow(shell_window->GetNativeWindow()))
     return;
 
-  const std::string app_launcher_id = GetAppLauncherId(shell_window);
-  AppControllerMap::iterator iter = app_controller_map_.find(app_launcher_id);
+  const std::string app_shelf_id = GetAppShelfId(shell_window);
+  AppControllerMap::iterator iter = app_controller_map_.find(app_shelf_id);
   if (iter == app_controller_map_.end())
     return;
   ShellWindowLauncherItemController* controller = iter->second;
   controller->set_image_set_by_controller(true);
-  owner_->SetLauncherItemImage(controller->launcher_id(),
+  owner_->SetLauncherItemImage(controller->shelf_id(),
                                shell_window->app_icon().AsImageSkia());
 }
 
@@ -128,35 +128,35 @@ void ShellWindowLauncherController::OnWindowActivated(
       ControllerForWindow(new_active);
   if (new_controller) {
     new_controller->SetActiveWindow(new_active);
-    owner_->SetItemStatus(new_controller->launcher_id(), ash::STATUS_ACTIVE);
+    owner_->SetItemStatus(new_controller->shelf_id(), ash::STATUS_ACTIVE);
   }
 
   // Mark the old active window's launcher item as running (if different).
   ShellWindowLauncherItemController* old_controller =
       ControllerForWindow(old_active);
   if (old_controller && old_controller != new_controller)
-    owner_->SetItemStatus(old_controller->launcher_id(), ash::STATUS_RUNNING);
+    owner_->SetItemStatus(old_controller->shelf_id(), ash::STATUS_RUNNING);
 }
 
 void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
   aura::Window* window = shell_window->GetNativeWindow();
-  // Get the app's launcher identifier and add an entry to the map.
-  DCHECK(window_to_app_launcher_id_map_.find(window) ==
-         window_to_app_launcher_id_map_.end());
-  const std::string app_launcher_id = GetAppLauncherId(shell_window);
-  window_to_app_launcher_id_map_[window] = app_launcher_id;
+  // Get the app's shelf identifier and add an entry to the map.
+  DCHECK(window_to_app_shelf_id_map_.find(window) ==
+         window_to_app_shelf_id_map_.end());
+  const std::string app_shelf_id = GetAppShelfId(shell_window);
+  window_to_app_shelf_id_map_[window] = app_shelf_id;
   window->AddObserver(this);
 
   // Find or create an item controller and launcher item.
   std::string app_id = shell_window->extension()->id();
   ash::ShelfItemStatus status = ash::wm::IsActiveWindow(window) ?
       ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
-  AppControllerMap::iterator iter = app_controller_map_.find(app_launcher_id);
-  ash::LauncherID launcher_id = 0;
+  AppControllerMap::iterator iter = app_controller_map_.find(app_shelf_id);
+  ash::ShelfID shelf_id = 0;
   if (iter != app_controller_map_.end()) {
     ShellWindowLauncherItemController* controller = iter->second;
     DCHECK(controller->app_id() == app_id);
-    launcher_id = controller->launcher_id();
+    shelf_id = controller->shelf_id();
     controller->AddShellWindow(shell_window, status);
   } else {
     LauncherItemController::Type type = shell_window->window_type_is_panel()
@@ -164,47 +164,47 @@ void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
         : LauncherItemController::TYPE_APP;
     ShellWindowLauncherItemController* controller =
         new ShellWindowLauncherItemController(
-            type, app_launcher_id, app_id, owner_);
+            type, app_shelf_id, app_id, owner_);
     controller->AddShellWindow(shell_window, status);
-    // If the app launcher id is not unique, and there is already a launcher
-    // item for this app id (e.g. pinned), use that launcher item.
-    if (app_launcher_id == app_id)
-      launcher_id = owner_->GetLauncherIDForAppID(app_id);
-    if (launcher_id == 0)
-      launcher_id = owner_->CreateAppLauncherItem(controller, app_id, status);
+    // If the app shelf id is not unique, and there is already a shelf
+    // item for this app id (e.g. pinned), use that shelf item.
+    if (app_shelf_id == app_id)
+      shelf_id = owner_->GetShelfIDForAppID(app_id);
+    if (shelf_id == 0)
+      shelf_id = owner_->CreateAppLauncherItem(controller, app_id, status);
     else
-      owner_->SetItemController(launcher_id, controller);
-    const std::string app_launcher_id = GetAppLauncherId(shell_window);
-    app_controller_map_[app_launcher_id] = controller;
+      owner_->SetItemController(shelf_id, controller);
+    const std::string app_shelf_id = GetAppShelfId(shell_window);
+    app_controller_map_[app_shelf_id] = controller;
   }
-  owner_->SetItemStatus(launcher_id, status);
-  ash::SetLauncherIDForWindow(launcher_id, window);
+  owner_->SetItemStatus(shelf_id, status);
+  ash::SetShelfIDForWindow(shelf_id, window);
 }
 
 void ShellWindowLauncherController::UnregisterApp(aura::Window* window) {
-  WindowToAppLauncherIdMap::iterator iter1 =
-      window_to_app_launcher_id_map_.find(window);
-  DCHECK(iter1 != window_to_app_launcher_id_map_.end());
-  std::string app_launcher_id = iter1->second;
-  window_to_app_launcher_id_map_.erase(iter1);
+  WindowToAppShelfIdMap::iterator iter1 =
+      window_to_app_shelf_id_map_.find(window);
+  DCHECK(iter1 != window_to_app_shelf_id_map_.end());
+  std::string app_shelf_id = iter1->second;
+  window_to_app_shelf_id_map_.erase(iter1);
   window->RemoveObserver(this);
 
-  AppControllerMap::iterator iter2 = app_controller_map_.find(app_launcher_id);
+  AppControllerMap::iterator iter2 = app_controller_map_.find(app_shelf_id);
   DCHECK(iter2 != app_controller_map_.end());
   ShellWindowLauncherItemController* controller = iter2->second;
   controller->RemoveShellWindowForWindow(window);
   if (controller->shell_window_count() == 0) {
-    // If this is the last window associated with the app launcher id, close the
-    // launcher item.
-    ash::LauncherID launcher_id = controller->launcher_id();
-    owner_->CloseLauncherItem(launcher_id);
+    // If this is the last window associated with the app shelf id, close the
+    // shelf item.
+    ash::ShelfID shelf_id = controller->shelf_id();
+    owner_->CloseLauncherItem(shelf_id);
     app_controller_map_.erase(iter2);
   }
 }
 
 bool ShellWindowLauncherController::IsRegisteredApp(aura::Window* window) {
-  return window_to_app_launcher_id_map_.find(window) !=
-      window_to_app_launcher_id_map_.end();
+  return window_to_app_shelf_id_map_.find(window) !=
+      window_to_app_shelf_id_map_.end();
 }
 
 // Private Methods
@@ -212,12 +212,12 @@ bool ShellWindowLauncherController::IsRegisteredApp(aura::Window* window) {
 ShellWindowLauncherItemController*
 ShellWindowLauncherController::ControllerForWindow(
     aura::Window* window) {
-  WindowToAppLauncherIdMap::iterator iter1 =
-      window_to_app_launcher_id_map_.find(window);
-  if (iter1 == window_to_app_launcher_id_map_.end())
+  WindowToAppShelfIdMap::iterator iter1 =
+      window_to_app_shelf_id_map_.find(window);
+  if (iter1 == window_to_app_shelf_id_map_.end())
     return NULL;
-  std::string app_launcher_id = iter1->second;
-  AppControllerMap::iterator iter2 = app_controller_map_.find(app_launcher_id);
+  std::string app_shelf_id = iter1->second;
+  AppControllerMap::iterator iter2 = app_controller_map_.find(app_shelf_id);
   if (iter2 == app_controller_map_.end())
     return NULL;
   return iter2->second;

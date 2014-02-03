@@ -89,13 +89,13 @@ class ShelfTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfTest);
 };
 
-// Confirms that LauncherItem reflects the appropriated state.
+// Confirms that ShelfItem reflects the appropriated state.
 TEST_F(ShelfTest, StatusReflection) {
   // Initially we have the app list.
   int button_count = test_api()->GetButtonCount();
 
   // Add running platform app.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_PLATFORM_APP;
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
@@ -115,7 +115,7 @@ TEST_F(ShelfTest, checkHoverAfterMenu) {
   int button_count = test_api()->GetButtonCount();
 
   // Add running platform app.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_PLATFORM_APP;
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
@@ -136,12 +136,12 @@ TEST_F(ShelfTest, checkHoverAfterMenu) {
 }
 
 TEST_F(ShelfTest, ShowOverflowBubble) {
-  LauncherID first_item_id = shelf_model()->next_id();
+  ShelfID first_item_id = shelf_model()->next_id();
 
   // Add platform app button until overflow.
   int items_added = 0;
   while (!test_api()->IsOverflowButtonVisible()) {
-    LauncherItem item;
+    ShelfItem item;
     item.type = TYPE_PLATFORM_APP;
     item.status = STATUS_RUNNING;
     shelf_model()->Add(item);

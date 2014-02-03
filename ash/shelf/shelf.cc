@@ -82,7 +82,7 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
 }
 
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
-  LauncherID id = GetLauncherIDForWindow(window);
+  ShelfID id = GetShelfIDForWindow(window);
   gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
@@ -94,7 +94,7 @@ gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
 
 void Shelf::UpdateIconPositionForWindow(aura::Window* window) {
   shelf_view_->UpdatePanelIconPosition(
-      GetLauncherIDForWindow(window),
+      GetShelfIDForWindow(window),
       ScreenUtil::ConvertRectFromScreen(
           shelf_widget()->GetNativeView(),
           window->GetBoundsInScreen()).CenterPoint());
@@ -108,7 +108,7 @@ void Shelf::ActivateShelfItem(int index) {
                      ui::EF_NONE,
                      false);
 
-  const LauncherItem& item = shelf_view_->model()->items()[index];
+  const ShelfItem& item = shelf_view_->model()->items()[index];
   ShelfItemDelegate* item_delegate =
       Shell::GetInstance()->shelf_item_delegate_manager()->GetShelfItemDelegate(
           item.id);
@@ -156,7 +156,7 @@ views::View* Shelf::GetAppListButtonView() const {
 
 void Shelf::LaunchAppIndexAt(int item_index) {
   ShelfModel* shelf_model = shelf_view_->model();
-  const LauncherItems& items = shelf_model->items();
+  const ShelfItems& items = shelf_model->items();
   int item_count = shelf_model->item_count();
   int indexes_left = item_index >= 0 ? item_index : item_count;
   int found_index = -1;

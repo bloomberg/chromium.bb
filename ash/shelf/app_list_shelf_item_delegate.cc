@@ -14,7 +14,7 @@ namespace ash {
 namespace internal {
 
 AppListShelfItemDelegate::AppListShelfItemDelegate() {
-  LauncherItem app_list;
+  ShelfItem app_list;
   app_list.type = TYPE_APP_LIST;
   Shell::GetInstance()->shelf_model()->Add(app_list);
 }

@@ -21,7 +21,7 @@ namespace ash {
 
 class ShelfMenuModel;
 
-// Delegate for the LauncherItem.
+// Delegate for the ShelfItem.
 class ASH_EXPORT ShelfItemDelegate {
  public:
   virtual ~ShelfItemDelegate() {}

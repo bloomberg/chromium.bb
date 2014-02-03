@@ -7,29 +7,29 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ui/aura/window_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::LauncherID);
+DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfID);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfItemDetails*);
 
 namespace ash {
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(LauncherID, kLauncherID, kInvalidShelfID);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ShelfID, kShelfID, kInvalidShelfID);
 
-// ShelfItemDetails for kLauncherItemDetaildKey is owned by the window
+// ShelfItemDetails for kShelfItemDetaildKey is owned by the window
 // and will be freed automatically.
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(ShelfItemDetails,
                                  kShelfItemDetailsKey,
                                  NULL);
 
-void SetLauncherIDForWindow(LauncherID id, aura::Window* window) {
+void SetShelfIDForWindow(ShelfID id, aura::Window* window) {
   if (!window)
     return;
 
-  window->SetProperty(kLauncherID, id);
+  window->SetProperty(kShelfID, id);
 }
 
-LauncherID GetLauncherIDForWindow(aura::Window* window) {
+ShelfID GetShelfIDForWindow(aura::Window* window) {
   DCHECK(window);
-  return window->GetProperty(kLauncherID);
+  return window->GetProperty(kShelfID);
 }
 
 void SetShelfItemDetailsForWindow(aura::Window* window,

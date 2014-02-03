@@ -25,7 +25,7 @@ ShelfItemDelegateManager::~ShelfItemDelegateManager() {
 }
 
 void ShelfItemDelegateManager::SetShelfItemDelegate(
-    LauncherID id,
+    ShelfID id,
     scoped_ptr<ShelfItemDelegate> item_delegate) {
   // If another ShelfItemDelegate is already registered for |id|, we assume
   // that this request is replacing ShelfItemDelegate for |id| with
@@ -34,10 +34,9 @@ void ShelfItemDelegateManager::SetShelfItemDelegate(
   id_to_item_delegate_map_[id] = item_delegate.release();
 }
 
-ShelfItemDelegate* ShelfItemDelegateManager::GetShelfItemDelegate(
-    LauncherID id) {
+ShelfItemDelegate* ShelfItemDelegateManager::GetShelfItemDelegate(ShelfID id) {
   if (model_->ItemIndexByID(id) != -1) {
-    // Each LauncherItem has to have a ShelfItemDelegate.
+    // Each ShelfItem has to have a ShelfItemDelegate.
     DCHECK(id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end());
     return id_to_item_delegate_map_[id];
   }
@@ -47,7 +46,7 @@ ShelfItemDelegate* ShelfItemDelegateManager::GetShelfItemDelegate(
 void ShelfItemDelegateManager::ShelfItemAdded(int index) {
 }
 
-void ShelfItemDelegateManager::ShelfItemRemoved(int index, LauncherID id) {
+void ShelfItemDelegateManager::ShelfItemRemoved(int index, ShelfID id) {
   RemoveShelfItemDelegate(id);
 }
 
@@ -56,13 +55,13 @@ void ShelfItemDelegateManager::ShelfItemMoved(int start_index,
 }
 
 void ShelfItemDelegateManager::ShelfItemChanged(int index,
-                                                const LauncherItem& old_item) {
+                                                const ShelfItem& old_item) {
 }
 
 void ShelfItemDelegateManager::ShelfStatusChanged() {
 }
 
-void ShelfItemDelegateManager::RemoveShelfItemDelegate(LauncherID id) {
+void ShelfItemDelegateManager::RemoveShelfItemDelegate(ShelfID id) {
   if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end()) {
     delete id_to_item_delegate_map_[id];
     id_to_item_delegate_map_.erase(id);

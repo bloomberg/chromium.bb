@@ -26,11 +26,11 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
     STATE_NORMAL    = 0,
     // Button has mouse hovering on it.
     STATE_HOVERED   = 1 << 0,
-    // Underlying LauncherItem has a running instance.
+    // Underlying ShelfItem has a running instance.
     STATE_RUNNING   = 1 << 1,
-    // Underlying LauncherItem is active (i.e. has focus).
+    // Underlying ShelfItem is active (i.e. has focus).
     STATE_ACTIVE    = 1 << 2,
-    // Underlying LauncherItem needs user's attention.
+    // Underlying ShelfItem needs user's attention.
     STATE_ATTENTION = 1 << 3,
     STATE_FOCUSED   = 1 << 4,
     // Hide the status (temporarily for some animations).

@@ -17,7 +17,7 @@ LauncherItemController::LauncherItemController(
     ChromeLauncherController* launcher_controller)
     : type_(type),
       app_id_(app_id),
-      launcher_id_(0),
+      shelf_id_(0),
       launcher_controller_(launcher_controller),
       locked_(0),
       image_set_by_controller_(false) {

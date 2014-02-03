@@ -30,7 +30,7 @@ class ShelfModel;
 class ShelfItemDelegateManager;
 
 namespace internal {
-// ShelfWindowWatcher creates and handles a LauncherItem for windows that have
+// ShelfWindowWatcher creates and handles a ShelfItem for windows that have
 // a ShelfItemDetails property in the default container.
 class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
                            public aura::WindowObserver,
@@ -75,11 +75,11 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
     DISALLOW_COPY_AND_ASSIGN(RemovedWindowObserver);
   };
 
-  // Creates a LauncherItem for |window| that has ShelfItemDetails.
-  void AddLauncherItem(aura::Window* window);
+  // Creates a ShelfItem for |window| that has ShelfItemDetails.
+  void AddShelfItem(aura::Window* window);
 
-  // Removes a LauncherItem for |window|.
-  void RemoveLauncherItem(aura::Window* window);
+  // Removes a ShelfItem for |window|.
+  void RemoveShelfItem(aura::Window* window);
 
   // Adds observer to default container and ActivationClient of |root_window|.
   void OnRootWindowAdded(aura::Window* root_window);
@@ -90,8 +90,8 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
   // Updates the status of ShelfItem for |window|.
   void UpdateShelfItemStatus(aura::Window* window, bool is_active);
 
-  // Returns the index of LauncherItem associated with |window|.
-  int GetLauncherItemIndexForWindow(aura::Window* window) const;
+  // Returns the index of ShelfItem associated with |window|.
+  int GetShelfItemIndexForWindow(aura::Window* window) const;
 
   // Used when a window is removed. During the dragging a window may be removed
   // and when the drag completes added back. When this happens we don't want to

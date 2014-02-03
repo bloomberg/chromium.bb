@@ -132,7 +132,7 @@ aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
     aura::Window* root,
     ash::ShelfItemDelegate* item_delegate,
-    ash::LauncherItem* item) {
+    ash::ShelfItem* item) {
   DCHECK(shelf_delegate_);
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())

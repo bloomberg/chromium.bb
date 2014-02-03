@@ -27,8 +27,8 @@ class ShelfDelegateImpl : public ShelfDelegate {
   // ShelfDelegate overrides:
   virtual void OnShelfCreated(Shelf* shelf) OVERRIDE;
   virtual void OnShelfDestroyed(Shelf* shelf) OVERRIDE;
-  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
-  virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE;
+  virtual ShelfID GetShelfIDForAppID(const std::string& app_id) OVERRIDE;
+  virtual const std::string& GetAppIDForShelfID(ShelfID id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
   virtual bool CanPin() const OVERRIDE;

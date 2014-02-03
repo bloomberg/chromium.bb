@@ -25,7 +25,7 @@ class ShelfNavigatorTest : public testing::Test {
     model_.reset(new ShelfModel);
 
     // Add APP_LIST for test.
-    LauncherItem app_list;
+    ShelfItem app_list;
     app_list.type = TYPE_APP_LIST;
     model_->Add(app_list);
 
@@ -35,7 +35,7 @@ class ShelfNavigatorTest : public testing::Test {
     EXPECT_TRUE(model_->items()[0].type == TYPE_APP_LIST);
 
     // Add BROWSER_SHORTCUT for test.
-    LauncherItem browser_shortcut;
+    ShelfItem browser_shortcut;
     browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
     model_->Add(browser_shortcut);
   }
@@ -44,7 +44,7 @@ class ShelfNavigatorTest : public testing::Test {
                            int types_length,
                            int focused_index) {
     for (int i = 0; i < types_length; ++i) {
-      LauncherItem new_item;
+      ShelfItem new_item;
       new_item.type = types[i];
       new_item.status =
           (types[i] == TYPE_PLATFORM_APP) ? STATUS_RUNNING : STATUS_CLOSED;
@@ -53,7 +53,7 @@ class ShelfNavigatorTest : public testing::Test {
 
     // Set the focused item.
     if (focused_index >= 0) {
-      LauncherItem focused_item =model_->items()[focused_index];
+      ShelfItem focused_item =model_->items()[focused_index];
       if (focused_item.type == TYPE_PLATFORM_APP) {
         focused_item.status = STATUS_ACTIVE;
         model_->Set(focused_index, focused_item);

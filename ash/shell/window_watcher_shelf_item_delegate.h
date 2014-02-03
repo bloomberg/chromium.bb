@@ -5,8 +5,8 @@
 #ifndef ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_
 #define ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_
 
-#include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_item_delegate.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
@@ -18,7 +18,7 @@ class WindowWatcher;
 // ShelfItemDelegate implementation used by WindowWatcher.
 class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
  public:
-  WindowWatcherShelfItemDelegate(LauncherID id, WindowWatcher* watcher);
+  WindowWatcherShelfItemDelegate(ShelfID id, WindowWatcher* watcher);
   virtual ~WindowWatcherShelfItemDelegate();
 
   // ShelfItemDelegate:
@@ -31,7 +31,7 @@ class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
   virtual void Close() OVERRIDE;
 
  private:
-  LauncherID id_;
+  ShelfID id_;
   WindowWatcher* watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowWatcherShelfItemDelegate);

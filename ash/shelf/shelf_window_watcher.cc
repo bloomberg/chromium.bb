@@ -24,10 +24,9 @@
 
 namespace {
 
-// Sets LauncherItem property by using the value of |details|.
-void SetShelfItemDetailsForLauncherItem(
-    ash::LauncherItem* item,
-    const ash::ShelfItemDetails& details) {
+// Sets ShelfItem property by using the value of |details|.
+void SetShelfItemDetailsForShelfItem(ash::ShelfItem* item,
+                                     const ash::ShelfItemDetails& details) {
   item->type = details.type;
   if (details.image_resource_id != ash::kInvalidImageResourceID) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -35,10 +34,10 @@ void SetShelfItemDetailsForLauncherItem(
   }
 }
 
-// Returns true if |window| has a LauncherItem added by ShelfWindowWatcher.
-bool HasLauncherItemForWindow(aura::Window* window) {
+// Returns true if |window| has a ShelfItem added by ShelfWindowWatcher.
+bool HasShelfItemForWindow(aura::Window* window) {
   if (ash::GetShelfItemDetailsForWindow(window) != NULL &&
-      ash::GetLauncherIDForWindow(window) != ash::kInvalidShelfID)
+      ash::GetShelfIDForWindow(window) != ash::kInvalidShelfID)
     return true;
   return false;
 }
@@ -101,7 +100,7 @@ void ShelfWindowWatcher::RemovedWindowObserver::OnWindowParentChanged(
 
 void ShelfWindowWatcher::RemovedWindowObserver::OnWindowDestroyed(
     aura::Window* window) {
-  DCHECK(HasLauncherItemForWindow(window));
+  DCHECK(HasShelfItemForWindow(window));
   window_watcher_->FinishObservingRemovedWindow(window);
 }
 
@@ -130,14 +129,14 @@ ShelfWindowWatcher::~ShelfWindowWatcher() {
   Shell::GetScreen()->RemoveObserver(this);
 }
 
-void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
+void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   const ShelfItemDetails* item_details =
       GetShelfItemDetailsForWindow(window);
-  LauncherItem item;
-  LauncherID id = model_->next_id();
+  ShelfItem item;
+  ShelfID id = model_->next_id();
   item.status = wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
-  SetShelfItemDetailsForLauncherItem(&item, *item_details);
-  SetLauncherIDForWindow(id, window);
+  SetShelfItemDetailsForShelfItem(&item, *item_details);
+  SetShelfIDForWindow(id, window);
   scoped_ptr<ShelfItemDelegate> item_delegate(
       new ShelfWindowWatcherItemDelegate(window, model_));
   // |item_delegate| is owned by |item_delegate_manager_|.
@@ -145,9 +144,9 @@ void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
   model_->Add(item);
 }
 
-void ShelfWindowWatcher::RemoveLauncherItem(aura::Window* window) {
-  model_->RemoveItemAt(model_->ItemIndexByID(GetLauncherIDForWindow(window)));
-  SetLauncherIDForWindow(kInvalidShelfID, window);
+void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
+  model_->RemoveItemAt(model_->ItemIndexByID(GetShelfIDForWindow(window)));
+  SetShelfIDForWindow(kInvalidShelfID, window);
 }
 
 void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
@@ -173,17 +172,17 @@ void ShelfWindowWatcher::OnRootWindowRemoved(aura::Window* root_window) {
 
 void ShelfWindowWatcher::UpdateShelfItemStatus(aura::Window* window,
                                                bool is_active) {
-  int index = GetLauncherItemIndexForWindow(window);
+  int index = GetShelfItemIndexForWindow(window);
   DCHECK_GE(index, 0);
 
-  LauncherItem item = model_->items()[index];
+  ShelfItem item = model_->items()[index];
   item.status = is_active ? STATUS_ACTIVE : STATUS_RUNNING;
   model_->Set(index, item);
 }
 
-int ShelfWindowWatcher::GetLauncherItemIndexForWindow(
+int ShelfWindowWatcher::GetShelfItemIndexForWindow(
     aura::Window* window) const {
-  return model_->ItemIndexByID(GetLauncherIDForWindow(window));
+  return model_->ItemIndexByID(GetShelfIDForWindow(window));
 }
 
 void ShelfWindowWatcher::StartObservingRemovedWindow(aura::Window* window) {
@@ -192,14 +191,14 @@ void ShelfWindowWatcher::StartObservingRemovedWindow(aura::Window* window) {
 
 void ShelfWindowWatcher::FinishObservingRemovedWindow(aura::Window* window) {
   observed_removed_windows_.Remove(window);
-  RemoveLauncherItem(window);
+  RemoveShelfItem(window);
 }
 
 void ShelfWindowWatcher::OnWindowActivated(aura::Window* gained_active,
                                            aura::Window* lost_active) {
-  if (gained_active && HasLauncherItemForWindow(gained_active))
+  if (gained_active && HasShelfItemForWindow(gained_active))
     UpdateShelfItemStatus(gained_active, true);
-  if (lost_active && HasLauncherItemForWindow(lost_active))
+  if (lost_active && HasShelfItemForWindow(lost_active))
     UpdateShelfItemStatus(lost_active, false);
 }
 
@@ -209,17 +208,17 @@ void ShelfWindowWatcher::OnWindowAdded(aura::Window* window) {
   if (observed_removed_windows_.IsObserving(window)) {
     // When |window| is added and it is already observed by
     // |dragged_window_observer_|, |window| already has its item.
-    DCHECK(HasLauncherItemForWindow(window));
+    DCHECK(HasShelfItemForWindow(window));
     observed_removed_windows_.Remove(window);
     return;
   }
 
-  // Add LauncherItem if |window| already has a ShelfItemDetails when it is
-  // created. Don't make a new LauncherItem for the re-parented |window| that
-  // already has a LauncherItem.
-  if (GetLauncherIDForWindow(window) == kInvalidShelfID &&
+  // Add ShelfItem if |window| already has a ShelfItemDetails when it is
+  // created. Don't make a new ShelfItem for the re-parented |window| that
+  // already has a ShelfItem.
+  if (GetShelfIDForWindow(window) == kInvalidShelfID &&
       GetShelfItemDetailsForWindow(window))
-    AddLauncherItem(window);
+    AddShelfItem(window);
 }
 
 void ShelfWindowWatcher::OnWillRemoveWindow(aura::Window* window) {
@@ -230,7 +229,7 @@ void ShelfWindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   // Don't remove |window| item immediately. Instead, defer handling of removing
   // |window|'s item to RemovedWindowObserver because |window| could be added
   // again to default container.
-  if (HasLauncherItemForWindow(window))
+  if (HasShelfItemForWindow(window))
     StartObservingRemovedWindow(window);
 }
 
@@ -247,26 +246,26 @@ void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
     return;
 
   if (GetShelfItemDetailsForWindow(window) == NULL) {
-    // Removes LauncherItem for |window| when it has a LauncherItem.
+    // Removes ShelfItem for |window| when it has a ShelfItem.
     if (reinterpret_cast<ShelfItemDetails*>(old) != NULL)
-      RemoveLauncherItem(window);
+      RemoveShelfItem(window);
     return;
   }
 
-  // When ShelfItemDetails is changed, update LauncherItem.
-  if (HasLauncherItemForWindow(window)) {
-    int index = GetLauncherItemIndexForWindow(window);
+  // When ShelfItemDetails is changed, update ShelfItem.
+  if (HasShelfItemForWindow(window)) {
+    int index = GetShelfItemIndexForWindow(window);
     DCHECK_GE(index, 0);
-    LauncherItem item = model_->items()[index];
+    ShelfItem item = model_->items()[index];
     const ShelfItemDetails* details =
         GetShelfItemDetailsForWindow(window);
-    SetShelfItemDetailsForLauncherItem(&item, *details);
+    SetShelfItemDetailsForShelfItem(&item, *details);
     model_->Set(index, item);
     return;
   }
 
-  // Creates a new LauncherItem for |window|.
-  AddLauncherItem(window);
+  // Creates a new ShelfItem for |window|.
+  AddShelfItem(window);
 }
 
 void ShelfWindowWatcher::OnDisplayBoundsChanged(const gfx::Display& display) {

@@ -35,9 +35,9 @@ namespace shell {
 
 namespace {
 
-// WindowTypeLauncherItem is an app item of app list. It carries a window
+// WindowTypeShelfItem is an app item of app list. It carries a window
 // launch type and launches corresponding example window when activated.
-class WindowTypeLauncherItem : public app_list::AppListItem {
+class WindowTypeShelfItem : public app_list::AppListItem {
  public:
   enum Type {
     TOPLEVEL_WINDOW = 0,
@@ -48,7 +48,7 @@ class WindowTypeLauncherItem : public app_list::AppListItem {
     LAST_TYPE,
   };
 
-  explicit WindowTypeLauncherItem(const std::string& id, Type type)
+  explicit WindowTypeShelfItem(const std::string& id, Type type)
       : app_list::AppListItem(id),
         type_(type) {
     std::string title(GetTitle(type));
@@ -145,7 +145,7 @@ class WindowTypeLauncherItem : public app_list::AppListItem {
  private:
   Type type_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncherItem);
+  DISALLOW_COPY_AND_ASSIGN(WindowTypeShelfItem);
 };
 
 // ExampleSearchResult is an app list search result. It provides what icon to
@@ -154,13 +154,13 @@ class WindowTypeLauncherItem : public app_list::AppListItem {
 // it.
 class ExampleSearchResult : public app_list::SearchResult {
  public:
-  ExampleSearchResult(WindowTypeLauncherItem::Type type,
+  ExampleSearchResult(WindowTypeShelfItem::Type type,
                       const base::string16& query)
       : type_(type) {
-    SetIcon(WindowTypeLauncherItem::GetIcon(type_));
+    SetIcon(WindowTypeShelfItem::GetIcon(type_));
 
     base::string16 title =
-        base::UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type_));
+        base::UTF8ToUTF16(WindowTypeShelfItem::GetTitle(type_));
     set_title(title);
 
     Tags title_tags;
@@ -179,17 +179,17 @@ class ExampleSearchResult : public app_list::SearchResult {
     set_title_tags(title_tags);
 
     base::string16 details =
-        base::UTF8ToUTF16(WindowTypeLauncherItem::GetDetails(type_));
+        base::UTF8ToUTF16(WindowTypeShelfItem::GetDetails(type_));
     set_details(details);
     Tags details_tags;
     details_tags.push_back(Tag(Tag::DIM, 0, details.length()));
     set_details_tags(details_tags);
   }
 
-  WindowTypeLauncherItem::Type type() const { return type_; }
+  WindowTypeShelfItem::Type type() const { return type_; }
 
  private:
-  WindowTypeLauncherItem::Type type_;
+  WindowTypeShelfItem::Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleSearchResult);
 };
@@ -204,13 +204,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
  private:
   void PopulateApps() {
-    for (int i = 0;
-         i < static_cast<int>(WindowTypeLauncherItem::LAST_TYPE);
-         ++i) {
-      WindowTypeLauncherItem::Type type =
-          static_cast<WindowTypeLauncherItem::Type>(i);
+    for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {
+      WindowTypeShelfItem::Type type =
+          static_cast<WindowTypeShelfItem::Type>(i);
       std::string id = base::StringPrintf("%d", i);
-      model_->AddItem(new WindowTypeLauncherItem(id, type));
+      model_->AddItem(new WindowTypeShelfItem(id, type));
     }
   }
 
@@ -267,7 +265,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
                                 int event_flags) OVERRIDE {
     const ExampleSearchResult* example_result =
         static_cast<const ExampleSearchResult*>(result);
-    WindowTypeLauncherItem::ActivateItem(example_result->type(), event_flags);
+    WindowTypeShelfItem::ActivateItem(example_result->type(), event_flags);
   }
 
   virtual void InvokeSearchResultAction(app_list::SearchResult* result,
@@ -292,14 +290,12 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     if (query.empty())
       return;
 
-    for (int i = 0;
-         i < static_cast<int>(WindowTypeLauncherItem::LAST_TYPE);
-         ++i) {
-      WindowTypeLauncherItem::Type type =
-          static_cast<WindowTypeLauncherItem::Type>(i);
+    for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {
+      WindowTypeShelfItem::Type type =
+          static_cast<WindowTypeShelfItem::Type>(i);
 
       base::string16 title =
-          base::UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type));
+          base::UTF8ToUTF16(WindowTypeShelfItem::GetTitle(type));
       if (base::i18n::StringSearchIgnoringCaseAndAccents(
               query, title, NULL, NULL)) {
         model_->results()->Add(new ExampleSearchResult(type, query));

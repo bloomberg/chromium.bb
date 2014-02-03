@@ -6,7 +6,7 @@
 #define ASH_SHELF_SHELF_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_types.h"
 
 namespace ash {
 class Shelf;
@@ -26,10 +26,10 @@ class ASH_EXPORT ShelfDelegate {
   virtual void OnShelfDestroyed(Shelf* shelf) = 0;
 
   // Get the shelf ID from an application ID.
-  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) = 0;
+  virtual ShelfID GetShelfIDForAppID(const std::string& app_id) = 0;
 
-  // Get the application ID for a given launcher ID.
-  virtual const std::string& GetAppIDForLauncherID(LauncherID id) = 0;
+  // Get the application ID for a given shelf ID.
+  virtual const std::string& GetAppIDForShelfID(ShelfID id) = 0;
 
   // Pins an app with |app_id| to shelf. A running instance will get pinned.
   // In case there is no running instance a new shelf item is created and

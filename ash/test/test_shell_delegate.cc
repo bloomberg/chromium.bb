@@ -143,7 +143,7 @@ aura::client::UserActionClient* TestShellDelegate::CreateUserActionClient() {
 ui::MenuModel* TestShellDelegate::CreateContextMenu(
     aura::Window* root,
     ash::ShelfItemDelegate* item_delegate,
-    ash::LauncherItem* item) {
+    ash::ShelfItem* item) {
   return NULL;
 }
 

@@ -29,18 +29,18 @@ TestShelfDelegate::~TestShelfDelegate() {
   instance_ = NULL;
 }
 
-void TestShelfDelegate::AddLauncherItem(aura::Window* window) {
-  AddLauncherItem(window, STATUS_CLOSED);
+void TestShelfDelegate::AddShelfItem(aura::Window* window) {
+  AddShelfItem(window, STATUS_CLOSED);
 }
 
-void TestShelfDelegate::AddLauncherItem(aura::Window* window,
-                                        ShelfItemStatus status) {
-  LauncherItem item;
+void TestShelfDelegate::AddShelfItem(aura::Window* window,
+                                     ShelfItemStatus status) {
+  ShelfItem item;
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     item.type = TYPE_APP_PANEL;
   else
     item.type = TYPE_PLATFORM_APP;
-  LauncherID id = model_->next_id();
+  ShelfID id = model_->next_id();
   item.status = status;
   model_->Add(item);
   window->AddObserver(this);
@@ -50,11 +50,11 @@ void TestShelfDelegate::AddLauncherItem(aura::Window* window,
   // |manager| owns TestShelfItemDelegate.
   scoped_ptr<ShelfItemDelegate> delegate(new TestShelfItemDelegate(window));
   manager->SetShelfItemDelegate(id, delegate.Pass());
-  SetLauncherIDForWindow(id, window);
+  SetShelfIDForWindow(id, window);
 }
 
-void TestShelfDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
-  LauncherID id = GetLauncherIDForWindow(window);
+void TestShelfDelegate::RemoveShelfItemForWindow(aura::Window* window) {
+  ShelfID id = GetShelfIDForWindow(window);
   if (id == 0)
     return;
   int index = model_->ItemIndexByID(id);
@@ -64,7 +64,7 @@ void TestShelfDelegate::RemoveLauncherItemForWindow(aura::Window* window) {
 }
 
 void TestShelfDelegate::OnWindowDestroying(aura::Window* window) {
-  RemoveLauncherItemForWindow(window);
+  RemoveShelfItemForWindow(window);
 }
 
 void TestShelfDelegate::OnWindowHierarchyChanging(
@@ -73,7 +73,7 @@ void TestShelfDelegate::OnWindowHierarchyChanging(
   // to another display or container. If the window does not have a new parent
   // then remove the shelf item.
   if (!params.new_parent)
-    RemoveLauncherItemForWindow(params.target);
+    RemoveShelfItemForWindow(params.target);
 }
 
 void TestShelfDelegate::OnShelfCreated(Shelf* shelf) {
@@ -82,11 +82,11 @@ void TestShelfDelegate::OnShelfCreated(Shelf* shelf) {
 void TestShelfDelegate::OnShelfDestroyed(Shelf* shelf) {
 }
 
-LauncherID TestShelfDelegate::GetLauncherIDForAppID(const std::string& app_id) {
+ShelfID TestShelfDelegate::GetShelfIDForAppID(const std::string& app_id) {
   return 0;
 }
 
-const std::string& TestShelfDelegate::GetAppIDForLauncherID(LauncherID id) {
+const std::string& TestShelfDelegate::GetAppIDForShelfID(ShelfID id) {
   return base::EmptyString();
 }
 

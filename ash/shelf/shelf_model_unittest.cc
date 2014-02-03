@@ -43,11 +43,11 @@ class TestShelfModelObserver : public ShelfModelObserver {
   virtual void ShelfItemAdded(int index) OVERRIDE {
     added_count_++;
   }
-  virtual void ShelfItemRemoved(int index, LauncherID id) OVERRIDE {
+  virtual void ShelfItemRemoved(int index, ShelfID id) OVERRIDE {
     removed_count_++;
   }
   virtual void ShelfItemChanged(int index,
-                                const LauncherItem& old_item) OVERRIDE {
+                                const ShelfItem& old_item) OVERRIDE {
     changed_count_++;
   }
   virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE {
@@ -85,7 +85,7 @@ class ShelfModelTest : public testing::Test {
     observer_.reset(new TestShelfModelObserver);
     EXPECT_EQ(0, model_->item_count());
 
-    LauncherItem item;
+    ShelfItem item;
     item.type = TYPE_APP_LIST;
     model_->Add(item);
     EXPECT_EQ(1, model_->item_count());
@@ -107,14 +107,14 @@ class ShelfModelTest : public testing::Test {
 
 TEST_F(ShelfModelTest, BasicAssertions) {
   // Add an item.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_APP_SHORTCUT;
   int index = model_->Add(item);
   EXPECT_EQ(2, model_->item_count());
   EXPECT_EQ("added=1", observer_->StateStringAndClear());
 
   // Change to a platform app item.
-  LauncherID original_id = model_->items()[index].id;
+  ShelfID original_id = model_->items()[index].id;
   item.type = TYPE_PLATFORM_APP;
   model_->Set(index, item);
   EXPECT_EQ(original_id, model_->items()[index].id);
@@ -150,7 +150,7 @@ TEST_F(ShelfModelTest, BasicAssertions) {
   EXPECT_EQ("moved=1", observer_->StateStringAndClear());
 
   // Verifies all the items get unique ids.
-  std::set<LauncherID> ids;
+  std::set<ShelfID> ids;
   for (int i = 0; i < model_->item_count(); ++i)
     ids.insert(model_->items()[i].id);
   EXPECT_EQ(model_->item_count(), static_cast<int>(ids.size()));
@@ -159,13 +159,13 @@ TEST_F(ShelfModelTest, BasicAssertions) {
 // Assertions around where items are added.
 TEST_F(ShelfModelTest, AddIndices) {
   // Insert browser short cut at index 1.
-  LauncherItem browser_shortcut;
+  ShelfItem browser_shortcut;
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
   int browser_shortcut_index = model_->Add(browser_shortcut);
   EXPECT_EQ(1, browser_shortcut_index);
 
   // platform app items should be after browser shortcut.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_PLATFORM_APP;
   int platform_app_index1 = model_->Add(item);
   EXPECT_EQ(2, platform_app_index1);
@@ -241,7 +241,7 @@ TEST_F(ShelfModelTest, AddIndices) {
 TEST_F(ShelfModelTest, FirstRunningAppIndexUsingWindowedAppFirst) {
   // Insert the browser shortcut at index 1 and check that the running
   // application index would be behind it.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_BROWSER_SHORTCUT;
   EXPECT_EQ(1, model_->Add(item));
   EXPECT_EQ(2, model_->FirstRunningAppIndex());
@@ -274,7 +274,7 @@ TEST_F(ShelfModelTest, FirstRunningAppIndexUsingWindowedAppFirst) {
 TEST_F(ShelfModelTest, FirstRunningAppIndexUsingPlatformAppFirst) {
   // Insert the browser shortcut at index 1 and check that the running
   // application index would be behind it.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_BROWSER_SHORTCUT;
   EXPECT_EQ(1, model_->Add(item));
   EXPECT_EQ(2, model_->FirstRunningAppIndex());
@@ -308,13 +308,13 @@ TEST_F(ShelfModelTest, AddIndicesForLegacyShelfLayout) {
       ash::switches::kAshDisableAlternateShelfLayout);
 
   // Insert browser short cut at index 0.
-  LauncherItem browser_shortcut;
+  ShelfItem browser_shortcut;
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
   int browser_shortcut_index = model_->Add(browser_shortcut);
   EXPECT_EQ(0, browser_shortcut_index);
 
   // platform app items should be after browser shortcut.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_PLATFORM_APP;
   int platform_app_index1 = model_->Add(item);
   EXPECT_EQ(1, platform_app_index1);
@@ -386,9 +386,9 @@ TEST_F(ShelfModelTest, AddIndicesForLegacyShelfLayout) {
 }
 
 // Assertions around id generation and usage.
-TEST_F(ShelfModelTest, LauncherIDTests) {
+TEST_F(ShelfModelTest, ShelfIDTests) {
   // Get the next to use ID counter.
-  LauncherID id = model_->next_id();
+  ShelfID id = model_->next_id();
 
   // Calling this function multiple times does not change the returned ID.
   EXPECT_EQ(model_->next_id(), id);
@@ -398,11 +398,11 @@ TEST_F(ShelfModelTest, LauncherIDTests) {
   // produce something new.
   EXPECT_EQ(model_->reserve_external_id(), id);
   EXPECT_EQ(1, model_->item_count());
-  LauncherID id2 = model_->next_id();
+  ShelfID id2 = model_->next_id();
   EXPECT_NE(id2, id);
 
   // Adding another item to the list should also produce a new ID.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_PLATFORM_APP;
   model_->Add(item);
   EXPECT_NE(model_->next_id(), id2);
@@ -413,14 +413,14 @@ TEST_F(ShelfModelTest, LauncherIDTests) {
 // location. See crbug.com/248769.
 TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChange) {
   // The first item is the app list and last item is the browser.
-  LauncherItem browser_shortcut;
+  ShelfItem browser_shortcut;
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
   int browser_shortcut_index = model_->Add(browser_shortcut);
   EXPECT_EQ(TYPE_APP_LIST, model_->items()[0].type);
   EXPECT_EQ(1, browser_shortcut_index);
 
   // Add three shortcuts. They should all be moved between the two.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_APP_SHORTCUT;
   int app1_index = model_->Add(item);
   EXPECT_EQ(2, app1_index);
@@ -443,14 +443,14 @@ TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChangeForLegacyShelfLayout) {
       ash::switches::kAshDisableAlternateShelfLayout);
 
   // The first item is the browser and the second item is app list.
-  LauncherItem browser_shortcut;
+  ShelfItem browser_shortcut;
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
   int browser_shortcut_index = model_->Add(browser_shortcut);
   EXPECT_EQ(0, browser_shortcut_index);
   EXPECT_EQ(TYPE_APP_LIST, model_->items()[1].type);
 
   // Add three shortcuts. They should all be moved between the two.
-  LauncherItem item;
+  ShelfItem item;
   item.type = TYPE_APP_SHORTCUT;
   int app1_index = model_->Add(item);
   EXPECT_EQ(1, app1_index);

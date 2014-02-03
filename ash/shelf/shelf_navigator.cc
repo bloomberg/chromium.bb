@@ -23,13 +23,13 @@ bool ShouldSkip(ShelfItemType type) {
 
 int GetNextActivatedItemIndex(const ShelfModel& model,
                               CycleDirection direction) {
-  const LauncherItems& items = model.items();
+  const ShelfItems& items = model.items();
   int item_count = model.item_count();
   int current_index = -1;
   int first_running = -1;
 
   for (int i = 0; i < item_count; ++i) {
-    const LauncherItem& item = items[i];
+    const ShelfItem& item = items[i];
     if (ShouldSkip(item.type))
       continue;
 
@@ -55,7 +55,7 @@ int GetNextActivatedItemIndex(const ShelfModel& model,
   // Find the next item and activate it.
   for (int i = (current_index + step + item_count) % item_count;
        i != current_index; i = (i + step + item_count) % item_count) {
-    const LauncherItem& item = items[i];
+    const ShelfItem& item = items[i];
     if (ShouldSkip(item.type))
       continue;
 

@@ -6,9 +6,9 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_button_host.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"

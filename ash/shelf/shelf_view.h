@@ -36,7 +36,7 @@ class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfItemDelegateManager;
 class ShelfModel;
-struct LauncherItem;
+struct ShelfItem;
 
 namespace internal {
 
@@ -79,10 +79,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know.
-  gfx::Rect GetIdealBoundsOfItemIcon(LauncherID id);
+  gfx::Rect GetIdealBoundsOfItemIcon(ShelfID id);
 
   // Repositions the icon for the specified item by the midpoint of the window.
-  void UpdatePanelIconPosition(LauncherID id, const gfx::Point& midpoint);
+  void UpdatePanelIconPosition(ShelfID id, const gfx::Point& midpoint);
 
   void AddIconObserver(ShelfIconObserver* observer);
   void RemoveIconObserver(ShelfIconObserver* observer);
@@ -187,7 +187,7 @@ class ASH_EXPORT ShelfView : public views::View,
   void AnimateToIdealBounds();
 
   // Creates the view used to represent |item|.
-  views::View* CreateViewForItem(const LauncherItem& item);
+  views::View* CreateViewForItem(const ShelfItem& item);
 
   // Fades |view| from an opacity of 0 to 1. This is when adding a new item.
   void FadeIn(views::View* view);
@@ -266,9 +266,9 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Overridden from ShelfModelObserver:
   virtual void ShelfItemAdded(int model_index) OVERRIDE;
-  virtual void ShelfItemRemoved(int model_index, LauncherID id) OVERRIDE;
+  virtual void ShelfItemRemoved(int model_index, ShelfID id) OVERRIDE;
   virtual void ShelfItemChanged(int model_index,
-                                const LauncherItem& old_item) OVERRIDE;
+                                const ShelfItem& old_item) OVERRIDE;
   virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE;
   virtual void ShelfStatusChanged() OVERRIDE;
 
@@ -296,7 +296,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // choose from. |source| specifies the view which is responsible for showing
   // the menu, and the bubble will point towards it.
   // The |event_flags| are the flags of the event which triggered this menu.
-  bool ShowListMenuForView(const LauncherItem& item,
+  bool ShowListMenuForView(const ShelfItem& item,
                            views::View* source,
                            const ui::Event& event);
 
@@ -325,7 +325,7 @@ class ASH_EXPORT ShelfView : public views::View,
   bool IsUsableEvent(const ui::Event& event);
 
   // Convenience accessor to model_->items().
-  const LauncherItem* LauncherItemForView(const views::View* view) const;
+  const ShelfItem* ShelfItemForView(const views::View* view) const;
 
   // Returns true if a tooltip should be shown for |view|.
   bool ShouldShowTooltipForView(const views::View* view) const;
@@ -376,7 +376,7 @@ class ASH_EXPORT ShelfView : public views::View,
   int start_drag_index_;
 
   // Used for the context menu of a particular item.
-  LauncherID context_menu_id_;
+  ShelfID context_menu_id_;
 
   scoped_ptr<views::FocusSearch> focus_search_;
 
@@ -408,9 +408,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // and it needs to be deleted/unpinned again if the operation gets cancelled.
   bool drag_and_drop_item_pinned_;
 
-  // The launcher item which is currently used for a drag and a drop operation
+  // The ShelfItem which is currently used for a drag and a drop operation
   // or 0 otherwise.
-  LauncherID drag_and_drop_launcher_id_;
+  ShelfID drag_and_drop_shelf_id_;
 
   // The application ID of the application which we drag and drop.
   std::string drag_and_drop_app_id_;

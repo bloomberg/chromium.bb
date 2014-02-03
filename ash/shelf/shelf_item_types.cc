@@ -8,6 +8,15 @@
 
 namespace ash {
 
+ShelfItem::ShelfItem()
+    : type(TYPE_UNDEFINED),
+      id(kInvalidShelfID),
+      status(STATUS_CLOSED) {
+}
+
+ShelfItem::~ShelfItem() {
+}
+
 ShelfItemDetails::ShelfItemDetails()
     : type(TYPE_UNDEFINED),
       image_resource_id(kInvalidImageResourceID) {

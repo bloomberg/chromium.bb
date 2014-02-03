@@ -529,7 +529,7 @@ ShelfDelegate* Shell::GetShelfDelegate() {
     // ShelfItemDelegate.
     int app_list_index = shelf_model_->GetItemIndexForType(TYPE_APP_LIST);
     DCHECK_GE(app_list_index, 0);
-    LauncherID app_list_id = shelf_model_->items()[app_list_index].id;
+    ShelfID app_list_id = shelf_model_->items()[app_list_index].id;
     DCHECK(app_list_id);
     shelf_item_delegate_manager_->SetShelfItemDelegate(app_list_id,
                                                        controller.Pass());

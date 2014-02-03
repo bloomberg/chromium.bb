@@ -19,15 +19,15 @@ class ShelfModel;
 namespace test {
 
 // Test implementation of ShelfDelegate.
-// Tests may create icons for windows by calling AddLauncherItem
+// Tests may create icons for windows by calling AddShelfItem().
 class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
  public:
   explicit TestShelfDelegate(ShelfModel* model);
   virtual ~TestShelfDelegate();
 
-  void AddLauncherItem(aura::Window* window);
-  void AddLauncherItem(aura::Window* window, ShelfItemStatus status);
-  void RemoveLauncherItemForWindow(aura::Window* window);
+  void AddShelfItem(aura::Window* window);
+  void AddShelfItem(aura::Window* window, ShelfItemStatus status);
+  void RemoveShelfItemForWindow(aura::Window* window);
 
   static TestShelfDelegate* instance() { return instance_; }
 
@@ -39,8 +39,8 @@ class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
   // ShelfDelegate implementation.
   virtual void OnShelfCreated(Shelf* shelf) OVERRIDE;
   virtual void OnShelfDestroyed(Shelf* shelf) OVERRIDE;
-  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
-  virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE;
+  virtual ShelfID GetShelfIDForAppID(const std::string& app_id) OVERRIDE;
+  virtual const std::string& GetAppIDForShelfID(ShelfID id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
   virtual bool CanPin() const OVERRIDE;
   virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;

@@ -66,7 +66,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     test::TestShelfDelegate* shelf_delegate =
         test::TestShelfDelegate::instance();
-    shelf_delegate->AddLauncherItem(window);
+    shelf_delegate->AddShelfItem(window);
     PanelLayoutManager* manager = static_cast<PanelLayoutManager*>(
         GetPanelContainer(window)->layout_manager());
     manager->Relayout();
@@ -212,13 +212,12 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   // Clicks the shelf items on |shelf_view| that is associated with given
   // |window|.
-  void ClickLauncherItemForWindow(ShelfView* shelf_view,
-                                  aura::Window* window) {
+  void ClickShelfItemForWindow(ShelfView* shelf_view, aura::Window* window) {
     test::ShelfViewTestAPI test_api(shelf_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
     ShelfModel* model = test::ShellTestApi(Shell::GetInstance()).shelf_model();
-    int index = model->ItemIndexByID(GetLauncherIDForWindow(window));
+    int index = model->ItemIndexByID(GetShelfIDForWindow(window));
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 
     aura::test::EventGenerator& event_generator = GetEventGenerator();
@@ -618,7 +617,7 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
 
   // Test a panel on 1st display.
   // Clicking on the same display has no effect.
-  ClickLauncherItemForWindow(shelf_view_1st, p1_d1.get());
+  ClickShelfItemForWindow(shelf_view_1st, p1_d1.get());
   EXPECT_EQ(root_windows[0], p1_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
   EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());
@@ -628,7 +627,7 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
 
   // Test if clicking on another display moves the panel to
   // that display.
-  ClickLauncherItemForWindow(shelf_view_2nd, p1_d1.get());
+  ClickShelfItemForWindow(shelf_view_2nd, p1_d1.get());
   EXPECT_EQ(root_windows[1], p1_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
   EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());
@@ -638,7 +637,7 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
 
   // Test a panel on 2nd display.
   // Clicking on the same display has no effect.
-  ClickLauncherItemForWindow(shelf_view_2nd, p1_d2.get());
+  ClickShelfItemForWindow(shelf_view_2nd, p1_d2.get());
   EXPECT_EQ(root_windows[1], p1_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
   EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());
@@ -648,7 +647,7 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
 
   // Test if clicking on another display moves the panel to
   // that display.
-  ClickLauncherItemForWindow(shelf_view_1st, p1_d2.get());
+  ClickShelfItemForWindow(shelf_view_1st, p1_d2.get());
   EXPECT_EQ(root_windows[1], p1_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p1_d2->GetRootWindow());
@@ -658,7 +657,7 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
 
   // Test if clicking on a previously moved window moves the
   // panel back to the original display.
-  ClickLauncherItemForWindow(shelf_view_1st, p1_d1.get());
+  ClickShelfItemForWindow(shelf_view_1st, p1_d1.get());
   EXPECT_EQ(root_windows[0], p1_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p2_d1->GetRootWindow());
   EXPECT_EQ(root_windows[0], p1_d2->GetRootWindow());

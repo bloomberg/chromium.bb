@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ash/shell_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -70,7 +70,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ui::MenuModel* CreateContextMenu(
       aura::Window* root,
       ash::ShelfItemDelegate* item_delegate,
-      ash::LauncherItem* item) OVERRIDE;
+      ash::ShelfItem* item) OVERRIDE;
   virtual ash::WindowTreeHostFactory* CreateWindowTreeHostFactory() OVERRIDE;
   virtual ash::GPUSupport* CreateGPUSupport() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;

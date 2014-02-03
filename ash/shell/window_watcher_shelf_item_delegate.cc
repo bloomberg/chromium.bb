@@ -12,7 +12,7 @@ namespace ash {
 namespace shell {
 
 WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
-    LauncherID id,
+    ShelfID id,
     WindowWatcher* watcher)
     : id_(id), watcher_(watcher) {
   DCHECK_GT(id_, 0);

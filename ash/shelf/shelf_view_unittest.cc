@@ -131,7 +131,7 @@ TEST_F(ShelfViewIconObserverTest, AddRemove) {
 
   scoped_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
-  shelf_delegate->AddLauncherItem(widget->GetNativeWindow());
+  shelf_delegate->AddShelfItem(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
@@ -167,7 +167,7 @@ TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
 
   scoped_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
-  shelf_delegate->AddLauncherItem(widget->GetNativeWindow());
+  shelf_delegate->AddShelfItem(widget->GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->change_notified());
   EXPECT_TRUE(second_observer.change_notified());
@@ -211,13 +211,13 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
 
   virtual void OnShelfDestroyed(Shelf* shelf) OVERRIDE {}
 
-  virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE {
-    LauncherID id = 0;
+  virtual ShelfID GetShelfIDForAppID(const std::string& app_id) OVERRIDE {
+    ShelfID id = 0;
     EXPECT_TRUE(base::StringToInt(app_id, &id));
     return id;
   }
 
-  virtual const std::string& GetAppIDForLauncherID(LauncherID id) OVERRIDE {
+  virtual const std::string& GetAppIDForShelfID(ShelfID id) OVERRIDE {
     // Use |app_id_| member variable because returning a reference to local
     // variable is not allowed.
     app_id_ = base::IntToString(id);
@@ -238,7 +238,7 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
   }
 
   virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE {
-    LauncherID id = 0;
+    ShelfID id = 0;
     EXPECT_TRUE(base::StringToInt(app_id, &id));
     ASSERT_GT(id, 0);
     int index = model_->ItemIndexByID(id);
@@ -251,7 +251,7 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
   ShelfModel* model_;
 
   // Temp member variable for returning a value. See the comment in the
-  // GetAppIDForLauncherID().
+  // GetAppIDForShelfID().
   std::string app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfDelegateForShelfView);
@@ -289,91 +289,91 @@ class ShelfViewTest : public AshTestBase {
   }
 
  protected:
-  void CreateAndSetShelfItemDelegateForID(LauncherID id) {
+  void CreateAndSetShelfItemDelegateForID(ShelfID id) {
     scoped_ptr<ShelfItemDelegate> delegate(new TestShelfItemDelegate(NULL));
     item_manager_->SetShelfItemDelegate(id, delegate.Pass());
   }
 
-  LauncherID AddBrowserShortcut() {
-    LauncherItem browser_shortcut;
+  ShelfID AddBrowserShortcut() {
+    ShelfItem browser_shortcut;
     browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
 
-    LauncherID id = model_->next_id();
+    ShelfID id = model_->next_id();
     model_->AddAt(browser_index_, browser_shortcut);
     CreateAndSetShelfItemDelegateForID(id);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
 
-  LauncherID AddAppShortcut() {
-    LauncherItem item;
+  ShelfID AddAppShortcut() {
+    ShelfItem item;
     item.type = TYPE_APP_SHORTCUT;
     item.status = STATUS_CLOSED;
 
-    LauncherID id = model_->next_id();
+    ShelfID id = model_->next_id();
     model_->Add(item);
     CreateAndSetShelfItemDelegateForID(id);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
 
-  LauncherID AddPanel() {
-    LauncherID id = AddPanelNoWait();
+  ShelfID AddPanel() {
+    ShelfID id = AddPanelNoWait();
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
 
-  LauncherID AddPlatformAppNoWait() {
-    LauncherItem item;
+  ShelfID AddPlatformAppNoWait() {
+    ShelfItem item;
     item.type = TYPE_PLATFORM_APP;
     item.status = STATUS_RUNNING;
 
-    LauncherID id = model_->next_id();
+    ShelfID id = model_->next_id();
     model_->Add(item);
     CreateAndSetShelfItemDelegateForID(id);
     return id;
   }
 
-  LauncherID AddPanelNoWait() {
-    LauncherItem item;
+  ShelfID AddPanelNoWait() {
+    ShelfItem item;
     item.type = TYPE_APP_PANEL;
     item.status = STATUS_RUNNING;
 
-    LauncherID id = model_->next_id();
+    ShelfID id = model_->next_id();
     model_->Add(item);
     CreateAndSetShelfItemDelegateForID(id);
     return id;
   }
 
-  LauncherID AddPlatformApp() {
-    LauncherID id = AddPlatformAppNoWait();
+  ShelfID AddPlatformApp() {
+    ShelfID id = AddPlatformAppNoWait();
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
 
-  void RemoveByID(LauncherID id) {
+  void RemoveByID(ShelfID id) {
     model_->RemoveItemAt(model_->ItemIndexByID(id));
     test_api_->RunMessageLoopUntilAnimationsDone();
   }
 
-  internal::ShelfButton* GetButtonByID(LauncherID id) {
+  internal::ShelfButton* GetButtonByID(ShelfID id) {
     int index = model_->ItemIndexByID(id);
     return test_api_->GetButton(index);
   }
 
-  LauncherItem GetItemByID(LauncherID id) {
-    LauncherItems::const_iterator items = model_->ItemByID(id);
+  ShelfItem GetItemByID(ShelfID id) {
+    ShelfItems::const_iterator items = model_->ItemByID(id);
     return *items;
   }
 
   void CheckModelIDs(
-      const std::vector<std::pair<LauncherID, views::View*> >& id_map) {
+      const std::vector<std::pair<ShelfID, views::View*> >& id_map) {
     size_t map_index = 0;
     for (size_t model_index = 0;
          model_index < model_->items().size();
          ++model_index) {
-      LauncherItem item = model_->items()[model_index];
-      LauncherID id = item.id;
+      ShelfItem item = model_->items()[model_index];
+      ShelfID id = item.id;
       EXPECT_EQ(id_map[map_index].first, id);
       EXPECT_EQ(id_map[map_index].second, GetButtonByID(id));
       ++map_index;
@@ -432,7 +432,7 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void SetupForDragTest(
-      std::vector<std::pair<LauncherID, views::View*> >* id_map) {
+      std::vector<std::pair<ShelfID, views::View*> >* id_map) {
     // Initialize |id_map| with the automatically-created shelf buttons.
     for (size_t i = 0; i < model_->items().size(); ++i) {
       internal::ShelfButton* button = test_api_->GetButton(i);
@@ -442,7 +442,7 @@ class ShelfViewTest : public AshTestBase {
 
     // Add 5 app shelf buttons for testing.
     for (int i = 0; i < 5; ++i) {
-      LauncherID id = AddAppShortcut();
+      ShelfID id = AddAppShortcut();
       // App Icon is located at index 0, and browser shortcut is located at
       // index 1. So we should start to add app shortcut at index 2.
       id_map->insert(id_map->begin() + (i + browser_index_ + 1),
@@ -489,7 +489,7 @@ class ShelfViewTest : public AshTestBase {
 
     int drag_item_index =
         test_api_for_overflow.GetLastVisibleIndex();
-    LauncherID drag_item_id = GetItemId(drag_item_index);
+    ShelfID drag_item_id = GetItemId(drag_item_index);
     internal::ShelfButton* drag_button =
         test_api_for_overflow.GetButton(drag_item_index);
     gfx::Point center_point_of_drag_item =
@@ -555,8 +555,8 @@ class ShelfViewTest : public AshTestBase {
     }
   }
 
-  // Returns the item's LauncherID at |index|.
-  LauncherID GetItemId(int index) {
+  // Returns the item's ShelfID at |index|.
+  ShelfID GetItemId(int index) {
     DCHECK_GE(index, 0);
     return model_->items()[index].id;
   }
@@ -648,7 +648,7 @@ class ShelfViewTextDirectionTest
 // Checks that the ideal item icon bounds match the view's bounds in the screen
 // in both LTR and RTL.
 TEST_P(ShelfViewTextDirectionTest, IdealBoundsOfItemIcon) {
-  LauncherID id = AddPlatformApp();
+  ShelfID id = AddPlatformApp();
   internal::ShelfButton* button = GetButtonByID(id);
   gfx::Rect item_bounds = button->GetBoundsInScreen();
   gfx::Point icon_offset = button->GetIconBounds().origin();
@@ -705,7 +705,7 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
 
   // Add platform app button until overflow.
   int items_added = 0;
-  LauncherID last_added = AddPlatformApp();
+  ShelfID last_added = AddPlatformApp();
   while (!test_api_->IsOverflowButtonVisible()) {
     // Added button is visible after animation while in this loop.
     EXPECT_TRUE(GetButtonByID(last_added)->visible());
@@ -727,11 +727,11 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   ASSERT_EQ(test_api_->GetButtonCount(),
             test_api_->GetLastVisibleIndex() + 1);
 
-  LauncherID browser_button_id = AddPlatformApp();
+  ShelfID browser_button_id = AddPlatformApp();
 
   // Add app shortcut until overflow.
   int items_added = 0;
-  LauncherID last_added = AddAppShortcut();
+  ShelfID last_added = AddAppShortcut();
   while (!test_api_->IsOverflowButtonVisible()) {
     // Added button is visible after animation while in this loop.
     EXPECT_TRUE(GetButtonByID(last_added)->visible());
@@ -752,11 +752,11 @@ TEST_F(ShelfViewLegacyShelfLayoutTest,
             test_api_->GetLastVisibleIndex() + 1);
 
 
-  LauncherID browser_button_id = AddPlatformApp();
+  ShelfID browser_button_id = AddPlatformApp();
 
   // Add app shortcut until overflow.
   int items_added = 0;
-  LauncherID last_added = AddAppShortcut();
+  ShelfID last_added = AddAppShortcut();
   while (!test_api_->IsOverflowButtonVisible()) {
     // Added button is visible after animation while in this loop.
     EXPECT_TRUE(GetButtonByID(last_added)->visible());
@@ -780,10 +780,10 @@ TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
   // Add platform app button until overflow, remember last visible platform app
   // button.
   int items_added = 0;
-  LauncherID first_added = AddPlatformApp();
+  ShelfID first_added = AddPlatformApp();
   EXPECT_TRUE(GetButtonByID(first_added)->visible());
   while (true) {
-    LauncherID added = AddPlatformApp();
+    ShelfID added = AddPlatformApp();
     if (test_api_->IsOverflowButtonVisible()) {
       EXPECT_FALSE(GetButtonByID(added)->visible());
       RemoveByID(added);
@@ -793,7 +793,7 @@ TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
     ASSERT_LT(items_added, 10000);
   }
 
-  LauncherID panel = AddPanel();
+  ShelfID panel = AddPanel();
   EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
 
   RemoveByID(panel);
@@ -808,11 +808,11 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
   // Add platform app button until overflow, remember last visible platform app
   // button.
   int items_added = 0;
-  LauncherID first_added = AddPlatformApp();
+  ShelfID first_added = AddPlatformApp();
   EXPECT_TRUE(GetButtonByID(first_added)->visible());
-  LauncherID last_visible = first_added;
+  ShelfID last_visible = first_added;
   while (true) {
-    LauncherID added = AddPlatformApp();
+    ShelfID added = AddPlatformApp();
     if (test_api_->IsOverflowButtonVisible()) {
       EXPECT_FALSE(GetButtonByID(added)->visible());
       break;
@@ -822,7 +822,7 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, AddPanelHidesPlatformAppButton) {
     ASSERT_LT(items_added, 10000);
   }
 
-  LauncherID panel = AddPanel();
+  ShelfID panel = AddPanel();
   EXPECT_TRUE(GetButtonByID(panel)->visible());
   EXPECT_FALSE(GetButtonByID(last_visible)->visible());
 
@@ -838,14 +838,14 @@ TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
             test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
-  LauncherID platform_app = AddPlatformApp();
-  LauncherID first_panel = AddPanel();
+  ShelfID platform_app = AddPlatformApp();
+  ShelfID first_panel = AddPanel();
 
   EXPECT_TRUE(GetButtonByID(platform_app)->visible());
   EXPECT_TRUE(GetButtonByID(first_panel)->visible());
 
   // Add panels until there is an overflow.
-  LauncherID last_panel = first_panel;
+  ShelfID last_panel = first_panel;
   int items_added = 0;
   while (!test_api_->IsOverflowButtonVisible()) {
     last_panel = AddPanel();
@@ -882,8 +882,8 @@ TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
 
   // Add platform app buttons until overflow.
   int items_added = 0;
-  LauncherID first_added = AddPlatformApp();
-  LauncherID last_added = first_added;
+  ShelfID first_added = AddPlatformApp();
+  ShelfID last_added = first_added;
   while (!test_api_->IsOverflowButtonVisible()) {
     last_added = AddPlatformApp();
     ++items_added;
@@ -912,7 +912,7 @@ TEST_F(ShelfViewTest, RemoveLastOverflowed) {
 
   // Add platform app button until overflow.
   int items_added = 0;
-  LauncherID last_added = AddPlatformApp();
+  ShelfID last_added = AddPlatformApp();
   while (!test_api_->IsOverflowButtonVisible()) {
     last_added = AddPlatformApp();
     ++items_added;
@@ -959,7 +959,7 @@ TEST_F(ShelfViewTest, AddButtonQuickly) {
 TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
   internal::ShelfButtonHost* button_host = shelf_view_;
 
-  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // Dragging browser shortcut at index 1.
@@ -1002,7 +1002,7 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
 
   // Adding a shelf item cancels the drag and respects the order.
   dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 1, 3);
-  LauncherID new_id = AddAppShortcut();
+  ShelfID new_id = AddAppShortcut();
   id_map.insert(id_map.begin() + 6,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
@@ -1025,7 +1025,7 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
 TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
   internal::ShelfButtonHost* button_host = shelf_view_;
 
-  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // Dragging browser shortcut at index 0.
@@ -1068,7 +1068,7 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
 
   // Adding a shelf item cancels the drag and respects the order.
   dragged_button = SimulateDrag(internal::ShelfButtonHost::MOUSE, 0, 2);
-  LauncherID new_id = AddAppShortcut();
+  ShelfID new_id = AddAppShortcut();
   id_map.insert(id_map.begin() + 5,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
@@ -1092,7 +1092,7 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, ModelChangesWhileDragging) {
 TEST_F(ShelfViewTest, SimultaneousDrag) {
   internal::ShelfButtonHost* button_host = shelf_view_;
 
-  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // Start a mouse drag.
@@ -1139,7 +1139,7 @@ TEST_F(ShelfViewTest, SimultaneousDrag) {
 TEST_F(ShelfViewTest, ClickOneDragAnother) {
   internal::ShelfButtonHost* button_host = shelf_view_;
 
-  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  std::vector<std::pair<ShelfID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // A click on item 1 is simulated.
@@ -1166,8 +1166,8 @@ TEST_F(ShelfViewTest, ShelfItemStatus) {
             test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
-  LauncherID last_added = AddPlatformApp();
-  LauncherItem item = GetItemByID(last_added);
+  ShelfID last_added = AddPlatformApp();
+  ShelfItem item = GetItemByID(last_added);
   int index = model_->ItemIndexByID(last_added);
   internal::ShelfButton* button = GetButtonByID(last_added);
   ASSERT_EQ(internal::ShelfButton::STATE_RUNNING, button->state());
@@ -1186,8 +1186,8 @@ TEST_F(ShelfViewLegacyShelfLayoutTest,
             test_api_->GetLastVisibleIndex() + 1);
 
   // Add 2 items to the shelf.
-  LauncherID item1_id = AddPlatformApp();
-  LauncherID item2_id = AddPlatformAppNoWait();
+  ShelfID item1_id = AddPlatformApp();
+  ShelfID item2_id = AddPlatformAppNoWait();
   internal::ShelfButton* item1_button = GetButtonByID(item1_id);
   internal::ShelfButton* item2_button = GetButtonByID(item2_id);
 
@@ -1221,8 +1221,8 @@ TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
             test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
-  LauncherID last_added = AddPlatformApp();
-  LauncherItem item = GetItemByID(last_added);
+  ShelfID last_added = AddPlatformApp();
+  ShelfItem item = GetItemByID(last_added);
   int index = model_->ItemIndexByID(last_added);
   internal::ShelfButton* button = GetButtonByID(last_added);
   ASSERT_EQ(internal::ShelfButton::STATE_RUNNING, button->state());
@@ -1252,8 +1252,8 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
             test_api_->GetButtonCount());
 
   // Prepare some items to the shelf.
-  LauncherID app_button_id = AddAppShortcut();
-  LauncherID platform_button_id = AddPlatformApp();
+  ShelfID app_button_id = AddAppShortcut();
+  ShelfID platform_button_id = AddPlatformApp();
 
   internal::ShelfButton* app_button = GetButtonByID(app_button_id);
   internal::ShelfButton* platform_button = GetButtonByID(platform_button_id);
@@ -1301,7 +1301,7 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
       shelf_view_->tooltip_manager();
 
   // Add an item to the shelf.
-  LauncherID app_button_id = AddAppShortcut();
+  ShelfID app_button_id = AddAppShortcut();
   internal::ShelfButton* app_button = GetButtonByID(app_button_id);
 
   // Spawn a tooltip on that item.
@@ -1326,7 +1326,7 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
       shelf_view_->tooltip_manager();
 
   // Add an item to the shelf.
-  LauncherID app_button_id = AddAppShortcut();
+  ShelfID app_button_id = AddAppShortcut();
   internal::ShelfButton* app_button = GetButtonByID(app_button_id);
 
   // Spawn a tooltip on the item.
@@ -1341,8 +1341,8 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
 }
 
 TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
-  LauncherID app_button_id = AddAppShortcut();
-  LauncherID platform_button_id = AddPlatformApp();
+  ShelfID app_button_id = AddAppShortcut();
+  ShelfID platform_button_id = AddPlatformApp();
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 0; i < test_api_->GetButtonCount(); i++) {

@@ -58,7 +58,7 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   // Determine the new browser's active state and change if necessary.
   int browser_index = model->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
   DCHECK_GE(browser_index, 0);
-  ash::LauncherItem browser_item = model->items()[browser_index];
+  ash::ShelfItem browser_item = model->items()[browser_index];
   ash::ShelfItemStatus browser_status = ash::STATUS_CLOSED;
 
   aura::Window* window = ash::wm::GetActiveWindow();
@@ -74,7 +74,7 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
       content::WebContents* contents =
           browser->tab_strip_model()->GetActiveWebContents();
       if (contents &&
-          (launcher_controller()->GetLauncherIDForWebContents(contents) !=
+          (launcher_controller()->GetShelfIDForWebContents(contents) !=
               browser_item.id))
         browser_status = ash::STATUS_RUNNING;
     }
@@ -224,8 +224,8 @@ base::string16 BrowserShortcutLauncherItemController::GetTitle() {
 
 ui::MenuModel* BrowserShortcutLauncherItemController::CreateContextMenu(
     aura::Window* root_window) {
-  ash::LauncherItem item =
-      *(launcher_controller()->model()->ItemByID(launcher_id()));
+  ash::ShelfItem item =
+      *(launcher_controller()->model()->ItemByID(shelf_id()));
   return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 
@@ -324,6 +324,6 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
            !browser->is_app() ||
            !browser->is_type_popup() ||
            launcher_controller()->
-               GetLauncherIDForAppID(web_app::GetExtensionIdFromApplicationName(
+               GetShelfIDForAppID(web_app::GetExtensionIdFromApplicationName(
                    browser->app_name())) <= 0));
 }

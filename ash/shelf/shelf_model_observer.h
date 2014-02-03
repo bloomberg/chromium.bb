@@ -6,11 +6,11 @@
 #define ASH_SHELF_SHELF_MODEL_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_types.h"
 
 namespace ash {
 
-struct LauncherItem;
+struct ShelfItem;
 
 class ASH_EXPORT ShelfModelObserver {
  public:
@@ -19,7 +19,7 @@ class ASH_EXPORT ShelfModelObserver {
 
   // Invoked after an item has been removed. |index| is the index the item was
   // at.
-  virtual void ShelfItemRemoved(int index, LauncherID id) = 0;
+  virtual void ShelfItemRemoved(int index, ShelfID id) = 0;
 
   // Invoked after an item has been moved. See ShelfModel::Move() for details
   // of the arguments.
@@ -27,7 +27,7 @@ class ASH_EXPORT ShelfModelObserver {
 
   // Invoked when the state of an item changes. |old_item| is the item
   // before the change.
-  virtual void ShelfItemChanged(int index, const LauncherItem& old_item) = 0;
+  virtual void ShelfItemChanged(int index, const ShelfItem& old_item) = 0;
 
   // Invoked when shelf status is changed.
   virtual void ShelfStatusChanged() = 0;

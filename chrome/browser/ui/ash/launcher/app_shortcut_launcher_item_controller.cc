@@ -207,8 +207,8 @@ base::string16 AppShortcutLauncherItemController::GetTitle() {
 
 ui::MenuModel* AppShortcutLauncherItemController::CreateContextMenu(
     aura::Window* root_window) {
-  ash::LauncherItem item =
-      *(launcher_controller()->model()->ItemByID(launcher_id()));
+  ash::ShelfItem item =
+      *(launcher_controller()->model()->ItemByID(shelf_id()));
   return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 

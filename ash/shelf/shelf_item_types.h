@@ -5,10 +5,15 @@
 #ifndef ASH_SHELF_SHELF_ITEM_TYPES_H_
 #define ASH_SHELF_SHELF_ITEM_TYPES_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
+
+typedef int ShelfID;
 
 // The type of a shelf item.
 enum ShelfItemType {
@@ -48,6 +53,24 @@ enum ShelfItemStatus {
   // A shelf item that needs user's attention.
   STATUS_ATTENTION,
 };
+
+struct ASH_EXPORT ShelfItem {
+  ShelfItem();
+  ~ShelfItem();
+
+  ShelfItemType type;
+
+  // Image to display in the shelf.
+  gfx::ImageSkia image;
+
+  // Assigned by the model when the item is added.
+  ShelfID id;
+
+  // Running status.
+  ShelfItemStatus status;
+};
+
+typedef std::vector<ShelfItem> ShelfItems;
 
 // ShelfItemDetails may be set on Window (by way of
 // SetShelfItemDetailsForWindow) to make the window appear in the shelf. See

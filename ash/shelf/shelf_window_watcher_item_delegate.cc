@@ -51,8 +51,7 @@ base::string16 ShelfWindowWatcherItemDelegate::GetTitle() {
 
 ui::MenuModel* ShelfWindowWatcherItemDelegate::CreateContextMenu(
     aura::Window* root_window) {
-  ash::LauncherItem item =
-      *(model_->ItemByID(GetLauncherIDForWindow(window_)));
+  ash::ShelfItem item = *(model_->ItemByID(GetShelfIDForWindow(window_)));
   return Shell::GetInstance()->delegate()->CreateContextMenu(root_window,
                                                              this,
                                                              &item);

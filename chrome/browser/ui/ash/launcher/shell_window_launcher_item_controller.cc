@@ -67,12 +67,12 @@ class ShellWindowHasWindow {
 
 ShellWindowLauncherItemController::ShellWindowLauncherItemController(
     Type type,
-    const std::string& app_launcher_id,
+    const std::string& app_shelf_id,
     const std::string& app_id,
     ChromeLauncherController* controller)
     : LauncherItemController(type, app_id, controller),
       last_active_shell_window_(NULL),
-      app_launcher_id_(app_launcher_id),
+      app_shelf_id_(app_shelf_id),
       observed_windows_(this) {
 }
 
@@ -224,8 +224,8 @@ base::string16 ShellWindowLauncherItemController::GetTitle() {
 
 ui::MenuModel* ShellWindowLauncherItemController::CreateContextMenu(
     aura::Window* root_window) {
-  ash::LauncherItem item =
-      *(launcher_controller()->model()->ItemByID(launcher_id()));
+  ash::ShelfItem item =
+      *(launcher_controller()->model()->ItemByID(shelf_id()));
   return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 
@@ -259,7 +259,7 @@ void ShellWindowLauncherItemController::OnWindowPropertyChanged(
     } else {
       status = ash::STATUS_RUNNING;
     }
-    launcher_controller()->SetItemStatus(launcher_id(), status);
+    launcher_controller()->SetItemStatus(shelf_id(), status);
   }
 }
 

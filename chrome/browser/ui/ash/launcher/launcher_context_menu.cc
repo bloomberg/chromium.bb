@@ -37,7 +37,7 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 }  // namespace
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
-                                         const ash::LauncherItem* item,
+                                         const ash::ShelfItem* item,
                                          aura::Window* root)
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
@@ -50,11 +50,10 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
   Init();
 }
 
-LauncherContextMenu::LauncherContextMenu(
-    ChromeLauncherController* controller,
-    ash::ShelfItemDelegate* item_delegate,
-    ash::LauncherItem* item,
-    aura::Window* root)
+LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
+                                         ash::ShelfItemDelegate* item_delegate,
+                                         ash::ShelfItem* item,
+                                         aura::Window* root)
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
       item_(*item),
@@ -70,7 +69,7 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          aura::Window* root)
     : ui::SimpleMenuModel(NULL),
       controller_(controller),
-      item_(ash::LauncherItem()),
+      item_(ash::ShelfItem()),
       shelf_alignment_menu_(root),
       extension_items_(new extensions::ContextMenuMatcher(
           controller->profile(), this, this,
@@ -157,7 +156,7 @@ void LauncherContextMenu::Init() {
     if (item_.type == ash::TYPE_APP_SHORTCUT ||
         item_.type == ash::TYPE_WINDOWED_APP ||
         item_.type == ash::TYPE_PLATFORM_APP) {
-      std::string app_id = controller_->GetAppIDForLauncherID(item_.id);
+      std::string app_id = controller_->GetAppIDForShelfID(item_.id);
       if (!app_id.empty()) {
         int index = 0;
         extension_items_->AppendExtensionItems(

@@ -47,10 +47,10 @@ void BrowserStatusMonitor::LocalWebContentsObserver::DidNavigateMainFrame(
   monitor_->UpdateAppItemState(web_contents(), state);
   monitor_->UpdateBrowserItemState();
 
-  // Navigating may change the LauncherID associated with the WebContents.
+  // Navigating may change the ShelfID associated with the WebContents.
   if (browser->tab_strip_model()->GetActiveWebContents() == web_contents()) {
-    ash::SetLauncherIDForWindow(
-        monitor_->GetLauncherIDForWebContents(web_contents()),
+    ash::SetShelfIDForWindow(
+        monitor_->GetShelfIDForWebContents(web_contents()),
         browser->window()->GetNativeWindow());
   }
 }
@@ -235,9 +235,8 @@ void BrowserStatusMonitor::ActiveTabChanged(content::WebContents* old_contents,
         ChromeLauncherController::APP_STATE_ACTIVE;
     UpdateAppItemState(new_contents, state);
     UpdateBrowserItemState();
-    ash::SetLauncherIDForWindow(
-        GetLauncherIDForWebContents(new_contents),
-        browser->window()->GetNativeWindow());
+    ash::SetShelfIDForWindow(GetShelfIDForWebContents(new_contents),
+                             browser->window()->GetNativeWindow());
   }
 }
 
@@ -264,9 +263,8 @@ void BrowserStatusMonitor::TabReplacedAt(TabStripModel* tab_strip_model,
   UpdateBrowserItemState();
 
   if (tab_strip_model->GetActiveWebContents() == new_contents) {
-    ash::SetLauncherIDForWindow(
-        GetLauncherIDForWebContents(new_contents),
-        browser->window()->GetNativeWindow());
+    ash::SetShelfIDForWindow(GetShelfIDForWebContents(new_contents),
+                             browser->window()->GetNativeWindow());
   }
 
   AddWebContentsObserver(new_contents);
@@ -335,7 +333,7 @@ void BrowserStatusMonitor::RemoveWebContentsObserver(
   webcontents_to_observer_map_.erase(contents);
 }
 
-ash::LauncherID BrowserStatusMonitor::GetLauncherIDForWebContents(
+ash::ShelfID BrowserStatusMonitor::GetShelfIDForWebContents(
     content::WebContents* contents) {
-  return launcher_controller_->GetLauncherIDForWebContents(contents);
+  return launcher_controller_->GetShelfIDForWebContents(contents);
 }

@@ -130,8 +130,8 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   // Remove LocalWebContentsObserver for |contents|.
   void RemoveWebContentsObserver(content::WebContents* contents);
 
-  // Retruns the LauncherID for |contents|.
-  ash::LauncherID GetLauncherIDForWebContents(content::WebContents* contents);
+  // Retruns the ShelfID for |contents|.
+  ash::ShelfID GetShelfIDForWebContents(content::WebContents* contents);
 
   ChromeLauncherController* launcher_controller_;
 

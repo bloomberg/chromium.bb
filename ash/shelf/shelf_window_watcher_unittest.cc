@@ -5,7 +5,7 @@
 #include "ash/shelf/shelf_window_watcher.h"
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
@@ -38,8 +38,8 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
     test::AshTestBase::TearDown();
   }
 
-  LauncherID CreateShelfItem(aura::Window* window) {
-    LauncherID id = model_->next_id();
+  ShelfID CreateShelfItem(aura::Window* window) {
+    ShelfID id = model_->next_id();
     ShelfItemDetails item_details;
     item_details.type = TYPE_PLATFORM_APP;
     SetShelfItemDetailsForWindow(window, item_details);
@@ -53,28 +53,28 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcherTest);
 };
 
-TEST_F(ShelfWindowWatcherTest, CreateAndRemoveLauncherItem) {
+TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItem) {
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model_->item_count());
 
   scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(0));
   scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
 
-  // Create a LauncherItem for w1.
-  LauncherID id_w1 = CreateShelfItem(w1.get());
+  // Create a ShelfItem for w1.
+  ShelfID id_w1 = CreateShelfItem(w1.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index_w1 = model_->ItemIndexByID(id_w1);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
 
-  // Create a LauncherItem for w2.
-  LauncherID id_w2 = CreateShelfItem(w2.get());
+  // Create a ShelfItem for w2.
+  ShelfID id_w2 = CreateShelfItem(w2.get());
   EXPECT_EQ(3, model_->item_count());
 
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w2].status);
 
-  // LauncherItem is removed when assoicated window is destroyed.
+  // ShelfItem is removed when assoicated window is destroyed.
   ClearShelfItemDetailsForWindow(w1.get());
   EXPECT_EQ(2, model_->item_count());
   ClearShelfItemDetailsForWindow(w2.get());
@@ -91,24 +91,24 @@ TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
   scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(0));
   scoped_ptr<aura::Window> w2(CreateTestWindowInShellWithId(0));
 
-  // Create a LauncherItem for w1.
-  LauncherID id_w1 = CreateShelfItem(w1.get());
+  // Create a ShelfItem for w1.
+  ShelfID id_w1 = CreateShelfItem(w1.get());
   EXPECT_EQ(2, model_->item_count());
   int index_w1 = model_->ItemIndexByID(id_w1);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
 
-  // Create a LauncherItem for w2.
-  LauncherID id_w2 = CreateShelfItem(w2.get());
+  // Create a ShelfItem for w2.
+  ShelfID id_w2 = CreateShelfItem(w2.get());
   EXPECT_EQ(3, model_->item_count());
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w2].status);
 
-  // LauncherItem for w1 is active when w1 is activated.
+  // ShelfItem for w1 is active when w1 is activated.
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w1].status);
 
-  // LauncherItem for w2 is active state when w2 is activated.
+  // ShelfItem for w2 is active state when w2 is activated.
   wm::ActivateWindow(w2.get());
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w2].status);
@@ -120,14 +120,14 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
 
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
-  // Create a LauncherItem for |window|.
-  LauncherID id = CreateShelfItem(window.get());
+  // Create a ShelfItem for |window|.
+  ShelfID id = CreateShelfItem(window.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
-  // Update LauncherItem for |window|.
+  // Update ShelfItem for |window|.
   ShelfItemDetails details;
   details.type = TYPE_PLATFORM_APP;
 
@@ -146,8 +146,8 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
-  // Create a LauncherItem for |window|.
-  LauncherID id = CreateShelfItem(window.get());
+  // Create a ShelfItem for |window|.
+  ShelfID id = CreateShelfItem(window.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
@@ -181,8 +181,8 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindow) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->set_owned_by_parent(false);
 
-  // Create a LauncherItem for |window|.
-  LauncherID id = CreateShelfItem(window.get());
+  // Create a ShelfItem for |window|.
+  ShelfID id = CreateShelfItem(window.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
@@ -217,8 +217,8 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
 
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
 
-  // Create a LauncherItem for |window|.
-  LauncherID id = CreateShelfItem(window.get());
+  // Create a ShelfItem for |window|.
+  ShelfID id = CreateShelfItem(window.get());
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
@@ -248,8 +248,8 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindowDuringTheDragging) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->set_owned_by_parent(false);
 
-  // Create a LauncherItem for |window|.
-  LauncherID id = CreateShelfItem(window.get());
+  // Create a ShelfItem for |window|.
+  ShelfID id = CreateShelfItem(window.get());
   EXPECT_EQ(2, model_->item_count());
   int index = model_->ItemIndexByID(id);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);

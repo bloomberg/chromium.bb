@@ -167,8 +167,6 @@
         'ime/mode_indicator_view.h',
         'keyboard_uma_event_filter.cc',
         'keyboard_uma_event_filter.h',
-        'launcher/launcher_types.cc',
-        'launcher/launcher_types.h',
         'magnifier/magnification_controller.cc',
         'magnifier/magnification_controller.h',
         'magnifier/magnifier_constants.h',

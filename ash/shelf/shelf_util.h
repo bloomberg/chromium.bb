@@ -6,7 +6,6 @@
 #define ASH_SHELF_SHELF_UTIL_H_
 
 #include "ash/ash_export.h"
-#include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "ui/aura/window.h"
 
@@ -19,21 +18,21 @@ namespace ash {
 extern const aura::WindowProperty<ShelfItemDetails*>* const
     kShelfItemDetailsKey;
 
-// Associates LauncherItem of |id| with specified |window|.
-ASH_EXPORT void SetLauncherIDForWindow(LauncherID id, aura::Window* window);
+// Associates ShelfItem of |id| with specified |window|.
+ASH_EXPORT void SetShelfIDForWindow(ShelfID id, aura::Window* window);
 
-// Returns the id of the LauncherItem associated with the specified |window|,
+// Returns the id of the ShelfItem associated with the specified |window|,
 // or 0 if there isn't one.
-// Note: Window of a tabbed browser will return the |LauncherID| of the
+// Note: Window of a tabbed browser will return the |ShelfID| of the
 // currently active tab.
-ASH_EXPORT LauncherID GetLauncherIDForWindow(aura::Window* window);
+ASH_EXPORT ShelfID GetShelfIDForWindow(aura::Window* window);
 
 // Sets ShelfItemDetails for |window|.
 ASH_EXPORT void SetShelfItemDetailsForWindow(aura::Window* window,
                                              const ShelfItemDetails& details);
 
 // Clears ShelfItemDetails for |window|.
-// If |window| has a LauncherItem by SetShelfItemDetailsForWindow(), it will
+// If |window| has a ShelfItem by SetShelfItemDetailsForWindow(), it will
 // be removed.
 ASH_EXPORT void ClearShelfItemDetailsForWindow(aura::Window* window);
 

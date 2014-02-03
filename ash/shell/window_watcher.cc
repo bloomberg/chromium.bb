@@ -86,7 +86,7 @@ WindowWatcher::~WindowWatcher() {
   }
 }
 
-aura::Window* WindowWatcher::GetWindowByID(ash::LauncherID id) {
+aura::Window* WindowWatcher::GetWindowByID(ash::ShelfID id) {
   IDToWindow::const_iterator i = id_to_window_.find(id);
   return i != id_to_window_.end() ? i->second : NULL;
 }
@@ -99,11 +99,11 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
 
   static int image_count = 0;
   ShelfModel* model = Shell::GetInstance()->shelf_model();
-  LauncherItem item;
+  ShelfItem item;
   item.type = new_window->type() == ui::wm::WINDOW_TYPE_PANEL
                   ? ash::TYPE_APP_PANEL
                   : ash::TYPE_PLATFORM_APP;
-  ash::LauncherID id = model->next_id();
+  ash::ShelfID id = model->next_id();
   id_to_window_[id] = new_window;
 
   SkBitmap icon_bitmap;
@@ -123,7 +123,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   scoped_ptr<ShelfItemDelegate> delegate(
       new WindowWatcherShelfItemDelegate(id, this));
   manager->SetShelfItemDelegate(id, delegate.Pass());
-  SetLauncherIDForWindow(id, new_window);
+  SetShelfIDForWindow(id, new_window);
 }
 
 void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
