@@ -173,7 +173,6 @@ extern const char kEnableStrictSiteIsolation[];
 CONTENT_EXPORT extern const char kEnableServiceWorker[];
 CONTENT_EXPORT extern const char kEnableTargetedStyleRecalc[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
-CONTENT_EXPORT extern const char kEnableTextServicesFramework[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableUniversalAcceleratedOverflowScroll[];
 CONTENT_EXPORT extern const char kEnableUserMediaScreenCapturing[];

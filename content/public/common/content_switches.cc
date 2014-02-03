@@ -585,10 +585,6 @@ const char kEnableServiceWorker[]           = "enable-service-worker";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
-// Enable Text Service Framework(TSF) for text inputting instead of IMM32. This
-// flag is ignored on Metro environment.
-const char kEnableTextServicesFramework[]   = "enable-text-services-framework";
-
 // Enable multithreaded GPU compositing of web content.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 
