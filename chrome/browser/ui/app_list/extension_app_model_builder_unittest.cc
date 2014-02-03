@@ -325,3 +325,30 @@ TEST_F(ExtensionAppModelBuilderTest, OrdinalConfilicts) {
   EXPECT_EQ(std::string("Hosted App,Packaged App 1,Packaged App 2"),
             GetModelContent(model_.get()));
 }
+
+// This test adds a bookmark app to the app list.
+TEST_F(ExtensionAppModelBuilderTest, BookmarkApp) {
+  const std::string kAppName = "Bookmark App";
+  const std::string kAppVersion = "2014.1.24.19748";
+  const std::string kAppUrl = "http://google.com";
+  const std::string kAppId = "podhdnefolignjhecmjkbimfgioanahm";
+  std::string err;
+  base::DictionaryValue value;
+  value.SetString("name", kAppName);
+  value.SetString("version", kAppVersion);
+  value.SetString("app.launch.web_url", kAppUrl);
+  scoped_refptr<extensions::Extension> bookmark_app =
+      extensions::Extension::Create(
+          base::FilePath(),
+          extensions::Manifest::INTERNAL,
+          value,
+          extensions::Extension::WAS_INSTALLED_BY_DEFAULT |
+              extensions::Extension::FROM_BOOKMARK,
+          kAppId,
+          &err);
+  EXPECT_TRUE(err.empty());
+
+  service_->AddExtension(bookmark_app.get());
+  EXPECT_EQ(kDefaultAppCount + 1, model_->item_list()->item_count());
+  EXPECT_NE(std::string::npos, GetModelContent(model_.get()).find(kAppName));
+}

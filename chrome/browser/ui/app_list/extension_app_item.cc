@@ -30,6 +30,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/rect.h"
 
 using extensions::Extension;
 
@@ -60,40 +61,49 @@ class ShortcutOverlayImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(ShortcutOverlayImageSource);
 };
 
+// Rounds the corners of a given image.
+class RoundedCornersImageSource : public gfx::CanvasImageSource {
+ public:
+  explicit RoundedCornersImageSource(const gfx::ImageSkia& icon)
+      : gfx::CanvasImageSource(icon.size(), false),
+        icon_(icon) {
+  }
+  virtual ~RoundedCornersImageSource() {}
+
+ private:
+  // gfx::CanvasImageSource overrides:
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+    // The radius used to round the app icon.
+    const size_t kRoundingRadius = 2;
+
+    canvas->DrawImageInt(icon_, 0, 0);
+
+    scoped_ptr<gfx::Canvas> masking_canvas(
+        new gfx::Canvas(gfx::Size(icon_.width(), icon_.height()), 1.0f, false));
+    DCHECK(masking_canvas);
+
+    SkPaint opaque_paint;
+    opaque_paint.setColor(SK_ColorWHITE);
+    opaque_paint.setFlags(SkPaint::kAntiAlias_Flag);
+    masking_canvas->DrawRoundRect(
+        gfx::Rect(icon_.width(), icon_.height()),
+        kRoundingRadius, opaque_paint);
+
+    SkPaint masking_paint;
+    masking_paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
+    canvas->DrawImageInt(
+        gfx::ImageSkia(masking_canvas->ExtractImageRep()), 0, 0, masking_paint);
+  }
+
+  gfx::ImageSkia icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedCornersImageSource);
+};
+
 extensions::AppSorting* GetAppSorting(Profile* profile) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   return service->extension_prefs()->app_sorting();
-}
-
-// Returns the given |icon| with rounded corners.
-gfx::ImageSkia GetRoundedIcon(gfx::ImageSkia icon) {
-  // The radius used to round the app icon.
-  const size_t kRoundingRadius = 2;
-
-  scoped_ptr<SkCanvas> canvas(
-      skia::CreateBitmapCanvas(icon.width(), icon.height(), false));
-  DCHECK(canvas);
-  canvas->drawBitmap(*icon.bitmap(), 0, 0);
-
-  scoped_ptr<SkCanvas> masking_canvas(
-      skia::CreateBitmapCanvas(icon.width(), icon.height(), false));
-  DCHECK(masking_canvas);
-
-  SkPaint opaque_paint;
-  opaque_paint.setColor(SK_ColorWHITE);
-  opaque_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  masking_canvas->drawRoundRect(
-    SkRect::MakeWH(icon.width(), icon.height()),
-    kRoundingRadius, kRoundingRadius, opaque_paint);
-
-  SkPaint masking_paint;
-  masking_paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
-  canvas->drawBitmap(
-      masking_canvas->getDevice()->accessBitmap(false), 0, 0, &masking_paint);
-
-  return gfx::ImageSkia::CreateFrom1xBitmap(
-      canvas->getDevice()->accessBitmap(false));
 }
 
 const color_utils::HSL shift = {-1, 0, 0.6};
@@ -169,7 +179,7 @@ void ExtensionAppItem::UpdateIcon() {
   }
 
   if (GetExtension()->from_bookmark())
-    icon = GetRoundedIcon(icon);
+    icon = gfx::ImageSkia(new RoundedCornersImageSource(icon), icon.size());
 
   if (HasOverlay())
     icon = gfx::ImageSkia(new ShortcutOverlayImageSource(icon), icon.size());
