@@ -34,24 +34,14 @@ if [[ "${ANDROID_SDK_BUILD}" -ne 1 ]]; then
   echo "Initializing for non-SDK build."
 fi
 
-# Get host architecture, and abort if it is 32-bit, unless --try-32
-# is also used.
+# Get host architecture, and abort if it is 32-bit.
 host_arch=$(uname -m)
 case "${host_arch}" in
   x86_64)  # pass
     ;;
   i?86)
-    if [[ -z "${try_32bit_host_build}" ]]; then
-      echo "ERROR: Android build requires a 64-bit host build machine."
-      echo "If you really want to try it on this machine, use the \
---try-32bit-host flag."
-      echo "Be warned that this may fail horribly at link time, due \
-very large binaries."
-      return 1
-    else
-      echo "WARNING: 32-bit host build enabled. Here be dragons!"
-      host_arch=x86
-    fi
+    echo "ERROR: Android build requires a 64-bit host build machine."
+    return 1
     ;;
   *)
     echo "ERROR: Unsupported host architecture (${host_arch})."
