@@ -1,13 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_MOCK_H__
-#define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_MOCK_H__
+#ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_ERROR_HANDLER_MOCK_H__
+#define COMPONENTS_SYNC_DRIVER_DATA_TYPE_ERROR_HANDLER_MOCK_H__
 
 #include "components/sync_driver/data_type_controller.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
 #include "sync/internal_api/public/base/model_type.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {
 
@@ -26,4 +25,4 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
 
 }  // namesspace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_MOCK_H__
+#endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_ERROR_HANDLER_MOCK_H__

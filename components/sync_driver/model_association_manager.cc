@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/model_association_manager.h"
+#include "components/sync_driver/model_association_manager.h"
 
 #include <algorithm>
 #include <functional>
@@ -11,10 +11,8 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-using content::BrowserThread;
 using syncer::ModelTypeSet;
 
 namespace browser_sync {
@@ -336,8 +334,6 @@ void ModelAssociationManager::TypeStartCallback(
     DataTypeController::StartResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   // TODO(haitaol): temporary fix for 335606.
   if (slow_types_.Has(type))
     return;

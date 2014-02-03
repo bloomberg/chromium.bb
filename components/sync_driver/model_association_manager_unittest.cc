@@ -1,12 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/sync/glue/model_association_manager.h"
 #include "components/sync_driver/fake_data_type_controller.h"
-#include "content/public/test/test_browser_thread.h"
+#include "components/sync_driver/model_association_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,13 +57,11 @@ ACTION_P(VerifyResult, expected_result) {
 
 class SyncModelAssociationManagerTest : public testing::Test {
  public:
-  SyncModelAssociationManagerTest() :
-      ui_thread_(content::BrowserThread::UI, &ui_loop_) {
+  SyncModelAssociationManagerTest() {
   }
 
  protected:
   base::MessageLoopForUI ui_loop_;
-  content::TestBrowserThread ui_thread_;
   MockModelAssociationResultProcessor result_processor_;
   DataTypeController::TypeMap controllers_;
 };

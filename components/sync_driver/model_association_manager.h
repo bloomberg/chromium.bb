@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATION_MANAGER_H__
-#define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATION_MANAGER_H__
+#ifndef COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATION_MANAGER_H__
+#define COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATION_MANAGER_H__
 
 #include <map>
 
@@ -155,4 +155,4 @@ class ModelAssociationManager {
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };
 }  // namespace browser_sync
-#endif  // CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATION_MANAGER_H__
+#endif  // COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATION_MANAGER_H__

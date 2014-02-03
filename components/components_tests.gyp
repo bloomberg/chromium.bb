@@ -43,6 +43,7 @@
             'precache/core/precache_url_table_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'signin/core/webdata/token_service_table_unittest.cc',
+            'sync_driver/model_association_manager_unittest.cc',
             'test/run_all_unittests.cc',
             'translate/core/browser/language_state_unittest.cc',
             'translate/core/browser/translate_browser_metrics_unittest.cc',
@@ -168,6 +169,7 @@
                 ['include', '^language_usage_metrics/'],
                 ['include', '^precache/core/'],
                 ['include', '^signin/'],
+                ['include', '^sync_driver/'],
                 ['include', '^translate/'],
               ],
               'conditions': [
