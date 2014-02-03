@@ -14,16 +14,13 @@ body {
 }
 
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
-kb-keyboard.alt-active kb-modifier-key[char=Alt] {
-  color: #d5d5d5;
-}
-
+kb-keyboard.alt-active kb-modifier-key[char=Alt],
 /**
 * Controls whether the shift key should be highlighted or not.
 * Only highlights if we are in the upper keyset, but not capslocked.
 */
 kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
-  color: #d5d5d5;
+  color: lightblue;
 }
 
 .dark {
@@ -38,14 +35,14 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
 }
 
 .caps-locked kb-shift-key.dark,
-.active {
+:not(kb-altkey-set) > .active {
   -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f;
   border-bottom-color: #5b5b5b;
   border-top-color: #a4a4a4;
 }
 
 .caps-locked kb-shift-key.dark,
-.active:not(.dark) {
+:not(kb-altkey-set) > .active:not(.dark){
   background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
   background-size: cover;
 }

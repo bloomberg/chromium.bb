@@ -94,11 +94,22 @@
         white-space:nowrap;
         z-index: 1;
       }
+
+      :host(kb-keyboard[layout=system-qwerty])
+          kb-options-menu-item:not([layout=none]) {
+        display:none;
+      }
     </style>
     <!-- TODO(kevers): This is a temporary placeholder to enable testing
       -- of layout switching.  Deprecate once a decision is reached on
       -- a more permanent solution for layout selection. -->
     <kb-options-menu-toggle-lock-item></kb-options-menu-toggle-lock-item>
+    <kb-options-menu-item layout="system-qwerty" label="System QWERTY">
+    </kb-options-menu-item>
+    <kb-options-menu-item layout="qwerty" label="QWERTY">
+    </kb-options-menu-item>
+    <kb-options-menu-item layout="dvorak" label="Dvorak">
+    </kb-options-menu-item>
     <kb-options-menu-item layout="none" label="Hide keyboard">
     </kb-options-menu-item>
   </template>
