@@ -144,7 +144,7 @@ typedef BOOL (^FieldFilterBlock)(NSView<AutofillInputField>*);
     return;
 
   NSPoint scrollPoint = [clipView constrainScrollPoint:
-      NSMakePoint(NSMinX(fieldRect), NSMinY(fieldRect) - bottomPadding)];
+      NSMakePoint(0, NSMinY(fieldRect) - bottomPadding)];
   [clipView scrollToPoint:scrollPoint];
   [scrollView_ reflectScrolledClipView:clipView];
   [self updateErrorBubble];
