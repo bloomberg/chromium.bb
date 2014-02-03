@@ -1161,7 +1161,7 @@ bool WebContentsImpl::PreHandleWheelEvent(
 
 bool WebContentsImpl::PreHandleGestureEvent(
     const blink::WebGestureEvent& event) {
-  return delegate_->PreHandleGestureEvent(this, event);
+  return delegate_ && delegate_->PreHandleGestureEvent(this, event);
 }
 
 #if defined(OS_WIN)
