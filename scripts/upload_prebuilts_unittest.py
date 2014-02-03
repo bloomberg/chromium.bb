@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unittests for upload_prebuilts.py."""
+
 import copy
 import mox
 import os
@@ -35,6 +37,7 @@ def SimplePackageIndex(header=True, packages=True):
 
 
 class TestUpdateFile(cros_test_lib.TempDirTestCase):
+  """Tests for the UpdateLocalFile function."""
 
   def setUp(self):
     self.contents_str = ['# comment that should be skipped',
@@ -104,6 +107,7 @@ class TestUpdateFile(cros_test_lib.TempDirTestCase):
 
 
 class TestPrebuilt(cros_test_lib.MoxTestCase):
+  """Tests for Prebuilt logic."""
 
   def testGenerateUploadDict(self):
     base_local_path = '/b/cbuild/build/chroot/build/x86-dogfood/'
@@ -125,6 +129,7 @@ class TestPrebuilt(cros_test_lib.MoxTestCase):
 
 
 class TestPkgIndex(cros_test_lib.TestCase):
+  """Helper for tests that update the Packages index file."""
 
   def setUp(self):
     self.db = {}
@@ -138,6 +143,7 @@ class TestPkgIndex(cros_test_lib.TestCase):
 
 
 class TestPackagesFileFiltering(TestPkgIndex):
+  """Tests for Packages filtering behavior."""
 
   def testFilterPkgIndex(self):
     """Test filtering out of private packages."""
@@ -147,6 +153,7 @@ class TestPackagesFileFiltering(TestPkgIndex):
 
 
 class TestPopulateDuplicateDB(TestPkgIndex):
+  """Tests for the _PopulateDuplicateDB function."""
 
   def testEmptyIndex(self):
     """Test population of the duplicate DB with an empty index."""
@@ -176,6 +183,7 @@ class TestPopulateDuplicateDB(TestPkgIndex):
 
 
 class TestResolveDuplicateUploads(cros_test_lib.MoxTestCase, TestPkgIndex):
+  """Tests for the ResolveDuplicateUploads function."""
 
   def setUp(self):
     self.mox.StubOutWithMock(binpkg.time, 'time')
@@ -247,6 +255,7 @@ class TestResolveDuplicateUploads(cros_test_lib.MoxTestCase, TestPkgIndex):
 
 
 class TestWritePackageIndex(cros_test_lib.MoxTestCase, TestPkgIndex):
+  """Tests for the WriteToNamedTemporaryFile function."""
 
   def testSimple(self):
     """Test simple call of WriteToNamedTemporaryFile()"""
@@ -258,9 +267,11 @@ class TestWritePackageIndex(cros_test_lib.MoxTestCase, TestPkgIndex):
 
 
 class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
+  """Tests for the _UploadPrebuilt function."""
 
   def setUp(self):
     class MockTemporaryFile(object):
+      """Mock out the temporary file logic."""
       def __init__(self, name):
         self.name = name
     self.pkgindex = SimplePackageIndex()
@@ -290,6 +301,7 @@ class TestUploadPrebuilt(cros_test_lib.MoxTestCase):
 
 
 class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
+  """Tests for the SyncHostPrebuilts function."""
 
   def setUp(self):
     self.mox.StubOutWithMock(prebuilt, 'DeterminePrebuiltConfFile')
@@ -365,6 +377,7 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
 
 
 class TestMain(cros_test_lib.MoxTestCase):
+  """Tests for the main() function."""
 
   def testMain(self):
     """Test that the main function works."""
