@@ -4051,7 +4051,7 @@ sub GenerateImplementationNamedPropertyGetter
 
     my $code = "static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    if (!$namedGetterFunction->extendedAttributes->{"OverrideBuiltins"}) {
+    if (!$interface->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
         $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
@@ -4098,7 +4098,7 @@ sub GenerateImplementationNamedPropertySetter
 
     my $code = "static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    if (!$namedSetterFunction->extendedAttributes->{"OverrideBuiltins"}) {
+    if (!$interface->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
         $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";

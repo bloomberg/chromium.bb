@@ -18,8 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface HTMLFrameSetElement : HTMLElement {
-    [NotEnumerable, OverrideBuiltins] getter Window (DOMString name);
+[
+    OverrideBuiltins,
+] interface HTMLFrameSetElement : HTMLElement {
+    [NotEnumerable] getter Window (DOMString name);
     [Reflect] attribute DOMString cols;
     [Reflect] attribute DOMString rows;
 

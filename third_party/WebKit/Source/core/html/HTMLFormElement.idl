@@ -18,7 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface HTMLFormElement : HTMLElement {
+[
+    OverrideBuiltins,
+] interface HTMLFormElement : HTMLElement {
     [Reflect=accept_charset] attribute DOMString acceptCharset;
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString action;
     [Reflect, ReflectOnly="on"|"off", ReflectMissing="on", ReflectInvalid="on"] attribute DOMString autocomplete;
@@ -32,7 +34,7 @@ interface HTMLFormElement : HTMLElement {
     readonly attribute HTMLCollection elements;
     readonly attribute long length;
     [ImplementedAs=item] getter Node (unsigned long index);
-    [NotEnumerable, OverrideBuiltins] getter (RadioNodeList or Element) (DOMString name);
+    [NotEnumerable] getter (RadioNodeList or Element) (DOMString name);
 
     [ImplementedAs=submitFromJavaScript, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] void submit();
     [CustomElementCallbacks] void reset();

@@ -24,12 +24,14 @@
  */
 
 [
+    OverrideBuiltins,
     SetWrapperReferenceFrom=element,
 ] interface DOMStringMap {
     [NotEnumerable] getter DOMString (unsigned long index);
     [RaisesException] setter DOMString (unsigned long index, DOMString value);
     deleter boolean (unsigned long index);
-    [ImplementedAs=item, OverrideBuiltins] getter DOMString (DOMString name);
-    [RaisesException, OverrideBuiltins] setter DOMString (DOMString name, DOMString value);
+
+    [ImplementedAs=item] getter DOMString (DOMString name);
+    [RaisesException] setter DOMString (DOMString name, DOMString value);
     deleter boolean (DOMString name);
 };
