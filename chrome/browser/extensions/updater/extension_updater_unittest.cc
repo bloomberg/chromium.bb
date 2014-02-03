@@ -70,6 +70,7 @@ using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
 using testing::DoAll;
+using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::Return;
@@ -151,6 +152,27 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
 
   void Quit() {
     quit_closure_.Run();
+  }
+
+  void DelegateTo(ExtensionDownloaderDelegate* delegate) {
+    ON_CALL(*this, OnExtensionDownloadFailed(_, _, _, _))
+        .WillByDefault(Invoke(delegate,
+            &ExtensionDownloaderDelegate::OnExtensionDownloadFailed));
+    ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _, _))
+        .WillByDefault(Invoke(delegate,
+            &ExtensionDownloaderDelegate::OnExtensionDownloadFinished));
+    ON_CALL(*this, GetPingDataForExtension(_, _))
+        .WillByDefault(Invoke(delegate,
+            &ExtensionDownloaderDelegate::GetPingDataForExtension));
+    ON_CALL(*this, GetUpdateUrlData(_))
+        .WillByDefault(Invoke(delegate,
+            &ExtensionDownloaderDelegate::GetUpdateUrlData));
+    ON_CALL(*this, IsExtensionPending(_))
+        .WillByDefault(Invoke(delegate,
+            &ExtensionDownloaderDelegate::IsExtensionPending));
+    ON_CALL(*this, GetExtensionExistingVersion(_, _))
+        .WillByDefault(Invoke(delegate,
+            &ExtensionDownloaderDelegate::GetExtensionExistingVersion));
   }
 
  private:
@@ -968,7 +990,7 @@ class ExtensionUpdaterTest : public testing::Test {
     Mock::VerifyAndClearExpectations(&delegate);
   }
 
-  void TestSingleExtensionDownloading(bool pending, bool retry) {
+  void TestSingleExtensionDownloading(bool pending, bool retry, bool fail) {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
     scoped_ptr<ServiceForDownloadTests> service(
@@ -979,9 +1001,11 @@ class ExtensionUpdaterTest : public testing::Test {
                              kUpdateFrequencySecs,
                              NULL);
     updater.Start();
+    MockExtensionDownloaderDelegate delegate;
+    delegate.DelegateTo(&updater);
     ResetDownloader(
         &updater,
-        new ExtensionDownloader(&updater, service->request_context()));
+        new ExtensionDownloader(&delegate, service->request_context()));
     updater.downloader_->extensions_queue_.set_backoff_policy(
         &kNoBackoffPolicy);
 
@@ -1034,19 +1058,31 @@ class ExtensionUpdaterTest : public testing::Test {
 
     fetcher->set_url(test_url);
     fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseFilePath(extension_file_path);
+    if (fail) {
+      fetcher->set_response_code(404);
+      EXPECT_CALL(delegate, OnExtensionDownloadFailed(id, _, _, requests));
+    } else {
+      fetcher->set_response_code(200);
+      fetcher->SetResponseFilePath(extension_file_path);
+      EXPECT_CALL(delegate, OnExtensionDownloadFinished(
+          id, _, _, _, version.GetString(), _, requests));
+    }
     fetcher->delegate()->OnURLFetchComplete(fetcher);
 
     RunUntilIdle();
 
-    // Expect that ExtensionUpdater asked the mock extensions service to install
-    // a file with the test data for the right id.
-    EXPECT_EQ(id, service->extension_id());
-    base::FilePath tmpfile_path = service->install_path();
-    EXPECT_FALSE(tmpfile_path.empty());
-    EXPECT_EQ(test_url, service->download_url());
-    EXPECT_EQ(extension_file_path, tmpfile_path);
+    if (fail) {
+      // Don't expect any extension to have been installed.
+      EXPECT_TRUE(service->extension_id().empty());
+    } else {
+      // Expect that ExtensionUpdater asked the mock extensions service to
+      // install a file with the test data for the right id.
+      EXPECT_EQ(id, service->extension_id());
+      base::FilePath tmpfile_path = service->install_path();
+      EXPECT_FALSE(tmpfile_path.empty());
+      EXPECT_EQ(test_url, service->download_url());
+      EXPECT_EQ(extension_file_path, tmpfile_path);
+    }
   }
 
   // Update a single extension in an environment where the download request
@@ -1524,19 +1560,31 @@ TEST_F(ExtensionUpdaterTest, TestMultipleManifestDownloading) {
 }
 
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloading) {
-  TestSingleExtensionDownloading(false, false);
+  TestSingleExtensionDownloading(false, false, false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingPending) {
-  TestSingleExtensionDownloading(true, false);
+  TestSingleExtensionDownloading(true, false, false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingWithRetry) {
-  TestSingleExtensionDownloading(false, true);
+  TestSingleExtensionDownloading(false, true, false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingPendingWithRetry) {
-  TestSingleExtensionDownloading(true, true);
+  TestSingleExtensionDownloading(true, true, false);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingFailure) {
+  TestSingleExtensionDownloading(false, false, true);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingFailureWithRetry) {
+  TestSingleExtensionDownloading(false, true, true);
+}
+
+TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingFailurePending) {
+  TestSingleExtensionDownloading(true, false, true);
 }
 
 TEST_F(ExtensionUpdaterTest, TestSingleProtectedExtensionDownloading) {
