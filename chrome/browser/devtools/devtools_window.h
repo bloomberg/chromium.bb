@@ -112,8 +112,6 @@ class DevToolsWindow : private content::NotificationObserver,
   static void InspectElement(
       content::RenderViewHost* inspected_rvh, int x, int y);
 
-  static int GetMinimizedHeight();
-
   // content::DevToolsFrontendHostDelegate:
   virtual void InspectedContentsClosing() OVERRIDE;
 

@@ -480,12 +480,6 @@ void DevToolsWindow::InspectElement(content::RenderViewHost* inspected_rvh,
     window->inspect_element_start_time_ = start_time;
 }
 
-// static
-int DevToolsWindow::GetMinimizedHeight() {
-  const int kMinimizedDevToolsHeight = 24;
-  return kMinimizedDevToolsHeight;
-}
-
 void DevToolsWindow::InspectedContentsClosing() {
   intercepted_page_beforeunload_ = false;
   // This will prevent any activity after frontend is loaded.
@@ -503,7 +497,7 @@ gfx::Insets DevToolsWindow::GetContentsInsets() const {
 }
 
 gfx::Size DevToolsWindow::GetMinimumSize() const {
-  const gfx::Size kMinDevToolsSize = gfx::Size(200, 100);
+  const gfx::Size kMinDevToolsSize = gfx::Size(230, 100);
   return kMinDevToolsSize;
 }
 
