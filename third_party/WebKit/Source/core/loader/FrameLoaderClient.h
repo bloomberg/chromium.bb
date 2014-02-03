@@ -214,9 +214,6 @@ class FetchRequest;
         // notification with the given GL_ARB_robustness guilt/innocence code (see Extensions3D.h).
         virtual void didLoseWebGLContext(int) { }
 
-        // Returns true if WebGL extension WEBGL_debug_renderer_info is allowed.
-        virtual bool allowWebGLDebugRendererInfo() { return false; }
-
         // If an HTML document is being loaded, informs the embedder that the document will have its <body> attached soon.
         virtual void dispatchWillInsertBody() { }
 

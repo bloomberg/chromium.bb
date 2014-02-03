@@ -727,13 +727,6 @@ void FrameLoaderClientImpl::didLoseWebGLContext(int arbRobustnessContextLostReas
         m_webFrame->client()->didLoseWebGLContext(m_webFrame, arbRobustnessContextLostReason);
 }
 
-bool FrameLoaderClientImpl::allowWebGLDebugRendererInfo()
-{
-    if (m_webFrame->permissionClient())
-        return m_webFrame->permissionClient()->allowWebGLDebugRendererInfo(m_webFrame);
-    return false;
-}
-
 void FrameLoaderClientImpl::dispatchWillInsertBody()
 {
     if (m_webFrame->client())

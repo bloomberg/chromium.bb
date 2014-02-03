@@ -144,7 +144,6 @@ public:
 
     virtual bool allowWebGL(bool enabledPerSettings) OVERRIDE;
     virtual void didLoseWebGLContext(int arbRobustnessContextLostReason) OVERRIDE;
-    virtual bool allowWebGLDebugRendererInfo() OVERRIDE;
 
     virtual void dispatchWillInsertBody() OVERRIDE;
 
