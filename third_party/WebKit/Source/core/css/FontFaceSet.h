@@ -126,7 +126,8 @@ private:
     bool hasLoadedFonts() const { return !m_loadedFonts.isEmpty() || !m_failedFonts.isEmpty(); }
 
     void forEachInternal(PassOwnPtr<FontFaceSetForEachCallback>, ScriptValue* thisArg) const;
-    void queueDoneEvent(FontFace*);
+    void incrementLoadingCount();
+    void decrementLoadingCount();
     void fireLoadingEvent();
     void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);

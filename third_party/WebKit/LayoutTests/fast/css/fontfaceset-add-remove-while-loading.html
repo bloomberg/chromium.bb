@@ -1,0 +1,67 @@
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('Tests that FontFaceSet is correctly updated when added or removed a FontFace while loading.');
+
+window.jsTestIsAsync = true;
+
+function testStep1() {
+    face1 = new FontFace('face1', 'url(../../resources/Ahem.ttf)', {});
+    shouldBeEqualToString('face1.status', 'unloaded');
+
+    face1.load();
+    shouldBeEqualToString('face1.status', 'loading');
+    shouldBeEqualToString('document.fonts.status', 'loaded');
+
+    document.fonts.add(face1);
+    shouldBeEqualToString('document.fonts.status', 'loading');
+    document.fonts.ready().then(testStep2);
+}
+
+function testStep2() {
+    shouldBeEqualToString('face1.status', 'loaded');
+    shouldBeEqualToString('document.fonts.status', 'loaded');
+
+    face2 = new FontFace('face2', 'url(../../resources/Ahem.ttf)', {});
+    shouldBeEqualToString('face2.status', 'unloaded');
+
+    document.fonts.add(face2);
+    face2.load();
+    shouldBeEqualToString('document.fonts.status', 'loading');
+
+    document.fonts.delete(face2);
+    shouldBeEqualToString('document.fonts.status', 'loaded');
+    shouldBeEqualToString('face2.status', 'loading');
+
+    face2.ready().then(testStep3);
+}
+
+function testStep3() {
+    shouldBeEqualToString('face2.status', 'loaded');
+    shouldBeEqualToString('document.fonts.status', 'loaded');
+
+    face3 = new FontFace('face3', 'url(../../resources/Ahem.ttf)', {});
+    shouldBeEqualToString('face3.status', 'unloaded');
+
+    document.fonts.add(face3);
+    face3.load();
+    shouldBeEqualToString('document.fonts.status', 'loading');
+
+    document.fonts.clear();
+    shouldBeEqualToString('document.fonts.status', 'loaded');
+    shouldBeEqualToString('face3.status', 'loading');
+
+    finishJSTest();
+}
+
+if (document.fonts)
+    testStep1();
+else
+    testFailed('document.fonts does not exist');
+
+</script>
+</head>
+<body>
+</body>
+</html>
