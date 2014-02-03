@@ -689,9 +689,7 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
     if ((entry.fullPath + '/').indexOf(volumeInfo.mountPath + '/root/') === 0) {
       rootPath = volumeInfo.mountPath + '/root';
       rootType = RootType.DRIVE;
-      isReadOnly = volumeInfo.isReadOnly ||
-          this.getDriveConnectionState().type ===
-              util.DriveConnectionType.OFFLINE;
+      isReadOnly = volumeInfo.isReadOnly;
     } else if ((entry.fullPath + '/').indexOf(
                    volumeInfo.mountPath + '/other/') === 0) {
       rootPath = volumeInfo.mountPath + '/other';

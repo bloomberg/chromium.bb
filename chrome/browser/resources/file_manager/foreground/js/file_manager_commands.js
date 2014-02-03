@@ -483,11 +483,8 @@ CommandHandler.COMMANDS_['delete'] = {
     fileManager.deleteSelection();
   },
   canExecute: function(event, fileManager) {
-    var allowDeletingWhileOffline =
-        fileManager.directoryModel.getCurrentRootType() === RootType.DRIVE;
     var selection = fileManager.getSelection();
-    event.canExecute = (!fileManager.isOnReadonlyDirectory() ||
-                        allowDeletingWhileOffline) &&
+    event.canExecute = !fileManager.isOnReadonlyDirectory() &&
                        selection &&
                        selection.totalCount > 0;
   }
@@ -521,14 +518,11 @@ CommandHandler.COMMANDS_['rename'] = {
     fileManager.initiateRename();
   },
   canExecute: function(event, fileManager) {
-    var allowRenamingWhileOffline =
-        fileManager.directoryModel.getCurrentRootType() === RootType.DRIVE;
     var selection = fileManager.getSelection();
-    event.canExecute =
-        !fileManager.isRenamingInProgress() &&
-        (!fileManager.isOnReadonlyDirectory() || allowRenamingWhileOffline) &&
-        selection &&
-        selection.totalCount == 1;
+    event.canExecute = !fileManager.isRenamingInProgress() &&
+                       !fileManager.isOnReadonlyDirectory() &&
+                       selection &&
+                       selection.totalCount == 1;
   }
 };
 
