@@ -155,12 +155,18 @@ TEST_F(CancelationSignalTest, CancelEarly) {
   EXPECT_TRUE(VerifyTaskNotStarted());
 }
 
+// This test is flaky on iOS and Mac; see http://crbug.com/340360
+#if defined(OS_IOS) || defined(OS_MACOSX)
+#define MAYBE_Cancel DISABLED_Cancel
+#else
+#define MAYBE_Cancel Cancel
+#endif
 // Send the cancelation signal after the request to start the task has been
 // posted.  This is racy.  The signal to stop may arrive before the signal to
 // run the task.  If that happens, we end up with another instance of the
 // CancelEarly test defined earlier.  If the signal requesting a stop arrives
 // after the task has been started, it should end up stopping the task.
-TEST_F(CancelationSignalTest, Cancel) {
+TEST_F(CancelationSignalTest, MAYBE_Cancel) {
   StartBlockingTask();
   CancelBlocking();
   EXPECT_TRUE(VerifyTaskDone());
