@@ -267,6 +267,22 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     {% set getter_name = getter.name or 'anonymousNamedGetter' %}
     {% set getter_arguments = ['propertyName', 'exceptionState']
            if getter.is_raises_exception else ['propertyName'] %}
+    {% if getter.union_arguments %}
+    {% for cpp_type in getter.cpp_type %}
+    bool element{{loop.index0}}Enabled = false;
+    {{cpp_type}} element{{loop.index0}};
+    {% endfor %}
+    {% set getter_arguments = getter_arguments + getter.union_arguments %}
+    collection->{{getter_name}}({{getter_arguments|join(', ')}});
+    {% for v8_set_return_value in getter.v8_set_return_value %}
+    if (element{{loop.index0}}Enabled) {
+        {{v8_set_return_value}};
+        return;
+    }
+
+    {% endfor %}
+    return;
+    {% else %}
     {{getter.cpp_type}} element = collection->{{getter_name}}({{getter_arguments|join(', ')}});
     {% if getter.is_raises_exception %}
     if (exceptionState.throwIfNeeded())
@@ -275,6 +291,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if ({{getter.is_null_expression}})
         return;
     {{getter.v8_set_return_value}};
+    {% endif %}
 }
 
 {% endif %}

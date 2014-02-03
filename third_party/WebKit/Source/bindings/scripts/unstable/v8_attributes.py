@@ -164,11 +164,8 @@ def generate_getter(interface, attribute, contents):
     def v8_set_return_value_statement():
         if contents['is_keep_alive_for_gc']:
             return 'v8SetReturnValue(info, wrapper)'
-        if attribute.is_nullable and v8_types.is_interface_type(idl_type):
-            set_cpp_value = 'jsValue.release()'
-        else:
-            set_cpp_value = cpp_value
-        return v8_types.v8_set_return_value(idl_type, set_cpp_value, extended_attributes=extended_attributes, script_wrappable='imp')
+        release = attribute.is_nullable and v8_types.is_interface_type(idl_type)
+        return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes=extended_attributes, script_wrappable='imp', release=release)
 
     contents.update({
         'cpp_value': cpp_value,

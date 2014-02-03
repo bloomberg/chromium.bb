@@ -79,13 +79,15 @@ class TypedObject:
         # interface itself.
         if not self.idl_type:
             return
-        # Convert string representation to and from an IdlType object
-        # to handle parsing of composite types (arrays and sequences)
-        idl_type_object = IdlType.from_string(self.idl_type)
-        base_type = idl_type_object.base_type
-        if base_type in typedefs:
-            idl_type_object.base_type = typedefs[base_type]
-            self.idl_type = str(idl_type_object)
+        # (Types are represented either as strings or as IdlUnionType objects.)
+        # Union types are objects, which have a member function for this
+        if isinstance(self.idl_type, IdlUnionType):
+            # Method 'resolve_typedefs' call is ok, but pylint can't infer this
+            # pylint: disable=E1101
+            self.idl_type.resolve_typedefs(typedefs)
+            return
+        # Otherwise, IDL type is represented as string, so use a function
+        self.idl_type = resolve_typedefs(self.idl_type, typedefs)
 
 
 # IDL classes
@@ -318,6 +320,15 @@ class IdlArgument(BaseIdl, TypedObject):
 # Type classes
 
 
+def resolve_typedefs(idl_type, typedefs):
+    """Return an IDL type (as string) with typedefs resolved."""
+    # Converts a string representation to and from an IdlType object to handle
+    # parsing of composite types (arrays and sequences) and encapsulate typedef
+    # resolution, e.g., GLint[] -> unsigned long[] requires parsing the '[]'.
+    # Use fluent interface to avoid auxiliary variable.
+    return str(IdlType.from_string(idl_type).resolve_typedefs(typedefs))
+
+
 class IdlType:
     # FIXME: replace type strings with these objects,
     # so don't need to parse everywhere types are used.
@@ -359,10 +370,20 @@ class IdlType:
             return cls(base_type, is_sequence=True)
         return cls(type_string)
 
+    def resolve_typedefs(self, typedefs):
+        if self.base_type in typedefs:
+            self.base_type = typedefs[self.base_type]
+        return self  # Fluent interface
+
 
 class IdlUnionType(BaseIdl):
     def __init__(self, union_member_types=None):
         self.union_member_types = union_member_types or []
+
+    def resolve_typedefs(self, typedefs):
+        self.union_member_types = [
+            typedefs.get(union_member_type, union_member_type)
+            for union_member_type in self.union_member_types]
 
     def json_serializable(self):
         return {

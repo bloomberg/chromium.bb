@@ -183,16 +183,18 @@ def v8_set_return_value(interface_name, method, cpp_value):
     extended_attributes = method.extended_attributes
     if idl_type == 'void':
         return None
+
+    release = False
     # [CallWith=ScriptState], [RaisesException]
     if (has_extended_attribute_value(method, 'CallWith', 'ScriptState') or
         'RaisesException' in extended_attributes):
         # use local variable for value
+        cpp_value = 'result'
         if v8_types.is_interface_type(idl_type):
-            cpp_value = 'result.release()'
-        else:
-            cpp_value = 'result'
+            release = True
+
     script_wrappable = 'imp' if v8_types.inherits_interface(interface_name, 'Node') else ''
-    return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable)
+    return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release)
 
 
 # [NotEnumerable]

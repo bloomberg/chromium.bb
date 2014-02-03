@@ -495,9 +495,21 @@ def property_getter(getter):
             return '!element'
         return ''
 
+    def union_arguments(idl_type):
+        """Return list of ['element0Enabled', 'element0', 'element1Enabled', ...]"""
+        return [arg
+                for i in range(len(idl_type.union_member_types))
+                for arg in ['element%sEnabled' % i, 'element%s' % i]]
+
     idl_type = getter.idl_type
     extended_attributes = getter.extended_attributes
-    element = 'element.release()' if is_interface_type(idl_type) else 'element'
+
+    is_union_type = v8_types.is_union_type(idl_type)
+    if is_union_type:
+        release = [v8_types.is_interface_type(union_member_type)
+                   for union_member_type in idl_type.union_member_types]
+    else:
+        release = v8_types.is_interface_type(idl_type)
 
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
@@ -513,7 +525,8 @@ def property_getter(getter):
         'is_null_expression': is_null_expression(idl_type),
         'is_raises_exception': 'RaisesException' in extended_attributes,
         'name': cpp_name(getter),
-        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, element, extended_attributes=extended_attributes, script_wrappable='collection'),
+        'union_arguments': union_arguments(idl_type) if is_union_type else None,
+        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'element', extended_attributes=extended_attributes, script_wrappable='collection', release=release),
     }
 
 

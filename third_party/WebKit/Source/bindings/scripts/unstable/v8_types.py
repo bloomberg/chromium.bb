@@ -88,6 +88,9 @@ def array_or_sequence_type(idl_type):
 
 
 def array_type(idl_type):
+    if is_union_type(idl_type):
+        # We do not support arrays of union types
+        return False
     matched = re.match(r'([\w\s]+)\[\]', idl_type)
     return matched and matched.group(1)
 
@@ -158,6 +161,9 @@ def is_interface_type(idl_type):
 
 
 def sequence_type(idl_type):
+    if is_union_type(idl_type):
+        # We do not support sequences of union types
+        return False
     matched = re.match(r'sequence<([\w\s]+)>', idl_type)
     return matched and matched.group(1)
 
@@ -269,7 +275,10 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
             return 'String'
         return 'V8StringResource<%s>' % string_mode()
     if is_union_type(idl_type):
-        raise Exception('UnionType is not supported')
+        # Attribute 'union_member_types' use is ok, but pylint can't infer this
+        # pylint: disable=E1103
+        return (cpp_type(union_member_type)
+                for union_member_type in idl_type.union_member_types)
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
         return cpp_template_type('Vector', cpp_type(this_array_or_sequence_type))
@@ -352,6 +361,12 @@ def includes_for_type(idl_type):
     this_array_or_sequence_type = array_or_sequence_type(idl_type)
     if this_array_or_sequence_type:
         return includes_for_type(this_array_or_sequence_type)
+    if is_union_type(idl_type):
+        # Attribute 'union_member_types' use is ok, but pylint can't infer this
+        # pylint: disable=E1103
+        return set.union(*[
+            includes_for_type(union_member_type)
+            for union_member_type in idl_type.union_member_types])
     if idl_type.endswith('Constructor'):
         idl_type = constructor_type(idl_type)
     return set(['V8%s.h' % idl_type])
@@ -559,13 +574,22 @@ V8_SET_RETURN_VALUE = {
 }
 
 
-def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable=''):
+def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value."""
     def dom_wrapper_conversion_type():
         if not script_wrappable:
             return 'DOMWrapperDefault'
         return 'DOMWrapperFast'
 
+    if is_union_type(idl_type):
+        return [
+            v8_set_return_value(union_member_type,
+                                cpp_value + str(i),
+                                extended_attributes,
+                                script_wrappable,
+                                release[i])
+                for i, union_member_type in
+                enumerate(idl_type.union_member_types)]
     idl_type, cpp_value = preprocess_idl_type_and_value(idl_type, cpp_value, extended_attributes)
     this_v8_conversion_type = v8_conversion_type(idl_type, extended_attributes)
     # SetReturn-specific overrides
@@ -576,6 +600,8 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
         this_v8_conversion_type = dom_wrapper_conversion_type()
 
     format_string = V8_SET_RETURN_VALUE[this_v8_conversion_type]
+    if release:
+        cpp_value = '%s.release()' % cpp_value
     statement = format_string.format(cpp_value=cpp_value, script_wrappable=script_wrappable)
     return statement
 
