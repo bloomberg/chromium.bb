@@ -150,6 +150,8 @@ int32_t PepperPDFHost::OnResourceMessageReceived(
                                       OnHostMsgGetResourceImage)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetSelectedText,
                                       OnHostMsgSetSelectedText)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetLinkUnderCursor,
+                                      OnHostMsgSetLinkUnderCursor)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -352,6 +354,17 @@ int32_t PepperPDFHost::OnHostMsgSetSelectedText(
   if (!instance)
     return PP_ERROR_FAILED;
   instance->SetSelectedText(selected_text);
+  return PP_OK;
+}
+
+int32_t PepperPDFHost::OnHostMsgSetLinkUnderCursor(
+    ppapi::host::HostMessageContext* context,
+    const std::string& url) {
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
+  if (!instance)
+    return PP_ERROR_FAILED;
+  instance->SetLinkUnderCursor(url);
   return PP_OK;
 }
 

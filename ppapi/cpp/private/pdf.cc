@@ -214,4 +214,10 @@ void PDF::SetSelectedText(const InstanceHandle& instance,
   }
 }
 
+// static
+void PDF::SetLinkUnderCursor(const InstanceHandle& instance, const char* url) {
+  if (has_interface<PPB_PDF>())
+    get_interface<PPB_PDF>()->SetLinkUnderCursor(instance.pp_instance(), url);
+}
+
 }  // namespace pp

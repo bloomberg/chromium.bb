@@ -107,6 +107,9 @@ class PepperPluginInstance {
 
   // Sets the selected text for this plugin.
   virtual void SetSelectedText(const base::string16& selected_text) = 0;
+
+  // Sets the link currently under the cursor.
+  virtual void SetLinkUnderCursor(const std::string& url) = 0;
 };
 
 }  // namespace content

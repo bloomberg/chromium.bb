@@ -154,6 +154,13 @@ void SetSelectedText(PP_Instance instance,
     enter.functions()->SetSelectedText(selected_text);
 }
 
+void SetLinkUnderCursor(PP_Instance instance, const char* url) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetLinkUnderCursor(url);
+}
+
 const PPB_PDF g_ppb_pdf_thunk = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -173,6 +180,7 @@ const PPB_PDF g_ppb_pdf_thunk = {
   &ModalPromptForPassword,
   &IsOutOfProcess,
   &SetSelectedText,
+  &SetLinkUnderCursor,
 };
 
 }  // namespace

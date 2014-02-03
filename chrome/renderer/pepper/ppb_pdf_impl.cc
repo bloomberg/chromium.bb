@@ -434,6 +434,14 @@ void SetSelectedText(PP_Instance instance_id, const char* selected_text) {
   NOTIMPLEMENTED();
 }
 
+void SetLinkUnderCursor(PP_Instance instance_id, const char* url) {
+  content::PepperPluginInstance* instance =
+      content::PepperPluginInstance::Get(instance_id);
+  if (!instance)
+    return;
+  instance->SetLinkUnderCursor(url);
+}
+
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -453,6 +461,7 @@ const PPB_PDF ppb_pdf = {
   &ModalPromptForPassword,
   &IsOutOfProcess,
   &SetSelectedText,
+  &SetLinkUnderCursor,
 };
 
 }  // namespace

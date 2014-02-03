@@ -22,6 +22,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrivatePageTransformType, 4);
 
 struct PPP_Pdf_1 {
   // Returns an absolute URL if the position is over a link.
+  // Deprecated: The plugin now notifies the host when the cursor is over a
+  // link.
   PP_Var (*GetLinkAtPosition)(PP_Instance instance,
                               PP_Point point);
 

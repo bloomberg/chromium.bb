@@ -2021,6 +2021,10 @@ IPC_MESSAGE_CONTROL2(PpapiPluginMsg_PDF_GetResourceImageReply,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetSelectedText,
                      base::string16 /* selected_text */)
 
+// Called by the plugin to set the link under the cursor.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetLinkUnderCursor,
+                     std::string /* url */)
+
 // VideoCapture_Dev, plugin -> host
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_StartCapture)

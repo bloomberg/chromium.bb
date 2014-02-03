@@ -1251,6 +1251,10 @@ void PepperPluginInstanceImpl::SetSelectedText(
   selected_text_ = selected_text;
 }
 
+void PepperPluginInstanceImpl::SetLinkUnderCursor(const std::string& url) {
+  link_under_cursor_ = base::UTF8ToUTF16(url);
+}
+
 base::string16 PepperPluginInstanceImpl::GetSelectedText(bool html) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
@@ -1272,13 +1276,21 @@ base::string16 PepperPluginInstanceImpl::GetLinkAtPosition(
     const gfx::Point& point) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  if (!LoadPdfInterface())
-    return base::string16();
+  if (!LoadPdfInterface()) {
+    // TODO(koz): Change the containing function to GetLinkUnderCursor(). We can
+    // return |link_under_cursor_| here because this is only ever called with
+    // the current mouse coordinates.
+    return link_under_cursor_;
+  }
 
   PP_Point p;
   p.x = point.x();
   p.y = point.y();
   PP_Var rv = plugin_pdf_interface_->GetLinkAtPosition(pp_instance(), p);
+  // If the plugin returns undefined for this function it has switched to
+  // providing us with the link under the cursor eagerly.
+  if (rv.type == PP_VARTYPE_UNDEFINED)
+    return link_under_cursor_;
   StringVar* string = StringVar::FromPPVar(rv);
   base::string16 link;
   if (string)

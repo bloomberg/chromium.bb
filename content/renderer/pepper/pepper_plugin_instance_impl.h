@@ -373,6 +373,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       const base::FilePath& path) OVERRIDE;
   virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
   virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
+  virtual void SetLinkUnderCursor(const std::string& url) OVERRIDE;
 
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
@@ -852,6 +853,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // The ContentDecryptorDelegate forwards PPP_ContentDecryptor_Private
   // calls and handles PPB_ContentDecryptor_Private calls.
   scoped_ptr<ContentDecryptorDelegate> content_decryptor_delegate_;
+
+  // The link currently under the cursor.
+  base::string16 link_under_cursor_;
 
   // Dummy NPP value used when calling in to WebBindings, to allow the bindings
   // to correctly track NPObjects belonging to this plugin instance.

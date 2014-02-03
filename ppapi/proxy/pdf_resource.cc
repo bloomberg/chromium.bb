@@ -200,5 +200,9 @@ void PDFResource::SetSelectedText(const char* selected_text) {
        PpapiHostMsg_PDF_SetSelectedText(base::UTF8ToUTF16(selected_text)));
 }
 
+void PDFResource::SetLinkUnderCursor(const char* url) {
+  Post(RENDERER, PpapiHostMsg_PDF_SetLinkUnderCursor(url));
+}
+
 }  // namespace proxy
 }  // namespace ppapi

@@ -33,6 +33,7 @@ class PPB_PDF_API {
                                                float scale) = 0;
   virtual PP_Bool IsOutOfProcess() = 0;
   virtual void SetSelectedText(const char* selected_text) = 0;
+  virtual void SetLinkUnderCursor(const char* url) = 0;
 
   static const SingletonResourceID kSingletonResourceID = PDF_SINGLETON_ID;
 };

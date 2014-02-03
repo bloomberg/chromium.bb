@@ -40,6 +40,7 @@ class FakePepperPluginInstance : public PepperPluginInstance {
       const base::FilePath& path) OVERRIDE;
   virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
   virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
+  virtual void SetLinkUnderCursor(const std::string& url) OVERRIDE;
 
  private:
   GURL gurl_;

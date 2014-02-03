@@ -56,6 +56,7 @@ class PPAPI_PROXY_EXPORT PDFResource
   virtual PP_Resource GetResourceImage(PP_ResourceImage image_id) OVERRIDE;
   virtual PP_Bool IsOutOfProcess() OVERRIDE;
   virtual void SetSelectedText(const char* selected_text) OVERRIDE;
+  virtual void SetLinkUnderCursor(const char* url) OVERRIDE;
 
  private:
   std::string locale_;
