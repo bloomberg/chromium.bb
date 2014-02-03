@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_DISPOSITION_GESTURE_FILTER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_DISPOSITION_GESTURE_FILTER_H_
 
 #include <deque>
 #include <queue>
@@ -15,26 +15,26 @@
 
 namespace content {
 
-// Interface with which the |GestureEventQueue| forwards gestures for a given
-// touch event.
-class CONTENT_EXPORT GestureEventQueueClient {
+// Interface with which the |TouchDispositionGestureFilter| forwards gestures
+// for a given touch event.
+class CONTENT_EXPORT TouchDispositionGestureFilterClient {
  public:
   virtual void ForwardGestureEvent(const blink::WebGestureEvent&) = 0;
 };
 
-// Handles dispatch of touch-derived gestures created by the platform.
-// Gestures are forwarded or dropped depending on the ack dispositions of the
-// generating touch sequence.
-class CONTENT_EXPORT GestureEventQueue {
+// Given a stream of touch-derived gesture packets, produces a refined gesture
+// sequence based on the ack dispositions of the generating touch events.
+class CONTENT_EXPORT TouchDispositionGestureFilter {
  public:
-  explicit GestureEventQueue(GestureEventQueueClient* client);
-  ~GestureEventQueue();
+  explicit TouchDispositionGestureFilter(
+      TouchDispositionGestureFilterClient* client);
+  ~TouchDispositionGestureFilter();
 
-  // To be called upon receipt of gesture-related events.  In particular,
-  // |packet| contains [0, n] gestures that correspond to a given event.  That
-  // event may be a touch, or a touch timeout for certain stationary gestures.
-  // It is imperative that a single packet is received for *each* touch event,
-  // even those that did not produce a gesture.
+  // To be called upon production of touch-derived gestures by the platform,
+  // *prior* to the generating touch being forward to the renderer.  In
+  // particular, |packet| contains [0, n] gestures that correspond to a given
+  // touch event. It is imperative that a single packet is received for
+  // *each* touch event, even those that did not produce a gesture.
   void OnGestureEventPacket(const GestureEventPacket& packet);
 
   // To be called upon receipt of *all* touch event acks.
@@ -77,7 +77,7 @@ class CONTENT_EXPORT GestureEventQueue {
   GestureSequence& Head();
   GestureSequence& Tail();
 
-  GestureEventQueueClient* client_;
+  TouchDispositionGestureFilterClient* client_;
   std::queue<GestureSequence> sequences_;
 
   // Bookkeeping for inserting synthetic Gesture{Tap,Fling}Cancel events
@@ -86,9 +86,9 @@ class CONTENT_EXPORT GestureEventQueue {
   bool needs_tap_ending_event_;
   bool needs_fling_ending_event_;
 
-  DISALLOW_COPY_AND_ASSIGN(GestureEventQueue);
+  DISALLOW_COPY_AND_ASSIGN(TouchDispositionGestureFilter);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_DISPOSITION_GESTURE_FILTER_H_

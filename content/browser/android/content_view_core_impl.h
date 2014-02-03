@@ -14,7 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
-#include "content/browser/renderer_host/input/gesture_event_queue.h"
+#include "content/browser/renderer_host/input/touch_disposition_gesture_filter.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -38,8 +38,8 @@ struct MenuItem;
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
                             public NotificationObserver,
-                            public WebContentsObserver,
-                            public GestureEventQueueClient {
+                            public TouchDispositionGestureFilterClient,
+                            public WebContentsObserver {
  public:
   static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
   ContentViewCoreImpl(JNIEnv* env,
@@ -335,7 +335,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void RenderViewReady() OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
-  // GestureEventQueueClient implementation.
+  // TouchDispositionGestureFilterClient implementation.
   virtual void ForwardGestureEvent(
       const blink::WebGestureEvent& event) OVERRIDE;
 
@@ -400,7 +400,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   bool geolocation_needs_pause_;
 
-  GestureEventQueue gesture_event_queue_;
+  // Handles gesture dispatch as the generating touch events are ack'ed.
+  TouchDispositionGestureFilter touch_disposition_gesture_filter_;
   bool handling_touch_event_;
   blink::WebTouchEvent pending_touch_event_;
   GestureEventPacket pending_gesture_packet_;

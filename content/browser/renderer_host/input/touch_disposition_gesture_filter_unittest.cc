@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/input/gesture_event_queue.h"
+#include "content/browser/renderer_host/input/touch_disposition_gesture_filter.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,23 +17,24 @@ using blink::WebTouchPoint;
 
 namespace content {
 
-class GestureEventQueueTest : public testing::Test,
-                              public GestureEventQueueClient {
+class TouchDispositionGestureFilterTest
+    : public testing::Test,
+      public TouchDispositionGestureFilterClient {
  public:
-  GestureEventQueueTest() : sent_gesture_count_(0) {}
+  TouchDispositionGestureFilterTest() : sent_gesture_count_(0) {}
 
-  virtual ~GestureEventQueueTest() {}
+  virtual ~TouchDispositionGestureFilterTest() {}
 
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    queue_.reset(new GestureEventQueue(this));
+    queue_.reset(new TouchDispositionGestureFilter(this));
   }
 
   virtual void TearDown() OVERRIDE {
     queue_.reset();
   }
 
-  // GestureEventQueueClient
+  // TouchDispositionGestureFilterClient
   virtual void ForwardGestureEvent(const WebGestureEvent& event) OVERRIDE {
     ++sent_gesture_count_;
     sent_gestures_.push_back(event.type);
@@ -160,14 +161,14 @@ class GestureEventQueueTest : public testing::Test,
   }
 
  private:
-  scoped_ptr<GestureEventQueue> queue_;
+  scoped_ptr<TouchDispositionGestureFilter> queue_;
   SyntheticWebTouchEvent touch_event_;
   GestureEventPacket pending_gesture_packet_;
   size_t sent_gesture_count_;
   GestureList sent_gestures_;
 };
 
-TEST_F(GestureEventQueueTest, BasicNoGestures) {
+TEST_F(TouchDispositionGestureFilterTest, BasicNoGestures) {
   PressTouchPoint(1, 1);
   EXPECT_FALSE(GesturesSent());
 
@@ -186,7 +187,7 @@ TEST_F(GestureEventQueueTest, BasicNoGestures) {
   EXPECT_FALSE(GesturesSent());
 }
 
-TEST_F(GestureEventQueueTest, BasicGestures) {
+TEST_F(TouchDispositionGestureFilterTest, BasicGestures) {
   // An unconsumed touch's gesture should be sent.
   PushGesture(WebInputEvent::GestureScrollBegin);
   PressTouchPoint(1, 1);
@@ -214,7 +215,7 @@ TEST_F(GestureEventQueueTest, BasicGestures) {
   EXPECT_FALSE(GesturesSent());
 }
 
-TEST_F(GestureEventQueueTest, ConsumedThenNotConsumed) {
+TEST_F(TouchDispositionGestureFilterTest, ConsumedThenNotConsumed) {
   // A consumed touch's gesture should not be sent.
   PushGesture(WebInputEvent::GestureScrollBegin);
   PressTouchPoint(1, 1);
@@ -234,7 +235,7 @@ TEST_F(GestureEventQueueTest, ConsumedThenNotConsumed) {
   EXPECT_FALSE(GesturesSent());
 }
 
-TEST_F(GestureEventQueueTest, NotConsumedThenNoConsumer) {
+TEST_F(TouchDispositionGestureFilterTest, NotConsumedThenNoConsumer) {
   // An unconsumed touch's gesture should be sent.
   PushGesture(WebInputEvent::GestureScrollBegin);
   PressTouchPoint(1, 1);
@@ -269,7 +270,7 @@ TEST_F(GestureEventQueueTest, NotConsumedThenNoConsumer) {
   EXPECT_FALSE(GesturesSent());
 }
 
-TEST_F(GestureEventQueueTest, MultipleTouchSequences) {
+TEST_F(TouchDispositionGestureFilterTest, MultipleTouchSequences) {
   // Queue two touch-to-gestures sequences.
   PushGesture(WebInputEvent::GestureFlingStart);
   PressTouchPoint(1, 1);
@@ -293,7 +294,7 @@ TEST_F(GestureEventQueueTest, MultipleTouchSequences) {
                             GetAndResetSentGestures()));
 }
 
-TEST_F(GestureEventQueueTest, FlingCancelledOnNewTouchSequence) {
+TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnNewTouchSequence) {
   // Simulate a fling.
   PressTouchPoint(1, 1);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
@@ -311,7 +312,7 @@ TEST_F(GestureEventQueueTest, FlingCancelledOnNewTouchSequence) {
                             GetAndResetSentGestures()));
 }
 
-TEST_F(GestureEventQueueTest, FlingCancelledOnScrollBegin) {
+TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnScrollBegin) {
   // Simulate a fling sequence.
   PushGesture(WebInputEvent::GestureScrollBegin);
   PushGesture(WebInputEvent::GestureFlingStart);
@@ -332,7 +333,7 @@ TEST_F(GestureEventQueueTest, FlingCancelledOnScrollBegin) {
                             GetAndResetSentGestures()));
 }
 
-TEST_F(GestureEventQueueTest, FlingNotCancelledIfGFCEventReceived) {
+TEST_F(TouchDispositionGestureFilterTest, FlingNotCancelledIfGFCEventReceived) {
   // Simulate a fling that is started then cancelled.
   PushGesture(WebInputEvent::GestureFlingStart);
   PressTouchPoint(1, 1);
@@ -352,7 +353,7 @@ TEST_F(GestureEventQueueTest, FlingNotCancelledIfGFCEventReceived) {
   EXPECT_FALSE(GesturesSent());
 }
 
-TEST_F(GestureEventQueueTest, TapCancelledWhenScrollBegins) {
+TEST_F(TouchDispositionGestureFilterTest, TapCancelledWhenScrollBegins) {
   PushGesture(WebInputEvent::GestureTapDown);
   PressTouchPoint(1, 1);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -368,7 +369,7 @@ TEST_F(GestureEventQueueTest, TapCancelledWhenScrollBegins) {
                             GetAndResetSentGestures()));
 }
 
-TEST_F(GestureEventQueueTest, TapCancelledWhenTouchConsumed) {
+TEST_F(TouchDispositionGestureFilterTest, TapCancelledWhenTouchConsumed) {
   PushGesture(WebInputEvent::GestureTapDown);
   PressTouchPoint(1, 1);
   SendTouchEventACK(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -383,7 +384,8 @@ TEST_F(GestureEventQueueTest, TapCancelledWhenTouchConsumed) {
                             GetAndResetSentGestures()));
 }
 
-TEST_F(GestureEventQueueTest, TapNotCancelledIfTapEndingEventReceived) {
+TEST_F(TouchDispositionGestureFilterTest,
+       TapNotCancelledIfTapEndingEventReceived) {
   PushGesture(WebInputEvent::GestureTapDown);
   PressTouchPoint(1, 1);
   PressTouchPoint(2, 2);
@@ -404,7 +406,7 @@ TEST_F(GestureEventQueueTest, TapNotCancelledIfTapEndingEventReceived) {
   EXPECT_FALSE(GesturesSent());
 }
 
-TEST_F(GestureEventQueueTest, TimeoutGestures) {
+TEST_F(TouchDispositionGestureFilterTest, TimeoutGestures) {
   // If the sequence is allowed, and there are no preceding gestures, the
   // timeout gestures should be forwarded immediately.
   PressTouchPoint(1, 1);

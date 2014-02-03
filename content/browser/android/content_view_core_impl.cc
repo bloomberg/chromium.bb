@@ -259,7 +259,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
       window_android_(window_android),
       device_orientation_(0),
       geolocation_needs_pause_(false),
-      gesture_event_queue_(this),
+      touch_disposition_gesture_filter_(this),
       handling_touch_event_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
@@ -586,7 +586,7 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
 }
 
 void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
-  gesture_event_queue_.OnTouchEventAck(ack_result);
+  touch_disposition_gesture_filter_.OnTouchEventAck(ack_result);
 }
 
 void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
@@ -1051,7 +1051,8 @@ void ContentViewCoreImpl::OnTouchEventHandlingEnd(JNIEnv* env, jobject obj) {
     return;
 
   // Note: Order is important here, as the touch may be ack'ed synchronously
-  gesture_event_queue_.OnGestureEventPacket(pending_gesture_packet_);
+  touch_disposition_gesture_filter_.OnGestureEventPacket(
+      pending_gesture_packet_);
   rwhv->SendTouchEvent(pending_touch_event_);
 }
 
@@ -1124,7 +1125,7 @@ void ContentViewCoreImpl::SendGestureEvent(
     const blink::WebGestureEvent& event) {
   // Gestures received while |handling_touch_event_| will accumulate until
   // touch handling finishes, at which point the gestures will be pushed to the
-  // |gesture_event_queue_|.
+  // |touch_disposition_gesture_filter_|.
   if (handling_touch_event_) {
     pending_gesture_packet_.Push(event);
     return;
@@ -1134,7 +1135,7 @@ void ContentViewCoreImpl::SendGestureEvent(
   // timestamp as the initial TouchStart of the current sequence. We should
   // verify that this is true, and use that as another timeout check.
   if (PossiblyTriggeredByTouchTimeout(event)) {
-    gesture_event_queue_.OnGestureEventPacket(
+    touch_disposition_gesture_filter_.OnGestureEventPacket(
         GestureEventPacket::FromTouchTimeout(event));
     return;
   }

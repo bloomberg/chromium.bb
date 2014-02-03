@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/gesture_event_queue.h"
+#include "content/browser/renderer_host/input/touch_disposition_gesture_filter.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -26,18 +26,20 @@ WebGestureEvent CreateGesture(WebInputEvent::Type type) {
 
 }  // namespace
 
-// GestureEventQueue
+// TouchDispositionGestureFilter
 
-GestureEventQueue::GestureEventQueue(GestureEventQueueClient* client)
+TouchDispositionGestureFilter::TouchDispositionGestureFilter(
+    TouchDispositionGestureFilterClient* client)
     : client_(client),
       needs_tap_ending_event_(false),
       needs_fling_ending_event_(false) {
   DCHECK(client_);
 }
 
-GestureEventQueue::~GestureEventQueue() {}
+TouchDispositionGestureFilter::~TouchDispositionGestureFilter() {}
 
-void GestureEventQueue::OnGestureEventPacket(const GestureEventPacket& packet) {
+void TouchDispositionGestureFilter::OnGestureEventPacket(
+    const GestureEventPacket& packet) {
   switch (packet.gesture_source()) {
     case GestureEventPacket::TOUCH_BEGIN:
       sequences_.push(GestureSequence());
@@ -64,7 +66,8 @@ void GestureEventQueue::OnGestureEventPacket(const GestureEventPacket& packet) {
   Tail().Push(packet);
 }
 
-void GestureEventQueue::OnTouchEventAck(InputEventAckState ack_state) {
+void TouchDispositionGestureFilter::OnTouchEventAck(
+    InputEventAckState ack_state) {
   if (Head().IsEmpty()) {
     CancelTapIfNecessary();
     CancelFlingIfNecessary();
@@ -102,12 +105,13 @@ void GestureEventQueue::OnTouchEventAck(InputEventAckState ack_state) {
     CancelTapIfNecessary();
 }
 
-void GestureEventQueue::SendPacket(const GestureEventPacket& packet) {
+void TouchDispositionGestureFilter::SendPacket(
+    const GestureEventPacket& packet) {
   for (size_t i = 0; i < packet.gesture_count(); ++i)
     SendGesture(packet.gesture(i));
 }
 
-void GestureEventQueue::SendGesture(const WebGestureEvent& event) {
+void TouchDispositionGestureFilter::SendGesture(const WebGestureEvent& event) {
   switch (event.type) {
     case WebInputEvent::GestureLongTap:
       CancelTapIfNecessary();
@@ -139,7 +143,7 @@ void GestureEventQueue::SendGesture(const WebGestureEvent& event) {
   client_->ForwardGestureEvent(event);
 }
 
-void GestureEventQueue::CancelTapIfNecessary() {
+void TouchDispositionGestureFilter::CancelTapIfNecessary() {
   if (!needs_tap_ending_event_)
     return;
 
@@ -147,7 +151,7 @@ void GestureEventQueue::CancelTapIfNecessary() {
   DCHECK(!needs_tap_ending_event_);
 }
 
-void GestureEventQueue::CancelFlingIfNecessary() {
+void TouchDispositionGestureFilter::CancelFlingIfNecessary() {
   if (!needs_fling_ending_event_)
     return;
 
@@ -155,40 +159,43 @@ void GestureEventQueue::CancelFlingIfNecessary() {
   DCHECK(!needs_fling_ending_event_);
 }
 
-GestureEventQueue::GestureSequence& GestureEventQueue::Head() {
+TouchDispositionGestureFilter::GestureSequence&
+TouchDispositionGestureFilter::Head() {
   DCHECK(!sequences_.empty());
   return sequences_.front();
 }
 
-GestureEventQueue::GestureSequence& GestureEventQueue::Tail() {
+TouchDispositionGestureFilter::GestureSequence&
+TouchDispositionGestureFilter::Tail() {
   DCHECK(!sequences_.empty());
   return sequences_.back();
 }
 
 
-// GestureEventQueue::GestureSequence
+// TouchDispositionGestureFilter::GestureSequence
 
-GestureEventQueue::GestureSequence::GestureSequence()
+TouchDispositionGestureFilter::GestureSequence::GestureSequence()
     : state_(PENDING) {}
 
-GestureEventQueue::GestureSequence::~GestureSequence() {}
+TouchDispositionGestureFilter::GestureSequence::~GestureSequence() {}
 
-void GestureEventQueue::GestureSequence::Push(
+void TouchDispositionGestureFilter::GestureSequence::Push(
     const GestureEventPacket& packet) {
   packets_.push(packet);
 }
 
-void GestureEventQueue::GestureSequence::Pop() {
+void TouchDispositionGestureFilter::GestureSequence::Pop() {
   DCHECK(!IsEmpty());
   packets_.pop();
 }
 
-const GestureEventPacket& GestureEventQueue::GestureSequence::Front() const {
+const GestureEventPacket&
+TouchDispositionGestureFilter::GestureSequence::Front() const {
   DCHECK(!IsEmpty());
   return packets_.front();
 }
 
-void GestureEventQueue::GestureSequence::UpdateState(
+void TouchDispositionGestureFilter::GestureSequence::UpdateState(
     InputEventAckState ack_state) {
   DCHECK_NE(INPUT_EVENT_ACK_STATE_UNKNOWN, ack_state);
   // Permanent states will not be affected by subsequent ack's.
@@ -205,11 +212,12 @@ void GestureEventQueue::GestureSequence::UpdateState(
     state_ = ALLOWED_UNTIL_PREVENTED;
 }
 
-bool GestureEventQueue::GestureSequence::IsGesturePrevented() const {
+bool TouchDispositionGestureFilter::GestureSequence::IsGesturePrevented()
+    const {
   return state_ == ALWAYS_PREVENTED;
 }
 
-bool GestureEventQueue::GestureSequence::IsEmpty() const {
+bool TouchDispositionGestureFilter::GestureSequence::IsEmpty() const {
   return packets_.empty();
 }
 
