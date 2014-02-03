@@ -9,6 +9,7 @@
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_in_transit.h"
+#include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 
@@ -130,6 +131,21 @@ MojoResult MessagePipe::EnqueueMessage(
   if (!endpoints_[port].get()) {
     message->Destroy();
     return MOJO_RESULT_FAILED_PRECONDITION;
+  }
+
+  if (dispatchers) {
+    for (size_t i = 0; i < dispatchers->size(); i++) {
+      if ((*dispatchers)[i]->GetType() == Dispatcher::kTypeMessagePipe) {
+        MessagePipeDispatcher* mp_dispatcher =
+            static_cast<MessagePipeDispatcher*>((*dispatchers)[i]);
+        if (mp_dispatcher->GetMessagePipeNoLock() == this) {
+          // The other case should have been disallowed by |CoreImpl|. (Note:
+          // |port| is the peer port of the handle given to |WriteMessage()|.)
+          DCHECK_EQ(mp_dispatcher->GetPortNoLock(), port);
+          return MOJO_RESULT_INVALID_ARGUMENT;
+        }
+      }
+    }
   }
 
   return endpoints_[port]->EnqueueMessage(message, dispatchers);

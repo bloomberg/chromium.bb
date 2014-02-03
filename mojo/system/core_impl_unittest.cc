@@ -440,10 +440,6 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing1) {
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->CreateMessagePipe(&h_passing[0], &h_passing[1]));
 
-  MojoHandle h_passed[2];
-  EXPECT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(&h_passed[0], &h_passed[1]));
-
   // Make sure that |h_passing[]| work properly.
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->WriteMessage(h_passing[0],
@@ -462,6 +458,23 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing1) {
   EXPECT_EQ(kHelloSize, num_bytes);
   EXPECT_STREQ(kHello, buffer);
   EXPECT_EQ(0u, num_handles);
+
+  // Make sure that you can't pass either of the message pipe's handles over
+  // itself.
+  EXPECT_EQ(MOJO_RESULT_BUSY,
+            core()->WriteMessage(h_passing[0],
+                                 kHello, kHelloSize,
+                                 &h_passing[0], 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            core()->WriteMessage(h_passing[0],
+                                 kHello, kHelloSize,
+                                 &h_passing[1], 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  MojoHandle h_passed[2];
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->CreateMessagePipe(&h_passed[0], &h_passed[1]));
 
   // Make sure that |h_passed[]| work properly.
   EXPECT_EQ(MOJO_RESULT_OK,

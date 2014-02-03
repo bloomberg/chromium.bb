@@ -45,8 +45,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   MojoResult Close();
   // |dispatchers| may be non-null if and only if there are handles to be
   // written, in which case this will be called with all the dispatchers' locks
-  // held. On success, all the dispatchers must have been moved to a closed
-  // state; on failure, they should remain in their original state.
+  // held; |this| must not be in |dispatchers|. On success, all the dispatchers
+  // must have been moved to a closed state; on failure, they should remain in
+  // their original state.
   MojoResult WriteMessage(const void* bytes,
                           uint32_t num_bytes,
                           const std::vector<Dispatcher*>* dispatchers,
