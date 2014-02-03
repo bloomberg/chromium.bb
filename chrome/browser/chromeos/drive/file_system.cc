@@ -276,7 +276,7 @@ void FileSystem::ResetComponents() {
           cache_,
           drive_service_->GetResourceIdCanonicalizer()));
   create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
-      blocking_task_runner_.get(), observer, scheduler_, resource_metadata_));
+      blocking_task_runner_.get(), observer, resource_metadata_));
   create_file_operation_.reset(
       new file_system::CreateFileOperation(blocking_task_runner_.get(),
                                            observer,

@@ -26,7 +26,6 @@ class CreateDirectoryOperationTest : public OperationTestBase {
 TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
   CreateDirectoryOperation operation(blocking_task_runner(),
                                      observer(),
-                                     scheduler(),
                                      metadata());
 
   const base::FilePath kExistingFile(
@@ -53,6 +52,13 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
   EXPECT_EQ(1U, observer()->get_changed_paths().size());
   EXPECT_EQ(1U,
             observer()->get_changed_paths().count(kNewDirectory1.DirName()));
+
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kNewDirectory1, &entry));
+  EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
+  EXPECT_TRUE(entry.file_info().is_directory());
+  EXPECT_EQ(1U, observer()->updated_local_ids().size());
+  EXPECT_EQ(1U, observer()->updated_local_ids().count(entry.local_id()));
 
   // Create a new directory recursively.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, FindDirectory(kNewDirectory2));
@@ -98,7 +104,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       true,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
+  EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 
   // Try to create a directory under a file.
   operation.CreateDirectory(
@@ -107,7 +113,7 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
       true,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
+  EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 }
 
 }  // namespace file_system
