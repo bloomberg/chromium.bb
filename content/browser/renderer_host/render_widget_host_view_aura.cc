@@ -396,6 +396,10 @@ class RenderWidgetHostViewAura::EventFilterForPopupExit :
     rwhva_->ApplyEventFilterForPopupExit(event);
   }
 
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    rwhva_->ApplyEventFilterForPopupExit(event);
+  }
+
  private:
   RenderWidgetHostViewAura* rwhva_;
 
@@ -403,12 +407,14 @@ class RenderWidgetHostViewAura::EventFilterForPopupExit :
 };
 
 void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
-    ui::MouseEvent* event) {
-  if (in_shutdown_ || is_fullscreen_)
+    ui::LocatedEvent* event) {
+  if (in_shutdown_ || is_fullscreen_ || !event->target())
     return;
 
-  if (event->type() != ui::ET_MOUSE_PRESSED || !event->target())
+  if (event->type() != ui::ET_MOUSE_PRESSED &&
+      event->type() != ui::ET_TOUCH_PRESSED) {
     return;
+  }
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
   if (target != window_ &&

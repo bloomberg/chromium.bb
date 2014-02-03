@@ -62,6 +62,7 @@ class Display;
 namespace ui {
 class CompositorLock;
 class InputMethod;
+class LocatedEvent;
 class Texture;
 }
 
@@ -529,8 +530,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
 
-  // Dismisses a Web Popup on mouse press outside the popup and its parent.
-  void ApplyEventFilterForPopupExit(ui::MouseEvent* event);
+  // Dismisses a Web Popup on a mouse or touch press outside the popup and its
+  // parent.
+  void ApplyEventFilterForPopupExit(ui::LocatedEvent* event);
 
   // Converts |rect| from window coordinate to screen coordinate.
   gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const;

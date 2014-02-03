@@ -417,8 +417,35 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupClickOutsidePopup) {
   EXPECT_FALSE(parent_window->GetBoundsInRootWindow().Contains(click_point));
 
   TestWindowObserver observer(window);
-  aura::test::EventGenerator generator(window->GetRootWindow(), gfx::Point());
+  aura::test::EventGenerator generator(window->GetRootWindow(), click_point);
   generator.ClickLeftButton();
+  ASSERT_TRUE(parent_view_->HasFocus());
+  ASSERT_TRUE(observer.destroyed());
+
+  widget_host_ = NULL;
+  view_ = NULL;
+}
+
+// Checks that a popup view is destroyed when a user taps outside of the popup
+// view and focus does not change. This is the case when the user taps the
+// desktop background on Chrome OS.
+TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupTapOutsidePopup) {
+  parent_view_->SetBounds(gfx::Rect(10, 10, 400, 400));
+  parent_view_->Focus();
+  EXPECT_TRUE(parent_view_->HasFocus());
+
+  view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
+  aura::Window* window = view_->GetNativeView();
+  ASSERT_TRUE(window != NULL);
+
+  gfx::Point tap_point;
+  EXPECT_FALSE(window->GetBoundsInRootWindow().Contains(tap_point));
+  aura::Window* parent_window = parent_view_->GetNativeView();
+  EXPECT_FALSE(parent_window->GetBoundsInRootWindow().Contains(tap_point));
+
+  TestWindowObserver observer(window);
+  aura::test::EventGenerator generator(window->GetRootWindow(), tap_point);
+  generator.GestureTapAt(tap_point);
   ASSERT_TRUE(parent_view_->HasFocus());
   ASSERT_TRUE(observer.destroyed());
 
