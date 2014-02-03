@@ -190,7 +190,8 @@ TrayIME::TrayIME(SystemTray* system_tray)
       tray_label_(NULL),
       default_(NULL),
       detailed_(NULL),
-      message_shown_(false) {
+      message_shown_(false),
+      weak_factory_(this) {
   Shell::GetInstance()->system_tray_notifier()->AddIMEObserver(this);
 }
 
@@ -243,7 +244,7 @@ void TrayIME::UpdateOrCreateNotification() {
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickedDelegate(
           base::Bind(&TrayIME::PopupDetailedView,
-                     base::Unretained(this), 0, true))));
+                     weak_factory_.GetWeakPtr(), 0, true))));
   message_center->AddNotification(notification.Pass());
   message_shown_ = true;
 }

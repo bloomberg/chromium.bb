@@ -7,6 +7,7 @@
 
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "base/memory/weak_ptr.h"
 
 namespace views {
 class Label;
@@ -60,6 +61,8 @@ class TrayIME : public SystemTrayItem,
   tray::IMEDetailedView* detailed_;
 
   bool message_shown_;
+
+  base::WeakPtrFactory<TrayIME> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };
