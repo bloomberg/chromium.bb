@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface TestSpecialOperationsIdentifier {
+interface TestSpecialOperationsIdentifierRaisesException {
     // Indexed property operations with an identifier
-    getter DOMString item(unsigned long index);
-    setter DOMString setItem(unsigned long index, DOMString value);
-    deleter boolean deleteItem(unsigned long index);
+    [RaisesException] getter DOMString item(unsigned long index);
+    [RaisesException] setter DOMString setItem(unsigned long index, DOMString value);
+    [RaisesException] deleter boolean deleteItem(unsigned long index);
 
     // Named property operations with an identifier
-    getter DOMString namedItem(DOMString name);
-    setter DOMString setNamedItem(DOMString name, DOMString value);
-    deleter boolean deleteNamedItem(DOMString name);
+    [RaisesException] getter DOMString namedItem(DOMString name);
+    [RaisesException] setter DOMString setNamedItem(DOMString name, DOMString value);
+    [RaisesException] deleter boolean deleteNamedItem(DOMString name);
 };

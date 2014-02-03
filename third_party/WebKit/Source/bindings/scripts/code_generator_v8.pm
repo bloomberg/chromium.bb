@@ -3777,6 +3777,10 @@ sub GenerateImplementationIndexedPropertySetter
     my $code = "static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
 
+    my $asSetterValue = 0;
+    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
+
     my $extraArguments = "";
     if ($raisesExceptions || IsIntegerType($type)) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
@@ -3784,10 +3788,6 @@ sub GenerateImplementationIndexedPropertySetter
             $extraArguments = ", exceptionState";
         }
     }
-
-    my $asSetterValue = 0;
-    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
 
     if ($indexedSetterFunction->extendedAttributes->{"StrictTypeChecking"} && IsWrapperType($type)) {
         $code .= <<END;
@@ -4108,6 +4108,11 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "\n";
     }
 
+    my $asSetterValue = 0;
+    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
+    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "name", "propertyName", "    ", "info.GetIsolate()");
+    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
+
     my $extraArguments = "";
     if ($raisesExceptions || IsIntegerType($type)) {
         $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
@@ -4116,18 +4121,13 @@ sub GenerateImplementationNamedPropertySetter
         }
     }
 
-    my $asSetterValue = 0;
-    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
-    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "name", "propertyName", "    ", "info.GetIsolate()");
-    $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
-
     $code .= "    bool result = collection->$methodName(propertyName, propertyValue$extraArguments);\n";
-    $code .= "    if (!result)\n";
-    $code .= "        return;\n";
     if ($raisesExceptions) {
         $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
+    $code .= "    if (!result)\n";
+    $code .= "        return;\n";
     $code .= "    v8SetReturnValue(info, jsValue);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
@@ -4201,9 +4201,9 @@ sub GenerateImplementationNamedPropertyEnumerator
     $implementation{nameSpaceInternal}->add(<<END);
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
     Vector<String> names;
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     collection->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

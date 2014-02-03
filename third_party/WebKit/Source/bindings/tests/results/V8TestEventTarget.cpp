@@ -253,9 +253,9 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     Vector<String> names;
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     collection->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
