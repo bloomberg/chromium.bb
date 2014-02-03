@@ -64,7 +64,6 @@
 // FIXME: Remove dependency on modules/encryptedmedia (http://crbug.com/242754).
 #include "modules/encryptedmedia/MediaKeyNeededEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
-#include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/ContentType.h"
 #include "platform/Language.h"
 #include "platform/Logging.h"
@@ -239,6 +238,19 @@ WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& 
         return WebMimeRegistry::IsNotSupported;
 
     return blink::Platform::current()->mimeRegistry()->supportsMediaMIMEType(type, typeCodecs, system);
+}
+
+URLRegistry* HTMLMediaElement::s_mediaStreamRegistry = 0;
+
+void HTMLMediaElement::setMediaStreamRegistry(URLRegistry* registry)
+{
+    ASSERT(!s_mediaStreamRegistry);
+    s_mediaStreamRegistry = registry;
+}
+
+bool HTMLMediaElement::isMediaStreamURL(const String& url)
+{
+    return s_mediaStreamRegistry ? s_mediaStreamRegistry->contains(url) : false;
 }
 
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& document, bool createdByParser)
@@ -846,11 +858,6 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     blink::WebMediaPlayer::LoadType loadType = blink::WebMediaPlayer::LoadTypeURL;
 
-    if (MediaStreamRegistry::registry().lookupMediaStreamDescriptor(url.string())) {
-        loadType = blink::WebMediaPlayer::LoadTypeMediaStream;
-        removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
-    }
-
     startProgressEventTimer();
 
     // Reset display mode to force a recalculation of what to show because we are resetting the player.
@@ -868,16 +875,21 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     bool attemptLoad = true;
 
     if (url.protocolIs(mediaSourceBlobProtocol)) {
-        m_mediaSource = HTMLMediaSource::lookup(url.string());
+        if (isMediaStreamURL(url.string())) {
+            loadType = blink::WebMediaPlayer::LoadTypeMediaStream;
+            removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
+        } else {
+            m_mediaSource = HTMLMediaSource::lookup(url.string());
 
-        if (m_mediaSource) {
-            loadType = blink::WebMediaPlayer::LoadTypeMediaSource;
+            if (m_mediaSource) {
+                loadType = blink::WebMediaPlayer::LoadTypeMediaSource;
 
-            if (!m_mediaSource->attachToElement(this)) {
-                // Forget our reference to the MediaSource, so we leave it alone
-                // while processing remainder of load failure.
-                m_mediaSource = 0;
-                attemptLoad = false;
+                if (!m_mediaSource->attachToElement(this)) {
+                    // Forget our reference to the MediaSource, so we leave it alone
+                    // while processing remainder of load failure.
+                    m_mediaSource = 0;
+                    attemptLoad = false;
+                }
             }
         }
     }

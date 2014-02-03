@@ -25,6 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 
+#include "core/html/HTMLMediaElement.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/MainThread.h"
@@ -33,7 +34,7 @@ namespace WebCore {
 
 MediaStreamRegistry& MediaStreamRegistry::registry()
 {
-    // Since WebWorkers cannot obtain MediaSource objects, we should be on the main thread.
+    // Since WebWorkers cannot obtain MediaStream objects, we should be on the main thread.
     ASSERT(isMainThread());
     DEFINE_STATIC_LOCAL(MediaStreamRegistry, instance, ());
     return instance;
@@ -52,10 +53,21 @@ void MediaStreamRegistry::unregisterURL(const KURL& url)
     m_streamDescriptors.remove(url.string());
 }
 
+bool MediaStreamRegistry::contains(const String& url)
+{
+    ASSERT(isMainThread());
+    return m_streamDescriptors.contains(url);
+}
+
 MediaStreamDescriptor* MediaStreamRegistry::lookupMediaStreamDescriptor(const String& url)
 {
     ASSERT(isMainThread());
     return m_streamDescriptors.get(url);
+}
+
+MediaStreamRegistry::MediaStreamRegistry()
+{
+    HTMLMediaElement::setMediaStreamRegistry(this);
 }
 
 } // namespace WebCore

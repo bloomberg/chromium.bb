@@ -62,6 +62,7 @@ class MediaKeys;
 class HTMLMediaSource;
 class TextTrackList;
 class TimeRanges;
+class URLRegistry;
 
 typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
 typedef CueIntervalTree::IntervalType CueInterval;
@@ -76,6 +77,9 @@ class HTMLMediaElement : public HTMLElement, public MediaPlayerClient, public Ac
 {
 public:
     static blink::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
+
+    static void setMediaStreamRegistry(URLRegistry*);
+    static bool isMediaStreamURL(const String& url);
 
     MediaPlayer* player() const { return m_player.get(); }
 
@@ -573,6 +577,8 @@ private:
     EmeMode m_emeMode;
 
     RefPtr<MediaKeys> m_mediaKeys;
+
+    static URLRegistry* s_mediaStreamRegistry;
 };
 
 #ifndef NDEBUG
