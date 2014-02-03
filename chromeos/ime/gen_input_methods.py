@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate a C++ header from ibus_input_methods.txt.
+"""Generate a C++ header from input_methods.txt.
 
 This program generates a C++ header file containing the information on
 available input methods.  It parses input_methods.txt, and then generates a

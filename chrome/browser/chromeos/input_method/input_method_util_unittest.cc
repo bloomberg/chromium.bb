@@ -463,7 +463,7 @@ TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
   EXPECT_EQ("fr", language_codes[2]);
 }
 
-// Test all supported descriptors to detect a typo in ibus_input_methods.txt.
+// Test all supported descriptors to detect a typo in input_methods.txt.
 TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
   for (size_t i = 0; i < util_.supported_input_methods_->size(); ++i) {
     const std::string language_code =
