@@ -80,4 +80,17 @@ bool HandleDebugURL(const GURL& url, PageTransition transition) {
   return false;
 }
 
+bool IsRendererDebugURL(const GURL& url) {
+  if (!url.is_valid())
+    return false;
+
+  if (url.SchemeIs(kJavaScriptScheme))
+    return true;
+
+  return url == GURL(kChromeUICrashURL) ||
+         url == GURL(kChromeUIKillURL) ||
+         url == GURL(kChromeUIHangURL) ||
+         url == GURL(kChromeUIShorthangURL);
+}
+
 }  // namespace content

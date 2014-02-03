@@ -15,6 +15,12 @@ namespace content {
 // handles it and returns true.
 bool HandleDebugURL(const GURL& url, PageTransition transition);
 
+// Returns whether the given url is either a debugging url handled in the
+// renderer process, such as one that crashes or hangs the renderer, or a
+// javascript: URL that operates on the current page in the renderer.  Such URLs
+// do not represent actual navigations and can be loaded in any SiteInstance.
+bool IsRendererDebugURL(const GURL& url);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_DEBUG_URLS_H_

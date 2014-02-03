@@ -12,6 +12,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -602,6 +603,11 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   const GURL& new_url = SiteInstanceImpl::GetEffectiveURL(browser_context,
                                                           new_entry->GetURL());
 
+  // Don't force a new BrowsingInstance for debug URLs that are handled in the
+  // renderer process, like javascript: or chrome://crash.
+  if (IsRendererDebugURL(new_url))
+    return false;
+
   // For security, we should transition between processes when one is a Web UI
   // page and one isn't.
   if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
@@ -781,10 +787,13 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForEntry(
       current_instance->GetSiteURL();
 
   // View-source URLs must use a new SiteInstance and BrowsingInstance.
+  // We don't need a swap when going from view-source to a debug URL like
+  // chrome://crash, however.
   // TODO(creis): Refactor this method so this duplicated code isn't needed.
   // See http://crbug.com/123007.
   if (current_entry &&
-      current_entry->IsViewSourceMode() != entry.IsViewSourceMode()) {
+      current_entry->IsViewSourceMode() != entry.IsViewSourceMode() &&
+      !IsRendererDebugURL(dest_url)) {
     return SiteInstance::CreateForURL(browser_context, dest_url);
   }
 

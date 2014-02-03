@@ -642,6 +642,14 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   if (HandleDebugURL(params.url, params.transition_type))
     return;
 
+  // Any renderer-side debug URLs or javascript: URLs should be ignored if the
+  // renderer process is not live.
+  if (IsRendererDebugURL(params.url)) {
+    // TODO(creis): Find the RVH for the correct frame.
+    if (!delegate_->GetRenderViewHost()->IsRenderViewLive())
+      return;
+  }
+
   // Checks based on params.load_type.
   switch (params.load_type) {
     case LOAD_TYPE_DEFAULT:

@@ -301,6 +301,9 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // complete and isn't conducive to quick turnarounds. As we don't currently
 // strip the app on the build bots, this is bad times.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CrossSiteAfterCrash) {
+  // Make sure we have a live process before trying to kill it.
+  NavigateToURL(shell(), GURL("about:blank"));
+
   // Cause the renderer to crash.
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),

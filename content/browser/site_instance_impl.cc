@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -17,21 +18,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace content {
-
-static bool IsURLSameAsAnySiteInstance(const GURL& url) {
-  if (!url.is_valid())
-    return false;
-
-  // We treat javascript: as the same site as any URL since it is actually
-  // a modifier on existing pages.
-  if (url.SchemeIs(kJavaScriptScheme))
-    return true;
-
-  return url == GURL(kChromeUICrashURL) ||
-         url == GURL(kChromeUIKillURL) ||
-         url == GURL(kChromeUIHangURL) ||
-         url == GURL(kChromeUIShorthangURL);
-}
 
 const RenderProcessHostFactory*
     SiteInstanceImpl::g_render_process_host_factory_ = NULL;
@@ -210,7 +196,7 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
 
   // If the URL to navigate to can be associated with any site instance,
   // we want to keep it in the same process.
-  if (IsURLSameAsAnySiteInstance(url))
+  if (IsRendererDebugURL(url))
     return false;
 
   // If the site URL is an extension (e.g., for hosted apps or WebUI) but the
@@ -259,7 +245,7 @@ bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
   // Some special URLs will match the site instance of any other URL. This is
   // done before checking both of them for validity, since we want these URLs
   // to have the same site instance as even an invalid one.
-  if (IsURLSameAsAnySiteInstance(url1) || IsURLSameAsAnySiteInstance(url2))
+  if (IsRendererDebugURL(url1) || IsRendererDebugURL(url2))
     return true;
 
   // If either URL is invalid, they aren't part of the same site.

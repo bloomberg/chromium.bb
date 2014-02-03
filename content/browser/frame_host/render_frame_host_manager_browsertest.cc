@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -1353,6 +1354,59 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(https_server.GetURL("files/title1.html"),
             shell()->web_contents()->GetLastCommittedURL());
   EXPECT_EQ(new_site_instance, shell()->web_contents()->GetSiteInstance());
+}
+
+// Ensure that renderer-side debug URLs do not cause a process swap, since they
+// are meant to run in the current page.  We had a bug where we expected a
+// BrowsingInstance swap to occur on pages like view-source and extensions,
+// which broke chrome://crash and javascript: URLs.
+// See http://crbug.com/335503.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, RendererDebugURLsDontSwap) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL original_url(test_server()->GetURL("files/title2.html"));
+  GURL view_source_url(kViewSourceScheme + std::string(":") +
+                       original_url.spec());
+
+  NavigateToURL(shell(), view_source_url);
+
+  // Check that javascript: URLs work.
+  base::string16 expected_title = ASCIIToUTF16("msg");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  shell()->LoadURL(GURL("javascript:document.title='msg'"));
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Crash the renderer of the view-source page.
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  NavigateToURL(shell(), GURL(kChromeUICrashURL));
+  crash_observer.Wait();
+}
+
+// Ensure that renderer-side debug URLs don't take effect on crashed renderers.
+// Otherwise, we might try to load an unprivileged about:blank page into a
+// WebUI-enabled RenderProcessHost, failing a safety check in InitRenderView.
+// See http://crbug.com/334214.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       IgnoreRendererDebugURLsWhenCrashed) {
+  // Visit a WebUI page with bindings.
+  GURL webui_url = GURL(std::string(chrome::kChromeUIScheme) + "://" +
+                        std::string(kChromeUIGpuHost));
+  NavigateToURL(shell(), webui_url);
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+
+  // Crash the renderer of the WebUI page.
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  NavigateToURL(shell(), GURL(kChromeUICrashURL));
+  crash_observer.Wait();
+
+  // Load the crash URL again but don't wait for any action.  If it is not
+  // ignored this time, we will fail the WebUI CHECK in InitRenderView.
+  shell()->LoadURL(GURL(kChromeUICrashURL));
 }
 
 }  // namespace content
