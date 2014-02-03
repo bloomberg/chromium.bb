@@ -18,6 +18,11 @@ namespace device {
 class HidConnection;
 
 template<typename T, void func(T*)>
+void DiscardReturnType(T* arg) { func(arg); }
+template<typename T, T* func(T*)>
+void DiscardReturnType(T* arg) { func(arg); }
+
+template<typename T, void func(T*)>
 struct Deleter {
   void operator()(T* enumerate) const {
     if (enumerate != NULL)
@@ -25,10 +30,17 @@ struct Deleter {
   }
 };
 
-typedef Deleter<udev_enumerate, udev_enumerate_unref> UdevEnumerateDeleter;
-typedef Deleter<udev_device, udev_device_unref> UdevDeviceDeleter;
-typedef Deleter<udev, udev_unref> UdevDeleter;
-typedef Deleter<udev_monitor, udev_monitor_unref> UdevMonitorDeleter;
+typedef Deleter<
+    udev_enumerate,
+    DiscardReturnType<udev_enumerate, udev_enumerate_unref> >
+    UdevEnumerateDeleter;
+typedef Deleter<
+    udev_device,
+    DiscardReturnType<udev_device, udev_device_unref> > UdevDeviceDeleter;
+typedef Deleter<udev, DiscardReturnType<udev, udev_unref> > UdevDeleter;
+typedef Deleter<
+    udev_monitor,
+    DiscardReturnType<udev_monitor, udev_monitor_unref> > UdevMonitorDeleter;
 
 typedef scoped_ptr<udev_device, UdevDeviceDeleter> ScopedUdevDevicePtr;
 typedef scoped_ptr<udev_enumerate, UdevEnumerateDeleter> ScopedUdevEnumeratePtr;
