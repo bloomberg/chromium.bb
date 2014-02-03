@@ -681,6 +681,8 @@ TEST_F(DriveBackendSyncTest, RemoteRenameAndRevertTest) {
             fake_drive_service_helper()->RenameResource(
                 file_id, base::FilePath(path).AsUTF8Unsafe()));
 
+  FetchRemoteChanges();
+
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
 
@@ -856,6 +858,53 @@ TEST_F(DriveBackendSyncTest, ReorganizeToMultipleParents) {
   EXPECT_EQ(1u, CountApp());
   EXPECT_EQ(4u, CountLocalFile(app_id));
   VerifyLocalFile(app_id, base::FilePath(FPL("parent1/file")), "abcde");
+
+  EXPECT_EQ(5u, CountMetadata());
+  EXPECT_EQ(5u, CountMetadata());
+}
+
+TEST_F(DriveBackendSyncTest, ReorganizeAndRevert) {
+  std::string app_id = "example";
+
+  RegisterApp(app_id);
+
+  AddLocalFolder(app_id, FPL("folder"));
+  AddLocalFolder(app_id, FPL("folder_temp"));
+  AddOrUpdateLocalFile(app_id, FPL("folder/file"), "abcde");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  std::string file_id;
+  std::string folder_id;
+  std::string folder_temp_id;
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder/file"), &file_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder"), &folder_id));
+  EXPECT_TRUE(GetFileIDByPath(app_id, FPL("folder_temp"), &folder_temp_id));
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->RemoveResourceFromDirectory(
+                folder_id, file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddResourceToDirectory(
+                folder_temp_id, file_id));
+
+  FetchRemoteChanges();
+
+  EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
+            fake_drive_service_helper()->RemoveResourceFromDirectory(
+                folder_temp_id, file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->AddResourceToDirectory(
+                folder_id, file_id));
+
+  FetchRemoteChanges();
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  EXPECT_EQ(1u, CountApp());
+  EXPECT_EQ(4u, CountLocalFile(app_id));
+  VerifyLocalFile(app_id, base::FilePath(FPL("folder/file")), "abcde");
 
   EXPECT_EQ(5u, CountMetadata());
   EXPECT_EQ(5u, CountMetadata());
