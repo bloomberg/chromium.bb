@@ -33,7 +33,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {# Special cases #}
     {% if attribute.is_check_security_for_node or
@@ -42,7 +42,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {% if attribute.is_check_security_for_node %}
     {# FIXME: consider using a local variable to not call getter twice #}
-    if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}}, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), {{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -98,10 +98,10 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     {% if attribute.deprecate_as %}
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::count(activeExecutionContext(), UseCounter::{{attribute.measure_as}});
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
@@ -174,7 +174,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {{attribute.cpp_setter}};
     {% if attribute.is_setter_raises_exception %}
@@ -203,10 +203,10 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     {% if attribute.deprecate_as %}
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::count(activeExecutionContext(), UseCounter::{{attribute.measure_as}});
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());

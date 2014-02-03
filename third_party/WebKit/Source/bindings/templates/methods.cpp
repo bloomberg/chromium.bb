@@ -24,13 +24,13 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if method.is_check_security_for_frame %}
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
     {% if method.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->{{method.name}}(exceptionState), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->{{method.name}}(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -56,7 +56,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 %}
 EventTarget* impl = {{v8_class}}::toNative(info.Holder());
 if (DOMWindow* window = impl->toDOMWindow()) {
-    if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -105,7 +105,7 @@ if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.ind
                   (argument.index + 1)) | indent(8)}}
         return;
     }
-    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext());
+    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext(info.GetIsolate()));
 }
 {% else %}
 if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{{argument.index}}]->IsFunction() || info[{{argument.index}}]->IsNull()){% else %}info[{{argument.index}}]->IsFunction(){% endif %}) {
@@ -114,7 +114,7 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
               (argument.index + 1)) | indent }}
     return;
 }
-OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext());
+OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), currentExecutionContext(info.GetIsolate()));
 {% endif %}{# argument.is_optional #}
 {% elif argument.is_clamp %}{# argument.is_callback_interface #}
 {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
@@ -170,7 +170,7 @@ if (!currentState)
 ScriptState& state = *currentState;
 {% endif %}
 {% if method.is_call_with_execution_context %}
-ExecutionContext* scriptContext = currentExecutionContext();
+ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.number_of_arguments}}));
@@ -241,10 +241,10 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     {% if method.measure_as %}
-    UseCounter::count(activeExecutionContext(), UseCounter::{{method.measure_as}});
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
     {% endif %}
     {% if method.deprecate_as %}
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{method.deprecate_as}});
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
     {% endif %}
     {% if world_suffix in method.activity_logging_world_list %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
@@ -286,7 +286,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         return;
     }
     {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), {{v8_class}}::domTemplate(info.GetIsolate(), currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -331,10 +331,10 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {{generate_argument(constructor, argument) | indent}}
     {% endfor %}
     {% if is_constructor_call_with_execution_context %}
-    ExecutionContext* context = currentExecutionContext();
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {% if is_constructor_call_with_document %}
-    Document& document = *toDocument(currentExecutionContext());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     {% endif %}
     RefPtr<{{cpp_class}}> impl = {{cpp_class}}::create({{constructor.argument_list | join(', ')}});
     v8::Handle<v8::Object> wrapper = info.Holder();
@@ -365,7 +365,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
         return;
     }
 
-    Document* document = currentDocument();
+    Document* document = currentDocument(info.GetIsolate());
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the {{cpp_class}} instance
