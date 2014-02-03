@@ -397,6 +397,17 @@ void SyncClient::OnUpdateComplete(const std::string& local_id,
 
   if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Updated " << local_id;
+
+    // Add update tasks for child entries which may be waiting for the parent to
+    // be updated.
+    ResourceEntryVector* entries = new ResourceEntryVector;
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(),
+        FROM_HERE,
+        base::Bind(&ResourceMetadata::ReadDirectoryById,
+                   base::Unretained(metadata_), local_id, entries),
+        base::Bind(&SyncClient::AddChildUpdateTasks,
+                   weak_ptr_factory_.GetWeakPtr(), base::Owned(entries)));
   } else {
     switch (error) {
       case FILE_ERROR_ABORT:
@@ -420,6 +431,20 @@ void SyncClient::OnUpdateComplete(const std::string& local_id,
             local_id);
         LOG(WARNING) << "Failed to update " << local_id << ": "
                      << FileErrorToString(error);
+    }
+  }
+}
+
+void SyncClient::AddChildUpdateTasks(const ResourceEntryVector* entries,
+                                     FileError error) {
+  if (error != FILE_ERROR_OK)
+    return;
+
+  for (size_t i = 0; i < entries->size(); ++i) {
+    const ResourceEntry& entry = (*entries)[i];
+    if (entry.metadata_edit_state() != ResourceEntry::CLEAN) {
+      AddUpdateTaskInternal(ClientContext(BACKGROUND), entry.local_id(),
+                            base::TimeDelta::FromSeconds(0));
     }
   }
 }

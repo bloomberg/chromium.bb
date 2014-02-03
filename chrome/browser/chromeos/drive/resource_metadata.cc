@@ -312,9 +312,17 @@ FileError ResourceMetadata::ReadDirectoryByPath(
   FileError error = GetIdByPath(path, &id);
   if (error != FILE_ERROR_OK)
     return error;
+  return ReadDirectoryById(id, out_entries);
+}
+
+FileError ResourceMetadata::ReadDirectoryById(
+    const std::string& id,
+    ResourceEntryVector* out_entries) {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(out_entries);
 
   ResourceEntry entry;
-  error = GetResourceEntryById(id, &entry);
+  FileError error = GetResourceEntryById(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
 

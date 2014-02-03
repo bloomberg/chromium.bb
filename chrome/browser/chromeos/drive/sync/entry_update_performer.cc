@@ -237,6 +237,14 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     return;
   }
 
+  // Parent was locally created and needs update. Just return for now.
+  // This entry should be updated again after the parent update completes.
+  if (local_state->parent_entry.resource_id().empty() &&
+      local_state->parent_entry.metadata_edit_state() != ResourceEntry::CLEAN) {
+    callback.Run(FILE_ERROR_OK);
+    return;
+  }
+
   base::Time last_modified = base::Time::FromInternalValue(
       local_state->entry.file_info().last_modified());
   base::Time last_accessed = base::Time::FromInternalValue(
@@ -290,6 +298,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     return;
   }
 
+  // Create directory.
   if (local_state->entry.file_info().is_directory() &&
       local_state->entry.resource_id().empty()) {
     // Lock the loader to avoid race conditions.

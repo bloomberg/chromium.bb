@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -134,18 +135,17 @@ class SyncClient {
   bool OnTaskComplete(SyncType type, const std::string& local_id);
 
   // Called when the file for |local_id| is fetched.
-  // Calls DoSyncLoop() to go back to the sync loop.
   void OnFetchFileComplete(const std::string& local_id,
                            FileError error,
                            const base::FilePath& local_path,
                            scoped_ptr<ResourceEntry> entry);
 
-  // Called when the file for |local_id| is uploaded.
-  // Calls DoSyncLoop() to go back to the sync loop.
-  void OnUploadFileComplete(const std::string& local_id, FileError error);
-
   // Called when the entry is updated.
   void OnUpdateComplete(const std::string& local_id, FileError error);
+
+  // Adds update tasks for |entries|.
+  void AddChildUpdateTasks(const ResourceEntryVector* entries,
+                           FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   file_system::OperationObserver* operation_observer_;

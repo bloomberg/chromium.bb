@@ -97,6 +97,10 @@ class ResourceMetadata {
   FileError ReadDirectoryByPath(const base::FilePath& file_path,
                                 ResourceEntryVector* out_entries);
 
+  // Finds and reads a directory by |id|.
+  FileError ReadDirectoryById(const std::string& id,
+                              ResourceEntryVector* out_entries);
+
   // Replaces an existing entry with the same local ID as |entry|.
   FileError RefreshEntry(const ResourceEntry& entry);
 

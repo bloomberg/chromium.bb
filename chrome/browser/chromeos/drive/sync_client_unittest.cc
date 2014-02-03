@@ -432,5 +432,44 @@ TEST_F(SyncClientTest, ScheduleRerun) {
   EXPECT_EQ(2, drive_service_->download_file_count());
 }
 
+TEST_F(SyncClientTest, Dependencies) {
+  // Create directories locally.
+  const base::FilePath kPath1(FILE_PATH_LITERAL("drive/root/dir1"));
+  const base::FilePath kPath2 = kPath1.AppendASCII("dir2");
+
+  ResourceEntry parent;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(kPath1.DirName(), &parent));
+
+  ResourceEntry entry1;
+  entry1.set_parent_local_id(parent.local_id());
+  entry1.set_title(kPath1.BaseName().AsUTF8Unsafe());
+  entry1.mutable_file_info()->set_is_directory(true);
+  entry1.set_metadata_edit_state(ResourceEntry::DIRTY);
+  std::string local_id1;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->AddEntry(entry1, &local_id1));
+
+  ResourceEntry entry2;
+  entry2.set_parent_local_id(local_id1);
+  entry2.set_title(kPath2.BaseName().AsUTF8Unsafe());
+  entry2.mutable_file_info()->set_is_directory(true);
+  entry2.set_metadata_edit_state(ResourceEntry::DIRTY);
+  std::string local_id2;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->AddEntry(entry2, &local_id2));
+
+  // Start syncing the child first.
+  sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id2);
+  base::RunLoop().RunUntilIdle();
+  // Start syncing the parent later.
+  sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id1);
+  base::RunLoop().RunUntilIdle();
+
+  // Both entries are synced.
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryById(local_id1, &entry1));
+  EXPECT_EQ(ResourceEntry::CLEAN, entry1.metadata_edit_state());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryById(local_id2, &entry2));
+  EXPECT_EQ(ResourceEntry::CLEAN, entry2.metadata_edit_state());
+}
+
 }  // namespace internal
 }  // namespace drive
