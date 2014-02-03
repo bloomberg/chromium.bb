@@ -50,7 +50,8 @@ class Json {
   // Sets |value| to the dictionary for |key| if it exists and has a dictionary
   // value. Returns false if the key doesn't exist or doesn't correspond to a
   // dictionary. The JSON object must be parsed successfully in ParseObject()
-  // before invoking this method.
+  // before invoking this method. |value| is only guaranteed to be valid as long
+  // as |this| is valid.
   virtual bool GetJsonValueForKey(const std::string& key,
                                   scoped_ptr<Json>* value) const = 0;
 
