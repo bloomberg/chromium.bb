@@ -284,17 +284,6 @@ const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
   return GetEntitySpecifics().session();
 }
 
-const sync_pb::ManagedUserSettingSpecifics&
-    BaseNode::GetManagedUserSettingSpecifics() const {
-  DCHECK_EQ(GetModelType(), MANAGED_USER_SETTINGS);
-  return GetEntitySpecifics().managed_user_setting();
-}
-
-const sync_pb::ManagedUserSpecifics& BaseNode::GetManagedUserSpecifics() const {
-  DCHECK_EQ(GetModelType(), MANAGED_USERS);
-  return GetEntitySpecifics().managed_user();
-}
-
 const sync_pb::DeviceInfoSpecifics& BaseNode::GetDeviceInfoSpecifics() const {
   DCHECK_EQ(GetModelType(), DEVICE_INFO);
   return GetEntitySpecifics().device_info();

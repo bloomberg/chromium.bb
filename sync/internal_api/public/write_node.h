@@ -160,15 +160,6 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // Should only be called if GetModelType() == SESSIONS.
   void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
 
-  // Set the managed user setting specifics (name and value).
-  // Should only be called if GetModelType() == MANAGED_USER_SETTINGS.
-  void SetManagedUserSettingSpecifics(
-      const sync_pb::ManagedUserSettingSpecifics& specifics);
-
-  // Set the managed user setting specifics (name and value).
-  // Should only be called if GetModelType() == MANAGED_USERS.
-  void SetManagedUserSpecifics(const sync_pb::ManagedUserSpecifics& specifics);
-
   // Set the device info specifics.
   // Should only be called if GetModelType() == DEVICE_INFO.
   void SetDeviceInfoSpecifics(const sync_pb::DeviceInfoSpecifics& specifics);

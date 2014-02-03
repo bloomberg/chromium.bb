@@ -109,8 +109,9 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
 
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
-    // MANAGED_USERS is always synced.
+    // MANAGED_USERS and MANAGED_USER_SETTINGS are always synced.
     if (it.Get() == syncer::MANAGED_USERS ||
+        it.Get() == syncer::MANAGED_USER_SHARED_SETTINGS ||
         it.Get() == syncer::SYNCED_NOTIFICATIONS ||
         it.Get() == syncer::SYNCED_NOTIFICATION_APP_INFO)
       continue;
