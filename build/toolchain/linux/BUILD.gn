@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../clang.gni")
-import("../goma.gni")
-import("../gcc_toolchain.gni")
 import("//build/config/sysroot.gni")
+import("//build/toolchain/clang.gni")
+import("//build/toolchain/gcc_toolchain.gni")
+import("//build/toolchain/goma.gni")
 
 if (is_gyp) {
   # Set the compilers for GYP to use. This logic is only relevant to GYP where
@@ -47,8 +47,6 @@ if (is_gyp) {
   }
 }
 
-# ARM --------------------------------------------------------------------------
-
 gcc_toolchain("arm") {
   cc = "arm-linux-gnueabi-gcc"
   cxx = "arm-linux-gnueabi-g++"
@@ -59,11 +57,22 @@ gcc_toolchain("arm") {
   toolchain_os = "linux"
 }
 
-# 32-bit -----------------------------------------------------------------------
-
 gcc_toolchain("x86") {
-  cc = "gcc"
-  cxx = "g++"
+  if (is_clang) {
+    if (use_clang_type_profiler) {
+      prefix = rebase_path("//third_party/llvm-allocated-type/Linux_ia32/bin",
+                           ".", root_build_dir)
+    } else {
+      prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                           ".", root_build_dir)
+    }
+    cc = "$prefix/clang"
+    cxx = "$prefix/clang++"
+  } else {
+    cc = "gcc"
+    cxx = "g++"
+  }
+
   ar = "ar"
   ld = cxx
 
@@ -72,16 +81,27 @@ gcc_toolchain("x86") {
 }
 
 gcc_toolchain("x64") {
-  cc = "gcc"
-  cxx = "g++"
+  if (is_clang) {
+    if (use_clang_type_profiler) {
+      prefix = rebase_path("//third_party/llvm-allocated-type/Linux_x64/bin",
+                           ".", root_build_dir)
+    } else {
+      prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                           ".", root_build_dir)
+    }
+    cc = "$prefix/clang"
+    cxx = "$prefix/clang++"
+  } else {
+    cc = "gcc"
+    cxx = "g++"
+  }
+
   ar = "ar"
   ld = cxx
 
   toolchain_cpu_arch = "x64"
   toolchain_os = "linux"
 }
-
-# MIPS -----------------------------------------------------------------------
 
 gcc_toolchain("mipsel") {
   cc = "mipsel-linux-gnu-gcc"

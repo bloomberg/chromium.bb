@@ -12,8 +12,8 @@ from optparse import OptionParser
 # This script runs pkg-config, optionally filtering out some results, and
 # returns the result.
 #
-# The result will be [ <includes>, <cflags>, <libs>, <lib_dirs> ] where each
-# member is itself a list of strings.
+# The result will be [ <includes>, <cflags>, <libs>, <lib_dirs>, <ldflags> ]
+# where each member is itself a list of strings.
 #
 # You can filter out matches using "-v <regexp>" where all results from
 # pkgconfig matching the given regular expression will be ignored. You can
@@ -138,6 +138,7 @@ includes = []
 cflags = []
 libs = []
 lib_dirs = []
+ldflags = []
 
 for flag in all_flags[:]:
   if len(flag) == 0 or MatchesAnyRegexp(flag, strip_out):
@@ -145,14 +146,21 @@ for flag in all_flags[:]:
 
   if flag[:2] == '-l':
     libs.append(RewritePath(flag[2:], prefix, sysroot))
-  if flag[:2] == '-L':
+  elif flag[:2] == '-L':
     lib_dirs.append(RewritePath(flag[2:], prefix, sysroot))
   elif flag[:2] == '-I':
     includes.append(RewritePath(flag[2:], prefix, sysroot))
+  elif flag[:3] == '-Wl':
+    ldflags.append(flag)
+  elif flag == '-pthread':
+    # Many libs specify "-pthread" which we don't need since we always include
+    # this anyway. Removing it here prevents a bunch of duplicate inclusions on
+    # the command line.
+    pass
   else:
     cflags.append(flag)
 
 # Output a GN array, the first one is the cflags, the second are the libs. The
 # JSON formatter prints GN compatible lists when everything is a list of
 # strings.
-print json.dumps([includes, cflags, libs, lib_dirs])
+print json.dumps([includes, cflags, libs, lib_dirs, ldflags])

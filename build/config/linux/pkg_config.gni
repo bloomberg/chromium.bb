@@ -34,5 +34,6 @@ template("pkg_config") {
     cflags = pkgresult[1]
     libs = pkgresult[2]
     lib_dirs = pkgresult[3]
+    ldflags = pkgresult[4]
   }
 }
