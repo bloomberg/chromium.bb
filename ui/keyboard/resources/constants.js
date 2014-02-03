@@ -6,20 +6,22 @@
  * Aspect ratio of keyboard.
  * @type {number}
  */
-var ASPECT_RATIO = 4.5;
+var ASPECT_RATIO = 3.5;
 
 var RowAlignment = {
   STRETCH: "stretch",
   LEFT: "left",
   RIGHT: "right",
-  CENTER: "center"
+  CENTER: "center",
+  // Assigns all extra weight to the right most key. TODO(rsadam): remove.
+  STRETCHRIGHT: "stretchright"
 }
 
 /**
  * Ratio of key height and font size.
  * @type {number}
  */
-var FONT_SIZE_RATIO = 3;
+var FONT_SIZE_RATIO = 2.5;
 
 /**
  * @type {enum}
@@ -61,7 +63,7 @@ var DEFAULT_KEY_WEIGHT_X = 100;
  * The default weight of a key in the Y direction.
  * @type {number}
  */
-var DEFAULT_KEY_WEIGHT_Y = 100;
+var DEFAULT_KEY_WEIGHT_Y = 70;
 
 /**
  * The top padding on each key.

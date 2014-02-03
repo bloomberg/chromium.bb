@@ -308,7 +308,7 @@
       weight += allKeys[i].weight;
     }
     var availableWidth = width - (allKeys.length - 1) * pitch;
-    var pixelsPerWeight = width / weight;
+    var pixelsPerWeight = availableWidth / weight;
     for (var i = 0; i < allKeys.length; i++) {
       var keyWidth = Math.floor(allKeys[i].weight * pixelsPerWeight);
       if (i == allKeys.length -1) {
@@ -415,49 +415,55 @@
    */
   function realignRow(row, params, heightOffset) {
     var all = row.children;
-    var stretch = [];
+    var nStretch = 0;
     var stretchWeightSum = 0;
     var allSum = 0;
-
+    // Keeps track of where to distribute pixels caused by round off errors.
+    var deltaWidth = [];
     for (var i = 0; i < all.length; i++) {
+      deltaWidth.push(0)
       var key = all[i];
       if (key.weight == DEFAULT_KEY_WEIGHT_X){
         allSum += params.keyWidth;
         continue;
       }
-      stretch.push(key)
+      nStretch++;
       var width =
           Math.floor((params.keyWidth/DEFAULT_KEY_WEIGHT_X) * key.weight);
       allSum += width;
       stretchWeightSum += key.weight;
     }
-    var nStretch = stretch.length;
     var nRegular = all.length - nStretch;
     // Extra space.
     var extra = params.availableWidth -
                 allSum -
                 (params.pitchX * (all.length -1));
     var xOffset = params.offsetLeft;
+
     var alignment = row.align;
     switch (alignment) {
       case RowAlignment.STRETCH:
         var extraPerWeight = extra/stretchWeightSum;
-        for (var i = 0; i < stretch.length; i++) {
-          var bonus = Math.floor(stretch[i].weight * extraPerWeight);
-          extra -= bonus;
+        for (var i = 0; i < all.length; i++) {
+          if (all[i].weight == DEFAULT_KEY_WEIGHT_X)
+            continue;
+          var delta = Math.floor(all[i].weight * extraPerWeight);
+          extra -= delta;
+          deltaWidth[i] = delta;
           // All left-over pixels assigned to right most key.
-          if (i == (stretch.length - 1))
-            stretch[i].setAttribute('bonus', bonus + extra);
-          else
-            stretch[i].setAttribute('bonus', bonus);
+          nStretch--;
+          if (nStretch == 0)
+            deltaWidth[i] += extra;
         }
         break;
       case RowAlignment.CENTER:
         xOffset += Math.floor(extra/2)
         break;
-      case RowAlignment.JUSTIFY:
+      case RowAlignment.RIGHT:
         xOffset += extra;
         break;
+      case RowAlignment.STRETCHRIGHT:
+        deltaWidth[all.length - 1] = extra;
       default:
         break;
     };
@@ -467,12 +473,9 @@
     for (var i = 0; i < all.length; i++) {
       var key = all[i];
       var width = params.keyWidth;
-      if (key.weight != DEFAULT_KEY_WEIGHT_X) {
+      if (key.weight != DEFAULT_KEY_WEIGHT_X)
         width = Math.floor((params.keyWidth/DEFAULT_KEY_WEIGHT_X) * key.weight)
-        var bonus = key.getAttribute('bonus')
-        if (bonus)
-          width += parseInt(bonus)
-      }
+      width += deltaWidth[i];
       updateKey(key, width, params.keyHeight, left, yOffset)
       left += (width + params.pitchX);
     }
@@ -525,6 +528,11 @@
    */
   function realignKeyset(keyset, params) {
     var rows = keyset.querySelectorAll('kb-row').array();
+    var maxSize = getKeyboardBounds();
+    var height =  (maxSize.width > ASPECT_RATIO * maxSize.height) ?
+      maxSize.height : Math.floor(maxSize.width / ASPECT_RATIO);
+    keyset.style.fontSize = (height / FONT_SIZE_RATIO / rows.length) + 'px';
+
     var heightOffset  = 0;
     for (var i = 0; i < rows.length; i++) {
       var row = rows[i];
