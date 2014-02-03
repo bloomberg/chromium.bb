@@ -1,6 +1,4 @@
 
-crbug.com/335285 [ Win Mac ] fast/forms/select-multiple-rtl.html [ NeedsRebaseline ]
-
 # This test can't just be rebaselined because it has absolute file paths in the output.
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
 
