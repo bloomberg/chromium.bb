@@ -5,19 +5,17 @@
 #ifndef UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_
 #define UI_BASE_RESOURCE_RESOURCE_BUNDLE_H_
 
-#include "build/build_config.h"
-
 #include <map>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/font_list.h"
@@ -27,6 +25,7 @@
 class SkBitmap;
 
 namespace base {
+class File;
 class Lock;
 class RefCountedStaticMemory;
 }
