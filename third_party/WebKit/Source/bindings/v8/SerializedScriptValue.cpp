@@ -134,6 +134,12 @@ private:
     // need to rehash after every garbage collection because a key object may have been moved.
     template<typename G>
     struct V8HandlePtrHash {
+        static v8::Handle<G> unsafeHandleFromRawValue(const G* value)
+        {
+            const v8::Handle<G>* handle = reinterpret_cast<const v8::Handle<G>*>(&value);
+            return *handle;
+        }
+
         static unsigned hash(const G* key)
         {
             return static_cast<unsigned>(unsafeHandleFromRawValue(key)->GetIdentityHash());
@@ -1211,6 +1217,17 @@ private:
     v8::Isolate* m_isolate;
 };
 
+// Returns true if the provided object is to be considered a 'host object', as used in the
+// HTML5 structured clone algorithm.
+static bool isHostObject(v8::Handle<v8::Object> object)
+{
+    // If the object has any internal fields, then we won't be able to serialize or deserialize
+    // them; conveniently, this is also a quick way to detect DOM wrapper objects, because
+    // the mechanism for these relies on data stored in these fields. We should
+    // catch external array data as a special case.
+    return object->InternalFieldCount() || object->HasIndexedPropertiesInExternalArrayData();
+}
+
 Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, StateBase* next)
 {
     m_writer.writeReferenceCount(m_nextObjectReference);
@@ -1358,10 +1375,10 @@ public:
             *value = v8::Null(m_isolate);
             break;
         case TrueTag:
-            *value = v8BooleanWithCheck(true, m_isolate);
+            *value = v8Boolean(true, m_isolate);
             break;
         case FalseTag:
-            *value = v8BooleanWithCheck(false, m_isolate);
+            *value = v8Boolean(false, m_isolate);
             break;
         case TrueObjectTag:
             *value = v8::BooleanObject::New(true);

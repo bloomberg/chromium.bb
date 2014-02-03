@@ -174,7 +174,7 @@ static void dateAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 static void dateAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(double, cppValue, toWebCoreDate(jsValue));
+    V8TRYCATCH_VOID(double, cppValue, toCoreDate(jsValue));
     imp->setDateAttribute(cppValue);
 }
 
@@ -3596,7 +3596,7 @@ static void voidMethodDateArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(double, dateArg, toWebCoreDate(info[0]));
+    V8TRYCATCH_VOID(double, dateArg, toCoreDate(info[0]));
     imp->voidMethodDateArg(dateArg);
 }
 

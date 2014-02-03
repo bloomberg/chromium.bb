@@ -74,8 +74,6 @@ namespace WebCore {
 
     v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
-    v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);
-
     inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& info, int index)
     {
         return index >= info.Length() ? v8::Local<v8::Value>() : info[index];
@@ -399,10 +397,29 @@ namespace WebCore {
         return static_cast<float>(value->NumberValue());
     }
 
-    WrapperWorldType worldType(v8::Isolate*);
-    WrapperWorldType worldTypeInMainThread(v8::Isolate*);
+    inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
+    {
+        return value ? v8::True(isolate) : v8::False(isolate);
+    }
 
-    DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate*);
+    inline double toCoreDate(v8::Handle<v8::Value> object)
+    {
+        if (object->IsDate())
+            return v8::Handle<v8::Date>::Cast(object)->ValueOf();
+        if (object->IsNumber())
+            return object->NumberValue();
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+
+    inline v8::Handle<v8::Value> v8DateOrNull(double value, v8::Isolate* isolate)
+    {
+        ASSERT(isolate);
+        return std::isfinite(value) ? v8::Date::New(isolate, value) : v8::Handle<v8::Value>::Cast(v8::Null(isolate));
+    }
+
+    // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
+    PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Isolate*);
+    PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
 
     template<class T> struct NativeValueTraits;
 
@@ -470,6 +487,8 @@ namespace WebCore {
         }
         return result;
     }
+
+    v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);
 
     template <class T, class V8T>
     Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate, bool* success = 0)
@@ -577,54 +596,15 @@ namespace WebCore {
         return v8Value;
     }
 
-    PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Isolate*);
+    v8::Isolate* mainThreadIsolate();
+    void setMainThreadIsolate(v8::Isolate*);
+    v8::Isolate* toIsolate(ExecutionContext*);
+    v8::Isolate* toIsolate(Frame*);
 
-    inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)
-    {
-        return value->IsNull() || value->IsUndefined();
-    }
+    WrapperWorldType worldType(v8::Isolate*);
+    WrapperWorldType worldTypeInMainThread(v8::Isolate*);
 
-    // Returns true if the provided object is to be considered a 'host object', as used in the
-    // HTML5 structured clone algorithm.
-    inline bool isHostObject(v8::Handle<v8::Object> object)
-    {
-        // If the object has any internal fields, then we won't be able to serialize or deserialize
-        // them; conveniently, this is also a quick way to detect DOM wrapper objects, because
-        // the mechanism for these relies on data stored in these fields. We should
-        // catch external array data as a special case.
-        return object->InternalFieldCount() || object->HasIndexedPropertiesInExternalArrayData();
-    }
-
-    inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
-    {
-        return value ? v8::True(isolate) : v8::False(isolate);
-    }
-
-    // Since v8Boolean(value, isolate) crashes if we pass a null isolate,
-    // we need to use v8BooleanWithCheck(value, isolate) if an isolate can be null.
-    //
-    // FIXME: Remove all null isolates from V8 bindings, and remove v8BooleanWithCheck(value, isolate).
-    inline v8::Handle<v8::Boolean> v8BooleanWithCheck(bool value, v8::Isolate* isolate)
-    {
-        return isolate ? v8Boolean(value, isolate) : v8Boolean(value, v8::Isolate::GetCurrent());
-    }
-
-    inline double toWebCoreDate(v8::Handle<v8::Value> object)
-    {
-        if (object->IsDate())
-            return v8::Handle<v8::Date>::Cast(object)->ValueOf();
-        if (object->IsNumber())
-            return object->NumberValue();
-        return std::numeric_limits<double>::quiet_NaN();
-    }
-
-    inline v8::Handle<v8::Value> v8DateOrNull(double value, v8::Isolate* isolate)
-    {
-        ASSERT(isolate);
-        return std::isfinite(value) ? v8::Date::New(isolate, value) : v8::Handle<v8::Value>::Cast(v8::Null(isolate));
-    }
-
-    PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
+    DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate*);
 
     DOMWindow* toDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
     DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
@@ -636,7 +616,7 @@ namespace WebCore {
     Document* currentDocument(v8::Isolate*);
     ExecutionContext* currentExecutionContext(v8::Isolate*);
 
-    // Returns the context associated with a ExecutionContext.
+    // Returns a V8 context associated with a ExecutionContext and a DOMWrapperWorld.
     v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld*);
 
     // Returns the frame object of the window object associated with
@@ -649,6 +629,24 @@ namespace WebCore {
         if (context.IsEmpty())
             return 0;
         return DOMWrapperWorld::isolatedWorld(context);
+    }
+
+    // If the current context causes out of memory, JavaScript setting
+    // is disabled and it returns true.
+    bool handleOutOfMemory();
+    v8::Local<v8::Value> handleMaxRecursionDepthExceeded(v8::Isolate*);
+    void crashIfV8IsDead();
+
+    inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)
+    {
+        return value->IsNull() || value->IsUndefined();
+    }
+    v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function>);
+
+    // Attaches |environment| to |function| and returns it.
+    inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Handle<v8::Value> environment, v8::Isolate* isolate)
+    {
+        return v8::Function::New(isolate, function, environment);
     }
 
     // FIXME: This will be soon embedded in the generated code.
@@ -665,27 +663,6 @@ namespace WebCore {
         v8SetReturnValue(info, properties);
     }
 
-    // If the current context causes out of memory, JavaScript setting
-    // is disabled and it returns true.
-    bool handleOutOfMemory();
-    v8::Local<v8::Value> handleMaxRecursionDepthExceeded(v8::Isolate*);
-
-    void crashIfV8IsDead();
-
-    template <class T>
-    v8::Handle<T> unsafeHandleFromRawValue(const T* value)
-    {
-        const v8::Handle<T>* handle = reinterpret_cast<const v8::Handle<T>*>(&value);
-        return *handle;
-    }
-
-    // Attaches |environment| to |function| and returns it.
-    inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Handle<v8::Value> environment, v8::Isolate* isolate)
-    {
-        return v8::Function::New(isolate, function, environment);
-    }
-    v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function>);
-
     v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*);
     v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
     bool setHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*, v8::Handle<v8::Value>);
@@ -699,13 +676,6 @@ namespace WebCore {
     void addHiddenValueToArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
     void removeHiddenValueFromArray(v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex, v8::Isolate*);
     void moveEventListenerToNewWrapper(v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex, v8::Isolate*);
-
-    v8::Isolate* mainThreadIsolate();
-    v8::Isolate* toIsolate(ExecutionContext*);
-    v8::Isolate* toIsolate(Frame*);
-
-    // Can only be called by blink::initialize
-    void setMainThreadIsolate(v8::Isolate*);
 
     // Converts a DOM object to a v8 value.
     // This is a no-inline version of toV8(). If you want to call toV8()

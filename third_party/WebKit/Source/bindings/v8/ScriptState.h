@@ -92,12 +92,6 @@ private:
     v8::Isolate* m_isolate;
 };
 
-class EmptyScriptState : public ScriptState {
-public:
-    EmptyScriptState() : ScriptState() { }
-    ~EmptyScriptState() { }
-};
-
 class ScriptStateProtectedPtr {
     WTF_MAKE_NONCOPYABLE(ScriptStateProtectedPtr);
 public:

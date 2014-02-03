@@ -382,7 +382,7 @@ def add_includes_for_type(idl_type):
 
 V8_VALUE_TO_CPP_VALUE = {
     # Basic
-    'Date': 'toWebCoreDate({v8_value})',
+    'Date': 'toCoreDate({v8_value})',
     'DOMString': '{v8_value}',
     'boolean': '{v8_value}->BooleanValue()',
     'float': 'static_cast<float>({v8_value}->NumberValue())',

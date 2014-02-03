@@ -5526,7 +5526,7 @@ sub JSValueToNative
         }
     }
     return "static_cast<Range::CompareHow>($value->Int32Value())" if $type eq "CompareHow";
-    return "toWebCoreDate($value)" if $type eq "Date";
+    return "toCoreDate($value)" if $type eq "Date";
 
     if ($type eq "DOMString" or IsEnumType($type)) {
         return $value;
