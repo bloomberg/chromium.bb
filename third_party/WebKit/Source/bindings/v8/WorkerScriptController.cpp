@@ -255,9 +255,8 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtr<Error
     throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), isolate()), isolate());
 }
 
-WorkerScriptController* WorkerScriptController::controllerForContext()
+WorkerScriptController* WorkerScriptController::controllerForContext(v8::Isolate* isolate)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Happens on frame destruction, check otherwise GetCurrent() will crash.
     if (!isolate || !isolate->InContext())
         return 0;

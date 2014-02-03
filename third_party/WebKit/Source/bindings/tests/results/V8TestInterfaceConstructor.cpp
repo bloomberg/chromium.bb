@@ -75,8 +75,8 @@ template <typename T> void V8_USE(T) { }
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
-    ExecutionContext* context = currentExecutionContext();
-    Document& document = *toDocument(currentExecutionContext());
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
@@ -106,8 +106,8 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[6])) : 0);
-    ExecutionContext* context = currentExecutionContext();
-    Document& document = *toDocument(currentExecutionContext());
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
     RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
@@ -135,7 +135,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
-    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     if (!info.IsConstructCall()) {
         throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
         return;

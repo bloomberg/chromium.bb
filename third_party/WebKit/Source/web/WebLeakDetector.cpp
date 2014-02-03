@@ -53,7 +53,7 @@ void cleanUpDOMObjects(blink::WebFrame* frame)
 
     // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
 
-    ResourceFetcher* fetcher = currentDocument()->fetcher();
+    ResourceFetcher* fetcher = currentDocument(context->GetIsolate())->fetcher();
     if (fetcher)
         fetcher->garbageCollectDocumentResources();
 

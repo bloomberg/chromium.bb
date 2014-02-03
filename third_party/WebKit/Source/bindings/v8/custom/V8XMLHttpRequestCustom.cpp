@@ -54,7 +54,7 @@ namespace WebCore {
 
 void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExecutionContext* context = currentExecutionContext();
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
 
     RefPtr<SecurityOrigin> securityOrigin;
     if (context->isDocument()) {
@@ -173,7 +173,7 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, method, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, urlstring, info[1]);
 
-    ExecutionContext* context = currentExecutionContext();
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     KURL url = context->completeURL(urlstring);
 
     if (info.Length() >= 3) {

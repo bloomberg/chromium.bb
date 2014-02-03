@@ -228,7 +228,7 @@ static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttrib
 static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     TestInterfaceEventConstructorV8Internal::deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -255,7 +255,7 @@ static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAt
 static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     TestInterfaceEventConstructorV8Internal::deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -274,7 +274,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterfaceEventConstructorInit eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        if (!initializeTestInterfaceEventConstructor(eventInit, options, exceptionState)) {
+        if (!initializeTestInterfaceEventConstructor(eventInit, options, exceptionState, info)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -312,10 +312,10 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceEventCons
     {"deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", TestInterfaceEventConstructorV8Internal::deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
-bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
+bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const v8::FunctionCallbackInfo<v8::Value>& info, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName, "", exceptionState);
-    if (!initializeEvent(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName))
+    if (!initializeEvent(eventInit, options, exceptionState, info, forEventName.isEmpty() ? String("TestInterfaceEventConstructor") : forEventName))
         return false;
 
     if (!options.convert(conversionContext.setConversionType("DOMString", false), "initializedByEventConstructorReadonlyStringAttribute", eventInit.initializedByEventConstructorReadonlyStringAttribute))
@@ -334,7 +334,7 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
         return false;
     if (options.convert(conversionContext.setConversionType("DOMString", false), "deprecatedInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedInitializedByEventConstructorReadonlyStringAttribute)) {
         if (options.hasProperty("deprecatedInitializedByEventConstructorReadonlyStringAttribute"))
-            UseCounter::countDeprecation(activeExecutionContext(), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+            UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {
         return false;
     }
@@ -342,7 +342,7 @@ bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& 
         return false;
     if (options.convert(conversionContext.setConversionType("DOMString", false), "deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", eventInit.deprecatedImplementedAsName)) {
         if (options.hasProperty("deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute"))
-            UseCounter::countDeprecation(activeExecutionContext(), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
+            UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::initializedByEventConstructorReadonlyStringAttribute);
     } else {
         return false;
     }

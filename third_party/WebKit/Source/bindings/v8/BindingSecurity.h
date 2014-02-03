@@ -32,6 +32,7 @@
 #define BindingSecurity_h
 
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -47,9 +48,9 @@ enum SecurityReportingOption {
 
 class BindingSecurity {
 public:
-    static bool shouldAllowAccessToNode(Node*, ExceptionState&);
-    static bool shouldAllowAccessToFrame(Frame*, SecurityReportingOption = ReportSecurityError);
-    static bool shouldAllowAccessToFrame(Frame*, ExceptionState&);
+    static bool shouldAllowAccessToNode(v8::Isolate*, Node*, ExceptionState&);
+    static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, SecurityReportingOption = ReportSecurityError);
+    static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, ExceptionState&);
 };
 
 }

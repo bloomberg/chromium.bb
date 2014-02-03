@@ -1624,7 +1624,7 @@ static void cachedAttributeAnyAttributeAttributeSetterCallback(v8::Local<v8::Str
 static void callWithExecutionContextAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     v8SetReturnValue(info, imp->callWithExecutionContextAnyAttribute(scriptContext).v8Value());
 }
 
@@ -1639,7 +1639,7 @@ static void callWithExecutionContextAnyAttributeAttributeSetter(v8::Local<v8::Va
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->setCallWithExecutionContextAnyAttribute(scriptContext, cppValue);
 }
 
@@ -1654,7 +1654,7 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "checkSecurityForNodeReadonlyDocumentAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->checkSecurityForNodeReadonlyDocumentAttribute(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->checkSecurityForNodeReadonlyDocumentAttribute(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -1880,7 +1880,7 @@ static void deprecatedLongAttributeAttributeGetter(const v8::PropertyCallbackInf
 static void deprecatedLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::LongAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
     TestObjectPythonV8Internal::deprecatedLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -1896,7 +1896,7 @@ static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue,
 static void deprecatedLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::LongAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
     TestObjectPythonV8Internal::deprecatedLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2110,7 +2110,7 @@ static void measureAsLongAttributeAttributeGetter(const v8::PropertyCallbackInfo
 static void measureAsLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -2126,7 +2126,7 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, 
 static void measureAsLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3064,7 +3064,7 @@ static void setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSett
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    imp->setSetterCallWithActiveWindowAndFirstWindowStringAttribute(activeDOMWindow(), firstDOMWindow(), cppValue);
+    imp->setSetterCallWithActiveWindowAndFirstWindowStringAttribute(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), cppValue);
 }
 
 static void setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -4493,7 +4493,7 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release());
 }
 
@@ -4513,7 +4513,7 @@ static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalTestCallbackInterfaceArg", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     }
     imp->voidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release());
 }
@@ -4536,7 +4536,7 @@ static void voidMethodNullableTestCallbackInterfaceArgMethod(const v8::FunctionC
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodNullableTestCallbackInterfaceArg", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->voidMethodNullableTestCallbackInterfaceArg(testCallbackInterfaceArg.release());
 }
 
@@ -5477,7 +5477,7 @@ static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->overloadedMethodH(testCallbackInterfaceArg.release());
 }
 
@@ -5636,7 +5636,7 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& in
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "TestObjectPython", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -5664,7 +5664,7 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "TestObjectPython", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -5914,7 +5914,7 @@ static void callWithScriptStateLongMethodMethodCallback(const v8::FunctionCallba
 static void callWithExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->callWithExecutionContextVoidMethod(scriptContext);
 }
 
@@ -5932,7 +5932,7 @@ static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::Functi
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->callWithScriptStateExecutionContextVoidMethod(&state, scriptContext);
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
@@ -6016,7 +6016,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
 static void callWithActiveWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    imp->callWithActiveWindow(activeDOMWindow());
+    imp->callWithActiveWindow(activeDOMWindow(info.GetIsolate()));
 }
 
 static void callWithActiveWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6029,7 +6029,7 @@ static void callWithActiveWindowMethodCallback(const v8::FunctionCallbackInfo<v8
 static void callWithActiveWindowScriptWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    imp->callWithActiveWindowScriptWindow(activeDOMWindow(), firstDOMWindow());
+    imp->callWithActiveWindowScriptWindow(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()));
 }
 
 static void callWithActiveWindowScriptWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6042,7 +6042,7 @@ static void callWithActiveWindowScriptWindowMethodCallback(const v8::FunctionCal
 static void checkSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->checkSecurityForNodeVoidMethod(exceptionState), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->checkSecurityForNodeVoidMethod(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -6146,7 +6146,7 @@ static void deprecatedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 static void deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::voidMethod);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::voidMethod);
     TestObjectPythonV8Internal::deprecatedVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -6186,7 +6186,7 @@ static void measureAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 static void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -6416,7 +6416,7 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
         exceptionState.throwIfNeeded();
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -6440,7 +6440,7 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
             exceptionState.throwIfNeeded();
             return;
         }
-        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     }
     imp->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release(), exceptionState);
     if (exceptionState.throwIfNeeded())

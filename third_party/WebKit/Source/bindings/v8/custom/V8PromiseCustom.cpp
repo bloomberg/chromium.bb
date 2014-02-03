@@ -458,7 +458,7 @@ void PromisePropagator::updateDerived(v8::Handle<v8::Object> derivedPromise, v8:
     v8::Local<v8::Value> originatorValue = originatorInternal->GetInternalField(V8PromiseCustom::InternalResultIndex);
     if (originatorState == V8PromiseCustom::Fulfilled) {
         if (originatorValue->IsObject()) {
-            ExecutionContext* executionContext = currentExecutionContext();
+            ExecutionContext* executionContext = currentExecutionContext(isolate);
             ASSERT(executionContext && executionContext->isContextThread());
             executionContext->postTask(adoptPtr(new UpdateDerivedTask(derivedPromise, onFulfilled, onRejected, originatorValue.As<v8::Object>(), isolate, executionContext)));
         } else {
@@ -497,7 +497,7 @@ void V8Promise::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
         createClosure(promiseRejectCallback, promise, isolate)
     };
     v8::TryCatch trycatch;
-    if (V8ScriptRunner::callFunction(init, currentExecutionContext(), v8::Undefined(isolate), WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
+    if (V8ScriptRunner::callFunction(init, currentExecutionContext(isolate), v8::Undefined(isolate), WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
         // An exception is thrown. Reject the promise if its resolved flag is unset.
         V8PromiseCustom::reject(promise, trycatch.Exception(), isolate);
     }
@@ -798,7 +798,7 @@ v8::Local<v8::Object> V8PromiseCustom::coerceThenable(v8::Handle<v8::Object> the
         createClosure(promiseRejectCallback, promise, isolate)
     };
     v8::TryCatch trycatch;
-    if (V8ScriptRunner::callFunction(then, currentExecutionContext(), thenable, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
+    if (V8ScriptRunner::callFunction(then, currentExecutionContext(isolate), thenable, WTF_ARRAY_LENGTH(argv), argv, isolate).IsEmpty()) {
         reject(promise, trycatch.Exception(), isolate);
     }
     setHiddenValue(isolate, thenable, "thenableHiddenPromise", promise);
@@ -808,7 +808,7 @@ v8::Local<v8::Object> V8PromiseCustom::coerceThenable(v8::Handle<v8::Object> the
 void V8PromiseCustom::callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, PromiseState originatorState, v8::Isolate* isolate)
 {
     ASSERT(originatorState == Fulfilled || originatorState == Rejected);
-    ExecutionContext* executionContext = currentExecutionContext();
+    ExecutionContext* executionContext = currentExecutionContext(isolate);
     ASSERT(executionContext && executionContext->isContextThread());
     executionContext->postTask(adoptPtr(new CallHandlerTask(promise, handler, argument, originatorState, isolate, executionContext)));
 }

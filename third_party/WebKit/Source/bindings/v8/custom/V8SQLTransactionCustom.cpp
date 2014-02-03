@@ -92,7 +92,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
 
     SQLTransaction* transaction = V8SQLTransaction::toNative(info.Holder());
 
-    ExecutionContext* executionContext = currentExecutionContext();
+    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 
     OwnPtr<SQLStatementCallback> callback;
     if (info.Length() > 2 && !isUndefinedOrNull(info[2])) {

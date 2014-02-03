@@ -300,7 +300,7 @@ static void voidMethodTestCallbackInterfaceArgumentMethod(const v8::FunctionCall
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArgument", "TestTypedefs", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> testCallbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->voidMethodTestCallbackInterfaceArgument(testCallbackInterface.release());
 }
 

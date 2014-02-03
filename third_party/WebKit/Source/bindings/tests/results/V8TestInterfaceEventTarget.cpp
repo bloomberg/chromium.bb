@@ -85,7 +85,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
         return;
     }
 
-    Document* document = currentDocument();
+    Document* document = currentDocument(info.GetIsolate());
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the TestInterfaceEventTarget instance

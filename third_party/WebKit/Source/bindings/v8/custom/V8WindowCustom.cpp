@@ -104,7 +104,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
             return;
     }
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState))
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState))
         return;
 
     OwnPtr<ScheduledAction> action;
@@ -152,7 +152,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
 {
     Frame* frame = V8Window::toNative(info.Holder())->frame();
     ExceptionState exceptionState(ExceptionState::GetterContext, "event", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(frame, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -172,7 +172,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
 {
     Frame* frame = V8Window::toNative(info.Holder())->frame();
     ExceptionState exceptionState(ExceptionState::SetterContext, "event", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(frame, exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -189,7 +189,7 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
 {
     DOMWindow* imp = V8Window::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "frame", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->frameElement(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->frameElement(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -207,7 +207,7 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
 {
     DOMWindow* imp = V8Window::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::SetterContext, "opener", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -242,7 +242,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     // None of these need to be RefPtr because info and context are guaranteed
     // to hold on to them.
     DOMWindow* window = V8Window::toNative(info.Holder());
-    DOMWindow* source = activeDOMWindow();
+    DOMWindow* source = activeDOMWindow(info.GetIsolate());
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "Window", info.Holder(), info.GetIsolate());
 
@@ -343,7 +343,7 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
 {
     DOMWindow* impl = V8Window::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "showModalDialog", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -352,7 +352,7 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     DialogHandler handler(info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, dialogFeaturesString, info[2]);
 
-    impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(), firstDOMWindow(), setUpDialog, &handler);
+    impl->showModalDialog(urlString, dialogFeaturesString, activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), setUpDialog, &handler);
 
     v8SetReturnValue(info, handler.returnValue(info.GetIsolate()));
 }
@@ -361,7 +361,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DOMWindow* impl = V8Window::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -376,7 +376,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, windowFeaturesString, info[2]);
 
-    RefPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, activeDOMWindow(), firstDOMWindow());
+    RefPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()));
     if (!openedWindow)
         return;
 
@@ -481,7 +481,7 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
             return true;
     }
 
-    return BindingSecurity::shouldAllowAccessToFrame(target, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(isolate, target, DoNotReportSecurityError);
 }
 
 bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
@@ -515,7 +515,7 @@ bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t i
         && !window->HasRealIndexedProperty(index))
         return true;
 
-    return BindingSecurity::shouldAllowAccessToFrame(target, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(isolate, target, DoNotReportSecurityError);
 }
 
 v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

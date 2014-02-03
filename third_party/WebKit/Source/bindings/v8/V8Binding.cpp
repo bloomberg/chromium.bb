@@ -516,45 +516,45 @@ ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
     return 0;
 }
 
-DOMWindow* activeDOMWindow()
+DOMWindow* activeDOMWindow(v8::Isolate* isolate)
 {
-    v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCallingContext();
+    v8::Handle<v8::Context> context = isolate->GetCallingContext();
     if (context.IsEmpty()) {
         // Unfortunately, when processing script from a plug-in, we might not
         // have a calling context. In those cases, we fall back to the
         // entered context.
-        context = v8::Isolate::GetCurrent()->GetEnteredContext();
+        context = isolate->GetEnteredContext();
     }
     return toDOMWindow(context);
 }
 
-ExecutionContext* activeExecutionContext()
+ExecutionContext* activeExecutionContext(v8::Isolate* isolate)
 {
-    v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCallingContext();
+    v8::Handle<v8::Context> context = isolate->GetCallingContext();
     if (context.IsEmpty()) {
         // Unfortunately, when processing script from a plug-in, we might not
         // have a calling context. In those cases, we fall back to the
         // entered context.
-        context = v8::Isolate::GetCurrent()->GetEnteredContext();
+        context = isolate->GetEnteredContext();
     }
     return toExecutionContext(context);
 }
 
-DOMWindow* firstDOMWindow()
+DOMWindow* firstDOMWindow(v8::Isolate* isolate)
 {
-    return toDOMWindow(v8::Isolate::GetCurrent()->GetEnteredContext());
+    return toDOMWindow(isolate->GetEnteredContext());
 }
 
-Document* currentDocument()
+Document* currentDocument(v8::Isolate* isolate)
 {
-    return toDOMWindow(v8::Isolate::GetCurrent()->GetCurrentContext())->document();
+    return toDOMWindow(isolate->GetCurrentContext())->document();
 }
 
-ExecutionContext* currentExecutionContext()
+ExecutionContext* currentExecutionContext(v8::Isolate* isolate)
 {
-    if (WorkerScriptController* controller = WorkerScriptController::controllerForContext())
+    if (WorkerScriptController* controller = WorkerScriptController::controllerForContext(isolate))
         return &controller->workerGlobalScope();
-    return currentDocument();
+    return currentDocument(isolate);
 }
 
 Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)

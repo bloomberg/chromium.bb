@@ -49,7 +49,7 @@ CryptoResultImpl::~CryptoResultImpl()
 
 PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptPromise promise)
 {
-    return adoptRef(new CryptoResultImpl(activeExecutionContext(), promise));
+    return adoptRef(new CryptoResultImpl(activeExecutionContext(v8::Isolate::GetCurrent()), promise));
 }
 
 void CryptoResultImpl::completeWithError(const blink::WebString& errorDetails)

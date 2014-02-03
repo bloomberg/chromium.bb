@@ -55,9 +55,9 @@ static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindo
     return false;
 }
 
-static bool canAccessDocument(Document* targetDocument, ExceptionState& exceptionState)
+static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, ExceptionState& exceptionState)
 {
-    DOMWindow* activeWindow = activeDOMWindow();
+    DOMWindow* activeWindow = activeDOMWindow(isolate);
     if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
         return true;
 
@@ -66,9 +66,9 @@ static bool canAccessDocument(Document* targetDocument, ExceptionState& exceptio
     return false;
 }
 
-static bool canAccessDocument(Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
+static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
 {
-    DOMWindow* activeWindow = activeDOMWindow();
+    DOMWindow* activeWindow = activeDOMWindow(isolate);
     if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
         return true;
 
@@ -80,19 +80,19 @@ static bool canAccessDocument(Document* targetDocument, SecurityReportingOption 
     return false;
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, SecurityReportingOption reportingOption)
 {
-    return target && canAccessDocument(target->document(), reportingOption);
+    return target && canAccessDocument(isolate, target->document(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, ExceptionState& exceptionState)
 {
-    return target && canAccessDocument(target->document(), exceptionState);
+    return target && canAccessDocument(isolate, target->document(), exceptionState);
 }
 
-bool BindingSecurity::shouldAllowAccessToNode(Node* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessToNode(v8::Isolate* isolate, Node* target, ExceptionState& exceptionState)
 {
-    return target && canAccessDocument(&target->document(), exceptionState);
+    return target && canAccessDocument(isolate, &target->document(), exceptionState);
 }
 
 }

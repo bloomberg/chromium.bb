@@ -435,7 +435,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, imp, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -497,7 +497,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -549,7 +549,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
-    ExecutionContext* context = currentExecutionContext();
+    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())

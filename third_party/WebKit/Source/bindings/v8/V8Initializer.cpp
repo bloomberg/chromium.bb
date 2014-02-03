@@ -130,13 +130,14 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
 {
-    Frame* target = findFrame(host, data, v8::Isolate::GetCurrent());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    Frame* target = findFrame(host, data, isolate);
     if (!target)
         return;
     DOMWindow* targetWindow = target->domWindow();
 
-    ExceptionState exceptionState(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
-    exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(activeDOMWindow()), targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
+    ExceptionState exceptionState(v8::Handle<v8::Object>(), isolate);
+    exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(activeDOMWindow(isolate)), targetWindow->crossDomainAccessErrorMessage(activeDOMWindow(isolate)));
     exceptionState.throwIfNeeded();
 }
 
@@ -198,7 +199,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // During the frame teardown, there may not be a valid context.
-    if (ExecutionContext* context = currentExecutionContext()) {
+    if (ExecutionContext* context = currentExecutionContext(isolate)) {
         String errorMessage = toCoreString(message->Get());
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, sourceURL, message->GetScriptResourceName());
 

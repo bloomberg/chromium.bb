@@ -155,20 +155,20 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(v8::L
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
     TestInterfaceCheckSecurity* imp =  V8TestInterfaceCheckSecurity::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), imp->frame(), DoNotReportSecurityError);
 }
 
 bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
 {
     TestInterfaceCheckSecurity* imp =  V8TestInterfaceCheckSecurity::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), imp->frame(), DoNotReportSecurityError);
 }
 
 static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethod", "TestInterfaceCheckSecurity", info.Holder(), info.GetIsolate());
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -211,7 +211,7 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
         return;
     }
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -263,7 +263,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
         return;
     }
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -315,7 +315,7 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
         return;
     }
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -367,7 +367,7 @@ static void doNotCheckSecurityReadOnlyVoidMethodOriginSafeMethodGetter(const v8:
         return;
     }
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityReadOnlyVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -419,7 +419,7 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
         return;
     }
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityUnforgeableVoidMethodMethodCallback, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8TestInterfaceCheckSecurity::domTemplate(info.GetIsolate(), currentWorldType)), 0);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -450,7 +450,7 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::Strin
     TestInterfaceCheckSecurity* imp = V8TestInterfaceCheckSecurity::toNative(holder);
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "TestInterfaceCheckSecurity", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }

@@ -119,7 +119,7 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     Frame* frame = V8Window::toNative(holder)->frame();
 
     v8::Context::Scope contextScope(context);
-    return BindingSecurity::shouldAllowAccessToFrame(frame, DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), frame, DoNotReportSecurityError);
 }
 
 void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackData<v8::Object, InjectedScriptManager::CallbackData>& data)

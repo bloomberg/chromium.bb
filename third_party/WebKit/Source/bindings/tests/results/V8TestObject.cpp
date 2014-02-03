@@ -536,7 +536,7 @@ static void testObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>
 static void testObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjV8Internal::testObjAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -551,7 +551,7 @@ static void testObjAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::P
 static void testObjAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjV8Internal::testObjAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -1627,7 +1627,7 @@ static void withScriptStateAttributeAttributeSetterCallback(v8::Local<v8::String
 static void withExecutionContextAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     v8SetReturnValueFast(info, imp->withExecutionContextAttribute(scriptContext), imp);
 }
 
@@ -1642,7 +1642,7 @@ static void withExecutionContextAttributeAttributeSetter(v8::Local<v8::Value> js
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->setWithExecutionContextAttribute(scriptContext, WTF::getPtr(cppValue));
 }
 
@@ -1670,7 +1670,7 @@ static void withActiveWindowAndFirstWindowAttributeAttributeSetter(v8::Local<v8:
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    imp->setWithActiveWindowAndFirstWindowAttribute(activeDOMWindow(), firstDOMWindow(), WTF::getPtr(cppValue));
+    imp->setWithActiveWindowAndFirstWindowAttribute(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()), WTF::getPtr(cppValue));
 }
 
 static void withActiveWindowAndFirstWindowAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -1729,7 +1729,7 @@ static void withExecutionContextAttributeRaisesAttributeGetter(const v8::Propert
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "withExecutionContextAttributeRaises", "TestObject", info.Holder(), info.GetIsolate());
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestObj> jsValue = imp->withExecutionContextAttributeRaises(scriptContext, exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -1747,7 +1747,7 @@ static void withExecutionContextAttributeRaisesAttributeSetter(v8::Local<v8::Val
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(TestObj*, cppValue, V8TestObject::hasInstance(jsValue, info.GetIsolate()) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->setWithExecutionContextAttributeRaises(scriptContext, WTF::getPtr(cppValue));
 }
 
@@ -1765,7 +1765,7 @@ static void withExecutionContextAndScriptStateAttributeAttributeGetter(const v8:
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     v8SetReturnValueFast(info, imp->withExecutionContextAndScriptStateAttribute(&state, scriptContext), imp);
 }
 
@@ -1784,7 +1784,7 @@ static void withExecutionContextAndScriptStateAttributeAttributeSetter(v8::Local
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->setWithExecutionContextAndScriptStateAttribute(&state, scriptContext, WTF::getPtr(cppValue));
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
@@ -1805,7 +1805,7 @@ static void withExecutionContextAndScriptStateAttributeRaisesAttributeGetter(con
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestObj> jsValue = imp->withExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -1831,7 +1831,7 @@ static void withExecutionContextAndScriptStateAttributeRaisesAttributeSetter(v8:
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->setWithExecutionContextAndScriptStateAttributeRaises(&state, scriptContext, WTF::getPtr(cppValue));
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
@@ -1851,7 +1851,7 @@ static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeGetter
     if (!currentState)
         return v8Undefined();
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     v8SetReturnValueFast(info, imp->withExecutionContextAndScriptStateWithSpacesAttribute(&state, scriptContext), imp);
 }
 
@@ -1870,7 +1870,7 @@ static void withExecutionContextAndScriptStateWithSpacesAttributeAttributeSetter
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->setWithExecutionContextAndScriptStateWithSpacesAttribute(&state, scriptContext, WTF::getPtr(cppValue));
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
@@ -2485,7 +2485,7 @@ static void contentDocumentAttributeGetter(const v8::PropertyCallbackInfo<v8::Va
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     ExceptionState exceptionState(ExceptionState::GetterContext, "contentDocument", "TestObject", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->contentDocument(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->contentDocument(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -3301,7 +3301,7 @@ static void deprecatedStaticReadOnlyAttrAttributeGetter(const v8::PropertyCallba
 static void deprecatedStaticReadOnlyAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::StaticReadonlyAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticReadonlyAttribute);
     TestObjV8Internal::deprecatedStaticReadOnlyAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3314,7 +3314,7 @@ static void deprecatedStaticAttrAttributeGetter(const v8::PropertyCallbackInfo<v
 static void deprecatedStaticAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::StaticAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticAttribute);
     TestObjV8Internal::deprecatedStaticAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3329,7 +3329,7 @@ static void deprecatedStaticAttrAttributeSetter(v8::Local<v8::Value> jsValue, co
 static void deprecatedStaticAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::StaticAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticAttribute);
     TestObjV8Internal::deprecatedStaticAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3343,7 +3343,7 @@ static void deprecatedReadonlyAttrAttributeGetter(const v8::PropertyCallbackInfo
 static void deprecatedReadonlyAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::ReadonlyAttribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::ReadonlyAttribute);
     TestObjV8Internal::deprecatedReadonlyAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3357,7 +3357,7 @@ static void deprecatedAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Val
 static void deprecatedAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::Attribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::Attribute);
     TestObjV8Internal::deprecatedAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3373,7 +3373,7 @@ static void deprecatedAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8
 static void deprecatedAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::Attribute);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::Attribute);
     TestObjV8Internal::deprecatedAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3537,7 +3537,7 @@ static void objMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void objMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     TestObjV8Internal::objMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3753,7 +3753,7 @@ static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void customMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeExecutionContext(), UseCounter::CustomTestFeature);
+    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::CustomTestFeature);
     V8TestObject::customMethodMethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -3770,7 +3770,7 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& in
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "TestObject", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8TestObject::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -3798,7 +3798,7 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "TestObject", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8TestObject::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -3924,7 +3924,7 @@ static void withScriptStateObjExceptionMethodCallback(const v8::FunctionCallback
 static void withExecutionContextMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->withExecutionContext(scriptContext);
 }
 
@@ -3942,7 +3942,7 @@ static void withExecutionContextAndScriptStateMethod(const v8::FunctionCallbackI
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     imp->withExecutionContextAndScriptState(&state, scriptContext);
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
@@ -3967,7 +3967,7 @@ static void withExecutionContextAndScriptStateObjExceptionMethod(const v8::Funct
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestObj> result = imp->withExecutionContextAndScriptStateObjException(&state, scriptContext, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -3994,7 +3994,7 @@ static void withExecutionContextAndScriptStateWithSpacesMethod(const v8::Functio
     if (!currentState)
         return;
     ScriptState& state = *currentState;
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestObj> result = imp->withExecutionContextAndScriptStateWithSpaces(&state, scriptContext);
     if (state.hadException()) {
         v8::Local<v8::Value> exception = state.exception();
@@ -4015,7 +4015,7 @@ static void withExecutionContextAndScriptStateWithSpacesMethodCallback(const v8:
 static void withActiveWindowAndFirstWindowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    imp->withActiveWindowAndFirstWindow(activeDOMWindow(), firstDOMWindow());
+    imp->withActiveWindowAndFirstWindow(activeDOMWindow(info.GetIsolate()), firstDOMWindow(info.GetIsolate()));
 }
 
 static void withActiveWindowAndFirstWindowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4156,7 +4156,7 @@ static void methodWithCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<
         throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->methodWithCallbackInterfaceArg(callbackInterface.release());
 }
 
@@ -4182,7 +4182,7 @@ static void methodWithNonCallbackArgAndCallbackInterfaceArgMethod(const v8::Func
         exceptionState.throwIfNeeded();
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[1]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[1]), currentExecutionContext(info.GetIsolate()));
     imp->methodWithNonCallbackArgAndCallbackInterfaceArg(nonCallback, callbackInterface.release());
 }
 
@@ -4202,7 +4202,7 @@ static void methodWithCallbackInterfaceAndOptionalArgMethod(const v8::FunctionCa
             throwTypeError(ExceptionMessages::failedToExecute("methodWithCallbackInterfaceAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     }
     imp->methodWithCallbackInterfaceAndOptionalArg(callbackInterface.release());
 }
@@ -4225,7 +4225,7 @@ static void methodWithNullableCallbackInterfaceArgMethod(const v8::FunctionCallb
         throwTypeError(ExceptionMessages::failedToExecute("methodWithNullableCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = info[0]->IsNull() ? nullptr : V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->methodWithNullableCallbackInterfaceArg(callbackInterface.release());
 }
 
@@ -4244,7 +4244,7 @@ static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallb
             throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackAndOptionalArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
             return;
         }
-        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+        callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     }
     TestObj::staticMethodWithCallbackAndOptionalArg(callbackInterface.release());
 }
@@ -4266,7 +4266,7 @@ static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8:
         throwTypeError(ExceptionMessages::failedToExecute("staticMethodWithCallbackArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     TestObj::staticMethodWithCallbackArg(callbackInterface.release());
 }
 
@@ -4543,7 +4543,7 @@ static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> callbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext());
+    OwnPtr<TestCallbackInterface> callbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
     imp->overloadedMethod(callbackInterfaceArg.release());
 }
 
@@ -5496,7 +5496,7 @@ static void deprecatedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& in
 static void deprecatedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::Method);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::Method);
     TestObjV8Internal::deprecatedMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -5509,7 +5509,7 @@ static void deprecatedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
 static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::StaticMethod);
+    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::StaticMethod);
     TestObjV8Internal::deprecatedStaticMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }

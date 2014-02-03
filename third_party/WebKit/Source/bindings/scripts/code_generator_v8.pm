@@ -1045,7 +1045,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<${
 END
 
     if ($interface->extendedAttributes->{"EventConstructor"}) {
-        $header{nameSpaceWebCore}->add("bool initialize${implClassName}(${implClassName}Init&, const Dictionary&, ExceptionState&, const String& = \"\");\n\n");
+        $header{nameSpaceWebCore}->add("bool initialize${implClassName}(${implClassName}Init&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info, const String& = \"\");\n\n");
     }
 }
 
@@ -1271,7 +1271,7 @@ static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::Pro
         return;
     }
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, $newTemplateParams, $functionLength);
         v8SetReturnValue(info, sharedTemplate->GetFunction());
@@ -1317,7 +1317,7 @@ static void ${implClassName}OriginSafeMethodSetter(v8::Local<v8::String> name, v
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "${interfaceName}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -1360,7 +1360,7 @@ sub GenerateFeatureObservation
 
     if ($measureAs) {
         AddToImplIncludes("core/frame/UseCounter.h");
-        return "    UseCounter::count(activeExecutionContext(), UseCounter::${measureAs});\n";
+        return "    UseCounter::count(activeExecutionContext(info.GetIsolate()), UseCounter::${measureAs});\n";
     }
 
     return "";
@@ -1371,7 +1371,7 @@ sub GenerateDeprecationNotification
     my $deprecateAs = shift;
     if ($deprecateAs) {
         AddToImplIncludes("core/frame/UseCounter.h");
-        return "    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::${deprecateAs});\n";
+        return "    UseCounter::countDeprecation(activeExecutionContext(info.GetIsolate()), UseCounter::${deprecateAs});\n";
     }
     return "";
 }
@@ -1580,7 +1580,7 @@ END
     # Generate security checks if necessary
     if ($attribute->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute) . "(), exceptionState)) {\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->" . GetImplName($attribute) . "(), exceptionState)) {\n";
         $code .= "        v8SetReturnValueNull(info);\n";
         $code .= "        exceptionState.throwIfNeeded();\n";
         $code .= "        return;\n";
@@ -1846,7 +1846,7 @@ END
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "${interfaceName}", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -2445,7 +2445,7 @@ sub GenerateFunction
         $code .= <<END;
     EventTarget* impl = ${v8ClassName}::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+        if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -2498,7 +2498,7 @@ END
         # We have not find real use cases yet.
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
     }
@@ -2507,7 +2507,7 @@ END
 
     if ($function->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(exceptionState), exceptionState)) {\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), imp->" . GetImplName($function) . "(exceptionState), exceptionState)) {\n";
         $code .= "        v8SetReturnValueNull(info);\n";
         $code .= "        exceptionState.throwIfNeeded();\n";
         $code .= "        return;\n";
@@ -2545,7 +2545,7 @@ sub GenerateCallWith
         AddToImplIncludes("bindings/v8/ScriptState.h");
     }
     if (ExtendedAttributeContains($callWith, "ExecutionContext")) {
-        $code .= $indent . "ExecutionContext* scriptContext = currentExecutionContext();\n";
+        $code .= $indent . "ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());\n";
         push(@callWithArgs, "scriptContext");
     }
     if ($function and ExtendedAttributeContains($callWith, "ScriptArguments")) {
@@ -2555,10 +2555,10 @@ sub GenerateCallWith
         AddToImplIncludes("core/inspector/ScriptArguments.h");
     }
     if (ExtendedAttributeContains($callWith, "ActiveWindow")) {
-        push(@callWithArgs, "activeDOMWindow()");
+        push(@callWithArgs, "activeDOMWindow(info.GetIsolate())");
     }
     if (ExtendedAttributeContains($callWith, "FirstWindow")) {
-        push(@callWithArgs, "firstDOMWindow()");
+        push(@callWithArgs, "firstDOMWindow(info.GetIsolate())");
     }
     return ([@callWithArgs], $code);
 }
@@ -2650,7 +2650,7 @@ END
                 }
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
-                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), currentExecutionContext());\n";
+                $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), currentExecutionContext(info.GetIsolate()));\n";
                 $parameterCheckString .= "    }\n";
             } else {
                 $parameterCheckString .= "    if (info.Length() <= $paramIndex || ";
@@ -2670,7 +2670,7 @@ END
                 $parameterCheckString .= "    }\n";
                 $parameterCheckString .= "    OwnPtr<" . $parameter->type . "> $parameterName = ";
                 $parameterCheckString .= "info[$paramIndex]->IsNull() ? nullptr : " if $parameter->isNullable;
-                $parameterCheckString .= "${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), currentExecutionContext());\n";
+                $parameterCheckString .= "${v8ClassName}::create(v8::Handle<v8::Function>::Cast(info[$paramIndex]), currentExecutionContext(info.GetIsolate()));\n";
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
                 my $nativeValue = "${parameterName}NativeValue";
@@ -2863,11 +2863,11 @@ END
     if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
         if (ExtendedAttributeContains($interface->extendedAttributes->{"ConstructorCallWith"}, "ExecutionContext")) {
             push(@beforeArgumentList, "context");
-            $code .= "    ExecutionContext* context = currentExecutionContext();\n";
+            $code .= "    ExecutionContext* context = currentExecutionContext(info.GetIsolate());\n";
         }
         if (ExtendedAttributeContains($interface->extendedAttributes->{"ConstructorCallWith"}, "Document")) {
             push(@beforeArgumentList, "document");
-            $code .= "    Document& document = *toDocument(currentExecutionContext());\n";
+            $code .= "    Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));\n";
         }
     }
 
@@ -3005,7 +3005,7 @@ END
     ${implClassName}Init eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        if (!initialize${implClassName}(eventInit, options, exceptionState)) {
+        if (!initialize${implClassName}(eventInit, options, exceptionState, info)) {
             exceptionState.throwIfNeeded();
             return;
         }
@@ -3076,7 +3076,7 @@ END
 
     my $code = "";
     $code .= <<END;
-bool initialize${implClassName}(${implClassName}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
+bool initialize${implClassName}(${implClassName}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const v8::FunctionCallbackInfo<v8::Value>& info, const String& forEventName)
 {
     Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("${interfaceName}") : forEventName, "", exceptionState);
 END
@@ -3084,7 +3084,7 @@ END
     if ($interface->parent) {
         my $interfaceBase = $interface->parent;
         $code .= <<END;
-    if (!initialize${interfaceBase}(eventInit, options, exceptionState, forEventName.isEmpty() ? String("${interfaceName}") : forEventName))
+    if (!initialize${interfaceBase}(eventInit, options, exceptionState, info, forEventName.isEmpty() ? String("${interfaceName}") : forEventName))
         return false;
 
 END
@@ -3163,7 +3163,7 @@ END
     $code .= $maybeDeprecateFeature if $maybeDeprecateFeature;
     $code .= GenerateConstructorHeader($function->extendedAttributes->{"NamedConstructor"});
     $code .= <<END;
-    Document* document = currentDocument();
+    Document* document = currentDocument(info.GetIsolate());
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the ${implClassName} instance
@@ -5206,7 +5206,7 @@ sub GenerateSecurityCheckFunctions
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
     $implClassName* imp =  ${v8ClassName}::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), imp->frame(), DoNotReportSecurityError);
 }
 
 END
@@ -5214,7 +5214,7 @@ END
 bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
 {
     $implClassName* imp =  ${v8ClassName}::toNative(host);
-    return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
+    return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), imp->frame(), DoNotReportSecurityError);
 }
 
 END

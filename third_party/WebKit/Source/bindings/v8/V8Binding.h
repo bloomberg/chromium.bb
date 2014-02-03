@@ -630,11 +630,11 @@ namespace WebCore {
     DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
     ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
 
-    DOMWindow* activeDOMWindow();
-    ExecutionContext* activeExecutionContext();
-    DOMWindow* firstDOMWindow();
-    Document* currentDocument();
-    ExecutionContext* currentExecutionContext();
+    DOMWindow* activeDOMWindow(v8::Isolate*);
+    ExecutionContext* activeExecutionContext(v8::Isolate*);
+    DOMWindow* firstDOMWindow(v8::Isolate*);
+    Document* currentDocument(v8::Isolate*);
+    ExecutionContext* currentExecutionContext(v8::Isolate*);
 
     // Returns the context associated with a ExecutionContext.
     v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld*);

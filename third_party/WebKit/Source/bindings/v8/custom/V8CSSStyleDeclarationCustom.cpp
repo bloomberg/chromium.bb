@@ -87,12 +87,12 @@ struct CSSPropertyInfo {
     unsigned nameWithCssPrefix: 1;
 };
 
-static inline void countCssPropertyInfoUsage(const CSSPropertyInfo& propInfo)
+static inline void countCssPropertyInfoUsage(v8::Isolate* isolate, const CSSPropertyInfo& propInfo)
 {
     if (propInfo.nameWithDash)
-        UseCounter::count(activeExecutionContext(), UseCounter::CSSStyleDeclarationPropertyName);
+        UseCounter::count(activeExecutionContext(isolate), UseCounter::CSSStyleDeclarationPropertyName);
     if (propInfo.propID == CSSPropertyFloat && !propInfo.nameWithCssPrefix)
-        UseCounter::count(activeExecutionContext(), UseCounter::CSSStyleDeclarationFloatPropertyName);
+        UseCounter::count(activeExecutionContext(isolate), UseCounter::CSSStyleDeclarationFloatPropertyName);
 }
 
 // When getting properties on CSSStyleDeclarations, the name used from
@@ -197,7 +197,7 @@ void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::String> v8Nam
     // NOTE: cssPropertyInfo lookups incur several mallocs.
     // Successful lookups have the same cost the first time, but are cached.
     if (CSSPropertyInfo* propInfo = cssPropertyInfo(v8Name)) {
-        countCssPropertyInfoUsage(*propInfo);
+        countCssPropertyInfoUsage(info.GetIsolate(), *propInfo);
         v8SetReturnValueInt(info, 0);
         return;
     }
@@ -216,7 +216,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
     if (!propInfo)
         return;
 
-    countCssPropertyInfoUsage(*propInfo);
+    countCssPropertyInfoUsage(info.GetIsolate(), *propInfo);
     CSSStyleDeclaration* imp = V8CSSStyleDeclaration::toNative(info.Holder());
     RefPtr<CSSValue> cssValue = imp->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
     if (cssValue) {
@@ -238,7 +238,7 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name
     if (!propInfo)
         return;
 
-    countCssPropertyInfoUsage(*propInfo);
+    countCssPropertyInfoUsage(info.GetIsolate(), *propInfo);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, propertyValue, value);
     ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(static_cast<CSSPropertyID>(propInfo->propID)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
     imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);

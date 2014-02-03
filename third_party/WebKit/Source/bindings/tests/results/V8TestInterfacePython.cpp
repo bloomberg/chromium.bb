@@ -542,7 +542,7 @@ static void partialStaticLongAttributeAttributeSetterCallback(v8::Local<v8::Stri
 static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     v8SetReturnValueInt(info, TestPartialInterfacePython::partialCallWithExecutionContextLongAttribute(scriptContext, imp));
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -562,7 +562,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterfacePython::setPartialCallWithExecutionContextLongAttribute(scriptContext, imp, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -707,7 +707,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, imp, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -840,7 +840,7 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialCallWithExecutionContextRaisesExceptionVoidMethod", "TestInterfacePython", info.Holder(), info.GetIsolate());
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ExecutionContext* scriptContext = currentExecutionContext();
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterfacePython::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, imp, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

@@ -53,7 +53,7 @@ public:
     {
         KURL url;
         String title;
-        if (Document* document = currentDocument()) {
+        if (Document* document = currentDocument(v8::Isolate::GetCurrent())) {
             url = document->url();
             title = document->title();
         }
