@@ -111,17 +111,6 @@ function nullifyObjectProto(obj)
 }
 
 /**
- * @param {string} name
- * @return {boolean}
- */
-function isArrayIndexPropertyName(name)
-{
-    // Array index check according to the ES5-15.4.
-    var index = name >>> 0;
-    return toString(index) === name && index !== 0xffffffff;
-}
-
-/**
  * @constructor
  */
 var InjectedScript = function()
@@ -1066,9 +1055,8 @@ InjectedScript.RemoteObject.prototype = {
                     descriptors.push(nameToDescriptors["#" + firstLevelKeys[i]]);
             }
 
-            var isArray = (this.subtype === "array");
             for (var i = 0; i < descriptors.length; ++i) {
-                if (propertiesThreshold.indexes < 0 && propertiesThreshold.properties < 0)
+                if (propertiesThreshold.indexes < 0 || propertiesThreshold.properties < 0)
                     break;
 
                 var descriptor = descriptors[i];
@@ -1078,15 +1066,13 @@ InjectedScript.RemoteObject.prototype = {
                     preview.lossless = false;
                     continue;
                 }
+                if (!descriptor.enumerable && !descriptor.isOwn)
+                    continue;
 
                 var name = descriptor.name;
                 if (name === "__proto__")
                     continue;
-                if (isArray && name === "length")
-                    continue;
-
-                var isArrayIndex = isArray && isArrayIndexPropertyName(name);
-                if (!descriptor.enumerable && !descriptor.isOwn && !isArrayIndex)
+                if (this.subtype === "array" && name === "length")
                     continue;
 
                 if (!("value" in descriptor)) {
@@ -1154,12 +1140,11 @@ InjectedScript.RemoteObject.prototype = {
      */
     _appendPropertyPreview: function(preview, property, propertiesThreshold)
     {
-        var threshold;
-        if (isArrayIndexPropertyName(property.name))
-            threshold = --propertiesThreshold.indexes;
+        if (toString(property.name >>> 0) === property.name)
+            propertiesThreshold.indexes--;
         else
-            threshold = --propertiesThreshold.properties;
-        if (threshold < 0) {
+            propertiesThreshold.properties--;
+        if (propertiesThreshold.indexes < 0 || propertiesThreshold.properties < 0) {
             preview.overflow = true;
             preview.lossless = false;
         } else {

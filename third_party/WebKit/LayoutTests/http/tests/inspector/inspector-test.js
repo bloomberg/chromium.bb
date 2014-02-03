@@ -410,8 +410,6 @@ InspectorTest.textContentWithLineBreaks = function(node)
             buffer += "\n    ";
         else if (currentNode.classList.contains("console-message"))
             buffer += "\n\n";
-        else if (currentNode.classList.contains("console-user-command"))
-            buffer += "\n\n> ";
     }
     return buffer;
 }

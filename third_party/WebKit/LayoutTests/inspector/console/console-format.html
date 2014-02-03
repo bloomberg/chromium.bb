@@ -52,15 +52,11 @@ function onload()
     });
     var negZero = 1 / Number.NEGATIVE_INFINITY;
 
-    var arrayWithNonIndexOverflow = [1,2,3,4];
-    for (var i = 0; i < 6; ++i)
-        arrayWithNonIndexOverflow["index" + i] = i;
-
     globals = [
         regex1, regex2, str, str2, error, errorWithMessage, node, func, multilinefunc, num, linkify,
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
-        NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, arrayWithNonIndexOverflow, {},
-        [function() {}], bar, svg, objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype
+        NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg,
+        objectWithNonEnumerables, negZero, Object.create(null), Object, Object.prototype
     ];
 
     runTest();
@@ -85,9 +81,7 @@ function test()
 
         function finish()
         {
-            var text = InspectorTest.textContentWithLineBreaks(WebInspector.consoleView.topGroup.element);
-            text = text.replace(/\bVM\d+/g, "VM");
-            InspectorTest.addResult(text);
+            InspectorTest.dumpConsoleMessages();
             InspectorTest.completeTest();
         }
 
