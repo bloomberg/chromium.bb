@@ -196,13 +196,13 @@ function test()
     {
         var breakpoint = event.data.breakpoint;
         var uiLocation = event.data.uiLocation;
-        InspectorTest.addResult("    breakpointAdded(" + [uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber, breakpoint.condition(), breakpoint.enabled()].join(", ") + ")");
+        InspectorTest.addResult("    breakpointAdded(" + [uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber, uiLocation.columnNumber, breakpoint.condition(), breakpoint.enabled()].join(", ") + ")");
     }
 
     function breakpointRemoved(event)
     {
         var uiLocation = event.data.uiLocation;
-        InspectorTest.addResult("    breakpointRemoved(" + [uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber].join(", ") + ")");
+        InspectorTest.addResult("    breakpointRemoved(" + [uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber, uiLocation.columnNumber].join(", ") + ")");
     }
 
     InspectorTest.addSniffer(WebInspector.Script.prototype, "createLiveLocation", function(rawLocation)
@@ -269,16 +269,16 @@ function test()
         return breakpointManager;
     }
 
-    function setBreakpoint(breakpointManager, uiSourceCode, lineNumber, condition, enabled)
+    function setBreakpoint(breakpointManager, uiSourceCode, lineNumber, columnNumber, condition, enabled)
     {
-        InspectorTest.addResult("  Setting breakpoint at " + uiSourceCode.originURL() + ":" + lineNumber + " enabled:" + enabled + " condition:" + condition);
-        return breakpointManager.setBreakpoint(uiSourceCode, lineNumber, condition, enabled);
+        InspectorTest.addResult("  Setting breakpoint at " + uiSourceCode.originURL() + ":" + lineNumber + ":" + columnNumber + " enabled:" + enabled + " condition:" + condition);
+        return breakpointManager.setBreakpoint(uiSourceCode, lineNumber, columnNumber, condition, enabled);
     }
 
-    function removeBreakpoint(breakpointManager, uiSourceCode, lineNumber)
+    function removeBreakpoint(breakpointManager, uiSourceCode, lineNumber, columnNumber)
     {
-        InspectorTest.addResult("  Removing breakpoint at " + uiSourceCode.originURL() + ":" + lineNumber);
-        breakpointManager.findBreakpoint(uiSourceCode, lineNumber).remove();
+        InspectorTest.addResult("  Removing breakpoint at " + uiSourceCode.originURL() + ":" + lineNumber + ":" + columnNumber);
+        breakpointManager.findBreakpoint(uiSourceCode, lineNumber, columnNumber).remove();
     }
 
     function dumpBreakpointStorage(breakpointManager)
@@ -287,6 +287,34 @@ function test()
         InspectorTest.addResult("  Dumping Storage");
         for (var i = 0; i < breakpoints.length; ++i)
             InspectorTest.addResult("    " + breakpoints[i].sourceFileId + ":" + breakpoints[i].lineNumber  + " enabled:" + breakpoints[i].enabled + " condition:" + breakpoints[i].condition);
+    }
+
+    function dumpBreakpointLocations(breakpointManager)
+    {
+        var allBreakpointLocations = breakpointManager.allBreakpointLocations();
+        InspectorTest.addResult("  Dumping Breakpoint Locations");
+        var lastUISourceCode = null;
+        var locations = [];
+
+        function dumpLocations(uiSourceCode, locations)
+        {
+            InspectorTest.addResult("    UISourceCode (url='" + uiSourceCode.url + "', uri='" + uiSourceCode.uri() + "')");
+            for (var i = 0; i < locations.length; ++i)
+                InspectorTest.addResult("      Location: (" + locations[i].lineNumber + ", " + locations[i].columnNumber + ")");
+        }
+
+        for (var i = 0; i < allBreakpointLocations.length; ++i) {
+            var uiLocation = allBreakpointLocations[i].uiLocation;
+            var uiSourceCode = uiLocation.uiSourceCode;
+            if (lastUISourceCode && lastUISourceCode != uiSourceCode) {
+                dumpLocations(uiSourceCode, locations);
+                locations = [];
+            }
+            lastUISourceCode = uiSourceCode;
+            locations.push(uiLocation);
+        }
+        if (lastUISourceCode)
+            dumpLocations(lastUISourceCode, locations);
     }
 
     function resetBreakpointManager(breakpointManager, next)
@@ -304,12 +332,19 @@ function test()
         {
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
-            setBreakpoint(breakpointManager, uiSourceCode, 30, "", true);
+            setBreakpoint(breakpointManager, uiSourceCode, 30, 0, "", true);
             window.setBreakpointCallback = step2.bind(this);
 
             function step2()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step3);
+            }
+
+            function step3()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -317,7 +352,8 @@ function test()
         {
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
-            var breakpoint = setBreakpoint(breakpointManager, uiSourceCode, 30, "", false);
+            var breakpoint = setBreakpoint(breakpointManager, uiSourceCode, 30, 0, "", false);
+            dumpBreakpointLocations(breakpointManager);
             dumpBreakpointStorage(breakpointManager);
             InspectorTest.addResult("  Enabling breakpoint");
             breakpoint.setEnabled(true);
@@ -325,7 +361,14 @@ function test()
 
             function step2()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step3);
+            }
+
+            function step3()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -333,11 +376,12 @@ function test()
         {
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
-            var breakpoint = setBreakpoint(breakpointManager, uiSourceCode, 30, "condition", true);
+            var breakpoint = setBreakpoint(breakpointManager, uiSourceCode, 30, 0, "condition", true);
             window.setBreakpointCallback = step2.bind(this);
 
             function step2()
             {
+                dumpBreakpointLocations(breakpointManager);
                 dumpBreakpointStorage(breakpointManager);
                 InspectorTest.addResult("  Updating condition");
                 breakpoint.setCondition("");
@@ -346,7 +390,14 @@ function test()
 
             function step3()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step4);
+            }
+
+            function step4()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -358,7 +409,14 @@ function test()
 
             function step2()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step3);
+            }
+
+            function step3()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -371,7 +429,14 @@ function test()
 
             function step2()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step3);
+            }
+
+            function step3()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -383,16 +448,25 @@ function test()
 
             function step2()
             {
-                setBreakpoint(breakpointManager, uiSourceCode, 30, "", true);
+                dumpBreakpointLocations(breakpointManager);
+                setBreakpoint(breakpointManager, uiSourceCode, 30, 0, "", true);
                 window.setBreakpointCallback = step3.bind(this);
             }
 
             function step3()
             {
-                removeBreakpoint(breakpointManager, uiSourceCode, 30);
-                removeBreakpoint(breakpointManager, uiSourceCode, 10);
-                removeBreakpoint(breakpointManager, uiSourceCode, 20);
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                removeBreakpoint(breakpointManager, uiSourceCode, 30, 0);
+                removeBreakpoint(breakpointManager, uiSourceCode, 10, 0);
+                removeBreakpoint(breakpointManager, uiSourceCode, 20, 0);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step4);
+            }
+
+            function step4()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -400,12 +474,19 @@ function test()
         {
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
-            setBreakpoint(breakpointManager, uiSourceCode, 1015, "", true);
+            setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, "", true);
             window.setBreakpointCallback = step2.bind(this);
 
             function step2()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step3);
+            }
+
+            function step3()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -413,18 +494,26 @@ function test()
         {
             var breakpointManager = createBreakpointManager();
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
-            setBreakpoint(breakpointManager, uiSourceCode, 1015, "", true);
+            setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, "", true);
             window.setBreakpointCallback = step2.bind(this);
 
             function step2()
             {
-                setBreakpoint(breakpointManager, uiSourceCode, 1015, "", true);
+                dumpBreakpointLocations(breakpointManager);
+                setBreakpoint(breakpointManager, uiSourceCode, 1015, 0, "", true);
                 window.setBreakpointCallback = step3.bind(this);
             }
 
             function step3()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step4);
+            }
+
+            function step4()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -432,12 +521,19 @@ function test()
         {
             var breakpointManager = createBreakpointManager([]);
             var uiSourceCode = addUISourceCode(breakpointManager, "a.js");
-            breakpointManager.setBreakpoint(uiSourceCode, 2500, "", true);
+            breakpointManager.setBreakpoint(uiSourceCode, 2500, 0, "", true);
             window.setBreakpointCallback = step2.bind(this);
 
             function step2()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step3);
+            }
+
+            function step3()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
        },
 
@@ -449,6 +545,7 @@ function test()
 
             function step2()
             {
+                dumpBreakpointLocations(breakpointManager);
                 InspectorTest.addResult("\n  Navigating to B.");
                 breakpointManager._debuggerModel.reset();
                 resetWorkspace(breakpointManager);
@@ -458,6 +555,7 @@ function test()
 
             function step3()
             {
+                dumpBreakpointLocations(breakpointManager);
                 InspectorTest.addResult("\n  Navigating back to A.");
                 breakpointManager._debuggerModel.reset();
                 resetWorkspace(breakpointManager);
@@ -471,7 +569,14 @@ function test()
 
             function step4()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step5);
+            }
+
+            function step5()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -493,11 +598,20 @@ function test()
 
             function step3()
             {
+                dumpBreakpointLocations(breakpointManager);
                 InspectorTest.addResult("\n  Toggling source mapping.");
                 breakpointManager._debuggerModel.pushSourceMapping(shiftingMapping);
+                dumpBreakpointLocations(breakpointManager);
                 InspectorTest.addResult("\n  Toggling source mapping back.");
                 breakpointManager._debuggerModel.disableSourceMapping(shiftingMapping);
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step4);
+            }
+
+            function step4()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -512,6 +626,7 @@ function test()
 
             function step2()
             {
+                dumpBreakpointLocations(breakpointManager);
                 breakpointManager._debuggerModel.reset();
                 resetWorkspace(breakpointManager);
                 InspectorTest.addResult("  Resolving provisional breakpoint.");
@@ -520,7 +635,14 @@ function test()
                 breakpointManager._debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.BreakpointResolved, eventData);
                 var breakpoints = breakpointManager.allBreakpoints();
                 InspectorTest.assertEquals(breakpoints.length, 1, "Exactly one provisional breakpoint should be registered in breakpoint manager.");
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step3);
+            }
+
+            function step3()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
 
@@ -540,6 +662,7 @@ function test()
 
             function step2()
             {
+                dumpBreakpointLocations(breakpointManager);
                 InspectorTest.addResult("\n  Reloading:");
                 breakpointManager._debuggerModel.reset();
                 resetWorkspace(breakpointManager);
@@ -559,7 +682,14 @@ function test()
 
             function step3()
             {
-                resetBreakpointManager(breakpointManager, next);
+                dumpBreakpointLocations(breakpointManager);
+                resetBreakpointManager(breakpointManager, step4);
+            }
+
+            function step4()
+            {
+                dumpBreakpointLocations(breakpointManager);
+                next();
             }
         },
     ]);

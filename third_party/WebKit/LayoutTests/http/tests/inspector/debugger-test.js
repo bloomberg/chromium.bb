@@ -285,12 +285,12 @@ InspectorTest.dumpScriptsNavigator = function(navigator, prefix)
 InspectorTest.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled)
 {
     if (!sourceFrame._muted)
-        sourceFrame._setBreakpoint(lineNumber, condition, enabled);
+        sourceFrame._setBreakpoint(lineNumber, 0, condition, enabled);
 };
 
 InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
 {
-    sourceFrame._breakpointManager.findBreakpoint(sourceFrame._uiSourceCode, lineNumber).remove();
+    sourceFrame._breakpointManager.findBreakpointOnLine(sourceFrame._uiSourceCode, lineNumber).remove();
 };
 
 InspectorTest.dumpBreakpointSidebarPane = function(title)
