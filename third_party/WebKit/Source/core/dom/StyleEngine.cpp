@@ -82,8 +82,6 @@ StyleEngine::StyleEngine(Document& document)
     , m_maxDirectAdjacentSelectors(0)
     , m_ignorePendingStylesheets(false)
     , m_didCalculateResolver(false)
-    , m_lastResolverAccessCount(0)
-    , m_resolverThrowawayTimer(this, &StyleEngine::resolverThrowawayTimerFired)
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
     , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : 0)
@@ -485,21 +483,8 @@ unsigned StyleEngine::resolverAccessCount() const
     return m_resolver ? m_resolver->accessCount() : 0;
 }
 
-void StyleEngine::resolverThrowawayTimerFired(Timer<StyleEngine>*)
-{
-    if (resolverAccessCount() == m_lastResolverAccessCount)
-        clearResolver();
-    m_lastResolverAccessCount = resolverAccessCount();
-}
-
-void StyleEngine::didAttach()
-{
-    m_resolverThrowawayTimer.startRepeating(60);
-}
-
 void StyleEngine::didDetach()
 {
-    m_resolverThrowawayTimer.stop();
     clearResolver();
 }
 

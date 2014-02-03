@@ -330,6 +330,7 @@ private:
     OwnPtr<StyleResolverStats> m_styleResolverStatsTotals;
     unsigned m_styleResolverStatsSequence;
 
+    // Use only for Internals::updateStyleAndReturnAffectedElementCount.
     unsigned m_accessCount;
 };
 

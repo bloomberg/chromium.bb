@@ -2068,8 +2068,6 @@ void Document::attach(const AttachContext& context)
     m_renderView->setStyle(StyleResolver::styleForDocument(*this));
     view()->updateCompositingLayersAfterStyleChange();
 
-    m_styleEngine->didAttach();
-
     ContainerNode::attach(context);
 
     m_lifecycle.advanceTo(DocumentLifecycle::Clean);
