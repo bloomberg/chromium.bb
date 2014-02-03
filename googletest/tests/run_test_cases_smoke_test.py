@@ -631,7 +631,8 @@ class RunTestCases(unittest.TestCase):
         test_cases=test_cases,
         duration=True)
 
-  def test_crash_after_pass(self):
+  def disabled_test_crash_after_pass(self):
+    # See TODO below.
     out, err, return_code = RunTest(
         [
           '--clusters', '10',
