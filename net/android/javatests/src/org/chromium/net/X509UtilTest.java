@@ -65,7 +65,7 @@ public class X509UtilTest extends InstrumentationTestCase {
 
     @Override
     public void setUp() {
-        X509Util.setDisableCertificateObservationForTest(true);
+        X509Util.setDisableNativeCodeForTest(true);
     }
 
     @MediumTest

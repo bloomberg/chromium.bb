@@ -12,7 +12,6 @@
 #include "jni/AndroidNetworkLibrary_jni.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ClearException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
@@ -46,10 +45,6 @@ void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
   ScopedJavaLocalRef<jobject> result =
       Java_AndroidNetworkLibrary_verifyServerCertificates(
           env, chain_byte_array.obj(), auth_string.obj(), host_string.obj());
-  if (ClearException(env)) {
-    *status = android::VERIFY_FAILED;
-    return;
-  }
 
   ExtractCertVerifyResult(result.obj(),
                           status, is_issued_by_known_root, verified_chain);

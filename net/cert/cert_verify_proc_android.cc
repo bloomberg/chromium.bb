@@ -144,11 +144,6 @@ int CertVerifyProcAndroid::VerifyInternal(
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);
 
-  // TODO(ppi): Implement missing functionality: yielding the constructed trust
-  // chain, public key hashes of its certificates and |is_issued_by_known_root|
-  // flag. All of the above require specific support from the platform, missing
-  // in the Java APIs. See also: http://crbug.com/116838
-
   return OK;
 }
 

@@ -8626,6 +8626,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.FoundSystemTrustRootsAndroid" enum="Boolean">
+  <summary>
+    Whether or not system installed trust anchors could be distinguished from
+    user installed trust anchors. Recorded on first certificate verification on
+    Android 4.2 and later.
+  </summary>
+</histogram>
+
 <histogram name="Net.FtpDataConnectionErrorCount" enum="FtpDataConnectionError">
   <summary>The number of times each FTP Error was observed.</summary>
 </histogram>

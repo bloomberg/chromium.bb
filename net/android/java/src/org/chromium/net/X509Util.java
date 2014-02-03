@@ -152,16 +152,23 @@ public class X509Util {
     private static Set<Pair<X500Principal, PublicKey>> sSystemTrustRoots;
 
     /**
+     * True if the system trust roots were initialized. (sSystemTrustRoots may
+     * still be null if system trust roots cannot be distinguished from
+     * user-installed ones.)
+     */
+    private static boolean sLoadedSystemTrustRoots;
+
+    /**
      * Lock object used to synchronize all calls that modify or depend on the trust managers.
      */
     private static final Object sLock = new Object();
 
-    /*
-     * Allow disabling registering the observer for the certificat changes. Net unit tests do not
-     * load native libraries which prevent this to succeed. Moreover, the system does not allow to
-     * interact with the certificate store without user interaction.
+    /**
+     * Allow disabling registering the observer and recording histograms for the certificate
+     * changes. Net unit tests do not load native libraries which prevent this to succeed. Moreover,
+     * the system does not allow to interact with the certificate store without user interaction.
      */
-    private static boolean sDisableCertificateObservationForTest = false;
+    private static boolean sDisableNativeCodeForTest = false;
 
     /**
      * Ensures that the trust managers and certificate factory are initialized.
@@ -175,8 +182,18 @@ public class X509Util {
             if (sDefaultTrustManager == null) {
                 sDefaultTrustManager = X509Util.createTrustManager(null);
             }
-            if (sSystemTrustRoots == null) {
-                sSystemTrustRoots = buildSystemTrustRootSet();
+            if (!sLoadedSystemTrustRoots) {
+                try {
+                    sSystemTrustRoots = buildSystemTrustRootSet();
+                } catch (KeyStoreException e) {
+                    // If the device does not have an "AndroidCAStore" KeyStore, don't make the
+                    // failure fatal. Instead default conservatively to setting isIssuedByKnownRoot
+                    // to false everywhere.
+                    Log.w(TAG, "Could not load system trust root set", e);
+                }
+                if (!sDisableNativeCodeForTest)
+                    nativeRecordCertVerifyCapabilitiesHistogram(sSystemTrustRoots != null);
+                sLoadedSystemTrustRoots = true;
             }
             if (sTestKeyStore == null) {
                 sTestKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -189,8 +206,7 @@ public class X509Util {
             if (sTestTrustManager == null) {
                 sTestTrustManager = X509Util.createTrustManager(sTestKeyStore);
             }
-            if (!sDisableCertificateObservationForTest &&
-                    sTrustStorageListener == null) {
+            if (!sDisableNativeCodeForTest && sTrustStorageListener == null) {
                 sTrustStorageListener = new TrustStorageListener();
                 nativeGetApplicationContext().registerReceiver(sTrustStorageListener,
                         new IntentFilter(KeyChain.ACTION_STORAGE_CHANGED));
@@ -240,7 +256,7 @@ public class X509Util {
         for (TrustManager tm : tmf.getTrustManagers()) {
             if (tm instanceof X509TrustManager) {
                 try {
-                    if (Build.VERSION.SDK_INT >= 17) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         return new X509TrustManagerJellyBean((X509TrustManager) tm);
                     } else {
                         return new X509TrustManagerIceCreamSandwich((X509TrustManager) tm);
@@ -268,6 +284,7 @@ public class X509Util {
             NoSuchAlgorithmException, CertificateException {
         sDefaultTrustManager = null;
         sSystemTrustRoots = null;
+        sLoadedSystemTrustRoots = false;
         nativeNotifyKeyChainChanged();
         ensureInitialized();
     }
@@ -404,7 +421,7 @@ public class X509Util {
             }
 
             boolean isIssuedByKnownRoot = false;
-            if (verifiedChain.size() > 0) {
+            if (sSystemTrustRoots != null && verifiedChain.size() > 0) {
                 X509Certificate root = verifiedChain.get(verifiedChain.size() - 1);
                 isIssuedByKnownRoot = sSystemTrustRoots.contains(
                         new Pair<X500Principal, PublicKey>(root.getSubjectX500Principal(),
@@ -416,13 +433,19 @@ public class X509Util {
         }
     }
 
-    public static void setDisableCertificateObservationForTest(boolean disabled) {
-        sDisableCertificateObservationForTest = disabled;
+    public static void setDisableNativeCodeForTest(boolean disabled) {
+        sDisableNativeCodeForTest = disabled;
     }
     /**
      * Notify the native net::CertDatabase instance that the system database has been updated.
      */
     private static native void nativeNotifyKeyChainChanged();
+
+    /**
+     * Record histograms on the platform's certificate verification capabilities.
+     */
+    private static native void nativeRecordCertVerifyCapabilitiesHistogram(
+        boolean foundSystemTrustRoots);
 
     /**
      * Returns the application context.
