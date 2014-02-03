@@ -862,7 +862,6 @@ void InProcessViewRenderer::DidOverscroll(
     gfx::Vector2dF accumulated_overscroll,
     gfx::Vector2dF latest_overscroll_delta,
     gfx::Vector2dF current_fling_velocity) {
-  DCHECK(current_fling_velocity.IsZero());
   const float physical_pixel_scale = dip_scale_ * page_scale_factor_;
   if (accumulated_overscroll == latest_overscroll_delta)
     overscroll_rounding_error_ = gfx::Vector2dF();
