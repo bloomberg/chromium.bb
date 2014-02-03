@@ -46,9 +46,6 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
 
     unsigned i;
     for (i = 0; i < m_queue.size(); ++i) {
-        // The created callback may schedule entered document
-        // callbacks.
-        CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
         result = Result(result | m_queue[i]->process());
 
         if (result & CustomElementMicrotaskStep::ShouldStop)

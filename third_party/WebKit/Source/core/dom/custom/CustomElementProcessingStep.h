@@ -44,7 +44,6 @@ public:
 
     virtual ~CustomElementProcessingStep() { }
     virtual void dispatch(Element*) = 0;
-    // FIXME: Should be isUpgradeStep()
     virtual bool isCreated() const { return false; }
 };
 

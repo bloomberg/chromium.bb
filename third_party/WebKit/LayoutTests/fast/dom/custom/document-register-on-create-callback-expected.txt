@@ -1,11 +1,4 @@
-document.registerElement() in a createdCallback should upgrade elements that are in the same processing queue.
-
-On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
-
-PASS createdElements is ["elemA0", "elemB0"]
-PASS createdElements is ["elemA0", "elemB0", "elemB1"]
-PASS successfullyParsed is true
-
-TEST COMPLETE
+ This is a testharness.js-based test.
+PASS document.registerElement() in a createdCallback should upgrade elements that are in the same processing queue. 
+Harness: the test ran to completion.
 

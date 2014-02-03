@@ -40,7 +40,6 @@
 
 namespace WebCore {
 
-// FIXME: Rename to CustomElementCallbackStep
 class CustomElementCallbackInvocation : public CustomElementProcessingStep {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
 public:

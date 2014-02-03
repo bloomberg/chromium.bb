@@ -32,7 +32,7 @@
 #define CustomElementScheduler_h
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
-#include "core/dom/custom/CustomElementMicrotaskQueue.h"
+#include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -46,13 +46,16 @@ class CustomElementLifecycleCallbacks;
 class CustomElementMicrotaskImportStep;
 class Element;
 class HTMLImport;
+class HTMLImportChild;
 
 class CustomElementScheduler {
 public:
+    static void scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
     static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     static void scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
     static void scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    static void scheduleResolutionStep(const CustomElementDescriptor&, PassRefPtr<Element>);
+
+    static void resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
     static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);
 
     static bool dispatchMicrotaskProcessingSteps() { return instance().dispatch(); }
@@ -71,7 +74,7 @@ private:
     typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
     ElementCallbackQueueMap m_elementCallbackQueueMap;
 
-    CustomElementMicrotaskQueue m_baseMicrotaskQueue;
+    CustomElementMicrotaskDispatcher m_microtaskDispatcher;
 };
 
 }

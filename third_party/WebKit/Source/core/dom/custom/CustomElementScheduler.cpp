@@ -36,15 +36,21 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackInvocation.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
-#include "core/dom/custom/CustomElementMicrotaskElementStep.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
+#include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
-#include "core/dom/custom/CustomElementResolutionStep.h"
-#include "core/html/HTMLImport.h"
 #include "core/html/HTMLImportChild.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
+
+class HTMLImport;
+
+void CustomElementScheduler::scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+{
+    CustomElementCallbackQueue* queue = instance().schedule(element);
+    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
+}
 
 void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
@@ -73,11 +79,16 @@ void CustomElementScheduler::scheduleDetachedCallback(PassRefPtr<CustomElementLi
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Detached));
 }
 
-void CustomElementScheduler::scheduleResolutionStep(const CustomElementDescriptor& descriptor, PassRefPtr<Element> element)
+void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)
 {
-    RefPtr<CustomElementRegistrationContext> context = element->document().registrationContext();
-    CustomElementCallbackQueue* queue = instance().schedule(element);
-    queue->append(CustomElementResolutionStep::create(context.release(), descriptor));
+    if (CustomElementCallbackDispatcher::inCallbackDeliveryScope()) {
+        context->resolve(element.get(), descriptor);
+        return;
+    }
+
+    HTMLImport* import = element->document().import();
+    OwnPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
+    instance().m_microtaskDispatcher.enqueue(import, step.release());
 }
 
 CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)
@@ -90,10 +101,7 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
 
     // Ownership of the new step is transferred to the parent
     // processing step, or the base queue.
-    if (CustomElementMicrotaskImportStep* parentStep = import->parent()->customElementMicrotaskStep())
-        parentStep->enqueue(step.release());
-    else
-        instance().m_baseMicrotaskQueue.enqueue(step.release());
+    instance().m_microtaskDispatcher.enqueue(import->parent(), step.release());
 
     return rawStep;
 }
@@ -139,17 +147,7 @@ CustomElementCallbackQueue* CustomElementScheduler::schedule(PassRefPtr<Element>
         return callbackQueue;
     }
 
-    HTMLImport* import = element->document().import();
-    if (import && import->customElementMicrotaskStep()) {
-        // The base element queue is active, but the element is in a
-        // parser-created import.
-        import->customElementMicrotaskStep()->enqueue(CustomElementMicrotaskElementStep::create(callbackQueue));
-        return callbackQueue;
-    }
-
-    // The base element queue is active. The element is not in a
-    // parser-created import.
-    m_baseMicrotaskQueue.enqueue(CustomElementMicrotaskElementStep::create(callbackQueue));
+    m_microtaskDispatcher.enqueue(callbackQueue);
     return callbackQueue;
 }
 
@@ -159,11 +157,10 @@ bool CustomElementScheduler::dispatch()
     if (CustomElementCallbackDispatcher::inCallbackDeliveryScope())
         return false;
 
-    CustomElementMicrotaskStep::Result result = m_baseMicrotaskQueue.dispatch();
-    if (m_baseMicrotaskQueue.isEmpty())
-        clearElementCallbackQueueMap();
-
-    return result & CustomElementMicrotaskStep::DidWork;
+    bool didWork = m_microtaskDispatcher.dispatch();
+    ASSERT(m_microtaskDispatcher.elementQueueIsEmpty());
+    clearElementCallbackQueueMap();
+    return didWork;
 }
 
 } // namespace WebCore

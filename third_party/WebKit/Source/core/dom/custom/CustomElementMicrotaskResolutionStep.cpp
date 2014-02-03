@@ -28,36 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementResolutionStep_h
-#define CustomElementResolutionStep_h
+#include "config.h"
+#include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 
-#include "core/dom/custom/CustomElementDescriptor.h"
-#include "core/dom/custom/CustomElementProcessingStep.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/AtomicString.h"
+#include "core/dom/Element.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 
 namespace WebCore {
 
-class CustomElementRegistrationContext;
-
-class CustomElementResolutionStep : public CustomElementProcessingStep {
-    WTF_MAKE_NONCOPYABLE(CustomElementResolutionStep);
-public:
-    static PassOwnPtr<CustomElementResolutionStep> create(PassRefPtr<CustomElementRegistrationContext>, const CustomElementDescriptor&);
-
-    virtual ~CustomElementResolutionStep();
-
-protected:
-    CustomElementResolutionStep(PassRefPtr<CustomElementRegistrationContext>, const CustomElementDescriptor&);
-
-    virtual void dispatch(Element*) OVERRIDE;
-    virtual bool isCreated() const OVERRIDE { return true; }
-
-private:
-    RefPtr<CustomElementRegistrationContext> m_context;
-    CustomElementDescriptor m_descriptor;
-};
-
+PassOwnPtr<CustomElementMicrotaskResolutionStep> CustomElementMicrotaskResolutionStep::create(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)
+{
+    return adoptPtr(new CustomElementMicrotaskResolutionStep(context, element, descriptor));
 }
 
-#endif // CustomElementResolutionStep_h
+CustomElementMicrotaskResolutionStep::CustomElementMicrotaskResolutionStep(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)
+    : m_context(context)
+    , m_element(element)
+    , m_descriptor(descriptor)
+{
+}
+
+CustomElementMicrotaskResolutionStep::~CustomElementMicrotaskResolutionStep()
+{
+}
+
+CustomElementMicrotaskStep::Result CustomElementMicrotaskResolutionStep::process()
+{
+    m_context->resolve(m_element.get(), m_descriptor);
+    return CustomElementMicrotaskStep::Continue;
+}
+
+} // namespace WebCore

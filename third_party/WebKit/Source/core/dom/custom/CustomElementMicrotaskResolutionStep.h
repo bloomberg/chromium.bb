@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,33 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementMicrotaskElementStep_h
-#define CustomElementMicrotaskElementStep_h
+#ifndef CustomElementMicrotaskResolutionStep_h
+#define CustomElementMicrotaskResolutionStep_h
 
+#include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementMicrotaskStep.h"
-#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class CustomElementCallbackQueue;
+class CustomElementRegistrationContext;
+class Element;
 
-// Runs a per-element schedule of work in the context of a microtask
-// step by thunking from CustomElementMicrotask::process to
-// CustomElementCallbackQueue::dispatch.
-class CustomElementMicrotaskElementStep : public CustomElementMicrotaskStep {
-    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskElementStep);
+class CustomElementMicrotaskResolutionStep : public CustomElementMicrotaskStep {
+    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskResolutionStep);
 public:
-    static PassOwnPtr<CustomElementMicrotaskElementStep> create(CustomElementCallbackQueue*);
-    virtual ~CustomElementMicrotaskElementStep() { }
+    static PassOwnPtr<CustomElementMicrotaskResolutionStep> create(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
+
+    virtual ~CustomElementMicrotaskResolutionStep();
 
 private:
-    CustomElementMicrotaskElementStep(CustomElementCallbackQueue*);
-    virtual Result process() OVERRIDE FINAL;
+    CustomElementMicrotaskResolutionStep(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
 
-    CustomElementCallbackQueue* m_queue;
+    virtual Result process() OVERRIDE;
+
+    RefPtr<CustomElementRegistrationContext> m_context;
+    RefPtr<Element> m_element;
+    CustomElementDescriptor m_descriptor;
 };
 
 }
 
-#endif // CustomElementMicrotaskElementStep_h
+#endif // CustomElementMicrotaskResolutionStep_h

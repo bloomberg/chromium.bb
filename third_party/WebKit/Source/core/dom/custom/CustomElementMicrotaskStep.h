@@ -42,7 +42,7 @@ public:
     virtual ~CustomElementMicrotaskStep() { }
 
     enum Result {
-        DidWork    = 1 << 0,
+        Continue   = 1 << 0,
         ShouldStop = 1 << 1
     };
 

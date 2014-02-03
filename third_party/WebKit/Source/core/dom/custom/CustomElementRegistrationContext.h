@@ -70,7 +70,7 @@ protected:
     void didGiveTypeExtension(Element*, const AtomicString& type);
 
 private:
-    void scheduleResolution(Element*, const AtomicString& typeExtension);
+    void resolveOrScheduleResolution(Element*, const AtomicString& typeExtension);
 
     CustomElementRegistry m_registry;
 

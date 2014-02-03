@@ -74,16 +74,16 @@ PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Doc
     }
 
     element->setCustomElementState(Element::WaitingForUpgrade);
-    scheduleResolution(element.get(), nullAtom);
+    resolveOrScheduleResolution(element.get(), nullAtom);
     return element.release();
 }
 
 void CustomElementRegistrationContext::didGiveTypeExtension(Element* element, const AtomicString& type)
 {
-    scheduleResolution(element, type);
+    resolveOrScheduleResolution(element, type);
 }
 
-void CustomElementRegistrationContext::scheduleResolution(Element* element, const AtomicString& typeExtension)
+void CustomElementRegistrationContext::resolveOrScheduleResolution(Element* element, const AtomicString& typeExtension)
 {
     // If an element has a custom tag name it takes precedence over
     // the "is" attribute (if any).
@@ -94,7 +94,8 @@ void CustomElementRegistrationContext::scheduleResolution(Element* element, cons
 
     CustomElementDescriptor descriptor(type, element->namespaceURI(), element->localName());
     ASSERT(element->customElementState() == Element::WaitingForUpgrade);
-    CustomElementScheduler::scheduleResolutionStep(descriptor, element);
+
+    CustomElementScheduler::resolveOrScheduleResolution(this, element, descriptor);
 }
 
 void CustomElementRegistrationContext::resolve(Element* element, const CustomElementDescriptor& descriptor)

@@ -106,12 +106,7 @@ void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition>
 
     case Element::WaitingForUpgrade:
         definitions().add(element, definition);
-        if (element->inDocument() && element->document().domWindow())
-            CustomElementScheduler::scheduleAttachedCallback(definition->callbacks(), element);
-        // FIXME: Push this through the callback scheduler. That
-        // design makes resolve and define robust to being called
-        // during other operations.
-        definition->callbacks()->created(element);
+        CustomElementScheduler::scheduleCreatedCallback(definition->callbacks(), element);
         break;
     }
 }
