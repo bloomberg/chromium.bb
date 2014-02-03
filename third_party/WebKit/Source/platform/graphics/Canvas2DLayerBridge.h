@@ -82,7 +82,7 @@ public:
     size_t bytesAllocated() const { return m_bytesAllocated; }
     void limitPendingFrames();
     void freeReleasedMailbox();
-    bool hasReleasedMailbox() const { return m_releasedMailboxInfo; };
+    bool hasReleasedMailbox() const;
     void freeTransientResources();
     bool hasTransientResources() const;
     bool isHidden() { return m_isHidden; }
@@ -128,10 +128,11 @@ protected:
         MailboxInfo() {}
     };
     MailboxInfo* createMailboxInfo();
+    MailboxInfo* releasedMailboxInfo();
 
     uint32_t m_lastImageId;
     Vector<MailboxInfo> m_mailboxes;
-    MailboxInfo* m_releasedMailboxInfo;
+    int m_releasedMailboxInfoIndex;
 };
 }
 #endif

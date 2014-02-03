@@ -41,6 +41,12 @@
 using blink::WebExternalTextureLayer;
 using blink::WebGraphicsContext3D;
 
+namespace {
+enum {
+    InvalidMailboxIndex = -1,
+};
+}
+
 namespace WebCore {
 
 static PassRefPtr<SkSurface> createSkSurface(GraphicsContext3D* context3D, const IntSize& size, int msaaSampleCount = 0)
@@ -88,7 +94,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassRefPtr<GraphicsContext3D> context, 
     , m_next(0)
     , m_prev(0)
     , m_lastImageId(0)
-    , m_releasedMailboxInfo(0)
+    , m_releasedMailboxInfoIndex(InvalidMailboxIndex)
 {
     ASSERT(m_canvas);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
@@ -252,28 +258,40 @@ bool Canvas2DLayerBridge::releasedMailboxHasExpired()
     // This heuristic indicates that the canvas is not being
     // actively presented by the compositor (3 frames rendered since
     // last mailbox release), suggesting that double buffering is not required.
-    return m_releasedMailboxInfo && m_framesSinceMailboxRelease > 2;
+    return hasReleasedMailbox() && m_framesSinceMailboxRelease > 2;
+}
+
+Canvas2DLayerBridge::MailboxInfo* Canvas2DLayerBridge::releasedMailboxInfo()
+{
+    return hasReleasedMailbox() ? &m_mailboxes[m_releasedMailboxInfoIndex] : 0;
+}
+
+bool Canvas2DLayerBridge::hasReleasedMailbox() const
+{
+    return m_releasedMailboxInfoIndex != InvalidMailboxIndex;
 }
 
 void Canvas2DLayerBridge::freeReleasedMailbox()
 {
-    if (m_releasedMailboxInfo) {
-        ASSERT(m_releasedMailboxInfo->m_status == MailboxReleased);
-        if (m_releasedMailboxInfo->m_mailbox.syncPoint) {
-            context()->waitSyncPoint(m_releasedMailboxInfo->m_mailbox.syncPoint);
-            m_releasedMailboxInfo->m_mailbox.syncPoint = 0;
-        }
-        // Invalidate texture state in case the compositor altered it since the copy-on-write.
-        if (m_releasedMailboxInfo->m_image) {
-            if (isHidden() || releasedMailboxHasExpired())
-                m_releasedMailboxInfo->m_image->getTexture()->resetFlag(static_cast<GrTextureFlags>(GrTexture::kReturnToCache_FlagBit));
-            m_releasedMailboxInfo->m_image->getTexture()->invalidateCachedState();
-            m_releasedMailboxInfo->m_image.clear();
-        }
-        m_releasedMailboxInfo->m_status = MailboxAvailable;
-        m_releasedMailboxInfo = 0;
-        Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
+    MailboxInfo* mailboxInfo = releasedMailboxInfo();
+    if (!mailboxInfo)
+        return;
+
+    ASSERT(mailboxInfo->m_status == MailboxReleased);
+    if (mailboxInfo->m_mailbox.syncPoint) {
+        context()->waitSyncPoint(mailboxInfo->m_mailbox.syncPoint);
+        mailboxInfo->m_mailbox.syncPoint = 0;
     }
+    // Invalidate texture state in case the compositor altered it since the copy-on-write.
+    if (mailboxInfo->m_image) {
+        if (isHidden() || releasedMailboxHasExpired())
+            mailboxInfo->m_image->getTexture()->resetFlag(static_cast<GrTextureFlags>(GrTexture::kReturnToCache_FlagBit));
+        mailboxInfo->m_image->getTexture()->invalidateCachedState();
+        mailboxInfo->m_image.clear();
+    }
+    mailboxInfo->m_status = MailboxAvailable;
+    m_releasedMailboxInfoIndex = InvalidMailboxIndex;
+    Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this);
 }
 
 blink::WebGraphicsContext3D* Canvas2DLayerBridge::context()
@@ -422,7 +440,7 @@ void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox
             // Trigger Canvas2DLayerBridge self-destruction if this is the
             // last live mailbox and the layer bridge is not externally
             // referenced.
-            m_releasedMailboxInfo = mailboxInfo;
+            m_releasedMailboxInfoIndex = mailboxInfo - m_mailboxes.begin();
             m_framesSinceMailboxRelease = 0;
             if (isHidden()) {
                 freeReleasedMailbox();
