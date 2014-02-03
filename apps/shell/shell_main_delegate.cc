@@ -4,14 +4,22 @@
 
 #include "apps/shell/shell_main_delegate.h"
 
+#include "apps/shell/renderer/shell_content_renderer_client.h"
 #include "apps/shell/shell_content_browser_client.h"
 #include "apps/shell/shell_content_client.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/common/content_switches.h"
+#include "extensions/common/extension_paths.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_paths.h"
+#endif
 
 namespace {
 
@@ -41,11 +49,21 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   InitLogging();
   content_client_.reset(new ShellContentClient);
   SetContentClient(content_client_.get());
+
+  chrome::RegisterPathProvider();
+#if defined(OS_CHROMEOS)
+  chromeos::RegisterPathProvider();
+#endif
+  extensions::RegisterPathProvider();
   return false;
 }
 
 void ShellMainDelegate::PreSandboxStartup() {
-  InitializeResourceBundle();
+  std::string process_type =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+  if (ProcessNeedsResourceBundle(process_type))
+    InitializeResourceBundle();
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
@@ -55,13 +73,30 @@ content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
 
 content::ContentRendererClient*
 ShellMainDelegate::CreateContentRendererClient() {
-  // TODO(jamescook): Create a ShellContentRendererClient with the extensions
-  // initialization pieces of ChromeContentRendererClient.
-  return content::ContentMainDelegate::CreateContentRendererClient();
+  renderer_client_.reset(new ShellContentRendererClient);
+  return renderer_client_.get();
+}
+
+// static
+bool ShellMainDelegate::ProcessNeedsResourceBundle(
+    const std::string& process_type) {
+  // The browser process has no process type flag, but needs resources.
+  // On Linux the zygote process opens the resources for the renderers.
+  return process_type.empty() ||
+         process_type == switches::kZygoteProcess ||
+         process_type == switches::kRendererProcess ||
+         process_type == switches::kUtilityProcess;
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+
+  // The extensions system needs manifest data from the Chrome PAK file.
+  // TODO(jamescook): app_shell needs its own manifest data file.
+  base::FilePath resources_pack_path;
+  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      resources_pack_path, ui::SCALE_FACTOR_NONE);
 }
 
 }  // namespace apps

@@ -311,8 +311,7 @@ class APIPermissionInfo {
   }
 
  private:
-  // Instances should only be constructed from within a
-  // PermissionsInfo::Delegate.
+  // Instances should only be constructed from within a PermissionsProvider.
   friend class ChromeAPIPermissions;
   // Implementations of APIPermission will want to get the permission message,
   // but this class's implementation should be hidden from everyone else.

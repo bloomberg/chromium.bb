@@ -12,14 +12,11 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/renderer_startup_helper.h"
-#include "extensions/common/extension_paths.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
@@ -27,10 +24,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/test/wm_test_helper.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_paths.h"
-#endif
 
 using content::BrowserContext;
 using extensions::Extension;
@@ -75,18 +68,6 @@ int ShellBrowserMainParts::PreCreateThreads() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
-  // Set up all the paths to load files.
-  chrome::RegisterPathProvider();
-#if defined(OS_CHROMEOS)
-  chromeos::RegisterPathProvider();
-#endif
-  extensions::RegisterPathProvider();
-
-  // The extensions system needs manifest data from the Chrome PAK file.
-  base::FilePath resources_pack_path;
-  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pack_path, ui::SCALE_FACTOR_NONE);
 
   // TODO(jamescook): Initialize chromeos::UserManager.
 

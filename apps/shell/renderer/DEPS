@@ -1,0 +1,12 @@
+include_rules = [
+  # Only allow includes the renderer can use.
+  "-content/public/browser",
+  "+content/public/common",
+  "+content/public/renderer",
+  "+content/public/test",
+
+  # TODO(jamescook): Remove these. http://crbug.com/305404
+  # Chrome pieces for bring-up.
+  "+chrome/renderer/extensions/dispatcher.h",
+  "+chrome/renderer/extensions/extension_helper.h",
+]

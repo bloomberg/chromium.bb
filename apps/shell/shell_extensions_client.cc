@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
@@ -24,25 +25,6 @@ using extensions::URLPatternSet;
 namespace apps {
 
 namespace {
-
-// TODO(jamescook): Refactor ChromeAPIPermissions to share some of the
-// permissions registration for app_shell. For now, allow no permissions.
-class ShellPermissionsProvider : public extensions::PermissionsProvider {
- public:
-  ShellPermissionsProvider() {}
-  virtual ~ShellPermissionsProvider() {}
-
-  virtual std::vector<APIPermissionInfo*> GetAllPermissions() const OVERRIDE {
-    return std::vector<APIPermissionInfo*>();
-  }
-
-  virtual std::vector<AliasInfo> GetAllAliases() const OVERRIDE {
-    return std::vector<AliasInfo>();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellPermissionsProvider);
-};
 
 // TODO(jamescook): Refactor ChromePermissionsMessageProvider so we can share
 // code.
@@ -101,8 +83,18 @@ void ShellExtensionsClient::Initialize() {
 
 const extensions::PermissionsProvider&
 ShellExtensionsClient::GetPermissionsProvider() const {
-  NOTIMPLEMENTED();
-  static ShellPermissionsProvider provider;
+  // TODO(jamescook): app_shell needs a way to use a subset of the Chrome
+  // extension Features and Permissions. In particular, the lists of Features
+  // (including API features, manifest features and permission features) are
+  // listed in JSON files from c/c/e/api that are included into Chrome's
+  // resources.pak (_api_features.json and _permission_features.json). The
+  // PermissionsProvider must match the set of permissions used by the features
+  // in those files.  We either need to make app_shell (and hence the extensions
+  // module) know about all possible permissions, or create a mechanism whereby
+  // we can build our own JSON files with only a subset of the data. For now,
+  // just provide all permissions Chrome knows about. Fixing this issue is
+  // http://crbug.com/339301
+  static extensions::ChromeAPIPermissions provider;
   return provider;
 }
 

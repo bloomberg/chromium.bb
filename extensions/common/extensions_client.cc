@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "extensions/common/extensions_client.h"
 
 namespace extensions {
@@ -14,6 +15,7 @@ ExtensionsClient* g_client = NULL;
 }  // namespace
 
 ExtensionsClient* ExtensionsClient::Get() {
+  DCHECK(g_client);
   return g_client;
 }
 

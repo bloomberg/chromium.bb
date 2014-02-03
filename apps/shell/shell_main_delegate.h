@@ -13,6 +13,7 @@ namespace apps {
 
 class ShellContentBrowserClient;
 class ShellContentClient;
+class ShellContentRendererClient;
 
 class ShellMainDelegate : public content::ContentMainDelegate {
  public:
@@ -26,11 +27,17 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   virtual content::ContentRendererClient* CreateContentRendererClient()
       OVERRIDE;
 
+ private:
+  // |process_type| is zygote, renderer, utility, etc. Returns true if the
+  // process needs data from resources.pak.
+  static bool ProcessNeedsResourceBundle(const std::string& process_type);
+
+  // Initializes the resource bundle and resources.pak.
   static void InitializeResourceBundle();
 
- private:
   scoped_ptr<ShellContentClient> content_client_;
   scoped_ptr<ShellContentBrowserClient> browser_client_;
+  scoped_ptr<ShellContentRendererClient> renderer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);
 };

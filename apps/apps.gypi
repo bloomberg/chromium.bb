@@ -124,6 +124,8 @@
             '..',
           ],
           'sources': [
+            'shell/renderer/shell_content_renderer_client.cc',
+            'shell/renderer/shell_content_renderer_client.h',
             'shell/shell_app_sorting.cc',
             'shell/shell_app_sorting.h',
             'shell/shell_browser_context.cc',
