@@ -57,7 +57,7 @@ def cpp_to_v8_conversion(idl_type, name):
     # as toV8 then implicitly uses the current context, which causes leaks
     # between isolate worlds if a different context should be used.
     cpp_value_to_v8_value = v8_types.cpp_value_to_v8_value(idl_type, name,
-        isolate='isolate', creation_context='v8::Handle<v8::Object>()')
+        isolate='m_isolate', creation_context='v8::Handle<v8::Object>()')
     return 'v8::Handle<v8::Value> {name}Handle = {cpp_to_v8};'.format(
         name=name, cpp_to_v8=cpp_value_to_v8_value)
 

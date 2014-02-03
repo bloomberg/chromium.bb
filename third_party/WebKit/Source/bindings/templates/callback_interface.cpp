@@ -43,8 +43,9 @@ namespace WebCore {
 
 {{v8_class}}::{{v8_class}}(v8::Handle<v8::Function> callback, ExecutionContext* context)
     : ActiveDOMCallback(context)
-    , m_callback(toIsolate(context), callback)
-    , m_world(DOMWrapperWorld::current())
+    , m_isolate(toIsolate(context))
+    , m_callback(m_isolate, callback)
+    , m_world(DOMWrapperWorld::current(m_isolate))
 {
 }
 
@@ -60,8 +61,7 @@ namespace WebCore {
     if (!canInvokeCallback())
         {{return_default}};
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope handleScope(isolate);
+    v8::HandleScope handleScope(m_isolate);
 
     v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
@@ -93,9 +93,9 @@ namespace WebCore {
 
     {% set this_handle_parameter = 'v8::Handle<v8::Object>::Cast(thisHandle), ' if method.call_with_this_handle else '' %}
     {% if method.return_idl_type == 'boolean' %}
-    return invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), isolate);
+    return invokeCallback(m_callback.newLocal(m_isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), m_isolate);
     {% else %}{# void #}
-    invokeCallback(m_callback.newLocal(isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), isolate);
+    invokeCallback(m_callback.newLocal(m_isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), m_isolate);
     {% endif %}
 }
 
