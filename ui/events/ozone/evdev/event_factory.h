@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
 #define UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "ui/events/events_export.h"
@@ -12,11 +13,21 @@
 #include "ui/events/ozone/evdev/event_modifiers.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
-#if defined(USE_UDEV)
-#include "ui/events/ozone/evdev/scoped_udev.h"
-#endif
-
 namespace ui {
+
+typedef base::Callback<void(const base::FilePath& file_path)>
+    EvdevDeviceCallback;
+
+// Interface for scanning & monitoring input devices.
+class DeviceManagerEvdev {
+ public:
+  virtual ~DeviceManagerEvdev();
+
+  // Enumerate devices & start watching for changes.
+  virtual void ScanAndStartMonitoring(
+      const EvdevDeviceCallback& device_added,
+      const EvdevDeviceCallback& device_removed) = 0;
+};
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
 class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
@@ -30,21 +41,14 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   // Open device at path & starting processing events.
   void AttachInputDevice(const base::FilePath& file_path);
 
-  // Scan & open devices in /dev/input (without udev).
-  void StartProcessingEventsManual();
-
-#if defined(USE_UDEV)
-  // Scan & open devices using udev.
-  void StartProcessingEventsUdev();
-#endif
+  // Close device at path.
+  void DetachInputDevice(const base::FilePath& file_path);
 
   // Owned per-device event converters (by path).
   std::map<base::FilePath, EventConverterEvdev*> converters_;
 
-#if defined(USE_UDEV)
-  // Udev daemon connection.
-  scoped_udev udev_;
-#endif
+  // Interface for scanning & monitoring input devices.
+  scoped_ptr<DeviceManagerEvdev> device_manager_;
 
   EventModifiersEvdev modifiers_;
 

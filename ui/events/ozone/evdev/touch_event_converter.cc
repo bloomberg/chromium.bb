@@ -121,7 +121,8 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
   if (read_size < 0) {
     if (errno == EINTR || errno == EAGAIN)
       return;
-    PLOG(ERROR) << "error reading device " << path_.value();
+    if (errno != ENODEV)
+      PLOG(ERROR) << "error reading device " << path_.value();
     Stop();
     return;
   }

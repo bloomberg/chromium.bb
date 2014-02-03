@@ -112,6 +112,8 @@
         'gestures/gesture_types.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
+        'ozone/evdev/device_manager_udev.cc',
+        'ozone/evdev/device_manager_udev.h',
         'ozone/evdev/event_converter.cc',
         'ozone/evdev/event_converter.h',
         'ozone/evdev/event_device_info.cc',
@@ -149,6 +151,12 @@
         ['use_ozone_evdev==1 and use_udev==1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:udev',
+          ],
+        }],
+        ['use_udev==0', {
+          'sources!': [
+            'ozone/evdev/device_manager_udev.cc',
+            'ozone/evdev/device_manager_udev.h',
           ],
         }],
       ],

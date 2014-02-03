@@ -37,6 +37,14 @@ struct UdevEnumerateDeleter {
 typedef scoped_ptr<struct udev_enumerate, UdevEnumerateDeleter>
     scoped_udev_enumerate;
 
+// Scoped struct udev_monitor.
+struct UdevMonitorDeleter {
+  void operator()(struct udev_monitor* udev_monitor) {
+    udev_monitor_unref(udev_monitor);
+  }
+};
+typedef scoped_ptr<struct udev_monitor, UdevMonitorDeleter> scoped_udev_monitor;
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_SCOPED_UDEV_H_

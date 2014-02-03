@@ -14,8 +14,6 @@ namespace ui {
 namespace {
 
 bool GetEventBits(int fd, unsigned int type, void* buf, unsigned int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
   if (ioctl(fd, EVIOCGBIT(type, size), buf) < 0) {
     DLOG(ERROR) << "failed EVIOCGBIT(" << type << ", " << size << ") on fd "
                 << fd;
@@ -26,8 +24,6 @@ bool GetEventBits(int fd, unsigned int type, void* buf, unsigned int size) {
 }
 
 bool GetPropBits(int fd, void* buf, unsigned int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
   if (ioctl(fd, EVIOCGPROP(size), buf) < 0) {
     DLOG(ERROR) << "failed EVIOCGPROP(" << size << ") on fd " << fd;
     return false;
