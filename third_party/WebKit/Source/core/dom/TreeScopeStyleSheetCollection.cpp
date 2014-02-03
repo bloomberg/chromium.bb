@@ -54,7 +54,7 @@ void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool 
     // since styles outside of the body and head continue to be shunted into the head
     // (and thus can shift to end up before dynamically added DOM content that is also
     // outside the body).
-    if (createdByParser && document()->body())
+    if (createdByParser && document().body())
         m_styleSheetCandidateNodes.parserAdd(node);
     else
         m_styleSheetCandidateNodes.add(node);
@@ -180,16 +180,16 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateM
     // No point in doing the analysis work if we're just going to recalc the whole document anyways.
     // This needs to be done after the compareStyleSheets calls above to ensure we don't throw away
     // the StyleResolver if we don't need to.
-    if (document()->hasPendingForcedStyleRecalc())
+    if (document().hasPendingForcedStyleRecalc())
         return;
 
     // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
-    if (!document()->body() || document()->hasNodesWithPlaceholderStyle())
+    if (!document().body() || document().hasNodesWithPlaceholderStyle())
         return;
     StyleInvalidationAnalysis invalidationAnalysis(addedSheets);
     if (invalidationAnalysis.dirtiesAllStyle())
         return;
-    invalidationAnalysis.invalidateStyle(*document());
+    invalidationAnalysis.invalidateStyle(document());
     change.requiresFullStyleRecalc = false;
     return;
 }

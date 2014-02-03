@@ -67,8 +67,7 @@ public:
 protected:
     explicit TreeScopeStyleSheetCollection(TreeScope&);
 
-    // FIXME: Should return a reference.
-    Document* document() { return &m_treeScope.document(); }
+    Document& document() const { return m_treeScope.document(); }
 
     enum StyleResolverUpdateType {
         Reconstruct,

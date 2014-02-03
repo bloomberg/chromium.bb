@@ -66,11 +66,11 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
             // Processing instruction (XML documents only).
             // We don't support linking to embedded CSS stylesheets, see <https://bugs.webkit.org/show_bug.cgi?id=49281> for discussion.
             // Don't apply XSL transforms to already transformed documents -- <rdar://problem/4132806>
-            if (RuntimeEnabledFeatures::xsltEnabled() && !document()->transformSourceDocument()) {
+            if (RuntimeEnabledFeatures::xsltEnabled() && !document().transformSourceDocument()) {
                 ProcessingInstruction* pi = toProcessingInstruction(n);
                 // Don't apply XSL transforms until loading is finished.
-                if (!document()->parsing() && !pi->isLoading())
-                    document()->applyXSLTransform(pi);
+                if (!document().parsing() && !pi->isLoading())
+                    document().applyXSLTransform(pi);
                 return;
             }
 
@@ -106,7 +106,7 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
 
 void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, DocumentStyleSheetCollector& collector)
 {
-    ASSERT(document()->styleEngine() == engine);
+    ASSERT(document().styleEngine() == engine);
     collector.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
     collector.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
     collectStyleSheetsFromCandidates(engine, collector);
