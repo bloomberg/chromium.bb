@@ -45,6 +45,7 @@ fileapi::FileSystemContext* GetFileSystemContextForRenderViewHost(
 // API that may be distinguished for each profile by the appended "xxx" part.)
 base::FilePath ConvertDrivePathToRelativeFileSystemPath(
     Profile* profile,
+    const std::string& extension_id,
     const base::FilePath& drive_path);
 
 // Converts DrivePath to FileSystem URL.

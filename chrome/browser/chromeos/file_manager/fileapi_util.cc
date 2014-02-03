@@ -54,20 +54,30 @@ fileapi::FileSystemContext* GetFileSystemContextForRenderViewHost(
 
 base::FilePath ConvertDrivePathToRelativeFileSystemPath(
     Profile* profile,
+    const std::string& extension_id,
     const base::FilePath& drive_path) {
-  // "drive-xxx"
-  base::FilePath path = drive::util::GetDriveMountPointPath(profile).BaseName();
+  // "/special/drive-xxx"
+  base::FilePath path = drive::util::GetDriveMountPointPath(profile);
   // appended with (|drive_path| - "drive").
   drive::util::GetDriveGrandRootPath().AppendRelativePath(drive_path, &path);
-  return path;
+
+  base::FilePath relative_path;
+  ConvertAbsoluteFilePathToRelativeFileSystemPath(profile,
+                                                  extension_id,
+                                                  path,
+                                                  &relative_path);
+  return relative_path;
 }
 
 GURL ConvertDrivePathToFileSystemUrl(Profile* profile,
                                      const base::FilePath& drive_path,
                                      const std::string& extension_id) {
   const base::FilePath relative_path =
-      ConvertDrivePathToRelativeFileSystemPath(profile, drive_path);
-  return ConvertRelativeFilePathToFileSystemUrl(drive_path, extension_id);
+      ConvertDrivePathToRelativeFileSystemPath(profile, extension_id,
+                                               drive_path);
+  if (relative_path.empty())
+    return GURL();
+  return ConvertRelativeFilePathToFileSystemUrl(relative_path, extension_id);
 }
 
 bool ConvertAbsoluteFilePathToFileSystemUrl(Profile* profile,

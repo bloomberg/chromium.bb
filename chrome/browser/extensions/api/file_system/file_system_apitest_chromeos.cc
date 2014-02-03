@@ -70,7 +70,8 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     SetUpTestFileHierarchy();
 
     integration_service_ = new drive::DriveIntegrationService(
-        profile, NULL, fake_drive_service_, test_cache_root_.path(), NULL);
+        profile, NULL, fake_drive_service_, std::string(),
+        test_cache_root_.path(), NULL);
     return integration_service_;
   }
 

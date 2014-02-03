@@ -403,7 +403,8 @@ class DriveTestVolume {
         "gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
     integration_service_ = new drive::DriveIntegrationService(
-        profile, NULL, fake_drive_service_, test_cache_root_.path(), NULL);
+        profile, NULL, fake_drive_service_, std::string(),
+        test_cache_root_.path(), NULL);
     return integration_service_;
   }
 

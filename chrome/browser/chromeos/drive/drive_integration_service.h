@@ -67,8 +67,8 @@ class DriveIntegrationService
  public:
   class PreferenceWatcher;
 
-  // test_drive_service, test_cache_root and test_file_system are used by tests
-  // to inject customized instances.
+  // test_drive_service, test_mount_point_name, test_cache_root and
+  // test_file_system are used by tests to inject customized instances.
   // Pass NULL or the empty value when not interested.
   // |preference_watcher| observes the drive enable preference, and sets the
   // enable state when changed. It can be NULL. The ownership is taken by
@@ -77,6 +77,7 @@ class DriveIntegrationService
       Profile* profile,
       PreferenceWatcher* preference_watcher,
       DriveServiceInterface* test_drive_service,
+      const std::string& test_mount_point_name,
       const base::FilePath& test_cache_root,
       FileSystemInterface* test_file_system);
   virtual ~DriveIntegrationService();
@@ -155,6 +156,8 @@ class DriveIntegrationService
   Profile* profile_;
   State state_;
   bool enabled_;
+  // Custom mount point name that can be injected for testing in constructor.
+  std::string mount_point_name_;
 
   base::FilePath cache_root_directory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

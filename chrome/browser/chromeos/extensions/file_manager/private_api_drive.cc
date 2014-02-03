@@ -401,7 +401,8 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
     entry->SetString("fileSystemRoot", info.root_url.spec());
     entry->SetString("fileFullPath",
         "/" + file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
-            GetProfile(), results->at(i).path).AsUTF8Unsafe());
+            GetProfile(), extension_->id(),
+            results->at(i).path).AsUTF8Unsafe());
     entry->SetBoolean("fileIsDirectory", results->at(i).is_directory);
     entries->Append(entry);
   }
@@ -490,7 +491,8 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
     entry->SetString("fileSystemRoot", info.root_url.spec());
     entry->SetString("fileFullPath",
         "/" + file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
-            GetProfile(), results->at(i).path).AsUTF8Unsafe());
+            GetProfile(), extension_->id(),
+            results->at(i).path).AsUTF8Unsafe());
     entry->SetBoolean("fileIsDirectory",
                       results->at(i).entry.file_info().is_directory());
 

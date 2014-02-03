@@ -325,7 +325,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
     return new drive::DriveIntegrationService(
         profile, NULL,
-        fake_drive_service_, test_cache_root_.path(), NULL);
+        fake_drive_service_, "drive", test_cache_root_.path(), NULL);
   }
 
   base::ScopedTempDir test_cache_root_;

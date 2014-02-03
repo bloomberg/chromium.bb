@@ -206,11 +206,13 @@ DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
     PreferenceWatcher* preference_watcher,
     DriveServiceInterface* test_drive_service,
+    const std::string& test_mount_point_name,
     const base::FilePath& test_cache_root,
     FileSystemInterface* test_file_system)
     : profile_(profile),
       state_(NOT_INITIALIZED),
       enabled_(false),
+      mount_point_name_(test_mount_point_name),
       cache_root_directory_(!test_cache_root.empty() ?
                             test_cache_root : util::GetCacheRootPath(profile)),
       weak_ptr_factory_(this) {
@@ -345,13 +347,14 @@ void DriveIntegrationService::SetEnabled(bool enabled) {
 }
 
 bool DriveIntegrationService::IsMounted() const {
+  if (mount_point_name_.empty())
+    return false;
+
   // Look up the registered path, and just discard it.
   // GetRegisteredPath() returns true if the path is available.
-  const base::FilePath& drive_mount_point =
-      util::GetDriveMountPointPath(profile_);
   base::FilePath unused;
   return BrowserContext::GetMountPoints(profile_)->GetRegisteredPath(
-      drive_mount_point.BaseName().AsUTF8Unsafe(), &unused);
+      mount_point_name_, &unused);
 }
 
 void DriveIntegrationService::AddObserver(
@@ -426,12 +429,14 @@ void DriveIntegrationService::AddDriveMountPoint() {
 
   const base::FilePath& drive_mount_point =
       util::GetDriveMountPointPath(profile_);
+  if (mount_point_name_.empty())
+    mount_point_name_ = drive_mount_point.BaseName().AsUTF8Unsafe();
   fileapi::ExternalMountPoints* mount_points =
       BrowserContext::GetMountPoints(profile_);
   DCHECK(mount_points);
 
   bool success = mount_points->RegisterFileSystem(
-      drive_mount_point.BaseName().AsUTF8Unsafe(),
+      mount_point_name_,
       fileapi::kFileSystemTypeDrive,
       fileapi::FileSystemMountOption(),
       drive_mount_point);
@@ -446,18 +451,19 @@ void DriveIntegrationService::AddDriveMountPoint() {
 void DriveIntegrationService::RemoveDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  job_list()->CancelAllJobs();
+  if (!mount_point_name_.empty()) {
+    job_list()->CancelAllJobs();
 
-  FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
-                    OnFileSystemBeingUnmounted());
+    FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
+                      OnFileSystemBeingUnmounted());
 
-  fileapi::ExternalMountPoints* mount_points =
-      BrowserContext::GetMountPoints(profile_);
-  DCHECK(mount_points);
+    fileapi::ExternalMountPoints* mount_points =
+        BrowserContext::GetMountPoints(profile_);
+    DCHECK(mount_points);
 
-  mount_points->RevokeFileSystem(
-      util::GetDriveMountPointPath(profile_).BaseName().AsUTF8Unsafe());
-  util::Log(logging::LOG_INFO, "Drive mount point is removed");
+    mount_points->RevokeFileSystem(mount_point_name_);
+    util::Log(logging::LOG_INFO, "Drive mount point is removed");
+  }
 }
 
 void DriveIntegrationService::Initialize() {
@@ -615,8 +621,9 @@ DriveIntegrationServiceFactory::BuildServiceInstanceFor(
           new DriveIntegrationService::PreferenceWatcher(profile->GetPrefs());
     }
 
-    service = new DriveIntegrationService(profile, preference_watcher,
-                                          NULL, base::FilePath(), NULL);
+    service = new DriveIntegrationService(
+        profile, preference_watcher,
+        NULL, std::string(), base::FilePath(), NULL);
   } else {
     service = factory_for_test_->Run(profile);
   }
