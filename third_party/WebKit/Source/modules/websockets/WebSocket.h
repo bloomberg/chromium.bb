@@ -136,6 +136,8 @@ private:
         // Does nothing otherwise.
         void dispatch(PassRefPtr<Event> /* event */);
 
+        bool isEmpty() const;
+
         void suspend();
         void resume();
         void stop();

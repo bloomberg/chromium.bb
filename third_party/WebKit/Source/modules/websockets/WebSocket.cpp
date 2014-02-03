@@ -88,6 +88,11 @@ void WebSocket::EventQueue::dispatch(PassRefPtr<Event> event)
     }
 }
 
+bool WebSocket::EventQueue::isEmpty() const
+{
+    return m_events.isEmpty();
+}
+
 void WebSocket::EventQueue::suspend()
 {
     if (m_state != Active)
@@ -553,7 +558,7 @@ void WebSocket::contextDestroyed()
 
 bool WebSocket::hasPendingActivity() const
 {
-    return m_state != CLOSED;
+    return m_state != CLOSED || !m_eventQueue->isEmpty();
 }
 
 void WebSocket::suspend()
