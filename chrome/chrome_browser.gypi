@@ -989,6 +989,8 @@
         'browser/local_discovery/privet_device_lister.h',
         'browser/local_discovery/privet_device_lister_impl.cc',
         'browser/local_discovery/privet_device_lister_impl.h',
+        'browser/local_discovery/privet_device_resolver.cc',
+        'browser/local_discovery/privet_device_resolver.h',
         'browser/local_discovery/privet_http.h',
         'browser/local_discovery/privet_http_impl.cc',
         'browser/local_discovery/privet_http_impl.h',
