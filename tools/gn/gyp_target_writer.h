@@ -22,14 +22,16 @@ class Toolchain;
 class GypTargetWriter {
  public:
   struct TargetGroup {
-    TargetGroup()
-        : debug(NULL),
-          release(NULL),
-          host_debug(NULL),
-          host_release(NULL),
-          debug64(NULL),
-          release64(NULL) {
+    TargetGroup();
+
+    // Returns "a" record associated with this group. This is used when getting
+    // general things like the sources list that should be the same across all
+    // records in a group.
+    const BuilderRecord* get() const {
+      // We assume we always have either a host or a target debug build.
+      return debug ? debug : host_debug;
     }
+
     const BuilderRecord* debug;
     const BuilderRecord* release;
 
@@ -42,6 +44,22 @@ class GypTargetWriter {
     // On Windows, we do both 32-bit and 64-bit builds. Null on non-Windows.
     const BuilderRecord* debug64;
     const BuilderRecord* release64;
+
+    // On Mac/iOS, there are some nontrivial differences between the GYP Ninja
+    // build and the GYP XCode build. In GYP, these are parameterized as
+    // conditions using the generator flag. To emulate this, we have different
+    // builds for the XCode and Ninja versions of the GYP file, and the
+    // generator wraps everything in a big condition so that GYP does the right
+    // thing.
+    //
+    // These refer to the GYP-XCode build. The "regular" debug and release
+    // targets above refer to the GYP-Ninja build.
+    const BuilderRecord* xcode_debug;
+    const BuilderRecord* xcode_release;
+
+    // Optional host versions of the xcode config when cross-compiling to iOS.
+    const BuilderRecord* xcode_host_debug;
+    const BuilderRecord* xcode_host_release;
   };
 
   GypTargetWriter(const Target* target,

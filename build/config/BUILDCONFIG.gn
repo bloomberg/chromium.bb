@@ -80,6 +80,10 @@ declare_args() {
 
   # When running in gyp-generating mode, this is the root of the build tree.
   gyp_output_dir = "out"
+
+  # When running in gyp-generating mode, this flag indicates if the current GYP
+  # generator is xcode. Can only be true when building for iOS).
+  is_gyp_xcode_generator = false
 }
 
 # =============================================================================
@@ -161,9 +165,8 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-  if (!is_clang) {
+  if (!is_gyp_xcode_generator) {
     # Always use clang on iOS when using ninja
-    # (which is always true when using GN).
     is_clang = true
   }
 } else if (os == "linux") {
@@ -332,10 +335,13 @@ native_compiler_configs = [
   "//build/config/compiler:runtime_library",
 ]
 if (is_win) {
-  native_compiler_configs += [
-    "//build/config/win:sdk",
-  ]
-} else if (is_clang) {
+  native_compiler_configs += [ "//build/config/win:sdk", ]
+} else if (is_mac) {
+  native_compiler_configs += [ "//build/config/mac:sdk", ]
+} else if (is_ios) {
+  native_compiler_configs += [ "//build/config/ios:sdk", ]
+}
+if (is_clang) {
   native_compiler_configs += [ "//build/config/clang:find_bad_constructs" ]
 }
 

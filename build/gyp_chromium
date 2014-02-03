@@ -223,13 +223,22 @@ def GetArgsStringForGN(supplemental_files):
       gn_args += ' ' + i[2]
 
   # These string arguments get passed directly as GN strings.
-  for v in ['android_src', 'windows_sdk_path', 'arm_float_abi']:
+  for v in ['android_src', 'arm_float_abi', 'ios_deployment_target',
+            'ios_sdk_path', 'windows_sdk_path']:
     if v in vars_dict:
       gn_args += ' ' + v + '=' + EscapeStringForGN(vars_dict[v])
 
   # gomadir is renamed goma_dir in the GN build.
   if 'gomadir' in vars_dict:
     gn_args += ' goma_dir=%s' % EscapeStringForGN(vars_dict['gomadir'])
+
+  # Clear the "use_ios_simulator" flag if the ios_sdk_path is set and is
+  # not a simulator SDK. This duplicates code done in GYP's xcode emulation.
+  if 'ios_sdk_path' in vars_dict:
+    if not os.path.basename(vars_dict['ios_sdk_path']).lower().startswith(
+        'iphonesimulator'):
+      gn_args += ' use_ios_simulator=false'
+
 
   # These arguments get passed directly as integers (avoiding the quoting and
   # escaping of the string ones above).

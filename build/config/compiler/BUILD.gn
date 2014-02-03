@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
-import("//build/config/sysroot.gni")
 if (cpu_arch == "arm") {
   import("//build/config/arm.gni")
 }
@@ -63,12 +62,7 @@ config("compiler") {
   # ----------------------------------
   if (is_mac || is_ios) {
     # These flags are shared between the C compiler and linker.
-    common_mac_flags = [ "-isysroot", sysroot ]
-    if (is_mac) {
-      common_mac_flags += [ "-mmacosx-version-min=10.6" ]
-    } else {
-      cflags += [ "-mios-simulator-version-min=6.0" ]
-    }
+    common_mac_flags = []
 
     # CPU architecture.
     if (cpu_arch == "x64") {
@@ -173,17 +167,6 @@ config("compiler") {
         "-Wl,--threads",
         "-Wl,--thread-count=4",
       ]
-    }
-
-    if (sysroot != "") {
-      cflags += [ "--sysroot=" + sysroot ]
-      ldflags += [ "--sysroot=" + sysroot ]
-
-      # Need to get some linker flags out of the sysroot.
-      ldflags += [ exec_script("../linux/sysroot_ld_path.py",
-          [rebase_path("../../linux/sysroot_ld_path.sh", ".", root_build_dir),
-           sysroot],
-          "value") ]
     }
 
     ldflags += [

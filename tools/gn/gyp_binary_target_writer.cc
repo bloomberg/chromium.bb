@@ -117,7 +117,7 @@ GypBinaryTargetWriter::GypBinaryTargetWriter(const TargetGroup& group,
                                              const Toolchain* debug_toolchain,
                                              const SourceDir& gyp_dir,
                                              std::ostream& out)
-    : GypTargetWriter(group.debug->item()->AsTarget(), debug_toolchain,
+    : GypTargetWriter(group.get()->item()->AsTarget(), debug_toolchain,
                       gyp_dir, out),
       group_(group) {
 }
@@ -183,6 +183,13 @@ void GypBinaryTargetWriter::WriteType(int indent) {
 
   if (target_->hard_dep())
     Indent(indent) << "'hard_dependency': 1,\n";
+
+  // Write out the toolsets depending on whether there is a host build. If no
+  // toolset is specified, GYP assumes a target build.
+  if (group_.debug && group_.host_debug)
+    Indent(indent) << "'toolsets': ['target', 'host'],\n";
+  else if (group_.host_debug)
+    Indent(indent) << "'toolsets': ['host'],\n";
 }
 
 void GypBinaryTargetWriter::WriteVCConfiguration(int indent) {
@@ -278,16 +285,46 @@ void GypBinaryTargetWriter::WriteLinuxConfiguration(int indent) {
 }
 
 void GypBinaryTargetWriter::WriteMacConfiguration(int indent) {
+  // The Mac flags are parameterized by the GYP generator (Ninja vs. XCode).
+  const char kNinjaGeneratorCondition[] =
+      "'conditions': [['\"<(GENERATOR)\"==\"ninja\"', {\n";
+  const char kNinjaGeneratorElse[] = "}, {\n";
+  const char kNinjaGeneratorEnd[] = "}]],\n";
+
   Indent(indent) << "'configurations': {\n";
 
+  // Debug.
   Indent(indent + kExtraIndent) << "'Debug': {\n";
-  Flags debug_flags(FlagsFromTarget(group_.debug->item()->AsTarget()));
-  WriteMacFlags(debug_flags, indent + kExtraIndent * 2);
+  Indent(indent + kExtraIndent * 2) << kNinjaGeneratorCondition;
+  {
+    // Ninja generator.
+    WriteMacTargetAndHostFlags(group_.debug, group_.host_debug,
+                               indent + kExtraIndent * 3);
+  }
+  Indent(indent + kExtraIndent * 2) << kNinjaGeneratorElse;
+  if (group_.xcode_debug) {
+    // XCode generator.
+    WriteMacTargetAndHostFlags(group_.xcode_debug, group_.xcode_host_debug,
+                               indent + kExtraIndent * 3);
+  }
+  Indent(indent + kExtraIndent * 2) << kNinjaGeneratorEnd;
   Indent(indent + kExtraIndent) << "},\n";
 
+  // Release.
   Indent(indent + kExtraIndent) << "'Release': {\n";
-  Flags release_flags(FlagsFromTarget(group_.release->item()->AsTarget()));
-  WriteMacFlags(release_flags, indent + kExtraIndent * 2);
+  Indent(indent + kExtraIndent * 2) << kNinjaGeneratorCondition;
+  {
+    // Ninja generator.
+    WriteMacTargetAndHostFlags(group_.release, group_.host_release,
+                               indent + kExtraIndent * 3);
+  }
+  Indent(indent + kExtraIndent * 2) << kNinjaGeneratorElse;
+  if (group_.xcode_release) {
+    // XCode generator.
+    WriteMacTargetAndHostFlags(group_.xcode_release, group_.xcode_host_release,
+                               indent + kExtraIndent * 3);
+  }
+  Indent(indent + kExtraIndent * 2) << kNinjaGeneratorEnd;
   Indent(indent + kExtraIndent) << "},\n";
 
   Indent(indent) << "},\n";
@@ -428,9 +465,10 @@ void GypBinaryTargetWriter::WriteMacFlags(Flags& flags, int indent) {
         target_->settings()->build_settings()->GetFullPath(SourceFile(
             "//third_party/llvm-build/Release+Asserts/bin/clang++"));
 
-    Indent(indent) << "'CC': '" << FilePathToUTF8(clang_path) << "',\n";
-    Indent(indent) << "'LDPLUSPLUS': '"
-                   << FilePathToUTF8(clang_pp_path) << "',\n";
+    Indent(indent + kExtraIndent)
+        << "'CC': '" << FilePathToUTF8(clang_path) << "',\n";
+    Indent(indent + kExtraIndent)
+        << "'LDPLUSPLUS': '" << FilePathToUTF8(clang_pp_path) << "',\n";
   }
 
   Indent(indent) << "},\n";
@@ -471,6 +509,40 @@ void GypBinaryTargetWriter::WriteLinuxFlags(const Flags& flags, int indent) {
     out_ << "',";
   }
   out_ << " ],\n";
+}
+
+void GypBinaryTargetWriter::WriteMacTargetAndHostFlags(
+    const BuilderRecord* target,
+    const BuilderRecord* host,
+    int indent) {
+  // The Mac flags are sometimes (when cross-compiling) also parameterized on
+  // the toolset.
+  const char kToolsetTargetCondition[] =
+      "'target_conditions': [['_toolset==\"target\"', {\n";
+  const char kToolsetTargetElse[] = "}, {\n";
+  const char kToolsetTargetEnd[] = "}]],\n";
+
+  int extra_indent = 0;
+  if (host) {
+    // Write out the first part of the conditional.
+    Indent(indent) << kToolsetTargetCondition;
+    extra_indent = kExtraIndent;
+  }
+
+  // Always write the target flags (may or may not be inside a target
+  // conditional).
+  {
+    Flags flags(FlagsFromTarget(target->item()->AsTarget()));
+    WriteMacFlags(flags, indent + extra_indent);
+  }
+
+  // Now optionally write the host conditional arm.
+  if (host) {
+    Indent(indent) << kToolsetTargetElse;
+    Flags flags(FlagsFromTarget(host->item()->AsTarget()));
+    WriteMacFlags(flags, indent + kExtraIndent);
+    Indent(indent) << kToolsetTargetEnd;
+  }
 }
 
 void GypBinaryTargetWriter::WriteSources(const Target* target, int indent) {

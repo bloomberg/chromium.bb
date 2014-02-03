@@ -31,6 +31,10 @@ class Args {
   void AddArgOverride(const char* name, const Value& value);
   void AddArgOverrides(const Scope::KeyValueMap& overrides);
 
+  // Returns the value corresponding to the given argument name, or NULL if no
+  // argument is set.
+  const Value* GetArgOverride(const char* name) const;
+
   // Sets up the root scope for a toolchain. This applies the default system
   // flags, then any overrides stored in this object, then applies any
   // toolchain overrides specified in the argument.

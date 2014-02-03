@@ -63,6 +63,12 @@ class GypBinaryTargetWriter : public GypTargetWriter {
   void WriteLinuxFlagsForTarget(const Target* target, int indent);
   void WriteLinuxFlags(const Flags& flags, int indent);
 
+  // Writes out the given target and optional host flags. This will insert a
+  // target conditionn if there is a host build.
+  void WriteMacTargetAndHostFlags(const BuilderRecord* target,
+                                  const BuilderRecord* host,
+                                  int indent);
+
   // Shared helpers for writing specific parts of GYP files.
   void WriteSources(const Target* target, int indent);
   void WriteDeps(const Target* target, int indent);

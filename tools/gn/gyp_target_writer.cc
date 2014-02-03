@@ -18,6 +18,19 @@
 #include "tools/gn/target.h"
 #include "tools/gn/toolchain.h"
 
+GypTargetWriter::TargetGroup::TargetGroup()
+    : debug(NULL),
+      release(NULL),
+      host_debug(NULL),
+      host_release(NULL),
+      debug64(NULL),
+      release64(NULL),
+      xcode_debug(NULL),
+      xcode_release(NULL),
+      xcode_host_debug(NULL),
+      xcode_host_release(NULL) {
+}
+
 GypTargetWriter::GypTargetWriter(const Target* target,
                                  const Toolchain* toolchain,
                                  const SourceDir& gyp_dir,

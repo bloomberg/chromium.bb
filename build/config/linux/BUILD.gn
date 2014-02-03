@@ -3,6 +3,20 @@
 # found in the LICENSE file.
 
 import("//build/config/linux/pkg_config.gni")
+import("//build/config/sysroot.gni")
+
+config("sdk") {
+  if (sysroot != "") {
+    cflags = [ "--sysroot=" + sysroot ]
+    ldflags = [ "--sysroot=" + sysroot ]
+
+    # Need to get some linker flags out of the sysroot.
+    ldflags += [ exec_script("sysroot_ld_path.py",
+        [ rebase_path("//build/linux/sysroot_ld_path.sh", ".", root_build_dir),
+          sysroot ],
+        "value") ]
+  }
+}
 
 # Sets up the dynamic library search path to include our "lib" directory.
 config("executable_ldconfig") {

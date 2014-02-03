@@ -11,6 +11,7 @@
 #include "base/environment.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
@@ -35,6 +36,45 @@ typedef std::map<SourceFile, std::vector<TargetGroup> > GroupedTargetsMap;
 typedef std::map<std::string, std::string> StringStringMap;
 typedef std::vector<const BuilderRecord*> RecordVector;
 
+struct Setups {
+  Setups()
+      : debug(NULL),
+        release(NULL),
+        host_debug(NULL),
+        host_release(NULL),
+        debug64(NULL),
+        release64(NULL),
+        xcode_debug(NULL),
+        xcode_release(NULL),
+        xcode_host_debug(NULL),
+        xcode_host_release(NULL) {
+  }
+
+  Setup* debug;
+  DependentSetup* release;
+  DependentSetup* host_debug;
+  DependentSetup* host_release;
+  DependentSetup* debug64;
+  DependentSetup* release64;
+  DependentSetup* xcode_debug;
+  DependentSetup* xcode_release;
+  DependentSetup* xcode_host_debug;
+  DependentSetup* xcode_host_release;
+};
+
+struct TargetVectors {
+  RecordVector debug;
+  RecordVector release;
+  RecordVector host_debug;
+  RecordVector host_release;
+  RecordVector debug64;
+  RecordVector release64;
+  RecordVector xcode_debug;
+  RecordVector xcode_release;
+  RecordVector xcode_host_debug;
+  RecordVector xcode_host_release;
+};
+
 // This function appends a suffix to the given source directory name. We append
 // a suffix to the last directory component rather than adding a new level so
 // that the relative location of the files don't change (i.e. a file
@@ -42,6 +82,33 @@ typedef std::vector<const BuilderRecord*> RecordVector;
 // be the same in all builds, and in particular the GYP build directories.
 SourceDir AppendDirSuffix(const SourceDir& base, const std::string& suffix) {
   return SourceDir(DirectoryWithNoLastSlash(base) + suffix + "/");
+}
+
+// We need a "host" build when targeting a device (iOS, Android, ChromeOS). The
+// host build will correspond to the the system doing the building.
+bool NeedsHostBuild(CommonSetup* setup) {
+  Args& args = setup->build_settings().build_args();
+  const Value* os_override = args.GetArgOverride("os");
+  if (!os_override)
+    return false;  // Target OS is the default, which is always the host.
+  if (os_override->type() != Value::STRING)
+    return false;  // Build will likely fail later.
+  return os_override->string_value() == "android" ||
+         os_override->string_value() == "ios" ||
+         os_override->string_value() == "chromeos";
+}
+
+void SetupHostBuildParams(CommonSetup* setup) {
+  // Re-override the target OS to the default of the current system.
+#if defined(OS_WIN)
+  const char kDefaultOs[] = "win";
+#elif defined(OS_MACOSX)
+  const char kDefaultOs[] = "mac";
+#elif defined(OS_LINUX)
+  const char kDefaultOs[] = "linux";
+#endif
+  setup->build_settings().build_args().AddArgOverride(
+      "os", Value(NULL, kDefaultOs));
 }
 
 std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
@@ -58,6 +125,16 @@ std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
   return result;
 }
 
+void CorrelateRecordVector(const RecordVector& records,
+                           CorrelatedTargetsMap* correlated,
+                           const BuilderRecord* TargetGroup::* record_ptr) {
+  for (size_t i = 0; i < records.size(); i++) {
+    const BuilderRecord* record = records[i];
+    (*correlated)[record->label().GetWithNoToolchain()].*record_ptr = record;
+  }
+}
+
+
 // Groups targets sharing the same label between debug and release.
 //
 // We strip the toolchain label because the 64-bit and 32-bit builds, for
@@ -68,47 +145,43 @@ std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
 // the 32-vs-64-bit case and the default-toolchain-vs-not case. When we find
 // a target not using hte default toolchain, we should probably just shell
 // out to ninja.
-void CorrelateTargets(const RecordVector& debug_targets,
-                      const RecordVector& release_targets,
-                      const RecordVector& host_debug_targets,
-                      const RecordVector& host_release_targets,
-                      const RecordVector& debug64_targets,
-                      const RecordVector& release64_targets,
+void CorrelateTargets(const TargetVectors& targets,
                       CorrelatedTargetsMap* correlated) {
   // Normal.
-  for (size_t i = 0; i < debug_targets.size(); i++) {
-    const BuilderRecord* record = debug_targets[i];
-    (*correlated)[record->label().GetWithNoToolchain()].debug = record;
-  }
-  for (size_t i = 0; i < release_targets.size(); i++) {
-    const BuilderRecord* record = release_targets[i];
-    (*correlated)[record->label().GetWithNoToolchain()].release = record;
-  }
+  CorrelateRecordVector(
+      targets.debug, correlated, &TargetGroup::debug);
+  CorrelateRecordVector(
+      targets.release, correlated, &TargetGroup::release);
 
   // Host build.
-  for (size_t i = 0; i < host_debug_targets.size(); i++) {
-    const BuilderRecord* record = host_debug_targets[i];
-    (*correlated)[record->label().GetWithNoToolchain()].host_debug = record;
-  }
-  for (size_t i = 0; i < host_release_targets.size(); i++) {
-    const BuilderRecord* record = host_release_targets[i];
-    (*correlated)[record->label().GetWithNoToolchain()].host_release = record;
-  }
+  CorrelateRecordVector(
+      targets.host_debug, correlated, &TargetGroup::host_debug);
+  CorrelateRecordVector(
+      targets.host_release, correlated, &TargetGroup::host_release);
 
-  // Host build.
-  for (size_t i = 0; i < debug64_targets.size(); i++) {
-    const BuilderRecord* record = debug64_targets[i];
-    (*correlated)[record->label().GetWithNoToolchain()].debug64 = record;
-  }
-  for (size_t i = 0; i < release64_targets.size(); i++) {
-    const BuilderRecord* record = release64_targets[i];
-    (*correlated)[record->label().GetWithNoToolchain()].release64 = record;
-  }
+  // 64-bit build.
+  CorrelateRecordVector(
+      targets.debug64, correlated, &TargetGroup::debug64);
+  CorrelateRecordVector(
+      targets.release64, correlated, &TargetGroup::release64);
+
+  // XCode build.
+  CorrelateRecordVector(
+      targets.xcode_debug, correlated, &TargetGroup::xcode_debug);
+  CorrelateRecordVector(
+      targets.xcode_release, correlated, &TargetGroup::xcode_release);
+  CorrelateRecordVector(
+      targets.xcode_host_debug, correlated, &TargetGroup::xcode_host_debug);
+  CorrelateRecordVector(
+      targets.xcode_host_release, correlated, &TargetGroup::xcode_host_release);
 }
 
 // Verifies that both debug and release variants match. They can differ only
 // by flags.
 bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
+  if (!group.debug && !group.release)
+    return true;
+
   // Check that both debug and release made this target.
   if (!group.debug || !group.release) {
     const BuilderRecord* non_null_one =
@@ -171,45 +244,46 @@ bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
 }
 
 // Returns the (number of targets, number of GYP files).
-std::pair<int, int> WriteGypFiles(CommonSetup* debug_setup,
-                                  CommonSetup* release_setup,
-                                  CommonSetup* host_debug_setup,
-                                  CommonSetup* host_release_setup,
-                                  CommonSetup* debug64_setup,
-                                  CommonSetup* release64_setup,
-                                  Err* err) {
+std::pair<int, int> WriteGypFiles(Setups& setups, Err* err) {
+  TargetVectors targets;
+
   // Group all targets by output GYP file name.
-  std::vector<const BuilderRecord*> debug_targets =
-      GetAllResolvedTargetRecords(debug_setup->builder());
-  std::vector<const BuilderRecord*> release_targets =
-      GetAllResolvedTargetRecords(release_setup->builder());
+  targets.debug = GetAllResolvedTargetRecords(setups.debug->builder());
+  targets.release = GetAllResolvedTargetRecords(setups.release->builder());
 
   // Host build is optional.
-  std::vector<const BuilderRecord*> host_debug_targets;
-  std::vector<const BuilderRecord*> host_release_targets;
-  if (host_debug_setup && host_release_setup) {
-      host_debug_targets = GetAllResolvedTargetRecords(
-          host_debug_setup->builder());
-      host_release_targets = GetAllResolvedTargetRecords(
-          host_release_setup->builder());
+  if (setups.host_debug && setups.host_release) {
+    targets.host_debug =
+        GetAllResolvedTargetRecords(setups.host_debug->builder());
+    targets.host_release =
+        GetAllResolvedTargetRecords(setups.host_release->builder());
   }
 
   // 64-bit build is optional.
-  std::vector<const BuilderRecord*> debug64_targets;
-  std::vector<const BuilderRecord*> release64_targets;
-  if (debug64_setup && release64_setup) {
-      debug64_targets = GetAllResolvedTargetRecords(
-          debug64_setup->builder());
-      release64_targets = GetAllResolvedTargetRecords(
-          release64_setup->builder());
+  if (setups.debug64 && setups.release64) {
+    targets.debug64 =
+        GetAllResolvedTargetRecords(setups.debug64->builder());
+    targets.release64 =
+        GetAllResolvedTargetRecords(setups.release64->builder());
+  }
+
+  // Xcode build is optional.
+  if (setups.xcode_debug && setups.xcode_release) {
+    targets.xcode_debug =
+        GetAllResolvedTargetRecords(setups.xcode_debug->builder());
+    targets.xcode_release =
+        GetAllResolvedTargetRecords(setups.xcode_release->builder());
+  }
+  if (setups.xcode_host_debug && setups.xcode_host_release) {
+    targets.xcode_host_debug =
+        GetAllResolvedTargetRecords(setups.xcode_host_debug->builder());
+    targets.xcode_host_release =
+        GetAllResolvedTargetRecords(setups.xcode_host_release->builder());
   }
 
   // Match up the debug and release version of each target by label.
   CorrelatedTargetsMap correlated;
-  CorrelateTargets(debug_targets, release_targets,
-                   host_debug_targets, host_release_targets,
-                   debug64_targets, release64_targets,
-                   &correlated);
+  CorrelateTargets(targets, &correlated);
 
   GypHelper helper;
   GroupedTargetsMap grouped_targets;
@@ -217,11 +291,11 @@ std::pair<int, int> WriteGypFiles(CommonSetup* debug_setup,
   for (CorrelatedTargetsMap::iterator i = correlated.begin();
        i != correlated.end(); ++i) {
     const TargetGroup& group = i->second;
-    if (!group.debug->should_generate())
+    if (!group.get()->should_generate())
       continue;  // Skip non-generated ones.
-    if (group.debug->item()->AsTarget()->external())
+    if (group.get()->item()->AsTarget()->external())
       continue;  // Skip external ones.
-    if (group.debug->item()->AsTarget()->gyp_file().is_null())
+    if (group.get()->item()->AsTarget()->gyp_file().is_null())
       continue;  // Skip ones without GYP files.
 
     if (!EnsureTargetsMatch(group, err))
@@ -238,7 +312,7 @@ std::pair<int, int> WriteGypFiles(CommonSetup* debug_setup,
   // Extract the toolchain for the debug targets.
   const Toolchain* debug_toolchain = NULL;
   if (!grouped_targets.empty()) {
-    debug_toolchain = debug_setup->builder()->GetToolchain(
+    debug_toolchain = setups.debug->builder()->GetToolchain(
         grouped_targets.begin()->second[0].debug->item()->settings()->
         default_toolchain_label());
   }
@@ -327,79 +401,128 @@ const char kGyp_Help[] =
 
 int RunGyp(const std::vector<std::string>& args) {
   base::ElapsedTimer timer;
+  Setups setups;
 
   // Deliberately leaked to avoid expensive process teardown.
-  Setup* setup_debug = new Setup;
-  if (!setup_debug->DoSetup())
+  setups.debug = new Setup;
+  if (!setups.debug->DoSetup())
     return 1;
   const char kIsDebug[] = "is_debug";
 
-  SourceDir base_build_dir = setup_debug->build_settings().build_dir();
-  setup_debug->build_settings().SetBuildDir(
+  SourceDir base_build_dir = setups.debug->build_settings().build_dir();
+  setups.debug->build_settings().SetBuildDir(
       AppendDirSuffix(base_build_dir, ".Debug"));
 
   // Make a release build based on the debug one. We use a new directory for
   // the build output so that they don't stomp on each other.
-  DependentSetup* setup_release = new DependentSetup(setup_debug);
-  setup_release->build_settings().build_args().AddArgOverride(
+  setups.release = new DependentSetup(setups.debug);
+  setups.release->build_settings().build_args().AddArgOverride(
       kIsDebug, Value(NULL, false));
-  setup_release->build_settings().SetBuildDir(
+  setups.release->build_settings().SetBuildDir(
       AppendDirSuffix(base_build_dir, ".Release"));
 
   // Host build.
-  DependentSetup* setup_host_debug = NULL;
-  DependentSetup* setup_host_release = NULL;
-  // TODO(brettw) hook up host build.
+  if (NeedsHostBuild(setups.debug)) {
+    setups.host_debug = new DependentSetup(setups.debug);
+    setups.host_debug->build_settings().SetBuildDir(
+        AppendDirSuffix(base_build_dir, ".HostDebug"));
+    SetupHostBuildParams(setups.host_debug);
+
+    setups.host_release = new DependentSetup(setups.release);
+    setups.host_release->build_settings().SetBuildDir(
+        AppendDirSuffix(base_build_dir, ".HostRelease"));
+    SetupHostBuildParams(setups.host_release);
+  }
 
   // 64-bit build (Windows only).
-  DependentSetup* setup_debug64 = NULL;
-  DependentSetup* setup_release64 = NULL;
 #if defined(OS_WIN)
   static const char kForceWin64[] = "force_win64";
-  setup_debug64 = new DependentSetup(setup_debug);
-  setup_debug64->build_settings().build_args().AddArgOverride(
+  setups.debug64 = new DependentSetup(setups.debug);
+  setups.debug64->build_settings().build_args().AddArgOverride(
       kForceWin64, Value(NULL, true));
-  setup_debug64->build_settings().SetBuildDir(
+  setups.debug64->build_settings().SetBuildDir(
       AppendDirSuffix(base_build_dir, ".Debug64"));
 
-  setup_release64 = new DependentSetup(setup_release);
-  setup_release64->build_settings().build_args().AddArgOverride(
+  setups.release64 = new DependentSetup(setups.release);
+  setups.release64->build_settings().build_args().AddArgOverride(
       kForceWin64, Value(NULL, true));
-  setup_release64->build_settings().SetBuildDir(
+  setups.release64->build_settings().SetBuildDir(
       AppendDirSuffix(base_build_dir, ".Release64"));
 #endif
 
+  // XCode build (Mac only).
+#if defined(OS_MACOSX)
+  static const char kGypXCode[] = "is_gyp_xcode_generator";
+  setups.xcode_debug = new DependentSetup(setups.debug);
+  setups.xcode_debug->build_settings().build_args().AddArgOverride(
+      kGypXCode, Value(NULL, true));
+  setups.xcode_debug->build_settings().SetBuildDir(
+      AppendDirSuffix(base_build_dir, ".XCodeDebug"));
+
+  setups.xcode_release = new DependentSetup(setups.release);
+  setups.xcode_release->build_settings().build_args().AddArgOverride(
+      kGypXCode, Value(NULL, true));
+  setups.xcode_release->build_settings().SetBuildDir(
+      AppendDirSuffix(base_build_dir, ".XCodeRelease"));
+
+  if (NeedsHostBuild(setups.debug)) {
+    setups.xcode_host_debug = new DependentSetup(setups.xcode_debug);
+    setups.xcode_host_debug->build_settings().SetBuildDir(
+        AppendDirSuffix(base_build_dir, ".XCodeHostDebug"));
+    SetupHostBuildParams(setups.xcode_host_debug);
+
+    setups.xcode_host_release = new DependentSetup(setups.xcode_release);
+    setups.xcode_host_release->build_settings().SetBuildDir(
+        AppendDirSuffix(base_build_dir, ".XCodeHostRelease"));
+    SetupHostBuildParams(setups.xcode_host_release);
+  }
+#endif
+
   // Run all the builds in parellel.
-  setup_release->RunPreMessageLoop();
-  if (setup_host_debug && setup_host_release) {
-    setup_host_debug->RunPreMessageLoop();
-    setup_host_release->RunPreMessageLoop();
+  setups.release->RunPreMessageLoop();
+  if (setups.host_debug && setups.host_release) {
+    setups.host_debug->RunPreMessageLoop();
+    setups.host_release->RunPreMessageLoop();
   }
-  if (setup_debug64 && setup_release64) {
-    setup_debug64->RunPreMessageLoop();
-    setup_release64->RunPreMessageLoop();
+  if (setups.debug64 && setups.release64) {
+    setups.debug64->RunPreMessageLoop();
+    setups.release64->RunPreMessageLoop();
+  }
+  if (setups.xcode_debug && setups.xcode_release) {
+    setups.xcode_debug->RunPreMessageLoop();
+    setups.xcode_release->RunPreMessageLoop();
+  }
+  if (setups.xcode_host_debug && setups.xcode_host_release) {
+    setups.xcode_host_debug->RunPreMessageLoop();
+    setups.xcode_host_release->RunPreMessageLoop();
   }
 
-  if (!setup_debug->Run())
+  if (!setups.debug->Run())
     return 1;
 
-  if (!setup_release->RunPostMessageLoop())
+  if (!setups.release->RunPostMessageLoop())
     return 1;
-  if (setup_host_debug && !setup_host_debug->RunPostMessageLoop())
+  if (setups.host_debug && !setups.host_debug->RunPostMessageLoop())
     return 1;
-  if (setup_host_release && !setup_host_release->RunPostMessageLoop())
+  if (setups.host_release && !setups.host_release->RunPostMessageLoop())
     return 1;
-  if (setup_debug64 && !setup_debug64->RunPostMessageLoop())
+  if (setups.debug64 && !setups.debug64->RunPostMessageLoop())
     return 1;
-  if (setup_release64 && !setup_release64->RunPostMessageLoop())
+  if (setups.release64 && !setups.release64->RunPostMessageLoop())
+    return 1;
+  if (setups.xcode_debug && !setups.xcode_debug->RunPostMessageLoop())
+    return 1;
+  if (setups.xcode_release && !setups.xcode_release->RunPostMessageLoop())
+    return 1;
+  if (setups.xcode_host_debug &&
+      !setups.xcode_host_debug->RunPostMessageLoop())
+    return 1;
+  if (setups.xcode_host_release &&
+      !setups.xcode_host_release->RunPostMessageLoop())
     return 1;
 
   Err err;
-  std::pair<int, int> counts =
-      WriteGypFiles(setup_debug, setup_release,
-                    setup_host_debug, setup_host_release,
-                    setup_debug64, setup_release64,
-                    &err);
+  std::pair<int, int> counts = WriteGypFiles(setups, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return 1;
@@ -414,7 +537,7 @@ int RunGyp(const std::vector<std::string>& args) {
         base::IntToString(counts.first) + " targets to " +
         base::IntToString(counts.second) + " GYP files read from " +
         base::IntToString(
-            setup_debug->scheduler().input_file_manager()->GetInputFileCount())
+            setups.debug->scheduler().input_file_manager()->GetInputFileCount())
         + " GN files in " +
         base::IntToString(elapsed_time.InMilliseconds()) + "ms\n";
 

@@ -79,6 +79,14 @@ void Args::AddArgOverrides(const Scope::KeyValueMap& overrides) {
   }
 }
 
+const Value* Args::GetArgOverride(const char* name) const {
+  Scope::KeyValueMap::const_iterator found =
+      all_overrides_.find(base::StringPiece(name));
+  if (found == all_overrides_.end())
+    return NULL;
+  return &found->second;
+}
+
 void Args::SetupRootScope(Scope* dest,
                           const Scope::KeyValueMap& toolchain_overrides) const {
   SetSystemVars(dest);
@@ -234,7 +242,6 @@ void Args::SetSystemVars(Scope* dest) const {
   dest->MarkUsed(variables::kCpuArch);
   dest->MarkUsed(variables::kOs);
 }
-
 
 void Args::ApplyOverrides(const Scope::KeyValueMap& values,
                           Scope* scope) const {
