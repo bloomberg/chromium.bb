@@ -34,7 +34,6 @@
 #include "bindings/v8/DOMDataStore.h"
 #include <v8.h>
 #include "wtf/PassRefPtr.h"
-#include "wtf/RawPtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
@@ -47,12 +46,7 @@ struct WrapperTypeInfo;
 
         template<typename V8T, typename T>
         static inline v8::Handle<v8::Object> associateObjectWithWrapper(PassRefPtr<T>, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
-        template<typename V8T, typename T>
-        static inline v8::Handle<v8::Object> associateObjectWithWrapper(RawPtr<T>, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
-        template<typename V8T, typename T>
-        static inline v8::Handle<v8::Object> associateObjectWithWrapper(T*, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
         static inline void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, void*);
-        static inline void setNativeInfoWithPersistentHandle(v8::Handle<v8::Object>, const WrapperTypeInfo*, void*, PersistentNode*);
         static inline void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
 
         static bool isDOMWrapper(v8::Handle<v8::Value>);
@@ -63,30 +57,14 @@ struct WrapperTypeInfo;
         ASSERT(wrapper->InternalFieldCount() >= 2);
         ASSERT(object);
         ASSERT(type);
-#if ENABLE(OILPAN)
-        ASSERT(!type->isGarbageCollected);
-#endif
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(type));
-    }
-
-    inline void V8DOMWrapper::setNativeInfoWithPersistentHandle(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* type, void* object, PersistentNode* handle)
-    {
-        ASSERT(wrapper->InternalFieldCount() >= 3);
-        ASSERT(object);
-        ASSERT(type);
-        ASSERT(type->isGarbageCollected);
-        wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, object);
-        wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(type));
-        wrapper->SetAlignedPointerInInternalField(v8PersistentHandleIndex, handle);
     }
 
     inline void V8DOMWrapper::clearNativeInfo(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* type)
     {
         ASSERT(wrapper->InternalFieldCount() >= 2);
         ASSERT(type);
-        // clearNativeInfo() is used only by NP objects, which are not garbage collected.
-        ASSERT(!type->isGarbageCollected);
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(type));
         wrapper->SetAlignedPointerInInternalField(v8DOMWrapperObjectIndex, 0);
     }
@@ -98,16 +76,6 @@ struct WrapperTypeInfo;
         ASSERT(isDOMWrapper(wrapper));
         WrapperConfiguration configuration = buildWrapperConfiguration(object.get(), lifetime);
         DOMDataStore::setWrapper<V8T>(object.leakRef(), wrapper, isolate, configuration);
-        return wrapper;
-    }
-
-    template<typename V8T, typename T>
-    inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(RawPtr<T> object, const WrapperTypeInfo* type, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, WrapperConfiguration::Lifetime lifetime)
-    {
-        setNativeInfoWithPersistentHandle(wrapper, type, V8T::toInternalPointer(object.get()), new Persistent<T>(object));
-        ASSERT(isDOMWrapper(wrapper));
-        WrapperConfiguration configuration = buildWrapperConfiguration(object.get(), lifetime);
-        DOMDataStore::setWrapper<V8T>(object.get(), wrapper, isolate, configuration);
         return wrapper;
     }
 

@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Gamepad);
-
 Gamepad::Gamepad()
     : m_index(0)
     , m_timestamp(0)
@@ -52,10 +50,6 @@ void Gamepad::buttons(unsigned count, float* data)
 }
 
 Gamepad::~Gamepad()
-{
-}
-
-void Gamepad::trace(Visitor* visitor)
 {
 }
 

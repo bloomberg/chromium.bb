@@ -41,7 +41,6 @@
 #include "wtf/HashTraits.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefPtr.h"
 
 #ifndef NDEBUG
 #define DEBUG_ONLY(x) x
@@ -268,18 +267,6 @@ public:
     void trace(const OwnPtr<T>& t)
     {
         t->trace(this);
-    }
-
-    // This trace method is to trace a RefPtrWillBeMember when ENABLE(OILPAN)
-    // is not enabled.
-    // Remove this once we remove RefPtrWillBeMember.
-    template<typename T>
-    void trace(const RefPtr<T>&)
-    {
-#if ENABLE(OILPAN)
-        // RefPtrs should never be traced.
-        ASSERT_NOT_REACHED();
-#endif
     }
 
     // This method marks an object and adds it to the set of objects

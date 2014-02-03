@@ -69,7 +69,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestSVG* object)
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestSVG::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSVG::domTemplate, V8TestSVG::derefObject, 0, 0, 0, V8TestSVG::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, false };
+const WrapperTypeInfo V8TestSVG::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSVG::domTemplate, V8TestSVG::derefObject, 0, 0, 0, V8TestSVG::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestSVGV8Internal {
 
