@@ -1,11 +1,10 @@
 #!/usr/bin/python
-
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Fast alternative to `emerge-$BOARD autotest-all`
 
-"""
 Simple script to be run inside the chroot. Used as a fast approximation of
 emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
@@ -154,7 +153,7 @@ def GetPackageAPI(portage_root, package_cp):
 
   Args:
     portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
-    package_cp:   A string similar to 'chromeos-base/autotest-tests'.
+    package_cp: A string similar to 'chromeos-base/autotest-tests'.
 
   Returns:
     Returns (package, vartree) tuple, where
@@ -200,7 +199,7 @@ def DowngradePackageVersion(portage_root, package_cp,
 
   Args:
     portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
-    package_cp:   A string similar to 'chromeos-base/autotest-tests'.
+    package_cp: A string similar to 'chromeos-base/autotest-tests'.
     downgrade_to_version: String version to downgrade to. Default: '0'
 
   Returns:
@@ -276,7 +275,7 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
                          --exclude=* [source_path] [sysroot_autotest_path]`
 
   Args:
-    pretend:   True to use the '-n' option to rsync, to perform dry run.
+    pretend: True to use the '-n' option to rsync, to perform dry run.
     overwrite: True to omit '-u' option, overwrite all files in sysroot,
                not just older files.
 

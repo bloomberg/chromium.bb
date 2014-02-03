@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -124,7 +123,7 @@ def _GetLatestRelease(base_url, branch=None):
   """Gets the latest release version from the buildspec_url for the branch.
 
   Args:
-    branch:  If set, gets the latest release for branch, otherwise latest
+    branch: If set, gets the latest release for branch, otherwise latest
       release.
 
   Returns:
@@ -230,7 +229,7 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
   Args:
     stable_ebuilds: A list of stable ebuilds.
     chrome_rev: The chrome_rev designating which candidate to find.
-    sticky_branch:  The the branch that is currently sticky with Major/Minor
+    sticky_branch: The the branch that is currently sticky with Major/Minor
       components.  For example: 9.0.553. Can be None but not if chrome_rev
       is CHROME_REV_STICKY.
 
@@ -321,7 +320,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
     stable_candidate: ebuild that corresponds to the stable ebuild we are
       revving from.  If None, builds the a new ebuild given the version
       and logic for chrome_rev type with revision set to 1.
-    unstable_ebuild:  ebuild corresponding to the unstable ebuild for chrome.
+    unstable_ebuild: ebuild corresponding to the unstable ebuild for chrome.
     chrome_rev: one of constants.VALID_CHROME_REVISIONS or LOCAL
       constants.CHROME_REV_SPEC -  Requires commit value.  Revs the ebuild for
         the specified version and uses the portage suffix of _alpha.
@@ -332,9 +331,9 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
       constants.CHROME_REV_LATEST - This uses the portage suffix of _rc as they
         are release candidates for the next sticky version.
       constants.CHROME_REV_STICKY -  Revs the sticky version.
-    chrome_version:  The \d.\d.\d.\d version of Chrome.
-    commit:  Used with constants.CHROME_REV_TOT.  The svn revision of chrome.
-    overlay_dir:  Path to the chromeos-chrome package dir.
+    chrome_version: The \d.\d.\d.\d version of Chrome.
+    commit: Used with constants.CHROME_REV_TOT.  The svn revision of chrome.
+    overlay_dir: Path to the chromeos-chrome package dir.
 
   Returns:
     Full portage version atom (including rc's, etc) that was revved.

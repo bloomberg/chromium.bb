@@ -183,7 +183,7 @@ class Cgroup(object):
       namespace: What cgroup namespace is this in?  cbuildbot/1823 for example.
       autoclean: Should this cgroup be removed once unused?
       lazy_init: Should we create the cgroup immediately, or when needed?
-      parent:    A Cgroup instance; if the namespace is cbuildbot/1823, then the
+      parent: A Cgroup instance; if the namespace is cbuildbot/1823, then the
         parent *must* be the cgroup instance for namespace cbuildbot.
       _is_root:  Internal option, shouldn't be used by consuming code.
       _overwrite: Internal option, shouldn't be used by consuming code.

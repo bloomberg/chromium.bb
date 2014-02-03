@@ -3,10 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Wrapper around chromite executable scripts.
+
+This takes care of creating a consistent environment for chromite scripts
+(like setting up import paths) so we don't have to duplicate the logic in
+lots of places.
+"""
+
 import os
 import sys
 
 CHROMITE_PATH = None
+
 
 class ChromiteImporter(object):
   """Virtual chromite module

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -41,7 +40,7 @@ class In(Comparator):
     """Initialize.
 
     Args:
-      key:  Any thing that could be in a list or a key in a dict
+      key: Any thing that could be in a list or a key in a dict
     """
     Comparator.__init__(self)
     self._key = key
@@ -220,7 +219,7 @@ class MockedCallResults(object):
         instances of meta-args (such as IgnoreArg, Regex, In, etc.).  Keyword
         argument matching is by default *strict*, but can be modified by the
         |strict| argument.
-      side_effect:  A functor that gets called every time a partially mocked
+      side_effect: A functor that gets called every time a partially mocked
         function is invoked.  The arguments the partial mock is invoked with are
         passed to the functor.  This is similar to how side effects work for
         mocks.

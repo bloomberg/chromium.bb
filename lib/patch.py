@@ -498,7 +498,7 @@ class GitRepoPatch(object):
                    patch from.
       project: The name of the project that the patch applies to.
       ref: The refspec to pull from the git repo.
-      tracking_branch:  The remote branch of the project the patch applies to.
+      tracking_branch: The remote branch of the project the patch applies to.
       remote: The remote git instance path.
       sha1: The sha1 of the commit, if known.  This *must* be accurate.  Can
         be None if not yet known- in which case Fetch will update it.
@@ -1382,7 +1382,7 @@ def PrepareLocalPatches(manifest, patches):
 
   Args:
     manifest: The manifest object for the checkout in question.
-    patches:  A list of user-specified patches, in project:branch form.
+    patches: A list of user-specified patches, in project:branch form.
       cbuildbot pre-processes the patch names before sending them to us,
       so we can expect that branch names will always be present.
   """

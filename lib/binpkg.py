@@ -6,6 +6,8 @@
 # Copyright 2003-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+"""Helpers dealing with binpkg Packages index files"""
+
 import collections
 import cStringIO
 import operator
