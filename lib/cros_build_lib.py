@@ -801,6 +801,26 @@ def FindCompressor(compression, chroot=None):
   return std
 
 
+def CompressionStrToType(s):
+  """Convert a compression string type to a constant.
+
+  Args:
+    s: string to check
+
+  Returns:
+    A constant, or None if the compression type is unknown.
+  """
+  _COMP_STR = {
+      'gz': COMP_GZIP,
+      'bz2': COMP_BZIP2,
+      'xz': COMP_XZ,
+  }
+  if s:
+    return _COMP_STR.get(s)
+  else:
+    return COMP_NONE
+
+
 def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
                   inputs=None, extra_args=None, **kwargs):
   """Create a tarball.  Executes 'tar' on the commandline.
