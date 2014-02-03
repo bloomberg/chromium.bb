@@ -435,7 +435,7 @@ def RunInstrumentationTests(options):
 
 
 def RunWebkitTests(options):
-  RunTestSuites(options, ['webkit_unit_tests'])
+  RunTestSuites(options, ['webkit_unit_tests', 'blink_heap_unittests'])
   RunWebkitLint(options.target)
 
 
