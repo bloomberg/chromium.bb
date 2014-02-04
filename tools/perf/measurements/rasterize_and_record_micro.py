@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import sys
 import time
 
@@ -37,6 +38,16 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
         '--enable-threaded-compositing',
         '--enable-gpu-benchmarking'
     ])
+
+  def DidStartBrowser(self, browser):
+    # Check if the we actually have threaded forced compositing enabled.
+    system_info = browser.GetSystemInfo()
+    if not (system_info.gpu.feature_status and
+            system_info.gpu.feature_status.get(
+                'compositing', None) == 'enabled_force_threaded'):
+      logging.warning('Warning: compositing feature status unknown or not '+
+                      'forced and threaded. Skipping measurement.')
+      sys.exit(0)
 
   def MeasurePage(self, page, tab, results):
     # TODO(vmpstr): Remove this temporary workaround when reference build has
@@ -91,4 +102,3 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
     results.Add('record_time', 'ms', record_time)
     results.Add('pixels_rasterized', '', pixels_rasterized)
     results.Add('rasterize_time', 'ms', rasterize_time)
-
