@@ -60,6 +60,7 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
@@ -85,6 +86,7 @@ using blink::WebPluginParams;
 using blink::WebReferrerPolicy;
 using blink::WebSearchableFormData;
 using blink::WebSecurityOrigin;
+using blink::WebSecurityPolicy;
 using blink::WebServiceWorkerProvider;
 using blink::WebStorageQuotaCallbacks;
 using blink::WebString;
@@ -1163,7 +1165,6 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebFrame* frame) {
 void RenderFrameImpl::willRequestAfterPreconnect(
     blink::WebFrame* frame,
     blink::WebURLRequest& request) {
-  blink::WebReferrerPolicy referrer_policy = frame->document().referrerPolicy();
   // FIXME(kohei): This will never be set.
   WebString custom_user_agent;
 
@@ -1173,7 +1174,7 @@ void RenderFrameImpl::willRequestAfterPreconnect(
   // The args after |was_after_preconnect_request| are not used, and set to
   // correct values at |willSendRequest|.
   request.setExtraData(new webkit_glue::WebURLRequestExtraDataImpl(
-      referrer_policy, custom_user_agent, was_after_preconnect_request));
+      custom_user_agent, was_after_preconnect_request));
 }
 
 void RenderFrameImpl::willSendRequest(
@@ -1215,13 +1216,6 @@ void RenderFrameImpl::willSendRequest(
   if (internal_data->is_cache_policy_override_set())
     request.setCachePolicy(internal_data->cache_policy_override());
 
-  blink::WebReferrerPolicy referrer_policy;
-  if (internal_data->is_referrer_policy_set()) {
-    referrer_policy = internal_data->referrer_policy();
-  } else {
-    referrer_policy = frame->document().referrerPolicy();
-  }
-
   // The request's extra data may indicate that we should set a custom user
   // agent. This needs to be done here, after WebKit is through with setting the
   // user agent on its own.
@@ -1259,8 +1253,7 @@ void RenderFrameImpl::willSendRequest(
         navigation_state->should_replace_current_entry();
   }
   request.setExtraData(
-      new RequestExtraData(referrer_policy,
-                           render_view_->visibilityState(),
+      new RequestExtraData(render_view_->visibilityState(),
                            custom_user_agent,
                            was_after_preconnect_request,
                            routing_id_,
@@ -1299,13 +1292,21 @@ void RenderFrameImpl::willSendRequest(
         navigation_state->extra_headers().begin(),
         navigation_state->extra_headers().end(), "\n");
         i.GetNext(); ) {
-      request.setHTTPHeaderField(WebString::fromUTF8(i.name()),
-                                 WebString::fromUTF8(i.values()));
+      if (LowerCaseEqualsASCII(i.name(), "referer")) {
+        WebString referrer = WebSecurityPolicy::generateReferrerHeader(
+            blink::WebReferrerPolicyDefault,
+            request.url(),
+            WebString::fromUTF8(i.values()));
+        request.setHTTPReferrer(referrer, blink::WebReferrerPolicyDefault);
+      } else {
+        request.setHTTPHeaderField(WebString::fromUTF8(i.name()),
+                                   WebString::fromUTF8(i.values()));
+      }
     }
   }
 
   if (!render_view_->renderer_preferences_.enable_referrers)
-    request.clearHTTPHeaderField("Referer");
+    request.setHTTPReferrer(WebString(), blink::WebReferrerPolicyDefault);
 }
 
 void RenderFrameImpl::didReceiveResponse(

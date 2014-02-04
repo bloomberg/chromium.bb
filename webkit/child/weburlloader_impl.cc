@@ -391,11 +391,8 @@ void WebURLLoaderImpl::Context::Start(
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
   request_info.extra_data = request.extraData();
-  if (request.extraData()) {
-    referrer_policy_ = static_cast<WebURLRequestExtraDataImpl*>(
-        request.extraData())->referrer_policy();
-    request_info.referrer_policy = referrer_policy_;
-  }
+  referrer_policy_ = request.referrerPolicy();
+  request_info.referrer_policy = request.referrerPolicy();
   bridge_.reset(platform->CreateResourceLoader(request_info));
 
   if (!request.httpBody().isNull()) {
@@ -490,7 +487,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
       new_url,
       request_.httpHeaderField(referrer_string));
   if (!referrer.isEmpty())
-    new_request.setHTTPHeaderField(referrer_string, referrer);
+    new_request.setHTTPReferrer(referrer, referrer_policy_);
 
   std::string new_method = net::URLRequest::ComputeMethodForRedirect(
              request_.httpMethod().utf8(), response.httpStatusCode());

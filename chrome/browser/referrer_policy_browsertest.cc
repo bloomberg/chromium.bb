@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
@@ -122,7 +124,20 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
 
   enum LinkType { REGULAR_LINK, LINk_WITH_TARGET_BLANK, };
 
-  enum RedirectType { NO_REDIRECT, SERVER_REDIRECT, };
+  enum RedirectType { NO_REDIRECT, SERVER_REDIRECT, SERVER_REDIRECT_ON_HTTP, };
+
+  std::string RedirectTypeToString(RedirectType redirect) {
+    switch (redirect) {
+      case NO_REDIRECT:
+        return "none";
+      case SERVER_REDIRECT:
+        return "https";
+      case SERVER_REDIRECT_ON_HTTP:
+        return "http";
+    }
+    NOTREACHED();
+    return "";
+  }
 
   // Navigates from a page with a given |referrer_policy| and checks that the
   // reported referrer matches the expectation.
@@ -155,7 +170,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         base::IntToString(test_server_->host_port_pair().port()) +
         "&ssl_port=" +
         base::IntToString(ssl_test_server_->host_port_pair().port()) +
-        "&redirect=" + (redirect == NO_REDIRECT ? "false" : "true") + "&link=" +
+        "&redirect=" + RedirectTypeToString(redirect) + "&link=" +
         (button == blink::WebMouseEvent::ButtonNone ? "false" : "true") +
         "&target=" + (link_type == LINk_WITH_TARGET_BLANK ? "_blank" : ""));
 
@@ -533,4 +548,83 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   // Shift-reload to B.
   chrome::ReloadIgnoringCache(browser(), CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
+}
+
+// Tests that reloading a site for "request tablet version" correctly clears
+// the referrer.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, RequestTabletSite) {
+  GURL start_url = RunReferrerTest(blink::WebReferrerPolicyOrigin,
+                                   START_ON_HTTPS,
+                                   REGULAR_LINK,
+                                   SERVER_REDIRECT_ON_HTTP,
+                                   CURRENT_TAB,
+                                   blink::WebMouseEvent::ButtonLeft,
+                                   EXPECT_ORIGIN_AS_REFERRER);
+
+  base::string16 expected_title =
+      GetExpectedTitle(start_url, EXPECT_EMPTY_REFERRER);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TitleWatcher title_watcher(tab, expected_title);
+
+  // Watch for all possible outcomes to avoid timeouts if something breaks.
+  AddAllPossibleTitles(start_url, &title_watcher);
+
+  // Request tablet version.
+  chrome::ToggleRequestTabletSite(browser());
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+// Test that an iframes gets the parent frames referrer and referrer policy if
+// the load was triggered by the parent, or from the iframe itself, if the
+// navigations was started by the iframe.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kWebKitAllowRunningInsecureContent, true);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  base::string16 expected_title(base::ASCIIToUTF16("loaded"));
+  scoped_ptr<content::TitleWatcher> title_watcher(
+      new content::TitleWatcher(tab, expected_title));
+
+  // Load a page that loads an iframe.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ssl_test_server_->GetURL(
+          std::string("files/referrer-policy-iframe.html?") +
+          base::IntToString(test_server_->host_port_pair().port())));
+  EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
+
+  // Verify that the referrer policy was honored and the main page's origin was
+  // send as referrer.
+  std::string title;
+  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractString(
+      tab,
+      "//iframe",
+      "window.domAutomationController.send(document.title)",
+      &title));
+  EXPECT_EQ("Referrer is " + ssl_test_server_->GetURL(std::string()).spec(),
+            title);
+
+  // Reload the iframe.
+  expected_title = base::ASCIIToUTF16("reset");
+  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
+  EXPECT_TRUE(content::ExecuteScript(tab, "document.title = 'reset'"));
+  EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
+
+  expected_title = base::ASCIIToUTF16("loaded");
+  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
+  EXPECT_TRUE(
+      content::ExecuteScriptInFrame(tab, "//iframe", "location.reload()"));
+  EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
+
+  // Verify that the full url of the iframe was used as referrer.
+  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractString(
+      tab,
+      "//iframe",
+      "window.domAutomationController.send(document.title)",
+      &title));
+  EXPECT_EQ("Referrer is " +
+                test_server_->GetURL("files/referrer-policy-log.html").spec(),
+            title);
 }

@@ -106,8 +106,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   request_info.request_type = ResourceType::OBJECT;
   request_info.routing_id = render_view_id;
 
-  RequestExtraData extra_data(blink::WebReferrerPolicyDefault,
-                              blink::WebPageVisibilityStateVisible,
+  RequestExtraData extra_data(blink::WebPageVisibilityStateVisible,
                               base::string16(),
                               false,
                               render_frame_id,

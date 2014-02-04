@@ -4,13 +4,11 @@
 
 #include "content/child/request_extra_data.h"
 
-using blink::WebReferrerPolicy;
 using blink::WebString;
 
 namespace content {
 
 RequestExtraData::RequestExtraData(
-    WebReferrerPolicy referrer_policy,
     blink::WebPageVisibilityState visibility_state,
     const WebString& custom_user_agent,
     bool was_after_preconnect_request,
@@ -25,8 +23,7 @@ RequestExtraData::RequestExtraData(
     bool should_replace_current_entry,
     int transferred_request_child_id,
     int transferred_request_request_id)
-    : webkit_glue::WebURLRequestExtraDataImpl(referrer_policy,
-                                              custom_user_agent,
+    : webkit_glue::WebURLRequestExtraDataImpl(custom_user_agent,
                                               was_after_preconnect_request),
       visibility_state_(visibility_state),
       render_frame_id_(render_frame_id),

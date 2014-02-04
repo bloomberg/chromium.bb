@@ -389,20 +389,11 @@ void RenderViewImpl::GetRedirectChain(WebDataSource* ds,
 }
 
 // static
-WebReferrerPolicy RenderViewImpl::GetReferrerPolicyFromRequest(
-    WebFrame* frame,
-    const WebURLRequest& request) {
-  return request.extraData() ?
-      static_cast<RequestExtraData*>(request.extraData())->referrer_policy() :
-      frame->document().referrerPolicy();
-}
-
-// static
 Referrer RenderViewImpl::GetReferrerFromRequest(
     WebFrame* frame,
     const WebURLRequest& request) {
   return Referrer(GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-                  GetReferrerPolicyFromRequest(frame, request));
+                  request.referrerPolicy());
 }
 
 // static
@@ -1483,7 +1474,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
           params.url,
           WebString::fromUTF8(params.referrer.url.spec()));
       if (!referrer.isEmpty())
-        request.setHTTPHeaderField(WebString::fromUTF8("Referer"), referrer);
+        request.setHTTPReferrer(referrer, params.referrer.policy);
     }
 
     if (!params.extra_headers.empty()) {
@@ -1959,8 +1950,8 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // If the page contained a client redirect (meta refresh, document.loc...),
     // set the referrer and transition appropriately.
     if (ds->isClientRedirect()) {
-      params.referrer = Referrer(params.redirects[0],
-          GetReferrerPolicyFromRequest(frame, ds->request()));
+      params.referrer =
+          Referrer(params.redirects[0], ds->request().referrerPolicy());
       params.transition = static_cast<PageTransition>(
           params.transition | PAGE_TRANSITION_CLIENT_REDIRECT);
     } else {
@@ -3414,7 +3405,6 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
 
-  internal_data->set_referrer_policy(params.referrer.policy);
   internal_data->set_is_overriding_user_agent(params.is_overriding_user_agent);
   internal_data->set_must_reset_scroll_and_scale_state(
       params.navigation_type ==
@@ -3499,7 +3489,6 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
   internal_data->set_use_error_page(false);
-  internal_data->clear_referrer_policy();
 
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the last committed

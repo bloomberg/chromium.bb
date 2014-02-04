@@ -18,8 +18,7 @@ namespace content {
 class CONTENT_EXPORT RequestExtraData
     : NON_EXPORTED_BASE(public webkit_glue::WebURLRequestExtraDataImpl) {
  public:
-  RequestExtraData(blink::WebReferrerPolicy referrer_policy,
-                   blink::WebPageVisibilityState visibility_state,
+  RequestExtraData(blink::WebPageVisibilityState visibility_state,
                    const blink::WebString& custom_user_agent,
                    bool was_after_preconnect_request,
                    int render_frame_id,

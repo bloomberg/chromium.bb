@@ -24,9 +24,7 @@ InternalDocumentStateData::InternalDocumentStateData()
       is_overriding_user_agent_(false),
       must_reset_scroll_and_scale_state_(false),
       cache_policy_override_set_(false),
-      cache_policy_override_(blink::WebURLRequest::UseProtocolCachePolicy),
-      referrer_policy_set_(false),
-      referrer_policy_(blink::WebReferrerPolicyDefault) {
+      cache_policy_override_(blink::WebURLRequest::UseProtocolCachePolicy) {
 }
 
 // static

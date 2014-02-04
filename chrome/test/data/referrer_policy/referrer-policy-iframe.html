@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="referrer" content="origin" />
+</head>
+<body>
+<script>
+var port = document.location.search.substr(1);
+
+var frame = document.createElement("iframe");
+frame.src = "http://127.0.0.1:" + port + "/files/referrer-policy-log.html";
+frame.onload = function() { document.title = "loaded"; };
+document.body.appendChild(frame);
+</script>
+</body>
+</html>

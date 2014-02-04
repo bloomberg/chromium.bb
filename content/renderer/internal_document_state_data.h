@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 
@@ -103,22 +102,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     return cache_policy_override_set_;
   }
 
-  // Sets the referrer policy to use. This is only used for browser initiated
-  // navigations, otherwise, the referrer policy is defined by the frame's
-  // document.
-  blink::WebReferrerPolicy referrer_policy() const {
-    return referrer_policy_;
-  }
-  void set_referrer_policy(blink::WebReferrerPolicy referrer_policy) {
-    referrer_policy_ = referrer_policy;
-    referrer_policy_set_ = true;
-  }
-  void clear_referrer_policy() {
-    referrer_policy_ = blink::WebReferrerPolicyDefault;
-    referrer_policy_set_ = false;
-  }
-  bool is_referrer_policy_set() const { return referrer_policy_set_; }
-
  protected:
   virtual ~InternalDocumentStateData();
 
@@ -133,8 +116,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;
   blink::WebURLRequest::CachePolicy cache_policy_override_;
-  bool referrer_policy_set_;
-  blink::WebReferrerPolicy referrer_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalDocumentStateData);
 };

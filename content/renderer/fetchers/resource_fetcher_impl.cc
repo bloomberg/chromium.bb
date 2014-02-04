@@ -5,6 +5,7 @@
 #include "content/renderer/fetchers/resource_fetcher_impl.h"
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
@@ -15,10 +16,12 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 
 using base::TimeDelta;
 using blink::WebFrame;
 using blink::WebHTTPBody;
+using blink::WebSecurityPolicy;
 using blink::WebURLError;
 using blink::WebURLLoader;
 using blink::WebURLRequest;
@@ -63,8 +66,16 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   DCHECK(!request_.isNull());
   DCHECK(!loader_);
 
-  request_.setHTTPHeaderField(blink::WebString::fromUTF8(header),
-                              blink::WebString::fromUTF8(value));
+  if (LowerCaseEqualsASCII(header, "referer")) {
+    blink::WebString referrer = WebSecurityPolicy::generateReferrerHeader(
+        blink::WebReferrerPolicyDefault,
+        request_.url(),
+        blink::WebString::fromUTF8(value));
+    request_.setHTTPReferrer(referrer, blink::WebReferrerPolicyDefault);
+  } else {
+    request_.setHTTPHeaderField(blink::WebString::fromUTF8(header),
+                                blink::WebString::fromUTF8(value));
+  }
 }
 
 void ResourceFetcherImpl::Start(WebFrame* frame,

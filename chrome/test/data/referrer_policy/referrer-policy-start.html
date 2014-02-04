@@ -9,8 +9,8 @@ function run() {
   var kRedirect = 4;
   var kLink = 5;
   var kTarget = 6;
-  var re = new RegExp(
-      /policy=(.*)&port=(.*)&ssl_port=(.*)&redirect=(.*)&link=(.*)&target=(.*)/);
+  var re = new RegExp("policy=(.*)&port=(.*)&ssl_port=(.*)&redirect=(.*)&" +
+                      "link=(.*)&target=(.*)");
   var matches = re.exec(document.location.search);
 
   if (matches == null) {
@@ -25,13 +25,17 @@ function run() {
 
   var destination;
 
-  if (matches[kRedirect] == "true") {
-    destination =
-        "https://127.0.0.1:" + matches[kSslPort] + "/server-redirect?" +
-        "http://127.0.0.1:" + matches[kPort] + "/files/referrer-policy-log.html";
+  if (matches[kRedirect] == "false") {
+    destination = "http://127.0.0.1:" + matches[kPort] +
+        "/files/referrer-policy-log.html";
+  } else if (matches[kRedirect] == "http") {
+    destination = "http://127.0.0.1:" + matches[kPort] +
+      "/server-redirect?http://127.0.0.1:" + matches[kPort] +
+      "/files/referrer-policy-log.html";
   } else {
-    destination =
-        "http://127.0.0.1:" + matches[kPort] + "/files/referrer-policy-log.html";
+    destination = "https://127.0.0.1:" + matches[kSslPort] +
+      "/server-redirect?http://127.0.0.1:" + matches[kPort] +
+      "/files/referrer-policy-log.html";
   }
 
   if (matches[kLink] == "true") {
