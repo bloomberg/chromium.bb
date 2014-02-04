@@ -48,7 +48,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 #include "ui/aura/remote_root_window_host_win.h"
 #endif
 
@@ -946,7 +946,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   gfx::NativeWindow owning_window = web_contents ?
       platform_util::GetTopLevel(web_contents->GetView()->GetNativeView())
           : NULL;
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   if (!owning_window &&
       chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
     owning_window = aura::RemoteWindowTreeHostWin::Instance()->GetAshWindow();

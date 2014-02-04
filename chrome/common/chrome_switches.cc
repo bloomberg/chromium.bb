@@ -1637,16 +1637,6 @@ const char kForceDesktop[]                  = "force-desktop";
 // Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
 const char kRelaunchShortcut[]              = "relaunch-shortcut";
 
-// Waits for the given handle to be signaled before relaunching metro Chrome on
-// Windows 8 and higher.
-const char kWaitForMutex[]                  = "wait-for-mutex";
-
-// Indicates that chrome was launched to service a search request in Windows 8.
-const char kWindows8Search[]           = "windows8-search";
-
-#endif
-
-#if defined(OS_WIN) && defined(USE_AURA)
 // Requests that Chrome connect to the running Metro viewer process.
 const char kViewerConnect[]                 = "viewer-connect";
 
@@ -1654,6 +1644,13 @@ const char kViewerConnect[]                 = "viewer-connect";
 // (which is assumed to be registered as default browser) and synchronously
 // connect to it.
 const char kViewerLaunchViaAppId[]          = "viewer-launch-via-appid";
+
+// Waits for the given handle to be signaled before relaunching metro Chrome on
+// Windows 8 and higher.
+const char kWaitForMutex[]                  = "wait-for-mutex";
+
+// Indicates that chrome was launched to service a search request in Windows 8.
+const char kWindows8Search[]           = "windows8-search";
 #endif
 
 #ifndef NDEBUG

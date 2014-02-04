@@ -717,7 +717,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-#if !(defined(OS_WIN) && defined(USE_AURA))
+#if !defined(OS_WIN)
 // This test passes locally (on aero and non-aero) but fails on the trybots and
 // buildbot.
 // http://crbug.com/154081
@@ -826,7 +826,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-#if !(defined(OS_WIN) && defined(USE_AURA))
+#if !defined(OS_WIN)
 // This test passes locally (on aero and non-aero) but fails on the trybots and
 // buildbot.
 // http://crbug.com/154081

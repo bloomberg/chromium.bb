@@ -143,7 +143,7 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kSingleProcess);
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
     // Don't want to try to create a GPU process.
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
 #endif

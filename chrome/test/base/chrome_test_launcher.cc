@@ -121,7 +121,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
   virtual void AdjustDefaultParallelJobs(int* default_jobs) OVERRIDE {
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAshBrowserTests)) {
       *default_jobs = 1;
@@ -129,7 +129,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
               "Disabling test parallelization for --ash-browsertests.\n");
       fflush(stdout);
     }
-#endif  // defined(OS_WIN) && defined(USE_AURA)
+#endif  // defined(OS_WIN)
   }
 
  private:

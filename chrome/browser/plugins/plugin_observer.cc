@@ -185,7 +185,7 @@ PluginObserver::~PluginObserver() {
 
 void PluginObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-#if defined(USE_AURA) && defined(OS_WIN)
+#if defined(OS_WIN)
   // If the window belongs to the Ash desktop, before we navigate we need
   // to tell the renderview that NPAPI plugins are not supported so it does
   // not try to instantiate them. The final decision is actually done in

@@ -60,8 +60,8 @@ const int kArrowOffset = 10;
 
 // Determines whether the current environment supports shadows bubble borders.
 bool SupportsShadow() {
-#if defined(USE_AURA) && defined(OS_WIN)
-  // Shadows are not supported on Windows Aura without Aero Glass.
+#if defined(OS_WIN)
+  // Shadows are not supported on Windows without Aero Glass.
   if (!ui::win::IsAeroGlassEnabled() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDwmComposition)) {
@@ -203,7 +203,7 @@ void AppListView::Paint(gfx::Canvas* canvas) {
 }
 
 void AppListView::OnThemeChanged() {
-#if defined(USE_AURA) && defined(OS_WIN)
+#if defined(OS_WIN)
   GetWidget()->Close();
 #endif
 }

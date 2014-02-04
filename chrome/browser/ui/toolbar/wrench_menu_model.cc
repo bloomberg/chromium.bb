@@ -669,7 +669,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
   }
 
   bool show_exit_menu = browser_defaults::kShowExitMenuItem;
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
     show_exit_menu = false;
 #endif

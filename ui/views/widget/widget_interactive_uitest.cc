@@ -148,8 +148,8 @@ class NestedLoopCaptureView : public View {
 
 }  // namespace
 
-#if defined(OS_WIN) && defined(USE_AURA)
-// Tests whether activation and focus change works correctly in Windows AURA.
+#if defined(OS_WIN)
+// Tests whether activation and focus change works correctly in Windows.
 // We test the following:-
 // 1. If the active aura window is correctly set when a top level widget is
 //    created.

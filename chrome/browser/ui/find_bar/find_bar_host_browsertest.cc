@@ -42,7 +42,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
 
 // Verify search for text within special URLs such as chrome:history,
 // chrome://downloads, data directory
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 // Disabled due to crbug.com/175711
 #define MAYBE_SearchWithinSpecialURL \
         DISABLED_SearchWithinSpecialURL
@@ -1554,7 +1554,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextShared) {
             GetFindBarTextForBrowser(browser_incognito));
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 
 BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
   HWND* child = reinterpret_cast<HWND*>(l_param);

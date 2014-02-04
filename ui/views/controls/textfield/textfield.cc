@@ -676,7 +676,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         OnAfterUserAction();
         event->SetHandled();
       }
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
       if (!read_only())
         base::win::DisplayVirtualKeyboard();
 #endif

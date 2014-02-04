@@ -18,7 +18,7 @@ const char kEnableChromiumBranding[] = "enable-chromium-branding";
 // Enable displaying error dialogs (for debugging).
 const char kEnableErrorDialogs[] = "enable-errdialogs";
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 // Force browser tests to run in Ash/Metro on Windows 8.
 const char kAshBrowserTests[] = "ash-browsertests";
 #endif

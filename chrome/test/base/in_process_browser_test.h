@@ -21,11 +21,11 @@ class ScopedNSAutoreleasePool;
 }  // namespace mac
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 namespace win {
 class ScopedCOMInitializer;
 }
-#endif  // defined(OS_WIN) && defined(USE_AURA)
+#endif  // defined(OS_WIN)
 }  // namespace base
 
 class Browser;
@@ -204,7 +204,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
 #endif  // OS_MACOSX
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
 };

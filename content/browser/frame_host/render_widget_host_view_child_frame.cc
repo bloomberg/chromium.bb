@@ -364,6 +364,6 @@ gfx::NativeViewId RenderWidgetHostViewChildFrame::GetParentForWindowlessPlugin()
     const {
   return NULL;
 }
-#endif // defined(OS_WIN) && defined(USE_AURA)
+#endif // defined(OS_WIN)
 
 }  // namespace content

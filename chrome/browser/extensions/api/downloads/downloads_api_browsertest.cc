@@ -1528,8 +1528,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                          result_id)));
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
-// This test is very flaky on Win Aura. http://crbug.com/248438
+#if defined(OS_WIN)
+// This test is very flaky on Win. http://crbug.com/248438
 #define MAYBE_DownloadExtensionTest_Download_UnsafeHeaders \
     DISABLED_DownloadExtensionTest_Download_UnsafeHeaders
 #else
@@ -1778,7 +1778,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Valid file URLs are valid URLs.
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 // Disabled due to crbug.com/175711
 #define MAYBE_DownloadExtensionTest_Download_File \
         DISABLED_DownloadExtensionTest_Download_File

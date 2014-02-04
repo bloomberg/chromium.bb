@@ -163,8 +163,8 @@ PersistingImagesTable kPersistingImages[] = {
 };
 const size_t kPersistingImagesLength = arraysize(kPersistingImages);
 
-#if defined(OS_WIN) && defined(USE_AURA)
-// Persistent theme ids for Windows AURA.
+#if defined(OS_WIN)
+// Persistent theme ids for Windows.
 const int PRS_THEME_FRAME_WIN = 100;
 const int PRS_THEME_FRAME_INACTIVE_WIN = 101;
 const int PRS_THEME_FRAME_INCOGNITO_WIN = 102;
@@ -222,7 +222,7 @@ int GetPersistentIDByIDR(int idr) {
       int prs_id = kPersistingImages[i].persistent_id;
       (*lookup_table)[idr] = prs_id;
     }
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
     for (size_t i = 0; i < kPersistingImagesWinDesktopAuraLength; ++i) {
       int idr = kPersistingImagesWinDesktopAura[i].idr_id;
       int prs_id = kPersistingImagesWinDesktopAura[i].persistent_id;
@@ -342,7 +342,7 @@ IntToIntTable kFrameTintMap[] = {
   { PRS_THEME_FRAME_INCOGNITO, ThemeProperties::TINT_FRAME_INCOGNITO },
   { PRS_THEME_FRAME_INCOGNITO_INACTIVE,
     ThemeProperties::TINT_FRAME_INCOGNITO_INACTIVE },
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   { PRS_THEME_FRAME_WIN, ThemeProperties::TINT_FRAME },
   { PRS_THEME_FRAME_INACTIVE_WIN, ThemeProperties::TINT_FRAME_INACTIVE },
   { PRS_THEME_FRAME_INCOGNITO_WIN, ThemeProperties::TINT_FRAME_INCOGNITO },
@@ -356,7 +356,7 @@ IntToIntTable kFrameTintMap[] = {
 IntToIntTable kTabBackgroundMap[] = {
   { PRS_THEME_TAB_BACKGROUND, PRS_THEME_FRAME },
   { PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO },
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   { PRS_THEME_TAB_BACKGROUND_WIN, PRS_THEME_FRAME_WIN },
   { PRS_THEME_TAB_BACKGROUND_INCOGNITO_WIN, PRS_THEME_FRAME_INCOGNITO_WIN },
 #endif
@@ -390,7 +390,7 @@ struct CropEntry kImagesToCrop[] = {
   { PRS_THEME_TOOLBAR, 200, false },
   { PRS_THEME_BUTTON_BACKGROUND, 60, false },
   { PRS_THEME_WINDOW_CONTROL_BACKGROUND, 50, false },
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   { PRS_THEME_TOOLBAR_WIN, 200, false }
 #endif
 };
@@ -770,7 +770,7 @@ void BrowserThemePack::GetThemeableImageIDRs(std::set<int>* result) {
   for (size_t i = 0; i < kPersistingImagesLength; ++i)
     result->insert(kPersistingImages[i].idr_id);
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   for (size_t i = 0; i < kPersistingImagesWinDesktopAuraLength; ++i)
     result->insert(kPersistingImagesWinDesktopAura[i].idr_id);
 #endif
@@ -1211,7 +1211,7 @@ void BrowserThemePack::AddFileAtScaleToMap(const std::string& image_name,
   int id = GetPersistentIDByName(image_name);
   if (id != -1)
     (*file_paths)[id][scale_factor] = image_path;
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   id = GetPersistentIDByNameHelper(image_name,
                                    kPersistingImagesWinDesktopAura,
                                    kPersistingImagesWinDesktopAuraLength);
@@ -1339,7 +1339,7 @@ void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
     // thing and just use the default images.
     int prs_base_id = 0;
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
     if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE_WIN) {
       prs_base_id = images->count(PRS_THEME_FRAME_INCOGNITO_WIN) ?
                     PRS_THEME_FRAME_INCOGNITO_WIN : PRS_THEME_FRAME_WIN;
@@ -1370,7 +1370,7 @@ void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
     } else if (prs_base_id != prs_id && images->count(prs_base_id)) {
       frame = (*images)[prs_base_id];
     } else if (prs_base_id == PRS_THEME_FRAME_OVERLAY) {
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
       if (images->count(PRS_THEME_FRAME_WIN)) {
 #else
       if (images->count(PRS_THEME_FRAME)) {

@@ -242,7 +242,7 @@ void WebView::AttachWebContents() {
   if (focus_manager && focus_manager->GetFocusedView() == this)
     OnFocus();
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   if (!is_embedding_fullscreen_widget_) {
     web_contents()->SetParentNativeViewAccessible(
         parent()->GetNativeViewAccessible());

@@ -55,7 +55,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
@@ -197,7 +197,7 @@ void InProcessBrowserTest::SetUp() {
 
   google_util::SetMockLinkDoctorBaseURLForTesting();
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests)) {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
@@ -216,7 +216,7 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   if (command_line->HasSwitch(switches::kAshBrowserTests)) {
     command_line->AppendSwitchNative(switches::kViewerLaunchViaAppId,
                                      win8::test::kDefaultTestAppUserModelId);
@@ -270,7 +270,7 @@ bool InProcessBrowserTest::CreateUserDataDirectory() {
 
 void InProcessBrowserTest::TearDown() {
   DCHECK(!g_browser_process);
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   com_initializer_.reset();
 #endif
   BrowserTestBase::TearDown();

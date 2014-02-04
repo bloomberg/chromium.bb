@@ -457,13 +457,10 @@ extern const char kForceImmersive[];
 extern const char kForceDesktop[];
 extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
-extern const char kWaitForMutex[];
-extern const char kWindows8Search[];
-#endif
-
-#if defined(OS_WIN) && defined(USE_AURA)
 extern const char kViewerConnect[];
 extern const char kViewerLaunchViaAppId[];
+extern const char kWaitForMutex[];
+extern const char kWindows8Search[];
 #endif
 
 #ifndef NDEBUG

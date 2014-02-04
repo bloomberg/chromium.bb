@@ -395,7 +395,7 @@ void OnAppExiting() {
 bool ShouldStartShutdown(Browser* browser) {
   if (BrowserList::GetInstance(browser->host_desktop_type())->size() > 1)
     return false;
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   // On Windows 8 the desktop and ASH environments could be active
   // at the same time.
   // We should not start the shutdown process in the following cases:-

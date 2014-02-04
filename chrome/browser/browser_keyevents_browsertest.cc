@@ -395,9 +395,9 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_NormalKeyEvents) {
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 
-#if defined(OS_LINUX) || (defined(OS_WIN) && defined(USE_AURA))
+#if defined(OS_LINUX) || defined(OS_WIN)
 // Linux: http://crbug.com/129235
-// Win Aura: crbug.com/269564
+// Win: crbug.com/269564
 #define MAYBE_CtrlKeyEvents DISABLED_CtrlKeyEvents
 #else
 #define MAYBE_CtrlKeyEvents CtrlKeyEvents
@@ -666,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
 }
 
 // Flaky, http://crbug.com/69475.
-#if defined(OS_LINUX) || (defined(OS_WIN) && defined(USE_AURA))
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_ReservedAccelerators DISABLED_ReservedAccelerators
 #else
 #define MAYBE_ReservedAccelerators ReservedAccelerators

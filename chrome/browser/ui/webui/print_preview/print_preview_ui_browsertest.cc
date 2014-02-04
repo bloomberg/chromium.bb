@@ -22,7 +22,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 
 BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
   HWND* child = reinterpret_cast<HWND*>(l_param);

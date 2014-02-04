@@ -19,7 +19,7 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
   EXPECT_FALSE(BookmarkBubbleView::IsShowing());
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 
 class StarViewTestNoDWM : public InProcessBrowserTest {
  public:

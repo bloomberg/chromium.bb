@@ -592,8 +592,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
-#if defined(USE_AURA) && defined(OS_WIN)
-    // In Aura for Windows we need to check if we can load NPAPI plugins.
+#if defined(OS_WIN)
+    // In Windows we need to check if we can load NPAPI plugins.
     // For example, if the render view is in the Ash desktop, we should not.
     if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed &&
         plugin.type == content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {

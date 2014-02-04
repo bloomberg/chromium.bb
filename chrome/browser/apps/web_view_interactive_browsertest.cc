@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
       gfx::Point(corner().x() + 74, corner().y() + 74)));
   MoveMouseInsideWindowWithListener(gfx::Point(75, 75), "mouse-move");
 
-#if (defined(OS_WIN) && defined(USE_AURA))
+#if defined(OS_WIN)
   // When the mouse is unlocked on win aura, sending a test mouse click clicks
   // where the mouse moved to while locked. I was unable to figure out why, and
   // since the issue only occurs with the test mouse events, just fix it with

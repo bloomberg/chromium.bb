@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "chrome/browser/browser_process_platform_part_mac.h"
-#elif defined(OS_WIN) && defined(USE_AURA)
+#elif defined(OS_WIN)
 #include "chrome/browser/browser_process_platform_part_aurawin.h"
 #else
 #include "chrome/browser/browser_process_platform_part_base.h"

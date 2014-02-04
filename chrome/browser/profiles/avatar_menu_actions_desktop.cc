@@ -64,7 +64,7 @@ bool AvatarMenuActionsDesktop::ShouldShowAddNewProfileLink() const {
   // |browser_| can be NULL in unit_tests.
   if (browser_ && browser_->profile()->IsManaged())
     return false;
-#if defined(USE_AURA) && defined(OS_WIN)
+#if defined(OS_WIN)
   return chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH;
 #else
   return true;
@@ -72,7 +72,7 @@ bool AvatarMenuActionsDesktop::ShouldShowAddNewProfileLink() const {
 }
 
 bool AvatarMenuActionsDesktop::ShouldShowEditProfileLink() const {
-#if defined(USE_AURA) && defined(OS_WIN)
+#if defined(OS_WIN)
   return chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH;
 #else
   return true;

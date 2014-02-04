@@ -197,7 +197,7 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                     const base::string16& yes_text,
                                     const base::string16& no_text) {
 
-#if defined(USE_AURA) && defined(OS_WIN)
+#if defined(OS_WIN)
   // If we're very early, we can't show a GPU-based dialog, so fallback to
   // plain Windows MessageBox.
   if (!ui::ContextFactory::GetInstance())
