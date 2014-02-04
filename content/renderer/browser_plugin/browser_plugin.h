@@ -42,6 +42,9 @@ class CONTENT_EXPORT BrowserPlugin :
   int render_view_routing_id() const { return render_view_routing_id_; }
   int guest_instance_id() const { return guest_instance_id_; }
   bool attached() const { return attached_; }
+  BrowserPluginManager* browser_plugin_manager() const {
+    return browser_plugin_manager_.get();
+  }
 
   static BrowserPlugin* FromContainer(blink::WebPluginContainer* container);
 
@@ -234,9 +237,6 @@ class CONTENT_EXPORT BrowserPlugin :
   int GetAdjustedMinHeight() const;
   // Gets the Min Width value used for auto size.
   int GetAdjustedMinWidth() const;
-  BrowserPluginManager* browser_plugin_manager() const {
-    return browser_plugin_manager_.get();
-  }
 
   // Virtual to allow for mocking in tests.
   virtual float GetDeviceScaleFactor() const;

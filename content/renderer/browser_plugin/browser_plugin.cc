@@ -917,10 +917,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     if (!compositing_helper_.get()) {
       compositing_helper_ =
           ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
-              container_,
-              browser_plugin_manager(),
-              guest_instance_id_,
-              render_view_routing_id_);
+              weak_ptr_factory_.GetWeakPtr());
     }
   } else {
     if (paint_ack_received_) {
@@ -953,9 +950,9 @@ void BrowserPlugin::destroy() {
   // The BrowserPlugin's WebPluginContainer is deleted immediately after this
   // call returns, so let's not keep a reference to it around.
   g_plugin_container_map.Get().erase(container_);
-  container_ = NULL;
   if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();
+  container_ = NULL;
   // Will be a no-op if the mouse is not currently locked.
   if (render_view_.get())
     render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);

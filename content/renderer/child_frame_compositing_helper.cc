@@ -16,6 +16,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -39,12 +40,9 @@ ChildFrameCompositingHelper::SwapBuffersInfo::SwapBuffersInfo()
 
 ChildFrameCompositingHelper*
 ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
-    blink::WebPluginContainer* container,
-    BrowserPluginManager* manager,
-    int instance_id,
-    int host_routing_id) {
+    const base::WeakPtr<BrowserPlugin>& browser_plugin) {
   return new ChildFrameCompositingHelper(
-      container, NULL, manager, NULL, instance_id, host_routing_id);
+      browser_plugin, NULL, NULL, browser_plugin->render_view_routing_id());
 }
 
 ChildFrameCompositingHelper*
@@ -53,18 +51,15 @@ ChildFrameCompositingHelper::CreateCompositingHelperForRenderFrame(
     RenderFrameImpl* render_frame,
     int host_routing_id) {
   return new ChildFrameCompositingHelper(
-      NULL, frame, NULL, render_frame, 0, host_routing_id);
+      base::WeakPtr<BrowserPlugin>(), frame, render_frame, host_routing_id);
 }
 
 ChildFrameCompositingHelper::ChildFrameCompositingHelper(
-    blink::WebPluginContainer* container,
+    const base::WeakPtr<BrowserPlugin>& browser_plugin,
     blink::WebFrame* frame,
-    BrowserPluginManager* manager,
     RenderFrameImpl* render_frame,
-    int instance_id,
     int host_routing_id)
-    : instance_id_(instance_id),
-      host_routing_id_(host_routing_id),
+    : host_routing_id_(host_routing_id),
       last_route_id_(0),
       last_output_surface_id_(0),
       last_host_id_(0),
@@ -72,23 +67,42 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       ack_pending_(true),
       software_ack_pending_(false),
       opaque_(true),
-      container_(container),
       frame_(frame),
-      browser_plugin_manager_(manager),
+      browser_plugin_(browser_plugin),
       render_frame_(render_frame) {}
 
 ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {}
+
+BrowserPluginManager* ChildFrameCompositingHelper::GetBrowserPluginManager() {
+  if (!browser_plugin_)
+    return NULL;
+
+  return browser_plugin_->browser_plugin_manager();
+}
+
+blink::WebPluginContainer* ChildFrameCompositingHelper::GetContainer() {
+  if (!browser_plugin_)
+    return NULL;
+
+  return browser_plugin_->container();
+}
+
+int ChildFrameCompositingHelper::GetInstanceID() {
+  if (!browser_plugin_)
+    return 0;
+
+  return browser_plugin_->guest_instance_id();
+}
 
 void ChildFrameCompositingHelper::SendCompositorFrameSwappedACKToBrowser(
     FrameHostMsg_CompositorFrameSwappedACK_Params& params) {
   // This function will be removed when BrowserPluginManager is removed and
   // BrowserPlugin is modified to use a RenderFrame.
-  if (browser_plugin_manager_) {
-    browser_plugin_manager_->Send(
+  if (GetBrowserPluginManager()) {
+    GetBrowserPluginManager()->Send(
         new BrowserPluginHostMsg_CompositorFrameSwappedACK(
-            host_routing_id_, instance_id_, params));
-  } else {
-    DCHECK(render_frame_);
+            host_routing_id_, GetInstanceID(), params));
+  } else if (render_frame_) {
     render_frame_->Send(
         new FrameHostMsg_CompositorFrameSwappedACK(host_routing_id_, params));
   }
@@ -98,11 +112,10 @@ void ChildFrameCompositingHelper::SendBuffersSwappedACKToBrowser(
     FrameHostMsg_BuffersSwappedACK_Params& params) {
   // This function will be removed when BrowserPluginManager is removed and
   // BrowserPlugin is modified to use a RenderFrame.
-  if (browser_plugin_manager_) {
-    browser_plugin_manager_->Send(new BrowserPluginHostMsg_BuffersSwappedACK(
-        host_routing_id_, instance_id_, params));
-  } else {
-    DCHECK(render_frame_);
+  if (GetBrowserPluginManager()) {
+    GetBrowserPluginManager()->Send(new BrowserPluginHostMsg_BuffersSwappedACK(
+        host_routing_id_, GetInstanceID(), params));
+  } else if (render_frame_) {
     render_frame_->Send(
         new FrameHostMsg_BuffersSwappedACK(host_routing_id_, params));
   }
@@ -112,12 +125,11 @@ void ChildFrameCompositingHelper::SendReclaimCompositorResourcesToBrowser(
     FrameHostMsg_ReclaimCompositorResources_Params& params) {
   // This function will be removed when BrowserPluginManager is removed and
   // BrowserPlugin is modified to use a RenderFrame.
-  if (browser_plugin_manager_) {
-    browser_plugin_manager_->Send(
+  if (GetBrowserPluginManager()) {
+    GetBrowserPluginManager()->Send(
         new BrowserPluginHostMsg_ReclaimCompositorResources(
-            host_routing_id_, instance_id_, params));
-  } else {
-    DCHECK(render_frame_);
+            host_routing_id_, GetInstanceID(), params));
+  } else if (render_frame_) {
     render_frame_->Send(
         new FrameHostMsg_ReclaimCompositorResources(host_routing_id_, params));
   }
@@ -177,9 +189,9 @@ void ChildFrameCompositingHelper::EnableCompositing(bool enable) {
     web_layer_.reset(new webkit::WebLayerImpl(background_layer_));
   }
 
-  if (container_) {
-    container_->setWebLayer(enable ? web_layer_.get() : NULL);
-  } else {
+  if (GetContainer()) {
+    GetContainer()->setWebLayer(enable ? web_layer_.get() : NULL);
+  } else if (frame_) {
     frame_->setRemoteWebLayer(enable ? web_layer_.get() : NULL);
   }
 }
@@ -262,9 +274,8 @@ void ChildFrameCompositingHelper::MailboxReleased(SwapBuffersInfo mailbox,
 }
 
 void ChildFrameCompositingHelper::OnContainerDestroy() {
-  if (container_)
-    container_->setWebLayer(NULL);
-  container_ = NULL;
+  if (GetContainer())
+    GetContainer()->setWebLayer(NULL);
 
   if (resource_collection_)
     resource_collection_->SetClient(NULL);
@@ -546,9 +557,11 @@ void ChildFrameCompositingHelper::CopyFromCompositingSurfaceHasResult(
                                       dest_size.width(),
                                       dest_size.height());
   }
-  browser_plugin_manager_->Send(
-      new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
-          host_routing_id_, instance_id_, request_id, resized_bitmap));
+  if (GetBrowserPluginManager()) {
+    GetBrowserPluginManager()->Send(
+        new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
+            host_routing_id_, GetInstanceID(), request_id, resized_bitmap));
+  }
 }
 
 }  // namespace content

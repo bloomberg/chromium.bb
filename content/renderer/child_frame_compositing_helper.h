@@ -47,6 +47,7 @@ struct FrameHostMsg_ReclaimCompositorResources_Params;
 
 namespace content {
 
+class BrowserPlugin;
 class BrowserPluginManager;
 class RenderFrameImpl;
 
@@ -55,10 +56,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       public cc::DelegatedFrameResourceCollectionClient {
  public:
   static ChildFrameCompositingHelper* CreateCompositingHelperForBrowserPlugin(
-      blink::WebPluginContainer* container,
-      BrowserPluginManager* manager,
-      int instance_id,
-      int host_routing_id);
+      const base::WeakPtr<BrowserPlugin>& browser_plugin);
   static ChildFrameCompositingHelper* CreateCompositingHelperForRenderFrame(
       blink::WebFrame* frame,
       RenderFrameImpl* render_frame,
@@ -91,12 +89,11 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   friend class base::RefCounted<ChildFrameCompositingHelper>;
 
  private:
-  ChildFrameCompositingHelper(blink::WebPluginContainer* container,
-                              blink::WebFrame* frame,
-                              BrowserPluginManager* manager,
-                              RenderFrameImpl* render_frame,
-                              int instance_id,
-                              int host_routing_id);
+  ChildFrameCompositingHelper(
+      const base::WeakPtr<BrowserPlugin>& browser_plugin,
+      blink::WebFrame* frame,
+      RenderFrameImpl* render_frame,
+      int host_routing_id);
 
   enum SwapBuffersType {
     TEXTURE_IMAGE_TRANSPORT,
@@ -116,6 +113,11 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
     base::SharedMemory* shared_memory;
   };
   virtual ~ChildFrameCompositingHelper();
+
+  BrowserPluginManager* GetBrowserPluginManager();
+  blink::WebPluginContainer* GetContainer();
+  int GetInstanceID();
+
   void SendCompositorFrameSwappedACKToBrowser(
       FrameHostMsg_CompositorFrameSwappedACK_Params& params);
   void SendBuffersSwappedACKToBrowser(
@@ -137,7 +139,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       gfx::Size dest_size,
       scoped_ptr<cc::CopyOutputResult> result);
 
-  int instance_id_;
   int host_routing_id_;
   int last_route_id_;
   uint32 last_output_surface_id_;
@@ -157,10 +158,9 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
   scoped_ptr<blink::WebLayer> web_layer_;
-  blink::WebPluginContainer* container_;
   blink::WebFrame* frame_;
 
-  scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
+  base::WeakPtr<BrowserPlugin> browser_plugin_;
   RenderFrameImpl* render_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);
