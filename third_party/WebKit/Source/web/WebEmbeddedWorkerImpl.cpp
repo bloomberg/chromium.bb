@@ -31,6 +31,7 @@
 #include "config.h"
 #include "WebEmbeddedWorkerImpl.h"
 
+#include "ServiceWorkerGlobalScopeClientImpl.h"
 #include "ServiceWorkerGlobalScopeProxy.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrameImpl.h"
@@ -226,8 +227,13 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
         (m_workerStartData.startMode == WebEmbeddedWorkerStartModePauseOnStart)
         ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
 
+    // This is to be owned by ServiceWorker's WorkerGlobalScope, and is
+    // guaranteed to be around while the WorkerGlobalScope is alive.
+    WebServiceWorkerContextClient* contextClient = m_workerContextClient.get();
+
     OwnPtr<WorkerClients> workerClients = WorkerClients::create();
     providePermissionClientToWorker(workerClients.get(), m_permissionClient.release());
+    provideServiceWorkerGlobalScopeClientToWorker(workerClients.get(), ServiceWorkerGlobalScopeClientImpl::create(m_workerContextClient.release()));
 
     OwnPtr<WorkerThreadStartupData> startupData =
         WorkerThreadStartupData::create(
@@ -242,7 +248,7 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
 
     m_mainScriptLoader.clear();
 
-    m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *toWebFrameImpl(m_mainFrame)->frame()->document(), m_workerContextClient.release());
+    m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *toWebFrameImpl(m_mainFrame)->frame()->document(), *contextClient);
     m_loaderProxy = LoaderProxy::create(*this);
 
     m_workerThread = ServiceWorkerThread::create(*m_loaderProxy, *m_workerGlobalScopeProxy, startupData.release());

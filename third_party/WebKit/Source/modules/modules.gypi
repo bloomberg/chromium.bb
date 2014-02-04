@@ -481,6 +481,8 @@
       'mediastream/URLMediaStream.h',
       'serviceworkers/ServiceWorkerGlobalScope.cpp',
       'serviceworkers/ServiceWorkerGlobalScope.h',
+      'serviceworkers/ServiceWorkerGlobalScopeClient.cpp',
+      'serviceworkers/ServiceWorkerGlobalScopeClient.h',
       'serviceworkers/ServiceWorkerThread.cpp',
       'serviceworkers/ServiceWorkerThread.h',
       'navigatorcontentutils/NavigatorContentUtils.cpp',

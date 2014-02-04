@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerContextProxy_h
-#define WebServiceWorkerContextProxy_h
+#include "config.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 
-namespace blink {
+#include "core/dom/ExecutionContext.h"
+#include "core/workers/WorkerGlobalScope.h"
 
-class WebString;
+namespace WebCore {
 
-// A proxy interface to talk to the worker's GlobalScope implementation.
-// All methods of this class must be called on the worker thread.
-class WebServiceWorkerContextProxy {
-public:
-    virtual ~WebServiceWorkerContextProxy() { }
+const char* ServiceWorkerGlobalScopeClient::supplementName()
+{
+    return "ServiceWorkerGlobalScopeClient";
+}
 
-    // FIXME: This needs to pass the active service worker info.
-    virtual void dispatchInstallEvent(int installEventID) = 0;
+ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::from(ExecutionContext* context)
+{
+    return static_cast<ServiceWorkerGlobalScopeClient*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
+}
 
-    virtual void resumeWorkerContext() { }
-    virtual void attachDevTools() { }
-    virtual void reattachDevTools(const WebString& savedState) { }
-    virtual void detachDevTools() { }
-    virtual void dispatchDevToolsMessage(const WebString&) { }
-};
+void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, PassOwnPtr<ServiceWorkerGlobalScopeClient> client)
+{
+    clients->provideSupplement(ServiceWorkerGlobalScopeClient::supplementName(), client);
+}
 
-} // namespace blink
-
-#endif // WebServiceWorkerContextProxy_h
+} // namespace WebCore

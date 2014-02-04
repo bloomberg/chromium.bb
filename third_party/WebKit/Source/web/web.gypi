@@ -81,6 +81,8 @@
       'PrerendererClientImpl.h',
       'ScrollbarGroup.cpp',
       'ScrollbarGroup.h',
+      'ServiceWorkerGlobalScopeClientImpl.cpp',
+      'ServiceWorkerGlobalScopeClientImpl.h',
       'ServiceWorkerGlobalScopeProxy.cpp',
       'ServiceWorkerGlobalScopeProxy.h',
       'SharedWorkerRepositoryClientImpl.cpp',

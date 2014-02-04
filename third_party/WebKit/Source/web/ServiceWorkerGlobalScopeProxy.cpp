@@ -46,7 +46,7 @@ using namespace WebCore;
 
 namespace blink {
 
-PassOwnPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, PassOwnPtr<WebServiceWorkerContextClient> client)
+PassOwnPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, WebServiceWorkerContextClient& client)
 {
     return adoptPtr(new ServiceWorkerGlobalScopeProxy(embeddedWorker, executionContext, client));
 }
@@ -55,7 +55,7 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 {
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent()
+void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int)
 {
     ASSERT(m_workerGlobalScope);
     // FIXME: We need to asynchronously call back to the client when all
@@ -65,7 +65,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent()
 
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
 {
-    notImplemented();
+    m_client.reportException(errorMessage, lineNumber, columnNumber, sourceURL);
 }
 
 void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL)
@@ -75,19 +75,19 @@ void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(MessageSource, MessageL
 
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& message)
 {
-    m_client->dispatchDevToolsMessage(message);
+    m_client.dispatchDevToolsMessage(message);
 }
 
 void ServiceWorkerGlobalScopeProxy::updateInspectorStateCookie(const String& message)
 {
-    m_client->saveDevToolsAgentState(message);
+    m_client.saveDevToolsAgentState(message);
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
 {
     ASSERT(!m_workerGlobalScope);
     m_workerGlobalScope = workerGlobalScope;
-    m_client->workerContextStarted(this);
+    m_client.workerContextStarted(this);
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
@@ -98,16 +98,15 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeDestroyed()
 {
     m_workerGlobalScope = 0;
-    m_client->workerContextDestroyed();
+    m_client.workerContextDestroyed();
 }
 
-ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, PassOwnPtr<WebServiceWorkerContextClient> client)
+ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl& embeddedWorker, ExecutionContext& executionContext, WebServiceWorkerContextClient& client)
     : m_embeddedWorker(embeddedWorker)
     , m_executionContext(executionContext)
     , m_client(client)
     , m_workerGlobalScope(0)
 {
-    ASSERT(m_client);
 }
 
 } // namespace blink

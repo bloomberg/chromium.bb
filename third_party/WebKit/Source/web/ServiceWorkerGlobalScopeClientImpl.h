@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerContextProxy_h
-#define WebServiceWorkerContextProxy_h
+#ifndef ServiceWorkerGlobalScopeClientImpl_h
+#define ServiceWorkerGlobalScopeClientImpl_h
+
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
-class WebString;
+class WebServiceWorkerContextClient;
 
-// A proxy interface to talk to the worker's GlobalScope implementation.
-// All methods of this class must be called on the worker thread.
-class WebServiceWorkerContextProxy {
+class ServiceWorkerGlobalScopeClientImpl FINAL : public WebCore::ServiceWorkerGlobalScopeClient {
 public:
-    virtual ~WebServiceWorkerContextProxy() { }
+    static PassOwnPtr<WebCore::ServiceWorkerGlobalScopeClient> create(PassOwnPtr<WebServiceWorkerContextClient>);
+    virtual ~ServiceWorkerGlobalScopeClientImpl();
 
-    // FIXME: This needs to pass the active service worker info.
-    virtual void dispatchInstallEvent(int installEventID) = 0;
+    virtual void didHandleInstallEvent(int installEventID) OVERRIDE;
 
-    virtual void resumeWorkerContext() { }
-    virtual void attachDevTools() { }
-    virtual void reattachDevTools(const WebString& savedState) { }
-    virtual void detachDevTools() { }
-    virtual void dispatchDevToolsMessage(const WebString&) { }
+private:
+    ServiceWorkerGlobalScopeClientImpl(PassOwnPtr<WebServiceWorkerContextClient>);
+
+    OwnPtr<WebServiceWorkerContextClient> m_client;
 };
 
 } // namespace blink
 
-#endif // WebServiceWorkerContextProxy_h
+#endif // ServiceWorkerGlobalScopeClientImpl_h

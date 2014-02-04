@@ -42,6 +42,9 @@ class WebServiceWorkerContextProxy;
 // on the main thread and then passed on to the worker thread to be owned
 // by a newly created WorkerGlobalScope. All methods of this class, except
 // for workerContextFailedToStart(), are called on the worker thread.
+// FIXME: Split this into EmbeddedWorkerContextClient and
+// ServiceWorkerScriptContextClient when we decide to use EmbeddedWorker
+// framework for other implementation (like SharedWorker).
 class WebServiceWorkerContextClient {
 public:
     virtual ~WebServiceWorkerContextClient() { }
@@ -63,8 +66,17 @@ public:
     // This is called on the main thread.
     virtual void workerContextFailedToStart() { }
 
+    // Called when the WorkerGlobalScope had an error or an exception.
+    virtual void reportException(const WebString& errorMessage, int lineNumber, int columnNumber, const WebString& sourceURL) { }
+
+    // Inspector related messages.
     virtual void dispatchDevToolsMessage(const WebString&) { }
     virtual void saveDevToolsAgentState(const WebString&) { }
+
+    // ServiceWorker specific method. Called after InstallEvent (dispatched
+    // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's
+    // script context.
+    virtual void didHandleInstallEvent(int installEventID) { }
 };
 
 } // namespace blink
