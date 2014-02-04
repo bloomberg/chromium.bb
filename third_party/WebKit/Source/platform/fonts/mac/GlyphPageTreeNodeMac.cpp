@@ -46,6 +46,16 @@ static bool shouldUseCoreText(UChar* buffer, unsigned bufferLength, const Simple
 {
     if (fontData->platformData().isCompositeFontReference())
         return true;
+
+    // CoreText doesn't have vertical glyphs of surrogate pair characters.
+    // Therefore, we should not use CoreText, but this always returns horizontal glyphs.
+    // FIXME: We should use vertical glyphs. https://code.google.com/p/chromium/issues/detail?id=340173
+    if (bufferLength >= 2 && U_IS_SURROGATE(buffer[0]) && fontData->hasVerticalGlyphs()) {
+        ASSERT(U_IS_SURROGATE_LEAD(buffer[0]));
+        ASSERT(U_IS_TRAIL(buffer[1]));
+        return false;
+    }
+
     if (fontData->platformData().widthVariant() != RegularWidth || fontData->hasVerticalGlyphs()) {
         // Ideographs don't have a vertical variant or width variants.
         for (unsigned i = 0; i < bufferLength; ++i) {
