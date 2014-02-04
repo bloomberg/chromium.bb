@@ -59,6 +59,7 @@ public:
     bool paused() const { return m_paused && !m_isPausedForTesting; }
     void pause();
     void play();
+    void reverse();
     bool finished() { return limited(currentTime()); }
 
     double playbackRate() const { return m_playbackRate; }

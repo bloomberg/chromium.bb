@@ -351,6 +351,65 @@ TEST_F(AnimationPlayerTest, PlayWithPlaybackRateZeroDoesNotSeek)
 }
 
 
+TEST_F(AnimationPlayerTest, Reverse)
+{
+    player->setCurrentTime(10);
+    player->pause();
+    player->reverse();
+    EXPECT_FALSE(player->paused());
+    EXPECT_EQ(-1, player->playbackRate());
+    EXPECT_EQ(10, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, ReverseDoesNothingWithPlaybackRateZero)
+{
+    player->setCurrentTime(10);
+    player->setPlaybackRate(0);
+    player->pause();
+    player->reverse();
+    EXPECT_TRUE(player->paused());
+    EXPECT_EQ(0, player->playbackRate());
+    EXPECT_EQ(10, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, ReverseDoesNotSeekWithNoSource)
+{
+    player->setSource(0);
+    player->setCurrentTime(10);
+    player->reverse();
+    EXPECT_EQ(10, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, ReverseSeeksToStart)
+{
+    player->setCurrentTime(-10);
+    player->setPlaybackRate(-1);
+    player->reverse();
+    EXPECT_EQ(0, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, ReverseSeeksToEnd)
+{
+    player->setCurrentTime(40);
+    player->reverse();
+    EXPECT_EQ(30, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, ReverseLimitsPlayer)
+{
+    player->setCurrentTime(40);
+    player->setPlaybackRate(-1);
+    player->reverse();
+    EXPECT_TRUE(player->finished());
+    EXPECT_EQ(40, player->currentTime());
+
+    player->setCurrentTime(-10);
+    player->reverse();
+    EXPECT_TRUE(player->finished());
+    EXPECT_EQ(-10, player->currentTime());
+}
+
+
 TEST_F(AnimationPlayerTest, LimitingAtSourceEnd)
 {
     updateTimeline(30);
