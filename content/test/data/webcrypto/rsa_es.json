@@ -1,0 +1,24 @@
+{
+  // The RSA public and private keys used for this test are produced by the
+  // openssl command line:
+  // % openssl genrsa -out pair.pem 1024
+  // % openssl rsa -in pair.pem -out spki.der -outform DER -pubout
+  // % openssl pkcs8 -topk8 -inform PEM -outform DER -in pair.pem -out
+  //     pkcs8.der -nocrypt
+  // % xxd -p spki.der
+  // % xxd -p pkcs8.der
+  "rsa_spki_der": "30819f300d06092a864886f70d010101050003818d0030818902818100a8d30894b93f376f7822229bfd2483e50da944c4ab803ca31979e0f47e70bf683c687c6b3e80f280a237cea3643fd1f7f10f7cc664dbc2ecd45be53e1c9b15a53c37dbdad846c0f8340c472abc7821e4aa7df185867bf38228ac3ecc1d97d3c8b57e21ea6ba57b2bc3814a436e910ee8ab64a0b7743a927e944d3420401f7dd50203010001",
+  "rsa_pkcs8_der": "30820276020100300d06092a864886f70d0101010500048202603082025c02010002818100a8d30894b93f376f7822229bfd2483e50da944c4ab803ca31979e0f47e70bf683c687c6b3e80f280a237cea3643fd1f7f10f7cc664dbc2ecd45be53e1c9b15a53c37dbdad846c0f8340c472abc7821e4aa7df185867bf38228ac3ecc1d97d3c8b57e21ea6ba57b2bc3814a436e910ee8ab64a0b7743a927e944d3420401f7dd5020301000102818100896cdffb50a0691bd00ad9696933243a7c5861a64684e8d74b91aed0d76c28234da9303e8c6ea2f89b141a9d5ea9a4ddd3d8eb9503dcf05ba0b1fd76060b281e3ae4b9d497fb5519bdf1127db8ad412d6a722686c78df3e3002acca960c6b2a242a83ace5410693c03ce3d74cb9c9a7bacc8e271812920d1f53fee9312ef4eb1024100d09c14418ce92af7cc62f7cdc79836d8c6e3d0d33e7229cc11d732cbac75aa4c56c92e409a3ccbe75d4ce63ac5adca33080690782c6371e3628134c3534ca603024100cf2d3206f6deea2f39b70351c51f854362005aa8f643e49e22486736d536e040dc30a2b4f9be3ab212a88d1891280874b9a170cdeb22eaf61c27c4b082c7d1470240638411a5b3b307ec6e744802c2d4ba556f8bfe72c7b76e790b89bd91ac13f5c9b51d04138d80b3450c1d4337865601bf96748b36c8f627be719f71ac3c70b441024065ce92cfe34ea58bf173a2b8f3024b4d5282540ac581957db3e11a7f528535ec098808dca0013ffcb3b88a25716757c86c540e07d2ad8502cdd129118822c30f0240420a4983040e9db46eb29f1315a0d7b41cf60428f7460fce748e9a1a7d22d7390fa328948e7e9d1724401374e99d45eb41474781201378a4330e8e808ce63551",
+
+  // Similarly, the cleartext and public key encrypted ciphertext for this test
+  // are also produced by openssl. Note that since we are using a 1024-bit key,
+  // the cleartext size must be less than or equal to 117 bytes (modulusLength /
+  // 8 - 11).
+  // % openssl rand -out cleartext.bin 64
+  // % openssl rsautl -encrypt -inkey spki.der -keyform DER -pubin -in
+  //     cleartext.bin -out ciphertext.bin
+  // % xxd -p cleartext.bin
+  // % xxd -p ciphertext.bin
+  "cleartext": "ec358ed141c45d7e03d4c6338aebad718e8bcbbf8f8ee6f8d9f4b9ef06d884739a398c6bcbc688418b2ff64761dc0ccd40e7d52bed03e06946d0957aeef9e822",
+  "ciphertext": "6106441c2b7a4b1a16260ed1ae4fe6135247345dc8e674754bbda6588c6c0d95a3d4d26bb34cdbcbe327723e80343bd7a15cd4c91c3a44e6cb9c6cd67ad2e8bf41523188d9b36dc364a838642dcbc2c25e85dfb2106ba47578ca3bbf8915055aea4fa7c3cbfdfbcc163f04c234fb6d847f39bab9612ecbee04626e945c3ccf42"
+}

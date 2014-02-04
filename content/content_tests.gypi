@@ -320,6 +320,7 @@
         '../sql/sql.gyp:test_support_sql',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/re2/re2.gyp:re2',
         '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',

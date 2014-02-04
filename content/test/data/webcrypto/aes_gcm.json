@@ -1,0 +1,61 @@
+// These tests come from the NIST GCM test vectors:
+// http://csrc.nist.gov/groups/STM/cavp/documents/mac/gcmtestvectors.zip
+//
+// Both encryption and decryption are expected to work.
+[
+  // [Keylen = 128]
+  // [IVlen = 96]
+  // [PTlen = 0]
+  // [AADlen = 0]
+  // [Taglen = 128]
+  {
+    "key": "cf063a34d4a9a76c2c86787d3f96db71",
+    "iv": "113b9785971864c83b01c787",
+    "plain_text": "",
+    "cipher_text": "",
+    "additional_data": "",
+    "authentication_tag": "72ac8493e3a5228b5d130a69d2510e42"
+  },
+
+  // [Keylen = 128]
+  // [IVlen = 96]
+  // [PTlen = 0]
+  // [AADlen = 128]
+  // [Taglen = 120]
+  {
+    "key": "6dfa1a07c14f978020ace450ad663d18",
+    "iv": "34edfa462a14c6969a680ec1",
+    "plain_text": "",
+    "cipher_text": "",
+    "additional_data": "2a35c7f5f8578e919a581c60500c04f6",
+    "authentication_tag": "751f3098d59cf4ea1d2fb0853bde1c"
+  },
+
+  // [Keylen = 128]
+  // [IVlen = 96]
+  // [PTlen = 128]
+  // [AADlen = 128]
+  // [Taglen = 112]
+  {
+    "key": "ed6cd876ceba555706674445c229c12d",
+    "iv": "92ecbf74b765bc486383ca2e",
+    "plain_text": "bfaaaea3880d72d4378561e2597a9b35",
+    "cipher_text": "bdd2ed6c66fa087dce617d7fd1ff6d93",
+    "additional_data": "95bd10d77dbe0e87fb34217f1a2e5efe",
+    "authentication_tag": "ba82e49c55a22ed02ca67da4ec6f"
+  },
+
+  // [Keylen = 192]
+  // [IVlen = 96]
+  // [PTlen = 128]
+  // [AADlen = 384]
+  // [Taglen = 112]
+  {
+    "key": "ae7972c025d7f2ca3dd37dcc3d41c506671765087c6b61b8",
+    "iv": "984c1379e6ba961c828d792d",
+    "plain_text": "d30b02c343487105219d6fa080acc743",
+    "cipher_text": "c4489fa64a6edf80e7e6a3b8855bc37c",
+    "additional_data": "edd8f630f9bbc31b0acf122998f15589d6e6e3e1a3ec89e0c6a6ece751610ebbf57fdfb9d82028ff1d9faebe37a268c1",
+    "authentication_tag": "772ee7de0f91a981c36c93a35c88"
+  }
+]
