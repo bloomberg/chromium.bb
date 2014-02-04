@@ -116,7 +116,7 @@ https://code.google.com/p/libaddressinput/source/browse/trunk/java/res/values/ad
   <message
       name="IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD"
       desc="Message to be shown when a required field is empty">
-    Required
+    Field is required
   </message>
   <message
       name="IDS_LIBADDRESSINPUT_I18N_INVALID_ENTRY"

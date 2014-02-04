@@ -32,6 +32,7 @@
 
 #include "country_rules_aggregator.h"
 #include "grit/libaddressinput_strings.h"
+#include "region_data_constants.h"
 #include "retriever.h"
 #include "rule.h"
 #include "ruleset.h"
@@ -111,7 +112,17 @@ class AddressValidatorImpl : public AddressValidator {
       AddressProblems* problems) const {
     std::map<std::string, const Ruleset*>::const_iterator ruleset_it =
         rules_.find(address.country_code);
+
+    // We can still validate the required fields even if the full ruleset isn't
+    // ready.
     if (ruleset_it == rules_.end()) {
+      Rule rule;
+      rule.CopyFrom(Rule::GetDefault());
+      if (rule.ParseSerializedRule(
+               RegionDataConstants::GetRegionData(address.country_code))) {
+        EnforceRequiredFields(rule, address, filter, problems);
+      }
+
       return loading_rules_.find(address.country_code) != loading_rules_.end()
           ? RULES_NOT_READY
           : RULES_UNAVAILABLE;
@@ -121,24 +132,7 @@ class AddressValidatorImpl : public AddressValidator {
     assert(ruleset != NULL);
     const Rule& country_rule =
         ruleset->GetLanguageCodeRule(address.language_code);
-
-    // Validate required fields.
-    for (std::vector<AddressField>::const_iterator
-             field_it = country_rule.GetRequired().begin();
-         field_it != country_rule.GetRequired().end();
-         ++field_it) {
-      bool field_empty = *field_it != STREET_ADDRESS
-          ? address.GetFieldValue(*field_it).empty()
-          : IsEmptyStreetAddress(address.address_lines);
-      if (field_empty &&
-          FilterAllows(
-              filter, *field_it, AddressProblem::MISSING_REQUIRED_FIELD)) {
-        problems->push_back(AddressProblem(
-            *field_it,
-            AddressProblem::MISSING_REQUIRED_FIELD,
-            IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD));
-      }
-    }
+    EnforceRequiredFields(country_rule, address, filter, problems);
 
     // Validate general postal code format. A country-level rule specifies the
     // regular expression for the whole postal code.
@@ -215,6 +209,29 @@ class AddressValidatorImpl : public AddressValidator {
     if (load_rules_delegate_ != NULL) {
       load_rules_delegate_->OnAddressValidationRulesLoaded(
           country_code, success);
+    }
+  }
+
+  // Adds problems for just the required fields portion of |country_rule|.
+  void EnforceRequiredFields(const Rule& country_rule,
+                             const AddressData& address,
+                             const AddressProblemFilter& filter,
+                             AddressProblems* problems) const {
+    for (std::vector<AddressField>::const_iterator
+             field_it = country_rule.GetRequired().begin();
+         field_it != country_rule.GetRequired().end();
+         ++field_it) {
+      bool field_empty = *field_it != STREET_ADDRESS
+          ? address.GetFieldValue(*field_it).empty()
+          : IsEmptyStreetAddress(address.address_lines);
+      if (field_empty &&
+          FilterAllows(
+              filter, *field_it, AddressProblem::MISSING_REQUIRED_FIELD)) {
+        problems->push_back(AddressProblem(
+            *field_it,
+            AddressProblem::MISSING_REQUIRED_FIELD,
+            IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD));
+      }
     }
   }
 

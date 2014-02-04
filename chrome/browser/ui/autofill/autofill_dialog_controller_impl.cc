@@ -77,6 +77,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/component_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/libaddressinput_strings.h"
 #include "grit/platform_locale_settings.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
@@ -1721,14 +1722,14 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
     case CREDIT_CARD_EXP_MONTH:
       if (!InputWasEdited(CREDIT_CARD_EXP_MONTH, value)) {
         return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE);
+            IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD);
       }
       break;
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
       if (!InputWasEdited(CREDIT_CARD_EXP_4_DIGIT_YEAR, value)) {
         return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE);
+            IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD);
       }
       break;
 
@@ -1790,9 +1791,9 @@ base::string16 AutofillDialogControllerImpl::InputValidityMessage(
       break;
   }
 
-  return value.empty() ?
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE) :
-      base::string16();
+  return value.empty() ? l10n_util::GetStringUTF16(
+                             IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD) :
+                         base::string16();
 }
 
 // TODO(groby): Also add tests.
@@ -1803,6 +1804,7 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
   if (inputs.empty())
     return messages;
 
+  AddressValidator::Status status = AddressValidator::SUCCESS;
   if (i18ninput::Enabled() && section != SECTION_CC) {
     AddressData address_data;
     i18ninput::CreateAddressData(
@@ -1810,21 +1812,17 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
         &address_data);
 
     AddressProblems problems;
-    if (GetValidator()->ValidateAddress(
-            address_data,
-            AddressProblemFilter(),
-            &problems) == AddressValidator::SUCCESS) {
-      common::AddressType address_type = section == SECTION_SHIPPING ?
-          common::ADDRESS_TYPE_SHIPPING : common::ADDRESS_TYPE_BILLING;
-      for (size_t i = 0; i < problems.size(); ++i) {
-        const AddressProblem& problem = problems[i];
-        bool sure = problem.type != AddressProblem::MISSING_REQUIRED_FIELD;
-        base::string16 text = l10n_util::GetStringUTF16(problem.description_id);
-        messages.Set(i18ninput::TypeForField(problem.field, address_type),
-                     ValidityMessage(text, sure));
-      }
-    } else {
-      // TODO(dbeam): disable submit button until able to successfully validate.
+    status = GetValidator()->ValidateAddress(address_data,
+                                             AddressProblemFilter(),
+                                             &problems);
+    common::AddressType address_type = section == SECTION_SHIPPING ?
+        common::ADDRESS_TYPE_SHIPPING : common::ADDRESS_TYPE_BILLING;
+    for (size_t i = 0; i < problems.size(); ++i) {
+      const AddressProblem& problem = problems[i];
+      bool sure = problem.type != AddressProblem::MISSING_REQUIRED_FIELD;
+      base::string16 text = l10n_util::GetStringUTF16(problem.description_id);
+      messages.Set(i18ninput::TypeForField(problem.field, address_type),
+                   ValidityMessage(text, sure));
     }
   }
 
@@ -1838,6 +1836,18 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     // it to be valid unless later proven otherwise.
     bool sure = InputWasEdited(type, iter->second) ||
                 AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY;
+
+    if (status != AddressValidator::SUCCESS &&
+        InputWasEdited(type, iter->second) &&
+        (AutofillType(type).group() == ADDRESS_HOME ||
+         AutofillType(type).group() == ADDRESS_BILLING)) {
+      DCHECK(text.empty());
+      // TODO(estade): string translation or remove this (sweet) hack.
+      text = base::ASCIIToUTF16("Sorry, Chrome failed to validate this field. "
+                                "Please wait and try again.");
+      sure = false;
+    }
+
     messages.Set(type, ValidityMessage(text, sure));
   }
 

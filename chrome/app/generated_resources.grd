@@ -10693,9 +10693,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER" desc="Message displayed to user when phone number validation fails.">
           Invalid phone number. Please check and try again.
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_MISSING_VALUE" desc="Message displayed to user when one of the required fields is left empty.">
-          Field is required
-        </message>
 
         <!-- Autofill dialog post-submit bubbles -->
         <message name="IDS_AUTOFILL_GENERATED_CREDIT_CARD_BUBBLE_TITLE" desc="Title of a bubble shown directly after a new card has been generated via Online Wallet using the Autofill dialog.">
