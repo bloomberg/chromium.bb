@@ -122,6 +122,12 @@ class MetadataDatabase {
       void(SyncStatusCode status, scoped_ptr<MetadataDatabase> instance)>
       CreateCallback;
 
+  enum ActivationStatus {
+    ACTIVATION_PENDING,
+    ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER,
+    ACTIVATION_FAILED_SAME_PATH_TRACKER,
+  };
+
   // The entry point of the MetadataDatabase for production code.
   // If |env_override| is non-NULL, internal LevelDB uses |env_override| instead
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
@@ -294,14 +300,18 @@ class MetadataDatabase {
                      const FileDetails& updated_details,
                      const SyncStatusCallback& callback);
 
-  // Returns true if a tracker of the file can be safely activated without
-  // deactivating any other trackers.  In this case, tries to activate the
-  // tracker, and invokes |callback| upon completion.
-  // Returns false otherwise.  In false case, |callback| will not be invoked.
-  bool TryNoSideEffectActivation(int64 parent_tracker_id,
-                                 const std::string& file_id,
-                                 const SyncStatusCallback& callback);
-
+  // Returns ACTIVATION_PENDING if a tracker of the file can be safely activated
+  // without deactivating any other trackers.  In this case, tries to activate
+  // the tracker, and invokes |callback| upon completion.
+  // Returns ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER if there's another active
+  // tracker that tracks |file_id|.
+  // Returns ACTIVATION_FAILED_SAME_PATH_TRACKER if there's another active
+  // tracker that has the same parent tracker and title to |file_id|.
+  // In these FAILED cases, |callback| is not invoked.
+  ActivationStatus TryNoSideEffectActivation(
+      int64 parent_tracker_id,
+      const std::string& file_id,
+      const SyncStatusCallback& callback);
 
   // Changes the priority of the tracker to low.
   void LowerTrackerPriority(int64 tracker_id);

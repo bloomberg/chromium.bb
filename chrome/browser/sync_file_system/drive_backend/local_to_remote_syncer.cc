@@ -628,18 +628,32 @@ void LocalToRemoteSyncer::DidCreateRemoteFolder(
     return;
   }
 
-  if (metadata_database()->TryNoSideEffectActivation(
+  MetadataDatabase::ActivationStatus activation_status =
+      metadata_database()->TryNoSideEffectActivation(
           remote_parent_folder_tracker_->tracker_id(),
-          file_id, callback)) {
-    // |callback| will be invoked by MetadataDatabase in this case.
-    return;
+          file_id, callback);
+  switch (activation_status) {
+    case MetadataDatabase::ACTIVATION_PENDING:
+      // |callback| will be invoked by MetadataDatabase later in this case.
+      return;
+    case MetadataDatabase::ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER:
+      // The activation failed due to another tracker that has another parent.
+      // Detach the folder from the current parent to avoid using this folder as
+      // active folder.
+      drive_service()->RemoveResourceFromDirectory(
+          remote_parent_folder_tracker_->file_id(), file_id,
+          base::Bind(&LocalToRemoteSyncer::DidDetachResourceForCreationConflict,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback));
+      return;
+    case MetadataDatabase::ACTIVATION_FAILED_SAME_PATH_TRACKER:
+      callback.Run(SYNC_STATUS_FILE_BUSY);
+      return;
   }
 
-  drive_service()->RemoveResourceFromDirectory(
-      remote_parent_folder_tracker_->file_id(), file_id,
-      base::Bind(&LocalToRemoteSyncer::DidDetachResourceForCreationConflict,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  NOTREACHED();
+  callback.Run(SYNC_STATUS_FAILED);
+  return;
 }
 
 void LocalToRemoteSyncer::DidDetachResourceForCreationConflict(

@@ -1099,7 +1099,7 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   WriteToDatabase(batch.Pass(), callback);
 }
 
-bool MetadataDatabase::TryNoSideEffectActivation(
+MetadataDatabase::ActivationStatus MetadataDatabase::TryNoSideEffectActivation(
     int64 parent_tracker_id,
     const std::string& file_id,
     const SyncStatusCallback& callback) {
@@ -1110,7 +1110,7 @@ bool MetadataDatabase::TryNoSideEffectActivation(
   if (!FindFileByFileID(file_id, &file)) {
     NOTREACHED();
     RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
-    return true;
+    return ACTIVATION_PENDING;
   }
   std::string title = file.details().title();
   DCHECK(!HasInvalidTitle(title));
@@ -1135,12 +1135,12 @@ bool MetadataDatabase::TryNoSideEffectActivation(
 
   if (!tracker->active()) {
     if (same_file_id.has_active())
-      return false;
+      return ACTIVATION_FAILED_ANOTHER_ACTIVE_TRACKER;
 
     TrackerSet same_title;
     FindTrackersByParentAndTitle(parent_tracker_id, title, &same_title);
     if (same_title.has_active())
-      return false;
+      return ACTIVATION_FAILED_SAME_PATH_TRACKER;
   }
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
@@ -1160,7 +1160,7 @@ bool MetadataDatabase::TryNoSideEffectActivation(
   PutTrackerToBatch(*tracker, batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
-  return true;
+  return ACTIVATION_PENDING;
 }
 
 void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
