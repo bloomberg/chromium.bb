@@ -3053,7 +3053,7 @@
           'dependencies': [
             'browser_tests',
             'chrome',
-            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
+            '../content/content_shell_and_tests.gyp:copy_test_netscape_plugin',
           ],
           'includes': [
             '../build/isolate.gypi',
