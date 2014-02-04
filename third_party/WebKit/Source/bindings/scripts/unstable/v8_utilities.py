@@ -90,8 +90,7 @@ def uncapitalize(name):
     """
     for acronym in ACRONYMS:
         if name.startswith(acronym):
-            name.replace(acronym, acronym.lower())
-            return name
+            return name.replace(acronym, acronym.lower())
     return name[0].lower() + name[1:]
 
 

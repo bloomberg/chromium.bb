@@ -700,7 +700,7 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
 {##############################################################################}
 {% block class_attributes %}
 {# FIXME: rename to install_attributes and put into configure_class_template #}
-{% if attributes %}
+{% if has_attribute_configuration %}
 static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
     {% for attribute in attributes
        if not (attribute.is_expose_js_accessors or
@@ -834,7 +834,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
         {% set attributes_name, attributes_length =
                ('%sAttributes' % v8_class,
                 'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class)
-           if attributes else (0, 0) %}
+           if has_attribute_configuration else (0, 0) %}
         {% set accessors_name, accessors_length =
                ('%sAccessors' % v8_class,
                 'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class)
