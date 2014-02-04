@@ -452,3 +452,31 @@ TEST_F(ExtensionWelcomeNotificationTest, TimeExpiredNotification) {
       GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) ==
           (GetStartTime() + requested_show_time).ToInternalValue());
 }
+
+// Simulate the passage of time after Chrome is closed and the welcome
+// notification expiration elapses.
+TEST_F(ExtensionWelcomeNotificationTest, NotificationPreviouslyExpired) {
+  StartPreferenceSyncing();
+  SetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
+  SetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp, 1);
+  EXPECT_FALSE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
+  EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) == 1);
+  EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
+
+  base::TimeDelta requested_show_time =
+      base::TimeDelta::FromDays(
+          ExtensionWelcomeNotification::kRequestedShowTimeDays);
+  SetElapsedTime(requested_show_time);
+  ShowChromeNowNotification();
+
+  EXPECT_TRUE(task_runner()->GetPendingTasks().empty());
+  EXPECT_TRUE(message_center()->add_notification_calls() == 0);
+  EXPECT_TRUE(message_center()->remove_notification_calls() == 0);
+  EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
+  EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationDismissed));
+  EXPECT_TRUE(GetBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      GetInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp) == 1);
+}

@@ -178,7 +178,12 @@ void ExtensionWelcomeNotification::ShowWelcomeNotificationIfNecessary(
               prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
         }
 
-        ShowWelcomeNotification(notification.display_source(), pop_up_request);
+        if (IsWelcomeNotificationExpired()) {
+          ExpireWelcomeNotification();
+        } else {
+          ShowWelcomeNotification(
+              notification.display_source(), pop_up_request);
+        }
       }
     } else {
       delayed_notification_.reset(new Notification(notification));
