@@ -23,11 +23,17 @@ using autofill::PasswordForm;
 using content::BrowserThread;
 using std::vector;
 
-PasswordStoreX::PasswordStoreX(LoginDatabase* login_db,
-                               Profile* profile,
-                               NativeBackend* backend)
-    : PasswordStoreDefault(login_db, profile),
-      backend_(backend), migration_checked_(!backend), allow_fallback_(false) {
+PasswordStoreX::PasswordStoreX(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+    LoginDatabase* login_db,
+    Profile* profile,
+    NativeBackend* backend)
+    : PasswordStoreDefault(
+        main_thread_runner, db_thread_runner, login_db, profile),
+      backend_(backend),
+      migration_checked_(!backend),
+      allow_fallback_(false) {
 }
 
 PasswordStoreX::~PasswordStoreX() {}

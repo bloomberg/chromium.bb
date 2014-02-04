@@ -20,9 +20,14 @@
 using autofill::PasswordForm;
 using content::BrowserThread;
 
-PasswordStoreDefault::PasswordStoreDefault(LoginDatabase* login_db,
-                                           Profile* profile)
-    : login_db_(login_db), profile_(profile) {
+PasswordStoreDefault::PasswordStoreDefault(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+    LoginDatabase* login_db,
+    Profile* profile)
+    : PasswordStore(main_thread_runner, db_thread_runner),
+      login_db_(login_db),
+      profile_(profile) {
   DCHECK(login_db);
   DCHECK(profile);
 }

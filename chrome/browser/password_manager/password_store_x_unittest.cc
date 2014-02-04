@@ -284,9 +284,12 @@ ACTION(STLDeleteElements0) {
 
 TEST_P(PasswordStoreXTest, Notifications) {
   scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(login_db_.release(),
-                         profile_.get(),
-                         GetBackend()));
+      new PasswordStoreX(
+          base::MessageLoopProxy::current(),
+          base::MessageLoopProxy::current(),
+          login_db_.release(),
+          profile_.get(),
+          GetBackend()));
   store->Init();
 
   PasswordFormData form_data =
@@ -396,9 +399,12 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(login_db_.release(),
-                         profile_.get(),
-                         GetBackend()));
+      new PasswordStoreX(
+          base::MessageLoopProxy::current(),
+          base::MessageLoopProxy::current(),
+          login_db_.release(),
+          profile_.get(),
+          GetBackend()));
   store->Init();
 
   MockPasswordStoreConsumer consumer;

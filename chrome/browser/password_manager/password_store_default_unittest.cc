@@ -135,7 +135,11 @@ ACTION(QuitUIMessageLoop) {
 
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   scoped_refptr<PasswordStoreDefault> store(
-      new PasswordStoreDefault(login_db_.release(), profile_.get()));
+      new PasswordStoreDefault(
+          base::MessageLoopProxy::current(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          login_db_.release(),
+          profile_.get()));
   store->Init();
 
   // Some non-ASCII password form data.
@@ -187,8 +191,12 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreDefault(login_db_.release(), profile_.get()));
+  scoped_refptr<PasswordStoreDefault> store(
+      new PasswordStoreDefault(
+          base::MessageLoopProxy::current(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          login_db_.release(),
+          profile_.get()));
   store->Init();
 
   PasswordFormData form_data =

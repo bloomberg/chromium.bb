@@ -160,10 +160,16 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
   callback_runner.Run(matched_forms);
 }
 
-PasswordStoreWin::PasswordStoreWin(LoginDatabase* login_database,
-                                   Profile* profile,
-                                   WebDataService* web_data_service)
-    : PasswordStoreDefault(login_database, profile) {
+PasswordStoreWin::PasswordStoreWin(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+    LoginDatabase* login_database,
+    Profile* profile,
+    WebDataService* web_data_service)
+    : PasswordStoreDefault(main_thread_runner,
+                           db_thread_runner,
+                           login_database,
+                           profile) {
   db_handler_.reset(new DBHandler(web_data_service, this));
 }
 

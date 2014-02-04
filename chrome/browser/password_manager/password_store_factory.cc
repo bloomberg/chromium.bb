@@ -112,20 +112,30 @@ PasswordStoreFactory::BuildServiceInstanceFor(
       return NULL;
     }
   }
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
+      base::MessageLoopProxy::current());
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::DB));
+
 #if defined(OS_WIN)
-  ps = new PasswordStoreWin(
-      login_db, profile,
-      WebDataService::FromBrowserContext(profile));
+  ps = new PasswordStoreWin(main_thread_runner,
+                            db_thread_runner,
+                            login_db,
+                            profile,
+                            WebDataService::FromBrowserContext(profile));
 #elif defined(OS_MACOSX)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain)) {
-    ps = new PasswordStoreMac(new crypto::MockAppleKeychain(), login_db);
-  } else {
-    ps = new PasswordStoreMac(new crypto::AppleKeychain(), login_db);
-  }
+  crypto::AppleKeychain* keychain =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain) ?
+          new crypto::MockAppleKeychain() : new crypto::AppleKeychain();
+  ps = new PasswordStoreMac(
+      main_thread_runner, db_thread_runner, keychain, login_db);
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
-  ps = new PasswordStoreDefault(login_db, profile);
+  ps = new PasswordStoreDefault(
+      main_thread_runner, db_thread_runner, login_db, profile);
 #elif defined(USE_X11)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
@@ -180,12 +190,18 @@ PasswordStoreFactory::BuildServiceInstanceFor(
         "more information about password storage options.";
   }
 
-  ps = new PasswordStoreX(login_db, profile, backend.release());
+  ps = new PasswordStoreX(main_thread_runner,
+                          db_thread_runner,
+                          login_db,
+                          profile,
+                          backend.release());
 #elif defined(USE_OZONE)
-  ps = new PasswordStoreDefault(login_db, profile);
+  ps = new PasswordStoreDefault(
+      main_thread_runner, db_thread_runner, login_db, profile);
 #else
   NOTIMPLEMENTED();
 #endif
+
   if (!ps.get())
     delete login_db;
 

@@ -12,10 +12,8 @@
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "components/autofill/core/common/password_form.h"
-#include "content/public/browser/browser_thread.h"
 
 using autofill::PasswordForm;
-using content::BrowserThread;
 using std::vector;
 
 namespace {
@@ -66,7 +64,11 @@ void PasswordStore::GetLoginsRequest::ForwardResult() {
                                     base::Passed(result_.Pass())));
 }
 
-PasswordStore::PasswordStore() {
+PasswordStore::PasswordStore(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner)
+    : main_thread_runner_(main_thread_runner),
+      db_thread_runner_(db_thread_runner) {
 }
 
 bool PasswordStore::Init() {
@@ -152,14 +154,15 @@ PasswordStore::~PasswordStore() {}
 
 bool PasswordStore::ScheduleTask(const base::Closure& task) {
   scoped_refptr<base::SequencedTaskRunner> task_runner(
-      GetTaskRunner());
+      GetBackgroundTaskRunner());
   if (task_runner.get())
     return task_runner->PostTask(FROM_HERE, task);
   return false;
 }
 
-scoped_refptr<base::SequencedTaskRunner> PasswordStore::GetTaskRunner() {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB);
+scoped_refptr<base::SequencedTaskRunner>
+PasswordStore::GetBackgroundTaskRunner() {
+  return db_thread_runner_;
 }
 
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
@@ -187,29 +190,23 @@ void PasswordStore::Schedule(
     PasswordStoreConsumer* consumer) {
   GetLoginsRequest* request = new GetLoginsRequest(consumer);
   consumer->cancelable_task_tracker()->PostTask(
-      GetTaskRunner(),
+      GetBackgroundTaskRunner(),
       FROM_HERE,
       base::Bind(func, this, base::Owned(request)));
 }
 
 void PasswordStore::WrapModificationTask(base::Closure task) {
-#if !defined(OS_MACOSX)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-#endif  // !defined(OS_MACOSX)
   task.Run();
   PostNotifyLoginsChanged();
 }
 
 void PasswordStore::PostNotifyLoginsChanged() {
-#if !defined(OS_MACOSX)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-#endif  // !defined(OS_MACOSX)
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  main_thread_runner_->PostTask(
+      FROM_HERE,
       base::Bind(&PasswordStore::NotifyLoginsChanged, this));
 }
 
 void PasswordStore::NotifyLoginsChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(Observer, observers_, OnLoginsChanged());
 }

@@ -1038,7 +1038,11 @@ class PasswordStoreMacTest : public testing::Test {
 
     keychain_ = new MockAppleKeychain();
 
-    store_ = new PasswordStoreMac(keychain_, login_db_);
+    store_ = new PasswordStoreMac(
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
+        keychain_,
+        login_db_);
     ASSERT_TRUE(store_->Init());
   }
 

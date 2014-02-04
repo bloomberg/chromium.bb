@@ -12,7 +12,11 @@ scoped_refptr<RefcountedBrowserContextKeyedService> TestPasswordStore::Create(
   return make_scoped_refptr(new TestPasswordStore);
 }
 
-TestPasswordStore::TestPasswordStore() : PasswordStore() {}
+TestPasswordStore::TestPasswordStore()
+    : PasswordStore(base::MessageLoopProxy::current(),
+                    base::MessageLoopProxy::current()) {
+}
+
 TestPasswordStore::~TestPasswordStore() {}
 
 TestPasswordStore::PasswordMap TestPasswordStore::stored_passwords() {
@@ -30,10 +34,6 @@ bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
       lhs.username_value == rhs.username_value &&
       lhs.password_element == rhs.password_element &&
       lhs.signon_realm == rhs.signon_realm;
-}
-
-scoped_refptr<base::SequencedTaskRunner> TestPasswordStore::GetTaskRunner() {
-  return base::MessageLoopProxy::current();
 }
 
 void TestPasswordStore::WrapModificationTask(base::Closure task) {

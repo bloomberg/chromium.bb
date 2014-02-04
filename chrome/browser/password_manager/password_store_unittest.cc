@@ -36,52 +36,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
                void(const std::vector<PasswordForm*>&));
 };
 
-// This class will add and remove a mock notification observer from
-// the DB thread.
-class DBThreadObserverHelper
-    : public base::RefCountedThreadSafe<DBThreadObserverHelper,
-                                        BrowserThread::DeleteOnDBThread> {
- public:
-  DBThreadObserverHelper() : done_event_(true, false) {}
-
-  void Init(PasswordStore* password_store) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&DBThreadObserverHelper::AddObserverTask,
-                   this,
-                   make_scoped_refptr(password_store)));
-    done_event_.Wait();
-  }
-
-  content::MockNotificationObserver& observer() {
-    return observer_;
-  }
-
- protected:
-  virtual ~DBThreadObserverHelper() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    registrar_.RemoveAll();
-  }
-
-  void AddObserverTask(PasswordStore* password_store) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_LOGINS_CHANGED,
-                   content::Source<PasswordStore>(password_store));
-    done_event_.Signal();
-  }
-
-  WaitableEvent done_event_;
-  content::NotificationRegistrar registrar_;
-  content::MockNotificationObserver observer_;
-
- private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::DB>;
-  friend class base::DeleteHelper<DBThreadObserverHelper>;
-};
-
 }  // anonymous namespace
 
 class PasswordStoreTest : public testing::Test {
@@ -128,7 +82,11 @@ ACTION(QuitUIMessageLoop) {
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(
-      new PasswordStoreDefault(login_db_.release(), profile_.get()));
+      new PasswordStoreDefault(
+          base::MessageLoopProxy::current(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          login_db_.release(),
+          profile_.get()));
   store->Init();
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC

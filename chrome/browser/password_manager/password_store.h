@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -103,7 +104,9 @@ class PasswordStore : public RefcountedBrowserContextKeyedService {
     virtual ~Observer() {}
   };
 
-  PasswordStore();
+  PasswordStore(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
   // Reimplement this to add custom initialization. Always call this too.
   virtual bool Init();
@@ -169,16 +172,17 @@ class PasswordStore : public RefcountedBrowserContextKeyedService {
                                             const autofill::PasswordForm&);
   friend void passwords_helper::UpdateLogin(PasswordStore*,
                                             const autofill::PasswordForm&);
+  FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, IgnoreOldWwwGoogleLogins);
 
   virtual ~PasswordStore();
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(const base::Closure& task);
 
-  // Get the TaskRunner to use for PasswordStore tasks.
+  // Get the TaskRunner to use for PasswordStore background tasks.
   // By default, a SingleThreadTaskRunner on the DB thread is used, but
   // subclasses can override.
-  virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
+  virtual scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner();
 
   // These will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.
@@ -224,6 +228,13 @@ class PasswordStore : public RefcountedBrowserContextKeyedService {
 
   // Log UMA stats for number of bulk deletions.
   void LogStatsForBulkDeletion(int num_deletions);
+
+  // TaskRunner for tasks that run on the main thread (usually the UI thread).
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+
+  // TaskRunner for the DB thread. By default, this is the task runner used for
+  // background tasks -- see |GetBackgroundTaskRunner|.
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner_;
 
  private:
   // Schedule the given |func| to be run in the PasswordStore's own thread with

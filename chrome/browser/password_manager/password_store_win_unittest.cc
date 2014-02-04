@@ -142,6 +142,15 @@ class PasswordStoreWinTest : public testing::Test {
     db_thread_.Stop();
   }
 
+  PasswordStoreWin* CreatePasswordStore() {
+    return new PasswordStoreWin(
+        base::MessageLoopProxy::current(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        login_db_.release(),
+        profile_.get(),
+        wds_.get());
+  }
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   // PasswordStore, WDS schedule work on this thread.
@@ -189,8 +198,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
-  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
-                                wds_.get());
+  store_ = CreatePasswordStore();
   EXPECT_TRUE(store_->Init());
 
   MockPasswordStoreConsumer consumer;
@@ -241,8 +249,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
 
 // Crashy.  http://crbug.com/86558
 TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
-  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
-                                wds_.get());
+  store_ = CreatePasswordStore();
   EXPECT_TRUE(store_->Init());
 
   PasswordFormData form_data = {
@@ -285,8 +292,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
-  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
-                                wds_.get());
+  store_ = CreatePasswordStore();
   EXPECT_TRUE(store_->Init());
 
   MockPasswordStoreConsumer password_consumer;
@@ -348,8 +354,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
 }
 
 TEST_F(PasswordStoreWinTest, EmptyLogins) {
-  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
-                                wds_.get());
+  store_ = CreatePasswordStore();
   store_->Init();
 
   PasswordFormData form_data = {
@@ -383,8 +388,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
 }
 
 TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
-  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
-                                wds_.get());
+  store_ = CreatePasswordStore();
   store_->Init();
 
   MockPasswordStoreConsumer consumer;
@@ -405,8 +409,7 @@ TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
 }
 
 TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
-  store_ = new PasswordStoreWin(login_db_.release(), profile_.get(),
-                                wds_.get());
+  store_ = CreatePasswordStore();
   store_->Init();
 
   MockPasswordStoreConsumer consumer;

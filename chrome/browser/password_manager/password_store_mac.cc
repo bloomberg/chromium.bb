@@ -826,9 +826,14 @@ OSType MacKeychainPasswordFormAdapter::CreatorCodeForSearch() {
 
 #pragma mark -
 
-PasswordStoreMac::PasswordStoreMac(AppleKeychain* keychain,
-                                   LoginDatabase* login_db)
-    : keychain_(keychain), login_metadata_db_(login_db) {
+PasswordStoreMac::PasswordStoreMac(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+    AppleKeychain* keychain,
+    LoginDatabase* login_db)
+    : PasswordStore(main_thread_runner, db_thread_runner),
+      keychain_(keychain),
+      login_metadata_db_(login_db) {
   DCHECK(keychain_.get());
   DCHECK(login_metadata_db_.get());
 }
@@ -858,7 +863,8 @@ void PasswordStoreMac::ShutdownOnUIThread() {
 // arbitrarily long time (most notably, it can block on user confirmation
 // from a dialog). Run tasks on a dedicated thread to avoid blocking the DB
 // thread.
-scoped_refptr<base::SequencedTaskRunner> PasswordStoreMac::GetTaskRunner() {
+scoped_refptr<base::SequencedTaskRunner>
+PasswordStoreMac::GetBackgroundTaskRunner() {
   return (thread_.get()) ? thread_->message_loop_proxy() : NULL;
 }
 

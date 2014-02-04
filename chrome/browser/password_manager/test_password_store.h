@@ -46,7 +46,6 @@ class TestPasswordStore : public PasswordStore {
                           const autofill::PasswordForm& rhs);
 
   // PasswordStore interface
-  virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() OVERRIDE;
   virtual void AddLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
   virtual void UpdateLoginImpl(const autofill::PasswordForm& form) OVERRIDE;
   virtual void RemoveLoginImpl(const autofill::PasswordForm& form) OVERRIDE;

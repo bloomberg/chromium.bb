@@ -18,14 +18,17 @@ class Profile;
 class PasswordStoreDefault : public PasswordStore {
  public:
   // Takes ownership of |login_db|.
-  PasswordStoreDefault(LoginDatabase* login_db,
-                       Profile* profile);
-
- protected:
-  virtual ~PasswordStoreDefault();
+  PasswordStoreDefault(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+      LoginDatabase* login_db,
+      Profile* profile);
 
   // Implements RefCountedBrowserContextKeyedService.
   virtual void ShutdownOnUIThread() OVERRIDE;
+
+ protected:
+  virtual ~PasswordStoreDefault();
 
   // Implements PasswordStore interface.
   virtual void ReportMetricsImpl() OVERRIDE;

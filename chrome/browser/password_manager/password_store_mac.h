@@ -30,7 +30,11 @@ class PasswordStoreMac : public PasswordStore {
  public:
   // Takes ownership of |keychain| and |login_db|, both of which must be
   // non-NULL.
-  PasswordStoreMac(crypto::AppleKeychain* keychain, LoginDatabase* login_db);
+  PasswordStoreMac(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+      crypto::AppleKeychain* keychain,
+      LoginDatabase* login_db);
 
   // Initializes |thread_| and |notification_service_|.
   virtual bool Init() OVERRIDE;
@@ -40,7 +44,8 @@ class PasswordStoreMac : public PasswordStore {
  protected:
   virtual ~PasswordStoreMac();
 
-  virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner>
+      GetBackgroundTaskRunner() OVERRIDE;
 
  private:
   virtual void ReportMetricsImpl() OVERRIDE;

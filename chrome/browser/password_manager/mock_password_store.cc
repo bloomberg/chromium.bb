@@ -3,8 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/mock_password_store.h"
+#include "content/public/browser/browser_thread.h"
 
-MockPasswordStore::MockPasswordStore() {}
+using content::BrowserThread;
+
+MockPasswordStore::MockPasswordStore()
+    : PasswordStore(
+        base::MessageLoopProxy::current(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)) {
+}
 
 // static
 scoped_refptr<RefcountedBrowserContextKeyedService> MockPasswordStore::Build(

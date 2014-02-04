@@ -54,7 +54,9 @@ class PasswordStoreX : public PasswordStoreDefault {
 
   // Takes ownership of |login_db| and |backend|. |backend| may be NULL in which
   // case this PasswordStoreX will act the same as PasswordStoreDefault.
-  PasswordStoreX(LoginDatabase* login_db,
+  PasswordStoreX(scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+                 scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+                 LoginDatabase* login_db,
                  Profile* profile,
                  NativeBackend* backend);
 

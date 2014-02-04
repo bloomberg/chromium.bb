@@ -21,9 +21,12 @@ struct PasswordForm;
 class PasswordStoreWin : public PasswordStoreDefault {
  public:
   // WebDataService is only used for IE7 password fetching.
-  PasswordStoreWin(LoginDatabase* login_database,
-                   Profile* profile,
-                   WebDataService* web_data_service);
+  PasswordStoreWin(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+      LoginDatabase* login_database,
+      Profile* profile,
+      WebDataService* web_data_service);
 
   // RefcountedBrowserContextKeyedService:
   virtual void ShutdownOnUIThread() OVERRIDE;
