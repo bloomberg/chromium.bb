@@ -691,29 +691,29 @@ var audioPlayer = null;
 var audioPlayerInitializationQueue = new AsyncUtil.Queue();
 
 audioPlayerInitializationQueue.run(function(callback) {
-  // TODO(yoshiki): Remove '--file-manager-enable-new-audio-player' flag after
-  // the feature is launched.
-  var newAudioPlayerEnabled = true;
+  chrome.commandLinePrivate.hasSwitch(
+      'file-manager-enable-new-audio-player',
+      function(newAudioPlayerEnabled) {
+        var audioPlayerHTML =
+            newAudioPlayerEnabled ? 'audio_player.html' : 'mediaplayer.html';
 
-  var audioPlayerHTML =
-      newAudioPlayerEnabled ? 'audio_player.html' : 'mediaplayer.html';
+        /**
+         * Audio player window create options.
+         * @type {Object}
+         */
+        var audioPlayerCreateOptions = Object.freeze({
+          type: 'panel',
+          hidden: true,
+          minHeight: newAudioPlayerEnabled ? 116 : (35 + 58),
+          minWidth: newAudioPlayerEnabled ? 292 : 280,
+          height: newAudioPlayerEnabled ? 356 : (35 + 58),
+          width: newAudioPlayerEnabled ? 292 : 280,
+        });
 
-  /**
-   * Audio player window create options.
-   * @type {Object}
-   */
-  var audioPlayerCreateOptions = Object.freeze({
-      type: 'panel',
-      hidden: true,
-      minHeight: newAudioPlayerEnabled ? 116 : (35 + 58),
-      minWidth: newAudioPlayerEnabled ? 292 : 280,
-      height: newAudioPlayerEnabled ? 356 : (35 + 58),
-      width: newAudioPlayerEnabled ? 292 : 280,
-  });
-
-  audioPlayer = new SingletonAppWindowWrapper(audioPlayerHTML,
-                                              audioPlayerCreateOptions);
-  callback();
+        audioPlayer = new SingletonAppWindowWrapper(audioPlayerHTML,
+                                                    audioPlayerCreateOptions);
+        callback();
+      });
 });
 
 /**
