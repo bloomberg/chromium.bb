@@ -167,14 +167,6 @@ class TabProxy : public AutomationResourceProxy {
   // Uses the specified encoding to override encoding of the page in the tab.
   bool OverrideEncoding(const std::string& encoding) WARN_UNUSED_RESULT;
 
-  // Selects all contents on the page.
-  void SelectAll();
-
-  // Edit operations on the page.
-  void Cut();
-  void Copy();
-  void Paste();
-
   // These handlers issue asynchronous Reload, Stop and SaveAs notifications to
   // the chrome instance.
   void ReloadAsync();

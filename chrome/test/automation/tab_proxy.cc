@@ -307,21 +307,6 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
   return succeeded;
 }
 
-void TabProxy::SelectAll() {
-  sender_->Send(new AutomationMsg_SelectAll(handle_));
-}
-
-void TabProxy::Cut() {
-  sender_->Send(new AutomationMsg_Cut(handle_));
-}
-
-void TabProxy::Copy() {
-  sender_->Send(new AutomationMsg_Copy(handle_));
-}
-
-void TabProxy::Paste() {
-  sender_->Send(new AutomationMsg_Paste(handle_));
-}
 
 void TabProxy::ReloadAsync() {
   sender_->Send(new AutomationMsg_ReloadAsync(handle_));

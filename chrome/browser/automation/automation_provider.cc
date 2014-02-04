@@ -317,10 +317,6 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleUnused, HandleUnused)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Find, HandleFindRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_OverrideEncoding, OverrideEncoding)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SelectAll, SelectAll)
-    IPC_MESSAGE_HANDLER(AutomationMsg_Cut, Cut)
-    IPC_MESSAGE_HANDLER(AutomationMsg_Copy, Copy)
-    IPC_MESSAGE_HANDLER(AutomationMsg_Paste, Paste)
     IPC_MESSAGE_HANDLER(AutomationMsg_ReloadAsync, ReloadAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_StopAsync, StopAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
@@ -492,46 +488,6 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
       contents->SetOverrideEncoding(selected_encoding);
     }
   }
-}
-
-void AutomationProvider::SelectAll(int tab_handle) {
-  RenderViewHost* view = GetViewForTab(tab_handle);
-  if (!view) {
-    NOTREACHED();
-    return;
-  }
-
-  view->SelectAll();
-}
-
-void AutomationProvider::Cut(int tab_handle) {
-  RenderViewHost* view = GetViewForTab(tab_handle);
-  if (!view) {
-    NOTREACHED();
-    return;
-  }
-
-  view->Cut();
-}
-
-void AutomationProvider::Copy(int tab_handle) {
-  RenderViewHost* view = GetViewForTab(tab_handle);
-  if (!view) {
-    NOTREACHED();
-    return;
-  }
-
-  view->Copy();
-}
-
-void AutomationProvider::Paste(int tab_handle) {
-  RenderViewHost* view = GetViewForTab(tab_handle);
-  if (!view) {
-    NOTREACHED();
-    return;
-  }
-
-  view->Paste();
 }
 
 void AutomationProvider::ReloadAsync(int tab_handle) {

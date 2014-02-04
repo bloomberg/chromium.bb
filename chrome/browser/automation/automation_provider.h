@@ -230,14 +230,6 @@ class AutomationProvider
                         const std::string& encoding_name,
                         bool* success);
 
-  // Selects all contents on the page.
-  void SelectAll(int tab_handle);
-
-  // Edit operations on the page.
-  void Cut(int tab_handle);
-  void Copy(int tab_handle);
-  void Paste(int tab_handle);
-
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);
 
