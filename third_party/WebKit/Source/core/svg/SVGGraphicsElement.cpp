@@ -239,22 +239,6 @@ PassRefPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript()
     return SVGRectTearOff::create(SVGRect::create(getBBox()), 0, PropertyIsNotAnimVal);
 }
 
-FloatRect SVGGraphicsElement::getStrokeBBox()
-{
-    document().updateLayoutIgnorePendingStylesheets();
-
-    // FIXME: Eventually we should support getStrokeBBox for detached elements.
-    if (!renderer())
-        return FloatRect();
-
-    return renderer()->strokeBoundingBox();
-}
-
-PassRefPtr<SVGRectTearOff> SVGGraphicsElement::getStrokeBBoxFromJavascript()
-{
-    return SVGRectTearOff::create(SVGRect::create(getStrokeBBox()), 0, PropertyIsNotAnimVal);
-}
-
 RenderObject* SVGGraphicsElement::createRenderer(RenderStyle*)
 {
     // By default, any subclass is expected to do path-based drawing

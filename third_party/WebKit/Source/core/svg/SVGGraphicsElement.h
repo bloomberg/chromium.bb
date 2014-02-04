@@ -48,10 +48,7 @@ public:
     virtual AffineTransform* supplementalTransform() OVERRIDE;
 
     virtual FloatRect getBBox();
-    FloatRect getStrokeBBox();
-
     PassRefPtr<SVGRectTearOff> getBBoxFromJavascript();
-    PassRefPtr<SVGRectTearOff> getStrokeBBoxFromJavascript();
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);

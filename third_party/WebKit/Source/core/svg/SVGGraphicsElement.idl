@@ -35,7 +35,6 @@ interface SVGGraphicsElement : SVGElement {
     [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;
 
     [ImplementedAs=getBBoxFromJavascript] SVGRect getBBox();
-    [ImplementedAs=getStrokeBBoxFromJavascript] SVGRect getStrokeBBox();
     SVGMatrix getCTM();
     SVGMatrix getScreenCTM();
     [RaisesException] SVGMatrix getTransformToElement([Default=Undefined] optional SVGElement element);

@@ -1,9 +1,0 @@
-getStrokeBBox() box test for crbug.com/280423.
-rect.getBBox()=20,20,40,40, rect.getStrokeBBox()=15,15,50,50
-ellipse.getBBox()=30,80,20,40, ellipse.getStrokeBBox()=25,75,30,50
-path.getBBox()=20,150,40,40, path.getStrokeBBox()=15,137.9,57.1,57.1
-marker.getBBox()=20,220,40,40, marker.getStrokeBBox()=6,206,68,68
-capjoin.getBBox()=20,300,40,40, capjoin.getStrokeBBox()=12.9,292.9,50.6,52.1
-dash.getBBox()=20,360,40,40, dash.getStrokeBBox()=14.5,354.5,45.5,50.5
-nostroke.getBBox()=20,420,40,40, nostroke.getStrokeBBox()=20,420,40,40
-
