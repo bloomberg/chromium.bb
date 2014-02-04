@@ -15,11 +15,16 @@
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/webview/webview.h"
@@ -62,6 +67,72 @@ class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
   bool use_transparent_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegateAura);
+};
+
+// Model for the "Debug" menu
+class DevToolsMenuModel : public ui::SimpleMenuModel,
+                          public ui::SimpleMenuModel::Delegate {
+ public:
+  explicit DevToolsMenuModel(Shell* shell)
+    : ui::SimpleMenuModel(this),
+      shell_(shell) {
+    AddItem(COMMAND_OPEN_DEVTOOLS, base::ASCIIToUTF16("Developer Tools"));
+  }
+
+  // ui::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+    return false;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+    return true;
+  }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE { return false; }
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+    switch (command_id) {
+      case COMMAND_OPEN_DEVTOOLS:
+        shell_->ShowDevTools();
+        break;
+    };
+  }
+
+ private:
+  enum CommandID {
+    COMMAND_OPEN_DEVTOOLS
+  };
+
+  Shell* shell_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsMenuModel);
+};
+
+class DebugMenuButton : public views::MenuButton,
+                        public views::MenuButtonListener {
+ public:
+  explicit DebugMenuButton(Shell* shell)
+    : MenuButton(NULL, base::ASCIIToUTF16("Debug"), this, true),
+      menu_model_(shell) {
+  }
+
+ private:
+  // MenuButtonListener:
+  virtual void OnMenuButtonClicked(View* source,
+                                   const gfx::Point& point) OVERRIDE {
+      menu_runner_.reset(new views::MenuRunner(&menu_model_));
+
+      if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
+                  this, gfx::Rect(point, gfx::Size()),
+                  views::MenuItemView::TOPRIGHT, ui::MENU_SOURCE_NONE,
+                  views::MenuRunner::HAS_MNEMONICS) ==
+              views::MenuRunner::MENU_DELETED)
+          return;
+  }
+
+  DevToolsMenuModel menu_model_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DebugMenuButton);
 };
 
 // Maintain the UI controls and web view for content shell
@@ -190,6 +261,15 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       toolbar_column_set->AddColumn(views::GridLayout::FILL,
                                     views::GridLayout::FILL, 1,
                                     views::GridLayout::USE_PREF, 0, 0);
+      toolbar_column_set->AddPaddingColumn(0, 2);
+      // Debug button
+      debug_button_ = new DebugMenuButton(shell_);
+      gfx::Size debug_button_size = debug_button_->GetPreferredSize();
+      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
+                                    views::GridLayout::CENTER, 0,
+                                    views::GridLayout::FIXED,
+                                    debug_button_size.width(),
+                                    debug_button_size.width() / 2);
 
       // Fill up the first row
       toolbar_layout->StartRow(0, 0);
@@ -198,6 +278,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       toolbar_layout->AddView(refresh_button_);
       toolbar_layout->AddView(stop_button_);
       toolbar_layout->AddView(url_entry_);
+      toolbar_layout->AddView(debug_button_);
 
       layout->AddView(toolbar_view_);
     }
@@ -315,6 +396,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   views::LabelButton* refresh_button_;
   views::LabelButton* stop_button_;
   views::Textfield* url_entry_;
+  DebugMenuButton* debug_button_;
 
   // Contents view contains the web contents view
   View* contents_view_;
