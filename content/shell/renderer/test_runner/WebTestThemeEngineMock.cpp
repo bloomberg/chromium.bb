@@ -433,6 +433,7 @@ void WebTestThemeEngineMock::paint(
         paint.setColor(SK_ColorWHITE);
         paint.setStyle(SkPaint::kFill_Style);
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        paint.setAntiAlias(true);
         canvas->drawIRect(cornerRect, paint);
         break;
     }
