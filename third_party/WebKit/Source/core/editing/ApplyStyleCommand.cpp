@@ -899,15 +899,12 @@ bool ApplyStyleCommand::removeInlineStyleFromElement(EditingStyle* style, PassRe
     return removed;
 }
 
-void ApplyStyleCommand::replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*& elem)
+void ApplyStyleCommand::replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement* elem)
 {
     if (hasNoAttributeOrOnlyStyleAttribute(elem, StyleAttributeShouldBeEmpty))
         removeNodePreservingChildren(elem);
-    else {
-        HTMLElement* newSpanElement = replaceElementWithSpanPreservingChildrenAndAttributes(elem);
-        ASSERT(newSpanElement && newSpanElement->inDocument());
-        elem = newSpanElement;
-    }
+    else
+        replaceElementWithSpanPreservingChildrenAndAttributes(elem);
 }
 
 bool ApplyStyleCommand::removeImplicitlyStyledElement(EditingStyle* style, HTMLElement* element, InlineStyleRemovalMode mode, EditingStyle* extractedStyle)

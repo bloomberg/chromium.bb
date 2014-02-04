@@ -80,7 +80,7 @@ private:
     void removeConflictingInlineStyleFromRun(EditingStyle*, RefPtr<Node>& runStart, RefPtr<Node>& runEnd, PassRefPtr<Node> pastEndNode);
     bool removeInlineStyleFromElement(EditingStyle*, PassRefPtr<HTMLElement>, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = 0);
     inline bool shouldRemoveInlineStyleFromElement(EditingStyle* style, HTMLElement* element) {return removeInlineStyleFromElement(style, element, RemoveNone);}
-    void replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*&);
+    void replaceWithSpanOrRemoveIfWithoutAttributes(HTMLElement*);
     bool removeImplicitlyStyledElement(EditingStyle*, HTMLElement*, InlineStyleRemovalMode, EditingStyle* extractedStyle);
     bool removeCSSStyle(EditingStyle*, HTMLElement*, InlineStyleRemovalMode = RemoveIfNeeded, EditingStyle* extractedStyle = 0);
     HTMLElement* highestAncestorWithConflictingInlineStyle(EditingStyle*, Node*);
