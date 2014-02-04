@@ -1591,7 +1591,7 @@
           },{
             'msvs_large_module_debug_link_mode%': '2',  # Yes
           }],
-          ['MSVS_VERSION=="2012e" or MSVS_VERSION=="2010e"', {
+          ['MSVS_VERSION=="2013e" or MSVS_VERSION=="2012e" or MSVS_VERSION=="2010e"', {
             'msvs_express%': 1,
             'secure_atl%': 0,
           },{
@@ -4531,12 +4531,14 @@
               '<(windows_driver_kit_path)/inc/mfc42',
             ],
             'target_conditions': [
-              ['chromium_code', {
+              ['chromium_code and MSVS_VERSION=="2010e"', {
                 # Workaround for intsafe in 2010 Express + WDK.
                 # ATL code uses intsafe.h and both intsafe.h and stdint.h
                 # define INT8_MIN et al.
                 # We can't use this workaround in third_party code because
                 # it has various levels of intolerance for including stdint.h.
+                # This is not necessary in 2013e, and should be removed once
+                # mainline is switched: http://crbug.com/340358.
                 'msvs_system_include_dirs': [
                   '<(DEPTH)/build',
                 ],
