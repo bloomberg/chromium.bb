@@ -67,7 +67,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
@@ -617,8 +616,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ImeEventAck, OnImeEventAck)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_Snapshot, OnSnapshot)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetBrowserRenderingStats,
-                        OnSetBrowserRenderingStats)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -2768,34 +2765,9 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
   }
 }
 
-void RenderWidget::GetRenderingStats(
-    blink::WebRenderingStatsImpl& stats) const {
-  if (compositor_)
-    compositor_->GetRenderingStats(&stats.rendering_stats);
-
-  stats.rendering_stats.Add(
-      legacy_software_mode_stats_->GetRenderingStats());
-}
-
-bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {
-  GpuChannelHost* gpu_channel = RenderThreadImpl::current()->GetGpuChannel();
-  if (!gpu_channel)
-    return false;
-
-  return gpu_channel->CollectRenderingStatsForSurface(surface_id(), stats);
-}
 
 RenderWidgetCompositor* RenderWidget::compositor() const {
   return compositor_.get();
-}
-
-void RenderWidget::OnSetBrowserRenderingStats(
-    const BrowserRenderingStats& stats) {
-  browser_rendering_stats_ = stats;
-}
-
-void RenderWidget::GetBrowserRenderingStats(BrowserRenderingStats* stats) {
-  *stats = browser_rendering_stats_;
 }
 
 bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {

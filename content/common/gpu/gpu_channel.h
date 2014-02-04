@@ -42,7 +42,6 @@ namespace content {
 class DevToolsGpuAgent;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
-struct GpuRenderingStats;
 class GpuVideoEncodeAccelerator;
 class GpuWatchdog;
 
@@ -171,10 +170,6 @@ class GpuChannel : public IPC::Listener,
   void OnDestroyVideoEncoder(int32 route_id);
   void OnDevToolsStartEventsRecording(int32* route_id);
   void OnDevToolsStopEventsRecording();
-
-  // Collect rendering stats.
-  void OnCollectRenderingStatsForSurface(
-      int32 surface_id, GpuRenderingStats* stats);
 
   // Decrement the count of unhandled IPC messages and defer preemption.
   void MessageProcessed();

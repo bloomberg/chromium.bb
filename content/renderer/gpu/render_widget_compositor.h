@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/swap_promise_monitor.h"
-#include "cc/debug/rendering_stats.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -50,7 +49,6 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   void Composite(base::TimeTicks frame_begin_time);
   void SetNeedsDisplayOnAllLayers();
   void SetRasterizeOnlyVisibleContent();
-  void GetRenderingStats(cc::RenderingStats* stats);
   void UpdateTopControlsState(cc::TopControlsState constraints,
                               cc::TopControlsState current,
                               bool animate);
@@ -110,7 +108,6 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) OVERRIDE;
   virtual void clearViewportLayers() OVERRIDE;
-  virtual void renderingStats(blink::WebRenderingStats& stats) const {}
   virtual void setShowFPSCounter(bool show);
   virtual void setShowPaintRects(bool show);
   virtual void setShowDebugBorders(bool show);

@@ -327,10 +327,6 @@ void RenderWidgetCompositor::SetRasterizeOnlyVisibleContent() {
   layer_tree_host_->SetDebugState(current);
 }
 
-void RenderWidgetCompositor::GetRenderingStats(cc::RenderingStats* stats) {
-  layer_tree_host_->CollectRenderingStats(stats);
-}
-
 void RenderWidgetCompositor::UpdateTopControlsState(
     cc::TopControlsState constraints,
     cc::TopControlsState current,

@@ -51,26 +51,6 @@ void ImplThreadRenderingStats::Add(const ImplThreadRenderingStats& other) {
   rasterized_pixel_count += other.rasterized_pixel_count;
 }
 
-void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
-  enumerator->AddInt64("frameCount",
-                       main_stats.frame_count + impl_stats.frame_count);
-  enumerator->AddDouble("paintTime",
-                        main_stats.paint_time.InSecondsF());
-  enumerator->AddInt64("paintedPixelCount",
-                       main_stats.painted_pixel_count);
-  enumerator->AddDouble("recordTime",
-                        main_stats.record_time.InSecondsF());
-  enumerator->AddInt64("recordedPixelCount",
-                       main_stats.recorded_pixel_count);
-  // Combine rasterization and analysis time as a precursor to combining
-  // them in the same step internally.
-  enumerator->AddDouble("rasterizeTime",
-                        impl_stats.rasterize_time.InSecondsF() +
-                            impl_stats.analysis_time.InSecondsF());
-  enumerator->AddInt64("rasterizedPixelCount",
-                       impl_stats.rasterized_pixel_count);
-}
-
 void RenderingStats::Add(const RenderingStats& other) {
   main_stats.Add(other.main_stats);
   impl_stats.Add(other.impl_stats);

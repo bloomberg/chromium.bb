@@ -12,8 +12,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
-#include "content/common/browser_rendering_stats.h"
-#include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
@@ -34,13 +32,11 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
-#include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 
 using blink::WebCanvas;
 using blink::WebFrame;
 using blink::WebImageCache;
 using blink::WebPrivatePtr;
-using blink::WebRenderingStatsImpl;
 using blink::WebSize;
 using blink::WebView;
 
@@ -102,38 +98,6 @@ class SkPictureSerializer {
  private:
   base::FilePath dirpath_;
   int layer_id_;
-};
-
-class RenderingStatsEnumerator : public cc::RenderingStats::Enumerator {
- public:
-  RenderingStatsEnumerator(v8::Isolate* isolate,
-                           v8::Handle<v8::Object> stats_object)
-      : isolate(isolate), stats_object(stats_object) {}
-
-  virtual void AddInt64(const char* name, int64 value) OVERRIDE {
-    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
-                      v8::Number::New(isolate, value));
-  }
-
-  virtual void AddDouble(const char* name, double value) OVERRIDE {
-    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
-                      v8::Number::New(isolate, value));
-  }
-
-  virtual void AddInt(const char* name, int value) OVERRIDE {
-    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
-                      v8::Integer::New(isolate, value));
-  }
-
-  virtual void AddTimeDeltaInSecondsF(const char* name,
-                                      const base::TimeDelta& value) OVERRIDE {
-    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
-                      v8::Number::New(isolate, value.InSecondsF()));
-  }
-
- private:
-  v8::Isolate* isolate;
-  v8::Handle<v8::Object> stats_object;
 };
 
 }  // namespace
@@ -264,14 +228,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function SetRasterizeOnlyVisibleContent();"
           "  return SetRasterizeOnlyVisibleContent();"
           "};"
-          "chrome.gpuBenchmarking.renderingStats = function() {"
-          "  native function GetRenderingStats();"
-          "  return GetRenderingStats();"
-          "};"
-          "chrome.gpuBenchmarking.gpuRenderingStats = function() {"
-          "  native function GetGpuRenderingStats();"
-          "  return GetGpuRenderingStats();"
-          "};"
           "chrome.gpuBenchmarking.printToSkPicture = function(dirname) {"
           "  native function PrintToSkPicture();"
           "  return PrintToSkPicture(dirname);"
@@ -363,10 +319,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (name->Equals(
             v8::String::NewFromUtf8(isolate, "SetRasterizeOnlyVisibleContent")))
       return v8::FunctionTemplate::New(isolate, SetRasterizeOnlyVisibleContent);
-    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetRenderingStats")))
-      return v8::FunctionTemplate::New(isolate, GetRenderingStats);
-    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetGpuRenderingStats")))
-      return v8::FunctionTemplate::New(isolate, GetGpuRenderingStats);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "PrintToSkPicture")))
       return v8::FunctionTemplate::New(isolate, PrintToSkPicture);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginSmoothScroll")))
@@ -407,48 +359,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return;
 
     context.compositor()->SetRasterizeOnlyVisibleContent();
-  }
-
-  static void GetRenderingStats(
-      const v8::FunctionCallbackInfo<v8::Value>& args) {
-
-    GpuBenchmarkingContext context;
-    if (!context.Init(false))
-      return;
-
-    WebRenderingStatsImpl stats;
-    context.render_view_impl()->GetRenderingStats(stats);
-
-    content::GpuRenderingStats gpu_stats;
-    context.render_view_impl()->GetGpuRenderingStats(&gpu_stats);
-    BrowserRenderingStats browser_stats;
-    context.render_view_impl()->GetBrowserRenderingStats(&browser_stats);
-    v8::Handle<v8::Object> stats_object = v8::Object::New(args.GetIsolate());
-
-    RenderingStatsEnumerator enumerator(args.GetIsolate(), stats_object);
-    stats.rendering_stats.EnumerateFields(&enumerator);
-    gpu_stats.EnumerateFields(&enumerator);
-    browser_stats.EnumerateFields(&enumerator);
-
-    args.GetReturnValue().Set(stats_object);
-  }
-
-  static void GetGpuRenderingStats(
-      const v8::FunctionCallbackInfo<v8::Value>& args) {
-
-    GpuBenchmarkingContext context;
-    if (!context.Init(false))
-      return;
-
-    content::GpuRenderingStats gpu_stats;
-    context.render_view_impl()->GetGpuRenderingStats(&gpu_stats);
-
-    v8::Isolate* isolate = args.GetIsolate();
-    v8::Handle<v8::Object> stats_object = v8::Object::New(isolate);
-    RenderingStatsEnumerator enumerator(isolate, stats_object);
-    gpu_stats.EnumerateFields(&enumerator);
-
-    args.GetReturnValue().Set(stats_object);
   }
 
   static void PrintToSkPicture(

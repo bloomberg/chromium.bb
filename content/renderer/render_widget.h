@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "content/common/browser_rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
@@ -57,7 +56,6 @@ class WebInputEvent;
 class WebKeyboardEvent;
 class WebMouseEvent;
 class WebTouchEvent;
-struct WebRenderingStatsImpl;
 }
 
 namespace cc { class OutputSurface; }
@@ -74,7 +72,6 @@ class RenderWidgetCompositor;
 class RenderWidgetTest;
 class ResizingModeSelector;
 struct ContextMenuParams;
-struct GpuRenderingStats;
 struct WebPluginGeometry;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -167,18 +164,6 @@ class CONTENT_EXPORT RenderWidget
   // Called when a plugin window has been destroyed, to make sure the currently
   // pending moves don't try to reference it.
   void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
-
-  // Fills in a WebRenderingStatsImpl struct containing information about
-  // rendering, e.g. count of frames rendered, time spent painting.
-  void GetRenderingStats(blink::WebRenderingStatsImpl&) const;
-
-  // Fills in a GpuRenderingStats struct containing information about
-  // GPU rendering, e.g. count of texture uploads performed, time spent
-  // uploading.
-  // This call is relatively expensive as it blocks on the GPU process
-  bool GetGpuRenderingStats(GpuRenderingStats*) const;
-
-  void GetBrowserRenderingStats(BrowserRenderingStats* stats);
 
   RenderWidgetCompositor* compositor() const;
 
@@ -401,7 +386,6 @@ class CONTENT_EXPORT RenderWidget
   bool ShouldHandleImeEvent();
 
   void OnSnapshot(const gfx::Rect& src_subrect);
-  void OnSetBrowserRenderingStats(const BrowserRenderingStats& stats);
 
   // Notify the compositor about a change in viewport size. This should be
   // used only with auto resize mode WebWidgets, as normal WebWidgets should
@@ -772,10 +756,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;
-
-  // The last set of rendering stats received from the browser. This is only
-  // received when using the --enable-gpu-benchmarking flag.
-  BrowserRenderingStats browser_rendering_stats_;
 
   // The latency information for any current non-accelerated-compositing
   // frame.

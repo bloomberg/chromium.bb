@@ -18,7 +18,6 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
-#include "third_party/WebKit/public/platform/WebRenderingStats.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/frame_time.h"
 #include "webkit/common/gpu/test_context_provider_factory.h"
@@ -27,7 +26,6 @@
 using blink::WebColor;
 using blink::WebGraphicsContext3D;
 using blink::WebRect;
-using blink::WebRenderingStats;
 using blink::WebSize;
 
 namespace webkit {
@@ -141,8 +139,6 @@ void WebLayerTreeViewImplForTesting::finishAllRendering() {
 void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
   layer_tree_host_->SetDeferCommits(defer_commits);
 }
-
-void WebLayerTreeViewImplForTesting::renderingStats(WebRenderingStats&) const {}
 
 void WebLayerTreeViewImplForTesting::Layout() {
 }

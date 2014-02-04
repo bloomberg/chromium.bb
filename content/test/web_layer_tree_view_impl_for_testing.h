@@ -55,8 +55,6 @@ class WebLayerTreeViewImplForTesting
   virtual bool compositeAndReadback(void* pixels, const blink::WebRect& rect);
   virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits);
-  virtual void renderingStats(
-      blink::WebRenderingStats& stats) const;  // NOLINT(runtime/references)
   virtual void registerViewportLayers(
       const blink::WebLayer* pageScaleLayerLayer,
       const blink::WebLayer* innerViewportScrollLayer,

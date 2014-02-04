@@ -2385,8 +2385,6 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
 
   base::TimeDelta ui_delta =
       rwh_component.event_time - ui_component.event_time;
-  rendering_stats_.touch_ui_count++;
-  rendering_stats_.total_touch_ui_latency += ui_delta;
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Event.Latency.Browser.TouchUI",
       ui_delta.InMicroseconds(),
@@ -2400,8 +2398,6 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
     DCHECK(acked_component.event_count == 1);
     base::TimeDelta acked_delta =
         acked_component.event_time - rwh_component.event_time;
-    rendering_stats_.touch_acked_count++;
-    rendering_stats_.total_touch_acked_latency += acked_delta;
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Event.Latency.Browser.TouchAcked",
         acked_delta.InMicroseconds(),
@@ -2409,10 +2405,6 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
         1000000,
         100);
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuBenchmarking))
-    Send(new ViewMsg_SetBrowserRenderingStats(routing_id_, rendering_stats_));
 }
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
@@ -2435,11 +2427,6 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
     return;
   }
 
-  rendering_stats_.input_event_count += rwh_component.event_count;
-  rendering_stats_.total_input_latency +=
-      rwh_component.event_count *
-      (swap_component.event_time - rwh_component.event_time);
-
   ui::LatencyInfo::LatencyComponent original_component;
   if (latency_info.FindLatency(
           ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -2458,15 +2445,7 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
           1000000,
           100);
     }
-    rendering_stats_.scroll_update_count += original_component.event_count;
-    rendering_stats_.total_scroll_update_latency +=
-        original_component.event_count *
-        (swap_component.event_time - original_component.event_time);
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGpuBenchmarking))
-    Send(new ViewMsg_SetBrowserRenderingStats(routing_id_, rendering_stats_));
 }
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {

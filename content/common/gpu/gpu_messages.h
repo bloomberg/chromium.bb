@@ -12,7 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/gpu_memory_stats.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -222,16 +221,6 @@ IPC_ENUM_TRAITS(gfx::GpuPreference)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
 
 IPC_ENUM_TRAITS(media::VideoCodecProfile)
-
-IPC_STRUCT_TRAITS_BEGIN(content::GpuRenderingStats)
-  IPC_STRUCT_TRAITS_MEMBER(global_texture_upload_count)
-  IPC_STRUCT_TRAITS_MEMBER(global_total_texture_upload_time)
-  IPC_STRUCT_TRAITS_MEMBER(texture_upload_count)
-  IPC_STRUCT_TRAITS_MEMBER(total_texture_upload_time)
-  IPC_STRUCT_TRAITS_MEMBER(global_total_processing_commands_time)
-  IPC_STRUCT_TRAITS_MEMBER(total_processing_commands_time)
-  IPC_STRUCT_TRAITS_MEMBER(global_video_memory_bytes_allocated)
-IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(media::VideoFrame::Format)
 
@@ -480,11 +469,6 @@ IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_CreateVideoEncoder,
                             int32 /* route_id */)
 
 IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroyVideoEncoder, int32 /* route_id */)
-
-// Tells the GPU process to collect rendering stats.
-IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CollectRenderingStatsForSurface,
-                            int32 /* surface_id */,
-                            content::GpuRenderingStats /* stats */)
 
 // Sent by DevTools agent in the inspected renderer process to initiate GPU
 // instrumentation events recording.

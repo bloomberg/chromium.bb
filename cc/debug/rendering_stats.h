@@ -12,22 +12,6 @@
 
 namespace cc {
 
-// In conjunction with EnumerateFields, this allows the embedder to
-// enumerate the values in this structure without
-// having to embed references to its specific member variables. This
-// simplifies the addition of new fields to this type.
-class RenderingStatsEnumerator {
- public:
-  virtual void AddInt64(const char* name, int64 value) = 0;
-  virtual void AddDouble(const char* name, double value) = 0;
-  virtual void AddInt(const char* name, int value) = 0;
-  virtual void AddTimeDeltaInSecondsF(const char* name,
-                                      const base::TimeDelta& value) = 0;
-
- protected:
-  virtual ~RenderingStatsEnumerator() {}
-};
-
 struct CC_EXPORT MainThreadRenderingStats {
   // Note: when adding new members, please remember to update EnumerateFields
   // and Add in rendering_stats.cc.
@@ -58,13 +42,8 @@ struct CC_EXPORT ImplThreadRenderingStats {
 };
 
 struct CC_EXPORT RenderingStats {
-  typedef RenderingStatsEnumerator Enumerator;
-
   MainThreadRenderingStats main_stats;
   ImplThreadRenderingStats impl_stats;
-
-  // Outputs the fields in this structure to the provided enumerator.
-  void EnumerateFields(Enumerator* enumerator) const;
 
   // Add fields of |other| to the fields in this structure.
   void Add(const RenderingStats& other);

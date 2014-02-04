@@ -25,7 +25,6 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/common/browser_rendering_stats.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/browser/event_with_latency_info.h"
@@ -931,8 +930,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   std::queue<base::Callback<void(bool, const SkBitmap&)> > pending_snapshots_;
 
   int64 last_input_number_;
-
-  BrowserRenderingStats rendering_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

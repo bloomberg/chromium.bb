@@ -507,11 +507,6 @@ void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
   }
 }
 
-void LayerTreeHost::CollectRenderingStats(RenderingStats* stats) const {
-  CHECK(debug_state_.RecordRenderingStats());
-  *stats = rendering_stats_instrumentation_->GetRenderingStats();
-}
-
 const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
   return proxy_->GetRendererCapabilities();
 }
