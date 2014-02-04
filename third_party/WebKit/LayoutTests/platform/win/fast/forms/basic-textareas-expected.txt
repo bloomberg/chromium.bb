@@ -214,12 +214,12 @@ layer at (0,0) size 785x1716
                       text run at (0,48) width 33: "wrap\","
                   RenderBR {BR} at (81,49) size 0x15
         layer at (3,81) size 181x38 clip at (4,82) size 179x36
-          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x16
               RenderText {#text} at (0,0) size 136x16
                 text run at (0,0) width 136: "Lorem ipsum dolor"
         layer at (190,81) size 181x38 clip at (191,82) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [color=#545454] [bgcolor=#EBEBE4] [border: (1px solid #545454)]
+          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [color=#545454] [bgcolor=#EBEBE4] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -230,7 +230,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (377,65) size 197x54 clip at (378,66) size 180x52 scrollHeight 100
-          RenderTextControl {TEXTAREA} at (3,35) size 197x54 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 197x54 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (11,11) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -241,7 +241,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (580,85) size 177x34 clip at (581,86) size 160x32 scrollHeight 80
-          RenderTextControl {TEXTAREA} at (3,35) size 177x34 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 177x34 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (1,1) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -252,7 +252,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (11,205) size 181x38 clip at (12,206) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (11,43) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (11,43) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -263,7 +263,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (204,215) size 181x38 clip at (205,216) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (1,33) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,33) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -274,7 +274,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (387,213) size 66x38 clip at (388,214) size 49x36 scrollHeight 244
-          RenderTextControl {TEXTAREA} at (1,35) size 66x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,35) size 66x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -296,7 +296,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (469,177) size 102x74 clip at (470,178) size 85x72 scrollHeight 280
-          RenderTextControl {TEXTAREA} at (1,51) size 102x74 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,51) size 102x74 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (21,21) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -318,7 +318,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (573,217) size 62x34 clip at (574,218) size 45x32 scrollHeight 240
-          RenderTextControl {TEXTAREA} at (1,51) size 62x34 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,51) size 62x34 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (1,1) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -340,7 +340,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (3,323) size 181x66 clip at (4,324) size 164x64 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,33) size 181x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,33) size 181x66 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -351,7 +351,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (188,323) size 66x66 clip at (189,324) size 49x64 scrollHeight 244
-          RenderTextControl {TEXTAREA} at (1,49) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,49) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -373,7 +373,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (272,349) size 181x38 clip at (273,350) size 179x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x80
               RenderText {#text} at (0,0) size 168x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -384,7 +384,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 168: "abcdefghijklmnopqrstu"
                 text run at (0,64) width 8: "v"
         layer at (459,334) size 181x53 clip at (460,335) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,35) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -395,7 +395,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (644,323) size 66x66 clip at (645,324) size 64x64 scrollHeight 180
-          RenderTextControl {TEXTAREA} at (1,65) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,65) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 60x176
               RenderText {#text} at (0,0) size 56x176
                 text run at (0,0) width 40: "Lorem"
@@ -414,7 +414,7 @@ layer at (0,0) size 785x1716
                 text run at (0,144) width 56: "opqrstu"
                 text run at (0,160) width 8: "v"
         layer at (1,459) size 66x66 clip at (2,460) size 49x49 scrollHeight 244
-          RenderTextControl {TEXTAREA} at (1,65) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,65) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -436,7 +436,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (83,459) size 66x66 clip at (84,460) size 49x64 scrollHeight 244
-          RenderTextControl {TEXTAREA} at (1,49) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,49) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -458,7 +458,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (165,459) size 66x66 clip at (166,460) size 49x64 scrollHeight 244
-          RenderTextControl {TEXTAREA} at (1,49) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,49) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -480,7 +480,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (247,459) size 66x66 clip at (248,460) size 49x64 scrollHeight 244
-          RenderTextControl {TEXTAREA} at (1,65) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,65) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 45x240
               RenderText {#text} at (0,0) size 45x240
                 text run at (0,0) width 40: "Lorem"
@@ -502,7 +502,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (331,485) size 45x38 clip at (332,486) size 28x36 scrollHeight 372
-          RenderTextControl {TEXTAREA} at (3,19) size 45x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 45x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 24x368
               RenderText {#text} at (0,0) size 24x368
                 text run at (0,0) width 24: "Lor"
@@ -533,7 +533,7 @@ layer at (0,0) size 785x1716
                 text run at (0,336) width 24: "stu"
                 text run at (0,352) width 8: "v"
         layer at (413,469) size 181x54 clip at (414,470) size 164x52 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,19) size 181x54 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 181x54 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -544,7 +544,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (600,485) size 77x38 clip at (601,486) size 60x36 scrollHeight 180
-          RenderTextControl {TEXTAREA} at (3,19) size 77x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 77x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 56x176
               RenderText {#text} at (0,0) size 56x176
                 text run at (0,0) width 40: "Lorem"
@@ -563,7 +563,7 @@ layer at (0,0) size 785x1716
                 text run at (0,144) width 56: "opqrstu"
                 text run at (0,160) width 8: "v"
         layer at (3,549) size 181x118 clip at (4,550) size 179x116
-          RenderTextControl {TEXTAREA} at (3,19) size 181x118 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 181x118 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x80
               RenderText {#text} at (0,0) size 168x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -574,7 +574,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 168: "abcdefghijklmnopqrstu"
                 text run at (0,64) width 8: "v"
         layer at (190,597) size 61x70 clip at (191,598) size 44x68 scrollHeight 244
-          RenderTextControl {TEXTAREA} at (3,35) size 61x70 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 61x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 40x240
               RenderText {#text} at (0,0) size 40x240
                 text run at (0,0) width 40: "Lorem"
@@ -596,12 +596,12 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (272,614) size 181x53 clip at (273,615) size 179x36 scrollWidth 546
-          RenderTextControl {TEXTAREA} at (3,19) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x16
               RenderText {#text} at (0,0) size 544x16
                 text run at (0,0) width 544: "Lorem ipsum  dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
         layer at (459,629) size 181x38 clip at (460,630) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -612,7 +612,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (3,709) size 181x38 clip at (4,710) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -623,7 +623,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (190,709) size 181x38 clip at (191,710) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 96: "Lorem ipsum "
@@ -633,7 +633,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (377,709) size 181x38 clip at (378,710) size 164x36 scrollHeight 68
-          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x64
               RenderText {#text} at (0,0) size 160x64
                 text run at (0,0) width 160: "Lorem ipsum  dolor A"
@@ -641,7 +641,7 @@ layer at (0,0) size 785x1716
                 text run at (0,32) width 160: "VWXYZ abcdefghijklmn"
                 text run at (0,48) width 64: "opqrstuv"
         layer at (564,709) size 181x38 clip at (565,710) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -652,13 +652,13 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (3,836) size 181x38 clip at (4,837) size 179x21 scrollWidth 538
-          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x16
               RenderText {#text} at (0,0) size 536x16
                 text run at (0,0) width 96: "Lorem ipsum "
                 text run at (96,0) width 440: "dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
         layer at (190,836) size 181x38 clip at (191,837) size 164x36 scrollHeight 84
-          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 96: "Lorem ipsum "
@@ -668,7 +668,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (377,821) size 181x53 clip at (378,822) size 164x36 scrollWidth 210 scrollHeight 68
-          RenderTextControl {TEXTAREA} at (3,35) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x64
               RenderText {#text} at (0,0) size 208x64
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -677,7 +677,7 @@ layer at (0,0) size 785x1716
                 text run at (0,32) width 8: " "
                 text run at (0,48) width 176: "abcdefghijklmnopqrstuv"
         layer at (564,821) size 181x53 clip at (565,822) size 164x36 scrollWidth 210 scrollHeight 68
-          RenderTextControl {TEXTAREA} at (3,67) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,67) size 181x53 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x64
               RenderText {#text} at (0,0) size 208x64
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -896,12 +896,12 @@ layer at (0,0) size 785x1716
                       text run at (0,48) width 33: "wrap\","
                   RenderBR {BR} at (81,61) size 0x0
         layer at (3,83) size 179x36 clip at (4,84) size 177x34
-          RenderTextControl {TEXTAREA} at (3,3) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,3) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x16
               RenderText {#text} at (0,0) size 136x16
                 text run at (0,0) width 136: "Lorem ipsum dolor"
         layer at (188,83) size 179x36 clip at (189,84) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,19) size 179x36 [color=#545454] [bgcolor=#EBEBE4] [border: (1px solid #545454)]
+          RenderTextControl {TEXTAREA} at (3,19) size 179x36 [color=#545454] [bgcolor=#EBEBE4] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -912,7 +912,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (373,65) size 197x54 clip at (374,66) size 180x52 scrollHeight 100
-          RenderTextControl {TEXTAREA} at (3,35) size 197x54 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 197x54 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (11,11) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -923,7 +923,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (576,85) size 177x34 clip at (577,86) size 160x32 scrollHeight 80
-          RenderTextControl {TEXTAREA} at (3,35) size 177x34 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 177x34 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (1,1) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -934,7 +934,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (11,203) size 179x36 clip at (12,204) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (11,43) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (11,43) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -945,7 +945,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (202,213) size 179x36 clip at (203,214) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (1,33) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,33) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -956,7 +956,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (383,211) size 60x36 clip at (384,212) size 43x34 scrollHeight 242
-          RenderTextControl {TEXTAREA} at (1,35) size 60x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,35) size 60x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 41x240
               RenderText {#text} at (0,0) size 41x240
                 text run at (0,0) width 40: "Lorem"
@@ -978,7 +978,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (465,173) size 60x74 clip at (466,174) size 43x72 scrollHeight 1128
-          RenderTextControl {TEXTAREA} at (1,51) size 60x74 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,51) size 60x74 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (21,21) size 3x1088
               RenderText {#text} at (0,0) size 8x1088
                 text run at (0,0) width 8: "L"
@@ -1050,7 +1050,7 @@ layer at (0,0) size 785x1716
                 text run at (0,1056) width 8: "u"
                 text run at (0,1072) width 8: "v"
         layer at (547,213) size 60x34 clip at (548,214) size 43x32 scrollHeight 240
-          RenderTextControl {TEXTAREA} at (1,51) size 60x34 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,51) size 60x34 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (1,1) size 43x240
               RenderText {#text} at (0,0) size 43x240
                 text run at (0,0) width 40: "Lorem"
@@ -1072,7 +1072,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (3,315) size 179x60 clip at (4,316) size 162x58 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,33) size 179x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,33) size 179x60 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1083,7 +1083,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (186,315) size 60x60 clip at (187,316) size 43x58 scrollHeight 242
-          RenderTextControl {TEXTAREA} at (1,49) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,49) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 41x240
               RenderText {#text} at (0,0) size 41x240
                 text run at (0,0) width 40: "Lorem"
@@ -1105,7 +1105,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (270,337) size 179x36 clip at (271,338) size 177x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x80
               RenderText {#text} at (0,0) size 168x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1116,7 +1116,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 168: "abcdefghijklmnopqrstu"
                 text run at (0,64) width 8: "v"
         layer at (455,322) size 179x51 clip at (456,323) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,35) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1127,7 +1127,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (638,315) size 60x60 clip at (639,316) size 58x58 scrollHeight 178
-          RenderTextControl {TEXTAREA} at (1,65) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,65) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 56x176
               RenderText {#text} at (0,0) size 56x176
                 text run at (0,0) width 40: "Lorem"
@@ -1146,7 +1146,7 @@ layer at (0,0) size 785x1716
                 text run at (0,144) width 56: "opqrstu"
                 text run at (0,160) width 8: "v"
         layer at (1,441) size 60x60 clip at (2,442) size 43x43 scrollHeight 242
-          RenderTextControl {TEXTAREA} at (1,65) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,65) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 41x240
               RenderText {#text} at (0,0) size 41x240
                 text run at (0,0) width 40: "Lorem"
@@ -1168,7 +1168,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (83,441) size 60x60 clip at (84,442) size 43x58 scrollHeight 242
-          RenderTextControl {TEXTAREA} at (1,49) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,49) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 41x240
               RenderText {#text} at (0,0) size 41x240
                 text run at (0,0) width 40: "Lorem"
@@ -1190,7 +1190,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (165,441) size 60x60 clip at (166,442) size 43x58 scrollHeight 242
-          RenderTextControl {TEXTAREA} at (1,49) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,49) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 41x240
               RenderText {#text} at (0,0) size 41x240
                 text run at (0,0) width 40: "Lorem"
@@ -1212,7 +1212,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (247,441) size 60x60 clip at (248,442) size 43x58 scrollHeight 242
-          RenderTextControl {TEXTAREA} at (1,65) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (1,65) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 41x240
               RenderText {#text} at (0,0) size 41x240
                 text run at (0,0) width 40: "Lorem"
@@ -1234,7 +1234,7 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (331,463) size 43x36 clip at (332,464) size 26x34 scrollHeight 370
-          RenderTextControl {TEXTAREA} at (3,19) size 43x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 43x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 24x368
               RenderText {#text} at (0,0) size 24x368
                 text run at (0,0) width 24: "Lor"
@@ -1265,7 +1265,7 @@ layer at (0,0) size 785x1716
                 text run at (0,336) width 24: "stu"
                 text run at (0,352) width 8: "v"
         layer at (413,447) size 179x52 clip at (414,448) size 162x50 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,19) size 179x52 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 179x52 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1276,7 +1276,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (598,463) size 75x36 clip at (599,464) size 58x34 scrollHeight 178
-          RenderTextControl {TEXTAREA} at (3,19) size 75x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 75x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 56x176
               RenderText {#text} at (0,0) size 56x176
                 text run at (0,0) width 40: "Lorem"
@@ -1295,7 +1295,7 @@ layer at (0,0) size 785x1716
                 text run at (0,144) width 56: "opqrstu"
                 text run at (0,160) width 8: "v"
         layer at (3,521) size 179x116 clip at (4,522) size 177x114
-          RenderTextControl {TEXTAREA} at (3,19) size 179x116 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 179x116 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x80
               RenderText {#text} at (0,0) size 168x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1306,7 +1306,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 168: "abcdefghijklmnopqrstu"
                 text run at (0,64) width 8: "v"
         layer at (188,569) size 59x68 clip at (189,570) size 42x66 scrollHeight 242
-          RenderTextControl {TEXTAREA} at (3,35) size 59x68 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 59x68 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 40x240
               RenderText {#text} at (0,0) size 40x240
                 text run at (0,0) width 40: "Lorem"
@@ -1328,12 +1328,12 @@ layer at (0,0) size 785x1716
                 text run at (0,208) width 40: "pqrst"
                 text run at (0,224) width 16: "uv"
         layer at (270,586) size 179x51 clip at (271,587) size 177x34 scrollWidth 546
-          RenderTextControl {TEXTAREA} at (3,19) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x16
               RenderText {#text} at (0,0) size 544x16
                 text run at (0,0) width 544: "Lorem ipsum  dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
         layer at (455,601) size 179x36 clip at (456,602) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,19) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1344,7 +1344,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (3,675) size 179x36 clip at (4,676) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,19) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,19) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1355,7 +1355,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (188,675) size 179x36 clip at (189,676) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 96: "Lorem ipsum "
@@ -1365,7 +1365,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (373,675) size 179x36 clip at (374,676) size 162x34 scrollHeight 66
-          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x64
               RenderText {#text} at (0,0) size 160x64
                 text run at (0,0) width 160: "Lorem ipsum  dolor A"
@@ -1373,7 +1373,7 @@ layer at (0,0) size 785x1716
                 text run at (0,32) width 160: "VWXYZ abcdefghijklmn"
                 text run at (0,48) width 64: "opqrstuv"
         layer at (558,675) size 179x36 clip at (559,676) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1384,13 +1384,13 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (3,796) size 179x36 clip at (4,797) size 177x19 scrollWidth 538
-          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 175x16
               RenderText {#text} at (0,0) size 536x16
                 text run at (0,0) width 96: "Lorem ipsum "
                 text run at (96,0) width 440: "dolor ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuv"
         layer at (188,796) size 179x36 clip at (189,797) size 162x34 scrollHeight 82
-          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x80
               RenderText {#text} at (0,0) size 160x80
                 text run at (0,0) width 96: "Lorem ipsum "
@@ -1400,7 +1400,7 @@ layer at (0,0) size 785x1716
                 text run at (0,48) width 160: "abcdefghijklmnopqrst"
                 text run at (0,64) width 16: "uv"
         layer at (373,781) size 179x51 clip at (374,782) size 162x34 scrollWidth 210 scrollHeight 66
-          RenderTextControl {TEXTAREA} at (3,35) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,35) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x64
               RenderText {#text} at (0,0) size 208x64
                 text run at (0,0) width 144: "Lorem ipsum  dolor"
@@ -1409,7 +1409,7 @@ layer at (0,0) size 785x1716
                 text run at (0,32) width 8: " "
                 text run at (0,48) width 176: "abcdefghijklmnopqrstuv"
         layer at (558,781) size 179x51 clip at (559,782) size 162x34 scrollWidth 210 scrollHeight 66
-          RenderTextControl {TEXTAREA} at (3,67) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+          RenderTextControl {TEXTAREA} at (3,67) size 179x51 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             RenderBlock {DIV} at (3,3) size 160x64
               RenderText {#text} at (0,0) size 208x64
                 text run at (0,0) width 144: "Lorem ipsum  dolor"

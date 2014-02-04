@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,36) size 784x20
         RenderText {#text} at (0,0) size 483x19
           text run at (0,0) width 483: "The popup and the button should say \x{201C}SUCCESS\x{201D} with no sign of \x{201C}FAILURE\x{201D}."
-      RenderMenuList {SELECT} at (0,72) size 200x30 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+      RenderMenuList {SELECT} at (0,72) size 200x30 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,6) size 198x18
           RenderText at (4,1) size 63x16
             text run at (4,1) width 63: "SUCCESS"
