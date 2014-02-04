@@ -47,7 +47,8 @@ CA_COMMON_NAME="AIA Test Root CA" \
     -out out/aia-test-root.pem \
     -signkey out/aia-test-root.key \
     -extfile aia-test.cnf \
-    -extensions ca_cert
+    -extensions ca_cert \
+    -text
 
 # Generate the intermediate
 CA_COMMON_NAME="AIA Test Intermediate CA" \

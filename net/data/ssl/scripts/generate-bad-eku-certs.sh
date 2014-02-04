@@ -49,7 +49,8 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
     -in "out/$eku_test_root.csr" \
     -extensions ca_cert \
     -signkey "out/$eku_test_root.key" \
-    -out "out/$eku_test_root.pem"
+    -out "out/$eku_test_root.pem" \
+    -text
 
 # Generate EE certs.
 for cert_type in non-crit-codeSigning crit-codeSigning

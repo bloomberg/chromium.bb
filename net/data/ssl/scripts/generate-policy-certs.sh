@@ -50,7 +50,8 @@ COMMON_NAME="Policy Test Root CA" \
     -out out/policy-root.pem \
     -signkey out/policy-root.key \
     -extfile policy.cnf \
-    -extensions ca_cert
+    -extensions ca_cert \
+    -text
 
 # Generate the intermediate
 COMMON_NAME="Policy Test Intermediate CA" \

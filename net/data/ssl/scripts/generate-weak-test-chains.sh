@@ -64,7 +64,8 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
     -in out/2048-rsa-root.csr \
     -extensions ca_cert \
     -signkey out/2048-rsa-root.key \
-    -out out/2048-rsa-root.pem
+    -out out/2048-rsa-root.pem \
+    -text
 
 # Generate private keys of all types and strengths for intermediate CAs and
 # end-entities.

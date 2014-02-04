@@ -57,7 +57,8 @@ CA_COMMON_NAME="D Root CA" \
     -in out/D.csr \
     -extensions ca_cert \
     -signkey out/D.key \
-    -out out/D.pem
+    -out out/D.pem \
+    -text
 
 echo Generate the C2 root CSR.
 CA_COMMON_NAME="C CA" \
@@ -75,7 +76,8 @@ CA_COMMON_NAME="C CA" \
     -in out/C2.csr \
     -extensions ca_cert \
     -signkey out/C.key \
-    -out out/C2.pem
+    -out out/C2.pem \
+    -text
 
 echo Generate the B and C intermediaries\' CSRs.
 for i in B C

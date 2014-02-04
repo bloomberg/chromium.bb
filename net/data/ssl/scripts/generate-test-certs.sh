@@ -34,10 +34,10 @@ CA_COMMON_NAME="Test Root CA" \
     -req -days 3650 \
     -in out/2048-sha1-root.req \
     -out out/2048-sha1-root.pem \
-    -text \
     -signkey out/2048-sha1-root.key \
     -extfile ca.cnf \
-    -extensions ca_cert
+    -extensions ca_cert \
+    -text
 
 # Generate the leaf certificate requests
 try openssl req \
