@@ -1,0 +1,211 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_CLOUD_DEVICES_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
+#define COMPONENTS_CLOUD_DEVICES_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
+
+#include <vector>
+
+#include "components/cloud_devices/description_items.h"
+
+// Implementation of templates defined in header file.
+// This file should be included from CC file with implementation of device
+// specific capabilities.
+
+namespace cloud_devices {
+
+template <class Option, class Traits>
+ListCapability<Option, Traits>::ListCapability() {
+  Reset();
+}
+
+template <class Option, class Traits>
+ListCapability<Option, Traits>::~ListCapability() { }
+
+template <class Option, class Traits>
+bool ListCapability<Option, Traits>::IsValid() const {
+  if (empty())
+    return false;  // This type of capabilities can't be empty.
+  for (size_t i = 0; i < options_.size(); ++i) {
+    if (!Traits::IsValid(options_[i]))
+      return false;
+  }
+  return true;
+}
+
+template <class Option, class Traits>
+bool ListCapability<Option, Traits>::LoadFrom(
+    const CloudDeviceDescription& description) {
+  Reset();
+  const base::ListValue* options =
+      description.GetListItem(Traits::GetItemPath());
+  if (!options)
+    return false;
+  for (size_t i = 0; i < options->GetSize(); ++i) {
+    const base::DictionaryValue* option_value = NULL;
+    if (!options->GetDictionary(i, &option_value))
+      return false;  // Every entry must be a dictionary.
+    Option option;
+    if (!Traits::Load(*option_value, &option))
+      return false;
+    AddOption(option);
+  }
+  return IsValid();
+}
+
+template <class Option, class Traits>
+void ListCapability<Option, Traits>::SaveTo(
+    CloudDeviceDescription* description) const {
+  DCHECK(IsValid());
+  base::ListValue* options_list =
+      description->CreateListItem(Traits::GetItemPath());
+  for (size_t i = 0; i < options_.size(); ++i) {
+    base::DictionaryValue* option_value = new base::DictionaryValue;
+    options_list->Append(option_value);
+    Traits::Save(options_[i], option_value);
+  }
+}
+
+template <class Option, class Traits>
+SelectionCapability<Option, Traits>::SelectionCapability() {
+  Reset();
+}
+
+template <class Option, class Traits>
+SelectionCapability<Option, Traits>::~SelectionCapability() { }
+
+template <class Option, class Traits>
+bool SelectionCapability<Option, Traits>::IsValid() const {
+  if (empty())
+    return false;  // This type of capabilities can't be empty
+  for (size_t i = 0; i < options_.size(); ++i) {
+    if (!Traits::IsValid(options_[i]))
+      return false;
+  }
+  return default_idx_ >= 0 && default_idx_ < static_cast<int>(size());
+}
+
+template <class Option, class Traits>
+bool SelectionCapability<Option, Traits>::LoadFrom(
+    const CloudDeviceDescription& description) {
+  Reset();
+  const base::DictionaryValue* item =
+      description.GetItem(Traits::GetItemPath());
+  if (!item)
+    return false;
+  const base::ListValue* options = NULL;
+  if (!item->GetList(json::kKeyOption, &options))
+    return false;
+  for (size_t i = 0; i < options->GetSize(); ++i) {
+    const base::DictionaryValue* option_value = NULL;
+    if (!options->GetDictionary(i, &option_value))
+      return false;  // Every entry must be a dictionary.
+    Option option;
+    if (!Traits::Load(*option_value, &option))
+      return false;
+    bool is_default = false;
+    option_value->GetBoolean(json::kKeyIsDefault, &is_default);
+    if (is_default && default_idx_ >= 0) {
+      return false;  // Multiple defaults.
+    }
+    AddDefaultOption(option, is_default);
+  }
+  return IsValid();
+}
+
+template <class Option, class Traits>
+void SelectionCapability<Option, Traits>::SaveTo(
+    CloudDeviceDescription* description) const {
+  DCHECK(IsValid());
+  base::ListValue* options_list = new base::ListValue;
+  description->CreateItem(Traits::GetItemPath())->Set(json::kKeyOption,
+                                                          options_list);
+  for (size_t i = 0; i < options_.size(); ++i) {
+    base::DictionaryValue* option_value = new base::DictionaryValue;
+    options_list->Append(option_value);
+    if (static_cast<int>(i) == default_idx_)
+      option_value->SetBoolean(json::kKeyIsDefault, true);
+    Traits::Save(options_[i], option_value);
+  }
+}
+
+template <class Traits>
+BooleanCapability<Traits>::BooleanCapability() {
+  Reset();
+}
+
+template <class Traits>
+BooleanCapability<Traits>::~BooleanCapability() { }
+
+template <class Traits>
+bool BooleanCapability<Traits>::LoadFrom(
+    const CloudDeviceDescription& description) {
+  Reset();
+  const base::DictionaryValue* dict =
+      description.GetItem(Traits::GetItemPath());
+  if (!dict)
+    return false;
+  default_value_ = Traits::kDefault;
+  dict->GetBoolean(json::kKeyDefault, &default_value_);
+  return true;
+}
+
+template <class Traits>
+void BooleanCapability<Traits>::SaveTo(
+    CloudDeviceDescription* description) const {
+  base::DictionaryValue* dict = description->CreateItem(Traits::GetItemPath());
+  if (default_value_ != Traits::kDefault)
+    dict->SetBoolean(json::kKeyDefault, default_value_);
+}
+
+template <class Traits>
+bool EmptyCapability<Traits>::LoadFrom(
+    const CloudDeviceDescription& description) {
+  return description.GetItem(Traits::GetItemPath()) != NULL;
+}
+
+template <class Traits>
+void EmptyCapability<Traits>::SaveTo(
+    CloudDeviceDescription* description) const {
+  description->CreateItem(Traits::GetItemPath());
+}
+
+template <class Option, class Traits>
+TicketItem<Option, Traits>::TicketItem() {
+  Reset();
+}
+
+template <class Option, class Traits>
+TicketItem<Option, Traits>::~TicketItem() { }
+
+template <class Option, class Traits>
+bool TicketItem<Option, Traits>::IsValid() const {
+  return Traits::IsValid(value());
+}
+
+template <class Option, class Traits>
+bool TicketItem<Option, Traits>::LoadFrom(
+    const CloudDeviceDescription& description) {
+  Reset();
+  const base::DictionaryValue* option_value =
+      description.GetItem(Traits::GetItemPath());
+  if (!option_value)
+    return false;
+  Option option;
+  if (!Traits::Load(*option_value, &option))
+    return false;
+  set_value(option);
+  return IsValid();
+}
+
+template <class Option, class Traits>
+void TicketItem<Option, Traits>::SaveTo(
+    CloudDeviceDescription* description) const {
+  DCHECK(IsValid());
+  Traits::Save(value(), description->CreateItem(Traits::GetItemPath()));
+}
+
+}  // namespace cloud_devices
+
+#endif  // COMPONENTS_CLOUD_DEVICES_DESCRIPTION_DESCRIPTION_ITEMS_INL_H_
