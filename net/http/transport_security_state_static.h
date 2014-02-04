@@ -436,6 +436,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {12, true, "\006urchin\003com", false, kGooglePins, DOMAIN_URCHIN_COM },
   {8, true, "\003goo\002gl", false, kGooglePins, DOMAIN_GOO_GL },
   {6, true, "\001g\002co", false, kGooglePins, DOMAIN_G_CO },
+  {22, true, "\020googletagmanager\003com", false, kGooglePins, DOMAIN_GOOGLETAGMANAGER_COM },
   {11, true, "\006google\002ac", false, kGooglePins, DOMAIN_GOOGLE_AC },
   {11, true, "\006google\002ad", false, kGooglePins, DOMAIN_GOOGLE_AD },
   {11, true, "\006google\002ae", false, kGooglePins, DOMAIN_GOOGLE_AE },

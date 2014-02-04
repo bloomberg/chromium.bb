@@ -225,6 +225,7 @@
     { "name": "urchin.com", "include_subdomains": true, "pins": "google" },
     { "name": "goo.gl", "include_subdomains": true, "pins": "google" },
     { "name": "g.co", "include_subdomains": true, "pins": "google" },
+    { "name": "googletagmanager.com", "include_subdomains": true, "pins": "google" },
     { "name": "google.ac", "include_subdomains": true, "pins": "google" },
     { "name": "google.ad", "include_subdomains": true, "pins": "google" },
     { "name": "google.ae", "include_subdomains": true, "pins": "google" },
