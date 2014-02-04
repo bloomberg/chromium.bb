@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserPrivateApiTest, Mount) {
 
   // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
-  EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _,  _))
+  EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _, _))
       .Times(0);
   EXPECT_CALL(*disk_mount_manager_mock_,
               UnmountPath(

@@ -90,42 +90,32 @@ bool FileBrowserPrivateRemoveMountFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   drive::util::Log(logging::LOG_INFO,
-                   "%s[%d] called. (mount_path: '%s')",
+                   "%s[%d] called. (veolume_id: '%s')",
                    name().c_str(),
                    request_id(),
-                   params->mount_path.c_str());
+                   params->volume_id.c_str());
   set_log_on_completion(true);
 
-  std::vector<GURL> file_paths;
-  file_paths.push_back(GURL(params->mount_path));
-  file_manager::util::GetSelectedFileInfo(
-      render_view_host(),
-      GetProfile(),
-      file_paths,
-      file_manager::util::NEED_LOCAL_PATH_FOR_OPENING,
-      base::Bind(
-          &FileBrowserPrivateRemoveMountFunction::GetSelectedFileInfoResponse,
-          this));
-  return true;
-}
+  using file_manager::VolumeManager;
+  using file_manager::VolumeInfo;
+  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  if (!volume_manager)
+    return false;
 
-void FileBrowserPrivateRemoveMountFunction::GetSelectedFileInfoResponse(
-    const std::vector<ui::SelectedFileInfo>& files) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (files.size() != 1) {
-    SendResponse(false);
-    return;
-  }
+  VolumeInfo volume_info;
+  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info))
+    return false;
 
   // TODO(tbarzic): Send response when callback is received, it would make more
   // sense than remembering issued unmount requests in file manager and showing
   // errors for them when MountCompleted event is received.
   DiskMountManager::GetInstance()->UnmountPath(
-      files[0].local_path.value(),
+      volume_info.mount_path.value(),
       chromeos::UNMOUNT_OPTIONS_NONE,
       DiskMountManager::UnmountPathCallback());
+
   SendResponse(true);
+  return true;
 }
 
 bool FileBrowserPrivateGetVolumeMetadataListFunction::RunImpl() {
