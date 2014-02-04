@@ -1251,6 +1251,14 @@ def GetIrtNexe(env, chrome_irt=False):
 
 pre_base_env.AddMethod(GetIrtNexe)
 
+def ApplyTLSEdit(env, nexe_name, raw_nexe):
+  tls_edit_exe = env['BUILD_ENV'].File('${STAGING_DIR}/tls_edit${PROGSUFFIX}')
+  return env.Command(
+      nexe_name,
+      [tls_edit_exe, raw_nexe],
+      '${SOURCES} ${TARGET}')
+
+pre_base_env.AddMethod(ApplyTLSEdit)
 
 def CommandValidatorTestNacl(env, name, image,
                              validator_flags=None,
@@ -3407,6 +3415,7 @@ nacl_irt_env.Append(
         'src/shared/gio/nacl.scons',
         'src/shared/platform/nacl.scons',
         'src/shared/srpc/nacl.scons',
+        'src/tools/tls_edit/build.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
@@ -3609,7 +3618,14 @@ def MakeBuildEnv():
 
   build_env = make_env_func(build_platform)
   build_env['IS_BUILD_ENV'] = True
-  build_env['BUILD_SCONSCRIPTS'] = []
+
+  # Building tls_edit depends on gio, platform, and validator_ragel.
+  build_env['BUILD_SCONSCRIPTS'] = [
+    # KEEP THIS SORTED PLEASE
+    'src/shared/gio/build.scons',
+    'src/shared/platform/build.scons',
+    'src/trusted/validator_ragel/build.scons',
+    ]
 
   # The build environment is only used for intermediate steps and should
   # not be creating any targets. Aliases are used as means to add targets
@@ -3618,17 +3634,29 @@ def MakeBuildEnv():
   # override the alias function and essentially stub it out.
   build_env.Alias = lambda env, target, source=[], actions=None, **kw : []
 
-  dbg_build_env, opt_build_env = GenerateOptimizationLevels(build_env)
+  return build_env
 
-  return opt_build_env
+def LinkBuildEnv(selected_envs):
+  build_env_map = {
+    'opt': opt_build_env,
+    'dbg': dbg_build_env,
+    }
 
-def LinkBuildEnv(selected_envs, build_env):
+  # We need to find the optimization level in order to know which
+  # build environment we want to use
+  opt_level = None
+  for env in selected_envs:
+    if 'OPTIMIZATION_LEVEL' in env:
+      if env['OPTIMIZATION_LEVEL']:
+        opt_level = env['OPTIMIZATION_LEVEL']
+        break
+
+  build_env = build_env_map.get(opt_level, opt_build_env)
   for env in selected_envs:
     env['BUILD_ENV'] = build_env
 
-  # If platform is not the same as the host environment, add the targets
-  #  of the host environment so scons can find them
-  if GetBuildPlatform() != GetTargetPlatform():
+  if (opt_level not in build_env_map or
+      GetBuildPlatform() != GetTargetPlatform()):
     selected_envs.append(build_env)
 
 def DumpEnvironmentInfo(selected_envs):
@@ -3683,7 +3711,7 @@ CheckArguments()
 SanityCheckEnvironments(environment_list)
 selected_envs = FilterEnvironments(environment_list)
 
-# If we are building nacl, build nacl_irt too.  This works around it being
+# If we are building NaCl, build nacl_irt too.  This works around it being
 # a separate mode due to the vagaries of scons when we'd really rather it
 # not be, while not requiring that every bot command line using --mode be
 # changed to list '...,nacl,nacl_irt' explicitly.
@@ -3694,10 +3722,16 @@ if nacl_env in selected_envs:
 if nacl_irt_test_env in selected_envs and nacl_env not in selected_envs:
   selected_envs.append(nacl_env)
 
-
 DumpEnvironmentInfo(selected_envs)
 LinkTrustedEnv(selected_envs)
-LinkBuildEnv(selected_envs, MakeBuildEnv())
+
+# When building NaCl, any intermediate build tool that is used during the
+# build process must be built using the current build environment, not the
+# target. Create a build environment for this purpose and link it into
+# the selected environments
+dbg_build_env, opt_build_env = GenerateOptimizationLevels(MakeBuildEnv())
+LinkBuildEnv(selected_envs)
+
 # This must happen after LinkTrustedEnv, since that is where TRUSTED_ENV
 # is finally set, and env.UsingEmulator() checks TRUSTED_ENV for the emulator.
 # This must also happen before BuildEnvironments.

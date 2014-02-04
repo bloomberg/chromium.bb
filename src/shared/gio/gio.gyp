@@ -22,6 +22,8 @@
     {
       'target_name': 'gio',
       'type': 'static_library',
+      # tls_edit relies on gio which is always built for the host platform.
+      'toolsets': ['host', 'target'],
       'sources': [
         '<@(trusted_sources)',
       ],

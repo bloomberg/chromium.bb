@@ -92,8 +92,17 @@ irt_libs = ['srpc',
             'm',
             ]
 
-irt_core_library = blob_env.ComponentProgram(
-    'irt_core', irt_support_objs + irt_nonbrowser, EXTRA_LIBS=irt_libs)
+irt_core_raw = blob_env.ComponentProgram(
+    'irt_core_raw', irt_support_objs + irt_nonbrowser, EXTRA_LIBS=irt_libs)
+
+irt_core_nexe = blob_env.ApplyTLSEdit(
+    'irt_core.nexe',
+    irt_core_raw)
+
+irt_core_library = blob_env.Install('${STAGING_DIR}', irt_core_nexe)
+blob_env.Alias('irt_core', irt_core_library)
+blob_env.ComponentProgramAlias(irt_core_library)
+
 env.SDKInstallBin('irt_core.nexe', irt_core_library)
 
 # TODO(mcgrathr): these should be installed, but scons is a mystery

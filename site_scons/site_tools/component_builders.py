@@ -499,8 +499,7 @@ def ComponentProgram(self, prog_name, *args, **kwargs):
 
   # Add an alias to build the program to the right groups
   a = env.Alias(prog_name, out_nodes)
-  for group in env['COMPONENT_PROGRAM_GROUPS']:
-    SCons.Script.Alias(group, a)
+  env.ComponentProgramAlias(a)
 
   # Store list of components for this program
   env._StoreComponents(prog_name)
@@ -513,6 +512,10 @@ def ComponentProgram(self, prog_name, *args, **kwargs):
 
   # Return the executable
   return out_nodes[0]
+
+def ComponentProgramAlias(self, program):
+  for group in self['COMPONENT_PROGRAM_GROUPS']:
+    SCons.Script.Alias(group, program)
 
 #------------------------------------------------------------------------------
 
@@ -639,6 +642,7 @@ def generate(env):
   env.AddMethod(ComponentObject)
   env.AddMethod(ComponentLibrary)
   env.AddMethod(ComponentProgram)
+  env.AddMethod(ComponentProgramAlias)
   env.AddMethod(ComponentTestProgram)
   env.AddMethod(ComponentTestOutput)
 

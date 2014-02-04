@@ -17,9 +17,14 @@ if env.Bit('bitcode'):
 #    __pthread_initialize() and the intercepted malloc() uses TLS.
 is_broken = env.Bit('running_on_valgrind')
 
-irt_thread_test_nexe = env.ComponentProgram(
-    'irt_thread_test', ['irt_thread_test.c'],
+irt_thread_test_raw = env.ComponentProgram(
+    'irt_thread_test_raw', ['irt_thread_test.c'],
     EXTRA_LIBS=['irt_support_private'])
+
+irt_thread_test_nexe = env.ApplyTLSEdit(
+    'irt_thread_test.nexe',
+    irt_thread_test_raw)
+
 node = env.CommandSelLdrTestNacl('irt_thread_test.out', irt_thread_test_nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_thread_test',
                        is_broken=is_broken)

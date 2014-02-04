@@ -10,6 +10,8 @@
     {
       'target_name': 'rdfa_validator',
       'type': 'static_library',
+      # tls_edit relies on this which is always built for the host platform.
+      'toolsets': ['host', 'target'],
       'sources': [
         'validator_features_all.c',
         'validator_features_validator.c',

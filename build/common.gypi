@@ -301,75 +301,83 @@
               '-Wstrict-prototypes',
             ],
           }],
-          [ 'target_arch=="arm"', {
-              'cflags': [
+          ['target_arch=="arm"', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
                   '-Wno-abi',
                   '-fno-exceptions',
                   '-Wall',
                   '-fPIC',
                   '--sysroot=<(sysroot)',
-              ],
-              'ldflags': [
+                ],
+                'ldflags': [
                   '--sysroot=<(sysroot)',
-              ],
-              # TODO(mcgrathr): This is copied from the arm section of
-              # chromium/src/build/common.gypi, but these details really
-              # should be more fully harmonized and shared.
-              'conditions': [
+                ],
+                # TODO(mcgrathr): This is copied from the arm section of
+                # chromium/src/build/common.gypi, but these details really
+                # should be more fully harmonized and shared.
+                'conditions': [
                   ['arm_thumb==1', {
-                      'cflags': [
-                          '-mthumb',
-                      ]
+                    'cflags': [
+                      '-mthumb',
+                    ]
                   }],
                   ['arm_version==7', {
-                      'cflags': [
-                          '-march=armv7-a',
-                          '-mtune=cortex-a9',
-                          '-mfloat-abi=<(arm_float_abi)',
-                      ],
-                      'conditions': [
-                          ['arm_neon==1', {
-                              'cflags': [ '-mfpu=neon', ],
-                          }, {
-                              'cflags': [ '-mfpu=<(arm_fpu)', ],
-                          }]
-                      ],
+                    'cflags': [
+                    '-march=armv7-a',
+                    '-mtune=cortex-a9',
+                    '-mfloat-abi=<(arm_float_abi)',
+                    ],
+                    'conditions': [
+                      ['arm_neon==1', {
+                        'cflags': [ '-mfpu=neon', ],
+                      }, {
+                        'cflags': [ '-mfpu=<(arm_fpu)', ],
+                      }]
+                    ],
                   }],
-              ],
-            }],
-            ['target_arch=="mipsel"', {
-              # Copied from chromium build/common.gypi
-              'conditions': [
-                ['mips_arch_variant=="mips32r2"', {
-                  'cflags': ['-mips32r2'],
-                }, {
-                  'cflags': ['-mips32'],
-                }],
-              ],
-            }],
-            ['target_arch=="ia32" or target_arch=="x64"', {
-              'conditions': [
-                ['target_arch=="x64"', {
-                  'variables': {
-                    'mbits_flag': '-m64',
-                  },
-                }, {
-                  'variables': {
-                    'mbits_flag': '-m32',
-                  }
-                },],
-              ],
-              'asflags': [
-                '<(mbits_flag)',
-              ],
-              'cflags': [
-                '<(mbits_flag)',
-                '-fno-exceptions',
-                '-Wall',
-              ],
-              'ldflags': [
-                '<(mbits_flag)',
-              ],
+                ],
+              }],
+            ],
+          }],
+          ['target_arch=="mipsel"', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                # Copied from chromium build/common.gypi
+                'conditions': [
+                  ['mips_arch_variant=="mips32r2"', {
+                    'cflags': ['-mips32r2'],
+                  }, {
+                    'cflags': ['-mips32'],
+                  }],
+                ],
+              }],
+            ],
+          }],
+          ['target_arch=="ia32" or target_arch=="x64"', {
+            'conditions': [
+              ['target_arch=="x64"', {
+                'variables': {
+                  'mbits_flag': '-m64',
+                },
+              }, {
+                'variables': {
+                  'mbits_flag': '-m32',
+                }
+              },],
+            ],
+            'asflags': [
+              '<(mbits_flag)',
+            ],
+            'cflags': [
+              '<(mbits_flag)',
+              '-fno-exceptions',
+              '-Wall',
+            ],
+            'ldflags': [
+              '<(mbits_flag)',
+            ],
           }],
         ],
         'cflags_cc': [

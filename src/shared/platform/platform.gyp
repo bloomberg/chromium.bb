@@ -134,6 +134,8 @@
     {
       'target_name': 'platform',
       'type': 'static_library',
+      # tls_edit relies on this which is always built for the host platform.
+      'toolsets': ['host', 'target'],
       'variables': {
         'target_base': 'platform_lib',
       },
