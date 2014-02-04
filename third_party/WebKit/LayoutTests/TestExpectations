@@ -1112,3 +1112,5 @@ crbug.com/340105 plugins/npp-set-window-called-during-destruction.html [ NeedsMa
 crbug.com/340105 svg/custom/createelement.svg [ NeedsManualRebaseline ]
 crbug.com/340105 svg/dom/svgpath-out-of-bounds-getPathSeg.html [ NeedsManualRebaseline ]
 crbug.com/340105 virtual/deferred/fast/images/support-broken-image-delegate.html [ NeedsManualRebaseline ]
+
+crbug.com/329786 http/tests/inspector/network/network-shared-worker.html [ Pass Failure ]
