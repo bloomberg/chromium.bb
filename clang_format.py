@@ -23,19 +23,20 @@ class NotFoundError(Exception):
         '  %s' % e)
 
 
-def _FindChromiumTree():
-  """Return the root of the current chromium checkout, or die trying."""
-  source_root = gclient_utils.FindFileUpwards('.gclient')
+def _FindChromiumSourceRoot():
+  """Return the source root of the current chromium checkout, or die trying."""
+  # The use of .gn is somewhat incongruous here, but we need a file uniquely
+  # existing at src/. GN does the same thing at least.
+  source_root = gclient_utils.FindFileUpwards('.gn')
   if not source_root:
     raise NotFoundError(
-        '.gclient file not found in any parent of the current path.')
+        '.gn file not found in any parent of the current path.')
   return source_root
 
 
 def FindClangFormatToolInChromiumTree():
   """Return a path to the clang-format executable, or die trying."""
-  # The binaries in platform-specific subdirectories in src/tools/gn/bin.
-  tool_path = os.path.join(_FindChromiumTree(), 'src', 'third_party',
+  tool_path = os.path.join(_FindChromiumSourceRoot(), 'third_party',
                            'clang_format', 'bin',
                            gclient_utils.GetMacWinOrLinux(),
                            'clang-format' + gclient_utils.GetExeSuffix())
@@ -62,11 +63,11 @@ def FindClangFormatToolInChromiumTree():
 
 def FindClangFormatScriptInChromiumTree(script_name):
   """Return a path to a clang-format helper script, or die trying."""
-  script_path = os.path.join(_FindChromiumTree(), 'src', 'third_party',
+  script_path = os.path.join(_FindChromiumSourceRoot(), 'third_party',
                              'clang_format', 'script', script_name)
   if not os.path.exists(script_path):
     # TODO(thakis): Remove the fallback to the old location after a few weeks.
-    script_path = os.path.join(_FindChromiumTree(), 'src', 'third_party',
+    script_path = os.path.join(_FindChromiumSourceRoot(), 'third_party',
                                'clang_format', 'scripts', script_name)
     if not os.path.exists(script_path):
       raise NotFoundError('File does not exist: %s' % script_path)
