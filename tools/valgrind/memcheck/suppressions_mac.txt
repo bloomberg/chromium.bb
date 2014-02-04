@@ -2385,3 +2385,12 @@
   fun:_ZN7WebCore15DatabaseManager7managerEv
   fun:_ZN7WebCore11FrameLoader11stopLoadingEv
 }
+{
+  bug_340726
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN4base17LoadNativeLibrary*
+  fun:_ZN3gfx26InitializeStaticGLBindings*
+  fun:_ZN3gfx9GLSurface30InitializeOneOffImplementation*
+  fun:_ZN3gfx9GLSurface24InitializeOneOffForTestsEv
+}
