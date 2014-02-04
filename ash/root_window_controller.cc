@@ -30,7 +30,6 @@
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/always_on_top_controller.h"
-#include "ash/wm/base_layout_manager.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/panels/panel_window_event_handler.h"

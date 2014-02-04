@@ -54,7 +54,6 @@
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/ash_native_cursor_manager.h"
-#include "ash/wm/base_layout_manager.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/event_client_impl.h"
