@@ -5,20 +5,18 @@
 #include "chrome/browser/extensions/external_component_loader.h"
 
 #include "base/command_line.h"
-#include "base/i18n/case_conversion.h"
-#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
@@ -61,24 +59,10 @@ void ExternalComponentLoader::StartLoading() {
   prefs_->SetString(appId + ".external_update_url",
                     extension_urls::GetWebstoreUpdateUrl().spec());
 
-  std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
-  if (!group.empty() && group != "Disabled") {
-    std::string locale =
-#if defined(OS_CHROMEOS)
-        // On ChromeOS locale is per-profile.
-        profile_->GetPrefs()->GetString(prefs::kApplicationLocale);
-#else
-        g_browser_process->GetApplicationLocale();
-#endif
-    // Only available for English now.
-    std::string normalized_locale = l10n_util::NormalizeLocale(locale);
-    if (!(strcmp(normalized_locale.c_str(), "en")) ||
-        !(strcmp(normalized_locale.c_str(), "en_us")) ||
-        !(strcmp(normalized_locale.c_str(), "en_US"))) {
-      std::string hotwordId = extension_misc::kHotwordExtensionId;
-      prefs_->SetString(hotwordId + ".external_update_url",
-                        extension_urls::GetWebstoreUpdateUrl().spec());
-    }
+  if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
+    std::string hotwordId = extension_misc::kHotwordExtensionId;
+    prefs_->SetString(hotwordId + ".external_update_url",
+                      extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
   if (CommandLine::ForCurrentProcess()->

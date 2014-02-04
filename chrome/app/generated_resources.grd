@@ -6923,7 +6923,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable "Ok Google"
       </message>
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE" desc="The button text that disallows the hotword voice search trigger.">
-        No thanks
+        Cancel
       </message>
 
       <!-- Conflicts page -->

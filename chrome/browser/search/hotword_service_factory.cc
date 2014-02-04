@@ -34,6 +34,12 @@ bool HotwordServiceFactory::ShouldShowOptInPopup(Profile* profile) {
   return hotword_service && hotword_service->ShouldShowOptInPopup();
 }
 
+// static
+bool HotwordServiceFactory::IsHotwordAllowed(Profile* profile) {
+  HotwordService* hotword_service = GetForProfile(profile);
+  return hotword_service && hotword_service->IsHotwordAllowed();
+}
+
 HotwordServiceFactory::HotwordServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "HotwordService",

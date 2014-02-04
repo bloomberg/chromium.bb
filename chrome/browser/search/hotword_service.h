@@ -10,6 +10,12 @@
 
 class Profile;
 
+namespace hotword_internal {
+// Constants for the hotword field trial.
+extern const char kHotwordFieldTrialName[];
+extern const char kHotwordFieldTrialDisabledGroupName[];
+}  // namespace hotword_internal
+
 // Provides an interface for the Hotword component that does voice triggered
 // search.
 class HotwordService : public BrowserContextKeyedService {
@@ -30,6 +36,10 @@ class HotwordService : public BrowserContextKeyedService {
   // Checks for whether all the necessary files have downloaded to allow for
   // using the extension.
   virtual bool IsServiceAvailable();
+
+  // Determine if hotwording is allowed in this profile based on field trials
+  // and language.
+  virtual bool IsHotwordAllowed();
 
  private:
   Profile* profile_;
