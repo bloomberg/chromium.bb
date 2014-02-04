@@ -69,6 +69,8 @@ const char kNumExtensionsCount[] = "num-extensions";
 
 const char kNumberOfViews[] = "num-views";
 
+const char kShutdownType[] = "shutdown-type";
+
 #if !defined(OS_ANDROID)
 const char kGPUVendorID[] = "gpu-venid";
 const char kGPUDeviceID[] = "gpu-devid";
@@ -121,6 +123,7 @@ size_t RegisterChromeCrashKeys() {
     { kVariations, kLargeSize },
     { kNumExtensionsCount, kSmallSize },
     { kNumberOfViews, kSmallSize },
+    { kShutdownType, kSmallSize },
 #if !defined(OS_ANDROID)
     { kGPUVendorID, kSmallSize },
     { kGPUDeviceID, kSmallSize },

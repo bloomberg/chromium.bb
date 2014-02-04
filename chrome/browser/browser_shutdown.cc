@@ -31,6 +31,7 @@
 #include "chrome/browser/service_process/service_process_control.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,6 +57,7 @@ using base::TimeDelta;
 using content::BrowserThread;
 
 namespace browser_shutdown {
+namespace {
 
 // Whether the browser is trying to quit (e.g., Quit chosen from menu).
 bool g_trying_to_quit = false;
@@ -75,6 +77,23 @@ int shutdown_num_processes_slow_;
 
 const char kShutdownMsFile[] = "chrome_shutdown_ms.txt";
 
+const char* ToShutdownTypeString(ShutdownType type) {
+  switch (type) {
+    case NOT_VALID:
+      NOTREACHED();
+      return "";
+    case WINDOW_CLOSE:
+      return "close";
+    case BROWSER_EXIT:
+      return "exit";
+    case END_SESSION:
+      return "end";
+  }
+  return "";
+}
+
+}  // namespace
+
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kShutdownType, NOT_VALID);
   registry->RegisterIntegerPref(prefs::kShutdownNumProcesses, 0);
@@ -88,7 +107,8 @@ ShutdownType GetShutdownType() {
 void OnShutdownStarting(ShutdownType type) {
   if (shutdown_type_ != NOT_VALID)
     return;
-
+  base::debug::SetCrashKeyValue(crash_keys::kShutdownType,
+                                ToShutdownTypeString(type));
 #if !defined(OS_CHROMEOS)
   // Start the shutdown tracing. Note that On ChromeOS we have started this
   // already.

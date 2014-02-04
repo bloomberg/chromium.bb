@@ -84,6 +84,10 @@ extern const char kNumExtensionsCount[];
 // The number of render views/tabs open in a renderer process.
 extern const char kNumberOfViews[];
 
+// Type of shutdown. The value is one of "close" for WINDOW_CLOSE,
+// "exit" for BROWSER_EXIT, or "end" for END_SESSION.
+extern const char kShutdownType[];
+
 // GPU information.
 #if !defined(OS_ANDROID)
 extern const char kGPUVendorID[];
