@@ -293,6 +293,9 @@ const char kDisableRemoteFonts[]            = "disable-remote-fonts";
 // Turns off the accessibility in the renderer.
 const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 
+// Disables the new layout/paint system which paints after layout is complete.
+const char kDisableRepaintAfterLayout[]     = "disable-repaint-after-layout";
+
 // Disable the seccomp filter sandbox (seccomp-bpf) (Linux only).
 const char kDisableSeccompFilterSandbox[]   = "disable-seccomp-filter-sandbox";
 

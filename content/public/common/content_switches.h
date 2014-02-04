@@ -94,6 +94,7 @@ CONTENT_EXPORT extern const char kDisablePlugins[];
 CONTENT_EXPORT extern const char kDisablePluginsDiscovery[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRendererAccessibility[];
+CONTENT_EXPORT extern const char kDisableRepaintAfterLayout[];
 CONTENT_EXPORT extern const char kDisableSeccompFilterSandbox[];
 extern const char kDisableSessionStorage[];
 CONTENT_EXPORT extern const char kDisableSetuidSandbox[];
