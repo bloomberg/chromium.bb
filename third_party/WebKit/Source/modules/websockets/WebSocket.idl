@@ -38,7 +38,7 @@
     GlobalContext=Window&WorkerGlobalScope,
     RaisesException=Constructor,
 ] interface WebSocket : EventTarget {
-    readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.
+    [MeasureAs=WebSocketURL] readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.
     readonly attribute DOMString url;
 
     // ready state
