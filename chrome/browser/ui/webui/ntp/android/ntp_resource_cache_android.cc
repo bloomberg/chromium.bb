@@ -136,18 +136,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET ?
           "tablet" : "phone");
 
-  bool bookmark_shortcuts_allowed = false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAddToHomescreen)) {
-    bookmark_shortcuts_allowed = true;
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAddToHomescreen)) {
-    bookmark_shortcuts_allowed = false;
-  }
-  localized_strings.SetString(
-      "shortcut_item_enabled",
-      bookmark_shortcuts_allowed ? "true" : "false");
-
   const char* new_tab_link = kLearnMoreIncognitoUrl;
   base::string16 learnMoreLink = base::ASCIIToUTF16(
       google_util::AppendGoogleLocaleParam(GURL(new_tab_link)).spec());

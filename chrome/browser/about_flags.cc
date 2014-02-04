@@ -1769,18 +1769,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kMapImageChoices)
   },
-  {
-    "enable-add-to-homescreen",
-    IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_NAME,
-    IDS_FLAGS_ENABLE_ADD_TO_HOMESCREEN_DESCRIPTION,
-    kOsAndroid,
-#if defined(OS_ANDROID)
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAddToHomescreen,
-                              switches::kDisableAddToHomescreen),
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
 #if defined(OS_CHROMEOS)
   {
     "disable-first-run-ui",
@@ -1985,6 +1973,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kOutOfProcessPdf)
   },
+#if defined(OS_ANDROID)
+  {
+    "app-banners",
+    IDS_FLAGS_DISABLE_APP_BANNERS_NAME,
+    IDS_FLAGS_DISABLE_APP_BANNERS_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kDisableAppBanners)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

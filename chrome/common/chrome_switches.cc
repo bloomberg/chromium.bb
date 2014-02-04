@@ -1529,8 +1529,8 @@ const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
-// Makes the "Add to Homescreen" shortcut invisible.
-const char kDisableAddToHomescreen[]         = "disable-add-to-homescreen";
+// Disables the app banner <meta> tag.
+const char kDisableAppBanners[]              = "disable-app-banners";
 
 // Disables the new NTP.
 const char kDisableNewNTP[]                  = "disable-new-ntp";
@@ -1541,9 +1541,6 @@ const char kDisableZeroSuggest[] = "disable-zero-suggest";
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
-
-// Makes the "Add to Homescreen" shortcut visible.
-const char kEnableAddToHomescreen[]         = "enable-add-to-homescreen";
 
 // Enables the new NTP.
 const char kEnableNewNTP[]                  = "enable-new-ntp";

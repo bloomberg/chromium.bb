@@ -416,11 +416,10 @@ extern const char kEnableSpdyProxyAuth[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
-extern const char kDisableAddToHomescreen[];
+extern const char kDisableAppBanners[];
 extern const char kDisableNewNTP[];
 extern const char kDisableZeroSuggest[];
 extern const char kEnableAccessibilityTabSwitcher[];
-extern const char kEnableAddToHomescreen[];
 extern const char kEnableNewNTP[];
 extern const char kEnableTranslate[];
 extern const char kEnableCast[];
