@@ -184,9 +184,9 @@ WebPlugin* WebHelperPluginImpl::getPlugin()
     ASSERT(objectElements && objectElements->length() == 1);
     if (!objectElements || objectElements->length() < 1)
         return 0;
-    Node* node = objectElements->item(0);
-    ASSERT(node->hasTagName(WebCore::HTMLNames::objectTag));
-    WebCore::Widget* widget = toHTMLPlugInElement(node)->pluginWidget();
+    Element* element = objectElements->item(0);
+    ASSERT(element->hasTagName(WebCore::HTMLNames::objectTag));
+    WebCore::Widget* widget = toHTMLPlugInElement(element)->pluginWidget();
     if (!widget)
         return 0;
     WebPlugin* plugin = toWebPluginContainerImpl(widget)->plugin();

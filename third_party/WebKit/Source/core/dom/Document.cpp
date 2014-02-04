@@ -4224,7 +4224,7 @@ KURL Document::openSearchDescriptionURL()
         return KURL();
 
     RefPtr<HTMLCollection> children = head()->children();
-    for (unsigned i = 0; Node* child = children->item(i); i++) {
+    for (unsigned i = 0; Element* child = children->item(i); i++) {
         if (!child->hasTagName(linkTag))
             continue;
         HTMLLinkElement* linkElement = toHTMLLinkElement(child);
@@ -4482,7 +4482,7 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask)
     RefPtr<HTMLCollection> children = head() ? head()->children() : 0;
     unsigned length = children ? children->length() : 0;
     for (unsigned i = 0; i < length; i++) {
-        Node* child = children->item(i);
+        Element* child = children->item(i);
         if (!child->hasTagName(linkTag))
             continue;
         HTMLLinkElement* linkElement = toHTMLLinkElement(child);

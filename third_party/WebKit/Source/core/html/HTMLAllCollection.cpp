@@ -46,7 +46,7 @@ HTMLAllCollection::~HTMLAllCollection()
 {
 }
 
-Node* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigned index) const
+Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigned index) const
 {
     updateNameCache();
 

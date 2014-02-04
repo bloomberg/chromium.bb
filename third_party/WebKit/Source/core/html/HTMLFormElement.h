@@ -54,7 +54,7 @@ public:
     void getNamedElements(const AtomicString&, Vector<RefPtr<Element> >&);
 
     unsigned length() const;
-    Node* item(unsigned index);
+    Element* item(unsigned index);
 
     String enctype() const { return m_attributes.encodingType(); }
     void setEnctype(const AtomicString&);

@@ -90,8 +90,8 @@ public:
     void setOption(unsigned index, HTMLOptionElement*, ExceptionState&);
     void setLength(unsigned, ExceptionState&);
 
-    Node* namedItem(const AtomicString& name);
-    Node* item(unsigned index);
+    Element* namedItem(const AtomicString& name);
+    Element* item(unsigned index);
 
     void scrollToSelection();
 

@@ -76,7 +76,7 @@ bool HTMLMapElement::mapMouseEvent(LayoutPoint location, const LayoutSize& size,
 HTMLImageElement* HTMLMapElement::imageElement()
 {
     RefPtr<HTMLCollection> images = document().images();
-    for (unsigned i = 0; Node* curr = images->item(i); i++) {
+    for (unsigned i = 0; Element* curr = images->item(i); i++) {
         if (!curr->hasTagName(imgTag))
             continue;
 

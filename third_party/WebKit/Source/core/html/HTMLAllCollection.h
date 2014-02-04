@@ -35,7 +35,7 @@ public:
     static PassRefPtr<HTMLAllCollection> create(ContainerNode*, CollectionType);
     virtual ~HTMLAllCollection();
 
-    Node* namedItemWithIndex(const AtomicString& name, unsigned index) const;
+    Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Element>&);
     PassRefPtr<HTMLCollection> tags(const AtomicString&);
 

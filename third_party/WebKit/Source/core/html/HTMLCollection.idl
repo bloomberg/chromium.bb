@@ -24,7 +24,7 @@
     SetWrapperReferenceFrom=ownerNode,
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
-    getter Node item([Default=Undefined] optional unsigned long index);
+    getter Element item([Default=Undefined] optional unsigned long index);
     Element namedItem([Default=Undefined] optional DOMString name);
     [NotEnumerable, ImplementedAs=namedItem] getter Element ([Default=Undefined] optional DOMString name);
 };

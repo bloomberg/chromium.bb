@@ -932,9 +932,9 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     RefPtr<HTMLCollection> options = dataList->options();
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
     paintInfo.context->setFillColor(o->resolveColor(CSSPropertyColor));
-    for (unsigned i = 0; Node* node = options->item(i); i++) {
-        ASSERT(node->hasTagName(optionTag));
-        HTMLOptionElement* optionElement = toHTMLOptionElement(node);
+    for (unsigned i = 0; Element* element = options->item(i); i++) {
+        ASSERT(element->hasTagName(optionTag));
+        HTMLOptionElement* optionElement = toHTMLOptionElement(element);
         String value = optionElement->value();
         if (!input->isValidValue(value))
             continue;

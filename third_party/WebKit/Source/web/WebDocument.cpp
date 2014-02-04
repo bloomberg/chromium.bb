@@ -164,9 +164,9 @@ void WebDocument::images(WebVector<WebElement>& results)
     Vector<WebElement> temp;
     temp.reserveCapacity(sourceLength);
     for (size_t i = 0; i < sourceLength; ++i) {
-        Node* node = images->item(i);
-        if (node && node->isHTMLElement())
-            temp.append(WebElement(toElement(node)));
+        Element* element = images->item(i);
+        if (element && element->isHTMLElement())
+            temp.append(WebElement(element));
     }
     results.assign(temp);
 }
@@ -178,10 +178,10 @@ void WebDocument::forms(WebVector<WebFormElement>& results) const
     Vector<WebFormElement> temp;
     temp.reserveCapacity(sourceLength);
     for (size_t i = 0; i < sourceLength; ++i) {
-        Node* node = forms->item(i);
+        Element* element = forms->item(i);
         // Strange but true, sometimes node can be 0.
-        if (node && node->isHTMLElement())
-            temp.append(WebFormElement(toHTMLFormElement(node)));
+        if (element && element->isHTMLElement())
+            temp.append(WebFormElement(toHTMLFormElement(element)));
     }
     results.assign(temp);
 }

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-template <typename Collection>
+template <typename Collection, typename NodeType>
 class CollectionIndexCache {
 public:
     CollectionIndexCache();
@@ -59,11 +59,11 @@ public:
     }
 
     unsigned nodeCount(const Collection&);
-    Node* nodeAt(const Collection&, unsigned index);
+    NodeType* nodeAt(const Collection&, unsigned index);
 
     void invalidate();
 
-    ALWAYS_INLINE void setCachedNode(Node* node, unsigned index)
+    ALWAYS_INLINE void setCachedNode(NodeType* node, unsigned index)
     {
         ASSERT(node);
         m_currentNode = node;
@@ -71,11 +71,11 @@ public:
     }
 
 private:
-    Node* nodeBeforeOrAfterCachedNode(const Collection&, unsigned index, const ContainerNode& root);
+    NodeType* nodeBeforeOrAfterCachedNode(const Collection&, unsigned index, const ContainerNode& root);
     bool isLastNodeCloserThanLastOrCachedNode(unsigned index) const;
     bool isFirstNodeCloserThanCachedNode(unsigned index) const;
 
-    ALWAYS_INLINE Node* cachedNode() const { return m_currentNode; }
+    ALWAYS_INLINE NodeType* cachedNode() const { return m_currentNode; }
     ALWAYS_INLINE unsigned cachedNodeIndex() const { ASSERT(cachedNode()); return m_cachedNodeIndex; }
 
     ALWAYS_INLINE bool isCachedNodeCountValid() const { return m_isLengthCacheValid; }
@@ -86,14 +86,14 @@ private:
         m_isLengthCacheValid = true;
     }
 
-    Node* m_currentNode;
+    NodeType* m_currentNode;
     unsigned m_cachedNodeCount;
     unsigned m_cachedNodeIndex;
     unsigned m_isLengthCacheValid : 1;
 };
 
-template <typename Collection>
-CollectionIndexCache<Collection>::CollectionIndexCache()
+template <typename Collection, typename NodeType>
+CollectionIndexCache<Collection, NodeType>::CollectionIndexCache()
     : m_currentNode(0)
     , m_cachedNodeCount(0)
     , m_cachedNodeIndex(0)
@@ -101,15 +101,15 @@ CollectionIndexCache<Collection>::CollectionIndexCache()
 {
 }
 
-template <typename Collection>
-void CollectionIndexCache<Collection>::invalidate()
+template <typename Collection, typename NodeType>
+void CollectionIndexCache<Collection, NodeType>::invalidate()
 {
     m_currentNode = 0;
     m_isLengthCacheValid = false;
 }
 
-template <typename Collection>
-inline unsigned CollectionIndexCache<Collection>::nodeCount(const Collection& collection)
+template <typename Collection, typename NodeType>
+inline unsigned CollectionIndexCache<Collection, NodeType>::nodeCount(const Collection& collection)
 {
     if (isCachedNodeCountValid())
         return cachedNodeCount();
@@ -120,8 +120,8 @@ inline unsigned CollectionIndexCache<Collection>::nodeCount(const Collection& co
     return cachedNodeCount();
 }
 
-template <typename Collection>
-inline Node* CollectionIndexCache<Collection>::nodeAt(const Collection& collection, unsigned index)
+template <typename Collection, typename NodeType>
+inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collection& collection, unsigned index)
 {
     if (cachedNode() && cachedNodeIndex() == index)
         return cachedNode();
@@ -131,11 +131,11 @@ inline Node* CollectionIndexCache<Collection>::nodeAt(const Collection& collecti
 
     ContainerNode& root = collection.rootNode();
     if (isCachedNodeCountValid() && collection.canTraverseBackward() && isLastNodeCloserThanLastOrCachedNode(index)) {
-        Node* lastNode = collection.itemBefore(0);
+        NodeType* lastNode = collection.itemBefore(0);
         ASSERT(lastNode);
         setCachedNode(lastNode, cachedNodeCount() - 1);
     } else if (!cachedNode() || isFirstNodeCloserThanCachedNode(index) || (!collection.canTraverseBackward() && index < cachedNodeIndex())) {
-        Node* firstNode = collection.traverseToFirstElement(root);
+        NodeType* firstNode = collection.traverseToFirstElement(root);
         if (!firstNode) {
             setCachedNodeCount(0);
             return 0;
@@ -150,11 +150,11 @@ inline Node* CollectionIndexCache<Collection>::nodeAt(const Collection& collecti
     return nodeBeforeOrAfterCachedNode(collection, index, root);
 }
 
-template <typename Collection>
-inline Node* CollectionIndexCache<Collection>::nodeBeforeOrAfterCachedNode(const Collection& collection, unsigned index, const ContainerNode &root)
+template <typename Collection, typename NodeType>
+inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeOrAfterCachedNode(const Collection& collection, unsigned index, const ContainerNode &root)
 {
     unsigned currentIndex = cachedNodeIndex();
-    Node* currentNode = cachedNode();
+    NodeType* currentNode = cachedNode();
     ASSERT(currentNode);
     ASSERT(currentIndex != index);
 
@@ -182,8 +182,8 @@ inline Node* CollectionIndexCache<Collection>::nodeBeforeOrAfterCachedNode(const
     return currentNode;
 }
 
-template <typename Collection>
-ALWAYS_INLINE bool CollectionIndexCache<Collection>::isLastNodeCloserThanLastOrCachedNode(unsigned index) const
+template <typename Collection, typename NodeType>
+ALWAYS_INLINE bool CollectionIndexCache<Collection, NodeType>::isLastNodeCloserThanLastOrCachedNode(unsigned index) const
 {
     ASSERT(isCachedNodeCountValid());
     unsigned distanceFromLastNode = cachedNodeCount() - index;
@@ -193,8 +193,8 @@ ALWAYS_INLINE bool CollectionIndexCache<Collection>::isLastNodeCloserThanLastOrC
     return cachedNodeIndex() < index && distanceFromLastNode < index - cachedNodeIndex();
 }
 
-template <typename Collection>
-ALWAYS_INLINE bool CollectionIndexCache<Collection>::isFirstNodeCloserThanCachedNode(unsigned index) const
+template <typename Collection, typename NodeType>
+ALWAYS_INLINE bool CollectionIndexCache<Collection, NodeType>::isFirstNodeCloserThanCachedNode(unsigned index) const
 {
     if (cachedNodeIndex() < index)
         return false;

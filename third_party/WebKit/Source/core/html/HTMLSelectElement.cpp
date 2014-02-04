@@ -386,12 +386,12 @@ void HTMLSelectElement::setSize(int size)
     setIntegralAttribute(sizeAttr, size);
 }
 
-Node* HTMLSelectElement::namedItem(const AtomicString& name)
+Element* HTMLSelectElement::namedItem(const AtomicString& name)
 {
     return options()->namedItem(name);
 }
 
-Node* HTMLSelectElement::item(unsigned index)
+Element* HTMLSelectElement::item(unsigned index)
 {
     return options()->item(index);
 }

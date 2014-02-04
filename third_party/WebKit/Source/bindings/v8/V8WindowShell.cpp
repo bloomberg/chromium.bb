@@ -441,11 +441,11 @@ static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const 
         return v8Undefined();
 
     if (items->hasExactlyOneItem()) {
-        Node* node = items->item(0);
+        Element* element = items->item(0);
         Frame* frame = 0;
-        if (node->hasTagName(HTMLNames::iframeTag) && (frame = toHTMLIFrameElement(node)->contentFrame()))
+        if (element->hasTagName(HTMLNames::iframeTag) && (frame = toHTMLIFrameElement(element)->contentFrame()))
             return toV8(frame->domWindow(), creationContext, isolate);
-        return toV8(node, creationContext, isolate);
+        return toV8(element, creationContext, isolate);
     }
     return toV8(items.release(), creationContext, isolate);
 }

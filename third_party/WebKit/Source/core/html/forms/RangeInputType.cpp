@@ -356,10 +356,10 @@ void RangeInputType::updateTickMarkValues()
     RefPtr<HTMLCollection> options = dataList->options();
     m_tickMarkValues.reserveCapacity(options->length());
     for (unsigned i = 0; i < options->length(); ++i) {
-        Node* node = options->item(i);
-        HTMLOptionElement* optionElement = toHTMLOptionElement(node);
+        Element* element = options->item(i);
+        HTMLOptionElement* optionElement = toHTMLOptionElement(element);
         String optionValue = optionElement->value();
-        if (!element().isValidValue(optionValue))
+        if (!this->element().isValidValue(optionValue))
             continue;
         m_tickMarkValues.append(parseToNumber(optionValue, Decimal::nan()));
     }

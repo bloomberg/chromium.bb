@@ -44,7 +44,7 @@ public:
 
     // DOM API
     unsigned length() const { return m_collectionIndexCache.nodeCount(*this); }
-    Node* item(unsigned offset) const { return m_collectionIndexCache.nodeAt(*this, offset); }
+    Element* item(unsigned offset) const { return m_collectionIndexCache.nodeAt(*this, offset); }
     virtual Element* namedItem(const AtomicString& name) const;
 
     // Non-DOM API
@@ -54,8 +54,9 @@ public:
 
     // CollectionIndexCache API.
     bool canTraverseBackward() const { return !overridesItemAfter(); }
+    Element* itemBefore(const Node* previousItem) const;
     Element* traverseToFirstElement(const ContainerNode& root) const;
-    Element* traverseForwardToOffset(unsigned offset, Node& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
+    Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
 
 protected:
     HTMLCollection(ContainerNode* base, CollectionType, ItemAfterOverrideType);
@@ -89,7 +90,7 @@ private:
     mutable unsigned m_isNameCacheValid : 1;
     mutable NodeCacheMap m_idCache;
     mutable NodeCacheMap m_nameCache;
-    mutable CollectionIndexCache<HTMLCollection> m_collectionIndexCache;
+    mutable CollectionIndexCache<HTMLCollection, Element> m_collectionIndexCache;
 
     friend class LiveNodeListBase;
 };

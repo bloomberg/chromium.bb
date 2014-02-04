@@ -477,10 +477,9 @@ void WebPageSerializerImpl::collectTargetFrames()
         // Go through sub-frames.
         RefPtr<HTMLCollection> all = currentDoc->all();
 
-        for (unsigned i = 0; Node* node = all->item(i); i++) {
-            if (!node->isHTMLElement())
+        for (unsigned i = 0; Element* element = all->item(i); i++) {
+            if (!element->isHTMLElement())
                 continue;
-            Element* element = toElement(node);
             WebFrameImpl* webFrame =
                 WebFrameImpl::fromFrameOwnerElement(element);
             if (webFrame)

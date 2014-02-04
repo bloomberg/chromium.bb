@@ -292,34 +292,40 @@ static Node* lastNode(const Node& rootNode, bool onlyIncludeDirectChildren)
     return onlyIncludeDirectChildren ? rootNode.lastChild() : lastDescendant(rootNode);
 }
 
-ALWAYS_INLINE Node* LiveNodeListBase::iterateForPreviousNode(Node* current) const
+template <typename Collection>
+ALWAYS_INLINE Element* LiveNodeListBase::iterateForPreviousNode(const Collection& collection, Node* current)
 {
-    bool onlyIncludeDirectChildren = shouldOnlyIncludeDirectChildren();
-    CollectionType collectionType = type();
-    Node& rootNode = this->rootNode();
+    bool onlyIncludeDirectChildren = collection.shouldOnlyIncludeDirectChildren();
+    Node& rootNode = collection.rootNode();
     for (; current; current = previousNode(rootNode, *current, onlyIncludeDirectChildren)) {
-        if (isLiveNodeListType(collectionType)) {
-            if (current->isElementNode() && isMatchingElement(static_cast<const LiveNodeList&>(*this), toElement(*current)))
-                return toElement(current);
-        } else {
-            if (current->isElementNode() && isMatchingElement(static_cast<const HTMLCollection&>(*this), toElement(*current)))
-                return toElement(current);
-        }
+        if (current->isElementNode() && isMatchingElement(collection, toElement(*current)))
+            return toElement(current);
     }
     return 0;
 }
 
-Node* LiveNodeListBase::itemBefore(const Node* previous) const
+template <typename Collection>
+Element* LiveNodeListBase::itemBefore(const Collection& collection, const Node* previous)
 {
     Node* current;
     if (LIKELY(!!previous)) // Without this LIKELY, length() and item() can be 10% slower.
-        current = previousNode(rootNode(), *previous, shouldOnlyIncludeDirectChildren());
+        current = previousNode(collection.rootNode(), *previous, collection.shouldOnlyIncludeDirectChildren());
     else
-        current = lastNode(rootNode(), shouldOnlyIncludeDirectChildren());
+        current = lastNode(collection.rootNode(), collection.shouldOnlyIncludeDirectChildren());
 
+    return iterateForPreviousNode(collection, current);
+}
+
+Node* LiveNodeList::itemBefore(const Node* previous) const
+{
     if (type() == ChildNodeListType)
-        return current;
-    return iterateForPreviousNode(current);
+        return LIKELY(!!previous) ? previous->previousSibling() : rootNode().lastChild();
+    return LiveNodeListBase::itemBefore(*this, previous);
+}
+
+Element* HTMLCollection::itemBefore(const Node* previous) const
+{
+    return LiveNodeListBase::itemBefore(*this, previous);
 }
 
 template <class NodeListType>
@@ -458,11 +464,11 @@ inline Element* HTMLCollection::traverseNextElement(Element& previous, const Con
     return nextMatchingElement(*this, previous, root);
 }
 
-Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Node& currentElement, unsigned& currentOffset, const ContainerNode& root) const
+Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const
 {
     ASSERT(currentOffset < offset);
     if (overridesItemAfter()) {
-        Element* next = &toElement(currentElement);
+        Element* next = &currentElement;
         while ((next = virtualItemAfter(next))) {
             if (++currentOffset == offset)
                 return next;
@@ -470,14 +476,14 @@ Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Node& currentE
         return 0;
     }
     if (shouldOnlyIncludeDirectChildren()) {
-        Element* next = &toElement(currentElement);
+        Element* next = &currentElement;
         while ((next = nextMatchingChildElement(*this, *next, root))) {
             if (++currentOffset == offset)
                 return next;
         }
         return 0;
     }
-    return traverseMatchingElementsForwardToOffset(*this, offset, toElement(currentElement), currentOffset, root);
+    return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset, root);
 }
 
 Element* HTMLCollection::namedItem(const AtomicString& name) const

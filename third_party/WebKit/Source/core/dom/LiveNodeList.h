@@ -68,7 +68,6 @@ public:
     }
 
     ContainerNode& rootNode() const;
-    Node* itemBefore(const Node* previousItem) const;
 
     ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
@@ -92,8 +91,12 @@ protected:
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
     bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
 
+    template <typename Collection>
+    static Element* iterateForPreviousNode(const Collection&, Node* current);
+    template <typename Collection>
+    static Element* itemBefore(const Collection&, const Node* previousItem);
+
 private:
-    Node* iterateForPreviousNode(Node* current) const;
     void invalidateIdNameCacheMaps() const;
 
     RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
@@ -145,13 +148,14 @@ public:
 
     // Collection IndexCache API.
     bool canTraverseBackward() const { return true; }
+    Node* itemBefore(const Node* previousItem) const;
     Node* traverseToFirstElement(const ContainerNode& root) const;
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
 
 private:
     virtual bool isLiveNodeList() const OVERRIDE FINAL { return true; }
 
-    mutable CollectionIndexCache<LiveNodeList> m_collectionIndexCache;
+    mutable CollectionIndexCache<LiveNodeList, Node> m_collectionIndexCache;
 };
 
 } // namespace WebCore

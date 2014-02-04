@@ -33,9 +33,9 @@ interface HTMLSelectElement : HTMLElement {
     readonly attribute HTMLOptionsCollection options;
     [RaisesException=Setter] attribute unsigned long length;
 
-    getter Node item(unsigned long index);
+    getter Element item(unsigned long index);
     [RaisesException, StrictTypeChecking] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
-    Node namedItem([Default=Undefined] optional DOMString name);
+    Element namedItem([Default=Undefined] optional DOMString name);
     [RaisesException] void add([Default=Undefined] optional HTMLElement element,
                                [Default=Undefined] optional HTMLElement before);
     void remove(long index);

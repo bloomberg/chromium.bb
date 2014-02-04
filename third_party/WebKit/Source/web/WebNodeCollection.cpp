@@ -31,11 +31,10 @@
 #include "config.h"
 #include "WebNodeCollection.h"
 
+#include "WebElement.h"
 #include "core/dom/Node.h"
 #include "core/html/HTMLCollection.h"
 #include "wtf/PassRefPtr.h"
-
-#include "WebNode.h"
 
 using namespace WebCore;
 
@@ -72,15 +71,15 @@ unsigned WebNodeCollection::length() const
     return m_private->length();
 }
 
-WebNode WebNodeCollection::nextItem() const
+WebElement WebNodeCollection::nextItem() const
 {
-    Node* node = m_private->item(m_current);
-    if (node)
+    Element* element = m_private->item(m_current);
+    if (element)
         m_current++;
-    return WebNode(node);
+    return WebElement(element);
 }
 
-WebNode WebNodeCollection::firstItem() const
+WebElement WebNodeCollection::firstItem() const
 {
     m_current = 0;
     return nextItem();

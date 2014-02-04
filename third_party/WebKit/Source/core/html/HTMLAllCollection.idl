@@ -29,8 +29,8 @@
     SetWrapperReferenceFrom=ownerNode,
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;
-    [ImplementedAs=item] getter Node (unsigned long index);
-    [Custom] Node item([Default=Undefined] optional unsigned long index);
+    [ImplementedAs=item] getter Element (unsigned long index);
+    [Custom] Element item([Default=Undefined] optional unsigned long index);
     [NotEnumerable] getter (NodeList or Element) (DOMString name);
     [Custom] Element namedItem(DOMString name);
     // FIXME: This should return an HTMLAllCollection.

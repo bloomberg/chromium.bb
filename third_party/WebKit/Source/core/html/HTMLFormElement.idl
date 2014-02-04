@@ -33,7 +33,7 @@
 
     readonly attribute HTMLCollection elements;
     readonly attribute long length;
-    [ImplementedAs=item] getter Node (unsigned long index);
+    [ImplementedAs=item] getter Element (unsigned long index);
     [NotEnumerable] getter (RadioNodeList or Element) (DOMString name);
 
     [ImplementedAs=submitFromJavaScript, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] void submit();

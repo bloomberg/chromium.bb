@@ -39,7 +39,7 @@ namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
-class WebNode;
+class WebElement;
 
 // Provides readonly access to some properties of a DOM node.
 class WebNodeCollection {
@@ -60,8 +60,8 @@ public:
     BLINK_EXPORT void assign(const WebNodeCollection&);
 
     BLINK_EXPORT unsigned length() const;
-    BLINK_EXPORT WebNode nextItem() const;
-    BLINK_EXPORT WebNode firstItem() const;
+    BLINK_EXPORT WebElement nextItem() const;
+    BLINK_EXPORT WebElement firstItem() const;
 
 #if BLINK_IMPLEMENTATION
     WebNodeCollection(const WTF::PassRefPtr<WebCore::HTMLCollection>&);

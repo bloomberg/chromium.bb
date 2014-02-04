@@ -183,7 +183,7 @@ unsigned HTMLFormElement::length() const
     return len;
 }
 
-Node* HTMLFormElement::item(unsigned index)
+Element* HTMLFormElement::item(unsigned index)
 {
     return elements()->item(index);
 }
