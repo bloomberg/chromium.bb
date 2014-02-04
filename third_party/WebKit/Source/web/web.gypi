@@ -185,6 +185,7 @@
       'WebLeakDetector.cpp',
       'WebMIDIClientMock.cpp',
       'WebMIDIPermissionRequest.cpp',
+      'WebMediaDevicesRequest.cpp',
       'WebMediaPlayerClientImpl.cpp',
       'WebMediaPlayerClientImpl.h',
       'WebMediaStreamRegistry.cpp',

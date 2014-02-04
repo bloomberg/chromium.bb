@@ -31,6 +31,7 @@
 #ifndef UserMediaClient_h
 #define UserMediaClient_h
 
+#include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,6 +43,8 @@ class UserMediaClient {
 public:
     virtual void requestUserMedia(PassRefPtr<UserMediaRequest>) = 0;
     virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
+    virtual void requestMediaDevices(PassRefPtr<MediaDevicesRequest>) = 0;
+    virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) = 0;
 
 protected:
     virtual ~UserMediaClient() { }

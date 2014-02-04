@@ -270,6 +270,7 @@
       'exported/WebHTTPLoadInfo.cpp',
       'exported/WebImageSkia.cpp',
       'exported/WebMediaConstraints.cpp',
+      'exported/WebMediaDeviceInfo.cpp',
       'exported/WebMediaStream.cpp',
       'exported/WebMediaStreamSource.cpp',
       'exported/WebMediaStreamTrack.cpp',

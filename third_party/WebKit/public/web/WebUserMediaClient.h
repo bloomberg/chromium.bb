@@ -33,7 +33,7 @@
 
 namespace blink {
 
-class WebMediaStreamSource;
+class WebMediaDevicesRequest;
 class WebUserMediaRequest;
 template <typename T> class WebVector;
 
@@ -43,6 +43,8 @@ public:
 
     virtual void requestUserMedia(const WebUserMediaRequest&) = 0;
     virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
+    virtual void requestMediaDevices(const WebMediaDevicesRequest&) { }
+    virtual void cancelMediaDevicesRequest(const WebMediaDevicesRequest&) { }
 };
 
 } // namespace blink

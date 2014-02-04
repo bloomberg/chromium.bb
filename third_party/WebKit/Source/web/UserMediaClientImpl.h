@@ -32,10 +32,10 @@
 #define UserMediaClientImpl_h
 
 #include "modules/mediastream/UserMediaClient.h"
-#include "platform/mediastream/MediaStreamSource.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
+class MediaDevicesRequest;
 class UserMediaRequest;
 }
 
@@ -51,6 +51,8 @@ public:
     // WebCore::UserMediaClient ----------------------------------------------
     virtual void requestUserMedia(PassRefPtr<WebCore::UserMediaRequest>) OVERRIDE;
     virtual void cancelUserMediaRequest(WebCore::UserMediaRequest*) OVERRIDE;
+    virtual void requestMediaDevices(PassRefPtr<WebCore::MediaDevicesRequest>) OVERRIDE;
+    virtual void cancelMediaDevicesRequest(WebCore::MediaDevicesRequest*) OVERRIDE;
 
 private:
     UserMediaClientImpl();

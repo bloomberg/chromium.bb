@@ -30,6 +30,8 @@
 #include "core/frame/Frame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
+#include "modules/mediastream/MediaDeviceInfoCallback.h"
+#include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "modules/mediastream/UserMediaController.h"
@@ -59,6 +61,23 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator* navigator, const Dictio
     RefPtr<UserMediaRequest> request = UserMediaRequest::create(navigator->frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
     if (!request) {
         exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        return;
+    }
+
+    request->start();
+}
+
+void NavigatorMediaStream::getMediaDevices(Navigator* navigator, PassOwnPtr<MediaDeviceInfoCallback> callback, ExceptionState& exceptionState)
+{
+    UserMediaController* userMedia = UserMediaController::from(navigator->frame() ? navigator->frame()->page() : 0);
+    if (!userMedia) {
+        exceptionState.throwDOMException(NotSupportedError, "Not implemented.");
+        return;
+    }
+
+    RefPtr<MediaDevicesRequest> request = MediaDevicesRequest::create(navigator->frame()->document(), userMedia, callback, exceptionState);
+    if (!request) {
+        exceptionState.throwDOMException(NotSupportedError, "Not implemented.");
         return;
     }
 

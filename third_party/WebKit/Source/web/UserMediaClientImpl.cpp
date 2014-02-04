@@ -31,11 +31,11 @@
 #include "config.h"
 #include "UserMediaClientImpl.h"
 
+#include "WebMediaDevicesRequest.h"
 #include "WebUserMediaClient.h"
 #include "WebUserMediaRequest.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include "public/platform/WebMediaStreamSource.h"
 #include "wtf/RefPtr.h"
 
 using namespace WebCore;
@@ -57,6 +57,18 @@ void UserMediaClientImpl::cancelUserMediaRequest(UserMediaRequest* request)
 {
     if (m_client)
         m_client->cancelUserMediaRequest(WebUserMediaRequest(request));
+}
+
+void UserMediaClientImpl::requestMediaDevices(PassRefPtr<WebCore::MediaDevicesRequest> request)
+{
+    if (m_client)
+        m_client->requestMediaDevices(request);
+}
+
+void UserMediaClientImpl::cancelMediaDevicesRequest(WebCore::MediaDevicesRequest* request)
+{
+    if (m_client)
+        m_client->cancelMediaDevicesRequest(WebMediaDevicesRequest(request));
 }
 
 } // namespace blink

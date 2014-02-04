@@ -31,6 +31,7 @@
 
 namespace WebCore {
 
+class MediaDevicesRequest;
 class UserMediaRequest;
 
 class UserMediaController FINAL : public Supplement<Page> {
@@ -38,8 +39,12 @@ public:
     virtual ~UserMediaController();
 
     UserMediaClient* client() const { return m_client; }
+
     void requestUserMedia(PassRefPtr<UserMediaRequest>);
     void cancelUserMediaRequest(UserMediaRequest*);
+
+    void requestMediaDevices(PassRefPtr<MediaDevicesRequest>);
+    void cancelMediaDevicesRequest(MediaDevicesRequest*);
 
     static PassOwnPtr<UserMediaController> create(UserMediaClient*);
     static const char* supplementName();
@@ -60,6 +65,16 @@ inline void UserMediaController::requestUserMedia(PassRefPtr<UserMediaRequest> r
 inline void UserMediaController::cancelUserMediaRequest(UserMediaRequest* request)
 {
     m_client->cancelUserMediaRequest(request);
+}
+
+inline void UserMediaController::requestMediaDevices(PassRefPtr<MediaDevicesRequest> request)
+{
+    m_client->requestMediaDevices(request);
+}
+
+inline void UserMediaController::cancelMediaDevicesRequest(MediaDevicesRequest* request)
+{
+    m_client->cancelMediaDevicesRequest(request);
 }
 
 } // namespace WebCore
