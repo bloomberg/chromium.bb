@@ -67,9 +67,6 @@ public:
     virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names) OVERRIDE;
     virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback>) OVERRIDE;
 
-    // Called from the injected script.
-    String databaseId(Database*);
-
     void didOpenDatabase(PassRefPtr<Database>, const String& domain, const String& name, const String& version);
 private:
     explicit InspectorDatabaseAgent();

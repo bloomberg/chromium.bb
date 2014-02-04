@@ -6,11 +6,6 @@
 
 function onload()
 {
-    window.db = openDatabase("InspectorDatabaseTest", "1.0", "Test of database reveal in inspector", 1);
-    window.db2 = openDatabase("InspectorDatabaseTest2", "1.0", "Test of database reveal in inspector", 1);
-    sessionStorage.clear();
-    localStorage["inspector"] = "Test of local storage reveal in inspector";
-    sessionStorage["inspector"] = "Test of session storage reveal in inspector";
     runTest();
 }
 
@@ -48,26 +43,6 @@ function test()
                 InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
                 next();
             }
-        },
-
-        function testRevealDatabase(next)
-        {
-            evalAndDump("inspect(db)", next);
-        },
-
-        function testRevealDatabase2(next)
-        {
-            evalAndDump("inspect(db2)", next);
-        },
-
-        function testRevealLocalStorage(next)
-        {
-            evalAndDump("inspect(localStorage)", next);
-        },
-
-        function testRevealSessionStorage(next)
-        {
-            evalAndDump("inspect(sessionStorage)", next);
         }
     ]);
 }

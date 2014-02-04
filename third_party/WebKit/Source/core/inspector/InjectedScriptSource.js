@@ -220,18 +220,6 @@ InjectedScript.prototype = {
         var objectId = this._wrapObject(object, "");
         var hints = { __proto__: null };
 
-        switch (injectedScript._describe(object)) {
-        case "Database":
-            var databaseId = InjectedScriptHost.databaseId(object)
-            if (databaseId)
-                hints.databaseId = databaseId;
-            break;
-        case "Storage":
-            var storageId = InjectedScriptHost.storageId(object)
-            if (storageId)
-                hints.domStorageId = InjectedScriptHost.evaluate("(" + storageId + ")");
-            break;
-        }
         InjectedScriptHost.inspect(objectId, hints);
         return object;
     },

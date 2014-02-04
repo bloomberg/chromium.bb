@@ -44,8 +44,6 @@
     [Custom] any[] getInternalProperties(any obj);
     [Custom] EventListener[] getEventListeners(EventTarget target);
     [Custom] any evaluate(DOMString text);
-    [Custom] DOMString databaseId(any database);
-    [Custom] DOMString storageId(any storage);
     [Custom] void debugFunction(any fn);
     [Custom] void undebugFunction(any fn);
     [Custom] void monitorFunction(any fn);

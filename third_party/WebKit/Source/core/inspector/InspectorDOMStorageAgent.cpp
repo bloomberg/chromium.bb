@@ -167,18 +167,6 @@ void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, co
     *errorString = toErrorString(exceptionState);
 }
 
-String InspectorDOMStorageAgent::storageId(Storage* storage)
-{
-    ASSERT(storage);
-    Document* document = storage->frame()->document();
-    ASSERT(document);
-    DOMWindow* window = document->domWindow();
-    ASSERT(window);
-    RefPtr<SecurityOrigin> securityOrigin = document->securityOrigin();
-    bool isLocalStorage = window->optionalLocalStorage() == storage;
-    return storageId(securityOrigin.get(), isLocalStorage)->toJSONString();
-}
-
 PassRefPtr<TypeBuilder::DOMStorage::StorageId> InspectorDOMStorageAgent::storageId(SecurityOrigin* securityOrigin, bool isLocalStorage)
 {
     return TypeBuilder::DOMStorage::StorageId::create()

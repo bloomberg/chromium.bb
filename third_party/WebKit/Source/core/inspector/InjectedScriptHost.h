@@ -84,8 +84,6 @@ public:
     void getEventListenersImpl(EventTarget*, Vector<EventListenerInfo>& listenersArray);
 
     void clearConsoleMessages();
-    String databaseIdImpl(Database*);
-    String storageIdImpl(Storage*);
     void debugFunction(const String& scriptId, int lineNumber, int columnNumber);
     void undebugFunction(const String& scriptId, int lineNumber, int columnNumber);
     void monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName);

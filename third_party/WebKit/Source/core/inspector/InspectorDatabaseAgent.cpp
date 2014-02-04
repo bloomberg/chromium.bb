@@ -309,15 +309,6 @@ void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, 
     database->transaction(callback.release(), errorCallback.release(), successCallback.release());
 }
 
-String InspectorDatabaseAgent::databaseId(Database* database)
-{
-    for (DatabaseResourcesMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
-        if (it->value->database() == database)
-            return it->key;
-    }
-    return String();
-}
-
 InspectorDatabaseResource* InspectorDatabaseAgent::findByFileName(const String& fileName)
 {
     for (DatabaseResourcesMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {

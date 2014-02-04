@@ -319,31 +319,6 @@ void V8InjectedScriptHost::inspectMethodCustom(const v8::FunctionCallbackInfo<v8
     host->inspectImpl(object.toJSONValue(ScriptState::current()), hints.toJSONValue(ScriptState::current()));
 }
 
-void V8InjectedScriptHost::databaseIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() > 0 && V8Database::hasInstance(info[0], info.GetIsolate())) {
-        Database* database = V8Database::toNative(v8::Handle<v8::Object>::Cast(info[0]));
-        if (database) {
-            InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder()); {
-                v8SetReturnValueStringOrUndefined(info, host->databaseIdImpl(database), info.GetIsolate());
-                return;
-            }
-        }
-    }
-}
-
-void V8InjectedScriptHost::storageIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() > 0 && V8Storage::hasInstance(info[0], info.GetIsolate())) {
-        Storage* storage = V8Storage::toNative(v8::Handle<v8::Object>::Cast(info[0]));
-        if (storage) {
-            InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
-            v8SetReturnValueStringOrUndefined(info, host->storageIdImpl(storage), info.GetIsolate());
-            return;
-        }
-    }
-}
-
 void V8InjectedScriptHost::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();

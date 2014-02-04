@@ -64,10 +64,6 @@ public:
     virtual void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value) OVERRIDE;
     virtual void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) OVERRIDE;
 
-    // Called from the injected script.
-    String storageId(Storage*);
-    PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
-
     // Called from InspectorInstrumentation
     void didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType, SecurityOrigin*);
 
@@ -77,6 +73,7 @@ private:
 
     bool isEnabled() const;
     PassOwnPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, Frame*&);
+    PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
     InspectorPageAgent* m_pageAgent;
     InspectorFrontend* m_frontend;
