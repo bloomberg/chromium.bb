@@ -103,7 +103,7 @@ def CalculateHash(root):
 
 
 def SaveTimestampsAndHash(root, sha1):
-  """Save timestamps and the final hash to be able to early-out more quickly
+  """Saves timestamps and the final hash to be able to early-out more quickly
   next time."""
   file_list = GetFileList(root)
   timestamps_data = {
@@ -125,36 +125,42 @@ def main():
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
   os.chdir(os.path.normpath(os.path.join(BASEDIR)))
+  # TODO(scottmg): http://crbug.com/323300 Attempt to locate a src-internal
+  # pull and use that as a signal to install Pro also.
+  should_get_pro = os.path.isfile(os.path.join(BASEDIR, '.vspro'))
   toolchain_dir = '.'
   target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs2013_files'))
 
   sha1path = os.path.join(toolchain_dir, 'toolchain_vs2013.hash')
-  desired_hash = ''
+  desired_hashes = set()
   if os.path.isfile(sha1path):
     with open(sha1path, 'rb') as f:
-      desired_hash = f.read().strip()
+      desired_hashes = set(f.read().strip().splitlines())
 
   # If the current hash doesn't match what we want in the file, nuke and pave.
   # Typically this script is only run when the .sha1 one file is updated, but
   # directly calling "gclient runhooks" will also run it, so we cache
   # based on timestamps to make that case fast.
   current_hash = CalculateHash(target_dir)
-  if current_hash != desired_hash:
-    print 'Windows toolchain out of date or doesn\'t exist, updating...'
+  if current_hash not in desired_hashes:
+    print('Windows toolchain out of date or doesn\'t exist, updating (%s)...' %
+          ('Pro' if should_get_pro else 'Express'))
     # This stays resident and will make the rmdir below fail.
     subprocess.call(['taskkill', '/f', '/im', 'mspdbsrv.exe'])
     if os.path.isdir(target_dir):
       subprocess.check_call('rmdir /s/q "%s"' % target_dir, shell=True)
-    subprocess.check_call([
-        sys.executable,
-        'toolchain2013.py',
-        '--targetdir', target_dir])
+    args = [sys.executable,
+            'toolchain2013.py',
+            '--targetdir', target_dir]
+    if not should_get_pro:
+      args.append('--express')
+    subprocess.check_call(args)
     current_hash = CalculateHash(target_dir)
-    if current_hash != desired_hash:
+    if current_hash not in desired_hashes:
       print >> sys.stderr, (
           'Got wrong hash after pulling a new toolchain. '
-          'Wanted \'%s\', got \'%s\'.' % (
-              desired_hash, current_hash))
+          'Wanted one of \'%s\', got \'%s\'.' % (
+              desired_hashes, current_hash))
       return 1
     SaveTimestampsAndHash(target_dir, current_hash)
 

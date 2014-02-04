@@ -17,6 +17,9 @@ import urllib2
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
+WDK_ISO_URL = (
+    'http://download.microsoft.com/download/'
+    '4/A/2/4A25C7D5-EFBE-4182-B6A9-AE6850409A78/GRMWDK_EN_7600_1.ISO')
 g_temp_dirs = []
 
 
@@ -57,8 +60,8 @@ def DeleteAllTempDirs():
   g_temp_dirs = []
 
 
-def GetIsoUrl(pro):
-  """Gets the .iso URL.
+def GetMainIsoUrl(pro):
+  """Gets the main .iso URL.
 
   If |pro| is False, downloads the Express edition. If |CHROME_HEADLESS| is
   set in the environment, then we assume we're on an internal bot, and download
@@ -151,12 +154,20 @@ def DownloadSDK8():
   while count < 5:
     rc = os.system(target_path + ' /quiet '
                    '/features OptionId.WindowsDesktopDebuggers '
+                             'OptionId.WindowsDesktopSoftwareDevelopmentKit '
                    '/layout ' + standalone_path)
     if rc == 0:
       return standalone_path
     count += 1
     sys.stdout.write('Windows 8 SDK failed to download, retrying.\n')
   sys.exit('After multiple retries, couldn\'t download Win8 SDK')
+
+
+def DownloadWDKIso():
+  wdk_temp_dir = TempDir()
+  target_path = os.path.join(wdk_temp_dir, 'GRMWDK_EN_7600_1.ISO')
+  Download(WDK_ISO_URL, target_path)
+  return target_path
 
 
 def DownloadUsingGsutil(filename):
@@ -185,23 +196,36 @@ def GetSDKInternal():
 
 
 class SourceImages(object):
-  def __init__(self, vs_path, sdk8_path):
+  """Local paths for components. |wdk_path| may be None if it's unnecessary for
+  the given configuration."""
+  def __init__(self, vs_path, sdk8_path, wdk_path):
     self.vs_path = vs_path
     self.sdk8_path = sdk8_path
+    self.wdk_path = wdk_path
 
 
-def GetSourceImages(local_dir, pro):
-  url = GetIsoUrl(pro)
-  if os.environ.get('CHROME_HEADLESS'):
-    return SourceImages(GetVSInternal(), GetSDKInternal())
+def GetSourceImages(local_dir, pro, bot_mode):
+  """Downloads the various sources that we need.
+
+  Of note: Because Express does not include ATL, there's an additional download
+  of the 7.1 WDK which is the latest publically accessible source for ATL. When
+  |pro| this is not necessary (and CHROME_HEADLESS always implies Pro).
+  """
+  url = GetMainIsoUrl(pro)
+  if bot_mode:
+    return SourceImages(GetVSInternal(), GetSDKInternal(), wdk_path=None)
   elif local_dir:
+    wdk_path = (os.path.join(local_dir, os.path.basename(WDK_ISO_URL))
+                if not pro else None)
     return SourceImages(os.path.join(local_dir, os.path.basename(url)),
-                        os.path.join(local_dir, 'Standalone'))
+                        os.path.join(local_dir, 'Standalone'),
+                        wdk_path=wdk_path)
   else:
     # Note that we do the SDK first, as it might cause an elevation prompt.
     sdk8_path = DownloadSDK8()
     vs_path = DownloadMainIso(url)
-    return SourceImages(vs_path, sdk8_path)
+    wdk_path = DownloadWDKIso() if not pro else None
+    return SourceImages(vs_path, sdk8_path, wdk_path=wdk_path)
 
 
 def ExtractMsiList(root_dir, packages):
@@ -238,10 +262,6 @@ def ExtractComponents(image):
       (r'vc_libraryDesktop\x64\vc_LibraryDesktopX64.msi', True),
       (r'vc_libraryDesktop\x86\vc_LibraryDesktopX86.msi', True),
       (r'vc_libraryextended\vc_libraryextended.msi', False),
-      (r'Windows_SDK\Windows Software Development Kit-x86_en-us.msi', True),
-      ('Windows_SDK\\'
-       r'Windows Software Development Kit for Metro style Apps-x86_en-us.msi',
-          True),
     ]
   extracted_iso = ExtractIso(image.vs_path)
   result = ExtractMsiList(os.path.join(extracted_iso, 'packages'), vs_packages)
@@ -250,9 +270,24 @@ def ExtractComponents(image):
       (r'X86 Debuggers And Tools-x86_en-us.msi', True),
       (r'X64 Debuggers And Tools-x64_en-us.msi', True),
       (r'SDK Debuggers-x86_en-us.msi', True),
+      (r'Windows Software Development Kit-x86_en-us.msi', True),
+      (r'Windows Software Development Kit for Metro style Apps-x86_en-us.msi',
+          True),
     ]
   result.extend(ExtractMsiList(os.path.join(image.sdk8_path, 'Installers'),
                                sdk_packages))
+
+  if image.wdk_path:
+    # This image will only be set when using Express, when we need the WDK
+    # headers and libs to supplement Express with ATL.
+    wdk_packages = [
+      (r'headers.msi', True),
+      (r'libs_x86fre.msi', True),
+      (r'libs_x64fre.msi', True),
+    ]
+    extracted_iso = ExtractIso(image.wdk_path)
+    result.extend(ExtractMsiList(os.path.join(extracted_iso, 'WDK'),
+                                 wdk_packages))
 
   return result
 
@@ -264,6 +299,7 @@ def CopyToFinalLocation(extracted_dirs, target_dir):
       'System64\\': 'sys64\\',
       'System\\': 'sys32\\',
       'Windows Kits\\8.0\\': 'win8sdk\\',
+      'WinDDK\\7600.16385.win7_wdk.100208-1538\\': 'wdk\\',
   }
   matches = []
   for extracted_dir in extracted_dirs:
@@ -327,6 +363,9 @@ def GenerateSetEnvCmd(target_dir, pro):
       f.write(':x64\n'
               'set PATH=%~dp0..\\..\\win8sdk\\bin\\x64;'
                  '%~dp0..\\..\\VC\\bin\\x86_amd64;'
+                 # Needed for mspdb120.dll. Must be after above though, so
+                 # that cl.exe is the x86_amd64 one.
+                 '%~dp0..\\..\\VC\\bin;'
                  '%PATH%\n')
     else:
       # x64 native.
@@ -351,6 +390,10 @@ def main():
                     help='use downloaded files from DIR')
   parser.add_option('--express',
                     help='use VS Express instead of Pro', action='store_true')
+  parser.add_option('--bot-mode',
+                    help='Use internal servers to pull isos',
+                    default=bool(int(os.environ.get('CHROME_HEADLESS', 0))),
+                    action='store_true')
   options, _ = parser.parse_args()
   try:
     target_dir = os.path.abspath(options.targetdir)
@@ -362,11 +405,14 @@ def main():
     # codec dll very well, so this is the simplest way to make sure it runs
     # correctly, as we don't otherwise care about working directory.
     os.chdir(os.path.join(BASEDIR, '7z'))
-    images = GetSourceImages(options.local, not options.express)
+    images = GetSourceImages(
+        options.local, not options.express, options.bot_mode)
     extracted = ExtractComponents(images)
     CopyToFinalLocation(extracted, target_dir)
 
     GenerateSetEnvCmd(target_dir, not options.express)
+    with open(os.path.join(target_dir, '.version'), 'w') as f:
+      f.write('express' if options.express else 'pro')
   finally:
     if options.clean:
       DeleteAllTempDirs()
