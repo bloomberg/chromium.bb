@@ -1479,7 +1479,7 @@ bool BisonCSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags
 
 static bool isVariableReference(CSSParserValue* value)
 {
-    return value->unit == CSSParserValue::Function && equal(value->function->name, "var(");
+    return RuntimeEnabledFeatures::cssVariablesEnabled() && value->unit == CSSParserValue::Function && equal(value->function->name, "var(");
 }
 
 inline bool BisonCSSParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
