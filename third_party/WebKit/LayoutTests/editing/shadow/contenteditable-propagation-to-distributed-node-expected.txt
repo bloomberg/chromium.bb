@@ -1,0 +1,8 @@
+This test checks that contenteditable is propagated to distributed nodes.
+
+PASS getComputedStyle(shadowRoot.getElementsByTagName('span')[0], null).webkitUserModify is "read-only"
+PASS getComputedStyle(shadowRoot.getElementsByTagName('content')[0].getDistributedNodes()[0], null).webkitUserModify is "read-write"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
