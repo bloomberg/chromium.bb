@@ -308,11 +308,11 @@
             # defined in installer.gyp.
             '../chrome/installer/mini_installer.gyp:mini_installer',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
-            '../content/content_shell_and_tests.gyp:copy_test_netscape_plugin',
             '../courgette/courgette.gyp:courgette_unittests',
             '../sandbox/sandbox.gyp:sbox_integration_tests',
             '../sandbox/sandbox.gyp:sbox_unittests',
             '../sandbox/sandbox.gyp:sbox_validation_tests',
+            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
             '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/views/views.gyp:views_unittests',
           ],
@@ -994,7 +994,6 @@
             # mini_installer_tests depends on mini_installer. This should be
             # defined in installer.gyp.
             '../chrome/installer/mini_installer.gyp:mini_installer',
-            '../content/content_shell_and_tests.gyp:copy_test_netscape_plugin',
             '../courgette/courgette.gyp:courgette_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
@@ -1018,6 +1017,7 @@
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:url_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
+            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
           ],
         },
         {
