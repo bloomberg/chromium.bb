@@ -21,35 +21,16 @@ from chromite.lib import remote_access
 # pylint: disable=W0212
 class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
   """Test xbuddy helper functions."""
-  def testCheckBoardMismatches(self):
-    """Test we correctly determine whether there is board mismatch."""
-
-    board = 'lumpy'
-    path = 'local/lumpy/latest'
-    self.assertEqual(cros_flash._CheckBoardMismatch(path, board), False)
-
-    board = 'peppy'
-    path = 'remote/lumpy/latest'
-    self.assertEqual(cros_flash._CheckBoardMismatch(path, board), True)
-
-    board = 'lumpy'
-    path = 'lumpy/latest'
-    self.assertEqual(cros_flash._CheckBoardMismatch(path, board), False)
-
   def testGenerateXbuddyRequest(self):
     """Test we generate correct xbuddy requests."""
     # Use the latest build when 'latest' is given.
-    board = 'stumpy'
-    req = 'xbuddy/local/stumpy/latest?for_update=true&return_dir=true'
-    self.assertEqual(
-        cros_flash.GenerateXbuddyRequest('latest', None, board=board), req)
+    req = 'xbuddy/latest?for_update=true&return_dir=true'
+    self.assertEqual(cros_flash.GenerateXbuddyRequest('latest', None), req)
 
     # Convert the path starting with 'xbuddy://' to 'xbuddy/'
-    board = 'stumpy'
     path = 'xbuddy://remote/stumpy/version'
     req = 'xbuddy/remote/stumpy/version?for_update=true&return_dir=true'
-    self.assertEqual(
-        cros_flash.GenerateXbuddyRequest(path, None, board=board), req)
+    self.assertEqual(cros_flash.GenerateXbuddyRequest(path, None), req)
 
   @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
   @mock.patch('os.path.exists', return_value=True)
@@ -58,7 +39,7 @@ class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
     image_path = '/foo/bar/chromiumos_test_image.bin'
     link = os.path.join(self.tempdir, 'others',
                         '2fdcf2f57d2bca72cf2f698363a4da1c')
-    cros_flash.GenerateXbuddyRequest(image_path, self.tempdir, board=None)
+    cros_flash.GenerateXbuddyRequest(image_path, self.tempdir)
     self.assertTrue(os.path.lexists(link))
 
 

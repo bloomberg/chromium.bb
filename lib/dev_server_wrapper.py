@@ -53,7 +53,8 @@ class DevServerWrapper(multiprocessing.Process):
   DEV_SERVER_TIMEOUT = 900
   KILL_TIMEOUT = 10
 
-  def __init__(self, static_dir=None, port=None, log_dir=None, src_image=None):
+  def __init__(self, static_dir=None, port=None, log_dir=None, src_image=None,
+               board=None):
     """Initialize a DevServerWrapper instance.
 
     Args:
@@ -62,11 +63,13 @@ class DevServerWrapper(multiprocessing.Process):
       log_dir: Directory to store the log files.
       src_image: The path to the image to be used as the base to
         generate delta payloads.
+      board: Override board to pass to the devserver for xbuddy pathing.
     """
     super(DevServerWrapper, self).__init__()
     self.devserver_bin = 'start_devserver'
     self.port = 8080 if not port else port
     self.src_image = src_image
+    self.board = board
     self.tempdir = None
     self.log_dir = log_dir
     if not self.log_dir:
@@ -189,6 +192,9 @@ class DevServerWrapper(multiprocessing.Process):
 
     if self.src_image:
       cmd.append('--src_image=%s' % cros_build_lib.ToChrootPath(self.src_image))
+
+    if self.board:
+      cmd.append('--board=%s' % self.board)
 
     result = self._RunCommand(
         cmd, enter_chroot=True,

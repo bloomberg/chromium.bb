@@ -8,7 +8,6 @@ import cStringIO
 import hashlib
 import logging
 import os
-import re
 import shutil
 import tempfile
 import urlparse
@@ -35,25 +34,8 @@ IMAGE_NAME_TO_TYPE = {
 }
 
 
-def _CheckBoardMismatch(xbuddy_path, board):
-  """Returns True if |board| doesn't match the board in |xbuddy_path|"""
-  # xbuddy_path: {local|remote}/board/version. The local/remote
-  # keyword is optional.
-  path_list = xbuddy_path.split('/')
-  keywords = ('local', 'remote')
-  if path_list[0] in keywords:
-    xbuddy_board = path_list[1]
-  else:
-    xbuddy_board = path_list[0]
-
-  # xbuddy_board can be 'peppy-paladin' or even 'trybot-peppy-paladin'.
-  # We check if the board name is in xbuddy_board.
-  pattern = r'^(.*-)?'+ re.escape(board) +'(-.*)?$'
-  return not re.match(pattern, xbuddy_board)
-
-
 # pylint: disable=E1101
-def GenerateXbuddyRequest(path, static_dir, board, board_mismatch_ok=False):
+def GenerateXbuddyRequest(path, static_dir):
   """Generate an xbuddy request used to retreive payloads.
 
   This function generates a xbuddy request based on |path|. If the
@@ -63,37 +45,31 @@ def GenerateXbuddyRequest(path, static_dir, board, board_mismatch_ok=False):
   If |path| is an xbuddy path (xbuddy://subpath), strip the '://"
   and returns xbuddy/subpath. If |path| is a local path to an image,
   creates a symlink in the static_dir, so that xbuddy can access the
-  image; returns the corresponding xbuddy path. If |path| is 'latest',
-  returns the request for the latest local build for |board|.
+  image; returns the corresponding xbuddy path. If |path| can't be found,
+  convert it to an xbuddy path.
 
   Args:
-    path: Either a local path to an image or a xbuddy path (xbuddy://)
-      or 'latest' for latest local build.
+    path: Either a local path to an image or an xbuddy path (with or without
+      xbuddy://).
     static_dir: static directory of the local devserver.
-    board: Current board.
-    board_mismatch_ok: If set True, ignore |board| mismatch.
 
   Returns:
     A xbuddy request.
   """
-  if path == 'latest':
-    # Use the latest local build.
-    path = 'xbuddy://local/%s/latest' % board
-
+  # Path used to store the string that xbuddy understands when finding an image.
+  xbuddy_path = None
   parsed = urlparse.urlparse(path)
+
+  # For xbuddy paths, we should do a sanity check / confirmation when the xbuddy
+  # board doesn't match the board on the device. Unfortunately this isn't
+  # currently possible since we don't want to duplicate xbuddy code.
+  # TODO(sosa): crbug.com/340722 and use it to compare boards.
   if parsed.scheme == 'xbuddy':
     xbuddy_path = '%s%s' % (parsed.netloc, parsed.path)
-    if _CheckBoardMismatch(xbuddy_path, board):
-      msg = '%s does not match current board %s.' % (xbuddy_path, board)
-      if not board_mismatch_ok and not cros_build_lib.BooleanPrompt(
-          default=False, prolog=msg):
-        cros_build_lib.Die('Exiting Cros Flash...')
-
-      logging.warning(msg)
+  elif not os.path.exists(path):
+    logging.debug('Cannot find path "%s". Assuming it is an xbuddy path.', path)
+    xbuddy_path = path
   else:
-    if not os.path.exists(path):
-      raise ValueError('Image path does not exist: %s' % path)
-
     # We have a list of known image names that are recognized by
     # devserver. User cannot arbitrarily rename their images.
     if os.path.basename(path) not in IMAGE_NAME_TO_TYPE:
@@ -340,9 +316,8 @@ using-the-dev-server/xbuddy-for-devserver
     osutils.SafeMakedirsNonRoot(static_dir)
 
     ds = ds_wrapper.DevServerWrapper(
-        static_dir=static_dir, src_image=src_image)
-    req = GenerateXbuddyRequest(
-        path, static_dir, board, board_mismatch_ok=self.yes)
+        static_dir=static_dir, src_image=src_image, board=board)
+    req = GenerateXbuddyRequest(path, static_dir)
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
       ds.Start()
@@ -354,6 +329,13 @@ using-the-dev-server/xbuddy-for-devserver
       if ds_log:
         logging.error(ds_log)
       raise
+    else:
+      # If we're running in debug, also print out the log even if we didn't get
+      # an exception.
+      if self.debug:
+        ds_log = ds.TailLog()
+        if ds_log:
+          logging.error(ds_log)
     finally:
       ds.Stop()
       if os.path.exists(ds.log_filename):
@@ -370,11 +352,10 @@ using-the-dev-server/xbuddy-for-devserver
         'device', help='The hostname/IP[:port] address of the device.')
     parser.add_argument(
         'image', nargs='?', default='latest', help="Image to install; "
-        "can be a local path, a xbuddy path "
-        "(xbuddy://{local|remote}/board/version), or simply "
-        "'latest' for latest local build. You Can also specify a "
-        "directory path with pre-generated payloads (defaults to "
-        "'latest')")
+        "can be a local path or an xbuddy path "
+        "(xbuddy://{local|remote}/board/version). Note any strings that do not "
+        "map to a real file path will be converted to an xbuddy path i.e. "
+        "latest, will map to xbuddy://latest if latest isn't a local file.")
 
     advanced = parser.add_argument_group('Advanced options')
     advanced.add_argument(
@@ -421,6 +402,7 @@ using-the-dev-server/xbuddy-for-devserver
     self.ssh = False
     self.ssh_hostname = None
     self.ssh_port = None
+    self.debug = False
 
   def Cleanup(self):
     """Cleans up the temporary directory."""
@@ -472,10 +454,11 @@ using-the-dev-server/xbuddy-for-devserver
     self.reboot = options.reboot
     # Do not wipe if debug is set.
     self.wipe = options.wipe and not options.debug
-    self.do_stateful_update =  options.stateful_update
+    self.do_stateful_update = options.stateful_update
     self.do_rootfs_update = options.rootfs_update
     self.clobber_stateful = options.clobber_stateful
     self.yes = options.yes
+    self.debug = options.debug
 
   # pylint: disable=E1101
   def Run(self):
