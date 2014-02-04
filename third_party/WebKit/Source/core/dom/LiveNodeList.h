@@ -44,25 +44,18 @@ enum NodeListRootType {
 
 class LiveNodeListBase {
 public:
-    enum ItemAfterOverrideType {
-        OverridesItemAfter,
-        DoesNotOverrideItemAfter,
-    };
-
     LiveNodeListBase(ContainerNode* ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
-        bool shouldOnlyIncludeDirectChildren, CollectionType collectionType, ItemAfterOverrideType itemAfterOverrideType)
+        bool shouldOnlyIncludeDirectChildren, CollectionType collectionType)
         : m_ownerNode(ownerNode)
         , m_rootType(rootType)
         , m_invalidationType(invalidationType)
         , m_shouldOnlyIncludeDirectChildren(shouldOnlyIncludeDirectChildren)
         , m_collectionType(collectionType)
-        , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
     {
         ASSERT(m_ownerNode);
         ASSERT(m_rootType == static_cast<unsigned>(rootType));
         ASSERT(m_invalidationType == static_cast<unsigned>(invalidationType));
         ASSERT(m_collectionType == static_cast<unsigned>(collectionType));
-        ASSERT(!m_overridesItemAfter || !isLiveNodeListType(collectionType));
 
         if (collectionType != ChildNodeListType)
             document().registerNodeList(this);
@@ -75,7 +68,6 @@ public:
     }
 
     ContainerNode& rootNode() const;
-    bool overridesItemAfter() const { return m_overridesItemAfter; }
     Node* itemBefore(const Node* previousItem) const;
 
     ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
@@ -109,9 +101,6 @@ private:
     const unsigned m_invalidationType : 4;
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
     const unsigned m_collectionType : 5;
-
-    // From HTMLCollection
-    const unsigned m_overridesItemAfter : 1;
 };
 
 ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType type, const QualifiedName& attrName)
@@ -143,7 +132,7 @@ class LiveNodeList : public NodeList, public LiveNodeListBase {
 public:
     LiveNodeList(PassRefPtr<ContainerNode> ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
         : LiveNodeListBase(ownerNode.get(), rootType, invalidationType, collectionType == ChildNodeListType,
-        collectionType, DoesNotOverrideItemAfter)
+        collectionType)
     { }
 
     virtual unsigned length() const OVERRIDE FINAL { return m_collectionIndexCache.nodeCount(*this); }
@@ -156,6 +145,7 @@ public:
     virtual void invalidateCache() const OVERRIDE FINAL;
 
     // Collection IndexCache API.
+    bool canTraverseBackward() const { return true; }
     Node* traverseToFirstElement(const ContainerNode& root) const;
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
 

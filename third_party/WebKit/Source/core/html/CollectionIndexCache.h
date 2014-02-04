@@ -130,11 +130,11 @@ inline Node* CollectionIndexCache<Collection>::nodeAt(const Collection& collecti
         return 0;
 
     ContainerNode& root = collection.rootNode();
-    if (isCachedNodeCountValid() && !collection.overridesItemAfter() && isLastNodeCloserThanLastOrCachedNode(index)) {
+    if (isCachedNodeCountValid() && collection.canTraverseBackward() && isLastNodeCloserThanLastOrCachedNode(index)) {
         Node* lastNode = collection.itemBefore(0);
         ASSERT(lastNode);
         setCachedNode(lastNode, cachedNodeCount() - 1);
-    } else if (!cachedNode() || isFirstNodeCloserThanCachedNode(index) || (collection.overridesItemAfter() && index < cachedNodeIndex())) {
+    } else if (!cachedNode() || isFirstNodeCloserThanCachedNode(index) || (!collection.canTraverseBackward() && index < cachedNodeIndex())) {
         Node* firstNode = collection.traverseToFirstElement(root);
         if (!firstNode) {
             setCachedNodeCount(0);
@@ -159,7 +159,7 @@ inline Node* CollectionIndexCache<Collection>::nodeBeforeOrAfterCachedNode(const
     ASSERT(currentIndex != index);
 
     if (index < cachedNodeIndex()) {
-        ASSERT(!collection.overridesItemAfter());
+        ASSERT(collection.canTraverseBackward());
         while ((currentNode = collection.itemBefore(currentNode))) {
             ASSERT(currentIndex);
             currentIndex--;

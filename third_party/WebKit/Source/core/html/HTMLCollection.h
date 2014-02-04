@@ -33,6 +33,11 @@ namespace WebCore {
 
 class HTMLCollection : public ScriptWrappable, public RefCounted<HTMLCollection>, public LiveNodeListBase {
 public:
+    enum ItemAfterOverrideType {
+        OverridesItemAfter,
+        DoesNotOverrideItemAfter,
+    };
+
     static PassRefPtr<HTMLCollection> create(ContainerNode* base, CollectionType);
     virtual ~HTMLCollection();
     virtual void invalidateCache() const OVERRIDE;
@@ -47,14 +52,16 @@ public:
     bool isEmpty() const { return m_collectionIndexCache.isEmpty(*this); }
     bool hasExactlyOneItem() const { return m_collectionIndexCache.hasExactlyOneNode(*this); }
 
-    virtual Element* virtualItemAfter(Element*) const;
-
     // CollectionIndexCache API.
+    bool canTraverseBackward() const { return !overridesItemAfter(); }
     Element* traverseToFirstElement(const ContainerNode& root) const;
     Element* traverseForwardToOffset(unsigned offset, Node& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
 
 protected:
     HTMLCollection(ContainerNode* base, CollectionType, ItemAfterOverrideType);
+
+    bool overridesItemAfter() const { return m_overridesItemAfter; }
+    virtual Element* virtualItemAfter(Element*) const;
 
     virtual void updateNameCache() const;
     bool hasNameCache() const { return m_isNameCacheValid; }
@@ -78,6 +85,7 @@ private:
         m_isNameCacheValid = false;
     }
 
+    const unsigned m_overridesItemAfter : 1;
     mutable unsigned m_isNameCacheValid : 1;
     mutable NodeCacheMap m_idCache;
     mutable NodeCacheMap m_nameCache;
