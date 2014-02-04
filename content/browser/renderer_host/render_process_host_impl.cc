@@ -1249,7 +1249,7 @@ TransportDIB* RenderProcessHostImpl::MapTransportDIB(
   // On Windows we need to duplicate the handle from the remote process
   HANDLE section;
   DuplicateHandle(GetHandle(), dib_id.handle, GetCurrentProcess(), &section,
-                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
+                  FILE_MAP_READ | FILE_MAP_WRITE,
                   FALSE, 0);
   return TransportDIB::Map(section);
 #elif defined(TOOLKIT_GTK)
