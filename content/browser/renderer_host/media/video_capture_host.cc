@@ -21,12 +21,18 @@ VideoCaptureHost::~VideoCaptureHost() {}
 
 void VideoCaptureHost::OnChannelClosing() {
   // Since the IPC channel is gone, close all requested VideoCaptureDevices.
-  for (EntryMap::iterator it = entries_.begin(); it != entries_.end(); it++) {
+  for (EntryMap::iterator it = entries_.begin(); it != entries_.end(); ) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
     if (controller) {
       VideoCaptureControllerID controller_id(it->first);
       media_stream_manager_->video_capture_manager()->StopCaptureForClient(
           controller.get(), controller_id, this);
+      ++it;
+    } else {
+      // Remove the entry for this controller_id so that when the controller
+      // is added, the controller will be notified to stop for this client
+      // in DoControllerAddedOnIOThread.
+      entries_.erase(it++);
     }
   }
 }
