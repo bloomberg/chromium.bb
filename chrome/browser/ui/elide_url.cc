@@ -21,6 +21,8 @@ using gfx::kForwardSlash;
 
 namespace {
 
+const base::char16 kDot = '.';
+
 // Build a path from the first |num_components| elements in |path_elements|.
 // Prepends |path_prefix|, appends |filename|, inserts ellipsis if appropriate.
 base::string16 BuildPathFromComponents(
@@ -67,6 +69,39 @@ base::string16 ElideComponentizedPath(
   return base::string16();
 }
 
+// Splits the hostname in the |url| into sub-strings for the full hostname,
+// the domain (TLD+1), and the subdomain (everything leading the domain).
+void SplitHost(const GURL& url,
+               base::string16* url_host,
+               base::string16* url_domain,
+               base::string16* url_subdomain) {
+  // Get Host.
+  *url_host = UTF8ToUTF16(url.host());
+
+  // Get domain and registry information from the URL.
+  *url_domain = UTF8ToUTF16(
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
+  if (url_domain->empty())
+    *url_domain = *url_host;
+
+  // Add port if required.
+  if (!url.port().empty()) {
+    *url_host += UTF8ToUTF16(":" + url.port());
+    *url_domain += UTF8ToUTF16(":" + url.port());
+  }
+
+  // Get sub domain.
+  const size_t domain_start_index = url_host->find(*url_domain);
+  base::string16 kWwwPrefix = UTF8ToUTF16("www.");
+  if (domain_start_index != base::string16::npos)
+    *url_subdomain = url_host->substr(0, domain_start_index);
+  if ((*url_subdomain == kWwwPrefix || url_subdomain->empty() ||
+      url.SchemeIsFile())) {
+    url_subdomain->clear();
+  }
+}
+
 }  // namespace
 
 // TODO(pkasting): http://crbug.com/77883 This whole function gets
@@ -109,32 +144,10 @@ base::string16 ElideUrl(const GURL& url,
     return ElideText(url_string, font_list, available_pixel_width,
                      gfx::ELIDE_AT_END);
 
-  // Get Host.
-  base::string16 url_host = UTF8ToUTF16(url.host());
-
-  // Get domain and registry information from the URL.
-  base::string16 url_domain = UTF8ToUTF16(
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
-  if (url_domain.empty())
-    url_domain = url_host;
-
-  // Add port if required.
-  if (!url.port().empty()) {
-    url_host += UTF8ToUTF16(":" + url.port());
-    url_domain += UTF8ToUTF16(":" + url.port());
-  }
-
-  // Get sub domain.
+  base::string16 url_host;
+  base::string16 url_domain;
   base::string16 url_subdomain;
-  const size_t domain_start_index = url_host.find(url_domain);
-  if (domain_start_index != base::string16::npos)
-    url_subdomain = url_host.substr(0, domain_start_index);
-  const base::string16 kWwwPrefix = UTF8ToUTF16("www.");
-  if ((url_subdomain == kWwwPrefix || url_subdomain.empty() ||
-      url.SchemeIsFile())) {
-    url_subdomain.clear();
-  }
+  SplitHost(url, &url_host, &url_domain, &url_subdomain);
 
   // If this is a file type, the path is now defined as everything after ":".
   // For example, "C:/aa/aa/bb", the path is "/aa/bb/cc". Interesting, the
@@ -265,3 +278,27 @@ base::string16 ElideUrl(const GURL& url,
                    gfx::ELIDE_AT_END);
 }
 
+base::string16 ElideHost(const GURL& url,
+                         const gfx::FontList& font_list,
+                         float available_pixel_width) {
+  base::string16 url_host;
+  base::string16 url_domain;
+  base::string16 url_subdomain;
+  SplitHost(url, &url_host, &url_domain, &url_subdomain);
+
+  const float pixel_width_url_host = GetStringWidthF(url_host, font_list);
+  if (available_pixel_width >= pixel_width_url_host)
+    return url_host;
+
+  if (url_subdomain.empty())
+    return url_domain;
+
+  const float pixel_width_url_domain = GetStringWidthF(url_domain, font_list);
+  float subdomain_width = available_pixel_width - pixel_width_url_domain;
+  if (subdomain_width <= 0)
+    return base::string16(kEllipsisUTF16) + kDot + url_domain;
+
+  base::string16 elided_subdomain = ElideText(
+      url_subdomain, font_list, subdomain_width, gfx::ELIDE_AT_BEGINNING);
+  return elided_subdomain + url_domain;
+}

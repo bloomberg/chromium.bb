@@ -39,15 +39,21 @@ const base::char16 kForwardSlash = '/';
 
 StringSlicer::StringSlicer(const base::string16& text,
              const base::string16& ellipsis,
-             bool elide_in_middle)
+             bool elide_in_middle,
+             bool elide_at_beginning)
     : text_(text),
       ellipsis_(ellipsis),
-      elide_in_middle_(elide_in_middle) {
+      elide_in_middle_(elide_in_middle),
+      elide_at_beginning_(elide_at_beginning) {
 }
 
 base::string16 StringSlicer::CutString(size_t length, bool insert_ellipsis) {
   const base::string16 ellipsis_text = insert_ellipsis ? ellipsis_
                                                        : base::string16();
+
+  if (elide_at_beginning_)
+    return ellipsis_text +
+           text_.substr(FindValidBoundaryBefore(text_.length() - length));
 
   if (!elide_in_middle_)
     return text_.substr(0, FindValidBoundaryBefore(length)) + ellipsis_text;
@@ -194,10 +200,11 @@ base::string16 ElideText(const base::string16& text,
 
   const float current_text_pixel_width = GetStringWidthF(text, font_list);
   const bool elide_in_middle = (elide_behavior == ELIDE_IN_MIDDLE);
+  const bool elide_at_beginning = (elide_behavior == ELIDE_AT_BEGINNING);
   const bool insert_ellipsis = (elide_behavior != TRUNCATE_AT_END);
 
   const base::string16 ellipsis = base::string16(kEllipsisUTF16);
-  StringSlicer slicer(text, ellipsis, elide_in_middle);
+  StringSlicer slicer(text, ellipsis, elide_in_middle, elide_at_beginning);
 
   // Pango will return 0 width for absurdly long strings. Cut the string in
   // half and try again.

@@ -262,6 +262,41 @@ TEST(TextEliderTest, MAYBE_ElideTextEllipsis) {
   }
 }
 
+// TODO(338784): Enable this on android.
+#if defined(OS_ANDROID)
+#define MAYBE_ElideTextEllipsisFront DISABLED_ElideTextEllipsisFront
+#else
+#define MAYBE_ElideTextEllipsisFront ElideTextEllipsisFront
+#endif
+TEST(TextEliderTest, MAYBE_ElideTextEllipsisFront) {
+  const FontList font_list;
+  const float kTestWidth = GetStringWidthF(ASCIIToUTF16("Test"), font_list);
+  const std::string kEllipsisStr(kEllipsis);
+  const float kEllipsisWidth =
+      GetStringWidthF(UTF8ToUTF16(kEllipsis), font_list);
+  const float kEllipsis23Width =
+      GetStringWidthF(UTF8ToUTF16(kEllipsisStr + "23"), font_list);
+  struct TestData {
+    const char* input;
+    float width;
+    const base::string16 output;
+  } cases[] = {
+    { "",        0,                base::string16() },
+    { "Test",    0,                base::string16() },
+    { "Test",    kEllipsisWidth,   UTF8ToUTF16(kEllipsisStr) },
+    { "",        kTestWidth,       base::string16() },
+    { "Tes",     kTestWidth,       ASCIIToUTF16("Tes") },
+    { "Test",    kTestWidth,       ASCIIToUTF16("Test") },
+    { "Test123", kEllipsis23Width, UTF8ToUTF16(kEllipsisStr + "23") },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    base::string16 result = ElideText(UTF8ToUTF16(cases[i].input), font_list,
+                                      cases[i].width, ELIDE_AT_BEGINNING);
+    EXPECT_EQ(cases[i].output, result);
+  }
+}
+
 // Checks that all occurrences of |first_char| are followed by |second_char| and
 // all occurrences of |second_char| are preceded by |first_char| in |text|.
 static void CheckSurrogatePairs(const base::string16& text,
@@ -310,6 +345,9 @@ TEST(TextEliderTest, MAYBE_ElideTextSurrogatePairs) {
 
     result = ElideText(kTestString, font_list, width, ELIDE_IN_MIDDLE);
     CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
+
+    result = ElideText(kTestString, font_list, width, ELIDE_AT_BEGINNING);
+    CheckSurrogatePairs(result, kSurrogateFirstChar, kSurrogateSecondChar);
   }
 }
 
@@ -331,16 +369,19 @@ TEST(TextEliderTest, MAYBE_ElideTextLongStrings) {
   base::string16 hundred_thousand_a(100000, 'a');
   base::string16 million_a(1000000, 'a');
 
+  // TODO(gbillock): Improve these tests by adding more string diversity and
+  // doing string compares instead of length compares. See bug 338836.
+
   size_t number_of_as = 156;
   base::string16 long_string_end(
       data_scheme + base::string16(number_of_as, 'a') + kEllipsisStr);
   UTF16Testcase testcases_end[] = {
-     {data_scheme + ten_a,              data_scheme + ten_a},
-     {data_scheme + hundred_a,          data_scheme + hundred_a},
-     {data_scheme + thousand_a,         long_string_end},
-     {data_scheme + ten_thousand_a,     long_string_end},
-     {data_scheme + hundred_thousand_a, long_string_end},
-     {data_scheme + million_a,          long_string_end},
+     { data_scheme + ten_a,              data_scheme + ten_a },
+     { data_scheme + hundred_a,          data_scheme + hundred_a },
+     { data_scheme + thousand_a,         long_string_end },
+     { data_scheme + ten_thousand_a,     long_string_end },
+     { data_scheme + hundred_thousand_a, long_string_end },
+     { data_scheme + million_a,          long_string_end },
   };
 
   const FontList font_list;
@@ -364,12 +405,12 @@ TEST(TextEliderTest, MAYBE_ElideTextLongStrings) {
       base::string16(number_of_as - number_of_trailing_as, 'a') + kEllipsisStr +
       base::string16(number_of_trailing_as, 'a'));
   UTF16Testcase testcases_middle[] = {
-     {data_scheme + ten_a,              data_scheme + ten_a},
-     {data_scheme + hundred_a,          data_scheme + hundred_a},
-     {data_scheme + thousand_a,         long_string_middle},
-     {data_scheme + ten_thousand_a,     long_string_middle},
-     {data_scheme + hundred_thousand_a, long_string_middle},
-     {data_scheme + million_a,          long_string_middle},
+     { data_scheme + ten_a,              data_scheme + ten_a },
+     { data_scheme + hundred_a,          data_scheme + hundred_a },
+     { data_scheme + thousand_a,         long_string_middle },
+     { data_scheme + ten_thousand_a,     long_string_middle },
+     { data_scheme + hundred_thousand_a, long_string_middle },
+     { data_scheme + million_a,          long_string_middle },
   };
 
   for (size_t i = 0; i < arraysize(testcases_middle); ++i) {
@@ -380,10 +421,31 @@ TEST(TextEliderTest, MAYBE_ElideTextLongStrings) {
                   testcases_middle[i].input,
                   font_list,
                   GetStringWidthF(testcases_middle[i].output, font_list),
-                  ELIDE_AT_END).size());
+                  ELIDE_IN_MIDDLE).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_middle[i].input, font_list, ellipsis_width,
-                        ELIDE_AT_END));
+                        ELIDE_IN_MIDDLE));
+  }
+
+  base::string16 long_string_beginning(
+      kEllipsisStr + base::string16(number_of_as, 'a'));
+  UTF16Testcase testcases_beginning[] = {
+     { data_scheme + ten_a,              data_scheme + ten_a },
+     { data_scheme + hundred_a,          data_scheme + hundred_a },
+     { data_scheme + thousand_a,         long_string_beginning },
+     { data_scheme + ten_thousand_a,     long_string_beginning },
+     { data_scheme + hundred_thousand_a, long_string_beginning },
+     { data_scheme + million_a,          long_string_beginning },
+  };
+  for (size_t i = 0; i < arraysize(testcases_beginning); ++i) {
+    EXPECT_EQ(testcases_beginning[i].output.size(),
+              ElideText(
+                  testcases_beginning[i].input, font_list,
+                  GetStringWidthF(testcases_beginning[i].output, font_list),
+                  ELIDE_AT_BEGINNING).size());
+    EXPECT_EQ(kEllipsisStr,
+              ElideText(testcases_beginning[i].input, font_list, ellipsis_width,
+                        ELIDE_AT_BEGINNING));
   }
 }
 

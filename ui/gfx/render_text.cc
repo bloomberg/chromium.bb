@@ -1149,7 +1149,8 @@ base::string16 RenderText::ElideText(const base::string16& text) {
 
   const base::string16 ellipsis = base::string16(gfx::kEllipsisUTF16);
   const bool elide_in_middle = false;
-  StringSlicer slicer(text, ellipsis, elide_in_middle);
+  const bool elide_at_beginning = false;
+  StringSlicer slicer(text, ellipsis, elide_in_middle, elide_at_beginning);
 
   // Pango will return 0 width for absurdly long strings. Cut the string in
   // half and try again.

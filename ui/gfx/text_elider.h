@@ -29,13 +29,13 @@ GFX_EXPORT extern const char kEllipsis[];
 GFX_EXPORT extern const base::char16 kEllipsisUTF16[];
 GFX_EXPORT extern const base::char16 kForwardSlash;
 
-
 // Helper class to split + elide text, while respecting UTF16 surrogate pairs.
 class StringSlicer {
  public:
   StringSlicer(const base::string16& text,
                const base::string16& ellipsis,
-               bool elide_in_middle);
+               bool elide_in_middle,
+               bool elide_at_beginning);
 
   // Cuts |text_| to be |length| characters long. If |elide_in_middle_| is true,
   // the middle of the string is removed to leave equal-length pieces from the
@@ -58,6 +58,9 @@ class StringSlicer {
   // If true, the middle of the string will be elided.
   bool elide_in_middle_;
 
+  // If true, the beginning of the string will be elided.
+  bool elide_at_beginning_;
+
   DISALLOW_COPY_AND_ASSIGN(StringSlicer);
 };
 
@@ -76,6 +79,8 @@ GFX_EXPORT base::string16 ElideEmail(const base::string16& email,
                                      float available_pixel_width);
 
 enum ElideBehavior {
+  // Add ellipsis at the beginning of the string.
+  ELIDE_AT_BEGINNING,
   // Add ellipsis at the end of the string.
   ELIDE_AT_END,
   // Add ellipsis in the middle of the string.
@@ -83,7 +88,7 @@ enum ElideBehavior {
   // Truncate the end of the string.
   TRUNCATE_AT_END,
   // No eliding of the string.
-  NO_ELIDE
+  NO_ELIDE,
 };
 
 // Elides |text| to fit in |available_pixel_width| according to the specified

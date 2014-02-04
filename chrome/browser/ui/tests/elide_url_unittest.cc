@@ -161,4 +161,41 @@ TEST(TextEliderTest, TestFileURLEliding) {
   RunUrlTest(testcases, arraysize(testcases));
 }
 
+TEST(TextEliderTest, TestHostEliding) {
+  const std::string kEllipsisStr(kEllipsis);
+  Testcase testcases[] = {
+    {"http://google.com", "google.com"},
+    {"http://subdomain.google.com", kEllipsisStr + ".google.com"},
+    {"http://reallyreallyreallylongdomainname.com",
+         "reallyreallyreallylongdomainname.com"},
+    {"http://a.b.c.d.e.f.com", kEllipsisStr + "f.com"},
+    {"http://foo", "foo"},
+    {"http://foo.bar", "foo.bar"},
+    {"http://subdomain.foo.bar", kEllipsisStr + "in.foo.bar"},
+// IOS width calculations are off by a letter from other platforms for
+// some strings from other platforms, probably for strings with too
+// many kerned letters on the default font set.
+#if !defined(OS_IOS)
+    {"http://subdomain.reallylongdomainname.com",
+         kEllipsisStr + "ain.reallylongdomainname.com"},
+    {"http://a.b.c.d.e.f.com", kEllipsisStr + ".e.f.com"},
+#endif
+  };
+
+  for (size_t i = 0; i < arraysize(testcases); ++i) {
+    const float available_width =
+        GetStringWidthF(UTF8ToUTF16(testcases[i].output), gfx::FontList());
+    EXPECT_EQ(UTF8ToUTF16(testcases[i].output), ElideHost(
+        GURL(testcases[i].input), gfx::FontList(), available_width));
+  }
+
+  // Trying to elide to a really short length will still keep the full TLD+1
+  EXPECT_EQ(base::ASCIIToUTF16("google.com"),
+            ElideHost(GURL("http://google.com"), gfx::FontList(), 2));
+  EXPECT_EQ(base::UTF8ToUTF16(kEllipsisStr + ".google.com"),
+            ElideHost(GURL("http://subdomain.google.com"), gfx::FontList(), 2));
+  EXPECT_EQ(base::ASCIIToUTF16("foo.bar"),
+            ElideHost(GURL("http://foo.bar"), gfx::FontList(), 2));
+}
+
 }  // namespace
