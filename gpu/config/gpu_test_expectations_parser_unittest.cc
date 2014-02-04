@@ -92,7 +92,7 @@ TEST_F(GPUTestExpectationsParserTest, ValidUnrelatedTestEntry) {
 TEST_F(GPUTestExpectationsParserTest, AllModifiers) {
   const std::string text =
       "BUG12345 XP VISTA WIN7 WIN8 LEOPARD SNOWLEOPARD LION MOUNTAINLION "
-      "LINUX CHROMEOS ANDROID "
+      "MAVERICKS LINUX CHROMEOS ANDROID "
       "NVIDIA INTEL AMD VMWARE RELEASE DEBUG : MyTest = "
       "PASS FAIL FLAKY TIMEOUT SKIP";
 
