@@ -99,7 +99,7 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
     gc.applyDeviceScaleFactor(page->deviceScaleFactor());
     gc.setUseHighResMarkers(page->deviceScaleFactor() > 1.5f);
     IntRect dirtyRect(rect);
-    gc.save();
+    gc.save(); // Needed to save the canvas, not the GraphicsContext.
     FrameView* view = mainFrameView(page);
     // FIXME: Can we remove the mainFrame()->document() check?
     if (view && page->mainFrame()->document()) {

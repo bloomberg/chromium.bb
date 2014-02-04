@@ -355,8 +355,6 @@ public:
         graphicsContext.setFillColor(Color::white);
         graphicsContext.fillRect(FloatRect(0, 0, pageWidth, totalHeight));
 
-        graphicsContext.save();
-
         int currentHeight = 0;
         for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
             // Draw a line for a page boundary if this isn't the first page.
@@ -382,8 +380,6 @@ public:
 
             currentHeight += pageSizeInPixels.height() + 1;
         }
-
-        graphicsContext.restore();
     }
 
     virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight)
