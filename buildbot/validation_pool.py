@@ -1469,6 +1469,8 @@ class ValidationPool(object):
       else:
         tree_status = constants.TREE_OPEN
 
+      waiting_for = 'new CLs'
+
       # Select the right default gerrit query based on the the tree
       # status, or use custom |changes_query| if it was provided.
       using_default_query = (changes_query is None)
@@ -1476,6 +1478,7 @@ class ValidationPool(object):
         query = changes_query
       elif tree_status == constants.TREE_THROTTLED:
         query = constants.THROTTLED_CQ_READY_QUERY
+        waiting_for = 'new CQ+2 CLs or the tree to open'
       else:
         query = constants.DEFAULT_CQ_READY_QUERY
 
@@ -1524,7 +1527,8 @@ class ValidationPool(object):
           or cls.ShouldExitEarly()):
         break
 
-      logging.info('Waiting for new CLs (%d minutes left)...', time_left / 60)
+      logging.info('Waiting for %s (%d minutes left)...', waiting_for,
+                   time_left / 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
     return pool
