@@ -10,9 +10,7 @@ import subprocess
 import sys
 import tempfile
 
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             "build"))
-import platform_tools
+import pynacl.platform
 
 # Target architecture for PNaCl can be set through the ``-arch``
 # command-line argument, and when its value is ``env`` the following
@@ -487,8 +485,9 @@ def ArgSplit(argv):
   parser.add_argument('--debug', '-g', action='store_true', default=False,
                       help='Run sel_ldr with debugging enabled.')
   parser.add_argument('-arch', '-m', dest='arch', action='store',
-                      choices=sorted(platform_tools.ArchDict().keys() +
-                                     ['env']),
+                      choices=sorted(
+                        pynacl.platform.ArchDict().keys() +
+                        ['env']),
                       help=('Specify architecture for PNaCl translation. ' +
                             '"env" is a special value which obtains the ' +
                             'architecture from the environment ' +
@@ -522,7 +521,7 @@ def ArgSplit(argv):
     # and just translate to the current machine's architecture.
     env.arch = GetBuildArch()
   # Canonicalize env.arch.
-  aliases = platform_tools.ArchDict()
+  aliases = pynacl.platform.ArchDict()
   if env.arch in aliases:
     env.arch = aliases[env.arch]
   elif env.arch:
@@ -607,7 +606,7 @@ def GetSconsOS():
 
 def GetBuildArch():
   machine = platform.machine().lower()
-  return platform_tools.ArchDict()[machine]
+  return pynacl.platform.ArchDict()[machine]
 
 def FindBaseDir():
   '''Crawl backwards, starting from the directory containing this script,

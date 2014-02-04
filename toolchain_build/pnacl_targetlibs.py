@@ -15,8 +15,10 @@ import sys
 import command
 import fnmatch
 import gsd_storage
-import platform_tools
 import pnacl_commands
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -25,7 +27,11 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 # msys should be false if the path will be called directly rather than passed to
 # an msys or cygwin tool such as sh or make.
 def PnaclTool(toolname, msys=True):
-  ext = '.bat' if not msys and platform_tools.IsWindows() else ''
+  if not msys and pynacl.platform.IsWindows():
+    ext = '.bat'
+  else:
+    ext = ''
+
   return command.path.join('%(cwd)s', 'driver', 'pnacl-' + toolname + ext)
 
 # PNaCl tools for newlib's environment, e.g. CC_FOR_TARGET=/path/to/pnacl-clang
@@ -38,7 +44,8 @@ TARGET_TOOLS = [ tool + '_FOR_TARGET=' + PnaclTool(name)
 
 def MakeCommand():
   make_command = ['make']
-  if not platform_tools.IsWindows() and not command.Runnable.use_cygwin:
+  if (not pynacl.platform.IsWindows() and
+      not command.Runnable.use_cygwin):
     # The make that ships with msys sometimes hangs when run with -j.
     # The ming32-make that comes with the compiler itself reportedly doesn't
     # have this problem, but it has issues with pathnames with LLVM's build.
@@ -155,11 +162,11 @@ def BuildLibgccEhCmd(sourcefile, output, arch):
     flags_naclcc = ['-arch', arch, '--pnacl-bias=' + arch,
                     '--pnacl-allow-translate', '--pnacl-allow-native']
   else:
-    if platform_tools.IsWindows():
+    if pynacl.platform.IsWindows():
       platformdir = 'win_x86_newlib'
-    elif platform_tools.IsMacOS():
+    elif pynacl.platform.IsMacOS():
       platformdir = 'mac_x86_newlib'
-    elif platform_tools.IsLinux():
+    elif pynacl.platform.IsLinux():
       platformdir = 'linux_x86_newlib'
     else:
       raise Exception('Unknown OS')

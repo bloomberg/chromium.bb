@@ -26,8 +26,7 @@ sys.path.append("tools")
 import command_tester
 import test_lib
 
-sys.path.append("build")
-import platform_tools
+import pynacl.platform
 
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
@@ -449,7 +448,7 @@ def GetTargetPlatform():
   return ARGUMENTS.get('platform', 'x86-32')
 
 def GetBuildPlatform():
-  arch_dict = platform_tools.ArchDict()
+  arch_dict = pynacl.platform.ArchDict()
   machine = platform.machine().lower()
   if machine not in arch_dict:
     raise UserError('Unrecognized host architecture: %s', platform.machine())

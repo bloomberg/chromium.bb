@@ -13,7 +13,6 @@ import shutil
 import stat
 
 import file_tools
-import platform_tools
 import repo_tools
 import subprocess
 

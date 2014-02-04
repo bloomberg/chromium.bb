@@ -29,11 +29,13 @@ import zipfile
 import command
 import file_tools
 import gsd_storage
-import platform_tools
 import pnacl_commands
 import pnacl_targetlibs
 import repo_tools
 import toolchain_main
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -85,15 +87,15 @@ BITCODE_BIASES = ('portable', 'x86-64')
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
 def NativeTriple():
-  if platform_tools.IsWindows():
+  if pynacl.platform.IsWindows():
     if command.Runnable.use_cygwin:
       return 'i686-pc-cygwin'
     else:
       return 'i686-w64-mingw32'
-  elif platform_tools.IsMacOS():
+  elif pynacl.platform.IsMacOS():
     return 'x86_64-apple-darwin'
-  elif platform_tools.IsLinux():
-    if platform_tools.Is64BitLinux():
+  elif pynacl.platform.IsLinux():
+    if pynacl.platform.Is64BitLinux():
       return 'x86_64-linux'
     else:
       return 'i686-linux'
@@ -112,7 +114,8 @@ def ConfigureHostArchFlags(host):
   native = NativeTriple()
   is_cross = host != native
   if is_cross:
-    if platform_tools.Is64BitLinux() and fnmatch.fnmatch(host, '*-linux*'):
+    if (pynacl.platform.Is64BitLinux() and
+        fnmatch.fnmatch(host, '*-linux*')):
       # 64 bit linux can build 32 bit linux binaries while still being a native
       # build for our purposes. But it's not what config.guess will yield, so
       # use --build to force it and make sure things build correctly.
@@ -155,7 +158,8 @@ def ConfigureHostArchFlags(host):
 
 def MakeCommand(host):
   make_command = ['make']
-  if not platform_tools.IsWindows() or command.Runnable.use_cygwin:
+  if (not pynacl.platform.IsWindows() or
+      command.Runnable.use_cygwin):
     # The make that ships with msys sometimes hangs when run with -j.
     # The ming32-make that comes with the compiler itself reportedly doesn't
     # have this problem, but it has issues with pathnames with LLVM's build.
@@ -180,7 +184,7 @@ def CopyWindowsHostLibs(host):
                     os.path.join(CYGWIN_PATH, 'bin', lib),
                     os.path.join('%(output)s', 'bin', lib))
                 for lib in libs]
-  if platform_tools.IsWindows():
+  if pynacl.platform.IsWindows():
     lib_path = os.path.join(MINGW_PATH, 'bin')
     # The native minGW compiler uses winpthread, but the Ubuntu cross compiler
     # does not.
@@ -239,7 +243,11 @@ def HostToolsSources(GetGitSyncCmd):
 def HostLibs(host):
   libs = {}
   if TripleIsWindows(host) and not command.Runnable.use_cygwin:
-    ar = 'ar' if platform_tools.IsWindows() else 'i686-w64-mingw32-ar'
+    if pynacl.platform.IsWindows():
+      ar = 'ar'
+    else:
+      ar = 'i686-w64-mingw32-ar'
+
     libs.update({
       'libdl': {
           'type': 'build',
@@ -473,19 +481,20 @@ if __name__ == '__main__':
     SyncPNaClRepos(revisions)
     sys.exit(0)
 
-  if platform_tools.IsWindows() and not command.Runnable.use_cygwin:
+  if (pynacl.platform.IsWindows() and
+      not command.Runnable.use_cygwin):
     InstallMinGWHostCompiler()
 
   packages = {}
   packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
 
-  if platform_tools.Is64BitLinux():
+  if pynacl.platform.Is64BitLinux():
     hosts = ['i686-linux']
     if args.build_64bit_host:
       hosts.append(NativeTriple())
   else:
     hosts = [NativeTriple()]
-  if platform_tools.IsLinux() and BUILD_CROSS_MINGW:
+  if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
     hosts.append('i686-w64-mingw32')
   for host in hosts:
     packages.update(HostLibs(host))
@@ -495,7 +504,7 @@ if __name__ == '__main__':
   # aren't right.
   # On linux use the 32-bit compiler to build the target libs since that's what
   # most developers will be using.
-  if platform_tools.IsLinux():
+  if pynacl.platform.platform_tools.IsLinux():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdCallback(revisions)))
     for bias in BITCODE_BIASES:

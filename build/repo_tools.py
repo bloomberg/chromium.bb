@@ -5,15 +5,19 @@
 
 import logging
 import os
+import sys
 
 import file_tools
 import log_tools
 import platform_tools
 import subprocess
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
+
 def GitCmd():
   """Return the git command to execute for the host platform."""
-  if platform_tools.IsWindows():
+  if pynacl.platform.IsWindows():
     # On windows, we want to use the depot_tools version of git, which has
     # git.bat as an entry point. When running through the msys command
     # prompt, subprocess does not handle batch files. Explicitly invoking
