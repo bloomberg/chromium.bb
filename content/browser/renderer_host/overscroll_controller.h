@@ -43,7 +43,7 @@ class OverscrollController {
   enum Disposition {
     CONSUMED,
     SHOULD_FORWARD_TO_RENDERER,
-    SHOULD_FORWARD_TO_GESTURE_FILTER
+    SHOULD_FORWARD_TO_GESTURE_QUEUE
   };
   // This must be called when dispatching any event from the
   // RenderWidgetHostView so that the state of the overscroll gesture can be

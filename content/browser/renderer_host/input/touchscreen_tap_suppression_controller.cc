@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
 
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "ui/events/gestures/gesture_configuration.h"
 
@@ -15,8 +15,8 @@
 namespace content {
 
 TouchscreenTapSuppressionController::TouchscreenTapSuppressionController(
-    GestureEventFilter* gef)
-    : gesture_event_filter_(gef),
+    GestureEventQueue* geq)
+    : gesture_event_queue_(geq),
       controller_(new TapSuppressionController(this)) {
 }
 
@@ -82,9 +82,9 @@ void TouchscreenTapSuppressionController::ForwardStashedTapDown() {
   DCHECK(stashed_tap_down_);
   ScopedGestureEvent tap_down = stashed_tap_down_.Pass();
   ScopedGestureEvent show_press = stashed_show_press_.Pass();
-  gesture_event_filter_->ForwardGestureEvent(*tap_down);
+  gesture_event_queue_->ForwardGestureEvent(*tap_down);
   if (show_press)
-    gesture_event_filter_->ForwardGestureEvent(*show_press);
+    gesture_event_queue_->ForwardGestureEvent(*show_press);
 }
 
 }  // namespace content

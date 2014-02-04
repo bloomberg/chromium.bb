@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/mock_input_ack_handler.h"
@@ -121,7 +121,7 @@ class InputRouterImplTest : public testing::Test {
     ack_handler_.reset(new MockInputAckHandler());
     input_router_.reset(new InputRouterImpl(
         process_.get(), client_.get(), ack_handler_.get(), MSG_ROUTING_NONE));
-    input_router_->gesture_event_filter_->set_debounce_enabled_for_testing(
+    input_router_->gesture_event_queue_->set_debounce_enabled_for_testing(
         false);
     client_->set_input_router(input_router());
     ack_handler_->set_input_router(input_router());

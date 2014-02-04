@@ -9,7 +9,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
@@ -222,36 +222,36 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   unsigned GestureEventLastQueueEventSize() const {
-    return gesture_event_filter()->coalesced_gesture_events_.size();
+    return gesture_event_queue()->coalesced_gesture_events_.size();
   }
 
   WebGestureEvent GestureEventSecondFromLastQueueEvent() const {
-    return gesture_event_filter()->coalesced_gesture_events_.at(
+    return gesture_event_queue()->coalesced_gesture_events_.at(
       GestureEventLastQueueEventSize() - 2).event;
   }
 
   WebGestureEvent GestureEventLastQueueEvent() const {
-    return gesture_event_filter()->coalesced_gesture_events_.back().event;
+    return gesture_event_queue()->coalesced_gesture_events_.back().event;
   }
 
   unsigned GestureEventDebouncingQueueSize() const {
-    return gesture_event_filter()->debouncing_deferral_queue_.size();
+    return gesture_event_queue()->debouncing_deferral_queue_.size();
   }
 
   WebGestureEvent GestureEventQueueEventAt(int i) const {
-    return gesture_event_filter()->coalesced_gesture_events_.at(i).event;
+    return gesture_event_queue()->coalesced_gesture_events_.at(i).event;
   }
 
   bool ScrollingInProgress() const {
-    return gesture_event_filter()->scrolling_in_progress_;
+    return gesture_event_queue()->scrolling_in_progress_;
   }
 
   bool FlingInProgress() const {
-    return gesture_event_filter()->fling_in_progress_;
+    return gesture_event_queue()->fling_in_progress_;
   }
 
   bool WillIgnoreNextACK() const {
-    return gesture_event_filter()->ignore_next_ack_;
+    return gesture_event_queue()->ignore_next_ack_;
   }
 
   void SetupForOverscrollControllerTest() {
@@ -261,11 +261,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void DisableGestureDebounce() {
-    gesture_event_filter()->set_debounce_enabled_for_testing(false);
+    gesture_event_queue()->set_debounce_enabled_for_testing(false);
   }
 
   void set_debounce_interval_time_ms(int delay_ms) {
-    gesture_event_filter()->
+    gesture_event_queue()->
         set_debounce_interval_time_ms_for_testing(delay_ms);
   }
 
@@ -323,12 +323,12 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return input_router_impl_->touch_event_queue_.get();
   }
 
-  const GestureEventFilter* gesture_event_filter() const {
-    return input_router_impl_->gesture_event_filter_.get();
+  const GestureEventQueue* gesture_event_queue() const {
+    return input_router_impl_->gesture_event_queue_.get();
   }
 
-  GestureEventFilter* gesture_event_filter() {
-    return input_router_impl_->gesture_event_filter_.get();
+  GestureEventQueue* gesture_event_queue() {
+    return input_router_impl_->gesture_event_queue_.get();
   }
 
  private:

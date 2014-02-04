@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/touch_action_filter.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
@@ -35,7 +35,7 @@ class RenderWidgetHostImpl;
 // A default implementation for browser input event routing.
 class CONTENT_EXPORT InputRouterImpl
     : public NON_EXPORTED_BASE(InputRouter),
-      public NON_EXPORTED_BASE(GestureEventFilterClient),
+      public NON_EXPORTED_BASE(GestureEventQueueClient),
       public NON_EXPORTED_BASE(TouchEventQueueClient),
       public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
@@ -155,7 +155,7 @@ private:
   void ProcessWheelAck(InputEventAckState ack_result,
                        const ui::LatencyInfo& latency);
 
-  // Forwards the event ack to |gesture_event_filter|, potentially triggering
+  // Forwards the event ack to |gesture_event_queue|, potentially triggering
   // dispatch of queued gesture events.
   void ProcessGestureAck(blink::WebInputEvent::Type type,
                          InputEventAckState ack_result,
@@ -239,7 +239,7 @@ private:
   AckSource current_ack_source_;
 
   scoped_ptr<TouchEventQueue> touch_event_queue_;
-  scoped_ptr<GestureEventFilter> gesture_event_filter_;
+  scoped_ptr<GestureEventQueue> gesture_event_queue_;
   TouchActionFilter touch_action_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);

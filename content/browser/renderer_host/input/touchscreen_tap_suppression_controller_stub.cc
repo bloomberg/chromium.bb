@@ -12,8 +12,8 @@
 namespace content {
 
 TouchscreenTapSuppressionController::TouchscreenTapSuppressionController(
-    GestureEventFilter* /*gef*/)
-    : gesture_event_filter_(NULL) {}
+    GestureEventQueue* /*geq*/)
+    : gesture_event_queue_(NULL) {}
 
 TouchscreenTapSuppressionController::~TouchscreenTapSuppressionController() {}
 

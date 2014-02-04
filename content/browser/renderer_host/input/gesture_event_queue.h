@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_FILTER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_FILTER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_
 
 #include <deque>
 
@@ -17,18 +17,18 @@
 #include "ui/gfx/transform.h"
 
 namespace content {
-class GestureEventFilterTest;
+class GestureEventQueueTest;
 class InputRouter;
 class MockRenderWidgetHost;
 class TouchpadTapSuppressionController;
 class TouchpadTapSuppressionControllerClient;
 class TouchscreenTapSuppressionController;
 
-// Interface with which the GestureEventFilter can forward gesture events, and
+// Interface with which the GestureEventQueue can forward gesture events, and
 // dispatch gesture event responses.
-class CONTENT_EXPORT GestureEventFilterClient {
+class CONTENT_EXPORT GestureEventQueueClient {
  public:
-  virtual ~GestureEventFilterClient() {}
+  virtual ~GestureEventQueueClient() {}
 
   virtual void SendGestureEventImmediately(
       const GestureEventWithLatencyInfo& event) = 0;
@@ -59,12 +59,12 @@ class CONTENT_EXPORT GestureEventFilterClient {
 // sent together.
 // TODO(rjkroege): Possibly refactor into a filter chain:
 // http://crbug.com/148443.
-class CONTENT_EXPORT GestureEventFilter {
+class CONTENT_EXPORT GestureEventQueue {
  public:
-  // Both |client| and |touchpad_client| must outlive the GestureEventFilter.
-  GestureEventFilter(GestureEventFilterClient* client,
+  // Both |client| and |touchpad_client| must outlive the GestureEventQueue.
+  GestureEventQueue(GestureEventQueueClient* client,
                      TouchpadTapSuppressionControllerClient* touchpad_client);
-  ~GestureEventFilter();
+  ~GestureEventQueue();
 
   // Returns |true| if the caller should immediately forward the provided
   // |GestureEventWithLatencyInfo| argument to the renderer.
@@ -98,12 +98,12 @@ class CONTENT_EXPORT GestureEventFilter {
   }
 
  private:
-  friend class GestureEventFilterTest;
+  friend class GestureEventQueueTest;
   friend class MockRenderWidgetHost;
 
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
   // methods that are getting confusing. This should be somehow fixed. Maybe
-  // while refactoring GEF: http://crbug.com/148443.
+  // while refactoring GEQ: http://crbug.com/148443.
 
   // Inovked on the expiration of the debounce interval to release
   // deferred events.
@@ -163,7 +163,7 @@ class CONTENT_EXPORT GestureEventFilter {
   void EnqueueEvent(const GestureEventWithLatencyInfo& gesture_event);
 
   // The receiver of all forwarded gesture events.
-  GestureEventFilterClient* client_;
+  GestureEventQueueClient* client_;
 
   // True if a GestureFlingStart is in progress on the renderer or
   // queued without a subsequent queued GestureFlingCancel event.
@@ -183,8 +183,8 @@ class CONTENT_EXPORT GestureEventFilter {
   // An object tracking the state of touchpad on the delivery of mouse events to
   // the renderer to filter mouse immediately after a touchpad fling canceling
   // tap.
-  // TODO(mohsen): Move touchpad tap suppression out of GestureEventFilter since
-  // GEF is meant to only be used for touchscreen gesture events.
+  // TODO(mohsen): Move touchpad tap suppression out of GestureEventQueue since
+  // GEQ is meant to only be used for touchscreen gesture events.
   scoped_ptr<TouchpadTapSuppressionController>
       touchpad_tap_suppression_controller_;
 
@@ -194,7 +194,7 @@ class CONTENT_EXPORT GestureEventFilter {
   scoped_ptr<TouchscreenTapSuppressionController>
       touchscreen_tap_suppression_controller_;
 
-  typedef std::deque<GestureEventWithLatencyInfo> GestureEventQueue;
+  typedef std::deque<GestureEventWithLatencyInfo> GestureQueue;
 
   // Queue of coalesced gesture events not yet sent to the renderer. If
   // |ignore_next_ack_| is false, then the event at the front of the queue has
@@ -202,13 +202,13 @@ class CONTENT_EXPORT GestureEventFilter {
   // If |ignore_next_ack_| is true, then the two events at the front of the
   // queue have been sent, and the second is awaiting an ACK. All other events
   // have yet to be sent.
-  GestureEventQueue coalesced_gesture_events_;
+  GestureQueue coalesced_gesture_events_;
 
   // Timer to release a previously deferred gesture event.
-  base::OneShotTimer<GestureEventFilter> debounce_deferring_timer_;
+  base::OneShotTimer<GestureEventQueue> debounce_deferring_timer_;
 
   // Queue of events that have been deferred for debounce.
-  GestureEventQueue debouncing_deferral_queue_;
+  GestureQueue debouncing_deferral_queue_;
 
   // Time window in which to debounce scroll/fling ends.
   // TODO(rjkroege): Make this dynamically configurable.
@@ -218,9 +218,9 @@ class CONTENT_EXPORT GestureEventFilter {
   // Defaults to true.
   bool debounce_enabled_;
 
-  DISALLOW_COPY_AND_ASSIGN(GestureEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(GestureEventQueue);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_FILTER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_QUEUE_H_

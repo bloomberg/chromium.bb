@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
@@ -103,7 +103,7 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       touch_ack_timeout_enabled_(false),
       touch_ack_timeout_delay_ms_(std::numeric_limits<size_t>::max()),
       current_ack_source_(ACK_SOURCE_NONE),
-      gesture_event_filter_(new GestureEventFilter(this, this)) {
+      gesture_event_queue_(new GestureEventQueue(this, this)) {
   DCHECK(sender);
   DCHECK(client);
   DCHECK(ack_handler);
@@ -145,11 +145,11 @@ void InputRouterImpl::SendMouseEvent(
   }
 
   if (mouse_event.event.type == WebInputEvent::MouseDown &&
-      gesture_event_filter_->GetTouchpadTapSuppressionController()->
+      gesture_event_queue_->GetTouchpadTapSuppressionController()->
           ShouldDeferMouseDown(mouse_event))
       return;
   if (mouse_event.event.type == WebInputEvent::MouseUp &&
-      gesture_event_filter_->GetTouchpadTapSuppressionController()->
+      gesture_event_queue_->GetTouchpadTapSuppressionController()->
           ShouldSuppressMouseUp())
       return;
 
@@ -189,7 +189,7 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
   key_queue_.push_back(key_event);
   HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
 
-  gesture_event_filter_->FlingHasBeenHalted();
+  gesture_event_queue_->FlingHasBeenHalted();
 
   // Only forward the non-native portions of our event.
   FilterAndSendWebInputEvent(key_event, latency_info, is_keyboard_shortcut);
@@ -204,7 +204,7 @@ void InputRouterImpl::SendGestureEvent(
   touch_event_queue_->OnGestureScrollEvent(gesture_event);
 
   if (!IsInOverscrollGesture() &&
-      !gesture_event_filter_->ShouldForward(gesture_event)) {
+      !gesture_event_queue_->ShouldForward(gesture_event)) {
     OverscrollController* controller = client_->GetOverscrollController();
     if (controller)
       controller->DiscardingGestureEvent(gesture_event.event);
@@ -388,12 +388,12 @@ bool InputRouterImpl::OfferToOverscrollController(
 
   bool consumed = disposition == OverscrollController::CONSUMED;
 
-  if (disposition == OverscrollController::SHOULD_FORWARD_TO_GESTURE_FILTER) {
+  if (disposition == OverscrollController::SHOULD_FORWARD_TO_GESTURE_QUEUE) {
     DCHECK(WebInputEvent::isGestureEventType(input_event.type));
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
     // An ACK is expected for the event, so mark it as consumed.
-    consumed = !gesture_event_filter_->ShouldForward(
+    consumed = !gesture_event_queue_->ShouldForward(
         GestureEventWithLatencyInfo(gesture_event, latency_info));
   }
 
@@ -608,14 +608,14 @@ void InputRouterImpl::ProcessGestureAck(WebInputEvent::Type type,
                                         InputEventAckState ack_result,
                                         const ui::LatencyInfo& latency) {
   // If |ack_result| originated from the overscroll controller, only
-  // feed |gesture_event_filter_| the ack if it was expecting one.
+  // feed |gesture_event_queue_| the ack if it was expecting one.
   if (current_ack_source_ == OVERSCROLL_CONTROLLER &&
-      !gesture_event_filter_->HasQueuedGestureEvents()) {
+      !gesture_event_queue_->HasQueuedGestureEvents()) {
     return;
   }
 
-  // |gesture_event_filter_| will forward to OnGestureEventAck when appropriate.
-  gesture_event_filter_->ProcessGestureAck(ack_result, type, latency);
+  // |gesture_event_queue_| will forward to OnGestureEventAck when appropriate.
+  gesture_event_queue_->ProcessGestureAck(ack_result, type, latency);
 }
 
 void InputRouterImpl::ProcessTouchAck(

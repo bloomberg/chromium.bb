@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,8 +24,8 @@ static const int kDebouncingIntervalTimeMs = 30;
 
 }  // namespace
 
-GestureEventFilter::GestureEventFilter(
-    GestureEventFilterClient* client,
+GestureEventQueue::GestureEventQueue(
+    GestureEventQueueClient* client,
     TouchpadTapSuppressionControllerClient* touchpad_client)
      : client_(client),
        fling_in_progress_(false),
@@ -46,13 +46,13 @@ GestureEventFilter::GestureEventFilter(
   }
 }
 
-GestureEventFilter::~GestureEventFilter() { }
+GestureEventQueue::~GestureEventQueue() { }
 
-bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
+bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
   if (coalesced_gesture_events_.empty() && fling_in_progress_)
     return false;
-  GestureEventQueue::const_reverse_iterator it =
+  GestureQueue::const_reverse_iterator it =
       coalesced_gesture_events_.rbegin();
   while (it != coalesced_gesture_events_.rend()) {
     if (it->event.type == WebInputEvent::GestureFlingStart)
@@ -64,7 +64,7 @@ bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
   return true;
 }
 
-bool GestureEventFilter::ShouldForwardForBounceReduction(
+bool GestureEventQueue::ShouldForwardForBounceReduction(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (!debounce_enabled_)
     return true;
@@ -75,7 +75,7 @@ bool GestureEventFilter::ShouldForwardForBounceReduction(
             FROM_HERE,
             base::TimeDelta::FromMilliseconds(debounce_interval_time_ms_),
             this,
-            &GestureEventFilter::SendScrollEndingEventsNow);
+            &GestureEventQueue::SendScrollEndingEventsNow);
       } else {
         // Extend the bounce interval.
         debounce_deferring_timer_.Reset();
@@ -101,7 +101,7 @@ bool GestureEventFilter::ShouldForwardForBounceReduction(
 }
 
 // NOTE: The filters are applied successively. This simplifies the change.
-bool GestureEventFilter::ShouldForward(
+bool GestureEventQueue::ShouldForward(
     const GestureEventWithLatencyInfo& gesture_event) {
   return ShouldForwardForZeroVelocityFlingStart(gesture_event) &&
       ShouldForwardForBounceReduction(gesture_event) &&
@@ -110,7 +110,7 @@ bool GestureEventFilter::ShouldForward(
       ShouldForwardForCoalescing(gesture_event);
 }
 
-bool GestureEventFilter::ShouldForwardForZeroVelocityFlingStart(
+bool GestureEventQueue::ShouldForwardForZeroVelocityFlingStart(
     const GestureEventWithLatencyInfo& gesture_event) const {
   return gesture_event.event.type != WebInputEvent::GestureFlingStart ||
       gesture_event.event.sourceDevice != WebGestureEvent::Touchpad ||
@@ -118,13 +118,13 @@ bool GestureEventFilter::ShouldForwardForZeroVelocityFlingStart(
       gesture_event.event.data.flingStart.velocityY != 0;
 }
 
-bool GestureEventFilter::ShouldForwardForGFCFiltering(
+bool GestureEventQueue::ShouldForwardForGFCFiltering(
     const GestureEventWithLatencyInfo& gesture_event) const {
   return gesture_event.event.type != WebInputEvent::GestureFlingCancel ||
       !ShouldDiscardFlingCancelEvent(gesture_event);
 }
 
-bool GestureEventFilter::ShouldForwardForTapSuppression(
+bool GestureEventQueue::ShouldForwardForTapSuppression(
     const GestureEventWithLatencyInfo& gesture_event) {
   switch (gesture_event.event.type) {
     case WebInputEvent::GestureFlingCancel:
@@ -152,7 +152,7 @@ bool GestureEventFilter::ShouldForwardForTapSuppression(
   return false;
 }
 
-bool GestureEventFilter::ShouldForwardForCoalescing(
+bool GestureEventQueue::ShouldForwardForCoalescing(
     const GestureEventWithLatencyInfo& gesture_event) {
   switch (gesture_event.event.type) {
     case WebInputEvent::GestureFlingCancel:
@@ -172,7 +172,7 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
   return ShouldHandleEventNow();
 }
 
-void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
+void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
                                            WebInputEvent::Type type,
                                            const ui::LatencyInfo& latency) {
   if (coalesced_gesture_events_.empty()) {
@@ -228,33 +228,35 @@ void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
 }
 
 TouchpadTapSuppressionController*
-    GestureEventFilter::GetTouchpadTapSuppressionController() {
+    GestureEventQueue::GetTouchpadTapSuppressionController() {
   return touchpad_tap_suppression_controller_.get();
 }
 
-bool GestureEventFilter::HasQueuedGestureEvents() const {
+bool GestureEventQueue::HasQueuedGestureEvents() const {
   return !coalesced_gesture_events_.empty();
 }
 
-void GestureEventFilter::FlingHasBeenHalted() {
+void GestureEventQueue::FlingHasBeenHalted() {
   fling_in_progress_ = false;
 }
 
-bool GestureEventFilter::ShouldHandleEventNow() const {
+bool GestureEventQueue::ShouldHandleEventNow() const {
   return coalesced_gesture_events_.size() == 1;
 }
 
-void GestureEventFilter::ForwardGestureEvent(
+void GestureEventQueue::ForwardGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (ShouldForwardForCoalescing(gesture_event))
     client_->SendGestureEventImmediately(gesture_event);
 }
 
-void GestureEventFilter::SendScrollEndingEventsNow() {
+void GestureEventQueue::SendScrollEndingEventsNow() {
   scrolling_in_progress_ = false;
-  GestureEventQueue debouncing_deferral_queue;
+  if (debouncing_deferral_queue_.empty())
+    return;
+  GestureQueue debouncing_deferral_queue;
   debouncing_deferral_queue.swap(debouncing_deferral_queue_);
-  for (GestureEventQueue::const_iterator it = debouncing_deferral_queue.begin();
+  for (GestureQueue::const_iterator it = debouncing_deferral_queue.begin();
        it != debouncing_deferral_queue.end(); it++) {
     if (ShouldForwardForGFCFiltering(*it) &&
         ShouldForwardForTapSuppression(*it) &&
@@ -264,7 +266,7 @@ void GestureEventFilter::SendScrollEndingEventsNow() {
   }
 }
 
-void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
+void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (coalesced_gesture_events_.size() <= 1) {
     EnqueueEvent(gesture_event);
@@ -335,7 +337,7 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
   coalesced_gesture_events_.push_back(pinch_event);
 }
 
-bool GestureEventFilter::ShouldTryMerging(
+bool GestureEventQueue::ShouldTryMerging(
     const GestureEventWithLatencyInfo& new_event,
     const GestureEventWithLatencyInfo& event_in_queue) const {
   DLOG_IF(WARNING,
@@ -347,7 +349,7 @@ bool GestureEventFilter::ShouldTryMerging(
       event_in_queue.event.modifiers == new_event.event.modifiers;
 }
 
-gfx::Transform GestureEventFilter::GetTransformForEvent(
+gfx::Transform GestureEventQueue::GetTransformForEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
   gfx::Transform gesture_transform = gfx::Transform();
   if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate) {
@@ -362,7 +364,7 @@ gfx::Transform GestureEventFilter::GetTransformForEvent(
   return gesture_transform;
 }
 
-void GestureEventFilter::EnqueueEvent(
+void GestureEventQueue::EnqueueEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   coalesced_gesture_events_.push_back(gesture_event);
   // Scroll and pinch events contributing to |combined_scroll_pinch_| will be

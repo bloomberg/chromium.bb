@@ -73,10 +73,10 @@ OverscrollController::Disposition OverscrollController::DispatchEvent(
     // example), and the event that completes this action needs to be sent to
     // the renderer so that those states can be updated/reset appropriately.
     if (blink::WebInputEvent::isGestureEventType(event.type)) {
-      // A gesture-event isn't sent to the GestureEventFilter when overscroll is
+      // A gesture-event isn't sent to the GestureEventQueue when overscroll is
       // in progress. So dispatch the event through the RenderWidgetHost so that
-      // it can reach the GestureEventFilter.
-      return SHOULD_FORWARD_TO_GESTURE_FILTER;
+      // it can reach the GestureEventQueue.
+      return SHOULD_FORWARD_TO_GESTURE_QUEUE;
     }
 
     return SHOULD_FORWARD_TO_RENDERER;
@@ -85,10 +85,10 @@ OverscrollController::Disposition OverscrollController::DispatchEvent(
   if (overscroll_mode_ != OVERSCROLL_NONE && DispatchEventResetsState(event)) {
     SetOverscrollMode(OVERSCROLL_NONE);
     if (blink::WebInputEvent::isGestureEventType(event.type)) {
-      // A gesture-event isn't sent to the GestureEventFilter when overscroll is
+      // A gesture-event isn't sent to the GestureEventQueue when overscroll is
       // in progress. So dispatch the event through the RenderWidgetHost so that
-      // it can reach the GestureEventFilter.
-      return SHOULD_FORWARD_TO_GESTURE_FILTER;
+      // it can reach the GestureEventQueue.
+      return SHOULD_FORWARD_TO_GESTURE_QUEUE;
     }
 
     // Let the event be dispatched to the renderer.

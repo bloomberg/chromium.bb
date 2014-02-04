@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -22,28 +22,28 @@ using blink::WebInputEvent;
 
 namespace content {
 
-class GestureEventFilterTest : public testing::Test,
-                               public GestureEventFilterClient,
-                               public TouchpadTapSuppressionControllerClient {
+class GestureEventQueueTest : public testing::Test,
+                              public GestureEventQueueClient,
+                              public TouchpadTapSuppressionControllerClient {
  public:
-  GestureEventFilterTest()
+  GestureEventQueueTest()
       : acked_gesture_event_count_(0),
         sent_gesture_event_count_(0) {}
 
-  virtual ~GestureEventFilterTest() {}
+  virtual ~GestureEventQueueTest() {}
 
   // testing::Test
   virtual void SetUp() OVERRIDE {
-    filter_.reset(new GestureEventFilter(this, this));
+    queue_.reset(new GestureEventQueue(this, this));
   }
 
   virtual void TearDown() OVERRIDE {
     // Process all pending tasks to avoid leaks.
     RunUntilIdle();
-    filter_.reset();
+    queue_.reset();
   }
 
-  // GestureEventFilterClient
+  // GestureEventQueueClient
   virtual void SendGestureEventImmediately(
       const GestureEventWithLatencyInfo& event) OVERRIDE {
     ++sent_gesture_event_count_;
@@ -69,11 +69,11 @@ class GestureEventFilterTest : public testing::Test,
 
  protected:
 
-  // Returns the result of |GestureEventFilter::ShouldForward()|.
+  // Returns the result of |GestureEventQueue::ShouldForward()|.
   bool SimulateGestureEvent(const WebGestureEvent& gesture) {
     GestureEventWithLatencyInfo gesture_with_latency(gesture,
                                                      ui::LatencyInfo());
-    if (filter()->ShouldForward(gesture_with_latency)) {
+    if (queue()->ShouldForward(gesture_with_latency)) {
       SendGestureEventImmediately(gesture_with_latency);
       return true;
     }
@@ -114,7 +114,7 @@ class GestureEventFilterTest : public testing::Test,
 
   void SendInputEventACK(WebInputEvent::Type type,
                          InputEventAckState ack) {
-    filter()->ProcessGestureAck(ack, type, ui::LatencyInfo());
+    queue()->ProcessGestureAck(ack, type, ui::LatencyInfo());
   }
 
   void RunUntilIdle() {
@@ -138,11 +138,11 @@ class GestureEventFilterTest : public testing::Test,
   }
 
   void DisableDebounce() {
-    filter()->set_debounce_enabled_for_testing(false);
+    queue()->set_debounce_enabled_for_testing(false);
   }
 
   void set_debounce_interval_time_ms(int ms) {
-    filter()->set_debounce_interval_time_ms_for_testing(ms);
+    queue()->set_debounce_interval_time_ms_for_testing(ms);
   }
 
   void set_synchronous_ack(InputEventAckState ack_result) {
@@ -156,44 +156,44 @@ class GestureEventFilterTest : public testing::Test,
   }
 
   unsigned GestureEventQueueSize() {
-    return filter()->coalesced_gesture_events_.size();
+    return queue()->coalesced_gesture_events_.size();
   }
 
   WebGestureEvent GestureEventSecondFromLastQueueEvent() {
-    return filter()->coalesced_gesture_events_.at(
+    return queue()->coalesced_gesture_events_.at(
         GestureEventQueueSize() - 2).event;
   }
 
   WebGestureEvent GestureEventLastQueueEvent() {
-    return filter()->coalesced_gesture_events_.back().event;
+    return queue()->coalesced_gesture_events_.back().event;
   }
 
   unsigned GestureEventDebouncingQueueSize() {
-    return filter()->debouncing_deferral_queue_.size();
+    return queue()->debouncing_deferral_queue_.size();
   }
 
   WebGestureEvent GestureEventQueueEventAt(int i) {
-    return filter()->coalesced_gesture_events_.at(i).event;
+    return queue()->coalesced_gesture_events_.at(i).event;
   }
 
   bool ScrollingInProgress() {
-    return filter()->scrolling_in_progress_;
+    return queue()->scrolling_in_progress_;
   }
 
   bool FlingInProgress() {
-    return filter()->fling_in_progress_;
+    return queue()->fling_in_progress_;
   }
 
   bool WillIgnoreNextACK() {
-    return filter()->ignore_next_ack_;
+    return queue()->ignore_next_ack_;
   }
 
-  GestureEventFilter* filter() const {
-    return filter_.get();
+  GestureEventQueue* queue() const {
+    return queue_.get();
   }
 
  private:
-  scoped_ptr<GestureEventFilter> filter_;
+  scoped_ptr<GestureEventQueue> queue_;
   size_t acked_gesture_event_count_;
   size_t sent_gesture_event_count_;
   WebGestureEvent last_acked_event_;
@@ -204,13 +204,13 @@ class GestureEventFilterTest : public testing::Test,
 
 #if GTEST_HAS_PARAM_TEST
 // This is for tests that are to be run for all source devices.
-class GestureEventFilterWithSourceTest
-    : public GestureEventFilterTest,
+class GestureEventQueueWithSourceTest
+    : public GestureEventQueueTest,
       public testing::WithParamInterface<WebGestureEvent::SourceDevice> {
 };
 #endif  // GTEST_HAS_PARAM_TEST
 
-TEST_F(GestureEventFilterTest, CoalescesScrollGestureEvents) {
+TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
   // Turn off debounce handling for test isolation.
   DisableDebounce();
 
@@ -284,7 +284,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollGestureEvents) {
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
 }
 
-TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
+TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   // Turn off debounce handling for test isolation.
   DisableDebounce();
 
@@ -501,7 +501,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(0U, GestureEventQueueSize());
 }
 
-TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
+TEST_F(GestureEventQueueTest, CoalescesMultiplePinchEventSequences) {
   // Turn off debounce handling for test isolation.
   DisableDebounce();
 
@@ -595,7 +595,7 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
 }
 
 // Tests a single event with an synchronous ack.
-TEST_F(GestureEventFilterTest, SimpleSyncAck) {
+TEST_F(GestureEventQueueTest, SimpleSyncAck) {
   set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
   SimulateGestureEvent(WebInputEvent::GestureTapDown,
                        WebGestureEvent::Touchscreen);
@@ -605,7 +605,7 @@ TEST_F(GestureEventFilterTest, SimpleSyncAck) {
 }
 
 // Tests an event with an synchronous ack which enqueues an additional event.
-TEST_F(GestureEventFilterTest, SyncAckQueuesEvent) {
+TEST_F(GestureEventQueueTest, SyncAckQueuesEvent) {
   scoped_ptr<WebGestureEvent> queued_event;
   set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
   set_sync_followup_event(WebInputEvent::GestureShowPress,
@@ -625,7 +625,7 @@ TEST_F(GestureEventFilterTest, SyncAckQueuesEvent) {
 }
 
 // Tests an event with an async ack followed by an event with a sync ack.
-TEST_F(GestureEventFilterTest, AsyncThenSyncAck) {
+TEST_F(GestureEventQueueTest, AsyncThenSyncAck) {
   // Turn off debounce handling for test isolation.
   DisableDebounce();
 
@@ -650,7 +650,7 @@ TEST_F(GestureEventFilterTest, AsyncThenSyncAck) {
   EXPECT_EQ(2U, GetAndResetAckedGestureEventCount());
 }
 
-TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEventWithSyncAck) {
+TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEventWithSyncAck) {
   // Turn off debounce handling for test isolation.
   DisableDebounce();
 
@@ -697,7 +697,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEventWithSyncAck) {
 }
 
 #if GTEST_HAS_PARAM_TEST
-TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
+TEST_P(GestureEventQueueWithSourceTest, GestureFlingCancelsFiltered) {
   WebGestureEvent::SourceDevice source_device = GetParam();
 
   // Turn off debounce handling for test isolation.
@@ -788,7 +788,7 @@ TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
 }
 
 INSTANTIATE_TEST_CASE_P(AllSources,
-                        GestureEventFilterWithSourceTest,
+                        GestureEventQueueWithSourceTest,
                         testing::Values(WebGestureEvent::Touchscreen,
                                         WebGestureEvent::Touchpad));
 #endif  // GTEST_HAS_PARAM_TEST
@@ -796,7 +796,7 @@ INSTANTIATE_TEST_CASE_P(AllSources,
 // Test that a GestureScrollEnd | GestureFlingStart are deferred during the
 // debounce interval, that Scrolls are not and that the deferred events are
 // sent after that timer fires.
-TEST_F(GestureEventFilterTest, DebounceDefersFollowingGestureEvents) {
+TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
   set_debounce_interval_time_ms(3);
 
   SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
@@ -859,7 +859,7 @@ TEST_F(GestureEventFilterTest, DebounceDefersFollowingGestureEvents) {
 // Test that non-scroll events are deferred while scrolling during the debounce
 // interval and are discarded if a GestureScrollUpdate event arrives before the
 // interval end.
-TEST_F(GestureEventFilterTest, DebounceDropsDeferredEvents) {
+TEST_F(GestureEventQueueTest, DebounceDropsDeferredEvents) {
   set_debounce_interval_time_ms(3);
   EXPECT_FALSE(ScrollingInProgress());
 
@@ -896,7 +896,7 @@ TEST_F(GestureEventFilterTest, DebounceDropsDeferredEvents) {
   }
 }
 
-TEST_F(GestureEventFilterTest, DropZeroVelocityFlings) {
+TEST_F(GestureEventQueueTest, DropZeroVelocityFlings) {
   WebGestureEvent gesture_event;
   gesture_event.type = WebInputEvent::GestureFlingStart;
   gesture_event.sourceDevice = WebGestureEvent::Touchpad;

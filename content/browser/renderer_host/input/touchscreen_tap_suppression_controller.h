@@ -6,12 +6,12 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCHSCREEN_TAP_SUPPRESSION_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/renderer_host/input/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 
 namespace content {
 
-class GestureEventFilter;
+class GestureEventQueue;
 class TapSuppressionController;
 
 // Controls the suppression of touchscreen taps immediately following the
@@ -19,7 +19,7 @@ class TapSuppressionController;
 class TouchscreenTapSuppressionController
     : public TapSuppressionControllerClient {
  public:
-  explicit TouchscreenTapSuppressionController(GestureEventFilter* gef);
+  explicit TouchscreenTapSuppressionController(GestureEventQueue* geq);
   virtual ~TouchscreenTapSuppressionController();
 
   // Should be called on arrival of GestureFlingCancel events.
@@ -48,7 +48,7 @@ class TouchscreenTapSuppressionController
   virtual void DropStashedTapDown() OVERRIDE;
   virtual void ForwardStashedTapDown() OVERRIDE;
 
-  GestureEventFilter* gesture_event_filter_;
+  GestureEventQueue* gesture_event_queue_;
 
   typedef scoped_ptr<GestureEventWithLatencyInfo> ScopedGestureEvent;
   ScopedGestureEvent stashed_tap_down_;
