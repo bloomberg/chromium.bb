@@ -317,4 +317,61 @@ TEST_F(AppCacheServiceTest, CheckAppCacheResponse) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Just tests the backoff scheduling function, not the actual reinit function.
+TEST_F(AppCacheServiceTest, ScheduleReinitialize) {
+  const base::TimeDelta kNoDelay;
+  const base::TimeDelta kOneSecond(base::TimeDelta::FromSeconds(1));
+  const base::TimeDelta k30Seconds(base::TimeDelta::FromSeconds(30));
+  const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
+
+  // Do things get initialized as expected?
+  scoped_ptr<AppCacheService> service(new AppCacheService(NULL));
+  EXPECT_TRUE(service->last_reinit_time_.is_null());
+  EXPECT_FALSE(service->reinit_timer_.IsRunning());
+  EXPECT_EQ(kNoDelay, service->next_reinit_delay_);
+
+  // Do we see artifacts of the timer pending and such?
+  service->ScheduleReinitialize();
+  EXPECT_TRUE(service->reinit_timer_.IsRunning());
+  EXPECT_EQ(kNoDelay, service->reinit_timer_.GetCurrentDelay());
+  EXPECT_EQ(k30Seconds, service->next_reinit_delay_);
+
+  // Nothing should change if already scheduled
+  service->ScheduleReinitialize();
+  EXPECT_TRUE(service->reinit_timer_.IsRunning());
+  EXPECT_EQ(kNoDelay, service->reinit_timer_.GetCurrentDelay());
+  EXPECT_EQ(k30Seconds, service->next_reinit_delay_);
+
+  // Does the delay increase as expected?
+  service->reinit_timer_.Stop();
+  service->last_reinit_time_ = base::Time::Now() - kOneSecond;
+  service->ScheduleReinitialize();
+  EXPECT_TRUE(service->reinit_timer_.IsRunning());
+  EXPECT_EQ(k30Seconds, service->reinit_timer_.GetCurrentDelay());
+  EXPECT_EQ(k30Seconds + k30Seconds, service->next_reinit_delay_);
+
+  // Does the delay reset as expected?
+  service->reinit_timer_.Stop();
+  service->last_reinit_time_ = base::Time::Now() -
+                               base::TimeDelta::FromHours(2);
+  service->ScheduleReinitialize();
+  EXPECT_TRUE(service->reinit_timer_.IsRunning());
+  EXPECT_EQ(kNoDelay, service->reinit_timer_.GetCurrentDelay());
+  EXPECT_EQ(k30Seconds, service->next_reinit_delay_);
+
+  // Does the delay max out as expected?
+  service->reinit_timer_.Stop();
+  service->last_reinit_time_ = base::Time::Now() - kOneSecond;
+  service->next_reinit_delay_ = kOneHour;
+  service->ScheduleReinitialize();
+  EXPECT_TRUE(service->reinit_timer_.IsRunning());
+  EXPECT_EQ(kOneHour, service->reinit_timer_.GetCurrentDelay());
+  EXPECT_EQ(kOneHour, service->next_reinit_delay_);
+
+  // Fine to delete while pending.
+  service.reset(NULL);
+}
+
+
+
 }  // namespace appcache

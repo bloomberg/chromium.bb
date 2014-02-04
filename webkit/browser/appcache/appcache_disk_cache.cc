@@ -49,9 +49,12 @@ class AppCacheDiskCache::CreateBackendCallbackShim
 // wrapper around disk_cache::Entry.
 class AppCacheDiskCache::EntryImpl : public Entry {
  public:
-  explicit EntryImpl(disk_cache::Entry* disk_cache_entry)
-      : disk_cache_entry_(disk_cache_entry) {
+  EntryImpl(disk_cache::Entry* disk_cache_entry,
+            AppCacheDiskCache* owner)
+      : disk_cache_entry_(disk_cache_entry), owner_(owner) {
     DCHECK(disk_cache_entry);
+    DCHECK(owner);
+    owner_->AddOpenEntry(this);
   }
 
   // Entry implementation.
@@ -59,6 +62,8 @@ class AppCacheDiskCache::EntryImpl : public Entry {
                    const net::CompletionCallback& callback) OVERRIDE {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
+    if (!disk_cache_entry_)
+      return net::ERR_ABORTED;
     return disk_cache_entry_->ReadData(
         index, static_cast<int>(offset), buf, buf_len, callback);
   }
@@ -67,22 +72,37 @@ class AppCacheDiskCache::EntryImpl : public Entry {
                     const net::CompletionCallback& callback) OVERRIDE {
     if (offset < 0 || offset > kint32max)
       return net::ERR_INVALID_ARGUMENT;
+    if (!disk_cache_entry_)
+      return net::ERR_ABORTED;
     const bool kTruncate = true;
     return disk_cache_entry_->WriteData(
         index, static_cast<int>(offset), buf, buf_len, callback, kTruncate);
   }
 
   virtual int64 GetSize(int index) OVERRIDE {
-    return disk_cache_entry_->GetDataSize(index);
+    return disk_cache_entry_ ? disk_cache_entry_->GetDataSize(index) : 0L;
   }
 
   virtual void Close() OVERRIDE {
-    disk_cache_entry_->Close();
+    if (disk_cache_entry_)
+      disk_cache_entry_->Close();
     delete this;
   }
 
+  void Abandon() {
+    owner_ = NULL;
+    disk_cache_entry_->Close();
+    disk_cache_entry_ = NULL;
+  }
+
  private:
+  virtual ~EntryImpl() {
+    if (owner_)
+      owner_->RemoveOpenEntry(this);
+  }
+
   disk_cache::Entry* disk_cache_entry_;
+  AppCacheDiskCache* owner_;
 };
 
 // Separate object to hold state for each Create, Delete, or Doom call
@@ -129,7 +149,7 @@ class AppCacheDiskCache::ActiveCall {
       return net::ERR_IO_PENDING;
     }
     if (rv == net::OK && entry)
-      *entry = new EntryImpl(entry_ptr_);
+      *entry = new EntryImpl(entry_ptr_, owner_);
     delete this;
     return rv;
   }
@@ -137,7 +157,7 @@ class AppCacheDiskCache::ActiveCall {
   void OnAsyncCompletion(int rv) {
     owner_->RemoveActiveCall(this);
     if (rv == net::OK && entry_)
-      *entry_ = new EntryImpl(entry_ptr_);
+      *entry_ = new EntryImpl(entry_ptr_, owner_);
     callback_.Run(rv);
     callback_.Reset();
     delete this;
@@ -154,13 +174,7 @@ AppCacheDiskCache::AppCacheDiskCache()
 }
 
 AppCacheDiskCache::~AppCacheDiskCache() {
-  if (create_backend_callback_.get()) {
-    create_backend_callback_->Cancel();
-    create_backend_callback_ = NULL;
-    OnCreateBackendComplete(net::ERR_ABORTED);
-  }
-  disk_cache_.reset();
-  STLDeleteElements(&active_calls_);
+  Disable();
 }
 
 int AppCacheDiskCache::InitWithDiskBackend(
@@ -188,6 +202,17 @@ void AppCacheDiskCache::Disable() {
     create_backend_callback_ = NULL;
     OnCreateBackendComplete(net::ERR_ABORTED);
   }
+
+  // We need to close open file handles in order to reinitalize the
+  // appcache system on the fly. File handles held in both entries and in
+  // the main disk_cache::Backend class need to be released.
+  for (OpenEntries::const_iterator iter = open_entries_.begin();
+       iter != open_entries_.end(); ++iter) {
+    (*iter)->Abandon();
+  }
+  open_entries_.clear();
+  disk_cache_.reset();
+  STLDeleteElements(&active_calls_);
 }
 
 int AppCacheDiskCache::CreateEntry(int64 key, Entry** entry,

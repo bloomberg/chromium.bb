@@ -86,6 +86,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
   void CloseConnection();
   void Disable();
   bool is_disabled() const { return is_disabled_; }
+  bool was_corruption_detected() const { return was_corruption_detected_; }
 
   int64 GetOriginUsage(const GURL& origin);
   bool GetAllOriginUsage(std::map<GURL, int64>* usage_map);
@@ -199,12 +200,16 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
   // and bodies are stored, and then creates a new database file.
   bool DeleteExistingAndCreateNewDatabase();
 
+  void OnDatabaseError(int err, sql::Statement* stmt);
+
   base::FilePath db_file_path_;
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<sql::MetaTable> meta_table_;
   bool is_disabled_;
   bool is_recreating_;
+  bool was_corruption_detected_;
 
+  friend class AppCacheStorageImplTest;
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, CacheRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, EntryRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, QuickIntegrityCheck);
@@ -218,6 +223,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OriginUsage);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, UpgradeSchema3to5);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, UpgradeSchema4to5);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, WasCorrutionDetected);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
 };

@@ -20,6 +20,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_backend_impl.h"
@@ -263,7 +264,6 @@ class AppCacheStorageImplTest : public testing::Test {
         const GURL& origin,
         quota::StorageType type,
         const GetUsageAndQuotaCallback& callback) OVERRIDE {
-      EXPECT_EQ(kOrigin, origin);
       EXPECT_EQ(quota::kStorageTypeTemporary, type);
       if (async_) {
         base::MessageLoop::current()->PostTask(
@@ -1571,9 +1571,9 @@ class AppCacheStorageImplTest : public testing::Test {
     TestFinished();
   }
 
-  // Reinitialize  -------------------------------
-  // This test is somewhat of a system integration test.
-  // It relies on running a mock http server on our IO thread,
+  // Reinitialize -------------------------------
+  // These tests are somewhat of a system integration test.
+  // They rely on running a mock http server on our IO thread,
   // and involves other appcache classes to get some code
   // coverage thruout when Reinitialize happens.
 
@@ -1618,31 +1618,53 @@ class AppCacheStorageImplTest : public testing::Test {
     bool error_event_was_raised_;
   };
 
+  enum ReinitTestCase {
+     CORRUPT_CACHE_ON_INSTALL,
+     CORRUPT_CACHE_ON_LOAD_EXISTING,
+     CORRUPT_SQL_ON_INSTALL
+  };
+
   void Reinitialize1() {
-    Reinitialize(1);
+    // Recover from a corrupt disk cache discovered while
+    // installing a new appcache.
+    Reinitialize(CORRUPT_CACHE_ON_INSTALL);
   }
 
   void Reinitialize2() {
-    Reinitialize(2);
+    // Recover from a corrupt disk cache discovered while
+    // trying to load a resource from an existing appcache.
+    Reinitialize(CORRUPT_CACHE_ON_LOAD_EXISTING);
   }
 
-  void Reinitialize(int test_case) {
+  void Reinitialize3() {
+    // Recover from a corrupt sql database discovered while
+    // installing a new appcache.
+    Reinitialize(CORRUPT_SQL_ON_INSTALL);
+  }
+
+  void Reinitialize(ReinitTestCase test_case) {
     // Unlike all of the other tests, this one actually read/write files.
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
 
-    // Create a corrupt/unopenable disk_cache index file.
-    const std::string kCorruptData("deadbeef");
-    base::FilePath disk_cache_directory =
-        temp_directory_.path().AppendASCII("Cache");
-    ASSERT_TRUE(base::CreateDirectory(disk_cache_directory));
-    base::FilePath index_file = disk_cache_directory.AppendASCII("index");
-    EXPECT_EQ(static_cast<int>(kCorruptData.length()),
-              file_util::WriteFile(
-                  index_file, kCorruptData.data(), kCorruptData.length()));
+    AppCacheDatabase db(temp_directory_.path().AppendASCII("Index"));
+    EXPECT_TRUE(db.LazyOpen(true));
+
+    if (test_case == CORRUPT_CACHE_ON_INSTALL ||
+        test_case == CORRUPT_CACHE_ON_LOAD_EXISTING) {
+      // Create a corrupt/unopenable disk_cache index file.
+      const std::string kCorruptData("deadbeef");
+      base::FilePath disk_cache_directory =
+          temp_directory_.path().AppendASCII("Cache");
+      ASSERT_TRUE(base::CreateDirectory(disk_cache_directory));
+      base::FilePath index_file = disk_cache_directory.AppendASCII("index");
+      EXPECT_EQ(static_cast<int>(kCorruptData.length()),
+                file_util::WriteFile(
+                    index_file, kCorruptData.data(), kCorruptData.length()));
+    }
 
     // Create records for a degenerate cached manifest that only contains
     // one entry for the manifest file resource.
-    if (test_case == 2) {
+    if (test_case == CORRUPT_CACHE_ON_LOAD_EXISTING) {
       AppCacheDatabase db(temp_directory_.path().AppendASCII("Index"));
       GURL manifest_url = MockHttpServer::GetMockUrl("manifest");
 
@@ -1692,12 +1714,20 @@ class AppCacheStorageImplTest : public testing::Test {
                    test_case));
   }
 
-  void Continue_Reinitialize(int test_case) {
+  void Continue_Reinitialize(ReinitTestCase test_case) {
     const int kMockProcessId = 1;
     backend_.reset(new AppCacheBackendImpl);
     backend_->Initialize(service_.get(), &frontend_, kMockProcessId);
 
-    if (test_case == 1) {
+    if (test_case == CORRUPT_SQL_ON_INSTALL) {
+      // Break the db file
+      EXPECT_FALSE(database()->was_corruption_detected());
+      ASSERT_TRUE(sql::test::CorruptSizeInHeader(
+          temp_directory_.path().AppendASCII("Index")));
+    }
+
+    if (test_case == CORRUPT_CACHE_ON_INSTALL  ||
+        test_case == CORRUPT_SQL_ON_INSTALL) {
       // Try to create a new appcache, the resulting update job will
       // eventually fail when it gets to disk cache initialization.
       backend_->RegisterHost(1);
@@ -1708,7 +1738,7 @@ class AppCacheStorageImplTest : public testing::Test {
                          kNoCacheId,
                          MockHttpServer::GetMockUrl("manifest"));
     } else {
-      ASSERT_EQ(2, test_case);
+      ASSERT_EQ(CORRUPT_CACHE_ON_LOAD_EXISTING, test_case);
       // Try to access the existing cache manifest.
       // The URLRequestJob  will eventually fail when it gets to disk
       // cache initialization.
@@ -1730,7 +1760,7 @@ class AppCacheStorageImplTest : public testing::Test {
         test_case));
   }
 
-  void Verify_Reinitialized(int test_case) {
+  void Verify_Reinitialized(ReinitTestCase test_case) {
     // Verify we got notified of reinit and a new storage instance is created,
     // and that the old data has been deleted.
     EXPECT_TRUE(observer_->observed_old_storage_.get());
@@ -1740,15 +1770,22 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(PathExists(
         temp_directory_.path().AppendASCII("Index")));
 
+    if (test_case == CORRUPT_SQL_ON_INSTALL) {
+      AppCacheStorageImpl* storage = static_cast<AppCacheStorageImpl*>(
+          observer_->observed_old_storage_->storage());
+      EXPECT_TRUE(storage->database_->was_corruption_detected());
+    }
+
     // Verify that the hosts saw appropriate events.
-    if (test_case == 1) {
+    if (test_case == CORRUPT_CACHE_ON_INSTALL ||
+        test_case == CORRUPT_SQL_ON_INSTALL) {
       EXPECT_TRUE(frontend_.error_event_was_raised_);
       AppCacheHost* host1 = backend_->GetHost(1);
       EXPECT_FALSE(host1->associated_cache());
       EXPECT_FALSE(host1->group_being_updated_);
       EXPECT_TRUE(host1->disabled_storage_reference_.get());
     } else {
-      ASSERT_EQ(2, test_case);
+      ASSERT_EQ(CORRUPT_CACHE_ON_LOAD_EXISTING, test_case);
       AppCacheHost* host2 = backend_->GetHost(2);
       EXPECT_EQ(1, host2->main_resource_cache_->cache_id());
       EXPECT_TRUE(host2->disabled_storage_reference_.get());
@@ -1961,6 +1998,10 @@ TEST_F(AppCacheStorageImplTest, Reinitialize1) {
 
 TEST_F(AppCacheStorageImplTest, Reinitialize2) {
   RunTestOnIOThread(&AppCacheStorageImplTest::Reinitialize2);
+}
+
+TEST_F(AppCacheStorageImplTest, Reinitialize3) {
+  RunTestOnIOThread(&AppCacheStorageImplTest::Reinitialize3);
 }
 
 // That's all folks!
