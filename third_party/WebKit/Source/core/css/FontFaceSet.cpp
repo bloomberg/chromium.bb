@@ -258,6 +258,8 @@ ScriptPromise FontFaceSet::ready()
 
 void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
 {
+    if (!document()->isActive())
+        return;
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
         return;
@@ -277,6 +279,8 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
 
 void FontFaceSet::clear()
 {
+    if (!document()->isActive())
+        return;
     FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it) {
         fontFaceCache->removeFontFace(it->get(), false);
@@ -288,6 +292,8 @@ void FontFaceSet::clear()
 
 bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
 {
+    if (!document()->isActive())
+        return false;
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
         return false;
@@ -307,6 +313,8 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
 
 bool FontFaceSet::has(FontFace* fontFace, ExceptionState& exceptionState) const
 {
+    if (!document()->isActive())
+        return false;
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
         return false;
@@ -338,6 +346,8 @@ void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback) const
 
 void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue* thisArg) const
 {
+    if (!document()->isActive())
+        return;
     const ListHashSet<RefPtr<FontFace> >& cssConnectedFaces = cssConnectedFontFaceList();
     Vector<RefPtr<FontFace> > fontFaces;
     fontFaces.reserveInitialCapacity(cssConnectedFaces.size() + m_nonCSSConnectedFaces.size());
@@ -357,6 +367,8 @@ void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callbac
 
 unsigned long FontFaceSet::size() const
 {
+    if (!document()->isActive())
+        return m_nonCSSConnectedFaces.size();
     return cssConnectedFontFaceList().size() + m_nonCSSConnectedFaces.size();
 }
 
@@ -405,6 +417,8 @@ static const String& nullToSpace(const String& s)
 Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const String& text, ExceptionState& exceptionState)
 {
     Vector<RefPtr<FontFace> > matchedFonts;
+    if (!document()->isActive())
+        return matchedFonts;
 
     Font font;
     if (!resolveFontStyle(fontString, font)) {
@@ -423,6 +437,9 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
 
 ScriptPromise FontFaceSet::load(const String& fontString, const String& text, ExceptionState& exceptionState)
 {
+    if (!document()->isActive())
+        return ScriptPromise();
+
     Font font;
     if (!resolveFontStyle(fontString, font)) {
         exceptionState.throwDOMException(SyntaxError, "Could not resolve '" + fontString + "' as a font.");
@@ -445,6 +462,9 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
 
 bool FontFaceSet::check(const String& fontString, const String& text, ExceptionState& exceptionState)
 {
+    if (!document()->isActive())
+        return false;
+
     Font font;
     if (!resolveFontStyle(fontString, font)) {
         exceptionState.throwDOMException(SyntaxError, "Could not resolve '" + fontString + "' as a font.");

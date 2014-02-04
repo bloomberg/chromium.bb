@@ -1,0 +1,21 @@
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+d = document.implementation.createDocument(null, '');
+d.fonts.size;
+face = new FontFace('f', 'local(F)', {});
+d.fonts.add(face);
+d.fonts.delete(face);
+d.fonts.has(face);
+d.fonts.clear();
+d.fonts.match('10px f');
+d.fonts.check('10px f');
+d.fonts.load('10px f');
+d.fonts.ready();
+d.fonts.forEach(function(){});
+d.fonts.status;
+</script>
+<body>
+This test passes if it does not crash.
+</body>
