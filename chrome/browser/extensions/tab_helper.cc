@@ -27,11 +27,10 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -65,6 +64,10 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#endif
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -413,14 +416,13 @@ void TabHelper::FinishCreateHostedApp(
     return;
   }
 
-  WebApplicationInfo install_info(web_app_info_);
-  if (install_info.app_url.is_empty())
-    install_info.app_url = web_contents()->GetURL();
+  if (web_app_info_.app_url.is_empty())
+    web_app_info_.app_url = web_contents()->GetURL();
 
-  if (install_info.title.empty())
-    install_info.title = web_contents()->GetTitle();
-  if (install_info.title.empty())
-    install_info.title = base::UTF8ToUTF16(install_info.app_url.spec());
+  if (web_app_info_.title.empty())
+    web_app_info_.title = web_contents()->GetTitle();
+  if (web_app_info_.title.empty())
+    web_app_info_.title = base::UTF8ToUTF16(web_app_info_.app_url.spec());
 
   // Add the downloaded icons. Extensions only allow certain icon sizes. First
   // populate icons that match the allowed sizes exactly and then downscale
@@ -481,7 +483,7 @@ void TabHelper::FinishCreateHostedApp(
     icon_info.data = resized_bitmaps_it->second;
     icon_info.width = icon_info.data.width();
     icon_info.height = icon_info.data.height();
-    install_info.icons.push_back(icon_info);
+    web_app_info_.icons.push_back(icon_info);
   }
 
   // Install the app.
@@ -490,7 +492,7 @@ void TabHelper::FinishCreateHostedApp(
   scoped_refptr<extensions::CrxInstaller> installer(
       extensions::CrxInstaller::CreateSilent(profile->GetExtensionService()));
   installer->set_error_on_unsupported_requirements(true);
-  installer->InstallWebApp(install_info);
+  installer->InstallWebApp(web_app_info_);
   favicon_downloader_.reset();
 }
 
@@ -734,34 +736,21 @@ void TabHelper::Observe(int type,
 
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      if (!extension || !extension->from_bookmark())
+      if (!extension ||
+          AppLaunchInfo::GetLaunchWebURL(extension) != web_app_info_.app_url)
         return;
 
-      // If enabled, launch the app launcher and highlight the new app.
-      // Otherwise, open the chrome://apps page in a new foreground tab.
-      if (IsAppLauncherEnabled()) {
-        AppListService::Get(chrome::GetHostDesktopTypeForNativeView(
-            web_contents()->GetView()->GetNativeView()))->
-            ShowForProfile(profile_);
-
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-            content::Source<Profile>(profile_),
-            content::Details<const std::string>(&extension->id()));
-        return;
-      }
+#if defined(OS_CHROMEOS)
+      ChromeLauncherController::instance()->PinAppWithID(extension->id());
+#endif
 
       // Android does not implement browser_finder.cc.
 #if !defined(OS_ANDROID)
       Browser* browser =
           chrome::FindBrowserWithWebContents(web_contents());
       if (browser) {
-        browser->OpenURL(
-            content::OpenURLParams(GURL(chrome::kChromeUIAppsURL),
-                                   content::Referrer(),
-                                   NEW_FOREGROUND_TAB,
-                                   content::PAGE_TRANSITION_LINK,
-                                   false));
+        browser->window()->ShowBookmarkAppBubble(web_app_info_,
+                                                 extension->id());
       }
 #endif
     }

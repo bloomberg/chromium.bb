@@ -478,6 +478,12 @@ void BrowserWindowCocoa::ShowBookmarkBubble(const GURL& url,
                       alreadyBookmarked:(already_bookmarked ? YES : NO)];
 }
 
+void BrowserWindowCocoa::ShowBookmarkAppBubble(
+    const WebApplicationInfo& web_app_info,
+    const std::string& extension_id) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::ShowTranslateBubble(
       content::WebContents* contents,
       TranslateBubbleModel::ViewState view_state,

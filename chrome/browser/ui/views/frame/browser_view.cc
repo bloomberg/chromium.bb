@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "chrome/browser/ui/views/extensions/bookmark_app_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
@@ -1194,6 +1195,15 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
                                  browser_->profile(),
                                  url,
                                  !already_bookmarked);
+}
+
+void BrowserView::ShowBookmarkAppBubble(
+    const WebApplicationInfo& web_app_info,
+    const std::string& extension_id) {
+  BookmarkAppBubbleView::ShowBubble(GetToolbarView(),
+                                    browser_->profile(),
+                                    web_app_info,
+                                    extension_id);
 }
 
 void BrowserView::ShowBookmarkPrompt() {

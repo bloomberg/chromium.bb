@@ -323,6 +323,9 @@ class BrowserView : public BrowserWindow,
   virtual void ShowUpdateChromeDialog() OVERRIDE;
   virtual void ShowBookmarkBubble(const GURL& url,
                                   bool already_bookmarked) OVERRIDE;
+  virtual void ShowBookmarkAppBubble(
+      const WebApplicationInfo& web_app_info,
+      const std::string& extension_id) OVERRIDE;
   virtual void ShowBookmarkPrompt() OVERRIDE;
   virtual void ShowTranslateBubble(
       content::WebContents* contents,

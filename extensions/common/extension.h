@@ -133,8 +133,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // Chrome Web Store.
     FROM_WEBSTORE = 1 << 3,
 
-    // |FROM_BOOKMARK| indicates the extension was created using a mock App
-    // created from a bookmark.
+    // |FROM_BOOKMARK| indicates the extension is a bookmark app which has been
+    // generated from a web page. Bookmark apps have no permissions or extent
+    // and launch the web page they are created from when run.
     FROM_BOOKMARK = 1 << 4,
 
     // |FOLLOW_SYMLINKS_ANYWHERE| means that resources can be symlinks to

@@ -1027,6 +1027,12 @@ void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
   toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
 }
 
+void BrowserWindowGtk::ShowBookmarkAppBubble(
+    const WebApplicationInfo& web_app_info,
+    const std::string& extension_id) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::ShowTranslateBubble(
     content::WebContents* contents,
     TranslateBubbleModel::ViewState view_state,

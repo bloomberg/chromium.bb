@@ -2152,6 +2152,15 @@ Even if you have downloaded files from this website before, the website might ha
         No
       </message>
 
+      <!-- Bookmark app bubble -->
+      <message name="IDS_BOOKMARK_APP_BUBBLE_TITLE" desc="Title of the bubble to add a bookmark app.">
+        Add shortcut?
+      </message>
+
+      <message name="IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_TAB" desc="Checkbox text for opening the bookmark app as a tab.">
+        Open as tab
+      </message>
+
       <!-- "Create application shortcuts" menu item -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">

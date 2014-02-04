@@ -32,6 +32,8 @@ class TemplateURL;
 class ToolbarView;
 #endif
 
+struct WebApplicationInfo;
+
 namespace autofill {
 class PasswordGenerator;
 struct PasswordForm;
@@ -213,6 +215,15 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
   // |already_bookmarked| is true if the url is already bookmarked.
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) = 0;
+
+  // Shows the Bookmark App bubble.
+  // See Extension::InitFromValueFlags::FROM_BOOKMARK for a description of
+  // bookmark apps.
+  //
+  // |web_app_info| is the WebApplicationInfo being converted into an app.
+  // |extension_id| is the id of the bookmark app.
+  virtual void ShowBookmarkAppBubble(const WebApplicationInfo& web_app_info,
+                                     const std::string& extension_id) = 0;
 
   // Shows the bookmark prompt.
   // TODO(yosin): Make ShowBookmarkPrompt pure virtual.
