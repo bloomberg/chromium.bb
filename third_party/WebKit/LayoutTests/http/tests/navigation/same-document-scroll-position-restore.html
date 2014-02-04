@@ -26,7 +26,7 @@ window.onhashchange = function() {
         haveSeenHashChange = true;
         history.back();
     } else {
-        document.body.appendChild(document.createTextNode("scrollY should be nonzero: " + (window.scrollY == 0 ? "FAIL" : "PASS")));
+        document.body.appendChild(document.createTextNode("scrollY should be 800: " + (window.scrollY == 800 ? "PASS" : "FAIL")));
         if (window.testRunner)
             testRunner.notifyDone();
     }

@@ -1,2 +1,2 @@
 Link to bottom
-scrollY should be nonzero: PASS
+scrollY should be 800: PASS
