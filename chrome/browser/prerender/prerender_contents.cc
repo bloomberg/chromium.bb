@@ -195,52 +195,6 @@ PrerenderContents::Observer::Observer() {
 PrerenderContents::Observer::~Observer() {
 }
 
-PrerenderContents::PendingPrerenderInfo::PendingPrerenderInfo(
-    base::WeakPtr<PrerenderHandle> weak_prerender_handle,
-    Origin origin,
-    const GURL& url,
-    const content::Referrer& referrer,
-    const gfx::Size& size)
-    : weak_prerender_handle(weak_prerender_handle),
-      origin(origin),
-      url(url),
-      referrer(referrer),
-      size(size) {
-}
-
-PrerenderContents::PendingPrerenderInfo::~PendingPrerenderInfo() {
-}
-
-void PrerenderContents::AddPendingPrerender(
-    scoped_ptr<PendingPrerenderInfo> pending_prerender_info) {
-  pending_prerenders_.push_back(pending_prerender_info.release());
-}
-
-void PrerenderContents::PrepareForUse() {
-  if (prerender_contents_.get()) {
-    prerender_contents_->SendToAllFrames(
-        new PrerenderMsg_SetIsPrerendering(MSG_ROUTING_NONE, false));
-  }
-
-  NotifyPrerenderStop();
-
-  SessionStorageNamespace* session_storage_namespace = NULL;
-  if (prerender_contents_) {
-    // TODO(ajwong): This does not correctly handle storage for isolated apps.
-    session_storage_namespace = prerender_contents_->
-        GetController().GetDefaultSessionStorageNamespace();
-  }
-  prerender_manager_->StartPendingPrerenders(
-      child_id_, &pending_prerenders_, session_storage_namespace);
-  pending_prerenders_.clear();
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ResumeThrottles, resource_throttles_));
-  resource_throttles_.clear();
-}
-
 PrerenderContents::PrerenderContents(
     PrerenderManager* prerender_manager,
     Profile* profile,
@@ -420,8 +374,10 @@ bool PrerenderContents::GetRouteId(int* route_id) const {
 }
 
 void PrerenderContents::SetFinalStatus(FinalStatus final_status) {
-  DCHECK(final_status >= FINAL_STATUS_USED && final_status < FINAL_STATUS_MAX);
-  DCHECK(final_status_ == FINAL_STATUS_MAX);
+  DCHECK_GE(final_status, FINAL_STATUS_USED);
+  DCHECK_LT(final_status, FINAL_STATUS_MAX);
+
+  DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
 
   final_status_ = final_status;
 }
@@ -508,10 +464,6 @@ void PrerenderContents::Observe(int type,
 
 void PrerenderContents::OnRenderViewHostCreated(
     RenderViewHost* new_render_view_host) {
-}
-
-size_t PrerenderContents::pending_prerender_count() const {
-  return pending_prerenders_.size();
 }
 
 WebContents* PrerenderContents::CreateWebContents(
@@ -806,6 +758,23 @@ bool PrerenderContents::IsCrossSiteNavigationPending() const {
     return false;
   return (prerender_contents_->GetSiteInstance() !=
           prerender_contents_->GetPendingSiteInstance());
+}
+
+void PrerenderContents::PrepareForUse() {
+  SetFinalStatus(FINAL_STATUS_USED);
+
+  if (prerender_contents_.get()) {
+    prerender_contents_->SendToAllFrames(
+        new PrerenderMsg_SetIsPrerendering(MSG_ROUTING_NONE, false));
+  }
+
+  NotifyPrerenderStop();
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ResumeThrottles, resource_throttles_));
+  resource_throttles_.clear();
 }
 
 SessionStorageNamespace* PrerenderContents::GetSessionStorageNamespace() const {

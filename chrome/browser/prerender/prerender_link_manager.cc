@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_link_manager.h"
 
+#include <functional>
 #include <limits>
 #include <set>
 #include <utility>
@@ -43,10 +44,54 @@ void Send(int child_id, IPC::Message* raw_message) {
 
 namespace prerender {
 
+// Helper class to implement PrerenderContents::Observer and watch prerenders
+// which launch other prerenders.
+class PrerenderLinkManager::PendingPrerenderManager
+    : public PrerenderContents::Observer {
+ public:
+  explicit PendingPrerenderManager(PrerenderLinkManager* link_manager)
+      : link_manager_(link_manager) {}
+
+  virtual ~PendingPrerenderManager() {
+    DCHECK(observed_launchers_.empty());
+    for (std::set<PrerenderContents*>::iterator i = observed_launchers_.begin();
+         i != observed_launchers_.end(); ++i) {
+      (*i)->RemoveObserver(this);
+    }
+  }
+
+  void ObserveLauncher(PrerenderContents* launcher) {
+    DCHECK_EQ(FINAL_STATUS_MAX, launcher->final_status());
+    if (observed_launchers_.find(launcher) != observed_launchers_.end())
+      return;
+    observed_launchers_.insert(launcher);
+    launcher->AddObserver(this);
+  }
+
+  virtual void OnPrerenderStart(PrerenderContents* launcher) OVERRIDE {}
+
+  virtual void OnPrerenderStop(PrerenderContents* launcher) OVERRIDE {
+    observed_launchers_.erase(launcher);
+    if (launcher->final_status() == FINAL_STATUS_USED) {
+      link_manager_->StartPendingPrerendersForLauncher(launcher);
+    } else {
+      link_manager_->CancelPendingPrerendersForLauncher(launcher);
+    }
+  }
+
+ private:
+  // A pointer to the parent PrerenderLinkManager.
+  PrerenderLinkManager* link_manager_;
+
+  // The set of PrerenderContentses being observed. Lifetimes are managed by
+  // OnPrerenderStop.
+  std::set<PrerenderContents*> observed_launchers_;
+};
+
 PrerenderLinkManager::PrerenderLinkManager(PrerenderManager* manager)
     : has_shutdown_(false),
-      manager_(manager) {
-}
+      manager_(manager),
+      pending_prerender_manager_(new PendingPrerenderManager(this)) {}
 
 PrerenderLinkManager::~PrerenderLinkManager() {
   for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
@@ -77,11 +122,27 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
   if (rph && rph->IsGuest())
     return;
 
+  // Check if the launcher is itself an unswapped prerender.
+  PrerenderContents* prerender_contents =
+      manager_->GetPrerenderContentsForRoute(launcher_child_id,
+                                             render_view_route_id);
+  if (prerender_contents &&
+      prerender_contents->final_status() != FINAL_STATUS_MAX) {
+    // The launcher is a prerender about to be destroyed asynchronously, but
+    // its AddLinkRelPrerender message raced with shutdown. Ignore it.
+    DCHECK_NE(FINAL_STATUS_USED, prerender_contents->final_status());
+    return;
+  }
+
   LinkPrerender
       prerender(launcher_child_id, prerender_id, url, referrer, size,
-                render_view_route_id, manager_->GetCurrentTimeTicks());
+                render_view_route_id, manager_->GetCurrentTimeTicks(),
+                prerender_contents);
   prerenders_.push_back(prerender);
-  StartPrerenders();
+  if (prerender_contents)
+    pending_prerender_manager_->ObserveLauncher(prerender_contents);
+  else
+    StartPrerenders();
 }
 
 void PrerenderLinkManager::OnCancelPrerender(int child_id, int prerender_id) {
@@ -138,16 +199,19 @@ PrerenderLinkManager::LinkPrerender::LinkPrerender(
     const content::Referrer& referrer,
     const gfx::Size& size,
     int render_view_route_id,
-    TimeTicks creation_time) : launcher_child_id(launcher_child_id),
-                               prerender_id(prerender_id),
-                               url(url),
-                               referrer(referrer),
-                               size(size),
-                               render_view_route_id(render_view_route_id),
-                               creation_time(creation_time),
-                               handle(NULL),
-                               is_match_complete_replacement(false),
-                               has_been_abandoned(false) {
+    TimeTicks creation_time,
+    PrerenderContents* deferred_launcher)
+    : launcher_child_id(launcher_child_id),
+      prerender_id(prerender_id),
+      url(url),
+      referrer(referrer),
+      size(size),
+      render_view_route_id(render_view_route_id),
+      creation_time(creation_time),
+      deferred_launcher(deferred_launcher),
+      handle(NULL),
+      is_match_complete_replacement(false),
+      has_been_abandoned(false) {
 }
 
 PrerenderLinkManager::LinkPrerender::~LinkPrerender() {
@@ -184,6 +248,9 @@ void PrerenderLinkManager::StartPrerenders() {
   // also per launcher.
   for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
        i != prerenders_.end(); ++i) {
+    // Skip prerenders launched by a prerender.
+    if (i->deferred_launcher)
+      continue;
     if (!i->handle) {
       pending_prerenders.push_back(i);
     } else {
@@ -318,6 +385,32 @@ void PrerenderLinkManager::CancelPrerender(LinkPrerender* prerender) {
     }
   }
   NOTREACHED();
+}
+
+void PrerenderLinkManager::StartPendingPrerendersForLauncher(
+    PrerenderContents* launcher) {
+  for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
+       i != prerenders_.end(); ++i) {
+    if (i->deferred_launcher == launcher)
+      i->deferred_launcher = NULL;
+  }
+  StartPrerenders();
+}
+
+void PrerenderLinkManager::CancelPendingPrerendersForLauncher(
+    PrerenderContents* launcher) {
+  // Remove all pending prerenders for this launcher.
+  std::vector<std::list<LinkPrerender>::iterator> to_erase;
+  for (std::list<LinkPrerender>::iterator i = prerenders_.begin();
+       i != prerenders_.end(); ++i) {
+    if (i->deferred_launcher == launcher) {
+      DCHECK(!i->handle);
+      to_erase.push_back(i);
+    }
+  }
+  std::for_each(to_erase.begin(), to_erase.end(),
+                std::bind1st(std::mem_fun(&std::list<LinkPrerender>::erase),
+                             &prerenders_));
 }
 
 void PrerenderLinkManager::Shutdown() {

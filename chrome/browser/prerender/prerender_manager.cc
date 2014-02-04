@@ -348,37 +348,6 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
             .GetDefaultSessionStorageNamespace();
   }
 
-  // If the prerender request comes from a recently cancelled prerender that
-  // |this| still owns, then abort the prerender.
-  for (ScopedVector<PrerenderData>::iterator it = to_delete_prerenders_.begin();
-       it != to_delete_prerenders_.end(); ++it) {
-    PrerenderContents* prerender_contents = (*it)->contents();
-    int contents_child_id;
-    int contents_route_id;
-    if (prerender_contents->GetChildId(&contents_child_id) &&
-        prerender_contents->GetRouteId(&contents_route_id)) {
-      if (contents_child_id == process_id && contents_route_id == route_id)
-        return NULL;
-    }
-  }
-
-  if (PrerenderData* parent_prerender_data =
-          FindPrerenderDataForChildAndRoute(process_id, route_id)) {
-    // Instead of prerendering from inside of a running prerender, we will defer
-    // this request until its launcher is made visible.
-    if (PrerenderContents* contents = parent_prerender_data->contents()) {
-      PrerenderHandle* prerender_handle =
-          new PrerenderHandle(static_cast<PrerenderData*>(NULL));
-      scoped_ptr<PrerenderContents::PendingPrerenderInfo>
-          pending_prerender_info(new PrerenderContents::PendingPrerenderInfo(
-              prerender_handle->weak_ptr_factory_.GetWeakPtr(),
-              origin, url, referrer, size));
-
-      contents->AddPendingPrerender(pending_prerender_info.Pass());
-      return prerender_handle;
-    }
-  }
-
   return AddPrerender(origin, process_id, url, referrer, size,
                       session_storage_namespace);
 }
@@ -599,10 +568,6 @@ WebContents* PrerenderManager::SwapInternal(
     return NULL;
   }
 
-  int child_id, route_id;
-  CHECK(prerender_data->contents()->GetChildId(&child_id));
-  CHECK(prerender_data->contents()->GetRouteId(&route_id));
-
   // At this point, we've determined that we will use the prerender.
   if (prerender_data->pending_swap())
     prerender_data->pending_swap()->set_swap_successful(true);
@@ -623,10 +588,8 @@ WebContents* PrerenderManager::SwapInternal(
   histograms_->RecordPerSessionCount(prerender_contents->origin(),
                                      ++prerenders_per_session_count_);
   histograms_->RecordUsedPrerender(prerender_contents->origin());
-  prerender_contents->SetFinalStatus(FINAL_STATUS_USED);
 
-  // Start pending prerender requests from the PrerenderContents, if there are
-  // any.
+  // Mark prerender as used.
   prerender_contents->PrepareForUse();
 
   WebContents* new_web_contents =
@@ -885,6 +848,16 @@ PrerenderContents* PrerenderManager::GetPrerenderContents(
     }
   }
   return NULL;
+}
+
+PrerenderContents* PrerenderManager::GetPrerenderContentsForRoute(
+    int child_id,
+    int route_id) const {
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(child_id, route_id);
+  if (web_contents == NULL)
+    return NULL;
+  return GetPrerenderContents(web_contents);
 }
 
 const std::vector<WebContents*>
@@ -1310,38 +1283,6 @@ void PrerenderManager::SetPrerenderContentsFactory(
   prerender_contents_factory_.reset(prerender_contents_factory);
 }
 
-
-void PrerenderManager::StartPendingPrerenders(
-    const int process_id,
-    ScopedVector<PrerenderContents::PendingPrerenderInfo>* pending_prerenders,
-    content::SessionStorageNamespace* session_storage_namespace) {
-  for (ScopedVector<PrerenderContents::PendingPrerenderInfo>::iterator
-           it = pending_prerenders->begin();
-       it != pending_prerenders->end(); ++it) {
-    PrerenderContents::PendingPrerenderInfo* info = *it;
-    PrerenderHandle* existing_prerender_handle =
-        info->weak_prerender_handle.get();
-    if (!existing_prerender_handle)
-      continue;
-
-    DCHECK(!existing_prerender_handle->IsPrerendering());
-    DCHECK(process_id == -1 || session_storage_namespace);
-
-    scoped_ptr<PrerenderHandle> new_prerender_handle(AddPrerender(
-        info->origin, process_id,
-        info->url, info->referrer, info->size,
-        session_storage_namespace));
-    if (new_prerender_handle) {
-      // AddPrerender has returned a new prerender handle to us. We want to make
-      // |existing_prerender_handle| active, so move the underlying
-      // PrerenderData to our new handle.
-      existing_prerender_handle->AdoptPrerenderDataFrom(
-          new_prerender_handle.get());
-      continue;
-    }
-  }
-}
-
 void PrerenderManager::SourceNavigatedAway(PrerenderData* prerender_data) {
   // The expiry time of our prerender data will likely change because of
   // this navigation. This requires a resort of active_prerenders_.
@@ -1588,26 +1529,6 @@ PrerenderManager::PrerenderData* PrerenderManager::FindPrerenderData(
   for (ScopedVector<PrerenderData>::iterator it = active_prerenders_.begin();
        it != active_prerenders_.end(); ++it) {
     if ((*it)->contents()->Matches(url, session_storage_namespace))
-      return *it;
-  }
-  return NULL;
-}
-
-PrerenderManager::PrerenderData*
-PrerenderManager::FindPrerenderDataForChildAndRoute(
-    const int child_id, const int route_id) {
-  for (ScopedVector<PrerenderData>::iterator it = active_prerenders_.begin();
-       it != active_prerenders_.end(); ++it) {
-    PrerenderContents* prerender_contents = (*it)->contents();
-
-    int contents_child_id;
-    if (!prerender_contents->GetChildId(&contents_child_id))
-      continue;
-    int contents_route_id;
-    if (!prerender_contents->GetRouteId(&contents_route_id))
-      continue;
-
-    if (contents_child_id == child_id && contents_route_id == route_id)
       return *it;
   }
   return NULL;

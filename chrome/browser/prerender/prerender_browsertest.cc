@@ -342,8 +342,7 @@ class TestPrerenderContents : public PrerenderContents {
         was_hidden_(false),
         was_shown_(false),
         should_be_shown_(expected_final_status == FINAL_STATUS_USED),
-        skip_final_checks_(false),
-        expected_pending_prerenders_(0) {
+        skip_final_checks_(false) {
   }
 
   virtual ~TestPrerenderContents() {
@@ -351,7 +350,7 @@ class TestPrerenderContents : public PrerenderContents {
       return;
 
     if (expected_final_status_ == FINAL_STATUS_MAX) {
-      EXPECT_EQ(match_complete_status(), MATCH_COMPLETE_REPLACEMENT);
+      EXPECT_EQ(MATCH_COMPLETE_REPLACEMENT, match_complete_status());
     } else {
       EXPECT_EQ(expected_final_status_, final_status()) <<
           " when testing URL " << prerender_url().path() <<
@@ -397,27 +396,6 @@ class TestPrerenderContents : public PrerenderContents {
     if (url.spec() != content::kChromeUICrashURL)
       return PrerenderContents::CheckURL(url);
     return true;
-  }
-
-  virtual void AddPendingPrerender(
-      scoped_ptr<PendingPrerenderInfo> pending_prerender_info) OVERRIDE {
-    PrerenderContents::AddPendingPrerender(pending_prerender_info.Pass());
-    if (expected_pending_prerenders_ > 0 &&
-        pending_prerender_count() == expected_pending_prerenders_) {
-      base::MessageLoop::current()->Quit();
-    }
-  }
-
-  // Waits until the prerender has |expected_pending_prerenders| pending
-  // prerenders.
-  void WaitForPendingPrerenders(size_t expected_pending_prerenders) {
-    if (pending_prerender_count() < expected_pending_prerenders) {
-      expected_pending_prerenders_ = expected_pending_prerenders;
-      content::RunMessageLoop();
-      expected_pending_prerenders_ = 0;
-    }
-
-    EXPECT_EQ(expected_pending_prerenders, pending_prerender_count());
   }
 
   // For tests that open the prerender in a new background tab, the RenderView
@@ -481,10 +459,6 @@ class TestPrerenderContents : public PrerenderContents {
   bool should_be_shown_;
   // If true, |expected_final_status_| and other shutdown checks are skipped.
   bool skip_final_checks_;
-
-  // Total number of pending prerenders we're currently waiting for.  Zero
-  // indicates we currently aren't waiting for any.
-  size_t expected_pending_prerenders_;
 };
 
 // A handle to a TestPrerenderContents whose lifetime is under the caller's
@@ -1323,6 +1297,14 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return GetPrerenderLinkManager()->IsEmpty();
   }
 
+  size_t GetLinkPrerenderCount() const {
+    return GetPrerenderLinkManager()->prerenders_.size();
+  }
+
+  size_t GetRunningLinkPrerenderCount() const {
+    return GetPrerenderLinkManager()->CountRunningPrerenders();
+  }
+
   // Returns length of |prerender_manager_|'s history, or -1 on failure.
   int GetHistoryLength() const {
     scoped_ptr<base::DictionaryValue> prerender_dict(
@@ -1585,23 +1567,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
 }
 
 // Checks that pending prerenders launch and receive proper event treatment.
-// Disabled due to http://crbug.com/167792
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderPagePending) {
-  std::vector<FinalStatus> expected_final_status_queue;
-  expected_final_status_queue.push_back(FINAL_STATUS_USED);
-  expected_final_status_queue.push_back(FINAL_STATUS_USED);
-  PrerenderTestURL("files/prerender/prerender_page_pending.html",
-                   expected_final_status_queue, 1);
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPagePending) {
+  scoped_ptr<TestPrerender> prerender =
+      PrerenderTestURL("files/prerender/prerender_page_pending.html",
+                       FINAL_STATUS_USED, 1);
 
-  ChannelDestructionWatcher first_channel_close_watcher;
-
-  first_channel_close_watcher.WatchChannel(
-      GetActiveWebContents()->GetRenderProcessHost());
+  // Navigate to the prerender.
+  scoped_ptr<TestPrerender> prerender2 = ExpectPrerender(FINAL_STATUS_USED);
   NavigateToDestURL();
-  // NavigateToDestURL doesn't run a message loop. Normally that's fine, but in
-  // this case, we need the pending prerenders to start.
-  content::RunMessageLoop();
-  first_channel_close_watcher.WaitForChannelClose();
+  // Abort early if the original prerender didn't swap, so as not to hang.
+  ASSERT_FALSE(prerender->contents());
+
+  // Wait for the new prerender to be ready.
+  prerender2->WaitForStart();
+  prerender2->WaitForLoads(1);
 
   const GURL prerender_page_url =
       test_server()->GetURL("files/prerender/prerender_page.html");
@@ -1610,13 +1589,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderPagePending) {
             GetPrerenderContentsFor(prerender_page_url));
 
   // Now navigate to our target page.
-  ChannelDestructionWatcher second_channel_close_watcher;
-  second_channel_close_watcher.WatchChannel(
-      GetActiveWebContents()->GetRenderProcessHost());
+  NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
+                                         GetActiveWebContents());
   ui_test_utils::NavigateToURLWithDisposition(
       current_browser(), prerender_page_url, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
-  second_channel_close_watcher.WaitForChannelClose();
+  swap_observer.Wait();
 
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
@@ -2210,9 +2188,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderQuickQuit) {
                    0);
 }
 
-// TODO(gavinp,sreeram): Fix http://crbug.com/145248 and deflake this test.
 // Checks that we don't prerender in an infinite loop.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
   const char* const kHtmlFileA = "files/prerender/prerender_infinite_a.html";
   const char* const kHtmlFileB = "files/prerender/prerender_infinite_b.html";
 
@@ -2223,23 +2200,29 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderInfiniteLoop) {
   ScopedVector<TestPrerender> prerenders =
       PrerenderTestURL(kHtmlFileA, expected_final_status_queue, 1);
   ASSERT_TRUE(prerenders[0]->contents());
-  prerenders[0]->contents()->WaitForPendingPrerenders(1u);
+  // Assert that the pending prerender is in there already. This relies on the
+  // fact that the renderer sends out the AddLinkRelPrerender IPC before sending
+  // the page load one.
+  EXPECT_EQ(2U, GetLinkPrerenderCount());
+  EXPECT_EQ(1U, GetRunningLinkPrerenderCount());
 
   // Next url should be in pending list but not an active entry.
   EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
 
   NavigateToDestURL();
 
-  // Make sure the PrerenderContents for the next url is now in the manager
-  // and not pending.
+  // Make sure the PrerenderContents for the next url is now in the manager and
+  // not pending. This relies on pending prerenders being resolved in the same
+  // event loop iteration as OnPrerenderStop.
   EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileB));
+  EXPECT_EQ(1U, GetLinkPrerenderCount());
+  EXPECT_EQ(1U, GetRunningLinkPrerenderCount());
 }
 
-// TODO(gavinp,sreeram): Fix http://crbug.com/145248 and deflake this test.
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderInfiniteLoopMultiple) {
+                       PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =
       "files/prerender/prerender_infinite_a_multiple.html";
   const char* const kHtmlFileB =
@@ -2260,9 +2243,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ScopedVector<TestPrerender> prerenders =
       PrerenderTestURL(kHtmlFileA, expected_final_status_queue, 1);
   ASSERT_TRUE(prerenders[0]->contents());
-  prerenders[0]->contents()->WaitForPendingPrerenders(2u);
 
-  // Next url should be in pending list but not an active entry.
+  // Next url should be in pending list but not an active entry. This relies on
+  // the fact that the renderer sends out the AddLinkRelPrerender IPC before
+  // sending the page load one.
+  EXPECT_EQ(3U, GetLinkPrerenderCount());
+  EXPECT_EQ(1U, GetRunningLinkPrerenderCount());
   EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
   EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileC));
 
@@ -2270,10 +2256,39 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   // Make sure the PrerenderContents for the next urls are now in the manager
   // and not pending. One and only one of the URLs (the last seen) should be the
-  // active entry.
+  // active entry. This relies on pending prerenders being resolved in the same
+  // event loop iteration as OnPrerenderStop.
   bool url_b_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileB);
   bool url_c_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileC);
   EXPECT_TRUE(url_b_is_active_prerender && url_c_is_active_prerender);
+  EXPECT_EQ(2U, GetLinkPrerenderCount());
+  EXPECT_EQ(2U, GetRunningLinkPrerenderCount());
+}
+
+// Checks that pending prerenders are aborted (and never launched) when launched
+// by a prerender that itself gets aborted.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAbortPendingOnCancel) {
+  const char* const kHtmlFileA = "files/prerender/prerender_infinite_a.html";
+  const char* const kHtmlFileB = "files/prerender/prerender_infinite_b.html";
+
+  scoped_ptr<TestPrerender> prerender =
+      PrerenderTestURL(kHtmlFileA, FINAL_STATUS_CANCELLED, 1);
+  ASSERT_TRUE(prerender->contents());
+  // Assert that the pending prerender is in there already. This relies on the
+  // fact that the renderer sends out the AddLinkRelPrerender IPC before sending
+  // the page load one.
+  EXPECT_EQ(2U, GetLinkPrerenderCount());
+  EXPECT_EQ(1U, GetRunningLinkPrerenderCount());
+
+  // Next url should be in pending list but not an active entry.
+  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
+
+  // Cancel the prerender.
+  GetPrerenderManager()->CancelAllPrerenders();
+  prerender->WaitForStop();
+
+  // All prerenders are now gone.
+  EXPECT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
 // See crbug.com/131836.

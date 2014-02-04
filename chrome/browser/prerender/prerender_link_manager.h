@@ -28,7 +28,7 @@ FORWARD_DECLARE_TEST(WebViewTest, NoPrerenderer);
 
 namespace prerender {
 
-class PrerenderHandle;
+class PrerenderContents;
 class PrerenderManager;
 
 // PrerenderLinkManager implements the API on Link elements for all documents
@@ -78,7 +78,8 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
                   const content::Referrer& referrer,
                   const gfx::Size& size,
                   int render_view_route_id,
-                  base::TimeTicks creation_time);
+                  base::TimeTicks creation_time,
+                  PrerenderContents* deferred_launcher);
     ~LinkPrerender();
 
     // Parameters from PrerenderLinkManager::OnAddPrerender():
@@ -92,6 +93,11 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
     // The time at which this Prerender was added to PrerenderLinkManager.
     base::TimeTicks creation_time;
 
+    // If non-NULL, this link prerender was launched by an unswapped prerender,
+    // |deferred_launcher|. When |deferred_launcher| is swapped in, the field is
+    // set to NULL.
+    PrerenderContents* deferred_launcher;
+
     // Initially NULL, |handle| is set once we start this prerender. It is owned
     // by this struct, and must be deleted before destructing this struct.
     PrerenderHandle* handle;
@@ -103,6 +109,8 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
     // True if this prerender has been abandoned by its launcher.
     bool has_been_abandoned;
   };
+
+  class PendingPrerenderManager;
 
   bool IsEmpty() const;
 
@@ -126,6 +134,12 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
   // manager.
   void CancelPrerender(LinkPrerender* prerender);
 
+  // Called when |launcher| is swapped in.
+  void StartPendingPrerendersForLauncher(PrerenderContents* launcher);
+
+  // Called when |launcher| is aborted.
+  void CancelPendingPrerendersForLauncher(PrerenderContents* launcher);
+
   // From BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
@@ -145,6 +159,10 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
   // made at the back, so the oldest prerender is at the front, and the youngest
   // at the back.
   std::list<LinkPrerender> prerenders_;
+
+  // Helper object to manage prerenders which are launched by other prerenders
+  // and must be deferred until the launcher is swapped in.
+  scoped_ptr<PendingPrerenderManager> pending_prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLinkManager);
 };

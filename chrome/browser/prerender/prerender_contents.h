@@ -78,7 +78,9 @@ class PrerenderContents : public content::NotificationObserver,
     // Signals that the prerender has had its load event.
     virtual void OnPrerenderStopLoading(PrerenderContents* contents);
 
-    // Signals that the prerender has stopped running.
+    // Signals that the prerender has stopped running. A PrerenderContents with
+    // an unset final status will always call OnPrerenderStop before being
+    // destroyed.
     virtual void OnPrerenderStop(PrerenderContents* contents) = 0;
 
     // Signals that this prerender has just become a MatchComplete replacement.
@@ -88,25 +90,6 @@ class PrerenderContents : public content::NotificationObserver,
    protected:
     Observer();
     virtual ~Observer() = 0;
-  };
-
-  // A container for extra data on pending prerenders.
-  struct PendingPrerenderInfo {
-   public:
-    PendingPrerenderInfo(
-        base::WeakPtr<PrerenderHandle> weak_prerender_handle,
-        Origin origin,
-        const GURL& url,
-        const content::Referrer& referrer,
-        const gfx::Size& size);
-
-    ~PendingPrerenderInfo();
-
-    base::WeakPtr<PrerenderHandle> weak_prerender_handle;
-    Origin origin;
-    GURL url;
-    content::Referrer referrer;
-    gfx::Size size;
   };
 
   // Indicates how this PrerenderContents relates to MatchComplete. This is to
@@ -200,10 +183,6 @@ class PrerenderContents : public content::NotificationObserver,
   // and returns a boolean indicating the validity of that id.
   virtual bool GetRouteId(int* route_id) const;
 
-  // Set the final status for how the PrerenderContents was used. This
-  // should only be called once, and should be called before the prerender
-  // contents are destroyed.
-  void SetFinalStatus(FinalStatus final_status);
   FinalStatus final_status() const { return final_status_; }
 
   Origin origin() const { return origin_; }
@@ -289,13 +268,7 @@ class PrerenderContents : public content::NotificationObserver,
   // MouseEvent being dispatched by a link to a website installed as an app.
   bool IsCrossSiteNavigationPending() const;
 
-  // Adds a pending prerender to the list. If |weak_prerender_handle| still
-  // exists when this page is made visible, it will be launched.
-  virtual void AddPendingPrerender(
-      scoped_ptr<PendingPrerenderInfo> pending_prerender_info);
-
-  // Reissues any pending prerender requests from the prerendered page.  Also
-  // clears the list of pending requests. Sends notifications.
+  // Marks prerender as used and releases any throttled resource requests.
   void PrepareForUse();
 
   content::SessionStorageNamespace* GetSessionStorageNamespace() const;
@@ -330,6 +303,11 @@ class PrerenderContents : public content::NotificationObserver,
                     Origin origin,
                     uint8 experiment_id);
 
+  // Set the final status for how the PrerenderContents was used. This
+  // should only be called once, and should be called before the prerender
+  // contents are destroyed.
+  void SetFinalStatus(FinalStatus final_status);
+
   // These call out to methods on our Observers, using our observer_list_. Note
   // that NotifyPrerenderStop() also clears the observer list.
   void NotifyPrerenderStart();
@@ -346,8 +324,6 @@ class PrerenderContents : public content::NotificationObserver,
   content::NotificationRegistrar& notification_registrar() {
     return notification_registrar_;
   }
-
-  size_t pending_prerender_count() const;
 
   bool prerendering_has_been_cancelled() const {
     return prerendering_has_been_cancelled_;
@@ -450,10 +426,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Experiment during which this prerender is performed.
   uint8 experiment_id_;
-
-  // Prerenders that the prerendered page has tried to prerender. They remain
-  // pending until this page is displayed.
-  ScopedVector<PendingPrerenderInfo> pending_prerenders_;
 
   // The process that created the child id.
   int creator_child_id_;

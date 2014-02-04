@@ -230,6 +230,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderContents* GetPrerenderContents(
       const content::WebContents* web_contents) const;
 
+  // Returns the PrerenderContents object for a given child_id, route_id pair,
+  // otherwise returns NULL. Note that the PrerenderContents may have been
+  // Destroy()ed, but not yet deleted.
+  virtual PrerenderContents* GetPrerenderContentsForRoute(
+      int child_id, int route_id) const;
+
   // Returns a list of all WebContents being prerendered.
   const std::vector<content::WebContents*> GetAllPrerenderingContents() const;
 
@@ -504,13 +510,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
 
-  // Adds prerenders from the pending Prerenders, called by
-  // PrerenderContents::StartPendingPrerenders.
-  void StartPendingPrerenders(
-      int process_id,
-      ScopedVector<PrerenderContents::PendingPrerenderInfo>* pending_prerenders,
-      content::SessionStorageNamespace* session_storage_namespace);
-
   // Called by a PrerenderData to signal that the launcher has navigated away
   // from the context that launched the prerender. A user may have clicked
   // a link in a page containing a <link rel=prerender> element, or the user
@@ -616,11 +615,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderData* FindPrerenderData(
       const GURL& url,
       const content::SessionStorageNamespace* session_storage_namespace);
-
-  // If |child_id| and |route_id| correspond to a RenderView that is an active
-  // prerender, returns the PrerenderData object for that prerender. Otherwise,
-  // returns NULL.
-  PrerenderData* FindPrerenderDataForChildAndRoute(int child_id, int route_id);
 
   // Finds the active PrerenderData object currently in a PendingSwap for
   // |target_contents|. Otherwise, returns NULL.

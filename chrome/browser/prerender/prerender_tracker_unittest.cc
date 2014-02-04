@@ -70,7 +70,6 @@ class TestPrerenderContents : public PrerenderContents {
   }
 
   void Use() {
-    SetFinalStatus(FINAL_STATUS_USED);
     PrepareForUse();
   }
 
