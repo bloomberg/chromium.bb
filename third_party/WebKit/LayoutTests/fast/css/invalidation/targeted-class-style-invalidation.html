@@ -28,7 +28,13 @@ outer.offsetTop;
 outer.className = 'outer';
 
 // Style recalc should happen on "inner" and "outer", but not "inner2".
-// FIXME: change the 3 to a 2 once we have a virtual test setup.
-shouldBe("internals.updateStyleAndReturnAffectedElementCount()", '3');
+
+var count;
+if (internals.runtimeFlags.targetedStyleRecalcEnabled)
+    count = 2;
+else
+    count = 3;
+
+shouldBe("internals.updateStyleAndReturnAffectedElementCount()", '' + count);
 
 </script>
