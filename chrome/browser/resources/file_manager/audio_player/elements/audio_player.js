@@ -12,10 +12,6 @@ Polymer('audio-player', {
   audioElement: null,
   trackList: null,
 
-  // Attributes of the element (little charactor only)
-  playing: false,
-  currenttrackurl: '',
-
   /**
    * Initializes an element. This method is called automatically when the
    * element is ready.
@@ -60,19 +56,13 @@ Polymer('audio-player', {
    * @param {number} newValue new value.
    */
   onCurrentTrackIndexChanged: function(oldValue, newValue) {
-    var currentTrackUrl = '';
-
     if (oldValue != newValue) {
       var currentTrack = this.trackList.getCurrentTrack();
       if (currentTrack && currentTrack.url != this.audioElement.src) {
         this.audioElement.src = currentTrack.url;
-        currentTrackUrl = this.audioElement.src;
         this.audioElement.play();
       }
     }
-
-    // The attributes may be being watched, so we change it at the last.
-    this.currenttrackurl = currentTrackUrl;
   },
 
   /**
@@ -94,18 +84,14 @@ Polymer('audio-player', {
    * @param {boolean} newValue new value.
    */
   onControllerPlayingChanged: function(oldValue, newValue) {
-    this.playing = newValue;
-
     if (newValue) {
       if (!this.audioElement.src) {
         var currentTrack = this.trackList.getCurrentTrack();
-        if (currentTrack && currentTrack.url != this.audioElement.src) {
+        if (currentTrack && currentTrack.url != this.audioElement.src)
           this.audioElement.src = currentTrack.url;
-        }
       }
 
       if (this.audioElement.src) {
-        this.currenttrackurl = this.audioElement.src;
         this.audioElement.play();
         return;
       }
@@ -113,7 +99,6 @@ Polymer('audio-player', {
 
     this.audioController.playing = false;
     this.audioElement.pause();
-    this.currenttrackurl = '';
   },
 
   /**
