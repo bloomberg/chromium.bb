@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
@@ -131,14 +132,16 @@ scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
 // Create and start a local audio track. Starting the audio track will connect
 // the audio track to the capturer and also start the source of the capturer.
 // Also, connect the sink to the audio track.
-scoped_refptr<WebRtcLocalAudioTrack>
-CreateAndStartLocalAudioTrack(WebRtcAudioCapturer* capturer,
+scoped_ptr<WebRtcLocalAudioTrack>
+CreateAndStartLocalAudioTrack(WebRtcLocalAudioTrackAdapter* adapter,
+                              WebRtcAudioCapturer* capturer,
                               PeerConnectionAudioSink* sink) {
-  scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      WebRtcLocalAudioTrack::Create(std::string(), capturer, NULL, NULL));
+  scoped_ptr<WebRtcLocalAudioTrack> local_audio_track(
+      new WebRtcLocalAudioTrack(adapter, capturer, NULL));
+
   local_audio_track->AddSink(sink);
   local_audio_track->Start();
-  return local_audio_track;
+  return local_audio_track.Pass();
 }
 
 class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
@@ -641,11 +644,13 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartRecording) {
 
   // Create and start a local audio track which is bridging the data flow
   // between the capturer and WebRtcAudioDeviceImpl.
-  scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      CreateAndStartLocalAudioTrack(capturer, webrtc_audio_device));
+  scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+      WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
+  scoped_ptr<WebRtcLocalAudioTrack> local_audio_track(
+      CreateAndStartLocalAudioTrack(adapter, capturer, webrtc_audio_device));
   // connect the VoE voice channel to the audio track
-  static_cast<webrtc::AudioTrackInterface*>(local_audio_track.get())->
-      GetRenderer()->AddChannel(ch);
+  static_cast<webrtc::AudioTrackInterface*>(
+      adapter.get())->GetRenderer()->AddChannel(ch);
 
   // Verify we get the data flow.
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_timeout()));
@@ -791,14 +796,16 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
 
+  scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+      WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
   scoped_refptr<WebRtcAudioCapturer> capturer(
       CreateAudioCapturer(webrtc_audio_device));
   EXPECT_TRUE(capturer);
-  scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      CreateAndStartLocalAudioTrack(capturer, webrtc_audio_device));
-  // connect the VoE voice channel to the audio track
-  static_cast<webrtc::AudioTrackInterface*>(local_audio_track.get())->
-      GetRenderer()->AddChannel(ch);
+  scoped_ptr<WebRtcLocalAudioTrack> local_audio_track(
+      CreateAndStartLocalAudioTrack(adapter, capturer, webrtc_audio_device));
+  // connect the VoE voice channel to the audio track adapter.
+  static_cast<webrtc::AudioTrackInterface*>(
+      adapter.get())->GetRenderer()->AddChannel(ch);
 
   ScopedWebRTCPtr<webrtc::VoENetwork> network(engine.get());
   ASSERT_TRUE(network.valid());
@@ -867,12 +874,14 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
 
   // Create and start a local audio track. Starting the audio track will connect
   // the audio track to the capturer and also start the source of the capturer.
-  scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      CreateAndStartLocalAudioTrack(capturer, sink.get()));
+  scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+      WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
+  scoped_ptr<WebRtcLocalAudioTrack> local_audio_track(
+      CreateAndStartLocalAudioTrack(adapter, capturer, sink.get()));
 
-  // connect the VoE voice channel to the audio track.
-  static_cast<webrtc::AudioTrackInterface*>(local_audio_track.get())->
-      GetRenderer()->AddChannel(ch);
+  // connect the VoE voice channel to the audio track adapter.
+  static_cast<webrtc::AudioTrackInterface*>(
+      adapter.get())->GetRenderer()->AddChannel(ch);
 
   base::Time start_time = base::Time::Now();
   EXPECT_EQ(0, base->StartSend(ch));

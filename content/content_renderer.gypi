@@ -676,6 +676,8 @@
         'renderer/media/webrtc_local_audio_track.h',
         'renderer/media/webrtc_logging.cc',
         'renderer/media/webrtc_logging.h',
+        'renderer/media/webrtc/webrtc_local_audio_track_adapter.cc',
+        'renderer/media/webrtc/webrtc_local_audio_track_adapter.h',
         'renderer/media/webrtc/webrtc_video_sink_adapter.cc',
         'renderer/media/webrtc/webrtc_video_sink_adapter.h',
         'renderer/p2p/host_address_request.cc',

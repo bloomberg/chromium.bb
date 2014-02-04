@@ -9,36 +9,23 @@
 #include "content/renderer/media/media_stream_audio_track_sink.h"
 #include "content/renderer/media/peer_connection_audio_sink_owner.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
-#include "content/renderer/media/webrtc_local_audio_source_provider.h"
-#include "media/base/audio_fifo.h"
-#include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
 
 namespace content {
 
-static const char kAudioTrackKind[] = "audio";
-
-scoped_refptr<WebRtcLocalAudioTrack> WebRtcLocalAudioTrack::Create(
-    const std::string& id,
-    const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    WebAudioCapturerSource* webaudio_source,
-    webrtc::AudioSourceInterface* track_source) {
-  talk_base::RefCountedObject<WebRtcLocalAudioTrack>* track =
-      new talk_base::RefCountedObject<WebRtcLocalAudioTrack>(
-          id, capturer, webaudio_source, track_source);
-  return track;
-}
-
 WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
-    const std::string& label,
+    WebRtcLocalAudioTrackAdapter* adapter,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    WebAudioCapturerSource* webaudio_source,
-    webrtc::AudioSourceInterface* track_source)
-    : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
+    WebAudioCapturerSource* webaudio_source)
+    : MediaStreamTrackExtraData(adapter, true),
+      adapter_(adapter),
       capturer_(capturer),
-      webaudio_source_(webaudio_source),
-      track_source_(track_source) {
+      webaudio_source_(webaudio_source) {
   DCHECK(capturer.get() || webaudio_source);
+
+  adapter_->Initialize(this);
+
   if (!webaudio_source_) {
     source_provider_.reset(new WebRtcLocalAudioSourceProvider());
     AddSink(source_provider_.get());
@@ -60,13 +47,11 @@ void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
                                     bool need_audio_processing) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   scoped_refptr<WebRtcAudioCapturer> capturer;
-  std::vector<int> voe_channels;
   SinkList::ItemList sinks;
   SinkList::ItemList sinks_to_notify_format;
   {
     base::AutoLock auto_lock(lock_);
     capturer = capturer_;
-    voe_channels = voe_channels_;
     sinks = sinks_.Items();
     sinks_.RetrieveAndClearTags(&sinks_to_notify_format);
   }
@@ -83,6 +68,7 @@ void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
   // disabled. This is currently done so to feed input to WebRTC typing
   // detection and should be changed when audio processing is moved from
   // WebRTC to the track.
+  std::vector<int> voe_channels = adapter_->VoeChannels();
   for (SinkList::ItemList::const_iterator it = sinks.begin();
        it != sinks.end();
        ++it) {
@@ -116,43 +102,6 @@ void WebRtcLocalAudioTrack::OnSetFormat(
   base::AutoLock auto_lock(lock_);
   // Remember to notify all sinks of the new format.
   sinks_.TagAll();
-}
-
-void WebRtcLocalAudioTrack::AddChannel(int channel_id) {
-  DVLOG(1) << "WebRtcLocalAudioTrack::AddChannel(channel_id="
-           << channel_id << ")";
-  base::AutoLock auto_lock(lock_);
-  if (std::find(voe_channels_.begin(), voe_channels_.end(), channel_id) !=
-      voe_channels_.end()) {
-    // We need to handle the case when the same channel is connected to the
-    // track more than once.
-    return;
-  }
-
-  voe_channels_.push_back(channel_id);
-}
-
-void WebRtcLocalAudioTrack::RemoveChannel(int channel_id) {
-  DVLOG(1) << "WebRtcLocalAudioTrack::RemoveChannel(channel_id="
-           << channel_id << ")";
-  base::AutoLock auto_lock(lock_);
-  std::vector<int>::iterator iter =
-      std::find(voe_channels_.begin(), voe_channels_.end(), channel_id);
-  DCHECK(iter != voe_channels_.end());
-  voe_channels_.erase(iter);
-}
-
-// webrtc::AudioTrackInterface implementation.
-webrtc::AudioSourceInterface* WebRtcLocalAudioTrack::GetSource() const {
-  return track_source_;
-}
-
-cricket::AudioRenderer* WebRtcLocalAudioTrack::GetRenderer() {
-  return this;
-}
-
-std::string WebRtcLocalAudioTrack::kind() const {
-  return kAudioTrackKind;
 }
 
 void WebRtcLocalAudioTrack::AddSink(MediaStreamAudioSink* sink) {

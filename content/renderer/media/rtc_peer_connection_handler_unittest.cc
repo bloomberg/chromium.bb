@@ -15,6 +15,7 @@
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -240,11 +241,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
 
     local_stream.audioTracks(audio_tracks);
-    const std::string audio_track_id = base::UTF16ToUTF8(audio_tracks[0].id());
     scoped_refptr<WebRtcAudioCapturer> capturer;
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         mock_dependency_factory_->CreateLocalAudioTrack(
-            audio_track_id, capturer, NULL, NULL));
+            audio_tracks[0], capturer, NULL, NULL));
     MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
         audio_track.get(), audio_tracks[0], true);
     native_stream->AddTrack(audio_track.get());
@@ -282,10 +282,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     if (!audio_track_label.empty()) {
       scoped_refptr<WebRtcAudioCapturer> capturer;
       scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-          mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
-                                                          capturer,
-                                                          NULL,
-                                                          NULL));
+          WebRtcLocalAudioTrackAdapter::Create(audio_track_label, NULL));
       stream->AddTrack(audio_track.get());
     }
     mock_peer_connection_->AddRemoteStream(stream.get());

@@ -180,7 +180,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual scoped_refptr<webrtc::AudioTrackInterface>
       CreateLocalAudioTrack(
-          const std::string& id,
+          const blink::WebMediaStreamTrack& blink_track,
           const scoped_refptr<WebRtcAudioCapturer>& capturer,
           WebAudioCapturerSource* webaudio_source,
           webrtc::AudioSourceInterface* source);

@@ -8,8 +8,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
@@ -441,16 +442,11 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
 
 scoped_refptr<webrtc::AudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
-    const std::string& id,
+    const blink::WebMediaStreamTrack& blink_track,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
     WebAudioCapturerSource* webaudio_source,
     webrtc::AudioSourceInterface* source) {
-  blink::WebMediaConstraints constraints;
-  scoped_refptr<WebRtcAudioCapturer> audio_capturer = capturer ?
-      capturer : WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
-                                                     constraints, NULL);
-  return WebRtcLocalAudioTrack::Create(
-      id, audio_capturer, webaudio_source, source);
+  return WebRtcLocalAudioTrackAdapter::Create(blink_track.id().utf8(), source);
 }
 
 SessionDescriptionInterface*

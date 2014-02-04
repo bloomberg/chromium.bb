@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/audio/audio_parameters.h"
@@ -76,18 +77,19 @@ class WebRtcAudioCapturerTest : public testing::Test {
 
     EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true));
     EXPECT_CALL(*capturer_source_.get(), Start());
-    track_ = WebRtcLocalAudioTrack::Create(std::string(), capturer_, NULL,
-                                           NULL);
+    scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+        WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
+    track_.reset(new WebRtcLocalAudioTrack(adapter, capturer_, NULL));
     static_cast<WebRtcLocalAudioSourceProvider*>(
         track_->audio_source_provider())->SetSinkParamsForTesting(params_);
     track_->Start();
-    EXPECT_TRUE(track_->enabled());
+    EXPECT_TRUE(track_->track()->enabled());
   }
 
   media::AudioParameters params_;
   scoped_refptr<MockCapturerSource> capturer_source_;
   scoped_refptr<WebRtcAudioCapturer> capturer_;
-  scoped_refptr<WebRtcLocalAudioTrack> track_;
+  scoped_ptr<WebRtcLocalAudioTrack> track_;
 };
 
 // Pass the delay value, vollume and key_pressed info via capture callback, and

@@ -21,7 +21,7 @@ void MediaStreamAudioSink::AddToAudioTrack(
   // TODO(xians): Support remote audio track.
   DCHECK(extra_data->is_local_track());
   WebRtcLocalAudioTrack* audio_track =
-      static_cast<WebRtcLocalAudioTrack*>(extra_data->track().get());
+      static_cast<WebRtcLocalAudioTrack*>(extra_data);
   audio_track->AddSink(sink);
 }
 
@@ -33,7 +33,7 @@ void MediaStreamAudioSink::RemoveFromAudioTrack(
   // TODO(xians): Support remote audio track.
   DCHECK(extra_data->is_local_track());
   WebRtcLocalAudioTrack* audio_track =
-      static_cast<WebRtcLocalAudioTrack*>(extra_data->track().get());
+      static_cast<WebRtcLocalAudioTrack*>(extra_data);
   audio_track->RemoveSink(sink);
 }
 

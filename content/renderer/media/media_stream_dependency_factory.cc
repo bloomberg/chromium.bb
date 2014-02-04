@@ -23,6 +23,7 @@
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/rtc_video_encoder_factory.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -294,21 +295,10 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
     }
   }
 
-  scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-      CreateLocalAudioTrack(track.id().utf8(),
-                            source_data->GetAudioCapturer(),
-                            webaudio_source.get(),
-                            source_data->local_audio_source()));
-  AddNativeTrackToBlinkTrack(audio_track.get(), track, true);
-
-  audio_track->set_enabled(track.isEnabled());
-
-  // Pass the pointer of the source provider to the blink audio track.
-  blink::WebMediaStreamTrack writable_track = track;
-  writable_track.setSourceProvider(static_cast<WebRtcLocalAudioTrack*>(
-      audio_track.get())->audio_source_provider());
-
-  return audio_track;
+  return CreateLocalAudioTrack(track,
+                               source_data->GetAudioCapturer(),
+                               webaudio_source.get(),
+                               source_data->local_audio_source());
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
@@ -654,23 +644,39 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
 
 scoped_refptr<webrtc::AudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
-    const std::string& id,
+    const blink::WebMediaStreamTrack& blink_track,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
     WebAudioCapturerSource* webaudio_source,
     webrtc::AudioSourceInterface* source) {
+  // Creates an adapter to hold all the libjingle objects.
+  scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+      WebRtcLocalAudioTrackAdapter::Create(blink_track.id().utf8(), source));
+  static_cast<webrtc::AudioTrackInterface*>(adapter.get())->set_enabled(
+      blink_track.isEnabled());
+
   // TODO(xians): Merge |source| to the capturer(). We can't do this today
   // because only one capturer() is supported while one |source| is created
   // for each audio track.
-  scoped_refptr<WebRtcLocalAudioTrack> audio_track(
-      WebRtcLocalAudioTrack::Create(id, capturer, webaudio_source, source));
+  scoped_ptr<WebRtcLocalAudioTrack> audio_track(
+      new WebRtcLocalAudioTrack(adapter, capturer, webaudio_source));
 
   // Add the WebRtcAudioDevice as the sink to the local audio track.
+  // TODO(xians): Implement a PeerConnection sink adapter and remove this
+  // AddSink() call.
   audio_track->AddSink(GetWebRtcAudioDevice());
   // Start the audio track. This will hook the |audio_track| to the capturer
   // as the sink of the audio, and only start the source of the capturer if
   // it is the first audio track connecting to the capturer.
   audio_track->Start();
-  return audio_track;
+
+  // Pass the pointer of the source provider to the blink audio track.
+  blink::WebMediaStreamTrack writable_track = blink_track;
+  writable_track.setSourceProvider(audio_track->audio_source_provider());
+
+  // Pass the ownership of the native local audio track to the blink track.
+  writable_track.setExtraData(audio_track.release());
+
+  return adapter;
 }
 
 webrtc::SessionDescriptionInterface*
