@@ -167,3 +167,17 @@ def gen_blacklist(regexes):
   """Returns a lambda to be used as a blacklist."""
   compiled = [re.compile(i) for i in regexes]
   return lambda f: any(j.match(f) for j in compiled)
+
+
+def is_headless():
+  """True if running in non-interactive mode on some bot machine.
+
+  Examines os.environ for presence of SWARMING_HEADLESS var.
+  """
+  headless_env_keys = (
+    # This is Chromium specific. Set when running under buildbot slave.
+    'CHROME_HEADLESS',
+    # Set when running under swarm bot.
+    'SWARMING_HEADLESS',
+  )
+  return any(bool(int(os.environ.get(key, 0))) for key in headless_env_keys)

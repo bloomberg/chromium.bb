@@ -656,7 +656,7 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
     options.swarming = options.swarming.rstrip('/')
     if not options.swarming:
       self.error('--swarming is required.')
-    auth.process_auth_options(options)
+    auth.process_auth_options(self, options)
     return options, args
 
 

@@ -81,6 +81,9 @@ COOKIE_FILE = os.path.join(os.path.expanduser('~'), '.isolated_cookies')
 # Google Storage URL regular expression.
 GS_STORAGE_HOST_URL_RE = re.compile(r'https://.*\.storage\.googleapis\.com')
 
+# All possible authentication methods. See configure_auth.
+AUTH_METHODS = ('oauth', 'cookie', 'bot', 'none')
+
 
 # Global (for now) map: server URL (http://example.com) -> HttpService instance.
 # Used by get_http_service to cache HttpService instances.
@@ -240,9 +243,10 @@ def configure_auth(default=None, urlhosts=None, oauth_options=None):
   """Defines what authentication methods to use for given hosts.
 
   Possible authentication methods are:
+    'bot' - use HMAC authentication based on a secret key.
     'cookie' - use cookie-based authentication.
-    'oauth' - user oauth-based authentication.
     'none' - do not use authentication.
+    'oauth' - use oauth-based authentication.
 
   Arguments:
     default: what method to use if host-specific method isn't set in |urlhosts|.
@@ -252,9 +256,9 @@ def configure_auth(default=None, urlhosts=None, oauth_options=None):
   global _auth_method_default
   global _auth_oauth_options
 
-  all_kinds = ('cookie', 'oauth', 'none')
-  assert not default or default in all_kinds
-  assert all(v in all_kinds for v in (urlhosts or {}).values()), str(urlhosts)
+  assert not default or default in AUTH_METHODS
+  assert all(
+      v in AUTH_METHODS for v in (urlhosts or {}).values()), str(urlhosts)
 
   with _auth_lock:
     if default:
@@ -272,12 +276,16 @@ def create_authenticator(urlhost):
   # For everything else use configuration set with 'configure_auth'.
   with _auth_lock:
     method = _auth_methods_per_host.get(urlhost, _auth_method_default)
-    if method == 'cookie':
+    if method == 'bot':
+      # TODO(vadimsh): Implement it. Use IP whitelist (that doesn't require
+      # any authenticator instance) for now.
+      return None
+    elif method == 'cookie':
       return CookieBasedAuthenticator(urlhost, get_cookie_jar())
-    elif method == 'oauth':
-      return OAuthAuthenticator(urlhost, _auth_oauth_options)
     elif method == 'none':
       return None
+    elif method == 'oauth':
+      return OAuthAuthenticator(urlhost, _auth_oauth_options)
   raise AssertionError('Invalid auth method: %s' % method)
 
 

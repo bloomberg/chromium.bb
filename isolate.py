@@ -1064,7 +1064,7 @@ def CMDarchive(parser, args):
       help='Namespace to use on the isolate server')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  auth.process_auth_options(options)
+  auth.process_auth_options(parser, options)
   if args:
     parser.error('Unsupported argument: %s' % args)
   if not options.isolate_server:

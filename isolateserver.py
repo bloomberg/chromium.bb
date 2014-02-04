@@ -2063,7 +2063,7 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
     options.isolate_server = options.isolate_server.rstrip('/')
     if not options.isolate_server:
       self.error('--isolate-server is required.')
-    auth.process_auth_options(options)
+    auth.process_auth_options(self, options)
     return options, args
 
 

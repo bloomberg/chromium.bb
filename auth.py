@@ -23,16 +23,20 @@ def add_auth_options(parser):
   """Adds command line options related to authentication."""
   parser.auth_group = optparse.OptionGroup(parser, 'Authentication')
   parser.auth_group.add_option(
-      '--use-cookie-auth', action='store_true',
-      help='Use cookie authentication instead of OAuth2.')
+      '--auth-method',
+      metavar='METHOD',
+      default='bot' if tools.is_headless() else 'oauth',
+      help='Authentication method to use: %s. [default: %%default]' %
+          ', '.join(net.AUTH_METHODS))
   parser.add_option_group(parser.auth_group)
   oauth.add_oauth_options(parser)
 
 
-def process_auth_options(options):
+def process_auth_options(parser, options):
   """Configures process-wide authentication parameters based on |options|."""
-  method = 'cookie' if options.use_cookie_auth else 'oauth'
-  net.configure_auth(method, oauth_options=options)
+  if options.auth_method not in net.AUTH_METHODS:
+    parser.error('Invalid --auth-method value: %s' % options.auth_method)
+  net.configure_auth(options.auth_method, oauth_options=options)
 
 
 class AuthServiceError(Exception):
@@ -71,7 +75,7 @@ class AuthService(object):
 def CMDlogin(parser, args):
   """Runs interactive login flow and stores auth token/cookie on disk."""
   (options, args) = parser.parse_args(args)
-  process_auth_options(options)
+  process_auth_options(parser, options)
   service = AuthService(options.service)
   if service.login(True):
     print 'Logged in as \'%s\'.' % service.get_current_identity()
@@ -85,7 +89,7 @@ def CMDlogin(parser, args):
 def CMDlogout(parser, args):
   """Purges cached auth token/cookie."""
   (options, args) = parser.parse_args(args)
-  process_auth_options(options)
+  process_auth_options(parser, options)
   service = AuthService(options.service)
   service.logout()
   return 0
@@ -95,7 +99,7 @@ def CMDlogout(parser, args):
 def CMDcheck(parser, args):
   """Shows identity associated with currently cached auth token/cookie."""
   (options, args) = parser.parse_args(args)
-  process_auth_options(options)
+  process_auth_options(parser, options)
   service = AuthService(options.service)
   service.login(False)
   print service.get_current_identity()

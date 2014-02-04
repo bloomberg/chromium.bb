@@ -762,7 +762,7 @@ def main(args):
 
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
-  auth.process_auth_options(options)
+  auth.process_auth_options(parser, options)
 
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')
