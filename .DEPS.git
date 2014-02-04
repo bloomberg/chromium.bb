@@ -12,9 +12,9 @@ vars = {
 
 deps = {
     'breakpad':
-        Var('git_url') + '/external/google-breakpad.git@cd272586eec3fc5d57d49a7cfbe55e7ade5d39a2',
+        Var('git_url') + '/external/google-breakpad.git@12528d19bdf7b00a0f1ad5cd466a12d587189055',
     'native_client/tools/perf_expectations':
-        Var('git_url') + '/chromium/src/tools/perf_expectations.git@875221aa2fc557eaa7851d985508a0c59fa342ad',
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@aa91a3d07ab79caf245e7308591473fafac226e3',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'third_party':
@@ -26,11 +26,11 @@ deps = {
     'third_party/valgrind':
         Var('git_url') + '/chromium/deps/valgrind.git@59886873b4b8258a8e0f098c23e1958e0d0c0a26',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@3a4c9663f01a7191795cabab9351e8d3dd2f239e',
+        Var('git_url') + '/chromium/src/tools/clang.git@22d9c8c786c90ed3d982ccc0fccaf92ba15045b3',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@27c626e0515f845338cb60b1d8405f40150a791d',
+        Var('git_url') + '/external/gyp.git@e540e6ab6291d4e63f262c8169ef0d0aae11dbec',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@78b01f7f7ae82125b09c968c80030ab752159495',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@a4260100f87a90f38946076568c9816ed9204320',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
