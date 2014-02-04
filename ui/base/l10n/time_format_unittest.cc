@@ -4,6 +4,7 @@
 
 #include "ui/base/l10n/time_format.h"
 
+#include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -17,6 +18,24 @@ namespace {
 
 using base::TimeDelta;
 
+class TimeFormatTest : public ::testing::Test {
+ public:
+  static void SetUpTestCase() {
+    LoadLocale(ui::ResourceBundle::GetSharedInstance()
+                   .GetLocaleFilePath("en-US", true));
+  }
+
+  static void TearDownTestCase() {
+    LoadLocale(base::FilePath());
+  }
+
+ private:
+  static void LoadLocale(const base::FilePath& file_path) {
+    ui::ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(file_path);
+    ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("en-US");
+  }
+};
+
 void TestTimeFormats(const TimeDelta& delta, const char* expected_ascii) {
   base::string16 expected = ASCIIToUTF16(expected_ascii);
   base::string16 expected_left = expected + ASCIIToUTF16(" left");
@@ -26,7 +45,7 @@ void TestTimeFormats(const TimeDelta& delta, const char* expected_ascii) {
   EXPECT_EQ(expected_ago, TimeFormat::TimeElapsed(delta));
 }
 
-TEST(TimeFormat, FormatTime) {
+TEST_F(TimeFormatTest, FormatTime) {
   const TimeDelta one_day = TimeDelta::FromDays(1);
   const TimeDelta one_hour = TimeDelta::FromHours(1);
   const TimeDelta one_min = TimeDelta::FromMinutes(1);
@@ -34,8 +53,6 @@ TEST(TimeFormat, FormatTime) {
   const TimeDelta one_millisecond = TimeDelta::FromMilliseconds(1);
   const TimeDelta zero = TimeDelta::FromMilliseconds(0);
 
-  // TODO(jungshik) : These test only pass when the OS locale is 'en'.
-  // We need to add SetUp() and TearDown() to set the locale to 'en'.
   TestTimeFormats(zero, "0 secs");
   TestTimeFormats(499 * one_millisecond, "0 secs");
   TestTimeFormats(500 * one_millisecond, "1 sec");
@@ -56,7 +73,7 @@ TEST(TimeFormat, FormatTime) {
 }
 
 // crbug.com/159388: This test fails when daylight savings time ends.
-TEST(TimeFormat, RelativeDate) {
+TEST_F(TimeFormatTest, RelativeDate) {
   base::Time now = base::Time::Now();
   base::string16 today_str = TimeFormat::RelativeDate(now, NULL);
   EXPECT_EQ(ASCIIToUTF16("Today"), today_str);
