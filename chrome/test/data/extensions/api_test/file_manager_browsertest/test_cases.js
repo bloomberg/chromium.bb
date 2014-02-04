@@ -465,7 +465,7 @@ testcase.intermediate.audioOpen = function(path) {
       chrome.test.assertTrue(result);
       callRemoteTestUtil('waitForWindow',
                          null,
-                         ['mediaplayer.html'],
+                         ['audio_player.html'],
                          this.next);
     },
     // Wait for the audio tag and verify the source.
@@ -473,7 +473,7 @@ testcase.intermediate.audioOpen = function(path) {
       audioAppId = inAppId;
       callRemoteTestUtil('waitForElement',
                          audioAppId,
-                         ['audio[src]'],
+                         ['audio-player[playing]'],
                          this.next);
     },
     // Get the title tag.
@@ -481,23 +481,7 @@ testcase.intermediate.audioOpen = function(path) {
       chrome.test.assertEq(
           'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/' +
               'external' + path + '/Beautiful%20Song.ogg',
-          element.attributes.src);
-      callRemoteTestUtil('waitForElement',
-                         audioAppId,
-                         ['.data-title'],
-                         this.next);
-    },
-    // Get the artist tag.
-    function(element) {
-      chrome.test.assertEq('Beautiful Song', element.text);
-      callRemoteTestUtil('waitForElement',
-                         audioAppId,
-                         ['.data-artist'],
-                         this.next);
-    },
-    // Verify the artist and if there are no javascript errors.
-    function(element) {
-      chrome.test.assertEq('Unknown Artist', element.text);
+          element.attributes.currenttrackurl);
       checkIfNoErrorsOccured(this.next);
     }
   ]);
