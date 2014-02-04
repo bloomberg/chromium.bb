@@ -1442,7 +1442,6 @@ internal_paladin.add_config('butterfly-paladin',
 )
 
 internal_paladin.add_config('clapper-paladin',
-  incompatible_instruction_set,
   boards=['clapper'],
   paladin_builder_name='clapper paladin',
   important=False,
@@ -1462,7 +1461,6 @@ internal_paladin.add_config('fox_wtm2-paladin',
 )
 
 internal_paladin.add_config('glimmer-paladin',
-  incompatible_instruction_set,
   boards=['glimmer'],
   paladin_builder_name='glimmer paladin',
   important=False,
@@ -1506,7 +1504,6 @@ internal_paladin.add_config('parrot-paladin',
 )
 
 internal_paladin.add_config('rambi-paladin',
-  incompatible_instruction_set,
   boards=['rambi'],
   paladin_builder_name='rambi paladin',
 )
@@ -1518,7 +1515,6 @@ internal_paladin.add_config('samus-paladin',
 )
 
 internal_paladin.add_config('squawks-paladin',
-  incompatible_instruction_set,
   boards=['squawks'],
   paladin_builder_name='squawks paladin',
   important=False,
@@ -1808,10 +1804,7 @@ _release.add_config('butterfly-release',
   boards=['butterfly'],
 )
 
-# clapper-release does not enable vm_tests or unittests due to the compiler
-# flags enabled for baytrail.
 _release.add_config('clapper-release',
-  incompatible_instruction_set,
   boards=['clapper'],
   hw_tests=[],
 )
@@ -1833,10 +1826,7 @@ _release.add_config('fox_wtm2-release',
   hw_tests=[],
 )
 
-# glimmer-release does not enable vm_tests or unittests due to the compiler
-# flags enabled for baytrail.
 _release.add_config('glimmer-release',
-  incompatible_instruction_set,
   boards=['glimmer'],
   hw_tests=[],
 )
@@ -1878,10 +1868,7 @@ _release.add_config('peppy-release',
   boards=['peppy'],
 )
 
-# rambi-release does not enable vm_tests or unittests due to the compiler
-# flags enabled for baytrail.
 _release.add_config('rambi-release',
-  incompatible_instruction_set,
   boards=['rambi'],
   hw_tests=[],
 )
@@ -1900,10 +1887,7 @@ _release.add_config('sonic-release',
   sonic,
 )
 
-# squawks-release does not enable vm_tests or unittests due to the compiler
-# flags enabled for baytrail.
 _release.add_config('squawks-release',
-  incompatible_instruction_set,
   boards=['squawks'],
   hw_tests=[],
 )
