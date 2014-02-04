@@ -32,13 +32,17 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "gin/public/isolate_holder.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
+static gin::IsolateHolder* mainIsolateHolder = 0;
+
 V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     : m_isolate(isolate)
+    , m_isMainThread(WTF::isMainThread())
     , m_stringCache(adoptPtr(new StringCache()))
-    , m_workerDomDataStore(0)
     , m_constructorMode(ConstructorMode::CreateNewObject)
     , m_recursionLevel(0)
 #ifndef NDEBUG
@@ -48,26 +52,32 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_shouldCollectGarbageSoon(false)
     , m_performingMicrotaskCheckpoint(false)
 {
+    if (m_isMainThread)
+        mainIsolateHolder = new gin::IsolateHolder(m_isolate);
 }
 
 V8PerIsolateData::~V8PerIsolateData()
 {
+    if (m_isMainThread) {
+        delete mainIsolateHolder;
+        mainIsolateHolder = 0;
+    }
 }
 
-V8PerIsolateData* V8PerIsolateData::create(v8::Isolate* isolate)
+v8::Isolate* V8PerIsolateData::mainThreadIsolate()
 {
-    ASSERT(isolate);
-    ASSERT(!isolate->GetData(gin::kEmbedderBlink));
-    V8PerIsolateData* data = new V8PerIsolateData(isolate);
-    isolate->SetData(gin::kEmbedderBlink, data);
-    return data;
+    ASSERT(WTF::isMainThread());
+    ASSERT(mainIsolateHolder);
+    return mainIsolateHolder->isolate();
 }
 
 void V8PerIsolateData::ensureInitialized(v8::Isolate* isolate)
 {
     ASSERT(isolate);
-    if (!isolate->GetData(gin::kEmbedderBlink))
-        create(isolate);
+    if (!isolate->GetData(gin::kEmbedderBlink)) {
+        V8PerIsolateData* data = new V8PerIsolateData(isolate);
+        isolate->SetData(gin::kEmbedderBlink, data);
+    }
 }
 
 v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()

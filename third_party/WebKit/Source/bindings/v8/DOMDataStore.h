@@ -63,7 +63,7 @@ public:
         if ((!DOMWrapperWorld::isolatedWorldsExist() && !canExistInWorker(object)) || holderContainsWrapper(holder, wrappable)) {
             if (ScriptWrappable::wrapperCanBeStoredInObject(object))
                 return ScriptWrappable::setReturnValueWithSecurityCheck<V8T>(returnValue, object);
-            return mainWorldStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
+            return DOMWrapperWorld::mainWorld()->domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
         }
         return current(returnValue.GetIsolate()).template setReturnValueFrom<V8T>(returnValue, object);
     }
@@ -83,7 +83,7 @@ public:
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object))
             return ScriptWrappable::setReturnValue(returnValue, object);
-        return mainWorldStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
+        return DOMWrapperWorld::mainWorld()->domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
     }
 
     template<typename V8T, typename T>
@@ -178,8 +178,6 @@ private:
         }
         m_wrapperMap.set(V8T::toInternalPointer(object), wrapper, configuration);
     }
-
-    static DOMDataStore& mainWorldStore();
 
     static bool canExistInWorker(void*) { return true; }
     static bool canExistInWorker(Node*) { return false; }

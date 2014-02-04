@@ -62,9 +62,9 @@ enum V8ContextEmbedderDataField {
 class V8PerContextDataHolder {
     WTF_MAKE_NONCOPYABLE(V8PerContextDataHolder);
 public:
-    static void install(v8::Handle<v8::Context> context)
+    static void install(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
     {
-        new V8PerContextDataHolder(context);
+        new V8PerContextDataHolder(context, world);
     }
 
     static V8PerContextDataHolder* from(v8::Handle<v8::Context> context)
@@ -75,14 +75,13 @@ public:
     V8PerContextData* perContextData() const { return m_perContextData; }
     void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
 
-    DOMWrapperWorld* isolatedWorld() const { return m_isolatedWorld; }
-    void setIsolatedWorld(DOMWrapperWorld* world) { m_isolatedWorld = world; }
+    DOMWrapperWorld* world() const { return m_world; }
 
 private:
-    explicit V8PerContextDataHolder(v8::Handle<v8::Context> context)
+    V8PerContextDataHolder(v8::Handle<v8::Context> context, DOMWrapperWorld* world)
         : m_context(v8::Isolate::GetCurrent(), context)
         , m_perContextData(0)
-        , m_isolatedWorld(0)
+        , m_world(world)
     {
         m_context.SetWeak(this, &V8PerContextDataHolder::weakCallback);
         context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
@@ -99,7 +98,10 @@ private:
 
     v8::Persistent<v8::Context> m_context;
     V8PerContextData* m_perContextData;
-    DOMWrapperWorld* m_isolatedWorld;
+    // This should not be a RefPtr. Otherwise, it creates a cycle:
+    // V8PerContextData => DOMWrapperWorld => DOMDataStore => global objects
+    // => Window or WorkerGlobalScope => V8PerContextData.
+    DOMWrapperWorld* m_world;
 };
 
 class V8PerContextData {

@@ -51,26 +51,9 @@ DOMDataStore::~DOMDataStore()
     m_wrapperMap.clear();
 }
 
-DOMDataStore& DOMDataStore::mainWorldStore()
-{
-    DEFINE_STATIC_LOCAL(DOMDataStore, mainWorldDOMDataStore, (MainWorld));
-    ASSERT(isMainThread());
-    return mainWorldDOMDataStore;
-}
-
 DOMDataStore& DOMDataStore::current(v8::Isolate* isolate)
 {
-    V8PerIsolateData* data = isolate ? V8PerIsolateData::from(isolate) : V8PerIsolateData::current();
-    if (UNLIKELY(!!data->workerDOMDataStore()))
-        return *data->workerDOMDataStore();
-
-    if (DOMWrapperWorld::isolatedWorldsExist()) {
-        DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(isolate->GetEnteredContext());
-        if (UNLIKELY(!!isolatedWorld))
-            return isolatedWorld->isolatedWorldDOMDataStore();
-    }
-
-    return mainWorldStore();
+    return DOMWrapperWorld::world(isolate->GetCurrentContext())->domDataStore();
 }
 
 } // namespace WebCore

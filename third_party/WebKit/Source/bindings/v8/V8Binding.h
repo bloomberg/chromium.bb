@@ -596,8 +596,6 @@ namespace WebCore {
         return v8Value;
     }
 
-    v8::Isolate* mainThreadIsolate();
-    void setMainThreadIsolate(v8::Isolate*);
     v8::Isolate* toIsolate(ExecutionContext*);
     v8::Isolate* toIsolate(Frame*);
 

@@ -45,11 +45,10 @@ struct WrapperTypeInfo;
 
 class ExternalStringVisitor;
 
-typedef WTF::Vector<DOMDataStore*> DOMDataList;
+typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
 
 class V8PerIsolateData {
 public:
-    static V8PerIsolateData* create(v8::Isolate*);
     static void ensureInitialized(v8::Isolate*);
     static V8PerIsolateData* current()
     {
@@ -62,6 +61,9 @@ public:
         return static_cast<V8PerIsolateData*>(isolate->GetData(gin::kEmbedderBlink));
     }
     static void dispose(v8::Isolate*);
+    static v8::Isolate* mainThreadIsolate();
+
+    bool isMainThread() { return m_isMainThread; };
 
     typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
 
@@ -82,23 +84,19 @@ public:
 
     v8::Persistent<v8::Value>& ensureLiveRoot();
 
-    DOMDataList& allStores() { return m_domDataList; }
+    DOMDataStoreList& allStores() { return m_domDataStoreList; }
 
     void registerDOMDataStore(DOMDataStore* domDataStore)
     {
-        ASSERT(m_domDataList.find(domDataStore) == kNotFound);
-        m_domDataList.append(domDataStore);
+        ASSERT(m_domDataStoreList.find(domDataStore) == kNotFound);
+        m_domDataStoreList.append(domDataStore);
     }
 
     void unregisterDOMDataStore(DOMDataStore* domDataStore)
     {
-        ASSERT(m_domDataList.find(domDataStore) != kNotFound);
-        m_domDataList.remove(m_domDataList.find(domDataStore));
+        ASSERT(m_domDataStoreList.find(domDataStore) != kNotFound);
+        m_domDataStoreList.remove(m_domDataStoreList.find(domDataStore));
     }
-
-    // DOMDataStore is owned outside V8PerIsolateData.
-    DOMDataStore* workerDOMDataStore() { return m_workerDomDataStore; }
-    void setWorkerDOMDataStore(DOMDataStore* store) { m_workerDomDataStore = store; }
 
     int recursionLevel() const { return m_recursionLevel; }
     int incrementRecursionLevel() { return ++m_recursionLevel; }
@@ -142,14 +140,14 @@ private:
     static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>&);
 
     v8::Isolate* m_isolate;
+    bool m_isMainThread; // Caches the result of isMainThread() for performance.
     TemplateMap m_templatesForMainWorld;
     TemplateMap m_templatesForNonMainWorld;
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
     v8::Persistent<v8::FunctionTemplate> m_lazyEventListenerToStringTemplate;
     OwnPtr<StringCache> m_stringCache;
 
-    Vector<DOMDataStore*> m_domDataList;
-    DOMDataStore* m_workerDomDataStore;
+    Vector<DOMDataStore*> m_domDataStoreList;
 
     ScopedPersistent<v8::Value> m_liveRoot;
     ScopedPersistent<v8::Context> m_regexContext;
