@@ -28,6 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum WebKitEndOfStreamError {
+    "network",
+    "decode"
+};
+
 [
     ActiveDOMObject,
     Constructor,
@@ -48,7 +53,7 @@
 
     readonly attribute DOMString readyState;
 
-    [RaisesException] void endOfStream([Default=NullString] optional DOMString error);
+    [RaisesException] void endOfStream(optional WebKitEndOfStreamError error);
 
     static boolean isTypeSupported (DOMString type);
 };

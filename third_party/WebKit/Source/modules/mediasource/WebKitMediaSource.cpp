@@ -181,6 +181,12 @@ Vector<RefPtr<TimeRanges> > WebKitMediaSource::activeRanges() const
     return activeRanges;
 }
 
+bool WebKitMediaSource::isUpdating() const
+{
+    // Prefixed MSE has no asynchronous append implementation.
+    return false;
+}
+
 bool WebKitMediaSource::isTypeSupported(const String& type)
 {
     // Section 2.1 isTypeSupported() method steps.

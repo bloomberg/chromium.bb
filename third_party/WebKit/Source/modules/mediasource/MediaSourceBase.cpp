@@ -150,21 +150,35 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
 
 void MediaSourceBase::setDuration(double duration, ExceptionState& exceptionState)
 {
+    // 2.1 http://www.w3.org/TR/media-source/#widl-MediaSource-duration
+    // 1. If the value being set is negative or NaN then throw an InvalidAccessError
+    // exception and abort these steps.
     if (duration < 0.0 || std::isnan(duration)) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
+
+    // 2. If the readyState attribute is not "open" then throw an InvalidStateError
+    // exception and abort these steps.
     if (!isOpen()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
+    // 3. If the updating attribute equals true on any SourceBuffer in sourceBuffers,
+    // then throw an InvalidStateError exception and abort these steps.
+    if (isUpdating()) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        return;
+    }
+
+    // 4. Run the duration change algorithm with new duration set to the value being
+    // assigned to this attribute.
     // Synchronously process duration change algorithm to enforce any required
     // seek is started prior to returning.
     m_attachedElement->durationChanged(duration);
     m_webMediaSource->setDuration(duration);
 }
-
 
 void MediaSourceBase::setReadyState(const AtomicString& state)
 {
@@ -191,7 +205,24 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& exc
     DEFINE_STATIC_LOCAL(const AtomicString, network, ("network", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, decode, ("decode", AtomicString::ConstructFromLiteral));
 
-    // 3.1 http://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#dom-endofstream
+    if (error == network) {
+        endOfStreamInternal(blink::WebMediaSource::EndOfStreamStatusNetworkError, exceptionState);
+    } else if (error == decode) {
+        endOfStreamInternal(blink::WebMediaSource::EndOfStreamStatusDecodeError, exceptionState);
+    } else {
+        ASSERT_NOT_REACHED(); // IDL enforcement should prevent this case.
+        exceptionState.throwTypeError("parameter 1 is not a valid enum value.");
+    }
+}
+
+void MediaSourceBase::endOfStream(ExceptionState& exceptionState)
+{
+    endOfStreamInternal(blink::WebMediaSource::EndOfStreamStatusNoError, exceptionState);
+}
+
+void MediaSourceBase::endOfStreamInternal(const blink::WebMediaSource::EndOfStreamStatus eosStatus, ExceptionState& exceptionState)
+{
+    // 2.2 http://www.w3.org/TR/media-source/#widl-MediaSource-endOfStream-void-EndOfStreamError-error
     // 1. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
@@ -199,21 +230,19 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& exc
         return;
     }
 
-    WebMediaSource::EndOfStreamStatus eosStatus = WebMediaSource::EndOfStreamStatusNoError;
-
-    if (error.isNull() || error.isEmpty()) {
-        eosStatus = WebMediaSource::EndOfStreamStatusNoError;
-    } else if (error == network) {
-        eosStatus = WebMediaSource::EndOfStreamStatusNetworkError;
-    } else if (error == decode) {
-        eosStatus = WebMediaSource::EndOfStreamStatusDecodeError;
-    } else {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+    // 2. If the updating attribute equals true on any SourceBuffer in sourceBuffers, then throw an
+    // InvalidStateError exception and abort these steps.
+    if (isUpdating()) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
-    // 2. Change the readyState attribute value to "ended".
+    // 3. Run the end of stream algorithm with the error parameter set to error.
+    //   1. Change the readyState attribute value to "ended".
+    //   2. Queue a task to fire a simple event named sourceended at the MediaSource.
     setReadyState(endedKeyword());
+
+    //   3. Do various steps based on |eosStatus|.
     m_webMediaSource->markEndOfStream(eosStatus);
 }
 

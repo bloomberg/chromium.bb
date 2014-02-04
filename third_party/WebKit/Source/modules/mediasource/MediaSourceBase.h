@@ -77,7 +77,7 @@ public:
     const AtomicString& readyState() const { return m_readyState; }
     void setReadyState(const AtomicString&);
     void endOfStream(const AtomicString& error, ExceptionState&);
-
+    void endOfStream(ExceptionState&);
 
     // ActiveDOMObject interface
     virtual bool hasPendingActivity() const OVERRIDE FINAL;
@@ -94,12 +94,14 @@ protected:
 
     virtual void onReadyStateChange(const AtomicString& oldState, const AtomicString& newState) = 0;
     virtual Vector<RefPtr<TimeRanges> > activeRanges() const = 0;
+    virtual bool isUpdating() const = 0;
 
     PassOwnPtr<blink::WebSourceBuffer> createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState&);
     void scheduleEvent(const AtomicString& eventName);
     GenericEventQueue* asyncEventQueue() const { return m_asyncEventQueue.get(); }
 
 private:
+    void endOfStreamInternal(const blink::WebMediaSource::EndOfStreamStatus, ExceptionState&);
     OwnPtr<blink::WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
     OwnPtr<GenericEventQueue> m_asyncEventQueue;

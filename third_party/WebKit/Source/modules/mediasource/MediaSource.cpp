@@ -186,6 +186,17 @@ Vector<RefPtr<TimeRanges> > MediaSource::activeRanges() const
     return activeRanges;
 }
 
+bool MediaSource::isUpdating() const
+{
+    // Return true if any member of |m_sourceBuffers| is updating.
+    for (unsigned long i = 0; i < m_sourceBuffers->length(); ++i) {
+        if (m_sourceBuffers->item(i)->updating())
+            return true;
+    }
+
+    return false;
+}
+
 bool MediaSource::isTypeSupported(const String& type)
 {
     WTF_LOG(Media, "MediaSource::isTypeSupported(%s)", type.ascii().data());
