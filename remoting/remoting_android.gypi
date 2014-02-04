@@ -54,8 +54,9 @@
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/layout',
               'files': [
-                'resources/layout/main.xml',
+                'resources/layout/desktop.xml',
                 'resources/layout/host.xml',
+                'resources/layout/main.xml',
                 'resources/layout/pin_dialog.xml',
               ],
             },

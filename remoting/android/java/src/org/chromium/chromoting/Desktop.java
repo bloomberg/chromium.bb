@@ -10,7 +10,9 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageButton;
 
 import org.chromium.chromoting.jni.JniInterface;
 
@@ -19,14 +21,22 @@ import org.chromium.chromoting.jni.JniInterface;
  */
 public class Desktop extends Activity {
     /** The surface that displays the remote host's desktop feed. */
-    private DesktopView remoteHostDesktop;
+    private DesktopView mRemoteHostDesktop;
+
+    /** The button used to show the action bar. */
+    private ImageButton mOverlayButton;
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        remoteHostDesktop = new DesktopView(this);
-        setContentView(remoteHostDesktop);
+        setContentView(R.layout.desktop);
+        mRemoteHostDesktop = (DesktopView)findViewById(R.id.desktop_view);
+        mOverlayButton = (ImageButton)findViewById(R.id.desktop_overlay_button);
+        mRemoteHostDesktop.setDesktop(this);
+
+        // Ensure the button is initially hidden.
+        showActionBar();
     }
 
     /** Called when the activity is finally finished. */
@@ -40,7 +50,7 @@ public class Desktop extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        remoteHostDesktop.onScreenConfigurationChanged();
+        mRemoteHostDesktop.onScreenConfigurationChanged();
     }
 
     /** Called to initialize the action bar. */
@@ -50,6 +60,21 @@ public class Desktop extends Activity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    public void showActionBar() {
+        mOverlayButton.setVisibility(View.INVISIBLE);
+        getActionBar().show();
+    }
+
+    public void hideActionBar() {
+        mOverlayButton.setVisibility(View.VISIBLE);
+        getActionBar().hide();
+    }
+
+    /** The overlay button's onClick handler. */
+    public void onOverlayButtonPressed(View view) {
+        showActionBar();
+    }
+
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -57,12 +82,15 @@ public class Desktop extends Activity {
             case R.id.actionbar_keyboard:
                 ((InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).toggleSoftInput(0, 0);
                 return true;
+
             case R.id.actionbar_hide:
-                getActionBar().hide();
+                hideActionBar();
                 return true;
+
             case R.id.actionbar_disconnect:
                 JniInterface.disconnectFromHost();
                 return true;
+
             case R.id.actionbar_send_ctrl_alt_del:
                 {
                     int[] keys = {
@@ -78,6 +106,7 @@ public class Desktop extends Activity {
                     }
                 }
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -97,18 +126,22 @@ public class Desktop extends Activity {
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_2, depressed);
                 break;
+
             case KeyEvent.KEYCODE_POUND:
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_3, depressed);
                 break;
+
             case KeyEvent.KEYCODE_STAR:
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_8, depressed);
                 break;
+
             case KeyEvent.KEYCODE_PLUS:
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_SHIFT_LEFT, depressed);
                 JniInterface.keyboardAction(KeyEvent.KEYCODE_EQUALS, depressed);
                 break;
+
             default:
                 // We try to send all other key codes to the host directly.
                 JniInterface.keyboardAction(event.getKeyCode(), depressed);

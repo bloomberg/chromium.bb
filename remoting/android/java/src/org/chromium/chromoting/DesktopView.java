@@ -4,8 +4,6 @@
 
 package org.chromium.chromoting;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -17,6 +15,7 @@ import android.graphics.Shader;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.text.InputType;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -37,7 +36,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         SurfaceHolder.Callback {
     private RenderData mRenderData;
     private TouchInputHandler mInputHandler;
-    private ActionBar mActionBar;
+
+    /** The parent Desktop activity. */
+    private Desktop mDesktop;
 
     // Flag to prevent multiple repaint requests from being backed up. Requests for repainting will
     // be dropped if this is already set to true. This is used by the main thread and the painting
@@ -119,18 +120,21 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     /** Whether the TouchInputHandler has requested animation to be performed. */
     private boolean mInputAnimationRunning = false;
 
-    public DesktopView(Activity context) {
-        super(context);
+    public DesktopView(Context context, AttributeSet attributes) {
+        super(context, attributes);
 
         // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
         setFocusableInTouchMode(true);
 
         mRenderData = new RenderData();
         mInputHandler = new TrackingInputHandler(this, context, mRenderData);
-        mActionBar = context.getActionBar();
         mRepaintPending = false;
 
         getHolder().addCallback(this);
+    }
+
+    public void setDesktop(Desktop desktop) {
+        mDesktop = desktop;
     }
 
     /** Request repainting of the desktop view. */
@@ -360,7 +364,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
     @Override
     public void showActionBar() {
-        mActionBar.show();
+        mDesktop.showActionBar();
     }
 
     @Override
