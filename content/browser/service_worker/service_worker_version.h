@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -56,7 +58,8 @@ struct ServiceWorkerFetchRequest;
 // being deleted from memory. This happens when a version is replaced
 // as well as at browser shutdown.
 class CONTENT_EXPORT ServiceWorkerVersion
-    : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerVersion>) {
+    : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerVersion>),
+      public EmbeddedWorkerInstance::Observer {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
 
@@ -82,14 +85,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // Starts an embedded worker for this version.
-  // It is not valid to call this while there's other inflight start or
-  // stop process running.
   // This returns OK (success) if the worker is already running.
   void StartWorker(const StatusCallback& callback);
 
   // Starts an embedded worker for this version.
-  // It is not valid to call this while there's other inflight start or
-  // stop process running.
   // This returns OK (success) if the worker is already stopped.
   void StopWorker(const StatusCallback& callback);
 
@@ -107,23 +106,24 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
+  // EmbeddedWorkerInstance::Observer overrides:
+  virtual void OnStarted() OVERRIDE;
+  virtual void OnStopped() OVERRIDE;
+  virtual void OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
 
-  // Embedded worker observer classes.
-  class WorkerObserverBase;
-  class StartObserver;
-  class StopObserver;
-
-  ~ServiceWorkerVersion();
+  virtual ~ServiceWorkerVersion();
 
   const int64 version_id_;
 
   bool is_shutdown_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
-
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
-  scoped_ptr<EmbeddedWorkerInstance::Observer> observer_;
+
+  std::vector<StatusCallback> start_callbacks_;
+  std::vector<StatusCallback> stop_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };

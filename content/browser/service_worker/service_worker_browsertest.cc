@@ -5,13 +5,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/location.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -42,21 +42,6 @@ void RunOnIOThread(const base::Closure& closure) {
       base::Bind(&RunAndQuit, closure, run_loop.QuitClosure(),
                  base::MessageLoopProxy::current()));
   run_loop.Run();
-}
-
-// TODO(kinuko): Factor out these common test helpers to a separate file.
-template <typename Arg>
-void VerifyResult(const tracked_objects::Location& where,
-                  const base::Closure& quit,
-                  Arg expected, Arg actual) {
-  EXPECT_EQ(expected, actual) << where.ToString();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit);
-}
-
-template <typename Arg> base::Callback<void(Arg)>
-CreateVerifier(const tracked_objects::Location& where,
-               const base::Closure& quit, Arg expected) {
-  return base::Bind(&VerifyResult<Arg>, where, quit, expected);
 }
 
 }  // namespace
@@ -201,8 +186,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
   void StartOnIOThread(const std::string& worker_url,
-                       ServiceWorkerStatusCode expected,
-                       const base::Closure& done) {
+                       const base::Closure& done,
+                       ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     const int64 registration_id = 1L;
@@ -216,13 +201,13 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         wrapper()->context()->embedded_worker_registry(),
         version_id);
     AssociateProcessToWorker(version_->embedded_worker());
-    version_->StartWorker(CreateVerifier(FROM_HERE, done, expected));
+    version_->StartWorker(CreateReceiver(BrowserThread::UI, done, result));
   }
 
-  void StopOnIOThread(const base::Closure& done) {
+  void StopOnIOThread(const base::Closure& done,
+                      ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(version_);
-    version_->StopWorker(
-        CreateVerifier(FROM_HERE, done, SERVICE_WORKER_OK));
+    version_->StopWorker(CreateReceiver(BrowserThread::UI, done, result));
   }
 
  protected:
@@ -260,20 +245,25 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartAndStop) {
       shell(), embedded_test_server()->GetURL("/service_worker/index.html"), 1);
 
   // Start a worker.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   base::RunLoop start_run_loop;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&self::StartOnIOThread, this,
                                      "/service_worker/worker.js",
-                                     SERVICE_WORKER_OK,
-                                     start_run_loop.QuitClosure()));
+                                     start_run_loop.QuitClosure(),
+                                     &status));
   start_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
 
   // Stop the worker.
+  status = SERVICE_WORKER_ERROR_FAILED;
   base::RunLoop stop_run_loop;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&self::StopOnIOThread, this,
-                                     stop_run_loop.QuitClosure()));
+                                     stop_run_loop.QuitClosure(),
+                                     &status));
   stop_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
@@ -282,13 +272,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
       shell(), embedded_test_server()->GetURL("/service_worker/index.html"), 1);
 
   // Start a worker for nonexistent URL.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   base::RunLoop start_run_loop;
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&self::StartOnIOThread, this,
                                      "/service_worker/nonexistent.js",
-                                     SERVICE_WORKER_ERROR_START_WORKER_FAILED,
-                                     start_run_loop.QuitClosure()));
+                                     start_run_loop.QuitClosure(),
+                                     &status));
   start_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
 }
 
 }  // namespace content

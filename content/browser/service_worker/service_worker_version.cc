@@ -19,89 +19,15 @@ void RunSoon(const base::Closure& callback) {
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
+template <typename CallbackArray, typename Arg>
+void RunCallbacks(const CallbackArray& callbacks, const Arg& arg) {
+  for (typename CallbackArray::const_iterator i = callbacks.begin();
+       i != callbacks.end(); ++i)
+    (*i).Run(arg);
+}
+
 }  // namespace
 
-//-------------------------------------------------------------------
-class ServiceWorkerVersion::WorkerObserverBase
-    : public EmbeddedWorkerInstance::Observer {
- public:
-  virtual ~WorkerObserverBase() {
-    version_->embedded_worker_->RemoveObserver(this);
-  }
-
-  virtual void OnStarted() OVERRIDE { NOTREACHED(); }
-  virtual void OnStopped() OVERRIDE { NOTREACHED(); }
-  virtual void OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    NOTREACHED();
-  }
-
- protected:
-  explicit WorkerObserverBase(ServiceWorkerVersion* version)
-      : version_(version) {
-    version_->embedded_worker_->AddObserver(this);
-  }
-
-  ServiceWorkerVersion* version() { return version_; }
-
- private:
-  ServiceWorkerVersion* version_;
-};
-
-
-// Observer class that is attached while the worker is starting.
-class ServiceWorkerVersion::StartObserver : public WorkerObserverBase {
- public:
-  typedef ServiceWorkerVersion::StatusCallback StatusCallback;
-
-  StartObserver(ServiceWorkerVersion* version, const StatusCallback& callback)
-      : WorkerObserverBase(version),
-        callback_(callback) {}
-  virtual ~StartObserver() {}
-
-  virtual void OnStarted() OVERRIDE {
-    Completed(SERVICE_WORKER_OK);
-  }
-
-  virtual void OnStopped() OVERRIDE {
-    Completed(SERVICE_WORKER_ERROR_START_WORKER_FAILED);
-  }
-
- private:
-  void Completed(ServiceWorkerStatusCode status) {
-    StatusCallback callback = callback_;
-    version()->observer_.reset();
-    callback.Run(status);
-  }
-
-  StatusCallback callback_;
-  DISALLOW_COPY_AND_ASSIGN(StartObserver);
-};
-
-// Observer class that is attached while the worker is stopping.
-class ServiceWorkerVersion::StopObserver : public WorkerObserverBase {
- public:
-  typedef ServiceWorkerVersion::StatusCallback StatusCallback;
-  StopObserver(ServiceWorkerVersion* version, const StatusCallback& callback)
-      : WorkerObserverBase(version),
-        callback_(callback) {}
-  virtual ~StopObserver() {}
-
-  virtual void OnStopped() OVERRIDE {
-    StatusCallback callback = callback_;
-    version()->observer_.reset();
-    callback.Run(SERVICE_WORKER_OK);
-  }
-
-  virtual void OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    // We just ignore messages, as we're stopping.
-  }
-
- private:
-  StatusCallback callback_;
-  DISALLOW_COPY_AND_ASSIGN(StopObserver);
-};
-
-//-------------------------------------------------------------------
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
     EmbeddedWorkerRegistry* worker_registry,
@@ -109,8 +35,10 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     : version_id_(version_id),
       is_shutdown_(false),
       registration_(registration) {
-  if (worker_registry)
+  if (worker_registry) {
     embedded_worker_ = worker_registry->CreateWorker();
+    embedded_worker_->AddObserver(this);
+  }
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() { DCHECK(is_shutdown_); }
@@ -118,40 +46,51 @@ ServiceWorkerVersion::~ServiceWorkerVersion() { DCHECK(is_shutdown_); }
 void ServiceWorkerVersion::Shutdown() {
   is_shutdown_ = true;
   registration_ = NULL;
-  embedded_worker_.reset();
+  if (embedded_worker_) {
+    embedded_worker_->RemoveObserver(this);
+    embedded_worker_.reset();
+  }
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
   DCHECK(!is_shutdown_);
+  DCHECK(embedded_worker_);
   DCHECK(registration_);
-  DCHECK(!observer_);
   if (status() == RUNNING) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
     return;
   }
-  observer_.reset(new StartObserver(this, callback));
-  ServiceWorkerStatusCode status = embedded_worker_->Start(
-      version_id_,
-      registration_->script_url());
-  if (status != SERVICE_WORKER_OK) {
-    observer_.reset();
-    RunSoon(base::Bind(callback, status));
+  if (status() == STOPPING) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    return;
   }
+  if (start_callbacks_.empty()) {
+    ServiceWorkerStatusCode status = embedded_worker_->Start(
+        version_id_,
+        registration_->script_url());
+    if (status != SERVICE_WORKER_OK) {
+      RunSoon(base::Bind(callback, status));
+      return;
+    }
+  }
+  start_callbacks_.push_back(callback);
 }
 
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
   DCHECK(!is_shutdown_);
-  DCHECK(!observer_);
+  DCHECK(embedded_worker_);
   if (status() == STOPPED) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
     return;
   }
-  observer_.reset(new StopObserver(this, callback));
-  ServiceWorkerStatusCode status = embedded_worker_->Stop();
-  if (status != SERVICE_WORKER_OK) {
-    observer_.reset();
-    RunSoon(base::Bind(callback, status));
+  if (stop_callbacks_.empty()) {
+    ServiceWorkerStatusCode status = embedded_worker_->Stop();
+    if (status != SERVICE_WORKER_OK) {
+      RunSoon(base::Bind(callback, status));
+      return;
+    }
   }
+  stop_callbacks_.push_back(callback);
 }
 
 bool ServiceWorkerVersion::DispatchFetchEvent(
@@ -169,6 +108,29 @@ void ServiceWorkerVersion::AddProcessToWorker(int process_id) {
 
 void ServiceWorkerVersion::RemoveProcessToWorker(int process_id) {
   embedded_worker_->ReleaseProcessReference(process_id);
+}
+
+void ServiceWorkerVersion::OnStarted() {
+  DCHECK_EQ(RUNNING, status());
+  // Fire all start callbacks.
+  RunCallbacks(start_callbacks_, SERVICE_WORKER_OK);
+  start_callbacks_.clear();
+}
+
+void ServiceWorkerVersion::OnStopped() {
+  DCHECK_EQ(STOPPED, status());
+  // Fire all stop callbacks.
+  RunCallbacks(stop_callbacks_, SERVICE_WORKER_OK);
+  stop_callbacks_.clear();
+
+  // If there're any callbacks that were waiting start let them know it's
+  // failed.
+  RunCallbacks(start_callbacks_, SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+  start_callbacks_.clear();
+}
+
+void ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
+  NOTREACHED();
 }
 
 }  // namespace content
