@@ -3,12 +3,14 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-"""Runs through isolate_test_cases.py all the tests cases in a google-test
+"""Runs through isolate_test_cases.py ALL the tests cases in a google-test
 executable, grabs the failures and traces them to generate a new .isolate.
 
 This scripts requires a .isolated file. This file is generated from a .isolate
 file. You can use 'GYP_DEFINES=test_isolation_mode=check ninja foo_test_run' to
 generate it.
+
+If you want to trace a single test case, you want isolate_test_cases.py.
 """
 
 import json

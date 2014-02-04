@@ -3,8 +3,8 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-"""Traces each test cases of a google-test executable individually and generates
-or updates an .isolate file.
+"""Traces one, multiple or all test cases of a google-test executable
+individually and generates or updates an .isolate file.
 
 If the trace hangs up, you can still take advantage of the traces up to the
 points it got to by Ctrl-C'ing out, then running isolate.py merge -r
