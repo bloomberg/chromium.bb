@@ -631,7 +631,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     if (mergeDestination == startOfParagraphToMove)
         return;
 
-    VisiblePosition endOfParagraphToMove = endOfParagraph(startOfParagraphToMove);
+    VisiblePosition endOfParagraphToMove = endOfParagraph(startOfParagraphToMove, CanSkipOverEditingBoundary);
 
     if (mergeDestination == endOfParagraphToMove)
         return;
