@@ -2238,8 +2238,8 @@
    fun:CGContextDrawImage
    fun:__-[NSImageRep drawInRect:fromRect:operation:fraction:respectFlipped:hints:]_block_invoke_1
    fun:-[NSImageRep drawInRect:fromRect:operation:fraction:respectFlipped:hints:]
-   fun:_ZN12_GLOBAL__N_129NSImageOrNSImageRepToSkBitmapEP7NSImageP10NSImageRep7_NSSizeb
-   fun:_ZN3gfx20NSImageRepToSkBitmapEP10NSImageRep7_NSSizeb
+   fun:_ZN12_GLOBAL__N_*NSImageOrNSImageRepToSkBitmap*
+   fun:_ZN3gfx*NSImageRepToSkBitmap*
    fun:_ZN3gfx27ImageSkiaFromResizedNSImageEP7NSImage7_NSSize
    fun:_ZN3gfx20ImageSkiaFromNSImageEP7NSImage
    fun:_ZNK3gfx5Image11ToImageSkiaEv
