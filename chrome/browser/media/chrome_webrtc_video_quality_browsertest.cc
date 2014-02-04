@@ -318,7 +318,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
 };
 
 // Flaky on Linux. http://crbug.com/340197.
-#if defined(OS_LINUX)
+// Flaky on Windows. http://crbug.com/340609.
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_MANUAL_TestVGAVideoQuality DISABLED_MANUAL_TestVGAVideoQuality
 #else
 #define MAYBE_MANUAL_TestVGAVideoQuality MANUAL_TestVGAVideoQuality
