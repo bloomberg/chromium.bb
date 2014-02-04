@@ -23,8 +23,6 @@
 #include "config.h"
 #include "core/rendering/svg/SVGInlineFlowBox.h"
 
-#include "core/dom/DocumentMarkerController.h"
-#include "core/dom/RenderedDocumentMarker.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
@@ -47,7 +45,7 @@ void SVGInlineFlowBox::paintSelectionBackground(PaintInfo& paintInfo)
     }
 }
 
-void SVGInlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint&, LayoutUnit, LayoutUnit)
+void SVGInlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit, LayoutUnit)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
     ASSERT(!paintInfo.context->paintingDisabled());
@@ -57,12 +55,8 @@ void SVGInlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint&, LayoutUni
 
     SVGRenderingContext renderingContext(boxRenderer, paintInfo, SVGRenderingContext::SaveGraphicsContext);
     if (renderingContext.isRenderingPrepared()) {
-        for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
-            if (child->isSVGInlineTextBox())
-                computeTextMatchMarkerRectForRenderer(toRenderSVGInlineText(toSVGInlineTextBox(child)->textRenderer()));
-
-            child->paint(paintInfo, LayoutPoint(), 0, 0);
-        }
+        for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
+            child->paint(paintInfo, paintOffset, 0, 0);
     }
 }
 
@@ -75,68 +69,6 @@ FloatRect SVGInlineFlowBox::calculateBoundaries() const
         childRect.unite(child->calculateBoundaries());
     }
     return childRect;
-}
-
-void SVGInlineFlowBox::computeTextMatchMarkerRectForRenderer(RenderSVGInlineText* textRenderer)
-{
-    ASSERT(textRenderer);
-
-    Node* node = textRenderer->node();
-    if (!node || !node->inDocument())
-        return;
-
-    RenderStyle* style = textRenderer->style();
-    ASSERT(style);
-
-    AffineTransform fragmentTransform;
-    Document& document = textRenderer->document();
-    Vector<DocumentMarker*> markers = document.markers()->markersFor(textRenderer->node());
-
-    Vector<DocumentMarker*>::iterator markerEnd = markers.end();
-    for (Vector<DocumentMarker*>::iterator markerIt = markers.begin(); markerIt != markerEnd; ++markerIt) {
-        DocumentMarker* marker = *markerIt;
-
-        // SVG is only interessted in the TextMatch marker, for now.
-        if (marker->type() != DocumentMarker::TextMatch)
-            continue;
-
-        FloatRect markerRect;
-        for (InlineTextBox* box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
-            if (!box->isSVGInlineTextBox())
-                continue;
-
-            SVGInlineTextBox* textBox = toSVGInlineTextBox(box);
-
-            int markerStartPosition = max<int>(marker->startOffset() - textBox->start(), 0);
-            int markerEndPosition = min<int>(marker->endOffset() - textBox->start(), textBox->len());
-
-            if (markerStartPosition >= markerEndPosition)
-                continue;
-
-            int fragmentStartPosition = 0;
-            int fragmentEndPosition = 0;
-
-            const Vector<SVGTextFragment>& fragments = textBox->textFragments();
-            unsigned textFragmentsSize = fragments.size();
-            for (unsigned i = 0; i < textFragmentsSize; ++i) {
-                const SVGTextFragment& fragment = fragments.at(i);
-
-                fragmentStartPosition = markerStartPosition;
-                fragmentEndPosition = markerEndPosition;
-                if (!textBox->mapStartEndPositionsIntoFragmentCoordinates(fragment, fragmentStartPosition, fragmentEndPosition))
-                    continue;
-
-                FloatRect fragmentRect = textBox->selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
-                fragment.buildFragmentTransform(fragmentTransform);
-                if (!fragmentTransform.isIdentity())
-                    fragmentRect = fragmentTransform.mapRect(fragmentRect);
-
-                markerRect.unite(fragmentRect);
-            }
-        }
-
-        toRenderedDocumentMarker(marker)->setRenderedRect(textRenderer->localToAbsoluteQuad(markerRect).enclosingBoundingBox());
-    }
 }
 
 } // namespace WebCore

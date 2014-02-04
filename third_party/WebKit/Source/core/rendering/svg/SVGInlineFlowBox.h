@@ -44,8 +44,6 @@ public:
 
     virtual FloatRect calculateBoundaries() const OVERRIDE;
 
-    static void computeTextMatchMarkerRectForRenderer(RenderSVGInlineText*);
-
 private:
     float m_logicalHeight;
 };
