@@ -76,6 +76,16 @@ ContainerNode* parent(const Node* node, ParentDetails* details)
     return toContainerNode(walker.traverseParent(walker.get(), details));
 }
 
+bool contains(const ContainerNode* container, const Node* node)
+{
+    while (node) {
+        if (node == container)
+            return true;
+        node = NodeRenderingTraversal::parent(node);
+    }
+    return false;
+}
+
 Node* nextSibling(const Node* node)
 {
     ComposedTreeWalker walker(node);

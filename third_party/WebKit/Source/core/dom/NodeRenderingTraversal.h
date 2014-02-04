@@ -62,6 +62,7 @@ private:
 
 ContainerNode* parent(const Node*);
 ContainerNode* parent(const Node*, ParentDetails*);
+bool contains(const ContainerNode*, const Node*);
 Node* nextSibling(const Node*);
 Node* previousSibling(const Node*);
 RenderObject* nextSiblingRenderer(const Node*);

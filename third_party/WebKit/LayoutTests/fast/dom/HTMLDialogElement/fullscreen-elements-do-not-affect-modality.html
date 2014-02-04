@@ -3,6 +3,10 @@
 <head>
 <script src="../../../fullscreen/full-screen-test.js"></script>
 <style>
+::backdrop {
+    display: none;
+}
+
 #bottom-dialog {
     top: 100px;
     left: 100px;
@@ -41,7 +45,7 @@ bottomDialog = document.querySelector('#bottom-dialog');
 topDialog = document.querySelector('#top-dialog');
 bottomDiv = document.querySelector('#bottom-div');
 topDiv = document.querySelector('#top-div');
-inert = document.querySelector('#inert-element');
+inertDiv = document.querySelector('#inert-element');
 
 expectClick = null;
 document.addEventListener('click', function(e) {
@@ -70,14 +74,14 @@ function shouldBeActiveModalDialog(expected)
     expectClick = expected;
     clickOn(expected);
     expectClick = document.documentElement;
-    clickOn(inert);
+    clickOn(inertDiv);
 }
 
 function shouldBeNoModalDialog()
 {
     consoleWrite('there should be no modal dialog');
-    expectClick = inert;
-    clickOn(inert);
+    expectClick = inertDiv;
+    clickOn(inertDiv);
 }
 
 document.addEventListener('webkitfullscreenchange', function(e) {
