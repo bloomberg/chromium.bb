@@ -48,6 +48,7 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
     -req -days 3650 \
     -in "out/$eku_test_root.csr" \
     -extensions ca_cert \
+    -extfile ca.cnf \
     -signkey "out/$eku_test_root.key" \
     -out "out/$eku_test_root.pem" \
     -text

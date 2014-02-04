@@ -60,6 +60,7 @@ COMMON_NAME="C Root CA" \
     -req -days 3650 \
     -in out/C.csr \
     -extensions ca_cert \
+    -extfile client-certs.cnf \
     -signkey out/C.key \
     -out out/C.pem
 

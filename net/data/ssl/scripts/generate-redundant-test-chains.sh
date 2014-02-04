@@ -56,6 +56,7 @@ CA_COMMON_NAME="D Root CA" \
     -req -days 3650 \
     -in out/D.csr \
     -extensions ca_cert \
+    -extfile redundant-ca.cnf \
     -signkey out/D.key \
     -out out/D.pem \
     -text
@@ -75,6 +76,7 @@ CA_COMMON_NAME="C CA" \
     -req -days 3650 \
     -in out/C2.csr \
     -extensions ca_cert \
+    -extfile redundant-ca.cnf \
     -signkey out/C.key \
     -out out/C2.pem \
     -text

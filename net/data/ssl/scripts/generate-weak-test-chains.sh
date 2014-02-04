@@ -63,6 +63,7 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
     -req -days 3650 \
     -in out/2048-rsa-root.csr \
     -extensions ca_cert \
+    -extfile ca.cnf \
     -signkey out/2048-rsa-root.key \
     -out out/2048-rsa-root.pem \
     -text
