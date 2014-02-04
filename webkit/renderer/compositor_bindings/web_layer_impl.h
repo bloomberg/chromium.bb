@@ -92,6 +92,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void setDrawsContent(bool draws_content);
   virtual bool drawsContent() const;
   virtual void setPreserves3D(bool preserves_3d);
+  virtual void setShouldFlattenTransform(bool flatten);
+  virtual void setRenderingContext(int context);
   virtual void setUseParentBackfaceVisibility(bool visible);
   virtual void setBackgroundColor(blink::WebColor color);
   virtual blink::WebColor backgroundColor() const;

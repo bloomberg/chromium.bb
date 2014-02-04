@@ -192,6 +192,10 @@ void WebLayerImpl::setPreserves3D(bool preserve3D) {
   layer_->SetPreserves3d(preserve3D);
 }
 
+void WebLayerImpl::setShouldFlattenTransform(bool flatten) { }
+
+void WebLayerImpl::setRenderingContext(int context) { }
+
 void WebLayerImpl::setUseParentBackfaceVisibility(
     bool use_parent_backface_visibility) {
   layer_->set_use_parent_backface_visibility(use_parent_backface_visibility);
