@@ -112,20 +112,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
 
 
 ################################################################################
-# Exports common GYP variables based on variable DEFINES and CHROME_SRC.
-################################################################################
-common_gyp_vars() {
-  export GYP_DEFINES="${DEFINES}"
-
-  # TODO(thakis): Remove this after a week or two. Sourcing envsetup.sh used to
-  # set this variable, but now that all_android.gyp is gone having it set will
-  # lead to errors, so explicitly unset it to remove it from the environment of
-  # developers who keep their shells open for weeks (most of them, probably).
-  unset CHROMIUM_GYP_FILE
-}
-
-
-################################################################################
 # Prints out help message on usage.
 ################################################################################
 print_usage() {
@@ -197,7 +183,7 @@ sdk_build_init() {
 
   DEFINES+="${sdk_defines}"
 
-  common_gyp_vars
+  export GYP_DEFINES="${DEFINES}"
 
   if [[ -n "$CHROME_ANDROID_BUILD_WEBVIEW" ]]; then
     # Can not build WebView with NDK/SDK because it needs the Android build
