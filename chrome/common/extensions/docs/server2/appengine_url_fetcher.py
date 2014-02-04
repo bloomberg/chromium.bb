@@ -33,7 +33,7 @@ class AppEngineUrlFetcher(object):
   async fetches.
   """
   def __init__(self, base_path=None):
-    assert base_path is None or not base_path.endswith('/')
+    assert base_path is None or not base_path.endswith('/'), base_path
     self._base_path = base_path
 
   def Fetch(self, url, username=None, password=None):
@@ -52,7 +52,7 @@ class AppEngineUrlFetcher(object):
     return Future(delegate=_AsyncFetchDelegate(rpc))
 
   def _FromBasePath(self, url):
-    assert not url.startswith('/')
+    assert not url.startswith('/'), url
     if self._base_path is not None:
       url = posixpath.join(self._base_path, url) if url else self._base_path
     return url

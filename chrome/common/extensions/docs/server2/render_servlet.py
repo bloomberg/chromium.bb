@@ -36,8 +36,6 @@ class RenderServlet(Servlet):
   def Get(self):
     ''' Render the page for a request.
     '''
-    # TODO(kalman): a consistent path syntax (even a Path class?) so that we
-    # can stop being so conservative with stripping and adding back the '/'s.
     path = self._request.path.lstrip('/')
     server_instance = self._delegate.CreateServerInstance()
 
