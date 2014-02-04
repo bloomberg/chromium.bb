@@ -742,19 +742,6 @@ RenderObject* FrameView::layoutRoot(bool onlyDuringLayout) const
     return onlyDuringLayout && layoutPending() ? 0 : m_layoutSubtreeRoot;
 }
 
-static inline void collectFrameViewChildren(FrameView* frameView, Vector<RefPtr<FrameView> >& frameViews)
-{
-    const HashSet<RefPtr<Widget> >* viewChildren = frameView->children();
-    ASSERT(viewChildren);
-
-    const HashSet<RefPtr<Widget> >::iterator end = viewChildren->end();
-    for (HashSet<RefPtr<Widget> >::iterator current = viewChildren->begin(); current != end; ++current) {
-        Widget* widget = (*current).get();
-        if (widget->isFrameView())
-            frameViews.append(toFrameView(widget));
-    }
-}
-
 inline void FrameView::forceLayoutParentViewIfNeeded()
 {
     RenderPart* ownerRenderer = m_frame->ownerRenderer();
@@ -2839,11 +2826,13 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     if (needsLayout())
         layout();
 
-    // Grab a copy of the children() set, as it may be mutated by the following updateLayoutAndStyleIfNeededRecursive
-    // calls, as they can potentially re-enter a layout of the parent frame view, which may add/remove scrollbars
-    // and thus mutates the children() set.
+    // FIXME: Calling layout() shouldn't trigger scripe execution or have any
+    // observable effects on the frame tree but we're not quite there yet.
     Vector<RefPtr<FrameView> > frameViews;
-    collectFrameViewChildren(this, frameViews);
+    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+        if (FrameView* view = child->view())
+            frameViews.append(view);
+    }
 
     const Vector<RefPtr<FrameView> >::iterator end = frameViews.end();
     for (Vector<RefPtr<FrameView> >::iterator it = frameViews.begin(); it != end; ++it)
