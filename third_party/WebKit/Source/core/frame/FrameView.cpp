@@ -379,13 +379,15 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     // Autosized font sizes depend on the width of the viewing area.
     if (newRect.width() != oldRect.width()) {
-        Page* page = m_frame->page();
-        bool textAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(page, page->settings().textAutosizingEnabled());
-        if (isMainFrame() && textAutosizingEnabled) {
-            TextAutosizer* textAutosizer = m_frame->document()->textAutosizer();
-            if (textAutosizer) {
-                for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
-                    textAutosizer->recalculateMultipliers();
+        if (isMainFrame()) {
+            Page* page = m_frame->page();
+            bool textAutosizingEnabled = InspectorInstrumentation::overrideTextAutosizing(page, page->settings().textAutosizingEnabled());
+            if (textAutosizingEnabled) {
+                TextAutosizer* textAutosizer = m_frame->document()->textAutosizer();
+                if (textAutosizer) {
+                    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
+                        textAutosizer->recalculateMultipliers();
+                }
             }
         }
     }
