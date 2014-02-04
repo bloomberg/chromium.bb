@@ -87,6 +87,7 @@ protected:
     RefPtr<Document> document;
     RefPtr<DocumentTimeline> timeline;
     RefPtr<Player> player;
+    TrackExceptionState exceptionState;
 };
 
 TEST_F(AnimationPlayerTest, InitialState)
@@ -407,6 +408,59 @@ TEST_F(AnimationPlayerTest, ReverseLimitsPlayer)
     player->reverse();
     EXPECT_TRUE(player->finished());
     EXPECT_EQ(-10, player->currentTime());
+}
+
+
+TEST_F(AnimationPlayerTest, Finish)
+{
+    player->finish(exceptionState);
+    EXPECT_EQ(30, player->currentTime());
+    EXPECT_TRUE(player->finished());
+
+    player->setPlaybackRate(-1);
+    player->finish(exceptionState);
+    EXPECT_EQ(0, player->currentTime());
+    EXPECT_TRUE(player->finished());
+
+    EXPECT_FALSE(exceptionState.hadException());
+}
+
+TEST_F(AnimationPlayerTest, FinishAfterSourceEnd)
+{
+    player->setCurrentTime(40);
+    player->finish(exceptionState);
+    EXPECT_EQ(30, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, FinishBeforeStart)
+{
+    player->setCurrentTime(-10);
+    player->setPlaybackRate(-1);
+    player->finish(exceptionState);
+    EXPECT_EQ(0, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, FinishDoesNothingWithPlaybackRateZero)
+{
+    player->setCurrentTime(10);
+    player->setPlaybackRate(0);
+    player->finish(exceptionState);
+    EXPECT_EQ(10, player->currentTime());
+}
+
+TEST_F(AnimationPlayerTest, FinishRaisesException)
+{
+    Timing timing;
+    timing.iterationDuration = 1;
+    timing.hasIterationDuration = true;
+    timing.iterationCount = std::numeric_limits<double>::infinity();
+    player->setSource(Animation::create(0, 0, timing).get());
+    player->setCurrentTime(10);
+
+    player->finish(exceptionState);
+    EXPECT_EQ(10, player->currentTime());
+    EXPECT_TRUE(exceptionState.hadException());
+    EXPECT_EQ(InvalidStateError, exceptionState.code());
 }
 
 

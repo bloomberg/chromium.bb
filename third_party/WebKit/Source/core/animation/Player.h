@@ -37,6 +37,7 @@
 namespace WebCore {
 
 class DocumentTimeline;
+class ExceptionState;
 
 class Player FINAL : public RefCounted<Player> {
 
@@ -60,6 +61,7 @@ public:
     void pause();
     void play();
     void reverse();
+    void finish(ExceptionState&);
     bool finished() { return limited(currentTime()); }
 
     double playbackRate() const { return m_playbackRate; }
