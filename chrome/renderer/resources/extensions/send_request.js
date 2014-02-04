@@ -159,6 +159,8 @@ function clearCalledSendRequest() {
 exports.sendRequest = sendRequest;
 exports.getCalledSendRequest = getCalledSendRequest;
 exports.clearCalledSendRequest = clearCalledSendRequest;
+exports.safeCallbackApply = safeCallbackApply;
+exports.getExtensionStackTrace = getExtensionStackTrace;
 
 // Called by C++.
 exports.handleResponse = handleResponse;

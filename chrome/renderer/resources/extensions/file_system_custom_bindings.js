@@ -9,7 +9,7 @@ var binding = require('binding').Binding.create('fileSystem');
 var fileSystemNatives = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
 var lastError = require('lastError');
-var sendRequest = require('sendRequest').sendRequest;
+var sendRequest = require('sendRequest');
 var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
 // TODO(sammc): Don't require extension. See http://crbug.com/235689.
 var GetExtensionViews = requireNative('runtime').GetExtensionViews;
@@ -67,9 +67,13 @@ if (window == backgroundPage) {
               // the callback will not be called with any entries.
               if (entries.length == response.entries.length) {
                 if (response.multiple) {
-                  callback(entries);
+                  sendRequest.safeCallbackApply(
+                      'fileSystem.' + functionName, request, callback,
+                      [entries]);
                 } else {
-                  callback(entries[0]);
+                  sendRequest.safeCallbackApply(
+                      'fileSystem.' + functionName, request, callback,
+                      [entries[0]]);
                 }
               }
             }
@@ -133,7 +137,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     var fileSystemName = fileEntry.filesystem.name;
     var relativePath = $String.slice(fileEntry.fullPath, 1);
 
-    sendRequest(this.name, [id, fileSystemName, relativePath],
+    sendRequest.sendRequest(this.name, [id, fileSystemName, relativePath],
       this.definition.parameters, {});
     return id;
   });
@@ -142,9 +146,14 @@ binding.registerCustomHook(function(bindingsAPI) {
       function(id, callback) {
     var savedEntry = entryIdManager.getEntryById(id);
     if (savedEntry) {
-      callback(true);
+      sendRequest.safeCallbackApply(
+          'fileSystem.isRestorable',
+          {'stack': sendRequest.getExtensionStackTrace()},
+          callback,
+          [true]);
     } else {
-      sendRequest(this.name, [id, callback], this.definition.parameters, {});
+      sendRequest.sendRequest(
+          this.name, [id, callback], this.definition.parameters, {});
     }
   });
 
@@ -154,7 +163,11 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (savedEntry) {
       // We already have a file entry for this id so pass it to the callback and
       // send a request to the browser to move it to the back of the LRU.
-      callback(savedEntry);
+      sendRequest.safeCallbackApply(
+          'fileSystem.restoreEntry',
+          {'stack': sendRequest.getExtensionStackTrace()},
+          callback,
+          [savedEntry]);
       return [id, false, null];
     } else {
       // Ask the browser process for a new file entry for this id, to be passed
