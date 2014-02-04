@@ -133,7 +133,6 @@ private:
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
     DisplayState m_displayState;
-    RefPtr<Widget> m_protectWidgetDuringReattach;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLPlugInElement, isPluginElement());
