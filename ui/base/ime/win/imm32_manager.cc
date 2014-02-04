@@ -4,8 +4,6 @@
 
 #include "ui/base/ime/win/imm32_manager.h"
 
-#include <atlbase.h>
-#include <atlcom.h>
 #include <msctf.h>
 
 #include "base/basictypes.h"
