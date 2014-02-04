@@ -2194,6 +2194,24 @@ END
     $implementation{nameSpaceInternal}->add($code);
 }
 
+sub NullOrOptionalCheck
+{
+    my $parameter = shift;
+    my $value = shift;
+
+    # If undefined is passed for an optional argument, the argument should be
+    # treated as missing; otherwise undefined is not allowed.
+    if ($parameter->isNullable) {
+        if ($parameter->isOptional) {
+            return "isUndefinedOrNull($value)";
+        }
+        return "${value}->IsNull()";
+    }
+    if ($parameter->isOptional) {
+        return "${value}->IsUndefined()";
+    }
+}
+
 sub GenerateParametersCheckExpression
 {
     my $numParameters = shift;
@@ -2206,6 +2224,8 @@ sub GenerateParametersCheckExpression
         last if $parameterIndex >= $numParameters;
         my $value = "info[$parameterIndex]";
         my $type = $parameter->type;
+
+        my $undefinedOrNullCheck = NullOrOptionalCheck($parameter, $value);
 
         # Only DOMString, wrapper types, and (to some degree) non-wrapper types
         # are checked.
@@ -2245,8 +2265,8 @@ sub GenerateParametersCheckExpression
             }
         } elsif ($nonWrapperTypes{$type}) {
             # Non-wrapper types are just objects: we don't distinguish type
-            if ($parameter->isNullable) {
-                push(@andExpression, "${value}->IsNull() || ${value}->IsObject()");
+            if ($undefinedOrNullCheck) {
+                push(@andExpression, "$undefinedOrNullCheck || ${value}->IsObject()");
             } else {
                 push(@andExpression, "${value}->IsObject()");
             }
