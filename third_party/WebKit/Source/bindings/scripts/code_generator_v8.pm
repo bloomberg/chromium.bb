@@ -781,7 +781,7 @@ END
 
     if ($interfaceName eq "Window") {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::ObjectTemplate> GetShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
+    static v8::Handle<v8::ObjectTemplate> getShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
 END
     }
 
@@ -4862,7 +4862,7 @@ END
 
     if ($interfaceName eq "Window") {
         $implementation{nameSpaceWebCore}->add(<<END);
-v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     if (currentWorldType == MainWorld) {
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());

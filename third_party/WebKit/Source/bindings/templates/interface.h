@@ -73,7 +73,7 @@ public:
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     {% endif %}
     {% if interface_name == 'Window' %}
-    static v8::Handle<v8::ObjectTemplate> GetShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
+    static v8::Handle<v8::ObjectTemplate> getShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
     {% endif %}
     {% for method in methods if method.is_custom %}
     {% filter conditional(method.conditional_string) %}
