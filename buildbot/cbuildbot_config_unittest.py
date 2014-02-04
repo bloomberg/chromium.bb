@@ -387,6 +387,20 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             test_config.priority in constants.HWTEST_VALID_PRIORITIES,
             '%s has an invalid hwtest priority.' % build_name)
 
+  def testPushImageSignerResultsPaygenDependancies(self):
+    """Paygen requires SignerResults which requires PushImage."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+
+      # signer_results can't complete without push_image.
+      if config['signer_results']:
+        self.assertTrue(config['push_image'],
+                        '%s has signer_results without push_image' % build_name)
+
+      # paygen can't complete without signer_results.
+      if config['paygen']:
+        self.assertTrue(config['signer_results'],
+                        '%s has paygen without signer_results' % build_name)
+
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""

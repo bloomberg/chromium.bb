@@ -436,6 +436,12 @@ class SimpleBuilder(Builder):
                      builder_run=builder_run)
       return
 
+    # signer_results can't complete without push_image.
+    assert not config['signer_results'] or config['push_image']
+
+    # paygen can't complete without signer_results.
+    assert not config['paygen'] or config['signer_results']
+
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
     # that make sense when read in order.  Also keep in mind that, since we
@@ -448,6 +454,7 @@ class SimpleBuilder(Builder):
         [stages.RetryStage, 1, stages.VMTestStage, board, archive_stage],
         [stages.SignerTestStage, board, archive_stage],
         [stages.SignerResultsStage, board, archive_stage],
+        [stages.PaygenStage, board, archive_stage],
         [stages.UnitTestStage, board],
         [stages.UploadPrebuiltsStage, board, archive_stage],
         [stages.DevInstallerPrebuiltsStage, board, archive_stage],
@@ -1142,6 +1149,9 @@ def _CreateParser():
                           help=("Don't run PatchChanges stage.  This does not "
                                 "disable patching in of chromite patches "
                                 "during BootstrapStage."))
+  group.add_remote_option('--nopaygen', action='store_false',
+                          dest='paygen', default=True,
+                          help="Don't generate payloads.")
   group.add_remote_option('--noreexec', action='store_false',
                           dest='postsync_reexec', default=True,
                           help="Don't reexec into the buildroot after syncing.")

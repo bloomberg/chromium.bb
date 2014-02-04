@@ -3071,6 +3071,71 @@ class SignerResultsStage(ArchivingStage):
       raise SignerFailure(failures)
 
 
+class PaygenStage(ArchivingStage):
+  """Stage that generates release payloads."""
+
+  option_name = 'paygen'
+  config_name = 'paygen'
+
+  def _HandleStageException(self, exception):
+    """Override and don't set status to FAIL but FORGIVEN instead."""
+    # TODO(dgarrett): Constrain this to only expected exceptions.
+    if isinstance(exception, Exception):
+      return self._HandleExceptionAsWarning(exception)
+
+    return super(PaygenStage, self)._HandleStageException(exception)
+
+  def PerformStage(self):
+    """Do the work of generating our release payloads."""
+
+    board = self._current_board
+    version = self._run.attrs.release_tag
+
+    with parallel.BackgroundTaskRunner(_RunPaygenInProcess) as per_channel:
+      while True:
+        channel = self.archive_stage.WaitForChannelSigning()
+        if channel:
+          per_channel.put((channel, board, version, self._run.debug))
+        else:
+          break
+
+
+def _RunPaygenInProcess(channel, board, version, debug):
+  """Helper for PaygenStage that invokes payload generation.
+
+  This method is intended to be safe to invoke inside a process.
+
+  Args:
+    channel: Channel of payloads to generate ('stable', 'beta', etc)
+    board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
+    version: Version of payloads to generate.
+    debug: Flag telling if this is a real run, or a test run.
+  """
+  # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
+  # These modules are imported here because they aren't always available at
+  # cbuildbot startup.
+  from crostools.lib import gspaths
+  from crostools.lib import paygen_build_lib
+
+  # Convert to release tools naming for channels.
+  if not channel.endswith('-channel'):
+    channel += '-channel'
+
+  # Convert to release tools naming for boards.
+  board = board.replace('_', '-')
+
+  with osutils.TempDir(sudo_rm=True) as tempdir:
+    # Create the definition of the build to generate payloads for.
+    build = gspaths.Build(channel=channel,
+                          board=board,
+                          version=version)
+
+    # Generate the payloads.
+    paygen_build_lib.CreatePayloads(build,
+                                    work_dir=tempdir,
+                                    dry_run=debug)
+
+
 class AUTestStage(HWTestStage):
   """Stage for au hw test suites that requires special pre-processing."""
 

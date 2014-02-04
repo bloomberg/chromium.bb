@@ -50,6 +50,14 @@ from chromite.lib import partial_mock
 from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot
 
+try:
+  from crostools.lib import gspaths
+  from crostools.lib import paygen_build_lib
+  CROSTOOLS_AVAILABLE = True
+except ImportError:
+  CROSTOOLS_AVAILABLE = False
+
+
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
 import mock
@@ -1161,6 +1169,85 @@ class SignerResultsStageTest(AbstractStageTest):
           'chan1': ['chan1_uri1'],
       })
       self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+
+
+class PaygenStageTest(AbstractStageTest):
+  """Test the PaygenStageStage."""
+
+  BOT_ID = 'x86-mario-release'
+  RELEASE_TAG = '0.0.1'
+
+  def setUp(self):
+    self.StartPatcher(BuilderRunMock())
+    self._Prepare()
+
+  def ConstructStage(self):
+    archive_stage = stages.ArchiveStage(self.run, self._current_board)
+    return stages.PaygenStage(
+        self.run, self._current_board, archive_stage)
+
+  def testPerformStageSuccess(self):
+    """Test that SignerResultsStage works when signing works."""
+
+    with patch(stages.parallel, 'BackgroundTaskRunner') as background:
+      queue = background().__enter__()
+
+      stage = self.ConstructStage()
+      stage.archive_stage._wait_for_channel_signing.put('stable')
+      stage.archive_stage._wait_for_channel_signing.put('beta')
+      stage.archive_stage._wait_for_channel_signing.put(None)
+      stage.PerformStage()
+
+      # Verify that we queue up work
+      queue.put.assert_any_call(('stable', 'x86-mario', '0.0.1', False))
+      queue.put.assert_any_call(('beta', 'x86-mario', '0.0.1', False))
+
+  def testPerformStageNoChannels(self):
+    """Test that SignerResultsStage works when signing works."""
+    with patch(stages.parallel, 'BackgroundTaskRunner') as background:
+      queue = background().__enter__()
+
+      stage = self.ConstructStage()
+      stage.archive_stage._wait_for_channel_signing.put(None)
+      stage.PerformStage()
+
+      # Ensure no work was queued up.
+      self.assertFalse(queue.put.called)
+
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
+  def testRunPaygenInProcess(self):
+    """Test that SignerResultsStage works when signing works."""
+    with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
+      # Call the method under test.
+      stages._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False)
+
+      # Ensure arguments are properly converted and passed along.
+      create_payloads.assert_called_with(gspaths.Build(version='foo-version',
+                                                       board='foo-board',
+                                                       channel='foo-channel'),
+                                         dry_run=False,
+                                         work_dir=mock.ANY)
+
+  @unittest.skipIf(not CROSTOOLS_AVAILABLE,
+                   'Internal crostools repository needed.')
+  def testRunPaygenInProcessComplex(self):
+    """Test that SignerResultsStage with arguments that are more unusual."""
+    with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
+      # Call the method under test.
+      # Use release tools channel naming, and a board name including a variant.
+      stages._RunPaygenInProcess('foo-channel',
+                                 'foo-board_variant',
+                                 'foo-version',
+                                 True)
+
+      # Ensure arguments are properly converted and passed along.
+      create_payloads.assert_called_with(
+          gspaths.Build(version='foo-version',
+                        board='foo-board-variant',
+                        channel='foo-channel'),
+          dry_run=True,
+          work_dir=mock.ANY)
 
 
 class AUTestStageTest(AbstractStageTest,

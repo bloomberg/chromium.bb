@@ -85,6 +85,7 @@ def OverrideConfigForTrybot(build_config, options):
 
     my_config['push_image'] = False
     my_config['signer_results'] = False
+    my_config['paygen'] = False
     if options.hwtest:
       my_config['upload_hw_test_artifacts'] = True
       if not my_config['hw_tests']:
@@ -420,6 +421,9 @@ _settings = dict(
 
 # signer_results -- Run a stage that waits for and displays signer output.
   signer_results=False,
+
+# paygen -- Run a stage that generates release payloads for signed images.
+  paygen=False,
 
 # manifest_repo_url -- git repository URL for our manifests.
 #  External: https://chromium.googlesource.com/chromiumos/manifest
@@ -1669,6 +1673,7 @@ _release = full.derive(official, internal,
   disk_vm_layout='usb',
   hw_tests=HWTestConfig.DefaultList(file_bugs=True),
   upload_hw_test_artifacts=True,
+  paygen=True,
   signer_results=True,
   signer_tests=True,
   trybot_list=True,
@@ -1723,6 +1728,8 @@ release_pgo = _release.derive(
                                     num=4) +
            HWTestConfig.PGOList(),
   push_image=False,
+  signer_results=False,
+  paygen=False,
   dev_installer_prebuilts=False,
 )
 
