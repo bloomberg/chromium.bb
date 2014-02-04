@@ -87,9 +87,9 @@ Decimal StepRange::clampValue(const Decimal& value) const
     const Decimal inRangeValue = max(m_minimum, min(value, m_maximum));
     if (!m_hasStep)
         return inRangeValue;
-    // Rounds inRangeValue to minimum + N * step.
-    const Decimal roundedValue = roundByStep(inRangeValue, m_minimum);
-    const Decimal clampedValue = roundedValue > m_maximum ? roundedValue - m_step : roundedValue;
+    // Rounds inRangeValue to stepBase + N * step.
+    const Decimal roundedValue = roundByStep(inRangeValue, m_stepBase);
+    const Decimal clampedValue = roundedValue > m_maximum ? roundedValue - m_step : (roundedValue < m_minimum ? roundedValue + m_step : roundedValue);
     ASSERT(clampedValue >= m_minimum);
     ASSERT(clampedValue <= m_maximum);
     return clampedValue;
