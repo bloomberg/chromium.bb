@@ -137,7 +137,8 @@ PepperOutputProtectionMessageFilter::Delegate::~Delegate() {
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
   if (rfh) {
     gfx::NativeView native_view = rfh->GetNativeView();
-    native_view->RemoveObserver(this);
+    if (native_view)
+      native_view->RemoveObserver(this);
   }
 }
 
