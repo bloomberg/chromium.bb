@@ -1318,6 +1318,9 @@ bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
         delegate_->OnHostLostMouseGrab();
       }
       break;
+    case FocusIn:
+      X11DesktopHandler::get()->ProcessXEvent(xev);
+      break;
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
       DCHECK_EQ(xwindow_, xev->xconfigure.event);

@@ -139,6 +139,11 @@ void X11DesktopHandler::ProcessXEvent(const base::NativeEvent& event) {
           current_window_ == event->xcrossing.window)
         OnActiveWindowChanged(None);
       break;
+    case FocusIn:
+      if (event->xfocus.mode == NotifyNormal &&
+          current_window_ != event->xfocus.window)
+        OnActiveWindowChanged(event->xfocus.window);
+      break;
     default:
       NOTREACHED();
   }
