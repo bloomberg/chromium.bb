@@ -163,7 +163,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     can_read_raw_cookies_ = false;
   }
 
-  void GrantPermissionForMIDISysEx() {
+  void GrantPermissionForMidiSysEx() {
     can_send_midi_sysex_ = true;
   }
 
@@ -514,14 +514,14 @@ void ChildProcessSecurityPolicyImpl::GrantDeleteFromFileSystem(
   GrantPermissionsForFileSystem(child_id, filesystem_id, DELETE_FILE_GRANT);
 }
 
-void ChildProcessSecurityPolicyImpl::GrantSendMIDISysExMessage(int child_id) {
+void ChildProcessSecurityPolicyImpl::GrantSendMidiSysExMessage(int child_id) {
   base::AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
-  state->second->GrantPermissionForMIDISysEx();
+  state->second->GrantPermissionForMidiSysEx();
 }
 
 void ChildProcessSecurityPolicyImpl::GrantScheme(int child_id,
@@ -871,7 +871,7 @@ void ChildProcessSecurityPolicyImpl::RegisterFileSystemPermissionPolicy(
   file_system_policy_map_[type] = policy;
 }
 
-bool ChildProcessSecurityPolicyImpl::CanSendMIDISysExMessage(int child_id) {
+bool ChildProcessSecurityPolicyImpl::CanSendMidiSysExMessage(int child_id) {
   base::AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(child_id);

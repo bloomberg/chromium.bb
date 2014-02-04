@@ -29,20 +29,20 @@ bool IsSystemRealTimeMessage(uint8 data) {
 
 }  // namespace
 
-MIDIMessageQueue::MIDIMessageQueue(bool allow_running_status)
+MidiMessageQueue::MidiMessageQueue(bool allow_running_status)
     : allow_running_status_(allow_running_status) {}
 
-MIDIMessageQueue::~MIDIMessageQueue() {}
+MidiMessageQueue::~MidiMessageQueue() {}
 
-void MIDIMessageQueue::Add(const std::vector<uint8>& data) {
+void MidiMessageQueue::Add(const std::vector<uint8>& data) {
   queue_.insert(queue_.end(), data.begin(), data.end());
 }
 
-void MIDIMessageQueue::Add(const uint8* data, size_t length) {
+void MidiMessageQueue::Add(const uint8* data, size_t length) {
   queue_.insert(queue_.end(), data, data + length);
 }
 
-void MIDIMessageQueue::Get(std::vector<uint8>* message) {
+void MidiMessageQueue::Get(std::vector<uint8>* message) {
   message->clear();
 
   while (true) {
@@ -98,7 +98,7 @@ void MIDIMessageQueue::Get(std::vector<uint8>* message) {
 
     DCHECK(IsDataByte(next));
     DCHECK_NE(kSysEx, status_byte);
-    const size_t target_len = GetMIDIMessageLength(status_byte);
+    const size_t target_len = GetMidiMessageLength(status_byte);
     if (next_message_.size() < target_len)
       continue;
     if (next_message_.size() == target_len) {

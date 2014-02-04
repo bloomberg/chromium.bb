@@ -17,10 +17,10 @@
 
 namespace media {
 
-class MIDIManagerAlsa::MIDIDeviceInfo
-    : public base::RefCounted<MIDIDeviceInfo> {
+class MidiManagerAlsa::MidiDeviceInfo
+    : public base::RefCounted<MidiDeviceInfo> {
  public:
-  MIDIDeviceInfo(MIDIManagerAlsa* manager,
+  MidiDeviceInfo(MidiManagerAlsa* manager,
                  const std::string& bus_id,
                  snd_ctl_card_info_t* card,
                  const snd_rawmidi_info_t* midi,
@@ -43,10 +43,10 @@ class MIDIManagerAlsa::MIDIDeviceInfo
         base::StringPrintf("%s / ALSA library version %d.%d.%d",
                            snd_ctl_card_info_get_driver(card),
                            SND_LIB_MAJOR, SND_LIB_MINOR, SND_LIB_SUBMINOR);
-    port_info_ = MIDIPortInfo(id, manufacturer, name, version);
+    port_info_ = MidiPortInfo(id, manufacturer, name, version);
   }
 
-  void Send(MIDIManagerClient* client, const std::vector<uint8>& data) {
+  void Send(MidiManagerClient* client, const std::vector<uint8>& data) {
     ssize_t result = snd_rawmidi_write(
         midi_out_, reinterpret_cast<const void*>(&data[0]), data.size());
     if (static_cast<size_t>(result) != data.size()) {
@@ -55,16 +55,16 @@ class MIDIManagerAlsa::MIDIDeviceInfo
     }
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&MIDIManagerClient::AccumulateMIDIBytesSent,
+        base::Bind(&MidiManagerClient::AccumulateMidiBytesSent,
                    base::Unretained(client), data.size()));
   }
 
-  const MIDIPortInfo& GetMIDIPortInfo() const { return port_info_; }
+  const MidiPortInfo& GetMidiPortInfo() const { return port_info_; }
   bool IsOpened() const { return opened_; }
 
  private:
-  friend class base::RefCounted<MIDIDeviceInfo>;
-  virtual ~MIDIDeviceInfo() {
+  friend class base::RefCounted<MidiDeviceInfo>;
+  virtual ~MidiDeviceInfo() {
     if (opened_) {
       snd_rawmidi_close(midi_in_);
       snd_rawmidi_close(midi_out_);
@@ -72,20 +72,21 @@ class MIDIManagerAlsa::MIDIDeviceInfo
   }
 
   bool opened_;
-  MIDIPortInfo port_info_;
+  MidiPortInfo port_info_;
   snd_rawmidi_t* midi_in_;
   snd_rawmidi_t* midi_out_;
 
-  DISALLOW_COPY_AND_ASSIGN(MIDIDeviceInfo);
+  DISALLOW_COPY_AND_ASSIGN(MidiDeviceInfo);
 };
 
-MIDIManagerAlsa::MIDIManagerAlsa()
-    : send_thread_("MIDISendThread") {
+MidiManagerAlsa::MidiManagerAlsa()
+    : send_thread_("MidiSendThread") {
 }
 
-bool MIDIManagerAlsa::Initialize() {
+bool MidiManagerAlsa::Initialize() {
   // TODO(toyoshim): Make Initialize() asynchronous.
-  TRACE_EVENT0("midi", "MIDIManagerMac::Initialize");
+  // See http://crbug.com/339746.
+  TRACE_EVENT0("midi", "MidiManagerMac::Initialize");
 
   // Enumerate only hardware MIDI devices because software MIDIs running in
   // the browser process is not secure.
@@ -123,19 +124,19 @@ bool MIDIManagerAlsa::Initialize() {
       input = snd_ctl_rawmidi_info(handle, midi_in) == 0;
       if (!output && !input)
         continue;
-      scoped_refptr<MIDIDeviceInfo> port = new MIDIDeviceInfo(
+      scoped_refptr<MidiDeviceInfo> port = new MidiDeviceInfo(
           this, id, card, output ? midi_out : midi_in, device);
       if (!port->IsOpened()) {
-        DLOG(ERROR) << "MIDIDeviceInfo open fails";
+        DLOG(ERROR) << "MidiDeviceInfo open fails";
         continue;
       }
       if (input) {
         in_devices_.push_back(port);
-        AddInputPort(port->GetMIDIPortInfo());
+        AddInputPort(port->GetMidiPortInfo());
       }
       if (output) {
         out_devices_.push_back(port);
-        AddOutputPort(port->GetMIDIPortInfo());
+        AddOutputPort(port->GetMidiPortInfo());
       }
     }
     snd_ctl_close(handle);
@@ -143,11 +144,11 @@ bool MIDIManagerAlsa::Initialize() {
   return true;
 }
 
-MIDIManagerAlsa::~MIDIManagerAlsa() {
+MidiManagerAlsa::~MidiManagerAlsa() {
   send_thread_.Stop();
 }
 
-void MIDIManagerAlsa::DispatchSendMIDIData(MIDIManagerClient* client,
+void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
                                            uint32 port_index,
                                            const std::vector<uint8>& data,
                                            double timestamp) {
@@ -165,15 +166,15 @@ void MIDIManagerAlsa::DispatchSendMIDIData(MIDIManagerClient* client,
   if (!send_thread_.IsRunning())
     send_thread_.Start();
 
-  scoped_refptr<MIDIDeviceInfo> device = out_devices_[port_index];
+  scoped_refptr<MidiDeviceInfo> device = out_devices_[port_index];
   send_thread_.message_loop()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&MIDIDeviceInfo::Send, device, client, data),
+      base::Bind(&MidiDeviceInfo::Send, device, client, data),
       delay);
 }
 
-MIDIManager* MIDIManager::Create() {
-  return new MIDIManagerAlsa();
+MidiManager* MidiManager::Create() {
+  return new MidiManagerAlsa();
 }
 
 }  // namespace media

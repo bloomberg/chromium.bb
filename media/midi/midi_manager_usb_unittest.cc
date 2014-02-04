@@ -68,24 +68,24 @@ class FakeUsbMidiDevice : public UsbMidiDevice {
   DISALLOW_COPY_AND_ASSIGN(FakeUsbMidiDevice);
 };
 
-class FakeMidiManagerClient : public MIDIManagerClient {
+class FakeMidiManagerClient : public MidiManagerClient {
  public:
   explicit FakeMidiManagerClient(Logger* logger) : logger_(logger) {}
   virtual ~FakeMidiManagerClient() {}
 
-  virtual void ReceiveMIDIData(uint32 port_index,
+  virtual void ReceiveMidiData(uint32 port_index,
                                const uint8* data,
                                size_t size,
                                double timestamp) OVERRIDE {
-    logger_->AddLog("MIDIManagerClient::ReceiveMIDIData ");
+    logger_->AddLog("MidiManagerClient::ReceiveMidiData ");
     logger_->AddLog(base::StringPrintf("port_index = %d data =", port_index));
     for (size_t i = 0; i < size; ++i)
       logger_->AddLog(base::StringPrintf(" 0x%02x", data[i]));
     logger_->AddLog("\n");
   }
 
-  virtual void AccumulateMIDIBytesSent(size_t size) OVERRIDE {
-    logger_->AddLog("MIDIManagerClient::AccumulateMIDIBytesSent ");
+  virtual void AccumulateMidiBytesSent(size_t size) OVERRIDE {
+    logger_->AddLog("MidiManagerClient::AccumulateMidiBytesSent ");
     // Windows has no "%zu".
     logger_->AddLog(base::StringPrintf("size = %u\n",
                                        static_cast<unsigned>(size)));
@@ -253,13 +253,13 @@ TEST_F(MidiManagerUsbTest, Send) {
   ASSERT_TRUE(initialize_result_);
   ASSERT_EQ(2u, manager_->output_streams().size());
 
-  manager_->DispatchSendMIDIData(&client, 1, ToVector(data), 0);
+  manager_->DispatchSendMidiData(&client, 1, ToVector(data), 0);
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n"
             "UsbMidiDevice::Send endpoint = 2 data = "
             "0x19 0x90 0x45 0x7f "
             "0x14 0xf0 0x00 0x01 "
             "0x15 0xf7 0x00 0x00\n"
-            "MIDIManagerClient::AccumulateMIDIBytesSent size = 7\n",
+            "MidiManagerClient::AccumulateMidiBytesSent size = 7\n",
             logger_.TakeLog());
 }
 
@@ -305,11 +305,11 @@ TEST_F(MidiManagerUsbTest, Receive) {
   manager_->EndSession(&client);
 
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n"
-            "MIDIManagerClient::ReceiveMIDIData port_index = 0 "
+            "MidiManagerClient::ReceiveMidiData port_index = 0 "
             "data = 0x90 0x45 0x7f\n"
-            "MIDIManagerClient::ReceiveMIDIData port_index = 0 "
+            "MidiManagerClient::ReceiveMidiData port_index = 0 "
             "data = 0xf0 0x00 0x01\n"
-            "MIDIManagerClient::ReceiveMIDIData port_index = 0 data = 0xf7\n",
+            "MidiManagerClient::ReceiveMidiData port_index = 0 data = 0xf7\n",
             logger_.TakeLog());
 }
 

@@ -542,13 +542,13 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
   }
 }
 
-void TabSpecificContentSettings::OnMIDISysExAccessed(
+void TabSpecificContentSettings::OnMidiSysExAccessed(
     const GURL& requesting_origin) {
   midi_usages_state_.OnPermissionSet(requesting_origin, true);
   OnContentAllowed(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
 }
 
-void TabSpecificContentSettings::OnMIDISysExAccessBlocked(
+void TabSpecificContentSettings::OnMidiSysExAccessBlocked(
     const GURL& requesting_origin) {
   midi_usages_state_.OnPermissionSet(requesting_origin, false);
   OnContentBlocked(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
@@ -606,7 +606,7 @@ void TabSpecificContentSettings::GeolocationDidNavigate(
   geolocation_usages_state_.DidNavigate(details);
 }
 
-void TabSpecificContentSettings::MIDIDidNavigate(
+void TabSpecificContentSettings::MidiDidNavigate(
     const content::LoadCommittedDetails& details) {
   midi_usages_state_.DidNavigate(details);
 }
@@ -615,7 +615,7 @@ void TabSpecificContentSettings::ClearGeolocationContentSettings() {
   geolocation_usages_state_.ClearStateMap();
 }
 
-void TabSpecificContentSettings::ClearMIDIContentSettings() {
+void TabSpecificContentSettings::ClearMidiContentSettings() {
   midi_usages_state_.ClearStateMap();
 }
 
@@ -652,7 +652,7 @@ void TabSpecificContentSettings::DidNavigateMainFrame(
     // Clear "blocked" flags.
     ClearBlockedContentSettingsExceptForCookies();
     GeolocationDidNavigate(details);
-    MIDIDidNavigate(details);
+    MidiDidNavigate(details);
   }
 }
 
@@ -673,7 +673,7 @@ void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
   if (!is_error_page)
     ClearCookieSpecificContentSettings();
   ClearGeolocationContentSettings();
-  ClearMIDIContentSettings();
+  ClearMidiContentSettings();
   ClearPendingProtocolHandler();
 }
 

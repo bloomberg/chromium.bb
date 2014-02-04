@@ -176,22 +176,23 @@ net::URLRequestContextGetter*
   return GetRequestContext();
 }
 
-void ShellBrowserContext::RequestMIDISysExPermission(
+void ShellBrowserContext::RequestMidiSysExPermission(
       int render_process_id,
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
-      const MIDISysExPermissionCallback& callback) {
+      const MidiSysExPermissionCallback& callback) {
   // Always reject requests for LayoutTests for now.
   // TODO(toyoshim): Make it programmable to improve test coverage.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDumpRenderTree)) {
     callback.Run(false);
     return;
   }
   callback.Run(true);
 }
 
-void ShellBrowserContext::CancelMIDISysExPermissionRequest(
+void ShellBrowserContext::CancelMidiSysExPermissionRequest(
     int render_process_id,
     int render_view_id,
     int bridge_id,

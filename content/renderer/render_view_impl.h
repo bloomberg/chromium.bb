@@ -147,7 +147,7 @@ class ImageResourceFetcher;
 class InputTagSpeechDispatcher;
 class JavaBridgeDispatcher;
 class LoadProgressTracker;
-class MIDIDispatcher;
+class MidiDispatcher;
 class MediaStreamClient;
 class MediaStreamDispatcher;
 class MouseLockDispatcher;
@@ -1339,8 +1339,8 @@ class CONTENT_EXPORT RenderViewImpl
   MediaStreamClient* media_stream_client_;
   blink::WebUserMediaClient* web_user_media_client_;
 
-  // MIDIClient attached to this view; lazily initialized.
-  MIDIDispatcher* midi_dispatcher_;
+  // MidiClient attached to this view; lazily initialized.
+  MidiDispatcher* midi_dispatcher_;
 
   DevToolsAgent* devtools_agent_;
 

@@ -13,58 +13,58 @@
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
-#define IPC_MESSAGE_START MIDIMsgStart
+#define IPC_MESSAGE_START MidiMsgStart
 
-IPC_STRUCT_TRAITS_BEGIN(media::MIDIPortInfo)
+IPC_STRUCT_TRAITS_BEGIN(media::MidiPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(manufacturer)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(version)
 IPC_STRUCT_TRAITS_END()
 
-// Messages for IPC between MIDIDispatcher and MIDIDispatcherHost.
+// Messages for IPC between MidiDispatcher and MidiDispatcherHost.
 
 // Renderer request to browser for using system exclusive messages.
-IPC_MESSAGE_CONTROL3(MIDIHostMsg_RequestSysExPermission,
+IPC_MESSAGE_CONTROL3(MidiHostMsg_RequestSysExPermission,
                      int /* routing id */,
                      int /* client id */,
                      GURL /* origin */)
 
 // Renderer request to browser for canceling a previous permission request.
-IPC_MESSAGE_CONTROL3(MIDIHostMsg_CancelSysExPermissionRequest,
+IPC_MESSAGE_CONTROL3(MidiHostMsg_CancelSysExPermissionRequest,
                      int /* render_view_id */,
                      int /* bridge_id */,
                      GURL /* GURL of the frame */)
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_ROUTED2(MIDIMsg_SysExPermissionApproved,
+IPC_MESSAGE_ROUTED2(MidiMsg_SysExPermissionApproved,
                     int /* client id */,
                     bool /* success */)
 
-// Messages for IPC between MIDIMessageFilter and MIDIHost.
+// Messages for IPC between MidiMessageFilter and MidiHost.
 
 // Renderer request to browser for access to MIDI services.
-IPC_MESSAGE_CONTROL1(MIDIHostMsg_StartSession,
+IPC_MESSAGE_CONTROL1(MidiHostMsg_StartSession,
                      int /* client id */)
 
-IPC_MESSAGE_CONTROL3(MIDIHostMsg_SendData,
+IPC_MESSAGE_CONTROL3(MidiHostMsg_SendData,
                      uint32 /* port */,
                      std::vector<uint8> /* data */,
                      double /* timestamp */)
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_CONTROL4(MIDIMsg_SessionStarted,
+IPC_MESSAGE_CONTROL4(MidiMsg_SessionStarted,
                      int /* client id */,
                      bool /* success */,
-                     media::MIDIPortInfoList /* input ports */,
-                     media::MIDIPortInfoList /* output ports */)
+                     media::MidiPortInfoList /* input ports */,
+                     media::MidiPortInfoList /* output ports */)
 
-IPC_MESSAGE_CONTROL3(MIDIMsg_DataReceived,
+IPC_MESSAGE_CONTROL3(MidiMsg_DataReceived,
                      uint32 /* port */,
                      std::vector<uint8> /* data */,
                      double /* timestamp */)
 
-IPC_MESSAGE_CONTROL1(MIDIMsg_AcknowledgeSentData,
+IPC_MESSAGE_CONTROL1(MidiMsg_AcknowledgeSentData,
                      uint32 /* bytes sent */)

@@ -468,8 +468,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
         MediaInternals::GetInstance()));
   }
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MIDIManager")
-    midi_manager_.reset(media::MIDIManager::Create());
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MidiManager")
+    midi_manager_.reset(media::MidiManager::Create());
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:ContentWebUIController")

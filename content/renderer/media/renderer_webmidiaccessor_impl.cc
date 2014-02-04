@@ -29,14 +29,14 @@ void RendererWebMIDIAccessorImpl::sendMIDIData(
     const unsigned char* data,
     size_t length,
     double timestamp) {
-  midi_message_filter()->SendMIDIData(
+  midi_message_filter()->SendMidiData(
       port_index,
       data,
       length,
       timestamp);
 }
 
-MIDIMessageFilter* RendererWebMIDIAccessorImpl::midi_message_filter() {
+MidiMessageFilter* RendererWebMIDIAccessorImpl::midi_message_filter() {
   return RenderThreadImpl::current()->midi_message_filter();
 }
 

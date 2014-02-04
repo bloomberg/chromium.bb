@@ -404,13 +404,13 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD2(GetMediaRequestContextForStoragePartition,
                net::URLRequestContextGetter*(
                    const base::FilePath& partition_path, bool in_memory));
-  MOCK_METHOD5(RequestMIDISysExPermission,
+  MOCK_METHOD5(RequestMidiSysExPermission,
                void(int render_process_id,
                     int render_view_id,
                     int bridge_id,
                     const GURL& requesting_frame,
-                    const MIDISysExPermissionCallback& callback));
-  MOCK_METHOD4(CancelMIDISysExPermissionRequest,
+                    const MidiSysExPermissionCallback& callback));
+  MOCK_METHOD4(CancelMidiSysExPermissionRequest,
                void(int render_process_id,
                     int render_view_id,
                     int bridge_id,

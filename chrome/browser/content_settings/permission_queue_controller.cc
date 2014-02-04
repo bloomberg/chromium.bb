@@ -109,7 +109,7 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
           display_languages);
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      infobar_ = MIDIPermissionInfoBarDelegate::Create(
+      infobar_ = MidiPermissionInfoBarDelegate::Create(
           GetInfoBarService(id_), controller, id_, requesting_frame_,
           display_languages);
       break;

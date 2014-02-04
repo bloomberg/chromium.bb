@@ -18,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-InfoBar* MIDIPermissionInfoBarDelegate::Create(
+InfoBar* MidiPermissionInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
@@ -27,13 +27,13 @@ InfoBar* MIDIPermissionInfoBarDelegate::Create(
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
   return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new MIDIPermissionInfoBarDelegate(
+      scoped_ptr<ConfirmInfoBarDelegate>(new MidiPermissionInfoBarDelegate(
           controller, id, requesting_frame,
           committed_entry ? committed_entry->GetUniqueID() : 0,
           display_languages))));
 }
 
-MIDIPermissionInfoBarDelegate::MIDIPermissionInfoBarDelegate(
+MidiPermissionInfoBarDelegate::MidiPermissionInfoBarDelegate(
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
@@ -47,22 +47,22 @@ MIDIPermissionInfoBarDelegate::MIDIPermissionInfoBarDelegate(
       display_languages_(display_languages) {
 }
 
-MIDIPermissionInfoBarDelegate::~MIDIPermissionInfoBarDelegate() {
+MidiPermissionInfoBarDelegate::~MidiPermissionInfoBarDelegate() {
 }
 
-void MIDIPermissionInfoBarDelegate::InfoBarDismissed() {
+void MidiPermissionInfoBarDelegate::InfoBarDismissed() {
   SetPermission(false, false);
 }
 
-int MIDIPermissionInfoBarDelegate::GetIconID() const {
+int MidiPermissionInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_MIDI_SYSEX;
 }
 
-InfoBarDelegate::Type MIDIPermissionInfoBarDelegate::GetInfoBarType() const {
+InfoBarDelegate::Type MidiPermissionInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-bool MIDIPermissionInfoBarDelegate::ShouldExpireInternal(
+bool MidiPermissionInfoBarDelegate::ShouldExpireInternal(
     const content::LoadCommittedDetails& details) const {
   // This implementation matches InfoBarDelegate::ShouldExpireInternal(), but
   // uses the unique ID we set in the constructor instead of that stored in the
@@ -73,29 +73,29 @@ bool MIDIPermissionInfoBarDelegate::ShouldExpireInternal(
               content::PAGE_TRANSITION_RELOAD);
 }
 
-base::string16 MIDIPermissionInfoBarDelegate::GetMessageText() const {
+base::string16 MidiPermissionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_MIDI_SYSEX_INFOBAR_QUESTION,
       net::FormatUrl(requesting_frame_.GetOrigin(), display_languages_));
 }
 
-base::string16 MIDIPermissionInfoBarDelegate::GetButtonLabel(
+base::string16 MidiPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_MIDI_SYSEX_ALLOW_BUTTON : IDS_MIDI_SYSEX_DENY_BUTTON);
 }
 
-bool MIDIPermissionInfoBarDelegate::Accept() {
+bool MidiPermissionInfoBarDelegate::Accept() {
   SetPermission(true, true);
   return true;
 }
 
-bool MIDIPermissionInfoBarDelegate::Cancel() {
+bool MidiPermissionInfoBarDelegate::Cancel() {
   SetPermission(true, false);
   return true;
 }
 
-void MIDIPermissionInfoBarDelegate::SetPermission(bool update_content_setting,
+void MidiPermissionInfoBarDelegate::SetPermission(bool update_content_setting,
                                                   bool allowed) {
   controller_->OnPermissionSet(id_, requesting_frame_, web_contents()->GetURL(),
                                update_content_setting, allowed);

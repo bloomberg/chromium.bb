@@ -76,7 +76,7 @@ ScopedMIDIHDR CreateMIDIHDR(size_t size) {
   return header.Pass();
 }
 
-void SendShortMIDIMessageInternal(HMIDIOUT midi_out_handle,
+void SendShortMidiMessageInternal(HMIDIOUT midi_out_handle,
                                   const std::vector<uint8>& message) {
   if (message.size() >= 4)
     return;
@@ -89,7 +89,7 @@ void SendShortMIDIMessageInternal(HMIDIOUT midi_out_handle,
       << "Failed to output short message: " << GetOutErrorMessage(result);
 }
 
-void SendLongMIDIMessageInternal(HMIDIOUT midi_out_handle,
+void SendLongMidiMessageInternal(HMIDIOUT midi_out_handle,
                                  const std::vector<uint8>& message) {
   // Implementation note:
   // Sending long MIDI message can be performed synchronously or asynchronously
@@ -147,7 +147,7 @@ void SendLongMIDIMessageInternal(HMIDIOUT midi_out_handle,
 
 }  // namespace
 
-class MIDIManagerWin::InDeviceInfo {
+class MidiManagerWin::InDeviceInfo {
  public:
   ~InDeviceInfo() {
     Uninitialize();
@@ -165,7 +165,7 @@ class MIDIManagerWin::InDeviceInfo {
     return midi_handle_;
   }
 
-  static scoped_ptr<InDeviceInfo> Create(MIDIManagerWin* manager,
+  static scoped_ptr<InDeviceInfo> Create(MidiManagerWin* manager,
                                          UINT device_id) {
     scoped_ptr<InDeviceInfo> obj(new InDeviceInfo(manager));
     if (!obj->Initialize(device_id))
@@ -177,7 +177,7 @@ class MIDIManagerWin::InDeviceInfo {
   static const int kInvalidPortIndex = -1;
   static const size_t kBufferLength = 32 * 1024;
 
-  explicit InDeviceInfo(MIDIManagerWin* manager)
+  explicit InDeviceInfo(MidiManagerWin* manager)
       : manager_(manager),
         port_index_(kInvalidPortIndex),
         midi_handle_(NULL),
@@ -297,7 +297,7 @@ class MIDIManagerWin::InDeviceInfo {
                               DWORD elapsed_ms) {
     if (device_to_be_closed())
       return;
-    const size_t len = GetMIDIMessageLength(status_byte);
+    const size_t len = GetMidiMessageLength(status_byte);
     if (len == 0 || port_index() == kInvalidPortIndex)
       return;
     const uint8 kData[] = { status_byte, first_data_byte, second_data_byte };
@@ -337,26 +337,26 @@ class MIDIManagerWin::InDeviceInfo {
     // http://msdn.microsoft.com/en-us/library/windows/desktop/dd757286.aspx
     const base::TimeTicks event_time =
         start_time_ + base::TimeDelta::FromMilliseconds(elapsed_ms);
-    // MIDIManager::ReceiveMIDIData() expects |timestamp| as the elapsed seconds
+    // MidiManager::ReceiveMidiData() expects |timestamp| as the elapsed seconds
     // from base::TimeTicks::Now().
-    // TODO(yukawa): Update MIDIManager::ReceiveMIDIData() so that it can
+    // TODO(yukawa): Update MidiManager::ReceiveMidiData() so that it can
     // receive |event_time| directly if the precision of base::TimeTicks is
     // sufficient.
     const double timestamp = (event_time - base::TimeTicks()).InSecondsF();
-    manager_->ReceiveMIDIData(port_index_, data, length, timestamp);
+    manager_->ReceiveMidiData(port_index_, data, length, timestamp);
   }
 
-  MIDIManagerWin* manager_;
+  MidiManagerWin* manager_;
   int port_index_;
   HMIDIIN midi_handle_;
   ScopedMIDIHDR midi_header_;
   base::TimeTicks start_time_;
   bool started_;
   bool device_to_be_closed_;
-  DISALLOW_COPY_AND_ASSIGN(MIDIManagerWin::InDeviceInfo);
+  DISALLOW_COPY_AND_ASSIGN(MidiManagerWin::InDeviceInfo);
 };
 
-class MIDIManagerWin::OutDeviceInfo {
+class MidiManagerWin::OutDeviceInfo {
  public:
   ~OutDeviceInfo() {
     Uninitialize();
@@ -389,18 +389,18 @@ class MIDIManagerWin::OutDeviceInfo {
       return;
 
     // MIDI Running status must be filtered out.
-    MIDIMessageQueue message_queue(false);
+    MidiMessageQueue message_queue(false);
     message_queue.Add(data);
     std::vector<uint8> message;
     while (!quitting_) {
       message_queue.Get(&message);
       if (message.empty())
         break;
-      // SendShortMIDIMessageInternal can send a MIDI message up to 3 bytes.
+      // SendShortMidiMessageInternal can send a MIDI message up to 3 bytes.
       if (message.size() <= 3)
-        SendShortMIDIMessageInternal(midi_handle_, message);
+        SendShortMidiMessageInternal(midi_handle_, message);
       else
-        SendLongMIDIMessageInternal(midi_handle_, message);
+        SendLongMidiMessageInternal(midi_handle_, message);
     }
   }
 
@@ -414,7 +414,7 @@ class MIDIManagerWin::OutDeviceInfo {
     Uninitialize();
     // Here we use |CALLBACK_FUNCTION| to subscribe MOM_DONE and MOM_CLOSE
     // events.
-    // - MOM_DONE: SendLongMIDIMessageInternal() relies on this event to clean
+    // - MOM_DONE: SendLongMidiMessageInternal() relies on this event to clean
     //     up the backing store where a long MIDI message is stored.
     // - MOM_CLOSE: This event is sent when 1) midiOutClose() is called, or 2)
     //     the MIDI device becomes unavailable for some reasons, e.g., the cable
@@ -490,17 +490,17 @@ class MIDIManagerWin::OutDeviceInfo {
   // True if the device is already closed.
   volatile bool closed_;
 
-  // True if the MIDIManagerWin is trying to stop the sender thread.
+  // True if the MidiManagerWin is trying to stop the sender thread.
   volatile bool quitting_;
 
-  DISALLOW_COPY_AND_ASSIGN(MIDIManagerWin::OutDeviceInfo);
+  DISALLOW_COPY_AND_ASSIGN(MidiManagerWin::OutDeviceInfo);
 };
 
-MIDIManagerWin::MIDIManagerWin()
-    : send_thread_("MIDISendThread") {
+MidiManagerWin::MidiManagerWin()
+    : send_thread_("MidiSendThread") {
 }
 
-bool MIDIManagerWin::Initialize() {
+bool MidiManagerWin::Initialize() {
   const UINT num_in_devices = midiInGetNumDevs();
   in_devices_.reserve(num_in_devices);
   for (UINT device_id = 0; device_id < num_in_devices; ++device_id) {
@@ -514,7 +514,7 @@ bool MIDIManagerWin::Initialize() {
     scoped_ptr<InDeviceInfo> in_device(InDeviceInfo::Create(this, device_id));
     if (!in_device)
       continue;
-    MIDIPortInfo info(
+    MidiPortInfo info(
         base::IntToString(static_cast<int>(device_id)),
         "",
         base::WideToUTF8(caps.szPname),
@@ -537,7 +537,7 @@ bool MIDIManagerWin::Initialize() {
     scoped_ptr<OutDeviceInfo> out_port(OutDeviceInfo::Create(device_id));
     if (!out_port)
       continue;
-    MIDIPortInfo info(
+    MidiPortInfo info(
         base::IntToString(static_cast<int>(device_id)),
         "",
         base::WideToUTF8(caps.szPname),
@@ -549,7 +549,7 @@ bool MIDIManagerWin::Initialize() {
   return true;
 }
 
-MIDIManagerWin::~MIDIManagerWin() {
+MidiManagerWin::~MidiManagerWin() {
   // Cleanup order is important. |send_thread_| must be stopped before
   // |out_devices_| is cleared.
   for (size_t i = 0; i < output_ports_.size(); ++i)
@@ -562,7 +562,7 @@ MIDIManagerWin::~MIDIManagerWin() {
   input_ports_.clear();
 }
 
-void MIDIManagerWin::DispatchSendMIDIData(MIDIManagerClient* client,
+void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
                                           uint32 port_index,
                                           const std::vector<uint8>& data,
                                           double timestamp) {
@@ -586,18 +586,18 @@ void MIDIManagerWin::DispatchSendMIDIData(MIDIManagerClient* client,
       base::Bind(&OutDeviceInfo::Send, base::Unretained(out_port), data),
       delay);
 
-  // Call back AccumulateMIDIBytesSent() on |send_thread_| to emulate the
-  // behavior of MIDIManagerMac::SendMIDIData.
+  // Call back AccumulateMidiBytesSent() on |send_thread_| to emulate the
+  // behavior of MidiManagerMac::SendMidiData.
   // TODO(yukawa): Do this task in a platform-independent way if possible.
   // See crbug.com/325810.
   send_thread_.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&MIDIManagerClient::AccumulateMIDIBytesSent,
+      base::Bind(&MidiManagerClient::AccumulateMidiBytesSent,
                  base::Unretained(client), data.size()));
 }
 
-MIDIManager* MIDIManager::Create() {
-  return new MIDIManagerWin();
+MidiManager* MidiManager::Create() {
+  return new MidiManagerWin();
 }
 
 }  // namespace media

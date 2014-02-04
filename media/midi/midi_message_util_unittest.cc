@@ -14,20 +14,20 @@ const uint8 kNoteOn[] = { 0x90, 0x3c, 0x7f };
 const uint8 kChannelPressure[] = { 0xd0, 0x01 };
 const uint8 kTimingClock[] = { 0xf8 };
 
-TEST(GetMIDIMessageLengthTest, BasicTest) {
+TEST(GetMidiMessageLengthTest, BasicTest) {
   // Check basic functionarity
-  EXPECT_EQ(arraysize(kNoteOn), GetMIDIMessageLength(kNoteOn[0]));
+  EXPECT_EQ(arraysize(kNoteOn), GetMidiMessageLength(kNoteOn[0]));
   EXPECT_EQ(arraysize(kChannelPressure),
-            GetMIDIMessageLength(kChannelPressure[0]));
-  EXPECT_EQ(arraysize(kTimingClock), GetMIDIMessageLength(kTimingClock[0]));
+            GetMidiMessageLength(kChannelPressure[0]));
+  EXPECT_EQ(arraysize(kTimingClock), GetMidiMessageLength(kTimingClock[0]));
 
   // SysEx message should be mapped to 0-length
-  EXPECT_EQ(0u, GetMIDIMessageLength(kGMOn[0]));
+  EXPECT_EQ(0u, GetMidiMessageLength(kGMOn[0]));
 
   // Any data byte should be mapped to 0-length
-  EXPECT_EQ(0u, GetMIDIMessageLength(kGMOn[1]));
-  EXPECT_EQ(0u, GetMIDIMessageLength(kNoteOn[1]));
-  EXPECT_EQ(0u, GetMIDIMessageLength(kChannelPressure[1]));
+  EXPECT_EQ(0u, GetMidiMessageLength(kGMOn[1]));
+  EXPECT_EQ(0u, GetMidiMessageLength(kNoteOn[1]));
+  EXPECT_EQ(0u, GetMidiMessageLength(kChannelPressure[1]));
 }
 
 }  // namespace

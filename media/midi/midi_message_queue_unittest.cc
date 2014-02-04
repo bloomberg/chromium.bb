@@ -28,7 +28,7 @@ const uint8 kBrokenData3[] = { 0xf2, 0x00 };
 const uint8 kDataByte0[] = { 0x00 };
 
 template <typename T, size_t N>
-void Add(MIDIMessageQueue* queue, const T(&array)[N]) {
+void Add(MidiMessageQueue* queue, const T(&array)[N]) {
   queue->Add(array, N);
 }
 
@@ -54,15 +54,15 @@ template <typename T, size_t N>
 #define EXPECT_MESSAGE(expected, actual)  \
   EXPECT_PRED_FORMAT2(ExpectEqualSequence, expected, actual)
 
-TEST(MIDIMessageQueueTest, EmptyData) {
-  MIDIMessageQueue queue(false);
+TEST(MidiMessageQueueTest, EmptyData) {
+  MidiMessageQueue queue(false);
   std::vector<uint8> message;
   queue.Get(&message);
   EXPECT_TRUE(message.empty());
 }
 
-TEST(MIDIMessageQueueTest, RunningStatusDisabled) {
-  MIDIMessageQueue queue(false);
+TEST(MidiMessageQueueTest, RunningStatusDisabled) {
+  MidiMessageQueue queue(false);
   Add(&queue, kGMOn);
   Add(&queue, kBrokenData1);
   Add(&queue, kNoteOnWithRunningStatus);
@@ -94,8 +94,8 @@ TEST(MIDIMessageQueueTest, RunningStatusDisabled) {
   EXPECT_TRUE(message.empty());
 }
 
-TEST(MIDIMessageQueueTest, RunningStatusEnabled) {
-  MIDIMessageQueue queue(true);
+TEST(MidiMessageQueueTest, RunningStatusEnabled) {
+  MidiMessageQueue queue(true);
   Add(&queue, kGMOn);
   Add(&queue, kBrokenData1);
   Add(&queue, kNoteOnWithRunningStatus);
@@ -139,8 +139,8 @@ TEST(MIDIMessageQueueTest, RunningStatusEnabled) {
       << "Running status must not be applied to real time messages";
 }
 
-TEST(MIDIMessageQueueTest, RunningStatusEnabledWithRealTimeEvent) {
-  MIDIMessageQueue queue(true);
+TEST(MidiMessageQueueTest, RunningStatusEnabledWithRealTimeEvent) {
+  MidiMessageQueue queue(true);
   const uint8 kNoteOnWithRunningStatusWithkTimingClock[] = {
     0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8, 0x3c, 0xf8,
     0x7f,

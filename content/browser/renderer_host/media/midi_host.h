@@ -17,30 +17,30 @@
 #include "media/midi/midi_manager.h"
 
 namespace media {
-class MIDIManager;
-class MIDIMessageQueue;
+class MidiManager;
+class MidiMessageQueue;
 }
 
 namespace content {
 
-class CONTENT_EXPORT MIDIHost
+class CONTENT_EXPORT MidiHost
     : public BrowserMessageFilter,
-      public media::MIDIManagerClient {
+      public media::MidiManagerClient {
  public:
   // Called from UI thread from the owner of this object.
-  MIDIHost(int renderer_process_id, media::MIDIManager* midi_manager);
+  MidiHost(int renderer_process_id, media::MidiManager* midi_manager);
 
   // BrowserMessageFilter implementation.
   virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  // MIDIManagerClient implementation.
-  virtual void ReceiveMIDIData(uint32 port,
+  // MidiManagerClient implementation.
+  virtual void ReceiveMidiData(uint32 port,
                                const uint8* data,
                                size_t length,
                                double timestamp) OVERRIDE;
-  virtual void AccumulateMIDIBytesSent(size_t n) OVERRIDE;
+  virtual void AccumulateMidiBytesSent(size_t n) OVERRIDE;
 
   // Start session to access MIDI hardware.
   void OnStartSession(int client_id);
@@ -51,13 +51,13 @@ class CONTENT_EXPORT MIDIHost
                   double timestamp);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(MIDIHostTest, IsValidWebMIDIData);
-  friend class base::DeleteHelper<MIDIHost>;
+  FRIEND_TEST_ALL_PREFIXES(MidiHostTest, IsValidWebMIDIData);
+  friend class base::DeleteHelper<MidiHost>;
   friend class BrowserThread;
 
-  virtual ~MIDIHost();
+  virtual ~MidiHost();
 
-  // Returns true if |data| fulfills the requirements of MIDIOutput.send API
+  // Returns true if |data| fulfills the requirements of MidiOutput.send API
   // defined in the WebMIDI spec.
   // - |data| must be any number of complete MIDI messages (data abbreviation
   //    called "running status" is disallowed).
@@ -75,10 +75,10 @@ class CONTENT_EXPORT MIDIHost
   // does not support MIDI.  If not supported then a call to
   // OnRequestAccess() will always refuse access and a call to
   // OnSendData() will do nothing.
-  media::MIDIManager* const midi_manager_;
+  media::MidiManager* const midi_manager_;
 
   // Buffers where data sent from each MIDI input port is stored.
-  ScopedVector<media::MIDIMessageQueue> received_messages_queues_;
+  ScopedVector<media::MidiMessageQueue> received_messages_queues_;
 
   // The number of bytes sent to the platform-specific MIDI sending
   // system, but not yet completed.
@@ -91,7 +91,7 @@ class CONTENT_EXPORT MIDIHost
   // Protects access to |sent_bytes_in_flight_|.
   base::Lock in_flight_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(MIDIHost);
+  DISALLOW_COPY_AND_ASSIGN(MidiHost);
 };
 
 }  // namespace content

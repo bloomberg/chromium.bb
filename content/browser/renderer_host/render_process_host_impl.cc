@@ -654,8 +654,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       media_stream_manager);
   AddFilter(audio_renderer_host_);
   AddFilter(
-      new MIDIHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
-  AddFilter(new MIDIDispatcherHost(GetID(), browser_context));
+      new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
+  AddFilter(new MidiDispatcherHost(GetID(), browser_context));
   AddFilter(new VideoCaptureHost(media_stream_manager));
   AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),

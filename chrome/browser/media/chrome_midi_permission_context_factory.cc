@@ -10,37 +10,37 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 // static
-ChromeMIDIPermissionContext*
-ChromeMIDIPermissionContextFactory::GetForProfile(Profile* profile) {
-  return static_cast<ChromeMIDIPermissionContext*>(
+ChromeMidiPermissionContext*
+ChromeMidiPermissionContextFactory::GetForProfile(Profile* profile) {
+  return static_cast<ChromeMidiPermissionContext*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-ChromeMIDIPermissionContextFactory*
-ChromeMIDIPermissionContextFactory::GetInstance() {
-  return Singleton<ChromeMIDIPermissionContextFactory>::get();
+ChromeMidiPermissionContextFactory*
+ChromeMidiPermissionContextFactory::GetInstance() {
+  return Singleton<ChromeMidiPermissionContextFactory>::get();
 }
 
-ChromeMIDIPermissionContextFactory::
-ChromeMIDIPermissionContextFactory()
+ChromeMidiPermissionContextFactory::
+ChromeMidiPermissionContextFactory()
     : BrowserContextKeyedServiceFactory(
-          "ChromeMIDIPermissionContext",
+          "ChromeMidiPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
 }
 
-ChromeMIDIPermissionContextFactory::
-~ChromeMIDIPermissionContextFactory() {
+ChromeMidiPermissionContextFactory::
+~ChromeMidiPermissionContextFactory() {
 }
 
 BrowserContextKeyedService*
-ChromeMIDIPermissionContextFactory::BuildServiceInstanceFor(
+ChromeMidiPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new ChromeMIDIPermissionContext(static_cast<Profile*>(profile));
+  return new ChromeMidiPermissionContext(static_cast<Profile*>(profile));
 }
 
 content::BrowserContext*
-ChromeMIDIPermissionContextFactory::GetBrowserContextToUse(
+ChromeMidiPermissionContextFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

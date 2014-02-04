@@ -27,7 +27,7 @@ class TraceEventSystemStatsMonitor;
 
 namespace media {
 class AudioManager;
-class MIDIManager;
+class MidiManager;
 class UserInputMonitor;
 }  // namespace media
 
@@ -96,7 +96,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
-  media::MIDIManager* midi_manager() const { return midi_manager_.get(); }
+  media::MidiManager* midi_manager() const { return midi_manager_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 
   bool is_tracing_startup() const { return is_tracing_startup_; }
@@ -140,7 +140,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // user_input_monitor_ has to outlive audio_manager_, so declared first.
   scoped_ptr<media::UserInputMonitor> user_input_monitor_;
   scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<media::MIDIManager> midi_manager_;
+  scoped_ptr<media::MidiManager> midi_manager_;
   scoped_ptr<AudioMirroringManager> audio_mirroring_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   // Per-process listener for online state changes.

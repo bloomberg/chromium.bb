@@ -15,24 +15,24 @@ class PermissionRequestID;
 class Profile;
 
 // This class manages MIDI permissions flow. Used on the UI thread.
-class ChromeMIDIPermissionContext : public BrowserContextKeyedService {
+class ChromeMidiPermissionContext : public BrowserContextKeyedService {
  public:
-  explicit ChromeMIDIPermissionContext(Profile* profile);
-  virtual ~ChromeMIDIPermissionContext();
+  explicit ChromeMidiPermissionContext(Profile* profile);
+  virtual ~ChromeMidiPermissionContext();
 
   // BrowserContextKeyedService methods:
   virtual void Shutdown() OVERRIDE;
 
   // Request to ask users permission about MIDI.
-  void RequestMIDISysExPermission(
+  void RequestMidiSysExPermission(
       int render_process_id,
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
-      const content::BrowserContext::MIDISysExPermissionCallback& callback);
+      const content::BrowserContext::MidiSysExPermissionCallback& callback);
 
   // Cancel a pending MIDI permission request.
-  void CancelMIDISysExPermissionRequest(int render_process_id,
+  void CancelMidiSysExPermissionRequest(int render_process_id,
                                         int render_view_id,
                                         int bridge_id,
                                         const GURL& requesting_frame);
@@ -45,14 +45,14 @@ class ChromeMIDIPermissionContext : public BrowserContextKeyedService {
       const PermissionRequestID& id,
       const GURL& requesting_frame,
       const GURL& embedder,
-      const content::BrowserContext::MIDISysExPermissionCallback& callback);
+      const content::BrowserContext::MidiSysExPermissionCallback& callback);
 
   // Called when permission is granted without interactively asking the user.
   void PermissionDecided(
       const PermissionRequestID& id,
       const GURL& requesting_frame,
       const GURL& embedder,
-      const content::BrowserContext::MIDISysExPermissionCallback& callback,
+      const content::BrowserContext::MidiSysExPermissionCallback& callback,
       bool allowed);
 
   // Called when the permission decision is made. It may be by the
@@ -60,7 +60,7 @@ class ChromeMIDIPermissionContext : public BrowserContextKeyedService {
   void NotifyPermissionSet(
       const PermissionRequestID& id,
       const GURL& requesting_frame,
-      const content::BrowserContext::MIDISysExPermissionCallback& callback,
+      const content::BrowserContext::MidiSysExPermissionCallback& callback,
       bool allowed);
 
   // Return an instance of the infobar queue controller, creating it if needed.
@@ -73,7 +73,7 @@ class ChromeMIDIPermissionContext : public BrowserContextKeyedService {
   bool shutting_down_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeMIDIPermissionContext);
+  DISALLOW_COPY_AND_ASSIGN(ChromeMidiPermissionContext);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_CHROME_MIDI_PERMISSION_CONTEXT_H_

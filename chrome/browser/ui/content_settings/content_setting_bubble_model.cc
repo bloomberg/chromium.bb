@@ -1131,15 +1131,14 @@ void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
   }
 }
 
-// TODO(toyoshim): Should share as many code with geolocation as possible.
-class ContentSettingMIDISysExBubbleModel
+class ContentSettingMidiSysExBubbleModel
     : public ContentSettingTitleAndLinkModel {
  public:
-  ContentSettingMIDISysExBubbleModel(Delegate* delegate,
+  ContentSettingMidiSysExBubbleModel(Delegate* delegate,
                                      WebContents* web_contents,
                                      Profile* profile,
                                      ContentSettingsType content_type);
-  virtual ~ContentSettingMIDISysExBubbleModel() {}
+  virtual ~ContentSettingMidiSysExBubbleModel() {}
 
  private:
   void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
@@ -1147,7 +1146,7 @@ class ContentSettingMIDISysExBubbleModel
   virtual void OnCustomLinkClicked() OVERRIDE;
 };
 
-ContentSettingMIDISysExBubbleModel::ContentSettingMIDISysExBubbleModel(
+ContentSettingMidiSysExBubbleModel::ContentSettingMidiSysExBubbleModel(
     Delegate* delegate,
     WebContents* web_contents,
     Profile* profile,
@@ -1158,7 +1157,7 @@ ContentSettingMIDISysExBubbleModel::ContentSettingMIDISysExBubbleModel(
   SetDomainsAndCustomLink();
 }
 
-void ContentSettingMIDISysExBubbleModel::MaybeAddDomainList(
+void ContentSettingMidiSysExBubbleModel::MaybeAddDomainList(
     const std::set<std::string>& hosts, int title_id) {
   if (!hosts.empty()) {
     DomainList domain_list;
@@ -1168,7 +1167,7 @@ void ContentSettingMIDISysExBubbleModel::MaybeAddDomainList(
   }
 }
 
-void ContentSettingMIDISysExBubbleModel::SetDomainsAndCustomLink() {
+void ContentSettingMidiSysExBubbleModel::SetDomainsAndCustomLink() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   const ContentSettingsUsagesState& usages_state =
@@ -1195,7 +1194,7 @@ void ContentSettingMIDISysExBubbleModel::SetDomainsAndCustomLink() {
   }
 }
 
-void ContentSettingMIDISysExBubbleModel::OnCustomLinkClicked() {
+void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
   if (!web_contents())
     return;
   // Reset this embedder's entry to default for each of the requesting
@@ -1256,7 +1255,7 @@ ContentSettingBubbleModel*
                                             registry, content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-    return new ContentSettingMIDISysExBubbleModel(delegate, web_contents,
+    return new ContentSettingMidiSysExBubbleModel(delegate, web_contents,
                                                   profile, content_type);
   }
   return new ContentSettingSingleRadioGroup(delegate, web_contents, profile,

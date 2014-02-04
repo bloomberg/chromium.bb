@@ -5745,7 +5745,7 @@ blink::WebUserMediaClient* RenderViewImpl::userMediaClient() {
 
 blink::WebMIDIClient* RenderViewImpl::webMIDIClient() {
   if (!midi_dispatcher_)
-    midi_dispatcher_ = new MIDIDispatcher(this);
+    midi_dispatcher_ = new MidiDispatcher(this);
   return midi_dispatcher_;
 }
 

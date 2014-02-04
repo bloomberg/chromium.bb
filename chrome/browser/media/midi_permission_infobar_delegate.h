@@ -14,13 +14,10 @@
 class PermissionQueueController;
 class InfoBarService;
 
-// TODO(toyoshim): Much more code can be shared with GeolocationInfoBarDelegate.
-// http://crbug.com/266743
-
-// MIDIPermissionInfoBarDelegates are created by the
-// ChromeMIDIPermissionContext to control the display and handling of MIDI
+// MidiPermissionInfoBarDelegates are created by the
+// ChromeMidiPermissionContext to control the display and handling of MIDI
 // permission infobars to the user.
-class MIDIPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
+class MidiPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a MIDI permission infobar and delegate and adds the infobar to
   // |infobar_service|.  Returns the infobar if it was successfully added.
@@ -31,12 +28,12 @@ class MIDIPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
                          const std::string& display_languages);
 
  private:
-  MIDIPermissionInfoBarDelegate(PermissionQueueController* controller,
+  MidiPermissionInfoBarDelegate(PermissionQueueController* controller,
                                 const PermissionRequestID& id,
                                 const GURL& requesting_frame,
                                 int contents_unique_id,
                                 const std::string& display_languages);
-  virtual ~MIDIPermissionInfoBarDelegate();
+  virtual ~MidiPermissionInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
@@ -59,7 +56,7 @@ class MIDIPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   int contents_unique_id_;
   std::string display_languages_;
 
-  DISALLOW_COPY_AND_ASSIGN(MIDIPermissionInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MidiPermissionInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MIDI_PERMISSION_INFOBAR_DELEGATE_H_

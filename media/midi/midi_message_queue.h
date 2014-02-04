@@ -24,7 +24,7 @@ namespace media {
 //   MIDI status byte is abbreviated (a.k.a. "running status").
 //
 // Example (pseudo message loop):
-//   MIDIMessageQueue queue(true);  // true to support "running status"
+//   MidiMessageQueue queue(true);  // true to support "running status"
 //   while (true) {
 //     if (is_incoming_midi_data_available()) {
 //       std::vector<uint8> incoming_data;
@@ -38,12 +38,12 @@ namespace media {
 //         dispatch(next_message);
 //     }
 //   }
-class MEDIA_EXPORT MIDIMessageQueue {
+class MEDIA_EXPORT MidiMessageQueue {
  public:
   // Initializes the queue. Set true to |allow_running_status| to enable
   // "MIDI running status" reconstruction.
-  explicit MIDIMessageQueue(bool allow_running_status);
-  ~MIDIMessageQueue();
+  explicit MidiMessageQueue(bool allow_running_status);
+  ~MidiMessageQueue();
 
   // Enqueues |data| to the internal buffer.
   void Add(const std::vector<uint8>& data);
@@ -64,7 +64,7 @@ class MEDIA_EXPORT MIDIMessageQueue {
   std::deque<uint8> queue_;
   std::vector<uint8> next_message_;
   const bool allow_running_status_;
-  DISALLOW_COPY_AND_ASSIGN(MIDIMessageQueue);
+  DISALLOW_COPY_AND_ASSIGN(MidiMessageQueue);
 };
 
 }  // namespace media

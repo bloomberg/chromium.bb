@@ -41,22 +41,22 @@ void PushToVector(const T(&data)[N], std::vector<T>* buffer) {
 
 }  // namespace
 
-TEST(MIDIHostTest, IsValidWebMIDIData) {
+TEST(MidiHostTest, IsValidWebMIDIData) {
   // Test single event scenario
-  EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(AsVector(kGMOn)));
-  EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(AsVector(kGSOn)));
-  EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(AsVector(kNoteOn)));
-  EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(AsVector(kChannelPressure)));
-  EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(AsVector(kTimingClock)));
-  EXPECT_FALSE(MIDIHost::IsValidWebMIDIData(AsVector(kBrokenData1)));
-  EXPECT_FALSE(MIDIHost::IsValidWebMIDIData(AsVector(kBrokenData2)));
-  EXPECT_FALSE(MIDIHost::IsValidWebMIDIData(AsVector(kBrokenData3)));
-  EXPECT_FALSE(MIDIHost::IsValidWebMIDIData(AsVector(kDataByte0)));
+  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kGMOn)));
+  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kGSOn)));
+  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kNoteOn)));
+  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kChannelPressure)));
+  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kTimingClock)));
+  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kBrokenData1)));
+  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kBrokenData2)));
+  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kBrokenData3)));
+  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kDataByte0)));
 
   // MIDI running status should be disallowed
-  EXPECT_FALSE(MIDIHost::IsValidWebMIDIData(
+  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(
       AsVector(kNoteOnWithRunningStatus)));
-  EXPECT_FALSE(MIDIHost::IsValidWebMIDIData(
+  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(
       AsVector(kChannelPressureWithRunningStatus)));
 
   // Multiple messages are allowed as long as each of them is complete.
@@ -67,9 +67,9 @@ TEST(MIDIHostTest, IsValidWebMIDIData) {
     PushToVector(kGSOn, &buffer);
     PushToVector(kTimingClock, &buffer);
     PushToVector(kNoteOn, &buffer);
-    EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(buffer));
+    EXPECT_TRUE(MidiHost::IsValidWebMIDIData(buffer));
     PushToVector(kBrokenData1, &buffer);
-    EXPECT_FALSE(MIDIHost::IsValidWebMIDIData(buffer));
+    EXPECT_FALSE(MidiHost::IsValidWebMIDIData(buffer));
   }
 
   // MIDI realtime message can be placed at any position.
@@ -77,13 +77,14 @@ TEST(MIDIHostTest, IsValidWebMIDIData) {
     const uint8 kNoteOnWithRealTimeClock[] = {
       0x90, 0xf8, 0x3c, 0x7f, 0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8,
     };
-    EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(
+    EXPECT_TRUE(MidiHost::IsValidWebMIDIData(
         AsVector(kNoteOnWithRealTimeClock)));
 
     const uint8 kGMOnWithRealTimeClock[] = {
       0xf0, 0xf8, 0x7e, 0x7f, 0x09, 0x01, 0xf8, 0xf7,
     };
-    EXPECT_TRUE(MIDIHost::IsValidWebMIDIData(AsVector(kGMOnWithRealTimeClock)));
+    EXPECT_TRUE(MidiHost::IsValidWebMIDIData(
+        AsVector(kGMOnWithRealTimeClock)));
   }
 }
 

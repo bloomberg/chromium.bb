@@ -10,20 +10,20 @@
 namespace media {
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA)
-// TODO(toyoshim): implement MIDIManager for other platforms.
-MIDIManager* MIDIManager::Create() {
-  return new MIDIManager;
+// TODO(toyoshim): implement MidiManager for other platforms.
+MidiManager* MidiManager::Create() {
+  return new MidiManager;
 }
 #endif
 
-MIDIManager::MIDIManager()
+MidiManager::MidiManager()
     : initialized_(false) {
 }
 
-MIDIManager::~MIDIManager() {
+MidiManager::~MidiManager() {
 }
 
-bool MIDIManager::StartSession(MIDIManagerClient* client) {
+bool MidiManager::StartSession(MidiManagerClient* client) {
   // Lazily initialize the MIDI back-end.
   if (!initialized_)
     initialized_ = Initialize();
@@ -36,33 +36,33 @@ bool MIDIManager::StartSession(MIDIManagerClient* client) {
   return initialized_;
 }
 
-void MIDIManager::EndSession(MIDIManagerClient* client) {
+void MidiManager::EndSession(MidiManagerClient* client) {
   base::AutoLock auto_lock(clients_lock_);
   ClientList::iterator i = clients_.find(client);
   if (i != clients_.end())
     clients_.erase(i);
 }
 
-void MIDIManager::DispatchSendMIDIData(MIDIManagerClient* client,
+void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
                                        uint32 port_index,
                                        const std::vector<uint8>& data,
                                        double timestamp) {
   NOTREACHED();
 }
 
-bool MIDIManager::Initialize() {
+bool MidiManager::Initialize() {
   return false;
 }
 
-void MIDIManager::AddInputPort(const MIDIPortInfo& info) {
+void MidiManager::AddInputPort(const MidiPortInfo& info) {
   input_ports_.push_back(info);
 }
 
-void MIDIManager::AddOutputPort(const MIDIPortInfo& info) {
+void MidiManager::AddOutputPort(const MidiPortInfo& info) {
   output_ports_.push_back(info);
 }
 
-void MIDIManager::ReceiveMIDIData(
+void MidiManager::ReceiveMidiData(
     uint32 port_index,
     const uint8* data,
     size_t length,
@@ -70,7 +70,7 @@ void MIDIManager::ReceiveMIDIData(
   base::AutoLock auto_lock(clients_lock_);
 
   for (ClientList::iterator i = clients_.begin(); i != clients_.end(); ++i)
-    (*i)->ReceiveMIDIData(port_index, data, length, timestamp);
+    (*i)->ReceiveMidiData(port_index, data, length, timestamp);
 }
 
 }  // namespace media

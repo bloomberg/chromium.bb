@@ -14,14 +14,14 @@
 
 namespace media {
 
-class MIDIManagerWin : public MIDIManager {
+class MidiManagerWin : public MidiManager {
  public:
-  MIDIManagerWin();
-  virtual ~MIDIManagerWin();
+  MidiManagerWin();
+  virtual ~MidiManagerWin();
 
-  // MIDIManager implementation.
+  // MidiManager implementation.
   virtual bool Initialize() OVERRIDE;
-  virtual void DispatchSendMIDIData(MIDIManagerClient* client,
+  virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,
                                     double timestamp) OVERRIDE;
@@ -32,7 +32,7 @@ class MIDIManagerWin : public MIDIManager {
   std::vector<scoped_ptr<InDeviceInfo> > in_devices_;
   std::vector<scoped_ptr<OutDeviceInfo> > out_devices_;
   base::Thread send_thread_;
-  DISALLOW_COPY_AND_ASSIGN(MIDIManagerWin);
+  DISALLOW_COPY_AND_ASSIGN(MidiManagerWin);
 };
 
 }  // namespace media

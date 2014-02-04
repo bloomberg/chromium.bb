@@ -13,15 +13,15 @@
 
 namespace media {
 
-struct MEDIA_EXPORT MIDIPortInfo {
-  MIDIPortInfo();
-  MIDIPortInfo(const std::string& in_id,
+struct MEDIA_EXPORT MidiPortInfo {
+  MidiPortInfo();
+  MidiPortInfo(const std::string& in_id,
                const std::string& in_manufacturer,
                const std::string& in_name,
                const std::string& in_version);
 
-  MIDIPortInfo(const MIDIPortInfo& info);
-  ~MIDIPortInfo();
+  MidiPortInfo(const MidiPortInfo& info);
+  ~MidiPortInfo();
 
   std::string id;
   std::string manufacturer;
@@ -29,7 +29,7 @@ struct MEDIA_EXPORT MIDIPortInfo {
   std::string version;
 };
 
-typedef std::vector<MIDIPortInfo> MIDIPortInfoList;
+typedef std::vector<MidiPortInfo> MidiPortInfoList;
 
 }  // namespace media
 

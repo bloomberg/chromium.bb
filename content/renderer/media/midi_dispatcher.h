@@ -17,16 +17,16 @@ namespace content {
 
 class RenderViewImpl;
 
-// MIDIDispatcher implements WebMIDIClient to handle permissions for using
+// MidiDispatcher implements WebMIDIClient to handle permissions for using
 // system exclusive messages.
 // It works as RenderViewObserver to handle IPC messages between
-// MIDIDispatcherHost owned by RenderViewHost since permissions are managed in
+// MidiDispatcherHost owned by RenderViewHost since permissions are managed in
 // the browser process.
-class MIDIDispatcher : public RenderViewObserver,
+class MidiDispatcher : public RenderViewObserver,
                        public blink::WebMIDIClient {
  public:
-  explicit MIDIDispatcher(RenderViewImpl* render_view);
-  virtual ~MIDIDispatcher();
+  explicit MidiDispatcher(RenderViewImpl* render_view);
+  virtual ~MidiDispatcher();
 
  private:
   // RenderView::Observer implementation.
@@ -46,7 +46,7 @@ class MIDIDispatcher : public RenderViewObserver,
   // WebMIDIPermissionRequest::setIsAllowed().
   IDMap<blink::WebMIDIPermissionRequest> requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(MIDIDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(MidiDispatcher);
 };
 
 }  // namespace content

@@ -22,17 +22,17 @@
 
 namespace media {
 
-// MIDIManager for USB-MIDI.
-class MEDIA_EXPORT MidiManagerUsb : public MIDIManager,
+// MidiManager for USB-MIDI.
+class MEDIA_EXPORT MidiManagerUsb : public MidiManager,
                                     public UsbMidiDeviceDelegate,
                                     public UsbMidiInputStream::Delegate {
  public:
   explicit MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> device_factory);
   virtual ~MidiManagerUsb();
 
-  // MIDIManager implementation.
+  // MidiManager implementation.
   virtual bool Initialize() OVERRIDE;
-  virtual void DispatchSendMIDIData(MIDIManagerClient* client,
+  virtual void DispatchSendMidiData(MidiManagerClient* client,
                                     uint32 port_index,
                                     const std::vector<uint8>& data,
                                     double timestamp) OVERRIDE;

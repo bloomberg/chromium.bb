@@ -40,7 +40,7 @@ TEST(UsbMidiDescriptorParserTest, NonExistingJackIsAssociated) {
 }
 
 TEST(UsbMidiDescriptorParserTest,
-     JacksShouldBeIgnoredWhenParserIsNotParsingMIDIInterface) {
+     JacksShouldBeIgnoredWhenParserIsNotParsingMidiInterface) {
   UsbMidiDescriptorParser parser;
   std::vector<UsbMidiJack> jacks;
   // a NON-MIDI INTERFACE descriptor followed by ENDPOINT and CS_ENDPOINT

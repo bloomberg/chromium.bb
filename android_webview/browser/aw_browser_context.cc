@@ -166,17 +166,18 @@ net::URLRequestContextGetter* AwBrowserContext::GetMediaRequestContext() {
   return GetRequestContext();
 }
 
-void AwBrowserContext::RequestMIDISysExPermission(
+void AwBrowserContext::RequestMidiSysExPermission(
       int render_process_id,
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
-      const MIDISysExPermissionCallback& callback) {
-  // TODO(toyoshim): Android is not supported yet.
+      const MidiSysExPermissionCallback& callback) {
+  // TODO(toyoshim): Android WebView is not supported yet.
+  // See http://crbug.com/339767.
   callback.Run(false);
 }
 
-void AwBrowserContext::CancelMIDISysExPermissionRequest(
+void AwBrowserContext::CancelMidiSysExPermissionRequest(
     int render_process_id,
     int render_view_id,
     int bridge_id,

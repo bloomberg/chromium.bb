@@ -12,7 +12,7 @@
 
 namespace content {
 
-class MIDIMessageFilter;
+class MidiMessageFilter;
 
 class RendererWebMIDIAccessorImpl
     : public blink::WebMIDIAccessor {
@@ -31,7 +31,7 @@ class RendererWebMIDIAccessorImpl
  private:
   blink::WebMIDIAccessorClient* client_;
 
-  MIDIMessageFilter* midi_message_filter();
+  MidiMessageFilter* midi_message_filter();
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMIDIAccessorImpl);
 };

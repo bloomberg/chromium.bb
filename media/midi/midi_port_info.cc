@@ -6,9 +6,9 @@
 
 namespace media {
 
-MIDIPortInfo::MIDIPortInfo() {}
+MidiPortInfo::MidiPortInfo() {}
 
-MIDIPortInfo::MIDIPortInfo(const std::string& in_id,
+MidiPortInfo::MidiPortInfo(const std::string& in_id,
                            const std::string& in_manufacturer,
                            const std::string& in_name,
                            const std::string& in_version)
@@ -17,9 +17,9 @@ MIDIPortInfo::MIDIPortInfo(const std::string& in_id,
       name(in_name),
       version(in_version) {}
 
-MIDIPortInfo::~MIDIPortInfo() {}
+MidiPortInfo::~MidiPortInfo() {}
 
-MIDIPortInfo::MIDIPortInfo(const MIDIPortInfo& info)
+MidiPortInfo::MidiPortInfo(const MidiPortInfo& info)
     : id(info.id),
       manufacturer(info.manufacturer),
       name(info.name),

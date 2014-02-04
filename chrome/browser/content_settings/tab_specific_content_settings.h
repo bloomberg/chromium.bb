@@ -165,7 +165,7 @@ class TabSpecificContentSettings
   void ClearGeolocationContentSettings();
 
   // Clears the MIDI settings.
-  void ClearMIDIContentSettings();
+  void ClearMidiContentSettings();
 
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
@@ -178,7 +178,7 @@ class TabSpecificContentSettings
       const content::LoadCommittedDetails& details);
 
   // Updates MIDI settings on navigation.
-  void MIDIDidNavigate(const content::LoadCommittedDetails& details);
+  void MidiDidNavigate(const content::LoadCommittedDetails& details);
 
   // Returns whether a particular kind of content has been blocked for this
   // page.
@@ -336,8 +336,8 @@ class TabSpecificContentSettings
           request_permissions);
 
   // There methods are called to update the status about MIDI access.
-  void OnMIDISysExAccessed(const GURL& reqesting_origin);
-  void OnMIDISysExAccessBlocked(const GURL& requesting_origin);
+  void OnMidiSysExAccessed(const GURL& reqesting_origin);
+  void OnMidiSysExAccessBlocked(const GURL& requesting_origin);
 
   // Adds the given |SiteDataObserver|. The |observer| is notified when a
   // locale shared object, like for example a cookie, is accessed.

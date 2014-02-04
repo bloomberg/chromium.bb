@@ -20,7 +20,7 @@ namespace {
 
 // Noop callback for (sync) Initialize.
 // TODO(yhirano): This function should go away when
-// MIDIManager::Initialize() becomes asynchronous.
+// MidiManager::Initialize() becomes asynchronous. See http://crbug.com/339746.
 void Noop(bool result) {
 }
 
@@ -47,13 +47,13 @@ void MidiManagerUsb::Initialize(base::Callback<void(bool result)> callback) {
                  base::Unretained(this)));
 }
 
-void MidiManagerUsb::DispatchSendMIDIData(MIDIManagerClient* client,
+void MidiManagerUsb::DispatchSendMidiData(MidiManagerClient* client,
                                           uint32_t port_index,
                                           const std::vector<uint8>& data,
                                           double timestamp) {
   DCHECK_LT(port_index, output_streams_.size());
   output_streams_[port_index]->Send(data);
-  client->AccumulateMIDIBytesSent(data.size());
+  client->AccumulateMidiBytesSent(data.size());
 }
 
 void MidiManagerUsb::ReceiveUsbMidiData(UsbMidiDevice* device,
@@ -74,7 +74,7 @@ void MidiManagerUsb::OnReceivedData(size_t jack_index,
                                     const uint8* data,
                                     size_t size,
                                     double timestamp) {
-  ReceiveMIDIData(jack_index, data, size, timestamp);
+  ReceiveMidiData(jack_index, data, size, timestamp);
 }
 
 
@@ -103,12 +103,12 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
       if (jacks[j].direction() == UsbMidiJack::DIRECTION_OUT) {
         output_streams_.push_back(new UsbMidiOutputStream(jacks[j]));
         // TODO(yhirano): Set appropriate properties.
-        AddOutputPort(MIDIPortInfo());
+        AddOutputPort(MidiPortInfo());
       } else {
         DCHECK_EQ(jacks[j].direction(), UsbMidiJack::DIRECTION_IN);
         input_jacks.push_back(jacks[j]);
         // TODO(yhirano): Set appropriate properties.
-        AddInputPort(MIDIPortInfo());
+        AddInputPort(MidiPortInfo());
       }
     }
     input_stream_.reset(new UsbMidiInputStream(input_jacks, this));

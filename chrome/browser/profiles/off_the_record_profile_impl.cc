@@ -300,29 +300,29 @@ OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
       .get();
 }
 
-void OffTheRecordProfileImpl::RequestMIDISysExPermission(
+void OffTheRecordProfileImpl::RequestMidiSysExPermission(
       int render_process_id,
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
-      const MIDISysExPermissionCallback& callback) {
-  ChromeMIDIPermissionContext* context =
-      ChromeMIDIPermissionContextFactory::GetForProfile(this);
-  context->RequestMIDISysExPermission(render_process_id,
+      const MidiSysExPermissionCallback& callback) {
+  ChromeMidiPermissionContext* context =
+      ChromeMidiPermissionContextFactory::GetForProfile(this);
+  context->RequestMidiSysExPermission(render_process_id,
                                       render_view_id,
                                       bridge_id,
                                       requesting_frame,
                                       callback);
 }
 
-void OffTheRecordProfileImpl::CancelMIDISysExPermissionRequest(
+void OffTheRecordProfileImpl::CancelMidiSysExPermissionRequest(
     int render_process_id,
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame) {
-  ChromeMIDIPermissionContext* context =
-      ChromeMIDIPermissionContextFactory::GetForProfile(this);
-  context->CancelMIDISysExPermissionRequest(
+  ChromeMidiPermissionContext* context =
+      ChromeMidiPermissionContextFactory::GetForProfile(this);
+  context->CancelMidiSysExPermissionRequest(
       render_process_id, render_view_id, bridge_id, requesting_frame);
 }
 

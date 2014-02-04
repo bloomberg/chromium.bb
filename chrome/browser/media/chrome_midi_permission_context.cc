@@ -14,34 +14,34 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
-ChromeMIDIPermissionContext::ChromeMIDIPermissionContext(Profile* profile)
+ChromeMidiPermissionContext::ChromeMidiPermissionContext(Profile* profile)
     : profile_(profile),
       shutting_down_(false) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-ChromeMIDIPermissionContext::~ChromeMIDIPermissionContext() {
+ChromeMidiPermissionContext::~ChromeMidiPermissionContext() {
   DCHECK(!permission_queue_controller_);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-void ChromeMIDIPermissionContext::Shutdown() {
+void ChromeMidiPermissionContext::Shutdown() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   permission_queue_controller_.reset();
   shutting_down_ = true;
 }
 
-void ChromeMIDIPermissionContext::RequestMIDISysExPermission(
+void ChromeMidiPermissionContext::RequestMidiSysExPermission(
     int render_process_id,
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
-    const content::BrowserContext::MIDISysExPermissionCallback& callback) {
+    const content::BrowserContext::MidiSysExPermissionCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!shutting_down_);
 
   // TODO(toyoshim): Support Extension's manifest declared permission.
-  // http://crbug.com/266338 .
+  // See http://crbug.com/266338.
 
   content::WebContents* web_contents =
     tab_util::GetWebContentsByID(render_process_id, render_view_id);
@@ -68,7 +68,7 @@ void ChromeMIDIPermissionContext::RequestMIDISysExPermission(
   DecidePermission(id, requesting_frame, embedder, callback);
 }
 
-void ChromeMIDIPermissionContext::CancelMIDISysExPermissionRequest(
+void ChromeMidiPermissionContext::CancelMidiSysExPermissionRequest(
     int render_process_id,
     int render_view_id,
     int bridge_id,
@@ -77,11 +77,11 @@ void ChromeMIDIPermissionContext::CancelMIDISysExPermissionRequest(
       PermissionRequestID(render_process_id, render_view_id, bridge_id, 0));
 }
 
-void ChromeMIDIPermissionContext::DecidePermission(
+void ChromeMidiPermissionContext::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
-    const content::BrowserContext::MIDISysExPermissionCallback& callback) {
+    const content::BrowserContext::MidiSysExPermissionCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ContentSetting content_setting =
@@ -100,25 +100,25 @@ void ChromeMIDIPermissionContext::DecidePermission(
     default:
       GetQueueController()->CreateInfoBarRequest(
           id, requesting_frame, embedder, base::Bind(
-              &ChromeMIDIPermissionContext::NotifyPermissionSet,
+              &ChromeMidiPermissionContext::NotifyPermissionSet,
               base::Unretained(this), id, requesting_frame, callback));
   }
 }
 
-void ChromeMIDIPermissionContext::PermissionDecided(
+void ChromeMidiPermissionContext::PermissionDecided(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
-    const content::BrowserContext::MIDISysExPermissionCallback& callback,
+    const content::BrowserContext::MidiSysExPermissionCallback& callback,
     bool allowed) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   NotifyPermissionSet(id, requesting_frame, callback, allowed);
 }
 
-void ChromeMIDIPermissionContext::NotifyPermissionSet(
+void ChromeMidiPermissionContext::NotifyPermissionSet(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const content::BrowserContext::MIDISysExPermissionCallback& callback,
+    const content::BrowserContext::MidiSysExPermissionCallback& callback,
     bool allowed) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -127,15 +127,15 @@ void ChromeMIDIPermissionContext::NotifyPermissionSet(
                                       id.render_view_id());
   if (content_settings) {
     if (allowed)
-      content_settings->OnMIDISysExAccessed(requesting_frame);
+      content_settings->OnMidiSysExAccessed(requesting_frame);
     else
-      content_settings->OnMIDISysExAccessBlocked(requesting_frame);
+      content_settings->OnMidiSysExAccessBlocked(requesting_frame);
   }
 
   callback.Run(allowed);
 }
 
-PermissionQueueController* ChromeMIDIPermissionContext::GetQueueController() {
+PermissionQueueController* ChromeMidiPermissionContext::GetQueueController() {
   if (!permission_queue_controller_) {
     permission_queue_controller_.reset(
         new PermissionQueueController(profile_,
@@ -144,7 +144,7 @@ PermissionQueueController* ChromeMIDIPermissionContext::GetQueueController() {
   return permission_queue_controller_.get();
 }
 
-void ChromeMIDIPermissionContext::CancelPendingInfobarRequest(
+void ChromeMidiPermissionContext::CancelPendingInfobarRequest(
     const PermissionRequestID& id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (shutting_down_)
