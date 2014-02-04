@@ -162,7 +162,7 @@ wl_client_post_no_memory(struct wl_client *client);
  * \code
  * void your_listener(struct wl_listener *listener, void *data)
  * {
- * 	struct your_data *data = NULL;
+ * 	struct your_data *data;
  *
  * 	your_data = wl_container_of(listener, data, your_member_name);
  * }
