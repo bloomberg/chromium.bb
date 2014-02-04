@@ -89,3 +89,11 @@ CA_COMMON_NAME="AIA Test Intermediate CA" \
     -out out/aia-test-cert.pem \
     -config aia-test.cnf \
     -extensions user_cert
+
+# Copy to the file names that are actually checked in.
+try cp out/aia-test-cert.pem ../certificates/aia-cert.pem
+try openssl x509 \
+  -outform der \
+  -in out/aia-test-intermediate.pem \
+  -out ../certificates/aia-intermediate.der
+try cp out/aia-test-root.pem ../certificates/aia-root.pem

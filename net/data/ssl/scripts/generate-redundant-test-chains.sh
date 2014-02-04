@@ -132,12 +132,13 @@ CA_COMMON_NAME="B CA" \
     -config redundant-ca.cnf
 
 echo Create redundant-server-chain.pem
-cat out/A.key out/A.pem out/B.pem out/C.pem out/D.pem \
-    > redundant-server-chain.pem
+try /bin/sh -c "cat out/A.key out/A.pem out/B.pem out/C.pem out/D.pem \
+    > ../certificates/redundant-server-chain.pem"
 
 echo Create redundant-validated-chain.pem
-cat out/A.key out/A.pem out/B.pem out/C2.pem > redundant-validated-chain.pem
+try /bin/sh -c "cat out/A.key out/A.pem out/B.pem out/C2.pem \
+  > ../certificates/redundant-validated-chain.pem"
 
 echo Create redundant-validated-chain-root.pem
-cp out/C2.pem redundant-validated-chain-root.pem
+try cp out/C2.pem ../certificates/redundant-validated-chain-root.pem
 

@@ -17,16 +17,16 @@ try () {
 try rm -rf out
 try mkdir out
 
-eku_test_root="eku-test-root"
+eku_test_root="2048-rsa-root"
 
 # Create the serial number files.
-try /bin/sh -c "echo 01 > out/$eku_test_root-serial"
+try /bin/sh -c "echo 01 > \"out/$eku_test_root-serial\""
 
 # Make sure the signers' DB files exist.
-touch out/$eku_test_root-index.txt
+touch "out/$eku_test_root-index.txt"
 
 # Generate one root CA certificate.
-try openssl genrsa -out out/$eku_test_root.key 2048
+try openssl genrsa -out "out/$eku_test_root.key" 2048
 
 CA_COMMON_NAME="2048 RSA Test Root CA" \
   CA_DIR=out \
@@ -36,9 +36,9 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
   CERT_TYPE=root \
   try openssl req \
     -new \
-    -key out/$eku_test_root.key \
+    -key "out/$eku_test_root.key" \
     -extensions ca_cert \
-    -out out/$eku_test_root.csr \
+    -out "out/$eku_test_root.csr" \
     -config ca.cnf
 
 CA_COMMON_NAME="2048 RSA Test Root CA" \
@@ -46,20 +46,20 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
   CA_NAME=req_env_dn \
   try openssl x509 \
     -req -days 3650 \
-    -in out/$eku_test_root.csr \
+    -in "out/$eku_test_root.csr" \
     -extensions ca_cert \
-    -signkey out/$eku_test_root.key \
-    -out out/$eku_test_root.pem
+    -signkey "out/$eku_test_root.key" \
+    -out "out/$eku_test_root.pem"
 
 # Generate EE certs.
 for cert_type in non-crit-codeSigning crit-codeSigning
 do
-  try openssl genrsa -out out/$cert_type.key 2048
+  try openssl genrsa -out "out/$cert_type.key" 2048
 
   try openssl req \
     -new \
-    -key out/$cert_type.key \
-    -out out/$cert_type.csr \
+    -key "out/$cert_type.key" \
+    -out "out/$cert_type.csr" \
     -config eku-test.cnf \
     -reqexts "$cert_type"
 
@@ -71,7 +71,14 @@ do
     CERT_TYPE=root \
     try openssl ca \
       -batch \
-      -in out/$cert_type.csr \
-      -out out/$cert_type.pem \
+      -in "out/$cert_type.csr" \
+      -out "out/$cert_type.pem" \
       -config ca.cnf
 done
+
+# Copy to the file names that are actually checked in.
+try cp "out/$eku_test_root.pem" ../certificates/eku-test-root.pem
+try /bin/sh -c "cat out/crit-codeSigning.key out/crit-codeSigning.pem \
+  > ../certificates/crit-codeSigning-chain.pem"
+try /bin/sh -c "cat out/non-crit-codeSigning.key out/non-crit-codeSigning.pem \
+  > ../certificates/non-crit-codeSigning-chain.pem"

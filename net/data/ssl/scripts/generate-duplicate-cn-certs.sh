@@ -101,5 +101,5 @@ try openssl pkcs12 \
   -out ../certificates/duplicate_cn_2.p12 \
   -passout pass:chrome
 
-cp out/A1.pem ../certificates/duplicate_cn_1.pem
-cp out/A2.pem ../certificates/duplicate_cn_2.pem
+try cp out/A1.pem ../certificates/duplicate_cn_1.pem
+try cp out/A2.pem ../certificates/duplicate_cn_2.pem

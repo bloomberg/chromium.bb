@@ -166,3 +166,5 @@ do
   done
 done
 
+# Copy final outputs.
+try cp out/*root*pem out/*intermediate*pem ../certificates

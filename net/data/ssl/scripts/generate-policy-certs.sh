@@ -91,6 +91,6 @@ COMMON_NAME="Policy Test Intermediate CA" \
     -config policy.cnf \
     -extensions user_cert
 
-cat out/policy-cert.pem \
+try /bin/sh -c "cat out/policy-cert.pem \
     out/policy-intermediate.pem \
-    out/policy-root.pem >../certificates/explicit-policy-chain.pem
+    out/policy-root.pem >../certificates/explicit-policy-chain.pem"
