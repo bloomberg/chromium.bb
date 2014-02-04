@@ -25,7 +25,8 @@ MediaStreamAudioSource::MediaStreamAudioSource()
 MediaStreamAudioSource::~MediaStreamAudioSource() {}
 
 void MediaStreamAudioSource::DoStopSource() {
-  audio_capturer_->Stop();
+  if (audio_capturer_.get())
+    audio_capturer_->Stop();
 }
 
 void MediaStreamAudioSource::AddTrack(
