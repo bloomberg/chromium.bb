@@ -740,13 +740,14 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         const IntRect borderBox = toRenderBox(renderer())->pixelSnappedBorderBoxRect();
 
         // Get layout bounds in the coords of compAncestor to match relativeCompositingBounds.
-        IntRect layerBounds(delta, borderBox.size());
+        IntRect layerBounds(delta + roundedIntSize(m_subpixelAccumulation), borderBox.size());
 
         // Update properties that depend on layer dimensions
         FloatPoint3D transformOrigin = computeTransformOrigin(borderBox);
         // Compute the anchor point, which is in the center of the renderer box unless transform-origin is set.
-        FloatPoint3D anchor(relativeCompositingBounds.width() != 0.0f ? ((layerBounds.x() - relativeCompositingBounds.x()) + transformOrigin.x()) / relativeCompositingBounds.width()  : 0.5f,
-            relativeCompositingBounds.height() != 0.0f ? ((layerBounds.y() - relativeCompositingBounds.y()) + transformOrigin.y()) / relativeCompositingBounds.height() : 0.5f,
+        FloatPoint3D anchor(
+            relativeCompositingBounds.width() ? (layerBounds.x() - relativeCompositingBounds.x() + transformOrigin.x()) / relativeCompositingBounds.width()  : 0.5f,
+            relativeCompositingBounds.height() ? (layerBounds.y() - relativeCompositingBounds.y() + transformOrigin.y()) / relativeCompositingBounds.height() : 0.5f,
             transformOrigin.z());
         m_graphicsLayer->setAnchorPoint(anchor);
 

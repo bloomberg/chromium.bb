@@ -530,6 +530,9 @@ crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 crbug.com/317806 [ Mac XP ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ImageOnlyFailure ]
 
+crbug.com/338674 compositing/direct-image-compositing.html [ NeedsRebaseline ]
+crbug.com/338674 virtual/softwarecompositing/direct-image-compositing.html [ NeedsRebaseline ]
+
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Pass Failure ]
