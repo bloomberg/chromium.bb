@@ -428,6 +428,15 @@ void WebTestThemeEngineMock::paint(
         break;
     }
 
+    case WebThemeEngine::PartScrollbarCorner: {
+        SkIRect cornerRect = {rect.x, rect.y, rect.x + rect.width, rect.y + rect.height};
+        paint.setColor(SK_ColorWHITE);
+        paint.setStyle(SkPaint::kFill_Style);
+        paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        canvas->drawIRect(cornerRect, paint);
+        break;
+    }
+
     case WebThemeEngine::PartCheckbox:
         if (extraParams->button.indeterminate) {
             nestedBoxes(canvas, irect,
