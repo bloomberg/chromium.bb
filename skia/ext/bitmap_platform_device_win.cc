@@ -16,25 +16,6 @@
 
 namespace {
 
-// PlatformBitmapPixelRef is an SkPixelRef that, on Windows, is backed by an
-// HBITMAP.
-class SK_API PlatformBitmapPixelRef : public SkPixelRef {
- public:
-  PlatformBitmapPixelRef(const SkImageInfo& info, HBITMAP bitmap_handle,
-                         void* pixels);
-  virtual ~PlatformBitmapPixelRef();
-
-  SK_DECLARE_UNFLATTENABLE_OBJECT();
-
- protected:
-  virtual void* onLockPixels(SkColorTable**) SK_OVERRIDE;
-  virtual void onUnlockPixels() SK_OVERRIDE;
-
- private:
-  HBITMAP bitmap_handle_;
-  void* pixels_;
-};
-
 HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
                              HANDLE shared_section, void** data) {
   // CreateDIBSection appears to get unhappy if we create an empty bitmap, so
@@ -118,30 +99,6 @@ HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
   return hbitmap;
 }
 
-PlatformBitmapPixelRef::PlatformBitmapPixelRef(const SkImageInfo& info,
-                                               HBITMAP bitmap_handle,
-                                               void* pixels)
-    : SkPixelRef(info),
-      bitmap_handle_(bitmap_handle),
-      pixels_(pixels) {
-  setPreLocked(pixels, info.minRowBytes(), NULL);
-}
-
-PlatformBitmapPixelRef::~PlatformBitmapPixelRef() {
-  if (bitmap_handle_)
-    DeleteObject(bitmap_handle_);
-}
-
-void* PlatformBitmapPixelRef::onLockPixels(SkColorTable** color_table) {
-  *color_table = NULL;
-  return pixels_;
-}
-
-void PlatformBitmapPixelRef::onUnlockPixels() {
-  // Nothing to do.
-  return;
-}
-
 }  // namespace
 
 namespace skia {
@@ -189,6 +146,19 @@ void BitmapPlatformDevice::LoadConfig() {
   LoadClippingRegionToDC(hdc_, clip_region_, transform_);
 }
 
+static void DeleteHBitmapCallback(void* addr, void* context) {
+  DeleteObject(static_cast<HBITMAP>(context));
+}
+
+static bool InstallHBitmapPixels(SkBitmap* bitmap, int width, int height,
+                                 bool is_opaque, void* data, HBITMAP hbitmap) {
+  const SkAlphaType at = is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+  const SkImageInfo info = SkImageInfo::MakeN32(width, height, at);
+  const size_t rowBytes = info.minRowBytes();
+  return bitmap->installPixels(info, data, rowBytes, DeleteHBitmapCallback,
+                               hbitmap);
+}
+
 // We use this static factory function instead of the regular constructor so
 // that we can create the pixel data before calling the constructor. This is
 // required so that we can call the base class' constructor with the pixel
@@ -205,18 +175,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
   if (!hbitmap)
     return NULL;
 
-  const SkImageInfo info = {
-    width,
-    height,
-    kPMColor_SkColorType,
-    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType
-  };
   SkBitmap bitmap;
-  bitmap.setConfig(info);
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new PlatformBitmapPixelRef(info,
-                                                                     hbitmap,
-                                                                     data));
-  bitmap.setPixelRef(pixel_ref.get());
+  if (!InstallHBitmapPixels(&bitmap, width, height, is_opaque, data, hbitmap))
+    return NULL;
 
 #ifndef NDEBUG
   // If we were given data, then don't clobber it!
@@ -398,18 +359,8 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   HGDIOBJ stock_bitmap = SelectObject(surface_, hbitmap);
   platform_extra_ = reinterpret_cast<intptr_t>(stock_bitmap);
 
-  const SkImageInfo info = {
-    width,
-    height,
-    kPMColor_SkColorType,
-    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType
-  };
-  bitmap_.setConfig(info);
-  // PlatformBitmapPixelRef takes ownership of |hbitmap|.
-  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new PlatformBitmapPixelRef(info,
-                                                                     hbitmap,
-                                                                     data));
-  bitmap_.setPixelRef(pixel_ref.get());
+  if (!InstallHBitmapPixels(&bitmap_, width, height, is_opaque, data, hbitmap))
+    return false;
   bitmap_.lockPixels();
 
   return true;
