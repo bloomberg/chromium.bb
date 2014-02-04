@@ -175,15 +175,16 @@ AppListSyncableService::AppListSyncableService(
     : profile_(profile),
       extension_system_(extension_system),
       model_(new AppListModel) {
-  if (!extension_system || !extension_system->extension_service()) {
-    LOG(WARNING) << "AppListSyncableService created with no ExtensionService";
+  if (!extension_system) {
+    LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
     return;
   }
 
   // Note: model_observer_ is constructed after the initial sync changes are
   // received in MergeDataAndStartSyncing(). Changes to the model before that
   // will be synced after the initial sync occurs.
-  if (extension_system->extension_service()->is_ready()) {
+  if (extension_system->extension_service() &&
+      extension_system->extension_service()->is_ready()) {
     BuildModel();
     return;
   }
