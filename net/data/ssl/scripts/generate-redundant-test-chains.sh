@@ -43,12 +43,7 @@ try openssl genrsa -out out/D.key 2048
 
 echo Generate the D CSR.
 CA_COMMON_NAME="D Root CA" \
-  CA_DIR=out \
-  CA_NAME=req_env_dn \
-  KEY_SIZE=2048 \
-  ALGO=rsa \
-  CERT_TYPE=root \
-  TYPE=D CERTIFICATE=D \
+  CERTIFICATE=D \
   try openssl req \
     -new \
     -key out/D.key \
@@ -57,8 +52,6 @@ CA_COMMON_NAME="D Root CA" \
 
 echo D signs itself.
 CA_COMMON_NAME="D Root CA" \
-  CA_DIR=out \
-  CA_NAME=req_env_dn \
   try openssl x509 \
     -req -days 3650 \
     -in out/D.csr \
@@ -68,12 +61,7 @@ CA_COMMON_NAME="D Root CA" \
 
 echo Generate the C2 root CSR.
 CA_COMMON_NAME="C CA" \
-  CA_DIR=out \
-  CA_NAME=req_env_dn \
-  KEY_SIZE=2048 \
-  ALGO=rsa \
-  CERT_TYPE=root \
-  TYPE=C2 CERTIFICATE=C2 \
+  CERTIFICATE=C2 \
   try openssl req \
     -new \
     -key out/C.key \
@@ -82,8 +70,6 @@ CA_COMMON_NAME="C CA" \
 
 echo C2 signs itself.
 CA_COMMON_NAME="C CA" \
-  CA_DIR=out \
-  CA_NAME=req_env_dn \
   try openssl x509 \
     -req -days 3650 \
     -in out/C2.csr \
@@ -96,12 +82,7 @@ for i in B C
 do
   name="$i Intermediate CA"
   CA_COMMON_NAME="$i CA" \
-    CA_DIR=out \
-    CA_NAME=req_env_dn \
-    KEY_SIZE=2048 \
-    ALGO=rsa \
-    CERT_TYPE=root \
-    TYPE=$i CERTIFICATE=$i \
+    CERTIFICATE=$i \
     try openssl req \
       -new \
       -key out/$i.key \
@@ -113,12 +94,7 @@ echo D signs the C intermediate.
 # Make sure the signer's DB file exists.
 touch out/D-index.txt
 CA_COMMON_NAME="D Root CA" \
-  CA_DIR=out \
-  CA_NAME=req_env_dn \
-  KEY_SIZE=2048 \
-  ALGO=rsa \
-  CERT_TYPE=root \
-  TYPE=D CERTIFICATE=D \
+  CERTIFICATE=D \
   try openssl ca \
     -batch \
     -extensions ca_cert \
@@ -129,12 +105,7 @@ CA_COMMON_NAME="D Root CA" \
 echo C signs the B intermediate.
 touch out/C-index.txt
 CA_COMMON_NAME="C CA" \
-  CA_DIR=out \
-  CA_NAME=req_env_dn \
-  KEY_SIZE=2048 \
-  ALGO=rsa \
-  CERT_TYPE=root \
-  TYPE=C CERTIFICATE=C \
+  CERTIFICATE=C \
   try openssl ca \
     -batch \
     -extensions ca_cert \
@@ -152,12 +123,7 @@ try openssl req \
 echo B signs A.
 touch out/B-index.txt
 CA_COMMON_NAME="B CA" \
-  CA_DIR=out \
-  CA_NAME=req_env_dn \
-  KEY_SIZE=$signer_key_size \
-  ALGO=$signer_algo \
-  CERT_TYPE=intermediate \
-  TYPE=B CERTIFICATE=B \
+  CERTIFICATE=B \
   try openssl ca \
     -batch \
     -extensions user_cert \
