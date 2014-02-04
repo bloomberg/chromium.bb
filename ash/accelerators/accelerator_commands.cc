@@ -35,11 +35,7 @@ void ToggleMaximized() {
   if (!window_state)
     return;
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Maximized"));
-  // Get out of fullscreen when in fullscreen mode.
-  if (window_state->IsFullscreen())
-    ToggleFullscreen();
-  else
-    window_state->ToggleMaximized();
+  window_state->OnWMEvent(wm::TOGGLE_MAXIMIZE);
 }
 
 void ToggleFullscreen() {

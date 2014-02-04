@@ -41,6 +41,23 @@ class WindowStateObserver;
 // accessing the window using |window()| is cheap.
 class ASH_EXPORT WindowState : public aura::WindowObserver {
  public:
+
+  // A subclass of State class represents one of the window's states
+  // that corresponds WnidowShowType to in Ash environment, e.g.
+  // maximized, minimized or side snapped, as subclass.
+  // Each subclass defines its own behavior and transition for each WMEvent.
+  class State {
+   public:
+    State() {}
+    virtual ~State() {}
+
+    // Update WindowState based on |event|.
+    virtual void OnWMEvent(WindowState* state, WMEvent event) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(State);
+  };
+
   explicit WindowState(aura::Window* window);
   virtual ~WindowState();
 
@@ -86,10 +103,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void Activate();
   void Deactivate();
   void Restore();
-  void ToggleMaximized();
   void ToggleFullscreen();
   void SnapLeft(const gfx::Rect& bounds);
   void SnapRight(const gfx::Rect& bounds);
+
+  // Invoked when a WMevent occurs, which drives the internal
+  // state machine.
+  void OnWMEvent(WMEvent event);
 
   // Sets the window's bounds in screen coordinates.
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
@@ -240,6 +260,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // resizer gets destroyed.
   void DeleteDragDetails();
 
+  // Sets the currently stored restore bounds and clears the restore bounds.
+  void SetAndClearRestoreBounds();
+
   // Returns a pointer to DragDetails during drag operations.
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
@@ -286,6 +309,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool in_set_window_show_type_;
 
   WindowShowType window_show_type_;
+
+  scoped_ptr<State> current_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };

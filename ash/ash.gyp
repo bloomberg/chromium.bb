@@ -467,6 +467,8 @@
         'wm/coordinate_conversion.h',
         'wm/custom_frame_view_ash.cc',
         'wm/custom_frame_view_ash.h',
+        'wm/default_state.cc',
+        'wm/default_state.h',
         'wm/default_window_resizer.cc',
         'wm/default_window_resizer.h',
         'wm/dock/docked_window_layout_manager.cc',

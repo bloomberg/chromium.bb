@@ -41,6 +41,24 @@ enum WindowShowType {
   SHOW_TYPE_AUTO_POSITIONED,
 };
 
+// Set of operations that can change the window's state.
+enum WMEvent {
+  // A user requested to toggle maximized state by double clicking window
+  // header.
+  TOGGLE_MAXIMIZE_CAPTION,
+
+  // A user requested to toggle maximized state using shortcut.
+  TOGGLE_MAXIMIZE,
+
+  // A user requested to toggle vertical maximize by double clicking
+  // top/bottom edge.
+  TOGGLE_VERTICAL_MAXIMIZE,
+
+  // A user requested to toggle horizontal maximize by double clicking
+  // left/right edge.
+  TOGGLE_HORIZONTAL_MAXIMIZE,
+};
+
 // Utility functions to convert WindowShowType <-> ui::WindowShowState.
 // Note: LEFT/RIGHT MAXIMIZED, AUTO_POSITIONED type will be lost when
 // converting to ui::WindowShowState.

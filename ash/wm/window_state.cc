@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/default_state.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
@@ -38,7 +39,8 @@ WindowState::WindowState(aura::Window* window)
       animate_to_fullscreen_(true),
       minimum_visibility_(false),
       in_set_window_show_type_(false),
-      window_show_type_(ToWindowShowType(GetShowState())) {
+      window_show_type_(ToWindowShowType(GetShowState())),
+      current_state_(new DefaultState) {
   window_->AddObserver(this);
 
 #if defined(OS_CHROMEOS)
@@ -177,13 +179,6 @@ void WindowState::Restore() {
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
-void WindowState::ToggleMaximized() {
-  if (IsMaximized())
-    Restore();
-  else if (CanMaximize())
-    Maximize();
-}
-
 void WindowState::ToggleFullscreen() {
   // Window which cannot be maximized should not be fullscreened.
   // It can, however, be restored if it was fullscreened.
@@ -198,6 +193,10 @@ void WindowState::ToggleFullscreen() {
     window_->SetProperty(aura::client::kShowStateKey,
                          ui::SHOW_STATE_FULLSCREEN);
   }
+}
+
+void WindowState::OnWMEvent(WMEvent event) {
+  current_state_->OnWMEvent(this, event);
 }
 
 void WindowState::SetBoundsInScreen(
@@ -260,6 +259,12 @@ void WindowState::CreateDragDetails(aura::Window* window,
 
 void WindowState::DeleteDragDetails() {
   drag_details_.reset();
+}
+
+void WindowState::SetAndClearRestoreBounds() {
+  DCHECK(HasRestoreBounds());
+  SetBoundsInScreen(GetRestoreBoundsInScreen());
+  ClearRestoreBounds();
 }
 
 void WindowState::OnWindowPropertyChanged(aura::Window* window,
