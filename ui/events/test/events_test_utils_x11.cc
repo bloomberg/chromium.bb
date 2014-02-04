@@ -135,15 +135,28 @@ XEvent* CreateXInput2Event(int deviceid,
 
 namespace ui {
 
-ScopedXI2Event::ScopedXI2Event() {}
-ScopedXI2Event::~ScopedXI2Event() {
-  Cleanup();
+// XInput2 events contain additional data that need to be explicitly freed (see
+// |CreateXInput2Event()|.
+void XEventDeleter::operator()(XEvent* event) {
+  if (event->type == GenericEvent) {
+    XIDeviceEvent* xiev =
+        static_cast<XIDeviceEvent*>(event->xcookie.data);
+    if (xiev) {
+      delete[] xiev->valuators.mask;
+      delete[] xiev->valuators.values;
+      delete[] xiev->buttons.mask;
+      delete xiev;
+    }
+  }
+  delete event;
 }
+
+ScopedXI2Event::ScopedXI2Event() {}
+ScopedXI2Event::~ScopedXI2Event() {}
 
 void ScopedXI2Event::InitKeyEvent(EventType type,
                                   KeyboardCode key_code,
                                   int flags) {
-  Cleanup();
   XDisplay* display = gfx::GetXDisplay();
   event_.reset(new XEvent);
   memset(event_.get(), 0, sizeof(XEvent));
@@ -168,7 +181,6 @@ void ScopedXI2Event::InitKeyEvent(EventType type,
 void ScopedXI2Event::InitGenericButtonEvent(int deviceid,
                                             EventType type,
                                             int flags) {
-  Cleanup();
   event_.reset(CreateXInput2Event(deviceid,
                                   XIButtonEventType(type), 0, gfx::Point()));
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event_->xcookie.data);
@@ -179,7 +191,6 @@ void ScopedXI2Event::InitGenericButtonEvent(int deviceid,
 
 void ScopedXI2Event::InitButtonEvent(EventType type,
                                      int flags) {
-  Cleanup();
   event_.reset(new XEvent);
   memset(event_.get(), 0, sizeof(XEvent));
   event_->type = XButtonEventType(type);
@@ -214,7 +225,6 @@ void ScopedXI2Event::InitScrollEvent(int deviceid,
                                      int x_offset_ordinal,
                                      int y_offset_ordinal,
                                      int finger_count) {
-  Cleanup();
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, 0, gfx::Point()));
 
   Valuator valuators[] = {
@@ -234,7 +244,6 @@ void ScopedXI2Event::InitFlingScrollEvent(int deviceid,
                                           int x_velocity_ordinal,
                                           int y_velocity_ordinal,
                                           bool is_cancel) {
-  Cleanup();
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, deviceid, gfx::Point()));
 
   Valuator valuators[] = {
@@ -254,23 +263,8 @@ void ScopedXI2Event::InitTouchEvent(int deviceid,
                                     int tracking_id,
                                     const gfx::Point& location,
                                     const std::vector<Valuator>& valuators) {
-  Cleanup();
   event_.reset(CreateXInput2Event(deviceid, evtype, tracking_id, location));
   SetUpValuators(valuators);
-}
-
-void ScopedXI2Event::Cleanup() {
-  if (event_.get() && event_->type == GenericEvent) {
-    XIDeviceEvent* xiev =
-        static_cast<XIDeviceEvent*>(event_->xcookie.data);
-    if (xiev) {
-      delete[] xiev->valuators.mask;
-      delete[] xiev->valuators.values;
-      delete[] xiev->buttons.mask;
-      delete xiev;
-    }
-  }
-  event_.reset();
 }
 
 void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {
