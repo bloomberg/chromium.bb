@@ -24,7 +24,8 @@ function test()
             InspectorTest.addResult("Profile groups after removal:");
             for (var key in profiles._profileGroups)
                 InspectorTest.addResult(key + ": " + profiles._profileGroups[key].length);
-            InspectorTest.assertEquals(0, type.treeElement.children.length, "All children has been removed");
+            var section = profiles._typeIdToSidebarSection[type.id];
+            InspectorTest.assertEquals(0, section.children.length, "All children has been removed");
             InspectorTest.completeProfilerTest();
         }
         WebInspector.showPanel("profiles");
