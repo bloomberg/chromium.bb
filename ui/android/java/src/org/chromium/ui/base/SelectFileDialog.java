@@ -7,6 +7,7 @@ package org.chromium.ui.base;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -129,6 +130,28 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
     }
 
     /**
+     * @return the display name of the @code uri if present in the database
+     *  or an empty string otherwise.
+     */
+    private String resolveFileName(Uri uri, ContentResolver contentResolver) {
+        Cursor cursor = null;
+        try {
+            cursor = contentResolver.query(uri, null, null, null, null);
+
+            if (cursor != null && cursor.getCount() >= 1) {
+                cursor.moveToFirst();
+                int index = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+                if (index > -1) return cursor.getString(index);
+            }
+        } finally {
+            if (cursor != null ) {
+                cursor.close();
+            }
+        }
+        return "";
+    }
+
+    /**
      * Callback method to handle the intent results and pass on the path to the native
      * SelectFileDialog.
      * @param window The window that has access to the application activity.
@@ -147,7 +170,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
         if (results == null) {
             // If we have a successful return but no data, then assume this is the camera returning
             // the photo that we requested.
-            nativeOnFileSelected(mNativeSelectFileDialog, mCameraOutputUri.getPath());
+            nativeOnFileSelected(mNativeSelectFileDialog, mCameraOutputUri.getPath(), "");
 
             // Broadcast to the media scanner that there's a new photo on the device so it will
             // show up right away in the gallery (rather than waiting until the next time the media
@@ -157,15 +180,17 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
             return;
         }
 
-        if ("file".equals(results.getData().getScheme())) {
+        if (ContentResolver.SCHEME_FILE.equals(results.getData().getScheme())) {
             nativeOnFileSelected(mNativeSelectFileDialog,
-                    results.getData().getSchemeSpecificPart());
+                    results.getData().getSchemeSpecificPart(), "");
             return;
         }
 
-        if (results.getScheme() != null
-                && results.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            nativeOnFileSelected(mNativeSelectFileDialog, results.getData().toString());
+        if (ContentResolver.SCHEME_CONTENT.equals(results.getScheme())) {
+            nativeOnFileSelected(mNativeSelectFileDialog,
+                                 results.getData().toString(),
+                                 resolveFileName(results.getData(),
+                                                 contentResolver));
             return;
         }
 
@@ -233,6 +258,6 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
     }
 
     private native void nativeOnFileSelected(long nativeSelectFileDialogImpl,
-            String filePath);
+            String filePath, String displayName);
     private native void nativeOnFileNotSelected(long nativeSelectFileDialogImpl);
 }

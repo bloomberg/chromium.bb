@@ -18,7 +18,10 @@ class SelectFileDialogImpl : public SelectFileDialog {
   static SelectFileDialogImpl* Create(Listener* listener,
                                       SelectFilePolicy* policy);
 
-  void OnFileSelected(JNIEnv* env, jobject java_object, jstring filepath);
+  void OnFileSelected(JNIEnv* env,
+                      jobject java_object,
+                      jstring filepath,
+                      jstring display_name);
   void OnFileNotSelected(JNIEnv* env, jobject java_object);
 
   // From SelectFileDialog
