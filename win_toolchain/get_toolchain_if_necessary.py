@@ -114,6 +114,20 @@ def SaveTimestampsAndHash(root, sha1):
     json.dump(timestamps_data, f)
 
 
+def HaveSrcInternalAccess():
+  """Checks whether access to src-internal is available."""
+  with open(os.devnull, 'w') as nul:
+    if subprocess.call(
+        ['svn', 'ls',
+         'svn://svn.chromium.org/chrome-internal/trunk/src-internal/'],
+        shell=True, stdin=nul, stdout=nul, stderr=nul) == 0:
+      return True
+    return subprocess.call(
+        ['git', 'remote', 'show',
+         'https://chrome-internal.googlesource.com/chrome/src-internal/'],
+        shell=True, stdin=nul, stdout=nul, stderr=nul) == 0
+
+
 def main():
   if not sys.platform.startswith(('cygwin', 'win32')):
     return 0
@@ -125,9 +139,6 @@ def main():
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
   os.chdir(os.path.normpath(os.path.join(BASEDIR)))
-  # TODO(scottmg): http://crbug.com/323300 Attempt to locate a src-internal
-  # pull and use that as a signal to install Pro also.
-  should_get_pro = os.path.isfile(os.path.join(BASEDIR, '.vspro'))
   toolchain_dir = '.'
   target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs2013_files'))
 
@@ -143,6 +154,8 @@ def main():
   # based on timestamps to make that case fast.
   current_hash = CalculateHash(target_dir)
   if current_hash not in desired_hashes:
+    should_get_pro = (os.path.isfile(os.path.join(BASEDIR, '.vspro')) or
+                      HaveSrcInternalAccess())
     print('Windows toolchain out of date or doesn\'t exist, updating (%s)...' %
           ('Pro' if should_get_pro else 'Express'))
     # This stays resident and will make the rmdir below fail.
