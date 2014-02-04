@@ -30,11 +30,11 @@ class Context : public gin::Wrappable<Context> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  // TODO(piman): lost context callback, draw animation frame callback.
+  // TODO(piman): draw animation frame callback.
   static gin::Handle<Context> Create(
       v8::Isolate* isolate,
       mojo::Handle handle,
-      v8::Handle<v8::Function> did_create_callback);
+      v8::Handle<v8::Function> context_lost_callback);
 
   static void BufferData(GLenum target, const gin::ArrayBufferView& buffer,
                          GLenum usage);
@@ -59,16 +59,14 @@ class Context : public gin::Wrappable<Context> {
 
   explicit Context(v8::Isolate* isolate,
                    mojo::Handle handle,
-                   v8::Handle<v8::Function> did_create_callback);
+                   v8::Handle<v8::Function> context_lost_callback);
   virtual ~Context();
 
-  void DidCreateContext();
-  static void DidCreateContextThunk(void* closure);
   void ContextLost();
   static void ContextLostThunk(void* closure);
 
   base::WeakPtr<gin::Runner> runner_;
-  v8::Persistent<v8::Function> did_create_callback_;
+  v8::Persistent<v8::Function> context_lost_callback_;
   MojoGLES2Context context_;
 };
 

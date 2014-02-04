@@ -37,10 +37,10 @@ class SampleApp : public ShellClient {
       : shell_(shell_handle.Pass(), this) {
     ScopedMessagePipeHandle client_handle, native_viewport_handle;
     CreateMessagePipe(&client_handle, &native_viewport_handle);
-    native_viewport_client_.reset(
-        new NativeViewportClientImpl(native_viewport_handle.Pass()));
     AllocationScope scope;
     shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
+    native_viewport_client_.reset(
+        new NativeViewportClientImpl(native_viewport_handle.Pass()));
   }
 
   virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
@@ -59,16 +59,9 @@ class SampleApp : public ShellClient {
       ScopedMessagePipeHandle gles2_client_handle;
       CreateMessagePipe(&gles2_handle, &gles2_client_handle);
 
-      gles2_client_.reset(new GLES2ClientImpl(
-            gles2_handle.Pass(),
-            base::Bind(&NativeViewportClientImpl::DidCreateContext,
-                       base::Unretained(this))));
       viewport_->CreateGLES2Context(gles2_client_handle.Pass());
+      gles2_client_.reset(new GLES2ClientImpl(gles2_handle.Pass()));
       host_.reset(new CompositorHost(gles2_client_.get()));
-    }
-
-    void DidCreateContext() {
-      host_->DidCreateContext();
     }
 
     virtual ~NativeViewportClientImpl() {}

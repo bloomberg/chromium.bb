@@ -202,11 +202,11 @@ class LauncherImpl : public ShellClient,
 
     ScopedMessagePipeHandle client_handle, native_viewport_handle;
     CreateMessagePipe(&client_handle, &native_viewport_handle);
+    AllocationScope scope;
+    shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
     root_window_host_.reset(new WindowTreeHostMojo(
         native_viewport_handle.Pass(), gfx::Rect(50, 50, 450, 60),
         base::Bind(&LauncherImpl::HostContextCreated, base::Unretained(this))));
-    AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
   }
 
  private:

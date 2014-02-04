@@ -280,9 +280,9 @@ define([
     this.shell_ = shell;
 
     var pipe = new core.createMessagePipe();
+    this.shell_.connect('mojo:mojo_native_viewport_service', pipe.handle1);
     new connector.Connection(pipe.handle0, NativeViewportClientImpl,
                              nativeViewport.NativeViewportProxy);
-    this.shell_.connect('mojo:mojo_native_viewport_service', pipe.handle1);
   }
   // TODO(aa): It is a bummer to need this stub object in JavaScript. We should
   // have a 'client' object that contains both the sending and receiving bits of
@@ -295,7 +295,6 @@ define([
     this.remote_ = remote;
 
     var pipe = core.createMessagePipe();
-    this.gles2_ = new GLES2ClientImpl(pipe.handle0);
 
     var rect = new nativeViewport.Rect;
     rect.position = new nativeViewport.Point;
@@ -305,6 +304,7 @@ define([
     this.remote_.create(rect);
     this.remote_.show();
     this.remote_.createGLES2Context(pipe.handle1);
+    this.gles2_ = new GLES2ClientImpl(pipe.handle0);
   }
   NativeViewportClientImpl.prototype =
       Object.create(nativeViewport.NativeViewportClientStub.prototype);
@@ -319,12 +319,10 @@ define([
   }
 
   function GLES2ClientImpl(remotePipe) {
-    this.gl_ = new gljs.Context(remotePipe, this.didCreateContext.bind(this));
+    this.gl_ = new gljs.Context(remotePipe, this.contextLost.bind(this));
     this.lastTime_ = monotonicClock.seconds();
     this.angle_ = 45;
-  }
 
-  GLES2ClientImpl.prototype.didCreateContext = function() {
     this.program_ = loadProgram(this.gl_);
     this.positionLocation_ =
         this.gl_.getAttribLocation(this.program_, 'a_position');
@@ -335,17 +333,15 @@ define([
     this.mvpMatrix_.loadIdentity();
 
     this.gl_.clearColor(0, 0, 0, 0);
-    this.timer_ = timer.createRepeating(16, this.handleTimer.bind(this));
-  };
+  }
 
   GLES2ClientImpl.prototype.setDimensions = function(size) {
     this.width_ = size.width;
     this.height_ = size.height;
+    this.timer_ = timer.createRepeating(16, this.handleTimer.bind(this));
   }
 
   GLES2ClientImpl.prototype.drawCube = function() {
-    if (!this.width_ || !this.height_)
-      return;
     this.gl_.viewport(0, 0, this.width_, this.height_);
     this.gl_.clear(this.gl_.COLOR_BUFFER_BIT);
     this.gl_.useProgram(this.program_);

@@ -24,8 +24,6 @@ class GLES2ClientImpl {
   void HandleInputEvent(const Event& event);
 
  private:
-  void DidCreateContext();
-  static void DidCreateContextThunk(void* closure);
   void ContextLost();
   static void ContextLostThunk(void* closure);
   void DrawAnimationFrame();
@@ -33,8 +31,6 @@ class GLES2ClientImpl {
 
   void RequestAnimationFrames();
   void CancelAnimationFrames();
-
-  void InitializeCubeIfNeeded();
 
   MojoTimeTicks last_time_;
   gfx::Size size_;
@@ -45,7 +41,6 @@ class GLES2ClientImpl {
   bool getting_animation_frames_;
 
   MojoGLES2Context context_;
-  bool context_created_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(GLES2ClientImpl);
 };

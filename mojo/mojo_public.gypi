@@ -168,6 +168,7 @@
         'public/bindings/error_handler.h',
         'public/bindings/passable.h',
         'public/bindings/remote_ptr.h',
+        'public/bindings/sync_dispatcher.h',
         'public/bindings/type_converter.h',
         'public/bindings/lib/array.cc',
         'public/bindings/lib/array_internal.h',
@@ -188,6 +189,7 @@
         'public/bindings/lib/message_queue.h',
         'public/bindings/lib/scratch_buffer.cc',
         'public/bindings/lib/scratch_buffer.h',
+        'public/bindings/lib/sync_dispatcher.cc',
       ],
     },
     {

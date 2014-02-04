@@ -23,21 +23,15 @@ namespace examples {
 
 class GLES2ClientImpl {
  public:
-  GLES2ClientImpl(
-      ScopedMessagePipeHandle pipe,
-      const base::Callback<void()>& context_created_callback);
+  explicit GLES2ClientImpl(ScopedMessagePipeHandle pipe);
   virtual ~GLES2ClientImpl();
 
   gpu::gles2::GLES2Interface* Interface() const;
   gpu::ContextSupport* Support() const;
 
  private:
-  void DidCreateContext();
-  static void DidCreateContextThunk(void* closure);
   void ContextLost();
   static void ContextLostThunk(void* closure);
-
-  base::Callback<void()> context_created_callback_;
 
   MojoGLES2Context context_;
 

@@ -23,7 +23,6 @@ MOJO_GLES2_EXPORT void MojoGLES2Initialize(MojoAsyncWaiter* async_waiter);
 MOJO_GLES2_EXPORT void MojoGLES2Terminate();
 MOJO_GLES2_EXPORT MojoGLES2Context MojoGLES2CreateContext(
     MojoHandle handle,
-    MojoGLES2ContextCreated created_callback,
     MojoGLES2ContextLost lost_callback,
     MojoGLES2DrawAnimationFrame animation_callback,
     void* closure);

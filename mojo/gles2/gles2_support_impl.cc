@@ -60,18 +60,19 @@ void GLES2SupportImpl::Terminate() {
 
 MojoGLES2Context GLES2SupportImpl::CreateContext(
     MessagePipeHandle handle,
-    MojoGLES2ContextCreated created_callback,
     MojoGLES2ContextLost lost_callback,
     MojoGLES2DrawAnimationFrame animation_callback,
     void* closure) {
   mojo::ScopedMessagePipeHandle scoped_handle =
       mojo::ScopedMessagePipeHandle(mojo::MessagePipeHandle(handle));
-  return new GLES2ClientImpl(async_waiter_,
-                             scoped_handle.Pass(),
-                             created_callback,
-                             lost_callback,
-                             animation_callback,
-                             closure);
+  scoped_ptr<GLES2ClientImpl> client(new GLES2ClientImpl(async_waiter_,
+                                                         scoped_handle.Pass(),
+                                                         lost_callback,
+                                                         animation_callback,
+                                                         closure));
+  if (!client->Initialize())
+    client.reset();
+  return client.release();
 }
 
 void GLES2SupportImpl::DestroyContext(MojoGLES2Context context) {

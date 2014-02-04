@@ -66,13 +66,9 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE;
   virtual void OnEvent(const Event& event) OVERRIDE;
 
-  void DidCreateContext();
-  void CreateCompositorIfNeeded();
-
   static ui::ContextFactory* context_factory_;
 
   scoped_ptr<GLES2ClientImpl> gles2_client_;
-  bool context_created_;
   RemotePtr<NativeViewport> native_viewport_;
   base::Callback<void()> compositor_created_callback_;
 

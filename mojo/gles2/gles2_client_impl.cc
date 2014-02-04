@@ -4,23 +4,20 @@
 
 #include "mojo/gles2/gles2_client_impl.h"
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-
+#include "mojo/public/bindings/sync_dispatcher.h"
 #include "mojo/public/gles2/gles2.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 namespace gles2 {
 
 GLES2ClientImpl::GLES2ClientImpl(MojoAsyncWaiter* async_waiter,
                                  ScopedMessagePipeHandle pipe,
-                                 MojoGLES2ContextCreated created_callback,
                                  MojoGLES2ContextLost lost_callback,
                                  MojoGLES2DrawAnimationFrame animation_callback,
                                  void* closure)
     : service_(pipe.Pass(), this, NULL, async_waiter),
       implementation_(NULL),
-      created_callback_(created_callback),
       lost_callback_(lost_callback),
       animation_callback_(animation_callback),
       closure_(closure) {
@@ -28,6 +25,17 @@ GLES2ClientImpl::GLES2ClientImpl(MojoAsyncWaiter* async_waiter,
 
 GLES2ClientImpl::~GLES2ClientImpl() {
   service_->Destroy();
+}
+
+bool GLES2ClientImpl::Initialize() {
+  MessagePipe sync_pipe;
+  sync_dispatcher_.reset(
+      new SyncDispatcher<GLES2SyncClient>(sync_pipe.handle1.Pass(), this));
+  service_->Initialize(sync_pipe.handle0.Pass());
+  // Wait for DidCreateContext to come on the sync client pipe.
+  if (!sync_dispatcher_->WaitAndDispatchOneMessage())
+    return false;
+  return !!implementation_;
 }
 
 void GLES2ClientImpl::RequestAnimationFrames() {
@@ -46,7 +54,6 @@ void GLES2ClientImpl::DidCreateContext(uint64_t encoded) {
   // still in-process, we just reinterpret_cast the value into a GL interface.
   implementation_ = reinterpret_cast<gpu::gles2::GLES2Implementation*>(
       static_cast<uintptr_t>(encoded));
-  created_callback_(closure_);
 }
 
 void GLES2ClientImpl::ContextLost() {
@@ -57,5 +64,5 @@ void GLES2ClientImpl::DrawAnimationFrame() {
   animation_callback_(closure_);
 }
 
-}  // namespace examples
+}  // namespace gles2
 }  // namespace mojo

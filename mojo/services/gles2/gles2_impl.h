@@ -28,16 +28,19 @@ class GLES2Impl : public GLES2 {
   void CreateContext(gfx::AcceleratedWidget widget, const gfx::Size& size);
 
  private:
+  virtual void Initialize(ScopedMessagePipeHandle sync_client_handle) OVERRIDE;
   virtual void RequestAnimationFrames() OVERRIDE;
   virtual void CancelAnimationFrames() OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
+  void SendDidCreateContextIfNeeded();
   void OnGLContextLost();
   void DrawAnimationFrame();
 
   base::RepeatingTimer<GLES2Impl> timer_;
   scoped_ptr<gpu::GLInProcessContext> gl_context_;
   RemotePtr<GLES2Client> client_;
+  RemotePtr<GLES2SyncClient> sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Impl);
 };

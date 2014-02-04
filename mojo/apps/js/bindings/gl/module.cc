@@ -25,8 +25,8 @@ gin::WrapperInfo kWrapperInfo = { gin::kEmbedderNativeGin };
 gin::Handle<Context> CreateContext(
     const gin::Arguments& args,
     mojo::Handle handle,
-    v8::Handle<v8::Function> did_create_callback) {
-  return Context::Create(args.isolate(), handle, did_create_callback);
+    v8::Handle<v8::Function> context_lost_callback) {
+  return Context::Create(args.isolate(), handle, context_lost_callback);
 }
 
 }  // namespace

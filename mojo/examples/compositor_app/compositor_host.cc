@@ -69,9 +69,6 @@ CompositorHost::~CompositorHost() {}
 
 void CompositorHost::SetSize(gfx::Size viewport_size) {
   tree_->SetViewportSize(viewport_size);
-}
-
-void CompositorHost::DidCreateContext() {
   tree_->SetLayerTreeHostClientReady();
   tree_->InitializeOutputSurfaceIfNeeded();
 }

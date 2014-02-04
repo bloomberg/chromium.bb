@@ -11,13 +11,9 @@
 namespace mojo {
 namespace examples {
 
-GLES2ClientImpl::GLES2ClientImpl(
-    ScopedMessagePipeHandle pipe,
-    const base::Callback<void()>& context_created_callback)
-    : context_created_callback_(context_created_callback) {
+GLES2ClientImpl::GLES2ClientImpl(ScopedMessagePipeHandle pipe) {
   context_ = MojoGLES2CreateContext(
       pipe.release().value(),
-      &DidCreateContextThunk,
       &ContextLostThunk,
       NULL,
       this);
@@ -40,16 +36,6 @@ gpu::ContextSupport* GLES2ClientImpl::Support() const {
     return NULL;
   return static_cast<gpu::ContextSupport*>(
       MojoGLES2GetContextSupport(context_));
-}
-
-void GLES2ClientImpl::DidCreateContext() {
-  TRACE_EVENT0("compositor_app", "DidCreateContext");
-  if (!context_created_callback_.is_null())
-    context_created_callback_.Run();
-}
-
-void GLES2ClientImpl::DidCreateContextThunk(void* closure) {
-  static_cast<GLES2ClientImpl*>(closure)->DidCreateContext();
 }
 
 void GLES2ClientImpl::ContextLost() {

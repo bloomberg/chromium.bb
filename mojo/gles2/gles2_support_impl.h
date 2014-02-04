@@ -22,7 +22,6 @@ class MOJO_GLES2_IMPL_EXPORT GLES2SupportImpl : public GLES2Support {
   virtual void Terminate() OVERRIDE;
   virtual MojoGLES2Context CreateContext(
       MessagePipeHandle handle,
-      MojoGLES2ContextCreated created_callback,
       MojoGLES2ContextLost lost_callback,
       MojoGLES2DrawAnimationFrame animation_callback,
       void* closure) OVERRIDE;

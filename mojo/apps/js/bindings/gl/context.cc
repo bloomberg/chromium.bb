@@ -35,9 +35,9 @@ gin::WrapperInfo Context::kWrapperInfo = { gin::kEmbedderNativeGin };
 gin::Handle<Context> Context::Create(
     v8::Isolate* isolate,
     mojo::Handle handle,
-    v8::Handle<v8::Function> did_create_callback) {
+    v8::Handle<v8::Function> context_lost_callback) {
   return gin::CreateHandle(isolate,
-                           new Context(isolate, handle, did_create_callback));
+                           new Context(isolate, handle, context_lost_callback));
 }
 
 void Context::BufferData(GLenum target, const gin::ArrayBufferView& buffer,
@@ -150,42 +150,32 @@ gin::ObjectTemplateBuilder Context::GetObjectTemplateBuilder(
 
 Context::Context(v8::Isolate* isolate,
                  mojo::Handle handle,
-                 v8::Handle<v8::Function> did_create_callback) {
+                 v8::Handle<v8::Function> context_lost_callback) {
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
-  did_create_callback_.Reset(isolate, did_create_callback);
+  context_lost_callback_.Reset(isolate, context_lost_callback);
   context_ = MojoGLES2CreateContext(
       handle.value(),
-      &DidCreateContextThunk,
       &ContextLostThunk,
       NULL,
       this);
+  MojoGLES2MakeCurrent(context_);
 }
 
 Context::~Context() {
   MojoGLES2DestroyContext(context_);
 }
 
-void Context::DidCreateContext() {
-  // TODO(aa): When we want to support multiple contexts, we should add
-  // Context::MakeCurrent() for developers to switch between them.
-  MojoGLES2MakeCurrent(context_);
+void Context::ContextLost() {
   if (!runner_)
     return;
   gin::Runner::Scope scope(runner_.get());
   v8::Isolate* isolate = runner_->isolate();
 
   v8::Handle<v8::Function> callback = v8::Local<v8::Function>::New(
-      isolate, did_create_callback_);
+      isolate, context_lost_callback_);
 
   runner_->Call(callback, runner_->global(), 0, NULL);
-}
-
-void Context::DidCreateContextThunk(void* closure) {
-  static_cast<Context*>(closure)->DidCreateContext();
-}
-
-void Context::ContextLost() {
 }
 
 void Context::ContextLostThunk(void* closure) {

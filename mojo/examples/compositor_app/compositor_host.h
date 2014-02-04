@@ -26,7 +26,6 @@ class CompositorHost : public cc::LayerTreeHostClient {
   virtual ~CompositorHost();
 
   void SetSize(gfx::Size viewport_size);
-  void DidCreateContext();
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE;

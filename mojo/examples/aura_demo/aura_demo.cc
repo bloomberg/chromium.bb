@@ -126,12 +126,12 @@ class AuraDemo : public ShellClient {
 
     ScopedMessagePipeHandle client_handle, native_viewport_handle;
     CreateMessagePipe(&client_handle, &native_viewport_handle);
+    mojo::AllocationScope scope;
+    shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
     root_window_host_.reset(new WindowTreeHostMojo(
         native_viewport_handle.Pass(),
         gfx::Rect(800, 600),
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
-    AllocationScope scope;
-    shell_->Connect("mojo:mojo_native_viewport_service", client_handle.Pass());
   }
 
   virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {

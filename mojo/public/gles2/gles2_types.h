@@ -16,8 +16,6 @@ extern "C" {
 #endif
 
 typedef struct MojoGLES2ContextPrivate *MojoGLES2Context;
-// TODO(piman): create context synchronously
-typedef void (*MojoGLES2ContextCreated)(void* closure);
 typedef void (*MojoGLES2ContextLost)(void* closure);
 typedef void (*MojoGLES2DrawAnimationFrame)(void* closure);
 

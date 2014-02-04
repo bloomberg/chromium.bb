@@ -19,6 +19,11 @@ GLES2Impl::GLES2Impl(ScopedMessagePipeHandle client)
 GLES2Impl::~GLES2Impl() {
 }
 
+void GLES2Impl::Initialize(ScopedMessagePipeHandle sync_client_handle) {
+  sync_client_.reset(sync_client_handle.Pass());
+  SendDidCreateContextIfNeeded();
+}
+
 void GLES2Impl::RequestAnimationFrames() {
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(16),
                this, &GLES2Impl::DrawAnimationFrame);
@@ -39,11 +44,16 @@ void GLES2Impl::CreateContext(gfx::AcceleratedWidget widget,
       false, widget, size, false, attribs, gfx::PreferDiscreteGpu));
   gl_context_->SetContextLostCallback(base::Bind(
       &GLES2Impl::OnGLContextLost, base::Unretained(this)));
+  SendDidCreateContextIfNeeded();
+}
 
+void GLES2Impl::SendDidCreateContextIfNeeded() {
+  if (sync_client_.is_null() || !gl_context_.get())
+    return;
   gpu::gles2::GLES2Interface* gl = gl_context_->GetImplementation();
   uint64_t encoded_gl = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(gl));
 
-  client_->DidCreateContext(encoded_gl);
+  sync_client_->DidCreateContext(encoded_gl);
 }
 
 void GLES2Impl::OnGLContextLost() {

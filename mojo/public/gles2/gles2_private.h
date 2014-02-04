@@ -28,7 +28,6 @@ class MOJO_GLES2_EXPORT GLES2Support {
   virtual void Terminate() = 0;
   virtual MojoGLES2Context CreateContext(
       MessagePipeHandle handle,
-      MojoGLES2ContextCreated created_callback,
       MojoGLES2ContextLost lost_callback,
       MojoGLES2DrawAnimationFrame animation_callback,
       void* closure) = 0;

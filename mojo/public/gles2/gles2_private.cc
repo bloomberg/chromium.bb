@@ -27,12 +27,10 @@ void MojoGLES2Terminate() {
 
 MojoGLES2Context MojoGLES2CreateContext(
     MojoHandle handle,
-    MojoGLES2ContextCreated created_callback,
     MojoGLES2ContextLost lost_callback,
     MojoGLES2DrawAnimationFrame animation_callback,
     void* closure) {
   return g_gles2_support->CreateContext(mojo::MessagePipeHandle(handle),
-                                        created_callback,
                                         lost_callback,
                                         animation_callback,
                                         closure);

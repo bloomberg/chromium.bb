@@ -31,8 +31,7 @@ WindowTreeHostMojo::WindowTreeHostMojo(
     ScopedMessagePipeHandle viewport_handle,
     const gfx::Rect& bounds,
     const base::Callback<void()>& compositor_created_callback)
-    : context_created_(false),
-      native_viewport_(viewport_handle.Pass(), this),
+    : native_viewport_(viewport_handle.Pass(), this),
       compositor_created_callback_(compositor_created_callback),
       bounds_(bounds) {
   AllocationScope scope;
@@ -51,11 +50,8 @@ WindowTreeHostMojo::WindowTreeHostMojo(
   }
   CHECK(context_factory_) << "No GL bindings.";
 
-  gles2_client_.reset(new GLES2ClientImpl(
-      gles2_handle.Pass(),
-      base::Bind(&WindowTreeHostMojo::DidCreateContext,
-                 base::Unretained(this))));
   native_viewport_->CreateGLES2Context(gles2_client_handle.Pass());
+  gles2_client_.reset(new GLES2ClientImpl(gles2_handle.Pass()));
 }
 
 WindowTreeHostMojo::~WindowTreeHostMojo() {}
@@ -170,7 +166,9 @@ void WindowTreeHostMojo::OnBoundsChanged(const Rect& bounds) {
                       bounds.size().width(), bounds.size().height());
   if (delegate_)
     window()->SetBounds(gfx::Rect(bounds_.size()));
-  CreateCompositorIfNeeded();
+  CreateCompositor(GetAcceleratedWidget());
+  compositor_created_callback_.Run();
+  NotifyHostResized(bounds_.size());
 }
 
 void WindowTreeHostMojo::OnDestroyed() {
@@ -206,22 +204,6 @@ void WindowTreeHostMojo::OnEvent(const Event& event) {
     // TODO(beng): touch, etc.
   }
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, private:
-
-void WindowTreeHostMojo::DidCreateContext() {
-  context_created_ = true;
-  CreateCompositorIfNeeded();
-}
-
-void WindowTreeHostMojo::CreateCompositorIfNeeded() {
-  if (bounds_.IsEmpty() || !context_created_)
-    return;
-  CreateCompositor(GetAcceleratedWidget());
-  compositor_created_callback_.Run();
-  NotifyHostResized(bounds_.size());
-}
 
 }  // namespace examples
 }  // namespace mojo
