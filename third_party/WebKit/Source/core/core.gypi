@@ -3256,6 +3256,7 @@
             'css/CSSValueTestHelper.h',
             'css/CSSParserValuesTest.cpp',
             'css/CSSValueTestHelper.h',
+            'css/HoverUpdateTest.cpp',
             'css/RuleSetTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'dom/DocumentMarkerControllerTest.cpp',

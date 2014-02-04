@@ -835,8 +835,11 @@ void ContainerNode::setActive(bool down)
 
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (renderer()) {
-        if (renderStyle()->affectedByActive() || (isElementNode() && toElement(this)->childrenAffectedByActive()))
+        if (isElementNode() && toElement(this)->childrenAffectedByActive())
             setNeedsStyleRecalc(SubtreeStyleChange);
+        else if (renderStyle()->affectedByActive())
+            setNeedsStyleRecalc(LocalStyleChange);
+
         if (renderStyle()->hasAppearance())
             RenderTheme::theme().stateChanged(renderer(), PressedState);
     }
@@ -851,17 +854,22 @@ void ContainerNode::setHovered(bool over)
 
     // If :hover sets display: none we lose our hover but still need to recalc our style.
     if (!renderer()) {
-        if (!over)
+        if (over)
+            return;
+        if (isElementNode() && toElement(this)->childrenAffectedByHover())
             setNeedsStyleRecalc(SubtreeStyleChange);
+        else
+            setNeedsStyleRecalc(LocalStyleChange);
         return;
     }
 
-    if (renderer()) {
-        if (renderStyle()->affectedByHover() || (isElementNode() && toElement(this)->childrenAffectedByHover()))
-            setNeedsStyleRecalc(SubtreeStyleChange);
-        if (renderer() && renderer()->style()->hasAppearance())
-            RenderTheme::theme().stateChanged(renderer(), HoverState);
-    }
+    if (isElementNode() && toElement(this)->childrenAffectedByHover())
+        setNeedsStyleRecalc(SubtreeStyleChange);
+    else if (renderStyle()->affectedByHover())
+        setNeedsStyleRecalc(LocalStyleChange);
+
+    if (renderer()->style()->hasAppearance())
+        RenderTheme::theme().stateChanged(renderer(), HoverState);
 }
 
 PassRefPtr<HTMLCollection> ContainerNode::children()
