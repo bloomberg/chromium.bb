@@ -47,7 +47,7 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     getDefaultValueInternal: function() {
       var cap = this.getCopiesCapability_();
-      return cap.hasOwnProperty('default') ? cap.default : '';
+      return cap.hasOwnProperty('default') ? cap.default : '1';
     },
 
     /** @override */
