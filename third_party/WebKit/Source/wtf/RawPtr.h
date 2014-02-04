@@ -44,7 +44,6 @@ template<typename T>
 class RawPtr {
 public:
     RawPtr(T* ptr) : m_ptr(ptr) { }
-    RawPtr(std::nullptr_t) : m_ptr(0) { }
 
     template<typename U>
     RawPtr(const RawPtr<U>& other)
@@ -58,12 +57,6 @@ public:
     RawPtr& operator=(T* ptr)
     {
         m_ptr = ptr;
-        return *this;
-    }
-
-    RawPtr& operator=(std::nullptr_t)
-    {
-        m_ptr = 0;
         return *this;
     }
 

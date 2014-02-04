@@ -791,7 +791,7 @@ public:
 
     static int s_aliveCount;
 private:
-    PointsBack() : m_backPointer(nullptr)
+    PointsBack() : m_backPointer(0)
     {
         ++s_aliveCount;
     }
@@ -1762,7 +1762,7 @@ TEST(HeapTest, HeapWeakCollectionSimple)
         EXPECT_EQ(4u, weakSet->size());
     }
 
-    keepNumbersAlive[0] = nullptr;
+    keepNumbersAlive[0] = 0;
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
 
@@ -1846,7 +1846,7 @@ TEST(HeapTest, HeapWeakCollectionTypes)
             }
 
             for (int i = 0; i < 128; i += 3)
-                keepNumbersAlive[i] = nullptr;
+                keepNumbersAlive[i] = 0;
 
             if (collectionNumber != weakStrongIndex)
                 weakStrong->clear();
@@ -1937,7 +1937,7 @@ TEST(HeapTest, HeapWeakCollectionTypes)
                 SetIteratorCheck(it4, weakSet->end(), (collectionNumber == weakSetIndex ? count : 0) + added);
             }
             for (unsigned i = 0; i < 128 + added; i++)
-                keepNumbersAlive[i] = nullptr;
+                keepNumbersAlive[i] = 0;
             Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
             EXPECT_EQ(added, weakStrong->size());
             EXPECT_EQ(added, strongWeak->size());

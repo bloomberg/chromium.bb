@@ -1164,7 +1164,7 @@ public:
     static void* newArray(size_t bytes)
     {
         ASSERT_NOT_REACHED();
-        return nullptr;
+        return 0;
     }
 
     static void deleteArray(void* ptr)

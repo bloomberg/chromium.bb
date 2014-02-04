@@ -183,8 +183,6 @@ public:
 
     Persistent(T* raw) : m_raw(raw) { }
 
-    Persistent(std::nullptr_t) : m_raw(0) { }
-
     Persistent(const Persistent& other) : m_raw(other) { }
 
     template<typename U>
@@ -232,12 +230,6 @@ public:
 
     T* operator->() const { return *this; }
 
-    Persistent& operator=(std::nullptr_t)
-    {
-        m_raw = 0;
-        return *this;
-    }
-
     Persistent& operator=(const Persistent& other)
     {
         m_raw = other;
@@ -276,8 +268,6 @@ public:
 
     Member(T* raw) : m_raw(raw) { }
 
-    Member(std::nullptr_t) : m_raw(0) { }
-
     Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1)) { }
 
     bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
@@ -309,12 +299,6 @@ public:
 
     T* operator->() const { return m_raw; }
     T& operator*() const { return *m_raw; }
-
-    Member& operator=(std::nullptr_t)
-    {
-        m_raw = 0;
-        return *this;
-    }
 
     template<typename U>
     Member& operator=(const Persistent<U>& other)
@@ -375,8 +359,6 @@ public:
 
     WeakMember(T* raw) : Member<T>(raw) { }
 
-    WeakMember(std::nullptr_t) : Member<T>(nullptr) { }
-
     WeakMember(WTF::HashTableDeletedValueType x) : Member<T>(x) { }
 
     template<typename U>
@@ -384,12 +366,6 @@ public:
 
     template<typename U>
     WeakMember(const Member<U>& other) : Member<T>(other) { }
-
-    WeakMember& operator=(std::nullptr_t)
-    {
-        this->m_raw = 0;
-        return *this;
-    }
 
     template<typename U>
     WeakMember& operator=(const Persistent<U>& other)
