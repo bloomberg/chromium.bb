@@ -151,10 +151,11 @@ class ServerInstance(object):
     # TODO(kalman): It may be better for |document_renderer| to construct a
     # TemplateDataSource itself rather than depending on template_renderer, but
     # for that the above todo should be addressed.
-    self.document_renderer = DocumentRenderer(TableOfContentsRenderer(
-        host_fs_at_trunk,
-        compiled_fs_factory,
-        self.template_renderer))
+    self.document_renderer = DocumentRenderer(
+        TableOfContentsRenderer(host_fs_at_trunk,
+                                compiled_fs_factory,
+                                self.template_renderer),
+        self.ref_resolver_factory.Create())
 
   @staticmethod
   def ForTest(file_system=None, file_system_provider=None, base_path='/'):

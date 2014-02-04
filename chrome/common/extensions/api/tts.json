@@ -231,7 +231,7 @@
                 "type": "array",
                 "name": "voices",
                 "items": { "$ref": "TtsVoice" },
-                "description": "Array of $ref:TtsVoice objects representing the available voices for speech synthesis."
+                "description": "Array of $(ref:tts.TtsVoice) objects representing the available voices for speech synthesis."
               }
             ]
           }

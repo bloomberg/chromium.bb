@@ -14,28 +14,28 @@
         "id": "Window",
         "type": "object",
         "properties": {
-          "id": {"type": "integer", "optional": true, "minimum": 0, "description": "The ID of the window. Window IDs are unique within a browser session. Under some circumstances a Window may not be assigned an ID, for example when querying windows using the $ref:sessions API, in which case a session ID may be present."},
+          "id": {"type": "integer", "optional": true, "minimum": 0, "description": "The ID of the window. Window IDs are unique within a browser session. Under some circumstances a Window may not be assigned an ID, for example when querying windows using the $(ref:sessions) API, in which case a session ID may be present."},
           "focused": {"type": "boolean", "description": "Whether the window is currently the focused window."},
-          "top": {"type": "integer", "optional": true, "description": "The offset of the window from the top edge of the screen in pixels. Under some circumstances a Window may not be assigned top property, for example when querying closed windows from the $ref:sessions API."},
-          "left": {"type": "integer", "optional": true, "description": "The offset of the window from the left edge of the screen in pixels. Under some circumstances a Window may not be assigned left property, for example when querying closed windows from the $ref:sessions API."},
-          "width": {"type": "integer", "optional": true, "description": "The width of the window, including the frame, in pixels. Under some circumstances a Window may not be assigned width property, for example when querying closed windows from the $ref:sessions API."},
-          "height": {"type": "integer", "optional": true, "description": "The height of the window, including the frame, in pixels. Under some circumstances a Window may not be assigned height property, for example when querying closed windows from the $ref:sessions API."},
-          "tabs": {"type": "array", "items": { "$ref": "tabs.Tab" }, "optional": true, "description": "Array of $ref:tabs.Tab objects representing the current tabs in the window."},
+          "top": {"type": "integer", "optional": true, "description": "The offset of the window from the top edge of the screen in pixels. Under some circumstances a Window may not be assigned top property, for example when querying closed windows from the $(ref:sessions) API."},
+          "left": {"type": "integer", "optional": true, "description": "The offset of the window from the left edge of the screen in pixels. Under some circumstances a Window may not be assigned left property, for example when querying closed windows from the $(ref:sessions) API."},
+          "width": {"type": "integer", "optional": true, "description": "The width of the window, including the frame, in pixels. Under some circumstances a Window may not be assigned width property, for example when querying closed windows from the $(ref:sessions) API."},
+          "height": {"type": "integer", "optional": true, "description": "The height of the window, including the frame, in pixels. Under some circumstances a Window may not be assigned height property, for example when querying closed windows from the $(ref:sessions) API."},
+          "tabs": {"type": "array", "items": { "$ref": "tabs.Tab" }, "optional": true, "description": "Array of $(ref:tabs.Tab) objects representing the current tabs in the window."},
           "incognito": {"type": "boolean", "description": "Whether the window is incognito."},
           "type": {
             "type": "string",
             "optional": true,
-            "description": "The type of browser window this is. Under some circumstances a Window may not be assigned type property, for example when querying closed windows from the $ref:sessions API.",
+            "description": "The type of browser window this is. Under some circumstances a Window may not be assigned type property, for example when querying closed windows from the $(ref:sessions) API.",
             "enum": ["normal", "popup", "panel", "app"]
           },
           "state": {
             "type": "string",
             "optional": true,
-            "description": "The state of this browser window. Under some circumstances a Window may not be assigned state property, for example when querying closed windows from the $ref:sessions API.",
+            "description": "The state of this browser window. Under some circumstances a Window may not be assigned state property, for example when querying closed windows from the $(ref:sessions) API.",
             "enum": ["normal", "minimized", "maximized", "fullscreen"]
           },
           "alwaysOnTop": {"type": "boolean", "description": "Whether the window is set to be always on top."},
-          "sessionId": {"type": "string", "optional": true, "description": "The session ID used to uniquely identify a Window obtained from the $ref:sessions API."}
+          "sessionId": {"type": "string", "optional": true, "description": "The session ID used to uniquely identify a Window obtained from the $(ref:sessions) API."}
         }
       }
     ],
@@ -62,7 +62,7 @@
             "optional": true,
             "description": "",
             "properties": {
-              "populate": {"type": "boolean", "optional": true, "description": "If true, the $ref:windows.Window object will have a <var>tabs</var> property that contains a list of the $ref:tabs.Tab objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
+              "populate": {"type": "boolean", "optional": true, "description": "If true, the $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
             }
           },
           {
@@ -87,7 +87,7 @@
             "optional": true,
             "description": "",
             "properties": {
-              "populate": {"type": "boolean", "optional": true, "description": "If true, the $ref:windows.Window object will have a <var>tabs</var> property that contains a list of the $ref:tabs.Tab objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
+              "populate": {"type": "boolean", "optional": true, "description": "If true, the $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
             }
           },
           {
@@ -112,7 +112,7 @@
             "optional": true,
             "description": "",
             "properties": {
-              "populate": {"type": "boolean", "optional": true, "description": "If true, the $ref:windows.Window object will have a <var>tabs</var> property that contains a list of the $ref:tabs.Tab objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
+              "populate": {"type": "boolean", "optional": true, "description": "If true, the $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
             }
           },
           {
@@ -137,7 +137,7 @@
             "optional": true,
             "description": "",
             "properties": {
-              "populate": {"type": "boolean", "optional": true, "description": "If true, each $ref:windows.Window object will have a <var>tabs</var> property that contains a list of the $ref:tabs.Tab objects for that window. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
+              "populate": {"type": "boolean", "optional": true, "description": "If true, each $(ref:windows.Window) object will have a <var>tabs</var> property that contains a list of the $(ref:tabs.Tab) objects for that window. The <code>Tab</code> objects only contain the <code>url</code>, <code>title</code> and <code>favIconUrl</code> properties if the extension's manifest file includes the <code>\"tabs\"</code> permission." }
             }
           },
           {

@@ -97,6 +97,7 @@ class RenderServlet(Servlet):
       # HACK: the Google ID thing (google2ed...) doesn't have a title.
       content, doc_warnings = server_instance.document_renderer.Render(
           template_content,
+          path,
           render_title=path != 'google2ed1af765c529f57.html')
       warnings = template_warnings + doc_warnings
       if warnings:

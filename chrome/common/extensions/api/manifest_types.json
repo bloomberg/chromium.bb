@@ -32,7 +32,7 @@
             "items": {"type": "string"}
           },
           "accepts_tls_channel_id": {
-            "description": "If <code>true</code>, messages sent via $ref:runtime.connect or $ref:runtime.sendMessage will set $ref:runtime.MessageSender.tlsChannelId if those methods request it to be. If <code>false</code>, $ref:runtime.MessageSender.tlsChannelId will never be set under any circumstance.",
+            "description": "If <code>true</code>, messages sent via $(ref:runtime.connect) or $(ref:runtime.sendMessage) will set $(ref:runtime.MessageSender.tlsChannelId) if those methods request it to be. If <code>false</code>, $(ref:runtime.MessageSender.tlsChannelId) will never be set under any circumstance.",
             "optional": true,
             "type": "boolean"
           }

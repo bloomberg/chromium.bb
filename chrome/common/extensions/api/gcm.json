@@ -32,7 +32,7 @@
           {
             "name": "callback",
             "type": "function",
-            "description": "Function called when registration completes. It should check $ref:runtime.lastError for error when <code>registrationId</code> is empty.",
+            "description": "Function called when registration completes. It should check $(ref:runtime.lastError) for error when <code>registrationId</code> is empty.",
             "parameters": [
               { 
                 "name": "registrationId",
@@ -77,14 +77,14 @@
                   "type": "string",
                   "minLength": 1
                 },
-                "description": "Message data to send to the server. <code>goog.</code> and <code>google</code> are disallowed as key prefixes. Sum of all key/value pairs should not exceed $ref:MAX_MESSAGE_SIZE."
+                "description": "Message data to send to the server. <code>goog.</code> and <code>google</code> are disallowed as key prefixes. Sum of all key/value pairs should not exceed $(ref:gcm.MAX_MESSAGE_SIZE)."
               }
             }
           },
           {
             "name": "callback",
             "type": "function",
-            "description": "A function called after the message is successfully queued for sending. $ref:runtime.lastError should be checked, to ensure a message was sent without problems.",
+            "description": "A function called after the message is successfully queued for sending. $(ref:runtime.lastError) should be checked, to ensure a message was sent without problems.",
             "parameters": [
               {
                 "name": "messageId",

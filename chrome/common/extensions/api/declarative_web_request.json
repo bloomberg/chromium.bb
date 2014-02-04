@@ -297,7 +297,7 @@
       },
       {
         "id": "declarativeWebRequest.SendMessageToExtension",
-        "description": "Triggers the $ref:declarativeWebRequest.onMessage event.",
+        "description": "Triggers the $(ref:declarativeWebRequest.onMessage) event.",
         "type": "object",
         "properties": {
           "instanceType": {
@@ -570,7 +570,7 @@
       {
         "name": "onMessage",
         "type": "function",
-        "description": "Fired when a message is sent via $ref:declarativeWebRequest.SendMessageToExtension from an action of the declarative web request API.",
+        "description": "Fired when a message is sent via $(ref:declarativeWebRequest.SendMessageToExtension) from an action of the declarative web request API.",
         "parameters": [
           {
             "type": "object",

@@ -96,7 +96,7 @@
       {
         "name": "request",
         "type": "function",
-        "description": "Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, $ref:runtime.lastError will be set.",
+        "description": "Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, $(ref:runtime.lastError) will be set.",
         "parameters": [
           {
             "name": "permissions",
@@ -119,7 +119,7 @@
       {
         "name": "remove",
         "type": "function",
-        "description": "Removes access to the specified permissions. If there are any problems removing the permissions, $ref:runtime.lastError will be set.",
+        "description": "Removes access to the specified permissions. If there are any problems removing the permissions, $(ref:runtime.lastError) will be set.",
         "parameters": [
           {
             "name": "permissions",

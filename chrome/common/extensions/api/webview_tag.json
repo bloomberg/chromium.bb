@@ -350,7 +350,7 @@
       {
         "name": "isUserAgentOverridden",
         "type": "function",
-        "description": "Indicates whether or not the webview's user agent string has been overridden by $ref:setUserAgentOverride"
+        "description": "Indicates whether or not the webview's user agent string has been overridden by $(ref:webviewTag.setUserAgentOverride)"
       },
       {
         "name": "reload",
@@ -607,7 +607,7 @@
             "name": "request",
             "type": "object",
             "properties": {},
-            "description": "An object which holds details of the requested permission. Depending on the type of permission requested, this may be a $ref:MediaPermissionRequest, $ref:GeolocationPermissionRequest, $ref:PointerLockPermissionRequest, $ref:DownloadPermissionRequest, or $ref:LoadPluginPermissionRequest."
+            "description": "An object which holds details of the requested permission. Depending on the type of permission requested, this may be a $(ref:webviewTag.MediaPermissionRequest), $(ref:webviewTag.GeolocationPermissionRequest), $(ref:webviewTag.PointerLockPermissionRequest), $(ref:webviewTag.DownloadPermissionRequest), or $(ref:webviewTag.LoadPluginPermissionRequest)."
           }
         ]
       },

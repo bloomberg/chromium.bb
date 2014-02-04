@@ -40,7 +40,7 @@
       },
       {
         "id": "ShowPageAction",
-        "description": "Declarative event action that shows the extension's $ref:[pageAction page action] while the corresponding conditions are met.  This action can be used without <a href=\"declare_permissions.html#host-permissions\">host permissions</a>, but the extension must have a page action.  If the extension takes the <a href=\"activeTab.html\">activeTab</a> permission, a click on the page action will grant access to the active tab.",
+        "description": "Declarative event action that shows the extension's $(ref:pageAction page action) while the corresponding conditions are met.  This action can be used without <a href=\"declare_permissions.html#host-permissions\">host permissions</a>, but the extension must have a page action.  If the extension takes the <a href=\"activeTab.html\">activeTab</a> permission, a click on the page action will grant access to the active tab.",
         "type": "object",
         "properties": {
           "instanceType": {

@@ -28,10 +28,10 @@
       {
         "name": "sendRequest",
         "nocompile": true,
-        "deprecated": "Please use $ref:runtime.sendMessage.",
+        "deprecated": "Please use $(ref:runtime.sendMessage).",
         "type": "function",
         "allowAmbiguousOptionalArguments": true,
-        "description": "Sends a single request to other listeners within the extension. Similar to $ref:runtime.connect, but only sends a single request with an optional response. The $ref:onRequest event is fired in each page of the extension.",
+        "description": "Sends a single request to other listeners within the extension. Similar to $(ref:runtime.connect), but only sends a single request with an optional response. The $(ref:extension.onRequest) event is fired in each page of the extension.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           { "type": "any", "name": "request" },
@@ -43,7 +43,7 @@
               {
                 "name": "response",
                 "type": "any",
-                "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the extension, the callback will be called with no arguments and $ref:runtime.lastError will be set to the error message."
+                "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the extension, the callback will be called with no arguments and $(ref:runtime.lastError) will be set to the error message."
               }
             ]
           }
@@ -119,7 +119,7 @@
       {
         "name": "getExtensionTabs",
         "nocompile": true,
-        "deprecated": "Please use $ref:getViews <code>{type: \"tab\"}</code>.",
+        "deprecated": "Please use $(ref:extension.getViews) <code>{type: \"tab\"}</code>.",
         "type": "function",
         "maximumManifestVersion": 1,
         "description": "Returns an array of the JavaScript 'window' objects for each of the tabs running inside the current extension. If <code>windowId</code> is specified, returns only the 'window' objects of tabs attached to the specified window.",
@@ -187,7 +187,7 @@
     "events": [
       {
         "name": "onRequest",
-        "deprecated": "Please use $ref:runtime.onMessage.",
+        "deprecated": "Please use $(ref:runtime.onMessage).",
         "type": "function",
         "options": {
           "unmanaged": true
@@ -201,7 +201,7 @@
       },
       {
         "name": "onRequestExternal",
-        "deprecated": "Please use $ref:runtime.onMessageExternal.",
+        "deprecated": "Please use $(ref:runtime.onMessageExternal).",
         "type": "function",
         "options": {
           "unmanaged": true

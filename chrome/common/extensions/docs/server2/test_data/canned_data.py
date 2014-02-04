@@ -99,7 +99,9 @@ CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(EXTENSIONS, {
               }
             ]
           }
-        })
+        }),
+        'manifest.json': '{}',
+        'permissions.json': '{}'
       },
       'private': {
         'intro_tables': {

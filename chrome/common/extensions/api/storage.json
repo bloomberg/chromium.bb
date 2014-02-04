@@ -51,7 +51,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback with storage items, or on failure (in which case $ref:runtime.lastError will be set).",
+                "description": "Callback with storage items, or on failure (in which case $(ref:runtime.lastError) will be set).",
                 "parameters": [
                   {
                     "name": "items",
@@ -80,7 +80,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback with the amount of space being used by storage, or on failure (in which case $ref:runtime.lastError will be set).",
+                "description": "Callback with the amount of space being used by storage, or on failure (in which case $(ref:runtime.lastError) will be set).",
                 "parameters": [
                   {
                     "name": "bytesInUse",
@@ -105,7 +105,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback on success, or on failure (in which case $ref:runtime.lastError will be set).",
+                "description": "Callback on success, or on failure (in which case $(ref:runtime.lastError) will be set).",
                 "parameters": [],
                 "optional": true
               }
@@ -127,7 +127,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback on success, or on failure (in which case $ref:runtime.lastError will be set).",
+                "description": "Callback on success, or on failure (in which case $(ref:runtime.lastError) will be set).",
                 "parameters": [],
                 "optional": true
               }
@@ -141,7 +141,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback on success, or on failure (in which case $ref:runtime.lastError will be set).",
+                "description": "Callback on success, or on failure (in which case $(ref:runtime.lastError) will be set).",
                 "parameters": [],
                 "optional": true
               }
@@ -160,7 +160,7 @@
             "name": "changes",
             "type": "object",
             "additionalProperties": { "$ref": "StorageChange" },
-            "description": "Object mapping each key that changed to its corresponding $ref:StorageChange for that item."
+            "description": "Object mapping each key that changed to its corresponding $(ref:storage.StorageChange) for that item."
           },
           {
             "name": "areaName",
@@ -178,23 +178,23 @@
         "properties": {
           "QUOTA_BYTES": {
             "value": 102400,
-            "description": "The maximum total amount (in bytes) of data that can be stored in sync storage, as measured by the JSON stringification of every value plus every key's length. Updates that would cause this limit to be exceeded fail immediately and set $ref:runtime.lastError."
+            "description": "The maximum total amount (in bytes) of data that can be stored in sync storage, as measured by the JSON stringification of every value plus every key's length. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
           },
           "QUOTA_BYTES_PER_ITEM": {
             "value": 4096,
-            "description": "The maximum size (in bytes) of each individual item in sync storage, as measured by the JSON stringification of its value plus its key length. Updates containing items larger than this limit will fail immediately and set $ref:runtime.lastError."
+            "description": "The maximum size (in bytes) of each individual item in sync storage, as measured by the JSON stringification of its value plus its key length. Updates containing items larger than this limit will fail immediately and set $(ref:runtime.lastError)."
           },
           "MAX_ITEMS": {
             "value": 512,
-            "description": "The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail immediately and set $ref:runtime.lastError."
+            "description": "The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail immediately and set $(ref:runtime.lastError)."
           },
           "MAX_WRITE_OPERATIONS_PER_HOUR": {
             "value": 1000,
-            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail immediately and set $ref:runtime.lastError."
+            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
           },
           "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": {
             "value": 10,
-            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail immediately and set $ref:runtime.lastError."
+            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
           }
         }
       },
@@ -205,7 +205,7 @@
         "properties": {
           "QUOTA_BYTES": {
             "value": 5242880,
-            "description": "The maximum amount (in bytes) of data that can be stored in local storage, as measured by the JSON stringification of every value plus every key's length. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission. Updates that would cause this limit to be exceeded fail immediately and set $ref:runtime.lastError."
+            "description": "The maximum amount (in bytes) of data that can be stored in local storage, as measured by the JSON stringification of every value plus every key's length. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
           }
         }
       },
