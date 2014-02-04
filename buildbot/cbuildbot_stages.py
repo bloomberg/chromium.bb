@@ -1146,7 +1146,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     """Fetch and return build status for this build and any of its slaves.
 
     Returns:
-      A build-names->status dictionary of build statuses.
+      A build-names->status dictionary of build statuses. Builders that never
+      started may have status None.
     """
 
     # TODO(mtennant): When testing a master in debug mode, it is actually very
@@ -1263,46 +1264,52 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
     statuses = self._FetchSlaveStatuses()
     self._slave_statuses = statuses
+    no_stat = set(builder for builder, status in statuses.iteritems()
+                  if status is None)
     failing = set(builder for builder, status in statuses.iteritems()
-                  if status.Failed())
+                  if status and status.Failed())
     inflight = set(builder for builder, status in statuses.iteritems()
-                   if status.Inflight())
+                   if status and status.Inflight())
 
     # If all the failing or inflight builders were sanity checkers
     # then ignore the failure.
-    fatal = self._IsFailureFatal(failing, inflight)
+    fatal = self._IsFailureFatal(failing, inflight, no_stat)
 
     if fatal:
-      self._AnnotateFailingBuilders(failing, inflight, statuses)
+      self._AnnotateFailingBuilders(failing, inflight, no_stat, statuses)
       self.HandleFailure(failing, inflight)
       raise ImportantBuilderFailedException()
     else:
       self.HandleSuccess()
 
-  def _IsFailureFatal(self, failing, inflight):
+  def _IsFailureFatal(self, failing, inflight, no_stat):
     """Returns a boolean indicating whether the build should fail.
 
     Args:
       failing: Set of builder names of slave builders that failed.
       inflight: Set of builder names of slave builders that are inflight
+      no_stat: Set of builder names of slave builders that had status None.
 
     Returns:
       True if any of the failing or inflight builders are not sanity check
-      builders for this master.
+      builders for this master, or if there were any non-sanity-check builders
+      with status None.
     """
     sanity_builders = self._run.config.sanity_check_slaves or []
     sanity_builders = set(sanity_builders)
-    return not sanity_builders.issuperset(failing | inflight)
+    return not sanity_builders.issuperset(failing | inflight | no_stat)
 
-  def _AnnotateFailingBuilders(self, failing, inflight, statuses):
+  def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses):
     """Add annotations that link to either failing or inflight builders.
 
     Adds buildbot links to failing builder dashboards. If no builders are
-    failing, adds links to inflight builders.
+    failing, adds links to inflight builders. Adds step text for builders
+    with status None.
 
     Args:
       failing: Set of builder names of slave builders that failed.
-      inflight: Set of builder names of slave builders that are inflights.
+      inflight: Set of builder names of slave builders that are inflight.
+      no_stat: Set of builder names of slave builders that had status None.
       statuses: A builder-name->status dictionary, which will provide
                 the dashboard_url values for any links.
     """
@@ -1311,6 +1318,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if statuses[builder].dashboard_url:
         cros_build_lib.PrintBuildbotLink(builder,
                                          statuses[builder].dashboard_url)
+    for builder in no_stat:
+      cros_build_lib.PrintBuildbotStepText('%s did not start.' % builder)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.
@@ -1403,7 +1412,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # status (perhaps because they timed out or never ran).
     # Of those that do have a status, if any of them failed,
     # call the build not sane.
-    return not any([slave_statuses.has_key(x) and slave_statuses[x].Failed()
+    return not any([slave_statuses.get(x) is not None and
+                    slave_statuses[x].Failed()
                     for x in sanity_check_slaves])
 
   def PerformStage(self):

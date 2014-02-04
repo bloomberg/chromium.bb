@@ -416,7 +416,7 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
 
   def testSanityDetection(self):
     """Test the _WasBuildSane function."""
-    sanity_slaves = ['sanity_1', 'sanity_2']
+    sanity_slaves = ['sanity_1', 'sanity_2', 'sanity_3']
 
     passed = manifest_version.BuilderStatus(
         manifest_version.BuilderStatus.STATUS_PASSED, '')
@@ -425,15 +425,17 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
 
     # If any sanity builder failed, build was not sane.
     slave_statuses = {'builder_a': passed,
-                      'sanity_1' : passed,
-                      'sanity_2' : failed}
+                      'sanity_1' : None,
+                      'sanity_2' : passed,
+                      'sanity_3' : failed}
     self.assertFalse(
         stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
                                                         slave_statuses))
 
-    # If some sanity builders did not report a status, but those that did
-    # passed, then build was sane.
+    # If some sanity builders did not report a status or reported status
+    # None, but the others passed, then build was sane.
     slave_statuses = {'builder_a': passed,
+                      'sanity_1' : None,
                       'sanity_2' : passed}
 
     self.assertTrue(
@@ -443,7 +445,8 @@ class CommitQueueCompletionStageTest(cros_test_lib.TestCase):
     # If all sanity builders passed, build was sane.
     slave_statuses = {'builder_a': failed,
                       'sanity_1' : passed,
-                      'sanity_2' : passed}
+                      'sanity_2' : passed,
+                      'sanity_3' : passed}
     self.assertTrue(
         stages.CommitQueueCompletionStage._WasBuildSane(sanity_slaves,
                                                         slave_statuses))
@@ -549,14 +552,20 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
     stage = self.ConstructStage()
 
     # Test behavior when there are no sanity check builders
-    self.assertFalse(stage._IsFailureFatal(set(), set()))
-    self.assertTrue(stage._IsFailureFatal(set(['test3']), set()))
-    self.assertTrue(stage._IsFailureFatal(set(), set(['test5'])))
+    self.assertFalse(stage._IsFailureFatal(set(), set(), set()))
+    self.assertTrue(stage._IsFailureFatal(set(['test3']), set(), set()))
+    self.assertTrue(stage._IsFailureFatal(set(), set(['test5']), set()))
+    self.assertTrue(stage._IsFailureFatal(set(), set(), set(['test1'])))
 
     # Test behavior where there is a sanity check builder
     stage._run.config.sanity_check_slaves = ['sanity']
-    self.assertTrue(stage._IsFailureFatal(set(['test5']), set(['sanity'])))
-    self.assertFalse(stage._IsFailureFatal(set(), set(['sanity'])))
+    self.assertTrue(stage._IsFailureFatal(set(['test5']), set(['sanity']),
+                                          set()))
+    self.assertFalse(stage._IsFailureFatal(set(), set(['sanity']), set()))
+    self.assertTrue(stage._IsFailureFatal(set(), set(['sanity']),
+                                           set(['test1'])))
+    self.assertFalse(stage._IsFailureFatal(set(), set(),
+                                           set(['sanity'])))
 
   def testAnnotateFailingBuilders(self):
     """Tests that _AnnotateFailingBuilders is free of syntax errors."""
@@ -566,7 +575,8 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
     inflight = {}
     status = manifest_version.BuilderStatus('failed', 'message', 'url')
     statuses = {'a' : status}
-    stage._AnnotateFailingBuilders(failing, inflight, statuses)
+    no_stat = set()
+    stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses)
 
 
 # pylint: disable=W0223
