@@ -179,6 +179,12 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     DCHECK(confirmButtonTitle);
     [dangerousDownloadConfirmButton_ setTitle:confirmButtonTitle];
 
+    // Since the text of the confirm button changed, dangerousButtonTweaker
+    // should be resized.
+    NSSize sizeChange =
+        [GTMUILocalizerAndLayoutTweaker sizeToFitView:dangerousButtonTweaker_];
+    buttonWidthChange += sizeChange.width;
+
     // Move the button to account for the change in label size.
     NSPoint frameOrigin = [dangerousButtonTweaker_ frame].origin;
     frameOrigin.x += labelWidthChange;
