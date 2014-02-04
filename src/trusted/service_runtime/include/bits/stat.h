@@ -81,15 +81,15 @@
  * (effectively, umask of 077) and cleared when read.
  */
 
-#define NACL_ABI_S_ISSOCK(m)  (0)
-#define NACL_ABI_S_ISLNK(m)   (0)
+#define NACL_ABI_S_ISSOCK(m)  (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSOCK)
+#define NACL_ABI_S_ISLNK(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFLNK)
 #define NACL_ABI_S_ISREG(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFREG)
-#define NACL_ABI_S_ISBLK(m)   (0)
+#define NACL_ABI_S_ISBLK(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFBLK)
 #define NACL_ABI_S_ISDIR(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFDIR)
 #define NACL_ABI_S_ISSOCKADDR(m) \
                               (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSOCKADDR)
-#define NACL_ABI_S_ISCHR(m)   (0)
-#define NACL_ABI_S_ISFIFO(m)  (0)
+#define NACL_ABI_S_ISCHR(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFCHR)
+#define NACL_ABI_S_ISFIFO(m)  (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFIFO)
 #define NACL_ABI_S_ISSHM(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSHM)
 #define NACL_ABI_S_ISSHM_SYSV(m) \
   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSHM_SYSV)
