@@ -34,6 +34,7 @@
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include "heap/Handle.h"
 #include <v8.h>
 
 // Helper to call webCoreInitializeScriptWrappableForInterface in the global namespace.
@@ -91,9 +92,9 @@ public:
         return 0;
     }
 
-    void setTypeInfo(const WrapperTypeInfo* info)
+    void setTypeInfo(const WrapperTypeInfo* typeInfo)
     {
-        m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(info);
+        m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(typeInfo);
         ASSERT(containsTypeInfo());
     }
 
@@ -121,14 +122,14 @@ public:
         return object->typeInfo();
     }
 
-    static void setTypeInfoInObject(void* object, const WrapperTypeInfo* info)
+    static void setTypeInfoInObject(void* object, const WrapperTypeInfo*)
     {
         ASSERT_NOT_REACHED();
     }
 
-    static void setTypeInfoInObject(ScriptWrappable* object, const WrapperTypeInfo* info)
+    static void setTypeInfoInObject(ScriptWrappable* object, const WrapperTypeInfo* typeInfo)
     {
-        object->setTypeInfo(info);
+        object->setTypeInfo(typeInfo);
     }
 
     template<typename V8T, typename T>
@@ -175,12 +176,12 @@ private:
     inline bool containsWrapper() const { return (m_wrapperOrTypeInfo & 1) == 1; }
     inline bool containsTypeInfo() const { return m_wrapperOrTypeInfo && (m_wrapperOrTypeInfo & 1) == 0; }
 
-    inline void disposeWrapper(v8::Local<v8::Object> value, const WrapperTypeInfo* info)
+    inline void disposeWrapper(v8::Local<v8::Object> wrapper)
     {
         ASSERT(containsWrapper());
-        ASSERT(value == *unsafePersistent().persistent());
+        ASSERT(wrapper == *unsafePersistent().persistent());
         unsafePersistent().dispose();
-        setTypeInfo(info);
+        setTypeInfo(toWrapperTypeInfo(wrapper));
     }
 
     // If zero, then this contains nothing, otherwise:
@@ -191,17 +192,12 @@ private:
     static void setWeakCallback(const v8::WeakCallbackData<v8::Object, ScriptWrappable>& data)
     {
         ASSERT(*data.GetParameter()->unsafePersistent().persistent() == data.GetValue());
+        data.GetParameter()->disposeWrapper(data.GetValue());
 
-        // Note: |object| might not be equal to |data|.GetParameter(), e.g., if ScriptWrappable isn't a left-most base class.
-        void* object = toNative(data.GetValue());
-        const WrapperTypeInfo* info = toWrapperTypeInfo(data.GetValue());
-        ASSERT(info->derefObjectFunction);
-
-        data.GetParameter()->disposeWrapper(data.GetValue(), info);
         // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
         // inside data.GetParameter()->deref(), which causes Node destructions. We should
         // make Node destructions incremental.
-        info->derefObject(object);
+        releaseObject(data.GetValue());
     }
 };
 

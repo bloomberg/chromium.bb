@@ -66,7 +66,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestSpecialOperations
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestSpecialOperationsCustom::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperationsCustom::domTemplate, V8TestSpecialOperationsCustom::derefObject, 0, 0, 0, V8TestSpecialOperationsCustom::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestSpecialOperationsCustom::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperationsCustom::domTemplate, V8TestSpecialOperationsCustom::derefObject, 0, 0, 0, V8TestSpecialOperationsCustom::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, false };
 
 namespace TestSpecialOperationsCustomV8Internal {
 

@@ -27,6 +27,7 @@
 #define GamepadList_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "modules/gamepad/Gamepad.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -34,16 +35,17 @@
 
 namespace WebCore {
 
-typedef Vector<RefPtr<Gamepad> > GamepadVector;
-
-class GamepadList : public RefCounted<GamepadList>, public ScriptWrappable {
+class GamepadList : public RefCountedWillBeGarbageCollected<GamepadList>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<GamepadList> create() { return adoptRef(new GamepadList); }
+    static PassRefPtrWillBeRawPtr<GamepadList> create() { return adoptRefWillBeNoop(new GamepadList); }
     ~GamepadList();
 
-    void set(unsigned index, PassRefPtr<Gamepad>);
+    void set(unsigned index, PassRefPtrWillBeRawPtr<Gamepad>);
     Gamepad* item(unsigned index);
     unsigned length() const;
+
+    void trace(Visitor*);
 
 private:
     enum { kMaximumGamepads = 4 };
@@ -52,7 +54,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    RefPtr<Gamepad> m_items[kMaximumGamepads];
+    RefPtrWillBeMember<Gamepad> m_items[kMaximumGamepads];
 };
 
 } // namespace WebCore

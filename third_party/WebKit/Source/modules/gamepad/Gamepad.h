@@ -27,17 +27,19 @@
 #define Gamepad_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Gamepad: public RefCounted<Gamepad>, public ScriptWrappable {
+class Gamepad: public RefCountedWillBeGarbageCollectedFinalized<Gamepad>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Gamepad> create()
+    static PassRefPtrWillBeRawPtr<Gamepad> create()
     {
-        return adoptRef(new Gamepad);
+        return adoptRefWillBeNoop(new Gamepad);
     }
     ~Gamepad();
 
@@ -57,6 +59,8 @@ public:
 
     const FloatVector& buttons() const { return m_buttons; }
     void buttons(unsigned count, float* data);
+
+    void trace(Visitor*);
 
 private:
     Gamepad();
