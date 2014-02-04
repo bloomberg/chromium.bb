@@ -66,11 +66,11 @@ public:
     // The same as the FrameView's layoutHeight/layoutWidth but with null check guards.
     int viewHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
     int viewWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
-    int viewLogicalWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const
+    int viewLogicalWidth() const
     {
-        return style()->isHorizontalWritingMode() ? viewWidth(scrollbarInclusion) : viewHeight(scrollbarInclusion);
+        return style()->isHorizontalWritingMode() ? viewWidth(ScrollableArea::ExcludeScrollbars) : viewHeight(ScrollableArea::ExcludeScrollbars);
     }
-    int viewLogicalHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion = ScrollableArea::ExcludeScrollbars) const;
+    int viewLogicalHeight() const;
 
     float zoomFactor() const;
 

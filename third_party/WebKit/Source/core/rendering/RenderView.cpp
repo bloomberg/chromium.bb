@@ -954,9 +954,9 @@ int RenderView::viewWidth(ScrollableArea::IncludeScrollbarsInRect scrollbarInclu
     return width;
 }
 
-int RenderView::viewLogicalHeight(ScrollableArea::IncludeScrollbarsInRect scrollbarInclusion) const
+int RenderView::viewLogicalHeight() const
 {
-    int height = style()->isHorizontalWritingMode() ? viewHeight(scrollbarInclusion) : viewWidth(scrollbarInclusion);
+    int height = style()->isHorizontalWritingMode() ? viewHeight(ScrollableArea::ExcludeScrollbars) : viewWidth(ScrollableArea::ExcludeScrollbars);
 
     if (hasColumns() && !style()->hasInlineColumnAxis()) {
         if (int pageLength = m_frameView->pagination().pageLength)
