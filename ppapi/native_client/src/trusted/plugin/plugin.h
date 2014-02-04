@@ -94,7 +94,7 @@ class Plugin : public pp::InstancePrivate {
   // mechanism(s) take over.
   //
   // Updates nacl_module_origin() and nacl_module_url().
-  bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info,
+  void LoadNaClModule(nacl::DescWrapper* wrapper,
                       bool enable_dyncode_syscalls,
                       bool enable_exception_handling,
                       bool enable_crash_throttling,

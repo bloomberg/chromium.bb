@@ -354,20 +354,20 @@ void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
   service_runtime->SignalStartSelLdrDone();
 }
 
-bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
-                            ErrorInfo* error_info,
+void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             bool enable_dyncode_syscalls,
                             bool enable_exception_handling,
                             bool enable_crash_throttling,
                             const pp::CompletionCallback& init_done_cb,
                             const pp::CompletionCallback& crash_cb) {
+  ErrorInfo error_info;
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
   SelLdrStartParams params(manifest_base_url(),
-                           error_info,
+                           &error_info,
                            true /* uses_irt */,
                            true /* uses_ppapi */,
                            enable_dev_interfaces_,
@@ -377,11 +377,11 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   if (!LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
                             true /* should_report_uma */,
                             params, init_done_cb, crash_cb)) {
-    return false;
+    ReportLoadError(error_info);
+    return;
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
                  main_subprocess_.detailed_description().c_str()));
-  return true;
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
@@ -808,17 +808,13 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
-  bool was_successful = LoadNaClModule(
-      wrapper.get(), &error_info,
+  LoadNaClModule(
+      wrapper.get(),
       true, /* enable_dyncode_syscalls */
       true, /* enable_exception_handling */
       false, /* enable_crash_throttling */
       callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation),
       callback_factory_.NewCallback(&Plugin::NexeDidCrash));
-
-  if (!was_successful) {
-    ReportLoadError(error_info);
-  }
 }
 
 void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
@@ -929,18 +925,13 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   // Inform JavaScript that we successfully translated the bitcode to a nexe.
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(pnacl_coordinator_.get()->ReleaseTranslatedFD());
-  ErrorInfo error_info;
-  bool was_successful = LoadNaClModule(
-      wrapper.get(), &error_info,
+  LoadNaClModule(
+      wrapper.get(),
       false, /* enable_dyncode_syscalls */
       false, /* enable_exception_handling */
       true, /* enable_crash_throttling */
       callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation),
       callback_factory_.NewCallback(&Plugin::NexeDidCrash));
-
-  if (!was_successful) {
-    ReportLoadError(error_info);
-  }
 }
 
 void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
