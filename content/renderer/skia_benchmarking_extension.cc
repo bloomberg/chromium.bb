@@ -153,14 +153,10 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   clip.Scale(scale);
   gfx::Rect snapped_clip = gfx::ToEnclosingRect(clip);
 
-  const int kMaxBitmapSize = 4096;
-  if (snapped_clip.width() > kMaxBitmapSize ||
-      snapped_clip.height() > kMaxBitmapSize)
-    return;
-
   SkBitmap bitmap;
-  bitmap.setConfig(
-      SkBitmap::kARGB_8888_Config, snapped_clip.width(), snapped_clip.height());
+  if (!bitmap.setConfig(SkBitmap::kARGB_8888_Config, snapped_clip.width(),
+                        snapped_clip.height()))
+    return;
   if (!bitmap.allocPixels())
     return;
   bitmap.eraseARGB(0, 0, 0, 0);
