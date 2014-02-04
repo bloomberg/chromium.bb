@@ -517,6 +517,12 @@ template<typename T> using NoBaseWillBeGarbageCollectedFinalized = GarbageCollec
 #endif // COMPILER(CLANG)
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return PassRefPtrWillBeRawPtr<T>(ptr); }
+
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefCountedWillBeRefCountedGarbageCollected(T* ptr)
+{
+    return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
+}
+
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return PassOwnPtrWillBeRawPtr<T>(ptr); }
 
 #else // !ENABLE(OILPAN)
@@ -559,6 +565,7 @@ template<typename T> using NoBaseWillBeGarbageCollectedFinalized = DummyBase<T>;
 #endif // COMPILER(CLANG)
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefCountedWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
 
 #endif // ENABLE(OILPAN)

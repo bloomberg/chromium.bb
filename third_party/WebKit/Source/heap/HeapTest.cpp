@@ -605,9 +605,9 @@ int RefCountedAndGarbageCollected::s_destructorCalls = 0;
 class RefCountedAndGarbageCollected2 : public HeapTestOtherSuperClass, public RefCountedGarbageCollected<RefCountedAndGarbageCollected2> {
     DECLARE_GC_INFO
 public:
-    static PassRefPtr<RefCountedAndGarbageCollected2> create()
+    static RefCountedAndGarbageCollected2* create()
     {
-        return adoptRef(new RefCountedAndGarbageCollected2());
+        return adoptRefCountedGarbageCollected(new RefCountedAndGarbageCollected2());
     }
 
     ~RefCountedAndGarbageCollected2()
@@ -896,8 +896,43 @@ private:
 
 int SubClass::s_aliveCount = 0;
 
+class TransitionRefCounted : public RefCountedWillBeRefCountedGarbageCollected<TransitionRefCounted> {
+    DECLARE_GC_INFO
+public:
+    static PassRefPtrWillBeRawPtr<TransitionRefCounted> create()
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new TransitionRefCounted());
+    }
+
+    ~TransitionRefCounted()
+    {
+        --s_aliveCount;
+    }
+
+    void trace(Visitor* visitor) { }
+
+    static int s_aliveCount;
+
+private:
+    TransitionRefCounted()
+    {
+        ++s_aliveCount;
+    }
+};
+
+int TransitionRefCounted::s_aliveCount = 0;
+
 TEST(HeapTest, Transition)
 {
+    {
+        RefPtr<TransitionRefCounted> refCounted = TransitionRefCounted::create();
+        EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0, TransitionRefCounted::s_aliveCount);
+
     RefPtrWillBePersistent<PointsBack> pointsBack1 = PointsBack::create();
     RefPtrWillBePersistent<PointsBack> pointsBack2 = PointsBack::create();
     RefPtrWillBePersistent<SuperClass> superClass = SuperClass::create(pointsBack1);
@@ -908,6 +943,7 @@ TEST(HeapTest, Transition)
     EXPECT_EQ(1, SubData::s_aliveCount);
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0, TransitionRefCounted::s_aliveCount);
     EXPECT_EQ(2, PointsBack::s_aliveCount);
     EXPECT_EQ(2, SuperClass::s_aliveCount);
     EXPECT_EQ(1, SubClass::s_aliveCount);
@@ -1948,10 +1984,10 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
     RefCountedAndGarbageCollected2::s_destructorCalls = 0;
     {
         RefCountedAndGarbageCollected* pointer1 = 0;
-        RefCountedAndGarbageCollected* pointer2 = 0;
+        RefCountedAndGarbageCollected2* pointer2 = 0;
         {
             RefPtr<RefCountedAndGarbageCollected> object1 = RefCountedAndGarbageCollected::create();
-            RefPtr<RefCountedAndGarbageCollected> object2 = RefCountedAndGarbageCollected::create();
+            RefPtr<RefCountedAndGarbageCollected2> object2 = RefCountedAndGarbageCollected2::create();
             pointer1 = object1.get();
             pointer2 = object2.get();
             void* objects[2] = { object1.get(), object2.get() };
@@ -1961,9 +1997,11 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
 
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
             EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+            EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
         }
         Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+        EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
 
         // At this point, the reference counts of object1 and object2 are 0.
         // Only pointer1 and pointer2 keep references to object1 and object2.
@@ -1974,7 +2012,7 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
 
         {
             RefPtr<RefCountedAndGarbageCollected> object1(pointer1);
-            RefPtr<RefCountedAndGarbageCollected> object2(pointer2);
+            RefPtr<RefCountedAndGarbageCollected2> object2(pointer2);
             void* objects[2] = { object1.get(), object2.get() };
             RefCountedGarbageCollectedVisitor visitor(2, objects);
             ThreadState::current()->visitPersistents(&visitor);
@@ -1982,14 +2020,17 @@ TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
 
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
             EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+            EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
         }
 
         Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+        EXPECT_EQ(0, RefCountedAndGarbageCollected2::s_destructorCalls);
     }
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(2, RefCountedAndGarbageCollected::s_destructorCalls);
+    EXPECT_EQ(1, RefCountedAndGarbageCollected::s_destructorCalls);
+    EXPECT_EQ(1, RefCountedAndGarbageCollected2::s_destructorCalls);
 }
 
 TEST(HeapTest, WeakMembers)
@@ -2120,5 +2161,6 @@ DEFINE_GC_INFO(SuperClass);
 DEFINE_GC_INFO(SubData);
 DEFINE_GC_INFO(TestTypedHeapClass);
 DEFINE_GC_INFO(TraceCounter);
+DEFINE_GC_INFO(TransitionRefCounted);
 
 } // namespace

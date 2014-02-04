@@ -38,6 +38,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 #include <stdint.h>
 
@@ -979,6 +980,11 @@ public:
         }
     }
 
+    bool hasOneRef()
+    {
+        return m_refCount == 1;
+    }
+
 protected:
     ~RefCountedGarbageCollected() { }
 
@@ -986,6 +992,15 @@ private:
     int m_refCount;
     Persistent<T>* m_keepAlive;
 };
+
+template<typename T>
+T* adoptRefCountedGarbageCollected(T* ptr)
+{
+    ASSERT(ptr->hasOneRef());
+    ptr->deref();
+    WTF::adopted(ptr);
+    return ptr;
+}
 
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
