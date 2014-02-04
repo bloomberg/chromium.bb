@@ -373,6 +373,17 @@ def overload_check_expression(method, argument_count):
 
 
 def overload_check_argument(index, argument):
+    def null_or_optional_check():
+        # If undefined is passed for an optional argument, the argument should
+        # be treated as missing; otherwise undefined is not allowed.
+        if argument['is_nullable']:
+            if argument['is_optional']:
+                return 'isUndefinedOrNull(%s)'
+            return '%s->IsNull()'
+        if argument['is_optional']:
+            return '%s->IsUndefined()'
+        return None
+
     cpp_value = 'info[%s]' % index
     idl_type = argument['idl_type']
     # FIXME: proper type checking, sharing code with attributes and methods
@@ -392,9 +403,14 @@ def overload_check_argument(index, argument):
         return type_check
     if is_interface_type(idl_type):
         # Non-wrapper types are just objects: we don't distinguish type
+        # We only allow undefined for non-wrapper types (notably Dictionary),
+        # as we need it for optional Dictionary arguments, but we don't want to
+        # change behavior of existing bindings for other types.
         type_check = '%s->IsObject()' % cpp_value
-        if argument['is_nullable']:
-            type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
+        added_check_template = null_or_optional_check()
+        if added_check_template:
+            type_check = ' || '.join([added_check_template % cpp_value,
+                                      type_check])
         return type_check
     return None
 
