@@ -26,15 +26,14 @@
 #include "config.h"
 #include "modules/gamepad/GamepadList.h"
 
-namespace WebCore {
 
-DEFINE_GC_INFO(GamepadList);
+namespace WebCore {
 
 GamepadList::~GamepadList()
 {
 }
 
-void GamepadList::set(unsigned index, PassRefPtrWillBeRawPtr<Gamepad> gamepad)
+void GamepadList::set(unsigned index, PassRefPtr<Gamepad> gamepad)
 {
     if (index >= kMaximumGamepads)
         return;
@@ -49,13 +48,6 @@ unsigned GamepadList::length() const
 Gamepad* GamepadList::item(unsigned index)
 {
     return index < length() ? m_items[index].get() : 0;
-}
-
-void GamepadList::trace(Visitor* visitor)
-{
-    for (unsigned index = 0; index < kMaximumGamepads; index++) {
-        visitor->trace(m_items[index]);
-    }
 }
 
 } // namespace WebCore

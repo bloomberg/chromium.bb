@@ -32,24 +32,19 @@
 #define WrapperTypeInfo_h
 
 #include "gin/public/wrapper_info.h"
-#include "heap/Handle.h"
 #include "wtf/Assertions.h"
 #include <v8.h>
 
 namespace WebCore {
 
     class ActiveDOMObject;
+    class DOMDataStore;
     class EventTarget;
     class Node;
 
     static const int v8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);
     static const int v8DOMWrapperObjectIndex = static_cast<int>(gin::kEncodedValueIndex);
     static const int v8DefaultWrapperInternalFieldCount = static_cast<int>(gin::kNumberOfInternalFields);
-    // If we have v8PersistentHandleIndex, it should be the first index of the custom internal fields.
-    // This contract is needed to keep the index consistent with generated code.
-    // FIXME: oilpan: Don't add an extra internal field for storing a persistent handle.
-    // Instead we should reuse the internal field of v8DOMWrapperObjectIndex.
-    static const int v8PersistentHandleIndex = v8DefaultWrapperInternalFieldCount;
     static const int v8PrototypeTypeIndex = 0;
     static const int v8PrototypeInternalFieldcount = 1;
 
@@ -107,6 +102,12 @@ namespace WebCore {
 
         v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate* isolate, WrapperWorldType worldType) const { return domTemplateFunction(isolate, worldType); }
 
+        void derefObject(void* object) const
+        {
+            if (derefObjectFunction)
+                derefObjectFunction(object);
+        }
+
         void installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
         {
             if (installPerContextEnabledMethodsFunction)
@@ -146,7 +147,6 @@ namespace WebCore {
         const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledMethodsFunction;
         const WrapperTypeInfo* parentClass;
         const WrapperTypePrototype wrapperTypePrototype;
-        const bool isGarbageCollected;
     };
 
 
@@ -162,53 +162,30 @@ namespace WebCore {
     }
 
     template<typename T, int offset>
-    inline T* getInternalField(v8::Handle<v8::Object> wrapper)
+    inline T* getInternalField(v8::Handle<v8::Object> object)
     {
-        ASSERT(offset < wrapper->InternalFieldCount());
-        return static_cast<T*>(wrapper->GetAlignedPointerFromInternalField(offset));
+        ASSERT(offset < object->InternalFieldCount());
+        return static_cast<T*>(object->GetAlignedPointerFromInternalField(offset));
     }
 
-    inline void* toNative(const v8::Persistent<v8::Object>& wrapper)
+    inline void* toNative(const v8::Persistent<v8::Object>& object)
     {
-        return getInternalField<void, v8DOMWrapperObjectIndex>(wrapper);
+        return getInternalField<void, v8DOMWrapperObjectIndex>(object);
     }
 
-    inline void* toNative(v8::Handle<v8::Object> wrapper)
+    inline void* toNative(v8::Handle<v8::Object> object)
     {
-        return getInternalField<void, v8DOMWrapperObjectIndex>(wrapper);
+        return getInternalField<void, v8DOMWrapperObjectIndex>(object);
     }
 
-    inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& wrapper)
+    inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Persistent<v8::Object>& object)
     {
-        return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
+        return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(object);
     }
 
-    inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> wrapper)
+    inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> object)
     {
-        return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
-    }
-
-    inline const PersistentNode* toPersistentHandle(const v8::Handle<v8::Object>& wrapper)
-    {
-        return getInternalField<PersistentNode, v8PersistentHandleIndex>(wrapper);
-    }
-
-    inline void releaseObject(v8::Handle<v8::Object> wrapper)
-    {
-        const WrapperTypeInfo* typeInfo = toWrapperTypeInfo(wrapper);
-#if ENABLE(OILPAN)
-        if (typeInfo->isGarbageCollected) {
-            const PersistentNode* handle = toPersistentHandle(wrapper);
-            ASSERT(handle);
-            delete handle;
-        } else {
-            ASSERT(typeInfo->derefObjectFunction);
-            typeInfo->derefObjectFunction(toNative(wrapper));
-        }
-#else
-        ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toNative(wrapper));
-#endif
+        return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(object);
     }
 
     struct WrapperConfiguration {

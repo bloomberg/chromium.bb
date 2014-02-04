@@ -26,7 +26,6 @@
 #ifndef NavigatorGamepad_h
 #define NavigatorGamepad_h
 
-#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
@@ -47,7 +46,7 @@ private:
     NavigatorGamepad();
     static const char* supplementName();
 
-    RefPtrWillBePersistent<GamepadList> m_gamepads;
+    RefPtr<GamepadList> m_gamepads;
 };
 
 } // namespace WebCore

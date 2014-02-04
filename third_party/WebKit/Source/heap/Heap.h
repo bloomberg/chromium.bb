@@ -873,17 +873,6 @@ public:
         ASSERT_NOT_REACHED();
     }
 
-    // FIXME: These methods are needed to make transition types compilable.
-    // Remove the methods once transition types are gone.
-    void ref()
-    {
-        ASSERT_NOT_REACHED();
-    }
-    void deref()
-    {
-        ASSERT_NOT_REACHED();
-    }
-
 protected:
     GarbageCollected()
     {
