@@ -44,6 +44,10 @@ const char kBlacklistAcceleratedCompositing[] =
 // Blacklist the GPU for WebGL.
 const char kBlacklistWebGL[]                = "blacklist-webgl";
 
+// Choose which logging channels in blink platform to activate.  See
+// Logging.cpp in blink's Source/platform for a list of available channels.
+const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";
+
 // Block cross-site documents (i.e., HTML/XML/JSON) from being loaded in
 // subresources when a document is not supposed to read them.  This will later
 // allow us to block them from the entire renderer process when site isolation
@@ -954,10 +958,6 @@ const char kUtilityProcessEnableMDns[]      = "utility-enable-mdns";
 // will be used as a filter to determine if the child process should have the
 // kWaitForDebugger flag passed on or not.
 const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
-
-// Choose which logging channels in WebCore to activate.  See
-// Logging.cpp in WebKit's WebCore for a list of available channels.
-const char kWebCoreLogChannels[]            = "webcore-log-channels";
 
 // Overrides the amount of shared memory the webgl command buffer allocates
 const char kWebGLCommandBufferSizeKb[]      = "webgl-command-buffer-size-kb";

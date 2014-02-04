@@ -234,7 +234,7 @@ scoped_ptr<base::SharedMemory> AllocateSharedMemoryFunction(size_t size) {
   return RenderThreadImpl::Get()->HostAllocateSharedMemoryBuffer(size);
 }
 
-void EnableWebCoreLogChannels(const std::string& channels) {
+void EnableBlinkPlatformLogChannels(const std::string& channels) {
   if (channels.empty())
     return;
   base::StringTokenizer t(channels, ", ");
@@ -705,8 +705,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   RenderThreadImpl::RegisterSchemes();
 
-  EnableWebCoreLogChannels(
-      command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
+  EnableBlinkPlatformLogChannels(
+      command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
 
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 
