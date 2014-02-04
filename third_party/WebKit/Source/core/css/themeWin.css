@@ -111,6 +111,15 @@ select,
 select[size="0"],
 select[size="1"] {
     border-radius: 0;
+    /* Same as native_theme_base. */
+    border-color: #a9a9a9;
+}
+
+select[size],
+select[multiple],
+select[size][multiple] {
+    /* Same as native_theme_base. */
+    border: 1px solid #a9a9a9;
 }
 
 /* Option font must be inherited because we depend on computing the size of the
@@ -121,5 +130,7 @@ option {
 }
 
 textarea {
-  font-family: monospace;
+    font-family: monospace;
+    /* Same as native_theme_base. */
+    border-color: #a9a9a9;
 }
