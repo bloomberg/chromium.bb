@@ -28,5 +28,5 @@
 ] interface HTMLSourceElement : HTMLElement {
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     attribute DOMString type;
-    [MeasureAs=HTMLSourceElementMedia] attribute DOMString media;
+    [DeprecateAs=HTMLSourceElementMedia] attribute DOMString media;
 };

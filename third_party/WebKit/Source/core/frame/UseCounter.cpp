@@ -706,6 +706,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case MediaErrorEncrypted:
         return "'MediaError.MEDIA_ERR_ENCRYPTED' is deprecated. This error code is never used.";
 
+    case HTMLSourceElementMedia:
+        return "'HTMLSourceElement.media' is deprecated. This attribute doesn't do anything.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
