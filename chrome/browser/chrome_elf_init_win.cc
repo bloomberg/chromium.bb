@@ -30,6 +30,12 @@ enum BlacklistSetupEventType {
   // The blacklist setup code failed to execute.
   BLACKLIST_SETUP_FAILED,
 
+  // The blacklist thunk setup code failed to execute.
+  BLACKLIST_THUNK_SETUP_FAILED,
+
+  // The blacklist interception code failed to execute.
+  BLACKLIST_INTERCEPTION_FAILED,
+
   // Always keep this at the end.
   BLACKLIST_SETUP_EVENT_MAX,
 };
@@ -91,13 +97,25 @@ void BrowserBlacklistBeaconSetup() {
     // Record the results of the latest blacklist setup.
     if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
       RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
-    } else if (blacklist_state == blacklist::BLACKLIST_SETUP_RUNNING) {
-      RecordBlacklistSetupEvent(BLACKLIST_SETUP_FAILED);
+    } else {
+      switch (blacklist_state) {
+        case blacklist::BLACKLIST_SETUP_RUNNING:
+          RecordBlacklistSetupEvent(BLACKLIST_SETUP_FAILED);
+          break;
+        case blacklist::BLACKLIST_THUNK_SETUP:
+          RecordBlacklistSetupEvent(BLACKLIST_THUNK_SETUP_FAILED);
+          break;
+        case blacklist::BLACKLIST_INTERCEPTING:
+          RecordBlacklistSetupEvent(BLACKLIST_INTERCEPTION_FAILED);
+          break;
+      }
 
-      // Since the setup failed, mark the blacklist as disabled so we don't
-      // try it again for this version.
-      blacklist_registry_key.WriteValue(blacklist::kBeaconState,
-                                        blacklist::BLACKLIST_DISABLED);
+      // Since some part of the blacklist failed, ensure it is now disabled
+      // for this version.
+      if (blacklist_state != blacklist::BLACKLIST_DISABLED) {
+        blacklist_registry_key.WriteValue(blacklist::kBeaconState,
+                                          blacklist::BLACKLIST_DISABLED);
+      }
     }
   }
 }

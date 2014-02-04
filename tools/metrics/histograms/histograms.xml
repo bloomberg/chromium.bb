@@ -22736,6 +22736,8 @@ other types of suffix sets.
   <int value="0" label="Blacklist enabled"/>
   <int value="1" label="Blacklist ran successfully."/>
   <int value="2" label="Blacklist failed."/>
+  <int value="3" label="Blacklist thunk setup failed."/>
+  <int value="4" label="Blacklist interception failed."/>
 </enum>
 
 <enum name="BluetoothPairingMethod" type="int">
