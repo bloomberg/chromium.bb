@@ -12,15 +12,15 @@
 
 try() {
   echo "$@"
-  $@ || exit 1
+  "$@" || exit 1
 }
 
 try rm -rf out
 try mkdir out
 
 # Create the serial number files.
-try echo 1 > out/policy-root-serial
-try echo 1 > out/policy-intermediate-serial
+try /bin/sh -c "echo 01 > out/policy-root-serial"
+try /bin/sh -c "echo 01 > out/policy-intermediate-serial"
 
 # Create the signers' DB files.
 touch out/policy-root-index.txt

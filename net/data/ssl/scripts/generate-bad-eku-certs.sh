@@ -11,7 +11,7 @@
 
 try () {
   echo "$@"
-  $@ || exit 1
+  "$@" || exit 1
 }
 
 try rm -rf out
@@ -20,7 +20,7 @@ try mkdir out
 eku_test_root="eku-test-root"
 
 # Create the serial number files.
-try echo 1 > out/$eku_test_root-serial
+try /bin/sh -c "echo 01 > out/$eku_test_root-serial"
 
 # Make sure the signers' DB files exist.
 touch out/$eku_test_root-index.txt

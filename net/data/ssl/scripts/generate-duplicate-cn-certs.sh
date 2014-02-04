@@ -16,24 +16,14 @@
 
 try () {
   echo "$@"
-  $@ || exit 1
-}
-
-generate_key_command () {
-  case "$1" in
-    rsa)
-      echo genrsa
-      ;;
-    *)
-      exit 1
-  esac
+  "$@" || exit 1
 }
 
 try rm -rf out
 try mkdir out
 
 echo Create the serial number and index files.
-try echo 1 > out/B-serial
+try /bin/sh -c "echo 01 > out/B-serial"
 try touch out/B-index.txt
 
 echo Generate the keys.

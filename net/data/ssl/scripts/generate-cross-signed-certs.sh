@@ -20,14 +20,14 @@
 
 try() {
   echo "$@"
-  $@ || exit 1
+  "$@" || exit 1
 }
 
 try rm -rf out
 try mkdir out
 
-try echo 1 > out/2048-sha1-root-serial
-try echo 2 > out/2048-md5-root-serial
+try /bin/sh -c "echo 01 > out/2048-sha1-root-serial"
+try /bin/sh -c "echo 02 > out/2048-md5-root-serial"
 touch out/2048-sha1-root-index.txt
 touch out/2048-md5-root-index.txt
 

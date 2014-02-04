@@ -20,17 +20,17 @@
 
 try () {
   echo "$@"
-  $@ || exit 1
+  "$@" || exit 1
 }
 
 try rm -rf out
 try mkdir out
 
 echo Create the serial number files and indices.
-serial = 100
+serial=1000
 for i in B C E
 do
-  try echo $serial > out/$i-serial
+  try /bin/sh -c "echo $serial > out/$i-serial"
   serial=$(expr $serial + 1)
   touch out/$i-index.txt
   touch out/$i-index.txt.attr

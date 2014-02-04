@@ -9,15 +9,15 @@
 
 try() {
   echo "$@"
-  $@ || exit 1
+  "$@" || exit 1
 }
 
 try rm -rf out
 try mkdir out
 
 # Create the serial number files.
-try echo 1 > out/aia-test-root-serial
-try echo 1 > out/aia-test-intermediate-serial
+try /bin/sh -c "echo 01 > out/aia-test-root-serial"
+try /bin/sh -c "echo 01 > out/aia-test-intermediate-serial"
 
 # Create the signers' DB files.
 touch out/aia-test-root-index.txt

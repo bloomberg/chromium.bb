@@ -9,13 +9,13 @@
 
 try() {
   echo "$@"
-  $@ || exit 1
+  "$@" || exit 1
 }
 
 try rm -rf out
 try mkdir out
 
-try echo 1 > out/2048-sha1-root-serial
+try /bin/sh -c "echo 01 > out/2048-sha1-root-serial"
 touch out/2048-sha1-root-index.txt
 
 # Generate the key

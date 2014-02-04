@@ -21,27 +21,17 @@
 
 try () {
   echo "$@"
-  $@ || exit 1
-}
-
-generate_key_command () {
-  case "$1" in
-    rsa)
-      echo genrsa
-      ;;
-    *)
-      exit 1
-  esac
+  "$@" || exit 1
 }
 
 try rm -rf out
 try mkdir out
 
 echo Create the serial number files.
-serial=100
+serial=1000
 for i in B C C2 D
 do
-  try echo $serial > out/$i-serial
+  try /bin/sh -c "echo $serial > out/$i-serial"
   serial=$(expr $serial + 1)
 done
 
