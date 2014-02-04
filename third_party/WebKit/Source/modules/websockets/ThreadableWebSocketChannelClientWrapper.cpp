@@ -41,8 +41,7 @@ namespace WebCore {
 ThreadableWebSocketChannelClientWrapper::ThreadableWebSocketChannelClientWrapper(ExecutionContext* context, WebSocketChannelClient* client)
     : m_context(context)
     , m_client(client)
-    , m_peer(0)
-    , m_failedWebSocketChannelCreation(false)
+    , m_initialized(false)
     , m_syncMethodDone(true)
     , m_sendRequestResult(WebSocketChannel::SendFail)
     , m_bufferedAmount(0)
@@ -70,30 +69,15 @@ bool ThreadableWebSocketChannelClientWrapper::syncMethodDone() const
     return m_syncMethodDone;
 }
 
-WorkerThreadableWebSocketChannel::Peer* ThreadableWebSocketChannelClientWrapper::peer() const
+bool ThreadableWebSocketChannelClientWrapper::initialized() const
 {
-    return m_peer;
+    return m_initialized;
 }
 
-void ThreadableWebSocketChannelClientWrapper::didCreateWebSocketChannel(WorkerThreadableWebSocketChannel::Peer* peer)
+void ThreadableWebSocketChannelClientWrapper::didInitialize()
 {
-    m_peer = peer;
+    m_initialized = true;
     m_syncMethodDone = true;
-}
-
-void ThreadableWebSocketChannelClientWrapper::clearPeer()
-{
-    m_peer = 0;
-}
-
-bool ThreadableWebSocketChannelClientWrapper::failedWebSocketChannelCreation() const
-{
-    return m_failedWebSocketChannelCreation;
-}
-
-void ThreadableWebSocketChannelClientWrapper::setFailedWebSocketChannelCreation()
-{
-    m_failedWebSocketChannelCreation = true;
 }
 
 String ThreadableWebSocketChannelClientWrapper::subprotocol() const

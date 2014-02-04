@@ -34,7 +34,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
-#include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -55,12 +54,8 @@ public:
     void setSyncMethodDone();
     bool syncMethodDone() const;
 
-    WorkerThreadableWebSocketChannel::Peer* peer() const;
-    void didCreateWebSocketChannel(WorkerThreadableWebSocketChannel::Peer*);
-    void clearPeer();
-
-    bool failedWebSocketChannelCreation() const;
-    void setFailedWebSocketChannelCreation();
+    bool initialized() const;
+    void didInitialize();
 
     // Subprotocol and extensions will be available when didConnect() callback is invoked.
     String subprotocol() const;
@@ -103,8 +98,7 @@ private:
 
     ExecutionContext* m_context;
     WebSocketChannelClient* m_client;
-    WorkerThreadableWebSocketChannel::Peer* m_peer;
-    bool m_failedWebSocketChannelCreation;
+    bool m_initialized;
     bool m_syncMethodDone;
     // ThreadSafeRefCounted must not have String member variables.
     Vector<UChar> m_subprotocol;
