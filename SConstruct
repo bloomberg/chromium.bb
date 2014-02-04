@@ -3645,17 +3645,23 @@ def LinkBuildEnv(selected_envs):
   # build environment we want to use
   opt_level = None
   for env in selected_envs:
-    if 'OPTIMIZATION_LEVEL' in env:
-      if env['OPTIMIZATION_LEVEL']:
-        opt_level = env['OPTIMIZATION_LEVEL']
-        break
+    if env.get('OPTIMIZATION_LEVEL', None):
+      opt_level = env['OPTIMIZATION_LEVEL']
+      break
 
   build_env = build_env_map.get(opt_level, opt_build_env)
   for env in selected_envs:
     env['BUILD_ENV'] = build_env
 
-  if (opt_level not in build_env_map or
-      GetBuildPlatform() != GetTargetPlatform()):
+  # If the build environment is different from all the selected environments,
+  # we will need to also append it to the selected environments so the targets
+  # can be built.
+  build_env_root = build_env.subst('${TARGET_ROOT}')
+  for env in selected_envs:
+    if build_env_root == env.subst('${TARGET_ROOT}'):
+      break
+  else:
+    # Did not find a matching environment, append the build environment now.
     selected_envs.append(build_env)
 
 def DumpEnvironmentInfo(selected_envs):
