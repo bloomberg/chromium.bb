@@ -12,8 +12,6 @@
 #include "ui/views/color_chooser/color_chooser_view.h"
 #include "ui/views/widget/widget.h"
 
-ColorChooserAura* ColorChooserAura::current_color_chooser_ = NULL;
-
 ColorChooserAura::ColorChooserAura(content::WebContents* web_contents,
                                    SkColor initial_color)
     : web_contents_(web_contents) {
@@ -47,8 +45,6 @@ void ColorChooserAura::End() {
 }
 
 void ColorChooserAura::DidEndColorChooser() {
-  DCHECK(current_color_chooser_ == this);
-  current_color_chooser_ = NULL;
   if (web_contents_)
     web_contents_->DidEndColorChooser();
 }
@@ -61,11 +57,7 @@ void ColorChooserAura::SetSelectedColor(SkColor color) {
 // static
 ColorChooserAura* ColorChooserAura::Open(
     content::WebContents* web_contents, SkColor initial_color) {
-  if (current_color_chooser_)
-    current_color_chooser_->End();
-  DCHECK(!current_color_chooser_);
-  current_color_chooser_ = new ColorChooserAura(web_contents, initial_color);
-  return current_color_chooser_;
+  return new ColorChooserAura(web_contents, initial_color);
 }
 
 #if !defined(OS_WIN)

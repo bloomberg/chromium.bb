@@ -28,8 +28,6 @@ class ColorChooserAura : public content::ColorChooser,
                                 SkColor initial_color);
 
  private:
-  static ColorChooserAura* current_color_chooser_;
-
   ColorChooserAura(content::WebContents* web_contents, SkColor initial_color);
 
   // content::ColorChooser overrides:
