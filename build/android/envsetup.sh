@@ -108,7 +108,6 @@ export GYP_CROSSCOMPILE=1
 android_gyp() {
   # This is just a simple wrapper of gyp_chromium, please don't add anything
   # in this function.
-  echo "GYP_GENERATORS set to '$GYP_GENERATORS'"
   (
     "${CHROME_SRC}/build/gyp_chromium" --depth="${CHROME_SRC}" --check "$@"
   )

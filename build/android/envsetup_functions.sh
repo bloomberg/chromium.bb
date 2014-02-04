@@ -261,11 +261,4 @@ ${ANDROID_SDK_VERSION}
     DEFINES+=" tracing_like_official_build=1"
   fi
   export GYP_DEFINES="${DEFINES}"
-
-  export GYP_GENERATORS="android"
-
-  export GYP_GENERATOR_FLAGS="${GYP_GENERATOR_FLAGS} default_target=All"
-  export GYP_GENERATOR_FLAGS="${GYP_GENERATOR_FLAGS} limit_to_target_all=1"
-
-  export CHROMIUM_GYP_FILE="${CHROME_SRC}/android_webview/all_webview.gyp"
 }
