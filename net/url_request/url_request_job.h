@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_observer.h"
-#include "net/base/filter.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
@@ -27,6 +26,7 @@ namespace net {
 class AuthChallengeInfo;
 class AuthCredentials;
 class CookieOptions;
+class Filter;
 class HttpRequestHeaders;
 class HttpResponseInfo;
 class IOBuffer;
@@ -306,7 +306,7 @@ class NET_EXPORT URLRequestJob
   // be destroyed so that statistics can be gathered while the derived class is
   // still present to assist in calculations.  This is used by URLRequestHttpJob
   // to get SDCH to emit stats.
-  void DestroyFilters() { filter_.reset(); }
+  void DestroyFilters();
 
   // Provides derived classes with access to the request's network delegate.
   NetworkDelegate* network_delegate() { return network_delegate_; }

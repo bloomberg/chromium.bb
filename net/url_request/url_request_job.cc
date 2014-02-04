@@ -16,6 +16,7 @@
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/filter/filter.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
@@ -656,6 +657,10 @@ bool URLRequestJob::ReadFilteredData(int* bytes_read) {
     filtered_read_buffer_len_ = 0;
   }
   return rv;
+}
+
+void URLRequestJob::DestroyFilters() {
+  filter_.reset();
 }
 
 const URLRequestStatus URLRequestJob::GetStatus() {

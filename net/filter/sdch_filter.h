@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,15 +11,15 @@
 // SdchFilter is also a subclass of Filter. See the latter's header file
 // filter.h for sample usage.
 
-#ifndef NET_BASE_SDCH_FILTER_H_
-#define NET_BASE_SDCH_FILTER_H_
+#ifndef NET_FILTER_SDCH_FILTER_H_
+#define NET_FILTER_SDCH_FILTER_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/filter.h"
 #include "net/base/net_export.h"
 #include "net/base/sdch_manager.h"
+#include "net/filter/filter.h"
 
 namespace open_vcdiff {
 class VCDiffStreamingDecoder;
@@ -125,4 +125,4 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
 
 }  // namespace net
 
-#endif  // NET_BASE_SDCH_FILTER_H_
+#endif  // NET_FILTER_SDCH_FILTER_H_

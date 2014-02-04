@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 // you've read from a file or socket.
 //
 
-#ifndef NET_BASE_GZIP_HEADER_H_
-#define NET_BASE_GZIP_HEADER_H_
+#ifndef NET_FILTER_GZIP_HEADER_H_
+#define NET_FILTER_GZIP_HEADER_H_
 
 #include "base/basictypes.h"
 
@@ -91,4 +91,4 @@ class GZipHeader {
 
 }  // namespace net
 
-#endif  // NET_BASE_GZIP_HEADER_H_
+#endif  // NET_FILTER_GZIP_HEADER_H_

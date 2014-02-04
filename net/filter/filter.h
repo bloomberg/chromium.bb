@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -26,8 +26,8 @@
 //
 // The lifetime of a Filter instance is completely controlled by its caller.
 
-#ifndef NET_BASE_FILTER_H__
-#define NET_BASE_FILTER_H__
+#ifndef NET_FILTER_FILTER_H__
+#define NET_FILTER_FILTER_H__
 
 #include <string>
 #include <vector>
@@ -273,4 +273,4 @@ class NET_EXPORT_PRIVATE Filter {
 
 }  // namespace net
 
-#endif  // NET_BASE_FILTER_H__
+#endif  // NET_FILTER_FILTER_H__

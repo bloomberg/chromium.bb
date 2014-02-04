@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_MOCK_FILTER_CONTEXT_H_
-#define NET_BASE_MOCK_FILTER_CONTEXT_H_
+#ifndef NET_FILTER_MOCK_FILTER_CONTEXT_H_
+#define NET_FILTER_MOCK_FILTER_CONTEXT_H_
 
 #include <string>
 
-#include "net/base/filter.h"
+#include "net/filter/filter.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -67,4 +67,4 @@ class MockFilterContext : public FilterContext {
 
 }  // namespace net
 
-#endif  // NET_BASE_MOCK_FILTER_CONTEXT_H_
+#endif  // NET_FILTER_MOCK_FILTER_CONTEXT_H_

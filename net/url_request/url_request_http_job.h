@@ -16,6 +16,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_store.h"
+#include "net/filter/filter.h"
 #include "net/http/http_request_info.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_throttler_entry_interface.h"
