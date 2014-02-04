@@ -463,18 +463,6 @@ hooks = [
     'action':
          [
     'python',
-    'src/build/win/setup_cygwin_mount.py',
-    '--win-only'
-],
-    'pattern':
-         '.',
-    'name':
-         'cygwin'
-},
-    {
-    'action':
-         [
-    'python',
     'src/build/util/lastchange.py',
     '-o',
     'src/build/util/LASTCHANGE'
