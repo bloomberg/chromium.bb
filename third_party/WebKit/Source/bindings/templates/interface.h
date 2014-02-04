@@ -72,6 +72,9 @@ public:
     {% if is_event_target %}
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     {% endif %}
+    {% if interface_name == 'Window' %}
+    static v8::Handle<v8::ObjectTemplate> GetShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
+    {% endif %}
     {% for method in methods if method.is_custom %}
     {% filter conditional(method.conditional_string) %}
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -150,11 +153,25 @@ public:
         return static_cast<{{cpp_class}}*>(object);
         {% endif %}
     }
+    {% if interface_name == 'Window' %}
+    static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);
+    static bool indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType, v8::Local<v8::Value> data);
+    {% endif %}
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, {{cpp_class}}*, v8::Isolate*){% if has_per_context_enabled_attributes %};
     {% else %} { }
     {% endif %}
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if has_per_context_enabled_attributes %};
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*){% if has_per_context_enabled_methods %};
     {% else %} { }
+    {% endif %}
+    {# Element wrappers #}
+    {% if interface_name == 'HTMLElement' %}
+    friend v8::Handle<v8::Object> createV8HTMLWrapper(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    friend v8::Handle<v8::Object> createV8HTMLDirectWrapper(HTMLElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    {% elif interface_name == 'HTMLUnknownElement' %}
+    friend v8::Handle<v8::Object> createV8HTMLFallbackWrapper(HTMLUnknownElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    {% elif interface_name == 'Element' %}
+    // This is a performance optimization hack. See V8Element::wrap.
+    friend v8::Handle<v8::Object> wrap(Node*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     {% endif %}
 
 private:
