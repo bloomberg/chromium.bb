@@ -120,7 +120,8 @@ TEST_F(AppCacheDiskCacheTest, DisableAfterInitted) {
   EXPECT_TRUE(completion_results_.empty());
 }
 
-TEST_F(AppCacheDiskCacheTest, DisableWithEntriesOpen) {
+// Flaky on Android: http://crbug.com/339534
+TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   // Create an instance and let it fully init.
   scoped_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
