@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "webkit/child/worker_task_runner.h"
 #include "webkit/common/quota/quota_types.h"
 
@@ -22,6 +23,14 @@ class Message;
 
 namespace blink {
 class WebStorageQuotaCallbacks;
+
+// TODO(nhiroki): Remove this after a Blink-side patch is landed.
+// (http://crbug.com/338995)
+#ifdef NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
+typedef WebStorageQuotaCallbacks WebStorageQuotaCallbacksType;
+#else
+typedef WebStorageQuotaCallbacks* WebStorageQuotaCallbacksType;
+#endif
 }
 
 namespace content {
@@ -69,7 +78,7 @@ class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
 
   // Creates a new Callback instance for WebStorageQuotaCallbacks.
   static Callback* CreateWebStorageQuotaCallbacksWrapper(
-      blink::WebStorageQuotaCallbacks* callbacks);
+      blink::WebStorageQuotaCallbacksType callbacks);
 
  private:
   // Message handlers.

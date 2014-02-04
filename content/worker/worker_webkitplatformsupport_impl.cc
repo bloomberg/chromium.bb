@@ -292,7 +292,7 @@ WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
 void WorkerWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
     const blink::WebURL& storage_partition,
     blink::WebStorageQuotaType type,
-    blink::WebStorageQuotaCallbacks* callbacks) {
+    blink::WebStorageQuotaCallbacksType callbacks) {
   if (!thread_safe_sender_.get() || !quota_message_filter_.get())
     return;
   QuotaDispatcher::ThreadSpecificInstance(

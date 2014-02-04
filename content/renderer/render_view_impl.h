@@ -121,6 +121,14 @@ struct WebWindowFeatures;
 #if defined(OS_ANDROID)
 class WebHitTestResult;
 #endif
+
+// TODO(nhiroki): Remove this after a Blink-side patch is landed.
+// (http://crbug.com/338995)
+#ifdef NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
+typedef WebStorageQuotaCallbacks WebStorageQuotaCallbacksType;
+#else
+typedef WebStorageQuotaCallbacks* WebStorageQuotaCallbacksType;
+#endif
 }
 
 namespace webkit_glue {
@@ -598,7 +606,7 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       blink::WebStorageQuotaType type,
       unsigned long long requested_size,
-      blink::WebStorageQuotaCallbacks* callbacks);
+      blink::WebStorageQuotaCallbacksType callbacks);
   virtual void willOpenSocketStream(
       blink::WebSocketStreamHandle* handle);
   virtual void willStartUsingPeerConnectionHandler(blink::WebFrame* frame,

@@ -11,7 +11,6 @@
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/quota_messages.h"
-#include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
 #include "url/gurl.h"
 
@@ -34,11 +33,22 @@ namespace {
 // QuotaDispatcher::Callback implementation for WebStorageQuotaCallbacks.
 class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
  public:
-  WebStorageQuotaDispatcherCallback(blink::WebStorageQuotaCallbacks* callback)
-      : callbacks_(callback) {
-    DCHECK(callbacks_);
-  }
+  explicit WebStorageQuotaDispatcherCallback(
+      blink::WebStorageQuotaCallbacksType callback)
+      : callbacks_(callback) {}
   virtual ~WebStorageQuotaDispatcherCallback() {}
+
+#ifdef NON_SELFDESTRUCT_WEBSTORAGEQUOTACALLBACKS
+  virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) OVERRIDE {
+    callbacks_.didQueryStorageUsageAndQuota(usage, quota);
+  }
+  virtual void DidGrantStorageQuota(int64 usage, int64 granted_quota) OVERRIDE {
+    callbacks_.didGrantStorageQuota(usage, granted_quota);
+  }
+  virtual void DidFail(quota::QuotaStatusCode error) OVERRIDE {
+    callbacks_.didFail(static_cast<WebStorageQuotaError>(error));
+  }
+#else
   virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) OVERRIDE {
     callbacks_->didQueryStorageUsageAndQuota(usage, quota);
   }
@@ -48,10 +58,12 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
   virtual void DidFail(quota::QuotaStatusCode error) OVERRIDE {
     callbacks_->didFail(static_cast<WebStorageQuotaError>(error));
   }
+#endif
 
  private:
-  // Not owned (self-destructed).
-  blink::WebStorageQuotaCallbacks* callbacks_;
+  blink::WebStorageQuotaCallbacksType callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebStorageQuotaDispatcherCallback);
 };
 
 int CurrentWorkerId() {
@@ -135,7 +147,7 @@ void QuotaDispatcher::RequestStorageQuota(
 // static
 QuotaDispatcher::Callback*
 QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(
-    blink::WebStorageQuotaCallbacks* callbacks) {
+    blink::WebStorageQuotaCallbacksType callbacks) {
   return new WebStorageQuotaDispatcherCallback(callbacks);
 }
 

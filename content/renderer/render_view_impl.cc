@@ -3947,7 +3947,7 @@ void RenderViewImpl::requestStorageQuota(
     WebFrame* frame,
     WebStorageQuotaType type,
     unsigned long long requested_size,
-    WebStorageQuotaCallbacks* callbacks) {
+    blink::WebStorageQuotaCallbacksType callbacks) {
   NOTREACHED();
 }
 
