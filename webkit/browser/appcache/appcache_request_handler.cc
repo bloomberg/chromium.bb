@@ -7,6 +7,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/browser/appcache/appcache.h"
+#include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_policy.h"
 #include "webkit/browser/appcache/appcache_url_request_job.h"
 
@@ -32,14 +33,6 @@ AppCacheRequestHandler::~AppCacheRequestHandler() {
 AppCacheStorage* AppCacheRequestHandler::storage() const {
   DCHECK(host_);
   return host_->storage();
-}
-
-void AppCacheRequestHandler::GetExtraResponseInfo(
-    int64* cache_id, GURL* manifest_url) {
-  if (job_.get() && job_->is_delivering_appcache_response()) {
-    *cache_id = job_->cache_id();
-    *manifest_url = job_->manifest_url();
-  }
 }
 
 AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
@@ -168,6 +161,31 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
       found_fallback_entry_, found_cache_id_, found_group_id_,
       found_manifest_url_, true, found_namespace_entry_url_);
   return job_.get();
+}
+
+void AppCacheRequestHandler::GetExtraResponseInfo(
+    int64* cache_id, GURL* manifest_url) {
+  if (job_.get() && job_->is_delivering_appcache_response()) {
+    *cache_id = job_->cache_id();
+    *manifest_url = job_->manifest_url();
+  }
+}
+
+void AppCacheRequestHandler::PrepareForCrossSiteTransfer(int old_process_id) {
+  if (!host_)
+    return;
+  AppCacheBackendImpl* backend = host_->service()->GetBackend(old_process_id);
+  host_for_cross_site_transfer_ = backend->TransferHostOut(host_->host_id());
+  DCHECK_EQ(host_, host_for_cross_site_transfer_.get());
+}
+
+void AppCacheRequestHandler::CompleteCrossSiteTransfer(
+    int new_process_id, int new_host_id) {
+  if (!host_for_cross_site_transfer_.get())
+    return;
+  DCHECK_EQ(host_, host_for_cross_site_transfer_.get());
+  AppCacheBackendImpl* backend = host_->service()->GetBackend(new_process_id);
+  backend->TransferHostIn(new_host_id, host_for_cross_site_transfer_.Pass());
 }
 
 void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {

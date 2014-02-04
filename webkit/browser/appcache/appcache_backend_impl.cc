@@ -147,4 +147,36 @@ void AppCacheBackendImpl::GetResourceList(
   host->GetResourceList(resource_infos);
 }
 
+scoped_ptr<AppCacheHost> AppCacheBackendImpl::TransferHostOut(int host_id) {
+  HostMap::iterator found = hosts_.find(host_id);
+  if (found == hosts_.end()) {
+    NOTREACHED();
+    return scoped_ptr<AppCacheHost>();
+  }
+
+  AppCacheHost* transferree = found->second;
+
+  // Put a new empty host in its place.
+  found->second = new AppCacheHost(host_id, frontend_, service_);
+
+  // We give up ownership.
+  transferree->PrepareForTransfer();
+  return scoped_ptr<AppCacheHost>(transferree);
+}
+
+void AppCacheBackendImpl::TransferHostIn(
+    int new_host_id, scoped_ptr<AppCacheHost> host) {
+  HostMap::iterator found = hosts_.find(new_host_id);
+  if (found == hosts_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  delete found->second;
+
+  // We take onwership.
+  host->CompleteTransfer(new_host_id, frontend_);
+  found->second = host.release();
+}
+
 }  // namespace appcache

@@ -24,6 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "webkit/browser/appcache/appcache_interceptor.h"
 
 namespace content {
 
@@ -289,6 +290,8 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
     referrer = Referrer(GURL(request()->referrer()), info->GetReferrerPolicy());
     frame_id = info->GetFrameID();
 
+    appcache::AppCacheInterceptor::PrepareForCrossSiteTransfer(
+        request(), global_id.child_id);
     ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(global_id);
   }
   BrowserThread::PostTask(

@@ -152,6 +152,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
 
   const GURL& first_party_url() const { return first_party_url_; }
 
+  // Methods to support cross site navigations.
+  void PrepareForTransfer();
+  void CompleteTransfer(int host_id, AppCacheFrontend* frontend);
+
  private:
   Status GetStatus();
   void LoadSelectedCache(int64 cache_id);

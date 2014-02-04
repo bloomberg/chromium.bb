@@ -489,6 +489,20 @@ void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {
   blocked_manifest_url_ = manifest_url;
 }
 
+void AppCacheHost::PrepareForTransfer() {
+  // This can only happen prior to the document having been loaded.
+  DCHECK(!associated_cache());
+  DCHECK(!is_selection_pending());
+  DCHECK(!group_being_updated_);
+  host_id_ = kNoHostId;
+  frontend_ = NULL;
+}
+
+void AppCacheHost::CompleteTransfer(int host_id, AppCacheFrontend* frontend) {
+  host_id_ = host_id;
+  frontend_ = frontend;
+}
+
 void AppCacheHost::AssociateNoCache(const GURL& manifest_url) {
   // manifest url can be empty.
   AssociateCacheHelper(NULL, manifest_url);

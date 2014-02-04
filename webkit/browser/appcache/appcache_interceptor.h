@@ -40,6 +40,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheInterceptor
                                    int64* cache_id,
                                    GURL* manifest_url);
 
+  // Methods to support cross site navigations.
+  static void PrepareForCrossSiteTransfer(net::URLRequest* request,
+                                          int old_process_id);
+  static void CompleteCrossSiteTransfer(net::URLRequest* request,
+                                        int new_process_id,
+                                        int new_host_id);
+
   static AppCacheInterceptor* GetInstance();
 
  protected:

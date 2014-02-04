@@ -62,6 +62,27 @@ void AppCacheInterceptor::GetExtraResponseInfo(net::URLRequest* request,
     handler->GetExtraResponseInfo(cache_id, manifest_url);
 }
 
+void AppCacheInterceptor::PrepareForCrossSiteTransfer(
+    net::URLRequest* request,
+    int old_process_id) {
+  AppCacheRequestHandler* handler = GetHandler(request);
+  if (!handler)
+    return;
+  handler->PrepareForCrossSiteTransfer(old_process_id);
+}
+
+void AppCacheInterceptor::CompleteCrossSiteTransfer(
+    net::URLRequest* request,
+    int new_process_id,
+    int new_host_id) {
+  AppCacheRequestHandler* handler = GetHandler(request);
+  if (!handler)
+    return;
+  DCHECK_NE(kNoHostId, new_host_id);
+  handler->CompleteCrossSiteTransfer(new_process_id,
+                                     new_host_id);
+}
+
 AppCacheInterceptor::AppCacheInterceptor() {
   net::URLRequest::Deprecated::RegisterRequestInterceptor(this);
 }
