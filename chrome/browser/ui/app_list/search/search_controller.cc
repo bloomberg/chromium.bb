@@ -61,9 +61,12 @@ void SearchController::Init() {
   StartPageService* service = StartPageService::Get(profile_);
   if (service && service->GetSpeechRecognitionContents()) {
     search_box_->SetSpeechRecognitionButton(
-        scoped_ptr<SearchBoxModel::ButtonProperty>(
-            new SearchBoxModel::ButtonProperty(
+        scoped_ptr<SearchBoxModel::SpeechButtonProperty>(
+            new SearchBoxModel::SpeechButtonProperty(
                 *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
+                l10n_util::GetStringUTF16(
+                    IDS_APP_LIST_HOTWORD_LISTENING),
+                *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_OFF),
                 l10n_util::GetStringUTF16(
                     IDS_APP_LIST_START_SPEECH_RECOGNITION))));
   }

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ui/app_list/search_box_model_observer.h"
+#include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -36,7 +37,8 @@ class SearchBoxView : public views::View,
                       public views::TextfieldController,
                       public views::ButtonListener,
                       public views::MenuButtonListener,
-                      public SearchBoxModelObserver {
+                      public SearchBoxModelObserver,
+                      public SpeechUIModelObserver {
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
                 AppListViewDelegate* view_delegate);
@@ -85,6 +87,10 @@ class SearchBoxView : public views::View,
   virtual void HintTextChanged() OVERRIDE;
   virtual void SelectionModelChanged() OVERRIDE;
   virtual void TextChanged() OVERRIDE;
+
+  // Overridden from SpeechUIModelObserver:
+  virtual void OnSpeechRecognitionStateChanged(
+      SpeechRecognitionState new_state) OVERRIDE;
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.

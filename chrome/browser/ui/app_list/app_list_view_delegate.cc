@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -97,6 +98,16 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
       app_list::StartPageService::Get(profile_);
   if (service)
     service->AddObserver(this);
+
+  // Hotword listening is on by default in ChromeOS right now. Here shouldn't
+  // use the current state in the webui because it will be changed to 'hotword
+  // listening' state from 'ready' after the view is initialized.
+  speech_ui_.reset(new app_list::SpeechUIModel(
+#if defined(OS_CHROMEOS)
+      app_list::switches::IsVoiceSearchEnabled() ?
+        app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING :
+#endif
+        app_list::SPEECH_RECOGNITION_OFF));
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
@@ -177,7 +188,7 @@ app_list::SigninDelegate* AppListViewDelegate::GetSigninDelegate() {
 }
 
 app_list::SpeechUIModel* AppListViewDelegate::GetSpeechUI() {
-  return &speech_ui_;
+  return speech_ui_.get();
 }
 
 void AppListViewDelegate::GetShortcutPathForApp(
@@ -310,7 +321,7 @@ void AppListViewDelegate::ShowForProfileByPath(
 
 void AppListViewDelegate::OnSpeechResult(const base::string16& result,
                                          bool is_final) {
-  speech_ui_.SetSpeechResult(result, is_final);
+  speech_ui_->SetSpeechResult(result, is_final);
   if (is_final) {
     auto_launch_timeout_ = base::TimeDelta::FromSeconds(
         kAutoLaunchDefaultTimeoutSec);
@@ -319,12 +330,12 @@ void AppListViewDelegate::OnSpeechResult(const base::string16& result,
 }
 
 void AppListViewDelegate::OnSpeechSoundLevelChanged(int16 level) {
-  speech_ui_.UpdateSoundLevel(level);
+  speech_ui_->UpdateSoundLevel(level);
 }
 
 void AppListViewDelegate::OnSpeechRecognitionStateChanged(
     app_list::SpeechRecognitionState new_state) {
-  speech_ui_.SetSpeechRecognitionState(new_state);
+  speech_ui_->SetSpeechRecognitionState(new_state);
 }
 
 void AppListViewDelegate::Observe(

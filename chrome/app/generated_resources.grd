@@ -14373,7 +14373,10 @@ Do you accept?
       Start Hangout
     </message>
     <message name="IDS_APP_LIST_START_SPEECH_RECOGNITION" desc="Tooltip text for the button to start the speech recognition.">
-      Start speech recognition
+      Click to start voice search
+    </message>
+    <message name="IDS_APP_LIST_HOTWORD_LISTENING" desc="Tooltip text for the mic button when it waits for the hotword.">
+      Click or say "Ok, Google" to start voice search
     </message>
     <if expr="not pp_ifdef('use_titlecase')">
       <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">

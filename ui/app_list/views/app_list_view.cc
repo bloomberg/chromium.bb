@@ -442,7 +442,8 @@ void AppListView::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
   DCHECK(!signin_view_->visible());
 
-  bool recognizing = new_state != SPEECH_RECOGNITION_NOT_STARTED;
+  bool recognizing = (new_state == SPEECH_RECOGNITION_RECOGNIZING ||
+                      new_state == SPEECH_RECOGNITION_IN_SPEECH);
   // No change for this class.
   if (speech_view_->visible() == recognizing)
     return;

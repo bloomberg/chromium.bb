@@ -209,7 +209,7 @@ void SpeechView::OnSpeechResult(const base::string16& result,
 void SpeechView::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
   int resource_id = IDR_APP_LIST_SPEECH_MIC_OFF;
-  if (new_state == SPEECH_RECOGNITION_ON)
+  if (new_state == SPEECH_RECOGNITION_RECOGNIZING)
     resource_id = IDR_APP_LIST_SPEECH_MIC_ON;
   else if (new_state == SPEECH_RECOGNITION_IN_SPEECH)
     resource_id = IDR_APP_LIST_SPEECH_MIC_RECORDING;

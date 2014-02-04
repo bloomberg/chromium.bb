@@ -153,11 +153,17 @@ void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
   std::string state_string;
   CHECK(args->GetString(0, &state_string));
 
-  SpeechRecognitionState new_state = SPEECH_RECOGNITION_NOT_STARTED;
-  if (state_string == "on")
-    new_state = SPEECH_RECOGNITION_ON;
-  else if (state_string == "in-speech")
+  SpeechRecognitionState new_state = SPEECH_RECOGNITION_OFF;
+  if (state_string == "READY")
+    new_state = SPEECH_RECOGNITION_READY;
+  else if (state_string == "HOTWORD_RECOGNIZING")
+    new_state = SPEECH_RECOGNITION_HOTWORD_LISTENING;
+  else if (state_string == "RECOGNIZING")
+    new_state = SPEECH_RECOGNITION_RECOGNIZING;
+  else if (state_string == "IN_SPEECH")
     new_state = SPEECH_RECOGNITION_IN_SPEECH;
+  else if (state_string == "STOPPING")
+    new_state = SPEECH_RECOGNITION_STOPPING;
 
   StartPageService* service =
       StartPageService::Get(Profile::FromWebUI(web_ui()));

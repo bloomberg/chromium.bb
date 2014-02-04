@@ -53,7 +53,8 @@ AppListTestViewDelegate::AppListTestViewDelegate()
     : dismiss_count_(0),
       open_search_result_count_(0),
       test_signin_delegate_(new TestSigninDelegate),
-      model_(new AppListTestModel) {
+      model_(new AppListTestModel),
+      speech_ui_(SPEECH_RECOGNITION_OFF) {
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}

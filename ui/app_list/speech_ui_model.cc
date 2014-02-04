@@ -13,8 +13,9 @@ const int16 kDefaultSoundLevel = 200;
 
 }  // namespace
 
-SpeechUIModel::SpeechUIModel()
-    : minimum_sound_level_(kDefaultSoundLevel),
+SpeechUIModel::SpeechUIModel(SpeechRecognitionState initial_state)
+    : state_(initial_state),
+      minimum_sound_level_(kDefaultSoundLevel),
       maximum_sound_level_(kDefaultSoundLevel) {}
 
 SpeechUIModel::~SpeechUIModel() {}
@@ -74,7 +75,8 @@ void SpeechUIModel::SetSpeechRecognitionState(
 
   state_ = new_state;
   // Revert the min/max sound level to the default.
-  if (state_ == SPEECH_RECOGNITION_ON) {
+  if (state_ != SPEECH_RECOGNITION_RECOGNIZING &&
+      state_ != SPEECH_RECOGNITION_IN_SPEECH) {
     minimum_sound_level_ = kDefaultSoundLevel;
     maximum_sound_level_ = kDefaultSoundLevel;
   }

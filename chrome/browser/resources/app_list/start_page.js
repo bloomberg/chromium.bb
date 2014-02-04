@@ -70,14 +70,14 @@ cr.define('appList.startPage', function() {
    * Invoked when the app-list bubble is shown.
    */
   function onAppListShown() {
-    speechManager.start();
+    speechManager.onShown();
   }
 
   /**
    * Invoked when the app-list bubble is hidden.
    */
   function onAppListHidden() {
-    speechManager.stop();
+    speechManager.onHidden();
   }
 
   /**

@@ -197,7 +197,8 @@ class ExampleSearchResult : public app_list::SearchResult {
 class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
  public:
   ExampleAppListViewDelegate()
-      : model_(new app_list::AppListModel) {
+      : model_(new app_list::AppListModel),
+        speech_ui_(app_list::SPEECH_RECOGNITION_OFF) {
     PopulateApps();
     DecorateSearchBox(model_->search_box());
   }
