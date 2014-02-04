@@ -71,9 +71,9 @@ private:
 
     enum MatchTraverseRootState { DoesNotMatchTraverseRoots, MatchesTraverseRoots };
     template <typename SelectorQueryTrait>
-    void executeForTraverseRoot(const SelectorData&, Node* traverseRoot, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
-    template <typename SelectorQueryTrait, typename SimpleNodeListType>
-    void executeForTraverseRoots(const SelectorData&, SimpleNodeListType& traverseRoots, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void executeForTraverseRoot(const SelectorData&, ContainerNode* traverseRoot, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    template <typename SelectorQueryTrait, typename SimpleElementListType>
+    void executeForTraverseRoots(const SelectorData&, SimpleElementListType& traverseRoots, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
 
     template <typename SelectorQueryTrait>
     void executeSlow(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;

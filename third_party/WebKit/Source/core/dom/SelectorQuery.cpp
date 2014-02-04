@@ -70,9 +70,9 @@ public:
 
     bool isEmpty() const { return !m_currentElement; }
 
-    Node* next()
+    Element* next()
     {
-        Node* current = m_currentElement;
+        Element* current = m_currentElement;
         ASSERT(current);
         if (onlyRoots)
             m_currentElement = nextInternal(ElementTraversal::nextSkippingChildren(*m_currentElement, &m_rootNode));
@@ -261,7 +261,7 @@ void SelectorDataList::findTraverseRootsAndExecute(ContainerNode& rootNode, type
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::executeForTraverseRoot(const SelectorData& selector, Node* traverseRoot, MatchTraverseRootState matchTraverseRoot, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::executeForTraverseRoot(const SelectorData& selector, ContainerNode* traverseRoot, MatchTraverseRootState matchTraverseRoot, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     if (!traverseRoot)
         return;
@@ -281,16 +281,15 @@ void SelectorDataList::executeForTraverseRoot(const SelectorData& selector, Node
     }
 }
 
-template <typename SelectorQueryTrait, typename SimpleNodeListType>
-void SelectorDataList::executeForTraverseRoots(const SelectorData& selector, SimpleNodeListType& traverseRoots, MatchTraverseRootState matchTraverseRoots, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
+template <typename SelectorQueryTrait, typename SimpleElementListType>
+void SelectorDataList::executeForTraverseRoots(const SelectorData& selector, SimpleElementListType& traverseRoots, MatchTraverseRootState matchTraverseRoots, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     if (traverseRoots.isEmpty())
         return;
 
     if (matchTraverseRoots) {
         while (!traverseRoots.isEmpty()) {
-            Node& node = *traverseRoots.next();
-            Element& element = toElement(node);
+            Element& element = *traverseRoots.next();
             if (selectorMatches(selector, element, rootNode)) {
                 SelectorQueryTrait::appendElement(output, element);
                 if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
@@ -301,9 +300,8 @@ void SelectorDataList::executeForTraverseRoots(const SelectorData& selector, Sim
     }
 
     while (!traverseRoots.isEmpty()) {
-        Node* traverseRoot = traverseRoots.next();
-        ASSERT(traverseRoot);
-        for (Element* element = ElementTraversal::firstWithin(*traverseRoot); element; element = ElementTraversal::next(*element, traverseRoot)) {
+        Element& traverseRoot = *traverseRoots.next();
+        for (Element* element = ElementTraversal::firstWithin(traverseRoot); element; element = ElementTraversal::next(*element, &traverseRoot)) {
             if (selectorMatches(selector, *element, rootNode)) {
                 SelectorQueryTrait::appendElement(output, *element);
                 if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
