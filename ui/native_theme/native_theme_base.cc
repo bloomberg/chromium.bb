@@ -38,6 +38,8 @@ const SkColor kSliderThumbDarkGrey = SkColorSetRGB(0xea, 0xe5, 0xe0);
 const SkColor kSliderThumbBorderDarkGrey =
     SkColorSetRGB(0x9d, 0x96, 0x8e);
 
+const SkColor kTextBorderColor = SkColorSetRGB(0xa9, 0xa9, 0xa9);
+
 const SkColor kMenuPopupBackgroundColor = SkColorSetRGB(210, 225, 246);
 
 const unsigned int kDefaultScrollbarWidth = 15;
@@ -712,10 +714,6 @@ void NativeThemeBase::PaintTextField(SkCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
                                      const TextFieldExtraParams& text) const {
-  // The following drawing code simulates the user-agent css border for
-  // text area and text input so that we do not break layout tests. Once we
-  // have decided the desired looks, we should update the code here and
-  // the layout test expectations.
   SkRect bounds;
   bounds.set(rect.x(), rect.y(), rect.right() - 1, rect.bottom() - 1);
 
@@ -724,78 +722,12 @@ void NativeThemeBase::PaintTextField(SkCanvas* canvas,
   fill_paint.setColor(text.background_color);
   canvas->drawRect(bounds, fill_paint);
 
-  if (text.is_text_area) {
-    // Draw text area border: 1px solid black
-    SkPaint stroke_paint;
-    fill_paint.setStyle(SkPaint::kStroke_Style);
-    fill_paint.setColor(SK_ColorBLACK);
-    canvas->drawRect(bounds, fill_paint);
-  } else {
-    // Draw text input and listbox inset border
-    //   Text Input: 2px inset #eee
-    //   Listbox: 1px inset #808080
-    const SkColor kLightColor = text.is_listbox ?
-        SkColorSetRGB(0x80, 0x80, 0x80) : SkColorSetRGB(0xee, 0xee, 0xee);
-    const SkColor kDarkColor = text.is_listbox ?
-        SkColorSetRGB(0x2c, 0x2c, 0x2c) : SkColorSetRGB(0x9a, 0x9a, 0x9a);
-    const int kBorderWidth = text.is_listbox ? 1 : 2;
-
-    SkPaint dark_paint;
-    dark_paint.setAntiAlias(true);
-    dark_paint.setStyle(SkPaint::kFill_Style);
-    dark_paint.setColor(kDarkColor);
-
-    SkPaint light_paint;
-    light_paint.setAntiAlias(true);
-    light_paint.setStyle(SkPaint::kFill_Style);
-    light_paint.setColor(kLightColor);
-
-    int left = rect.x();
-    int top = rect.y();
-    int right = rect.right();
-    int bottom = rect.bottom();
-
-    SkPath path;
-    path.incReserve(4);
-
-    // Top
-    path.moveTo(SkIntToScalar(left), SkIntToScalar(top));
-    path.lineTo(SkIntToScalar(left + kBorderWidth),
-                SkIntToScalar(top + kBorderWidth));
-    path.lineTo(SkIntToScalar(right - kBorderWidth),
-                SkIntToScalar(top + kBorderWidth));
-    path.lineTo(SkIntToScalar(right), SkIntToScalar(top));
-    canvas->drawPath(path, dark_paint);
-
-    // Bottom
-    path.reset();
-    path.moveTo(SkIntToScalar(left + kBorderWidth),
-                SkIntToScalar(bottom - kBorderWidth));
-    path.lineTo(SkIntToScalar(left), SkIntToScalar(bottom));
-    path.lineTo(SkIntToScalar(right), SkIntToScalar(bottom));
-    path.lineTo(SkIntToScalar(right - kBorderWidth),
-                SkIntToScalar(bottom - kBorderWidth));
-    canvas->drawPath(path, light_paint);
-
-    // Left
-    path.reset();
-    path.moveTo(SkIntToScalar(left), SkIntToScalar(top));
-    path.lineTo(SkIntToScalar(left), SkIntToScalar(bottom));
-    path.lineTo(SkIntToScalar(left + kBorderWidth),
-                SkIntToScalar(bottom - kBorderWidth));
-    path.lineTo(SkIntToScalar(left + kBorderWidth),
-                SkIntToScalar(top + kBorderWidth));
-    canvas->drawPath(path, dark_paint);
-
-    // Right
-    path.reset();
-    path.moveTo(SkIntToScalar(right - kBorderWidth),
-                SkIntToScalar(top + kBorderWidth));
-    path.lineTo(SkIntToScalar(right - kBorderWidth), SkIntToScalar(bottom));
-    path.lineTo(SkIntToScalar(right), SkIntToScalar(bottom));
-    path.lineTo(SkIntToScalar(right), SkIntToScalar(top));
-    canvas->drawPath(path, light_paint);
-  }
+  // Text INPUT, listbox SELECT, and TEXTAREA have consistent borders.
+  // border: 1px solid #a9a9a9
+  SkPaint stroke_paint;
+  stroke_paint.setStyle(SkPaint::kStroke_Style);
+  stroke_paint.setColor(kTextBorderColor);
+  canvas->drawRect(bounds, stroke_paint);
 }
 
 void NativeThemeBase::PaintMenuList(
