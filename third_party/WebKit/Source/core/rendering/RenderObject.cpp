@@ -827,6 +827,9 @@ RenderBlock* RenderObject::containingBlock() const
             o = o->parent();
         }
 
+        if (o && !o->isRenderBlock())
+            o = o->containingBlock();
+
         while (o && o->isAnonymousBlock())
             o = o->containingBlock();
     } else {

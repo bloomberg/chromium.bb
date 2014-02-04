@@ -105,7 +105,7 @@ private:
 
     virtual LayerType layerTypeRequired() const OVERRIDE
     {
-        if (hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup())
+        if (hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup() || isStickyPositioned())
             return NormalLayer;
 
         if (hasOverflowClip())
