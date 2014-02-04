@@ -154,9 +154,10 @@ class MarkImageToBeSignedTest(cros_test_lib.MockTestCase):
     pushimage.MarkImageToBeSigned(self.ctx, '', '', 50)
     # We assume the first call is the one we care about.
     self.assertTrue(m.called)
-    content = '\n'.join(m.call_args_list[0][0][1])
+    content = m.call_args_list[0][0][1]
     self.assertIn('USER=', content)
     self.assertIn('HOSTNAME=', content)
+    self.assertIn('\n', content)
 
   def testTbsUpload(self):
     """Make sure we actually try to upload the file"""
