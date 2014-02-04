@@ -269,6 +269,16 @@ template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, 
     return false;
 }
 
+template <> inline bool isMatchingElement(const ClassCollection& collection, const Element& element)
+{
+    return collection.elementMatches(element);
+}
+
+template <> inline bool isMatchingElement(const HTMLTagCollection& collection, const Element& element)
+{
+    return collection.elementMatches(element);
+}
+
 template <> inline bool isMatchingElement(const LiveNodeList& nodeList, const Element& element)
 {
     return nodeList.nodeMatches(element);
@@ -448,11 +458,18 @@ inline Element* nextMatchingChildElement(const HTMLCollection& nodeList, Element
 
 Element* HTMLCollection::traverseToFirstElement(const ContainerNode& root) const
 {
-    if (overridesItemAfter())
-        return virtualItemAfter(0);
-    if (shouldOnlyIncludeDirectChildren())
-        return firstMatchingChildElement(*this, root);
-    return firstMatchingElement(*this, root);
+    switch (type()) {
+    case HTMLTagCollectionType:
+        return firstMatchingElement(static_cast<const HTMLTagCollection&>(*this), root);
+    case ClassCollectionType:
+        return firstMatchingElement(static_cast<const ClassCollection&>(*this), root);
+    default:
+        if (overridesItemAfter())
+            return virtualItemAfter(0);
+        if (shouldOnlyIncludeDirectChildren())
+            return firstMatchingChildElement(*this, root);
+        return firstMatchingElement(*this, root);
+    }
 }
 
 inline Element* HTMLCollection::traverseNextElement(Element& previous, const ContainerNode& root) const
@@ -467,23 +484,30 @@ inline Element* HTMLCollection::traverseNextElement(Element& previous, const Con
 Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const
 {
     ASSERT(currentOffset < offset);
-    if (overridesItemAfter()) {
-        Element* next = &currentElement;
-        while ((next = virtualItemAfter(next))) {
-            if (++currentOffset == offset)
-                return next;
+    switch (type()) {
+    case HTMLTagCollectionType:
+        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagCollection&>(*this), offset, currentElement, currentOffset, root);
+    case ClassCollectionType:
+        return traverseMatchingElementsForwardToOffset(static_cast<const ClassCollection&>(*this), offset, currentElement, currentOffset, root);
+    default:
+        if (overridesItemAfter()) {
+            Element* next = &currentElement;
+            while ((next = virtualItemAfter(next))) {
+                if (++currentOffset == offset)
+                    return next;
+            }
+            return 0;
         }
-        return 0;
-    }
-    if (shouldOnlyIncludeDirectChildren()) {
-        Element* next = &currentElement;
-        while ((next = nextMatchingChildElement(*this, *next, root))) {
-            if (++currentOffset == offset)
-                return next;
+        if (shouldOnlyIncludeDirectChildren()) {
+            Element* next = &currentElement;
+            while ((next = nextMatchingChildElement(*this, *next, root))) {
+                if (++currentOffset == offset)
+                    return next;
+            }
+            return 0;
         }
-        return 0;
+        return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset, root);
     }
-    return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset, root);
 }
 
 Element* HTMLCollection::namedItem(const AtomicString& name) const
