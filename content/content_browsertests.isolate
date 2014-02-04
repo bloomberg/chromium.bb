@@ -89,12 +89,6 @@
           '<(PRODUCT_DIR)/plugins/npTestNetscapePlugIn.dll',
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
         ],
-        'isolate_dependency_untracked': [
-          # The two directories below are only needed for
-          # WorkerXHRHttpLayoutTest.Tests which are currently disabled.
-          #'../third_party/cygwin/',
-          #'../third_party/perl/perl/',
-        ],
       },
     }],
   ],

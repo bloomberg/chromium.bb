@@ -124,8 +124,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '../native_client/build/build_nexe.py',
-          '../third_party/cygwin/bin/bash.exe',
-          '../third_party/cygwin/setup_mount.bat',
           '<(PRODUCT_DIR)/clearkeycdm.dll',
           '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',

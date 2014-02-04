@@ -646,12 +646,6 @@ hooks = [
     "action": ["python", "src/tools/clang/scripts/update.py", "--mac-only"],
   },
   {
-    # Update the cygwin mount on Windows.
-    "name": "cygwin",
-    "pattern": ".",
-    "action": ["python", "src/build/win/setup_cygwin_mount.py", "--win-only"],
-  },
-  {
     # Update LASTCHANGE. This is also run by export_tarball.py in
     # src/tools/export_tarball - please keep them in sync.
     "name": "lastchange",
