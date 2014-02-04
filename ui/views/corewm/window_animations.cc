@@ -27,6 +27,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
@@ -567,10 +568,10 @@ bool AnimateWindow(aura::Window* window, WindowAnimationType type) {
 }
 
 bool WindowAnimationsDisabled(aura::Window* window) {
-  return (window &&
+  return (!gfx::Animation::ShouldRenderRichAnimation() || (window &&
           window->GetProperty(aura::client::kAnimationsDisabledKey)) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWindowAnimationsDisabled);
+          switches::kWindowAnimationsDisabled));
 }
 
 }  // namespace corewm
