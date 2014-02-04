@@ -208,7 +208,7 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
    */
 
   if (args->initial_ipc_desc != NULL) {
-    NaClSetDesc(nap, NACL_CHROME_INITIAL_IPC_DESC, args->initial_ipc_desc);
+    NaClAppSetDesc(nap, NACL_CHROME_INITIAL_IPC_DESC, args->initial_ipc_desc);
   }
 
   /*

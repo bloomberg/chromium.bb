@@ -42,12 +42,12 @@ int32_t NaClSysDup(struct NaClAppThread *natp,
 
   NaClLog(3, "NaClSysDup(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) natp, oldfd);
-  old_nd = NaClGetDesc(nap, oldfd);
+  old_nd = NaClAppGetDesc(nap, oldfd);
   if (NULL == old_nd) {
     retval = -NACL_ABI_EBADF;
     goto done;
   }
-  retval = NaClSetAvail(nap, old_nd);
+  retval = NaClAppSetDescAvail(nap, old_nd);
 done:
   return retval;
 }
@@ -73,12 +73,12 @@ int32_t NaClSysDup2(struct NaClAppThread  *natp,
     retval = -NACL_ABI_EINVAL;
     goto done;
   }
-  old_nd = NaClGetDesc(nap, oldfd);
+  old_nd = NaClAppGetDesc(nap, oldfd);
   if (NULL == old_nd) {
     retval = -NACL_ABI_EBADF;
     goto done;
   }
-  NaClSetDesc(nap, newfd, old_nd);
+  NaClAppSetDesc(nap, newfd, old_nd);
   retval = newfd;
 done:
   return retval;
@@ -94,9 +94,9 @@ int32_t NaClSysClose(struct NaClAppThread *natp,
           (uintptr_t) natp, d);
 
   NaClFastMutexLock(&nap->desc_mu);
-  ndp = NaClGetDescMu(nap, d);
+  ndp = NaClAppGetDescMu(nap, d);
   if (NULL != ndp) {
-    NaClSetDescMu(nap, d, NULL);  /* Unref the desc_tbl */
+    NaClAppSetDescMu(nap, d, NULL);  /* Unref the desc_tbl */
   }
   NaClFastMutexUnlock(&nap->desc_mu);
   NaClLog(5, "Invoking Close virtual function of object 0x%08"NACL_PRIxPTR"\n",
@@ -125,7 +125,7 @@ int32_t NaClSysGetdents(struct NaClAppThread *natp,
            "%"NACL_PRIdS"[0x%"NACL_PRIxS"])\n"),
           (uintptr_t) natp, d, (uintptr_t) dirp, count, count);
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
@@ -202,7 +202,7 @@ int32_t NaClSysRead(struct NaClAppThread  *natp,
            "%"NACL_PRIdS"[0x%"NACL_PRIxS"])\n"),
           (uintptr_t) natp, d, (uintptr_t) buf, count, count);
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
@@ -276,7 +276,7 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
           "%"NACL_PRIdS"[0x%"NACL_PRIxS"])\n",
           (uintptr_t) natp, d, (uintptr_t) buf, count, count);
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   NaClLog(4, " ndp = %"NACL_PRIxPTR"\n", (uintptr_t) ndp);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
@@ -350,7 +350,7 @@ int32_t NaClSysLseek(struct NaClAppThread *natp,
            " 0x%08"NACL_PRIxPTR", %d)\n"),
           (uintptr_t) natp, d, (uintptr_t) offp, whence);
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
@@ -409,7 +409,7 @@ int32_t NaClSysIoctl(struct NaClAppThread *natp,
    ****************************************
    */
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     NaClLog(4, "bad desc\n");
     retval = -NACL_ABI_EBADF;
@@ -460,7 +460,7 @@ int32_t NaClSysFstat(struct NaClAppThread *natp,
           " sizeof(struct nacl_abi_stat) = %"NACL_PRIdS" (0x%"NACL_PRIxS")\n",
           sizeof *nasp, sizeof *nasp);
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     NaClLog(4, "bad desc\n");
     retval = -NACL_ABI_EBADF;

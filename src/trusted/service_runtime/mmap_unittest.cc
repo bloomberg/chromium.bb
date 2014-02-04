@@ -75,7 +75,7 @@ void MapShmFd(struct NaClApp *nap, uintptr_t addr, size_t shm_size) {
   ASSERT_EQ(NaClDescImcShmAllocCtor(shm_desc, shm_size,
                                     /* executable= */ 0), 1);
   struct NaClDesc *desc = &shm_desc->base;
-  int fd = NaClSetAvail(nap, desc);
+  int fd = NaClAppSetDescAvail(nap, desc);
 
   uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
       nap, (void *) addr, shm_size,
@@ -114,7 +114,7 @@ void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
   ASSERT_EQ(written, (ssize_t) file_size);
   delete[] buf;
 
-  int fd = NaClSetAvail(nap, desc);
+  int fd = NaClAppSetDescAvail(nap, desc);
 
   uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
       nap, (void *) addr, file_size,
@@ -414,7 +414,7 @@ TEST_F(MmapTest, TestSysvShmMapping) {
       (struct NaClDescSysvShm *) malloc(sizeof(*shm_desc));
   ASSERT_TRUE(NaClDescSysvShmCtor(shm_desc, shm_size));
   struct NaClDesc *desc = &shm_desc->base;
-  int fd = NaClSetAvail(&app, desc);
+  int fd = NaClAppSetDescAvail(&app, desc);
 
   uintptr_t mapping_addr = 0x200000;
 

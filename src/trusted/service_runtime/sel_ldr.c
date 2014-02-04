@@ -573,8 +573,8 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
   NaClXMutexUnlock(&nap->mu);
 }
 
-struct NaClDesc *NaClGetDescMu(struct NaClApp *nap,
-                               int            d) {
+struct NaClDesc *NaClAppGetDescMu(struct NaClApp *nap,
+                                  int            d) {
   struct NaClDesc *result;
 
   result = (struct NaClDesc *) DynArrayGet(&nap->desc_tbl, d);
@@ -585,9 +585,9 @@ struct NaClDesc *NaClGetDescMu(struct NaClApp *nap,
   return result;
 }
 
-void NaClSetDescMu(struct NaClApp   *nap,
-                   int              d,
-                   struct NaClDesc  *ndp) {
+void NaClAppSetDescMu(struct NaClApp   *nap,
+                      int              d,
+                      struct NaClDesc  *ndp) {
   struct NaClDesc *result;
 
   result = (struct NaClDesc *) DynArrayGet(&nap->desc_tbl, d);
@@ -595,54 +595,54 @@ void NaClSetDescMu(struct NaClApp   *nap,
 
   if (!DynArraySet(&nap->desc_tbl, d, ndp)) {
     NaClLog(LOG_FATAL,
-            "NaClSetDesc: could not set descriptor %d to 0x%08"
+            "NaClAppSetDesc: could not set descriptor %d to 0x%08"
             NACL_PRIxPTR"\n",
             d,
             (uintptr_t) ndp);
   }
 }
 
-int32_t NaClSetAvailMu(struct NaClApp  *nap,
-                       struct NaClDesc *ndp) {
+int32_t NaClAppSetDescAvailMu(struct NaClApp  *nap,
+                              struct NaClDesc *ndp) {
   size_t pos;
 
   pos = DynArrayFirstAvail(&nap->desc_tbl);
 
   if (pos > INT32_MAX) {
     NaClLog(LOG_FATAL,
-            ("NaClSetAvailMu: DynArrayFirstAvail returned a value"
+            ("NaClAppSetDescAvailMu: DynArrayFirstAvail returned a value"
              " that is greather than 2**31-1.\n"));
   }
 
-  NaClSetDescMu(nap, (int) pos, ndp);
+  NaClAppSetDescMu(nap, (int) pos, ndp);
 
   return (int32_t) pos;
 }
 
-struct NaClDesc *NaClGetDesc(struct NaClApp *nap,
-                             int            d) {
+struct NaClDesc *NaClAppGetDesc(struct NaClApp *nap,
+                                int            d) {
   struct NaClDesc *res;
 
   NaClFastMutexLock(&nap->desc_mu);
-  res = NaClGetDescMu(nap, d);
+  res = NaClAppGetDescMu(nap, d);
   NaClFastMutexUnlock(&nap->desc_mu);
   return res;
 }
 
-void NaClSetDesc(struct NaClApp   *nap,
-                 int              d,
-                 struct NaClDesc  *ndp) {
+void NaClAppSetDesc(struct NaClApp   *nap,
+                    int              d,
+                    struct NaClDesc  *ndp) {
   NaClFastMutexLock(&nap->desc_mu);
-  NaClSetDescMu(nap, d, ndp);
+  NaClAppSetDescMu(nap, d, ndp);
   NaClFastMutexUnlock(&nap->desc_mu);
 }
 
-int32_t NaClSetAvail(struct NaClApp  *nap,
-                     struct NaClDesc *ndp) {
+int32_t NaClAppSetDescAvail(struct NaClApp  *nap,
+                            struct NaClDesc *ndp) {
   int32_t pos;
 
   NaClFastMutexLock(&nap->desc_mu);
-  pos = NaClSetAvailMu(nap, ndp);
+  pos = NaClAppSetDescAvailMu(nap, ndp);
   NaClFastMutexUnlock(&nap->desc_mu);
 
   return pos;
@@ -719,7 +719,7 @@ void NaClAddHostDescriptor(struct NaClApp *nap,
   if (NULL == dp) {
     NaClLog(LOG_FATAL, "NaClAddHostDescriptor: NaClDescIoDescMake failed\n");
   }
-  NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
+  NaClAppSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
 }
 
 void NaClAddImcHandle(struct NaClApp  *nap,
@@ -741,7 +741,7 @@ void NaClAddImcHandle(struct NaClApp  *nap,
     NaClLog(LOG_FATAL, ("NaClAddImcHandle: cannot construct"
                         " IMC descriptor object\n"));
   }
-  NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
+  NaClAppSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
 }
 
 
@@ -794,7 +794,7 @@ static void NaClProcessRedirControl(struct NaClApp *nap) {
 
     if (NULL != ndp) {
       NaClLog(4, "Setting descriptor %d\n", (int) ix);
-      NaClSetDesc(nap, (int) ix, ndp);
+      NaClAppSetDesc(nap, (int) ix, ndp);
     } else if (NACL_RESOURCE_PHASE_START == nap->resource_phase) {
       /*
        * Environment not set or redirect failed -- handle default inheritance.
@@ -857,8 +857,8 @@ void NaClCreateServiceSocket(struct NaClApp *nap) {
           "addr at 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) pair[0],
           (uintptr_t) pair[1]);
-  NaClSetDesc(nap, NACL_SERVICE_PORT_DESCRIPTOR, pair[0]);
-  NaClSetDesc(nap, NACL_SERVICE_ADDRESS_DESCRIPTOR, pair[1]);
+  NaClAppSetDesc(nap, NACL_SERVICE_PORT_DESCRIPTOR, pair[0]);
+  NaClAppSetDesc(nap, NACL_SERVICE_ADDRESS_DESCRIPTOR, pair[1]);
 
   NaClDescSafeUnref(nap->service_port);
 

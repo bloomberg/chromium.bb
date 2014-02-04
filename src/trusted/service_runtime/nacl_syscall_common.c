@@ -169,7 +169,7 @@ int32_t NaClSysNameService(struct NaClAppThread *natp,
 
   if (-1 == desc) {
     /* read */
-    desc = NaClSetAvail(nap, NaClDescRef(nap->name_service_conn_cap));
+    desc = NaClAppSetDescAvail(nap, NaClDescRef(nap->name_service_conn_cap));
     if (NaClCopyOutToUser(nap, (uintptr_t) desc_addr,
                           &desc, sizeof desc)) {
       retval = 0;
@@ -177,7 +177,7 @@ int32_t NaClSysNameService(struct NaClAppThread *natp,
       retval = -NACL_ABI_EFAULT;
     }
   } else {
-    struct NaClDesc *desc_obj_ptr = NaClGetDesc(nap, desc);
+    struct NaClDesc *desc_obj_ptr = NaClAppGetDesc(nap, desc);
 
     if (NULL == desc_obj_ptr) {
       retval = -NACL_ABI_EBADF;
@@ -326,7 +326,7 @@ int32_t NaClSysMutexCreate(struct NaClAppThread *natp) {
     goto cleanup;
   }
 
-  retval = NaClSetAvail(nap, (struct NaClDesc *) desc);
+  retval = NaClAppSetDescAvail(nap, (struct NaClDesc *) desc);
   desc = NULL;
 cleanup:
   free(desc);
@@ -346,7 +346,7 @@ int32_t NaClSysMutexLock(struct NaClAppThread  *natp,
           ("Entered NaClSysMutexLock(0x%08"NACL_PRIxPTR", %d)\n"),
           (uintptr_t) natp, mutex_handle);
 
-  desc = NaClGetDesc(nap, mutex_handle);
+  desc = NaClAppGetDesc(nap, mutex_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;
@@ -370,7 +370,7 @@ int32_t NaClSysMutexUnlock(struct NaClAppThread  *natp,
           ("Entered NaClSysMutexUnlock(0x%08"NACL_PRIxPTR", %d)\n"),
           (uintptr_t) natp, mutex_handle);
 
-  desc = NaClGetDesc(nap, mutex_handle);
+  desc = NaClAppGetDesc(nap, mutex_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;
@@ -394,7 +394,7 @@ int32_t NaClSysMutexTrylock(struct NaClAppThread   *natp,
           ("Entered NaClSysMutexTrylock(0x%08"NACL_PRIxPTR", %d)\n"),
           (uintptr_t) natp, mutex_handle);
 
-  desc = NaClGetDesc(nap, mutex_handle);
+  desc = NaClAppGetDesc(nap, mutex_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;
@@ -424,7 +424,7 @@ int32_t NaClSysCondCreate(struct NaClAppThread *natp) {
     goto cleanup;
   }
 
-  retval = NaClSetAvail(nap, (struct NaClDesc *)desc);
+  retval = NaClAppSetDescAvail(nap, (struct NaClDesc *)desc);
   desc = NULL;
 cleanup:
   free(desc);
@@ -446,14 +446,14 @@ int32_t NaClSysCondWait(struct NaClAppThread *natp,
           ("Entered NaClSysCondWait(0x%08"NACL_PRIxPTR", %d, %d)\n"),
           (uintptr_t) natp, cond_handle, mutex_handle);
 
-  cv_desc = NaClGetDesc(nap, cond_handle);
+  cv_desc = NaClAppGetDesc(nap, cond_handle);
 
   if (NULL == cv_desc) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
   }
 
-  mutex_desc = NaClGetDesc(nap, mutex_handle);
+  mutex_desc = NaClAppGetDesc(nap, mutex_handle);
   if (NULL == mutex_desc) {
     NaClDescUnref(cv_desc);
     retval = -NACL_ABI_EBADF;
@@ -479,7 +479,7 @@ int32_t NaClSysCondSignal(struct NaClAppThread *natp,
           ("Entered NaClSysCondSignal(0x%08"NACL_PRIxPTR", %d)\n"),
           (uintptr_t) natp, cond_handle);
 
-  desc = NaClGetDesc(nap, cond_handle);
+  desc = NaClAppGetDesc(nap, cond_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;
@@ -502,7 +502,7 @@ int32_t NaClSysCondBroadcast(struct NaClAppThread  *natp,
           ("Entered NaClSysCondBroadcast(0x%08"NACL_PRIxPTR", %d)\n"),
           (uintptr_t) natp, cond_handle);
 
-  desc = NaClGetDesc(nap, cond_handle);
+  desc = NaClAppGetDesc(nap, cond_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;
@@ -538,13 +538,13 @@ int32_t NaClSysCondTimedWaitAbs(struct NaClAppThread     *natp,
   }
   /* TODO(gregoryd): validate ts - do we have a limit for time to wait? */
 
-  cv_desc = NaClGetDesc(nap, cond_handle);
+  cv_desc = NaClAppGetDesc(nap, cond_handle);
   if (NULL == cv_desc) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
   }
 
-  mutex_desc = NaClGetDesc(nap, mutex_handle);
+  mutex_desc = NaClAppGetDesc(nap, mutex_handle);
   if (NULL == mutex_desc) {
     NaClDescUnref(cv_desc);
     retval = -NACL_ABI_EBADF;
@@ -579,7 +579,7 @@ int32_t NaClSysSemCreate(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  retval = NaClSetAvail(nap, (struct NaClDesc *) desc);
+  retval = NaClAppSetDescAvail(nap, (struct NaClDesc *) desc);
   desc = NULL;
 cleanup:
   free(desc);
@@ -598,7 +598,7 @@ int32_t NaClSysSemWait(struct NaClAppThread *natp,
            ", %d)\n"),
           (uintptr_t) natp, sem_handle);
 
-  desc = NaClGetDesc(nap, sem_handle);
+  desc = NaClAppGetDesc(nap, sem_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;
@@ -628,7 +628,7 @@ int32_t NaClSysSemPost(struct NaClAppThread *natp,
            ", %d)\n"),
           (uintptr_t) natp, sem_handle);
 
-  desc = NaClGetDesc(nap, sem_handle);
+  desc = NaClAppGetDesc(nap, sem_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;
@@ -652,7 +652,7 @@ int32_t NaClSysSemGetValue(struct NaClAppThread *natp,
            ", %d)\n"),
           (uintptr_t) natp, sem_handle);
 
-  desc = NaClGetDesc(nap, sem_handle);
+  desc = NaClAppGetDesc(nap, sem_handle);
 
   if (NULL == desc) {
     retval = -NACL_ABI_EBADF;

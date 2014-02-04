@@ -40,23 +40,23 @@ int32_t NaClSysImcMakeBoundSock(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  usr_pair[0] = NaClSetAvail(nap, pair[0]);
-  usr_pair[1] = NaClSetAvail(nap, pair[1]);
+  usr_pair[0] = NaClAppSetDescAvail(nap, pair[0]);
+  usr_pair[1] = NaClAppSetDescAvail(nap, pair[1]);
   if (!NaClCopyOutToUser(nap, (uintptr_t) sap,
                          usr_pair, sizeof usr_pair)) {
     /*
      * NB: The descriptors were briefly observable to untrusted code
      * in this window, even though the syscall had not returned yet,
      * and another thread which guesses their numbers could actually
-     * use them, so the NaClDescSafeUnref inside NaClSetDesc below
+     * use them, so the NaClDescSafeUnref inside NaClAppSetDesc below
      * might not actually deallocate right away.  To avoid this, we
      * could grab the descriptor lock and hold it until after the
      * copyout is done, but that imposes an ordering between the
      * descriptor lock and the VM lock which can cause problems
      * elsewhere.
      */
-    NaClSetDesc(nap, usr_pair[0], NULL);
-    NaClSetDesc(nap, usr_pair[1], NULL);
+    NaClAppSetDesc(nap, usr_pair[0], NULL);
+    NaClAppSetDesc(nap, usr_pair[1], NULL);
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
@@ -76,7 +76,7 @@ int32_t NaClSysImcAccept(struct NaClAppThread  *natp,
   NaClLog(3, "Entered NaClSysImcAccept(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) natp, d);
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
   } else {
@@ -84,7 +84,7 @@ int32_t NaClSysImcAccept(struct NaClAppThread  *natp,
     retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
               AcceptConn)(ndp, &result_desc);
     if (retval == 0) {
-      retval = NaClSetAvail(nap, result_desc);
+      retval = NaClAppSetDescAvail(nap, result_desc);
     }
     NaClDescUnref(ndp);
   }
@@ -101,7 +101,7 @@ int32_t NaClSysImcConnect(struct NaClAppThread *natp,
   NaClLog(3, "Entered NaClSysImcConnectAddr(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) natp, d);
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
   } else {
@@ -109,7 +109,7 @@ int32_t NaClSysImcConnect(struct NaClAppThread *natp,
     retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
               ConnectAddr)(ndp, &result);
     if (retval == 0) {
-      retval = NaClSetAvail(nap, result);
+      retval = NaClAppSetDescAvail(nap, result);
     }
     NaClDescUnref(ndp);
   }
@@ -196,7 +196,7 @@ int32_t NaClSysImcSendmsg(struct NaClAppThread         *natp,
     }
   }
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup_leave;
@@ -226,7 +226,7 @@ int32_t NaClSysImcSendmsg(struct NaClAppThread         *natp,
         kern_desc[i] = (struct NaClDesc *) NaClDescInvalidMake();
       } else {
         /* NaCl modules are ILP32, so this works on ILP32 and LP64 systems */
-        kern_desc[i] = NaClGetDesc(nap, usr_desc[i]);
+        kern_desc[i] = NaClAppGetDesc(nap, usr_desc[i]);
       }
       if (NULL == kern_desc[i]) {
         retval = -NACL_ABI_EBADF;
@@ -383,7 +383,7 @@ int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
     }
   }
 
-  ndp = NaClGetDesc(nap, d);
+  ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
     NaClLog(4, "receiving descriptor invalid\n");
     retval = -NACL_ABI_EBADF;
@@ -460,7 +460,7 @@ int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
       usr_desc[i] = kKnownInvalidDescNumber;
       NaClDescUnref(new_desc[i]);
     } else {
-      usr_desc[i] = NaClSetAvail(nap, new_desc[i]);
+      usr_desc[i] = NaClAppSetDescAvail(nap, new_desc[i]);
     }
     new_desc[i] = NULL;
   }
@@ -534,7 +534,7 @@ int32_t NaClSysImcMemObjCreate(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  retval = NaClSetAvail(nap, (struct NaClDesc *) shmp);
+  retval = NaClAppSetDescAvail(nap, (struct NaClDesc *) shmp);
   shmp = NULL;
 
 cleanup:
@@ -560,13 +560,13 @@ int32_t NaClSysImcSocketPair(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  usr_pair[0] = NaClSetAvail(nap, pair[0]);
-  usr_pair[1] = NaClSetAvail(nap, pair[1]);
+  usr_pair[0] = NaClAppSetDescAvail(nap, pair[0]);
+  usr_pair[1] = NaClAppSetDescAvail(nap, pair[1]);
 
   if (!NaClCopyOutToUser(nap, (uintptr_t) descs_out, usr_pair,
                          sizeof usr_pair)) {
-    NaClSetDesc(nap, usr_pair[0], NULL);
-    NaClSetDesc(nap, usr_pair[1], NULL);
+    NaClAppSetDesc(nap, usr_pair[0], NULL);
+    NaClAppSetDesc(nap, usr_pair[1], NULL);
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }

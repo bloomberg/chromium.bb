@@ -637,32 +637,32 @@ static const uintptr_t kNaClBadAddress = (uintptr_t) -1;
  * The caller is responsible for invoking NaClDescUnref() on it when
  * done.
  */
-struct NaClDesc *NaClGetDesc(struct NaClApp *nap,
-                             int            d);
+struct NaClDesc *NaClAppGetDesc(struct NaClApp *nap,
+                                int            d);
 
 /*
  * Takes ownership of ndp.
  */
-void NaClSetDesc(struct NaClApp   *nap,
-                 int              d,
-                 struct NaClDesc  *ndp);
+void NaClAppSetDesc(struct NaClApp   *nap,
+                    int              d,
+                    struct NaClDesc  *ndp);
 
 
-int32_t NaClSetAvail(struct NaClApp   *nap,
-                     struct NaClDesc  *ndp);
+int32_t NaClAppSetDescAvail(struct NaClApp   *nap,
+                            struct NaClDesc  *ndp);
 
 /*
  * Versions that are called while already holding the desc_mu lock
  */
-struct NaClDesc *NaClGetDescMu(struct NaClApp *nap,
-                               int            d);
+struct NaClDesc *NaClAppGetDescMu(struct NaClApp *nap,
+                                  int            d);
 
-void NaClSetDescMu(struct NaClApp   *nap,
-                   int              d,
-                   struct NaClDesc  *ndp);
+void NaClAppSetDescMu(struct NaClApp   *nap,
+                      int              d,
+                      struct NaClDesc  *ndp);
 
-int32_t NaClSetAvailMu(struct NaClApp   *nap,
-                       struct NaClDesc  *ndp);
+int32_t NaClAppSetDescAvailMu(struct NaClApp   *nap,
+                              struct NaClDesc  *ndp);
 
 
 int NaClAddThread(struct NaClApp        *nap,

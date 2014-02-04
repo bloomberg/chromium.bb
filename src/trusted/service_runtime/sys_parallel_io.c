@@ -39,7 +39,7 @@ int32_t NaClSysPRead(struct NaClAppThread *natp,
           (uintptr_t) natp, (int) desc,
           usr_addr, buffer_bytes, buffer_bytes,
           offset_addr);
-  ndp = NaClGetDesc(nap, (int) desc);
+  ndp = NaClAppGetDesc(nap, (int) desc);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;
@@ -88,7 +88,7 @@ int32_t NaClSysPWrite(struct NaClAppThread *natp,
           (uintptr_t) natp, (int) desc,
           usr_addr, buffer_bytes, buffer_bytes,
           offset_addr);
-  ndp = NaClGetDesc(nap, (int) desc);
+  ndp = NaClAppGetDesc(nap, (int) desc);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
     goto cleanup;

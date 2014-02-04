@@ -279,7 +279,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
      */
     ndp = NULL;
   } else {
-    ndp = NaClGetDesc(nap, d);
+    ndp = NaClAppGetDesc(nap, d);
     if (NULL == ndp) {
       map_result = -NACL_ABI_EBADF;
       goto cleanup;

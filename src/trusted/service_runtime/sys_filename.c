@@ -158,8 +158,8 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
     NaClLog(1, "NaClHostDirOpen(0x%08"NACL_PRIxPTR", %s) returned %d\n",
             (uintptr_t) hd, path, retval);
     if (0 == retval) {
-      retval = NaClSetAvail(nap,
-                            ((struct NaClDesc *) NaClDescDirDescMake(hd)));
+      retval = NaClAppSetDescAvail(
+          nap, (struct NaClDesc *) NaClDescDirDescMake(hd));
       NaClLog(1, "Entered directory into open file table at %d\n",
               retval);
     }
@@ -186,7 +186,7 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
         NaClDescSetFlags(desc,
                          NaClDescGetFlags(desc) | NACL_DESC_FLAGS_MMAP_EXEC_OK);
       }
-      retval = NaClSetAvail(nap, desc);
+      retval = NaClAppSetDescAvail(nap, desc);
       NaClLog(1, "Entered into open file table at %d\n", retval);
     }
   }

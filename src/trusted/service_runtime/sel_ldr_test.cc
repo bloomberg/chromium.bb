@@ -81,37 +81,37 @@ TEST_F(SelLdrTest, DescTable) {
   io_desc = (struct NaClDesc *) NaClDescIoDescMake(host_desc);
 
   // 1st pos available is 0
-  ret_code = NaClSetAvail(&app, io_desc);
+  ret_code = NaClAppSetDescAvail(&app, io_desc);
   ASSERT_EQ(0, ret_code);
   // valid desc at pos 0
-  ret_desc = NaClGetDesc(&app, 0);
+  ret_desc = NaClAppGetDesc(&app, 0);
   ASSERT_TRUE(NULL != ret_desc);
 
   // next pos available is 1
-  ret_code = NaClSetAvail(&app, NULL);
+  ret_code = NaClAppSetDescAvail(&app, NULL);
   ASSERT_EQ(1, ret_code);
   // no desc at pos 1
-  ret_desc = NaClGetDesc(&app, 1);
+  ret_desc = NaClAppGetDesc(&app, 1);
   ASSERT_TRUE(NULL == ret_desc);
 
   // no desc at pos 1 -> pos 1 is available
-  ret_code = NaClSetAvail(&app, io_desc);
+  ret_code = NaClAppSetDescAvail(&app, io_desc);
   ASSERT_EQ(1, ret_code);
 
   // valid desc at pos 1
-  ret_desc = NaClGetDesc(&app, 1);
+  ret_desc = NaClAppGetDesc(&app, 1);
   ASSERT_TRUE(NULL != ret_desc);
 
   // set no desc at pos 3
-  NaClSetDesc(&app, 3, NULL);
+  NaClAppSetDesc(&app, 3, NULL);
 
   // valid desc at pos 4
-  NaClSetDesc(&app, 4, io_desc);
-  ret_desc = NaClGetDesc(&app, 4);
+  NaClAppSetDesc(&app, 4, io_desc);
+  ret_desc = NaClAppGetDesc(&app, 4);
   ASSERT_TRUE(NULL != ret_desc);
 
   // never set a desc at pos 10
-  ret_desc = NaClGetDesc(&app, 10);
+  ret_desc = NaClAppGetDesc(&app, 10);
   ASSERT_TRUE(NULL == ret_desc);
 }
 
