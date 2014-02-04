@@ -70,7 +70,6 @@ bool IsBaselinePolicyWatched(int sysno) {
 #endif
          SyscallSets::IsNuma(sysno) ||
          SyscallSets::IsProcessGroupOrSession(sysno) ||
-         SyscallSets::IsProcessPrivilegeChange(sysno) ||
 #if defined(__i386__)
          SyscallSets::IsSocketCall(sysno) ||
 #endif
@@ -137,7 +136,8 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno, SandboxBPF* sandbox,
 
   if (SyscallSets::IsUmask(sysno) ||
       SyscallSets::IsDeniedFileSystemAccessViaFd(sysno) ||
-      SyscallSets::IsDeniedGetOrModifySocket(sysno)) {
+      SyscallSets::IsDeniedGetOrModifySocket(sysno) ||
+      SyscallSets::IsProcessPrivilegeChange(sysno)) {
     return ErrorCode(EPERM);
   }
 
