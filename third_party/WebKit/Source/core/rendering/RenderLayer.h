@@ -176,11 +176,12 @@ public:
     enum UpdateLayerPositionsFlag {
         CheckForRepaint = 1 << 0,
         NeedsFullRepaintInBacking = 1 << 1,
-        UpdateCompositingLayers = 1 << 2,
-        UpdatePagination = 1 << 3,
+        IsCompositingUpdateRoot = 1 << 2,
+        UpdateCompositingLayers = 1 << 3,
+        UpdatePagination = 1 << 4
     };
     typedef unsigned UpdateLayerPositionsFlags;
-    static const UpdateLayerPositionsFlags defaultFlags = CheckForRepaint | UpdateCompositingLayers;
+    static const UpdateLayerPositionsFlags defaultFlags = CheckForRepaint | IsCompositingUpdateRoot | UpdateCompositingLayers;
 
     void updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, UpdateLayerPositionsFlags);
 

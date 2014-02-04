@@ -408,28 +408,31 @@ void CompositedLayerMapping::updateCompositingReasons()
     m_graphicsLayer->setCompositingReasons(m_owningLayer->compositingReasons());
 }
 
-// Recurs down the RenderLayer tree until its finds the compositing descendants of compositingAncestor and updates their geometry.
-void CompositedLayerMapping::updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer* layer)
+void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
 {
-    if (layer->stackingNode() != compositingAncestor && layer->hasCompositedLayerMapping()) {
-        CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
-        compositedLayerMapping->updateCompositedBounds();
-        compositedLayerMapping->updateGraphicsLayerGeometry();
+    RenderLayerCompositor* layerCompositor = compositor();
+    if (!layerCompositor->compositingLayersNeedRebuild()) {
+        // Calling updateGraphicsLayerGeometry() here gives incorrect results, because the
+        // position of this layer's GraphicsLayer depends on the position of our compositing
+        // ancestor's GraphicsLayer. That cannot be determined until all the descendant
+        // RenderLayers of that ancestor have been processed via updateLayerPositions().
+        //
+        // The solution is to update compositing children of this layer here,
+        // via updateCompositingChildrenGeometry().
+        updateCompositedBounds();
+        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer->stackingNode(), m_owningLayer, flags & CompositingChildrenOnly);
+
+        if (flags & IsUpdateRoot) {
+            updateGraphicsLayerGeometry();
+            layerCompositor->updateRootLayerPosition();
+            RenderLayerStackingNode* stackingContainer = m_owningLayer->stackingNode()->enclosingStackingContainerNode();
+            if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainer && (stackingContainer != m_owningLayer->stackingNode()))
+                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer->layer(), flags & CompositingChildrenOnly);
+        }
     }
 
-    if (layer->reflectionInfo())
-        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionInfo()->reflectionLayer());
-
-    if (layer->hasCompositedLayerMapping() || !layer->hasCompositingDescendant())
-        return;
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(layer->stackingNode());
-#endif
-
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        updateCompositingDescendantGeometry(compositingAncestor, curNode->layer());
+    if (flags & NeedsFullRepaint && !paintsIntoCompositedAncestor())
+        setContentsNeedDisplay();
 }
 
 bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
@@ -1550,20 +1553,10 @@ void CompositedLayerMapping::contentChanged(ContentChangeType changeType)
         return;
     }
 
-    RenderLayerCompositor* layerCompositor = compositor();
-    if (changeType == MaskImageChanged && m_maskLayer && layerCompositor->compositingLayersNeedRebuild()) {
+    if ((changeType == MaskImageChanged) && m_maskLayer) {
         // The composited layer bounds relies on box->maskClipRect(), which changes
         // when the mask image becomes available.
-
-        updateCompositedBounds();
-        updateCompositingDescendantGeometry(m_owningLayer->stackingNode(), m_owningLayer);
-        updateGraphicsLayerGeometry();
-
-        // FIXME: why do we need to do this?
-        layerCompositor->updateRootLayerPosition();
-        RenderLayerStackingNode* stackingContainer = m_owningLayer->stackingNode()->enclosingStackingContainerNode();
-        if (stackingContainer && (stackingContainer != m_owningLayer->stackingNode()))
-            updateCompositingDescendantGeometry(stackingContainer, stackingContainer->layer());
+        updateAfterLayout(CompositingChildrenOnly | IsUpdateRoot);
     }
 
     if ((changeType == CanvasChanged || changeType == CanvasPixelsChanged) && isAcceleratedCanvas(renderer())) {

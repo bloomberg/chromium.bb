@@ -1185,7 +1185,7 @@ bool RenderLayerCompositor::canAccelerateVideoRendering(RenderVideo* o) const
     return o->supportsAcceleratedRendering();
 }
 
-void RenderLayerCompositor::updateGraphicsLayersMappedToRenderLayer(RenderLayer* layer, UpdateGraphicsLayersOptions options)
+void RenderLayerCompositor::updateGraphicsLayersMappedToRenderLayer(RenderLayer* layer)
 {
     if (!layer->hasCompositedLayerMapping())
         return;
@@ -1194,7 +1194,6 @@ void RenderLayerCompositor::updateGraphicsLayersMappedToRenderLayer(RenderLayer*
 
     // Note carefully: here we assume that the compositing state of all descendants have been updated already,
     // so it is legitimate to compute and cache the composited bounds for this layer.
-    // FIXME: Can we ASSERT that invariant?
     compositedLayerMapping->updateCompositedBounds();
 
     if (layer->reflectionInfo()) {
@@ -1204,14 +1203,13 @@ void RenderLayerCompositor::updateGraphicsLayersMappedToRenderLayer(RenderLayer*
             reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
     }
 
-    if (options == UpdateGraphicsLayerConfigurationAndPositionOverflowControls)
-        compositedLayerMapping->updateGraphicsLayerConfiguration();
+    compositedLayerMapping->updateGraphicsLayerConfiguration();
     compositedLayerMapping->updateGraphicsLayerGeometry();
 
     if (!layer->parent())
         updateRootLayerPosition();
 
-    if (options == UpdateGraphicsLayerConfigurationAndPositionOverflowControls && compositedLayerMapping->hasUnpositionedOverflowControlsLayers())
+    if (compositedLayerMapping->hasUnpositionedOverflowControlsLayers())
         layer->scrollableArea()->positionOverflowControls();
 }
 
@@ -1480,6 +1478,42 @@ void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer)
     while (RenderLayerStackingNode* curNode = iterator.next())
         updateLayerTreeGeometry(curNode->layer());
 }
+
+// Recurs down the RenderLayer tree until its finds the compositing descendants of compositingAncestor and updates their geometry.
+void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer* layer, bool compositedChildrenOnly)
+{
+    if (layer->stackingNode() != compositingAncestor) {
+        if (layer->hasCompositedLayerMapping()) {
+            CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
+            compositedLayerMapping->updateCompositedBounds();
+
+            if (layer->reflectionInfo()) {
+                RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
+                if (reflectionLayer->hasCompositedLayerMapping())
+                    reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
+            }
+
+            compositedLayerMapping->updateGraphicsLayerGeometry();
+            if (compositedChildrenOnly)
+                return;
+        }
+    }
+
+    if (layer->reflectionInfo())
+        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionInfo()->reflectionLayer(), compositedChildrenOnly);
+
+    if (!layer->hasCompositingDescendant())
+        return;
+
+#if !ASSERT_DISABLED
+    LayerListMutationDetector mutationChecker(layer->stackingNode());
+#endif
+
+    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
+    while (RenderLayerStackingNode* curNode = iterator.next())
+        updateCompositingDescendantGeometry(compositingAncestor, curNode->layer(), compositedChildrenOnly);
+}
+
 
 void RenderLayerCompositor::repaintCompositedLayers(const IntRect* absRect)
 {
