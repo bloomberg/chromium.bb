@@ -557,6 +557,8 @@
     'browser/gamepad/gamepad_standard_mappings_linux.cc',
     'browser/gamepad/gamepad_standard_mappings_mac.mm',
     'browser/gamepad/gamepad_standard_mappings_win.cc',
+    'browser/gamepad/raw_input_data_fetcher_win.cc',
+    'browser/gamepad/raw_input_data_fetcher_win.h',
     'browser/gamepad/xbox_data_fetcher_mac.cc',
     'browser/gamepad/xbox_data_fetcher_mac.h',
     'browser/geolocation/empty_wifi_data_provider.cc',
