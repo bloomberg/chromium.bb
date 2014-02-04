@@ -34,7 +34,7 @@ class ImageButton;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  A View that renders a Tab, either in a TabStrip or in a DraggedTabView.
+//  A View that renders a Tab in a TabStrip.
 //
 ///////////////////////////////////////////////////////////////////////////////
 class Tab : public gfx::AnimationDelegate,
@@ -48,8 +48,6 @@ class Tab : public gfx::AnimationDelegate,
   explicit Tab(TabController* controller);
   virtual ~Tab();
 
-  TabController* controller() const { return controller_; }
-
   // Used to set/check whether this Tab is being animated closed.
   void set_closing(bool closing) { closing_ = closing; }
   bool closing() const { return closing_; }
@@ -60,13 +58,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // Sets the container all animations run from.
   void set_animation_container(gfx::AnimationContainer* container);
-
-  // Set the theme provider - because we get detached, we are frequently
-  // outside of a hierarchy with a theme provider at the top. This should be
-  // called whenever we're detached or attached to a hierarchy.
-  void set_theme_provider(ui::ThemeProvider* provider) {
-    theme_provider_ = provider;
-  }
 
   // Returns true if this tab is the active tab.
   bool IsActive() const;
@@ -181,7 +172,6 @@ class Tab : public gfx::AnimationDelegate,
                               base::string16* tooltip) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,
                                     gfx::Point* origin) const OVERRIDE;
-  virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
@@ -297,8 +287,7 @@ class Tab : public gfx::AnimationDelegate,
                              ui::ScaleFactor scale_factor,
                              const gfx::ImageSkia& image);
 
-  // The controller.
-  // WARNING: this is null during detached tab dragging.
+  // The controller, never NULL.
   TabController* controller_;
 
   TabRendererData data_;
@@ -336,8 +325,6 @@ class Tab : public gfx::AnimationDelegate,
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
   views::ImageButton* close_button_;
-
-  ui::ThemeProvider* theme_provider_;
 
   bool tab_activated_with_last_gesture_begin_;
 

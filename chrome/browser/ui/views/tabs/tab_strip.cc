@@ -898,14 +898,6 @@ bool TabStrip::IsValidModelIndex(int model_index) const {
   return controller_->IsValidIndex(model_index);
 }
 
-Tab* TabStrip::CreateTabForDragging() {
-  Tab* tab = new Tab(NULL);
-  // Make sure the dragged tab shares our theme provider. We need to explicitly
-  // do this as during dragging there isn't a theme provider.
-  tab->set_theme_provider(GetThemeProvider());
-  return tab;
-}
-
 bool TabStrip::IsDragSessionActive() const {
   return drag_controller_.get() != NULL;
 }

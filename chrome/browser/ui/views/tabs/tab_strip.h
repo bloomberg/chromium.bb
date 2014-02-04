@@ -134,10 +134,6 @@ class TabStrip : public views::View,
 
   TabStripController* controller() const { return controller_.get(); }
 
-  // Creates and returns a tab that can be used for dragging. Ownership passes
-  // to the caller.
-  Tab* CreateTabForDragging();
-
   // Returns true if a drag session is currently active.
   bool IsDragSessionActive() const;
 

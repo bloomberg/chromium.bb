@@ -147,11 +147,6 @@ TEST_F(TabStripTest, tab_count) {
   EXPECT_EQ(0, tab_strip_->tab_count());
 }
 
-TEST_F(TabStripTest, CreateTabForDragging) {
-  // Any result is good, as long as it doesn't crash.
-  scoped_ptr<Tab> tab(tab_strip_->CreateTabForDragging());
-}
-
 TEST_F(TabStripTest, AddTabAt) {
   TestTabStripObserver observer(tab_strip_);
   tab_strip_->AddTabAt(0, TabRendererData(), false);

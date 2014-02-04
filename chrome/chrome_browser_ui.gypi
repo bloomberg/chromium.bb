@@ -2111,9 +2111,6 @@
         'browser/ui/views/tabs/browser_tab_strip_controller.h',
         'browser/ui/views/tabs/dock_info_views.cc',
         'browser/ui/views/tabs/dock_info_win.cc',
-        'browser/ui/views/tabs/dragged_tab_view.cc',
-        'browser/ui/views/tabs/dragged_tab_view.h',
-        'browser/ui/views/tabs/native_view_photobooth.h',
         'browser/ui/views/tabs/stacked_tab_strip_layout.cc',
         'browser/ui/views/tabs/stacked_tab_strip_layout.h',
         'browser/ui/views/tabs/tab.cc',
@@ -2903,7 +2900,6 @@
             ['exclude', '^browser/ui/screen_capture_notification_ui_stub.cc'],
             ['exclude', '^browser/ui/views/about_ipc_dialog.cc'],
             ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_win.cc'],
-            ['exclude', '^browser/ui/views/tabs/native_view_photobooth.h'],
             ['exclude', '^browser/ui/views/user_data_dir_dialog_view.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
             ['include', '^browser/ui/views/simple_message_box_views.cc'],
