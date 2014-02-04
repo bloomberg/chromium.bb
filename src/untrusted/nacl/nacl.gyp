@@ -86,6 +86,7 @@
       'stubs/getuid.c',
       'stubs/getwd.c',
       'stubs/ioctl.c',
+      'stubs/isatty.c',
       'stubs/issetugid.c',
       'stubs/kill.c',
       'stubs/lchown.c',
