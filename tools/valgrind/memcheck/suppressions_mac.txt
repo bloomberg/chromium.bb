@@ -2376,3 +2376,12 @@
    fun:_ZN7WebCore7RuleSet17addRulesFromSheet*
    fun:_ZN7WebCore21CSSDefaultStyleSheets16loadDefaultStyle*
 }
+{
+  bug_340718
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN7WebCore15DatabaseManagerC2Ev
+  fun:_ZN7WebCore15DatabaseManagerC1Ev
+  fun:_ZN7WebCore15DatabaseManager7managerEv
+  fun:_ZN7WebCore11FrameLoader11stopLoadingEv
+}
