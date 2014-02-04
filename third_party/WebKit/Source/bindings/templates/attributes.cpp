@@ -79,7 +79,11 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         {{attribute.v8_set_return_value}};
     }
     {% else %}
+    {% if world_suffix %}
+    {{attribute.v8_set_return_value_for_main_world}};
+    {% else %}
     {{attribute.v8_set_return_value}};
+    {% endif %}
     {% endif %}
 }
 {% endfilter %}

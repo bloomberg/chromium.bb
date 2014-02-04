@@ -32,8 +32,10 @@ interface TestInterfaceNode : Node {
     attribute DOMString stringAttribute;
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     attribute EventHandler eventHandlerAttribute;
+    [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [Reflect] attribute DOMString reflectStringAttribute;
     [Reflect, URL] attribute DOMString reflectUrlStringAttribute;
 
     TestInterfaceEmpty testInterfaceEmptyMethod();
+    [PerWorldBindings] TestInterfaceEmpty perWorldBindingsTestInterfaceEmptyMethod();
 };

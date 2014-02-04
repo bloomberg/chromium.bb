@@ -127,6 +127,7 @@ def generate_method(interface, method):
         'property_attributes': property_attributes(method),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
+        'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
@@ -179,7 +180,7 @@ def cpp_value(interface, method, number_of_arguments):
     return '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
 
-def v8_set_return_value(interface_name, method, cpp_value):
+def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False):
     idl_type = method.idl_type
     extended_attributes = method.extended_attributes
     if idl_type == 'void':
@@ -195,7 +196,7 @@ def v8_set_return_value(interface_name, method, cpp_value):
             release = True
 
     script_wrappable = 'imp' if v8_types.inherits_interface(interface_name, 'Node') else ''
-    return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release)
+    return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
 
 
 # [NotEnumerable]

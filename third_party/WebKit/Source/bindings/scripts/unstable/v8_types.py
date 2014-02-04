@@ -568,16 +568,19 @@ V8_SET_RETURN_VALUE = {
     'ScriptValue': 'v8SetReturnValue(info, {cpp_value})',
     'SerializedScriptValue': 'v8SetReturnValue(info, {cpp_value})',
     # DOMWrapper
+    'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, {cpp_value})',
     'DOMWrapperFast': 'v8SetReturnValueFast(info, {cpp_value}, {script_wrappable})',
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
 }
 
 
-def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False):
+def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False, for_main_world=False):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value."""
     def dom_wrapper_conversion_type():
         if not script_wrappable:
             return 'DOMWrapperDefault'
+        if for_main_world:
+            return 'DOMWrapperForMainWorld'
         return 'DOMWrapperFast'
 
     if is_union_type(idl_type):

@@ -39,7 +39,11 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% for argument in method.arguments %}
     {{generate_argument(method, argument) | indent}}
     {% endfor %}
+    {% if world_suffix %}
+    {{cpp_method_call(method, method.v8_set_return_value_for_main_world, method.cpp_value) | indent}}
+    {% else %}
     {{cpp_method_call(method, method.v8_set_return_value, method.cpp_value) | indent}}
+    {% endif %}
     {% endif %}{# addEventListener, removeEventListener #}
 }
 {% endfilter %}
