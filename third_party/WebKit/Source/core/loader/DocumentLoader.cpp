@@ -796,6 +796,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
     // Create a new document before clearing the frame, because it may need to
     // inherit an aliased security context.
     DocumentInit init(url, frame);
+    init.withNewRegistrationContext();
 
     // In some rare cases, we'll re-used a DOMWindow for a new Document. For example,
     // when a script calls window.open("..."), the browser gives JavaScript a window

@@ -1,0 +1,3 @@
+
+PASS an XHR response document must not have a registry 
+

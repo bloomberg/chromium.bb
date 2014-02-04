@@ -5311,7 +5311,7 @@ Document& Document::ensureTemplateDocument()
         return *const_cast<Document*>(document);
 
     if (isHTMLDocument()) {
-        DocumentInit init = DocumentInit::fromContext(contextDocument(), blankURL());
+        DocumentInit init = DocumentInit::fromContext(contextDocument(), blankURL()).withNewRegistrationContext();
         m_templateDocument = HTMLDocument::create(init);
     } else {
         m_templateDocument = Document::create(DocumentInit(blankURL()));

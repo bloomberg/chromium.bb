@@ -66,7 +66,7 @@ public:
     Settings* settings() const;
 
     DocumentInit& withRegistrationContext(CustomElementRegistrationContext*);
-
+    DocumentInit& withNewRegistrationContext();
     PassRefPtr<CustomElementRegistrationContext> registrationContext(Document*) const;
     WeakPtr<Document> contextDocument() const;
 
@@ -82,6 +82,7 @@ private:
     WeakPtr<Document> m_contextDocument;
     HTMLImport* m_import;
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
+    bool m_createNewRegistrationContext;
 };
 
 } // namespace WebCore

@@ -66,8 +66,8 @@ testRegisterInAInstantiateInB_shouldActivateDefinition = function () {
 
 (function () {
 
-var t = async_test('registration context is shared with DOMImplementation-' +
-                   'created documents');
+var t = async_test('registration context is shared with some ' +
+                   'DOMImplementation-created documents');
 
 withFrame(t.step_func(function (frame) {
     var documentA = frame.contentDocument;
@@ -89,25 +89,12 @@ withFrame(t.step_func(function (frame) {
 }));
 
 withFrame(t.step_func(function (frame) {
-    // Test transitively sharing a registration context through multiple
-    // createDocument/createHTMLDocument steps.
-
     var documentA = frame.contentDocument;
-
-    // This document is not HTML, XHTML; it will not process custom elements.
-    var documentB = documentA.implementation.createDocument(null, '');
-
-    // This document *will* process custom elements, in a new context.
+    var documentB = documentA.implementation.createDocument(
+        'http://www.w3.org/1999/xhtml', 'html');
     var documentC = documentB.implementation.createHTMLDocument();
-
-    var documentD = documentC.implementation.createDocument(
-        'http://www.w3.org/1999/xhtml', 'html');
-
-    var documentE = documentD.implementation.createDocument(
-        'http://www.w3.org/1999/xhtml', 'html');
-
     var tester = new TestRegistrationContextSharing(
-        frame.contentWindow, documentC, documentE);
+        frame.contentWindow, documentA, documentC);
     tester.testRegistrationContextIsShared();
     frame.remove();
     t.done();
@@ -121,10 +108,8 @@ var t = async_test('registration context is shared with imported documents');
 var link;
 var documentA;
 
-t.step(function () {
-    // FIXME: When inserting a <link> within a frame triggers an import,
-    // run this part of the test in isolation within a frame.
-    documentA = document;
+withFrame(t.step_func(function (frame) {
+    documentA = frame.contentDocument;
 
     link = documentA.createElement('link');
     link.rel = 'import';
@@ -138,7 +123,7 @@ t.step(function () {
     });
 
     documentA.head.appendChild(link);
-});
+}));
 
 })();
 

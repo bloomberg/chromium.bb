@@ -68,6 +68,7 @@ DocumentInit::DocumentInit(const KURL& url, Frame* frame, WeakPtr<Document> cont
     , m_owner(ownerDocument(frame))
     , m_contextDocument(contextDocument)
     , m_import(import)
+    , m_createNewRegistrationContext(false)
 {
 }
 
@@ -79,6 +80,7 @@ DocumentInit::DocumentInit(const DocumentInit& other)
     , m_contextDocument(other.m_contextDocument)
     , m_import(other.m_import)
     , m_registrationContext(other.m_registrationContext)
+    , m_createNewRegistrationContext(other.m_createNewRegistrationContext)
 {
 }
 
@@ -125,8 +127,15 @@ KURL DocumentInit::parentBaseURL() const
 
 DocumentInit& DocumentInit::withRegistrationContext(CustomElementRegistrationContext* registrationContext)
 {
-    ASSERT(!m_registrationContext);
+    ASSERT(!m_createNewRegistrationContext && !m_registrationContext);
     m_registrationContext = registrationContext;
+    return *this;
+}
+
+DocumentInit& DocumentInit::withNewRegistrationContext()
+{
+    ASSERT(!m_createNewRegistrationContext && !m_registrationContext);
+    m_createNewRegistrationContext = true;
     return *this;
 }
 
@@ -138,10 +147,10 @@ PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(D
     if (!document->isHTMLDocument() && !document->isXHTMLDocument())
         return 0;
 
-    if (m_registrationContext)
-        return m_registrationContext.get();
+    if (m_createNewRegistrationContext)
+        return CustomElementRegistrationContext::create();
 
-    return CustomElementRegistrationContext::create();
+    return m_registrationContext.get();
 }
 
 WeakPtr<Document> DocumentInit::contextDocument() const
