@@ -535,3 +535,22 @@ def NativeLibs(host, arch):
       },
   }
   return libs
+
+def NativeLibsUnsandboxed(arch):
+  libs = {
+      Mangle('libs_support_unsandboxed', arch): {
+          'type': 'build',
+          'output_subdir': 'lib-' + arch,
+          'inputs': { 'support': os.path.join(NACL_DIR, 'pnacl', 'support') },
+          'commands': [
+              # TODO(dschuff): this include path breaks the input encapsulation
+              # for build rules.
+              command.Command([
+                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
+                  '-I%(top_srcdir)s/..', '-DNACL_LINUX=1',
+                  '-c', command.path.join('%(support)s', 'unsandboxed_irt.c'),
+                  '-o', command.path.join('%(output)s', 'unsandboxed_irt.o')]),
+          ],
+      },
+  }
+  return libs

@@ -491,15 +491,18 @@ if __name__ == '__main__':
     packages.update(HostLibs(host))
     packages.update(HostTools(host))
   # Don't build the target libs on Windows because of pathname issues.
+  # Don't build the target libs on Mac because the gold plugin's rpaths
+  # aren't right.
   # On linux use the 32-bit compiler to build the target libs since that's what
   # most developers will be using.
-  if not platform_tools.IsWindows():
+  if platform_tools.IsLinux():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdCallback(revisions)))
     for bias in BITCODE_BIASES:
       packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
     for arch in ALL_ARCHES:
       packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
+    packages.update(pnacl_targetlibs.NativeLibsUnsandboxed('linux-x86-32'))
   packages.update(Metadata())
 
   tb = toolchain_main.PackageBuilder(packages,
