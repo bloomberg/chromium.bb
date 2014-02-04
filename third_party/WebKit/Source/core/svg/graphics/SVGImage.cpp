@@ -374,7 +374,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         return true;
 
     if (allDataReceived) {
-        static FrameLoaderClient* dummyFrameLoaderClient =  new EmptyFrameLoaderClient;
+        static FrameLoaderClient* dummyFrameLoaderClient = new EmptyFrameLoaderClient;
 
         Page::PageClients pageClients;
         fillWithEmptyClients(pageClients);

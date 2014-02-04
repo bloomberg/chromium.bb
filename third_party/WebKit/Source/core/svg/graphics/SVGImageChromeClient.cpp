@@ -26,35 +26,56 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGImageChromeClient_h
-#define SVGImageChromeClient_h
+#include "config.h"
+#include "core/svg/graphics/SVGImageChromeClient.h"
 
-#include "core/loader/EmptyClients.h"
-#include "platform/Timer.h"
+#include "core/frame/FrameView.h"
+#include "core/svg/graphics/SVGImage.h"
+#include "platform/graphics/ImageObserver.h"
 
 namespace WebCore {
 
-class SVGImageChromeClient FINAL : public EmptyChromeClient {
-    WTF_MAKE_NONCOPYABLE(SVGImageChromeClient); WTF_MAKE_FAST_ALLOCATED;
-public:
-    explicit SVGImageChromeClient(SVGImage*);
-    virtual bool isSVGImageChromeClient() const OVERRIDE;
-
-    SVGImage* image() const { return m_image; }
-
-private:
-    virtual void chromeDestroyed() OVERRIDE;
-    virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
-    virtual void scheduleAnimation() OVERRIDE;
-
-    void animationTimerFired(Timer<SVGImageChromeClient>*);
-
-    SVGImage* m_image;
-    Timer<SVGImageChromeClient> m_animationTimer;
-};
-
-DEFINE_TYPE_CASTS(SVGImageChromeClient, ChromeClient, client, client->isSVGImageChromeClient(), client.isSVGImageChromeClient());
-
+SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
+    : m_image(image)
+    , m_animationTimer(this, &SVGImageChromeClient::animationTimerFired)
+{
 }
 
-#endif // SVGImageChromeClient_h
+bool SVGImageChromeClient::isSVGImageChromeClient() const
+{
+    return true;
+}
+
+void SVGImageChromeClient::chromeDestroyed()
+{
+    m_image = 0;
+}
+
+void SVGImageChromeClient::invalidateContentsAndRootView(const IntRect& r)
+{
+    // If m_image->m_page is null, we're being destructed, don't fire changedInRect() in that case.
+    if (m_image && m_image->imageObserver() && m_image->m_page)
+        m_image->imageObserver()->changedInRect(m_image, r);
+}
+
+void SVGImageChromeClient::scheduleAnimation()
+{
+    // Because a single SVGImage can be shared by multiple pages, we can't key
+    // our svg image layout on the page's real animation frame. Therefore, we
+    // run this fake animation timer to trigger layout in SVGImages. The name,
+    // "animationTimer", is to match the new requestAnimationFrame-based layout
+    // approach.
+    if (m_animationTimer.isActive())
+        return;
+    m_animationTimer.startOneShot(0);
+}
+
+void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
+{
+    // In principle, we should call requestAnimationFrame callbacks here, but
+    // we know there aren't any because script is forbidden inside SVGImages.
+    if (m_image)
+        m_image->frameView()->layout();
+}
+
+}
