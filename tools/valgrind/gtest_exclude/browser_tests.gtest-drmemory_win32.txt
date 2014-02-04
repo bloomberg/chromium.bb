@@ -30,7 +30,7 @@ H*
 InfoBarsTest.*
 # J*: 0    tests
 # K*: 1    tests
-L*
+# L*: 62   tests
 M*
 N*
 O*
