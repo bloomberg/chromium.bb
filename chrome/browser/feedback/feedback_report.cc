@@ -58,8 +58,8 @@ FeedbackReport::FeedbackReport(content::BrowserContext* context,
   file_ = reports_path_.AppendASCII(
       kFeedbackReportFilenamePrefix + base::GenerateGUID());
 
-  // Uses a SKIP_ON_SHUTDOWN file task runner because losing a couple
-  // associations is better than blocking shutdown.
+  // Uses a BLOCK_SHUTDOWN file task runner because we really don't want to
+  // lose reports.
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   reports_task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
       pool->GetSequenceToken(),
