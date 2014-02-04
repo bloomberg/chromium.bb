@@ -46,28 +46,4 @@ void LiveNodeList::invalidateCache() const
     m_collectionIndexCache.invalidate();
 }
 
-Node* LiveNodeList::namedItem(const AtomicString& elementId) const
-{
-    Node& rootNode = this->rootNode();
-
-    if (rootNode.inDocument()) {
-        Element* element = rootNode.treeScope().getElementById(elementId);
-        if (element && nodeMatches(*element) && element->isDescendantOf(&rootNode))
-            return element;
-        if (!element)
-            return 0;
-        // In the case of multiple nodes with the same name, just fall through.
-    }
-
-    unsigned length = this->length();
-    for (unsigned i = 0; i < length; i++) {
-        Node* node = item(i);
-        // FIXME: This should probably be using getIdAttribute instead of idForStyleResolution.
-        if (node->hasID() && toElement(node)->idForStyleResolution() == elementId)
-            return node;
-    }
-
-    return 0;
-}
-
 } // namespace WebCore

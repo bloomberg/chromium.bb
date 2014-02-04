@@ -20,11 +20,8 @@
 
 [
     DependentLifetime,
-    OverrideBuiltins,
     SetWrapperReferenceFrom=ownerNode,
 ] interface NodeList {
     getter Node item(unsigned long index);
-    [NotEnumerable] getter (Node or unsigned long) (DOMString name);
-
     readonly attribute unsigned long length;
 };

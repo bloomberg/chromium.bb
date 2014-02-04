@@ -37,24 +37,6 @@
 
 namespace WebCore {
 
-void NodeList::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<Node>& returnValue0, bool& returnValue1Enabled, unsigned& returnValue1)
-{
-    // Length property cannot be overridden.
-    DEFINE_STATIC_LOCAL(const AtomicString, length, ("length", AtomicString::ConstructFromLiteral));
-    if (name == length) {
-        returnValue1Enabled = true;
-        returnValue1 = this->length();
-        return;
-    }
-
-    Node* result = namedItem(name);
-    if (!result)
-        return;
-
-    returnValue0Enabled = true;
-    returnValue0 = result;
-}
-
 Node* NodeList::ownerNode() const
 {
     if (isLiveNodeList())

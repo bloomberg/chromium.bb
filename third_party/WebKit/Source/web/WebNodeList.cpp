@@ -57,7 +57,6 @@ public:
     // WebNodeCollection::isNull().
     virtual unsigned length() const OVERRIDE { return m_collection ? m_collection->length() : 0; }
     virtual Node* item(unsigned index) const OVERRIDE { return m_collection ? m_collection->item(index) : 0; }
-    virtual Node* namedItem(const AtomicString& elementId) const OVERRIDE { return m_collection ? m_collection->namedItem(elementId) : 0; }
 
 private:
     explicit NodeListWithInternalCollection(HTMLCollection* collection)

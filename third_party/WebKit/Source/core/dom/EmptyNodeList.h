@@ -51,7 +51,6 @@ private:
 
     virtual unsigned length() const OVERRIDE { return 0; }
     virtual Node* item(unsigned) const OVERRIDE { return 0; }
-    virtual Node* namedItem(const AtomicString&) const OVERRIDE { return 0; }
 
     virtual bool isEmptyNodeList() const OVERRIDE { return true; }
 

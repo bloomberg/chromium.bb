@@ -48,7 +48,6 @@ public:
 
     virtual unsigned length() const OVERRIDE { return m_nodes.size(); }
     virtual Node* item(unsigned) const OVERRIDE;
-    virtual Node* namedItem(const AtomicString&) const OVERRIDE;
 
 private:
     explicit NamedNodesCollection(const Vector<RefPtr<Element> >& nodes)

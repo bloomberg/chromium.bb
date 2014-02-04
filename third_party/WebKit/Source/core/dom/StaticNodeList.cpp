@@ -45,16 +45,4 @@ Node* StaticNodeList::item(unsigned index) const
     return 0;
 }
 
-Node* StaticNodeList::namedItem(const AtomicString& elementId) const
-{
-    size_t length = m_nodes.size();
-    for (size_t i = 0; i < length; ++i) {
-        Node* node = m_nodes[i].get();
-        if (node->isElementNode() && toElement(node)->getIdAttribute() == elementId)
-            return node;
-    }
-
-    return 0;
-}
-
 } // namespace WebCore

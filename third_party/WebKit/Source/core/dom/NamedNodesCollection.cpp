@@ -41,14 +41,4 @@ Node* NamedNodesCollection::item(unsigned index) const
     return 0;
 }
 
-Node* NamedNodesCollection::namedItem(const AtomicString& id) const
-{
-    for (unsigned i = 0; i < m_nodes.size(); ++i) {
-        Node* node = m_nodes[i].get();
-        if (node->hasID() && toElement(node)->getIdAttribute() == id)
-            return node;
-    }
-    return 0;
-}
-
 } // namespace WebCore

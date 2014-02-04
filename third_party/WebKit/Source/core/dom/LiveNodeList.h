@@ -137,7 +137,6 @@ public:
 
     virtual unsigned length() const OVERRIDE FINAL { return m_collectionIndexCache.nodeCount(*this); }
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
-    virtual Node* namedItem(const AtomicString&) const OVERRIDE FINAL;
     virtual bool nodeMatches(const Element&) const = 0;
     // Avoid ambiguity since both NodeList and LiveNodeListBase have an ownerNode() method.
     using LiveNodeListBase::ownerNode;

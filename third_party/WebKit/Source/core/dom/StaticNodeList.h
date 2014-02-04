@@ -55,7 +55,6 @@ public:
 
     virtual unsigned length() const OVERRIDE;
     virtual Node* item(unsigned index) const OVERRIDE;
-    virtual Node* namedItem(const AtomicString&) const OVERRIDE;
 
 private:
     Vector<RefPtr<Node> > m_nodes;
