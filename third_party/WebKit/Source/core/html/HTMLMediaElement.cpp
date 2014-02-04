@@ -3925,9 +3925,10 @@ void HTMLMediaElement::applyMediaFragmentURI()
 
 MediaPlayerClient::CORSMode HTMLMediaElement::mediaPlayerCORSMode() const
 {
-    if (!fastHasAttribute(crossoriginAttr))
+    const AtomicString& crossOriginMode = fastGetAttribute(crossoriginAttr);
+    if (crossOriginMode.isNull())
         return Unspecified;
-    if (equalIgnoringCase(fastGetAttribute(crossoriginAttr), "use-credentials"))
+    if (equalIgnoringCase(crossOriginMode, "use-credentials"))
         return UseCredentials;
     return Anonymous;
 }
