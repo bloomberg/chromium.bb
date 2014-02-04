@@ -48,6 +48,7 @@ def generate_method(interface, method):
     is_static = method.is_static
     name = method.name
 
+    v8_types.add_includes_for_type(idl_type)
     this_cpp_value = cpp_value(interface, method, len(arguments))
 
     def function_template():
