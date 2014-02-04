@@ -56,7 +56,7 @@ private:
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
 
     RefPtr<SVGAnimatedString> m_svgTarget;
     RefPtr<SVGAnimatedString> m_href;

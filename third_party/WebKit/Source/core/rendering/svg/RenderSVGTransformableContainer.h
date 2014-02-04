@@ -30,8 +30,6 @@ class RenderSVGTransformableContainer FINAL : public RenderSVGContainer {
 public:
     explicit RenderSVGTransformableContainer(SVGGraphicsElement*);
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
-
     virtual bool isSVGTransformableContainer() const OVERRIDE { return true; }
     virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
     virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }

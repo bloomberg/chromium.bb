@@ -76,10 +76,8 @@ private:
 
     virtual void willBeDestroyed() OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject*) OVERRIDE;
-    virtual bool canHaveWhitespaceChildren() const OVERRIDE { return false; }
 
     virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;

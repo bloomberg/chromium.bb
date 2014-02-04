@@ -152,7 +152,7 @@ public:
 
     void addToPropertyMap(PassRefPtr<NewSVGAnimatedPropertyBase>);
 
-    virtual bool childShouldCreateRenderer(const Node& child) const { return true; }
+    virtual bool childShouldCreateRenderer(const Node& child) const;
 
     SVGAnimatedString* className() { return m_className.get(); }
 

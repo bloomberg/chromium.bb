@@ -49,9 +49,6 @@ class RenderSVGModelObject : public RenderObject {
 public:
     explicit RenderSVGModelObject(SVGElement*);
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
-    virtual bool canHaveWhitespaceChildren() const OVERRIDE { return false; }
-
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
     virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed = false) const OVERRIDE FINAL;
     virtual LayoutRect outlineBoundsForRepaint(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap*) const OVERRIDE FINAL;
