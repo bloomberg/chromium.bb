@@ -4,6 +4,8 @@
 
 #import "ui/message_center/cocoa/notification_controller.h"
 
+#include <algorithm>
+
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -267,19 +269,22 @@
   [self configureCloseButtonInFrame:rootFrame];
   [rootView addSubview:closeButton_];
 
+  // Create the small image.
   [self configureSmallImageInFrame:rootFrame];
   [[self view] addSubview:smallImage_];
 
+  NSRect contentFrame = [self currentContentRect];
+
   // Create the title.
-  [self configureTitleInFrame:rootFrame];
+  [self configureTitleInFrame:contentFrame];
   [rootView addSubview:title_];
 
   // Create the message body.
-  [self configureBodyInFrame:rootFrame];
+  [self configureBodyInFrame:contentFrame];
   [rootView addSubview:message_];
 
   // Create the context message body.
-  [self configureContextMessageInFrame:rootFrame];
+  [self configureContextMessageInFrame:contentFrame];
   [rootView addSubview:contextMessage_];
 
   // Populate the data.
@@ -695,20 +700,18 @@
   [smallImage_ setAutoresizingMask:NSViewMinYMargin];
 }
 
-- (void)configureTitleInFrame:(NSRect)rootFrame {
-  NSRect frame = [self currentContentRect];
-  frame.size.height = 0;
-  title_.reset([self newLabelWithFrame:frame]);
+- (void)configureTitleInFrame:(NSRect)contentFrame {
+  contentFrame.size.height = 0;
+  title_.reset([self newLabelWithFrame:contentFrame]);
   [title_ setAutoresizingMask:NSViewMinYMargin];
   [title_ setTextColor:gfx::SkColorToCalibratedNSColor(
       message_center::kRegularTextColor)];
   [title_ setFont:[NSFont messageFontOfSize:message_center::kTitleFontSize]];
 }
 
-- (void)configureBodyInFrame:(NSRect)rootFrame {
-  NSRect frame = [self currentContentRect];
-  frame.size.height = 0;
-  message_.reset([self newLabelWithFrame:frame]);
+- (void)configureBodyInFrame:(NSRect)contentFrame {
+  contentFrame.size.height = 0;
+  message_.reset([self newLabelWithFrame:contentFrame]);
   [message_ setAutoresizingMask:NSViewMinYMargin];
   [message_ setTextColor:gfx::SkColorToCalibratedNSColor(
       message_center::kRegularTextColor)];
@@ -716,10 +719,9 @@
       [NSFont messageFontOfSize:message_center::kMessageFontSize]];
 }
 
-- (void)configureContextMessageInFrame:(NSRect)rootFrame {
-  NSRect frame = [self currentContentRect];
-  frame.size.height = 0;
-  contextMessage_.reset([self newLabelWithFrame:frame]);
+- (void)configureContextMessageInFrame:(NSRect)contentFrame {
+  contentFrame.size.height = 0;
+  contextMessage_.reset([self newLabelWithFrame:contentFrame]);
   [contextMessage_ setAutoresizingMask:NSViewMinYMargin];
   [contextMessage_ setTextColor:gfx::SkColorToCalibratedNSColor(
       message_center::kDimTextColor)];
@@ -746,12 +748,18 @@
 - (NSRect)currentContentRect {
   DCHECK(icon_);
   DCHECK(closeButton_);
+  DCHECK(smallImage_);
 
   NSRect iconFrame, contentFrame;
   NSDivideRect([[self view] bounds], &iconFrame, &contentFrame,
       NSWidth([icon_ frame]) + message_center::kIconToTextPadding,
       NSMinXEdge);
-  contentFrame.size.width -= NSWidth([closeButton_ frame]);
+  // The content area is between the icon on the left and the control area
+  // on the right.
+  int controlAreaWidth =
+      std::max(NSWidth([closeButton_ frame]), NSWidth([smallImage_ frame]));
+  contentFrame.size.width -=
+      2 * message_center::kSmallImagePadding + controlAreaWidth;
   return contentFrame;
 }
 
