@@ -9,7 +9,6 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_update_queue.h"
 #include "cc/resources/scoped_ui_resource.h"
-#include "cc/scheduler/texture_uploader.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"

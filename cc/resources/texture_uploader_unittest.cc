@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/scheduler/texture_uploader.h"
+#include "cc/resources/texture_uploader.h"
 
 #include "cc/base/util.h"
 #include "cc/resources/prioritized_resource.h"
@@ -147,12 +147,8 @@ void UploadTexture(TextureUploader* uploader,
                    ResourceFormat format,
                    const gfx::Size& size,
                    const uint8* data) {
-  uploader->Upload(data,
-                   gfx::Rect(size),
-                   gfx::Rect(size),
-                   gfx::Vector2d(),
-                   format,
-                   size);
+  uploader->Upload(
+      data, gfx::Rect(size), gfx::Rect(size), gfx::Vector2d(), format, size);
 }
 
 TEST(TextureUploaderTest, NumBlockingUploads) {

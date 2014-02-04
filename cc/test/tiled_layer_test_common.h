@@ -12,7 +12,6 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_update_queue.h"
-#include "cc/scheduler/texture_uploader.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 

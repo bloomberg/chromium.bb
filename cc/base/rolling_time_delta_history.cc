@@ -1,19 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <cmath>
 
-#include "cc/scheduler/rolling_time_delta_history.h"
+#include "cc/base/rolling_time_delta_history.h"
 
 namespace cc {
 
 RollingTimeDeltaHistory::RollingTimeDeltaHistory(size_t max_size)
-    : max_size_(max_size) {
-}
+    : max_size_(max_size) {}
 
-RollingTimeDeltaHistory::~RollingTimeDeltaHistory() {
-}
+RollingTimeDeltaHistory::~RollingTimeDeltaHistory() {}
 
 void RollingTimeDeltaHistory::InsertSample(base::TimeDelta time) {
   if (max_size_ == 0)

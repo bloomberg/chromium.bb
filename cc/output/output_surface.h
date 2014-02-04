@@ -12,10 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/rolling_time_delta_history.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/software_output_device.h"
 #include "cc/scheduler/frame_rate_controller.h"
-#include "cc/scheduler/rolling_time_delta_history.h"
 
 namespace base { class SingleThreadTaskRunner; }
 

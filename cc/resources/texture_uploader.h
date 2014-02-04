@@ -1,9 +1,9 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_SCHEDULER_TEXTURE_UPLOADER_H_
-#define CC_SCHEDULER_TEXTURE_UPLOADER_H_
+#ifndef CC_RESOURCES_TEXTURE_UPLOADER_H_
+#define CC_RESOURCES_TEXTURE_UPLOADER_H_
 
 #include <set>
 
@@ -66,12 +66,8 @@ class CC_EXPORT TextureUploader {
     bool IsPending();
     unsigned Value();
     size_t TexturesUploaded();
-    void mark_as_non_blocking() {
-      is_non_blocking_ = true;
-    }
-    bool is_non_blocking() const {
-      return is_non_blocking_;
-    }
+    void mark_as_non_blocking() { is_non_blocking_ = true; }
+    bool is_non_blocking() const { return is_non_blocking_; }
 
    private:
     explicit Query(gpu::gles2::GLES2Interface* gl);
@@ -119,4 +115,4 @@ class CC_EXPORT TextureUploader {
 
 }  // namespace cc
 
-#endif  // CC_SCHEDULER_TEXTURE_UPLOADER_H_
+#endif  // CC_RESOURCES_TEXTURE_UPLOADER_H_
