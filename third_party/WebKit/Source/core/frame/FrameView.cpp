@@ -137,7 +137,7 @@ FrameView::FrameView(Frame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
     , m_slowRepaintObjectCount(0)
-    , m_layoutTimer(this, &FrameView::layoutTimerFired)
+    , m_hasPendingLayout(false)
     , m_layoutSubtreeRoot(0)
     , m_inSynchronousPostLayout(false)
     , m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired)
@@ -221,7 +221,7 @@ void FrameView::reset()
     m_cannotBlitToWindow = false;
     m_isOverlapped = false;
     m_contentIsOpaque = false;
-    m_layoutTimer.stop();
+    m_hasPendingLayout = false;
     m_layoutSubtreeRoot = 0;
     m_delayedLayout = false;
     m_doFullRepaint = true;
@@ -907,7 +907,7 @@ void FrameView::layout(bool allowSubtree)
     // Every scroll that happens during layout is programmatic.
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
-    m_layoutTimer.stop();
+    m_hasPendingLayout = false;
     m_delayedLayout = false;
 
     // we shouldn't enter layout() while painting
@@ -1789,11 +1789,6 @@ void FrameView::handleLoadCompleted()
     autoSizeIfEnabled();
 }
 
-void FrameView::layoutTimerFired(Timer<FrameView>*)
-{
-    layout();
-}
-
 void FrameView::scheduleRelayout()
 {
     ASSERT(m_frame->view() == this);
@@ -1811,13 +1806,14 @@ void FrameView::scheduleRelayout()
     InspectorInstrumentation::didInvalidateLayout(m_frame.get());
 
     int delay = m_frame->document()->minimumLayoutDelay();
-    if (m_layoutTimer.isActive() && m_delayedLayout && !delay)
+    if (m_hasPendingLayout && m_delayedLayout && !delay)
         unscheduleRelayout();
-    if (m_layoutTimer.isActive())
+    if (m_hasPendingLayout)
         return;
 
     m_delayedLayout = delay != 0;
-    m_layoutTimer.startOneShot(delay * 0.001);
+    m_hasPendingLayout = true;
+    scheduleAnimation();
 }
 
 static bool isObjectAncestorContainerOf(RenderObject* ancestor, RenderObject* descendant)
@@ -1867,13 +1863,14 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
         ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
         InspectorInstrumentation::didInvalidateLayout(m_frame.get());
         m_delayedLayout = delay != 0;
-        m_layoutTimer.startOneShot(delay * 0.001);
+        m_hasPendingLayout = true;
+        scheduleAnimation();
     }
 }
 
 bool FrameView::layoutPending() const
 {
-    return m_layoutTimer.isActive();
+    return m_hasPendingLayout;
 }
 
 bool FrameView::needsLayout() const
@@ -1896,10 +1893,10 @@ void FrameView::setNeedsLayout()
 
 void FrameView::unscheduleRelayout()
 {
-    if (!m_layoutTimer.isActive())
+    if (!m_hasPendingLayout)
         return;
 
-    m_layoutTimer.stop();
+    m_hasPendingLayout = false;
     m_delayedLayout = false;
 }
 
