@@ -3513,21 +3513,18 @@ class DebugSymbolsStage(ArchivingStage):
     debug = self.debug
     archive_path = self.archive_path
 
-    if config['archive_build_debug'] or config['vm_tests']:
-      self._GenerateBreakpadSymbols(buildroot, board, debug)
+    self._GenerateBreakpadSymbols(buildroot, board, debug)
 
-      # Kick off the symbol upload process in the background.
-      if config['upload_symbols']:
-        self.UploadSymbols(buildroot, board)
+    # Kick off the symbol upload process in the background.
+    if config['upload_symbols']:
+      self.UploadSymbols(buildroot, board)
 
-      # Generate and upload tarball.
-      with self.ArtifactUploader(archive=False) as queue:
-        filename = commands.GenerateDebugTarball(
-            buildroot, board, archive_path,
-            config['archive_build_debug'])
-        queue.put([filename])
-    else:
-      self.archive_stage.BreakpadSymbolsGenerated(False)
+    # Generate and upload tarball.
+    with self.ArtifactUploader(archive=False) as queue:
+      filename = commands.GenerateDebugTarball(
+          buildroot, board, archive_path,
+          config['archive_build_debug'])
+      queue.put([filename])
 
   def UploadSymbols(self, buildroot, board):
     """Upload generated debug symbols."""
@@ -3539,6 +3536,7 @@ class DebugSymbolsStage(ArchivingStage):
     else:
       cnt = None
       official = self._run.config['chromeos_official']
+
     commands.UploadSymbols(buildroot, board, official, cnt)
 
   def _GenerateBreakpadSymbols(self, buildroot, board, debug):

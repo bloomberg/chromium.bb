@@ -1787,13 +1787,8 @@ class DebugSymbolsStageTest(AbstractStageTest):
     return stages.DebugSymbolsStage(self.run, self._current_board,
                                     archive_stage)
 
-  def testPerformStageEnabled(self):
-    """Smoke test for an PerformStage when debugging is enabled"""
-    extra_config = {
-        'archive_build_debug': True,
-        'vm_tests': True,
-        'upload_symbols': True,
-    }
+  def _TestPerformStage(self, extra_config):
+    """Run PerformStage for the stage with the given extra config."""
     self._Prepare(extra_config=extra_config)
     self.run.attrs.release_tag = BuilderRunMock.VERSION
 
@@ -1801,25 +1796,30 @@ class DebugSymbolsStageTest(AbstractStageTest):
     stage = self.ConstructStage()
     stage.PerformStage()
 
+  def testPerformStageWithSymbols(self):
+    """Smoke test for an PerformStage when debugging is enabled"""
+    extra_config = {
+        'archive_build_debug': True,
+        'vm_tests': True,
+        'upload_symbols': True,
+    }
+    self._TestPerformStage(extra_config)
+
     self.assertEqual(self.gen_mock.call_count, 1)
     self.assertEqual(self.tar_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 1)
 
-  def testPerformStageDisabled(self):
+  def testPerformStageNoSymbols(self):
     """Smoke test for an PerformStage when debugging is disabled"""
     extra_config = {
         'archive_build_debug': False,
         'vm_tests': False,
         'upload_symbols': False,
     }
-    self._Prepare(extra_config=extra_config)
-    self.run.attrs.release_tag = BuilderRunMock.VERSION
+    self._TestPerformStage(extra_config)
 
-    stage = self.ConstructStage()
-    stage.PerformStage()
-
-    self.assertEqual(self.gen_mock.call_count, 0)
-    self.assertEqual(self.tar_mock.call_count, 0)
+    self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.tar_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 0)
 
 
