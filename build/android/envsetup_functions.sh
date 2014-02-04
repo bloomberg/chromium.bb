@@ -256,11 +256,6 @@ ${ANDROID_SDK_VERSION}
   DEFINES+=" android_sdk_tools=\$(PWD)/${ANDROID_SDK_TOOLS}"
   DEFINES+=" android_sdk_version=${ANDROID_SDK_VERSION}"
   DEFINES+=" android_toolchain=${ANDROID_TOOLCHAIN}"
-  if [[ -n "$CHROME_ANDROID_WEBVIEW_ENABLE_DMPROF" ]]; then
-    DEFINES+=" disable_debugallocation=1"
-    DEFINES+=" android_full_debug=1"
-    DEFINES+=" android_use_tcmalloc=1"
-  fi
   if [[ -n "$CHROME_ANDROID_WEBVIEW_OFFICIAL_BUILD" ]]; then
     DEFINES+=" logging_like_official_build=1"
     DEFINES+=" tracing_like_official_build=1"
