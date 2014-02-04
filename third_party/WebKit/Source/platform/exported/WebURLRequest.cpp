@@ -181,7 +181,10 @@ void WebURLRequest::setHTTPHeaderField(const WebString& name, const WebString& v
 
 void WebURLRequest::setHTTPReferrer(const WebString& referrer, WebReferrerPolicy referrerPolicy)
 {
-    m_private->m_resourceRequest->setHTTPReferrer(Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy)));
+    if (referrer.isEmpty())
+        m_private->m_resourceRequest->clearHTTPReferrer();
+    else
+        m_private->m_resourceRequest->setHTTPReferrer(Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy)));
 }
 
 void WebURLRequest::addHTTPHeaderField(const WebString& name, const WebString& value)

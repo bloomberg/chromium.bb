@@ -1056,7 +1056,7 @@ void WebFrameImpl::setReferrerForRequest(WebURLRequest& request, const WebURL& r
     referrer = SecurityPolicy::generateReferrerHeader(frame()->document()->referrerPolicy(), request.url(), referrer);
     if (referrer.isEmpty())
         return;
-    request.setHTTPHeaderField(WebString::fromUTF8("Referer"), referrer);
+    request.setHTTPReferrer(referrer, static_cast<WebReferrerPolicy>(frame()->document()->referrerPolicy()));
 }
 
 void WebFrameImpl::dispatchWillSendRequest(WebURLRequest& request)
