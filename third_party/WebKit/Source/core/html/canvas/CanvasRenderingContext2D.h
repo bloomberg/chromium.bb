@@ -116,7 +116,7 @@ public:
     String globalCompositeOperation() const;
     void setGlobalCompositeOperation(const String&);
 
-    void save() { ++m_unrealizedSaveCount; }
+    void save() { ++m_stateStack.last().m_unrealizedSaveCount; }
     void restore();
 
     SVGMatrix currentTransform() const
@@ -251,6 +251,8 @@ private:
         // CSSFontSelectorClient implementation
         virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
 
+        unsigned m_unrealizedSaveCount;
+
         String m_unparsedStrokeColor;
         String m_unparsedFillColor;
         RefPtr<CanvasStyle> m_strokeStyle;
@@ -282,7 +284,7 @@ private:
 
     CanvasRenderingContext2D(HTMLCanvasElement*, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode);
 
-    State& modifiableState() { ASSERT(!m_unrealizedSaveCount); return m_stateStack.last(); }
+    State& modifiableState() { ASSERT(!state().m_unrealizedSaveCount); return m_stateStack.last(); }
     const State& state() const { return m_stateStack.last(); }
 
     void applyLineDash() const;
@@ -298,12 +300,7 @@ private:
     GraphicsContext* drawingContext() const;
 
     void unwindStateStack();
-    void realizeSaves()
-    {
-        if (m_unrealizedSaveCount)
-            realizeSavesLoop();
-    }
-    void realizeSavesLoop();
+    void realizeSaves();
 
     void applyStrokePattern();
     void applyFillPattern();
@@ -333,7 +330,6 @@ private:
     virtual blink::WebLayer* platformLayer() const OVERRIDE;
 
     Vector<State, 1> m_stateStack;
-    unsigned m_unrealizedSaveCount;
     bool m_usesCSSCompatibilityParseMode;
     bool m_hasAlpha;
     MutableStylePropertyMap m_fetchedFonts;

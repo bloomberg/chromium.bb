@@ -81,7 +81,6 @@ static const char defaultFont[] = "10px sans-serif";
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)
     , m_stateStack(1)
-    , m_unrealizedSaveCount(0)
     , m_usesCSSCompatibilityParseMode(usesCSSCompatibilityParseMode)
     , m_hasAlpha(!attrs || attrs->alpha())
 {
@@ -122,7 +121,6 @@ void CanvasRenderingContext2D::reset()
     m_stateStack.resize(1);
     m_stateStack.first() = State();
     m_path.clear();
-    m_unrealizedSaveCount = 0;
 }
 
 // Important: Several of these properties are also stored in GraphicsContext's
@@ -130,7 +128,8 @@ void CanvasRenderingContext2D::reset()
 // that the canvas 2d spec specifies. Make sure to sync the initial state of the
 // GraphicsContext in HTMLCanvasElement::createImageBuffer()!
 CanvasRenderingContext2D::State::State()
-    : m_strokeStyle(CanvasStyle::createFromRGBA(Color::black))
+    : m_unrealizedSaveCount(0)
+    , m_strokeStyle(CanvasStyle::createFromRGBA(Color::black))
     , m_fillStyle(CanvasStyle::createFromRGBA(Color::black))
     , m_lineWidth(1)
     , m_lineCap(ButtCap)
@@ -153,6 +152,7 @@ CanvasRenderingContext2D::State::State()
 
 CanvasRenderingContext2D::State::State(const State& other)
     : CSSFontSelectorClient()
+    , m_unrealizedSaveCount(other.m_unrealizedSaveCount)
     , m_unparsedStrokeColor(other.m_unparsedStrokeColor)
     , m_unparsedFillColor(other.m_unparsedFillColor)
     , m_strokeStyle(other.m_strokeStyle)
@@ -189,6 +189,7 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
     if (m_realizedFont)
         static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
 
+    m_unrealizedSaveCount = other.m_unrealizedSaveCount;
     m_unparsedStrokeColor = other.m_unparsedStrokeColor;
     m_unparsedFillColor = other.m_unparsedFillColor;
     m_strokeStyle = other.m_strokeStyle;
@@ -232,22 +233,30 @@ void CanvasRenderingContext2D::State::fontsNeedUpdate(CSSFontSelector* fontSelec
     m_font.update(fontSelector);
 }
 
-void CanvasRenderingContext2D::realizeSavesLoop()
+void CanvasRenderingContext2D::realizeSaves()
 {
-    ASSERT(m_unrealizedSaveCount);
-    ASSERT(m_stateStack.size() >= 1);
-    GraphicsContext* context = drawingContext();
-    do {
+    if (state().m_unrealizedSaveCount) {
+        ASSERT(m_stateStack.size() >= 1);
+        // Reduce the current state's unrealized count by one now,
+        // to reflect the fact we are saving one state.
+        m_stateStack.last().m_unrealizedSaveCount--;
         m_stateStack.append(state());
+        // Set the new state's unrealized count to 0, because it has no outstanding saves.
+        // We need to do this explicitly because the copy constructor and operator= used
+        // by the Vector operations copy the unrealized count from the previous state (in
+        // turn necessary to support correct resizing and unwinding of the stack).
+        m_stateStack.last().m_unrealizedSaveCount = 0;
+        GraphicsContext* context = drawingContext();
         if (context)
             context->save();
-    } while (--m_unrealizedSaveCount);
+    }
 }
 
 void CanvasRenderingContext2D::restore()
 {
-    if (m_unrealizedSaveCount) {
-        --m_unrealizedSaveCount;
+    if (state().m_unrealizedSaveCount) {
+        // We never realized the save, so just record that it was unnecessary.
+        --m_stateStack.last().m_unrealizedSaveCount;
         return;
     }
     ASSERT(m_stateStack.size() >= 1);
@@ -257,9 +266,8 @@ void CanvasRenderingContext2D::restore()
     m_stateStack.removeLast();
     m_path.transform(state().m_transform.inverse());
     GraphicsContext* c = drawingContext();
-    if (!c)
-        return;
-    c->restore();
+    if (c)
+        c->restore();
 }
 
 CanvasStyle* CanvasRenderingContext2D::strokeStyle() const
