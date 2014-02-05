@@ -38,6 +38,7 @@
             'json_schema/json_schema_validator_unittest_base.h',
             'language_usage_metrics/language_usage_metrics_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
+            'password_manager/core/browser/psl_matching_helper_unittest.cc',
             'precache/content/precache_manager_unittest.cc',
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
@@ -109,6 +110,7 @@
             'components.gyp:language_usage_metrics',
 
             # Dependencies of password_manager
+            'components.gyp:password_manager_core_browser',
             'components.gyp:password_manager_core_browser_test_support',
 
             # Dependencies of precache/core
@@ -171,6 +173,7 @@
                 ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
                 ['include', '^language_usage_metrics/'],
+                ['include', '^password_manager/'],
                 ['include', '^precache/core/'],
                 ['include', '^signin/'],
                 ['include', '^sync_driver/'],
