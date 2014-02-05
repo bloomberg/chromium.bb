@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "net/base/net_util.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -111,7 +112,8 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   void StartLoggingIfAllowed();
   void DoStartLogging();
-  void LogMachineInfo();
+  void LogMachineInfoOnFileThread();
+  void LogMachineInfoOnIOThread(const net::NetworkInterfaceList& network_list);
   void NotifyLoggingStarted();
 
   // Writes a formatted log |message| to the |circular_buffer_|.

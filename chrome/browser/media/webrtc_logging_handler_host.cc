@@ -29,7 +29,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "gpu/config/gpu_info.h"
 #include "net/base/address_family.h"
-#include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_LINUX)
@@ -38,6 +37,10 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/statistics_provider.h"
 #endif
 
 using base::IntToString;
@@ -294,11 +297,23 @@ void WebRtcLoggingHandlerHost::DoStartLogging() {
                               false));
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::LogMachineInfo, this));
+      &WebRtcLoggingHandlerHost::LogMachineInfoOnFileThread, this));
 }
 
-void WebRtcLoggingHandlerHost::LogMachineInfo() {
+void WebRtcLoggingHandlerHost::LogMachineInfoOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  net::NetworkInterfaceList network_list;
+  net::GetNetworkList(&network_list,
+                      net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &WebRtcLoggingHandlerHost::LogMachineInfoOnIOThread, this, network_list));
+}
+
+void WebRtcLoggingHandlerHost::LogMachineInfoOnIOThread(
+    const net::NetworkInterfaceList& network_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Write metadata if received before logging started.
   if (!meta_data_.empty()) {
@@ -331,11 +346,14 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
   LogToCircularBuffer("Cpu brand: " + cpu_brand);
 
   // Computer model
+  std::string computer_model = "Not available";
 #if defined(OS_MACOSX)
-  LogToCircularBuffer("Computer model: " + base::mac::GetModelIdentifier());
-#else
-  LogToCircularBuffer("Computer model: Not available");
+  computer_model = base::mac::GetModelIdentifier();
+#elif defined(OS_CHROMEOS)
+  chromeos::system::StatisticsProvider::GetInstance()->
+      GetMachineStatistic(chromeos::system::kHardwareClassKey, &computer_model);
 #endif
+  LogToCircularBuffer("Computer model: " + computer_model);
 
   // GPU
   gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
@@ -346,19 +364,15 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
                       "', driver-version=" + gpu_info.driver_version);
 
   // Network interfaces
-  net::NetworkInterfaceList network_list;
-  net::GetNetworkList(&network_list,
-                      net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   LogToCircularBuffer("Discovered " + IntToString(network_list.size()) +
                       " network interfaces:");
-  for (net::NetworkInterfaceList::iterator it = network_list.begin();
+  for (net::NetworkInterfaceList::const_iterator it = network_list.begin();
        it != network_list.end(); ++it) {
     LogToCircularBuffer("Name: " + it->name + ", Address: " +
                         IPAddressToSensitiveString(it->address));
   }
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &WebRtcLoggingHandlerHost::NotifyLoggingStarted, this));
+  NotifyLoggingStarted();
 }
 
 void WebRtcLoggingHandlerHost::NotifyLoggingStarted() {
@@ -369,6 +383,7 @@ void WebRtcLoggingHandlerHost::NotifyLoggingStarted() {
 }
 
 void WebRtcLoggingHandlerHost::LogToCircularBuffer(const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(circular_buffer_.get());
   circular_buffer_->Write(message.c_str(), message.length());
   const char eol = '\n';
