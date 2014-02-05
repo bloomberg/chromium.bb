@@ -32,6 +32,7 @@ class GCController : public gin::Wrappable<GCController> {
       v8::Isolate* isolate) OVERRIDE;
 
   void Collect(const gin::Arguments& args);
+  void CollectAll(const gin::Arguments& args);
   void MinorCollect(const gin::Arguments& args);
 
   DISALLOW_COPY_AND_ASSIGN(GCController);

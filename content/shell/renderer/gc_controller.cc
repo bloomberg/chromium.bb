@@ -39,12 +39,27 @@ gin::ObjectTemplateBuilder GCController::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<GCController>::GetObjectTemplateBuilder(isolate)
       .SetMethod("collect", &GCController::Collect)
+      .SetMethod("collectAll", &GCController::CollectAll)
       .SetMethod("minorCollect", &GCController::MinorCollect);
 }
 
 void GCController::Collect(const gin::Arguments& args) {
   args.isolate()->RequestGarbageCollectionForTesting(
       v8::Isolate::kFullGarbageCollection);
+}
+
+void GCController::CollectAll(const gin::Arguments& args) {
+  // In order to collect a DOM wrapper, two GC cycles are needed.
+  // In the first GC cycle, a weak callback of the DOM wrapper is called back
+  // and the weak callback disposes a persistent handle to the DOM wrapper.
+  // In the second GC cycle, the DOM wrapper is reclaimed.
+  // Given that two GC cycles are needed to collect one DOM wrapper,
+  // more than two GC cycles are needed to collect all DOM wrappers
+  // that are chained. Seven GC cycles look enough in most tests.
+  for (int i = 0; i < 7; i++) {
+    args.isolate()->RequestGarbageCollectionForTesting(
+        v8::Isolate::kFullGarbageCollection);
+  }
 }
 
 void GCController::MinorCollect(const gin::Arguments& args) {
