@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_store_change.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -21,21 +20,12 @@ using autofill::PasswordForm;
 PasswordStoreDefault::PasswordStoreDefault(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    LoginDatabase* login_db,
-    Profile* profile)
-    : PasswordStore(main_thread_runner, db_thread_runner),
-      login_db_(login_db),
-      profile_(profile) {
+    LoginDatabase* login_db)
+    : PasswordStore(main_thread_runner, db_thread_runner), login_db_(login_db) {
   DCHECK(login_db);
-  DCHECK(profile);
 }
 
 PasswordStoreDefault::~PasswordStoreDefault() {
-}
-
-void PasswordStoreDefault::ShutdownOnUIThread() {
-  DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  profile_ = NULL;
 }
 
 void PasswordStoreDefault::ReportMetricsImpl() {

@@ -13,12 +13,4 @@ MockPasswordStore::MockPasswordStore()
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)) {
 }
 
-// static
-scoped_refptr<RefcountedBrowserContextKeyedService> MockPasswordStore::Build(
-    content::BrowserContext* profile) {
-  return new MockPasswordStore;
-}
-
-void MockPasswordStore::ShutdownOnUIThread() {}
-
 MockPasswordStore::~MockPasswordStore() {}

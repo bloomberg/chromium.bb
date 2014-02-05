@@ -16,9 +16,6 @@ namespace content {
 class BrowserContext;
 }
 
-scoped_refptr<RefcountedBrowserContextKeyedService> CreateTestPasswordStore(
-    content::BrowserContext* profile);
-
 // A very simple PasswordStore implementation that keeps all of the passwords
 // in memory and does all it's manipulations on the main thread. Since this
 // is only used for testing, only the parts of the interface that are needed
@@ -26,11 +23,6 @@ scoped_refptr<RefcountedBrowserContextKeyedService> CreateTestPasswordStore(
 class TestPasswordStore : public PasswordStore {
  public:
   TestPasswordStore();
-
-  // Helper function for registration with
-  // RefcountedBrowserContextKeyedService::SetTestingFactory
-  static scoped_refptr<RefcountedBrowserContextKeyedService> Create(
-      content::BrowserContext* profile);
 
   typedef std::map<std::string /* signon_realm */,
                    std::vector<autofill::PasswordForm> > PasswordMap;
@@ -67,7 +59,6 @@ class TestPasswordStore : public PasswordStore {
       std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
   virtual bool FillBlacklistLogins(
       std::vector<autofill::PasswordForm*>* forms) OVERRIDE;
-  virtual void ShutdownOnUIThread() OVERRIDE {}
 
  private:
   PasswordMap stored_passwords_;

@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/common/cancelable_request.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
 class PasswordStore;
 class PasswordStoreConsumer;
@@ -43,7 +42,7 @@ void UpdateLogin(PasswordStore* store, const autofill::PasswordForm& form);
 // Interface for storing form passwords in a platform-specific secure way.
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
-class PasswordStore : public RefcountedBrowserContextKeyedService {
+class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
  public:
   // Whether or not it's acceptable for Chrome to request access to locked
   // passwords, which requires prompting the user for permission.
@@ -154,6 +153,10 @@ class PasswordStore : public RefcountedBrowserContextKeyedService {
 
   // Removes |observer| from the observer list.
   void RemoveObserver(Observer* observer);
+
+  // Before you destruct the store, call Shutdown to indicate that the store
+  // needs to shut itself down.
+  virtual void Shutdown();
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
@@ -270,6 +273,8 @@ class PasswordStore : public RefcountedBrowserContextKeyedService {
 
   // The observers.
   ObserverList<Observer> observers_;
+
+  bool shutdown_called_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };

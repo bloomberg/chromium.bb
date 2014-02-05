@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/mock_password_store.h"
+#include "chrome/browser/password_manager/mock_password_store_service.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
@@ -82,9 +83,11 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
-    store_ = static_cast<MockPasswordStore*>(
-        PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), MockPasswordStore::Build).get());
+    PasswordStoreFactory* factory = PasswordStoreFactory::GetInstance();
+    factory->SetTestingFactory(profile(), MockPasswordStoreService::Build);
+    scoped_refptr<PasswordStore> store_temp(
+        factory->GetForProfile(profile(), Profile::IMPLICIT_ACCESS));
+    store_ = static_cast<MockPasswordStore*>(store_temp.get());
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
     EXPECT_CALL(delegate_, GetPrefs()).

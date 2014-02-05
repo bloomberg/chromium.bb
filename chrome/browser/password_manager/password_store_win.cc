@@ -12,9 +12,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "components/webdata/encryptor/ie7_password_win.h"
+#include "content/public/browser/browser_thread.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;
@@ -164,12 +164,10 @@ PasswordStoreWin::PasswordStoreWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
     LoginDatabase* login_database,
-    Profile* profile,
     WebDataService* web_data_service)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,
-                           login_database,
-                           profile) {
+                           login_database) {
   db_handler_.reset(new DBHandler(web_data_service, this));
 }
 
@@ -181,11 +179,11 @@ void PasswordStoreWin::ShutdownOnDBThread() {
   db_handler_.reset();
 }
 
-void PasswordStoreWin::ShutdownOnUIThread() {
+void PasswordStoreWin::Shutdown() {
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&PasswordStoreWin::ShutdownOnDBThread, this));
-  PasswordStoreDefault::ShutdownOnUIThread();
+  PasswordStoreDefault::Shutdown();
 }
 
 void PasswordStoreWin::GetIE7LoginIfNecessary(

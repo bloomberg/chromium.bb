@@ -856,9 +856,6 @@ bool PasswordStoreMac::Init() {
   return PasswordStore::Init();
 }
 
-void PasswordStoreMac::ShutdownOnUIThread() {
-}
-
 // Mac stores passwords in the system keychain, which can block for an
 // arbitrarily long time (most notably, it can block on user confirmation
 // from a dialog). Run tasks on a dedicated thread to avoid blocking the DB

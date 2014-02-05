@@ -13,6 +13,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store.h"
+#include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -146,7 +147,7 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     // PasswordManager will ignore any forms in a page if the load from the
     // PasswordStore has not completed.
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        browser()->profile(), &TestPasswordStore::Create);
+        browser()->profile(), TestPasswordStoreService::Build);
   }
 
  protected:

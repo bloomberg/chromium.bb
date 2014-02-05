@@ -126,8 +126,8 @@ class PasswordStoreWinTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (store_.get())
-      store_->ShutdownOnUIThread();
+    if (store_)
+      store_->Shutdown();
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();
     wds_ = NULL;
@@ -147,7 +147,6 @@ class PasswordStoreWinTest : public testing::Test {
         base::MessageLoopProxy::current(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
         login_db_.release(),
-        profile_.get(),
         wds_.get());
   }
 
@@ -270,7 +269,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
   store_->GetLogins(*form, PasswordStore::DISALLOW_PROMPT, &consumer);
 
   // Release the PSW and the WDS before the query can return.
-  store_->ShutdownOnUIThread();
+  store_->Shutdown();
   store_ = NULL;
   wds_ = NULL;
 

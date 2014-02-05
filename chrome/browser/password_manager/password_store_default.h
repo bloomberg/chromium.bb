@@ -11,8 +11,6 @@
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
 
-class Profile;
-
 // Simple password store implementation that delegates everything to
 // the LoginDatabase.
 class PasswordStoreDefault : public PasswordStore {
@@ -21,11 +19,7 @@ class PasswordStoreDefault : public PasswordStore {
   PasswordStoreDefault(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      LoginDatabase* login_db,
-      Profile* profile);
-
-  // Implements RefCountedBrowserContextKeyedService.
-  virtual void ShutdownOnUIThread() OVERRIDE;
+      LoginDatabase* login_db);
 
  protected:
   virtual ~PasswordStoreDefault();
@@ -57,7 +51,6 @@ class PasswordStoreDefault : public PasswordStore {
 
  private:
   scoped_ptr<LoginDatabase> login_db_;
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);
 };

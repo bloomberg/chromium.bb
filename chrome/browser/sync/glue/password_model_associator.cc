@@ -13,6 +13,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/autofill/core/common/password_form.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/read_node.h"

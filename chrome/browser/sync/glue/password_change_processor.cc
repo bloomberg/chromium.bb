@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/autofill/core/common/password_form.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "sync/internal_api/public/change_record.h"

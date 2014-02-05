@@ -13,7 +13,6 @@
 
 class LoginDatabase;
 class PrefService;
-class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -57,7 +56,6 @@ class PasswordStoreX : public PasswordStoreDefault {
   PasswordStoreX(scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
                  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
                  LoginDatabase* login_db,
-                 Profile* profile,
                  NativeBackend* backend);
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)

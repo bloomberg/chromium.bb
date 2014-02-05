@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/mock_password_store.h"
+#include "chrome/browser/password_manager/mock_password_store_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
@@ -53,8 +54,8 @@ class PasswordManagerPresenterTest : public testing::Test {
 
   virtual ~PasswordManagerPresenterTest() {}
   virtual void SetUp() OVERRIDE {
-    PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-        &profile_, MockPasswordStore::Build);
+    PasswordStoreFactory::GetInstance()->SetTestingFactory(
+        &profile_, MockPasswordStoreService::Build);
     mock_controller_.reset(new MockPasswordUIView(&profile_));
   }
   void AddPasswordEntry(const GURL& origin,

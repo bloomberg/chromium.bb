@@ -6,12 +6,6 @@
 
 #include "components/autofill/core/common/password_form.h"
 
-// static
-scoped_refptr<RefcountedBrowserContextKeyedService> TestPasswordStore::Create(
-    content::BrowserContext* profile) {
-  return make_scoped_refptr(new TestPasswordStore);
-}
-
 TestPasswordStore::TestPasswordStore()
     : PasswordStore(base::MessageLoopProxy::current(),
                     base::MessageLoopProxy::current()) {

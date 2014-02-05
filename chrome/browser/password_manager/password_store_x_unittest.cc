@@ -21,7 +21,6 @@
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -250,8 +249,6 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    profile_.reset(new TestingProfile());
-
     login_db_.reset(new LoginDatabase());
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append("login_test")));
   }
@@ -274,7 +271,6 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<LoginDatabase> login_db_;
-  scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -284,12 +280,10 @@ ACTION(STLDeleteElements0) {
 
 TEST_P(PasswordStoreXTest, Notifications) {
   scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(
-          base::MessageLoopProxy::current(),
-          base::MessageLoopProxy::current(),
-          login_db_.release(),
-          profile_.get(),
-          GetBackend()));
+      new PasswordStoreX(base::MessageLoopProxy::current(),
+                         base::MessageLoopProxy::current(),
+                         login_db_.release(),
+                         GetBackend()));
   store->Init();
 
   PasswordFormData form_data =
@@ -363,8 +357,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Wait for PasswordStore to execute.
   base::RunLoop().RunUntilIdle();
 
-  // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store.get())->ShutdownOnUIThread();
+  store->Shutdown();
 }
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
@@ -399,12 +392,10 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(
-          base::MessageLoopProxy::current(),
-          base::MessageLoopProxy::current(),
-          login_db_.release(),
-          profile_.get(),
-          GetBackend()));
+      new PasswordStoreX(base::MessageLoopProxy::current(),
+                         base::MessageLoopProxy::current(),
+                         login_db_.release(),
+                         GetBackend()));
   store->Init();
 
   MockPasswordStoreConsumer consumer;
@@ -477,8 +468,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   STLDeleteElements(&expected_autofillable);
   STLDeleteElements(&expected_blacklisted);
 
-  // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store.get())->ShutdownOnUIThread();
+  store->Shutdown();
 }
 
 INSTANTIATE_TEST_CASE_P(NoBackend,

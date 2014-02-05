@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class PasswordStore;
 class Profile;
@@ -21,11 +21,27 @@ class Profile;
 typedef int LocalProfileId;
 #endif
 
+// A wrapper of PasswordStore so we can use it as a profiled keyed service.
+class PasswordStoreService : public BrowserContextKeyedService {
+ public:
+  // |password_store| needs to be not-NULL, and the constructor expects that
+  // Init() was already called successfully on it.
+  explicit PasswordStoreService(scoped_refptr<PasswordStore> password_store);
+  virtual ~PasswordStoreService();
+
+  scoped_refptr<PasswordStore> GetPasswordStore();
+
+  // BrowserContextKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+ private:
+  scoped_refptr<PasswordStore> password_store_;
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreService);
+};
+
 // Singleton that owns all PasswordStores and associates them with
-// Profiles. Listens for the Profile's destruction notification and cleans up
-// the associated PasswordStore.
-class PasswordStoreFactory
-    : public RefcountedBrowserContextKeyedServiceFactory {
+// Profiles.
+class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
  public:
   static scoped_refptr<PasswordStore> GetForProfile(
       Profile* profile, Profile::ServiceAccessType set);
@@ -43,8 +59,8 @@ class PasswordStoreFactory
 #endif
 
   // BrowserContextKeyedServiceFactory:
-  virtual scoped_refptr<RefcountedBrowserContextKeyedService>
-      BuildServiceInstanceFor(content::BrowserContext* context) const OVERRIDE;
+  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const OVERRIDE;
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(

@@ -68,8 +68,8 @@ PasswordStore::PasswordStore(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner)
     : main_thread_runner_(main_thread_runner),
-      db_thread_runner_(db_thread_runner) {
-}
+      db_thread_runner_(db_thread_runner),
+      shutdown_called_(false) {}
 
 bool PasswordStore::Init() {
   ReportMetrics();
@@ -150,7 +150,9 @@ void PasswordStore::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-PasswordStore::~PasswordStore() {}
+void PasswordStore::Shutdown() { shutdown_called_ = true; }
+
+PasswordStore::~PasswordStore() { DCHECK(shutdown_called_); }
 
 bool PasswordStore::ScheduleTask(const base::Closure& task) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(

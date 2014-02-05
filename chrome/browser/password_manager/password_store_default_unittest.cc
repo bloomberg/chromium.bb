@@ -134,12 +134,10 @@ ACTION(QuitUIMessageLoop) {
 }
 
 TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
-  scoped_refptr<PasswordStoreDefault> store(
-      new PasswordStoreDefault(
-          base::MessageLoopProxy::current(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-          login_db_.release(),
-          profile_.get()));
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::MessageLoopProxy::current(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      login_db_.release()));
   store->Init();
 
   // Some non-ASCII password form data.
@@ -188,15 +186,15 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   base::MessageLoop::current()->Run();
 
   STLDeleteElements(&expected_forms);
+
+  store->Shutdown();
 }
 
 TEST_F(PasswordStoreDefaultTest, Notifications) {
-  scoped_refptr<PasswordStoreDefault> store(
-      new PasswordStoreDefault(
-          base::MessageLoopProxy::current(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-          login_db_.release(),
-          profile_.get()));
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::MessageLoopProxy::current(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      login_db_.release()));
   store->Init();
 
   PasswordFormData form_data =
@@ -277,5 +275,5 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
-  store->ShutdownOnUIThread();
+  store->Shutdown();
 }

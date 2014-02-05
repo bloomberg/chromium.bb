@@ -17,9 +17,6 @@ class MockPasswordStore : public PasswordStore {
  public:
   MockPasswordStore();
 
-  static scoped_refptr<RefcountedBrowserContextKeyedService> Build(
-      content::BrowserContext* profile);
-
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD3(GetLogins, void(
       const autofill::PasswordForm&,
@@ -44,8 +41,6 @@ class MockPasswordStore : public PasswordStore {
       bool(std::vector<autofill::PasswordForm*>*));
   MOCK_METHOD1(FillBlacklistLogins,
       bool(std::vector<autofill::PasswordForm*>*));
-
-  virtual void ShutdownOnUIThread();
 
  protected:
   virtual ~MockPasswordStore();

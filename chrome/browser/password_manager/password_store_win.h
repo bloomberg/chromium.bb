@@ -9,7 +9,6 @@
 #include "chrome/browser/password_manager/password_store_default.h"
 
 class LoginDatabase;
-class Profile;
 class WebDataService;
 
 namespace autofill {
@@ -25,11 +24,10 @@ class PasswordStoreWin : public PasswordStoreDefault {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
       LoginDatabase* login_database,
-      Profile* profile,
       WebDataService* web_data_service);
 
-  // RefcountedBrowserContextKeyedService:
-  virtual void ShutdownOnUIThread() OVERRIDE;
+  // PasswordStore:
+  virtual void Shutdown() OVERRIDE;
 
  private:
   class DBHandler;

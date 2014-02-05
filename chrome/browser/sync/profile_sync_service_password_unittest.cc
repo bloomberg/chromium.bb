@@ -16,6 +16,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/password_manager/mock_password_store.h"
+#include "chrome/browser/password_manager/mock_password_store_service.h"
+#include "chrome/browser/password_manager/null_password_store_service.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -84,11 +86,6 @@ ACTION_P(AcquireSyncTransaction, password_test_service) {
 class NullPasswordStore : public MockPasswordStore {
  public:
   NullPasswordStore() {}
-
-  static scoped_refptr<RefcountedBrowserContextKeyedService> Build(
-      content::BrowserContext* profile) {
-    return scoped_refptr<RefcountedBrowserContextKeyedService>();
-  }
 
  protected:
   virtual ~NullPasswordStore() {}
@@ -168,14 +165,16 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     profile_ = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
-    password_store_ = static_cast<MockPasswordStore*>(
-        PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), MockPasswordStore::Build).get());
+    PasswordStoreFactory* factory = PasswordStoreFactory::GetInstance();
+    factory->SetTestingFactory(profile_.get(), MockPasswordStoreService::Build);
+    scoped_refptr<PasswordStore> store_temp(
+        factory->GetForProfile(profile_.get(), Profile::IMPLICIT_ACCESS));
+    password_store_ = static_cast<MockPasswordStore*>(store_temp.get());
   }
 
   virtual void TearDown() {
-    if (password_store_.get())
-      password_store_->ShutdownOnUIThread();
+    if (password_store_)
+      password_store_->Shutdown();
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
           profile_.get(), NULL);
       profile_.reset();
@@ -356,9 +355,11 @@ TEST_F(ProfileSyncServicePasswordTest, MAYBE_FailModelAssociation) {
 }
 
 TEST_F(ProfileSyncServicePasswordTest, MAYBE_FailPasswordStoreLoad) {
-  password_store_ = static_cast<NullPasswordStore*>(
-      PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), NullPasswordStore::Build).get());
+  PasswordStoreFactory* factory = PasswordStoreFactory::GetInstance();
+  factory->SetTestingFactory(profile_.get(), NullPasswordStoreService::Build);
+  scoped_refptr<PasswordStore> store_temp(
+      factory->GetForProfile(profile_.get(), Profile::IMPLICIT_ACCESS));
+  password_store_ = static_cast<NullPasswordStore*>(store_temp.get());
   StartSyncService(base::Closure(), base::Closure());
   EXPECT_FALSE(sync_service_->HasUnrecoverableError());
   syncer::ModelTypeSet failed_types =

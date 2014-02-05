@@ -81,12 +81,10 @@ ACTION(QuitUIMessageLoop) {
 }
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
-  scoped_refptr<PasswordStoreDefault> store(
-      new PasswordStoreDefault(
-          base::MessageLoopProxy::current(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-          login_db_.release(),
-          profile_.get()));
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::MessageLoopProxy::current(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      login_db_.release()));
   store->Init();
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
@@ -221,4 +219,6 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   base::MessageLoop::current()->Run();
 
   STLDeleteElements(&all_forms);
+
+  store->Shutdown();
 }

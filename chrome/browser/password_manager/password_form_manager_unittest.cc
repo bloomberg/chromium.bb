@@ -15,6 +15,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store.h"
+#include "chrome/browser/password_manager/test_password_store_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -365,11 +366,12 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   // Need a MessageLoop for callbacks.
   base::MessageLoop message_loop;
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
-      profile(), &TestPasswordStore::Create);
+      profile(), TestPasswordStoreService::Build);
+  scoped_refptr<PasswordStore> store_temp(
+      PasswordStoreFactory::GetForProfile(profile(), Profile::IMPLICIT_ACCESS));
   scoped_refptr<TestPasswordStore> password_store =
-      static_cast<TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(profile(),
-                                              Profile::IMPLICIT_ACCESS).get());
+      static_cast<TestPasswordStore*>(store_temp.get());
+
   TestPasswordManagerDelegate delegate(profile());
   TestPasswordManager password_manager(&delegate);
   scoped_ptr<TestPasswordFormManager> manager(new TestPasswordFormManager(

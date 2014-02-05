@@ -39,8 +39,6 @@ class PasswordStoreMac : public PasswordStore {
   // Initializes |thread_| and |notification_service_|.
   virtual bool Init() OVERRIDE;
 
-  virtual void ShutdownOnUIThread() OVERRIDE;
-
  protected:
   virtual ~PasswordStoreMac();
 
