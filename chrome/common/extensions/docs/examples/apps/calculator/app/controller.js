@@ -51,21 +51,21 @@ function Controller(model, view) {
 /** @private */
 Controller.prototype.defineInputs_ = function() {
   var inputs = {byButton: {}, byKey: {}};
-  inputs.byButton['zero'] = inputs.byKey['48'] = '0';
-  inputs.byButton['one'] = inputs.byKey['49'] = '1';
-  inputs.byButton['two'] = inputs.byKey['50'] = '2';
-  inputs.byButton['three'] = inputs.byKey['51'] = '3';
-  inputs.byButton['four'] = inputs.byKey['52'] = '4';
-  inputs.byButton['five'] = inputs.byKey['53'] = '5';
-  inputs.byButton['six'] = inputs.byKey['54'] = '6';
-  inputs.byButton['seven'] = inputs.byKey['55'] = '7';
-  inputs.byButton['eight'] = inputs.byKey['56'] = '8';
-  inputs.byButton['nine'] = inputs.byKey['57'] = '9';
-  inputs.byButton['point'] = inputs.byKey['190'] = '.';
-  inputs.byButton['add'] = inputs.byKey['^187'] = '+';
-  inputs.byButton['subtract'] = inputs.byKey['189'] = '-';
-  inputs.byButton['multiply'] = inputs.byKey['^56'] = '*';
-  inputs.byButton['divide'] = inputs.byKey['191'] = '/';
+  inputs.byButton['zero'] = inputs.byKey['48'] = inputs.byKey['96'] = '0';
+  inputs.byButton['one'] = inputs.byKey['49'] = inputs.byKey['97'] = '1';
+  inputs.byButton['two'] = inputs.byKey['50'] = inputs.byKey['98'] = '2';
+  inputs.byButton['three'] = inputs.byKey['51'] = inputs.byKey['99'] = '3';
+  inputs.byButton['four'] = inputs.byKey['52'] = inputs.byKey['100'] = '4';
+  inputs.byButton['five'] = inputs.byKey['53'] = inputs.byKey['101'] = '5';
+  inputs.byButton['six'] = inputs.byKey['54'] = inputs.byKey['102'] = '6';
+  inputs.byButton['seven'] = inputs.byKey['55'] = inputs.byKey['103'] = '7';
+  inputs.byButton['eight'] = inputs.byKey['56'] = inputs.byKey['104'] = '8';
+  inputs.byButton['nine'] = inputs.byKey['57'] = inputs.byKey['105'] = '9';
+  inputs.byButton['point'] = inputs.byKey['190'] = inputs.byKey['110'] = '.';
+  inputs.byButton['add'] = inputs.byKey['^187'] = inputs.byKey['107'] = '+';
+  inputs.byButton['subtract'] = inputs.byKey['189'] = inputs.byKey['109'] = '-';
+  inputs.byButton['multiply'] = inputs.byKey['^56'] = inputs.byKey['106'] = '*';
+  inputs.byButton['divide'] = inputs.byKey['191'] = inputs.byKey['111'] = '/';
   inputs.byButton['equals'] = inputs.byKey['187'] = inputs.byKey['13'] = '=';
   inputs.byButton['negate'] = inputs.byKey['32'] = '+ / -';
   inputs.byButton['clear'] = inputs.byKey['67'] = 'AC';
