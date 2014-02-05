@@ -4,13 +4,18 @@
 
 #include "chrome/renderer/pepper/pepper_flash_renderer_host.h"
 
+#include <map>
 #include <vector>
 
+#include "base/lazy_instance.h"
+#include "base/metrics/histogram.h"
+#include "base/strings/string_util.h"
 #include "chrome/renderer/pepper/ppb_pdf_impl.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/http/http_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -32,6 +37,100 @@
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
+
+namespace {
+
+// Some non-simple HTTP request headers that Flash may set.
+// (Please see http://www.w3.org/TR/cors/#simple-header for the definition of
+// simple headers.)
+//
+// The list and the enum defined below are used to collect data about request
+// headers used in PPB_Flash.Navigate() calls, in order to understand the impact
+// of rejecting PPB_Flash.Navigate() requests with non-simple headers.
+//
+// TODO(yzshen): We should be able to remove the histogram recording code once
+// we get the answer.
+const char* kRejectedHttpRequestHeaders[] = {
+  "authorization",
+  "cache-control",
+  "content-encoding",
+  "content-md5",
+  "content-type",  // If the media type is not one of those covered by the
+                   // simple header definition.
+  "expires",
+  "from",
+  "if-match",
+  "if-none-match",
+  "if-range",
+  "if-unmodified-since",
+  "pragma",
+  "referer"
+};
+
+// Please note that new entries should be added right above
+// FLASH_NAVIGATE_USAGE_ENUM_COUNT, and existing entries shouldn't be re-ordered
+// or removed, since this ordering is used in a histogram.
+enum FlashNavigateUsage {
+  // This section must be in the same order as kRejectedHttpRequestHeaders.
+  REJECT_AUTHORIZATION = 0,
+  REJECT_CACHE_CONTROL,
+  REJECT_CONTENT_ENCODING,
+  REJECT_CONTENT_MD5,
+  REJECT_CONTENT_TYPE,
+  REJECT_EXPIRES,
+  REJECT_FROM,
+  REJECT_IF_MATCH,
+  REJECT_IF_NONE_MATCH,
+  REJECT_IF_RANGE,
+  REJECT_IF_UNMODIFIED_SINCE,
+  REJECT_PRAGMA,
+  REJECT_REFERER,
+
+  // The navigate request is rejected because of headers not listed above
+  // (e.g., custom headers).
+  REJECT_OTHER_HEADERS,
+
+  // Total number of rejected navigate requests.
+  TOTAL_REJECTED_NAVIGATE_REQUESTS,
+
+  // Total number of navigate requests.
+  TOTAL_NAVIGATE_REQUESTS,
+
+  FLASH_NAVIGATE_USAGE_ENUM_COUNT
+};
+
+static base::LazyInstance<std::map<std::string, FlashNavigateUsage> >
+    g_rejected_headers = LAZY_INSTANCE_INITIALIZER;
+
+bool IsSimpleHeader(const std::string& lower_case_header_name,
+                    const std::string& header_value) {
+  if (lower_case_header_name == "accept" ||
+      lower_case_header_name == "accept-language" ||
+      lower_case_header_name == "content-language") {
+    return true;
+  }
+
+  if (lower_case_header_name == "content-type") {
+    std::string lower_case_mime_type;
+    std::string lower_case_charset;
+    bool had_charset = false;
+    net::HttpUtil::ParseContentType(header_value, &lower_case_mime_type,
+                                    &lower_case_charset, &had_charset, NULL);
+    return lower_case_mime_type == "application/x-www-form-urlencoded" ||
+           lower_case_mime_type == "multipart/form-data" ||
+           lower_case_mime_type == "text/plain";
+  }
+
+  return false;
+}
+
+void RecordFlashNavigateUsage(FlashNavigateUsage usage) {
+  DCHECK_NE(FLASH_NAVIGATE_USAGE_ENUM_COUNT, usage);
+  UMA_HISTOGRAM_ENUMERATION("Plugin.FlashNavigateUsage", usage,
+                            FLASH_NAVIGATE_USAGE_ENUM_COUNT);
+}
+
+}  // namespace
 
 PepperFlashRendererHost::PepperFlashRendererHost(
     content::RendererPpapiHost* host,
@@ -209,6 +308,37 @@ int32_t PepperFlashRendererHost::OnNavigate(
       host_->GetPluginInstance(pp_instance());
   if (!plugin_instance)
     return PP_ERROR_FAILED;
+
+  std::map<std::string, FlashNavigateUsage>& rejected_headers =
+      g_rejected_headers.Get();
+  if (rejected_headers.empty()) {
+    for (size_t i = 0; i < arraysize(kRejectedHttpRequestHeaders); ++i)
+      rejected_headers[kRejectedHttpRequestHeaders[i]] =
+          static_cast<FlashNavigateUsage>(i);
+  }
+
+  net::HttpUtil::HeadersIterator header_iter(data.headers.begin(),
+                                             data.headers.end(),
+                                             "\n\r");
+  bool rejected = false;
+  while (header_iter.GetNext()) {
+    std::string lower_case_header_name = StringToLowerASCII(header_iter.name());
+    if (!IsSimpleHeader(lower_case_header_name, header_iter.values())) {
+      rejected = true;
+
+      std::map<std::string, FlashNavigateUsage>::const_iterator iter =
+          rejected_headers.find(lower_case_header_name);
+      FlashNavigateUsage usage = iter != rejected_headers.end() ?
+          iter->second : REJECT_OTHER_HEADERS;
+      RecordFlashNavigateUsage(usage);
+    }
+  }
+
+  RecordFlashNavigateUsage(TOTAL_NAVIGATE_REQUESTS);
+  if (rejected) {
+    RecordFlashNavigateUsage(TOTAL_REJECTED_NAVIGATE_REQUESTS);
+    return PP_ERROR_NOACCESS;
+  }
 
   // Navigate may call into Javascript (e.g. with a "javascript:" URL),
   // or do things like navigate away from the page, either one of which will
