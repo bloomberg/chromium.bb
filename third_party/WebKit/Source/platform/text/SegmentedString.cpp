@@ -22,54 +22,6 @@
 
 namespace WebCore {
 
-SegmentedString::SegmentedString(const SegmentedString& other)
-    : m_pushedChar1(other.m_pushedChar1)
-    , m_pushedChar2(other.m_pushedChar2)
-    , m_currentString(other.m_currentString)
-    , m_numberOfCharactersConsumedPriorToCurrentString(other.m_numberOfCharactersConsumedPriorToCurrentString)
-    , m_numberOfCharactersConsumedPriorToCurrentLine(other.m_numberOfCharactersConsumedPriorToCurrentLine)
-    , m_currentLine(other.m_currentLine)
-    , m_substrings(other.m_substrings)
-    , m_closed(other.m_closed)
-    , m_empty(other.m_empty)
-    , m_fastPathFlags(other.m_fastPathFlags)
-    , m_advanceFunc(other.m_advanceFunc)
-    , m_advanceAndUpdateLineNumberFunc(other.m_advanceAndUpdateLineNumberFunc)
-{
-    if (m_pushedChar2)
-        m_currentChar = m_pushedChar2;
-    else if (m_pushedChar1)
-        m_currentChar = m_pushedChar1;
-    else
-        m_currentChar = m_currentString.m_length ? m_currentString.getCurrentChar() : 0;
-}
-
-const SegmentedString& SegmentedString::operator=(const SegmentedString& other)
-{
-    m_pushedChar1 = other.m_pushedChar1;
-    m_pushedChar2 = other.m_pushedChar2;
-    m_currentString = other.m_currentString;
-    m_substrings = other.m_substrings;
-    if (m_pushedChar2)
-        m_currentChar = m_pushedChar2;
-    else if (m_pushedChar1)
-        m_currentChar = m_pushedChar1;
-    else
-        m_currentChar = m_currentString.m_length ? m_currentString.getCurrentChar() : 0;
-
-    m_closed = other.m_closed;
-    m_empty = other.m_empty;
-    m_fastPathFlags = other.m_fastPathFlags;
-    m_numberOfCharactersConsumedPriorToCurrentString = other.m_numberOfCharactersConsumedPriorToCurrentString;
-    m_numberOfCharactersConsumedPriorToCurrentLine = other.m_numberOfCharactersConsumedPriorToCurrentLine;
-    m_currentLine = other.m_currentLine;
-
-    m_advanceFunc = other.m_advanceFunc;
-    m_advanceAndUpdateLineNumberFunc = other.m_advanceAndUpdateLineNumberFunc;
-
-    return *this;
-}
-
 unsigned SegmentedString::length() const
 {
     unsigned length = m_currentString.m_length;

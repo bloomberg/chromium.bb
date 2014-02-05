@@ -890,6 +890,7 @@
       'testing/TreeTestHelpers.h',
       'text/BidiResolverTest.cpp',
       'text/DateTimeFormatTest.cpp',
+      'text/SegmentedStringTest.cpp',
       'text/UnicodeUtilitiesTest.cpp',
       'weborigin/DatabaseIdentifierTest.cpp',
       'weborigin/KURLTest.cpp',

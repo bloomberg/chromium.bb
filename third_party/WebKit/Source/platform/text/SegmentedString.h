@@ -172,10 +172,6 @@ public:
         updateAdvanceFunctionPointers();
     }
 
-    SegmentedString(const SegmentedString&);
-
-    const SegmentedString& operator=(const SegmentedString&);
-
     void clear();
     void close();
 
