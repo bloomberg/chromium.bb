@@ -1,45 +1,16 @@
-/*
- * Copyright (c) 2013, Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/ElementAnimation.h"
+#include "core/animation/Animation.h"
 
 #include "bindings/v8/Dictionary.h"
 #include "core/animation/AnimatableLength.h"
-#include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
+#include "core/animation/AnimationHelpers.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/Timing.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "platform/animation/TimingFunctionTestHelper.h"
 
 #include <gtest/gtest.h>
@@ -70,7 +41,7 @@ void setV8ObjectPropertyAsNumber(v8::Handle<v8::Object> object, String name, dou
 
 } // namespace
 
-class AnimationElementAnimationTest : public ::testing::Test {
+class AnimationAnimationTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -84,24 +55,24 @@ protected:
     RefPtr<Document> document;
     RefPtr<Element> element;
 
-    Animation* startAnimation(Element* element, Vector<Dictionary> keyframesDictionaryVector, Dictionary timingInput)
+    PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
     {
-        return ElementAnimation::startAnimation(element, keyframesDictionaryVector, timingInput);
+        return Animation::createUnsafe(element, keyframeDictionaryVector, timingInput);
     }
 
-    Animation* startAnimation(Element* element, Vector<Dictionary> keyframesDictionaryVector, double timingInput)
+    PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
     {
-        return ElementAnimation::startAnimation(element, keyframesDictionaryVector, timingInput);
+        return Animation::createUnsafe(element, keyframeDictionaryVector, timingInput);
     }
 
-    Animation* startAnimation(Element* element, Vector<Dictionary> keyframesDictionaryVector)
+    PassRefPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector)
     {
-        return ElementAnimation::startAnimation(element, keyframesDictionaryVector);
+        return Animation::createUnsafe(element, keyframeDictionaryVector);
     }
 
     void populateTiming(Timing& timing, Dictionary timingInputDictionary)
     {
-        ElementAnimation::populateTiming(timing, timingInputDictionary);
+        Animation::populateTiming(timing, timingInputDictionary);
     }
 
     void applyTimingInputNumber(Timing& timing, v8::Isolate* isolate, String timingProperty, double timingPropertyValue)
@@ -121,7 +92,7 @@ protected:
     }
 };
 
-TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
+TEST_F(AnimationAnimationTest, CanCreateAnAnimation)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -148,10 +119,7 @@ TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
     ASSERT_TRUE(jsKeyframes[1].get("width", value2));
     ASSERT_EQ("0px", value2);
 
-    Animation* animation = startAnimation(element.get(), jsKeyframes, 0);
-
-    Player* player = document->timeline()->players().at(0).get();
-    EXPECT_EQ(animation, player->source());
+    RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, 0);
 
     Element* target = animation->target();
     EXPECT_EQ(*element.get(), *target);
@@ -174,19 +142,7 @@ TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
     EXPECT_EQ("0px", toAnimatableLength(keyframe2Width)->toCSSValue()->cssText());
 }
 
-TEST_F(AnimationElementAnimationTest, ParseCamelCasePropertyNames)
-{
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("line-height")));
-    EXPECT_EQ(CSSPropertyLineHeight, ElementAnimation::camelCaseCSSPropertyNameToID(String("lineHeight")));
-    EXPECT_EQ(CSSPropertyBorderTopWidth, ElementAnimation::camelCaseCSSPropertyNameToID(String("borderTopWidth")));
-    EXPECT_EQ(CSSPropertyWidth, ElementAnimation::camelCaseCSSPropertyNameToID(String("width")));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("Width")));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("-webkit-transform")));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("webkitTransform")));
-    EXPECT_EQ(CSSPropertyInvalid, ElementAnimation::camelCaseCSSPropertyNameToID(String("cssFloat")));
-}
-
-TEST_F(AnimationElementAnimationTest, CanSetDuration)
+TEST_F(AnimationAnimationTest, CanSetDuration)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -196,16 +152,13 @@ TEST_F(AnimationElementAnimationTest, CanSetDuration)
     Vector<Dictionary, 0> jsKeyframes;
     double duration = 2;
 
-    Animation* animation = startAnimation(element.get(), jsKeyframes, duration);
+    RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, duration);
 
-    Player* player = document->timeline()->players().at(0).get();
-
-    EXPECT_EQ(animation, player->source());
-    EXPECT_TRUE(player->source()->specified().hasIterationDuration);
-    EXPECT_EQ(duration, player->source()->specified().iterationDuration);
+    EXPECT_TRUE(animation->specified().hasIterationDuration);
+    EXPECT_EQ(duration, animation->specified().iterationDuration);
 }
 
-TEST_F(AnimationElementAnimationTest, CanOmitSpecifiedDuration)
+TEST_F(AnimationAnimationTest, CanOmitSpecifiedDuration)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -214,16 +167,13 @@ TEST_F(AnimationElementAnimationTest, CanOmitSpecifiedDuration)
 
     Vector<Dictionary, 0> jsKeyframes;
 
-    Animation* animation = startAnimation(element.get(), jsKeyframes);
+    RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes);
 
-    Player* player = document->timeline()->players().at(0).get();
-    EXPECT_EQ(animation, player->source());
-
-    EXPECT_FALSE(player->source()->specified().hasIterationDuration);
-    EXPECT_EQ(0, player->source()->specified().iterationDuration);
+    EXPECT_FALSE(animation->specified().hasIterationDuration);
+    EXPECT_EQ(0, animation->specified().iterationDuration);
 }
 
-TEST_F(AnimationElementAnimationTest, ClipNegativeDurationToZero)
+TEST_F(AnimationAnimationTest, ClipNegativeDurationToZero)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -232,16 +182,13 @@ TEST_F(AnimationElementAnimationTest, ClipNegativeDurationToZero)
 
     Vector<Dictionary, 0> jsKeyframes;
 
-    Animation* animation = startAnimation(element.get(), jsKeyframes, -2);
+    RefPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, -2);
 
-    Player* player = document->timeline()->players().at(0).get();
-    EXPECT_EQ(animation, player->source());
-
-    EXPECT_TRUE(player->source()->specified().hasIterationDuration);
-    EXPECT_EQ(0, player->source()->specified().iterationDuration);
+    EXPECT_TRUE(animation->specified().hasIterationDuration);
+    EXPECT_EQ(0, animation->specified().iterationDuration);
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputStartDelay)
+TEST_F(AnimationAnimationTest, TimingInputStartDelay)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -284,7 +231,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputStartDelay)
     timing.startDelay = 0;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputFillMode)
+TEST_F(AnimationAnimationTest, TimingInputFillMode)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -324,7 +271,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputFillMode)
     timing.fillMode = defaultFillMode;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputIterationStart)
+TEST_F(AnimationAnimationTest, TimingInputIterationStart)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -359,7 +306,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputIterationStart)
     timing.iterationStart = 0;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputIterationCount)
+TEST_F(AnimationAnimationTest, TimingInputIterationCount)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -394,7 +341,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputIterationCount)
     timing.iterationCount = 1;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputIterationDuration)
+TEST_F(AnimationAnimationTest, TimingInputIterationDuration)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -454,7 +401,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputIterationDuration)
     timing.iterationDuration = 0;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputPlaybackRate)
+TEST_F(AnimationAnimationTest, TimingInputPlaybackRate)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -489,7 +436,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputPlaybackRate)
     timing.playbackRate = 1;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputDirection)
+TEST_F(AnimationAnimationTest, TimingInputDirection)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -525,7 +472,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputDirection)
     timing.direction = defaultPlaybackDirection;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputTimingFunction)
+TEST_F(AnimationAnimationTest, TimingInputTimingFunction)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -602,7 +549,7 @@ TEST_F(AnimationElementAnimationTest, TimingInputTimingFunction)
     timing.timingFunction = defaultTimingFunction;
 }
 
-TEST_F(AnimationElementAnimationTest, TimingInputEmpty)
+TEST_F(AnimationAnimationTest, TimingInputEmpty)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);

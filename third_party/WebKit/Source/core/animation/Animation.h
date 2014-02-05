@@ -38,6 +38,7 @@
 namespace WebCore {
 
 class Element;
+class Dictionary;
 
 class Animation FINAL : public TimedItem {
 
@@ -45,6 +46,11 @@ public:
     enum Priority { DefaultPriority, TransitionPriority };
 
     static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
+    // Web Animations API Bindings constructors.
+    static PassRefPtr<Animation> create(Element*, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput);
+    static PassRefPtr<Animation> create(Element*, Vector<Dictionary> keyframeDictionaryVector, double timingInput);
+    static PassRefPtr<Animation> create(Element*, Vector<Dictionary> keyframeDictionaryVector);
+
     virtual bool isAnimation() const OVERRIDE { return true; }
 
     const AnimationEffect::CompositableValueList* compositableValues() const
@@ -76,6 +82,12 @@ protected:
     virtual double calculateTimeToEffectChange(double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
+    static void populateTiming(Timing&, Dictionary);
+    // createUnsafe should only be directly called from tests.
+    static PassRefPtr<Animation> createUnsafe(Element*, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput);
+    static PassRefPtr<Animation> createUnsafe(Element*, Vector<Dictionary> keyframeDictionaryVector, double timingInput);
+    static PassRefPtr<Animation> createUnsafe(Element*, Vector<Dictionary> keyframeDictionaryVector);
+
     Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
 
     RefPtr<Element> m_target;
@@ -89,6 +101,7 @@ private:
     Vector<int> m_compositorAnimationIds;
 
     friend class CSSAnimations;
+    friend class AnimationAnimationTest;
 };
 
 DEFINE_TYPE_CASTS(Animation, TimedItem, timedItem, timedItem->isAnimation(), timedItem.isAnimation());

@@ -30,5 +30,8 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
+    Constructor(Element target, sequence<Dictionary> keyframes, Dictionary timingInput),
+    Constructor(Element target, sequence<Dictionary> keyframes, double timingInput),
+    Constructor(Element target, sequence<Dictionary> keyframes),
 ] interface Animation : TimedItem {
 };

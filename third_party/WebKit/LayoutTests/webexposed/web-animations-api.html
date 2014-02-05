@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Check that Web Animations API methods are not available without experimental web platform features enabled. " +
+    "Expected to fail in LayoutTests/webexposed and pass in LayoutTests/virtual/stable/webexposed.");
+
+if ('animate' in Element.prototype)
+    testFailed("Element.animate() is exposed.");
+else
+    testPassed("Element.animate() is not exposed.");
+
+if ('Animation' in window)
+    testFailed("Animation constructor is exposed.");
+else
+    testPassed("Animation constructor is not exposed.");
+</script>
+

@@ -31,28 +31,19 @@
 #ifndef ElementAnimation_h
 #define ElementAnimation_h
 
-#include "core/css/parser/BisonCSSParser.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
 class Animation;
 class Dictionary;
 class Element;
-struct Timing;
 
 class ElementAnimation {
 public:
-    static CSSPropertyID camelCaseCSSPropertyNameToID(const String& propertyName);
     static Animation* animate(Element*, Vector<Dictionary> keyframesDictionaryVector, Dictionary timingInput);
     static Animation* animate(Element*, Vector<Dictionary> keyframesDictionaryVector, double timingInput);
     static Animation* animate(Element*, Vector<Dictionary> keyframesDictionaryVector);
-
-private:
-    static Animation* startAnimation(Element*, Vector<Dictionary> keyframesDictionaryVector, Dictionary timingInput);
-    static Animation* startAnimation(Element*, Vector<Dictionary> keyframesDictionaryVector, double timingInput);
-    static Animation* startAnimation(Element*, Vector<Dictionary> keyframesDictionaryVector);
-    static void populateTiming(Timing&, Dictionary);
-    friend class AnimationElementAnimationTest;
 };
 
 } // namespace WebCore

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<body>
+    <div id='e'></div>
+</body>
+
+<script>
+var element = document.getElementById('e');
+
+var animationWithTimingObject = new Animation(element,
+    [{opacity: '1', offset: 0},
+    {opacity: '0', offset: 1}],
+    {duration: 2, iterations: 5});
+
+var animationWithDuration = new Animation(element,
+    [{opacity: '1', offset: 0},
+    {opacity: '0', offset: 1}],
+    2);
+
+var animationNoTiming = new Animation(element,
+    [{opacity: '1', offset: 0},
+    {opacity: '0', offset: 1}]);
+
+test(function() {
+    assert_false(animationWithTimingObject == undefined);
+    assert_equals(animationWithTimingObject.constructor, Animation);
+}, 'Calling new Animation() with a timing object input should create an animation.');
+
+test(function() {
+    assert_false(animationWithDuration == undefined);
+    assert_equals(animationWithDuration.constructor, Animation);
+}, 'Calling new Animation() with a duration input should create an animation.');
+
+test(function() {
+    assert_false(animationNoTiming == undefined);
+    assert_equals(animationNoTiming.constructor, Animation);
+}, 'Calling new Animation() with no timing input should create an animation.');
+</script>
