@@ -124,6 +124,10 @@ struct gl_renderer {
 	PFNEGLCREATEIMAGEKHRPROC create_image;
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 
+#ifdef EGL_EXT_swap_buffers_with_damage
+	PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC swap_buffers_with_damage;
+#endif
+
 	int has_unpack_subimage;
 
 	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
@@ -677,6 +681,17 @@ draw_output_border_texture(struct gl_output_state *go,
 	glDisableVertexAttribArray(0);
 }
 
+static int
+output_has_borders(struct weston_output *output)
+{
+	struct gl_output_state *go = get_output_state(output);
+
+	return go->borders[GL_RENDERER_BORDER_TOP].data ||
+	       go->borders[GL_RENDERER_BORDER_RIGHT].data ||
+	       go->borders[GL_RENDERER_BORDER_BOTTOM].data ||
+	       go->borders[GL_RENDERER_BORDER_LEFT].data;
+}
+
 static void
 draw_output_borders(struct weston_output *output,
 		    enum gl_border_status border_status)
@@ -727,6 +742,43 @@ draw_output_borders(struct weston_output *output,
 					   right->width, output->current_mode->height);
 	if (border_status & BORDER_BOTTOM_DIRTY)
 		draw_output_border_texture(go, GL_RENDERER_BORDER_BOTTOM,
+					   0, full_height - bottom->height,
+					   full_width, bottom->height);
+}
+
+static void
+output_get_border_damage(struct weston_output *output,
+			 enum gl_border_status border_status,
+			 pixman_region32_t *damage)
+{
+	struct gl_output_state *go = get_output_state(output);
+	struct gl_border_image *top, *bottom, *left, *right;
+	int full_width, full_height;
+
+	if (border_status == BORDER_STATUS_CLEAN)
+		return; /* Clean. Nothing to do. */
+
+	top = &go->borders[GL_RENDERER_BORDER_TOP];
+	bottom = &go->borders[GL_RENDERER_BORDER_BOTTOM];
+	left = &go->borders[GL_RENDERER_BORDER_LEFT];
+	right = &go->borders[GL_RENDERER_BORDER_RIGHT];
+
+	full_width = output->current_mode->width + left->width + right->width;
+	full_height = output->current_mode->height + top->height + bottom->height;
+	if (border_status & BORDER_TOP_DIRTY)
+		pixman_region32_union_rect(damage, damage,
+					   0, 0,
+					   full_width, top->height);
+	if (border_status & BORDER_LEFT_DIRTY)
+		pixman_region32_union_rect(damage, damage,
+					   0, top->height,
+					   left->width, output->current_mode->height);
+	if (border_status & BORDER_RIGHT_DIRTY)
+		pixman_region32_union_rect(damage, damage,
+					   full_width - right->width, top->height,
+					   right->width, output->current_mode->height);
+	if (border_status & BORDER_BOTTOM_DIRTY)
+		pixman_region32_union_rect(damage, damage,
 					   0, full_height - bottom->height,
 					   full_width, bottom->height);
 }
@@ -802,6 +854,11 @@ gl_renderer_repaint_output(struct weston_output *output,
 	struct gl_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
+#ifdef EGL_EXT_swap_buffers_with_damage
+	int i, nrects, buffer_height;
+	EGLint *egl_damage, *d;
+	pixman_box32_t *rects;
+#endif
 	pixman_region32_t buffer_damage, total_damage;
 	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
 
@@ -847,7 +904,48 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
 
+#ifdef EGL_EXT_swap_buffers_with_damage
+	if (gr->swap_buffers_with_damage) {
+		pixman_region32_init(&buffer_damage);
+		weston_transformed_region(output->width, output->height,
+					  output->transform,
+					  output->current_scale,
+					  output_damage, &buffer_damage);
+
+		if (output_has_borders(output)) {
+			pixman_region32_translate(&buffer_damage,
+						  go->borders[GL_RENDERER_BORDER_LEFT].width,
+						  go->borders[GL_RENDERER_BORDER_TOP].height);
+			output_get_border_damage(output, go->border_status,
+						 &buffer_damage);
+		}
+
+		rects = pixman_region32_rectangles(&buffer_damage, &nrects);
+		egl_damage = malloc(nrects * 4 * sizeof(EGLint));
+
+		buffer_height = go->borders[GL_RENDERER_BORDER_TOP].height +
+				output->current_mode->height +
+				go->borders[GL_RENDERER_BORDER_BOTTOM].height;
+
+		d = egl_damage;
+		for (i = 0; i < nrects; ++i) {
+			*d++ = rects[i].x1;
+			*d++ = buffer_height - rects[i].y2;
+			*d++ = rects[i].x2 - rects[i].x1;
+			*d++ = rects[i].y2 - rects[i].y1;
+		}
+		ret = gr->swap_buffers_with_damage(gr->egl_display,
+						   go->egl_surface,
+						   egl_damage, nrects);
+		free(egl_damage);
+		pixman_region32_fini(&buffer_damage);
+	} else {
+		ret = eglSwapBuffers(gr->egl_display, go->egl_surface);
+	}
+#else /* ! defined EGL_EXT_swap_buffers_with_damage */
 	ret = eglSwapBuffers(gr->egl_display, go->egl_surface);
+#endif
+
 	if (ret == EGL_FALSE && !errored) {
 		errored = 1;
 		weston_log("Failed in eglSwapBuffers.\n");
@@ -1957,6 +2055,15 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 	else
 		weston_log("warning: EGL_EXT_buffer_age not supported. "
 			   "Performance could be affected.\n");
+
+#ifdef EGL_EXT_swap_buffers_with_damage
+	if (strstr(extensions, "EGL_EXT_swap_buffers_with_damage"))
+		gr->swap_buffers_with_damage =
+			(void *) eglGetProcAddress("eglSwapBuffersWithDamageEXT");
+	else
+		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
+			   "supported. Performance could be affected.\n");
+#endif
 
 	glActiveTexture(GL_TEXTURE0);
 
