@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 

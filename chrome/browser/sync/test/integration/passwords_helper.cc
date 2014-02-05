@@ -17,7 +17,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/password_manager/core/password_form_data.h"
+#include "components/password_manager/core/browser/password_form_data.h"
 
 using autofill::PasswordForm;
 using sync_datatype_helper::test;

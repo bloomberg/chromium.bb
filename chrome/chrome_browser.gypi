@@ -30,6 +30,7 @@
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:encryptor',
         '../components/components.gyp:navigation_metrics',
+        '../components/components.gyp:password_manager_core_common',
         '../components/components.gyp:policy_component',
         '../components/components.gyp:precache_core',
         '../components/components.gyp:signin_core',

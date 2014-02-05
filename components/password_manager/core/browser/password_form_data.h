@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_PASSWORD_FORM_DATA_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_PASSWORD_FORM_DATA_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_DATA_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_DATA_H_
 
 #include <ostream>
 
@@ -50,4 +50,4 @@ MATCHER_P(ContainsAllPasswordForms, forms, "") {
   return ContainsSamePasswordFormsPtr(forms, arg);
 }
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_PASSWORD_FORM_DATA_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_DATA_H_

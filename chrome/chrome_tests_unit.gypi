@@ -18,7 +18,7 @@
         'common',
         '../base/base.gyp:base_prefs_test_support',
         '../base/base.gyp:test_support_base',
-        '../components/components.gyp:password_manager_core_test_support',
+        '../components/components.gyp:password_manager_core_browser_test_support',
         '../components/components.gyp:sync_driver_test_support',
         '../content/content.gyp:content_app_both',
         '../content/content_shell_and_tests.gyp:test_support_content',

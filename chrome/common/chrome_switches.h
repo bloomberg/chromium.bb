@@ -11,6 +11,7 @@
 
 #include "base/base_switches.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/common/content_switches.h"
 
 namespace switches {
@@ -111,7 +112,6 @@ extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableOmniboxAutoCompletionForIme[];
 extern const char kDisableOriginChip[];
-extern const char kDisablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kDisablePasswordManagerReauthentication[];
 extern const char kDisablePeopleSearch[];
 extern const char kDisablePnacl[];

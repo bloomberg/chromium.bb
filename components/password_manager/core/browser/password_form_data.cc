@@ -4,7 +4,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/password_manager/core/password_form_data.h"
+#include "components/password_manager/core/browser/password_form_data.h"
 
 using autofill::PasswordForm;
 

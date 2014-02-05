@@ -22,7 +22,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/password_manager/core/password_form_data.h"
+#include "components/password_manager/core/browser/password_form_data.h"
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/encryptor/ie7_password_win.h"
 #include "content/public/test/test_browser_thread.h"

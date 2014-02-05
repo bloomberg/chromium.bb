@@ -376,11 +376,6 @@ const char kDisableOmniboxAutoCompletionForIme[] =
 // Disable the origin chip.
 const char kDisableOriginChip[]             = "disable-origin-chip";
 
-// Disable using a public suffix based domain matching for autofill of
-// passwords.
-const char kDisablePasswordAutofillPublicSuffixDomainMatching[] =
-    "disable-password-autofill-public-suffix-domain-matching";
-
 // Disable the setting to prompt the user for their OS account password before
 // revealing plaintext passwords in the password manager.
 const char kDisablePasswordManagerReauthentication[] =

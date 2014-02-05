@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'password_manager_core_test_support',
+      'target_name': 'password_manager_core_browser_test_support',
       'type': 'static_library',
       'dependencies': [
         'autofill_core_common',
@@ -17,8 +17,21 @@
         '..',
       ],
       'sources': [
-        'password_manager/core/password_form_data.cc',
-        'password_manager/core/password_form_data.h',
+        'password_manager/core/browser/password_form_data.cc',
+        'password_manager/core/browser/password_form_data.h',
+      ],
+    },
+    {
+      'target_name': 'password_manager_core_common',
+      'type': 'static_library',
+      'dependencies': [
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'password_manager/core/common/password_manager_switches.cc',
+        'password_manager/core/common/password_manager_switches.h',
       ],
     },
   ],
