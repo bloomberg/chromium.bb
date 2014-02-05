@@ -23,7 +23,10 @@ class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {
   // Returns true to show the opt in pop up for that profile.
   static bool ShouldShowOptInPopup(Profile* profile);
 
-  // Returns whether we are allowed to make hotwording an option to |profile|.
+  // Returns true if the hotwording service is available for |profile|.
+  static bool IsServiceAvailable(Profile* profile);
+
+  // Returns true if hotwording is allowed for |profile|.
   static bool IsHotwordAllowed(Profile* profile);
 
  private:

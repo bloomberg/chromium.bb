@@ -14,11 +14,6 @@
 
 // static
 HotwordService* HotwordServiceFactory::GetForProfile(Profile* profile) {
-  if (!profile ||
-      (profile->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled) &&
-       !profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)))
-    return NULL;
-
   return static_cast<HotwordService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
@@ -32,6 +27,12 @@ HotwordServiceFactory* HotwordServiceFactory::GetInstance() {
 bool HotwordServiceFactory::ShouldShowOptInPopup(Profile* profile) {
   HotwordService* hotword_service = GetForProfile(profile);
   return hotword_service && hotword_service->ShouldShowOptInPopup();
+}
+
+// static
+bool HotwordServiceFactory::IsServiceAvailable(Profile* profile) {
+  HotwordService* hotword_service = GetForProfile(profile);
+  return hotword_service && hotword_service->IsServiceAvailable();
 }
 
 // static
