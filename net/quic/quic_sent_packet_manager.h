@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/linked_hash_map.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_ack_notifier_manager.h"

@@ -17,6 +17,11 @@
 
 namespace net {
 
+class ChannelIDSigner;
+class CryptoHandshakeMessage;
+class ProofVerifier;
+class ProofVerifyDetails;
+class QuicRandom;
 class QuicServerInfo;
 class QuicServerInfoFactory;
 

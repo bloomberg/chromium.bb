@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/base/int128.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/quic/iovector.h"
 #include "net/quic/quic_bandwidth.h"
@@ -43,6 +44,7 @@ typedef uint32 QuicHeaderId;
 // QuicTag is the type of a tag in the wire protocol.
 typedef uint32 QuicTag;
 typedef std::vector<QuicTag> QuicTagVector;
+typedef std::map<QuicTag, std::string> QuicTagValueMap;
 // TODO(rtenneti): Didn't use SpdyPriority because SpdyPriority is uint8 and
 // QuicPriority is uint32. Use SpdyPriority when we change the QUIC_VERSION.
 typedef uint32 QuicPriority;
@@ -80,6 +82,7 @@ const size_t kQuicVersionSize = 4;
 const size_t kPrivateFlagsSize = 1;
 // Number of bytes reserved for FEC group in the packet header.
 const size_t kFecGroupSize = 1;
+// TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
 // Number of bytes reserved for the nonce proof in public reset packet.
 const size_t kPublicResetNonceSize = 8;
 
@@ -294,16 +297,13 @@ NET_EXPORT_PRIVATE std::string QuicVersionVectorToString(
 NET_EXPORT_PRIVATE QuicTag MakeQuicTag(char a, char b, char c, char d);
 
 // Size in bytes of the data or fec packet header.
-NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(QuicPacketHeader header);
+NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(const QuicPacketHeader& header);
 
 NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(
     QuicGuidLength guid_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length,
     InFecGroup is_in_fec_group);
-
-// Size in bytes of the public reset packet.
-NET_EXPORT_PRIVATE size_t GetPublicResetPacketSize();
 
 // Index of the first byte in a QUIC packet of FEC protected data.
 NET_EXPORT_PRIVATE size_t GetStartOfFecProtectedData(
@@ -507,6 +507,7 @@ struct NET_EXPORT_PRIVATE QuicPublicResetPacket {
   QuicPacketPublicHeader public_header;
   QuicPublicResetNonceProof nonce_proof;
   QuicPacketSequenceNumber rejected_sequence_number;
+  IPEndPoint client_address;
 };
 
 enum QuicVersionNegotiationState {

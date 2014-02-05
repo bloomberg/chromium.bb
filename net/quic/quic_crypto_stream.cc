@@ -10,6 +10,7 @@
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_session.h"
+#include "net/quic/quic_utils.h"
 
 using std::string;
 using base::StringPiece;

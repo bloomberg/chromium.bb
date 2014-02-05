@@ -15,7 +15,7 @@ using std::string;
 
 namespace net {
 
-size_t GetPacketHeaderSize(QuicPacketHeader header) {
+size_t GetPacketHeaderSize(const QuicPacketHeader& header) {
   return GetPacketHeaderSize(header.public_header.guid_length,
                              header.public_header.version_flag,
                              header.public_header.sequence_number_length,
@@ -29,11 +29,6 @@ size_t GetPacketHeaderSize(QuicGuidLength guid_length,
   return kPublicFlagsSize + guid_length +
       (include_version ? kQuicVersionSize : 0) + sequence_number_length +
       kPrivateFlagsSize + (is_in_fec_group == IN_FEC_GROUP ? kFecGroupSize : 0);
-}
-
-size_t GetPublicResetPacketSize() {
-  return kPublicFlagsSize + PACKET_8BYTE_GUID + kPublicResetNonceSize +
-      PACKET_6BYTE_SEQUENCE_NUMBER;
 }
 
 size_t GetStartOfFecProtectedData(

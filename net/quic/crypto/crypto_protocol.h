@@ -5,9 +5,7 @@
 #ifndef NET_QUIC_CRYPTO_CRYPTO_PROTOCOL_H_
 #define NET_QUIC_CRYPTO_CRYPTO_PROTOCOL_H_
 
-#include <map>
 #include <string>
-#include <vector>
 
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
@@ -26,7 +24,6 @@
 namespace net {
 
 typedef std::string ServerConfigID;
-typedef std::map<QuicTag, std::string> QuicTagValueMap;
 
 const QuicTag kCHLO = TAG('C', 'H', 'L', 'O');  // Client hello
 const QuicTag kSHLO = TAG('S', 'H', 'L', 'O');  // Server hello
@@ -34,6 +31,7 @@ const QuicTag kSCFG = TAG('S', 'C', 'F', 'G');  // Server config
 const QuicTag kREJ  = TAG('R', 'E', 'J', '\0'); // Reject
 const QuicTag kCETV = TAG('C', 'E', 'T', 'V');  // Client encrypted tag-value
                                                 // pairs
+const QuicTag kPRST = TAG('P', 'R', 'S', 'T');  // Public reset
 
 // Key exchange methods
 const QuicTag kP256 = TAG('P', '2', '5', '6');  // ECDH, Curve P-256
@@ -85,12 +83,16 @@ const QuicTag kCCS  = TAG('C', 'C', 'S', 0);    // Common certificate set
 const QuicTag kCCRT = TAG('C', 'C', 'R', 'T');  // Cached certificate
 const QuicTag kEXPY = TAG('E', 'X', 'P', 'Y');  // Expiry
 
+// Server hello tags
+const QuicTag kCADR = TAG('C', 'A', 'D', 'R');  // Client IP address and port
+
 // CETV tags
 const QuicTag kCIDK = TAG('C', 'I', 'D', 'K');  // ChannelID key
 const QuicTag kCIDS = TAG('C', 'I', 'D', 'S');  // ChannelID signature
 
-// Server hello tags
-const QuicTag kCADR = TAG('C', 'A', 'D', 'R');  // Client IP address and port
+// Public reset tags
+const QuicTag kRNON = TAG('R', 'N', 'O', 'N');  // Public reset nonce proof
+const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');  // Rejected sequence number
 
 // Universal tags
 const QuicTag kPAD  = TAG('P', 'A', 'D', '\0'); // Padding

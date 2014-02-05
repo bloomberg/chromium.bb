@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
-#include "net/quic/quic_utils.h"
 
 namespace net {
+
+class CryptoHandshakeMessage;
 
 class NET_EXPORT_PRIVATE QuicNegotiableValue {
  public:

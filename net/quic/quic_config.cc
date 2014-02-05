@@ -7,7 +7,10 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "net/quic/crypto/crypto_handshake_message.h"
+#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
+#include "net/quic/quic_utils.h"
 
 using std::string;
 

@@ -188,6 +188,7 @@ void QuicTimeWaitListManager::SendPublicReset(
   packet.rejected_sequence_number = rejected_sequence_number;
   // TODO(satyamshekhar): generate a valid nonce for this guid.
   packet.nonce_proof = 1010101;
+  packet.client_address = client_address;
   QueuedPacket* queued_packet = new QueuedPacket(
       server_address,
       client_address,

@@ -6,6 +6,7 @@
 
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_http_utils.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 namespace net {

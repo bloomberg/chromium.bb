@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/reliable_quic_stream.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/test/gtest_util.h"

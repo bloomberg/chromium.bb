@@ -22,6 +22,7 @@
 
 namespace net {
 
+class CryptoHandshakeMessage;
 class EphemeralKeySource;
 class KeyExchange;
 class ProofSource;

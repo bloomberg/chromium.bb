@@ -14,6 +14,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/test_tools/mock_epoll_server.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
@@ -70,6 +71,7 @@ class QuicTimeWaitListManagerTest : public testing::Test {
                                 &epoll_server_, QuicSupportedVersions()),
         framer_(QuicSupportedVersions(), QuicTime::Zero(), true),
         guid_(45),
+        client_address_(net::test::TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
 
   virtual ~QuicTimeWaitListManagerTest() {}
@@ -165,7 +167,9 @@ class ValidatePublicResetPacketPredicate
     QuicPublicResetPacket packet = visitor.public_reset_packet();
     return guid_ == packet.public_header.guid &&
         packet.public_header.reset_flag && !packet.public_header.version_flag &&
-        sequence_number_ == packet.rejected_sequence_number;
+        sequence_number_ == packet.rejected_sequence_number &&
+        net::test::TestPeerIPAddress() == packet.client_address.address() &&
+        kTestPort == packet.client_address.port();
   }
 
   virtual void DescribeTo(::std::ostream* os) const { }

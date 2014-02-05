@@ -798,6 +798,8 @@
         'quic/crypto/crypto_framer.h',
         'quic/crypto/crypto_handshake.cc',
         'quic/crypto/crypto_handshake.h',
+        'quic/crypto/crypto_handshake_message.cc',
+        'quic/crypto/crypto_handshake_message.h',
         'quic/crypto/crypto_protocol.h',
         'quic/crypto/crypto_secret_boxer.cc',
         'quic/crypto/crypto_secret_boxer.h',

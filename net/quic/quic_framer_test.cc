@@ -103,6 +103,12 @@ const size_t kPublicResetPacketNonceProofOffset =
 const size_t kPublicResetPacketRejectedSequenceNumberOffset =
     kPublicResetPacketNonceProofOffset + kPublicResetNonceSize;
 
+// TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
+// Size of the old-style public reset packet.
+const size_t kPublicResetPacketOldSize =
+    kPublicResetPacketRejectedSequenceNumberOffset +
+    PACKET_6BYTE_SEQUENCE_NUMBER;
+
 class TestEncrypter : public QuicEncrypter {
  public:
   virtual ~TestEncrypter() {}
@@ -2282,6 +2288,163 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
 TEST_P(QuicFramerTest, PublicResetPacket) {
   unsigned char packet[] = {
     // public flags (public reset, 8 byte guid)
+    0x0E,
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // message tag (kPRST)
+    'P', 'R', 'S', 'T',
+    // num_entries (2) + padding
+    0x02, 0x00, 0x00, 0x00,
+    // tag kRNON
+    'R', 'N', 'O', 'N',
+    // end offset 8
+    0x08, 0x00, 0x00, 0x00,
+    // tag kRSEQ
+    'R', 'S', 'E', 'Q',
+    // end offset 16
+    0x10, 0x00, 0x00, 0x00,
+    // nonce proof
+    0x89, 0x67, 0x45, 0x23,
+    0x01, 0xEF, 0xCD, 0xAB,
+    // rejected sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12, 0x00, 0x00,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+  ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.public_reset_packet_.get());
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.public_reset_packet_->public_header.guid);
+  EXPECT_TRUE(visitor_.public_reset_packet_->public_header.reset_flag);
+  EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
+  EXPECT_EQ(GG_UINT64_C(0xABCDEF0123456789),
+            visitor_.public_reset_packet_->nonce_proof);
+  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
+            visitor_.public_reset_packet_->rejected_sequence_number);
+  EXPECT_TRUE(
+      visitor_.public_reset_packet_->client_address.address().empty());
+
+  // Now test framing boundaries
+  for (size_t i = 0; i < arraysize(packet); ++i) {
+    string expected_error;
+    DLOG(INFO) << "iteration: " << i;
+    if (i < kGuidOffset) {
+      expected_error = "Unable to read public flags.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
+    } else if (i < kPublicResetPacketNonceProofOffset) {
+      expected_error = "Unable to read GUID.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
+    } else if (i < kPublicResetPacketRejectedSequenceNumberOffset) {
+      expected_error = "Unable to read nonce proof.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
+    } else if (i < kPublicResetPacketOldSize) {
+      expected_error = "Unable to read rejected sequence number.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
+    } else if (i == kPublicResetPacketOldSize) {
+      // This looks like an old public reset packet, so there won't be an
+      // error.
+    } else {
+      expected_error = "Unable to read reset message.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
+    }
+  }
+}
+
+TEST_P(QuicFramerTest, PublicResetPacketWithClientAddress) {
+  unsigned char packet[] = {
+    // public flags (public reset, 8 byte guid)
+    0x0E,
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // message tag (kPRST)
+    'P', 'R', 'S', 'T',
+    // num_entries (3) + padding
+    0x03, 0x00, 0x00, 0x00,
+    // tag kRNON
+    'R', 'N', 'O', 'N',
+    // end offset 8
+    0x08, 0x00, 0x00, 0x00,
+    // tag kRSEQ
+    'R', 'S', 'E', 'Q',
+    // end offset 16
+    0x10, 0x00, 0x00, 0x00,
+    // tag kCADR
+    'C', 'A', 'D', 'R',
+    // end offset 24
+    0x18, 0x00, 0x00, 0x00,
+    // nonce proof
+    0x89, 0x67, 0x45, 0x23,
+    0x01, 0xEF, 0xCD, 0xAB,
+    // rejected sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12, 0x00, 0x00,
+    // client address: 4.31.198.44:443
+    0x02, 0x00,
+    0x04, 0x1F, 0xC6, 0x2C,
+    0xBB, 0x01,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+  ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.public_reset_packet_.get());
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.public_reset_packet_->public_header.guid);
+  EXPECT_TRUE(visitor_.public_reset_packet_->public_header.reset_flag);
+  EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
+  EXPECT_EQ(GG_UINT64_C(0xABCDEF0123456789),
+            visitor_.public_reset_packet_->nonce_proof);
+  EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
+            visitor_.public_reset_packet_->rejected_sequence_number);
+  EXPECT_EQ("4.31.198.44",
+            IPAddressToString(visitor_.public_reset_packet_->
+                client_address.address()));
+  EXPECT_EQ(443, visitor_.public_reset_packet_->client_address.port());
+
+  // Now test framing boundaries
+  for (size_t i = 0; i < arraysize(packet); ++i) {
+    string expected_error;
+    DLOG(INFO) << "iteration: " << i;
+    if (i < kGuidOffset) {
+      expected_error = "Unable to read public flags.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
+    } else if (i < kPublicResetPacketNonceProofOffset) {
+      expected_error = "Unable to read GUID.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
+    } else if (i < kPublicResetPacketRejectedSequenceNumberOffset) {
+      expected_error = "Unable to read nonce proof.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
+    } else if (i < kPublicResetPacketOldSize) {
+      expected_error = "Unable to read rejected sequence number.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
+    } else if (i == kPublicResetPacketOldSize) {
+      // This looks like an old public reset packet, so there won't be an
+      // error.
+    } else {
+      expected_error = "Unable to read reset message.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
+    }
+  }
+}
+
+// TODO(wtc): remove this test when we drop support for QUIC_VERSION_13.
+TEST_P(QuicFramerTest, PublicResetPacketOld) {
+  unsigned char packet[] = {
+    // public flags (public reset, 8 byte guid)
     0x3E,
     // guid
     0x10, 0x32, 0x54, 0x76,
@@ -2306,9 +2469,11 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
             visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
             visitor_.public_reset_packet_->rejected_sequence_number);
+  EXPECT_TRUE(
+      visitor_.public_reset_packet_->client_address.address().empty());
 
   // Now test framing boundaries
-  for (size_t i = 0; i < GetPublicResetPacketSize(); ++i) {
+  for (size_t i = 0; i < arraysize(packet); ++i) {
     string expected_error;
     DVLOG(1) << "iteration: " << i;
     if (i < kGuidOffset) {
@@ -2709,7 +2874,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
 
   unsigned char packet[] = {
     // public flags (version, 8 byte guid)
-    0x3D,
+    0x0D,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -3155,15 +3320,79 @@ TEST_P(QuicFramerTest, BuildPublicResetPacket) {
 
   unsigned char packet[] = {
     // public flags (public reset, 8 byte GUID)
-    0x3E,
+    0x0E,
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
+    // message tag (kPRST)
+    'P', 'R', 'S', 'T',
+    // num_entries (2) + padding
+    0x02, 0x00, 0x00, 0x00,
+    // tag kRNON
+    'R', 'N', 'O', 'N',
+    // end offset 8
+    0x08, 0x00, 0x00, 0x00,
+    // tag kRSEQ
+    'R', 'S', 'E', 'Q',
+    // end offset 16
+    0x10, 0x00, 0x00, 0x00,
     // nonce proof
     0x89, 0x67, 0x45, 0x23,
     0x01, 0xEF, 0xCD, 0xAB,
     // rejected sequence number
     0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12, 0x00, 0x00,
+  };
+
+  scoped_ptr<QuicEncryptedPacket> data(
+      framer_.BuildPublicResetPacket(reset_packet));
+  ASSERT_TRUE(data != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
+}
+
+TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
+  QuicPublicResetPacket reset_packet;
+  reset_packet.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  reset_packet.public_header.reset_flag = true;
+  reset_packet.public_header.version_flag = false;
+  reset_packet.rejected_sequence_number = GG_UINT64_C(0x123456789ABC);
+  reset_packet.nonce_proof = GG_UINT64_C(0xABCDEF0123456789);
+  reset_packet.client_address = IPEndPoint(Loopback4(), 0x1234);
+
+  unsigned char packet[] = {
+    // public flags (public reset, 8 byte GUID)
+    0x0E,
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // message tag (kPRST)
+    'P', 'R', 'S', 'T',
+    // num_entries (3) + padding
+    0x03, 0x00, 0x00, 0x00,
+    // tag kRNON
+    'R', 'N', 'O', 'N',
+    // end offset 8
+    0x08, 0x00, 0x00, 0x00,
+    // tag kRSEQ
+    'R', 'S', 'E', 'Q',
+    // end offset 16
+    0x10, 0x00, 0x00, 0x00,
+    // tag kCADR
+    'C', 'A', 'D', 'R',
+    // end offset 24
+    0x18, 0x00, 0x00, 0x00,
+    // nonce proof
+    0x89, 0x67, 0x45, 0x23,
+    0x01, 0xEF, 0xCD, 0xAB,
+    // rejected sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12, 0x00, 0x00,
+    // client address
+    0x02, 0x00,
+    0x7F, 0x00, 0x00, 0x01,
     0x34, 0x12,
   };
 

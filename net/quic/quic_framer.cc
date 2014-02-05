@@ -5,10 +5,13 @@
 #include "net/quic/quic_framer.h"
 
 #include "base/containers/hash_tables.h"
+#include "net/quic/crypto/crypto_framer.h"
+#include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_data_writer.h"
+#include "net/quic/quic_socket_address_coder.h"
 
 using base::StringPiece;
 using std::make_pair;
@@ -429,12 +432,27 @@ SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
 QuicEncryptedPacket* QuicFramer::BuildPublicResetPacket(
     const QuicPublicResetPacket& packet) {
   DCHECK(packet.public_header.reset_flag);
-  size_t len = GetPublicResetPacketSize();
+
+  CryptoHandshakeMessage reset;
+  reset.set_tag(kPRST);
+  reset.SetValue(kRNON, packet.nonce_proof);
+  reset.SetValue(kRSEQ, packet.rejected_sequence_number);
+  if (!packet.client_address.address().empty()) {
+    // packet.client_address is non-empty.
+    QuicSocketAddressCoder address_coder(packet.client_address);
+    string serialized_address = address_coder.Encode();
+    if (serialized_address.empty()) {
+      return NULL;
+    }
+    reset.SetStringPiece(kCADR, serialized_address);
+  }
+  const QuicData& reset_serialized = reset.GetSerialized();
+
+  size_t len = kPublicFlagsSize + PACKET_8BYTE_GUID + reset_serialized.length();
   QuicDataWriter writer(len);
 
   uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_RST |
-                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID |
-                                   PACKET_PUBLIC_FLAGS_6BYTE_SEQUENCE);
+                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID);
   if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
@@ -443,13 +461,7 @@ QuicEncryptedPacket* QuicFramer::BuildPublicResetPacket(
     return NULL;
   }
 
-  if (!writer.WriteUInt64(packet.nonce_proof)) {
-    return NULL;
-  }
-
-  if (!AppendPacketSequenceNumber(PACKET_6BYTE_SEQUENCE_NUMBER,
-                                  packet.rejected_sequence_number,
-                                  &writer)) {
+  if (!writer.WriteBytes(reset_serialized.data(), reset_serialized.length())) {
     return NULL;
   }
 
@@ -464,8 +476,7 @@ QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
   QuicDataWriter writer(len);
 
   uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION |
-                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID |
-                                   PACKET_PUBLIC_FLAGS_6BYTE_SEQUENCE);
+                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID);
   if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
@@ -585,16 +596,57 @@ bool QuicFramer::ProcessDataPacket(
 bool QuicFramer::ProcessPublicResetPacket(
     const QuicPacketPublicHeader& public_header) {
   QuicPublicResetPacket packet(public_header);
-  if (!reader_->ReadUInt64(&packet.nonce_proof)) {
+
+  if (reader_->BytesRemaining() <=
+      kPublicResetNonceSize + PACKET_6BYTE_SEQUENCE_NUMBER) {
+    // An old-style public reset packet.
+    // TODO(wtc): remove this when we drop support for QUIC_VERSION_13.
+    if (!reader_->ReadUInt64(&packet.nonce_proof)) {
+      set_detailed_error("Unable to read nonce proof.");
+      return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
+    }
+
+    if (!reader_->ReadUInt48(&packet.rejected_sequence_number)) {
+      set_detailed_error("Unable to read rejected sequence number.");
+      return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
+    }
+
+    visitor_->OnPublicResetPacket(packet);
+    return true;
+  }
+
+  scoped_ptr<CryptoHandshakeMessage> reset(
+      CryptoFramer::ParseMessage(reader_->ReadRemainingPayload()));
+  if (!reset.get()) {
+    set_detailed_error("Unable to read reset message.");
+    return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
+  }
+  if (reset->tag() != kPRST) {
+    set_detailed_error("Incorrect message tag.");
+    return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
+  }
+
+  if (reset->GetUint64(kRNON, &packet.nonce_proof) != QUIC_NO_ERROR) {
     set_detailed_error("Unable to read nonce proof.");
     return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
   }
   // TODO(satyamshekhar): validate nonce to protect against DoS.
 
-  if (!reader_->ReadUInt48(&packet.rejected_sequence_number)) {
+  if (reset->GetUint64(kRSEQ, &packet.rejected_sequence_number) !=
+      QUIC_NO_ERROR) {
     set_detailed_error("Unable to read rejected sequence number.");
     return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
   }
+
+  StringPiece address;
+  if (reset->GetStringPiece(kCADR, &address)) {
+    QuicSocketAddressCoder address_coder;
+    if (address_coder.Decode(address.data(), address.length())) {
+      packet.client_address = IPEndPoint(address_coder.ip(),
+                                         address_coder.port());
+    }
+  }
+
   visitor_->OnPublicResetPacket(packet);
   return true;
 }
