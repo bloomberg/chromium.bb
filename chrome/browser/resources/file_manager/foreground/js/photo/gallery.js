@@ -637,42 +637,42 @@ Gallery.prototype.onKeyDown_ = function(event) {
  * @private
  */
 Gallery.prototype.updateSelectionAndState_ = function() {
+  var numSelectedItems = this.selectionModel_.length;
   var displayName = '';
+  var selectedEntryURL = null;
 
-  var selectedItems = this.getSelectedItems();
-  if (selectedItems.length === 1) {
-    var item = selectedItems[0];
-    var entry = item.getEntry();
-    window.top.document.title = entry.name;
-    displayName = ImageUtil.getDisplayNameFromName(entry.name);
-  } else if (selectedItems.length > 1 && this.context_.curDirEntry) {
-    // If the Gallery was opened on search results the search query will not be
-    // recorded in the app state and the relaunch will just open the gallery
-    // in the curDirEntry directory.
-    window.top.document.title = this.context_.curDirEntry.name;
-    displayName =
-        this.displayStringFunction_('GALLERY_ITEMS_SELECTED',
-                                    selectedItems.length);
-  }
-
-  window.top.util.updateAppState(
-      null,  // Keep the current directory.
-      entry.toURL(),  // Update the selection.
-      {gallery: (this.currentMode_ === this.mosaicMode_ ? 'mosaic' : 'slide')});
-
-  // We can't rename files in readonly directory.
-  // We can only rename a single file.
-  this.filenameEdit_.disabled = selectedItems.length !== 1 ||
-                                this.context_.readonlyDirName;
-
-  this.filenameEdit_.value = displayName;
-
-  if (this.selectionModel_.selectedIndexes.length) {
+  // If it's selecting something, update the variable values.
+  if (numSelectedItems) {
     var selectedIndex = this.selectionModel_.selectedIndex;
     var selectedItem =
         this.dataModel_.item(this.selectionModel_.selectedIndex);
     this.selectedEntry_ = selectedItem.getEntry();
+    selectedEntryURL = this.selectedEntry_.toURL();
+
+    if (numSelectedItems === 1) {
+      window.top.document.title = this.selectedEntry_.name;
+      displayName = ImageUtil.getDisplayNameFromName(this.selectedEntry_.name);
+    } else if (this.context_.curDirEntry) {
+      // If the Gallery was opened on search results the search query will not
+      // be recorded in the app state and the relaunch will just open the
+      // gallery in the curDirEntry directory.
+      window.top.document.title = this.context_.curDirEntry.name;
+      displayName =
+          this.displayStringFunction_('GALLERY_ITEMS_SELECTED',
+                                      numSelectedItems);
+    }
   }
+
+  window.top.util.updateAppState(
+      null,  // Keep the current directory.
+      selectedEntryURL,  // Update the selection.
+      {gallery: (this.currentMode_ === this.mosaicMode_ ? 'mosaic' : 'slide')});
+
+  // We can't rename files in readonly directory.
+  // We can only rename a single file.
+  this.filenameEdit_.disabled = numSelectedItems !== 1 ||
+                                this.context_.readonlyDirName;
+  this.filenameEdit_.value = displayName;
 };
 
 /**
@@ -824,7 +824,9 @@ Gallery.prototype.updateShareMenu_ = function() {
       item.style.backgroundImage = 'url(' + task.iconUrl + ')';
       item.addEventListener('click', function(taskId) {
         this.toggleShare_();  // Hide the menu.
-        this.executeWhenReady(api.executeTask.bind(api, taskId, entries));
+        // TODO(hirono): Use entries instead of URLs.
+        this.executeWhenReady(
+            api.executeTask.bind(api, taskId, util.entriesToURLs(entries)));
       }.bind(this, task.taskId));
     }
 
