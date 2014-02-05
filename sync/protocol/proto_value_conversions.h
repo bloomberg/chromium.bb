@@ -20,6 +20,7 @@ class AppNotificationSettings;
 class AppSettingSpecifics;
 class AppSpecifics;
 class ArticleSpecifics;
+class AttachmentId;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class BookmarkSpecifics;
@@ -60,7 +61,6 @@ class SessionSpecifics;
 class SessionTab;
 class SessionWindow;
 class SimpleCollapsedLayout;
-class SyncAttachmentId;
 class SyncCycleCompletedEventInfo;
 class SyncedNotification;
 class SyncedNotificationAction;
@@ -297,8 +297,8 @@ base::DictionaryValue* SyncCycleCompletedEventInfoToValue(
 base::DictionaryValue* ClientConfigParamsToValue(
     const sync_pb::ClientConfigParams& proto);
 
-SYNC_EXPORT_PRIVATE base::DictionaryValue* SyncAttachmentIdToValue(
-    const sync_pb::SyncAttachmentId& proto);
+SYNC_EXPORT_PRIVATE base::DictionaryValue* AttachmentIdToValue(
+    const sync_pb::AttachmentId& proto);
 
 }  // namespace syncer
 

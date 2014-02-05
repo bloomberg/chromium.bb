@@ -446,7 +446,8 @@
           '..',
         ],
         'sources': [
-          'api/sync_attachment_unittest.cc',
+          'api/attachments/attachment_unittest.cc',
+          'api/attachments/fake_attachment_store_unittest.cc',
           'api/sync_change_unittest.cc',
           'api/sync_error_unittest.cc',
           'api/sync_merge_result_unittest.cc',

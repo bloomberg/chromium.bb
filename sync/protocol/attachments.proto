@@ -17,7 +17,7 @@ package sync_pb;
 // Identifies an attachment.
 //
 // Note, message's definition is in flux and may change. Don't rely on it.
-message SyncAttachmentId {
+message AttachmentId {
   // Uniquely identifies the attachment. Two attachments with the same unique_id
   // are considered equivalent.
   optional string unique_id = 1;
