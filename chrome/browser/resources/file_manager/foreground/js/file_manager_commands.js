@@ -239,13 +239,6 @@ var CommandHandler = function(fileManager) {
    */
   this.commands_ = {};
 
-  /**
-   * Whether the ctrl key is pressed or not.
-   * @type {boolean}
-   * @private
-   */
-  this.ctrlKeyPressed_ = false;
-
   Object.seal(this);
 
   // Decorate command tags in the document.
@@ -259,8 +252,6 @@ var CommandHandler = function(fileManager) {
   fileManager.document.addEventListener('command', this.onCommand_.bind(this));
   fileManager.document.addEventListener('canExecute',
                                         this.onCanExecute_.bind(this));
-  fileManager.document.addEventListener('keydown', this.onKeyDown_.bind(this));
-  fileManager.document.addEventListener('keyup', this.onKeyUp_.bind(this));
 };
 
 /**
@@ -309,34 +300,6 @@ CommandHandler.prototype.onCanExecute_ = function(event) {
     return;
   var handler = CommandHandler.COMMANDS_[event.command.id];
   handler.canExecute.call(this, event, this.fileManager_);
-};
-
-/**
- * Handle key down event.
- * @param {Event} event Key down event.
- * @private
- */
-CommandHandler.prototype.onKeyDown_ = function(event) {
-  // 17 is the keycode of Ctrl key and it means the event is not for other keys
-  // with Ctrl modifier but for ctrl key itself.
-  if (util.getKeyModifiers(event) + event.keyCode == 'Ctrl-17') {
-    this.ctrlKeyPressed_ = true;
-    this.updateAvailability();
-  }
-};
-
-/**
- * Handle key up event.
- * @param {Event} event Key up event.
- * @private
- */
-CommandHandler.prototype.onKeyUp_ = function(event) {
-  // 17 is the keycode of Ctrl key and it means the event is not for other keys
-  // with Ctrl modifier but for ctrl key itself.
-  if (util.getKeyModifiers(event) + event.keyCode == '17') {
-    this.ctrlKeyPressed_ = false;
-    this.updateAvailability();
-  }
 };
 
 /**
