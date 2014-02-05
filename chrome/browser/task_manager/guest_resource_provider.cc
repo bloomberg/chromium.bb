@@ -142,7 +142,7 @@ void GuestResourceProvider::StartUpdating() {
     if (widget->IsRenderView()) {
       RenderViewHost* rvh = RenderViewHost::From(widget);
       WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-      if (web_contents->IsSubframe())
+      if (web_contents && web_contents->IsSubframe())
         Add(rvh);
     }
   }
