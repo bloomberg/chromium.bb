@@ -40,6 +40,7 @@
     Constructor(DOMString stringArg),
     Constructor(
         TestInterfaceEmpty testInterfaceEmptyArg,
+        long longArg,
         [Default=Undefined] optional DOMString defaultUndefinedOptionalStringArg,
         [Default=NullString] optional DOMString defaultNullStringOptionalStringArg,
         [Default=Undefined] optional Dictionary defaultUndefinedOptionalDictionaryArg),

@@ -319,7 +319,7 @@ static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Lo
 {% macro generate_constructor(constructor) %}
 static void constructor{{constructor.overload_index}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    {% if is_constructor_raises_exception %}
+    {% if constructor.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if interface_length and not constructor.overload_index %}
@@ -376,7 +376,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     // may end up being the only node in the map and get garbage-collected prematurely.
     toV8(document, info.Holder(), info.GetIsolate());
 
-    {% if is_constructor_raises_exception %}
+    {% if constructor.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if constructor.number_of_required_arguments %}

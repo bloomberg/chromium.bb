@@ -425,7 +425,12 @@ def generate_constructor(interface, constructor):
         'argument_list': constructor_argument_list(interface, constructor),
         'arguments': [constructor_argument(argument, index)
                       for index, argument in enumerate(constructor.arguments)],
-        'has_exception_state': interface.extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
+        'has_exception_state':
+            # [RaisesException=Constructor]
+            interface.extended_attributes.get('RaisesException') == 'Constructor' or
+            any(argument for argument in constructor.arguments
+                if argument.idl_type == 'SerializedScriptValue' or
+                   v8_types.is_integer_type(argument.idl_type)),
         'is_constructor': True,
         'is_variadic': False,  # Required for overload resolution
         'number_of_required_arguments':
