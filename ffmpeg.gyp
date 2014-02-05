@@ -54,7 +54,14 @@
           ['OS == "mac" or OS == "win" or OS == "openbsd"', {
             'os_config%': '<(OS)',
           }, {  # all other Unix OS's use the linux config
-            'os_config%': 'linux',
+            'conditions': [
+              ['msan==1', {
+                # MemorySanitizer doesn't like assembly code.
+                'os_config%': 'linux-noasm',
+              }, {
+                'os_config%': 'linux',
+              }]
+            ],
           }],
         ],
       }],
@@ -78,7 +85,7 @@
     'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
   'conditions': [
-    ['target_arch != "arm"', {
+    ['target_arch != "arm" and os_config != "linux-noasm"', {
       'targets': [
         {
           'target_name': 'ffmpeg_yasm',
@@ -228,7 +235,7 @@
               'dependencies': ['convert_ffmpeg_sources'],
               'sources': ['<@(converter_outputs)'],
             }],
-            ['target_arch != "arm" and target_arch != "mipsel"', {
+            ['target_arch != "arm" and target_arch != "mipsel" and os_config != "linux-noasm"', {
               'dependencies': [
                 'ffmpeg_yasm',
               ],
