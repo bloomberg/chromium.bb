@@ -19,7 +19,7 @@ class KeyEvent;
 
 namespace chromeos {
 
-class IBusText;
+class CompositionText;
 
 namespace input_method {
 struct InputMethodProperty;
@@ -124,8 +124,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
   InputMethodEngineInterface::Observer* observer_;
 
   // The current preedit text, and it's cursor position.
-  scoped_ptr<IBusText> preedit_text_;
-  int preedit_cursor_;
+  scoped_ptr<CompositionText> composition_text_;
+  int composition_cursor_;
 
   // The current candidate window.
   scoped_ptr<ui::CandidateWindow> candidate_window_;

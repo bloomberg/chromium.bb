@@ -1,29 +1,29 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // TODO(nona): Add more tests.
 
-#include "chromeos/ime/ibus_text.h"
+#include "chromeos/ime/composition_text.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-TEST(IBusTextTest, CopyTest) {
+TEST(CompositionTextTest, CopyTest) {
   const char kSampleText[] = "Sample Text";
-  const IBusText::UnderlineAttribute kSampleUnderlineAttribute1 = {
-    IBusText::IBUS_TEXT_UNDERLINE_SINGLE, 10, 20};
+  const CompositionText::UnderlineAttribute kSampleUnderlineAttribute1 = {
+    CompositionText::COMPOSITION_TEXT_UNDERLINE_SINGLE, 10, 20};
 
-  const IBusText::UnderlineAttribute kSampleUnderlineAttribute2 = {
-    IBusText::IBUS_TEXT_UNDERLINE_DOUBLE, 11, 21};
+  const CompositionText::UnderlineAttribute kSampleUnderlineAttribute2 = {
+    CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE, 11, 21};
 
-  const IBusText::UnderlineAttribute kSampleUnderlineAttribute3 = {
-    IBusText::IBUS_TEXT_UNDERLINE_ERROR, 12, 22};
+  const CompositionText::UnderlineAttribute kSampleUnderlineAttribute3 = {
+    CompositionText::COMPOSITION_TEXT_UNDERLINE_ERROR, 12, 22};
 
-  // Make IBusText
-  IBusText text;
+  // Make CompositionText
+  CompositionText text;
   text.set_text(kSampleText);
-  std::vector<IBusText::UnderlineAttribute>* underline_attributes =
+  std::vector<CompositionText::UnderlineAttribute>* underline_attributes =
       text.mutable_underline_attributes();
   underline_attributes->push_back(kSampleUnderlineAttribute1);
   underline_attributes->push_back(kSampleUnderlineAttribute2);
@@ -31,7 +31,7 @@ TEST(IBusTextTest, CopyTest) {
   text.set_selection_start(30);
   text.set_selection_end(40);
 
-  IBusText text2;
+  CompositionText text2;
   text2.CopyFrom(text);
 
   EXPECT_EQ(text.text(), text2.text());

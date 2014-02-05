@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
-#include "chromeos/ime/ibus_text.h"
+#include "chromeos/ime/composition_text.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/base/ime/text_input_client.h"
@@ -485,9 +485,10 @@ void InputMethodChromeOS::CommitText(const std::string& text) {
   }
 }
 
-void InputMethodChromeOS::UpdatePreeditText(const chromeos::IBusText& text,
-                                        uint32 cursor_pos,
-                                        bool visible) {
+void InputMethodChromeOS::UpdateCompositionText(
+    const chromeos::CompositionText& text,
+    uint32 cursor_pos,
+    bool visible) {
   if (IsTextInputTypeNone())
     return;
 
@@ -557,11 +558,11 @@ bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
     return false;
 
   // CharacterComposer consumed the key event.  Update the composition text.
-  chromeos::IBusText preedit;
+  chromeos::CompositionText preedit;
   preedit.set_text(
       base::UTF16ToUTF8(character_composer_.preedit_string()));
-  UpdatePreeditText(preedit, preedit.text().size(),
-                    !preedit.text().empty());
+  UpdateCompositionText(preedit, preedit.text().size(),
+                        !preedit.text().empty());
   std::string commit_text =
       base::UTF16ToUTF8(character_composer_.composed_character());
   if (!commit_text.empty()) {
@@ -571,7 +572,7 @@ bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
 }
 
 void InputMethodChromeOS::ExtractCompositionText(
-    const chromeos::IBusText& text,
+    const chromeos::CompositionText& text,
     uint32 cursor_position,
     CompositionText* out_composition) const {
   out_composition->Clear();
@@ -599,7 +600,7 @@ void InputMethodChromeOS::ExtractCompositionText(
 
   out_composition->selection = gfx::Range(cursor_offset);
 
-  const std::vector<chromeos::IBusText::UnderlineAttribute>&
+  const std::vector<chromeos::CompositionText::UnderlineAttribute>&
       underline_attributes = text.underline_attributes();
   if (!underline_attributes.empty()) {
     for (size_t i = 0; i < underline_attributes.size(); ++i) {
@@ -611,10 +612,10 @@ void InputMethodChromeOS::ExtractCompositionText(
           char16_offsets[start], char16_offsets[end],
           SK_ColorBLACK, false /* thick */);
       if (underline_attributes[i].type ==
-          chromeos::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE)
+          chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE)
         underline.thick = true;
       else if (underline_attributes[i].type ==
-               chromeos::IBusText::IBUS_TEXT_UNDERLINE_ERROR)
+               chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_ERROR)
         underline.color = SK_ColorRED;
       out_composition->underlines.push_back(underline);
     }

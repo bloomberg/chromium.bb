@@ -21,9 +21,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
+#include "chromeos/ime/composition_text.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/ibus_keymap.h"
-#include "chromeos/ime/ibus_text.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -37,18 +37,18 @@ namespace chromeos {
 const char* kErrorNotActive = "IME is not active";
 const char* kErrorWrongContext = "Context is not active";
 const char* kCandidateNotFound = "Candidate not found";
-const char* kEngineBusPrefix = "org.freedesktop.IBus.";
 
 namespace {
 
-// Notifies InputContextHandler that the preedit is changed.
-void UpdatePreedit(const IBusText& ibus_text,
-                   uint32 cursor_pos,
-                   bool is_visible) {
+// Notifies InputContextHandler that the composition is changed.
+void UpdateComposition(const CompositionText& composition_text,
+                       uint32 cursor_pos,
+                       bool is_visible) {
   IBusInputContextHandlerInterface* input_context =
       IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
-    input_context->UpdatePreeditText(ibus_text, cursor_pos, is_visible);
+    input_context->UpdateCompositionText(
+        composition_text, cursor_pos, is_visible);
 }
 
 }  // namespace
@@ -59,8 +59,8 @@ InputMethodEngine::InputMethodEngine()
       context_id_(0),
       next_context_id_(1),
       observer_(NULL),
-      preedit_text_(new IBusText()),
-      preedit_cursor_(0),
+      composition_text_(new CompositionText()),
+      composition_cursor_(0),
       candidate_window_(new ui::CandidateWindow()),
       window_visible_(false) {}
 
@@ -138,24 +138,24 @@ bool InputMethodEngine::SetComposition(
     return false;
   }
 
-  preedit_cursor_ = cursor;
-  preedit_text_.reset(new IBusText());
-  preedit_text_->set_text(text);
+  composition_cursor_ = cursor;
+  composition_text_.reset(new CompositionText());
+  composition_text_->set_text(text);
 
-  preedit_text_->set_selection_start(selection_start);
-  preedit_text_->set_selection_end(selection_end);
+  composition_text_->set_selection_start(selection_start);
+  composition_text_->set_selection_end(selection_end);
 
   // TODO: Add support for displaying selected text in the composition string.
   for (std::vector<SegmentInfo>::const_iterator segment = segments.begin();
        segment != segments.end(); ++segment) {
-    IBusText::UnderlineAttribute underline;
+    CompositionText::UnderlineAttribute underline;
 
     switch (segment->style) {
       case SEGMENT_STYLE_UNDERLINE:
-        underline.type = IBusText::IBUS_TEXT_UNDERLINE_SINGLE;
+        underline.type = CompositionText::COMPOSITION_TEXT_UNDERLINE_SINGLE;
         break;
       case SEGMENT_STYLE_DOUBLE_UNDERLINE:
-        underline.type = IBusText::IBUS_TEXT_UNDERLINE_DOUBLE;
+        underline.type = CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE;
         break;
       default:
         continue;
@@ -163,11 +163,11 @@ bool InputMethodEngine::SetComposition(
 
     underline.start_index = segment->start;
     underline.end_index = segment->end;
-    preedit_text_->mutable_underline_attributes()->push_back(underline);
+    composition_text_->mutable_underline_attributes()->push_back(underline);
   }
 
   // TODO(nona): Makes focus out mode configuable, if necessary.
-  UpdatePreedit(*preedit_text_, preedit_cursor_, true);
+  UpdateComposition(*composition_text_, composition_cursor_, true);
   return true;
 }
 
@@ -182,9 +182,9 @@ bool InputMethodEngine::ClearComposition(int context_id,
     return false;
   }
 
-  preedit_cursor_ = 0;
-  preedit_text_.reset(new IBusText());
-  UpdatePreedit(*preedit_text_, preedit_cursor_, false);
+  composition_cursor_ = 0;
+  composition_text_.reset(new CompositionText());
+  UpdateComposition(*composition_text_, composition_cursor_, false);
   return true;
 }
 

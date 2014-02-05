@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_IBUS_TEXT_H_
-#define CHROMEOS_IME_IBUS_TEXT_H_
+#ifndef CHROMEOS_IME_COMPOSITION_TEXT_H_
+#define CHROMEOS_IME_COMPOSITION_TEXT_H_
 
 #include <string>
 #include <vector>
@@ -12,24 +12,24 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT IBusText {
+class CHROMEOS_EXPORT CompositionText {
  public:
-  enum IBusTextUnderlineType {
-    IBUS_TEXT_UNDERLINE_SINGLE = 1,
-    IBUS_TEXT_UNDERLINE_DOUBLE = 2,
-    IBUS_TEXT_UNDERLINE_ERROR  = 4,
+  enum UnderlineType {
+    COMPOSITION_TEXT_UNDERLINE_SINGLE = 1,
+    COMPOSITION_TEXT_UNDERLINE_DOUBLE = 2,
+    COMPOSITION_TEXT_UNDERLINE_ERROR  = 4,
   };
 
   struct UnderlineAttribute {
-    IBusTextUnderlineType type;
+    UnderlineType type;
     uint32 start_index;  // The inclusive start index.
     uint32 end_index;  // The exclusive end index.
   };
 
-  // Accessors
-  IBusText();
-  virtual ~IBusText();
+  CompositionText();
+  virtual ~CompositionText();
 
+  // Accessors
   const std::string& text() const { return text_; }
   void set_text(const std::string& text) { text_ = text; }
 
@@ -51,7 +51,7 @@ class CHROMEOS_EXPORT IBusText {
     selection_end_ = selection_end;
   }
 
-  void CopyFrom(const IBusText& obj);
+  void CopyFrom(const CompositionText& obj);
 
  private:
   std::string text_;
@@ -59,9 +59,9 @@ class CHROMEOS_EXPORT IBusText {
   uint32 selection_start_;
   uint32 selection_end_;
 
-  DISALLOW_COPY_AND_ASSIGN(IBusText);
+  DISALLOW_COPY_AND_ASSIGN(CompositionText);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_IBUS_TEXT_H_
+#endif  // CHROMEOS_IME_COMPOSITION_TEXT_H_

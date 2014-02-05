@@ -4,7 +4,7 @@
 
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 
-#include "chromeos/ime/ibus_text.h"
+#include "chromeos/ime/composition_text.h"
 
 namespace chromeos {
 
@@ -22,13 +22,14 @@ void MockIMEInputContextHandler::CommitText(const std::string& text) {
   last_commit_text_ = text;
 }
 
-void MockIMEInputContextHandler::UpdatePreeditText(const IBusText& text,
-                                                   uint32 cursor_pos,
-                                                   bool visible) {
+void MockIMEInputContextHandler::UpdateCompositionText(
+    const CompositionText& text,
+    uint32 cursor_pos,
+    bool visible) {
   ++update_preedit_text_call_count_;
-  last_update_preedit_arg_.ibus_text.CopyFrom(text);
-  last_update_preedit_arg_.cursor_pos = cursor_pos;
-  last_update_preedit_arg_.is_visible = visible;
+  last_update_composition_arg_.composition_text.CopyFrom(text);
+  last_update_composition_arg_.cursor_pos = cursor_pos;
+  last_update_composition_arg_.is_visible = visible;
 }
 
 void MockIMEInputContextHandler::DeleteSurroundingText(int32 offset,

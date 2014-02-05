@@ -15,8 +15,8 @@
 #include "base/i18n/char_iterator.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ime/composition_text.h"
 #include "chromeos/ime/ibus_keymap.h"
-#include "chromeos/ime/ibus_text.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
@@ -579,11 +579,12 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_NoAttribute) {
   const uint32 kCursorPos = 2UL;
 
   const base::string16 utf16_string = UTF8ToUTF16(kSampleText);
-  chromeos::IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
+  chromeos::CompositionText chromeos_composition_text;
+  chromeos_composition_text.set_text(kSampleText);
 
   CompositionText composition_text;
-  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  ime_->ExtractCompositionText(
+      chromeos_composition_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
@@ -601,17 +602,19 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
 
-  // Set up ibus text with one underline attribute.
-  chromeos::IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
-  chromeos::IBusText::UnderlineAttribute underline;
-  underline.type = chromeos::IBusText::IBUS_TEXT_UNDERLINE_SINGLE;
+  // Set up chromeos composition text with one underline attribute.
+  chromeos::CompositionText chromeos_composition_text;
+  chromeos_composition_text.set_text(kSampleText);
+  chromeos::CompositionText::UnderlineAttribute underline;
+  underline.type = chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_SINGLE;
   underline.start_index = 1UL;
   underline.end_index = 4UL;
-  ibus_text.mutable_underline_attributes()->push_back(underline);
+  chromeos_composition_text.mutable_underline_attributes()->push_back(
+      underline);
 
   CompositionText composition_text;
-  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  ime_->ExtractCompositionText(
+      chromeos_composition_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
@@ -631,17 +634,19 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
 
-  // Set up ibus text with one underline attribute.
-  chromeos::IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
-  chromeos::IBusText::UnderlineAttribute underline;
-  underline.type = chromeos::IBusText::IBUS_TEXT_UNDERLINE_DOUBLE;
+  // Set up chromeos composition text with one underline attribute.
+  chromeos::CompositionText chromeos_composition_text;
+  chromeos_composition_text.set_text(kSampleText);
+  chromeos::CompositionText::UnderlineAttribute underline;
+  underline.type = chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE;
   underline.start_index = 1UL;
   underline.end_index = 4UL;
-  ibus_text.mutable_underline_attributes()->push_back(underline);
+  chromeos_composition_text.mutable_underline_attributes()->push_back(
+      underline);
 
   CompositionText composition_text;
-  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  ime_->ExtractCompositionText(
+      chromeos_composition_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   // If there is no selection, |selection| represents cursor position.
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
@@ -661,17 +666,19 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
 
-  // Set up ibus text with one underline attribute.
-  chromeos::IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
-  chromeos::IBusText::UnderlineAttribute underline;
-  underline.type = chromeos::IBusText::IBUS_TEXT_UNDERLINE_ERROR;
+  // Set up chromeos composition text with one underline attribute.
+  chromeos::CompositionText chromeos_composition_text;
+  chromeos_composition_text.set_text(kSampleText);
+  chromeos::CompositionText::UnderlineAttribute underline;
+  underline.type = chromeos::CompositionText::COMPOSITION_TEXT_UNDERLINE_ERROR;
   underline.start_index = 1UL;
   underline.end_index = 4UL;
-  ibus_text.mutable_underline_attributes()->push_back(underline);
+  chromeos_composition_text.mutable_underline_attributes()->push_back(
+      underline);
 
   CompositionText composition_text;
-  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  ime_->ExtractCompositionText(
+      chromeos_composition_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
@@ -690,21 +697,24 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
 
-  // Set up ibus text with one underline attribute.
-  chromeos::IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
-  ibus_text.set_selection_start(1UL);
-  ibus_text.set_selection_end(4UL);
+  // Set up chromeos composition text with one underline attribute.
+  chromeos::CompositionText chromeos_composition_text;
+  chromeos_composition_text.set_text(kSampleText);
+  chromeos_composition_text.set_selection_start(1UL);
+  chromeos_composition_text.set_selection_end(4UL);
 
   CompositionText composition_text;
-  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  ime_->ExtractCompositionText(
+      chromeos_composition_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_start()),
             composition_text.underlines[0].start_offset);
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_end()),
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
@@ -716,25 +726,29 @@ TEST_F(InputMethodChromeOSTest,
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 1UL;
 
-  // Set up ibus text with one underline attribute.
-  chromeos::IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
-  ibus_text.set_selection_start(kCursorPos);
-  ibus_text.set_selection_end(4UL);
+  // Set up chromeos composition text with one underline attribute.
+  chromeos::CompositionText chromeos_composition_text;
+  chromeos_composition_text.set_text(kSampleText);
+  chromeos_composition_text.set_selection_start(kCursorPos);
+  chromeos_composition_text.set_selection_end(4UL);
 
   CompositionText composition_text;
-  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  ime_->ExtractCompositionText(
+      chromeos_composition_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_end()),
             composition_text.selection.start());
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, kCursorPos),
             composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_start()),
             composition_text.underlines[0].start_offset);
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_end()),
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
@@ -746,25 +760,29 @@ TEST_F(InputMethodChromeOSTest,
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 4UL;
 
-  // Set up ibus text with one underline attribute.
-  chromeos::IBusText ibus_text;
-  ibus_text.set_text(kSampleText);
-  ibus_text.set_selection_start(1UL);
-  ibus_text.set_selection_end(kCursorPos);
+  // Set up chromeos composition text with one underline attribute.
+  chromeos::CompositionText chromeos_composition_text;
+  chromeos_composition_text.set_text(kSampleText);
+  chromeos_composition_text.set_selection_start(1UL);
+  chromeos_composition_text.set_selection_end(kCursorPos);
 
   CompositionText composition_text;
-  ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
+  ime_->ExtractCompositionText(
+      chromeos_composition_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_start()),
             composition_text.selection.start());
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, kCursorPos),
             composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_start()),
             composition_text.underlines[0].start_offset);
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText,
+                             chromeos_composition_text.selection_end()),
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);

@@ -19,7 +19,7 @@
 
 namespace chromeos {
 namespace ibus {
-class IBusText;
+class CompositionText;
 }  // namespace ibus
 }  // namespace chromeos
 
@@ -49,7 +49,7 @@ class UI_BASE_EXPORT InputMethodChromeOS
 
  protected:
   // Converts |text| into CompositionText.
-  void ExtractCompositionText(const chromeos::IBusText& text,
+  void ExtractCompositionText(const chromeos::CompositionText& text,
                               uint32 cursor_position,
                               CompositionText* out_composition) const;
 
@@ -104,9 +104,9 @@ class UI_BASE_EXPORT InputMethodChromeOS
 
   // chromeos::IBusInputContextHandlerInterface overrides:
   virtual void CommitText(const std::string& text) OVERRIDE;
-  virtual void UpdatePreeditText(const chromeos::IBusText& text,
-                                 uint32 cursor_pos,
-                                 bool visible) OVERRIDE;
+  virtual void UpdateCompositionText(const chromeos::CompositionText& text,
+                                     uint32 cursor_pos,
+                                     bool visible) OVERRIDE;
   virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
 
   // Hides the composition text.

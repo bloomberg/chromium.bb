@@ -6,7 +6,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
-#include "chromeos/ime/ibus_text.h"
+#include "chromeos/ime/composition_text.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/test/browser_test_utils.h"
@@ -461,21 +461,24 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
                                        set_composition_test_script));
     EXPECT_EQ(1, mock_input_context->update_preedit_text_call_count());
 
-    EXPECT_EQ(4U, mock_input_context->last_update_preedit_arg().cursor_pos);
-    EXPECT_TRUE(mock_input_context->last_update_preedit_arg().is_visible);
+    EXPECT_EQ(4U,
+              mock_input_context->last_update_composition_arg().cursor_pos);
+    EXPECT_TRUE(mock_input_context->last_update_composition_arg().is_visible);
 
-    const IBusText& ibus_text =
-        mock_input_context->last_update_preedit_arg().ibus_text;
-    EXPECT_EQ("COMPOSITION_TEXT", ibus_text.text());
-    const std::vector<IBusText::UnderlineAttribute>& underlines =
-        ibus_text.underline_attributes();
+    const CompositionText& composition_text =
+        mock_input_context->last_update_composition_arg().composition_text;
+    EXPECT_EQ("COMPOSITION_TEXT", composition_text.text());
+    const std::vector<CompositionText::UnderlineAttribute>& underlines =
+        composition_text.underline_attributes();
 
     ASSERT_EQ(2U, underlines.size());
-    EXPECT_EQ(IBusText::IBUS_TEXT_UNDERLINE_SINGLE, underlines[0].type);
+    EXPECT_EQ(CompositionText::COMPOSITION_TEXT_UNDERLINE_SINGLE,
+              underlines[0].type);
     EXPECT_EQ(0U, underlines[0].start_index);
     EXPECT_EQ(5U, underlines[0].end_index);
 
-    EXPECT_EQ(IBusText::IBUS_TEXT_UNDERLINE_DOUBLE, underlines[1].type);
+    EXPECT_EQ(CompositionText::COMPOSITION_TEXT_UNDERLINE_DOUBLE,
+              underlines[1].type);
     EXPECT_EQ(6U, underlines[1].start_index);
     EXPECT_EQ(10U, underlines[1].end_index);
   }
@@ -492,10 +495,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        commite_text_test_script));
     EXPECT_EQ(1, mock_input_context->update_preedit_text_call_count());
-    EXPECT_FALSE(mock_input_context->last_update_preedit_arg().is_visible);
-    const IBusText& ibus_text =
-        mock_input_context->last_update_preedit_arg().ibus_text;
-    EXPECT_TRUE(ibus_text.text().empty());
+    EXPECT_FALSE(
+        mock_input_context->last_update_composition_arg().is_visible);
+    const CompositionText& composition_text =
+        mock_input_context->last_update_composition_arg().composition_text;
+    EXPECT_TRUE(composition_text.text().empty());
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:visibility test");

@@ -23,17 +23,17 @@ class KeyEvent;
 
 namespace chromeos {
 
-class IBusText;
+class CompositionText;
 
 class UI_BASE_EXPORT IBusInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;
 
-  // Called when the engine update preedit stroing.
-  virtual void UpdatePreeditText(const IBusText& text,
-                                 uint32 cursor_pos,
-                                 bool visible) = 0;
+  // Called when the engine updates composition text.
+  virtual void UpdateCompositionText(const CompositionText& text,
+                                     uint32 cursor_pos,
+                                     bool visible) = 0;
 
   // Called when the engine request deleting surrounding string.
   virtual void DeleteSurroundingText(int32 offset, uint32 length) = 0;

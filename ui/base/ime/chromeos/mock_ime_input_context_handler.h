@@ -5,7 +5,7 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 
-#include "chromeos/ime/ibus_text.h"
+#include "chromeos/ime/composition_text.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ui_base_export.h"
 
@@ -14,8 +14,8 @@ namespace chromeos {
 class UI_BASE_EXPORT MockIMEInputContextHandler
     : public IBusInputContextHandlerInterface {
  public:
-  struct UpdatePreeditTextArg {
-    IBusText ibus_text;
+  struct UpdateCompositionTextArg {
+    CompositionText composition_text;
     uint32 cursor_pos;
     bool is_visible;
   };
@@ -29,7 +29,7 @@ class UI_BASE_EXPORT MockIMEInputContextHandler
   virtual ~MockIMEInputContextHandler();
 
   virtual void CommitText(const std::string& text) OVERRIDE;
-  virtual void UpdatePreeditText(const IBusText& text,
+  virtual void UpdateCompositionText(const CompositionText& text,
                                  uint32 cursor_pos,
                                  bool visible) OVERRIDE;
   virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
@@ -48,8 +48,8 @@ class UI_BASE_EXPORT MockIMEInputContextHandler
     return last_commit_text_;
   };
 
-  const UpdatePreeditTextArg& last_update_preedit_arg() const {
-    return last_update_preedit_arg_;
+  const UpdateCompositionTextArg& last_update_composition_arg() const {
+    return last_update_composition_arg_;
   }
 
   const DeleteSurroundingTextArg& last_delete_surrounding_text_arg() const {
@@ -64,7 +64,7 @@ class UI_BASE_EXPORT MockIMEInputContextHandler
   int update_preedit_text_call_count_;
   int delete_surrounding_text_call_count_;
   std::string last_commit_text_;
-  UpdatePreeditTextArg last_update_preedit_arg_;
+  UpdateCompositionTextArg last_update_composition_arg_;
   DeleteSurroundingTextArg last_delete_surrounding_text_arg_;
 };
 

@@ -17,7 +17,7 @@ class KeyEvent;
 
 namespace chromeos {
 
-class IBusText;
+class CompositionText;
 
 namespace input_method {
 class CandidateWindow;
