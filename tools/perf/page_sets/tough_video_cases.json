@@ -58,22 +58,28 @@
     {
       "url": "file://tough_video_cases/video.html?src=crowd1080.ogv",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "50fps": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=crowd1080.webm",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "50fps": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=crowd2160.ogv",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "50fps": true,
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=crowd2160.webm",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "50fps": true,
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=tulip2.ogg&type=audio",
@@ -98,12 +104,15 @@
     {
       "url": "file://tough_video_cases/video.html?src=crowd1080.mp4",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "50fps": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=crowd2160.mp4",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "50fps": true,
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=tulip2.mp3&type=audio",
@@ -123,17 +132,20 @@
     {
       "url": "file://tough_video_cases/video.html?src=garden2_10s.webm",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=garden2_10s.mp4",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=garden2_10s.ogv",
       "media_metrics": {"action": "play-action"},
-      "add_browser_metrics": true
+      "add_browser_metrics": true,
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=tulip2.ogg&type=audio",
@@ -168,17 +180,20 @@
     {
       "url": "file://tough_video_cases/video.html?src=garden2_10s.webm",
       "skip_basic_metrics": true,
-      "media_metrics": {"action": "seek_before_and_after_playhead"}
+      "media_metrics": {"action": "seek_before_and_after_playhead"},
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=garden2_10s.mp4",
       "skip_basic_metrics": true,
-      "media_metrics": {"action": "seek_before_and_after_playhead"}
+      "media_metrics": {"action": "seek_before_and_after_playhead"},
+      "4k": true
     },
     {
       "url": "file://tough_video_cases/video.html?src=garden2_10s.ogv",
       "skip_basic_metrics": true,
-      "media_metrics": {"action": "seek_before_and_after_playhead"}
+      "media_metrics": {"action": "seek_before_and_after_playhead"},
+      "4k": true
     },
     {
       "skip_basic_metrics": true,

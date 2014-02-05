@@ -1,11 +1,10 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from measurements import media
 from telemetry import test
 from telemetry.page import page_measurement
-
-from measurements import media
 
 
 class MSEMeasurement(page_measurement.PageMeasurement):
@@ -26,10 +25,12 @@ class Media(test.Test):
   test = media.Media
   page_set = 'page_sets/tough_video_cases.json'
 
+
 class MediaNetworkSimulation(test.Test):
   """Obtains media metrics under different network simulations."""
   test = media.Media
   page_set = 'page_sets/media_cns_cases.json'
+
 
 class MediaAndroid(test.Test):
   """Obtains media metrics for key user scenarios on Android."""
@@ -38,18 +39,30 @@ class MediaAndroid(test.Test):
   page_set = 'page_sets/tough_video_cases.json'
   # Exclude 4k and 50 fps media files (garden* & crowd*).
   options = {
-      'page_filter_exclude': '.*(crowd|garden).*'
-  }
+      'page_label_filter_exclude': '4k,50fps'}
+
+
+class MediaChromeOS4kOnly(test.Test):
+  """Benchmark for media performance on ChromeOS using only 4k test content."""
+  test = media.Media
+  tag = 'chromeOS4kOnly'
+  page_set = 'page_sets/tough_video_cases.json'
+  options = {'page_label_filter': '4k',
+             # Exclude 50fps test files: crbug/331816
+             'page_label_filter_exclude': '50fps'}
+
 
 class MediaChromeOS(test.Test):
-  """Obtains media metrics for key user scenarios on ChromeOS."""
+  """Benchmark for media performance on all ChromeOS platforms.
+
+  This benchmark does not run 4k content, there's a separate benchmark for that.
+  """
   test = media.Media
   tag = 'chromeOS'
   page_set = 'page_sets/tough_video_cases.json'
-  # Exclude crowd* media files (50fps 2160p): crbug/331816
-  options = {
-      'page_filter_exclude': '.*crowd.*'
-  }
+  # Exclude 50fps test files: crbug/331816
+  options = {'page_label_filter_exclude': '4k,50fps'}
+
 
 class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
