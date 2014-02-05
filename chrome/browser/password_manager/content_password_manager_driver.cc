@@ -6,6 +6,7 @@
 
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/password_form.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -38,6 +39,10 @@ bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
   }
 
   return net::IsCertStatusError(entry->GetSSL().cert_status);
+}
+
+bool ContentPasswordManagerDriver::IsOffTheRecord() {
+  return web_contents_->GetBrowserContext()->IsOffTheRecord();
 }
 
 PasswordGenerationManager*

@@ -34,6 +34,7 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
   virtual void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) OVERRIDE {}
   virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE { return false; }
+  virtual bool IsOffTheRecord() OVERRIDE { return false; }
   virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE {
     return NULL;
   }

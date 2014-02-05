@@ -137,8 +137,7 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
 }
 
 bool PasswordManager::IsSavingEnabled() const {
-  return *password_manager_enabled_ &&
-         !delegate_->GetProfile()->IsOffTheRecord();
+  return *password_manager_enabled_ && !driver_->IsOffTheRecord();
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {

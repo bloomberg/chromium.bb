@@ -48,6 +48,7 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
  public:
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
+  MOCK_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
 };

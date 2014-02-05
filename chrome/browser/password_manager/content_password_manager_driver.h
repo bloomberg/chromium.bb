@@ -25,6 +25,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   virtual void FillPasswordForm(const autofill::PasswordFormFillData& form_data)
       OVERRIDE;
   virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
+  virtual bool IsOffTheRecord() OVERRIDE;
   virtual PasswordGenerationManager* GetPasswordGenerationManager() OVERRIDE;
   virtual PasswordManager* GetPasswordManager() OVERRIDE;
 

@@ -27,6 +27,9 @@ class PasswordManagerDriver {
   // the last page load.
   virtual bool DidLastPageLoadEncounterSSLErrors() = 0;
 
+  // If this browsing session should not be persisted.
+  virtual bool IsOffTheRecord() = 0;
+
   // Returns the PasswordGenerationManager associated with this instance.
   virtual PasswordGenerationManager* GetPasswordGenerationManager() = 0;
 
