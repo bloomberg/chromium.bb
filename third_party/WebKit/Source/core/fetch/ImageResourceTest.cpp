@@ -100,8 +100,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     blink::WebURLResponse response;
     response.initialize();
     response.setMIMEType("text/html");
-    WTF::String localPath = blink::Platform::current()->unitTestSupport()->webKitRootDir();
-    localPath.append("/Source/web/tests/data/cancelTest.html");
+    WTF::String localPath = String(blink::Platform::current()->unitTestSupport()->webKitRootDir()) + "/Source/web/tests/data/cancelTest.html";
     blink::Platform::current()->unitTestSupport()->registerMockedURL(testURL, response, localPath);
 
     // Create enough of a mocked world to get a functioning ResourceLoader.

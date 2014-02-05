@@ -43,9 +43,7 @@ namespace WebCore {
 // Common serializing methods. See: http://dev.w3.org/csswg/cssom/#common-serializing-idioms
 void serializeCharacter(UChar32, StringBuilder& appendTo);
 void serializeCharacterAsCodePoint(UChar32, StringBuilder& appendTo);
-void serializeIdentifier(const String& identifier, String& appendTo);
 void serializeIdentifier(const String& identifier, StringBuilder& appendTo);
-void serializeString(const String&, String& appendTo);
 void serializeString(const String&, StringBuilder& appendTo);
 
 } // namespace WebCore
