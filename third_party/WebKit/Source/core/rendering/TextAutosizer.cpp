@@ -198,6 +198,9 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     if (windowInfo.windowSize.isEmpty())
         windowInfo.windowSize = mainFrame->view()->unscaledVisibleContentSize(ScrollableArea::IncludeScrollbars);
 
+    if (windowInfo.windowSize.isEmpty())
+        return false;
+
     // Largest area of block that can be visible at once (assuming the main
     // frame doesn't get scaled to less than overview scale), in CSS pixels.
     windowInfo.minLayoutSize = mainFrame->view()->layoutSize();
@@ -241,6 +244,8 @@ float TextAutosizer::clusterMultiplier(WritingMode writingMode, const TextAutosi
     int logicalLayoutWidth = isHorizontalWritingMode(writingMode) ? windowInfo.minLayoutSize.width() : windowInfo.minLayoutSize.height();
     // Ignore box width in excess of the layout width, to avoid extreme multipliers.
     float logicalClusterWidth = std::min<float>(textWidth, logicalLayoutWidth);
+
+    ASSERT(logicalWindowWidth);
 
     float multiplier = logicalClusterWidth / logicalWindowWidth;
     multiplier *= m_document->settings()->accessibilityFontScaleFactor();
