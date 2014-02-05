@@ -1,16 +1,12 @@
 <html>
-<head>
-    <script>
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-        setTimeout('document.getElementById("container").scrollLeft = -400; if (window.testRunner) testRunner.notifyDone();', 0);
-    </script>
-</head>
 <body style="margin:0;">
     <div id="container" style="width:400px; overflow:-webkit-paged-x; -webkit-writing-mode:vertical-rl;">
         <div style="width:100%; height:100%; margin:8px;">
             <img src="resources/big-green.png" style="width:100%; height:100%; max-width:100%; max-height:100%;"/>
         </div>
     </div>
+    <script>
+        document.getElementById("container").scrollLeft = -400;
+    </script>
 </body>
 </html>
