@@ -13,10 +13,7 @@
 #include <prtime.h>
 #include <secmod.h>
 
-#if defined(OS_LINUX)
-#include <linux/nfs_fs.h>
-#include <sys/vfs.h>
-#elif defined(OS_OPENBSD)
+#if defined(OS_OPENBSD)
 #include <sys/mount.h>
 #include <sys/param.h>
 #endif
@@ -147,21 +144,25 @@ char* PKCS11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
 // Because this function sets an environment variable it must be run before we
 // go multi-threaded.
 void UseLocalCacheOfNSSDatabaseIfNFS(const base::FilePath& database_dir) {
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  struct statfs buf;
-  if (statfs(database_dir.value().c_str(), &buf) == 0) {
+  bool db_on_nfs = false;
 #if defined(OS_LINUX)
-    if (buf.f_type == NFS_SUPER_MAGIC) {
+  file_util::FileSystemType fs_type = file_util::FILE_SYSTEM_UNKNOWN;
+  if (file_util::GetFileSystemType(database_dir, &fs_type))
+    db_on_nfs = (fs_type == file_util::FILE_SYSTEM_NFS);
 #elif defined(OS_OPENBSD)
-    if (strcmp(buf.f_fstypename, MOUNT_NFS) == 0) {
+  struct statfs buf;
+  if (statfs(database_dir.value().c_str(), &buf) == 0)
+    db_on_nfs = (strcmp(buf.f_fstypename, MOUNT_NFS) == 0);
+#else
+  NOTIMPLEMENTED();
 #endif
-      scoped_ptr<base::Environment> env(base::Environment::Create());
-      const char* use_cache_env_var = "NSS_SDB_USE_CACHE";
-      if (!env->HasVar(use_cache_env_var))
-        env->SetVar(use_cache_env_var, "yes");
-    }
+
+  if (db_on_nfs) {
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    static const char kUseCacheEnvVar[] = "NSS_SDB_USE_CACHE";
+    if (!env->HasVar(kUseCacheEnvVar))
+      env->SetVar(kUseCacheEnvVar, "yes");
   }
-#endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 }
 
 #endif  // defined(USE_NSS)
@@ -909,10 +910,10 @@ void LoadNSSLibraries() {
   paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabihf/nss"));
 #else
   paths.push_back(base::FilePath("/usr/lib/arm-linux-gnueabi/nss"));
-#endif
+#endif  // defined(__ARM_PCS_VFP)
 #elif defined(ARCH_CPU_MIPSEL)
   paths.push_back(base::FilePath("/usr/lib/mipsel-linux-gnu/nss"));
-#endif
+#endif  // defined(ARCH_CPU_X86_64)
 
   // A list of library files to load.
   std::vector<std::string> libs;
@@ -938,7 +939,7 @@ void LoadNSSLibraries() {
   } else {
     LOG(ERROR) << "Failed to load NSS libraries.";
   }
-#endif
+#endif  // defined(USE_NSS)
 }
 
 bool CheckNSSVersion(const char* version) {
