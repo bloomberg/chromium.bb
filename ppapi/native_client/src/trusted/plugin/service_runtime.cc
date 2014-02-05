@@ -584,9 +584,13 @@ bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
       tmp_subprocess(new SelLdrLauncherChrome());
   if (NULL == tmp_subprocess.get()) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (subprocess create failed)\n");
-    params.error_info->SetReport(
-        ERROR_SEL_LDR_CREATE_LAUNCHER,
-        "ServiceRuntime: failed to create sel_ldr launcher");
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReport(
+          ERROR_SEL_LDR_CREATE_LAUNCHER,
+          "ServiceRuntime: failed to create sel_ldr launcher");
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
   nacl::string error_message;
@@ -601,10 +605,14 @@ bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
                                        &error_message);
   if (!started) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (start failed)\n");
-    params.error_info->SetReportWithConsoleOnlyError(
-        ERROR_SEL_LDR_LAUNCH,
-        "ServiceRuntime: failed to start",
-        error_message);
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReportWithConsoleOnlyError(
+          ERROR_SEL_LDR_LAUNCH,
+          "ServiceRuntime: failed to start",
+          error_message);
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
 
@@ -627,14 +635,17 @@ void ServiceRuntime::SignalStartSelLdrDone() {
 }
 
 bool ServiceRuntime::LoadNexeAndStart(nacl::DescWrapper* nacl_desc,
-                                      ErrorInfo* error_info,
                                       const pp::CompletionCallback& crash_cb) {
   NaClLog(4, "ServiceRuntime::LoadNexeAndStart (nacl_desc=%p)\n",
           reinterpret_cast<void*>(nacl_desc));
-  bool ok = LoadModule(nacl_desc, error_info) &&
-            InitReverseService(error_info) &&
-            StartModule(error_info);
+  ErrorInfo error_info;
+  bool ok = LoadModule(nacl_desc, &error_info) &&
+            InitReverseService(&error_info) &&
+            StartModule(&error_info);
   if (!ok) {
+    if (main_service_runtime_) {
+      plugin_->ReportLoadError(error_info);
+    }
     // On a load failure the service runtime does not crash itself to
     // avoid a race where the no-more-senders error on the reverse
     // channel esrvice thread might cause the crash-detection logic to

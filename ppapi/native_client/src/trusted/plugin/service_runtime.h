@@ -49,7 +49,6 @@ class ServiceRuntime;
 // creation templates aren't overwhelmed with too many parameters.
 struct SelLdrStartParams {
   SelLdrStartParams(const nacl::string& url,
-                    ErrorInfo* error_info,
                     bool uses_irt,
                     bool uses_ppapi,
                     bool enable_dev_interfaces,
@@ -57,7 +56,6 @@ struct SelLdrStartParams {
                     bool enable_exception_handling,
                     bool enable_crash_throttling)
       : url(url),
-        error_info(error_info),
         uses_irt(uses_irt),
         uses_ppapi(uses_ppapi),
         enable_dev_interfaces(enable_dev_interfaces),
@@ -66,7 +64,6 @@ struct SelLdrStartParams {
         enable_crash_throttling(enable_crash_throttling) {
   }
   nacl::string url;
-  ErrorInfo* error_info;
   bool uses_irt;
   bool uses_ppapi;
   bool enable_dev_interfaces;
@@ -248,10 +245,8 @@ class ServiceRuntime {
 
   // Establish an SrpcClient to the sel_ldr instance and load the nexe.
   // The nexe to be started is passed through |nacl_file_desc|.
-  // On success, returns true. On failure, returns false and |error_string|
-  // is set to something describing the error.
+  // On success, returns true. On failure, returns false.
   bool LoadNexeAndStart(nacl::DescWrapper* nacl_file_desc,
-                        ErrorInfo* error_info,
                         const pp::CompletionCallback& crash_cb);
 
   // Starts the application channel to the nexe.

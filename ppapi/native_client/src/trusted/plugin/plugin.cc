@@ -293,16 +293,18 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   const SelLdrStartParams& params,
                                   const pp::CompletionCallback& init_done_cb,
                                   const pp::CompletionCallback& crash_cb) {
+  ErrorInfo error_info;
   ServiceRuntime* new_service_runtime =
       new ServiceRuntime(this, manifest, should_report_uma, init_done_cb,
                          crash_cb);
   subprocess->set_service_runtime(new_service_runtime);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime=%p)\n",
                  static_cast<void*>(new_service_runtime)));
-  if (NULL == new_service_runtime) {
-    params.error_info->SetReport(
+  if (should_report_uma && NULL == new_service_runtime) {
+    error_info.SetReport(
         ERROR_SEL_LDR_INIT,
         "sel_ldr init failure " + subprocess->description());
+    ReportLoadError(error_info);
     return false;
   }
 
@@ -328,14 +330,10 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
 
   // Now actually load the nexe, which can happen on a background thread.
   bool nexe_loaded = new_service_runtime->LoadNexeAndStart(wrapper,
-                                                           params.error_info,
                                                            crash_cb);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (nexe_loaded=%d)\n",
                  nexe_loaded));
-  if (!nexe_loaded) {
-    return false;
-  }
-  return true;
+  return nexe_loaded;
 }
 
 void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
@@ -360,28 +358,24 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             bool enable_crash_throttling,
                             const pp::CompletionCallback& init_done_cb,
                             const pp::CompletionCallback& crash_cb) {
-  ErrorInfo error_info;
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
   // associated listener threads do not go unjoined because if they
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocesses();
   SelLdrStartParams params(manifest_base_url(),
-                           &error_info,
                            true /* uses_irt */,
                            true /* uses_ppapi */,
                            enable_dev_interfaces_,
                            enable_dyncode_syscalls,
                            enable_exception_handling,
                            enable_crash_throttling);
-  if (!LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
-                            true /* should_report_uma */,
-                            params, init_done_cb, crash_cb)) {
-    ReportLoadError(error_info);
-    return;
+  if (LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
+                           true /* should_report_uma */,
+                           params, init_done_cb, crash_cb)) {
+    PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
+                   main_subprocess_.detailed_description().c_str()));
   }
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (%s)\n",
-                 main_subprocess_.detailed_description().c_str()));
 }
 
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
@@ -440,7 +434,6 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   // TODO(jvoung): See if we still need the uses_ppapi variable, now that
   // LaunchSelLdr always happens on the main thread.
   SelLdrStartParams params(manifest_base_url(),
-                           error_info,
                            false /* uses_irt */,
                            false /* uses_ppapi */,
                            enable_dev_interfaces_,
