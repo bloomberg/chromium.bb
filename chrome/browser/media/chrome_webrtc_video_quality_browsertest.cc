@@ -317,15 +317,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
   scoped_ptr<base::Environment> environment_;
 };
 
-// Flaky on Linux. http://crbug.com/340197.
-// Flaky on Windows. http://crbug.com/340609.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_MANUAL_TestVGAVideoQuality DISABLED_MANUAL_TestVGAVideoQuality
-#else
-#define MAYBE_MANUAL_TestVGAVideoQuality MANUAL_TestVGAVideoQuality
-#endif
 IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
-                       MAYBE_MANUAL_TestVGAVideoQuality) {
+                       MANUAL_TestVGAVideoQuality) {
   ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
       "This is a long-running test; you must specify "
       "--ui-test-action-max-timeout to have a value of at least 150000.";
