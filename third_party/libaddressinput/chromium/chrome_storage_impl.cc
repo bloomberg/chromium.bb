@@ -17,8 +17,12 @@ ChromeStorageImpl::ChromeStorageImpl(WriteablePrefStore* store)
 
 ChromeStorageImpl::~ChromeStorageImpl() {}
 
-void ChromeStorageImpl::Put(const std::string& key, const std::string& data) {
-  backing_store_->SetValue(key, new base::StringValue(data));
+void ChromeStorageImpl::Put(const std::string& key,
+                            scoped_ptr<std::string> data) {
+  scoped_ptr<base::StringValue> string_value(
+      new base::StringValue(std::string()));
+  string_value->GetString()->swap(*data);
+  backing_store_->SetValue(key, string_value.release());
 }
 
 void ChromeStorageImpl::Get(
@@ -50,10 +54,10 @@ void ChromeStorageImpl::DoGet(
   }
 
   const base::Value* value;
-  std::string result;
+  const base::StringValue* string_value;
   if (backing_store_->GetValue(key, &value) &&
-      value->GetAsString(&result)) {
-    (*data_ready)(true, key, result);
+      value->GetAsString(&string_value)) {
+    (*data_ready)(true, key, string_value->GetString());
   } else {
     (*data_ready)(false, key, std::string());
   }

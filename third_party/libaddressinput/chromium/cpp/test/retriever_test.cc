@@ -44,10 +44,11 @@ const char kEmptyData[] = "{}";
 // integrity.
 const char kEmptyDataChecksum[] = "99914b932bd37a50b983c5e7c90ae93b";
 
-std::string Wrap(const std::string& data,
-                 const std::string& checksum,
-                 const std::string& timestamp) {
-  return data + "\n" + "checksum=" + checksum + "\n" + "timestamp=" + timestamp;
+scoped_ptr<std::string> Wrap(const std::string& data,
+                             const std::string& checksum,
+                             const std::string& timestamp) {
+  return make_scoped_ptr(new std::string(
+      data + "\n" + "checksum=" + checksum + "\n" + "timestamp=" + timestamp));
 }
 
 }  // namespace
@@ -170,7 +171,7 @@ TEST_F(RetrieverTest, FaultyDownloaderFallback) {
 }
 
 TEST_F(RetrieverTest, NoChecksumAndTimestampWillRedownload) {
-  storage_->Put(kKey, kEmptyData);
+  storage_->Put(kKey, make_scoped_ptr(new std::string(kEmptyData)));
   retriever_->Retrieve(kKey, BuildCallback());
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);

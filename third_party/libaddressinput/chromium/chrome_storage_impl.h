@@ -28,7 +28,8 @@ class ChromeStorageImpl : public ::i18n::addressinput::Storage,
   virtual ~ChromeStorageImpl();
 
   // ::i18n::addressinput::Storage implementation.
-  virtual void Put(const std::string& key, const std::string& data) OVERRIDE;
+  virtual void Put(const std::string& key, scoped_ptr<std::string> data)
+      OVERRIDE;
   virtual void Get(const std::string& key, scoped_ptr<Callback> data_ready)
       const OVERRIDE;
 

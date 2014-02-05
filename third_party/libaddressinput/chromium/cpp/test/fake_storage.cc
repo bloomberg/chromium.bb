@@ -24,8 +24,8 @@ FakeStorage::FakeStorage() {}
 
 FakeStorage::~FakeStorage() {}
 
-void FakeStorage::Put(const std::string& key, const std::string& data) {
-  data_[key] = data;
+void FakeStorage::Put(const std::string& key, scoped_ptr<std::string> data) {
+  data_[key] = *data;
 }
 
 void FakeStorage::Get(const std::string& key,

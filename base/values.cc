@@ -134,6 +134,10 @@ bool Value::GetAsString(string16* out_value) const {
   return false;
 }
 
+bool Value::GetAsString(const StringValue** out_value) const {
+  return false;
+}
+
 bool Value::GetAsList(ListValue** out_value) {
   return false;
 }
@@ -278,6 +282,14 @@ StringValue::StringValue(const string16& in_value)
 StringValue::~StringValue() {
 }
 
+std::string* StringValue::GetString() {
+  return &value_;
+}
+
+const std::string& StringValue::GetString() const {
+  return value_;
+}
+
 bool StringValue::GetAsString(std::string* out_value) const {
   if (out_value)
     *out_value = value_;
@@ -287,6 +299,12 @@ bool StringValue::GetAsString(std::string* out_value) const {
 bool StringValue::GetAsString(string16* out_value) const {
   if (out_value)
     *out_value = UTF8ToUTF16(value_);
+  return true;
+}
+
+bool StringValue::GetAsString(const StringValue** out_value) const {
+  if (*out_value)
+    *out_value = this;
   return true;
 }
 

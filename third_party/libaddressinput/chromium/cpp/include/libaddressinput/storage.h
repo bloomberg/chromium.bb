@@ -47,7 +47,7 @@ class Storage {
   virtual ~Storage() {}
 
   // Stores |data| for |key|.
-  virtual void Put(const std::string& key, const std::string& data) = 0;
+  virtual void Put(const std::string& key, scoped_ptr<std::string> data) = 0;
 
   // Retrieves the data for |key| and invokes the |data_ready| callback.
   virtual void Get(const std::string& key,

@@ -91,6 +91,7 @@ class BASE_EXPORT Value {
   virtual bool GetAsDouble(double* out_value) const;
   virtual bool GetAsString(std::string* out_value) const;
   virtual bool GetAsString(string16* out_value) const;
+  virtual bool GetAsString(const StringValue** out_value) const;
   virtual bool GetAsList(ListValue** out_value);
   virtual bool GetAsList(const ListValue** out_value) const;
   virtual bool GetAsDictionary(DictionaryValue** out_value);
@@ -154,9 +155,14 @@ class BASE_EXPORT StringValue : public Value {
 
   virtual ~StringValue();
 
+  // Returns |value_| as a pointer or reference.
+  std::string* GetString();
+  const std::string& GetString() const;
+
   // Overridden from Value:
   virtual bool GetAsString(std::string* out_value) const OVERRIDE;
   virtual bool GetAsString(string16* out_value) const OVERRIDE;
+  virtual bool GetAsString(const StringValue** out_value) const OVERRIDE;
   virtual StringValue* DeepCopy() const OVERRIDE;
   virtual bool Equals(const Value* other) const OVERRIDE;
 

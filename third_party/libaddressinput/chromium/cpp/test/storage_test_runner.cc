@@ -63,7 +63,7 @@ void StorageTestRunner::GetWithoutPutReturnsEmptyData() {
 
 void StorageTestRunner::GetReturnsWhatWasPut() {
   ClearValues();
-  storage_->Put("key", "value");
+  storage_->Put("key", make_scoped_ptr(new std::string("value")));
   storage_->Get("key", BuildCallback());
 
   EXPECT_TRUE(success_);
@@ -73,8 +73,8 @@ void StorageTestRunner::GetReturnsWhatWasPut() {
 
 void StorageTestRunner::SecondPutOverwritesData() {
   ClearValues();
-  storage_->Put("key", "bad-value");
-  storage_->Put("key", "good-value");
+  storage_->Put("key", make_scoped_ptr(new std::string("bad-value")));
+  storage_->Put("key", make_scoped_ptr(new std::string("good-value")));
   storage_->Get("key", BuildCallback());
 
   EXPECT_TRUE(success_);

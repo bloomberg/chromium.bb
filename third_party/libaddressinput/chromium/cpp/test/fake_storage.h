@@ -34,7 +34,7 @@ namespace addressinput {
 //      ~MyClass() {}
 //
 //      void Write() {
-//        storage_.Put("key", "value");
+//        storage_.Put("key", make_scoped_ptr(new std::string("value")));
 //      }
 //
 //      void Read() {
@@ -58,7 +58,7 @@ class FakeStorage : public Storage {
   virtual ~FakeStorage();
 
   // Storage implementation.
-  virtual void Put(const std::string& key, const std::string& data);
+  virtual void Put(const std::string& key, scoped_ptr<std::string> data);
   virtual void Get(const std::string& key, scoped_ptr<Callback> data_ready)
       const;
 

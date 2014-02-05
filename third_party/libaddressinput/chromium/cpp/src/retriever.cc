@@ -211,8 +211,7 @@ void Retriever::OnDownloaded(bool success,
   if (success) {
     InvokeCallbackForKey(key, success, *downloaded_data);
     AppendTimestamp(downloaded_data.get());
-    // TODO(estade): storage should take a scoped_ptr.
-    storage_->Put(key, *downloaded_data);
+    storage_->Put(key, downloaded_data.Pass());
   } else if (stale_data_it != stale_data_.end()) {
     InvokeCallbackForKey(key, true, stale_data_it->second);
   } else {
