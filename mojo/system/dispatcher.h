@@ -114,6 +114,30 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // under the dispatcher's lock.
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock();
 
+  // |CoreImpl| needs some special access, in particular to implement
+  // |WriteMessage()|.
+  class CoreImplAccess {
+   private:
+    friend class CoreImpl;
+
+    static inline bool TryLock(const Dispatcher* dispatcher) {
+      return dispatcher->lock().Try();
+    }
+    static inline void ReleaseLock(const Dispatcher* dispatcher) {
+      dispatcher->lock().Release();
+    }
+    // The following must be called with the dispatcher lock held (obtained if
+    // |TryLock()| returns true).
+    static inline bool IsBusyNoLock(const Dispatcher* dispatcher) {
+      dispatcher->lock().AssertAcquired();
+      return dispatcher->IsBusyNoLock();
+    }
+    static inline bool IsClosedNoLock(const Dispatcher* dispatcher) {
+      dispatcher->lock().AssertAcquired();
+      return dispatcher->is_closed_;
+    }
+  };
+
  protected:
   Dispatcher();
 
@@ -163,7 +187,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // This should be overridden to return true if/when there's an ongoing
   // operation (e.g., two-phase read/writes on data pipes) that should prevent a
   // handle from being sent over a message pipe (with status "busy").
-  virtual bool IsBusyNoLock();
+  virtual bool IsBusyNoLock() const;
 
   // This must be implemented by subclasses, since only they can instantiate a
   // new dispatcher of the same class. See
@@ -175,12 +199,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // |base::AutoLock|'s constructor takes a non-const reference.)
   base::Lock& lock() const { return lock_; }
 
-  bool is_closed_no_lock() const { return is_closed_; }
-
  private:
-  // For |WriteMessage()|, |CoreImpl| needs access to |lock()|,
-  // |is_closed_no_lock()|, and |IsBusyNoLock()|.
-  friend class CoreImpl;
   // Test helpers to do the same sort of thing as |CoreImpl| (so things can be
   // unit tested without involving |CoreImpl|).
   friend base::Lock& test::GetDispatcherLock(const Dispatcher*);
@@ -202,7 +221,7 @@ inline base::Lock& GetDispatcherLock(const Dispatcher* dispatcher) {
 
 inline bool IsDispatcherClosedNoLock(const Dispatcher* dispatcher) {
   dispatcher->lock().AssertAcquired();
-  return dispatcher->is_closed_no_lock();
+  return dispatcher->is_closed_;
 }
 
 }  // namespace test

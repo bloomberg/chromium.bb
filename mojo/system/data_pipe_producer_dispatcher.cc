@@ -89,7 +89,7 @@ void DataPipeProducerDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
   data_pipe_->ProducerRemoveWaiter(waiter);
 }
 
-bool DataPipeProducerDispatcher::IsBusyNoLock() {
+bool DataPipeProducerDispatcher::IsBusyNoLock() const {
   lock().AssertAcquired();
   return data_pipe_->ProducerIsBusy();
 }

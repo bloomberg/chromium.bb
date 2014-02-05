@@ -257,7 +257,7 @@ void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/) {
   // will do something nontrivial.
 }
 
-bool Dispatcher::IsBusyNoLock() {
+bool Dispatcher::IsBusyNoLock() const {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // Most dispatchers support only "atomic" operations, so they are never busy

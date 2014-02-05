@@ -251,7 +251,7 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
       entries[i]->busy = true;
 
       // Try to take the lock.
-      if (!entries[i]->dispatcher->lock().Try()) {
+      if (!Dispatcher::CoreImplAccess::TryLock(entries[i]->dispatcher.get())) {
         // Unset the busy flag (since it won't be unset below).
         entries[i]->busy = false;
         error_result = MOJO_RESULT_BUSY;
@@ -261,15 +261,16 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
       // We shouldn't race with things that close dispatchers, since closing can
       // only take place either under |handle_table_lock_| or when the handle is
       // marked as busy.
-      DCHECK(!entries[i]->dispatcher->is_closed_no_lock());
+      DCHECK(!Dispatcher::CoreImplAccess::IsClosedNoLock(
+          entries[i]->dispatcher.get()));
 
       // Check if the dispatcher is busy (e.g., in a two-phase read/write).
       // (Note that this must be done after the dispatcher's lock is acquired.)
-      if (entries[i]->dispatcher->IsBusyNoLock()) {
+      if (Dispatcher::CoreImplAccess::IsBusyNoLock(entries[i]->dispatcher)) {
         // Unset the busy flag and release the lock (since it won't be done
         // below).
         entries[i]->busy = false;
-        entries[i]->dispatcher->lock().Release();
+        Dispatcher::CoreImplAccess::ReleaseLock(entries[i]->dispatcher.get());
         error_result = MOJO_RESULT_BUSY;
         break;
       }
@@ -285,7 +286,7 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
       for (uint32_t j = 0; j < i; j++) {
         DCHECK(entries[j]->busy);
         entries[j]->busy = false;
-        entries[j]->dispatcher->lock().Release();
+        Dispatcher::CoreImplAccess::ReleaseLock(entries[j]->dispatcher.get());
       }
       return error_result;
     }
@@ -297,10 +298,8 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
 
   // We need to release the dispatcher locks before we take the handle table
   // lock.
-  for (uint32_t i = 0; i < num_handles; i++) {
-    dispatchers[i]->lock().AssertAcquired();
-    dispatchers[i]->lock().Release();
-  }
+  for (uint32_t i = 0; i < num_handles; i++)
+    Dispatcher::CoreImplAccess::ReleaseLock(dispatchers[i]);
 
   if (rv == MOJO_RESULT_OK) {
     base::AutoLock locker(handle_table_lock_);

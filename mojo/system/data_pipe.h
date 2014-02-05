@@ -52,7 +52,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                MojoWaitFlags flags,
                                MojoResult wake_result);
   void ProducerRemoveWaiter(Waiter* waiter);
-  bool ProducerIsBusy();
+  bool ProducerIsBusy() const;
 
   // These are called by the consumer dispatcher to implement its methods of
   // corresponding names.
@@ -75,7 +75,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                MojoWaitFlags flags,
                                MojoResult wake_result);
   void ConsumerRemoveWaiter(Waiter* waiter);
-  bool ConsumerIsBusy();
+  bool ConsumerIsBusy() const;
 
  protected:
   DataPipe(bool has_local_producer,
@@ -174,7 +174,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   const size_t element_num_bytes_;
   const size_t capacity_num_bytes_;
 
-  base::Lock lock_;  // Protects the following members.
+  mutable base::Lock lock_;  // Protects the following members.
   // *Known* state of producer or consumer.
   bool producer_open_;
   bool consumer_open_;
