@@ -47,4 +47,12 @@ void MultiUserWindowManagerStub::AddUser(Profile* profile) {
   NOTIMPLEMENTED();
 }
 
+void MultiUserWindowManagerStub::AddObserver(Observer* observer) {
+  NOTIMPLEMENTED();
+}
+
+void MultiUserWindowManagerStub::RemoveObserver(Observer* observer) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace chrome

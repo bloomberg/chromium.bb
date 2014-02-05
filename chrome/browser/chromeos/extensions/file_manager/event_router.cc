@@ -263,6 +263,7 @@ EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
 EventRouter::EventRouter(Profile* profile)
     : pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
+      multi_user_window_manager_observer_registered_(false),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -302,10 +303,18 @@ void EventRouter::Shutdown() {
   if (volume_manager)
     volume_manager->RemoveObserver(this);
 
+  chrome::MultiUserWindowManager* const multi_user_window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  if (multi_user_window_manager &&
+      multi_user_window_manager_observer_registered_) {
+    multi_user_window_manager_observer_registered_ = false;
+    multi_user_window_manager->RemoveObserver(this);
+  }
+
   profile_ = NULL;
 }
 
-void EventRouter::ObserveFileSystemEvents() {
+void EventRouter::ObserveEvents() {
   if (!profile_) {
     NOTREACHED();
     return;
@@ -344,6 +353,10 @@ void EventRouter::ObserveFileSystemEvents() {
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
   pref_change_registrar_->Add(prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
+
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_PROFILE_ADDED,
+                              content::NotificationService::AllSources());
 }
 
 // File watch setup routines.
@@ -786,6 +799,33 @@ void EventRouter::OnFormatCompleted(const std::string& device_path,
                       file_browser_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS :
                       file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
                       device_path);
+}
+
+void EventRouter::Observe(int type,
+                          const content::NotificationSource& source,
+                          const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_PROFILE_ADDED) {
+    BroadcastEvent(profile_,
+                   file_browser_private::OnProfileAdded::kEventName,
+                   file_browser_private::OnProfileAdded::Create());
+  }
+}
+
+void EventRouter::RegisterMultiUserWindowManagerObserver() {
+  if (multi_user_window_manager_observer_registered_)
+    return;
+  chrome::MultiUserWindowManager* const multi_user_window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  if (multi_user_window_manager) {
+    multi_user_window_manager->AddObserver(this);
+    multi_user_window_manager_observer_registered_ = true;
+  }
+}
+
+void EventRouter::OnOwnerEntryChanged(aura::Window* window) {
+  BroadcastEvent(profile_,
+                 file_browser_private::OnDesktopChanged::kEventName,
+                 file_browser_private::OnDesktopChanged::Create());
 }
 
 }  // namespace file_manager

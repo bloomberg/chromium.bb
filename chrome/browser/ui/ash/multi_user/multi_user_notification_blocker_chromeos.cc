@@ -19,9 +19,11 @@ MultiUserNotificationBlockerChromeOS::MultiUserNotificationBlockerChromeOS(
     : NotificationBlocker(message_center),
       multi_user_window_manager_(multi_user_window_manager) {
   UpdateWindowOwners();
+  multi_user_window_manager_->AddObserver(this);
 }
 
 MultiUserNotificationBlockerChromeOS::~MultiUserNotificationBlockerChromeOS() {
+  multi_user_window_manager_->RemoveObserver(this);
 }
 
 void MultiUserNotificationBlockerChromeOS::UpdateWindowOwners() {
@@ -50,6 +52,21 @@ bool MultiUserNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
   return (current_user_ids_.find(notifier_id.profile_id) !=
           current_user_ids_.end()) ||
       ShouldShowNotification(notifier_id);
+}
+
+void MultiUserNotificationBlockerChromeOS::OnOwnerEntryAdded(
+    aura::Window* window) {
+  UpdateWindowOwners();
+}
+
+void MultiUserNotificationBlockerChromeOS::OnOwnerEntryChanged(
+    aura::Window* window) {
+  UpdateWindowOwners();
+}
+
+void MultiUserNotificationBlockerChromeOS::OnOwnerEntryRemoved(
+    aura::Window* window) {
+  UpdateWindowOwners();
 }
 
 void MultiUserNotificationBlockerChromeOS::ActiveUserChanged(

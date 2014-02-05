@@ -698,8 +698,7 @@ interface Functions {
   static void getProfiles(GetProfilesCallback callback);
 
   // Moves the window to other user's desktop.
-  static void visitDesktop(DOMString profileId,
-                           SimpleCallback callback);
+  static void visitDesktop(DOMString profileId);
 };
 
 interface Events {
@@ -718,5 +717,12 @@ interface Events {
   static void onDeviceChanged(DeviceEvent event);
 
   static void onDriveSyncError(DriveSyncErrorEvent event);
+
+  // Dispatched when a profile is added.
+  static void onProfileAdded();
+
+  // Dispatched when any window moves another desktop.
+  // TODO(hirono): Add information which window is moved.
+  static void onDesktopChanged();
 };
 };

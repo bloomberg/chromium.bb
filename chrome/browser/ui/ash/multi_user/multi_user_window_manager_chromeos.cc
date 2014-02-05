@@ -310,10 +310,8 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   // will add the children but not the owner to the transient children map.
   AddTransientOwnerRecursive(window, window);
 
-  // Right now only |notification_blocker_| needs to know when the list of
-  // owners may change.
-  // TODO(skuhne): replace this by observer when another one needs this event.
-  notification_blocker_->UpdateWindowOwners();
+  // Notify entry adding.
+  FOR_EACH_OBSERVER(Observer, observers_, OnOwnerEntryAdded(window));
 
   if (!IsWindowOnDesktopOfUser(window, current_user_id_))
     SetWindowVisibility(window, false, 0);
@@ -337,6 +335,7 @@ void MultiUserWindowManagerChromeOS::ShowWindowForUser(
   // visible desktop.
   if (user_id == current_user_id_ || previous_owner != current_user_id_)
     return;
+
   ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(
       user_id);
 }
@@ -403,6 +402,14 @@ void MultiUserWindowManagerChromeOS::AddUser(Profile* profile) {
   }
 }
 
+void MultiUserWindowManagerChromeOS::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MultiUserWindowManagerChromeOS::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void MultiUserWindowManagerChromeOS::ActiveUserChanged(
     const std::string& user_id) {
   DCHECK(user_id != current_user_id_);
@@ -443,8 +450,9 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
   // Remove the window from the owners list.
   delete window_to_entry_[window];
   window_to_entry_.erase(window);
-  // TODO(skuhne): replace this by observer when another one needs this event.
-  notification_blocker_->UpdateWindowOwners();
+
+  // Notify entry change.
+  FOR_EACH_OBSERVER(Observer, observers_, OnOwnerEntryRemoved(window));
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanging(
@@ -569,8 +577,8 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
     SetWindowVisibility(window, false, kTeleportAnimationTimeMS);
   }
 
-  // TODO(skuhne): replace this by observer when another one needs this event.
-  notification_blocker_->UpdateWindowOwners();
+  // Notify entry change.
+  FOR_EACH_OBSERVER(Observer, observers_, OnOwnerEntryChanged(window));
   return true;
 }
 

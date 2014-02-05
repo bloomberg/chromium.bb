@@ -9,25 +9,19 @@
 #include <set>
 #include <string>
 
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "ui/message_center/notification_blocker.h"
-
-namespace chrome {
-class MultiUserWindowManager;
-}
 
 // A notification blocker for per-profile stream switching. Owned and controlled
 // by MultiUserWindowManagerChromeOS.
 class MultiUserNotificationBlockerChromeOS
-    : public message_center::NotificationBlocker {
+    : public message_center::NotificationBlocker,
+      public chrome::MultiUserWindowManager::Observer {
  public:
   MultiUserNotificationBlockerChromeOS(
       message_center::MessageCenter* message_center,
       chrome::MultiUserWindowManager* multi_user_window_manager);
   virtual ~MultiUserNotificationBlockerChromeOS();
-
-  // Checks the current desktop and update the list of users which owns windows
-  // on the current desktop.
-  void UpdateWindowOwners();
 
   // Called by MultiUserWindowManager when the active user has changed.
   void ActiveUserChanged(const std::string& user_id);
@@ -38,9 +32,18 @@ class MultiUserNotificationBlockerChromeOS
   virtual bool ShouldShowNotificationAsPopup(
       const message_center::NotifierId& notifier_id) const OVERRIDE;
 
+  // chrome::MultiUserWindowManager::Observer overrides:
+  virtual void OnOwnerEntryAdded(aura::Window* window) OVERRIDE;
+  virtual void OnOwnerEntryChanged(aura::Window* window) OVERRIDE;
+  virtual void OnOwnerEntryRemoved(aura::Window* window) OVERRIDE;
+
  private:
   // Returns true if this blocker is actively working.
   bool IsActive() const;
+
+  // Checks the current desktop and update the list of users which owns windows
+  // on the current desktop.
+  void UpdateWindowOwners();
 
   chrome::MultiUserWindowManager* multi_user_window_manager_;  // Weak.
   std::string active_user_id_;

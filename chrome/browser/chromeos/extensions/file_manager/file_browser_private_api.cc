@@ -11,7 +11,7 @@ namespace file_manager {
 
 FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
     : event_router_(new EventRouter(profile)) {
-  event_router_->ObserveFileSystemEvents();
+  event_router_->ObserveEvents();
 }
 
 FileBrowserPrivateAPI::~FileBrowserPrivateAPI() {

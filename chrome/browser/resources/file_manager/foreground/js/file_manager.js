@@ -434,9 +434,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.gearButton_.addEventListener('menushow',
         this.refreshRemainingSpace_.bind(this,
                                          false /* Without loading caption. */));
-    this.gearButton_.addEventListener(
-        'menushow',
+    chrome.fileBrowserPrivate.onDesktopChanged.addListener(function() {
+      this.updateVisitDesktopMenus_();
+      this.ui_.updateProfileBatch();
+    }.bind(this));
+    chrome.fileBrowserPrivate.onProfileAdded.addListener(
         this.updateVisitDesktopMenus_.bind(this));
+    this.updateVisitDesktopMenus_();
+
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
         'menuitem, hr';
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
@@ -2233,18 +2238,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         cr.ui.MenuItem.decorate(item);
         gearMenu.insertBefore(item, insertingPosition);
         item.className = 'visit-desktop';
-        item.label =
-            strf('VISIT_DESKTOP_OF_USER', profile.displayName);
+        item.label = strf('VISIT_DESKTOP_OF_USER',
+                          profile.displayName,
+                          profile.profileId);
         item.addEventListener('activate', function(inProfile, event) {
           // Stop propagate and hide the menu manually, in order to prevent the
           // focus from being back to the button. (cf. http://crbug.com/248479)
           event.stopPropagation();
           this.gearButton_.hideMenu();
           this.gearButton_.blur();
-          chrome.fileBrowserPrivate.visitDesktop(inProfile.profileId,
-                                                 function() {
-            this.ui_.updateProfileBatch();
-          }.bind(this));
+          chrome.fileBrowserPrivate.visitDesktop(inProfile.profileId);
         }.bind(this, profile));
       }
     }.bind(this));

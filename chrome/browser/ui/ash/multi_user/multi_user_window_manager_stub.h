@@ -41,6 +41,8 @@ class MultiUserWindowManagerStub : public MultiUserWindowManager {
   virtual const std::string& GetUserPresentingWindow(
       aura::Window* window) OVERRIDE;
   virtual void AddUser(Profile* profile) OVERRIDE;
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerStub);

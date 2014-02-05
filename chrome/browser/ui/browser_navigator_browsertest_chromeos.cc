@@ -50,6 +50,8 @@ class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
   virtual const std::string& GetUserPresentingWindow(
       aura::Window* window) OVERRIDE;
   virtual void AddUser(Profile* profile) OVERRIDE;
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
  private:
   // The window of the visiting browser.
@@ -135,6 +137,12 @@ const std::string& TestMultiUserWindowManager::GetUserPresentingWindow(
 }
 
 void TestMultiUserWindowManager::AddUser(Profile* profile) {
+}
+
+void TestMultiUserWindowManager::AddObserver(Observer* observer) {
+}
+
+void TestMultiUserWindowManager::RemoveObserver(Observer* observer) {
 }
 
 GURL GetGoogleURL() {

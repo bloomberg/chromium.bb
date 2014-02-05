@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -373,6 +375,8 @@ bool FileBrowserPrivateGetProfilesFunction::RunImpl() {
   apps::ShellWindow* const shell_window = GetCurrentShellWindow(this);
   chrome::MultiUserWindowManager* const window_manager =
       chrome::MultiUserWindowManager::GetInstance();
+  const std::string current_profile_id =
+      multi_user_util::GetUserIDFromProfile(GetProfile());
   const std::string display_profile_id =
       window_manager && shell_window ?
       window_manager->GetUserPresentingWindow(shell_window->GetNativeWindow()) :
@@ -380,8 +384,8 @@ bool FileBrowserPrivateGetProfilesFunction::RunImpl() {
 
   results_ = api::file_browser_private::GetProfiles::Results::Create(
       profiles,
-      multi_user_util::GetUserIDFromProfile(GetProfile()),
-      display_profile_id);
+      current_profile_id,
+      display_profile_id.empty() ? current_profile_id : display_profile_id);
   return true;
 }
 
@@ -418,6 +422,11 @@ bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
     SetError("Target window is not found.");
     return false;
   }
+
+  // Observe owner changes of widnows.
+  file_manager::EventRouter* const event_router =
+      file_manager::FileBrowserPrivateAPI::Get(GetProfile())->event_router();
+  event_router->RegisterMultiUserWindowManagerObserver();
 
   // Move the window to the user's desktop.
   window_manager->ShowWindowForUser(

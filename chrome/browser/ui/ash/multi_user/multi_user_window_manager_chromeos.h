@@ -11,6 +11,7 @@
 #include "ash/session_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -75,6 +76,8 @@ class MultiUserWindowManagerChromeOS
   virtual const std::string& GetUserPresentingWindow(
       aura::Window* window) OVERRIDE;
   virtual void AddUser(Profile* profile) OVERRIDE;
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
   // SessionStateObserver overrides:
   virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE;
@@ -221,6 +224,9 @@ class MultiUserWindowManagerChromeOS
 
   // A list of all known users and their shell window observers.
   UserIDToShellWindowObserver user_id_to_app_observer_;
+
+  // An observer list to be notified upon window owner changes.
+  ObserverList<Observer> observers_;
 
   // A map which remembers for owned transient windows their own visibility.
   TransientWindowToVisibility transient_window_to_visibility_;
