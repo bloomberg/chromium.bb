@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/v4l2_video_device.h"
@@ -50,16 +51,27 @@ namespace content {
 //   media::VideoDecodeAccelerator::Client interface.
 // * The decoder_thread_, owned by this class.  It services API tasks, through
 //   the *Task() routines, as well as V4L2 device events, through
-//   ServiceDeviceTask().  Almost all state modification is done on this thread.
+//   ServiceDeviceTask().  Almost all state modification is done on this thread
+//   (this doesn't include buffer (re)allocation sequence, see below).
 // * The device_poll_thread_, owned by this class.  All it does is epoll() on
 //   the V4L2 in DevicePollTask() and schedule a ServiceDeviceTask() on the
 //   decoder_thread_ when something interesting happens.
 //   TODO(sheu): replace this thread with an TYPE_IO decoder_thread_.
 //
-// Note that this class has no locks!  Everything's serviced on the
-// decoder_thread_, so there are no synchronization issues.
+// Note that this class has (almost) no locks, apart from the pictures_assigned_
+// WaitableEvent. Everything (apart from buffer (re)allocation) is serviced on
+// the decoder_thread_, so there are no synchronization issues.
 // ... well, there are, but it's a matter of getting messages posted in the
 // right order, not fiddling with locks.
+// Buffer creation is a two-step process that is serviced partially on the
+// Child thread, because we need to wait for the client to provide textures
+// for the buffers we allocate. We cannot keep the decoder thread running while
+// the client allocates Pictures for us, because we need to REQBUFS first to get
+// the required number of output buffers from the device and that cannot be done
+// unless we free the previous set of buffers, leaving the decoding in a
+// inoperable state for the duration of the wait for Pictures. So to prevent
+// subtle races (esp. if we get Reset() in the meantime), we block the decoder
+// thread while we wait for AssignPictureBuffers from the client.
 class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     : public VideoDecodeAcceleratorImpl {
  public:
@@ -121,7 +133,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   struct BitstreamBufferRef;
 
   // Auto-destruction reference for an array of PictureBuffer, for
-  // message-passing from AssignPictureBuffers() to AssignPictureBuffersTask().
+  // simpler EGLImage cleanup if any calls fail in AssignPictureBuffers().
   struct PictureBufferArrayRef;
 
   // Auto-destruction reference for EGLSync (for message-passing).
@@ -183,11 +195,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   bool AppendToInputFrame(const void* data, size_t size);
   // Flush data for one decoded frame.
   bool FlushInputFrame();
-
-  // Process an AssignPictureBuffers() API call.  After this, the
-  // device_poll_thread_ can be started safely, since we have all our
-  // buffers.
-  void AssignPictureBuffersTask(scoped_ptr<PictureBufferArrayRef> pic_buffers);
 
   // Service I/O on the V4L2 devices.  This task should only be scheduled from
   // DevicePollTask().  If |event_pending| is true, one or more events
@@ -355,6 +362,9 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   //
   // Hardware state and associated queues.  Since decoder_thread_ services
   // the hardware, decoder_thread_ owns these too.
+  // output_buffer_map_ and free_output_buffers_ are an exception during the
+  // buffer (re)allocation sequence, when the decoder_thread_ is blocked briefly
+  // while the Child thread manipulates them.
   //
 
   // Completed decode buffers.
@@ -388,6 +398,10 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // The number of pictures that are sent to PictureReady and will be cleared.
   int picture_clearing_count_;
+
+  // Used by the decoder thread to wait for AssignPictureBuffers to arrive
+  // to avoid races with potential Reset requests.
+  base::WaitableEvent pictures_assigned_;
 
   // Output picture size.
   gfx::Size frame_buffer_size_;

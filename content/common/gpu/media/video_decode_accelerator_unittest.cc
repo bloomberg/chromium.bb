@@ -49,6 +49,7 @@
 #include "content/common/gpu/media/rendering_helper.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "content/public/common/content_switches.h"
+#include "media/filters/h264_parser.h"
 #include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_WIN)
@@ -108,6 +109,8 @@ bool g_disable_rendering = false;
 // Magic constants for differentiating the reasons for NotifyResetDone being
 // called.
 enum ResetPoint {
+  // Reset() just after calling Decode() with a fragment containing config info.
+  RESET_AFTER_FIRST_CONFIG_INFO = -4,
   START_OF_STREAM_RESET = -3,
   MID_STREAM_RESET = -2,
   END_OF_STREAM_RESET = -1
@@ -128,7 +131,7 @@ struct TestVideoFile {
         num_fragments(-1),
         min_fps_render(-1),
         min_fps_no_render(-1),
-        profile(-1),
+        profile(media::VIDEO_CODEC_PROFILE_UNKNOWN),
         reset_after_frame_num(END_OF_STREAM_RESET) {
   }
 
@@ -139,7 +142,7 @@ struct TestVideoFile {
   int num_fragments;
   int min_fps_render;
   int min_fps_no_render;
-  int profile;
+  media::VideoCodecProfile profile;
   int reset_after_frame_num;
   std::string data_str;
 };
@@ -380,7 +383,7 @@ class GLRenderingVDAClient
                        int delete_decoder_state,
                        int frame_width,
                        int frame_height,
-                       int profile,
+                       media::VideoCodecProfile profile,
                        double rendering_fps,
                        bool suppress_rendering,
                        int delay_reuse_after_frame_num,
@@ -459,7 +462,7 @@ class GLRenderingVDAClient
   int num_done_bitstream_buffers_;
   PictureBufferById picture_buffers_by_id_;
   base::TimeTicks initialize_done_ticks_;
-  int profile_;
+  media::VideoCodecProfile profile_;
   GLenum texture_target_;
   bool suppress_rendering_;
   std::vector<base::TimeTicks> frame_delivery_times_;
@@ -486,7 +489,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     int delete_decoder_state,
     int frame_width,
     int frame_height,
-    int profile,
+    media::VideoCodecProfile profile,
     double rendering_fps,
     bool suppress_rendering,
     int delay_reuse_after_frame_num,
@@ -578,10 +581,9 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
     return;
 
   // Configure the decoder.
-  media::VideoCodecProfile profile = media::H264PROFILE_BASELINE;
-  if (profile_ != -1)
-    profile = static_cast<media::VideoCodecProfile>(profile_);
-  CHECK(decoder_->Initialize(profile));
+  profile_ = (profile_ != media::VIDEO_CODEC_PROFILE_UNKNOWN ?
+              profile_ : media::H264PROFILE_BASELINE);
+  CHECK(decoder_->Initialize(profile_));
 }
 
 void GLRenderingVDAClient::ProvidePictureBuffers(
@@ -674,6 +676,7 @@ void GLRenderingVDAClient::NotifyInitializeDone() {
   initialize_done_ticks_ = base::TimeTicks::Now();
 
   if (reset_after_frame_num_ == START_OF_STREAM_RESET) {
+    reset_after_frame_num_ = MID_STREAM_RESET;
     decoder_->Reset();
     return;
   }
@@ -845,6 +848,29 @@ std::string GLRenderingVDAClient::GetBytesForNextFrame(
   return bytes;
 }
 
+static bool FragmentHasConfigInfo(const uint8* data, size_t size,
+                                  media::VideoCodecProfile profile) {
+  if (profile >= media::H264PROFILE_MIN &&
+      profile <= media::H264PROFILE_MAX) {
+    media::H264Parser parser;
+    parser.SetStream(data, size);
+    media::H264NALU nalu;
+    media::H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
+    if (result != media::H264Parser::kOk) {
+      // Let the VDA figure out there's something wrong with the stream.
+      return false;
+    }
+
+    return nalu.nal_unit_type == media::H264NALU::kSPS;
+  } else if (profile >= media::VP8PROFILE_MIN &&
+             profile <= media::VP8PROFILE_MAX) {
+    return (size > 0 && !(data[0] & 0x01));
+  }
+
+  CHECK(false) << "Invalid profile";  // Shouldn't happen at this point.
+  return false;
+}
+
 void GLRenderingVDAClient::DecodeNextFragment() {
   if (decoder_deleted())
     return;
@@ -865,6 +891,19 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   }
   size_t next_fragment_size = next_fragment_bytes.size();
 
+  // Call Reset() just after Decode() if the fragment contains config info.
+  // This tests how the VDA behaves when it gets a reset request before it has
+  // a chance to ProvidePictureBuffers().
+  bool reset_here = false;
+  if (reset_after_frame_num_ == RESET_AFTER_FIRST_CONFIG_INFO) {
+    reset_here = FragmentHasConfigInfo(
+        reinterpret_cast<const uint8*>(next_fragment_bytes.data()),
+        next_fragment_size,
+        profile_);
+    if (reset_here)
+      reset_after_frame_num_ = END_OF_STREAM_RESET;
+  }
+
   // Populate the shared memory buffer w/ the fragment, duplicate its handle,
   // and hand it off to the decoder.
   base::SharedMemory shm;
@@ -879,11 +918,18 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
   decoder_->Decode(bitstream_buffer);
   ++outstanding_decodes_;
-  encoded_data_next_pos_to_decode_ = end_pos;
-
   if (!remaining_play_throughs_ &&
       -delete_decoder_state_ == next_bitstream_buffer_id_) {
     DeleteDecoder();
+  }
+
+  if (reset_here) {
+    reset_after_frame_num_ = MID_STREAM_RESET;
+    decoder_->Reset();
+    // Restart from the beginning to re-Decode() the SPS we just sent.
+    encoded_data_next_pos_to_decode_ = 0;
+  } else {
+    encoded_data_next_pos_to_decode_ = end_pos;
   }
 
   if (decode_calls_per_second_ > 0) {
@@ -1017,8 +1063,10 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
       CHECK(base::StringToInt(fields[5], &video_file->min_fps_render));
     if (!fields[6].empty())
       CHECK(base::StringToInt(fields[6], &video_file->min_fps_no_render));
+    int profile = -1;
     if (!fields[7].empty())
-      CHECK(base::StringToInt(fields[7], &video_file->profile));
+      CHECK(base::StringToInt(fields[7], &profile));
+    video_file->profile = static_cast<media::VideoCodecProfile>(profile);
 
     // Read in the video data.
     base::FilePath filepath(video_file->file_name);
@@ -1035,14 +1083,18 @@ void VideoDecodeAcceleratorTest::UpdateTestVideoFileParams(
     std::vector<TestVideoFile*>* test_video_files) {
   for (size_t i = 0; i < test_video_files->size(); i++) {
     TestVideoFile* video_file = (*test_video_files)[i];
-    if (video_file->num_frames > 0 && reset_point == MID_STREAM_RESET) {
-      // Reset should not go beyond the last frame; reset after the first
-      // frame for short videos.
+    if (reset_point == MID_STREAM_RESET) {
+      // Reset should not go beyond the last frame;
+      // reset in the middle of the stream for short videos.
       video_file->reset_after_frame_num = kMaxResetAfterFrameNum;
-      if (video_file->num_frames <= kMaxResetAfterFrameNum)
-        video_file->reset_after_frame_num = 1;
+      if (video_file->num_frames <= video_file->reset_after_frame_num)
+        video_file->reset_after_frame_num = video_file->num_frames / 2;
+
       video_file->num_frames += video_file->reset_after_frame_num;
+    } else {
+      video_file->reset_after_frame_num = reset_point;
     }
+
     if (video_file->min_fps_render != -1)
       video_file->min_fps_render /= num_concurrent_decoders;
     if (video_file->min_fps_no_render != -1)
@@ -1364,16 +1416,18 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         MakeTuple(1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false, false)));
 
-// This hangs on Exynos, preventing further testing and wasting test machine
-// time.
-// TODO(ihf): Enable again once http://crbug.com/269754 is fixed.
-#if defined(ARCH_CPU_X86_FAMILY)
 // Test that Reset() before the first Decode() works fine.
 INSTANTIATE_TEST_CASE_P(
     ResetBeforeDecode, VideoDecodeAcceleratorParamTest,
     ::testing::Values(
         MakeTuple(1, 1, 1, START_OF_STREAM_RESET, CS_RESET, false, false)));
-#endif  // ARCH_CPU_X86_FAMILY
+
+// Test Reset() immediately after Decode() containing config info.
+INSTANTIATE_TEST_CASE_P(
+    ResetAfterFirstConfigInfo, VideoDecodeAcceleratorParamTest,
+    ::testing::Values(
+        MakeTuple(
+            1, 1, 1, RESET_AFTER_FIRST_CONFIG_INFO, CS_RESET, false, false)));
 
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
