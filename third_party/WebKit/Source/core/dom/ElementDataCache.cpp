@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/dom/DocumentSharedObjectPool.h"
+#include "core/dom/ElementDataCache.h"
 
 #include "core/dom/ElementData.h"
 
@@ -43,7 +43,7 @@ inline bool hasSameAttributes(const Vector<Attribute>& attributes, ShareableElem
     return !memcmp(attributes.data(), elementData.m_attributeArray, attributes.size() * sizeof(Attribute));
 }
 
-PassRefPtr<ShareableElementData> DocumentSharedObjectPool::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
+PassRefPtr<ShareableElementData> ElementDataCache::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
 {
     ASSERT(!attributes.isEmpty());
 
@@ -59,11 +59,11 @@ PassRefPtr<ShareableElementData> DocumentSharedObjectPool::cachedShareableElemen
     return it->value.get();
 }
 
-DocumentSharedObjectPool::DocumentSharedObjectPool()
+ElementDataCache::ElementDataCache()
 {
 }
 
-DocumentSharedObjectPool::~DocumentSharedObjectPool()
+ElementDataCache::~ElementDataCache()
 {
 }
 

@@ -89,10 +89,10 @@ class DocumentLifecycleObserver;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentParser;
-class DocumentSharedObjectPool;
 class DocumentTimeline;
 class DocumentType;
 class Element;
+class ElementDataCache;
 class Event;
 class EventListener;
 class ExceptionState;
@@ -991,7 +991,7 @@ public:
     void setContextFeatures(PassRefPtr<ContextFeatures>);
     ContextFeatures* contextFeatures() const { return m_contextFeatures.get(); }
 
-    DocumentSharedObjectPool* sharedObjectPool() { return m_sharedObjectPool.get(); }
+    ElementDataCache* elementDataCache() { return m_elementDataCache.get(); }
 
     void didRemoveAllPendingStylesheet();
     void setNeedsNotifyRemoveAllPendingStylesheet() { m_needsNotifyRemoveAllPendingStylesheet = true; }
@@ -1314,10 +1314,10 @@ private:
 
     RefPtr<NamedFlowCollection> m_namedFlows;
 
-    void sharedObjectPoolClearTimerFired(Timer<Document>*);
-    Timer<Document> m_sharedObjectPoolClearTimer;
+    void elementDataCacheClearTimerFired(Timer<Document>*);
+    Timer<Document> m_elementDataCacheClearTimer;
 
-    OwnPtr<DocumentSharedObjectPool> m_sharedObjectPool;
+    OwnPtr<ElementDataCache> m_elementDataCache;
 
 #ifndef NDEBUG
     bool m_didDispatchViewportPropertiesChanged;

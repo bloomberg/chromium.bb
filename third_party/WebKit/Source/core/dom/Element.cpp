@@ -46,7 +46,7 @@
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DatasetDOMStringMap.h"
-#include "core/dom/DocumentSharedObjectPool.h"
+#include "core/dom/ElementDataCache.h"
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -1187,8 +1187,8 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector)
     if (attributeVector.isEmpty())
         return;
 
-    if (document().sharedObjectPool())
-        m_elementData = document().sharedObjectPool()->cachedShareableElementDataWithAttributes(attributeVector);
+    if (document().elementDataCache())
+        m_elementData = document().elementDataCache()->cachedShareableElementDataWithAttributes(attributeVector);
     else
         m_elementData = ShareableElementData::createWithAttributes(attributeVector);
 

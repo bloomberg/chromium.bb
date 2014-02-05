@@ -114,7 +114,7 @@ private:
 #pragma warning(disable: 4200) // Disable "zero-sized array in struct/union" warning
 #endif
 
-// SharableElementData is managed by DocumentSharedObjectPool and is produced by
+// SharableElementData is managed by ElementDataCache and is produced by
 // the parser during page load for elements that have identical attributes. This
 // is a memory optimization since it's very common for many elements to have
 // duplicate sets of attributes (ex. the same classes).

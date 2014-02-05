@@ -67,9 +67,9 @@
 #include "core/dom/DocumentLifecycleNotifier.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/DocumentSharedObjectPool.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementDataCache.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -494,7 +494,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_lastHandledUserGestureTimestamp(0)
     , m_taskRunner(MainThreadTaskRunner::create(this))
     , m_registrationContext(initializer.registrationContext(this))
-    , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
+    , m_elementDataCacheClearTimer(this, &Document::elementDataCacheClearTimerFired)
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
@@ -2585,8 +2585,8 @@ void Document::setParsing(bool b)
 {
     m_bParsing = b;
 
-    if (m_bParsing && !m_sharedObjectPool)
-        m_sharedObjectPool = DocumentSharedObjectPool::create();
+    if (m_bParsing && !m_elementDataCache)
+        m_elementDataCache = ElementDataCache::create();
 
     if (!m_bParsing && view())
         view()->scheduleRelayout();
@@ -4452,12 +4452,11 @@ void Document::finishedParsing()
         InspectorInstrumentation::domContentLoadedEventFired(f.get());
     }
 
-    // Schedule dropping of the DocumentSharedObjectPool. We keep it alive for a while after parsing finishes
+    // Schedule dropping of the ElementDataCache. We keep it alive for a while after parsing finishes
     // so that dynamically inserted content can also benefit from sharing optimizations.
-    // Note that we don't refresh the timer on pool access since that could lead to huge caches being kept
+    // Note that we don't refresh the timer on cache access since that could lead to huge caches being kept
     // alive indefinitely by something innocuous like JS setting .innerHTML repeatedly on a timer.
-    static const int timeToKeepSharedObjectPoolAliveAfterParsingFinishedInSeconds = 10;
-    m_sharedObjectPoolClearTimer.startOneShot(timeToKeepSharedObjectPoolAliveAfterParsingFinishedInSeconds);
+    m_elementDataCacheClearTimer.startOneShot(10);
 
     // Parser should have picked up all preloads by now
     m_fetcher->clearPreloads();
@@ -4466,9 +4465,9 @@ void Document::finishedParsing()
         m_import->didFinishParsing();
 }
 
-void Document::sharedObjectPoolClearTimerFired(Timer<Document>*)
+void Document::elementDataCacheClearTimerFired(Timer<Document>*)
 {
-    m_sharedObjectPool.clear();
+    m_elementDataCache.clear();
 }
 
 Vector<IconURL> Document::iconURLs(int iconTypesMask)

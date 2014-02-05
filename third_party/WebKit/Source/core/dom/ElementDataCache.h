@@ -24,12 +24,14 @@
  *
  */
 
-#ifndef DocumentSharedObjectPool_h
-#define DocumentSharedObjectPool_h
+#ifndef ElementDataCache_h
+#define ElementDataCache_h
 
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {
@@ -38,15 +40,15 @@ class Attribute;
 class ShareableElementData;
 class ShareableElementDataCacheEntry;
 
-class DocumentSharedObjectPool {
+class ElementDataCache {
 public:
-    static PassOwnPtr<DocumentSharedObjectPool> create() { return adoptPtr(new DocumentSharedObjectPool); }
-    ~DocumentSharedObjectPool();
+    static PassOwnPtr<ElementDataCache> create() { return adoptPtr(new ElementDataCache); }
+    ~ElementDataCache();
 
     PassRefPtr<ShareableElementData> cachedShareableElementDataWithAttributes(const Vector<Attribute>&);
 
 private:
-    DocumentSharedObjectPool();
+    ElementDataCache();
 
     typedef HashMap<unsigned, RefPtr<ShareableElementData>, AlreadyHashed> ShareableElementDataCache;
     ShareableElementDataCache m_shareableElementDataCache;
