@@ -139,7 +139,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
       needs_begin_frame_(false),
-      are_layers_attached_(!widget_host->is_hidden()),
+      is_showing_(!widget_host->is_hidden()),
       content_view_core_(NULL),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
@@ -259,31 +259,26 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
 }
 
-blink::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
+void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
-    gfx::Size* out_size) {
-  gfx::Size size(gfx::ToCeiledSize(
-      gfx::ScaleSize(texture_size_in_layer_, scale)));
-
-  if (!CompositorImpl::IsInitialized() ||
-      texture_id_in_layer_ == 0 ||
-      texture_size_in_layer_.IsEmpty() ||
-      size.IsEmpty()) {
-    if (out_size)
-        out_size->SetSize(0, 0);
-
-    return 0;
+    gfx::Size* out_size,
+    const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
+  if (!IsSurfaceAvailableForCopy()) {
+    result_callback.Run(false, SkBitmap());
+    return;
   }
 
-  if (out_size)
-    *out_size = size;
-
-  GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
-  return helper->CopyAndScaleTexture(texture_id_in_layer_,
-                                     texture_size_in_layer_,
-                                     size,
-                                     true,
-                                     GLHelper::SCALER_QUALITY_FAST);
+  gfx::Size bounds = layer_->bounds();
+  gfx::Rect src_subrect(bounds);
+  const gfx::Display& display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  float device_scale_factor = display.device_scale_factor();
+  DCHECK_GT(device_scale_factor, 0);
+  gfx::Size dst_size(
+      gfx::ToCeiledSize(gfx::ScaleSize(bounds, scale / device_scale_factor)));
+  *out_size = dst_size;
+  CopyFromCompositingSurface(
+      src_subrect, dst_size, result_callback, SkBitmap::kARGB_8888_Config);
 }
 
 bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
@@ -323,6 +318,9 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   if (!content_view_core_)
     return false;
+  if (!layer_)
+    return false;
+
   if (texture_size_in_layer_.IsEmpty())
     return false;
 
@@ -387,22 +385,24 @@ bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewAndroid::Show() {
-  if (are_layers_attached_)
+  if (is_showing_)
     return;
 
-  are_layers_attached_ = true;
-  AttachLayers();
+  is_showing_ = true;
+  if (layer_)
+    layer_->SetHideLayerAndSubtree(false);
 
   frame_evictor_->SetVisible(true);
   WasShown();
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
-  if (!are_layers_attached_)
+  if (!is_showing_)
     return;
 
-  are_layers_attached_ = false;
-  RemoveLayers();
+  is_showing_ = false;
+  if (layer_)
+    layer_->SetHideLayerAndSubtree(true);
 
   frame_evictor_->SetVisible(false);
   WasHidden();
@@ -412,7 +412,7 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
   // ContentViewCoreImpl represents the native side of the Java
   // ContentViewCore.  It being NULL means that it is not attached
   // to the View system yet, so we treat this RWHVA as hidden.
-  return are_layers_attached_ && content_view_core_;
+  return is_showing_ && content_view_core_;
 }
 
 void RenderWidgetHostViewAndroid::LockResources() {
@@ -756,8 +756,7 @@ void RenderWidgetHostViewAndroid::UnusedResourcesAreAvailable() {
 }
 
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
-  if (are_layers_attached_)
-    RemoveLayers();
+  RemoveLayers();
   frame_provider_ = NULL;
   delegated_renderer_layer_ = NULL;
   layer_ = NULL;
@@ -792,15 +791,13 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     }
     if (!frame_provider_ ||
         texture_size_in_layer_ != frame_provider_->frame_size()) {
-      if (are_layers_attached_)
-        RemoveLayers();
+      RemoveLayers();
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
       delegated_renderer_layer_ =
           cc::DelegatedRendererLayer::Create(frame_provider_);
       layer_ = delegated_renderer_layer_;
-      if (are_layers_attached_)
-        AttachLayers();
+      AttachLayers();
     } else {
       frame_provider_->SetFrameData(frame_data.Pass());
     }
@@ -859,6 +856,7 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     ComputeContentsSize(frame->metadata);
 
     SwapDelegatedFrame(output_surface_id, frame->delegated_frame_data.Pass());
+    frame_evictor_->SwappedFrame(!host_->is_hidden());
     return;
   }
 
@@ -1011,6 +1009,7 @@ void RenderWidgetHostViewAndroid::AttachLayers() {
   content_view_core_->AttachLayer(layer_);
   if (overscroll_effect_enabled_)
     overscroll_effect_->Enable();
+  layer_->SetHideLayerAndSubtree(!is_showing_);
 }
 
 void RenderWidgetHostViewAndroid::RemoveLayers() {
@@ -1331,7 +1330,7 @@ SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
 void RenderWidgetHostViewAndroid::OnOverscrolled(
     gfx::Vector2dF accumulated_overscroll,
     gfx::Vector2dF current_fling_velocity) {
-  if (!content_view_core_ || !are_layers_attached_)
+  if (!content_view_core_ || !layer_ || !is_showing_)
     return;
 
   if (overscroll_effect_->OnOverscrolled(content_view_core_->GetLayer(),
@@ -1351,9 +1350,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
   RunAckCallbacks();
 
-  if (are_layers_attached_)
-    RemoveLayers();
-
+  RemoveLayers();
   if (content_view_core_ && !using_synchronous_compositor_)
     content_view_core_->GetWindowAndroid()->RemoveObserver(this);
 
@@ -1367,11 +1364,9 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
         SetContentViewCore(obj);
   }
 
-  if (are_layers_attached_) {
-    AttachLayers();
-    if (content_view_core_ && !using_synchronous_compositor_)
-      content_view_core_->GetWindowAndroid()->AddObserver(this);
-  }
+  AttachLayers();
+  if (content_view_core_ && !using_synchronous_compositor_)
+    content_view_core_->GetWindowAndroid()->AddObserver(this);
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
@@ -1407,7 +1402,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const base::TimeTicks& start_time,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
-  DCHECK(result->HasTexture());
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
 

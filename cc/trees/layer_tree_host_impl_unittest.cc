@@ -5453,12 +5453,16 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
+  gfx::Size size(4, 4);
+  // SkImageInfo has no support for ETC1.  The |info| below contains the right
+  // total pixel size for the bitmap but not the right height and width.  The
+  // correct width/height are passed directly to UIResourceBitmap.
   SkImageInfo info =
-      SkImageInfo::Make(4, 4, kPMColor_SkColorType, kPremul_SkAlphaType);
+      SkImageInfo::Make(4, 2, kAlpha_8_SkColorType, kPremul_SkAlphaType);
   skia::RefPtr<SkPixelRef> pixel_ref =
       skia::AdoptRef(SkMallocPixelRef::NewAllocate(info, 0, 0));
   pixel_ref->setImmutable();
-  UIResourceBitmap bitmap(pixel_ref);
+  UIResourceBitmap bitmap(pixel_ref, size);
   UIResourceId ui_resource_id = 1;
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());
