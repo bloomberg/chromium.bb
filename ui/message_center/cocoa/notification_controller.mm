@@ -54,13 +54,32 @@
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
+@interface MCNotificationButton : NSButton
+@end
+
+@implementation MCNotificationButton
+// drawRect: needs to fill the button with a background, otherwise we don't get
+// subpixel antialiasing.
+- (void)drawRect:(NSRect)dirtyRect {
+  NSColor* color = gfx::SkColorToCalibratedNSColor(
+      message_center::kNotificationBackgroundColor);
+  [color set];
+  NSRectFill(dirtyRect);
+  [super drawRect:dirtyRect];
+}
+@end
 
 @interface MCNotificationButtonCell : NSButtonCell {
   BOOL hovered_;
 }
 @end
 
+////////////////////////////////////////////////////////////////////////////////
 @implementation MCNotificationButtonCell
+- (BOOL)isOpaque {
+  return YES;
+}
+
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
   // Else mouseEntered: and mouseExited: won't be called and hovered_ won't be
   // valid.
@@ -491,8 +510,8 @@
     NSRect buttonFrame = frame;
     buttonFrame.origin = NSMakePoint(0, y);
     buttonFrame.size.height = message_center::kButtonHeight;
-    base::scoped_nsobject<NSButton> button(
-        [[NSButton alloc] initWithFrame:buttonFrame]);
+    base::scoped_nsobject<MCNotificationButton> button(
+        [[MCNotificationButton alloc] initWithFrame:buttonFrame]);
     base::scoped_nsobject<MCNotificationButtonCell> cell(
         [[MCNotificationButtonCell alloc]
             initTextCell:base::SysUTF16ToNSString(buttonInfo.title)]);
