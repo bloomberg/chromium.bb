@@ -9,7 +9,6 @@ import sys
 
 import file_tools
 import log_tools
-import platform_tools
 import subprocess
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -37,7 +36,7 @@ def CheckGitOutput(args):
 
 def SvnCmd():
   """Return the svn command to execute for the host platform."""
-  if platform_tools.IsWindows():
+  if pynacl.platform.IsWindows():
     return ['cmd.exe', '/c', 'svn.bat']
   else:
     return ['svn']

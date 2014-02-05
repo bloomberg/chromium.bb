@@ -504,7 +504,7 @@ if __name__ == '__main__':
   # aren't right.
   # On linux use the 32-bit compiler to build the target libs since that's what
   # most developers will be using.
-  if pynacl.platform.platform_tools.IsLinux():
+  if pynacl.platform.IsLinux():
     packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdCallback(revisions)))
     for bias in BITCODE_BIASES:

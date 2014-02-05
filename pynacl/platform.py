@@ -1,10 +1,11 @@
 #!/usr/bin/python
-# Copyright (c) 2013 The Native Client Authors. All rights reserved.
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import platform
 import sys
+
+import lib
 
 def IsWindows():
   return sys.platform == 'win32'
@@ -34,7 +35,7 @@ def IsLinux():
 # those binaries! TODO(dschuff): get rid of this bot or make it do something
 # useful.
 def Is64BitLinux():
-  return IsLinux() and platform.machine() == 'x86_64'
+  return IsLinux() and lib.platform.machine() == 'x86_64'
 
 def ArchDict():
   """Returns a dictionary that maps an alias for an architecture into
