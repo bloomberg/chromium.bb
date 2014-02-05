@@ -61,7 +61,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         return;
     }
     {% elif attribute.idl_type == 'EventHandler' or
-            attribute.cached_attribute_validation_method %}
+            (attribute.cached_attribute_validation_method and
+             not attribute.is_getter_raises_exception) %}{# Already assigned #}
     {# FIXME: consider merging all these assign to local variable statements #}
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {% endif %}

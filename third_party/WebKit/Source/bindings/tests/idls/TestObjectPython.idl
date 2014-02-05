@@ -152,7 +152,6 @@ interface TestObjectPython {
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
     [ExposeJSAccessors] attribute long exposeJSAccessorsLongAttribute;
-    [RaisesException=Getter] attribute long getterRaisesExceptionLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
     attribute TestInterfacePython testInterfacePythonAttribute;  // interface type that itself has [ImplementedAs] (not self; self-reference test at TestInterfacePython)
@@ -170,6 +169,9 @@ interface TestObjectPython {
     [PutForwards=href] readonly attribute TestNode location;
     [PutForwards=hrefThrows] readonly attribute TestNode locationWithException;
     [RaisesException] attribute long raisesExceptionLongAttribute;
+    [RaisesException=Getter] attribute long raisesExceptionGetterLongAttribute;
+    [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
+    [CachedAttribute=isValueDirty, RaisesException] attribute any cachedAttributeRaisesExceptionGetterAnyAttribute;
     [Reflect] attribute TestInterface reflectTestInterfaceAttribute;
     [Reflect=reflectedNameAttribute] attribute TestInterface reflectReflectedNameAttributeTestAttribute;
     // [Reflect] exceptional types: exceptional getters, exceptional setters,
@@ -189,7 +191,6 @@ interface TestObjectPython {
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
-    [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
     [StrictTypeChecking] attribute float strictTypeCheckingFloatAttribute;  // nop for non-interface types
     [StrictTypeChecking] attribute TestInterface strictTypeCheckingTestInterfaceAttribute;
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
