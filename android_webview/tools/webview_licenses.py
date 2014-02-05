@@ -41,6 +41,7 @@ def GetIncompatibleDirectories():
   """
 
   whitelist = [
+    'A(pple )?PSL 2(\.0)?',
     'Apache( Version)? 2(\.0)?',
     '(New )?([23]-Clause )?BSD( [23]-Clause)?( with advertising clause)?',
     'L?GPL ?v?2(\.[01])?( or later)?',
