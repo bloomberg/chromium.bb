@@ -29,8 +29,10 @@ namespace drive_backend {
 
 void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
                                leveldb::WriteBatch* batch);
-void PutFileToBatch(const FileMetadata& file, leveldb::WriteBatch* batch);
-void PutTrackerToBatch(const FileTracker& tracker, leveldb::WriteBatch* batch);
+void PutFileMetadataToBatch(const FileMetadata& file,
+                            leveldb::WriteBatch* batch);
+void PutFileTrackerToBatch(const FileTracker& tracker,
+                           leveldb::WriteBatch* batch);
 
 void PopulateFileDetailsByFileResource(
     const google_apis::FileResource& file_resource,

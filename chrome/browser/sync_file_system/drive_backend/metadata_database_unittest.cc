@@ -270,6 +270,7 @@ class MetadataDatabaseTest : public testing::Test {
     details->set_file_kind(FILE_KIND_FILE);
     details->set_md5(
         "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
+    details->set_change_id(current_change_id_);
     return file;
   }
 
@@ -281,6 +282,7 @@ class MetadataDatabaseTest : public testing::Test {
     details->add_parent_folder_ids(parent.file_id());
     details->set_title(title);
     details->set_file_kind(FILE_KIND_FOLDER);
+    details->set_change_id(current_change_id_);
     return folder;
   }
 
@@ -420,14 +422,14 @@ class MetadataDatabaseTest : public testing::Test {
 
   leveldb::Status PutFileToDB(leveldb::DB* db, const FileMetadata& file) {
     leveldb::WriteBatch batch;
-    PutFileToBatch(file, &batch);
+    PutFileMetadataToBatch(file, &batch);
     return db->Write(leveldb::WriteOptions(), &batch);
   }
 
   leveldb::Status PutTrackerToDB(leveldb::DB* db,
                                  const FileTracker& tracker) {
     leveldb::WriteBatch batch;
-    PutTrackerToBatch(tracker, &batch);
+    PutFileTrackerToBatch(tracker, &batch);
     return db->Write(leveldb::WriteOptions(), &batch);
   }
 

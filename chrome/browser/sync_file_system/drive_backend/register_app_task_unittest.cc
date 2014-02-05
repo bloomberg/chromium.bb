@@ -127,8 +127,8 @@ class RegisterAppTaskTest : public testing::Test,
     batch.Put(kDatabaseVersionKey,
               base::Int64ToString(kCurrentDatabaseVersion));
     PutServiceMetadataToBatch(service_metadata, &batch);
-    PutFileToBatch(sync_root_metadata, &batch);
-    PutTrackerToBatch(sync_root_tracker, &batch);
+    PutFileMetadataToBatch(sync_root_metadata, &batch);
+    PutFileTrackerToBatch(sync_root_tracker, &batch);
     EXPECT_TRUE(db->Write(leveldb::WriteOptions(), &batch).ok());
   }
 
@@ -170,8 +170,8 @@ class RegisterAppTaskTest : public testing::Test,
     tracker.set_active(true);
 
     leveldb::WriteBatch batch;
-    PutFileToBatch(metadata, &batch);
-    PutTrackerToBatch(tracker, &batch);
+    PutFileMetadataToBatch(metadata, &batch);
+    PutFileTrackerToBatch(tracker, &batch);
     EXPECT_TRUE(db->Write(leveldb::WriteOptions(), &batch).ok());
   }
 
@@ -195,8 +195,8 @@ class RegisterAppTaskTest : public testing::Test,
     tracker.set_active(false);
 
     leveldb::WriteBatch batch;
-    PutFileToBatch(metadata, &batch);
-    PutTrackerToBatch(tracker, &batch);
+    PutFileMetadataToBatch(metadata, &batch);
+    PutFileTrackerToBatch(tracker, &batch);
     EXPECT_TRUE(db->Write(leveldb::WriteOptions(), &batch).ok());
   }
 

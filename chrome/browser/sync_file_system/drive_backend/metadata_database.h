@@ -448,6 +448,12 @@ class MetadataDatabase {
   void StoreFileMetadata(scoped_ptr<FileMetadata> file_metadata);
   void StoreFileTracker(scoped_ptr<FileTracker> file_tracker);
 
+  void AttachSyncRoot(const google_apis::FileResource& sync_root_folder,
+                      leveldb::WriteBatch* batch);
+  void AttachInitialAppRoot(const google_apis::FileResource& app_root_folder,
+                            leveldb::WriteBatch* batch);
+  void InsertFileTrackerToIndex(FileTracker* tracker);
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::FilePath database_path_;
   leveldb::Env* env_override_;

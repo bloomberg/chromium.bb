@@ -29,7 +29,8 @@ void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
   batch->Put(kServiceMetadataKey, value);
 }
 
-void PutFileToBatch(const FileMetadata& file, leveldb::WriteBatch* batch) {
+void PutFileMetadataToBatch(const FileMetadata& file,
+                            leveldb::WriteBatch* batch) {
   if (!batch)
     return;
 
@@ -39,7 +40,8 @@ void PutFileToBatch(const FileMetadata& file, leveldb::WriteBatch* batch) {
   batch->Put(kFileMetadataKeyPrefix + file.file_id(), value);
 }
 
-void PutTrackerToBatch(const FileTracker& tracker, leveldb::WriteBatch* batch) {
+void PutFileTrackerToBatch(const FileTracker& tracker,
+                           leveldb::WriteBatch* batch) {
   if (!batch)
     return;
 
