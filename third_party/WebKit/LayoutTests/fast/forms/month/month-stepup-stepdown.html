@@ -7,7 +7,7 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-description('Check stepUp() and stepDown() bahevior for type=month.');
+description('Check stepUp() and stepDown() behavior for type=month.');
 
 var input = document.createElement('input');
 
@@ -38,30 +38,30 @@ function stepDown(value, step, min, optionalStepCount) {
 
 input.type = 'month';
 debug('Invalid value');
-shouldThrow('stepUp("", null, null)');
-shouldThrow('stepDown("", null, null)');
+shouldBeEqualToString('stepUp("", null, null)', '1970-02');
+shouldBeEqualToString('stepDown("", null, null)', '1969-12');
 debug('Non-number arguments');
-shouldBe('stepUp("2010-02", null, null, "0")', '"2010-02"');
-shouldBe('stepDown("2010-02", null, null, "0")', '"2010-02"');
-shouldBe('stepUp("2010-02", null, null, "foo")', '"2010-02"');
-shouldBe('stepDown("2010-02", null, null, "foo")', '"2010-02"');
-shouldBe('stepUp("2010-02", null, null, null)', '"2010-02"');
-shouldBe('stepDown("2010-02", null, null, null)', '"2010-02"');
+shouldBeEqualToString('stepUp("2010-02", null, null, "0")', '2010-02');
+shouldBeEqualToString('stepDown("2010-02", null, null, "0")', '2010-02');
+shouldBeEqualToString('stepUp("2010-02", null, null, "foo")', '2010-02');
+shouldBeEqualToString('stepDown("2010-02", null, null, "foo")', '2010-02');
+shouldBeEqualToString('stepUp("2010-02", null, null, null)', '2010-02');
+shouldBeEqualToString('stepDown("2010-02", null, null, null)', '2010-02');
 debug('Normal cases');
-shouldBe('stepUp("2010-02", null, null)', '"2010-03"');
-shouldBe('stepDown("2010-02", null, null)', '"2010-01"');
-shouldBe('stepUp("2010-02", null, null, 10)', '"2010-12"');
-shouldBe('stepDown("2010-02", null, null, 11)', '"2009-03"');
-shouldBe('stepUp("1970-01", "4", null, 2)', '"1970-09"');
-shouldBe('stepDown("1970-01", "4", null, 3)', '"1969-01"');
+shouldBeEqualToString('stepUp("2010-02", null, null)', '2010-03');
+shouldBeEqualToString('stepDown("2010-02", null, null)', '2010-01');
+shouldBeEqualToString('stepUp("2010-02", null, null, 10)', '2010-12');
+shouldBeEqualToString('stepDown("2010-02", null, null, 11)', '2009-03');
+shouldBeEqualToString('stepUp("1970-01", "4", null, 2)', '1970-09');
+shouldBeEqualToString('stepDown("1970-01", "4", null, 3)', '1969-01');
 debug('Step=any');
 shouldThrow('stepUp("2010-02", "any", null)');
 shouldThrow('stepDown("2010-02", "any", null)');
 debug('Overflow/underflow');
-shouldThrow('stepUp("2010-02", "3.40282346e+38", null)');
-shouldThrow('stepDown("2010-02", "3.40282346e+38", null)');
-shouldThrow('stepUp("2010-02", "1", "2010-02")');
-shouldThrow('stepDown("2010-02", "1", "2010-02")');
+shouldBeEqualToString('stepUp("2010-02", "3.40282346e+38", null)', '275760-09');
+shouldBeEqualToString('stepDown("2010-02", "3.40282346e+38", null)', '1970-01');
+shouldBeEqualToString('stepUp("2010-02", "1", "2010-02")', '2010-02');
+shouldBeEqualToString('stepDown("2010-02", "1", "2010-02")', '2010-02');
 
 debug('');
 </script>

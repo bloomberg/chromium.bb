@@ -81,7 +81,7 @@ StepRange DateTimeLocalInputType::createStepRange(AnyStepHandling anyStepHandlin
 {
     DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (dateTimeLocalDefaultStep, dateTimeLocalDefaultStepBase, dateTimeLocalStepScaleFactor, StepRange::ScaledStepValueShouldBeInteger));
 
-    return InputType::createStepRange(anyStepHandling, 0, Decimal::fromDouble(DateComponents::minimumDateTime()), Decimal::fromDouble(DateComponents::maximumDateTime()), stepDescription);
+    return InputType::createStepRange(anyStepHandling, dateTimeLocalDefaultStepBase, Decimal::fromDouble(DateComponents::minimumDateTime()), Decimal::fromDouble(DateComponents::maximumDateTime()), stepDescription);
 }
 
 bool DateTimeLocalInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const

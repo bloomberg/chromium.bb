@@ -794,7 +794,7 @@ unsigned InputType::width() const
     return 0;
 }
 
-void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState)
+void InputType::applyStep(const Decimal& current, int count, AnyStepHandling anyStepHandling, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState)
 {
     StepRange stepRange(createStepRange(anyStepHandling));
     if (!stepRange.hasStep()) {
@@ -802,38 +802,56 @@ void InputType::applyStep(int count, AnyStepHandling anyStepHandling, TextFieldE
         return;
     }
 
-    const Decimal current = parseToNumberOrNaN(element().value());
-    if (!current.isFinite()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::notAFiniteNumber(current, "form element's current value"));
-        return;
-    }
-    Decimal newValue = current + stepRange.step() * count;
-    if (!newValue.isFinite()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::notAFiniteNumber(newValue, "form element's new value"));
-        return;
-    }
-
-    const Decimal acceptableErrorValue = stepRange.acceptableError();
-    if (newValue - stepRange.minimum() < -acceptableErrorValue) {
-        exceptionState.throwDOMException(InvalidStateError, "The form element's new value (" + newValue.toString() + ") would be lower than the minimum (" + stepRange.minimum().toString() + "), and snapping to the minimum would exceed the amount of acceptible error.");
-        return;
-    }
-    if (newValue < stepRange.minimum())
-        newValue = stepRange.minimum();
+    EventQueueScope scope;
+    const Decimal step = stepRange.step();
 
     const AtomicString& stepString = element().fastGetAttribute(stepAttr);
-    if (!equalIgnoringCase(stepString, "any"))
-        newValue = stepRange.alignValueForStep(current, newValue);
+    if (!equalIgnoringCase(stepString, "any") && stepRange.stepMismatch(current)) {
+        // Snap-to-step / clamping steps
+        // If the current value is not matched to step value:
+        // - The value should be the larger matched value nearest to 0 if count > 0
+        //   e.g. <input type=number value=3 min=-100 step=3> -> 5
+        // - The value should be the smaller matched value nearest to 0 if count < 0
+        //   e.g. <input type=number value=3 min=-100 step=3> -> 2
+        //
 
-    if (newValue - stepRange.maximum() > acceptableErrorValue) {
-        exceptionState.throwDOMException(InvalidStateError, "The form element's new value (" + newValue.toString() + ") would be higher than the maximum (" + stepRange.maximum().toString() + "), and snapping to the maximum would exceed the amount of acceptible error.");
-        return;
+        ASSERT(!step.isZero());
+        Decimal newValue;
+        const Decimal base = stepRange.stepBase();
+        if (count < 0)
+            newValue = base + ((current - base) / step).floor() * step;
+        else if (count > 0)
+            newValue = base + ((current - base) / step).ceiling() * step;
+        else
+            newValue = current;
+
+        if (newValue < stepRange.minimum())
+            newValue = stepRange.minimum();
+        if (newValue > stepRange.maximum())
+            newValue = stepRange.maximum();
+
+        setValueAsDecimal(newValue, count == 1 || count == -1 ? DispatchChangeEvent : DispatchNoEvent, IGNORE_EXCEPTION);
+        if (count > 1) {
+            applyStep(newValue, count - 1, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
+            return;
+        }
+        if (count < -1) {
+            applyStep(newValue, count + 1, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
+            return;
+        }
+    } else {
+        Decimal newValue = current + stepRange.step() * count;
+
+        if (!equalIgnoringCase(stepString, "any"))
+            newValue = stepRange.alignValueForStep(current, newValue);
+
+        if (newValue > stepRange.maximum())
+            newValue = newValue - stepRange.step();
+        else if (newValue < stepRange.minimum())
+            newValue = newValue + stepRange.step();
+
+        setValueAsDecimal(newValue, eventBehavior, exceptionState);
     }
-    if (newValue > stepRange.maximum())
-        newValue = stepRange.maximum();
-
-    setValueAsDecimal(newValue, eventBehavior, exceptionState);
-
     if (AXObjectCache* cache = element().document().existingAXObjectCache())
         cache->postNotification(&element(), AXObjectCache::AXValueChanged, true);
 }
@@ -857,14 +875,15 @@ void InputType::stepUp(int n, ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, "This form element is not steppable.");
         return;
     }
-    applyStep(n, RejectAny, DispatchNoEvent, exceptionState);
+    const Decimal current = parseToNumber(element().value(), 0);
+    applyStep(current, n, RejectAny, DispatchNoEvent, exceptionState);
 }
 
 void InputType::stepUpFromRenderer(int n)
 {
-    // The differences from stepUp()/stepDown():
+    // The only difference from stepUp()/stepDown() is the extra treatment
+    // of the current value before applying the step:
     //
-    // Difference 1: the current value
     // If the current value is not a number, including empty, the current value is assumed as 0.
     //   * If 0 is in-range, and matches to step value
     //     - The value should be the +step if n > 0
@@ -887,13 +906,6 @@ void InputType::stepUpFromRenderer(int n)
     // If the current value is larger than the maximum value:
     //  - The value should be the maximum value if n < 0
     //  - Nothing should happen if n > 0
-    //
-    // Difference 2: clamping steps
-    // If the current value is not matched to step value:
-    // - The value should be the larger matched value nearest to 0 if n > 0
-    //   e.g. <input type=number value=3 min=-100 step=3> -> 5
-    // - The value should be the smaler matched value nearest to 0 if n < 0
-    //   e.g. <input type=number value=3 min=-100 step=3> -> 2
     //
     // n is assumed as -n if step < 0.
 
@@ -922,8 +934,7 @@ void InputType::stepUpFromRenderer(int n)
     else
         sign = 0;
 
-    String currentStringValue = element().value();
-    Decimal current = parseToNumberOrNaN(currentStringValue);
+    Decimal current = parseToNumberOrNaN(element().value());
     if (!current.isFinite()) {
         current = defaultValueForStepUp();
         const Decimal nextDiff = step * n;
@@ -935,32 +946,9 @@ void InputType::stepUpFromRenderer(int n)
     }
     if ((sign > 0 && current < stepRange.minimum()) || (sign < 0 && current > stepRange.maximum())) {
         setValueAsDecimal(sign > 0 ? stepRange.minimum() : stepRange.maximum(), DispatchChangeEvent, IGNORE_EXCEPTION);
-    } else {
-        if (stepMismatch(element().value())) {
-            ASSERT(!step.isZero());
-            const Decimal base = stepRange.stepBase();
-            Decimal newValue;
-            if (sign < 0)
-                newValue = base + ((current - base) / step).floor() * step;
-            else if (sign > 0)
-                newValue = base + ((current - base) / step).ceiling() * step;
-            else
-                newValue = current;
-
-            if (newValue < stepRange.minimum())
-                newValue = stepRange.minimum();
-            if (newValue > stepRange.maximum())
-                newValue = stepRange.maximum();
-
-            setValueAsDecimal(newValue, n == 1 || n == -1 ? DispatchChangeEvent : DispatchNoEvent, IGNORE_EXCEPTION);
-            if (n > 1)
-                applyStep(n - 1, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
-            else if (n < -1)
-                applyStep(n + 1, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
-        } else {
-            applyStep(n, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
-        }
+        return;
     }
+    applyStep(current, n, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
 }
 
 void InputType::countUsageIfVisible(UseCounter::Feature feature) const

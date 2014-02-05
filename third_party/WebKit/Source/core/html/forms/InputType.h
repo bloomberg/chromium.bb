@@ -236,7 +236,7 @@ protected:
 
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
-    void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
+    void applyStep(const Decimal&, int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
 };
 
 } // namespace WebCore

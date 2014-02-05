@@ -161,7 +161,7 @@ bool StepRange::stepMismatch(const Decimal& valueForCheck) const
     // ... that number subtracted from the step base is not an integral multiple
     // of the allowed value step, the element is suffering from a step mismatch.
     const Decimal remainder = (value - m_step * (value / m_step).round()).abs();
-    // Accepts erros in lower fractional part which IEEE 754 single-precision
+    // Accepts errors in lower fractional part which IEEE 754 single-precision
     // can't represent.
     const Decimal computedAcceptableError = acceptableError();
     return computedAcceptableError < remainder && remainder < (m_step - computedAcceptableError);

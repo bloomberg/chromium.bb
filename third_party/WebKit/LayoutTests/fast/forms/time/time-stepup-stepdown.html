@@ -7,7 +7,7 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-description('Check stepUp() and stepDown() bahevior for type=time.');
+description('Check stepUp() and stepDown() behavior for type=time.');
 
 var input = document.createElement('input');
 
@@ -38,32 +38,32 @@ function stepDown(value, step, min, optionalStepCount) {
 
 input.type = 'time';
 debug('Invalid value');
-shouldThrow('stepUp("", null, null)');
-shouldThrow('stepDown("", null, null)');
+shouldBeEqualToString('stepUp("", null, null)', '00:01');
+shouldBeEqualToString('stepDown("", null, null)', '00:00');
 debug('Non-number arguments');
-shouldBe('stepUp("20:13", null, null, "0")', '"20:13"');
-shouldBe('stepDown("20:13", null, null, "0")', '"20:13"');
-shouldBe('stepUp("20:13", null, null, "foo")', '"20:13"');
-shouldBe('stepDown("20:13", null, null, "foo")', '"20:13"');
-shouldBe('stepUp("20:13", null, null, null)', '"20:13"');
-shouldBe('stepDown("20:13", null, null, null)', '"20:13"');
+shouldBeEqualToString('stepUp("20:13", null, null, "0")', '20:13');
+shouldBeEqualToString('stepDown("20:13", null, null, "0")', '20:13');
+shouldBeEqualToString('stepUp("20:13", null, null, "foo")', '20:13');
+shouldBeEqualToString('stepDown("20:13", null, null, "foo")', '20:13');
+shouldBeEqualToString('stepUp("20:13", null, null, null)', '20:13');
+shouldBeEqualToString('stepDown("20:13", null, null, null)', '20:13');
 debug('Normal cases');
-shouldBe('stepUp("20:13", null, null)', '"20:14"');
-shouldBe('stepDown("20:13", null, null)', '"20:12"');
-shouldBe('stepUp("20:13", null, null, 10)', '"20:23"');
-shouldBe('stepDown("20:13", null, null, 11)', '"20:02"');
-shouldBe('stepUp("20:13", "4", null, 2)', '"20:13:08"');
-shouldBe('stepDown("20:13", "4", null, 3)', '"20:12:48"');
+shouldBeEqualToString('stepUp("20:13", null, null)', '20:14');
+shouldBeEqualToString('stepDown("20:13", null, null)', '20:12');
+shouldBeEqualToString('stepUp("20:13", null, null, 10)', '20:23');
+shouldBeEqualToString('stepDown("20:13", null, null, 11)', '20:02');
+shouldBeEqualToString('stepUp("20:13", "4", null, 2)', '20:13:08');
+shouldBeEqualToString('stepDown("20:13", "4", null, 3)', '20:12:48');
 debug('Step=any');
 shouldThrow('stepUp("20:13", "any", null)');
 shouldThrow('stepDown("20:13", "any", null)');
 debug('Overflow/underflow');
-shouldThrow('stepUp("20:13", "3.40282346e+38", null)');
-shouldThrow('stepDown("20:13", "3.40282346e+38", null)');
-shouldThrow('stepUp("20:13", "1", "20:13")');
-shouldThrow('stepDown("20:13", "1", "20:13")');
-shouldThrow('stepUp("23:59", null, null)');
-shouldThrow('stepDown("00:00", null, null)');
+shouldBeEqualToString('stepUp("20:13", "3.40282346e+38", null)', '23:59:59.999');
+shouldBeEqualToString('stepDown("20:13", "3.40282346e+38", null)', '00:00:00');
+shouldBeEqualToString('stepUp("20:13", "1", "20:13")', '20:13:00');
+shouldBeEqualToString('stepDown("20:13", "1", "20:13")', '20:13:00');
+shouldBeEqualToString('stepUp("23:59", null, null)', '23:59');
+shouldBeEqualToString('stepDown("00:00", null, null)', '00:00');
 
 debug('');
 </script>

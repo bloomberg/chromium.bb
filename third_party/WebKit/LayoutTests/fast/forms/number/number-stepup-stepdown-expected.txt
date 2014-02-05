@@ -1,12 +1,12 @@
-Check stepUp() and stepDown() bahevior for number type.
+Check stepUp() and stepDown() behavior for number type.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 Number type
 Invalid value
-PASS stepUp("", null, null) threw exception InvalidStateError: Failed to execute 'stepUp' on 'HTMLInputElement': The form element's current value is not a number..
-PASS stepDown("", null, null) threw exception InvalidStateError: Failed to execute 'stepDown' on 'HTMLInputElement': The form element's current value is not a number..
+PASS stepUp("", null, null) is "1"
+PASS stepDown("", null, null) is "-1"
 Non-number arguments
 PASS stepUp("0", null, null, "0") is "0"
 PASS stepDown("0", null, null, "0") is "0"
@@ -36,21 +36,20 @@ PASS stepUpExplicitBounds("0", "100", "any", "1.5", "1") threw exception Invalid
 PASS stepDownExplicitBounds("0", "100", "any", "1.5", "1") threw exception InvalidStateError: Failed to execute 'stepDown' on 'HTMLInputElement': This form element does not have an allowed value step..
 Overflow/underflow
 PASS stepDown("1", "1", "0") is "0"
-PASS stepDown("0", "1", "0") threw exception InvalidStateError: Failed to execute 'stepDown' on 'HTMLInputElement': The form element's new value (-1) would be lower than the minimum (0), and snapping to the minimum would exceed the amount of acceptible error..
-PASS stepDown("1", "1", "0", 2) threw exception InvalidStateError: Failed to execute 'stepDown' on 'HTMLInputElement': The form element's new value (-1) would be lower than the minimum (0), and snapping to the minimum would exceed the amount of acceptible error..
-PASS input.value is "1"
-PASS stepDown("1", "3.40282346e+38", "", 2) threw exception InvalidStateError: Failed to execute 'stepDown' on 'HTMLInputElement': The form element's new value (-6.80564692e+38) would be lower than the minimum (-3.4028234663852886e+38), and snapping to the minimum would exceed the amount of acceptible error..
+PASS stepDown("0", "1", "0") is "0"
+PASS stepDown("1", "1", "0", 2) is "0"
+PASS stepDown("1", "3.40282346e+38", "", 2) is "-3.40282346e+38"
 PASS stepUp("-1", "1", "0") is "0"
-PASS stepUp("0", "1", "0") threw exception InvalidStateError: Failed to execute 'stepUp' on 'HTMLInputElement': The form element's new value (1) would be higher than the maximum (0), and snapping to the maximum would exceed the amount of acceptible error..
-PASS stepUp("-1", "1", "0", 2) threw exception InvalidStateError: Failed to execute 'stepUp' on 'HTMLInputElement': The form element's new value (1) would be higher than the maximum (0), and snapping to the maximum would exceed the amount of acceptible error..
-PASS input.value is "-1"
-PASS stepUp("1", "3.40282346e+38", "", 2) threw exception InvalidStateError: Failed to execute 'stepUp' on 'HTMLInputElement': The form element's new value (6.80564692e+38) would be higher than the maximum (3.4028234663852886e+38), and snapping to the maximum would exceed the amount of acceptible error..
+PASS stepUp("0", "1", "0") is "0"
+PASS stepUp("-1", "1", "0", 2) is "0"
+PASS stepUp("1", "3.40282346e+38", "", 2) is "3.40282346e+38"
 stepDown()/stepUp() for stepMismatch values
-PASS stepUp("1", "2", "") is "3"
-PASS input.stepDown(); input.value is "1"
-PASS input.min = "0"; stepUp("9", "10", "", 9) is "99"
-PASS stepDown("19", "10", "0") is "9"
-PASS stepUp("89", "10", "99") is "99"
+PASS stepUpExplicitBounds("0", "", "2", "1"); input.value is "2"
+PASS stepUp("1", "2", "") is "2"
+PASS input.stepDown(); input.value is "0"
+PASS input.min = "0"; stepUp("9", "10", "", 9) is "90"
+PASS stepDown("19", "10", "0") is "10"
+PASS stepUp("89", "10", "99") is "90"
 Huge value and small step
 PASS input.min = ""; stepUp("1e+38", "1", "", 999999) is "1e+38"
 PASS input.max = ""; stepDown("1e+38", "1", "", 999999) is "1e+38"
