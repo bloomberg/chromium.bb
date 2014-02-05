@@ -797,46 +797,106 @@
       ],
     },
     {
+      'target_name': 'xcursor',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xcursor)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xcursor)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xcursor)',
+        ],
+      },
+    },
+    {
+      'target_name': 'xcomposite',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xcomposite)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xcomposite)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xcomposite)',
+        ],
+      },
+    },
+    {
+      'target_name': 'xdamage',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xdamage)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xdamage)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xdamage)',
+        ],
+      },
+    },
+    {
       'target_name': 'xext',
       'type': 'none',
-      'conditions': [
-        ['_toolset=="target"', {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags xext)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other xext)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l xext)',
-            ],
-          },
-        }],
-      ],
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xext)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xext)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xext)',
+        ],
+      },
     },
     {
       'target_name': 'xfixes',
       'type': 'none',
-      'conditions': [
-        ['_toolset=="target"', {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags xfixes)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other xfixes)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l xfixes)',
-            ],
-          },
-        }],
-      ],
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xfixes)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xfixes)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xfixes)',
+        ],
+      },
+    },
+    {
+      'target_name': 'xi',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xi)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xi)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xi)',
+        ],
+      },
     },
     {
       'target_name': 'xrandr',
@@ -874,5 +934,39 @@
         }],
       ],
     },
+    {
+      'target_name': 'xrender',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xrender)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xrender)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xrender)',
+        ],
+      },
+    },
+    {
+      'target_name': 'xtst',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'cflags': [
+          '<!@(<(pkg-config) --cflags xtst)',
+        ],
+      },
+      'link_settings': {
+        'ldflags': [
+          '<!@(<(pkg-config) --libs-only-L --libs-only-other xtst)',
+        ],
+        'libraries': [
+          '<!@(<(pkg-config) --libs-only-l xtst)',
+        ],
+      },
+    }
   ],
 }

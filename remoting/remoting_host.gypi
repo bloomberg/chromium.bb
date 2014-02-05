@@ -253,15 +253,15 @@
               'dependencies': [
                 # Always use GTK on Linux, even for Aura builds.
                 '../build/linux/system.gyp:gtk',
+                '../build/linux/system.gyp:x11',
+                '../build/linux/system.gyp:xext',
+                '../build/linux/system.gyp:xfixes',
+                '../build/linux/system.gyp:xi',
+                '../build/linux/system.gyp:xrandr',
+                '../build/linux/system.gyp:xtst',
               ],
               'link_settings': {
                 'libraries': [
-                  '-lX11',
-                  '-lXext',
-                  '-lXfixes',
-                  '-lXtst',
-                  '-lXi',
-                  '-lXrandr',
                   '-lpam',
                 ],
               },

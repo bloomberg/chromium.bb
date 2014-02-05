@@ -494,11 +494,9 @@
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
       ],
-      'link_settings': {
-        'libraries': [
-          '-lXcomposite',
-        ],
-      },
+      'dependencies': [
+         '<(DEPTH)/build/linux/system.gyp:xcomposite',
+      ],
     }],
     ['use_x11 == 1 and (target_arch != "arm" or chromeos == 0)', {
       'sources': [

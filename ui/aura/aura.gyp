@@ -120,14 +120,12 @@
       ],
       'conditions': [
         ['use_x11==1', {
-          'link_settings': {
-            'libraries': [
-              '-lX11',
-              '-lXi',
-              '-lXfixes',
-              '-lXrandr',
-            ],
-          },
+          'dependencies': [
+            '../../build/linux/system.gyp:x11',
+            '../../build/linux/system.gyp:xfixes',
+            '../../build/linux/system.gyp:xrandr',
+            '../../build/linux/system.gyp:xi',
+          ],
         }],
         ['OS=="win"', {
           'dependencies': [

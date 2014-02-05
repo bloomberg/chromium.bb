@@ -50,18 +50,11 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lXext',
-            ],
-          },
         }],
         ['use_x11 == 1', {
-          'link_settings': {
-            'libraries': [
-              '-lXext',
-            ],
-          },
+          'dependencies': [
+            '../build/linux/system.gyp:xext',
+          ],
         }],
       ],
     }],

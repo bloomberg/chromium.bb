@@ -640,15 +640,13 @@
           },
           'conditions': [
             ['use_x11==1', {
-              'link_settings': {
-                'libraries': [
-                  '-lX11',
-                  '-lXdamage',
-                  '-lXext',
-                  '-lXfixes',
-                  '-lXtst',
-                ],
-              },
+              'dependencies': [
+                '../build/linux/system.gyp:x11',
+                '../build/linux/system.gyp:xdamage',
+                '../build/linux/system.gyp:xext',
+                '../build/linux/system.gyp:xfixes',
+                '../build/linux/system.gyp:xtst',
+              ],
             }, {  # else: use_x11==0
               'sources!': [
                 'base/user_input_monitor_linux.cc',
@@ -1444,14 +1442,10 @@
             '../ui/gl/gl.gyp:gl',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:xext',
+            '../build/linux/system.gyp:xrender',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lX11',
-              '-lXrender',
-              '-lXext',
-            ],
-          },
           'conditions': [
             # Linux/Solaris need libdl for dlopen() and friends.
             ['OS=="linux" or OS=="solaris"', {

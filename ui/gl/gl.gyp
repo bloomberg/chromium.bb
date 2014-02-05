@@ -213,6 +213,11 @@
               '-lXcomposite',
             ],
           },
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:x11',
+            '<(DEPTH)/build/linux/system.gyp:xcomposite',
+            '<(DEPTH)/build/linux/system.gyp:xext',
+          ],
         }],
         ['OS=="win"', {
           'sources': [

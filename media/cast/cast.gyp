@@ -146,14 +146,14 @@
           ],
           'conditions': [
             ['OS == "linux"', {
+              'dependencies': [
+                '<(DEPTH)/build/linux/system.gyp:x11',
+                '<(DEPTH)/build/linux/system.gyp:xext',
+              ],
               'sources': [
                 '<(DEPTH)/media/cast/test/linux_output_window.cc',
                 '<(DEPTH)/media/cast/test/linux_output_window.h',
               ],
-              'libraries': [
-                '-lXext',
-                '-lX11',
-             ],
           }],
           ],
         },

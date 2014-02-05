@@ -75,9 +75,9 @@
           ],
         }],
         ['use_aura==1 and use_x11==1', {
-          'link_settings': {
-            'libraries': [ '-lXcursor', ],
-          },
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:xcursor',
+          ],
         }],
         ['use_ozone==0', {
           'sources!': [

@@ -343,15 +343,11 @@
         ['use_x11 == 1', {
           'dependencies': [
             '../build/linux/system.gyp:glib',
+            '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:xext',
+            '../build/linux/system.gyp:xi',
+            '../build/linux/system.gyp:xrandr',
           ],
-          'link_settings': {
-            'libraries': [
-              '-lX11',
-              '-lXext',
-              '-lXi',
-              '-lXrandr',
-            ],
-          },
         }, {
           # use_x11 == 0
           'sources!': [

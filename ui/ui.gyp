@@ -527,25 +527,23 @@
             'ldflags': [
               '-L<(PRODUCT_DIR)',
             ],
+            # TODO(jamesr): Targets using X11 should declare dependencies on the
+            # appropriate build/linux/system.gyp targets themselves instead of
+            # independently picking it up from ui.
             'link_settings': {
               'libraries': [
                 '-lX11',
                 '-lXcursor',
-                '-lXrender',  # For XRender* function calls in x11_util.cc.
+                '-lXrender',
               ],
             },
           },
-          'link_settings': {
-            'libraries': [
-              '-lX11',
-              '-lXcursor',
-              '-lXrender',  # For XRender* function calls in x11_util.cc.
-            ],
-          },
           'dependencies': [
             '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:xcursor',
             '../build/linux/system.gyp:xext',
             '../build/linux/system.gyp:xfixes',
+            '../build/linux/system.gyp:xrender',  # For XRender* function calls in x11_util.cc.
           ],
         }],
         ['use_ozone==0', {
