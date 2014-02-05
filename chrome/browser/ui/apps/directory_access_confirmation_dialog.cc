@@ -22,7 +22,7 @@ class DirectoryAccessConfirmationDialog : public TabModalConfirmDialogDelegate {
                                     const base::Closure& on_cancel);
 
   virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetDialogMessage() OVERRIDE;
   virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
   virtual base::string16 GetCancelButtonTitle() OVERRIDE;
 
@@ -54,7 +54,7 @@ base::string16 DirectoryAccessConfirmationDialog::GetTitle() {
       IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_TITLE);
 }
 
-base::string16 DirectoryAccessConfirmationDialog::GetMessage() {
+base::string16 DirectoryAccessConfirmationDialog::GetDialogMessage() {
   if (writable_) {
     return l10n_util::GetStringFUTF16(
         IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_MESSAGE_WRITABLE,

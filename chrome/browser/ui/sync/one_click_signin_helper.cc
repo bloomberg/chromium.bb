@@ -180,7 +180,7 @@ class ConfirmEmailDialogDelegate : public TabModalConfirmDialogDelegate {
 
   // TabModalConfirmDialogDelegate:
   virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetDialogMessage() OVERRIDE;
   virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
   virtual base::string16 GetCancelButtonTitle() OVERRIDE;
   virtual base::string16 GetLinkText() const OVERRIDE;
@@ -230,7 +230,7 @@ base::string16 ConfirmEmailDialogDelegate::GetTitle() {
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_TITLE);
 }
 
-base::string16 ConfirmEmailDialogDelegate::GetMessage() {
+base::string16 ConfirmEmailDialogDelegate::GetDialogMessage() {
   return l10n_util::GetStringFUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
       base::UTF8ToUTF16(last_email_), base::UTF8ToUTF16(email_));

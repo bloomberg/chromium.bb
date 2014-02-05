@@ -30,7 +30,7 @@ base::string16 MockTabModalConfirmDialogDelegate::GetTitle() {
   return base::string16();
 }
 
-base::string16 MockTabModalConfirmDialogDelegate::GetMessage() {
+base::string16 MockTabModalConfirmDialogDelegate::GetDialogMessage() {
   return base::string16();
 }
 

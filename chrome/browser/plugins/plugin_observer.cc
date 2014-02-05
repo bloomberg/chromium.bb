@@ -65,7 +65,7 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
 
   // TabModalConfirmDialogDelegate methods:
   virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetDialogMessage() OVERRIDE;
   virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
@@ -94,7 +94,7 @@ base::string16 ConfirmInstallDialogDelegate::GetTitle() {
       IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE, plugin_metadata_->name());
 }
 
-base::string16 ConfirmInstallDialogDelegate::GetMessage() {
+base::string16 ConfirmInstallDialogDelegate::GetDialogMessage() {
   return l10n_util::GetStringFUTF16(IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG,
                                     plugin_metadata_->name());
 }

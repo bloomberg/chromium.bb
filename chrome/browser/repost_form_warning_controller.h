@@ -21,7 +21,7 @@ class RepostFormWarningController : public TabModalConfirmDialogDelegate,
  private:
   // TabModalConfirmDialogDelegate methods:
   virtual base::string16 GetTitle() OVERRIDE;
-  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetDialogMessage() OVERRIDE;
   virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
 #if defined(TOOLKIT_GTK)
   virtual const char* GetAcceptButtonIcon() OVERRIDE;

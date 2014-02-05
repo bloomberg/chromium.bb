@@ -70,7 +70,7 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
                target:bridge_
                action:@selector(onLinkClicked:)];
   [alert_ setInformativeText:
-      l10n_util::FixUpWindowsStyleLabel(delegate->GetMessage())];
+      l10n_util::FixUpWindowsStyleLabel(delegate->GetDialogMessage())];
   [alert_ addButtonWithTitle:
       l10n_util::FixUpWindowsStyleLabel(delegate->GetAcceptButtonTitle())
               keyEquivalent:kKeyEquivalentReturn

@@ -43,7 +43,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     : delegate_(delegate),
       dialog_(NULL),
       browser_context_(web_contents->GetBrowserContext()) {
-  views::MessageBoxView::InitParams init_params(delegate->GetMessage());
+  views::MessageBoxView::InitParams init_params(delegate->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
       views::kUnrelatedControlVerticalSpacing;
   message_box_view_ = new views::MessageBoxView(init_params);

@@ -71,7 +71,7 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
 
   // The title of the dialog. Note that the title is not shown on all platforms.
   virtual base::string16 GetTitle() = 0;
-  virtual base::string16 GetMessage() = 0;
+  virtual base::string16 GetDialogMessage() = 0;
 
   // Icon to show for the dialog. If this method is not overridden, a default
   // icon (like the application icon) is shown.
