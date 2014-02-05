@@ -20,8 +20,6 @@ namespace embedder {
 
 namespace {
 
-const char kMojoChannelDescriptorSwitch[] = "mojo-channel-descriptor";
-
 bool IsTargetDescriptorUsed(
     const base::FileHandleMappingVector& file_handle_mapping,
     int target_fd) {
@@ -52,12 +50,12 @@ PlatformChannelPair::PlatformChannelPair() {
 ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
     const CommandLine& command_line) {
   std::string client_fd_string =
-      command_line.GetSwitchValueASCII(kMojoChannelDescriptorSwitch);
+      command_line.GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
   int client_fd = -1;
   if (client_fd_string.empty() ||
       !base::StringToInt(client_fd_string, &client_fd) ||
       client_fd < base::GlobalDescriptors::kBaseDescriptor) {
-    LOG(ERROR) << "Missing or invalid --" << kMojoChannelDescriptorSwitch;
+    LOG(ERROR) << "Missing or invalid --" << kMojoPlatformChannelHandleSwitch;
     return ScopedPlatformHandle();
   }
 
@@ -66,40 +64,35 @@ ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
 
 void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
     CommandLine* command_line,
-    base::FileHandleMappingVector* file_handle_mapping) const {
+    base::FileHandleMappingVector* handle_passing_info) const {
   DCHECK(command_line);
-  DCHECK(file_handle_mapping);
+  DCHECK(handle_passing_info);
   // This is an arbitrary sanity check. (Note that this guarantees that the loop
   // below will terminate sanely.)
-  CHECK_LT(file_handle_mapping->size(), 1000u);
+  CHECK_LT(handle_passing_info->size(), 1000u);
 
   DCHECK(client_handle_.is_valid());
 
   // Find a suitable FD to map our client handle to in the child process.
-  // This has quadratic time complexity in the size of |*file_handle_mapping|,
-  // but |*file_handle_mapping| should be very small (usually/often empty).
+  // This has quadratic time complexity in the size of |*handle_passing_info|,
+  // but |*handle_passing_info| should be very small (usually/often empty).
   int target_fd = base::GlobalDescriptors::kBaseDescriptor;
-  while (IsTargetDescriptorUsed(*file_handle_mapping, target_fd))
+  while (IsTargetDescriptorUsed(*handle_passing_info, target_fd))
     target_fd++;
 
-  file_handle_mapping->push_back(std::pair<int, int>(client_handle_.get().fd,
+  handle_passing_info->push_back(std::pair<int, int>(client_handle_.get().fd,
                                                      target_fd));
   // Log a warning if the command line already has the switch, but "clobber" it
   // anyway, since it's reasonably likely that all the switches were just copied
   // from the parent.
-  LOG_IF(WARNING, command_line->HasSwitch(kMojoChannelDescriptorSwitch))
+  LOG_IF(WARNING, command_line->HasSwitch(kMojoPlatformChannelHandleSwitch))
       << "Child command line already has switch --"
-      << kMojoChannelDescriptorSwitch << "="
-      << command_line->GetSwitchValueASCII(kMojoChannelDescriptorSwitch);
+      << kMojoPlatformChannelHandleSwitch << "="
+      << command_line->GetSwitchValueASCII(kMojoPlatformChannelHandleSwitch);
   // (Any existing switch won't actually be removed from the command line, but
   // the last one appended takes precedence.)
-  command_line->AppendSwitchASCII(kMojoChannelDescriptorSwitch,
+  command_line->AppendSwitchASCII(kMojoPlatformChannelHandleSwitch,
                                   base::IntToString(target_fd));
-}
-
-void PlatformChannelPair::ChildProcessLaunched() {
-  DCHECK(client_handle_.is_valid());
-  client_handle_.reset();
 }
 
 }  // namespace embedder

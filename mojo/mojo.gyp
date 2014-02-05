@@ -114,6 +114,7 @@
         'system/embedder/platform_channel_pair.cc',
         'system/embedder/platform_channel_pair.h',
         'system/embedder/platform_channel_pair_posix.cc',
+        'system/embedder/platform_channel_pair_win.cc',
         'system/embedder/platform_handle.cc',
         'system/embedder/platform_handle.h',
         'system/embedder/scoped_platform_handle.h',

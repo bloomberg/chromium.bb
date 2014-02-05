@@ -9,6 +9,9 @@
 namespace mojo {
 namespace embedder {
 
+const char PlatformChannelPair::kMojoPlatformChannelHandleSwitch[] =
+    "mojo-platform-channel-handle";
+
 PlatformChannelPair::~PlatformChannelPair() {
 }
 
@@ -18,6 +21,11 @@ ScopedPlatformHandle PlatformChannelPair::PassServerHandle() {
 
 ScopedPlatformHandle PlatformChannelPair::PassClientHandle() {
   return client_handle_.Pass();
+}
+
+void PlatformChannelPair::ChildProcessLaunched() {
+  DCHECK(client_handle_.is_valid());
+  client_handle_.reset();
 }
 
 }  // namespace embedder

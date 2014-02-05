@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
+#include "build/build_config.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -15,6 +16,16 @@ class CommandLine;
 
 namespace mojo {
 namespace embedder {
+
+// It would be nice to refactor base/process/launch.h to have a more platform-
+// independent way of representing handles that are passed to child processes.
+#if defined(OS_WIN)
+typedef base::HandlesToInheritVector HandlePassingInformation;
+#elif defined(OS_POSIX)
+typedef base::FileHandleMappingVector HandlePassingInformation;
+#else
+#error "Unsupported."
+#endif
 
 // This is used to create a pair of |PlatformHandle|s that are connected by a
 // suitable (platform-specific) bidirectional "pipe" (e.g., socket on POSIX,
@@ -29,9 +40,9 @@ namespace embedder {
 // call |ChildProcessLaunched()|. Note that on Windows this facility (will) only
 // work on Vista and later (TODO(vtl)).
 //
-// Note: |PlatformChannelPair()|, |PassClientHandleFromParentProcess()|,
-// |PrepareToPassClientHandleToChildProcess()|, and |ChildProcessLaunched()|
-// have platform-specific implementations.
+// Note: |PlatformChannelPair()|, |PassClientHandleFromParentProcess()| and
+// |PrepareToPassClientHandleToChildProcess()| have platform-specific
+// implementations.
 class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
  public:
   PlatformChannelPair();
@@ -51,16 +62,19 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
 
   // Prepares to pass the client channel to a new child process, to be launched
   // using |LaunchProcess()| (from base/launch.h). Modifies |*command_line| and
-  // |*file_handle_mapping| as needed. (|file_handle_mapping| may be null on
-  // platforms that don't need it, like Windows.)
+  // |*handle_passing_info| as needed.
+  // Note: For Windows, this method only works on Vista and later.
   void PrepareToPassClientHandleToChildProcess(
       CommandLine* command_line,
-      base::FileHandleMappingVector* file_handle_mapping) const;
+      HandlePassingInformation* handle_passing_info) const;
+
   // To be called once the child process has been successfully launched, to do
   // any cleanup necessary.
   void ChildProcessLaunched();
 
  private:
+  static const char kMojoPlatformChannelHandleSwitch[];
+
   ScopedPlatformHandle server_handle_;
   ScopedPlatformHandle client_handle_;
 
