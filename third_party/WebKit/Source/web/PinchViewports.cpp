@@ -73,8 +73,6 @@ PinchViewports::PinchViewports(WebViewImpl* owner)
     // dynamically-sized viewports on Android.
     m_innerViewportContainerLayer->setMasksToBounds(false);
 
-    // TODO(wjmaclean) Remove next line once https://codereview.chromium.org/23983047 lands.
-    m_innerViewportScrollLayer->platformLayer()->setScrollable(true);
     m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
         m_innerViewportContainerLayer->platformLayer());
     m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);

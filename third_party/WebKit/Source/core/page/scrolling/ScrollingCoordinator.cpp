@@ -358,12 +358,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     WebLayer* webLayer = scrollingWebLayerForScrollableArea(scrollableArea);
     WebLayer* containerLayer = containerWebLayerForScrollableArea(scrollableArea);
     if (webLayer) {
-        // TODO(wjmaclean) Remove the next line once https://codereview.chromium.org/23983047 lands.
-        webLayer->setScrollable(true);
         webLayer->setScrollClipLayer(containerLayer);
         webLayer->setScrollPosition(IntPoint(scrollableArea->scrollPosition() - scrollableArea->minimumScrollPosition()));
-        // TODO(wjmaclean) Remove the next line once https://codereview.chromium.org/23983047 lands.
-        webLayer->setMaxScrollPosition(IntSize(scrollableArea->scrollSize(HorizontalScrollbar), scrollableArea->scrollSize(VerticalScrollbar)));
         webLayer->setBounds(scrollableArea->contentsSize());
         bool canScrollX = scrollableArea->userInputScrollable(HorizontalScrollbar);
         bool canScrollY = scrollableArea->userInputScrollable(VerticalScrollbar);

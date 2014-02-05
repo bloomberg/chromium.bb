@@ -173,10 +173,8 @@ public:
     virtual WebSize maxScrollPosition() const = 0;
 
     // To set a WebLayer as scrollable we must specify the corresponding clip layer.
-    // TODO(wjmaclean) Make this pure virtual once https://codereview.chromium.org/23983047 lands.
-    virtual void setScrollClipLayer(WebLayer*) { }
+    virtual void setScrollClipLayer(WebLayer*) = 0;
     virtual bool scrollable() const = 0;
-
     virtual void setUserScrollable(bool horizontal, bool vertical) = 0;
     virtual bool userScrollableHorizontal() const = 0;
     virtual bool userScrollableVertical() const = 0;
@@ -216,10 +214,6 @@ public:
     virtual bool isOrphan() const = 0;
 
     virtual void setWebLayerClient(WebLayerClient*) = 0;
-
-    // TODO(wjmaclean) Remove next two lines once https://codereview.chromium.org/23983047 lands.
-    virtual void setMaxScrollPosition(WebSize) { }
-    virtual void setScrollable(bool) { }
 };
 
 } // namespace blink
