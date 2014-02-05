@@ -43,9 +43,9 @@ class MediaFolderFinderTest : public testing::Test {
     expected_success_ = expected_success;
     expected_results_ = expected_results;
     media_folder_finder_.reset(
-        new MediaFolderFinder(roots,
-                              base::Bind(&MediaFolderFinderTest::OnGotResults,
+        new MediaFolderFinder(base::Bind(&MediaFolderFinderTest::OnGotResults,
                                          base::Unretained(this))));
+    media_folder_finder_->SetRootsForTesting(roots);
   }
 
   void StartScan() {

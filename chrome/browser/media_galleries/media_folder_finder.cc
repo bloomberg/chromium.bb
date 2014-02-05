@@ -8,11 +8,21 @@
 #include <set>
 
 #include "base/files/file_enumerator.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/dbus/cros_disks_client.h"
+#endif
+
+typedef base::Callback<void(const std::vector<base::FilePath>& /*roots*/)>
+    DefaultScanRootsCallback;
 using content::BrowserThread;
 
 namespace {
@@ -101,15 +111,129 @@ void ScanFolderOnBlockingPool(
   }
 }
 
+// Return true if |path| should not be considered as the starting point for a
+// media scan.
+bool ShouldIgnoreScanRoot(const base::FilePath& path) {
+#if defined(OS_MACOSX)
+  // Scanning root is of little value.
+  return (path.value() == "/");
+#elif defined(OS_CHROMEOS)
+  // Sanity check to make sure mount points are where they should be.
+  base::FilePath mount_point =
+      chromeos::CrosDisksClient::GetRemovableDiskMountPoint();
+  return mount_point.IsParent(path);
+#elif defined(OS_LINUX)
+  // /media and /mnt are likely the only places with interesting mount points.
+  if (StartsWithASCII(path.value(), "/media", true) ||
+      StartsWithASCII(path.value(), "/mnt", true)) {
+    return false;
+  }
+  return true;
+#elif defined(OS_WIN)
+  return false;
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
+}
+
+// Return a location that is likely to have user data to scan, if any.
+base::FilePath GetPlatformSpecificDefaultScanRoot() {
+  base::FilePath root;
+#if defined(OS_CHROMEOS)
+  PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &root);
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
+  PathService::Get(base::DIR_HOME, &root);
+#elif defined(OS_WIN)
+  // Nothing to add.
+#else
+  NOTIMPLEMENTED();
+#endif
+  return root;
+}
+
+// Find the likely locations with user media files and pass them to
+// |callback|. Locations are platform specific.
+void GetDefaultScanRoots(const DefaultScanRootsCallback& callback,
+                         bool has_override,
+                         const std::vector<base::FilePath>& override_paths) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (has_override) {
+    callback.Run(override_paths);
+    return;
+  }
+
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  DCHECK(monitor->IsInitialized());
+
+  std::vector<base::FilePath> roots;
+  std::vector<StorageInfo> storages = monitor->GetAllAvailableStorages();
+  for (size_t i = 0; i < storages.size(); ++i) {
+    StorageInfo::Type type;
+    if (!StorageInfo::CrackDeviceId(storages[i].device_id(), &type, NULL) ||
+        type != StorageInfo::FIXED_MASS_STORAGE) {
+      continue;
+    }
+    base::FilePath path(storages[i].location());
+    if (ShouldIgnoreScanRoot(path))
+      continue;
+    roots.push_back(path);
+  }
+
+  base::FilePath platform_root = GetPlatformSpecificDefaultScanRoot();
+  if (!platform_root.empty())
+    roots.push_back(platform_root);
+  callback.Run(roots);
+}
+
 }  // namespace
 
 MediaFolderFinder::MediaFolderFinder(
-    const std::vector<base::FilePath>& roots,
     const MediaFolderFinderResultsCallback& callback)
     : results_callback_(callback),
       scan_state_(SCAN_STATE_NOT_STARTED),
+      has_roots_for_testing_(false),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+MediaFolderFinder::~MediaFolderFinder() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (scan_state_ == SCAN_STATE_FINISHED)
+    return;
+
+  MediaFolderFinderResults empty_results;
+  results_callback_.Run(false /* success? */, empty_results);
+}
+
+void MediaFolderFinder::StartScan() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (scan_state_ != SCAN_STATE_NOT_STARTED)
+    return;
+
+  scan_state_ = SCAN_STATE_STARTED;
+  GetDefaultScanRoots(
+      base::Bind(&MediaFolderFinder::OnInitialized, weak_factory_.GetWeakPtr()),
+      has_roots_for_testing_,
+      roots_for_testing_);
+}
+
+void MediaFolderFinder::SetRootsForTesting(
+    const std::vector<base::FilePath>& roots) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(SCAN_STATE_NOT_STARTED, scan_state_);
+
+  has_roots_for_testing_ = true;
+  roots_for_testing_ = roots;
+}
+
+void MediaFolderFinder::OnInitialized(
+    const std::vector<base::FilePath>& roots) {
+  DCHECK_EQ(SCAN_STATE_STARTED, scan_state_);
+  DCHECK(!token_.IsValid());
+  DCHECK(filter_callback_.is_null());
 
   std::set<base::FilePath> valid_roots;
   for (size_t i = 0; i < roots.size(); ++i) {
@@ -144,26 +268,6 @@ MediaFolderFinder::MediaFolderFinder(
 
   std::copy(valid_roots.begin(), valid_roots.end(),
             std::back_inserter(folders_to_scan_));
-}
-
-MediaFolderFinder::~MediaFolderFinder() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (scan_state_ == SCAN_STATE_FINISHED)
-    return;
-
-  MediaFolderFinderResults empty_results;
-  results_callback_.Run(false /* success? */, empty_results);
-}
-
-void MediaFolderFinder::StartScan() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (scan_state_ != SCAN_STATE_NOT_STARTED)
-    return;
-  scan_state_ = SCAN_STATE_STARTED;
-
-  DCHECK(!token_.IsValid());
-  DCHECK(filter_callback_.is_null());
   token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
   filter_callback_ = base::Bind(&FilterPath,
                                 base::Owned(new MediaPathFilter()));

@@ -26,24 +26,29 @@ class MediaFolderFinder {
   typedef base::Callback<MediaGalleryScanFileType(const base::FilePath&)>
       FilterCallback;
 
-  // Set up a scan with a given set of |roots| as starting points.
-  // The elements of |roots| should not overlap and should be absolute.
   // |callback| will get called when the scan finishes. If the object is deleted
   // before it finishes, the scan will stop and |callback| will get called with
   // success = false.
-  MediaFolderFinder(const std::vector<base::FilePath>& roots,
-                    const MediaFolderFinderResultsCallback& callback);
-  ~MediaFolderFinder();
+  // MediaFolderFinder has a default set of per-platform paths to scan.
+  // Override in tests with SetRootsForTesting().
+  explicit MediaFolderFinder(const MediaFolderFinderResultsCallback& callback);
+  virtual ~MediaFolderFinder();
 
   // Start the scan.
-  void StartScan();
+  virtual void StartScan();
 
  private:
+  friend class MediaFolderFinderTest;
+
   enum ScanState {
     SCAN_STATE_NOT_STARTED,
     SCAN_STATE_STARTED,
     SCAN_STATE_FINISHED,
   };
+
+  void SetRootsForTesting(const std::vector<base::FilePath>& roots);
+
+  void OnInitialized(const std::vector<base::FilePath>& roots);
 
   // Scan a folder from |folders_to_scan_|.
   void ScanFolder();
@@ -66,6 +71,10 @@ class MediaFolderFinder {
 
   // Callback used to filter through files and make sure they are media files.
   FilterCallback filter_callback_;
+
+  // Set of roots to scan for testing.
+  bool has_roots_for_testing_;
+  std::vector<base::FilePath> roots_for_testing_;
 
   base::WeakPtrFactory<MediaFolderFinder> weak_factory_;
 
