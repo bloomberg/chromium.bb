@@ -1105,25 +1105,23 @@ gfx::Vector2d LayerTreeHost::DistributeScrollOffsetToViewports(
   // go to the outer viewport first.
   gfx::Vector2d max_outer_viewport_scroll_offset =
       outer_viewport_scroll_layer_->MaxScrollOffset();
-#if ENABLE_DCHECK
-// TODO(wjmaclean) The DCHECK below is triggering during zoom-out.
-// crbug.com/336574
-/*
-  gfx::Vector2d maxInnerViewportScrollOffset =
+  gfx::Vector2d max_inner_viewport_scroll_offset =
       inner_viewport_scroll_layer_->MaxScrollOffset();
 
-  gfx::Vector2d totalMaxScrollOffset =
-      max_outer_viewport_scroll_offset + maxInnerViewportScrollOffset;
-  DCHECK(totalMaxScrollOffset.x() >= offset.x() &&
-         totalMaxScrollOffset.y() >= offset.y());
-*/
-#endif
+  // TODO(bokan): This trips on zoom-out due to how Blink orders scale-scroll.
+  //              Disabled until that's sorted out: crbug.com/336574
+  // gfx::Vector2d total_max_scroll_offset =
+  //    max_outer_viewport_scroll_offset + max_inner_viewport_scroll_offset;
+  // DCHECK(total_max_scroll_offset.x() >= offset.x() &&
+  //       total_max_scroll_offset.y() >= offset.y());
 
   outer_viewport_offset = offset - inner_viewport_offset;
   outer_viewport_offset.SetToMin(max_outer_viewport_scroll_offset);
   outer_viewport_offset.SetToMax(gfx::Vector2d());
 
   inner_viewport_offset = offset - outer_viewport_offset;
+  inner_viewport_offset.SetToMin(max_inner_viewport_scroll_offset);
+  inner_viewport_offset.SetToMax(gfx::Vector2d());
   inner_viewport_scroll_layer_->SetScrollOffset(inner_viewport_offset);
 
   return outer_viewport_offset;
