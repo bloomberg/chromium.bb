@@ -161,6 +161,9 @@ class WebViewGuest : public GuestView,
       bool is_error_page,
       bool is_iframe_srcdoc,
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DocumentLoadedInFrame(
+      int64 frame_id,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(
@@ -181,6 +184,8 @@ class WebViewGuest : public GuestView,
   static void RemoveWebViewFromExtensionRendererState(
       content::WebContents* web_contents);
 
+  void InjectChromeVoxIfNeeded(content::RenderViewHost* render_view_host);
+
   ObserverList<extensions::TabHelper::ScriptExecutionObserver>
       script_observers_;
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
@@ -200,6 +205,12 @@ class WebViewGuest : public GuestView,
   // Indicates that the page needs to be reloaded once it has been attached to
   // an embedder.
   bool pending_reload_on_attachment_;
+
+  // Main frame ID of last committed page.
+  int64 main_frame_id_;
+
+  // Set to |true| if ChromeVox was already injected in main frame.
+  bool chromevox_injected_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

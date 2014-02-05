@@ -19,6 +19,9 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 
+namespace content {
+class RenderViewHost;
+}
 class Profile;
 
 namespace chromeos {
@@ -134,6 +137,9 @@ class AccessibilityManager : public content::NotificationObserver,
 
   // Initiates play of shutdown sound and returns it's duration.
   base::TimeDelta PlayShutdownSound();
+
+  // Injects ChromeVox scripts into given |render_view_host|.
+  void InjectChromeVox(content::RenderViewHost* render_view_host);
 
  protected:
   AccessibilityManager();

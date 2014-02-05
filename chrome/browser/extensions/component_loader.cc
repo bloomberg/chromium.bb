@@ -424,6 +424,10 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
 
   // Component extensions needed for kiosk apps.
   AddFileManagerExtension();
+
+#if defined(OS_CHROMEOS)
+  ComponentLoader::AddChromeOsSpeechSynthesisExtension();
+#endif
 }
 
 void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(

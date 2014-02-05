@@ -152,21 +152,20 @@ class ContentScriptLoader {
   std::queue<extensions::ExtensionResource> resources_;
 };
 
-void LoadChromeVoxExtension(Profile* profile, content::WebUI* login_web_ui) {
+void LoadChromeVoxExtension(Profile* profile,
+                            RenderViewHost* render_view_host) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   base::FilePath path = GetChromeVoxPath();
   std::string extension_id =
       extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
                                                  path);
-  if (login_web_ui) {
+  if (render_view_host) {
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
     const extensions::Extension* extension =
         extension_service->extensions()->GetByID(extension_id);
 
-    RenderViewHost* render_view_host =
-        login_web_ui->GetWebContents()->GetRenderViewHost();
     // Set a flag to tell ChromeVox that it's just been enabled,
     // so that it won't interrupt our speech feedback enabled message.
     ExtensionMsg_ExecuteCode_Params params;
@@ -515,7 +514,8 @@ void AccessibilityManager::LoadChromeVoxToUserScreen() {
     }
   }
 
-  LoadChromeVoxExtension(profile_, login_web_ui);
+  LoadChromeVoxExtension(profile_, login_web_ui ?
+      login_web_ui->GetWebContents()->GetRenderViewHost() : NULL);
   chrome_vox_loaded_on_user_screen_ = true;
 }
 
@@ -528,7 +528,8 @@ void AccessibilityManager::LoadChromeVoxToLockScreen() {
     content::WebUI* lock_web_ui = screen_locker->GetAssociatedWebUI();
     if (lock_web_ui) {
       Profile* profile = Profile::FromWebUI(lock_web_ui);
-      LoadChromeVoxExtension(profile, lock_web_ui);
+      LoadChromeVoxExtension(profile,
+          lock_web_ui->GetWebContents()->GetRenderViewHost());
       chrome_vox_loaded_on_lock_screen_ = true;
     }
   }
@@ -813,6 +814,10 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
   if (!ash::PlaySystemSound(SOUND_SHUTDOWN, true /* honor_spoken_feedback */))
     return base::TimeDelta();
   return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
+}
+
+void AccessibilityManager::InjectChromeVox(RenderViewHost* render_view_host) {
+  LoadChromeVoxExtension(profile_, render_view_host);
 }
 
 void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {

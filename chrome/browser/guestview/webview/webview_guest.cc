@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -34,6 +36,10 @@
 
 #if defined(ENABLE_PLUGINS)
 #include "chrome/browser/guestview/webview/plugin_permission_helper.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -122,7 +128,9 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
                                                       &script_observers_)),
       next_permission_request_id_(0),
       is_overriding_user_agent_(false),
-      pending_reload_on_attachment_(false) {
+      pending_reload_on_attachment_(false),
+      main_frame_id_(0),
+      chromevox_injected_(false) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::Source<WebContents>(guest_web_contents));
@@ -130,6 +138,12 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<WebContents>(guest_web_contents));
+
+#if defined(OS_CHROMEOS)
+  notification_registrar_.Add(this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+      content::NotificationService::AllSources());
+#endif
 
   AttachWebViewHelpers(guest_web_contents);
 }
@@ -474,6 +488,11 @@ void WebViewGuest::Observe(int type,
                    is_top_level);
       break;
     }
+#if defined(OS_CHROMEOS)
+    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
+      InjectChromeVoxIfNeeded(guest_web_contents()->GetRenderViewHost());
+      break;
+#endif
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
@@ -580,6 +599,10 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   args->SetInteger(webview::kInternalProcessId,
       guest_web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
+  if (is_main_frame) {
+    chromevox_injected_ = false;
+    main_frame_id_ = frame_id;
+  }
 }
 
 void WebViewGuest::DidFailProvisionalLoad(
@@ -608,6 +631,13 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
   args->SetString(guestview::kUrl, validated_url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   DispatchEvent(new GuestView::Event(webview::kEventLoadStart, args.Pass()));
+}
+
+void WebViewGuest::DocumentLoadedInFrame(
+    int64 frame_id,
+    content::RenderViewHost* render_view_host) {
+  if (frame_id == main_frame_id_)
+    InjectChromeVoxIfNeeded(render_view_host);
 }
 
 void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
@@ -721,6 +751,20 @@ void WebViewGuest::SizeChanged(const gfx::Size& old_size,
   args->SetInteger(webview::kNewHeight, new_size.height());
   args->SetInteger(webview::kNewWidth, new_size.width());
   DispatchEvent(new GuestView::Event(webview::kEventSizeChanged, args.Pass()));
+}
+
+void WebViewGuest::InjectChromeVoxIfNeeded(
+    content::RenderViewHost* render_view_host) {
+#if defined(OS_CHROMEOS)
+  if (!chromevox_injected_) {
+    chromeos::AccessibilityManager* manager =
+        chromeos::AccessibilityManager::Get();
+    if (manager && manager->IsSpokenFeedbackEnabled()) {
+      manager->InjectChromeVox(render_view_host);
+      chromevox_injected_ = true;
+    }
+  }
+#endif
 }
 
 WebViewGuest::PermissionResponseInfo::PermissionResponseInfo()
