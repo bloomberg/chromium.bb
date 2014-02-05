@@ -351,8 +351,8 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
 
 
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
-          packages=(), skip_chroot_upgrade=True, extra_env=None,
-          chrome_root=None):
+          packages=(), skip_chroot_upgrade=True, noworkon=False,
+          extra_env=None, chrome_root=None):
   """Wrapper around build_packages.
 
   Args:
@@ -366,6 +366,7 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
       build_packages will calculate a list of packages automatically.
     skip_chroot_upgrade: Whether to skip the chroot update. If the chroot is
       not yet up to date, you should specify skip_chroot_upgrade=False.
+    noworkon: If set, don't force-build workon packages.
     extra_env: A dictionary of environmental variables to set during generation.
     chrome_root: The directory where chrome is stored.
   """
@@ -383,6 +384,9 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if chrome_binhost_only:
     cmd.append('--chrome_binhost_only')
+
+  if noworkon:
+    cmd.append('--noworkon')
 
   chroot_args = []
   if chrome_root:

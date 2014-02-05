@@ -2330,6 +2330,9 @@ class BuildPackagesStage(ArchivingStage):
                                           buildroot=self._build_root)
       commands.WaitForPGOData(self._GetArchitectures(), cpv)
 
+    # If we have rietveld patches, always compile Chrome from source.
+    noworkon = not self._run.options.rietveld_patches
+
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._build_autotest,
@@ -2338,6 +2341,7 @@ class BuildPackagesStage(ArchivingStage):
                    packages=self._run.config.packages,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,
+                   noworkon=noworkon,
                    extra_env=self._env)
 
 
