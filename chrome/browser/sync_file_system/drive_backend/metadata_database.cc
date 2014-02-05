@@ -84,30 +84,19 @@ base::FilePath ReverseConcatPathComponents(
   return base::FilePath(result).NormalizePathSeparators();
 }
 
-void CreateInitialSyncRootTracker(
+scoped_ptr<FileTracker> CreateSyncRootTracker(
     int64 tracker_id,
-    const google_apis::FileResource& file_resource,
-    scoped_ptr<FileMetadata>* file_out,
-    scoped_ptr<FileTracker>* tracker_out) {
-  FileDetails details;
-  PopulateFileDetailsByFileResource(file_resource, &details);
-
-  scoped_ptr<FileMetadata> file(new FileMetadata);
-  file->set_file_id(file_resource.file_id());
-  *file->mutable_details() = details;
-
-  scoped_ptr<FileTracker> tracker(new FileTracker);
-  tracker->set_tracker_id(tracker_id);
-  tracker->set_file_id(file_resource.file_id());
-  tracker->set_parent_tracker_id(0);
-  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
-  tracker->set_dirty(false);
-  tracker->set_active(true);
-  tracker->set_needs_folder_listing(false);
-  *tracker->mutable_synced_details() = details;
-
-  *file_out = file.Pass();
-  *tracker_out = tracker.Pass();
+    const FileMetadata& sync_root_metadata) {
+  scoped_ptr<FileTracker> sync_root_tracker(new FileTracker);
+  sync_root_tracker->set_tracker_id(tracker_id);
+  sync_root_tracker->set_file_id(sync_root_metadata.file_id());
+  sync_root_tracker->set_parent_tracker_id(0);
+  sync_root_tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
+  sync_root_tracker->set_dirty(false);
+  sync_root_tracker->set_active(true);
+  sync_root_tracker->set_needs_folder_listing(false);
+  *sync_root_tracker->mutable_synced_details() = sync_root_metadata.details();
+  return sync_root_tracker.Pass();
 }
 
 void CreateInitialAppRootTracker(
@@ -144,11 +133,13 @@ void AdaptLevelDBStatusToSyncStatusCode(const SyncStatusCallback& callback,
 
 void PutFileDeletionToBatch(const std::string& file_id,
                             leveldb::WriteBatch* batch) {
-  batch->Delete(kFileMetadataKeyPrefix + file_id);
+  if (batch)
+    batch->Delete(kFileMetadataKeyPrefix + file_id);
 }
 
 void PutTrackerDeletionToBatch(int64 tracker_id, leveldb::WriteBatch* batch) {
-  batch->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
+  if (batch)
+    batch->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
 }
 
 template <typename OutputIterator>
@@ -333,7 +324,8 @@ SyncStatusCode InitializeServiceMetadata(DatabaseContents* contents,
 
     std::string value;
     contents->service_metadata->SerializeToString(&value);
-    batch->Put(kServiceMetadataKey, value);
+    if (batch)
+      batch->Put(kServiceMetadataKey, value);
   }
   return SYNC_STATUS_OK;
 }
@@ -556,12 +548,11 @@ void MetadataDatabase::PopulateInitialData(
   FileTracker* sync_root_tracker = NULL;
   int64 sync_root_tracker_id = 0;
   {
-    scoped_ptr<FileMetadata> folder;
-    scoped_ptr<FileTracker> tracker;
-    CreateInitialSyncRootTracker(IncrementTrackerID(batch.get()),
-                                 sync_root_folder,
-                                 &folder,
-                                 &tracker);
+    scoped_ptr<FileMetadata> folder =
+        CreateFileMetadataFromFileResource(largest_change_id, sync_root_folder);
+    scoped_ptr<FileTracker> tracker =
+        CreateSyncRootTracker(IncrementTrackerID(batch.get()), *folder);
+
     std::string sync_root_folder_id = folder->file_id();
     sync_root_tracker = tracker.get();
     sync_root_tracker_id = tracker->tracker_id();
@@ -960,11 +951,7 @@ void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
   }
   *new_tracker->mutable_synced_details() = new_file_details;
 
-  new_tracker->set_dirty(false);
-  dirty_trackers_.erase(new_tracker);
-  low_priority_dirty_trackers_.erase(new_tracker);
-  PutTrackerToBatch(*new_tracker, batch.get());
-
+  ClearDirty(new_tracker, batch.get());
   WriteToDatabase(batch.Pass(), callback);
 }
 
@@ -999,11 +986,8 @@ void MetadataDatabase::PopulateFolderByChildList(
        itr != child_file_ids.end(); ++itr)
     CreateTrackerForParentAndFileID(*folder_tracker, *itr, batch.get());
   folder_tracker->set_needs_folder_listing(false);
-  if (folder_tracker->dirty() && !ShouldKeepDirty(*folder_tracker)) {
-    folder_tracker->set_dirty(false);
-    dirty_trackers_.erase(folder_tracker);
-    low_priority_dirty_trackers_.erase(folder_tracker);
-  }
+  if (folder_tracker->dirty() && !ShouldKeepDirty(*folder_tracker))
+    ClearDirty(folder_tracker, NULL);
   PutTrackerToBatch(*folder_tracker, batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
@@ -1088,11 +1072,8 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   //   - There is no active tracker that has the same |parent| and |title|.
   if (!tracker->active() && CanActivateTracker(*tracker))
     MakeTrackerActive(tracker->tracker_id(), batch.get());
-  if (tracker->dirty() && !ShouldKeepDirty(*tracker)) {
-    tracker->set_dirty(false);
-    dirty_trackers_.erase(tracker);
-    low_priority_dirty_trackers_.erase(tracker);
-  }
+  if (tracker->dirty() && !ShouldKeepDirty(*tracker))
+    ClearDirty(tracker, NULL);
   PutTrackerToBatch(*tracker, batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
@@ -1153,10 +1134,7 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryNoSideEffectActivation(
   *tracker->mutable_synced_details() = file.details();
 
   MakeTrackerActive(tracker->tracker_id(), batch.get());
-  tracker->set_dirty(false);
-  dirty_trackers_.erase(tracker);
-  low_priority_dirty_trackers_.erase(tracker);
-  PutTrackerToBatch(*tracker, batch.get());
+  ClearDirty(tracker, batch.get());
 
   WriteToDatabase(batch.Pass(), callback);
   return ACTIVATION_PENDING;
@@ -1418,11 +1396,7 @@ void MetadataDatabase::MakeTrackerActive(int64 tracker_id,
       tracker->synced_details().file_kind() == FILE_KIND_FOLDER);
 
   // Make |tracker| a normal priority dirty tracker.
-  if (tracker->dirty())
-    low_priority_dirty_trackers_.erase(tracker);
-  tracker->set_dirty(true);
-  dirty_trackers_.insert(tracker);
-
+  MarkSingleTrackerAsDirty(tracker, NULL);
   PutTrackerToBatch(*tracker, batch);
 }
 
@@ -1666,8 +1640,8 @@ void MetadataDatabase::EraseTrackerFromPathIndex(FileTracker* tracker) {
   }
 }
 
-void MetadataDatabase::MarkSingleTrackerDirty(FileTracker* tracker,
-                                              leveldb::WriteBatch* batch) {
+void MetadataDatabase::MarkSingleTrackerAsDirty(FileTracker* tracker,
+                                                leveldb::WriteBatch* batch) {
   if (!tracker->dirty()) {
     tracker->set_dirty(true);
     PutTrackerToBatch(*tracker, batch);
@@ -1676,12 +1650,23 @@ void MetadataDatabase::MarkSingleTrackerDirty(FileTracker* tracker,
   low_priority_dirty_trackers_.erase(tracker);
 }
 
+void MetadataDatabase::ClearDirty(FileTracker* tracker,
+                                  leveldb::WriteBatch* batch) {
+  if (tracker->dirty()) {
+    tracker->set_dirty(false);
+    PutTrackerToBatch(*tracker, batch);
+  }
+
+  dirty_trackers_.erase(tracker);
+  low_priority_dirty_trackers_.erase(tracker);
+}
+
 void MetadataDatabase::MarkTrackerSetDirty(
     TrackerSet* trackers,
     leveldb::WriteBatch* batch) {
   for (TrackerSet::iterator itr = trackers->begin();
        itr != trackers->end(); ++itr) {
-    MarkSingleTrackerDirty(*itr, batch);
+    MarkSingleTrackerAsDirty(*itr, batch);
   }
 }
 
@@ -1724,13 +1709,7 @@ void MetadataDatabase::RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
     PushChildTrackersToContainer(
         trackers_by_parent_and_title_, tracker_id, std::back_inserter(stack));
 
-    FileTracker* tracker = tracker_by_id_[tracker_id];
-    if (!tracker->dirty()) {
-      tracker->set_dirty(true);
-      PutTrackerToBatch(*tracker, batch);
-      dirty_trackers_.insert(tracker);
-      low_priority_dirty_trackers_.erase(tracker);
-    }
+    MarkSingleTrackerAsDirty(tracker_by_id_[tracker_id], batch);
   }
 }
 
@@ -1862,6 +1841,11 @@ void MetadataDatabase::UpdateByFileMetadata(
 
 void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                                        const SyncStatusCallback& callback) {
+  if (!batch) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return;
+  }
+
   base::PostTaskAndReplyWithResult(
       task_runner_.get(),
       FROM_HERE,

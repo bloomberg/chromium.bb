@@ -256,6 +256,7 @@ class MetadataDatabaseTest : public testing::Test {
     FileDetails* details = sync_root.mutable_details();
     details->set_title(kSyncRootFolderTitle);
     details->set_file_kind(FILE_KIND_FOLDER);
+    details->set_change_id(current_change_id_);
     return sync_root;
   }
 
@@ -579,6 +580,10 @@ class MetadataDatabaseTest : public testing::Test {
 
   void ResetTrackerID(FileTracker* tracker) {
     tracker->set_tracker_id(GetTrackerIDByFileID(tracker->file_id()));
+  }
+
+  int64 current_change_id() const {
+    return current_change_id_;
   }
 
  private:
@@ -1066,7 +1071,6 @@ TEST_F(MetadataDatabaseTest, PopulateInitialDataTest) {
     &sync_root, &app_root
   };
 
-  int64 largest_change_id = 42;
   scoped_ptr<google_apis::FileResource> sync_root_folder(
       CreateFileResourceFromMetadata(sync_root.metadata));
   scoped_ptr<google_apis::FileResource> app_root_folder(
@@ -1077,7 +1081,7 @@ TEST_F(MetadataDatabaseTest, PopulateInitialDataTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
   EXPECT_EQ(SYNC_STATUS_OK, PopulateInitialData(
-      largest_change_id,
+      current_change_id(),
       *sync_root_folder,
       app_root_folders));
 

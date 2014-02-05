@@ -402,8 +402,9 @@ class MetadataDatabase {
   void MaybeAddTrackersForNewFile(const FileMetadata& file,
                                   leveldb::WriteBatch* batch);
 
-  void MarkSingleTrackerDirty(FileTracker* tracker,
-                              leveldb::WriteBatch* batch);
+  void MarkSingleTrackerAsDirty(FileTracker* tracker,
+                                leveldb::WriteBatch* batch);
+  void ClearDirty(FileTracker* tracker, leveldb::WriteBatch* batch);
   void MarkTrackerSetDirty(TrackerSet* trackers,
                            leveldb::WriteBatch* batch);
   void MarkTrackersDirtyByFileID(const std::string& file_id,

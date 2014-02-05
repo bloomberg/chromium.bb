@@ -30,6 +30,9 @@ void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
 }
 
 void PutFileToBatch(const FileMetadata& file, leveldb::WriteBatch* batch) {
+  if (!batch)
+    return;
+
   std::string value;
   bool success = file.SerializeToString(&value);
   DCHECK(success);
@@ -37,6 +40,9 @@ void PutFileToBatch(const FileMetadata& file, leveldb::WriteBatch* batch) {
 }
 
 void PutTrackerToBatch(const FileTracker& tracker, leveldb::WriteBatch* batch) {
+  if (!batch)
+    return;
+
   std::string value;
   bool success = tracker.SerializeToString(&value);
   DCHECK(success);
