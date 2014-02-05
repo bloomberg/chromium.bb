@@ -1304,7 +1304,7 @@
             # can use breakpad for these builds.
             'release_unwind_tables%': 0,
           }],
-	  # TODO(jungshik): Turn this on on Android and CrOS as well.
+          # TODO(jungshik): Turn this on on Android and Chrome OS
           ['OS!="android" and chromeos==0', {
             'icu_use_data_file_flag%': 1,
           }],

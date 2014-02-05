@@ -68,14 +68,15 @@ ResourceBundle* g_shared_instance_ = NULL;
 
 void InitDefaultFontList() {
 #if defined(OS_CHROMEOS)
-  gfx::FontList::SetDefaultFontDescription(
-      l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  std::string font_family = base::UTF16ToUTF8(
+      rb.GetLocalizedString(IDS_UI_FONT_FAMILY_CROS));
+  gfx::FontList::SetDefaultFontDescription(font_family);
 
   // TODO(yukishiino): Remove SetDefaultFontDescription() once the migration to
   // the font list is done.  We will no longer need SetDefaultFontDescription()
   // after every client gets started using a FontList instead of a Font.
-  gfx::PlatformFontPango::SetDefaultFontDescription(
-      l10n_util::GetStringUTF8(IDS_UI_FONT_FAMILY_CROS));
+  gfx::PlatformFontPango::SetDefaultFontDescription(font_family);
 #else
   // Use a single default font as the default font list.
   gfx::FontList::SetDefaultFontDescription(std::string());
