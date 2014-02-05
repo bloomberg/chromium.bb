@@ -30,21 +30,23 @@ var e3Style = getComputedStyle(e3);
 var durationValue = 1;
 
 test(function() {
-    e1.animate([
+    var player = e1.animate([
         {left: '10px', opacity: '1', offset: 0},
         {left: '100px', opacity: '0', offset: 1}
-    ], durationValue);
-    internals.pauseAnimations(durationValue / 2);
+    ], durationValue).player;
+    player.pause();
+    player.currentTime = durationValue / 2;
     assert_equals(e1Style.left, '55px');
     assert_equals(e1Style.opacity, '0.5');
 }, 'Calling animate() should start an animation.');
 
 test(function() {
-    e2.animate([
+    var player = e2.animate([
         {backgroundColor: 'green', offset: 0},
         {backgroundColor: 'purple', offset: 1}
-    ], durationValue);
-    internals.pauseAnimations(durationValue / 2);
+    ], durationValue).player;
+    player.pause();
+    player.currentTime = durationValue / 2;
     assert_equals(e2Style.backgroundColor, 'rgb(64, 64, 64)');
 }, 'Calling animate() should start an animation. CamelCase property names should be parsed.');
 
@@ -55,8 +57,9 @@ var keyframesWithInvalid = [
         ];
 
 test(function() {
-    e3.animate(keyframesWithInvalid, {duration: durationValue, fill: 'forwards'});
-    internals.pauseAnimations(durationValue);
+    var player = e3.animate(keyframesWithInvalid, {duration: durationValue, fill: 'forwards'}).player;
+    player.pause();
+    player.currentTime = durationValue;
     assert_equals(e3Style.width, '1000px');
     assert_equals(e3Style.backgroundColor, 'rgb(0, 0, 0)');
     assert_equals(e3Style.foo, undefined);
