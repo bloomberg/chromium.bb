@@ -1360,6 +1360,69 @@ TEST_F(FileUtilTest, CopyDirectoryWithTrailingSeparators) {
   EXPECT_TRUE(PathExists(file_name_to));
 }
 
+// Sets the source file to read-only.
+void SetReadOnly(const FilePath& path) {
+#if defined(OS_WIN)
+  // On Windows, it involves setting a bit.
+  DWORD attrs = GetFileAttributes(path.value().c_str());
+  ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
+  ASSERT_TRUE(SetFileAttributes(
+      path.value().c_str(), attrs | FILE_ATTRIBUTE_READONLY));
+  attrs = GetFileAttributes(path.value().c_str());
+  // Files in the temporary directory should not be indexed ever. If this
+  // assumption change, fix this unit test accordingly.
+  // FILE_ATTRIBUTE_NOT_CONTENT_INDEXED doesn't exist on XP.
+  DWORD expected = FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_READONLY;
+  if (win::GetVersion() >= win::VERSION_VISTA)
+    expected |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
+  ASSERT_EQ(expected, attrs);
+#else
+  // On all other platforms, it involves removing the write bit.
+  EXPECT_TRUE(SetPosixFilePermissions(path, S_IRUSR));
+#endif
+}
+
+bool IsReadOnly(const FilePath& path) {
+#if defined(OS_WIN)
+  DWORD attrs = GetFileAttributes(path.value().c_str());
+  EXPECT_NE(INVALID_FILE_ATTRIBUTES, attrs);
+  return attrs & FILE_ATTRIBUTE_READONLY;
+#else
+  int mode = 0;
+  EXPECT_TRUE(GetPosixFilePermissions(path, &mode));
+  return !(mode & S_IWUSR);
+#endif
+}
+
+TEST_F(FileUtilTest, CopyDirectoryACL) {
+  // Create a directory.
+  FilePath src = temp_dir_.path().Append(FILE_PATH_LITERAL("src"));
+  CreateDirectory(src);
+  ASSERT_TRUE(PathExists(src));
+
+  // Create a file under the directory.
+  FilePath src_file = src.Append(FILE_PATH_LITERAL("src.txt"));
+  CreateTextFile(src_file, L"Gooooooooooooooooooooogle");
+  SetReadOnly(src_file);
+  ASSERT_TRUE(IsReadOnly(src_file));
+
+  // Copy the directory recursively.
+  FilePath dst = temp_dir_.path().Append(FILE_PATH_LITERAL("dst"));
+  FilePath dst_file = dst.Append(FILE_PATH_LITERAL("src.txt"));
+  EXPECT_TRUE(CopyDirectory(src, dst, true));
+
+#if defined(OS_WIN)
+  // While the source file had RO bit set, the copied file doesn't.
+  ASSERT_FALSE(IsReadOnly(dst_file));
+#elif defined(OS_MACOSX)
+  // On OSX, file mode is copied.
+  ASSERT_TRUE(IsReadOnly(dst_file));
+#else
+  // On other POSIX, file mode is not copied.
+  ASSERT_FALSE(IsReadOnly(dst_file));
+#endif
+}
+
 TEST_F(FileUtilTest, CopyFile) {
   // Create a directory
   FilePath dir_name_from =
@@ -1398,7 +1461,6 @@ TEST_F(FileUtilTest, CopyFile) {
   EXPECT_TRUE(PathExists(dest_file2));
 }
 
-#if defined(OS_WIN) || defined(OS_POSIX)
 TEST_F(FileUtilTest, CopyFileACL) {
   // While FileUtilTest.CopyFile asserts the content is correctly copied over,
   // this test case asserts the access control bits are meeting expectations in
@@ -1408,24 +1470,9 @@ TEST_F(FileUtilTest, CopyFileACL) {
   CreateTextFile(src, file_contents);
 
   // Set the source file to read-only.
-#if defined(OS_WIN)
-  // On Windows, it involves setting a bit.
-  DWORD attrs = GetFileAttributes(src.value().c_str());
-  ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
-  ASSERT_TRUE(SetFileAttributes(
-      src.value().c_str(), attrs | FILE_ATTRIBUTE_READONLY));
-  attrs = GetFileAttributes(src.value().c_str());
-  // Files in the temporary directory should not be indexed ever. If this
-  // assumption change, fix this unit test accordingly.
-  // FILE_ATTRIBUTE_NOT_CONTENT_INDEXED doesn't exist on XP.
-  DWORD expected = FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_READONLY;
-  if (win::GetVersion() >= win::VERSION_VISTA)
-    expected |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-  ASSERT_EQ(expected, attrs);
-#else
-  // On all other platforms, it involves removing the write bit.
-  EXPECT_TRUE(SetPosixFilePermissions(src, 0400));
-#endif
+  ASSERT_FALSE(IsReadOnly(src));
+  SetReadOnly(src);
+  ASSERT_TRUE(IsReadOnly(src));
 
   // Copy the file.
   FilePath dst = temp_dir_.path().Append(FILE_PATH_LITERAL("dst.txt"));
@@ -1435,26 +1482,15 @@ TEST_F(FileUtilTest, CopyFileACL) {
 #if defined(OS_WIN)
   // While the source file had RO bit set, the copied file doesn't. Other file
   // modes are copied.
-  attrs = GetFileAttributes(src.value().c_str());
-  ASSERT_EQ(expected, attrs);
-  expected = FILE_ATTRIBUTE_ARCHIVE;
-  if (win::GetVersion() >= win::VERSION_VISTA)
-    expected |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-  attrs = GetFileAttributes(dst.value().c_str());
-  ASSERT_EQ(expected, attrs);
+  ASSERT_FALSE(IsReadOnly(dst));
 #elif defined(OS_MACOSX)
   // On OSX, file mode is copied.
-  int mode = 0;
-  EXPECT_TRUE(GetPosixFilePermissions(dst, &mode));
-  EXPECT_EQ(0400, mode & 0600);
+  ASSERT_TRUE(IsReadOnly(dst));
 #else
   // On other POSIX, file mode is not copied.
-  int mode = 0;
-  EXPECT_TRUE(GetPosixFilePermissions(dst, &mode));
-  EXPECT_EQ(0600, mode & 0600);
+  ASSERT_FALSE(IsReadOnly(dst));
 #endif
 }
-#endif  // defined(OS_WIN) || defined(OS_POSIX)
 
 // file_util winds up using autoreleased objects on the Mac, so this needs
 // to be a PlatformTest.
