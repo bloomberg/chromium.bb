@@ -57,99 +57,48 @@ using namespace WebCore;
 
 namespace blink {
 
-// Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
-class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorkerConnector::ConnectListener {
+// Callback class that keeps the SharedWorker and WebSharedWorker objects alive while connecting.
+class SharedWorkerConnector : private WebSharedWorkerConnector::ConnectListener {
 public:
-    SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<WebMessagePortChannel> channel, PassOwnPtr<WebSharedWorkerConnector> webWorkerConnector)
+    SharedWorkerConnector(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<WebMessagePortChannel> channel, PassOwnPtr<WebSharedWorkerConnector> webWorkerConnector)
         : m_worker(worker)
         , m_url(url)
         , m_name(name)
         , m_webWorkerConnector(webWorkerConnector)
-        , m_channel(channel)
-        , m_scriptLoader(WorkerScriptLoader::create())
-        , m_loading(false)
-        , m_responseAppCacheID(0)
-    {
-        m_scriptLoader->setTargetType(ResourceRequest::TargetIsSharedWorker);
-    }
+        , m_channel(channel) { }
 
-    ~SharedWorkerScriptLoader();
-    void load();
+    virtual ~SharedWorkerConnector();
+    void connect();
 
 private:
-    // WorkerScriptLoaderClient callbacks
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
-    virtual void notifyFinished() OVERRIDE;
-
     // WebSharedWorkerConnector::ConnectListener overrides.
     virtual void connected() OVERRIDE;
     virtual void scriptLoadFailed() OVERRIDE;
-
-    void sendConnect();
 
     RefPtr<SharedWorker> m_worker;
     KURL m_url;
     String m_name;
     OwnPtr<WebSharedWorkerConnector> m_webWorkerConnector;
     OwnPtr<WebMessagePortChannel> m_channel;
-    RefPtr<WorkerScriptLoader> m_scriptLoader;
-    bool m_loading;
-    long long m_responseAppCacheID;
 };
 
-SharedWorkerScriptLoader::~SharedWorkerScriptLoader()
+SharedWorkerConnector::~SharedWorkerConnector()
 {
-    if (m_loading)
-        m_worker->unsetPreventGC();
+    m_worker->unsetPreventGC();
 }
-
-void SharedWorkerScriptLoader::load()
+void SharedWorkerConnector::connect()
 {
-    ASSERT(!m_loading);
-    // If the shared worker is not yet running, load the script resource for it, otherwise just send it a connect event.
-    if (m_webWorkerConnector->isStarted()) {
-        sendConnect();
-    } else {
-        // Keep the worker + JS wrapper alive until the resource load is complete in case we need to dispatch an error event.
-        m_worker->setPreventGC();
-        m_loading = true;
-
-        m_scriptLoader->loadAsynchronously(m_worker->executionContext(), m_url, DenyCrossOriginRequests, this);
-    }
-}
-
-void SharedWorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
-{
-    m_responseAppCacheID = response.appCacheID();
-    InspectorInstrumentation::didReceiveScriptResponse(m_worker->executionContext(), identifier);
-}
-
-void SharedWorkerScriptLoader::notifyFinished()
-{
-    if (m_scriptLoader->failed()) {
-        m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
-        delete this;
-    } else {
-        InspectorInstrumentation::scriptImported(m_worker->executionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
-        // Pass the script off to the worker, then send a connect event.
-        m_webWorkerConnector->startWorkerContext(m_url, m_name, m_worker->executionContext()->userAgent(m_url), m_scriptLoader->script(), m_worker->executionContext()->contentSecurityPolicy()->deprecatedHeader(), static_cast<blink::WebContentSecurityPolicyType>(m_worker->executionContext()->contentSecurityPolicy()->deprecatedHeaderType()), m_responseAppCacheID);
-        sendConnect();
-    }
-}
-
-void SharedWorkerScriptLoader::sendConnect()
-{
-    // Send the connect event off, and linger until it is done sending.
+    m_worker->setPreventGC();
     m_webWorkerConnector->connect(m_channel.leakPtr(), this);
 }
 
-void SharedWorkerScriptLoader::connected()
+void SharedWorkerConnector::connected()
 {
-    // Connect event has been sent, so free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
+    // Free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
     delete this;
 }
 
-void SharedWorkerScriptLoader::scriptLoadFailed()
+void SharedWorkerConnector::scriptLoadFailed()
 {
     m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
     // Free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
@@ -176,10 +125,10 @@ void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, 
         return;
     }
 
-    // The loader object manages its own lifecycle (and the lifecycles of the two worker objects).
-    // It will free itself once loading is completed.
-    SharedWorkerScriptLoader* loader = new SharedWorkerScriptLoader(worker, url, name, port, webWorkerConnector.release());
-    loader->load();
+    // The connector object manages its own lifecycle (and the lifecycles of the two worker objects).
+    // It will free itself once connecting is completed.
+    SharedWorkerConnector* connector = new SharedWorkerConnector(worker, url, name, port, webWorkerConnector.release());
+    connector->connect();
 }
 
 void SharedWorkerRepositoryClientImpl::documentDetached(Document* document)

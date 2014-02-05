@@ -51,22 +51,11 @@ public:
     // Invoked from the worker thread to instantiate a WebSharedWorker that interacts with the WebKit worker components.
     BLINK_EXPORT static WebSharedWorker* create(WebSharedWorkerClient*);
 
-    virtual ~WebSharedWorker() {};
-
     virtual void startWorkerContext(
         const WebURL& scriptURL,
         const WebString& name,
         const WebString& contentSecurityPolicy,
         WebContentSecurityPolicyType) = 0;
-    // FIXME(horo): Remove this
-    virtual void startWorkerContext(
-        const WebURL& scriptURL,
-        const WebString& name,
-        const WebString& userAgent,
-        const WebString& sourceCode,
-        const WebString& contentSecurityPolicy,
-        WebContentSecurityPolicyType,
-        long long scriptResourceAppCacheID) = 0;
 
     // Sends a connect event to the SharedWorker context.
     virtual void connect(WebMessagePortChannel*) = 0;

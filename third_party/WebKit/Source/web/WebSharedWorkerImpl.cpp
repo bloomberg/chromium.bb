@@ -315,12 +315,6 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
     initializeLoader(url);
 }
 
-// FIXME(horo): Remove this
-void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString& name, const WebString& userAgent, const WebString& sourceCode, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType policyType, long long)
-{
-    startWorkerContext(url, name, contentSecurityPolicy, policyType);
-}
-
 void WebSharedWorkerImpl::didReceiveScriptLoaderResponse()
 {
     InspectorInstrumentation::didReceiveScriptResponse(m_loadingDocument.get(), m_mainScriptLoader->identifier());

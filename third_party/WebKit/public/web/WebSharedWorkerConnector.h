@@ -45,20 +45,6 @@ class WebSharedWorkerConnector {
 public:
     virtual ~WebSharedWorkerConnector() { }
 
-    // Returns false if the thread hasn't been started yet (script loading has not taken place).
-    // FIXME(atwilson): Remove this when we move the initial script loading into the worker process.
-    virtual bool isStarted() { return true; };
-
-    // FIXME(horo): remove this.
-    virtual void startWorkerContext(
-        const WebURL& scriptURL,
-        const WebString& name,
-        const WebString& userAgent,
-        const WebString& sourceCode,
-        const WebString& contentSecurityPolicy,
-        WebContentSecurityPolicyType,
-        long long scriptResourceAppCacheID) { };
-
     class ConnectListener {
     public:
         // Invoked once the connect event has been sent so the caller can free this object.

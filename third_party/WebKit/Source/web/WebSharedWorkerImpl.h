@@ -45,6 +45,10 @@
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 
+namespace WebCore {
+class ResourceResponse;
+}
+
 namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -91,8 +95,6 @@ public:
 
     // WebSharedWorker methods:
     virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType) OVERRIDE;
-    // FIXME(horo): Remove this
-    virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& userAgent, const WebString& sourceCode, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, long long cacheId) OVERRIDE;
     virtual void connect(WebMessagePortChannel*) OVERRIDE;
     virtual void terminateWorkerContext() OVERRIDE;
     virtual void clientDestroyed() OVERRIDE;
