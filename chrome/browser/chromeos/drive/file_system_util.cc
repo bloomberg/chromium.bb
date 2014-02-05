@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -47,8 +48,10 @@ namespace util {
 
 namespace {
 
-const base::FilePath::CharType kDriveMountPointPath[] =
-    FILE_PATH_LITERAL("/special/drive");
+const base::FilePath::CharType kSpecialMountPointRoot[] =
+    FILE_PATH_LITERAL("/special");
+
+const char kDriveMountPointNameBase[] = "drive";
 
 const base::FilePath::CharType kDriveMyDriveRootPath[] =
     FILE_PATH_LITERAL("drive/root");
@@ -124,11 +127,11 @@ const base::FilePath& GetDriveMyDriveRootPath() {
   return drive_root_path;
 }
 
-const base::FilePath& GetDriveMountPointPath(Profile* profile) {
-  // TODO(kinaba): assign different path for each different profile.
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mount_path,
-      (kDriveMountPointPath));
-  return drive_mount_path;
+base::FilePath GetDriveMountPointPath(Profile* profile) {
+  const std::string id = "-" +
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
+  return base::FilePath(kSpecialMountPointRoot).AppendASCII(
+      net::EscapePath(kDriveMountPointNameBase + id));
 }
 
 FileSystemInterface* GetFileSystemByProfile(Profile* profile) {
@@ -216,6 +219,22 @@ base::FilePath ExtractDrivePath(const base::FilePath& path) {
   for (size_t i = 3; i < components.size(); ++i)
     drive_path = drive_path.Append(components[i]);
   return drive_path;
+}
+
+Profile* ExtractProfileFromPath(const base::FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const std::vector<Profile*>& profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    Profile* original_profile = profiles[i]->GetOriginalProfile();
+    if (original_profile == profiles[i]) {
+      const base::FilePath base = GetDriveMountPointPath(original_profile);
+      if (base == path || base.IsParent(path))
+        return original_profile;
+    }
+  }
+  return NULL;
 }
 
 base::FilePath ExtractDrivePathFromFileSystemUrl(

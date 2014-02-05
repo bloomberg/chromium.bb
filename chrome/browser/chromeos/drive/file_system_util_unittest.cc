@@ -9,7 +9,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_options.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +25,33 @@
 
 namespace drive {
 namespace util {
+
+namespace {
+
+// Sets up ProfileManager for testing and marks the current thread as UI by
+// TestBrowserThreadBundle. We need the thread since Profile objects must be
+// touched from UI and hence has CHECK/DCHECKs for it.
+class ProfileRelatedFileSystemUtilTest : public testing::Test {
+ protected:
+  ProfileRelatedFileSystemUtilTest()
+      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {
+  }
+
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
+  }
+
+  Profile* CreateProfileWithName(const std::string& name) {
+    return testing_profile_manager_.CreateTestingProfile(
+        chrome::kProfileDirPrefix + name);
+  }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfileManager testing_profile_manager_;
+};
+
+}  // namespace
 
 TEST(FileSystemUtilTest, FilePathToDriveURL) {
   base::FilePath path;
@@ -45,6 +76,23 @@ TEST(FileSystemUtilTest, FilePathToDriveURL) {
   path = GetDriveMyDriveRootPath().Append(
       base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(utf16_string) + ".txt"));
   EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
+}
+
+TEST_F(ProfileRelatedFileSystemUtilTest, GetDriveMountPointPath) {
+  Profile* profile = CreateProfileWithName("hash1");
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive-hash1"),
+            GetDriveMountPointPath(profile));
+}
+
+TEST_F(ProfileRelatedFileSystemUtilTest, ExtractProfileFromPath) {
+  Profile* profile1 = CreateProfileWithName("hash1");
+  Profile* profile2 = CreateProfileWithName("hash2");
+  EXPECT_EQ(profile1, ExtractProfileFromPath(
+      base::FilePath::FromUTF8Unsafe("/special/drive-hash1")));
+  EXPECT_EQ(profile2, ExtractProfileFromPath(
+      base::FilePath::FromUTF8Unsafe("/special/drive-hash2/root/xxx")));
+  EXPECT_EQ(NULL, ExtractProfileFromPath(
+      base::FilePath::FromUTF8Unsafe("/special/non-drive-path")));
 }
 
 TEST(FileSystemUtilTest, IsUnderDriveMountPoint) {

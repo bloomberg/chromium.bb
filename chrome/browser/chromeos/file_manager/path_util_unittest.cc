@@ -56,8 +56,23 @@ TEST(FileManagerPathUtilTest, MultiProfileDriveFolderMigration) {
 
   base::FilePath path;
 
-  // TODO(kinaba): add test, once after drive::util::GetDriveMountPointPath is
-  // implemented in the way that takes profile into account
+  EXPECT_TRUE(MigratePathFromOldFormat(
+      &profile,
+      base::FilePath::FromUTF8Unsafe("/special/drive"),
+      &path));
+  EXPECT_EQ(kDrive, path);
+
+  EXPECT_TRUE(MigratePathFromOldFormat(
+      &profile,
+      base::FilePath::FromUTF8Unsafe("/special/drive/a/b"),
+      &path));
+  EXPECT_EQ(kDrive.AppendASCII("a/b"), path);
+
+  // Path already in the new format is not converted.
+  EXPECT_FALSE(MigratePathFromOldFormat(
+      &profile,
+      kDrive.AppendASCII("a/b"),
+      &path));
 
   // Only the "/special/drive" path is converted.
   EXPECT_FALSE(MigratePathFromOldFormat(
