@@ -713,8 +713,13 @@ gfx::Size NativeWidgetAura::GetMaximumSize() const {
 
 void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
-  if (old_bounds.origin() != new_bounds.origin())
+  // Assume that if the old bounds was completely empty a move happened. This
+  // handles the case of a maximize animation acquiring the layer (acquiring a
+  // layer results in clearing the bounds).
+  if (old_bounds.origin() != new_bounds.origin() ||
+      (old_bounds == gfx::Rect(0, 0, 0, 0) && !new_bounds.IsEmpty())) {
     delegate_->OnNativeWidgetMove();
+  }
   if (old_bounds.size() != new_bounds.size())
     delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }

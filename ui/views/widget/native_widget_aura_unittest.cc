@@ -56,7 +56,7 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 1024, 800));
-  scoped_ptr<Widget>  widget(new Widget());
+  scoped_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
@@ -367,6 +367,44 @@ TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
   window->Close();
   base::MessageLoop::current()->RunUntilIdle();
   widget->GetNativeTheme();  // Shouldn't crash.
+}
+
+// Used to track calls to WidgetDelegate::OnWidgetMove().
+class MoveTestWidgetDelegate : public WidgetDelegateView {
+ public:
+  MoveTestWidgetDelegate() : got_move_(false) {}
+  virtual ~MoveTestWidgetDelegate() {}
+
+  void ClearGotMove() { got_move_ = false; }
+  bool got_move() const { return got_move_; }
+
+  // WidgetDelegate overrides:
+  virtual void OnWidgetMove() OVERRIDE { got_move_ = true; }
+
+ private:
+  bool got_move_;
+
+  DISALLOW_COPY_AND_ASSIGN(MoveTestWidgetDelegate);
+};
+
+// This test simulates what happens when a window is normally maximized. That
+// is, it's layer is acquired for animation then the window is maximized.
+// Acquiring the layer resets the bounds of the window. This test verifies the
+// Widget is still notified correctly of a move in this case.
+TEST_F(NativeWidgetAuraTest, OnWidgetMovedInvokedAfterAcquireLayer) {
+  // |delegate| deletes itself when the widget is destroyed.
+  MoveTestWidgetDelegate* delegate = new MoveTestWidgetDelegate;
+  Widget* widget =
+      Widget::CreateWindowWithContextAndBounds(delegate,
+                                               root_window(),
+                                               gfx::Rect(10, 10, 100, 200));
+  widget->Show();
+  delegate->ClearGotMove();
+  // Simulate a maximize with animation.
+  delete widget->GetNativeView()->RecreateLayer();
+  widget->SetBounds(gfx::Rect(0, 0, 500, 500));
+  EXPECT_TRUE(delegate->got_move());
+  widget->CloseNow();
 }
 
 }  // namespace
