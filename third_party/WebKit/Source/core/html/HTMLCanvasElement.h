@@ -146,6 +146,7 @@ private:
     PassOwnPtr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
     void createImageBuffer();
     void clearImageBuffer();
+    void discardImageBuffer();
 
     void setSurfaceSize(const IntSize&);
 

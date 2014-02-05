@@ -352,8 +352,7 @@ void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
 {
     m_size = size;
     m_didFailToCreateImageBuffer = false;
-    m_contextStateSaver.clear();
-    m_imageBuffer.clear();
+    discardImageBuffer();
     setExternallyAllocatedMemory(0);
     clearCopiedImage();
 }
@@ -449,6 +448,7 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
 void HTMLCanvasElement::createImageBuffer()
 {
     ASSERT(!m_imageBuffer);
+    ASSERT(!m_contextStateSaver);
 
     m_didFailToCreateImageBuffer = true;
     m_didClearImageBuffer = true;
@@ -475,7 +475,6 @@ void HTMLCanvasElement::createImageBuffer()
 
     if (is3D()) {
         // Early out for WebGL canvases
-        m_contextStateSaver.clear();
         return;
     }
 
@@ -529,7 +528,7 @@ void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
 {
     if ((hasImageBuffer() && !m_imageBuffer->isAccelerated()) || m_didFailToCreateImageBuffer)
         return;
-    m_imageBuffer.clear();
+    discardImageBuffer();
     OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
     m_imageBuffer = ImageBuffer::create(size(), opacityMode);
     m_didFailToCreateImageBuffer = !m_imageBuffer;
@@ -560,6 +559,12 @@ void HTMLCanvasElement::clearImageBuffer()
     }
 }
 
+void HTMLCanvasElement::discardImageBuffer()
+{
+    m_contextStateSaver.clear(); // uses context owned by m_imageBuffer
+    m_imageBuffer.clear();
+}
+
 void HTMLCanvasElement::clearCopiedImage()
 {
     m_copiedImage.clear();
@@ -579,7 +584,7 @@ void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
         if (hidden) {
             clearCopiedImage();
             if (is3D()) {
-                m_imageBuffer.clear();
+                discardImageBuffer();
             }
         }
         if (hasImageBuffer()) {
