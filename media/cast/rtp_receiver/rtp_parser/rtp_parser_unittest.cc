@@ -22,9 +22,7 @@ static const uint8 kRefFrameId = 17;
 
 class RtpDataTest : public RtpData {
  public:
-  RtpDataTest() {
-    expected_header_.reset(new RtpCastHeader());
-  }
+  RtpDataTest() { expected_header_.reset(new RtpCastHeader()); }
 
   virtual ~RtpDataTest() {}
 
@@ -41,7 +39,7 @@ class RtpDataTest : public RtpData {
 
   void VerifyCommonHeader(const RtpCastHeader& parsed_header) {
     EXPECT_EQ(expected_header_->packet_id == expected_header_->max_packet_id,
-        parsed_header.webrtc.header.markerBit);
+              parsed_header.webrtc.header.markerBit);
     EXPECT_EQ(kTestPayloadType, parsed_header.webrtc.header.payloadType);
     EXPECT_EQ(kTestSsrc, parsed_header.webrtc.header.ssrc);
     EXPECT_EQ(0, parsed_header.webrtc.header.numCSRCs);
@@ -57,6 +55,8 @@ class RtpDataTest : public RtpData {
 
  private:
   scoped_ptr<RtpCastHeader> expected_header_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtpDataTest);
 };
 
 class RtpParserTest : public ::testing::Test {
@@ -65,11 +65,6 @@ class RtpParserTest : public ::testing::Test {
     PopulateConfig();
     rtp_data_.reset(new RtpDataTest());
     rtp_parser_.reset(new RtpParser(rtp_data_.get(), config_));
-  }
-
-  virtual ~RtpParserTest() {}
-
-  virtual void SetUp() {
     cast_header_.is_reference = true;
     cast_header_.reference_frame_id = kRefFrameId;
     packet_builder_.SetSsrc(kTestSsrc);
@@ -79,6 +74,8 @@ class RtpParserTest : public ::testing::Test {
     packet_builder_.SetPayloadType(kTestPayloadType);
     packet_builder_.SetMarkerBit(true);  // Only one packet.
   }
+
+  virtual ~RtpParserTest() {}
 
   void PopulateConfig() {
     config_.payload_type = kTestPayloadType;

@@ -37,15 +37,16 @@ void ReceiverStats::GetStatistics(uint8* fraction_lost,
       diff = max_sequence_number_ - interval_min_sequence_number_ + 1;
     } else {
       diff = kMaxSequenceNumber * (interval_wrap_count_ - 1) +
-        (max_sequence_number_ - interval_min_sequence_number_ +
-            kMaxSequenceNumber + 1);
+             (max_sequence_number_ - interval_min_sequence_number_ +
+              kMaxSequenceNumber + 1);
     }
 
     if (diff < 1) {
       *fraction_lost = 0;
     } else {
-      *fraction_lost =  static_cast<uint8>((256 * (1 -
-          static_cast<float>(interval_number_packets_) / abs(diff))));
+      float tmp_ratio =
+          (1 - static_cast<float>(interval_number_packets_) / abs(diff));
+      *fraction_lost = static_cast<uint8>(256 * tmp_ratio);
     }
   }
 
@@ -55,14 +56,15 @@ void ReceiverStats::GetStatistics(uint8* fraction_lost,
   } else if (sequence_number_cycles_ == 0) {
     *cumulative_lost = expected_packets_num - total_number_packets_;
   } else {
-    *cumulative_lost = kMaxSequenceNumber * (sequence_number_cycles_ - 1) +
+    *cumulative_lost =
+        kMaxSequenceNumber * (sequence_number_cycles_ - 1) +
         (expected_packets_num - total_number_packets_ + kMaxSequenceNumber);
   }
 
   // Extended high sequence number consists of the highest seq number and the
   // number of cycles (wrap).
-  *extended_high_sequence_number = (sequence_number_cycles_ << 16) +
-      max_sequence_number_;
+  *extended_high_sequence_number =
+      (sequence_number_cycles_ << 16) + max_sequence_number_;
 
   *jitter = static_cast<uint32>(abs(jitter_.InMillisecondsRoundedUp()));
 
@@ -100,7 +102,8 @@ void ReceiverStats::UpdateStatistics(const RtpCastHeader& header) {
       base::TimeDelta::FromMilliseconds(header.webrtc.header.timestamp);
   if (total_number_packets_ > 0) {
     // Update jitter.
-    base::TimeDelta delta = (now - last_received_packet_time_) -
+    base::TimeDelta delta =
+        (now - last_received_packet_time_) -
         ((delta_new_timestamp - last_received_timestamp_) / 90);
     jitter_ += (delta - jitter_) / 16;
   }

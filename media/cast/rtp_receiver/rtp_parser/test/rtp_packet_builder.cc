@@ -27,17 +27,11 @@ RtpPacketBuilder::RtpPacketBuilder()
       payload_type_(0),
       ssrc_(0) {}
 
-void RtpPacketBuilder::SetKeyFrame(bool is_key) {
-  is_key_ = is_key;
-}
+void RtpPacketBuilder::SetKeyFrame(bool is_key) { is_key_ = is_key; }
 
-void RtpPacketBuilder::SetFrameId(uint32 frame_id) {
-  frame_id_ = frame_id;
-}
+void RtpPacketBuilder::SetFrameId(uint32 frame_id) { frame_id_ = frame_id; }
 
-void RtpPacketBuilder::SetPacketId(uint16 packet_id) {
-  packet_id_ = packet_id;
-}
+void RtpPacketBuilder::SetPacketId(uint16 packet_id) { packet_id_ = packet_id; }
 
 void RtpPacketBuilder::SetMaxPacketId(uint16 max_packet_id) {
   max_packet_id_ = max_packet_id;
@@ -57,17 +51,13 @@ void RtpPacketBuilder::SetSequenceNumber(uint16 sequence_number) {
   sequence_number_ = sequence_number;
 }
 
-void RtpPacketBuilder::SetMarkerBit(bool marker) {
-  marker_ = marker;
-}
+void RtpPacketBuilder::SetMarkerBit(bool marker) { marker_ = marker; }
 
 void RtpPacketBuilder::SetPayloadType(int payload_type) {
   payload_type_ = payload_type;
 }
 
-void RtpPacketBuilder::SetSsrc(uint32 ssrc) {
-  ssrc_ = ssrc;
-}
+void RtpPacketBuilder::SetSsrc(uint32 ssrc) { ssrc_ = ssrc; }
 
 void RtpPacketBuilder::BuildHeader(uint8* data, uint32 data_length) {
   BuildCommonHeader(data, data_length);
@@ -81,8 +71,8 @@ void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
   // Set the first 7 bytes to 0.
   memset(data, 0, kCastRtpHeaderLength);
   net::BigEndianWriter big_endian_writer(data, 56);
-  big_endian_writer.WriteU8(
-      (is_key_ ? 0x80 : 0) | (is_reference_set_ ? 0x40 : 0));
+  big_endian_writer.WriteU8((is_key_ ? 0x80 : 0) |
+                            (is_reference_set_ ? 0x40 : 0));
   big_endian_writer.WriteU8(frame_id_);
   big_endian_writer.WriteU16(packet_id_);
   big_endian_writer.WriteU16(max_packet_id_);

@@ -7,11 +7,9 @@
 namespace media {
 namespace cast {
 
-MockRtpPayloadFeedback::MockRtpPayloadFeedback() {
-}
+MockRtpPayloadFeedback::MockRtpPayloadFeedback() {}
 
-MockRtpPayloadFeedback::~MockRtpPayloadFeedback() {
-}
+MockRtpPayloadFeedback::~MockRtpPayloadFeedback() {}
 
 }  // namespace cast
 }  // namespace media

@@ -50,7 +50,8 @@ uint32 RtpReceiver::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
 
 bool RtpReceiver::ReceivedPacket(const uint8* packet, size_t length) {
   RtpCastHeader rtp_header;
-  if (!parser_->ParsePacket(packet, length, &rtp_header)) return false;
+  if (!parser_->ParsePacket(packet, length, &rtp_header))
+    return false;
 
   stats_->UpdateStatistics(rtp_header);
   return true;
@@ -60,10 +61,8 @@ void RtpReceiver::GetStatistics(uint8* fraction_lost,
                                 uint32* cumulative_lost,
                                 uint32* extended_high_sequence_number,
                                 uint32* jitter) {
-  stats_->GetStatistics(fraction_lost,
-                        cumulative_lost,
-                        extended_high_sequence_number,
-                        jitter);
+  stats_->GetStatistics(
+      fraction_lost, cumulative_lost, extended_high_sequence_number, jitter);
 }
 
 }  // namespace cast

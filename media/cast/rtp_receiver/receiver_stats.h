@@ -39,6 +39,8 @@ class ReceiverStats {
   int interval_min_sequence_number_;
   int interval_number_packets_;
   int interval_wrap_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReceiverStats);
 };
 
 }  // namespace cast

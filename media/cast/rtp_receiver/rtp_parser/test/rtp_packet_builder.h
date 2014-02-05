@@ -7,7 +7,6 @@
 #ifndef MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_TEST_RTP_PACKET_BUILDER_H_
 #define MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_TEST_RTP_PACKET_BUILDER_H_
 
-
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
@@ -43,6 +42,8 @@ class RtpPacketBuilder {
 
   void BuildCastHeader(uint8* data, uint32 data_length);
   void BuildCommonHeader(uint8* data, uint32 data_length);
+
+  DISALLOW_COPY_AND_ASSIGN(RtpPacketBuilder);
 };
 
 }  // namespace cast

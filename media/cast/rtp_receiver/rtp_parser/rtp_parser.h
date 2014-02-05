@@ -34,20 +34,23 @@ class RtpParser {
 
   ~RtpParser();
 
-  bool ParsePacket(const uint8* packet, size_t length,
+  bool ParsePacket(const uint8* packet,
+                   size_t length,
                    RtpCastHeader* rtp_header);
 
  private:
-  bool ParseCommon(const uint8* packet, size_t length,
+  bool ParseCommon(const uint8* packet,
+                   size_t length,
                    RtpCastHeader* rtp_header);
 
-  bool ParseCast(const uint8* packet, size_t length,
-                 RtpCastHeader* rtp_header);
+  bool ParseCast(const uint8* packet, size_t length, RtpCastHeader* rtp_header);
 
   RtpData* data_callback_;
   RtpParserConfig parser_config_;
   transport::FrameIdWrapHelper frame_id_wrap_helper_;
   transport::FrameIdWrapHelper reference_frame_id_wrap_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtpParser);
 };
 
 }  // namespace cast

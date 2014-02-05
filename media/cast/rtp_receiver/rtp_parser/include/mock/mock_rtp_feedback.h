@@ -14,19 +14,17 @@ namespace cast {
 class MockRtpFeedback : public RtpFeedback {
  public:
   MOCK_METHOD4(OnInitializeDecoder,
-      int32(const int8 payloadType,
-            const int frequency,
-            const uint8 channels,
-            const uint32 rate));
+               int32(const int8 payloadType,
+                     const int frequency,
+                     const uint8 channels,
+                     const uint32 rate));
 
-  MOCK_METHOD1(OnPacketTimeout,
-               void(const int32 id));
+  MOCK_METHOD1(OnPacketTimeout, void(const int32 id));
   MOCK_METHOD2(OnReceivedPacket,
                void(const int32 id, const RtpRtcpPacketType packet_type));
   MOCK_METHOD2(OnPeriodicDeadOrAlive,
                void(const int32 id, const RTPAliveType alive));
-  MOCK_METHOD2(OnIncomingSSRCChanged,
-               void(const int32 id, const uint32 ssrc));
+  MOCK_METHOD2(OnIncomingSSRCChanged, void(const int32 id, const uint32 ssrc));
   MOCK_METHOD3(OnIncomingCSRCChanged,
                void(const int32 id, const uint32 csrc, const bool added));
 };

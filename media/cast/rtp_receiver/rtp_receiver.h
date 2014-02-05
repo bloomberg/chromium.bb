@@ -48,6 +48,8 @@ class RtpReceiver {
  private:
   scoped_ptr<ReceiverStats> stats_;
   scoped_ptr<RtpParser> parser_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtpReceiver);
 };
 
 }  // namespace cast

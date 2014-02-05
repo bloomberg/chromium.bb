@@ -24,15 +24,19 @@ RtpParser::RtpParser(RtpData* incoming_payload_callback,
 
 RtpParser::~RtpParser() {}
 
-bool RtpParser::ParsePacket(const uint8* packet, size_t length,
+bool RtpParser::ParsePacket(const uint8* packet,
+                            size_t length,
                             RtpCastHeader* rtp_header) {
-  if (length == 0) return false;
+  if (length == 0)
+    return false;
   // Get RTP general header.
-  if (!ParseCommon(packet, length, rtp_header)) return false;
+  if (!ParseCommon(packet, length, rtp_header))
+    return false;
   if (rtp_header->webrtc.header.payloadType == parser_config_.payload_type &&
-    rtp_header->webrtc.header.ssrc == parser_config_.ssrc) {
+      rtp_header->webrtc.header.ssrc == parser_config_.ssrc) {
     return ParseCast(packet + kRtpCommonHeaderLength,
-        length - kRtpCommonHeaderLength, rtp_header);
+                     length - kRtpCommonHeaderLength,
+                     rtp_header);
   }
   // Not a valid payload type / ssrc combination.
   return false;
@@ -41,9 +45,11 @@ bool RtpParser::ParsePacket(const uint8* packet, size_t length,
 bool RtpParser::ParseCommon(const uint8* packet,
                             size_t length,
                             RtpCastHeader* rtp_header) {
-  if (length < kRtpCommonHeaderLength) return false;
+  if (length < kRtpCommonHeaderLength)
+    return false;
   uint8 version = packet[0] >> 6;
-  if (version != 2) return false;
+  if (version != 2)
+    return false;
   uint8 cc = packet[0] & 0x0f;
   bool marker = ((packet[1] & 0x80) != 0);
   int payload_type = packet[1] & 0x7f;
@@ -55,14 +61,15 @@ bool RtpParser::ParseCommon(const uint8* packet,
   big_endian_reader.ReadU32(&rtp_timestamp);
   big_endian_reader.ReadU32(&ssrc);
 
-  if (ssrc != parser_config_.ssrc) return false;
+  if (ssrc != parser_config_.ssrc)
+    return false;
 
-  rtp_header->webrtc.header.markerBit      = marker;
-  rtp_header->webrtc.header.payloadType    = payload_type;
+  rtp_header->webrtc.header.markerBit = marker;
+  rtp_header->webrtc.header.payloadType = payload_type;
   rtp_header->webrtc.header.sequenceNumber = sequence_number;
-  rtp_header->webrtc.header.timestamp      = rtp_timestamp;
-  rtp_header->webrtc.header.ssrc           = ssrc;
-  rtp_header->webrtc.header.numCSRCs       = cc;
+  rtp_header->webrtc.header.timestamp = rtp_timestamp;
+  rtp_header->webrtc.header.ssrc = ssrc;
+  rtp_header->webrtc.header.numCSRCs = cc;
 
   uint8 csrc_octs = cc * 4;
   rtp_header->webrtc.type.Audio.numEnergy = rtp_header->webrtc.header.numCSRCs;
@@ -76,7 +83,8 @@ bool RtpParser::ParseCommon(const uint8* packet,
 bool RtpParser::ParseCast(const uint8* packet,
                           size_t length,
                           RtpCastHeader* rtp_header) {
-  if (length < kRtpCastHeaderLength) return false;
+  if (length < kRtpCastHeaderLength)
+    return false;
 
   // Extract header.
   const uint8* data_ptr = packet;
@@ -99,7 +107,8 @@ bool RtpParser::ParseCast(const uint8* packet,
     data_length -= kRtpCastHeaderLength - 1;
   }
 
-  if (rtp_header->max_packet_id < rtp_header->packet_id) return false;
+  if (rtp_header->max_packet_id < rtp_header->packet_id)
+    return false;
 
   data_callback_->OnReceivedPayloadData(data_ptr, data_length, rtp_header);
   return true;
