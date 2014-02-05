@@ -57,5 +57,6 @@
   ],
   'includes': [
     'base.isolate',
+    'base_prefs.isolate',
   ],
 }
