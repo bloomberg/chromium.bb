@@ -8,7 +8,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "ui/gl/android/surface_texture.h"
-#include "ui/gl/gl_surface.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -177,9 +176,6 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
 // TODO(boliu): Deduplicate this with synchronous_compositor_output_surface.cc.
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 SynchronousCompositorFactoryImpl::CreateOffscreenContext() {
-  if (!gfx::GLSurface::InitializeOneOff())
-    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
-
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   blink::WebGraphicsContext3D::Attributes attributes;

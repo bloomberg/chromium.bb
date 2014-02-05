@@ -32,9 +32,6 @@ namespace {
 scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
 CreateWebGraphicsContext3D(scoped_refptr<gfx::GLSurface> surface) {
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  if (!gfx::GLSurface::InitializeOneOff())
-    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
-
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   blink::WebGraphicsContext3D::Attributes attributes;
