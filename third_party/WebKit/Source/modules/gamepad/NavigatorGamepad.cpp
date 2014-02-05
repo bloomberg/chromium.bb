@@ -42,7 +42,7 @@ static void sampleGamepads(GamepadList* into)
     for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
         blink::WebGamepad& webGamepad = gamepads.items[i];
         if (i < gamepads.length && webGamepad.connected) {
-            RefPtr<Gamepad> gamepad = into->item(i);
+            RefPtrWillBeRawPtr<Gamepad> gamepad = into->item(i);
             if (!gamepad)
                 gamepad = Gamepad::create();
             gamepad->id(webGamepad.id);

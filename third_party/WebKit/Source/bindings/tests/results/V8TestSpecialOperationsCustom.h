@@ -37,6 +37,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -48,8 +49,8 @@ public:
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
-    static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static void derefObject(void*);
     static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
@@ -139,25 +140,25 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestSpecialOp
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr<TestSpecialOperationsCustom > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(PassRefPtr<TestSpecialOperationsCustom> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestSpecialOperationsCustom > impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestSpecialOperationsCustom> impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestSpecialOperationsCustom > impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestSpecialOperationsCustom> impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestSpecialOperationsCustom > impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestSpecialOperationsCustom> impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }

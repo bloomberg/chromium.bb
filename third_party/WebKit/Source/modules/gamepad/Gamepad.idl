@@ -24,6 +24,7 @@
  */
 
 [
+    GarbageCollected,
     NoInterfaceObject
 ] interface Gamepad {
     readonly attribute DOMString id;

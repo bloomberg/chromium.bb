@@ -24,6 +24,7 @@
  */
 
 [
+    GarbageCollected,
     NoInterfaceObject
 ] interface GamepadList {
     readonly attribute unsigned long length;
