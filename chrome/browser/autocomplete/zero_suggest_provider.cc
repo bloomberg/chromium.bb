@@ -183,8 +183,8 @@ void ZeroSuggestProvider::StartZeroSuggest(
 ZeroSuggestProvider::ZeroSuggestProvider(
   AutocompleteProviderListener* listener,
   Profile* profile)
-    : AutocompleteProvider(listener, profile,
-          AutocompleteProvider::TYPE_ZERO_SUGGEST),
+    : BaseSearchProvider(listener, profile,
+                         AutocompleteProvider::TYPE_ZERO_SUGGEST),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       have_pending_request_(false),
       verbatim_relevance_(kDefaultVerbatimZeroSuggestRelevance),
@@ -196,11 +196,10 @@ ZeroSuggestProvider::ZeroSuggestProvider(
 ZeroSuggestProvider::~ZeroSuggestProvider() {
 }
 
-void ZeroSuggestProvider::FillResults(
-    const base::Value& root_val,
-    int* verbatim_relevance,
-    SearchProvider::SuggestResults* suggest_results,
-    SearchProvider::NavigationResults* navigation_results) {
+void ZeroSuggestProvider::FillResults(const base::Value& root_val,
+                                      int* verbatim_relevance,
+                                      SuggestResults* suggest_results,
+                                      NavigationResults* navigation_results) {
   base::string16 query;
   const base::ListValue* root_list = NULL;
   const base::ListValue* results = NULL;
@@ -267,12 +266,12 @@ void ZeroSuggestProvider::FillResults(
       if (url.is_valid()) {
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
-        navigation_results->push_back(SearchProvider::NavigationResult(
+        navigation_results->push_back(NavigationResult(
             *this, url, title, false, relevance, relevances != NULL,
             current_query_string16, languages));
       }
     } else {
-      suggest_results->push_back(SearchProvider::SuggestResult(
+      suggest_results->push_back(SuggestResult(
           result, AutocompleteMatchType::SEARCH_SUGGEST, result,
           base::string16(), std::string(), std::string(), false, relevance,
           relevances != NULL, false, current_query_string16));
@@ -281,9 +280,9 @@ void ZeroSuggestProvider::FillResults(
 }
 
 void ZeroSuggestProvider::AddSuggestResultsToMap(
-    const SearchProvider::SuggestResults& results,
+    const SuggestResults& results,
     const TemplateURL* template_url,
-    SearchProvider::MatchMap* map) {
+    MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i) {
     AddMatchToMap(results[i].relevance(), AutocompleteMatchType::SEARCH_SUGGEST,
                   template_url, results[i].suggestion(), i, map);
@@ -295,9 +294,9 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
                                         const TemplateURL* template_url,
                                         const base::string16& query_string,
                                         int accepted_suggestion,
-                                        SearchProvider::MatchMap* map) {
+                                        MatchMap* map) {
   // Pass in query_string as the input_text to avoid bolding.
-  SearchProvider::SuggestResult suggestion(
+  SuggestResult suggestion(
       query_string, type, query_string, base::string16(), std::string(),
       std::string(), false, relevance, true, false, query_string);
   // TODO(samarth|melevin): use the actual omnibox margin here as well instead
@@ -311,9 +310,9 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
-  SearchProvider::MatchKey match_key(
+  MatchKey match_key(
       std::make_pair(base::i18n::ToLower(query_string), std::string()));
-  const std::pair<SearchProvider::MatchMap::iterator, bool> i(map->insert(
+  const std::pair<MatchMap::iterator, bool> i(map->insert(
       std::make_pair(match_key, match)));
   // NOTE: We purposefully do a direct relevance comparison here instead of
   // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
@@ -328,7 +327,7 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
 }
 
 AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
-    const SearchProvider::NavigationResult& navigation) {
+    const NavigationResult& navigation) {
   AutocompleteMatch match(this, navigation.relevance(), false,
                           AutocompleteMatchType::NAVSUGGEST);
   match.destination_url = navigation.url();
@@ -385,7 +384,7 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
 }
 
 void ZeroSuggestProvider::ParseSuggestResults(const base::Value& root_val) {
-  SearchProvider::SuggestResults suggest_results;
+  SuggestResults suggest_results;
   FillResults(root_val, &verbatim_relevance_,
               &suggest_results, &navigation_results_);
 
@@ -433,8 +432,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
         profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     for (size_t i = 0; i < most_visited_urls_.size(); i++) {
       const history::MostVisitedURL& url = most_visited_urls_[i];
-      SearchProvider::NavigationResult nav(
-          *this, url.url, url.title, false, relevance, true,
+      NavigationResult nav(*this, url.url, url.title, false, relevance, true,
           current_query_string16, languages);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;
@@ -449,12 +447,12 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   // current typing in the omnibox.
   matches_.push_back(current_url_match_);
 
-  for (SearchProvider::MatchMap::const_iterator it(query_matches_map_.begin());
+  for (MatchMap::const_iterator it(query_matches_map_.begin());
        it != query_matches_map_.end(); ++it)
     matches_.push_back(it->second);
 
-  for (SearchProvider::NavigationResults::const_iterator it(
-       navigation_results_.begin()); it != navigation_results_.end(); ++it)
+  for (NavigationResults::const_iterator it(navigation_results_.begin());
+       it != navigation_results_.end(); ++it)
     matches_.push_back(NavigationToMatch(*it));
 }
 

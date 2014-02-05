@@ -21,13 +21,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/base_search_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-class AutocompleteInput;
-class GURL;
 class TemplateURLService;
 
 namespace base {
@@ -49,8 +45,7 @@ class URLFetcher;
 // TODO(jered): Consider deleting this class and building this functionality
 // into SearchProvider after dogfood and after we break the association between
 // omnibox text and suggestions.
-class ZeroSuggestProvider : public AutocompleteProvider,
-                            public net::URLFetcherDelegate {
+class ZeroSuggestProvider : public BaseSearchProvider {
  public:
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderListener* listener,
@@ -99,14 +94,14 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   // |verbatim_relevance|.
   void FillResults(const base::Value& root_val,
                    int* verbatim_relevance,
-                   SearchProvider::SuggestResults* suggest_results,
-                   SearchProvider::NavigationResults* navigation_results);
+                   SuggestResults* suggest_results,
+                   NavigationResults* navigation_results);
 
   // Creates AutocompleteMatches to search |template_url| for "<suggestion>" for
   // all suggestions in |results|, and adds them to |map|.
-  void AddSuggestResultsToMap(const SearchProvider::SuggestResults& results,
+  void AddSuggestResultsToMap(const SuggestResults& results,
                               const TemplateURL* template_url,
-                              SearchProvider::MatchMap* map);
+                              MatchMap* map);
 
   // Creates an AutocompleteMatch with the provided |relevance| and |type| to
   // search |template_url| for |query_string|.  |accepted_suggestion| will be
@@ -119,11 +114,10 @@ class ZeroSuggestProvider : public AutocompleteProvider,
                      const TemplateURL* template_url,
                      const base::string16& query_string,
                      int accepted_suggestion,
-                     SearchProvider::MatchMap* map);
+                     MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
-  AutocompleteMatch NavigationToMatch(
-      const SearchProvider::NavigationResult& navigation);
+  AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);
 
   // Fetches zero-suggest suggestions by sending a request using |suggest_url|.
   void Run(const GURL& suggest_url);
@@ -167,9 +161,9 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   // Suggestion for the current URL.
   AutocompleteMatch current_url_match_;
   // Navigation suggestions for the most recent ZeroSuggest input URL.
-  SearchProvider::NavigationResults navigation_results_;
+  NavigationResults navigation_results_;
   // Query suggestions for the most recent ZeroSuggest input URL.
-  SearchProvider::MatchMap query_matches_map_;
+  MatchMap query_matches_map_;
   // The relevance score for the URL of the current page.
   int verbatim_relevance_;
 
