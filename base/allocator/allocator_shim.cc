@@ -8,7 +8,6 @@
 #include "base/allocator/allocator_extension_thunks.h"
 #include "base/profiler/alternate_timer.h"
 #include "base/sysinfo.h"
-#include "jemalloc.h"
 
 // This shim make it possible to use different allocators via an environment
 // variable set before running the program. This may reduce the
@@ -33,8 +32,7 @@ static int new_mode = 0;
 
 typedef enum {
   TCMALLOC,    // TCMalloc is the default allocator.
-  JEMALLOC,    // JEMalloc.
-  WINHEAP,  // Windows Heap (standard Windows allocator).
+  WINHEAP,     // Windows Heap (standard Windows allocator).
   WINLFH,      // Windows LFH Heap.
 } Allocator;
 
@@ -60,16 +58,6 @@ static const char secondary_name[] = "CHROME_ALLOCATOR_2";
 // possible.
 #include "debugallocation_shim.cc"
 #include "win_allocator.cc"
-
-// Forward declarations from jemalloc.
-extern "C" {
-void* je_malloc(size_t s);
-void* je_realloc(void* p, size_t s);
-void je_free(void* s);
-size_t je_msize(void* p);
-bool je_malloc_init_hard();
-void* je_memalign(size_t a, size_t s);
-}
 
 // Call the new handler, if one has been set.
 // Returns true on successfully calling the handler, false otherwise.
@@ -118,9 +106,6 @@ void* malloc(size_t size) __THROW {
   void* ptr;
   for (;;) {
     switch (allocator) {
-      case JEMALLOC:
-        ptr = je_malloc(size);
-        break;
       case WINHEAP:
       case WINLFH:
         ptr = win_heap_malloc(size);
@@ -141,9 +126,6 @@ void* malloc(size_t size) __THROW {
 
 void free(void* p) __THROW {
   switch (allocator) {
-    case JEMALLOC:
-      je_free(p);
-      return;
     case WINHEAP:
     case WINLFH:
       win_heap_free(p);
@@ -164,9 +146,6 @@ void* realloc(void* ptr, size_t size) __THROW {
   void* new_ptr;
   for (;;) {
     switch (allocator) {
-      case JEMALLOC:
-        new_ptr = je_realloc(ptr, size);
-        break;
       case WINHEAP:
       case WINLFH:
         new_ptr = win_heap_realloc(ptr, size);
@@ -191,9 +170,6 @@ void* realloc(void* ptr, size_t size) __THROW {
 // TODO(mbelshe): Implement this for other allocators.
 void malloc_stats(void) __THROW {
   switch (allocator) {
-    case JEMALLOC:
-      // No stats.
-      return;
     case WINHEAP:
     case WINLFH:
       // No stats.
@@ -208,8 +184,6 @@ void malloc_stats(void) __THROW {
 
 extern "C" size_t _msize(void* p) {
   switch (allocator) {
-    case JEMALLOC:
-      return je_msize(p);
     case WINHEAP:
     case WINLFH:
       return win_heap_msize(p);
@@ -226,7 +200,6 @@ extern "C" intptr_t _get_heap_handle() {
 
 static bool get_allocator_waste_size_thunk(size_t* size) {
   switch (allocator) {
-    case JEMALLOC:
     case WINHEAP:
     case WINLFH:
       // TODO(alexeif): Implement for allocators other than tcmalloc.
@@ -260,9 +233,7 @@ extern "C" int _heap_init() {
 #if !(defined(ADDRESS_SANITIZER) && defined(OS_WIN))
   const char* environment_value = GetenvBeforeMain(primary_name);
   if (environment_value) {
-    if (!stricmp(environment_value, "jemalloc"))
-      allocator = JEMALLOC;
-    else if (!stricmp(environment_value, "winheap"))
+    if (!stricmp(environment_value, "winheap"))
       allocator = WINHEAP;
     else if (!stricmp(environment_value, "winlfh"))
       allocator = WINLFH;
@@ -272,8 +243,6 @@ extern "C" int _heap_init() {
 #endif
 
   switch (allocator) {
-    case JEMALLOC:
-      return je_malloc_init_hard() ? 0 : 1;
     case WINHEAP:
       return win_heap_init(false) ? 1 : 0;
     case WINLFH:
@@ -331,9 +300,6 @@ void* _aligned_malloc(size_t size, size_t alignment) {
   void* ptr;
   for (;;) {
     switch (allocator) {
-      case JEMALLOC:
-        ptr = je_memalign(alignment, size);
-        break;
       case WINHEAP:
       case WINLFH:
         ptr = win_heap_memalign(alignment, size);
@@ -357,13 +323,10 @@ void* _aligned_malloc(size_t size, size_t alignment) {
 }
 
 void _aligned_free(void* p) {
-  // Both JEMalloc and TCMalloc return pointers from memalign() that are safe to
-  // use with free().  Pointers allocated with win_heap_memalign() MUST be freed
-  // via win_heap_memalign_free() since the aligned pointer is not the real one.
+  // TCMalloc returns pointers from memalign() that are safe to use with free().
+  // Pointers allocated with win_heap_memalign() MUST be freed via
+  // win_heap_memalign_free() since the aligned pointer is not the real one.
   switch (allocator) {
-    case JEMALLOC:
-      je_free(p);
-      return;
     case WINHEAP:
     case WINLFH:
       win_heap_memalign_free(p);
