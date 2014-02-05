@@ -1436,7 +1436,7 @@ void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
     InspectorInstrumentation::didClearWindowObjectInMainWorld(m_frame);
 
     Vector<RefPtr<DOMWrapperWorld> > worlds;
-    DOMWrapperWorld::getAllWorldsInMainThread(worlds);
+    DOMWrapperWorld::getAllWorlds(worlds);
     for (size_t i = 0; i < worlds.size(); ++i)
         m_client->dispatchDidClearWindowObjectInWorld(worlds[i].get());
 }

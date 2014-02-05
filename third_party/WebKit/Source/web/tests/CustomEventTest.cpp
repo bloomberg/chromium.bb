@@ -64,7 +64,7 @@ public:
     {
         EXPECT_EQ(event->type(), "blah");
 
-        v8::Local<v8::Context> v8Context = WebCore::toV8Context(context, DOMWrapperWorld::mainWorld());
+        v8::Local<v8::Context> v8Context = WebCore::toV8Context(context, mainThreadNormalWorld());
         v8::Isolate* isolate = v8Context->GetIsolate();
         v8::Context::Scope scope(v8Context);
         v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);

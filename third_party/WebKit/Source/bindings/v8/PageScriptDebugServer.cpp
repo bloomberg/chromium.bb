@@ -107,7 +107,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     }
     m_listenersMap.set(page, listener);
 
-    V8WindowShell* shell = scriptController.existingWindowShell(DOMWrapperWorld::mainWorld());
+    V8WindowShell* shell = scriptController.existingWindowShell(mainThreadNormalWorld());
     if (!shell || !shell->isContextInitialized())
         return;
     v8::Local<v8::Context> context = shell->context();

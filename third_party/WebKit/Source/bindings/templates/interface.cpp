@@ -1145,7 +1145,7 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
         return wrapper;
     if (!isolatedWorldForEnteredContext(isolate)) {
         if (Frame* frame = impl->frame())
-            frame->script().windowShell(DOMWrapperWorld::mainWorld())->updateDocumentWrapper(wrapper);
+            frame->script().windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
     }
     {% endif %}
     return wrapper;
