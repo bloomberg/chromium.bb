@@ -97,6 +97,10 @@ class ComponentObserver {
 // |pk_hash| is the SHA256 hash of the component's public key. If the component
 // is to be installed then version should be "0" or "0.0", else it should be
 // the current version. |observer|, |fingerprint|, and |name| are optional.
+// |allow_background_download| specifies that the component can be background
+// downloaded in some cases. The default for this value is |true| and the value
+// can be overriden at the registration time. This is a temporary change until
+// the issue 340448 is resolved.
 struct CrxComponent {
   std::vector<uint8> pk_hash;
   ComponentInstaller* installer;
@@ -104,6 +108,7 @@ struct CrxComponent {
   Version version;
   std::string fingerprint;
   std::string name;
+  bool allow_background_download;
   CrxComponent();
   ~CrxComponent();
 };

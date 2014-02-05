@@ -84,7 +84,8 @@ CrxUpdateItem::~CrxUpdateItem() {
 
 CrxComponent::CrxComponent()
     : installer(NULL),
-      observer(NULL) {
+      observer(NULL),
+      allow_background_download(true) {
 }
 
 CrxComponent::~CrxComponent() {
@@ -646,17 +647,22 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
   crx_context->installer = workitem->component.installer;
   crx_context->fingerprint = workitem->next_fp;
   const std::vector<GURL>* urls = NULL;
+  bool allow_background_download = false;
   if (CanTryDiffUpdate(workitem, *config_)) {
     urls = &workitem->crx_diffurls;
     ChangeItemState(workitem, CrxUpdateItem::kDownloadingDiff);
   } else {
+    // Background downloads are enabled only for selected components and
+    // only for full downloads (see issue 340448).
+    allow_background_download = workitem->component.allow_background_download;
     urls = &workitem->crx_urls;
     ChangeItemState(workitem, CrxUpdateItem::kDownloading);
   }
 
   // On demand component updates are always downloaded in foreground.
-  const bool is_background_download = !workitem->on_demand &&
-                                       config_->UseBackgroundDownloader();
+  const bool is_background_download =
+      !workitem->on_demand && allow_background_download &&
+      config_->UseBackgroundDownloader();
 
   crx_downloader_.reset(CrxDownloader::Create(
       is_background_download,
