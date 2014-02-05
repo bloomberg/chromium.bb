@@ -157,6 +157,7 @@ class JobScheduler
   // Adds a AddNewDirectory operation to the queue.
   void AddNewDirectory(const std::string& parent_resource_id,
                        const std::string& directory_title,
+                       const ClientContext& context,
                        const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a DownloadFile operation to the queue.
@@ -191,14 +192,6 @@ class JobScheduler
       const drive::DriveUploader::UploadExistingFileOptions& options,
       const ClientContext& context,
       const google_apis::GetResourceEntryCallback& callback);
-
-  // Adds a CreateFile operation to the queue.
-  void CreateFile(const std::string& parent_resource_id,
-                  const base::FilePath& drive_file_path,
-                  const std::string& title,
-                  const std::string& content_type,
-                  const ClientContext& context,
-                  const google_apis::GetResourceEntryCallback& callback);
 
   // Adds a GetResourceListInDirectoryByWapi operation to the queue.
   // |callback| must not be null.

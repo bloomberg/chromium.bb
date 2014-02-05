@@ -566,10 +566,12 @@ void JobScheduler::RemoveResourceFromDirectory(
 void JobScheduler::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
+    const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobEntry* new_job = CreateNewJob(TYPE_ADD_NEW_DIRECTORY);
+  new_job->context = context;
   new_job->task = base::Bind(
       &DriveServiceInterface::AddNewDirectory,
       base::Unretained(drive_service_),
@@ -687,43 +689,6 @@ void JobScheduler::UploadExistingFile(
                                         weak_ptr_factory_.GetWeakPtr(),
                                         new_job->job_info.job_id);
   new_job->task = base::Bind(&RunUploadExistingFile, uploader_.get(), params);
-  new_job->abort_callback = CreateErrorRunCallback(callback);
-  StartJob(new_job);
-}
-
-void JobScheduler::CreateFile(
-    const std::string& parent_resource_id,
-    const base::FilePath& drive_file_path,
-    const std::string& title,
-    const std::string& content_type,
-    const ClientContext& context,
-    const google_apis::GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const base::FilePath kDevNull(FILE_PATH_LITERAL("/dev/null"));
-
-  JobEntry* new_job = CreateNewJob(TYPE_CREATE_FILE);
-  new_job->job_info.file_path = drive_file_path;
-  new_job->context = context;
-
-  UploadNewFileParams params;
-  params.parent_resource_id = parent_resource_id;
-  params.local_file_path = kDevNull;  // Upload an empty file.
-  params.title = title;
-  params.content_type = content_type;
-
-  ResumeUploadParams resume_params;
-  resume_params.local_file_path = params.local_file_path;
-  resume_params.content_type = params.content_type;
-
-  params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               new_job->job_info.job_id,
-                               resume_params,
-                               callback);
-  params.progress_callback = google_apis::ProgressCallback();
-
-  new_job->task = base::Bind(&RunUploadNewFile, uploader_.get(), params);
   new_job->abort_callback = CreateErrorRunCallback(callback);
   StartJob(new_job);
 }

@@ -308,6 +308,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     scheduler_->AddNewDirectory(
         local_state->parent_entry.resource_id(),
         local_state->entry.title(),
+        context,
         base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                    weak_ptr_factory_.GetWeakPtr(),
                    context,

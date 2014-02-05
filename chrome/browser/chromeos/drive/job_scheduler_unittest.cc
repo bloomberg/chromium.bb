@@ -504,6 +504,7 @@ TEST_F(JobSchedulerTest, AddNewDirectory) {
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),  // Root directory.
       "New Directory",
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 
@@ -512,18 +513,14 @@ TEST_F(JobSchedulerTest, AddNewDirectory) {
 }
 
 TEST_F(JobSchedulerTest, PriorityHandling) {
-  const base::FilePath kDummyFilePath(FILE_PATH_LITERAL("dummy"));
-
   // Saturate the metadata job queue with uninteresting jobs to prevent
   // following jobs from starting.
   google_apis::GDataErrorCode error_dontcare = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> entry_dontcare;
   for (int i = 0; i < GetMetadataQueueMaxJobCount(); ++i) {
-    scheduler_->CreateFile(
-        fake_drive_service_->GetRootResourceId(),
-        kDummyFilePath,
-        base::StringPrintf("uninteresting file %d", i),
-        "text/plain",
+    std::string resource_id("file:2_file_resource_id");
+    scheduler_->GetResourceEntry(
+        resource_id,
         ClientContext(USER_INITIATED),
         google_apis::test_util::CreateCopyResultCallback(&error_dontcare,
                                                          &entry_dontcare));
@@ -536,32 +533,24 @@ TEST_F(JobSchedulerTest, PriorityHandling) {
   std::string title_4("new file 4");
   std::vector<std::string> titles;
 
-  scheduler_->CreateFile(
+  scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
-      kDummyFilePath,
       title_1,
-      "text/plain",
       ClientContext(USER_INITIATED),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
-  scheduler_->CreateFile(
+  scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
-      kDummyFilePath,
       title_2,
-      "text/plain",
       ClientContext(BACKGROUND),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
-  scheduler_->CreateFile(
+  scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
-      kDummyFilePath,
       title_3,
-      "text/plain",
       ClientContext(BACKGROUND),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
-  scheduler_->CreateFile(
+  scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
-      kDummyFilePath,
       title_4,
-      "text/plain",
       ClientContext(USER_INITIATED),
       base::Bind(&CopyTitleFromGetResourceEntryCallback, &titles));
 
@@ -577,13 +566,12 @@ TEST_F(JobSchedulerTest, PriorityHandling) {
 TEST_F(JobSchedulerTest, NoConnectionUserInitiated) {
   ConnectToNone();
 
+  std::string resource_id("file:2_file_resource_id");
+
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> entry;
-  scheduler_->CreateFile(
-      fake_drive_service_->GetRootResourceId(),
-      base::FilePath(FILE_PATH_LITERAL("dummy")),
-      "title",
-      "text/plain",
+  scheduler_->GetResourceEntry(
+      resource_id,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -598,11 +586,8 @@ TEST_F(JobSchedulerTest, NoConnectionBackground) {
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> entry;
-  scheduler_->CreateFile(
-      fake_drive_service_->GetRootResourceId(),
-      base::FilePath(FILE_PATH_LITERAL("dummy")),
-      "title",
-      "text/plain",
+  scheduler_->GetResourceEntry(
+      resource_id,
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
@@ -616,7 +601,6 @@ TEST_F(JobSchedulerTest, NoConnectionBackground) {
 
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(entry);
-  EXPECT_EQ("title", entry->title());
 }
 
 TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
@@ -838,6 +822,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),
       "New Directory",
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   expected_types.insert(TYPE_GET_ABOUT_RESOURCE);
   scheduler_->GetAboutResource(
