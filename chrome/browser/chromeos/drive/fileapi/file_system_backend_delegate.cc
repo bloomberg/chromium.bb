@@ -9,10 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/fileapi/async_file_util.h"
+#include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_reader_impl.h"
 #include "chrome/browser/chromeos/drive/fileapi/webkit_file_stream_writer_impl.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util.h"
@@ -23,12 +22,8 @@ using content::BrowserThread;
 
 namespace drive {
 
-FileSystemBackendDelegate::FileSystemBackendDelegate(
-    content::BrowserContext* browser_context)
-    : profile_id_(Profile::FromBrowserContext(browser_context)),
-      async_file_util_(new internal::AsyncFileUtil(
-          base::Bind(&util::GetFileSystemByProfileId, profile_id_))) {
-  DCHECK(profile_id_);
+FileSystemBackendDelegate::FileSystemBackendDelegate()
+    : async_file_util_(new internal::AsyncFileUtil) {
 }
 
 FileSystemBackendDelegate::~FileSystemBackendDelegate() {
@@ -56,7 +51,7 @@ FileSystemBackendDelegate::CreateFileStreamReader(
 
   return scoped_ptr<webkit_blob::FileStreamReader>(
       new internal::WebkitFileStreamReaderImpl(
-          base::Bind(&util::GetFileSystemByProfileId, profile_id_),
+          base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
           context->default_file_task_runner(),
           file_path, offset, expected_modification_time));
 }
@@ -76,7 +71,7 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
 
   return scoped_ptr<fileapi::FileStreamWriter>(
       new internal::WebkitFileStreamWriterImpl(
-          base::Bind(&util::GetFileSystemByProfileId, profile_id_),
+          base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
           context->default_file_task_runner(),file_path, offset));
 }
 

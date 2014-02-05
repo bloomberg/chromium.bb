@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,7 +47,7 @@ void PostFileSystemCallback(
 
 // Runs CreateOrOpenFile callback based on the given |error| and |file|.
 void RunCreateOrOpenFileCallback(
-    const AsyncFileUtil::FileSystemGetter& file_system_getter,
+    const fileapi_internal::FileSystemGetter& file_system_getter,
     const base::FilePath& file_path,
     const AsyncFileUtil::CreateOrOpenCallback& callback,
     base::File::Error error,
@@ -114,8 +115,7 @@ void RunCreateSnapshotFileCallback(
 
 }  // namespace
 
-AsyncFileUtil::AsyncFileUtil(const FileSystemGetter& file_system_getter)
-    : file_system_getter_(file_system_getter) {
+AsyncFileUtil::AsyncFileUtil() {
 }
 
 AsyncFileUtil::~AsyncFileUtil() {
@@ -137,13 +137,15 @@ void AsyncFileUtil::CreateOrOpen(
     return;
   }
 
+  const fileapi_internal::FileSystemGetter getter =
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url);
   PostFileSystemCallback(
-      file_system_getter_,
+      getter,
       base::Bind(&fileapi_internal::OpenFile,
                  file_path, file_flags,
                  google_apis::CreateRelayCallback(
                      base::Bind(&RunCreateOrOpenFileCallback,
-                                file_system_getter_, file_path, callback))),
+                                getter, file_path, callback))),
       base::Bind(&RunCreateOrOpenFileCallbackOnError,
                  callback, base::File::FILE_ERROR_FAILED));
 }
@@ -161,7 +163,7 @@ void AsyncFileUtil::EnsureFileExists(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::CreateFile,
                  file_path, true /* is_exlusive */,
                  google_apis::CreateRelayCallback(
@@ -184,7 +186,7 @@ void AsyncFileUtil::CreateDirectory(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::CreateDirectory,
                  file_path, exclusive, recursive,
                  google_apis::CreateRelayCallback(callback)),
@@ -204,7 +206,7 @@ void AsyncFileUtil::GetFileInfo(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::GetFileInfo,
                  file_path, google_apis::CreateRelayCallback(callback)),
       base::Bind(callback, base::File::FILE_ERROR_FAILED,
@@ -224,7 +226,7 @@ void AsyncFileUtil::ReadDirectory(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::ReadDirectory,
                  file_path, google_apis::CreateRelayCallback(callback)),
       base::Bind(callback, base::File::FILE_ERROR_FAILED,
@@ -246,7 +248,7 @@ void AsyncFileUtil::Touch(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::TouchFile,
                  file_path, last_access_time, last_modified_time,
                  google_apis::CreateRelayCallback(callback)),
@@ -267,7 +269,7 @@ void AsyncFileUtil::Truncate(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::Truncate,
                  file_path, length, google_apis::CreateRelayCallback(callback)),
       base::Bind(callback, base::File::FILE_ERROR_FAILED));
@@ -289,8 +291,14 @@ void AsyncFileUtil::CopyFileLocal(
     return;
   }
 
+  // TODO(kinaba): crbug.com/339794.
+  // Assumption here is that |src_url| and |dest_url| are always from the same
+  // profile. This indeed holds as long as we mount different profiles onto
+  // different mount point. Hence, using GetFileSystemFromUrl(dest_url) is safe.
+  // This will change after we introduce cross-profile sharing etc., and we
+  // need to deal with files from different profiles here.
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
       base::Bind(
           &fileapi_internal::Copy,
           src_path, dest_path,
@@ -314,8 +322,11 @@ void AsyncFileUtil::MoveFileLocal(
     return;
   }
 
+  // TODO(kinaba): see the comment in CopyFileLocal(). |src_url| and |dest_url|
+  // always return the same FileSystem by GetFileSystemFromUrl, but we need to
+  // change it in order to support cross-profile file sharing etc.
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
       base::Bind(
           &fileapi_internal::Move,
           src_path, dest_path,
@@ -338,7 +349,7 @@ void AsyncFileUtil::CopyInForeignFile(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
       base::Bind(&fileapi_internal::CopyInForeignFile,
                  src_file_path, dest_path,
                  google_apis::CreateRelayCallback(callback)),
@@ -358,7 +369,7 @@ void AsyncFileUtil::DeleteFile(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::Remove,
                  file_path, false /* not recursive */,
                  google_apis::CreateRelayCallback(callback)),
@@ -378,7 +389,7 @@ void AsyncFileUtil::DeleteDirectory(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::Remove,
                  file_path, false /* not recursive */,
                  google_apis::CreateRelayCallback(callback)),
@@ -398,7 +409,7 @@ void AsyncFileUtil::DeleteRecursively(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::Remove,
                  file_path, true /* recursive */,
                  google_apis::CreateRelayCallback(callback)),
@@ -421,7 +432,7 @@ void AsyncFileUtil::CreateSnapshotFile(
   }
 
   PostFileSystemCallback(
-      file_system_getter_,
+      base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
       base::Bind(&fileapi_internal::CreateSnapshotFile,
                  file_path,
                  google_apis::CreateRelayCallback(

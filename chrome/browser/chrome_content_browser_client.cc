@@ -2555,7 +2555,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   DCHECK(external_mount_points);
   chromeos::FileSystemBackend* backend =
       new chromeos::FileSystemBackend(
-          new drive::FileSystemBackendDelegate(browser_context),
+          new drive::FileSystemBackendDelegate,
           browser_context->GetSpecialStoragePolicy(),
           external_mount_points,
           fileapi::ExternalMountPoints::GetSystemInstance());

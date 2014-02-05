@@ -18,13 +18,7 @@ namespace internal {
 // The implementation of fileapi::AsyncFileUtil for Drive File System.
 class AsyncFileUtil : public fileapi::AsyncFileUtil {
  public:
-  // Callback to return the FileSystemInterface instance. This is an
-  // injecting point for testing.
-  // Note that the callback will be copied between threads (IO and UI), and
-  // will be called on UI thread.
-  typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
-
-  explicit AsyncFileUtil(const FileSystemGetter& file_system_getter);
+  AsyncFileUtil();
   virtual ~AsyncFileUtil();
 
   // fileapi::AsyncFileUtil overrides.
@@ -98,8 +92,6 @@ class AsyncFileUtil : public fileapi::AsyncFileUtil {
       const CreateSnapshotFileCallback& callback) OVERRIDE;
 
  private:
-  FileSystemGetter file_system_getter_;
-
   DISALLOW_COPY_AND_ASSIGN(AsyncFileUtil);
 };
 

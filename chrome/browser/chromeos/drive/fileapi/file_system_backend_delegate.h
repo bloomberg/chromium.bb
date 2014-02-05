@@ -9,10 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace fileapi {
 class AsyncFileUtil;
 }  // namespace fileapi
@@ -23,8 +19,7 @@ namespace drive {
 // for Drive file system.
 class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
  public:
-  // |browser_context| is used to obtain |profile_id_|.
-  explicit FileSystemBackendDelegate(content::BrowserContext* browser_context);
+  FileSystemBackendDelegate();
   virtual ~FileSystemBackendDelegate();
 
   // FileSystemBackend::Delegate overrides.
@@ -41,8 +36,6 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
       fileapi::FileSystemContext* context) OVERRIDE;
 
  private:
-  // The profile for processing Drive accesses. Should not be NULL.
-  void* profile_id_;
   scoped_ptr<fileapi::AsyncFileUtil> async_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemBackendDelegate);

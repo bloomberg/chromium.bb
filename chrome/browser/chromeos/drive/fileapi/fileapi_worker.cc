@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/directory_entry.h"
 
 using content::BrowserThread;
@@ -196,6 +197,13 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
 }
 
 }  // namespace
+
+FileSystemInterface* GetFileSystemFromUrl(const fileapi::FileSystemURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  Profile* profile = util::ExtractProfileFromPath(url.path());
+  return profile ? util::GetFileSystemByProfile(profile) : NULL;
+}
 
 void RunFileSystemCallback(
     const FileSystemGetter& file_system_getter,

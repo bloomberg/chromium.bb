@@ -34,6 +34,7 @@ class FilePath;
 
 namespace fileapi {
 struct DirectoryEntry;
+class FileSystemURL;
 }  // namespace fileapi
 
 namespace drive {
@@ -68,6 +69,11 @@ typedef base::Callback<
     void(base::File::Error result,
          base::PlatformFile platform_file,
          const base::Closure& close_callback)> OpenFileCallback;
+
+// Gets the profile of the Drive entry pointed by |url|. Used as
+// FileSystemGetter callback by binding an URL on the IO thread and passing to
+// the UI thread.
+FileSystemInterface* GetFileSystemFromUrl(const fileapi::FileSystemURL& url);
 
 // Runs |file_system_getter| to obtain the instance of FileSystemInstance,
 // and then runs |callback| with it.
