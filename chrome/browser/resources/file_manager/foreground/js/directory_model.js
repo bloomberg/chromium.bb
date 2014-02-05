@@ -73,15 +73,6 @@ DirectoryModel.prototype.getFileList = function() {
 };
 
 /**
- * Sort the file list.
- * @param {string} sortField Sort field.
- * @param {string} sortDirection "asc" or "desc".
- */
-DirectoryModel.prototype.sortFileList = function(sortField, sortDirection) {
-  this.getFileList().sort(sortField, sortDirection);
-};
-
-/**
  * @return {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel} Selection
  * in the fileList.
  */
@@ -195,7 +186,7 @@ DirectoryModel.prototype.getCurrentDirEntry = function() {
 };
 
 /**
- * @return {Array.<Entry>} Array of selected entries..
+ * @return {Array.<Entry>} Array of selected entries.
  * @private
  */
 DirectoryModel.prototype.getSelectedEntries_ = function() {
@@ -628,27 +619,6 @@ DirectoryModel.prototype.createDirectory = function(name,
 };
 
 /**
- * @param {DirectoryEntry} dirEntry The entry of the new directory.
- * @param {function()=} opt_callback Executed if the directory loads
- *     successfully.
- * @private
- */
-DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
-                                                                opt_callback) {
-  var onScanComplete = function() {
-    if (opt_callback)
-      opt_callback();
-    // For tests that open the dialog to empty directories, everything
-    // is loaded at this point.
-    chrome.test.sendMessage('directory-change-complete');
-  };
-  this.clearAndScan_(
-      DirectoryContents.createForDirectory(this.currentFileListContext_,
-                                           dirEntry),
-      onScanComplete.bind(this));
-};
-
-/**
  * Change the current directory to the directory represented by
  * a DirectoryEntry or a fake entry.
  *
@@ -662,28 +632,38 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
-  if (util.isFakeEntry(dirEntry)) {
-    this.specialSearch(dirEntry);
-    if (opt_callback)
-      opt_callback();
-    return;
-  }
-
   // Increment the sequence value.
   this.changeDirectorySequence_++;
+  this.clearSearch_();
 
-  this.fileWatcher_.changeWatchedDirectory(dirEntry, function(sequence) {
-    if (this.changeDirectorySequence_ !== sequence)
-      return;
-    var previous = this.currentDirContents_.getDirectoryEntry();
-    this.clearSearch_();
-    this.changeDirectoryEntrySilent_(dirEntry, opt_callback);
+  var promise = new Promise(
+      function(onFulfilled, onRejected) {
+        this.fileWatcher_.changeWatchedDirectory(dirEntry, onFulfilled);
+      }.bind(this)).
 
-    var e = new Event('directory-changed');
-    e.previousDirEntry = previous;
-    e.newDirEntry = dirEntry;
-    this.dispatchEvent(e);
-  }.bind(this, this.changeDirectorySequence_));
+      then(function(sequence) {
+        return new Promise(function(onFulfilled, onRejected) {
+          if (this.changeDirectorySequence_ !== sequence)
+            return;
+
+          var newDirectoryContents = this.createDirectoryContents_(
+              this.currentFileListContext_, dirEntry, '');
+          if (!newDirectoryContents)
+            return;
+
+          var previousDirEntry = this.currentDirContents_.getDirectoryEntry();
+          this.clearAndScan_(newDirectoryContents, opt_callback);
+
+          // For tests that open the dialog to empty directories, everything is
+          // loaded at this point.
+          chrome.test.sendMessage('directory-change-complete');
+
+          var event = new Event('directory-changed');
+          event.previousDirEntry = previousDirEntry;
+          event.newDirEntry = dirEntry;
+          this.dispatchEvent(event);
+        }.bind(this));
+      }.bind(this, this.changeDirectorySequence_));
 };
 
 /**
@@ -765,7 +745,7 @@ DirectoryModel.prototype.selectIndex = function(index) {
 };
 
 /**
- * Called when VolumeInfoList is updated.
+ * Handles update of VolumeInfoList.
  * @param {Event} event Event of VolumeInfoList's 'splice'.
  * @private
  */
@@ -778,6 +758,61 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
     this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
       this.changeDirectoryEntry(displayRoot);
     }.bind(this));
+  }
+};
+
+/**
+ * Creates directory contents for the entry and query.
+ *
+ * @param {FileListContext} context File list context.
+ * @param {DirectoryEntry} entry Current directory.
+ * @param {string=} opt_query Search query string.
+ * @return {DirectoryContents} Directory contents.
+ * @private
+ */
+DirectoryModel.prototype.createDirectoryContents_ =
+    function(context, entry, opt_query) {
+  var query = (opt_query || '').trimLeft();
+  var locationInfo = this.volumeManager_.getLocationInfo(entry);
+  if (!locationInfo)
+    return null;
+  var canUseDriveSearch = this.volumeManager_.getDriveConnectionState().type !==
+      util.DriveConnectionType.OFFLINE &&
+      locationInfo.isDriveBased;
+
+  if (query && canUseDriveSearch) {
+    // Drive search.
+    return DirectoryContents.createForDriveSearch(context, entry, query);
+  } else if (query) {
+    // Local search.
+    return DirectoryContents.createForLocalSearch(context, entry, query);
+  } if (locationInfo.isSpecialSearchRoot) {
+    // Drive special search.
+    var searchType;
+    switch (locationInfo.rootType) {
+      case RootType.DRIVE_OFFLINE:
+        searchType =
+            DriveMetadataSearchContentScanner.SearchType.SEARCH_OFFLINE;
+        break;
+      case RootType.DRIVE_SHARED_WITH_ME:
+        searchType =
+            DriveMetadataSearchContentScanner.SearchType.SEARCH_SHARED_WITH_ME;
+        break;
+      case RootType.DRIVE_RECENT:
+        searchType =
+            DriveMetadataSearchContentScanner.SearchType.SEARCH_RECENT_FILES;
+        break;
+      default:
+        // Unknown special search entry.
+        throw new Error('Unknown special search type.');
+    }
+    return DirectoryContents.createForDriveMetadataSearch(
+        context,
+        entry,
+        searchType);
+  } else {
+    // Local fetch or search.
+    return DirectoryContents.createForDirectory(context, entry);
   }
 };
 
@@ -797,119 +832,32 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
 DirectoryModel.prototype.search = function(query,
                                            onSearchRescan,
                                            onClearSearch) {
-  query = query.trimLeft();
-
   this.clearSearch_();
-
   var currentDirEntry = this.getCurrentDirEntry();
   if (!currentDirEntry) {
     // Not yet initialized. Do nothing.
     return;
   }
 
-  if (!query) {
+  if (!(query || '').trimLeft()) {
     if (this.isSearching()) {
       var newDirContents = DirectoryContents.createForDirectory(
           this.currentFileListContext_,
-          this.currentDirContents_.getLastNonSearchDirectoryEntry());
+          currentDirEntry);
       this.clearAndScan_(newDirContents);
     }
     return;
   }
 
+  var newDirContents = this.createDirectoryContents_(
+      this.currentFileListContext_, currentDirEntry, query);
+  if (!newDirContents)
+    return;
+
   this.onSearchCompleted_ = onSearchRescan;
   this.onClearSearch_ = onClearSearch;
-
   this.addEventListener('scan-completed', this.onSearchCompleted_);
-
-  // If we are offline, let's fallback to file name search inside dir.
-  // A search initiated from directories in Drive or special search results
-  // should trigger Drive search.
-  var newDirContents;
-  var isDriveOffline = this.volumeManager_.getDriveConnectionState().type ===
-      util.DriveConnectionType.OFFLINE;
-  var locationInfo = this.volumeManager_.getLocationInfo(currentDirEntry);
-  if (!isDriveOffline && locationInfo && locationInfo.isDriveBased) {
-    // Drive search is performed over the whole drive, so pass  drive root as
-    // |directoryEntry|.
-    newDirContents = DirectoryContents.createForDriveSearch(
-        this.currentFileListContext_,
-        currentDirEntry,
-        this.currentDirContents_.getLastNonSearchDirectoryEntry(),
-        query);
-  } else {
-    newDirContents = DirectoryContents.createForLocalSearch(
-        this.currentFileListContext_, currentDirEntry, query);
-  }
   this.clearAndScan_(newDirContents);
-};
-
-/**
- * Performs special search and displays results. e.g. Drive files available
- * offline, shared-with-me files, recently modified files.
- * @param {Object} fakeEntry Fake entry representing a special search.
- * @param {string=} opt_query Query string used for the search.
- */
-DirectoryModel.prototype.specialSearch = function(fakeEntry, opt_query) {
-  var query = opt_query || '';
-
-  // Increment the sequence value.
-  this.changeDirectorySequence_++;
-
-  this.clearSearch_();
-  this.onSearchCompleted_ = null;
-  this.onClearSearch_ = null;
-
-  // Obtains a volume information.
-  // TODO(hirono): Obtain the proper profile's volume information.
-  var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
-      util.VolumeType.DRIVE);
-  if (!volumeInfo) {
-    // It seems that the volume is already unmounted or drive is disable.
-    return;
-  }
-
-  var onDriveDirectoryResolved = function(sequence, driveRoot) {
-    if (this.changeDirectorySequence_ !== sequence)
-      return;
-
-    var locationInfo = this.volumeManager_.getLocationInfo(fakeEntry);
-    if (!locationInfo)
-      return;
-
-    var searchOption;
-    switch (locationInfo.rootType) {
-      case RootType.DRIVE_OFFLINE:
-        searchOption =
-            DriveMetadataSearchContentScanner.SearchType.SEARCH_OFFLINE;
-        break;
-      case RootType.DRIVE_SHARED_WITH_ME:
-        searchOption =
-            DriveMetadataSearchContentScanner.SearchType.SEARCH_SHARED_WITH_ME;
-        break;
-      case RootType.DRIVE_RECENT:
-        searchOption =
-            DriveMetadataSearchContentScanner.SearchType.SEARCH_RECENT_FILES;
-        break;
-      default:
-        // Unknown special search entry.
-        throw new Error('Unknown special search type.');
-    }
-
-    var newDirContents = DirectoryContents.createForDriveMetadataSearch(
-        this.currentFileListContext_,
-        fakeEntry, driveRoot, query, searchOption);
-    var previous = this.currentDirContents_.getDirectoryEntry();
-    this.clearAndScan_(newDirContents);
-
-    var e = new Event('directory-changed');
-    e.previousDirEntry = previous;
-    e.newDirEntry = fakeEntry;
-    this.dispatchEvent(e);
-  }.bind(this, this.changeDirectorySequence_);
-
-  volumeInfo.resolveDisplayRoot(
-      onDriveDirectoryResolved /* success */, function() {} /* failed */);
 };
 
 /**

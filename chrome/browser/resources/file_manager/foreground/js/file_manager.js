@@ -973,7 +973,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                  this.updateStartupPrefs_.bind(this));
 
     // Restore preferences.
-    this.directoryModel_.sortFileList(
+    this.directoryModel_.getFileList().sort(
         this.viewOptions_.sortField || 'modificationTime',
         this.viewOptions_.sortDirection || 'desc');
     if (this.viewOptions_.columns) {

@@ -261,15 +261,13 @@ LocalSearchContentScanner.prototype.scan = function(
 
 /**
  * Scanner of the entries for the metadata search on Drive File System.
- * @param {string} query The query of the search.
  * @param {DriveMetadataSearchContentScanner.SearchType} searchType The option
  *     of the search.
  * @constructor
  * @extends {ContentScanner}
  */
-function DriveMetadataSearchContentScanner(query, searchType) {
+function DriveMetadataSearchContentScanner(searchType) {
   ContentScanner.call(this);
-  this.query_ = query;
   this.searchType_ = searchType;
 }
 
@@ -297,7 +295,7 @@ DriveMetadataSearchContentScanner.SearchType = Object.freeze({
 DriveMetadataSearchContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
   chrome.fileBrowserPrivate.searchDriveMetadata(
-      {query: this.query_, types: this.searchType_, maxResults: 500},
+      {query: '', types: this.searchType_, maxResults: 500},
       function(results) {
         if (this.cancelled_) {
           errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
@@ -466,8 +464,6 @@ function FileListContext(fileFilter, metadataCache) {
  * @param {boolean} isSearch True for search directory contents, otherwise
  *     false.
  * @param {DirectoryEntry} directoryEntry The entry of the current directory.
- * @param {DirectoryEntry} lastNonSearchDirectoryEntry The entry of the last
- *     non-search directory.
  * @param {function():ContentScanner} scannerFactory The factory to create
  *     ContentScanner instance.
  * @constructor
@@ -476,14 +472,12 @@ function FileListContext(fileFilter, metadataCache) {
 function DirectoryContents(context,
                            isSearch,
                            directoryEntry,
-                           lastNonSearchDirectoryEntry,
                            scannerFactory) {
   this.context_ = context;
   this.fileList_ = context.fileList;
 
   this.isSearch_ = isSearch;
   this.directoryEntry_ = directoryEntry;
-  this.lastNonSearchDirectoryEntry_ = lastNonSearchDirectoryEntry;
 
   this.scannerFactory_ = scannerFactory;
   this.scanner_ = null;
@@ -502,8 +496,10 @@ DirectoryContents.prototype.__proto__ = cr.EventTarget.prototype;
  */
 DirectoryContents.prototype.clone = function() {
   return new DirectoryContents(
-      this.context_, this.isSearch_, this.directoryEntry_,
-      this.lastNonSearchDirectoryEntry_, this.scannerFactory_);
+      this.context_,
+      this.isSearch_,
+      this.directoryEntry_,
+      this.scannerFactory_);
 };
 
 /**
@@ -553,13 +549,6 @@ DirectoryContents.prototype.isSearch = function() {
  */
 DirectoryContents.prototype.getDirectoryEntry = function() {
   return this.directoryEntry_;
-};
-
-/**
- * @return {DirectoryEntry} A DirectoryEntry for the last non search contents.
- */
-DirectoryContents.prototype.getLastNonSearchDirectoryEntry = function() {
-  return this.lastNonSearchDirectoryEntry_;
 };
 
 /**
@@ -690,7 +679,6 @@ DirectoryContents.createForDirectory = function(context, directoryEntry) {
       context,
       false,  // Non search.
       directoryEntry,
-      directoryEntry,
       function() {
         return new DirectoryContentScanner(directoryEntry);
       });
@@ -702,18 +690,15 @@ DirectoryContents.createForDirectory = function(context, directoryEntry) {
  *
  * @param {FileListContext} context File list context.
  * @param {DirectoryEntry} directoryEntry The current directory entry.
- * @param {DirectoryEntry} previousDirectoryEntry The DirectoryEntry that was
- *     current before the search.
  * @param {string} query Search query.
  * @return {DirectoryContents} Created DirectoryContents instance.
  */
 DirectoryContents.createForDriveSearch = function(
-    context, directoryEntry, previousDirectoryEntry, query) {
+    context, directoryEntry, query) {
   return new DirectoryContents(
       context,
       true,  // Search.
       directoryEntry,
-      previousDirectoryEntry,
       function() {
         return new DriveSearchContentScanner(query);
       });
@@ -734,7 +719,6 @@ DirectoryContents.createForLocalSearch = function(
       context,
       true,  // Search.
       directoryEntry,
-      directoryEntry,
       function() {
         return new LocalSearchContentScanner(directoryEntry, query);
       });
@@ -748,21 +732,18 @@ DirectoryContents.createForLocalSearch = function(
  * @param {DirectoryEntry} fakeDirectoryEntry Fake directory entry representing
  *     the set of result entries. This serves as a top directory for the
  *     search.
- * @param {DirectoryEntry} driveDirectoryEntry Directory for the actual drive.
- * @param {string} query Search query.
  * @param {DriveMetadataSearchContentScanner.SearchType} searchType The type of
  *     the search. The scanner will restricts the entries based on the given
  *     type.
  * @return {DirectoryContents} Created DirectoryContents instance.
  */
 DirectoryContents.createForDriveMetadataSearch = function(
-    context, fakeDirectoryEntry, driveDirectoryEntry, query, searchType) {
+    context, fakeDirectoryEntry, searchType) {
   return new DirectoryContents(
       context,
       true,  // Search
       fakeDirectoryEntry,
-      driveDirectoryEntry,
       function() {
-        return new DriveMetadataSearchContentScanner(query, searchType);
+        return new DriveMetadataSearchContentScanner(searchType);
       });
 };
