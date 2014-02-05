@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -215,19 +214,6 @@ void PrepareBuilder(
     scoped_ptr<PrefHashStore> pref_hash_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     bool async) {
-#if defined(OS_LINUX)
-  // We'd like to see what fraction of our users have the preferences
-  // stored on a network file system, as we've had no end of troubles
-  // with NFS/AFS.
-  // TODO(evanm): remove this once we've collected state.
-  file_util::FileSystemType fstype;
-  if (file_util::GetFileSystemType(pref_filename.DirName(), &fstype)) {
-    UMA_HISTOGRAM_ENUMERATION("PrefService.FileSystemType",
-                              static_cast<int>(fstype),
-                              file_util::FILE_SYSTEM_TYPE_COUNT);
-  }
-#endif
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
   using policy::ConfigurationPolicyPrefStore;
   factory->set_managed_prefs(
