@@ -396,6 +396,43 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   EXPECT_EQ(3, log_stream_id);
 }
 
+TEST_P(QuicNetworkTransactionTest, QuicProxy) {
+  proxy_service_.reset(
+      ProxyService::CreateFixedFromPacResult("QUIC myproxy:70"));
+
+  QuicStreamId stream_id = GetParam() > QUIC_VERSION_12 ? 5 : 3;
+  MockQuicData mock_quic_data;
+  if (GetParam() > QUIC_VERSION_12) {
+    mock_quic_data.AddWrite(
+        ConstructRequestHeadersPacket(1, stream_id, true, true,
+                                      GetRequestHeaders("GET", "http", "/")));
+    mock_quic_data.AddRead(
+        ConstructResponseHeadersPacket(1, stream_id, false, false,
+                                       GetResponseHeaders("200 OK")));
+    mock_quic_data.AddRead(
+        ConstructDataPacket(2, stream_id, false, true, 0, "hello!"));
+    mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  } else {
+    mock_quic_data.AddWrite(
+        ConstructDataPacket(1, stream_id, true, true, 0,
+                            GetRequestString("GET", "http", "/")));
+    mock_quic_data.AddRead(
+        ConstructDataPacket(1, stream_id, false, true, 0,
+                            GetResponseString("200 OK", "hello!")));
+    mock_quic_data.AddWrite(ConstructAckPacket(1, 0));
+  }
+  mock_quic_data.AddRead(SYNCHRONOUS, 0);  // EOF
+
+  mock_quic_data.AddDelayedSocketDataToFactory(&socket_factory_, 1);
+
+  // There is no need to set up an alternate protocol job, because
+  // no attempt will be made to speak to the proxy over TCP.
+
+  CreateSession();
+
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
   params_.origin_to_force_quic_on =
       HostPortPair::FromString("www.google.com:80");

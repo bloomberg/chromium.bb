@@ -675,7 +675,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
   if (result == OK) {
     // Remove unsupported proxies from the list.
     proxy_info_.RemoveProxiesWithoutScheme(
-        ProxyServer::SCHEME_DIRECT |
+        ProxyServer::SCHEME_DIRECT | ProxyServer::SCHEME_QUIC |
         ProxyServer::SCHEME_HTTP | ProxyServer::SCHEME_HTTPS |
         ProxyServer::SCHEME_SOCKS4 | ProxyServer::SCHEME_SOCKS5);
 
@@ -743,18 +743,25 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   if (ShouldForceQuic())
     using_quic_ = true;
 
+  if (proxy_info_.is_quic())
+    using_quic_ = true;
+
   if (using_quic_) {
     DCHECK(session_->params().enable_quic);
-    if (!proxy_info_.is_direct()) {
+    if (proxy_info_.is_quic() && !request_info_.url.SchemeIs("http")) {
       NOTREACHED();
-      // TODO(rch): support QUIC proxies.
+      // TODO(rch): support QUIC proxies for HTTPS urls.
       return ERR_NOT_IMPLEMENTED;
     }
+    HostPortProxyPair destination;
+    destination.first = proxy_info_.is_quic() ?
+        proxy_info_.proxy_server().host_port_pair() : origin_;
+    destination.second = ProxyServer::Direct();
     next_state_ = STATE_INIT_CONNECTION_COMPLETE;
-    const ProxyServer& proxy_server = proxy_info_.proxy_server();
-    int rv = quic_request_.Request(HostPortProxyPair(origin_, proxy_server),
-                                   using_ssl_, session_->cert_verifier(),
-                                   net_log_, io_callback_);
+    bool secure_quic = using_ssl_ || proxy_info_.is_quic();
+    int rv = quic_request_.Request(
+        destination, secure_quic, session_->cert_verifier(), net_log_,
+        io_callback_);
     if (rv != OK) {
       // OK, there's no available QUIC session. Let |waiting_job_| resume
       // if it's paused.
