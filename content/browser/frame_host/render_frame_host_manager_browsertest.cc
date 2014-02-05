@@ -1407,6 +1407,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Load the crash URL again but don't wait for any action.  If it is not
   // ignored this time, we will fail the WebUI CHECK in InitRenderView.
   shell()->LoadURL(GURL(kChromeUICrashURL));
+
+  // Ensure that such URLs can still work as the initial navigation of a tab.
+  // We postpone the initial navigation of the tab using an empty GURL, so that
+  // we can add a watcher for crashes.
+  Shell* shell2 = Shell::CreateNewWindow(
+      shell()->web_contents()->GetBrowserContext(), GURL(), NULL,
+      MSG_ROUTING_NONE, gfx::Size());
+  RenderProcessHostWatcher crash_observer2(
+      shell2->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  NavigateToURL(shell2, GURL(kChromeUIKillURL));
+  crash_observer2.Wait();
 }
 
 }  // namespace content
