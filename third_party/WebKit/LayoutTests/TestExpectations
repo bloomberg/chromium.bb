@@ -881,9 +881,6 @@ crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Ti
 
 # Disable failing tests for the new WebSocket implementation
 crbug.com/339373 http/tests/security/contentSecurityPolicy/connect-src-websocket-allowed.html [ Skip ]
-crbug.com/339373 http/tests/inspector/websocket/websocket-frame.html [ Skip ]
-crbug.com/339373 http/tests/inspector/websocket/websocket-handshake.html [ Skip ]
-crbug.com/339373 http/tests/inspector/web-socket-frame-error.html [ Skip ]
 crbug.com/339373 http/tests/websocket/FIXME-handshake-fail-by-null-subprotocol-selection-whitelist.html [ Skip ]
 crbug.com/339373 http/tests/websocket/bad-handshake-crash.html [ Skip ]
 crbug.com/339373 http/tests/websocket/binary-type.html [ Skip ]

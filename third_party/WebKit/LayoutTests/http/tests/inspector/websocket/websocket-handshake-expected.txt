@@ -7,12 +7,14 @@ Tests that WebSocket handshake information is passed to Web Inspector.
 log: 
 log: requestMethod: GET
 log: requestHeaders
+log:     Accept-Encoding: gzip,deflate
+log:     Accept-Language: en-us,en
 log:     Cache-Control: no-cache
 log:     Connection: Upgrade
 log:     Host: localhost:8880
-log:     Origin: http://127.0.0.1:8000
+log:     Origin: http://127.0.0.1:8000/
 log:     Pragma: no-cache
-log:     Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits, x-webkit-deflate-frame
+log:     Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
 log:     Sec-WebSocket-Key: ***
 log:     Sec-WebSocket-Version: 13
 log:     Upgrade: websocket

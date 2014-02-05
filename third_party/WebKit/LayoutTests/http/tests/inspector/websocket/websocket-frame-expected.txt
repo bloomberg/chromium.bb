@@ -2,7 +2,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Connected.
-Tests that WebSocketFrames are being sent and recieved by Web Inspector.
+Tests that WebSocketFrames are being sent and received by Web Inspector.
 
 1- sent: test
 1- sent: test
