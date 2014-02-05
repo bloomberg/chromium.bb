@@ -300,7 +300,6 @@ class CppStyleTestBase(unittest.TestCase):
 
     def perform_avoid_static_cast_of_objects(self, code, filename='foo.cpp', fs=None):
         basic_error_rules = ('-',
-                             '+security/casting',
                              '+runtime/casting')
         return self.perform_lint(code, filename, basic_error_rules, fs)
 
@@ -759,7 +758,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_language_rules_check('foo.h', statement, error_message)
 
     # Tests for static_cast readability.
-    # FIXME: Add cases for testing the DEFINE_TYPE_CASTS usecases also.
     def test_static_cast_on_objects_with_toFoo(self):
         mock_header_contents = ['inline Foo* toFoo(Bar* bar)']
         fs = FileSystem()
@@ -775,7 +773,7 @@ class CppStyleTest(CppStyleTestBase):
                 filename='casting.cpp',
                 fs=fs)
             self.assertEqual(message, 'static_cast of class objects is not allowed. Use toFoo defined in Foo.h.'
-                                      '  [security/casting] [4]')
+                                      '  [runtime/casting] [4]')
         finally:
             fs.read_text_file = orig_read_text_file_fn
 
@@ -793,7 +791,7 @@ class CppStyleTest(CppStyleTestBase):
                 'Foo* x = static_cast<Foo*>(bar);',
                 filename='casting.cpp',
                 fs=fs)
-            self.assertEqual(message, 'static_cast of class objects is not allowed. Define cast macro DEFINE_TYPE_CASTS(Foo) in Foo.h and use it.'
+            self.assertEqual(message, 'static_cast of class objects is not allowed. Add toFoo in Foo.h and use it instead.'
                                       '  [runtime/casting] [4]')
         finally:
             fs.read_text_file = orig_read_text_file_fn
