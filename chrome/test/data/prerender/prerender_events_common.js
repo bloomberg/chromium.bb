@@ -90,6 +90,17 @@ function ClickTarget(url) {
   AddAnchor(url, '_blank').dispatchEvent(eventObject);
 }
 
+function ClickPing(url, pingUrl) {
+  var a = AddAnchor(url);
+  a.ping = pingUrl;
+  a.dispatchEvent(new MouseEvent('click', {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+    detail: 1
+  }));
+}
+
 function ShiftClick(url) {
   AddAnchor(url).dispatchEvent(new MouseEvent('click', {
     view: window,

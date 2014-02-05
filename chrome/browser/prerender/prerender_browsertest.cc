@@ -807,11 +807,32 @@ class MockHTTPJob : public content::URLRequestMockHTTPJob {
 // Dummy counter class to live on the UI thread for counting requests.
 class RequestCounter : public base::SupportsWeakPtr<RequestCounter> {
  public:
-  RequestCounter() : count_(0) {}
+  RequestCounter() : count_(0), expected_count_(-1) {}
   int count() const { return count_; }
-  void RequestStarted() { count_++; }
+
+  void RequestStarted() {
+    count_++;
+    if (loop_ && count_ == expected_count_)
+      loop_->Quit();
+  }
+
+  void WaitForCount(int expected_count) {
+    ASSERT_TRUE(!loop_);
+    ASSERT_EQ(-1, expected_count_);
+    if (count_ < expected_count) {
+      expected_count_ = expected_count;
+      loop_.reset(new base::RunLoop);
+      loop_->Run();
+      expected_count_ = -1;
+      loop_.reset();
+    }
+
+    EXPECT_EQ(expected_count, count_);
+  }
  private:
   int count_;
+  int expected_count_;
+  scoped_ptr<base::RunLoop> loop_;
 };
 
 // Protocol handler which counts the number of requests that start.
@@ -1103,35 +1124,39 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void OpenURLViaClick(const GURL& url) const {
-    OpenURLWithJSImpl("Click", url, false);
+    OpenURLWithJSImpl("Click", url, GURL(), false);
   }
 
   void OpenDestURLViaClickTarget() const {
-    OpenURLWithJSImpl("ClickTarget", dest_url_, true);
+    OpenURLWithJSImpl("ClickTarget", dest_url_, GURL(), true);
+  }
+
+  void OpenDestURLViaClickPing(const GURL& ping_url) const {
+    OpenURLWithJSImpl("ClickPing", dest_url_, ping_url, false);
   }
 
   void OpenDestURLViaClickNewWindow() const {
-    OpenURLWithJSImpl("ShiftClick", dest_url_, true);
+    OpenURLWithJSImpl("ShiftClick", dest_url_, GURL(), true);
   }
 
   void OpenDestURLViaClickNewForegroundTab() const {
 #if defined(OS_MACOSX)
-    OpenURLWithJSImpl("MetaShiftClick", dest_url_, true);
+    OpenURLWithJSImpl("MetaShiftClick", dest_url_, GURL(), true);
 #else
-    OpenURLWithJSImpl("CtrlShiftClick", dest_url_, true);
+    OpenURLWithJSImpl("CtrlShiftClick", dest_url_, GURL(), true);
 #endif
   }
 
   void OpenDestURLViaClickNewBackgroundTab() const {
 #if defined(OS_MACOSX)
-    OpenURLWithJSImpl("MetaClick", dest_url_, true);
+    OpenURLWithJSImpl("MetaClick", dest_url_, GURL(), true);
 #else
-    OpenURLWithJSImpl("CtrlClick", dest_url_, true);
+    OpenURLWithJSImpl("CtrlClick", dest_url_, GURL(), true);
 #endif
   }
 
   void OpenDestURLViaWindowOpen() const {
-    OpenURLWithJSImpl("WindowOpen", dest_url_, true);
+    OpenURLWithJSImpl("WindowOpen", dest_url_, GURL(), true);
   }
 
   void RemoveLinkElement(int i) const {
@@ -1516,12 +1541,15 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   // happen in a new WebContents via OpenURL.
   void OpenURLWithJSImpl(const std::string& javascript_function_name,
                          const GURL& url,
+                         const GURL& ping_url,
                          bool new_web_contents) const {
     WebContents* web_contents = GetActiveWebContents();
     RenderViewHost* render_view_host =
         GetActiveWebContents()->GetRenderViewHost();
+    // Extra arguments in JS are ignored.
     std::string javascript = base::StringPrintf(
-        "%s('%s')", javascript_function_name.c_str(), url.spec().c_str());
+        "%s('%s', '%s')", javascript_function_name.c_str(),
+        url.spec().c_str(), ping_url.spec().c_str());
 
     if (new_web_contents) {
       NewTabNavigationOrSwapObserver observer;
@@ -3859,6 +3887,24 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       GURL(content::kAboutBlankURL), Referrer(), CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED, false));
   nav_observer.Wait();
+}
+
+// Checks that <a ping> requests are not dropped in prerender.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPing) {
+  // Count hits to a certain URL.
+  const GURL kPingURL("http://prerender.test/ping");
+  base::FilePath empty_file = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
+  RequestCounter ping_counter;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateCountingProtocolHandlerOnIO,
+                 kPingURL, empty_file, ping_counter.AsWeakPtr()));
+
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  OpenDestURLViaClickPing(kPingURL);
+
+  ping_counter.WaitForCount(1);
 }
 
 class PrerenderIncognitoBrowserTest : public PrerenderBrowserTest {

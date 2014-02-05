@@ -150,8 +150,13 @@ void URLRequestMockHTTPJob::GetResponseInfoConst(
   base::FilePath header_file =
       base::FilePath(file_path_.value() + kMockHeaderFileSuffix);
   std::string raw_headers;
-  if (!base::ReadFileToString(header_file, &raw_headers))
-    return;
+  if (!base::PathExists(header_file)) {
+    // If there is no mock-http-headers file, fake a 200 OK.
+    raw_headers = "HTTP/1.0 200 OK\n";
+  } else {
+    if (!base::ReadFileToString(header_file, &raw_headers))
+      return;
+  }
 
   // Handle CRLF line-endings.
   ReplaceSubstringsAfterOffset(&raw_headers, 0, "\r\n", "\n");
