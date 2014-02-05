@@ -209,6 +209,7 @@ bool FileBrowserPrivateRequestFileSystemFunction::
     SetupFileSystemAccessPermissions(
         scoped_refptr<fileapi::FileSystemContext> file_system_context,
         int child_id,
+        Profile* profile,
         scoped_refptr<const extensions::Extension> extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -238,6 +239,20 @@ bool FileBrowserPrivateRequestFileSystemFunction::
     ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
         child_id, root_dirs[i]);
   }
+
+  // Grant R/W permissions to profile-specific directories (Drive, Downloads)
+  // from other profiles. Those directories may not be mounted at this moment
+  // yet, so we need to do this separately from the above loop over
+  // GetRootDirectories().
+  const std::vector<Profile*>& profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    if (!profiles[i]->IsOffTheRecord()) {
+      file_manager::util::SetupProfileFileAccessPermissions(child_id,
+                                                            profiles[i]);
+    }
+  }
+
   return true;
 }
 
@@ -263,21 +278,11 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   const int child_id = render_view_host()->GetProcess()->GetID();
   if (!SetupFileSystemAccessPermissions(file_system_context,
                                         child_id,
+                                        GetProfile(),
                                         GetExtension())) {
     DidFail(base::File::FILE_ERROR_SECURITY);
     return false;
   }
-
-  // Set permissions for the Drive mount point immediately when we kick of
-  // first instance of file manager. The actual mount event will be sent to
-  // UI only when we perform proper authentication.
-  //
-  // Note that we call this function even when Drive is disabled by the
-  // setting. Otherwise, we need to call this when the setting is changed at
-  // a later time, which complicates the code.
-  ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
-      render_view_host()->GetProcess()->GetID(),
-      drive::util::GetDriveMountPointPath(GetProfile()));
 
   fileapi::FileSystemInfo info =
       fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());

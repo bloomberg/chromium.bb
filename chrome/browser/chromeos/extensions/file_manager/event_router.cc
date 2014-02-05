@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,6 +36,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -246,6 +248,22 @@ CopyProgressTypeToCopyProgressStatusType(
   }
   NOTREACHED();
   return file_browser_private::COPY_PROGRESS_STATUS_TYPE_NONE;
+}
+
+void GrantAccessForAddedProfileToRunningInstance(Profile* added_profile,
+                                                 Profile* running_profile) {
+  extensions::ProcessManager* const process_manager =
+      extensions::ExtensionSystem::Get(running_profile)->process_manager();
+  if (!process_manager)
+    return;
+
+  extensions::ExtensionHost* const extension_host =
+      process_manager->GetBackgroundHostForExtension(kFileManagerAppId);
+  if (!extension_host || !extension_host->render_process_host())
+    return;
+
+  const int id = extension_host->render_process_host()->GetID();
+  file_manager::util::SetupProfileFileAccessPermissions(id, added_profile);
 }
 
 }  // namespace
@@ -805,6 +823,10 @@ void EventRouter::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROFILE_ADDED) {
+    Profile* const added_profile = content::Source<Profile>(source).ptr();
+    if (!added_profile->IsOffTheRecord())
+      GrantAccessForAddedProfileToRunningInstance(added_profile, profile_);
+
     BroadcastEvent(profile_,
                    file_browser_private::OnProfileAdded::kEventName,
                    file_browser_private::OnProfileAdded::Create());

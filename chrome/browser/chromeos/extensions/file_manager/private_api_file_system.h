@@ -52,6 +52,7 @@ class FileBrowserPrivateRequestFileSystemFunction
   bool SetupFileSystemAccessPermissions(
       scoped_refptr<fileapi::FileSystemContext> file_system_context,
       int child_id,
+      Profile* profile,
       scoped_refptr<const extensions::Extension> extension);
 };
 
