@@ -612,7 +612,8 @@ TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, false)));
 }
 
-TEST_F(ComboboxTest, ContentWidth) {
+// Disabled because of memory leaks, see http://crbug.com/341042.
+TEST_F(ComboboxTest, DISABLED_ContentWidth) {
   std::vector<std::string> values;
 
   scoped_ptr<VectorComboboxModel> model(new VectorComboboxModel(&values));
