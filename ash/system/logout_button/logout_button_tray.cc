@@ -15,9 +15,8 @@
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event.h"
-#include "ui/gfx/font_list.h"
-#include "ui/gfx/insets.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -83,8 +82,6 @@ class LogoutConfirmationDialogDelegate
 LogoutButton::LogoutButton(views::ButtonListener* listener)
     : views::LabelButton(listener, base::string16()) {
   SetupLabelForTray(label());
-  SetFontList(
-      GetFontList().DeriveFontListWithSizeDeltaAndStyle(0, gfx::Font::NORMAL));
   for (size_t state = 0; state < views::Button::STATE_COUNT; ++state)
     SetTextColor(static_cast<views::Button::ButtonState>(state), SK_ColorWHITE);
 

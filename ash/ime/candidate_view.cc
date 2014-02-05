@@ -52,12 +52,10 @@ views::Label* CreateShortcutLabel(
 
   if (orientation == ui::CandidateWindow::VERTICAL) {
     shortcut_label->SetFontList(
-        shortcut_label->font_list().DeriveFontListWithSizeDeltaAndStyle(
-            kFontSizeDelta, gfx::Font::BOLD));
+        shortcut_label->font_list().Derive(kFontSizeDelta, gfx::Font::BOLD));
   } else {
     shortcut_label->SetFontList(
-        shortcut_label->font_list().DeriveFontListWithSizeDelta(
-            kFontSizeDelta));
+        shortcut_label->font_list().DeriveWithSizeDelta(kFontSizeDelta));
   }
   // TODO(satorux): Maybe we need to use language specific fonts for
   // candidate_label, like Chinese font for Chinese input method?
@@ -108,7 +106,7 @@ views::Label* CreateCandidateLabel(
 
   // Change the font size.
   candidate_label->SetFontList(
-      candidate_label->font_list().DeriveFontListWithSizeDelta(kFontSizeDelta));
+      candidate_label->font_list().DeriveWithSizeDelta(kFontSizeDelta));
   candidate_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   return candidate_label;
@@ -124,8 +122,7 @@ views::Label* CreateAnnotationLabel(
 
   // Change the font size and color.
   annotation_label->SetFontList(
-      annotation_label->font_list().DeriveFontListWithSizeDelta(
-          kFontSizeDelta));
+      annotation_label->font_list().DeriveWithSizeDelta(kFontSizeDelta));
   annotation_label->SetEnabledColor(theme.GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor));
   annotation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

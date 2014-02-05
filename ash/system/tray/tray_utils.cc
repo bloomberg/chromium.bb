@@ -14,10 +14,10 @@ namespace ash {
 namespace internal {
 
 void SetupLabelForTray(views::Label* label) {
-  // Making label_font static to avoid the time penalty of DeriveFont for
-  // all but the first call.
+  // Making label_font static to avoid the time penalty of Derive for all but
+  // the first call.
   static const gfx::FontList label_font_list(
-      gfx::FontList().DeriveFontListWithSizeDeltaAndStyle(1, gfx::Font::BOLD));
+      gfx::FontList().Derive(1, gfx::Font::BOLD));
   label->SetFontList(label_font_list);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(SK_ColorWHITE);

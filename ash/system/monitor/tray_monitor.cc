@@ -45,7 +45,7 @@ views::View* TrayMonitor::CreateTrayView(user::LoginStatus status) {
                           SkColorSetARGB(64, 0, 0, 0));
   label_->SetShadowOffset(0, 1);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_->SetFontList(label_->font_list().DeriveFontListWithSizeDelta(-2));
+  label_->SetFontList(label_->font_list().DeriveWithSizeDelta(-2));
   return view;
 }
 

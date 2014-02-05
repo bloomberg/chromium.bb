@@ -488,7 +488,10 @@ class AudioDetailedView : public TrayDetailsView,
   }
 
   void AddScrollListInfoItem(const base::string16& text) {
-    views::Label* label = new views::Label(text);
+    views::Label* label = new views::Label(
+        text,
+        ui::ResourceBundle::GetSharedInstance().GetFontList(
+            ui::ResourceBundle::BoldFont));
 
     //  Align info item with checkbox items
     int margin = kTrayPopupPaddingHorizontal +
@@ -507,8 +510,6 @@ class AudioDetailedView : public TrayDetailsView,
                                          right_margin));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
-    label->SetFontList(label->font_list().DeriveFontListWithSizeDeltaAndStyle(
-        0, gfx::Font::BOLD));
 
     scroll_content()->AddChildView(label);
   }

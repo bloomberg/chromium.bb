@@ -54,8 +54,8 @@ views::Label* CreateAndSetupLabel() {
   views::Label* label = new views::Label;
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetupLabelForTray(label);
-  label->SetFontList(label->font_list().DeriveFontListWithSizeDeltaAndStyle(
-      0, label->font_list().GetFontStyle() & ~gfx::Font::BOLD));
+  label->SetFontList(label->font_list().DeriveWithStyle(
+      label->font_list().GetFontStyle() & ~gfx::Font::BOLD));
   return label;
 }
 
