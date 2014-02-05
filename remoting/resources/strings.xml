@@ -2,9 +2,6 @@
 <!--User-facing strings for the Android app-->
 <!--TODO(solb) Merge in with localized strings-->
 <resources>
-    <!--Application-wide attributes-->
-    <string name="app_name">Chromoting</string>
-
     <!--Instructional blurbs-->
     <string name="inst_host_list">My computers:</string>
     <string name="inst_empty_list">There are no computers to display</string>

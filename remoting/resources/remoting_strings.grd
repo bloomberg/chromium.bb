@@ -91,6 +91,54 @@
     <output filename="remoting/webapp/_locales/vi/messages.json" lang="vi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/zh_CN/messages.json" lang="zh-CN" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/zh_TW/messages.json" lang="zh-TW" type="chrome_messages_json"/>
+
+    <if expr="is_android">
+      <output filename="remoting/android/res/values-am/remoting_strings.xml" lang="am" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-ar/remoting_strings.xml" lang="ar" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-bg/remoting_strings.xml" lang="bg" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-ca/remoting_strings.xml" lang="ca" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-cs/remoting_strings.xml" lang="cs" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-da/remoting_strings.xml" lang="da" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-de/remoting_strings.xml" lang="de" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-el/remoting_strings.xml" lang="el" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values/remoting_strings.xml" lang="en" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-en-rGB/remoting_strings.xml" lang="en-GB" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-es/remoting_strings.xml" lang="es" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-es-rUS/remoting_strings.xml" lang="es-419" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-fa/remoting_strings.xml" lang="fa" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-fi/remoting_strings.xml" lang="fi" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-tl/remoting_strings.xml" lang="fil" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-fr/remoting_strings.xml" lang="fr" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-hi/remoting_strings.xml" lang="hi" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-hr/remoting_strings.xml" lang="hr" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-hu/remoting_strings.xml" lang="hu" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-in/remoting_strings.xml" lang="id" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-it/remoting_strings.xml" lang="it" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-iw/remoting_strings.xml" lang="he" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-ja/remoting_strings.xml" lang="ja" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-ko/remoting_strings.xml" lang="ko" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-lt/remoting_strings.xml" lang="lt" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-lv/remoting_strings.xml" lang="lv" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-nl/remoting_strings.xml" lang="nl" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-nb/remoting_strings.xml" lang="no" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-pl/remoting_strings.xml" lang="pl" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-pt-rBR/remoting_strings.xml" lang="pt-BR" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-pt-rPT/remoting_strings.xml" lang="pt-PT" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-ro/remoting_strings.xml" lang="ro" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-ru/remoting_strings.xml" lang="ru" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-sk/remoting_strings.xml" lang="sk" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-sl/remoting_strings.xml" lang="sl" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-sr/remoting_strings.xml" lang="sr" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-sv/remoting_strings.xml" lang="sv" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-sw/remoting_strings.xml" lang="sw" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-th/remoting_strings.xml" lang="th" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-tr/remoting_strings.xml" lang="tr" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-uk/remoting_strings.xml" lang="uk" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-vi/remoting_strings.xml" lang="vi" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-zh-rCN/remoting_strings.xml" lang="zh-CN" type="android" context="android_java"/>
+      <output filename="remoting/android/res/values-zh-rTW/remoting_strings.xml" lang="zh-TW" type="android" context="android_java"/>
+    </if>
+
   </outputs>
   <translations>
     <file lang="ar" path="remoting_strings_ar.xtb"/>
@@ -189,7 +237,7 @@
         <message desc="Message displayed when the client or host has disconnected." name="IDS_MESSAGE_SESSION_FINISHED">
           Your Chrome Remote Desktop session has ended.
         </message>
-        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME">
+        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME" formatter_data="android_java">
           Chrome Remote Desktop
         </message>
         <message desc="Message displayed at the bottom of the client connect dialog if Chrome Remote Desktop is running in the wrong start-up mode." name="IDS_WARNING_NOT_WINDOWED">
@@ -285,7 +333,7 @@
         <message desc="Message displayed when the client or host has disconnected." name="IDS_MESSAGE_SESSION_FINISHED">
           Your Chromoting session has ended.
         </message>
-        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME">
+        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME" formatter_data="android_java">
           Chromoting
         </message>
         <message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDS_WARNING_NOT_WINDOWED">
