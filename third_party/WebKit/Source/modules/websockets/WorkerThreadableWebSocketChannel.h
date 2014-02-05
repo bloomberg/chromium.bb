@@ -45,12 +45,17 @@
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
+namespace blink {
+class WebWaitableEvent;
+}
+
 namespace WebCore {
 
 class BlobDataHandle;
 class KURL;
 class ExecutionContext;
 class ThreadableWebSocketChannelClientWrapper;
+class ThreadableWebSocketChannelSyncHelper;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
 class WorkerRunLoop;
@@ -87,7 +92,7 @@ public:
 
         // sourceURLAtConnection and lineNumberAtConnection parameters may
         // be shown when the connection fails.
-        static void initialize(ExecutionContext*, PassRefPtr<WeakReference<Peer> >, WorkerLoaderProxy*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& taskMode, const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
+        static void initialize(ExecutionContext*, PassRefPtr<WeakReference<Peer> >, WorkerLoaderProxy*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, const String& taskMode, const String& sourceURLAtConnection, unsigned lineNumberAtConnection, ThreadableWebSocketChannelSyncHelper*);
         void destroy();
 
         void connect(const KURL&, const String& protocol);
@@ -111,12 +116,13 @@ public:
         virtual void didReceiveMessageError() OVERRIDE;
 
     private:
-        Peer(PassRefPtr<WeakReference<Peer> >, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& taskMode, const String& sourceURL, unsigned lineNumber);
+        Peer(PassRefPtr<WeakReference<Peer> >, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, WorkerLoaderProxy&, ExecutionContext*, const String& taskMode, const String& sourceURL, unsigned lineNumber, ThreadableWebSocketChannelSyncHelper&);
 
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         WorkerLoaderProxy& m_loaderProxy;
         RefPtr<WebSocketChannel> m_mainWebSocketChannel;
         String m_taskMode;
+        ThreadableWebSocketChannelSyncHelper& m_syncHelper;
         WeakPtrFactory<Peer> m_weakFactory;
     };
 
@@ -162,13 +168,15 @@ private:
         // Executed on the worker context's thread.
         void clearClientWrapper();
 
-        void setMethodNotCompleted();
-        void waitForMethodCompletion();
+        // Returns false if shutdown event is received before method completion.
+        bool waitForMethodCompletion();
 
         RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
         RefPtr<WorkerGlobalScope> m_workerGlobalScope;
         WorkerLoaderProxy& m_loaderProxy;
         String m_taskMode;
+        OwnPtr<blink::WebWaitableEvent> m_syncEvent;
+        OwnPtr<ThreadableWebSocketChannelSyncHelper> m_syncHelper;
         WeakPtr<Peer> m_peer;
     };
 
