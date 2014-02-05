@@ -523,31 +523,34 @@ class SimpleBuilder(Builder):
         self.archive_stages[board_config] = archive_stage
         tasks.append((builder_run, board, archive_stage))
 
+    # Run BuildPackages and BuildImage in sequence.
+    for builder_run, board, archive_stage in tasks:
+      compilecheck = (builder_run.config.compilecheck or
+                      builder_run.options.compilecheck)
+      if not compilecheck:
+        # Run BuildPackages and BuildImage in the foreground, generating
+        # or using PGO data if requested.
+        kwargs = {'archive_stage': archive_stage, 'builder_run': builder_run}
+        if builder_run.config.pgo_generate:
+          kwargs['pgo_generate'] = True
+        elif builder_run.config.pgo_use:
+          kwargs['pgo_use'] = True
+
+        self._RunStage(stages.BuildPackagesStage, board, **kwargs)
+        self._RunStage(stages.BuildImageStage, board, **kwargs)
+
+        if builder_run.config.pgo_generate:
+          suite = cbuildbot_config.PGORecordTest()
+          self._RunStage(stages.HWTestStage, board, archive_stage, suite,
+                         builder_run=builder_run)
+
     # Set up a process pool to run test/archive stages in the background.
-    # This process runs task(board) for each board added to the queue.
+    # This process runs the task_runner for each board added to the queue.
     task_runner = self._RunBackgroundStagesForBoard
     with parallel.BackgroundTaskRunner(task_runner) as queue:
       for builder_run, board, archive_stage in tasks:
         compilecheck = (builder_run.config.compilecheck or
                         builder_run.options.compilecheck)
-        if not compilecheck:
-          # Run BuildPackages and BuildImage in the foreground, generating
-          # or using PGO data if requested.
-          kwargs = {'archive_stage': archive_stage, 'builder_run': builder_run}
-          if builder_run.config.pgo_generate:
-            kwargs['pgo_generate'] = True
-          elif builder_run.config.pgo_use:
-            kwargs['pgo_use'] = True
-
-          self._RunStage(stages.BuildPackagesStage, board, **kwargs)
-          self._RunStage(stages.BuildImageStage, board, **kwargs)
-
-          if builder_run.config.pgo_generate:
-            suite = cbuildbot_config.PGORecordTest()
-            self._RunStage(stages.HWTestStage, board, archive_stage, suite,
-                           builder_run=builder_run)
-
-        # Kick off our background stages.
         queue.put([builder_run, board, compilecheck])
 
   def RunStages(self):
