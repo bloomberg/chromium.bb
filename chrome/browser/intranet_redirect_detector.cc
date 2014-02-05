@@ -21,8 +21,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
-const size_t IntranetRedirectDetector::kNumCharsInHostnames = 10;
-
 IntranetRedirectDetector::IntranetRedirectDetector()
     : redirect_origin_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownIntranetRedirectOrigin)),
@@ -77,7 +75,9 @@ void IntranetRedirectDetector::FinishSleep() {
   // Start three fetchers on random hostnames.
   for (size_t i = 0; i < 3; ++i) {
     std::string url_string("http://");
-    for (size_t j = 0; j < kNumCharsInHostnames; ++j)
+    // We generate a random hostname with between 7 and 15 characters.
+    const int num_chars = base::RandInt(7, 15);
+    for (int j = 0; j < num_chars; ++j)
       url_string += ('a' + base::RandInt(0, 'z' - 'a'));
     GURL random_url(url_string + '/');
     net::URLFetcher* fetcher = net::URLFetcher::Create(
@@ -161,27 +161,4 @@ void IntranetRedirectDetector::OnIPAddressChanged() {
       base::Bind(&IntranetRedirectDetector::FinishSleep,
                  weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kNetworkSwitchDelayMS));
-}
-
-IntranetRedirectHostResolverProc::IntranetRedirectHostResolverProc(
-    net::HostResolverProc* previous)
-    : net::HostResolverProc(previous) {
-}
-
-int IntranetRedirectHostResolverProc::Resolve(
-    const std::string& host,
-    net::AddressFamily address_family,
-    net::HostResolverFlags host_resolver_flags,
-    net::AddressList* addrlist,
-    int* os_error) {
-  // We'd love to just ask the IntranetRedirectDetector, but we may not be on
-  // the same thread.  So just use the heuristic that any all-lowercase a-z
-  // hostname with the right number of characters is likely from the detector
-  // (and thus should be blocked).
-  return ((host.length() == IntranetRedirectDetector::kNumCharsInHostnames) &&
-      (host.find_first_not_of("abcdefghijklmnopqrstuvwxyz") ==
-          std::string::npos)) ?
-      net::ERR_NAME_NOT_RESOLVED :
-      ResolveUsingPrevious(host, address_family, host_resolver_flags, addrlist,
-                           os_error);
 }

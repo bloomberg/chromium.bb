@@ -54,10 +54,6 @@ class IntranetRedirectDetector
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // The number of characters the fetcher will use for its randomly-generated
-  // hostnames.
-  static const size_t kNumCharsInHostnames;
-
  private:
   typedef std::set<net::URLFetcher*> Fetchers;
 
@@ -80,22 +76,6 @@ class IntranetRedirectDetector
   base::WeakPtrFactory<IntranetRedirectDetector> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IntranetRedirectDetector);
-};
-
-// This is for use in testing, where we don't want our fetches to actually go
-// over the network.  It captures the requests and causes them to fail.
-class IntranetRedirectHostResolverProc : public net::HostResolverProc {
- public:
-  explicit IntranetRedirectHostResolverProc(net::HostResolverProc* previous);
-
-  virtual int Resolve(const std::string& host,
-                      net::AddressFamily address_family,
-                      net::HostResolverFlags host_resolver_flags,
-                      net::AddressList* addrlist,
-                      int* os_error) OVERRIDE;
-
- private:
-  virtual ~IntranetRedirectHostResolverProc() {}
 };
 
 #endif  // CHROME_BROWSER_INTRANET_REDIRECT_DETECTOR_H_
