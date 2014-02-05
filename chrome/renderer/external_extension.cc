@@ -4,8 +4,6 @@
 
 #include "chrome/renderer/external_extension.h"
 
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/search_provider.h"
 #include "content/public/renderer/render_view.h"
@@ -20,7 +18,9 @@ using content::RenderView;
 
 namespace extensions_v8 {
 
-static const char* const kSearchProviderApi =
+namespace {
+
+const char* const kSearchProviderApi =
     "var external;"
     "if (!external)"
     "  external = {};"
@@ -33,7 +33,9 @@ static const char* const kSearchProviderApi =
     "  return NativeIsSearchProviderInstalled(name);"
     "};";
 
-const char* const kExternalExtensionName = "v8/External";
+const char kExternalExtensionName[] = "v8/External";
+
+}  // namespace
 
 class ExternalExtensionWrapper : public v8::Extension {
  public:
@@ -61,9 +63,7 @@ class ExternalExtensionWrapper : public v8::Extension {
 };
 
 ExternalExtensionWrapper::ExternalExtensionWrapper()
-    : v8::Extension(
-        kExternalExtensionName,
-        kSearchProviderApi) {
+    : v8::Extension(kExternalExtensionName, kSearchProviderApi) {
 }
 
 v8::Handle<v8::FunctionTemplate>
@@ -98,8 +98,8 @@ void ExternalExtensionWrapper::AddSearchProvider(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (!args.Length()) return;
 
-  std::string name = std::string(*v8::String::Utf8Value(args[0]));
-  if (!name.length()) return;
+  std::string name(*v8::String::Utf8Value(args[0]));
+  if (name.empty()) return;
 
   RenderView* render_view = GetRenderView();
   if (!render_view) return;
@@ -119,7 +119,7 @@ void ExternalExtensionWrapper::IsSearchProviderInstalled(
   v8::String::Utf8Value utf8name(args[0]);
   if (!utf8name.length()) return;
 
-  std::string name = std::string(*utf8name);
+  std::string name(*utf8name);
   RenderView* render_view = GetRenderView();
   if (!render_view) return;
 
