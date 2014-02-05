@@ -85,7 +85,6 @@ public:
 
     void layout(bool allowSubtree = true);
     bool didFirstLayout() const;
-    void layoutTimerFired(Timer<FrameView>*);
     void scheduleRelayout();
     void scheduleRelayoutOfSubtree(RenderObject*);
     void unscheduleRelayout();
@@ -437,7 +436,7 @@ private:
     bool m_contentIsOpaque;
     unsigned m_slowRepaintObjectCount;
 
-    Timer<FrameView> m_layoutTimer;
+    bool m_hasPendingLayout;
     bool m_delayedLayout;
     RenderObject* m_layoutSubtreeRoot;
 

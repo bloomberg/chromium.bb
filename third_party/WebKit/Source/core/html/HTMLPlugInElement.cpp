@@ -129,6 +129,7 @@ void HTMLPlugInElement::attach(const AttachContext& context)
         && !m_isDelayingLoadEvent) {
         m_isDelayingLoadEvent = true;
         document().incrementLoadEventDelayCount();
+        document().loadPluginsSoon();
     }
 }
 

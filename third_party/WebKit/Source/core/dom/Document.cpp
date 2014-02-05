@@ -485,6 +485,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_hasFullscreenElementStack(false)
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
+    , m_pluginLoadingTimer(this, &Document::pluginLoadingTimerFired)
     , m_didSetReferrerPolicy(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_directionSetOnDocumentElement(false)
@@ -4915,6 +4916,18 @@ void Document::loadEventDelayTimerFired(Timer<Document>*)
 {
     if (frame())
         frame()->loader().checkCompleted();
+}
+
+void Document::loadPluginsSoon()
+{
+    // FIXME: Remove this timer once we don't need to compute layout to load plugins.
+    if (!m_pluginLoadingTimer.isActive())
+        m_pluginLoadingTimer.startOneShot(0);
+}
+
+void Document::pluginLoadingTimerFired(Timer<Document>*)
+{
+    updateLayout();
 }
 
 ScriptedAnimationController& Document::ensureScriptedAnimationController()

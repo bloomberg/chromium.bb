@@ -927,6 +927,7 @@ public:
     void incrementLoadEventDelayCount() { ++m_loadEventDelayCount; }
     void decrementLoadEventDelayCount();
     bool isDelayingLoadEvent() const { return m_loadEventDelayCount; }
+    void loadPluginsSoon();
 
     PassRefPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force) const;
     PassRefPtr<TouchList> createTouchList(Vector<RefPtr<Touch> >&) const;
@@ -1110,6 +1111,7 @@ private:
     PassRefPtr<NodeList> handleZeroPadding(const HitTestRequest&, HitTestResult&) const;
 
     void loadEventDelayTimerFired(Timer<Document>*);
+    void pluginLoadingTimerFired(Timer<Document>*);
 
     PageVisibilityState pageVisibilityState() const;
 
@@ -1287,6 +1289,7 @@ private:
 
     int m_loadEventDelayCount;
     Timer<Document> m_loadEventDelayTimer;
+    Timer<Document> m_pluginLoadingTimer;
 
     ViewportDescription m_viewportDescription;
     ViewportDescription m_legacyViewportDescription;
