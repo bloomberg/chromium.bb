@@ -36,6 +36,10 @@ class EventDeviceInfo {
   bool HasSwEvent(unsigned int code) const;
   bool HasLedEvent(unsigned int code) const;
 
+  // Properties of absolute axes.
+  int32 GetAbsMinimum(unsigned int code) const;
+  int32 GetAbsMaximum(unsigned int code) const;
+
   // Check input device properties.
   bool HasProp(unsigned int code) const;
 
@@ -48,6 +52,8 @@ class EventDeviceInfo {
   unsigned long sw_bits_[EVDEV_BITS_TO_LONGS(SW_CNT)];
   unsigned long led_bits_[EVDEV_BITS_TO_LONGS(LED_CNT)];
   unsigned long prop_bits_[EVDEV_BITS_TO_LONGS(INPUT_PROP_CNT)];
+
+  struct input_absinfo abs_info_[ABS_CNT];
 
   DISALLOW_COPY_AND_ASSIGN(EventDeviceInfo);
 };

@@ -36,6 +36,14 @@ bool BitIsSet(const unsigned long* bits, unsigned int bit) {
   return (bits[bit / EVDEV_LONG_BITS] & (1UL << (bit % EVDEV_LONG_BITS)));
 }
 
+bool GetAbsInfo(int fd, int code, struct input_absinfo* absinfo) {
+  if (ioctl(fd, EVIOCGABS(code), absinfo)) {
+    DLOG(ERROR) << "failed EVIOCGABS(" << code << ") on fd " << fd;
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 EventDeviceInfo::EventDeviceInfo() {
@@ -47,6 +55,7 @@ EventDeviceInfo::EventDeviceInfo() {
   memset(sw_bits_, 0, sizeof(sw_bits_));
   memset(led_bits_, 0, sizeof(led_bits_));
   memset(prop_bits_, 0, sizeof(prop_bits_));
+  memset(abs_info_, 0, sizeof(abs_info_));
 }
 
 EventDeviceInfo::~EventDeviceInfo() {}
@@ -75,6 +84,11 @@ bool EventDeviceInfo::Initialize(int fd) {
 
   if (!GetPropBits(fd, prop_bits_, sizeof(prop_bits_)))
     return false;
+
+  for (unsigned int i = 0; i < ABS_CNT; ++i)
+    if (HasAbsEvent(i))
+      if (!GetAbsInfo(fd, i, &abs_info_[i]))
+        return false;
 
   return true;
 }
@@ -125,6 +139,14 @@ bool EventDeviceInfo::HasProp(unsigned int code) const {
   if (code > INPUT_PROP_MAX)
     return false;
   return BitIsSet(prop_bits_, code);
+}
+
+int32 EventDeviceInfo::GetAbsMinimum(unsigned int code) const {
+  return abs_info_[code].minimum;
+}
+
+int32 EventDeviceInfo::GetAbsMaximum(unsigned int code) const {
+  return abs_info_[code].maximum;
 }
 
 }  // namespace ui

@@ -86,7 +86,7 @@ void EventFactoryEvdev::AttachInputDevice(const base::FilePath& path) {
   // TODO(spang) Add more device types.
   scoped_ptr<EventConverterEvdev> converter;
   if (IsTouchScreen(devinfo))
-    converter.reset(new TouchEventConverterEvdev(fd, path));
+    converter.reset(new TouchEventConverterEvdev(fd, path, devinfo));
   else if (devinfo.HasEventType(EV_KEY))
     converter.reset(new KeyEventConverterEvdev(fd, path, &modifiers_));
 

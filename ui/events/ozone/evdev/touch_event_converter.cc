@@ -33,13 +33,17 @@ const float kFingerWidth = 25.f;
 
 namespace ui {
 
-TouchEventConverterEvdev::TouchEventConverterEvdev(int fd, base::FilePath path)
-    : pressure_min_(0),
-      pressure_max_(0),
+TouchEventConverterEvdev::TouchEventConverterEvdev(int fd,
+                                                   base::FilePath path,
+                                                   const EventDeviceInfo& info)
+    : pressure_min_(info.GetAbsMinimum(ABS_MT_PRESSURE)),
+      pressure_max_(info.GetAbsMaximum(ABS_MT_PRESSURE)),
       x_scale_(1.),
       y_scale_(1.),
-      x_max_(std::numeric_limits<int>::max()),
-      y_max_(std::numeric_limits<int>::max()),
+      x_min_(info.GetAbsMinimum(ABS_MT_POSITION_X)),
+      x_max_(info.GetAbsMaximum(ABS_MT_POSITION_X)),
+      y_min_(info.GetAbsMinimum(ABS_MT_POSITION_Y)),
+      y_max_(info.GetAbsMaximum(ABS_MT_POSITION_Y)),
       current_slot_(0),
       fd_(fd),
       path_(path) {
@@ -53,43 +57,14 @@ TouchEventConverterEvdev::~TouchEventConverterEvdev() {
 }
 
 void TouchEventConverterEvdev::Init() {
-  input_absinfo abs = {};
-  if (ioctl(fd_, EVIOCGABS(ABS_MT_SLOT), &abs) != -1) {
-    CHECK_GE(abs.maximum, abs.minimum);
-    CHECK_GE(abs.minimum, 0);
-  } else {
-    DLOG(WARNING) << "failed ioctl EVIOCGABS ABS_MT_SLOT event on "
-                  << path_.value();
-  }
-  if (ioctl(fd_, EVIOCGABS(ABS_MT_PRESSURE), &abs) != -1) {
-    pressure_min_ = abs.minimum;
-    pressure_max_ = abs.maximum;
-  } else {
-    DLOG(WARNING) << "failed ioctl EVIOCGABS ABS_MT_PRESSURE event on "
-                  << path_.value();
-  }
-  int x_min = 0, x_max = 0;
-  if (ioctl(fd_, EVIOCGABS(ABS_MT_POSITION_X), &abs) != -1) {
-    x_min = abs.minimum;
-    x_max = abs.maximum;
-  } else {
-    LOG(WARNING) << "failed ioctl EVIOCGABS ABS_X event on " << path_.value();
-  }
-  int y_min = 0, y_max = 0;
-  if (ioctl(fd_, EVIOCGABS(ABS_MT_POSITION_Y), &abs) != -1) {
-    y_min = abs.minimum;
-    y_max = abs.maximum;
-  } else {
-    LOG(WARNING) << "failed ioctl EVIOCGABS ABS_Y event on " << path_.value();
-  }
-  if (x_max && y_max && gfx::SurfaceFactoryOzone::GetInstance()) {
+  if (x_max_ && y_max_ && gfx::SurfaceFactoryOzone::GetInstance()) {
     const char* display =
         gfx::SurfaceFactoryOzone::GetInstance()->DefaultDisplaySpec();
     int screen_width, screen_height;
     int sc = sscanf(display, "%dx%d", &screen_width, &screen_height);
     if (sc == 2) {
-      x_scale_ = (double)screen_width / (x_max - x_min);
-      y_scale_ = (double)screen_height / (y_max - y_min);
+      x_scale_ = (double)screen_width / (x_max_ - x_min_);
+      y_scale_ = (double)screen_height / (y_max_ - y_min_);
       x_max_ = screen_width - 1;
       y_max_ = screen_height - 1;
       VLOG(1) << "touch input x_scale=" << x_scale_

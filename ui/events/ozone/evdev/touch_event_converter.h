@@ -13,6 +13,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/ozone/evdev/event_converter.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
 
 namespace ui {
 
@@ -25,7 +26,9 @@ class EVENTS_EXPORT TouchEventConverterEvdev
   enum {
     MAX_FINGERS = 11
   };
-  TouchEventConverterEvdev(int fd, base::FilePath path);
+  TouchEventConverterEvdev(int fd,
+                           base::FilePath path,
+                           const EventDeviceInfo& info);
   virtual ~TouchEventConverterEvdev();
 
  private:
@@ -50,8 +53,12 @@ class EVENTS_EXPORT TouchEventConverterEvdev
   float x_scale_;
   float y_scale_;
 
-  // Maximum coordinate-values allowed for the events.
+  // Range for x-axis.
+  int x_min_;
   int x_max_;
+
+  // Range for y-axis.
+  int y_min_;
   int y_max_;
 
   // Touch point currently being updated from the /dev/input/event* stream.

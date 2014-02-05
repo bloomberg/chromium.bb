@@ -66,9 +66,15 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
 
 MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
                                                            base::FilePath path)
-    : TouchEventConverterEvdev(fd, path) {
+    : TouchEventConverterEvdev(fd, path, EventDeviceInfo()) {
   pressure_min_ = 30;
   pressure_max_ = 60;
+
+  // TODO(rjkroege): Check test axes.
+  x_min_ = 0;
+  x_max_ = std::numeric_limits<int>::max();
+  y_min_ = 0;
+  y_max_ = std::numeric_limits<int>::max();
 
   int fds[2];
 
