@@ -1360,7 +1360,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
   // Prevent the WebContents HWND from being hidden by any of the model
   // operations performed during the drag.
   if (!detach_into_browser_)
-    source_dragged_contents()->IncrementCapturerCount();
+    source_dragged_contents()->IncrementCapturerCount(gfx::Size());
 
   std::vector<gfx::Rect> drag_bounds = CalculateBoundsForDraggedTabs();
   TabStripModel* attached_model = GetModel(attached_tabstrip_);

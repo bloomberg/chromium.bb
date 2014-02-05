@@ -63,6 +63,9 @@ class ThreadSafeCaptureOracle
     return oracle_->capture_period();
   }
 
+  // Returns the current capture resolution.
+  gfx::Size GetCaptureSize() const;
+
   // Updates capture resolution based on the supplied source size and the
   // maximum frame size.
   void UpdateCaptureSize(const gfx::Size& source_size);
@@ -83,8 +86,9 @@ class ThreadSafeCaptureOracle
       int frame_number,
       base::TimeTicks timestamp,
       bool success);
+
   // Protects everything below it.
-  base::Lock lock_;
+  mutable base::Lock lock_;
 
   // Recipient of our capture activity.
   scoped_ptr<media::VideoCaptureDevice::Client> client_;

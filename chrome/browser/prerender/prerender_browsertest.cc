@@ -3465,7 +3465,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCapturedWebContents) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_PAGE_BEING_CAPTURED, 1);
   WebContents* web_contents = GetActiveWebContents();
-  web_contents->IncrementCapturerCount();
+  web_contents->IncrementCapturerCount(gfx::Size());
   NavigateToDestURLWithDisposition(CURRENT_TAB, false);
   web_contents->DecrementCapturerCount();
 }

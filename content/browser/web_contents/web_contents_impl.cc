@@ -829,11 +829,18 @@ bool WebContentsImpl::DisplayedInsecureContent() const {
   return displayed_insecure_content_;
 }
 
-void WebContentsImpl::IncrementCapturerCount() {
+void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
   DCHECK(!is_being_destroyed_);
   ++capturer_count_;
   DVLOG(1) << "There are now " << capturer_count_
            << " capturing(s) of WebContentsImpl@" << this;
+
+  // Note: This provides a hint to upstream code to size the views optimally
+  // for quality (e.g., to avoid scaling).
+  if (!capture_size.IsEmpty() && preferred_size_for_capture_.IsEmpty()) {
+    preferred_size_for_capture_ = capture_size;
+    OnPreferredSizeChanged(preferred_size_);
+  }
 }
 
 void WebContentsImpl::DecrementCapturerCount() {
@@ -844,6 +851,12 @@ void WebContentsImpl::DecrementCapturerCount() {
 
   if (is_being_destroyed_)
     return;
+
+  if (capturer_count_ == 0) {
+    const gfx::Size old_size = preferred_size_for_capture_;
+    preferred_size_for_capture_ = gfx::Size();
+    OnPreferredSizeChanged(old_size);
+  }
 
   if (IsHidden()) {
     DVLOG(1) << "Executing delayed WasHidden().";
@@ -1575,9 +1588,9 @@ void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
 }
 
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
+  const gfx::Size old_size = GetPreferredSize();
   preferred_size_ = pref_size;
-  if (delegate_)
-    delegate_->UpdatePreferredSize(this, pref_size);
+  OnPreferredSizeChanged(old_size);
 }
 
 void WebContentsImpl::ResizeDueToAutoResize(const gfx::Size& new_size) {
@@ -1918,7 +1931,7 @@ int WebContentsImpl::GetMaximumZoomPercent() const {
 }
 
 gfx::Size WebContentsImpl::GetPreferredSize() const {
-  return preferred_size_;
+  return capturer_count_ == 0 ? preferred_size_ : preferred_size_for_capture_;
 }
 
 bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
@@ -3743,6 +3756,14 @@ void WebContentsImpl::OnFrameRemoved(
     int64 frame_id) {
    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                      FrameDetached(render_view_host, frame_id));
+}
+
+void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
+  if (!delegate_)
+    return;
+  const gfx::Size new_size = GetPreferredSize();
+  if (new_size != old_size)
+    delegate_->UpdatePreferredSize(this, new_size);
 }
 
 }  // namespace content

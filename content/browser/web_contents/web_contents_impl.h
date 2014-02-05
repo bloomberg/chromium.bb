@@ -224,7 +224,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual std::set<GURL> GetSitesInTab() const OVERRIDE;
   virtual const std::string& GetEncoding() const OVERRIDE;
   virtual bool DisplayedInsecureContent() const OVERRIDE;
-  virtual void IncrementCapturerCount() OVERRIDE;
+  virtual void IncrementCapturerCount(const gfx::Size& capture_size) OVERRIDE;
   virtual void DecrementCapturerCount() OVERRIDE;
   virtual int GetCapturerCount() const OVERRIDE;
   virtual bool IsCrashed() const OVERRIDE;
@@ -836,6 +836,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   void OnFrameRemoved(RenderViewHostImpl* render_view_host, int64 frame_id);
 
+  // Helper method that's called whenever |preferred_size_| or
+  // |preferred_size_for_capture_| changes, to propagate the new value to the
+  // |delegate_|.
+  void OnPreferredSizeChanged(const gfx::Size& old_size);
+
   // Adds/removes a callback called on creation of each new WebContents.
   // Deprecated, about to remove.
   static void AddCreatedCallback(const CreatedCallback& callback);
@@ -995,6 +1000,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The intrinsic size of the page.
   gfx::Size preferred_size_;
+
+  // The preferred size for content screen capture.  When |capturer_count_| > 0,
+  // this overrides |preferred_size_|.
+  gfx::Size preferred_size_for_capture_;
 
 #if defined(OS_ANDROID)
   // Date time chooser opened by this tab.

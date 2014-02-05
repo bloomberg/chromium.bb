@@ -695,7 +695,7 @@ bool WebContentsCaptureMachine::StartObservingWebContents() {
 
   WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
   if (contents) {
-    contents->IncrementCapturerCount();
+    contents->IncrementCapturerCount(oracle_proxy_->GetCaptureSize());
     fullscreen_widget_id_ = contents->GetFullscreenWidgetRoutingID();
     RenewFrameSubscription();
     return true;

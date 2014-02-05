@@ -127,6 +127,11 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   return true;
 }
 
+gfx::Size ThreadSafeCaptureOracle::GetCaptureSize() const {
+  base::AutoLock guard(lock_);
+  return capture_size_;
+}
+
 void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
   base::AutoLock guard(lock_);
 
