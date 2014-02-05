@@ -2412,8 +2412,12 @@ void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
     LayerImpl* scroll_layer_impl = active_tree_->LayerById(
         scroll_layer_id_when_mouse_over_scrollbar_);
 
+    // The check for a null scroll_layer_impl below was added to see if it will
+    // eliminate the crashes described in http://crbug.com/326635.
+    // TODO(wjmaclean) Add a unit test if this fixes the crashes.
     ScrollbarAnimationController* animation_controller =
-        scroll_layer_impl->scrollbar_animation_controller();
+        scroll_layer_impl ? scroll_layer_impl->scrollbar_animation_controller()
+                          : NULL;
     if (animation_controller) {
       animation_controller->DidMouseMoveOffScrollbar(
           CurrentPhysicalTimeTicks());
