@@ -23,6 +23,12 @@
     tracks: [],
 
     /**
+     * Play order of the tracks. Each value is the index of 'this.tracks'.
+     * @type {Array.<number>}
+     */
+    playOrder: [],
+
+    /**
      * Track index of the current track.
      * If the tracks propertye is empty, it should be -1. Otherwise, be a valid
      * track number.
@@ -30,6 +36,21 @@
      * @type {number}
      */
     currentTrackIndex: -1,
+
+    /**
+     * Flag whether the shuffle mode is enabled.
+     * @type {boolean}
+     */
+    shuffle: false,
+
+    /**
+     * Invoked when 'shuffle' property is changed.
+     * @param {boolean} oldValue Old value.
+     * @param {boolean} newValue New value.
+     */
+    shuffleChanged: function(oldValue, newValue) {
+      this.generatePlayOrder(true /* keep the current track */);
+    },
 
     /**
      * Invoked when the current track index is changed.
@@ -40,17 +61,23 @@
       if (oldValue === newValue)
         return;
 
-      if (oldValue !== -1)
+      if (!isNaN(oldValue) && oldValue !== -1)
         this.tracks[oldValue].active = false;
 
-      if (newValue < 0 || this.tracks.length <= newValue) {
-        if (this.tracks.length === 0)
-          this.currentTrackIndex = -1;
-        else
-          this.currentTrackIndex = 0;
-      } else {
-        this.tracks[newValue].active = true;
+      if (0 <= newValue && newValue < this.tracks.length) {
+        var currentPlayOrder = this.playOrder.indexOf(newValue);
+        if (currentPlayOrder !== -1) {
+          // Success
+          this.tracks[newValue].active = true;
+          return;
+        }
       }
+
+      // Invalid index
+      if (this.tracks.length === 0)
+        this.currentTrackIndex = -1;
+      else
+        this.generatePlayOrder(false /* no need to keep the current track */);
     },
 
     /**
@@ -59,16 +86,21 @@
      */
     tracksChanged: function(oldValue, newValue) {
       if (oldValue !== newValue) {
+        // Re-register the observer of 'this.tracks'.
         this.tracksObserver_.close();
         this.tracksObserver_ = new ArrayObserver(
             this.tracks,
             this.tracksValueChanged_.bind(this));
+
+        // Reset play order and current index.
         if (this.tracks.length !== 0)
-          this.currentTrackIndex = 0;
+          this.generatePlayOrder(false /* no need to keep the current track */);
       }
 
-      if (this.tracks.length === 0)
+      if (this.tracks.length === 0) {
+        this.playOrder = [];
         this.currentTrackIndex = -1;
+      }
     },
 
     /**
@@ -89,6 +121,48 @@
     trackClicked: function(event) {
       var track = event.target.templateInstance.model;
       this.selectTrack(track);
+    },
+
+    /**
+     * Invoked when the track element is clicked.
+     * @param {boolean} keepCurrentTrack Keep the current track or not.
+     */
+    generatePlayOrder: function(keepCurrentTrack) {
+      console.assert((keepCurrentTrack !== undefined),
+                     'The argument "forward" is undefined');
+
+      if (this.tracks.length === 0) {
+        this.playOrder = [];
+        return;
+      }
+
+      // Creates sequenced array.
+      this.playOrder =
+          this.tracks.
+          map(function(unused, index) { return index; });
+
+      if (this.shuffle) {
+        // Randomizes the play order array (Schwarzian-transform algorithm).
+        this.playOrder =
+            this.playOrder.
+            map(function(a) {
+              return {weight: Math.random(), index: a};
+            }).
+            sort(function(a, b) { return a.weight - b.weight }).
+            map(function(a) { return a.index });
+
+        if (keepCurrentTrack) {
+          // Puts the current track at the beginning of the play order.
+          this.playOrder =
+              this.playOrder.filter(function(value) {
+                return this.currentTrackIndex !== value;
+              }, this);
+          this.playOrder.splice(0, 0, this.currentTrackIndex);
+        }
+      }
+
+      if (!keepCurrentTrack)
+        this.currentTrackIndex = this.playOrder[0];
     },
 
     /**
@@ -120,58 +194,39 @@
     },
 
     /**
-     * Returns the next (or previous) track in the track list.
+     * Returns the next (or previous) track in the track list. If there is no
+     * next track, returns -1.
      *
      * @param {boolean} forward Specify direction: forward or previous mode.
      *     True: forward mode, false: previous mode.
-     * @return {AudioPlayer.TrackInfo} TrackInfo of the next track. If there is
-     *     no track, the return value is null.
+     * @param {boolean} cyclic Specify if cyclically or not: It true, the first
+     *     track is succeeding to the last track, otherwise no track after the
+     *     last.
+     * @return {number} The next track index.
      */
-    getNextTrackIndex: function(forward) {
-      var defaultTrack = forward ? 0 : (this.tracks.length - 1);
-      var tentativeNewTrackIndex = this.currentTrackIndex + (forward ? +1 : -1);
-      var newTrackIndex;
+    getNextTrackIndex: function(forward, cyclic)  {
+      if (this.tracks.length === 0)
+        return -1;
 
-      if (this.tracks.length === 0) {
-        newTrackIndex = -1;
-      } else {
-        if (this.currentTrackIndex === -1) {
-          newTrackIndex = defaultTrack;
-        } else if (0 <= tentativeNewTrackIndex &&
-                   tentativeNewTrackIndex < this.tracks.length) {
-          newTrackIndex = tentativeNewTrackIndex;
-        } else {
-          newTrackIndex = defaultTrack;
-        }
-      }
+      var defaultTrackIndex =
+          forward ? this.playOrder[0] : this.playOrder[this.tracks.length - 1];
+
+      var currentPlayOrder = this.playOrder.indexOf(this.currentTrackIndex);
+      console.assert(
+          (0 <= currentPlayOrder && currentPlayOrder < this.tracks.length),
+          'Insufficient TrackList.playOrder. The current track is not on the ' +
+            'track list.');
+
+      var newPlayOrder = currentPlayOrder + (forward ? +1 : -1);
+      if (newPlayOrder === -1 || newPlayOrder === this.tracks.length)
+        return cyclic ? defaultTrackIndex : -1;
+
+      var newTrackIndex = this.playOrder[newPlayOrder];
+      console.assert(
+          (0 <= newTrackIndex && newTrackIndex < this.tracks.length),
+          'Insufficient TrackList.playOrder. New Play Order: ' + newPlayOrder);
 
       return newTrackIndex;
     },
-
-    /**
-     * Returns if the next (or previous) track in the track list is available.
-     *
-     * @param {boolean} forward Specify direction: forward or previous mode.
-     *     True: forward mode, false: previous mode.
-     * @return {true} True if the next (or previous) track available. False
-     *     otherwise.
-     */
-    isNextTrackAvailable: function(forward) {
-      if (this.tracks.length === 0) {
-        return false;
-      } else {
-        var tentativeNewTrackIndex =
-            this.currentTrackIndex + (forward ? +1 : -1);
-
-        if (this.currentTrackIndex === -1) {
-          return false;
-        } else if (0 <= tentativeNewTrackIndex &&
-                   tentativeNewTrackIndex < this.tracks.length) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    }
   });  // Polymer('track-list') block
 })();  // Anonymous closure

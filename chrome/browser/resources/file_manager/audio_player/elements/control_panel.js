@@ -94,19 +94,20 @@
     volumeSliderShown: false,
 
     /**
-     * Flag to enable shuffle mode.
+     * Flag whether the shuffle mode is enabled.
      * @type {boolean}
      */
     shuffle: false,
 
-    /*
-     * Flag to enable repeat mode.
+    /**
+     * Flag whether the repeat mode is enabled.
      * @type {boolean}
      */
     repeat: false,
 
-    /*
-     * Flag if the audio is playing or paused. True if playing, or false paused.
+    /**
+     * Flag whether the audio is playing or paused. True if playing, or false
+     * paused.
      * @type {boolean}
      */
     playing: false,

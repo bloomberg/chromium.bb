@@ -130,7 +130,7 @@ Polymer('audio-player', {
    * @param {boolean} newValue new value.
    */
   onControllerShuffleChanged: function(oldValue, newValue) {
-    // TODO(yoshiki): Implement shuffle mode.
+    this.trackList.shuffle = newValue;
   },
 
   /**
@@ -194,13 +194,14 @@ Polymer('audio-player', {
   advance_: function(forward, repeat) {
     this.cancelAutoAdvance_();
 
-    var nextTrackIndex = this.trackList.getNextTrackIndex(forward);
-    var nextTrack = this.trackList.tracks[nextTrackIndex];
-    var isNextTrackAvailable = this.trackList.isNextTrackAvailable(forward);
+    var nextTrackIndex = this.trackList.getNextTrackIndex(forward, true);
+    var isNextTrackAvailable =
+        (this.trackList.getNextTrackIndex(forward, repeat) !== -1);
 
     this.trackList.currentTrackIndex = nextTrackIndex;
 
-    if (isNextTrackAvailable || repeat && nextTrack) {
+    if (isNextTrackAvailable) {
+      var nextTrack = this.trackList.tracks[nextTrackIndex];
       this.audioElement.src = nextTrack.url;
       this.audioElement.play();
     } else {
