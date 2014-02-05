@@ -221,6 +221,14 @@
       'filepath': 'Source/platform/image-decoders/webp' \
                   '|Source/platform/image-encoders/skia/WEBP'
     },
+    'css_grid_layout': {
+      'filepath': 'Source/core/rendering/.*Grid' \
+                  '|Source/core/css/.*Grid' \
+                  '|LayoutTests/fast/css-grid-layout/' \
+                  '|LayoutTests/ietestcenter/css3/grid/' \
+                  '|LayoutTests/platform/.*/fast/css-grid-layout/' \
+                  '|LayoutTests/platform/.*/ietestcenter/css3/grid/'
+    },
   },
 
   'WATCHLISTS': {
@@ -319,5 +327,6 @@
               'jzern@chromium.org',
               'skal@google.com',
               'vikasa@google.com' ],
+    'css_grid_layout': [ 'svillar@igalia.com', 'jfernandez@igalia.com', 'rego@igalia.com' ],
   },
 }
