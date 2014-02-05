@@ -524,13 +524,14 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
 
     // Cache if we are at the top of the block right now.
     bool atBeforeSideOfBlock = marginInfo.atBeforeSideOfBlock();
+    bool childIsSelfCollapsing = child->isSelfCollapsingBlock();
 
     // Now determine the correct ypos based off examination of collapsing margin
     // values.
-    LayoutUnit logicalTopBeforeClear = collapseMargins(child, marginInfo);
+    LayoutUnit logicalTopBeforeClear = collapseMargins(child, marginInfo, childIsSelfCollapsing);
 
     // Now check for clear.
-    LayoutUnit logicalTopAfterClear = clearFloatsIfNeeded(child, marginInfo, oldPosMarginBefore, oldNegMarginBefore, logicalTopBeforeClear);
+    LayoutUnit logicalTopAfterClear = clearFloatsIfNeeded(child, marginInfo, oldPosMarginBefore, oldNegMarginBefore, logicalTopBeforeClear, childIsSelfCollapsing);
 
     bool paginated = view()->layoutState()->isPaginated();
     if (paginated) {
@@ -568,12 +569,12 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     // we set this bit to ensure we would not collapse the child's margins, and those of any subsequent
     // self-collapsing siblings, with our parent. If this child is not self-collapsing then it can
     // collapse its margins with the parent so reset the bit.
-    if (!marginInfo.canCollapseMarginAfterWithLastChild() && !child->isSelfCollapsingBlock())
+    if (!marginInfo.canCollapseMarginAfterWithLastChild() && !childIsSelfCollapsing)
         marginInfo.setCanCollapseMarginAfterWithLastChild(true);
 
     // We are no longer at the top of the block if we encounter a non-empty child.
     // This has to be done after checking for clear, so that margins can be reset if a clear occurred.
-    if (marginInfo.atBeforeSideOfBlock() && !child->isSelfCollapsingBlock())
+    if (marginInfo.atBeforeSideOfBlock() && !childIsSelfCollapsing)
         marginInfo.setAtBeforeSideOfBlock(false);
 
     // Now place the child in the correct left position
@@ -998,11 +999,10 @@ RenderBlockFlow::MarginValues RenderBlockFlow::marginValuesForChild(RenderBox* c
     return RenderBlockFlow::MarginValues(childBeforePositive, childBeforeNegative, childAfterPositive, childAfterNegative);
 }
 
-LayoutUnit RenderBlockFlow::collapseMargins(RenderBox* child, MarginInfo& marginInfo)
+LayoutUnit RenderBlockFlow::collapseMargins(RenderBox* child, MarginInfo& marginInfo, bool childIsSelfCollapsing)
 {
     bool childDiscardMarginBefore = mustDiscardMarginBeforeForChild(child);
     bool childDiscardMarginAfter = mustDiscardMarginAfterForChild(child);
-    bool childIsSelfCollapsing = child->isSelfCollapsingBlock();
 
     // The child discards the before margin when the the after margin has discard in the case of a self collapsing block.
     childDiscardMarginBefore = childDiscardMarginBefore || (childDiscardMarginAfter && childIsSelfCollapsing);
@@ -1213,13 +1213,13 @@ LayoutUnit RenderBlockFlow::computeStartPositionDeltaForChildAvoidingFloats(cons
     return newPosition - oldPosition;
 }
 
-LayoutUnit RenderBlockFlow::clearFloatsIfNeeded(RenderBox* child, MarginInfo& marginInfo, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos)
+LayoutUnit RenderBlockFlow::clearFloatsIfNeeded(RenderBox* child, MarginInfo& marginInfo, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos, bool childIsSelfCollapsing)
 {
     LayoutUnit heightIncrease = getClearDelta(child, yPos);
     if (!heightIncrease)
         return yPos;
 
-    if (child->isSelfCollapsingBlock()) {
+    if (childIsSelfCollapsing) {
         bool childDiscardMargin = mustDiscardMarginBeforeForChild(child) || mustDiscardMarginAfterForChild(child);
 
         // For self-collapsing blocks that clear, they can still collapse their
