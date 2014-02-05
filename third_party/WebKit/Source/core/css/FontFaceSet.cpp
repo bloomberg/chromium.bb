@@ -414,27 +414,6 @@ static const String& nullToSpace(const String& s)
     return s.isNull() ? space : s;
 }
 
-Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const String& text, ExceptionState& exceptionState)
-{
-    Vector<RefPtr<FontFace> > matchedFonts;
-    if (!document()->isActive())
-        return matchedFonts;
-
-    Font font;
-    if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwDOMException(SyntaxError, "Could not resolve '" + fontString + "' as a font.");
-        return matchedFonts;
-    }
-
-    FontFaceCache* fontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
-    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
-        if (face)
-            matchedFonts.append(face->fontFaces(nullToSpace(text)));
-    }
-    return matchedFonts;
-}
-
 ScriptPromise FontFaceSet::load(const String& fontString, const String& text, ExceptionState& exceptionState)
 {
     if (!document()->isActive())

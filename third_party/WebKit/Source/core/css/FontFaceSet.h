@@ -67,7 +67,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror);
 
-    Vector<RefPtr<FontFace> > match(const String& font, const String& text, ExceptionState&);
     bool check(const String& font, const String& text, ExceptionState&);
     ScriptPromise load(const String& font, const String& text, ExceptionState&);
     ScriptPromise ready();

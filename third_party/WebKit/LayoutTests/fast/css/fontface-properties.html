@@ -16,8 +16,14 @@
 <script>
 description('Test getting/setting FontFace properties.');
 
+function getDocumentFontFaces() {
+    var faces = [];
+    document.fonts.forEach(function(face) { faces.push(face); });
+    return faces;
+}
+
 function runTests() {
-    ahemFace = document.fonts.match('italic small-caps 10px Ahem')[0];
+    ahemFace = getDocumentFontFaces()[0];
     shouldBeEqualToString('ahemFace.family', 'Ahem');
     shouldBeEqualToString('ahemFace.style', 'italic');
     shouldBeEqualToString('ahemFace.weight', '300');

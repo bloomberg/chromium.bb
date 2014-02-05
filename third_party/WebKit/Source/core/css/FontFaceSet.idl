@@ -41,7 +41,6 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
     attribute EventHandler onloadingdone;
     attribute EventHandler onloadingerror;
 
-    [RaisesException] sequence<FontFace> match(DOMString font, [Default=NullString] optional DOMString text);
     [RaisesException] boolean check(DOMString font, [Default=NullString] optional DOMString text);
     [RaisesException] Promise load(DOMString font, [Default=NullString] optional DOMString text);
     Promise ready();

@@ -68,7 +68,6 @@ public:
 
     bool checkFont(const String&) const;
     void loadFont(const FontDescription&, const String&, PassRefPtr<LoadFontCallback>);
-    Vector<RefPtr<FontFace> > fontFaces(const String& text) const;
     void willUseFontData(const FontDescription&);
 
 private:

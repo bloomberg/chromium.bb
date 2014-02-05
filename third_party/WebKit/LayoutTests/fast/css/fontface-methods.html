@@ -17,6 +17,12 @@ description('Tests load() and ready() methods of FontFace.');
 
 window.jsTestIsAsync = true;
 
+function getDocumentFontFaces() {
+    var faces = [];
+    document.fonts.forEach(function(face) { faces.push(face); });
+    return faces;
+}
+
 function fail(message) {
     return function() {
         testFailed(message);
@@ -25,7 +31,10 @@ function fail(message) {
 }
 
 function testStep1() {
-    face1 = document.fonts.match('10px Font1')[0];
+    var faces = getDocumentFontFaces();
+    face1 = faces[0];
+    face2 = faces[1];
+
     face1.ready().then(testStep2, fail('face1.ready() rejected'));
     shouldBeEqualToString('face1.status', 'unloaded');
     face1.load();
@@ -35,7 +44,6 @@ function testStep1() {
 function testStep2() {
     shouldBeEqualToString('face1.status', 'loaded');
 
-    face2 = document.fonts.match('10px Font2')[0];
     face2.ready().then(fail('face2.ready() fulfilled'), testStep3);
     shouldBeEqualToString('face2.status', 'unloaded');
     face2.load();

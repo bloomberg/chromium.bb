@@ -220,14 +220,4 @@ void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, cons
     }
 }
 
-Vector<RefPtr<FontFace> > CSSSegmentedFontFace::fontFaces(const String& text) const
-{
-    Vector<RefPtr<FontFace> > fontFaces;
-    for (FontFaceList::const_iterator it = m_fontFaces.begin(); it != m_fontFaces.end(); ++it) {
-        if ((*it)->cssFontFace()->ranges().intersectsWith(text))
-            fontFaces.append(*it);
-    }
-    return fontFaces;
-}
-
 }
