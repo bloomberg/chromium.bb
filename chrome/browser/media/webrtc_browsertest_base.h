@@ -30,8 +30,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
   WebRtcTestBase();
   virtual ~WebRtcTestBase();
 
-  void SetUp() OVERRIDE;
-
   // These all require that the loaded page fulfills the public interface in
   // chrome/test/data/webrtc/message_handling.js.
   void GetUserMediaAndAccept(content::WebContents* tab_contents) const;

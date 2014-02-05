@@ -68,11 +68,6 @@ WebRtcTestBase::~WebRtcTestBase() {
   }
 }
 
-void WebRtcTestBase::SetUp() {
-  EnablePixelOutput();
-  InProcessBrowserTest::SetUp();
-}
-
 void WebRtcTestBase::GetUserMediaAndAccept(
     content::WebContents* tab_contents) const {
   GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
