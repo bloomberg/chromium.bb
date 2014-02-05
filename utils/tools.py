@@ -169,6 +169,14 @@ def gen_blacklist(regexes):
   return lambda f: any(j.match(f) for j in compiled)
 
 
+def get_bool_env_var(name):
+  """Return True if integer environment variable |name| value is non zero.
+
+  If environment variable is missing or is set to '0', returns False.
+  """
+  return bool(int(os.environ.get(name, '0')))
+
+
 def is_headless():
   """True if running in non-interactive mode on some bot machine.
 
@@ -180,4 +188,4 @@ def is_headless():
     # Set when running under swarm bot.
     'SWARMING_HEADLESS',
   )
-  return any(bool(int(os.environ.get(key, 0))) for key in headless_env_keys)
+  return any(get_bool_env_var(key) for key in headless_env_keys)

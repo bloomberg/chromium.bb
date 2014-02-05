@@ -32,6 +32,7 @@ except ImportError:
   keyring_storage = None
 
 from third_party import requests
+from utils import tools
 
 
 # Path to a file with cached OAuth2 credentials, used only if keyring is not
@@ -46,16 +47,22 @@ def add_oauth_options(parser):
   # open-ended request_uri. It should always be 'localhost'.
   parser.oauth_group = optparse.OptionGroup(parser, 'OAuth options')
   parser.oauth_group.add_option(
-      '--no-auth-local-webserver', action='store_true',
-      default=bool(int(os.environ.get('DISABLE_LOCAL_SERVER', '0'))),
-      help='Do not run a local web server.')
+      '--auth-no-local-webserver', action='store_true',
+      default=tools.get_bool_env_var('SWARMING_AUTH_NO_LOCAL_WEBSERVER'),
+      help=('Do not run a local web server when performing OAuth2 login flow. '
+          'Can also be set with SWARMING_AUTH_NO_LOCAL_WEBSERVER=1 '
+          'environment variable.'))
   parser.oauth_group.add_option(
       '--auth-host-port', action='append', type=int,
-      default=[8080, 8090], help='Port web server should listen on.')
+      default=[8080, 8090],
+      help=('Port a local web server should listen on. Used only if '
+          '--auth-no-local-webserver is not set.'))
   parser.oauth_group.add_option(
       '--auth-no-keyring', action='store_true',
-      default=bool(int(os.environ.get('SWARMING_AUTH_NO_KEYRING', '0'))),
-      help='Do not use keyring to store tokens, use plain file storage instead')
+      default=tools.get_bool_env_var('SWARMING_AUTH_NO_KEYRING'),
+      help=('Do not use system keyring to store OAuth2 tokens, store them in '
+          'file %s instead. Can also be set with SWARMING_AUTH_NO_KEYRING=1 '
+          'environment variable.' % OAUTH_STORAGE_FILE))
   parser.add_option_group(parser.oauth_group)
 
 
@@ -173,7 +180,7 @@ def _run_oauth_dance(urlhost, storage, options):
       'https://www.googleapis.com/auth/userinfo.email',
       approval_prompt='force')
 
-  use_local_webserver = not options.no_auth_local_webserver
+  use_local_webserver = not options.auth_no_local_webserver
   ports = options.auth_host_port
   if use_local_webserver:
     success = False
@@ -193,7 +200,7 @@ def _run_oauth_dance(urlhost, storage, options):
       print 'Please check your firewall settings and locally'
       print 'running programs that may be blocking or using those ports.'
       print
-      print 'Falling back to --no-auth-local-webserver and continuing with',
+      print 'Falling back to --auth-no-local-webserver and continuing with',
       print 'authorization.'
       print
 
@@ -213,7 +220,7 @@ def _run_oauth_dance(urlhost, storage, options):
     print 'If your browser is on a different machine then exit and re-run this'
     print 'application with the command-line parameter '
     print
-    print '  --no-auth-local-webserver'
+    print '  --auth-no-local-webserver'
     print
   else:
     print 'Go to the following link in your browser:'
@@ -229,7 +236,7 @@ def _run_oauth_dance(urlhost, storage, options):
       return None
     if 'code' not in httpd.query_params:
       print 'Failed to find "code" in the query parameters of the redirect.'
-      print 'Try running with --no-auth-local-webserver.'
+      print 'Try running with --auth-no-local-webserver.'
       return None
     code = httpd.query_params['code']
   else:
