@@ -8579,6 +8579,26 @@ TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
+  InitDecoder("",                            // extensions
+              "opengl es 3.0",               // gl version
+              false,                         // has alpha
+              false,                         // has depth
+              false,                         // has stencil
+              false,                         // request alpha
+              false,                         // request depth
+              false,                         // request stencil
+              false);                        // bind generates resource
+
+  // EXPECT_EQ can't be used to compare function pointers
+  EXPECT_TRUE(
+      gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") ==
+      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+  EXPECT_TRUE(
+      gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
+      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT"));
+}
+
 TEST_F(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   InitDecoder("GL_EXT_discard_framebuffer",  // extensions
               "opengl es 2.0",               // gl version
@@ -8589,6 +8609,11 @@ TEST_F(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
               false,                         // request depth
               false,                         // request stencil
               false);                        // bind generates resource
+
+  // EXPECT_EQ can't be used to compare function pointers
+  EXPECT_TRUE(
+      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
+      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
