@@ -60,13 +60,9 @@ private:
     {
         ByteType<DataType> data;
         size_t typeSize = sizeof(ByteType<DataType>);
-
-        for (size_t i = 0; i < typeSize; ++i) {
-            ASSERT(m_streamCurrent < m_streamEnd);
-            data.bytes[i] = *m_streamCurrent;
-            ++m_streamCurrent;
-        }
-
+        ASSERT(m_streamCurrent + typeSize <= m_streamEnd);
+        memcpy(data.bytes, m_streamCurrent, typeSize);
+        m_streamCurrent += typeSize;
         return data.value;
     }
 
