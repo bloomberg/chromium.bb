@@ -76,27 +76,6 @@ static INLINE void AssertSameType_%(name)s(void) {
 }
 """
 
-# Integer/pointer registers used in x86-64 calling convention.  NB:
-# the untrusted code is compiled using gcc, and follows the AMD64
-# calling covention, not the Windows x64 convention.  The service
-# runtime may be compiled with either compiler, so our assembly code
-# for context switch must take care to handle the differences.
-ARG_REGISTERS = {
-    'x86-32': [],
-    'x86-64': [],
-    # 'x86-64': ['rdi', 'rsi', 'rdx', 'rcx', 'r8', 'r9'],
-    'arm-32': [],
-    # 'arm-32': [ 'r0',  'r1',  'r2',  'r3'],
-    # while the arm calling convention passes arguments in registers,
-    # the arm trampoline code pushes them onto the untrusted stack first
-    # before transferring control to trusted code.  this uses up some
-    # more untrusted stack space / memory/cache bandwidth, but we had
-    # to save these arguments somewhere, either in a processor context
-    # or on-stack, anyway.
-    'mips-32': [],
-    # 'mips-32': [ 'a0',  'a1',  'a2',  'a3'],
-    }
-
 # Our syscall handling code, in nacl_syscall.S, always pushes the
 # syscall arguments onto the untrusted user stack.  The syscall
 # arguments get snapshotted from there into a per-syscall structure,
@@ -257,19 +236,14 @@ def ArgList(architecture, alist):
     return ''
 
   extractedargs = []
-  for argnum, arg in enumerate(alist):
+  for arg in alist:
     t = ExtractType(arg)
     extra_cast = ''
     # avoid cast to pointer from integer of different size
     if TypeIsPointer(t):
       extra_cast = '(uintptr_t)'
-    if argnum >= len(ARG_REGISTERS[architecture]):
-      extractedargs += ['(' + t + ') ' + extra_cast
-                        + ' p.' + ExtractVariable(arg)]
-    else:
-      extractedargs += ['(' + t + ') ' + extra_cast
-                        +' natp->user.' +
-                        ARG_REGISTERS[architecture][argnum]]
+    extractedargs += ['(' + t + ') ' + extra_cast
+                      + ' p.' + ExtractVariable(arg)]
 
   return ', ' + ', '.join(extractedargs)
 
@@ -278,13 +252,8 @@ def MemoryArgStruct(architecture, name, alist):
   if not alist:
     return '  NaClCopyDropLock(natp->nap);'
 
-  # Note: although this return value might be computed more
-  # concisely with a list comprehension, we instead use a
-  # for statement to maintain python 2.3 compatibility.
-  margs = []
-  for argnum, arg in enumerate(alist):
-    if argnum >= len(ARG_REGISTERS[architecture]):
-      margs += ['    uint32_t %s' % ExtractVariable(arg)]
+  margs = ['    uint32_t %s' % ExtractVariable(arg)
+           for arg in alist]
   values = {
       'name': name,
       'members' : ';\n'.join(margs) + ';'
@@ -355,9 +324,6 @@ def main(argv):
 
   if subarch != '':
     arch = arch + '-' + subarch
-
-  if not ARG_REGISTERS.has_key(arch):
-    raise Exception()
 
   # Check naming consistency.
   for syscall_number, func_name, alist in SYSCALL_LIST:
