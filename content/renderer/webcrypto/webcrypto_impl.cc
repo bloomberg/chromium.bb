@@ -27,7 +27,10 @@ namespace {
 
 void CompleteWithError(const Status& status, blink::WebCryptoResult* result) {
   DCHECK(status.IsError());
-  result->completeWithError(blink::WebString::fromUTF8(status.ToString()));
+  if (status.HasErrorDetails())
+    result->completeWithError(blink::WebString::fromUTF8(status.ToString()));
+  else
+    result->completeWithError();
 }
 
 bool IsAlgorithmAsymmetric(const blink::WebCryptoAlgorithm& algorithm) {
@@ -194,13 +197,75 @@ bool WebCryptoAlgorithmsConsistent(const blink::WebCryptoAlgorithm& alg1,
   return false;
 }
 
-bool GetDecodedUrl64ValueByKey(
-    const base::DictionaryValue& dict,
-    const std::string& key,
-    std::string* decoded) {
-  std::string value_url64;
-  return dict.GetString(key, &value_url64) &&
-         webcrypto::Base64DecodeUrlSafe(value_url64, decoded);
+// Extracts the required string property with key |path| from |dict| and saves
+// the result to |*result|. If the property does not exist or is not a string,
+// returns an error.
+Status GetJwkString(base::DictionaryValue* dict,
+                    const std::string& path,
+                    std::string* result) {
+  base::Value* value = NULL;
+  if (!dict->Get(path, &value))
+    return Status::ErrorJwkPropertyMissing(path);
+  if (!value->GetAsString(result))
+    return Status::ErrorJwkPropertyWrongType(path, "string");
+  return Status::Success();
+}
+
+// Extracts the optional string property with key |path| from |dict| and saves
+// the result to |*result| if it was found. If the property exists and is not a
+// string, returns an error. Otherwise returns success, and sets
+// |*property_exists| if it was found.
+Status GetOptionalJwkString(base::DictionaryValue* dict,
+                            const std::string& path,
+                            std::string* result,
+                            bool* property_exists) {
+  *property_exists = false;
+  base::Value* value = NULL;
+  if (!dict->Get(path, &value))
+    return Status::Success();
+
+  if (!value->GetAsString(result))
+    return Status::ErrorJwkPropertyWrongType(path, "string");
+
+  *property_exists = true;
+  return Status::Success();
+}
+
+// Extracts the required string property with key |path| from |dict| and saves
+// the base64-decoded bytes to |*result|. If the property does not exist or is
+// not a string, or could not be base64-decoded, returns an error.
+Status GetJwkBytes(base::DictionaryValue* dict,
+                   const std::string& path,
+                   std::string* result) {
+  std::string base64_string;
+  Status status = GetJwkString(dict, path, &base64_string);
+  if (status.IsError())
+    return status;
+
+  if (!webcrypto::Base64DecodeUrlSafe(base64_string, result))
+    return Status::ErrorJwkBase64Decode(path);
+
+  return Status::Success();
+}
+
+// Extracts the optional boolean property with key |path| from |dict| and saves
+// the result to |*result| if it was found. If the property exists and is not a
+// boolean, returns an error. Otherwise returns success, and sets
+// |*property_exists| if it was found.
+Status GetOptionalJwkBool(base::DictionaryValue* dict,
+                          const std::string& path,
+                          bool* result,
+                          bool* property_exists) {
+  *property_exists = false;
+  base::Value* value = NULL;
+  if (!dict->Get(path, &value))
+    return Status::Success();
+
+  if (!value->GetAsBoolean(result))
+    return Status::ErrorJwkPropertyWrongType(path, "boolean");
+
+  *property_exists = true;
+  return Status::Success();
 }
 
 }  // namespace
@@ -537,19 +602,22 @@ Status WebCryptoImpl::ImportKeyJwk(
 
   // JWK "kty". Exit early if this required JWK parameter is missing.
   std::string jwk_kty_value;
-  if (!dict_value->GetString("kty", &jwk_kty_value))
-    return Status::ErrorJwkMissingKty();
+  Status status = GetJwkString(dict_value, "kty", &jwk_kty_value);
+  if (status.IsError())
+    return status;
 
   // JWK "extractable" (optional) --> extractable parameter
-  // TODO(eroman): Should error if "extractable" was specified but not a
-  //               boolean.
   {
     bool jwk_extractable_value;
-    if (dict_value->GetBoolean("extractable", &jwk_extractable_value)) {
-      if (!jwk_extractable_value && extractable)
-        return Status::ErrorJwkExtractableInconsistent();
-      extractable = extractable && jwk_extractable_value;
-    }
+    bool has_jwk_extractable;
+    status = GetOptionalJwkBool(dict_value,
+                                "extractable",
+                                &jwk_extractable_value,
+                                &has_jwk_extractable);
+    if (status.IsError())
+      return status;
+    if (has_jwk_extractable && !jwk_extractable_value && extractable)
+      return Status::ErrorJwkExtractableInconsistent();
   }
 
   // JWK "alg" (optional) --> algorithm parameter
@@ -562,11 +630,16 @@ Status WebCryptoImpl::ImportKeyJwk(
   //      input value (because it has potentially more details)
   // 5. JWK alg missing AND input algorithm isNull: error
   // 6. JWK alg missing AND input algorithm specified: use input value
-  // TODO(eroman): Should error if "alg" was specified but not a string.
   blink::WebCryptoAlgorithm algorithm = blink::WebCryptoAlgorithm::createNull();
   const JwkAlgorithmInfo* algorithm_info = NULL;
   std::string jwk_alg_value;
-  if (dict_value->GetString("alg", &jwk_alg_value)) {
+  bool has_jwk_alg;
+  status =
+      GetOptionalJwkString(dict_value, "alg", &jwk_alg_value, &has_jwk_alg);
+  if (status.IsError())
+    return status;
+
+  if (has_jwk_alg) {
     // JWK alg present
 
     // TODO(padolph): Validate alg vs kty. For example kty="RSA" implies alg can
@@ -597,9 +670,13 @@ Status WebCryptoImpl::ImportKeyJwk(
   DCHECK(!algorithm.isNull());
 
   // JWK "use" (optional) --> usage_mask parameter
-  // TODO(eroman): Should error if "use" was specified but not a string.
   std::string jwk_use_value;
-  if (dict_value->GetString("use", &jwk_use_value)) {
+  bool has_jwk_use;
+  status =
+      GetOptionalJwkString(dict_value, "use", &jwk_use_value, &has_jwk_use);
+  if (status.IsError())
+    return status;
+  if (has_jwk_use) {
     blink::WebCryptoKeyUsageMask jwk_usage_mask = 0;
     if (jwk_use_value == "enc") {
       jwk_usage_mask =
@@ -623,8 +700,9 @@ Status WebCryptoImpl::ImportKeyJwk(
   if (jwk_kty_value == "oct") {
 
     std::string jwk_k_value;
-    if (!GetDecodedUrl64ValueByKey(*dict_value, "k", &jwk_k_value))
-      return Status::ErrorJwkDecodeK();
+    status = GetJwkBytes(dict_value, "k", &jwk_k_value);
+    if (status.IsError())
+      return status;
 
     // Some JWK alg ID's embed information about the key length in the alg ID
     // string. For example "A128CBC" implies the JWK carries 128 bits
@@ -659,11 +737,13 @@ Status WebCryptoImpl::ImportKeyJwk(
       return Status::ErrorJwkRsaPrivateKeyUnsupported();
 
     std::string jwk_n_value;
-    if (!GetDecodedUrl64ValueByKey(*dict_value, "n", &jwk_n_value))
-      return Status::ErrorJwkDecodeN();
+    status = GetJwkBytes(dict_value, "n", &jwk_n_value);
+    if (status.IsError())
+      return status;
     std::string jwk_e_value;
-    if (!GetDecodedUrl64ValueByKey(*dict_value, "e", &jwk_e_value))
-      return Status::ErrorJwkDecodeE();
+    status = GetJwkBytes(dict_value, "e", &jwk_e_value);
+    if (status.IsError())
+      return status;
 
     return ImportRsaPublicKeyInternal(
         reinterpret_cast<const uint8*>(jwk_n_value.data()),

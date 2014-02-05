@@ -36,6 +36,9 @@ class CONTENT_EXPORT Status {
   // Returns true if the Status represent success.
   bool IsSuccess() const;
 
+  // Returns true if the Status contains a non-empty error message.
+  bool HasErrorDetails() const;
+
   // Returns a UTF-8 error message (non-localized) describing the error. This
   // message is intended to be displayed in the dev tools console.
   std::string ToString() const;
@@ -56,10 +59,18 @@ class CONTENT_EXPORT Status {
   // convertable to a dictionary.
   static Status ErrorJwkNotDictionary();
 
-  // The required "kty" parameter was missing, or is not a string.
-  static Status ErrorJwkMissingKty();
+  // The required property |property| was missing.
+  static Status ErrorJwkPropertyMissing(const std::string& property);
 
-  // The "extractable" parameter was specified and was a boolean, but was
+  // The property |property| was not of type |expected_type|.
+  static Status ErrorJwkPropertyWrongType(const std::string& property,
+                                          const std::string& expected_type);
+
+  // The property |property| was a string, however could not be successfully
+  // base64 decoded.
+  static Status ErrorJwkBase64Decode(const std::string& property);
+
+  // The "extractable" parameter was specified but was
   // incompatible with the value requested by the Web Crypto call.
   static Status ErrorJwkExtractableInconsistent();
 
@@ -82,18 +93,6 @@ class CONTENT_EXPORT Status {
   // The "use" parameter was specified, however it is incompatible with that
   // specified by the Web Crypto import operation.
   static Status ErrorJwkUsageInconsistent();
-
-  // The "k" parameter was either missing or could not be parsed as a base-64
-  // encoded string.
-  static Status ErrorJwkDecodeK();
-
-  // The "n" parameter was either missing or could not be parsed as a base-64
-  // encoded string.
-  static Status ErrorJwkDecodeN();
-
-  // The "e" parameter was either missing or could not be parsed as a base-64
-  // encoded string.
-  static Status ErrorJwkDecodeE();
 
   // TODO(eroman): Private key import through JWK is not yet supported.
   static Status ErrorJwkRsaPrivateKeyUnsupported();
@@ -174,11 +173,16 @@ class CONTENT_EXPORT Status {
   static Status ErrorGenerateKeyLength();
 
  private:
-  // |error_details_utf8| can be NULL to indicate there was no error.
-  // Otherwise it is a UTF-8 string literal (the pointer must remain valid).
-  explicit Status(const char* error_details_utf8);
+  enum Type { TYPE_ERROR, TYPE_SUCCESS };
 
-  const char* error_details_;
+  // Constructs an error with the specified message.
+  explicit Status(const std::string& error_details_utf8);
+
+  // Constructs a success or error without any details.
+  explicit Status(Type type);
+
+  Type type_;
+  std::string error_details_;
 };
 
 // Returns a pointer to the start of |data|, or NULL if it is empty. This is a
