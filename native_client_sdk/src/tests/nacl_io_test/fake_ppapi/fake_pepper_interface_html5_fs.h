@@ -52,6 +52,8 @@ class FakeHtml5FsNode {
   void set_last_access_time(PP_Time time) { info_.last_access_time = time; }
   void set_last_modified_time(PP_Time time) { info_.last_modified_time = time; }
 
+  const std::vector<uint8_t>& contents() const { return contents_; }
+
  private:
   PP_FileInfo info_;
   std::vector<uint8_t> contents_;
@@ -146,6 +148,9 @@ class FakeFileRefInterface : public nacl_io::FileRefInterface {
   virtual int32_t ReadDirectoryEntries(PP_Resource file_ref,
                                        const PP_ArrayOutput& output,
                                        PP_CompletionCallback callback);
+  virtual int32_t Rename(PP_Resource file_ref,
+                         PP_Resource new_file_ref,
+                         PP_CompletionCallback callback);
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.

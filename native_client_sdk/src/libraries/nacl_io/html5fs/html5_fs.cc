@@ -117,7 +117,20 @@ Error Html5Fs::Rename(const Path& path, const Path& newpath) {
   if (!fileref_resource.pp_resource())
     return ENOENT;
 
-  return EACCES;
+  ScopedResource new_fileref_resource(
+      ppapi(),
+      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
+                                             newpath.Join().c_str()));
+  if (!new_fileref_resource.pp_resource())
+    return ENOENT;
+
+  int32_t result = ppapi()->GetFileRefInterface()->Rename(
+      fileref_resource.pp_resource(), new_fileref_resource.pp_resource(),
+      PP_BlockUntilComplete());
+  if (result != PP_OK)
+    return PPErrorToErrno(result);
+
+  return 0;
 }
 
 Html5Fs::Html5Fs()

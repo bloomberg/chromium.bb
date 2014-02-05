@@ -57,6 +57,8 @@ BEGIN_INTERFACE(FileRefInterface, PPB_FileRef_1_2, PPB_FILEREF_INTERFACE_1_2)
           PP_CompletionCallback)
   METHOD3(FileRefInterface, int32_t, ReadDirectoryEntries, PP_Resource,
           const PP_ArrayOutput&, PP_CompletionCallback)
+  METHOD3(FileRefInterface, int32_t, Rename, PP_Resource, PP_Resource,
+          PP_CompletionCallback)
 END_INTERFACE(FileRefInterface, PPB_FileRef_1_2)
 
 BEGIN_INTERFACE(FileSystemInterface, PPB_FileSystem_1_0,

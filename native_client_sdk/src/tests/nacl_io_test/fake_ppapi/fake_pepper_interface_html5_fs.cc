@@ -622,6 +622,38 @@ int32_t FakeFileRefInterface::ReadDirectoryEntries(
   return RunCompletionCallback(&callback, PP_OK);
 }
 
+int32_t FakeFileRefInterface::Rename(PP_Resource file_ref,
+                                     PP_Resource new_file_ref,
+                                     PP_CompletionCallback callback) {
+  FakeFileRefResource* file_ref_resource =
+      core_interface_->resource_manager()->Get<FakeFileRefResource>(file_ref);
+  if (file_ref_resource == NULL)
+    return PP_ERROR_BADRESOURCE;
+
+  FakeFileRefResource* new_file_ref_resource =
+      core_interface_->resource_manager()->Get<FakeFileRefResource>(
+          new_file_ref);
+  if (new_file_ref_resource == NULL)
+    return PP_ERROR_BADRESOURCE;
+
+  FakeHtml5FsFilesystem* filesystem = file_ref_resource->filesystem;
+  FakeHtml5FsFilesystem::Path path = file_ref_resource->path;
+  FakeHtml5FsFilesystem::Path newpath = new_file_ref_resource->path;
+  FakeHtml5FsNode* node = filesystem->GetNode(path);
+  if (node == NULL)
+    return RunCompletionCallback(&callback, PP_ERROR_FILENOTFOUND);
+  // FakeFileRefResource does not support directory rename.
+  if (!node->IsRegular())
+    return RunCompletionCallback(&callback, PP_ERROR_NOTAFILE);
+
+  // Remove the destination if it exists.
+  filesystem->RemoveNode(newpath);
+  const std::vector<uint8_t> contents = node->contents();
+  EXPECT_TRUE(filesystem->AddFile(newpath, contents, NULL));
+  EXPECT_TRUE(filesystem->RemoveNode(path));
+  return RunCompletionCallback(&callback, PP_OK);
+}
+
 FakeFileSystemInterface::FakeFileSystemInterface(
     FakeCoreInterface* core_interface)
     : core_interface_(core_interface) {}

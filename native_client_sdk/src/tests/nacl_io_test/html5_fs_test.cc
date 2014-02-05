@@ -188,6 +188,20 @@ TEST_F(Html5FsTest, DISABLED_Rmdir) {
   EXPECT_EQ(0, fs->Access(Path("/file"), F_OK));
 }
 
+TEST_F(Html5FsTest, Rename) {
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/foo", NULL));
+
+  StringMap_t map;
+  ScopedRef<Html5FsForTesting> fs(new Html5FsForTesting(map, &ppapi_));
+
+  Path path("/foo");
+  Path newpath("/bar");
+  ASSERT_EQ(0, fs->Access(path, F_OK));
+  ASSERT_EQ(0, fs->Rename(path, newpath));
+  EXPECT_EQ(ENOENT, fs->Access(path, F_OK));
+  EXPECT_EQ(0, fs->Access(newpath, F_OK));
+}
+
 TEST_F(Html5FsTest, OpenForCreate) {
   StringMap_t map;
   ScopedRef<Html5FsForTesting> fs(new Html5FsForTesting(map, &ppapi_));
