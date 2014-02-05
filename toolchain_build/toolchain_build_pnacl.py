@@ -306,7 +306,7 @@ def HostTools(host):
                   '--with-sysroot=/arm-pc-nacl']),
               command.Command(MakeCommand(host)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
-              [command.RemoveDirectory(command.path.join('%(abs_output)s', dir))
+              [command.RemoveDirectory(os.path.join('%(output)s', dir))
                for dir in ('arm-pc-nacl', 'lib', 'lib32')]
           },
       H('llvm'): {

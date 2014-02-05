@@ -43,7 +43,9 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
     nopy_name = os.path.join(dstdir, os.path.splitext(name)[0])
     shutil.copy(os.path.join(srcdir, 'redirect.sh'), nopy_name)
     os.chmod(nopy_name,
-             stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP)
+             stat.S_IRUSR | stat.S_IXUSR | stat.S_IWUSR | stat.S_IRGRP |
+             stat.S_IWGRP | stat.S_IXGRP)
+
     if host_windows:
       # Windows gets both sh and bat extensions so it works w/cygwin and without
       batch_script = nopy_name + '.bat'
