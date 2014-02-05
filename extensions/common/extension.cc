@@ -50,7 +50,7 @@ namespace errors = manifest_errors;
 namespace {
 
 const int kModernManifestVersion = 2;
-const int kPEMOutputColumns = 65;
+const int kPEMOutputColumns = 64;
 
 // KEY MARKERS
 const char kKeyBeginHeaderMarker[] = "-----BEGIN";
