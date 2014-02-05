@@ -20,8 +20,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSParser_h
-#define CSSParser_h
+#ifndef BisonCSSParser_h
+#define BisonCSSParser_h
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -635,4 +635,4 @@ inline int cssyylex(void* yylval, BisonCSSParser* parser)
 
 } // namespace WebCore
 
-#endif // CSSParser_h
+#endif // BisonCSSParser_h
