@@ -2754,13 +2754,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   OpenDestURLViaClickTarget();
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_PrerenderSSLClientCertTopLevel DISABLED_PrerenderSSLClientCertTopLevel
-#else
-#define MAYBE_PrerenderSSLClientCertTopLevel PrerenderSSLClientCertTopLevel
-#endif
-
 class TestClientCertStore : public net::ClientCertStore {
  public:
   TestClientCertStore() {}
@@ -2784,7 +2777,7 @@ scoped_ptr<net::ClientCertStore> CreateCertStore() {
 // Checks that a top-level page which would normally request an SSL client
 // certificate will never be seen since it's an https top-level resource.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderSSLClientCertTopLevel) {
+                       PrerenderSSLClientCertTopLevel) {
   ProfileIOData::FromResourceContext(
       current_browser()->profile()->GetResourceContext())->
           set_client_cert_store_factory_for_testing(
