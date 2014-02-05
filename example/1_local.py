@@ -44,7 +44,7 @@ def main():
     common.run(
         [
           'isolate.py',
-          'archive',
+          'hashtable',
           '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
           '--outdir', hashtabledir,

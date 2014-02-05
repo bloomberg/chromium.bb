@@ -46,7 +46,7 @@ def main():
           'archive',
           '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
-          '--outdir', options.isolate_server,
+          '--isolate-server', options.isolate_server,
         ], options.verbose)
 
     common.note(
