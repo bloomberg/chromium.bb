@@ -645,6 +645,16 @@ void WebFrameImpl::setOpener(const WebFrame* webFrame)
     frame()->loader().setOpener(webFrame ? toWebFrameImpl(webFrame)->frame() : 0);
 }
 
+void WebFrameImpl::appendChild(WebFrame* child)
+{
+    // FIXME: Implement after this revision rolls into Chrome.
+}
+
+void WebFrameImpl::removeChild(WebFrame* child)
+{
+    // FIXME: Implement after this revision rolls into Chrome.
+}
+
 WebFrame* WebFrameImpl::parent() const
 {
     if (!frame())

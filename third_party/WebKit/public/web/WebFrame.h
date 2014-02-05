@@ -213,6 +213,12 @@ public:
     // This is executed between layout tests runs
     void clearOpener() { setOpener(0); }
 
+    // Adds the given frame as a child of this frame.
+    virtual void appendChild(WebFrame*) = 0;
+
+    // Removes the given child from this frame.
+    virtual void removeChild(WebFrame*) = 0;
+
     // Returns the parent frame or 0 if this is a top-most frame.
     virtual WebFrame* parent() const = 0;
 

@@ -4780,7 +4780,7 @@ TEST_F(WebFrameTest, ExportHistoryItemFromChildFrame)
 
     WebFrame* childFrame = webViewHelper.webViewImpl()->mainFrameImpl()->firstChild();
     WebHistoryItem item = childFrame->currentHistoryItem();
-    EXPECT_EQ(item.urlString(), WebString::fromUTF8(m_baseURL + "iframe_reload.html"));
+    EXPECT_EQ(item.urlString().utf8(), m_baseURL + "iframe_reload.html");
 }
 
 class TestSameDocumentWebFrameClient : public WebFrameClient {

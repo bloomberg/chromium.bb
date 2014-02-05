@@ -47,7 +47,6 @@ namespace WebCore {
         const AtomicString& uniqueName() const { return m_uniqueName; }
         void setName(const AtomicString&);
         Frame* parent() const;
-        void setParent(Frame* parent) { m_parent = parent; }
 
         Frame* nextSibling() const { return m_nextSibling.get(); }
         Frame* previousSibling() const { return m_previousSibling; }
@@ -60,7 +59,6 @@ namespace WebCore {
         Frame* traversePreviousWithWrap(bool) const;
 
         void appendChild(PassRefPtr<Frame>);
-        void detachFromParent() { m_parent = 0; }
         void removeChild(Frame*);
 
         Frame* child(const AtomicString& name) const;
