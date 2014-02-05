@@ -17,7 +17,7 @@ def fix_filename(file_name):
   file_name = re.sub(".*crtstuff.c:0", "???:0", file_name)
   return file_name
 
-class Unbuffered(object):
+class LineBuffered(object):
   """Disable buffering on a file object."""
   def __init__(self, stream):
     self.stream = stream
@@ -36,7 +36,7 @@ def disable_buffering():
   if not os.environ.get('PYTHONUNBUFFERED'):
     # Since sys.stdout is a C++ object, it's impossible to do
     # sys.stdout.write = lambda...
-    sys.stdout = Unbuffered(sys.stdout)
+    sys.stdout = LineBuffered(sys.stdout)
     os.environ['PYTHONUNBUFFERED'] = 'x'
 
 
