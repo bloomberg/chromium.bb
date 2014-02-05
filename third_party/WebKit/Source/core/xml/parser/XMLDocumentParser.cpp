@@ -1103,28 +1103,15 @@ void XMLDocumentParser::error(XMLErrors::ErrorType type, const char* message, va
     if (isStopped())
         return;
 
-#if HAVE(VASPRINTF)
-    char* formattedMessage;
-    if (vasprintf(&formattedMessage, message, args) == -1)
-        return;
-#else
     char formattedMessage[1024];
     vsnprintf(formattedMessage, sizeof(formattedMessage) - 1, message, args);
-#endif
 
     if (m_parserPaused) {
         m_pendingCallbacks.append(adoptPtr(new PendingErrorCallback(type, reinterpret_cast<const xmlChar*>(formattedMessage), lineNumber(), columnNumber())));
-#if HAVE(VASPRINTF)
-        free(formattedMessage);
-#endif
         return;
     }
 
     handleError(type, formattedMessage, textPosition());
-
-#if HAVE(VASPRINTF)
-    free(formattedMessage);
-#endif
 }
 
 void XMLDocumentParser::processingInstruction(const String& target, const String& data)
