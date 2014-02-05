@@ -465,6 +465,7 @@ struct terminal {
 	double average_width;
 	cairo_scaled_font_t *font_normal, *font_bold;
 	uint32_t hide_cursor_serial;
+	int size_in_title;
 
 	struct wl_data_source *selection;
 	uint32_t click_time;
@@ -850,6 +851,7 @@ resize_handler(struct widget *widget,
 		widget_set_size(terminal->widget, width, height);
 		if (asprintf(&p, "%s — [%dx%d]", terminal->title, columns, rows) > 0) {
 		    window_set_title(terminal->window, p);
+		    terminal->size_in_title = 1;
 		    free(p);
 		}
 	}
@@ -2740,7 +2742,10 @@ enter_handler(struct widget *widget,
 	struct terminal *terminal = data;
 
 	/* Reset title to get rid of resizing '[WxH]' in titlebar */
-	window_set_title(terminal->window, terminal->title);
+	if (terminal->size_in_title) {
+		window_set_title(terminal->window, terminal->title);
+		terminal->size_in_title = 0;
+	}
 
 	return CURSOR_IBEAM;
 }
