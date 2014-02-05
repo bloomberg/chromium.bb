@@ -110,6 +110,7 @@ def generate_attribute(interface, attribute):
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
+        'is_setter_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'SetterCallWith', 'ExecutionContext'),
         'is_setter_raises_exception': is_setter_raises_exception,
         'has_setter_exception_state': (
             is_setter_raises_exception or has_strict_type_checking or

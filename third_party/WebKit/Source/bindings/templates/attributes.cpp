@@ -181,7 +181,8 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {# Skip on compact node DOMString getters #}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
-    {% if attribute.is_call_with_execution_context %}
+    {% if attribute.is_call_with_execution_context or
+          attribute.is_setter_call_with_execution_context %}
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     {% endif %}
     {{attribute.cpp_setter}};

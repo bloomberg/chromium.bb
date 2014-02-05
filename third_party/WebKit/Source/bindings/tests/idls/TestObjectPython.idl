@@ -191,6 +191,7 @@ interface TestObjectPython {
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
+    [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
     [StrictTypeChecking] attribute float strictTypeCheckingFloatAttribute;  // nop for non-interface types
     [StrictTypeChecking] attribute TestInterface strictTypeCheckingTestInterfaceAttribute;
     [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
