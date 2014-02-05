@@ -3271,6 +3271,60 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(v8:
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void corsSettingAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    String resultValue = imp->fastGetAttribute(HTMLNames::corssettingattributeAttr);
+    if (resultValue.isNull()) {
+        ;
+    } else if (resultValue.isEmpty()) {
+        resultValue = "anonymous";
+    } else if (equalIgnoringCase(resultValue, "anonymous")) {
+        resultValue = "anonymous";
+    } else if (equalIgnoringCase(resultValue, "use-credentials")) {
+        resultValue = "use-credentials";
+    } else {
+        resultValue = "anonymous";
+    }
+    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+}
+
+static void corsSettingAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::corsSettingAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    String resultValue = imp->fastGetAttribute(HTMLNames::limitedwithemptymissinginvalidattributeAttr);
+    if (resultValue.isNull()) {
+        resultValue = "missing";
+    } else if (resultValue.isEmpty()) {
+        resultValue = "empty";
+    } else if (equalIgnoringCase(resultValue, "empty")) {
+        resultValue = "empty";
+    } else if (equalIgnoringCase(resultValue, "missing")) {
+        resultValue = "missing";
+    } else if (equalIgnoringCase(resultValue, "invalid")) {
+        resultValue = "invalid";
+    } else if (equalIgnoringCase(resultValue, "a-normal")) {
+        resultValue = "a-normal";
+    } else {
+        resultValue = "invalid";
+    }
+    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+}
+
+static void limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::limitedWithEmptyMissingInvalidAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void replaceableReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -7055,6 +7109,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"limitedToOnlyOtherAttribute", TestObjectPythonV8Internal::limitedToOnlyOtherAttributeAttributeGetterCallback, TestObjectPythonV8Internal::limitedToOnlyOtherAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedWithMissingDefaultAttribute", TestObjectPythonV8Internal::limitedWithMissingDefaultAttributeAttributeGetterCallback, TestObjectPythonV8Internal::limitedWithMissingDefaultAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedWithInvalidMissingDefaultAttribute", TestObjectPythonV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback, TestObjectPythonV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"corsSettingAttribute", TestObjectPythonV8Internal::corsSettingAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"limitedWithEmptyMissingInvalidAttribute", TestObjectPythonV8Internal::limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"replaceableReadonlyLongAttribute", TestObjectPythonV8Internal::replaceableReadonlyLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::TestObjectPythonReplaceableAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterCallWithActiveWindowAndFirstWindowStringAttribute", TestObjectPythonV8Internal::setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"setterCallWithExecutionContextStringAttribute", TestObjectPythonV8Internal::setterCallWithExecutionContextStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::setterCallWithExecutionContextStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

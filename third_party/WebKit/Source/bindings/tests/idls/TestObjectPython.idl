@@ -194,8 +194,8 @@ interface TestObjectPython {
     [Reflect=Other, ReflectOnly="Value1"|"Value2" ] attribute DOMString limitedToOnlyOtherAttribute;
     [Reflect, ReflectOnly="rsa"|"dsa", ReflectMissing="rsa"] attribute DOMString limitedWithMissingDefaultAttribute;
     [Reflect, ReflectOnly="ltr"|"rtl"|"auto", ReflectMissing="auto", ReflectInvalid="ltr"] attribute DOMString limitedWithInvalidMissingDefaultAttribute;
-    // [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] readonly attribute DOMString corsSettingAttribute;
-    // [Reflect, ReflectOnly="empty"|"missing"|"invalid"|"a-normal", ReflectEmpty="empty", ReflectMissing="missing", ReflectInvalid="invalid"] readonly attribute DOMString limitedWithEmptyMissingInvalidAttribute;
+    [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] readonly attribute DOMString corsSettingAttribute;
+    [Reflect, ReflectOnly="empty"|"missing"|"invalid"|"a-normal", ReflectEmpty="empty", ReflectMissing="missing", ReflectInvalid="invalid"] readonly attribute DOMString limitedWithEmptyMissingInvalidAttribute;
 
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;

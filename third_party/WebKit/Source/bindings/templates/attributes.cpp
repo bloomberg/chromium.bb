@@ -35,7 +35,8 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.reflect_only %}
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {{release_only_check(attribute.reflect_only, attribute.reflect_missing,
-                         attribute.reflect_invalid) | indent}}
+                         attribute.reflect_invalid, attribute.reflect_empty)
+      | indent}}
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
@@ -97,15 +98,27 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 
 {######################################}
 {% macro release_only_check(reflect_only_values, reflect_missing,
-                            reflect_invalid) %}
+                            reflect_invalid, reflect_empty) %}
 {# Attribute is limited to only known values: check that the attribute value is
    one of those. If not, set it to the empty string.
    http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
-if (resultValue.isEmpty()) {
+{% if reflect_empty %}
+if (resultValue.isNull()) {
 {% if reflect_missing %}
     resultValue = "{{reflect_missing}}";
 {% else %}
     ;
+{% endif %}
+} else if (resultValue.isEmpty()) {
+    resultValue = "{{reflect_empty}}";
+{% else %}
+if (resultValue.isEmpty()) {
+{# FIXME: should use [ReflectEmpty] instead; need to change IDL files #}
+{% if reflect_missing %}
+    resultValue = "{{reflect_missing}}";
+{% else %}
+    ;
+{% endif %}
 {% endif %}
 {% for value in reflect_only_values %}
 } else if (equalIgnoringCase(resultValue, "{{value}}")) {
