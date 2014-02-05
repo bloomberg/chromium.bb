@@ -55,11 +55,11 @@ private:
 #if COMPILER(MSVC)
 #pragma warning(disable: 4701)
 #endif
-    template<typename DataType, typename ByteType>
+    template<typename DataType>
     DataType readType()
     {
-        ByteType data;
-        size_t typeSize = sizeof(ByteType);
+        ByteType<DataType> data;
+        size_t typeSize = sizeof(ByteType<DataType>);
 
         for (size_t i = 0; i < typeSize; ++i) {
             ASSERT(m_streamCurrent < m_streamEnd);
@@ -70,25 +70,13 @@ private:
         return data.value;
     }
 
-    bool readFlag()
-    {
-        return readType<bool, BoolByte>();
-    }
-
-    float readFloat()
-    {
-        return readType<float, FloatByte>();
-    }
-
-    unsigned short readSVGSegmentType()
-    {
-        return readType<unsigned short, UnsignedShortByte>();
-    }
-
+    bool readFlag() { return readType<bool>(); }
+    float readFloat() { return readType<float>(); }
+    unsigned short readSVGSegmentType() { return readType<unsigned short>(); }
     FloatPoint readFloatPoint()
     {
-        float x = readType<float, FloatByte>();
-        float y = readType<float, FloatByte>();
+        float x = readType<float>();
+        float y = readType<float>();
         return FloatPoint(x, y);
     }
 

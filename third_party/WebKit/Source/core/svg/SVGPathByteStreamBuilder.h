@@ -53,40 +53,24 @@ private:
     virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) OVERRIDE;
     virtual void arcTo(float, float, float, bool largeArcFlag, bool sweepFlag, const FloatPoint&, PathCoordinateMode) OVERRIDE;
 
-    template<typename ByteType>
-    void writeType(const ByteType& type)
+    template<typename DataType>
+    void writeType(DataType value)
     {
-        size_t typeSize = sizeof(ByteType);
+        ByteType<DataType> data;
+        data.value = value;
+        size_t typeSize = sizeof(ByteType<DataType>);
         for (size_t i = 0; i < typeSize; ++i)
-            m_byteStream->append(type.bytes[i]);
+            m_byteStream->append(data.bytes[i]);
     }
 
-    void writeFlag(bool value)
-    {
-        BoolByte data;
-        data.value = value;
-        writeType(data);
-    }
-
-    void writeFloat(float value)
-    {
-        FloatByte data;
-        data.value = value;
-        writeType(data);
-    }
-
+    void writeFlag(bool value) { writeType<bool>(value); }
+    void writeFloat(float value) { writeType<float>(value); }
     void writeFloatPoint(const FloatPoint& point)
     {
-        writeFloat(point.x());
-        writeFloat(point.y());
+        writeType<float>(point.x());
+        writeType<float>(point.y());
     }
-
-    void writeSegmentType(unsigned short value)
-    {
-        UnsignedShortByte data;
-        data.value = value;
-        writeType(data);
-    }
+    void writeSegmentType(unsigned short value) { writeType<unsigned short>(value); }
 
     SVGPathByteStream* m_byteStream;
 };
