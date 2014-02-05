@@ -302,6 +302,11 @@ def Main():
 
   env = os.environ.copy()
 
+  # Don't write out .pyc files because in cases in which files move around or
+  # the PYTHONPATH / sys.path change, old .pyc files can be mistakenly used.
+  # This avoids the need for admin changes on the bots in this case.
+  env['PYTHONDONTWRITEBYTECODE'] = '1'
+
   # Use .boto file from home-dir instead of buildbot supplied one.
   if 'AWS_CREDENTIAL_FILE' in env:
     del env['AWS_CREDENTIAL_FILE']
