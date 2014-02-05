@@ -278,7 +278,7 @@
                            'rob.buis@samsung.com',
                            'jbroman@chromium.org' ],
     'svg': [ 'schenney@chromium.org', 'pdr@google.com', 'fmalita@chromium.org', 'dschulze@chromium.org', 'rob.buis@samsung.com', 'fs@opera.com', 'ed+blinkwatch@opera.com', 'gyuyoung.kim@webkit.org' ],
-    'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org', 'dglazkov+blink@chromium.org', 'ed+blinkwatch@opera.com' ],
+    'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org', 'dglazkov+blink@chromium.org', 'ed+blinkwatch@opera.com', 'rune+blink@opera.com' ],
     'dom': [ 'adamk+blink@chromium.org',
              'eae+blinkwatch@chromium.org',
              'dglazkov+blink@chromium.org',
