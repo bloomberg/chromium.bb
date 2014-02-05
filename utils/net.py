@@ -861,7 +861,7 @@ class OAuthAuthenticator(Authenticator):
   def logout(self):
     with self._lock:
       self._access_token = None
-      oauth.purge_access_token(self.urlhost)
+      oauth.purge_access_token(self.urlhost, self.options)
 
 
 class RetryAttempt(object):

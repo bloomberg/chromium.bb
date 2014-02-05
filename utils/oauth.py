@@ -52,12 +52,16 @@ def add_oauth_options(parser):
   parser.oauth_group.add_option(
       '--auth-host-port', action='append', type=int,
       default=[8080, 8090], help='Port web server should listen on.')
+  parser.oauth_group.add_option(
+      '--auth-no-keyring', action='store_true',
+      default=bool(int(os.environ.get('SWARMING_AUTH_NO_KEYRING', '0'))),
+      help='Do not use keyring to store tokens, use plain file storage instead')
   parser.add_option_group(parser.oauth_group)
 
 
 def load_access_token(urlhost, options):
   """Returns cached access token if it is not expired yet."""
-  storage = _get_storage(urlhost)
+  storage = _get_storage(urlhost, options)
   credentials = storage.get()
   # Missing?
   if not credentials or credentials.invalid:
@@ -81,7 +85,7 @@ def create_access_token(urlhost, options, allow_user_interaction):
     access_token on success.
     None on error or if OAuth2 flow was interrupted.
   """
-  storage = _get_storage(urlhost)
+  storage = _get_storage(urlhost, options)
   credentials = storage.get()
 
   # refresh_token is missing, need to go through full flow.
@@ -106,19 +110,19 @@ def create_access_token(urlhost, options, allow_user_interaction):
   return credentials.access_token
 
 
-def purge_access_token(urlhost):
+def purge_access_token(urlhost, options):
   """Deletes OAuth tokens that can be used to access |urlhost|."""
-  _get_storage(urlhost).delete()
+  _get_storage(urlhost, options).delete()
 
 
-def _get_storage(urlhost):
+def _get_storage(urlhost, options):
   """Returns oauth2client.Storage with tokens to access |urlhost|."""
   # Normalize urlhost.
   urlhost = urlhost.rstrip('/')
-  # Use keyring storage if 'keyring' module is present (it is on Linux).
-  if keyring_storage:
+  # Use keyring storage if 'keyring' module is present and enabled.
+  if keyring_storage and not options.auth_no_keyring:
     return keyring_storage.Storage(urlhost, 'oauth2_tokens')
-  # Revert to less secure plain text storage otherwise (Win, Mac).
+  # Revert to less secure plain text storage otherwise.
   return multistore_file.get_credential_storage_custom_string_key(
       OAUTH_STORAGE_FILE, urlhost)
 
