@@ -59,6 +59,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/content_restriction.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -397,8 +398,26 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
   }
 #endif
 
+  GURL url = browser->profile()->GetHomePage();
+
+  // Streamlined hosted apps should return to their launch page when the home
+  // button is pressed.
+  if (browser->is_app()) {
+    const ExtensionService* service = browser->profile()->GetExtensionService();
+    if (!service)
+      return;
+
+    const extensions::Extension* extension =
+        service->GetInstalledExtension(
+            web_app::GetExtensionIdFromApplicationName(browser->app_name()));
+    if (!extension)
+      return;
+
+    url = extensions::AppLaunchInfo::GetLaunchWebURL(extension);
+  }
+
   OpenURLParams params(
-      browser->profile()->GetHomePage(), Referrer(), disposition,
+      url, Referrer(), disposition,
       content::PageTransitionFromInt(
           content::PAGE_TRANSITION_AUTO_BOOKMARK |
           content::PAGE_TRANSITION_HOME_PAGE),

@@ -969,7 +969,11 @@ void BrowserCommandController::InitCommandState() {
   bool normal_window = browser_->is_type_tabbed();
 
   // Navigation commands
-  command_updater_.UpdateCommandEnabled(IDC_HOME, normal_window);
+  command_updater_.UpdateCommandEnabled(
+      IDC_HOME,
+      normal_window || (CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kEnableStreamlinedHostedApps) &&
+                        browser_->is_app()));
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);

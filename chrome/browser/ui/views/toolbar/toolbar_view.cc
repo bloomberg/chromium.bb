@@ -101,6 +101,11 @@ int GetButtonSpacing() {
       ToolbarView::kStandardSpacing : 0;
 }
 
+bool IsStreamlinedHostedAppsEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableStreamlinedHostedApps);
+}
+
 }  // namespace
 
 // static
@@ -129,8 +134,7 @@ ToolbarView::ToolbarView(Browser* browser)
 
   display_mode_ = DISPLAYMODE_LOCATION;
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ||
-      (browser->is_app() && CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps)))
+      (browser->is_app() && IsStreamlinedHostedAppsEnabled()))
     display_mode_ = DISPLAYMODE_NORMAL;
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
@@ -567,7 +571,8 @@ void ToolbarView::Layout() {
                      reload_->GetPreferredSize().width(), child_height);
   next_element_x = reload_->bounds().right();
 
-  if (show_home_button_.GetValue()) {
+  if (show_home_button_.GetValue() ||
+      (browser_->is_app() && IsStreamlinedHostedAppsEnabled())) {
     home_->SetVisible(true);
     home_->SetBounds(next_element_x + button_spacing, child_y,
                      home_->GetPreferredSize().width(), child_height);
