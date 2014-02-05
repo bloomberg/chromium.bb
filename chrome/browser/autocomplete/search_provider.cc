@@ -1359,6 +1359,8 @@ void SearchProvider::UpdateMatches() {
         omnibox_will_reorder_for_legal_default_match));
     DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
   }
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
 
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if ((keyword_url != NULL) && HasKeywordDefaultMatchInKeywordMode()) {

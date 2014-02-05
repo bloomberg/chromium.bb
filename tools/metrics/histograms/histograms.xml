@@ -12418,6 +12418,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SearchProviderMatches">
+  <summary>
+    The number of matches returned by SearchProvider.  Emitted on every call to
+    SearchProvider::Start(), which effectively means every key stroke in the
+    omnibox.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime"
     units="milliseconds">
   <summary>
