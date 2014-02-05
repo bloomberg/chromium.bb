@@ -161,7 +161,7 @@ void TestURLFetcher::SaveResponseWithWriter(
     response = response_writer_->Write(buffer.get(),
                                        fake_response_string_.size(),
                                        CompletionCallback());
-    DCHECK_EQ(OK, response);
+    DCHECK_EQ(static_cast<int>(fake_response_string_.size()), response);
     response = response_writer_->Finish(CompletionCallback());
     DCHECK_EQ(OK, response);
   } else {
