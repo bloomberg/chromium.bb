@@ -1559,14 +1559,15 @@ def GetDefaultConcurrentLinks():
     hard_cap = max(1, int(os.getenv('GYP_LINK_CONCURRENCY_MAX', 2**32)))
     return min(mem_limit, hard_cap)
   elif sys.platform.startswith('linux'):
-    with open("/proc/meminfo") as meminfo:
-      memtotal_re = re.compile(r'^MemTotal:\s*(\d*)\s*kB')
-      for line in meminfo:
-        match = memtotal_re.match(line)
-        if not match:
-          continue
-        # Allow 8Gb per link on Linux because Gold is quite memory hungry
-        return max(1, int(match.group(1)) / (8 * (2 ** 20)))
+    if os.path.exists("/proc/meminfo"):
+      with open("/proc/meminfo") as meminfo:
+        memtotal_re = re.compile(r'^MemTotal:\s*(\d*)\s*kB')
+        for line in meminfo:
+          match = memtotal_re.match(line)
+          if not match:
+            continue
+          # Allow 8Gb per link on Linux because Gold is quite memory hungry
+          return max(1, int(match.group(1)) / (8 * (2 ** 20)))
     return 1
   elif sys.platform == 'darwin':
     try:
