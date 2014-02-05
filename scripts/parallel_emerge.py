@@ -310,10 +310,11 @@ class DepGraphGenerator(object):
     if "--accept-properties" in opts:
       os.environ["ACCEPT_PROPERTIES"] = opts["--accept-properties"]
 
-    # If we're installing packages to the board, and we're not using the
-    # official flag, we can disable vardb locks. This is safe because we
-    # only run up to one instance of parallel_emerge in parallel.
-    if self.board and os.environ.get("CHROMEOS_OFFICIAL") != "1":
+    # If we're installing packages to the board, we can disable vardb locks.
+    # This is safe because we only run up to one instance of parallel_emerge in
+    # parallel.
+    # TODO(davidjames): Enable this for the host too.
+    if self.board:
       os.environ.setdefault("PORTAGE_LOCKS", "false")
 
     # Now that we've setup the necessary environment variables, we can load the
