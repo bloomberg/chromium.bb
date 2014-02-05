@@ -55,6 +55,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
@@ -210,8 +211,7 @@ void RenderVideoFrame(const SkBitmap& input,
 // this seems disadvantageous.
 class WebContentsCaptureMachine
     : public VideoCaptureMachine,
-      public WebContentsObserver,
-      public base::SupportsWeakPtr<WebContentsCaptureMachine> {
+      public WebContentsObserver {
  public:
   WebContentsCaptureMachine(int render_process_id, int render_view_id);
   virtual ~WebContentsCaptureMachine();
@@ -308,6 +308,9 @@ class WebContentsCaptureMachine
   // Responsible for forwarding events from the active RenderWidgetHost to the
   // oracle, and initiating captures accordingly.
   scoped_ptr<ContentCaptureSubscription> subscription_;
+
+  // Weak pointer factory used to invalidate callbacks.
+  base::WeakPtrFactory<WebContentsCaptureMachine> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsCaptureMachine);
 };
@@ -559,7 +562,8 @@ WebContentsCaptureMachine::WebContentsCaptureMachine(int render_process_id,
                                                      int render_view_id)
     : initial_render_process_id_(render_process_id),
       initial_render_view_id_(render_view_id),
-      fullscreen_widget_id_(MSG_ROUTING_NONE) {}
+      fullscreen_widget_id_(MSG_ROUTING_NONE),
+      weak_ptr_factory_(this) {}
 
 WebContentsCaptureMachine::~WebContentsCaptureMachine() {
   BrowserThread::PostBlockingPoolTask(
@@ -600,6 +604,10 @@ void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
     web_contents()->DecrementCapturerCount();
     Observe(NULL);
   }
+
+  // Any callback that intend to use render_thread_ will not work after it is
+  // passed.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   // The render thread cannot be stopped on the UI thread, so post a message
   // to the thread pool used for blocking operations.
@@ -647,20 +655,23 @@ void WebContentsCaptureMachine::Capture(
     rwh->GetSnapshotFromRenderer(
         gfx::Rect(),
         base::Bind(&WebContentsCaptureMachine::DidCopyFromBackingStore,
-                   this->AsWeakPtr(), start_time, target, deliver_frame_cb));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   start_time, target, deliver_frame_cb));
   } else if (view->CanCopyToVideoFrame()) {
     view->CopyFromCompositingSurfaceToVideoFrame(
         gfx::Rect(view_size),
         target,
         base::Bind(&WebContentsCaptureMachine::
                         DidCopyFromCompositingSurfaceToVideoFrame,
-                   this->AsWeakPtr(), start_time, deliver_frame_cb));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   start_time, deliver_frame_cb));
   } else {
     rwh->CopyFromBackingStore(
         gfx::Rect(),
         fitted_size,  // Size here is a request not always honored.
         base::Bind(&WebContentsCaptureMachine::DidCopyFromBackingStore,
-                   this->AsWeakPtr(), start_time, target, deliver_frame_cb));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   start_time, target, deliver_frame_cb));
   }
 }
 
@@ -773,7 +784,8 @@ void WebContentsCaptureMachine::RenewFrameSubscription() {
     return;
 
   subscription_.reset(new ContentCaptureSubscription(*rwh, oracle_proxy_,
-      base::Bind(&WebContentsCaptureMachine::Capture, this->AsWeakPtr())));
+      base::Bind(&WebContentsCaptureMachine::Capture,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 
 }  // namespace
