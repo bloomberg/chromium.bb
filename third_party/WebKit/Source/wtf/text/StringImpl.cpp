@@ -296,9 +296,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, LChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
-    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
-    size_t size = sizeof(StringImpl) + length * sizeof(LChar);
-    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
+    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), allocationSize<LChar>(length)));
 
     data = reinterpret_cast<LChar*>(string + 1);
     return adoptRef(new (string) StringImpl(length, Force8BitConstructor));
@@ -314,9 +312,7 @@ PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& 
     // Allocate a single buffer large enough to contain the StringImpl
     // struct as well as the data which it contains. This removes one
     // heap allocation from this call.
-    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)));
-    size_t size = sizeof(StringImpl) + length * sizeof(UChar);
-    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), size));
+    StringImpl* string = static_cast<StringImpl*>(partitionAllocGeneric(Partitions::getBufferPartition(), allocationSize<UChar>(length)));
 
     data = reinterpret_cast<UChar*>(string + 1);
     return adoptRef(new (string) StringImpl(length));
@@ -333,8 +329,7 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     }
 
     // Same as createUninitialized() except here we use realloc.
-    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(LChar)));
-    size_t size = sizeof(StringImpl) + length * sizeof(LChar);
+    size_t size = allocationSize<LChar>(length);
     originalString->~StringImpl();
     StringImpl* string = static_cast<StringImpl*>(partitionReallocGeneric(Partitions::getBufferPartition(), originalString.leakRef(), size));
 
@@ -353,8 +348,7 @@ PassRefPtr<StringImpl> StringImpl::reallocate(PassRefPtr<StringImpl> originalStr
     }
 
     // Same as createUninitialized() except here we use realloc.
-    RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(UChar)));
-    size_t size = sizeof(StringImpl) + length * sizeof(UChar);
+    size_t size = allocationSize<UChar>(length);
     originalString->~StringImpl();
     StringImpl* string = static_cast<StringImpl*>(partitionReallocGeneric(Partitions::getBufferPartition(), originalString.leakRef(), size));
 

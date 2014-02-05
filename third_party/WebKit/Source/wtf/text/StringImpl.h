@@ -435,6 +435,12 @@ public:
 #endif
 
 private:
+    template<typename CharType> static size_t allocationSize(unsigned length)
+    {
+        RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(CharType)));
+        return sizeof(StringImpl) + length * sizeof(CharType);
+    }
+
     // This number must be at least 2 to avoid sharing empty, null as well as 1 character strings from SmallStrings.
     static const unsigned s_copyCharsInlineCutOff = 20;
 
