@@ -94,18 +94,4 @@ function testAddAndRemoveVolumes() {
   assertEquals('/removable/fuga', model.item(3).volumeInfo.mountPath);
   assertEquals('/drive/root/shortcut', model.item(4).entry.fullPath);
   assertEquals('/removable/hoge/shortcut2', model.item(5).entry.fullPath);
-
-  // The 'hoge' is unmounted. A shortcut on 'hoge' is removed.
-  volumeManager.volumeInfoList.splice(2, 1);
-  assertEquals(4, model.length);
-  assertEquals('/drive', model.item(0).volumeInfo.mountPath);
-  assertEquals('/Downloads', model.item(1).volumeInfo.mountPath);
-  assertEquals('/removable/fuga', model.item(2).volumeInfo.mountPath);
-  assertEquals('/drive/root/shortcut', model.item(3).entry.fullPath);
-
-  // The Drive is unmounted. A shortcut on the Drive is removed.
-  volumeManager.volumeInfoList.splice(0, 1);
-  assertEquals(2, model.length);
-  assertEquals('/Downloads', model.item(0).volumeInfo.mountPath);
-  assertEquals('/removable/fuga', model.item(1).volumeInfo.mountPath);
 }

@@ -22,140 +22,29 @@ function FolderShortcutsDataModel(volumeManager) {
   this.array_ = [];
   this.pendingPaths_ = {};  // Hash map for easier deleting.
   this.unresolvablePaths_ = {};
-  this.driveVolumeInfo_ = null;
+  this.lastDriveRootURL_ = null;
 
-  // Process changes only after initial loading is finished.
-  var queue = new AsyncUtil.Queue();
+  // Queue to serialize resolving entries.
+  this.queue_ = new AsyncUtil.Queue();
+  this.queue_.run(this.volumeManager_.ensureInitialized.bind(this));
 
-  // Processes list of paths and converts them to Entry, then adds to the model.
-  var processPaths = function(list, completionCallback) {
-    for (var index = 0; index < list.length; index++) {
-      this.pendingPaths_[list[index]] = true;
-    }
-    // Resolve the items all at once, in parallel.
-    var group = new AsyncUtil.Group();
-    for (var index = 0; index < list.length; index++) {
-      var path = list[index];
-      group.add(function(path, callback) {
-        var url = this.convertStoredPathToUrl_(path);
-        webkitResolveLocalFileSystemURL(url, function(entry) {
-          if (entry.fullPath in this.pendingPaths_)
-            delete this.pendingPaths_[entry.fullPath];
-          this.addInternal_(entry);
-          callback();
-        }.bind(this), function() {
-          if (path in this.pendingPaths_)
-            delete this.pendingPaths_[path];
-          // Remove the shortcut on error, only if Drive is fully online.
-          // Only then we can be sure, that the error means that the directory
-          // does not exist anymore.
-          if (volumeManager.getDriveConnectionState().type !==
-              util.DriveConnectionType.ONLINE) {
-            this.unresolvablePaths_[path] = true;
-          }
-          // Not adding to the model nor to the |unresolvablePaths_| means
-          // that it will be removed from the storage permanently after the
-          // next call to save_().
-          callback();
-        }.bind(this));
-      }.bind(this, path));
-    }
-    // Save the model after finishing.
-    group.run(function() {
-      this.save_();
-      completionCallback();
-    }.bind(this));
-  }.bind(this);
+  // Load the shortcuts. Runs within the queue.
+  this.load_();
 
-  // Loads the contents from the storage to initialize the array.
-  queue.run(function(queueCallback) {
-    var shortcutPaths = null;
-
-    // Process both (1) and (2) before processing paths.
-    var group = new AsyncUtil.Group();
-
-    // (1) Get the stored shortcuts from chrome.storage.
-    group.add(function(callback) {
-      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
-        if (!(FolderShortcutsDataModel.NAME in value)) {
-          // If no shortcuts are stored, shortcutPaths is kept as null.
-          callback();
-          return;
-        }
-
-        // Since the value comes from outer resource, we have to check it just
-        // in case.
-        shortcutPaths = value[FolderShortcutsDataModel.NAME];
-
-        // Record metrics.
-        metrics.recordSmallCount('FolderShortcut.Count', shortcutPaths.length);
-
-        callback();
-      }.bind(this));
-    }.bind(this));
-
-    // (2) Get the volume info of the 'drive' volume.
-    group.add(function(callback) {
-      this.volumeManager_.ensureInitialized(function() {
-        this.driveVolumeInfo_ = this.volumeManager_.getCurrentProfileVolumeInfo(
-            util.VolumeType.DRIVE);
-        callback();
-      }.bind(this));
-    }.bind(this));
-
-    // Process shortcuts' paths after both (1) and (2) are finished.
-    group.run(function() {
-      // No shortcuts are stored.
-      if (!shortcutPaths) {
-        queueCallback();
-        return;
-      }
-
-      if (!this.driveVolumeInfo_) {
-        // Drive is unavailable.
-        shortcutPaths.forEach(function(path) {
-          this.unresolvablePaths_[path] = true;
-       }, this);
-
-        // TODO(mtomasz): Reload shortcuts when Drive goes back available.
-        // http://crbug.com/333090
-
-        queueCallback();
-        return;
-      }
-
-      // Convert the paths to Entries and add to the model.
-      processPaths(shortcutPaths, queueCallback);
-    }.bind(this));
-  }.bind(this));
-
-  // Listening for changes in the storage. Process only after initial load is
-  // finished.
+  // Listening for changes in the storage.
   chrome.storage.onChanged.addListener(function(changes, namespace) {
-    queue.run(function(queueCallback) {
-      if (!(FolderShortcutsDataModel.NAME in changes) || namespace != 'sync') {
-        queueCallback();
-        return;
-      }
-
-      var list = changes[FolderShortcutsDataModel.NAME].newValue;
-
-      if (!this.driveVolumeInfo_) {
-        // Drive is unavailable.
-        list.forEach(function(path) {
-          this.unresolvablePaths_[path] = true;
-        }, this);
-
-        // TODO(mtomasz): Reload shortcuts when Drive goes back available.
-        // http://crbug.com/333090
-
-        queueCallback();
-        return;
-      }
-
-      processPaths(list, queueCallback);
-    }.bind(this));
+    if (!(FolderShortcutsDataModel.NAME in changes) || namespace !== 'sync')
+      return;
+    this.reload_();  // Runs within the queue.
   }.bind(this));
+
+  // If the volume info list is changed, then shortcuts have to be reloaded.
+  this.volumeManager_.volumeInfoList.addEventListener(
+      'permuted', this.reload_.bind(this));
+
+  // If the drive status has changed, then shortcuts have to be re-resolved.
+  this.volumeManager_.addEventListener(
+      'drive-connection-changed', this.reload_.bind(this));
 }
 
 /**
@@ -176,6 +65,159 @@ FolderShortcutsDataModel.prototype = {
   },
 
   /**
+   * Remembers the Drive volume's root URL used for conversions between virtual
+   * paths and URLs.
+   * @private
+   */
+  rememberLastDriveURL_: function() {
+    if (this.lastDriveRootURL_)
+      return;
+    var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+        util.VolumeType.DRIVE);
+    if (volumeInfo)
+      this.lastDriveRootURL_ = volumeInfo.root.toURL();
+  },
+
+  /**
+   * Resolves Entries from a list of stored virtual paths. Runs within a queue.
+   * @param {Array.<string>} list List of virtual paths.
+   * @private
+   */
+  processEntries_: function(list) {
+    this.queue_.run(function(callback) {
+      this.pendingPaths_ = {};
+      this.unresolvablePaths_ = {};
+      list.forEach(function(path) {
+        this.pendingPaths_[path] = true;
+      }, this);
+      callback();
+    }.bind(this));
+
+    this.queue_.run(function(queueCallback) {
+      var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+          util.VolumeType.DRIVE);
+      var changed = false;
+      var resolvedURLs = {};
+      this.rememberLastDriveURL_();  // Required for conversions.
+
+      var onResolveSuccess = function(path, entry) {
+        if (path in this.pendingPaths_)
+          delete this.pendingPaths_[path];
+        if (path in this.unresolvablePaths_) {
+          changed = true;
+          delete this.unresolvablePaths_[path];
+        }
+        if (!this.exists(entry)) {
+          changed = true;
+          this.addInternal_(entry);
+        }
+        resolvedURLs[entry.toURL()] = true;
+      }.bind(this);
+
+      var onResolveFailure = function(path, url) {
+        if (path in this.pendingPaths_)
+          delete this.pendingPaths_[path];
+        var existingIndex = this.getIndexByURL_(url);
+        if (existingIndex !== -1) {
+          changed = true;
+          this.removeInternal_(this.item(existingIndex));
+        }
+        // Remove the shortcut on error, only if Drive is fully online.
+        // Only then we can be sure, that the error means that the directory
+        // does not exist anymore.
+        if (!volumeInfo ||
+            this.volumeManager_.getDriveConnectionState().type !==
+                util.DriveConnectionType.ONLINE) {
+          if (!this.unresolvablePaths_[path]) {
+            changed = true;
+            this.unresolvablePaths_[path] = true;
+          }
+        }
+        // Not adding to the model nor to the |unresolvablePaths_| means
+        // that it will be removed from the storage permanently after the
+        // next call to save_().
+      }.bind(this);
+
+      // Resolve the items all at once, in parallel.
+      var group = new AsyncUtil.Group();
+      list.forEach(function(path) {
+        group.add(function(path, callback) {
+          var url =
+              this.lastDriveRootURL_ && this.convertStoredPathToUrl_(path);
+          if (url && volumeInfo) {
+            webkitResolveLocalFileSystemURL(
+                url,
+                function(entry) {
+                  onResolveSuccess(path, entry);
+                  callback();
+                },
+                function() {
+                  onResolveFailure(path, url);
+                  callback();
+                });
+          } else {
+            onResolveFailure(path, url);
+            callback();
+          }
+        }.bind(this, path));
+      }, this);
+
+      // Save the model after finishing.
+      group.run(function() {
+        // Remove all of those old entries, which were resolved by this method.
+        var index = 0;
+        while (index < this.length) {
+          var entry = this.item(index);
+          if (!resolvedURLs[entry.toURL()]) {
+            this.removeInternal_(entry);
+            changed = true;
+          } else {
+            index++;
+          }
+        }
+        // If something changed, then save.
+        if (changed)
+          this.save_();
+        queueCallback();
+      }.bind(this));
+    }.bind(this));
+  },
+
+  /**
+   * Initializes the model and loads the shortcuts.
+   * @private
+   */
+  load_: function() {
+    this.queue_.run(function(callback) {
+      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+        var shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
+
+        // Record metrics.
+        metrics.recordSmallCount('FolderShortcut.Count', shortcutPaths.length);
+
+        // Resolve and add the entries to the model.
+        this.processEntries_(shortcutPaths);  // Runs within a queue.
+        callback();
+      }.bind(this));
+    }.bind(this));
+  },
+
+  /**
+   * Reloads the model and loads the shortcuts.
+   * @private
+   */
+  reload_: function(ev) {
+    var shortcutPaths;
+    this.queue_.run(function(callback) {
+      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+        var shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
+        this.processEntries_(shortcutPaths);  // Runs within a queue.
+        callback();
+      }.bind(this));
+    }.bind(this));
+  },
+
+  /**
    * Returns the entries in the given range as a new array instance. The
    * arguments and return value are compatible with Array.slice().
    *
@@ -193,6 +235,20 @@ FolderShortcutsDataModel.prototype = {
    */
   item: function(index) {
     return this.array_[index];
+  },
+
+  /**
+   * @param {string} value URL of the entry to be found.
+   * @return {number} Index of the element with the specified |value|.
+   * @private
+   */
+  getIndexByURL_: function(value) {
+    for (var i = 0; i < this.length; i++) {
+      // Same item check: must be exact match.
+      if (this.array_[i].toURL() === value)
+        return i;
+    }
+    return -1;
   },
 
   /**
@@ -235,6 +291,7 @@ FolderShortcutsDataModel.prototype = {
   add: function(value) {
     var result = this.addInternal_(value);
     metrics.recordUserAction('FolderShortcut.Add');
+    this.save_();
     return result;
   },
 
@@ -248,6 +305,8 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   addInternal_: function(value) {
+    this.rememberLastDriveURL_();  // Required for saving.
+
     var oldArray = this.array_.slice(0);  // Shallow copy.
     var addedIndex = -1;
     for (var i = 0; i < this.length; i++) {
@@ -271,8 +330,6 @@ FolderShortcutsDataModel.prototype = {
 
     this.firePermutedEvent_(
         this.calculatePermutation_(oldArray, this.array_));
-    this.save_();
-    metrics.recordUserAction('FolderShortcut.Add');
     return addedIndex;
   },
 
@@ -282,6 +339,22 @@ FolderShortcutsDataModel.prototype = {
    * @return {number} Index in the list which the element removed from.
    */
   remove: function(value) {
+    var result = this.removeInternal_(value);
+    if (result !== -1) {
+      this.save_();
+      metrics.recordUserAction('FolderShortcut.Remove');
+    }
+    return result;
+  },
+
+  /**
+   * Removes the given item from the array.
+   *
+   * @param {Entry} value Value to be removed from the array.
+   * @return {number} Index in the list which the element removed from.
+   * @private
+   */
+  removeInternal_: function(value) {
     var removedIndex = -1;
     var oldArray = this.array_.slice(0);  // Shallow copy.
     for (var i = 0; i < this.length; i++) {
@@ -293,11 +366,9 @@ FolderShortcutsDataModel.prototype = {
       }
     }
 
-    if (removedIndex != -1) {
+    if (removedIndex !== -1) {
       this.firePermutedEvent_(
           this.calculatePermutation_(oldArray, this.array_));
-      this.save_();
-      metrics.recordUserAction('FolderShortcut.Remove');
       return removedIndex;
     }
 
@@ -331,19 +402,9 @@ FolderShortcutsDataModel.prototype = {
           {usage: 'sort', numeric: true});
     };
 
-    // TODO(mtomasz): remove it once the shortcut reload logic is implemented.
-    // http://crbug.com/333090
-    if (!this.driveVolumeInfo_) {
-      this.driveVolumeInfo_ = this.volumeManager_.getCurrentProfileVolumeInfo(
-          util.VolumeType.DRIVE);
-
-      // Returns without saving, because the drive has been unavailable since
-      // Files.app opens and we can't retrieve the drive info.
-      // It doesn't cause problem since the user can't change the shortcuts
-      // when the Drive is unavailable.
-      if (!this.driveVolumeInfo_)
-        return;
-    }
+    this.rememberLastDriveURL_();
+    if (!this.lastDriveRootURL_)
+      return;
 
     // TODO(mtomasz): Migrate to URL.
     var paths = this.array_.
@@ -434,11 +495,12 @@ FolderShortcutsDataModel.prototype = {
       // TODO(mtomasz): Add support for multi-profile.
       this.unresolvablePaths_[path] = true;
     }
-    this.remove(entry);
+    this.removeInternal_(entry);
+    this.save_();
   },
 
   /**
-   * Converts the given "stored path" to the URL
+   * Converts the given "stored path" to the URL.
    *
    * This conversion is necessary because the shortcuts are not stored with
    * stored-formatted mount paths for compatibility. See http://crbug.com/336155
@@ -453,10 +515,8 @@ FolderShortcutsDataModel.prototype = {
       console.warn(path + ' is neither a drive mount path nor a stored path.');
       return null;
     }
-
-    var url = this.driveVolumeInfo_.root.toURL() +
-        encodeURIComponent(path.substr(STORED_DRIVE_MOUNT_PATH.length));
-    return url;
+    return this.lastDriveRootURL_ + encodeURIComponent(
+        path.substr(STORED_DRIVE_MOUNT_PATH.length));
   },
 
   /**
@@ -469,14 +529,12 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   convertUrlToStoredPath_: function(url) {
-    var rootUrl = this.driveVolumeInfo_.root.toURL();
-    if (url.indexOf(rootUrl + '/') !== 0) {
+    if (url.indexOf(this.lastDriveRootURL_ + '/') !== 0) {
       console.warn(url + ' is not a drive URL.');
       return null;
     }
 
-    var storedPath = decodeURIComponent(
-        STORED_DRIVE_MOUNT_PATH + url.substr(rootUrl.length));
-    return storedPath;
+    return STORED_DRIVE_MOUNT_PATH + decodeURIComponent(
+        url.substr(this.lastDriveRootURL_.length));
   },
 };

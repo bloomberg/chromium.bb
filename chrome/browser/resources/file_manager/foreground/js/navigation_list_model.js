@@ -108,9 +108,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
   for (var i = 0; i < this.shortcutListModel_.length; i++) {
     var shortcutEntry = this.shortcutListModel_.item(i);
     var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
-    var isMounted = volumeInfo && !volumeInfo.error;
-    if (isMounted)
-      this.shortcutList_.push(entryToModelItem(shortcutEntry));
+    this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }
 
   // Generates a combined 'permuted' event from an event of either list.
@@ -138,72 +136,62 @@ function NavigationListModel(volumeManager, shortcutListModel) {
       this.volumeList_ = newList;
 
       permutation = event.permutation.slice();
-    } else {
-      // volumeList part has not been changed, so the permutation should be
-      // idenetity mapping.
-      permutation = [];
-      for (var i = 0; i < this.volumeList_.length; i++)
-        permutation[i] = i;
-    }
 
-    // Build the shortcutList. Even if the event is for the volumeInfoList
-    // update, the short cut entry may be unmounted or newly mounted. So, here
-    // shortcutList will always be re-built.
-    // Currently this code may be redundant, as shortcut folder is supported
-    // only on Drive File System and we can assume single-profile, but
-    // multi-profile will be supported later.
-    // The shortcut list is sorted in case-insensitive lexicographical order.
-    // So we just can traverse the two list linearly.
-    var modelIndex = 0;
-    var oldListIndex = 0;
-    var newList = [];
-    while (modelIndex < this.shortcutListModel_.length &&
-           oldListIndex < this.shortcutList_.length) {
-      var shortcutEntry = this.shortcutListModel_.item(modelIndex);
-      var cmp = this.shortcutListModel_.compare(
-          shortcutEntry, this.shortcutList_[oldListIndex].entry);
-      if (cmp > 0) {
-        // The shortcut at shortcutList_[oldListIndex] is removed.
-        permutation.push(-1);
-        oldListIndex++;
-        continue;
+      // shortcutList part has not been changed, so the permutation should be
+      // just identity mapping with a shift.
+      for (var i = 0; i < this.shortcutList_.length; i++) {
+        permutation.push(i + this.volumeList_.length);
+      }
+    } else {
+      // Build the shortcutList.
+
+      // volumeList part has not been changed, so the permutation should be
+      // identity mapping.
+
+      permutation = [];
+      for (var i = 0; i < this.volumeList_.length; i++) {
+        permutation[i] = i;
       }
 
-      // Check if the volume where the shortcutEntry is is mounted or not.
-      var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
-      var isMounted = volumeInfo && !volumeInfo.error;
-      if (cmp == 0) {
-        // There exists an old NavigationModelItem instance.
-        if (isMounted) {
+      var modelIndex = 0;
+      var oldListIndex = 0;
+      var newList = [];
+      while (modelIndex < this.shortcutListModel_.length &&
+             oldListIndex < this.shortcutList_.length) {
+        var shortcutEntry = this.shortcutListModel_.item(modelIndex);
+        var cmp = this.shortcutListModel_.compare(
+            shortcutEntry, this.shortcutList_[oldListIndex].entry);
+        if (cmp > 0) {
+          // The shortcut at shortcutList_[oldListIndex] is removed.
+          permutation.push(-1);
+          oldListIndex++;
+          continue;
+        }
+
+        if (cmp === 0) {
           // Reuse the old instance.
           permutation.push(newList.length + this.volumeList_.length);
           newList.push(this.shortcutList_[oldListIndex]);
+          oldListIndex++;
         } else {
-          permutation.push(-1);
-        }
-        oldListIndex++;
-      } else {
-        // We needs to create a new instance for the shortcut entry.
-        if (isMounted)
+          // We needs to create a new instance for the shortcut entry.
           newList.push(entryToModelItem(shortcutEntry));
+        }
+        modelIndex++;
       }
-      modelIndex++;
-    }
 
-    // Add remaining (new) shortcuts if necessary.
-    for (; modelIndex < this.shortcutListModel_.length; modelIndex++) {
-      var shortcutEntry = this.shortcutListModel_.item(modelIndex);
-      var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
-      var isMounted = volumeInfo && !volumeInfo.error;
-      if (isMounted)
+      // Add remaining (new) shortcuts if necessary.
+      for (; modelIndex < this.shortcutListModel_.length; modelIndex++) {
+        var shortcutEntry = this.shortcutListModel_.item(modelIndex);
         newList.push(entryToModelItem(shortcutEntry));
+      }
+
+      // Fill remaining permutation if necessary.
+      for (; oldListIndex < this.shortcutList_.length; oldListIndex++)
+        permutation.push(-1);
+
+      this.shortcutList_ = newList;
     }
-
-    // Fill remaining permutation if necessary.
-    for (; oldListIndex < this.shortcutList_.length; oldListIndex++)
-      permutation.push(-1);
-
-    this.shortcutList_ = newList;
 
     // Dispatch permuted event.
     var permutedEvent = new Event('permuted');
