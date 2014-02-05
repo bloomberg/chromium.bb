@@ -10,8 +10,9 @@
 namespace media {
 namespace cast {
 
-LoggingImpl::LoggingImpl(scoped_refptr<base::TaskRunner> main_thread_proxy,
-                         const CastLoggingConfig& config)
+LoggingImpl::LoggingImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
+    const CastLoggingConfig& config)
     : main_thread_proxy_(main_thread_proxy),
       config_(config),
       raw_(config.is_sender),

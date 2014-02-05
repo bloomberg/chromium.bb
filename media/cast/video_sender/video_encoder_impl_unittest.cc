@@ -10,7 +10,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/video_sender/video_encoder_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -87,7 +87,7 @@ class VideoEncoderImplTest : public ::testing::Test {
 
   virtual void SetUp() OVERRIDE {
     testing_clock_ = new base::SimpleTestTickClock();
-    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ = new CastEnvironment(
         scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_,
@@ -107,7 +107,7 @@ class VideoEncoderImplTest : public ::testing::Test {
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<VideoEncoder> video_encoder_;
   scoped_refptr<media::VideoFrame> video_frame_;
 

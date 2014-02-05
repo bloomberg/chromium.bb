@@ -9,7 +9,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/logging/logging_impl.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 
 namespace media {
 namespace cast {
@@ -32,14 +32,14 @@ class TestLogging : public ::testing::Test {
 
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
     logging_.reset(new LoggingImpl(task_runner_, config_));
   }
 
   virtual ~TestLogging() {}
 
   CastLoggingConfig config_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<LoggingImpl> logging_;
   base::SimpleTestTickClock testing_clock_;
 };

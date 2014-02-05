@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 
-using base::TaskRunner;
+using base::SingleThreadTaskRunner;
 
 namespace {
 
@@ -23,12 +23,12 @@ namespace cast {
 
 CastEnvironment::CastEnvironment(
     scoped_ptr<base::TickClock> clock,
-    scoped_refptr<TaskRunner> main_thread_proxy,
-    scoped_refptr<TaskRunner> audio_encode_thread_proxy,
-    scoped_refptr<TaskRunner> audio_decode_thread_proxy,
-    scoped_refptr<TaskRunner> video_encode_thread_proxy,
-    scoped_refptr<TaskRunner> video_decode_thread_proxy,
-    scoped_refptr<TaskRunner> transport_thread_proxy,
+    scoped_refptr<SingleThreadTaskRunner> main_thread_proxy,
+    scoped_refptr<SingleThreadTaskRunner> audio_encode_thread_proxy,
+    scoped_refptr<SingleThreadTaskRunner> audio_decode_thread_proxy,
+    scoped_refptr<SingleThreadTaskRunner> video_encode_thread_proxy,
+    scoped_refptr<SingleThreadTaskRunner> video_decode_thread_proxy,
+    scoped_refptr<SingleThreadTaskRunner> transport_thread_proxy,
     const CastLoggingConfig& config)
     : clock_(clock.Pass()),
       main_thread_proxy_(main_thread_proxy),
@@ -55,8 +55,8 @@ CastEnvironment::~CastEnvironment() {
 bool CastEnvironment::PostTask(ThreadId identifier,
                                const tracked_objects::Location& from_here,
                                const base::Closure& task) {
-  scoped_refptr<TaskRunner> task_runner =
-      GetMessageTaskRunnerForThread(identifier);
+  scoped_refptr<SingleThreadTaskRunner> task_runner =
+      GetMessageSingleThreadTaskRunnerForThread(identifier);
 
   return task_runner->PostTask(from_here, task);
 }
@@ -65,13 +65,14 @@ bool CastEnvironment::PostDelayedTask(ThreadId identifier,
                                  const tracked_objects::Location& from_here,
                                  const base::Closure& task,
                                  base::TimeDelta delay) {
-  scoped_refptr<TaskRunner> task_runner =
-      GetMessageTaskRunnerForThread(identifier);
+  scoped_refptr<SingleThreadTaskRunner> task_runner =
+      GetMessageSingleThreadTaskRunnerForThread(identifier);
 
   return task_runner->PostDelayedTask(from_here, task, delay);
 }
 
-scoped_refptr<TaskRunner> CastEnvironment::GetMessageTaskRunnerForThread(
+scoped_refptr<SingleThreadTaskRunner>
+CastEnvironment::GetMessageSingleThreadTaskRunnerForThread(
     ThreadId identifier) {
   switch (identifier) {
     case CastEnvironment::MAIN:

@@ -18,8 +18,8 @@
 
       ],
       'sources': [
-        '<(DEPTH)/media/cast/test/fake_task_runner.cc',
-        '<(DEPTH)/media/cast/test/fake_task_runner.h',
+        '<(DEPTH)/media/cast/test/fake_single_thread_task_runner.cc',
+        '<(DEPTH)/media/cast/test/fake_single_thread_task_runner.h',
         'input_builder.cc',
         'input_builder.h',
         'audio_utility.cc',

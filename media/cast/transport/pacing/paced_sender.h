@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -40,9 +40,12 @@ class PacedSender : public PacedPacketSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<PacedSender> {
  public:
-  PacedSender(base::TickClock* clock,
-              PacketSender* transport,
-              const scoped_refptr<base::TaskRunner>& transport_task_runner);
+  // The |external_transport| should only be used by the Cast receiver and for
+  // testing.
+  PacedSender(
+      base::TickClock* clock,
+      PacketSender* external_transport,
+      const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~PacedSender();
 
@@ -74,7 +77,6 @@ class PacedSender : public PacedPacketSender,
   base::TickClock* const clock_;
   PacketSender* transport_;  // Not owned by this class.
   scoped_refptr<base::TaskRunner> transport_task_runner_;
-
   size_t burst_size_;
   size_t packets_sent_in_burst_;
   base::TimeTicks time_last_process_;

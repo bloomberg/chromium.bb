@@ -30,7 +30,7 @@ class CastTransportSenderImpl : public CastTransportSender {
       base::TickClock* clock,
       const CastTransportConfig& config,
       const CastTransportStatusCallback& status_callback,
-      const scoped_refptr<base::TaskRunner>& transport_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacketSender* external_transport);
 
   virtual ~CastTransportSenderImpl();

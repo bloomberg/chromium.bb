@@ -5,7 +5,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/audio_receiver/audio_decoder.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -29,7 +29,7 @@ class AudioDecoderTest : public ::testing::Test {
   AudioDecoderTest() {
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1234));
-    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
                             task_runner_,
@@ -50,7 +50,7 @@ class AudioDecoderTest : public ::testing::Test {
   TestRtpPayloadFeedback cast_feedback_;
   // Owned by CastEnvironment.
   base::SimpleTestTickClock* testing_clock_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<AudioDecoder> audio_decoder_;
 

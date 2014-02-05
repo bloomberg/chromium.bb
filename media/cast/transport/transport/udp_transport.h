@@ -33,10 +33,11 @@ class UdpTransport : public PacketSender {
   // |remote_end_point| specifies the address and port to send packets
   // to. If the value is 0.0.0.0:0 the the end point is set to the source
   // address of the first packet received.
-  UdpTransport(const scoped_refptr<base::TaskRunner>& io_thread_proxy,
-               const net::IPEndPoint& local_end_point,
-               const net::IPEndPoint& remote_end_point,
-               const CastTransportStatusCallback& status_callback);
+  UdpTransport(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
+      const net::IPEndPoint& local_end_point,
+      const net::IPEndPoint& remote_end_point,
+      const CastTransportStatusCallback& status_callback);
   virtual ~UdpTransport();
 
   // Start receiving packets. Packets are submitted to |packet_receiver|.
@@ -50,7 +51,7 @@ class UdpTransport : public PacketSender {
   void OnReceived(int result);
   void OnSent(const scoped_refptr<net::IOBuffer>& buf, int result);
 
-  scoped_refptr<base::TaskRunner> io_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
   net::IPEndPoint local_addr_;
   net::IPEndPoint remote_addr_;
   scoped_ptr<net::UDPServerSocket> udp_socket_;

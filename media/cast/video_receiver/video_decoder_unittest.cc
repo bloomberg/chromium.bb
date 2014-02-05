@@ -10,7 +10,7 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/video_receiver/video_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -41,7 +41,7 @@ class VideoDecoderTest : public ::testing::Test {
  protected:
   VideoDecoderTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_), task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
@@ -60,7 +60,7 @@ class VideoDecoderTest : public ::testing::Test {
   scoped_ptr<VideoDecoder> decoder_;
   VideoReceiverConfig config_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<DecodeTestFrameCallback> test_callback_;
 };

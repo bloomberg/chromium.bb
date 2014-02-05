@@ -25,7 +25,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "media/cast/transport/cast_transport_config.h"
@@ -45,7 +45,7 @@ class CastTransportSender : public base::NonThreadSafe {
       base::TickClock* clock,
       const CastTransportConfig& config,
       const CastTransportStatusCallback& status_callback,
-      const scoped_refptr<base::TaskRunner>& transport_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~CastTransportSender() {}
 

@@ -41,7 +41,7 @@ bool IsEqual(const net::IPEndPoint& addr1, const net::IPEndPoint& addr2) {
 }  // namespace
 
 UdpTransport::UdpTransport(
-    const scoped_refptr<base::TaskRunner>& io_thread_proxy,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     const CastTransportStatusCallback& status_callback)

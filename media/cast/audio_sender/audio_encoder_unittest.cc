@@ -13,7 +13,7 @@
 #include "media/cast/audio_sender/audio_encoder.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,7 +90,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   }
 
   virtual void SetUp() {
-    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
                             task_runner_,
@@ -166,7 +166,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   void IncrementReleaseCallbackCounter() { ++release_callback_count_; }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
   scoped_ptr<TestEncodedAudioFrameReceiver> receiver_;
   scoped_refptr<AudioEncoder> audio_encoder_;

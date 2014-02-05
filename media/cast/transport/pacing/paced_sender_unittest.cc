@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -46,7 +46,7 @@ class PacedSenderTest : public ::testing::Test {
   PacedSenderTest() {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
     paced_sender_.reset(new PacedSender(&testing_clock_,
                                         &mock_transport_,
                                         task_runner_));
@@ -68,7 +68,7 @@ class PacedSenderTest : public ::testing::Test {
 
   base::SimpleTestTickClock testing_clock_;
   TestPacketSender mock_transport_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<PacedSender> paced_sender_;
 };
 

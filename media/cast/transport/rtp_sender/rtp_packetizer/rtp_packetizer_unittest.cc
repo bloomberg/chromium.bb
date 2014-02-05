@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
 #include "media/cast/transport/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"
@@ -93,7 +93,7 @@ class TestRtpPacketTransport : public PacketSender {
 class RtpPacketizerTest : public ::testing::Test {
  protected:
   RtpPacketizerTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
+      : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
         video_frame_(),
         packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
     config_.sequence_number = kSeqNum;
@@ -123,7 +123,7 @@ class RtpPacketizerTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock testing_clock_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   EncodedVideoFrame video_frame_;
   PacketStorage packet_storage_;
   RtpPacketizerConfig config_;

@@ -90,7 +90,7 @@ CastReceiverImpl::CastReceiverImpl(
     transport::PacketSender* const packet_sender)
     : pacer_(cast_environment->Clock(),
              packet_sender,
-             cast_environment->GetMessageTaskRunnerForThread(
+             cast_environment->GetMessageSingleThreadTaskRunnerForThread(
                  CastEnvironment::TRANSPORT)),
       audio_receiver_(cast_environment, audio_config, &pacer_),
       video_receiver_(cast_environment, video_config, &pacer_),

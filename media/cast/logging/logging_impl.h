@@ -11,7 +11,7 @@
 // 3. Tracing of raw events.
 
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/logging_raw.h"
@@ -23,7 +23,7 @@ namespace cast {
 // Should only be called from the main thread.
 class LoggingImpl : public base::NonThreadSafe {
  public:
-  LoggingImpl(scoped_refptr<base::TaskRunner> main_thread_proxy,
+  LoggingImpl(scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
               const CastLoggingConfig& config);
 
   ~LoggingImpl();
@@ -80,7 +80,7 @@ class LoggingImpl : public base::NonThreadSafe {
 
  private:
   void InsertGenericUmaEvent(CastLoggingEvent event, int value);
-  scoped_refptr<base::TaskRunner> main_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   const CastLoggingConfig config_;
   LoggingRaw raw_;
   LoggingStats stats_;

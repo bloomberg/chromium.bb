@@ -23,7 +23,7 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_config.h"
@@ -335,8 +335,9 @@ class End2EndTest : public ::testing::Test {
   End2EndTest()
       : start_time_(),
         testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeTaskRunner(testing_clock_)),
-        transport_task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
+        transport_task_runner_(
+            new test::FakeSingleThreadTaskRunner(testing_clock_)),
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
@@ -494,8 +495,8 @@ class End2EndTest : public ::testing::Test {
 
   base::TimeTicks start_time_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
-  scoped_refptr<test::FakeTaskRunner> transport_task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> transport_task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
 
   LoopBackTransport receiver_to_sender_;

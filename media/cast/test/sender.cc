@@ -186,7 +186,7 @@ VideoSenderConfig GetVideoSenderConfig() {
 
 class SendProcess {
  public:
-  SendProcess(scoped_refptr<base::TaskRunner> thread_proxy,
+  SendProcess(scoped_refptr<base::SingleThreadTaskRunner> thread_proxy,
               base::TickClock* clock,
               const VideoSenderConfig& video_config,
               FrameInput* frame_input)
@@ -281,7 +281,7 @@ class SendProcess {
   }
 
  private:
-  scoped_refptr<base::TaskRunner> test_app_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> test_app_thread_proxy_;
   const VideoSenderConfig video_config_;
   int audio_diff_;
   const scoped_refptr<FrameInput> frame_input_;

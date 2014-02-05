@@ -8,7 +8,7 @@
 #include "media/filters/gpu_video_accelerator_factories.h"
 
 #include "base/message_loop/message_loop.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 
 namespace media {
 namespace cast {
@@ -17,14 +17,15 @@ namespace test {
 class FakeGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
  public:
   explicit FakeGpuVideoAcceleratorFactories(
-      const scoped_refptr<base::TaskRunner>& fake_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& fake_task_runner);
 
   virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator(
       VideoEncodeAccelerator::Client* client) OVERRIDE;
 
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetTaskRunner() OVERRIDE;
   //
   //  The following functions are no-op.
   //
@@ -54,7 +55,7 @@ class FakeGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   friend class base::RefCountedThreadSafe<FakeGpuVideoAcceleratorFactories>;
   virtual ~FakeGpuVideoAcceleratorFactories();
 
-  const scoped_refptr<base::TaskRunner> fake_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> fake_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGpuVideoAcceleratorFactories);
 };

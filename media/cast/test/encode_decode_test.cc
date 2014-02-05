@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/video_receiver/codecs/vp8/vp8_decoder.h"
 #include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
@@ -71,7 +71,7 @@ class EncodeDecodeTest : public ::testing::Test {
  protected:
   EncodeDecodeTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
         // CastEnvironment will only be used by the vp8 decoder; Enable only the
         // video decoder and main threads.
         cast_environment_(new CastEnvironment(
@@ -117,7 +117,7 @@ class EncodeDecodeTest : public ::testing::Test {
   scoped_ptr<Vp8Decoder> decoder_;
   scoped_refptr<media::VideoFrame> video_frame_;
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<EncodeDecodeTestFrameCallback> test_callback_;
 };

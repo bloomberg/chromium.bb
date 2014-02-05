@@ -9,7 +9,7 @@
 #include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -57,7 +57,7 @@ class RtcpSenderTest : public ::testing::Test {
  protected:
   RtcpSenderTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
@@ -74,7 +74,7 @@ class RtcpSenderTest : public ::testing::Test {
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestRtcpTransport test_transport_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<RtcpSender> rtcp_sender_;
 

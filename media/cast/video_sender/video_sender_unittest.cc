@@ -10,7 +10,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/test/fake_gpu_video_accelerator_factories.h"
-#include "media/cast/test/fake_task_runner.h"
+#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender_impl.h"
@@ -85,7 +85,7 @@ class VideoSenderTest : public ::testing::Test {
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ = new CastEnvironment(
         scoped_ptr<base::TickClock>(testing_clock_).Pass(),
         task_runner_, task_runner_, task_runner_, task_runner_,
@@ -170,7 +170,7 @@ class VideoSenderTest : public ::testing::Test {
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestPacketSender transport_;
   scoped_ptr<transport::CastTransportSenderImpl> transport_sender_;
-  scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<PeerVideoSender> video_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
 

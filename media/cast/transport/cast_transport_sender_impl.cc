@@ -4,7 +4,7 @@
 
 #include "media/cast/transport/cast_transport_sender_impl.h"
 
-#include "base/task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_defines.h"
 
@@ -16,7 +16,7 @@ CastTransportSender* CastTransportSender::CreateCastTransportSender(
     base::TickClock* clock,
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
-    const scoped_refptr<base::TaskRunner>& transport_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner) {
   return new CastTransportSenderImpl(clock,
                                      config,
                                      status_callback,
@@ -28,7 +28,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     base::TickClock* clock,
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
-    const scoped_refptr<base::TaskRunner>& transport_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacketSender* external_transport)
     : transport_(external_transport ? NULL :
                  new UdpTransport(transport_task_runner,

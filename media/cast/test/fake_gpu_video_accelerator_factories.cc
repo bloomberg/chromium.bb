@@ -12,7 +12,7 @@ namespace cast {
 namespace test {
 
 FakeGpuVideoAcceleratorFactories::FakeGpuVideoAcceleratorFactories(
-    const scoped_refptr<base::TaskRunner>& fake_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& fake_task_runner)
     : fake_task_runner_(fake_task_runner) {}
 
 FakeGpuVideoAcceleratorFactories::~FakeGpuVideoAcceleratorFactories() {}
@@ -35,8 +35,7 @@ base::SharedMemory* FakeGpuVideoAcceleratorFactories::CreateSharedMemory(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 FakeGpuVideoAcceleratorFactories::GetTaskRunner() {
-  return scoped_refptr<base::SingleThreadTaskRunner>(
-      static_cast<base::SingleThreadTaskRunner*>(fake_task_runner_.get()));
+  return fake_task_runner_;
 }
 
 uint32 FakeGpuVideoAcceleratorFactories::CreateTextures(
