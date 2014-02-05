@@ -33,14 +33,21 @@ var CONTENT_MARGIN_HEIGHT = 40;
  */
 var MAX_SCREENSHOT_WIDTH = 100;
 
+/** @type {string}
+ * @const
+ */
+var SYSINFO_WINDOW_ID = 'sysinfo_window';
+
+/** @type {string}
+ * @const
+ */
+var STATS_WINDOW_ID = 'stats_window';
+
 var attachedFileBlob = null;
 var lastReader = null;
 
 var feedbackInfo = null;
 var systemInfo = null;
-
-var systemInfoWindow = {id: 0};
-var histogramsWindow = {id: 0};
 
 /**
  * Reads the selected file when the user selects a file.
@@ -80,22 +87,14 @@ function clearAttachedFile() {
 }
 
 /**
- * Creates and shows a window with the given url, if the window is not already
- * open.
- * @param {Object} window An object with the id of the window to update, or 0.
+ * Creates a closure that creates or shows a window with the given url.
+ * @param {string} windowId A string with the ID of the window we are opening.
  * @param {string} url The destination URL of the new window.
  * @return {function()} A function to be called to open the window.
  */
-function windowOpener(window, url) {
+function windowOpener(windowId, url) {
   return function() {
-    if (window.id == 0) {
-      chrome.windows.create({url: url}, function(win) {
-        window.id = win.id;
-        chrome.app.window.current().show();
-      });
-    } else {
-      chrome.windows.update(window.id, {drawAttention: true});
-    }
+    chrome.app.window.create(url, {id: windowId});
   };
 }
 
@@ -103,9 +102,8 @@ function windowOpener(window, url) {
  * Opens a new window with chrome://slow_trace, downloading performance data.
  */
 function openSlowTraceWindow() {
-  chrome.windows.create(
-      {url: 'chrome://slow_trace/tracing.zip#' + feedbackInfo.traceId},
-      function(win) {});
+  chrome.app.window.create(
+      'chrome://slow_trace/tracing.zip#' + feedbackInfo.traceId);
 }
 
 /**
@@ -309,12 +307,12 @@ function initialize() {
         if ($('sys-info-url')) {
           // Opens a new window showing the current system info.
           $('sys-info-url').onclick =
-              windowOpener(systemInfoWindow, 'chrome://system');
+              windowOpener(SYSINFO_WINDOW_ID, 'chrome://system');
         }
         if ($('histograms-url')) {
           // Opens a new window showing the histogram metrics.
           $('histograms-url').onclick =
-              windowOpener(histogramsWindow, 'chrome://histograms');
+              windowOpener(STATS_WINDOW_ID, 'chrome://histograms');
         }
       });
     }
@@ -335,13 +333,6 @@ function initialize() {
     $('performance-info-checkbox').addEventListener(
         'change', performanceFeedbackChanged);
 </if>
-
-    chrome.windows.onRemoved.addListener(function(windowId, removeInfo) {
-      if (windowId == systemInfoWindow.id)
-        systemInfoWindow.id = 0;
-      else if (windowId == histogramsWindow.id)
-        histogramsWindow.id = 0;
-    });
   });
 }
 
