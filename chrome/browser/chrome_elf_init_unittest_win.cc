@@ -92,30 +92,6 @@ TEST_F(ChromeBlacklistTrialTest, SetupFailed) {
   ASSERT_EQ(blacklist::BLACKLIST_DISABLED, GetBlacklistState());
 }
 
-TEST_F(ChromeBlacklistTrialTest, ThunkSetupFailed) {
-  // Set the registry to indicate that the blacklist thunk setup is running,
-  // which means it failed to run correctly last time.
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconState,
-                                     blacklist::BLACKLIST_THUNK_SETUP);
-
-  BrowserBlacklistBeaconSetup();
-
-  // Since the blacklist thunk setup failed, it should now be disabled.
-  ASSERT_EQ(blacklist::BLACKLIST_DISABLED, GetBlacklistState());
-}
-
-TEST_F(ChromeBlacklistTrialTest, InterceptionFailed) {
-  // Set the registry to indicate that an interception is running,
-  // which means it failed to run correctly last time.
-  blacklist_registry_key_.WriteValue(blacklist::kBeaconState,
-                                     blacklist::BLACKLIST_INTERCEPTING);
-
-  BrowserBlacklistBeaconSetup();
-
-  // Since an interception failed, the blacklist should now be disabled.
-  ASSERT_EQ(blacklist::BLACKLIST_DISABLED, GetBlacklistState());
-}
-
 TEST_F(ChromeBlacklistTrialTest, VersionChanged) {
   // Mark the blacklist as disabled for an older version, so it should
   // get enabled for this new version.

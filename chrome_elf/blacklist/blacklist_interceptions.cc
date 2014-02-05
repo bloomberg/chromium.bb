@@ -166,21 +166,6 @@ bool IsSameAsCurrentProcess(HANDLE process) {
           (::GetProcessId(process) == ::GetCurrentProcessId());
 }
 
-// Record that the interception completed succesfully and close the registry
-// key handle since it is no longer needed.
-void RecordSuccessfulInterception(HKEY* key, DWORD old_state) {
-  if (key != NULL) {
-    ::RegSetValueEx(*key,
-                    blacklist::kBeaconState,
-                    0,
-                    REG_DWORD,
-                    reinterpret_cast<LPBYTE>(&old_state),
-                    sizeof(old_state));
-    ::RegCloseKey(*key);
-    key = NULL;
-  }
-}
-
 }  // namespace
 
 namespace blacklist {
@@ -211,53 +196,12 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
     SECTION_INHERIT inherit,
     ULONG allocation_type,
     ULONG protect) {
-  // Record that we are starting an interception.
-  HKEY key = NULL;
-  DWORD disposition = 0;
-  LONG result = ::RegCreateKeyEx(HKEY_CURRENT_USER,
-                                 kRegistryBeaconPath,
-                                 0,
-                                 NULL,
-                                 REG_OPTION_NON_VOLATILE,
-                                 KEY_QUERY_VALUE | KEY_SET_VALUE,
-                                 NULL,
-                                 &key,
-                                 &disposition);
-
-  DWORD old_blacklist_state = BLACKLIST_DISABLED;
-  if (result == ERROR_SUCCESS) {
-    DWORD old_blacklist_state_size = sizeof(old_blacklist_state);
-    DWORD type = 0;
-    result = ::RegQueryValueEx(key,
-                               kBeaconState,
-                               0,
-                               &type,
-                               reinterpret_cast<LPBYTE>(&old_blacklist_state),
-                               &old_blacklist_state_size);
-
-    if (result != ERROR_SUCCESS) {
-      old_blacklist_state = BLACKLIST_ENABLED;
-    }
-
-    DWORD blacklist_state = BLACKLIST_INTERCEPTING;
-    ::RegSetValueEx(key,
-                    kBeaconState,
-                    0,
-                    REG_DWORD,
-                    reinterpret_cast<LPBYTE>(&blacklist_state),
-                    sizeof(blacklist_state));
-  } else {
-    key = NULL;
-  }
-
-
   NTSTATUS ret = orig_MapViewOfSection(section, process, base, zero_bits,
                                        commit_size, offset, view_size, inherit,
                                        allocation_type, protect);
 
   if (!NT_SUCCESS(ret) || !IsSameAsCurrentProcess(process) ||
       !IsModuleValidImageSection(section, base, offset, view_size)) {
-    RecordSuccessfulInterception(&key, old_blacklist_state);
     return ret;
   }
 
@@ -280,9 +224,8 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
       g_nt_unmap_view_of_section_func(process, *base);
       ret = STATUS_UNSUCCESSFUL;
     }
-  }
 
-  RecordSuccessfulInterception(&key, old_blacklist_state);
+  }
   return ret;
 }
 
