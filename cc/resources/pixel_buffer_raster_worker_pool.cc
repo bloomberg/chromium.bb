@@ -440,6 +440,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
        !HasPendingTasksRequiredForActivation());
   bool will_notify_client_that_no_tasks_are_pending =
       (should_notify_client_if_no_tasks_are_pending_ &&
+       !raster_required_for_activation_finished_task_pending_ &&
        !raster_finished_task_pending_ && !HasPendingTasks());
 
   // Adjust the need to generate notifications before scheduling more tasks.
