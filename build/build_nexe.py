@@ -131,6 +131,7 @@ def GetGomaConfig(gomadir, osname, arch, toolname, is_pnacl_toolchain):
     return {}
 
   goma_config = {}
+  # TODO(yyanagisawa): make try-except more explicit.
   try:
     gomacc_base = 'gomacc.exe' if os.name == 'nt' else 'gomacc'
     # Search order of gomacc:
@@ -142,7 +143,7 @@ def GetGomaConfig(gomadir, osname, arch, toolname, is_pnacl_toolchain):
     # 2. Use GOMA_DIR environment variable if exist.
     goma_dir_env = os.environ.get('GOMA_DIR')
     if goma_dir_env:
-      search_path.append(gomadir_env)
+      search_path.append(goma_dir_env)
     # 3. Append PATH env.
     path_env = os.environ.get('PATH')
     if path_env:
