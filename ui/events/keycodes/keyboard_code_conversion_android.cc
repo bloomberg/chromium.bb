@@ -21,6 +21,8 @@ enum {
   AKEYCODE_META_LEFT       = 117,
   AKEYCODE_META_RIGHT      = 118,
   AKEYCODE_BREAK           = 121,
+  AKEYCODE_MOVE_HOME       = 122,
+  AKEYCODE_MOVE_END        = 123,
   AKEYCODE_INSERT          = 124,
   AKEYCODE_MEDIA_PLAY      = 126,
   AKEYCODE_MEDIA_PAUSE     = 127,
@@ -80,7 +82,7 @@ KeyboardCode KeyboardCodeFromAndroidKeyCode(int keycode) {
       return VKEY_ESCAPE;
     case AKEYCODE_SPACE:
       return VKEY_SPACE;
-    case AKEYCODE_HOME:
+    case AKEYCODE_MOVE_HOME:
       return VKEY_HOME;
     case AKEYCODE_DPAD_LEFT:
       return VKEY_LEFT;
@@ -201,7 +203,7 @@ KeyboardCode KeyboardCodeFromAndroidKeyCode(int keycode) {
     case AKEYCODE_MEDIA_PLAY:
     case AKEYCODE_MEDIA_PLAY_PAUSE:
       return VKEY_MEDIA_PLAY_PAUSE;
-    case AKEYCODE_CALL:
+    case AKEYCODE_MOVE_END:
       return VKEY_END;
     case AKEYCODE_ALT_LEFT:
       return VKEY_LMENU;
