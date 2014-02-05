@@ -7,7 +7,7 @@
 
 #include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
-#include "third_party/skia/include/core/SkScalar.h"
+#include "ui/gfx/geometry/cubic_bezier.h"
 
 namespace cc {
 
@@ -45,10 +45,7 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
  protected:
   CubicBezierTimingFunction(double x1, double y1, double x2, double y2);
 
-  double x1_;
-  double y1_;
-  double x2_;
-  double y2_;
+  gfx::CubicBezier bezier_;
 
  private:
   DISALLOW_ASSIGN(CubicBezierTimingFunction);

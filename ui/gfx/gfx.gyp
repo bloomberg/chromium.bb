@@ -19,6 +19,8 @@
       'sources': [
         'geometry/box_f.cc',
         'geometry/box_f.h',
+        'geometry/cubic_bezier.h',
+        'geometry/cubic_bezier.cc',
         'geometry/insets.cc',
         'geometry/insets.h',
         'geometry/insets_base.h',
@@ -77,6 +79,7 @@
       ],
       'sources': [
         'geometry/box_unittest.cc',
+        'geometry/cubic_bezier_unittest.cc',
         'geometry/insets_unittest.cc',
         'geometry/matrix3_unittest.cc',
         'geometry/point_unittest.cc',

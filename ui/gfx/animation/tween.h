@@ -16,15 +16,18 @@ namespace gfx {
 class GFX_EXPORT Tween {
  public:
   enum Type {
-    LINEAR,        // Linear.
-    EASE_OUT,      // Fast in, slow out (default).
-    EASE_IN,       // Slow in, fast out.
-    EASE_IN_2,     // Variant of EASE_IN that starts out slower.
-    EASE_IN_OUT,   // Slow in and out, fast in the middle.
-    FAST_IN_OUT,   // Fast in and out, slow in the middle.
-    EASE_OUT_SNAP, // Fast in, slow out, snap to final value.
-    SMOOTH_IN_OUT, // Smooth, consistent speeds in and out (sine wave).
-    ZERO,          // Returns a value of 0 always.
+    LINEAR,           // Linear.
+    EASE_OUT,         // Fast in, slow out (default).
+    EASE_OUT_BEZIER,  // Variant of EASE_OUT that starts and ends slower.
+    EASE_IN,          // Slow in, fast out.
+    EASE_IN_2,        // Variant of EASE_IN that starts out slower.
+    EASE_IN_BEZIER,   // Variant of EASE_IN that starts slower than EASE_IN and
+                      // ends faster than both EASE_IN and EASE_IN_2
+    EASE_IN_OUT,      // Slow in and out, fast in the middle.
+    FAST_IN_OUT,      // Fast in and out, slow in the middle.
+    EASE_OUT_SNAP,    // Fast in, slow out, snap to final value.
+    SMOOTH_IN_OUT,    // Smooth, consistent speeds in and out (sine wave).
+    ZERO,             // Returns a value of 0 always.
   };
 
   // Returns the value based on the tween type. |state| is from 0-1.
