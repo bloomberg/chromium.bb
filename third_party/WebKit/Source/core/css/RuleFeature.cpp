@@ -171,6 +171,8 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
 
 void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, RuleFeatureSet::FeatureMetadata& metadata)
 {
+    unsigned maxDirectAdjacentSelectors = 0;
+
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (current->m_match == CSSSelector::Id)
             metadata.idsInRules.add(current->value());
@@ -181,13 +183,20 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, Ru
 
         if (current->pseudoType() == CSSSelector::PseudoFirstLine)
             metadata.usesFirstLineRules = true;
-        if (current->isDirectAdjacentSelector())
-            metadata.maxDirectAdjacentSelectors++;
+        if (current->isDirectAdjacentSelector()) {
+            maxDirectAdjacentSelectors++;
+        } else if (maxDirectAdjacentSelectors) {
+            if (maxDirectAdjacentSelectors > metadata.maxDirectAdjacentSelectors)
+                metadata.maxDirectAdjacentSelectors = maxDirectAdjacentSelectors;
+            maxDirectAdjacentSelectors = 0;
+        }
         if (current->isSiblingSelector())
             metadata.foundSiblingSelector = true;
 
         collectFeaturesFromSelectorList(current->selectorList(), metadata);
     }
+
+    ASSERT(!maxDirectAdjacentSelectors);
 }
 
 void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* selectorList, RuleFeatureSet::FeatureMetadata& metadata)
