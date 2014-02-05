@@ -83,7 +83,7 @@ class MockFileSystemTest(unittest.TestCase):
       '404.html': '0',
       'apps/': '0',
       'extensions/': '0'
-    }), fs.Stat('/'))
+    }), fs.Stat(''))
     self.assertEqual(StatInfo('0'), fs.Stat('404.html'))
     self.assertEqual(StatInfo('0', child_versions={
       'a11y.html': '0',
@@ -100,7 +100,7 @@ class MockFileSystemTest(unittest.TestCase):
       '404.html': '1',
       'apps/': '0',
       'extensions/': '0'
-    }), fs.Stat('/'))
+    }), fs.Stat(''))
     self.assertEqual(StatInfo('1'), fs.Stat('404.html'))
     self.assertEqual(StatInfo('0', child_versions={
       'a11y.html': '0',
@@ -122,7 +122,7 @@ class MockFileSystemTest(unittest.TestCase):
       '404.html': '2',
       'apps/': '2',
       'extensions/': '0'
-    }), fs.Stat('/'))
+    }), fs.Stat(''))
     self.assertEqual(StatInfo('2'), fs.Stat('404.html'))
     self.assertEqual(StatInfo('2', child_versions={
       'a11y.html': '0',

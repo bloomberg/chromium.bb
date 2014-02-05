@@ -62,24 +62,24 @@ class ChrootFileSystemTest(unittest.TestCase):
                      chroot_fs.ReadSingle('404.html').Get())
 
   def testStat(self):
-    self._test_fs.IncrementStat('extensions/manifest/', by=2)
+    self._test_fs.IncrementStat('extensions/manifest/sockets.html', by=2)
     self._test_fs.IncrementStat('extensions/manifest/moremanifest/csp.html')
     for prefix in ('', '/'):
       for suffix in ('', '/'):
         chroot_fs = ChrootFileSystem(self._test_fs,
                                      prefix + 'extensions' + suffix)
-        self.assertEqual(StatInfo('0', child_versions={
+        self.assertEqual(StatInfo('2', child_versions={
           'activeTab.html': '0',
           'alarms.html': '0',
           'manifest/': '2',
         }), chroot_fs.Stat(''))
         self.assertEqual(StatInfo('0'), chroot_fs.Stat('activeTab.html'))
         self.assertEqual(StatInfo('2', child_versions={
-          'moremanifest/': '0',
-          'sockets.html': '0',
+          'moremanifest/': '1',
+          'sockets.html': '2',
         }), chroot_fs.Stat('manifest/'))
-        self.assertEqual(StatInfo('0'), chroot_fs.Stat('manifest/sockets.html'))
-        self.assertEqual(StatInfo('0', child_versions={
+        self.assertEqual(StatInfo('2'), chroot_fs.Stat('manifest/sockets.html'))
+        self.assertEqual(StatInfo('1', child_versions={
           'csp.html': '1',
           'usb.html': '0',
         }), chroot_fs.Stat('manifest/moremanifest/'))

@@ -8,6 +8,7 @@ import schema_util
 from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
 from future import Gettable, Future
+from path_util import ToDirectory
 from third_party.handlebar import Handlebar
 from third_party.json_schema_compiler import json_parse
 from third_party.json_schema_compiler.memoize import memoize
@@ -225,8 +226,8 @@ class CompiledFileSystem(object):
     '''Calls |compilation_function| on the listing of the files at |path|.
     Assumes that the path given is to a directory.
     '''
-    if not path.endswith('/'):
-      path += '/'
+    # TODO(kalman): assert IsDirectory(path)
+    path = ToDirectory(path)
 
     try:
       version = self._file_system.Stat(path).version

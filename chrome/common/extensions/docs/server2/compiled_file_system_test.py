@@ -83,8 +83,8 @@ class CompiledFileSystemTest(unittest.TestCase):
                      compiled_fs.GetFromFile('404.html').Get())
     self.assertEqual('ZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzz',
                      compiled_fs.GetFromFile('apps/a11y.html').Get())
-    self.assertEqual('ZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzz',
-                     compiled_fs.GetFromFile('/apps/fakedir/file.html').Get())
+    self.assertEqual('ZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzz',
+                     compiled_fs.GetFromFile('apps/fakedir/file.html').Get())
 
   def testPopulateFromFileListing(self):
     def strip_ext(path, files):
@@ -101,8 +101,6 @@ class CompiledFileSystemTest(unittest.TestCase):
       'extensions/alarms'
     ]
     self.assertEqual(expected_top_listing,
-                     sorted(compiled_fs.GetFromFileListing('/').Get()))
-    self.assertEqual(expected_top_listing,
                      sorted(compiled_fs.GetFromFileListing('').Get()))
     expected_apps_listing = [
       'a11y',
@@ -112,22 +110,12 @@ class CompiledFileSystemTest(unittest.TestCase):
       'fakedir/file',
     ]
     self.assertEqual(expected_apps_listing,
-                     sorted(compiled_fs.GetFromFileListing('/apps/').Get()))
-    self.assertEqual(expected_apps_listing,
                      sorted(compiled_fs.GetFromFileListing('apps/').Get()))
-    self.assertEqual(['file',],
-                     compiled_fs.GetFromFileListing('/apps/fakedir/').Get())
     self.assertEqual(['file',],
                      compiled_fs.GetFromFileListing('apps/fakedir/').Get())
     self.assertEqual(['deeper/deepest', 'deepfile'],
                      sorted(compiled_fs.GetFromFileListing(
-                        '/apps/deepdir/').Get()))
-    self.assertEqual(['deeper/deepest', 'deepfile'],
-                     sorted(compiled_fs.GetFromFileListing(
                          'apps/deepdir/').Get()))
-    self.assertEqual(['deepest'],
-                     compiled_fs.GetFromFileListing(
-                         '/apps/deepdir/deeper/').Get())
     self.assertEqual(['deepest'],
                      compiled_fs.GetFromFileListing(
                          'apps/deepdir/deeper/').Get())
@@ -139,8 +127,9 @@ class CompiledFileSystemTest(unittest.TestCase):
     self.assertEqual(set(('file.html',)),
                      set(compiled_fs.GetFromFileListing('apps/fakedir').Get()))
 
-    compiled_fs._file_system._obj['404.html'] = 'boom'
-    compiled_fs._file_system._obj['apps']['fakedir']['boom.html'] = 'blam'
+    compiled_fs._file_system._path_values['404.html'] = 'boom'
+    compiled_fs._file_system._path_values['apps/fakedir/'] = [
+        'file.html', 'boom.html']
     self.assertEqual('404.html contents',
                      compiled_fs.GetFromFile('404.html').Get())
     self.assertEqual(set(('file.html',)),
@@ -204,7 +193,7 @@ class CompiledFileSystemTest(unittest.TestCase):
     self.assertTrue(*mock_fs.CheckAndReset())
 
     # Similar configuration to the 'apps/' case but deeper.
-    future = compiled_fs.GetFromFileListing('/')
+    future = compiled_fs.GetFromFileListing('')
     self.assertTrue(*mock_fs.CheckAndReset(stat_count=1,
                                            read_count=2,
                                            read_resolve_count=1))

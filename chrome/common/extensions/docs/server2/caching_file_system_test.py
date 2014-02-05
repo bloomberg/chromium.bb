@@ -137,7 +137,7 @@ class CachingFileSystemTest(unittest.TestCase):
         tuple(future.Get() for future in futures))
     self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=3))
 
-    test_fs.IncrementStat(path='bob/')
+    test_fs.IncrementStat(path='bob/bob0')
     file_system = create_empty_caching_fs()
     self.assertEqual('bob/bob1 contents',
                      file_system.ReadSingle('bob/bob1').Get())

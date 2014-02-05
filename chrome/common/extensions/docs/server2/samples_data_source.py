@@ -211,7 +211,7 @@ class SamplesDataSource(object):
 
   def _CreateSamplesDict(self, key):
     if key == 'apps':
-      samples_list = self._apps_cache.GetFromFileListing('/').Get()
+      samples_list = self._apps_cache.GetFromFileListing('').Get()
     else:
       samples_list = self._extensions_cache.GetFromFileListing(EXAMPLES).Get()
     return_list = []

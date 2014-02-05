@@ -129,7 +129,7 @@ class GithubFileSystem(FileSystem):
     if zip_file is None:
       logging.error('Bad github zip file.')
       return ''
-    prefix = zip_file.namelist()[0][:-1]
+    prefix = zip_file.namelist()[0]
     return zip_file.read(prefix + path)
 
   def _ListDir(self, path):

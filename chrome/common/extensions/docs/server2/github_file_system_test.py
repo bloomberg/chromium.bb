@@ -32,16 +32,16 @@ class GithubFileSystemTest(unittest.TestCase):
 
   def testRead(self):
     self.assertEqual(self._ReadLocalFile('expected_read.txt'),
-                     self._file_system.ReadSingle('/analytics/launch.js').Get())
+                     self._file_system.ReadSingle('analytics/launch.js').Get())
 
   def testStat(self):
     self.assertEqual(0, self._file_system.Stat('zipball').version)
 
   def testKeyGeneration(self):
     self.assertEqual(0, len(files.GetBlobKeys()))
-    self._file_system.ReadSingle('/analytics/launch.js').Get()
+    self._file_system.ReadSingle('analytics/launch.js').Get()
     self.assertEqual(1, len(files.GetBlobKeys()))
-    self._file_system.ReadSingle('/analytics/main.css').Get()
+    self._file_system.ReadSingle('analytics/main.css').Get()
     self.assertEqual(1, len(files.GetBlobKeys()))
 
 if __name__ == '__main__':

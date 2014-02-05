@@ -58,7 +58,7 @@ class ChainedCompiledFileSystemTest(unittest.TestCase):
   def testGetFromFileListing(self):
     self.assertEqual(self._chained_compiled_fs.GetFromFile('dir/').Get(),
                      self._base_compiled_fs.GetFromFile('dir/').Get())
-    self._new_file_system.IncrementStat('dir/')
+    self._new_file_system.IncrementStat('dir/new.txt')
     self.assertNotEqual(
         self._chained_compiled_fs.GetFromFileListing('dir/').Get(),
         self._base_compiled_fs.GetFromFileListing('dir/').Get())
