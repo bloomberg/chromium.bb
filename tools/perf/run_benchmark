@@ -17,7 +17,6 @@ if __name__ == '__main__':
       'image_decoding.tough_decoding_cases':
           'image_decoding.image_decoding_measurement',
       'media.tough_media_cases': 'media.tough_video_cases',
-      'page_cycler.indexeddb': 'page_cycler.indexed_db.basic_insert',
       'page_cycler.pica': 'pica.pica',
   }
   sys.exit(test_runner.Main())

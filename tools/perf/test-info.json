@@ -132,9 +132,6 @@
   "page_cycler.dhtml":{
     "description":"Benchmarks for various DHTML operations like simple animations."
   },
-  "page_cycler.indexeddb":{
-    "description":"Benchmark for a basic insert operation in Indexed DB."
-  },
   "page_cycler.intl_ar_fa_he":{
     "description":"Page load time benchmark for a variety of pages in Arabic, Farsi and Hebrew. Runs against pages recorded in April, 2013."
   },
