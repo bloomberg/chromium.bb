@@ -932,6 +932,14 @@ void Internals::setMarkersActive(Node* node, unsigned startOffset, unsigned endO
     node->document().markers()->setMarkersActive(node, startOffset, endOffset, active);
 }
 
+void Internals::setMarkedTextMatchesAreHighlighted(Document* document, bool highlight, ExceptionState&)
+{
+    if (!document || !document->frame())
+        return;
+
+    document->frame()->editor().setMarkedTextMatchesAreHighlighted(highlight);
+}
+
 void Internals::setScrollViewPosition(Document* document, long x, long y, ExceptionState& exceptionState)
 {
     if (!document || !document->view()) {

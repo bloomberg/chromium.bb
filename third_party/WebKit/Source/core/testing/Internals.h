@@ -155,6 +155,7 @@ public:
     String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     void addTextMatchMarker(const Range*, bool isActive);
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool, ExceptionState&);
+    void setMarkedTextMatchesAreHighlighted(Document*, bool, ExceptionState&);
 
     void setScrollViewPosition(Document*, long x, long y, ExceptionState&);
     String viewportAsText(Document*, float devicePixelRatio, int availableWidth, int availableHeight, ExceptionState&);

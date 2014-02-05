@@ -871,6 +871,8 @@ crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
+crbug.com/56580 svg/custom/text-match-highlight.html [ NeedsRebaseline ]
+
 crbug.com/339174 fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Failure ]
 crbug.com/339252 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
