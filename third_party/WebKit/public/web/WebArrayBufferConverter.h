@@ -31,15 +31,19 @@
 #ifndef WebArrayBufferConverter_h
 #define WebArrayBufferConverter_h
 
-#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "public/platform/WebArrayBuffer.h"
+
+namespace v8 {
+class Value;
+template <class T> class Handle;
+}
 
 namespace blink {
 
 class WebArrayBufferConverter {
 public:
-    static v8::Handle<v8::Value> toV8Value(WebArrayBuffer*);
-    static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
+    BLINK_EXPORT static v8::Handle<v8::Value> toV8Value(WebArrayBuffer*);
+    BLINK_EXPORT static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
 };
 
 } // namespace blink

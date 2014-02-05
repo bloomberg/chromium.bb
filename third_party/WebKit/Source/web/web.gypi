@@ -107,7 +107,6 @@
       'ViewportAnchor.h',
       'WebAXObject.cpp',
       'WebArrayBufferConverter.cpp',
-      'WebArrayBufferConverter.h',
       'WebArrayBufferView.cpp',
       'WebBindings.cpp',
       'WebBlob.cpp',
