@@ -26,6 +26,49 @@
 
 namespace WebCore {
 
+// Helper class that coalesces writes to a SVGPathByteStream to a local buffer.
+class CoalescingBuffer {
+public:
+    CoalescingBuffer(SVGPathByteStream* byteStream)
+        : m_currentOffset(0)
+        , m_byteStream(byteStream)
+    {
+        ASSERT(byteStream);
+    }
+    ~CoalescingBuffer()
+    {
+        for (size_t i = 0; i < m_currentOffset; ++i)
+            m_byteStream->append(m_bytes[i]);
+    }
+
+    template<typename DataType>
+    void writeType(DataType value)
+    {
+        ByteType<DataType> data;
+        data.value = value;
+        size_t typeSize = sizeof(ByteType<DataType>);
+        ASSERT(m_currentOffset + typeSize <= sizeof(m_bytes));
+        memcpy(m_bytes + m_currentOffset, data.bytes, typeSize);
+        m_currentOffset += typeSize;
+    }
+
+    void writeFlag(bool value) { writeType<bool>(value); }
+    void writeFloat(float value) { writeType<float>(value); }
+    void writeFloatPoint(const FloatPoint& point)
+    {
+        writeType<float>(point.x());
+        writeType<float>(point.y());
+    }
+    void writeSegmentType(unsigned short value) { writeType<unsigned short>(value); }
+
+private:
+    // Adjust size to fit the largest command (in serialized/byte-stream format).
+    // Currently a cubic segment.
+    size_t m_currentOffset;
+    unsigned char m_bytes[sizeof(unsigned short) + sizeof(FloatPoint) * 3];
+    SVGPathByteStream* m_byteStream;
+};
+
 SVGPathByteStreamBuilder::SVGPathByteStreamBuilder()
     : m_byteStream(0)
 {
@@ -33,80 +76,80 @@ SVGPathByteStreamBuilder::SVGPathByteStreamBuilder()
 
 void SVGPathByteStreamBuilder::moveTo(const FloatPoint& targetPoint, bool, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ?  PathSegMoveToRel : PathSegMoveToAbs);
-    writeFloatPoint(targetPoint);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ?  PathSegMoveToRel : PathSegMoveToAbs);
+    buffer.writeFloatPoint(targetPoint);
 }
 
 void SVGPathByteStreamBuilder::lineTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegLineToRel : PathSegLineToAbs);
-    writeFloatPoint(targetPoint);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegLineToRel : PathSegLineToAbs);
+    buffer.writeFloatPoint(targetPoint);
 }
 
 void SVGPathByteStreamBuilder::lineToHorizontal(float x, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegLineToHorizontalRel : PathSegLineToHorizontalAbs);
-    writeFloat(x);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegLineToHorizontalRel : PathSegLineToHorizontalAbs);
+    buffer.writeFloat(x);
 }
 
 void SVGPathByteStreamBuilder::lineToVertical(float y, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegLineToVerticalRel : PathSegLineToVerticalAbs);
-    writeFloat(y);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegLineToVerticalRel : PathSegLineToVerticalAbs);
+    buffer.writeFloat(y);
 }
 
 void SVGPathByteStreamBuilder::curveToCubic(const FloatPoint& point1, const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToCubicRel : PathSegCurveToCubicAbs);
-    writeFloatPoint(point1);
-    writeFloatPoint(point2);
-    writeFloatPoint(targetPoint);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToCubicRel : PathSegCurveToCubicAbs);
+    buffer.writeFloatPoint(point1);
+    buffer.writeFloatPoint(point2);
+    buffer.writeFloatPoint(targetPoint);
 }
 
 void SVGPathByteStreamBuilder::curveToCubicSmooth(const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToCubicSmoothRel : PathSegCurveToCubicSmoothAbs);
-    writeFloatPoint(point2);
-    writeFloatPoint(targetPoint);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToCubicSmoothRel : PathSegCurveToCubicSmoothAbs);
+    buffer.writeFloatPoint(point2);
+    buffer.writeFloatPoint(targetPoint);
 }
 
 void SVGPathByteStreamBuilder::curveToQuadratic(const FloatPoint& point1, const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToQuadraticRel : PathSegCurveToQuadraticAbs);
-    writeFloatPoint(point1);
-    writeFloatPoint(targetPoint);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToQuadraticRel : PathSegCurveToQuadraticAbs);
+    buffer.writeFloatPoint(point1);
+    buffer.writeFloatPoint(targetPoint);
 }
 
 void SVGPathByteStreamBuilder::curveToQuadraticSmooth(const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToQuadraticSmoothRel : PathSegCurveToQuadraticSmoothAbs);
-    writeFloatPoint(targetPoint);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegCurveToQuadraticSmoothRel : PathSegCurveToQuadraticSmoothAbs);
+    buffer.writeFloatPoint(targetPoint);
 }
 
 void SVGPathByteStreamBuilder::arcTo(float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag, const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(mode == RelativeCoordinates ? PathSegArcRel : PathSegArcAbs);
-    writeFloat(r1);
-    writeFloat(r2);
-    writeFloat(angle);
-    writeFlag(largeArcFlag);
-    writeFlag(sweepFlag);
-    writeFloatPoint(targetPoint);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(mode == RelativeCoordinates ? PathSegArcRel : PathSegArcAbs);
+    buffer.writeFloat(r1);
+    buffer.writeFloat(r2);
+    buffer.writeFloat(angle);
+    buffer.writeFlag(largeArcFlag);
+    buffer.writeFlag(sweepFlag);
+    buffer.writeFloatPoint(targetPoint);
 }
 
 void SVGPathByteStreamBuilder::closePath()
 {
-    ASSERT(m_byteStream);
-    writeSegmentType(PathSegClosePath);
+    CoalescingBuffer buffer(m_byteStream);
+    buffer.writeSegmentType(PathSegClosePath);
 }
 
 } // namespace WebCore
