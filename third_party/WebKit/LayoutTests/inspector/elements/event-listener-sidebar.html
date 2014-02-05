@@ -25,6 +25,11 @@ function setupEventListeners()
     function ObjectHandler() { document.addEventListener("click", this, true); }
     ObjectHandler.prototype.toString = function() { return "ObjectHandler"; }
     new ObjectHandler();
+
+    function EventListenerImpl() { document.addEventListener("click", this, true); }
+    EventListenerImpl.prototype.toString = function() { return "EventListenerImpl"; }
+    EventListenerImpl.prototype.handleEvent = function() { console.log("click - document - handleEvent"); }
+    new EventListenerImpl();
 }
 
 function test()

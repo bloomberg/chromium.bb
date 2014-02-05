@@ -12,11 +12,22 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] document (anonymous function)
+[expanded] document event-listener-sidebar.html:25
     handler: ObjectHandler
     isAttribute: false
-    listenerBody: ObjectHandler
+    lineNumber: 25
+    listenerBody: function ObjectHandler() { document.addEventListener("click", this, true); }
     node: #document
+    sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
+    type: click
+    useCapture: true
+[expanded] document event-listener-sidebar.html:31
+    handler: EventListenerImpl
+    isAttribute: false
+    lineNumber: 31
+    listenerBody: function () { console.log("click - document - handleEvent"); }
+    node: #document
+    sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
 [expanded] button#node event-listener-sidebar.html:15
@@ -97,11 +108,22 @@ Inspect Me
     sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
-[expanded] document (anonymous function)
+[expanded] document event-listener-sidebar.html:25
     handler: ObjectHandler
     isAttribute: false
-    listenerBody: ObjectHandler
+    lineNumber: 25
+    listenerBody: function ObjectHandler() { document.addEventListener("click", this, true); }
     node: #document
+    sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
+    type: click
+    useCapture: true
+[expanded] document event-listener-sidebar.html:31
+    handler: EventListenerImpl
+    isAttribute: false
+    lineNumber: 31
+    listenerBody: function () { console.log("click - document - handleEvent"); }
+    node: #document
+    sourceName: [clipped-for-test]/LayoutTests/inspector/elements/event-listener-sidebar.html
     type: click
     useCapture: true
 [expanded] document event-listener-sidebar.html:6

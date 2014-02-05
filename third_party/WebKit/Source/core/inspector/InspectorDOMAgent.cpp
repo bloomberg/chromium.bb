@@ -862,8 +862,11 @@ void InspectorDOMAgent::getEventListenersForNode(ErrorString* errorString, int n
         const EventListenerVector& vector = info.eventListenerVector;
         for (size_t j = 0; j < vector.size(); ++j) {
             const RegisteredEventListener& listener = vector[j];
-            if (listener.useCapture)
-                listenersArray->addItem(buildObjectForEventListener(listener, info.eventType, info.eventTarget->toNode(), objectGroup));
+            if (listener.useCapture) {
+                RefPtr<TypeBuilder::DOM::EventListener> listenerObject = buildObjectForEventListener(listener, info.eventType, info.eventTarget->toNode(), objectGroup);
+                if (listenerObject)
+                    listenersArray->addItem(listenerObject);
+            }
         }
     }
 
@@ -873,8 +876,11 @@ void InspectorDOMAgent::getEventListenersForNode(ErrorString* errorString, int n
         const EventListenerVector& vector = info.eventListenerVector;
         for (size_t j = 0; j < vector.size(); ++j) {
             const RegisteredEventListener& listener = vector[j];
-            if (!listener.useCapture)
-                listenersArray->addItem(buildObjectForEventListener(listener, info.eventType, info.eventTarget->toNode(), objectGroup));
+            if (!listener.useCapture) {
+                RefPtr<TypeBuilder::DOM::EventListener> listenerObject = buildObjectForEventListener(listener, info.eventType, info.eventTarget->toNode(), objectGroup);
+                if (listenerObject)
+                    listenersArray->addItem(listenerObject);
+            }
         }
     }
 }
@@ -1591,13 +1597,23 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::build
 PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, Node* node, const String* objectGroupId)
 {
     RefPtr<EventListener> eventListener = registeredEventListener.listener;
+    String sourceName;
+    String scriptId;
+    int lineNumber;
+    if (!eventListenerHandlerLocation(&node->document(), eventListener.get(), sourceName, scriptId, lineNumber))
+        return 0;
+
     Document& document = node->document();
+    RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
+        .setScriptId(scriptId)
+        .setLineNumber(lineNumber);
     RefPtr<TypeBuilder::DOM::EventListener> value = TypeBuilder::DOM::EventListener::create()
         .setType(eventType)
         .setUseCapture(registeredEventListener.useCapture)
         .setIsAttribute(eventListener->isAttribute())
         .setNodeId(pushNodePathToFrontend(node))
-        .setHandlerBody(eventListenerHandlerBody(&document, eventListener.get()));
+        .setHandlerBody(eventListenerHandlerBody(&document, eventListener.get()))
+        .setLocation(location);
     if (objectGroupId) {
         ScriptValue functionValue = eventListenerHandler(&document, eventListener.get());
         if (!functionValue.hasNoValue()) {
@@ -1614,17 +1630,8 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
             }
         }
     }
-    String sourceName;
-    String scriptId;
-    int lineNumber;
-    if (eventListenerHandlerLocation(&node->document(), eventListener.get(), sourceName, scriptId, lineNumber)) {
-        RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
-            .setScriptId(scriptId)
-            .setLineNumber(lineNumber);
-        value->setLocation(location);
-        if (!sourceName.isEmpty())
-            value->setSourceName(sourceName);
-    }
+    if (!sourceName.isEmpty())
+        value->setSourceName(sourceName);
     return value.release();
 }
 
