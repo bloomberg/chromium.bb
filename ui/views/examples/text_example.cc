@@ -255,7 +255,7 @@ void TextExample::ButtonPressed(Button* button, const ui::Event& event) {
   text_view_->SchedulePaint();
 }
 
-void TextExample::OnSelectedIndexChanged(Combobox* combobox) {
+void TextExample::OnPerformAction(Combobox* combobox) {
   int text_flags = text_view_->text_flags();
   if (combobox == h_align_cb_) {
     text_flags &= ~(gfx::Canvas::TEXT_ALIGN_LEFT |

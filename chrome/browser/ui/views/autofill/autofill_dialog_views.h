@@ -143,7 +143,7 @@ class AutofillDialogViews : public AutofillDialogView,
                                 views::View* focused_now) OVERRIDE;
 
   // views::ComboboxListener implementation:
-  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
 
   // views::StyledLabelListener implementation:
   virtual void StyledLabelLinkClicked(const gfx::Range& range, int event_flags)

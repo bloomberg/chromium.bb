@@ -343,7 +343,7 @@ void VPNConfigView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
 }
 
-void VPNConfigView::OnSelectedIndexChanged(views::Combobox* combobox) {
+void VPNConfigView::OnPerformAction(views::Combobox* combobox) {
   UpdateControls();
   UpdateErrorLabel();
   UpdateCanLogin();

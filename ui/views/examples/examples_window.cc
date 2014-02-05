@@ -184,7 +184,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   }
 
   // ComboboxListener:
-  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE {
+  virtual void OnPerformAction(Combobox* combobox) OVERRIDE {
     DCHECK_EQ(combobox, combobox_);
     DCHECK(combobox->selected_index() < combobox_model_.GetItemCount());
     example_shown_->RemoveAllChildViews(false);

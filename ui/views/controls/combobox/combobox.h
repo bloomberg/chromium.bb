@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -36,10 +37,14 @@ class Painter;
 class PrefixSelector;
 
 // A non-editable combobox (aka a drop-down list or selector).
-// Combobox has two distinct parts, the drop down arrow and the text. When the
-// user clicks on the text the drop down is either shown
-// (STYLE_SHOW_DROP_DOWN_ON_CLICK) or the listener is notified
-// (STYLE_NOTIFY_ON_CLICK).
+// Combobox has two distinct parts, the drop down arrow and the text. Combobox
+// offers two distinct behaviors:
+// * STYLE_NORMAL: typical combobox, clicking on the text and/or button shows
+// the drop down, arrow keys change selection, selected index can be changed by
+// the user to something other than the first item.
+// * STYLE_ACTION: clicking on the text notifies the listener. The menu can be
+// shown only by clicking on the arrow. The selected index is always reverted to
+// 0 after the listener is notified.
 class VIEWS_EXPORT Combobox : public MenuDelegate,
                               public PrefixDelegate,
                               public ui::ComboboxModelObserver,
@@ -47,8 +52,8 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
  public:
   // The style of the combobox.
   enum Style {
-    STYLE_SHOW_DROP_DOWN_ON_CLICK,
-    STYLE_NOTIFY_ON_CLICK,
+    STYLE_NORMAL,
+    STYLE_ACTION,
   };
 
   // The combobox's class name.
@@ -121,6 +126,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
  private:
   FRIEND_TEST_ALL_PREFIXES(ComboboxTest, Click);
   FRIEND_TEST_ALL_PREFIXES(ComboboxTest, NotifyOnClickWithMouse);
+  FRIEND_TEST_ALL_PREFIXES(ComboboxTest, ContentWidth);
 
   // Updates the combobox's content from its model.
   void UpdateFromModel();
@@ -141,7 +147,9 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   void ShowDropDownMenu(ui::MenuSourceType source_type);
 
   // Called when the selection is changed by the user.
-  void OnSelectionChanged();
+  void OnPerformAction();
+  void NotifyPerformAction();
+  void AfterPerformAction();
 
   // Converts a menu command ID to a menu item index.
   int MenuCommandToIndex(int menu_command_id) const;
@@ -208,6 +216,9 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   // The base View takes the ownerships of these as child views.
   CustomButton* text_button_;
   CustomButton* arrow_button_;
+
+  // Used for making calbacks.
+  base::WeakPtrFactory<Combobox> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Combobox);
 };

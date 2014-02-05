@@ -11,15 +11,18 @@ namespace views {
 
 class Combobox;
 
-// An interface implemented by an object to let it know that the selected index
-// has changed.
+// Interface used to notify consumers when something interesting happens to a
+// Combobox.
 class VIEWS_EXPORT ComboboxListener {
  public:
-  virtual void OnSelectedIndexChanged(Combobox* combobox) = 0;
-
-  // Handles when the combobox's style is the button style and the button is
-  // clicked.
-  virtual void OnComboboxTextButtonClicked(Combobox* combobox) {}
+  // Invoked when the user does the appropriate gesture that some action should
+  // be performed. For both STYLE_NORMAL and STYLE_ACTION this is invoked if the
+  // user clicks on the menu button and then clicks an item. For STYLE_NORMAL
+  // this is also invoked when the menu is not showing and the does a gesture to
+  // change the selection (for example, presses the home or end keys). This is
+  // not invoked when the menu is shown and the user changes the selection
+  // without closing the menu.
+  virtual void OnPerformAction(Combobox* combobox) = 0;
 
  protected:
   virtual ~ComboboxListener() {}

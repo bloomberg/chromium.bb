@@ -1692,7 +1692,7 @@ void AutofillDialogViews::OnDidChangeFocus(
   }
 }
 
-void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
+void AutofillDialogViews::OnPerformAction(views::Combobox* combobox) {
   DialogSection section = GroupForView(combobox)->section;
   InputEditedOrActivated(TypeForCombobox(combobox), gfx::Rect(), true);
   // NOTE: |combobox| may have been deleted.

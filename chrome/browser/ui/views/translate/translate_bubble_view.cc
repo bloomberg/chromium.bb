@@ -268,31 +268,8 @@ gfx::Size TranslateBubbleView::GetPreferredSize() {
   return gfx::Size(width, height);
 }
 
-void TranslateBubbleView::OnSelectedIndexChanged(views::Combobox* combobox) {
-  HandleComboboxSelectedIndexChanged(static_cast<ComboboxID>(combobox->id()));
-}
-
-void TranslateBubbleView::OnComboboxTextButtonClicked(
-    views::Combobox* combobox) {
-  if (combobox != denial_combobox_)
-    return;
-
-  denial_button_clicked_ = true;
-  int index = combobox->selected_index();
-  switch (index) {
-    case TranslateDenialComboboxModel::INDEX_NOPE:
-      break;
-    case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_LANGUAGE:
-      model_->SetNeverTranslateLanguage(true);
-      break;
-    case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_SITE:
-      model_->SetNeverTranslateSite(true);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  StartFade(false);
+void TranslateBubbleView::OnPerformAction(views::Combobox* combobox) {
+  HandleComboboxPerformAction(static_cast<ComboboxID>(combobox->id()));
 }
 
 void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
@@ -428,11 +405,26 @@ void TranslateBubbleView::HandleLinkClicked(
   }
 }
 
-void TranslateBubbleView::HandleComboboxSelectedIndexChanged(
+void TranslateBubbleView::HandleComboboxPerformAction(
     TranslateBubbleView::ComboboxID sender_id) {
   switch (sender_id) {
     case COMBOBOX_ID_DENIAL: {
-      // do nothing
+      denial_button_clicked_ = true;
+      int index = denial_combobox_->selected_index();
+      switch (index) {
+        case TranslateDenialComboboxModel::INDEX_NOPE:
+          break;
+        case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_LANGUAGE:
+          model_->SetNeverTranslateLanguage(true);
+          break;
+        case TranslateDenialComboboxModel::INDEX_NEVER_TRANSLATE_SITE:
+          model_->SetNeverTranslateSite(true);
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+      StartFade(false);
       break;
     }
     case COMBOBOX_ID_SOURCE_LANGUAGE: {
@@ -475,7 +467,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
       new TranslateDenialComboboxModel(original_language_name));
   denial_combobox_->set_id(COMBOBOX_ID_DENIAL);
   denial_combobox_->set_listener(this);
-  denial_combobox_->SetStyle(views::Combobox::STYLE_NOTIFY_ON_CLICK);
+  denial_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
 
   views::View* view = new views::View();
   views::GridLayout* layout = new views::GridLayout(view);

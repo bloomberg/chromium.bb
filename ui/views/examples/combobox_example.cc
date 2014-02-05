@@ -44,7 +44,7 @@ void ComboboxExample::CreateExampleView(View* container) {
   container->AddChildView(combobox_);
 }
 
-void ComboboxExample::OnSelectedIndexChanged(Combobox* combobox) {
+void ComboboxExample::OnPerformAction(Combobox* combobox) {
   DCHECK_EQ(combobox_, combobox);
   PrintStatus("Selected: %s", base::UTF16ToUTF8(combobox_model_.GetItemAt(
       combobox->selected_index())).c_str());

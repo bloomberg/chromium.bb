@@ -43,7 +43,7 @@ class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase,
   virtual void ButtonPressed(Button* button, const ui::Event& event) OVERRIDE;
 
   // ComboboxListener:
-  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(Combobox* combobox) OVERRIDE;
 
   class TextExampleView;
   // The content of the scroll view.

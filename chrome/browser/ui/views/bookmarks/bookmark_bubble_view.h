@@ -85,7 +85,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
                              const ui::Event& event) OVERRIDE;
 
   // Overridden from views::ComboboxListener:
-  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
 
   // Handle the message when the user presses a button.
   void HandleButtonPressed(views::Button* sender);

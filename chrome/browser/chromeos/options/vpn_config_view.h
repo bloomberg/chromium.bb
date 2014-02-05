@@ -59,7 +59,7 @@ class VPNConfigView : public ChildNetworkConfigView,
                              const ui::Event& event) OVERRIDE;
 
   // views::ComboboxListener:
-  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
 
   // CertLibrary::Observer:
   virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;

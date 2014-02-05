@@ -38,7 +38,7 @@ class VIEWS_EXAMPLES_EXPORT ComboboxExample : public ExampleBase,
 
  private:
   // ComboboxListener:
-  virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(Combobox* combobox) OVERRIDE;
 
   ComboboxModelExample combobox_model_;
   Combobox* combobox_;

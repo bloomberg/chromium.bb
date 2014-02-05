@@ -64,8 +64,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // views::CombboxListener methods.
-  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
-  virtual void OnComboboxTextButtonClicked(views::Combobox* combobox) OVERRIDE;
+  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
 
   // views::LinkListener method.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -131,7 +130,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   void HandleLinkClicked(LinkID sender_id);
 
   // Handles the event when the user changes an index of a combobox.
-  void HandleComboboxSelectedIndexChanged(ComboboxID sender_id);
+  void HandleComboboxPerformAction(ComboboxID sender_id);
 
   // Updates the visibilities of child views according to the current view type.
   void UpdateChildVisibilities();

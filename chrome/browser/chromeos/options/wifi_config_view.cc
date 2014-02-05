@@ -625,7 +625,7 @@ void WifiConfigView::ButtonPressed(views::Button* sender,
   }
 }
 
-void WifiConfigView::OnSelectedIndexChanged(views::Combobox* combobox) {
+void WifiConfigView::OnPerformAction(views::Combobox* combobox) {
   if (combobox == security_combobox_) {
     bool passphrase_enabled = PassphraseActive();
     passphrase_label_->SetEnabled(passphrase_enabled);
