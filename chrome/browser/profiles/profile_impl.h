@@ -60,15 +60,6 @@ class ProfileImpl : public Profile {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Ensures that the preference hash store has been initialized for the profile
-  // at |profile_path|.
-  static void InitializePrefHashStoreIfRequired(
-      const base::FilePath& profile_path);
-
-  // Resets the contents of the preference hash store for the profile at
-  // |profile_path|.
-  static void ResetPrefHashStore(const base::FilePath& profile_path);
-
   // content::BrowserContext implementation:
   virtual base::FilePath GetPath() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
@@ -187,8 +178,6 @@ class ProfileImpl : public Profile {
 
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
-
-  base::FilePath GetPrefFilePath();
 
 #if defined(ENABLE_SESSION_SERVICE)
   void StopCreateSessionServiceTimer();

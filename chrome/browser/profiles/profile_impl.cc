@@ -56,7 +56,6 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
-#include "chrome/browser/prefs/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
@@ -94,7 +93,6 @@
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_system.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -120,14 +118,6 @@
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_settings_service_factory.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/profiles/file_path_verifier_win.h"
-#include "chrome/installer/util/install_util.h"
-#if defined(ENABLE_RLZ)
-#include "rlz/lib/machine_id.h"
-#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -256,50 +246,6 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   return std::string();
 }
 
-void SchedulePrefsFileVerification(const base::FilePath& prefs_file) {
-#if defined(OS_WIN)
-  // Only do prefs file verification on Windows.
-  const int kVerifyPrefsFileDelaySeconds = 60;
-  BrowserThread::GetBlockingPool()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&VerifyPreferencesFile, prefs_file),
-        base::TimeDelta::FromSeconds(kVerifyPrefsFileDelaySeconds));
-#endif
-}
-
-scoped_ptr<PrefHashStoreImpl> GetPrefHashStore(
-    const base::FilePath& profile_path) {
-  // TODO(erikwright): Enable this on Android when race condition is sorted out.
-#if defined(OS_ANDROID)
-  return scoped_ptr<PrefHashStoreImpl>();
-#else
-  std::string seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_PREF_HASH_SEED_BIN).as_string();
-  std::string device_id;
-
-#if defined(OS_WIN) && defined(ENABLE_RLZ)
-  // This is used by
-  // chrome/browser/extensions/api/music_manager_private/device_id_win.cc
-  // but that API is private (http://crbug.com/276485) and other platforms are
-  // not available synchronously.
-  // As part of improving pref metrics on other platforms we may want to find
-  // ways to defer preference loading until the device ID can be used.
-  rlz_lib::GetMachineId(&device_id);
-#endif
-
-  return make_scoped_ptr(new PrefHashStoreImpl(
-      profile_path.AsUTF8Unsafe(),
-      seed,
-      device_id,
-      g_browser_process->local_state()));
-#endif
-}
-
-base::FilePath GetPrefFilePathFromProfilePath(
-    const base::FilePath& profile_path) {
-  return profile_path.Append(chrome::kPreferencesFilename);
-}
-
 }  // namespace
 
 // static
@@ -414,24 +360,6 @@ void ProfileImpl::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-// static
-void ProfileImpl::InitializePrefHashStoreIfRequired(
-    const base::FilePath& profile_path) {
-  scoped_ptr<PrefHashStoreImpl> pref_hash_store(GetPrefHashStore(profile_path));
-  if (pref_hash_store && !pref_hash_store->IsInitialized()) {
-    chrome_prefs::InitializeHashStoreForPrefFile(
-        GetPrefFilePathFromProfilePath(profile_path),
-        JsonPrefStore::GetTaskRunnerForFile(
-            profile_path, BrowserThread::GetBlockingPool()),
-        pref_hash_store.PassAs<PrefHashStore>());
-  }
-}
-
-// static
-void ProfileImpl::ResetPrefHashStore(const base::FilePath& profile_path) {
-  GetPrefHashStore(profile_path)->Reset();
-}
-
 ProfileImpl::ProfileImpl(
     const base::FilePath& path,
     Delegate* delegate,
@@ -517,11 +445,10 @@ ProfileImpl::ProfileImpl(
     startup_metric_utils::ScopedSlowStartupUMA
         scoped_timer("Startup.SlowStartupPreferenceLoading");
     prefs_ = chrome_prefs::CreateProfilePrefs(
-        GetPrefFilePath(),
+        path_,
         sequenced_task_runner,
         profile_policy_connector_->policy_service(),
         managed_user_settings,
-        GetPrefHashStore(path_).PassAs<PrefHashStore>(),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForBrowserContext(this), false),
         pref_registry_,
@@ -878,7 +805,7 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
         predictor_));
   }
 
-  SchedulePrefsFileVerification(GetPrefFilePath());
+  chrome_prefs::SchedulePrefsFilePathVerification(path_);
 
   ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
   DoFinalInit();
@@ -934,10 +861,6 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
             ExtensionPrefValueMapFactory::GetForBrowserContext(this), true)));
   }
   return otr_prefs_.get();
-}
-
-base::FilePath ProfileImpl::GetPrefFilePath() {
-  return GetPrefFilePathFromProfilePath(path_);
 }
 
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(

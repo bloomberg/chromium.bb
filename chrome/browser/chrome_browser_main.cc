@@ -86,7 +86,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/shell_integration.h"
@@ -520,7 +519,7 @@ void InitializeAllPrefHashStores() {
   for (size_t i = 0; i < n_profiles; ++i) {
     base::FilePath profile_path =
         profile_info_cache.GetPathOfProfileAtIndex(i);
-    ProfileImpl::InitializePrefHashStoreIfRequired(profile_path);
+    chrome_prefs::InitializePrefHashStoreIfRequired(profile_path);
   }
 }
 }  // namespace

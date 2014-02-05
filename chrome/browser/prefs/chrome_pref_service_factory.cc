@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/default_pref_store.h"
@@ -18,21 +19,27 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_store.h"
 #include "base/prefs/pref_value_store.h"
+#include "base/threading/sequenced_worker_pool.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
-#include "chrome/browser/prefs/pref_hash_store.h"
+#include "chrome/browser/prefs/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
+#include "chrome/browser/profiles/file_path_verifier_win.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/pref_names.h"
+#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -42,6 +49,10 @@
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/supervised_user_pref_store.h"
+#endif
+
+#if defined(OS_WIN) && defined(ENABLE_RLZ)
+#include "rlz/lib/machine_id.h"
 #endif
 
 using content::BrowserContext;
@@ -196,6 +207,41 @@ void HandleReadError(PersistentPrefStore::PrefReadError error) {
   }
 }
 
+base::FilePath GetPrefFilePathFromProfilePath(
+    const base::FilePath& profile_path) {
+  return profile_path.Append(chrome::kPreferencesFilename);
+}
+
+// Returns the PrefHashStoreImpl for the profile at |profile_path|; may be NULL
+// on some platforms.
+scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl(
+    const base::FilePath& profile_path) {
+  // TODO(erikwright): Enable this on Android when race condition is sorted out.
+#if defined(OS_ANDROID)
+  return scoped_ptr<PrefHashStoreImpl>();
+#else
+  std::string seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_PREF_HASH_SEED_BIN).as_string();
+  std::string device_id;
+
+#if defined(OS_WIN) && defined(ENABLE_RLZ)
+  // This is used by
+  // chrome/browser/extensions/api/music_manager_private/device_id_win.cc
+  // but that API is private (http://crbug.com/276485) and other platforms are
+  // not available synchronously.
+  // As part of improving pref metrics on other platforms we may want to find
+  // ways to defer preference loading until the device ID can be used.
+  rlz_lib::GetMachineId(&device_id);
+#endif
+
+  return make_scoped_ptr(new PrefHashStoreImpl(
+      profile_path.AsUTF8Unsafe(),
+      seed,
+      device_id,
+      g_browser_process->local_state()));
+#endif
+}
+
 scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store) {
   return make_scoped_ptr(new PrefHashFilter(pref_hash_store.Pass(),
@@ -311,38 +357,59 @@ scoped_ptr<PrefService> CreateLocalState(
 }
 
 scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
-    const base::FilePath& pref_filename,
+    const base::FilePath& profile_path,
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     ManagedUserSettingsService* managed_user_settings,
-    scoped_ptr<PrefHashStore> pref_hash_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
   PrefServiceSyncableFactory factory;
   PrepareBuilder(&factory,
-                 pref_filename,
+                 GetPrefFilePathFromProfilePath(profile_path),
                  pref_io_task_runner,
                  policy_service,
                  managed_user_settings,
-                 pref_hash_store.Pass(),
+                 GetPrefHashStoreImpl(profile_path).PassAs<PrefHashStore>(),
                  extension_prefs,
                  async);
   return factory.CreateSyncable(pref_registry.get());
 }
 
-void InitializeHashStoreForPrefFile(
-    const base::FilePath& pref_filename,
-    base::SequencedTaskRunner* pref_io_task_runner,
-    scoped_ptr<PrefHashStore> pref_hash_store) {
-  scoped_refptr<JsonPrefStore> pref_store(
-      new JsonPrefStore(pref_filename,
-                        pref_io_task_runner,
-                        scoped_ptr<PrefFilter>()));
-  pref_store->AddObserver(
-      new InitializeHashStoreObserver(pref_store, pref_hash_store.Pass()));
-  pref_store->ReadPrefsAsync(NULL);
+void SchedulePrefsFilePathVerification(const base::FilePath& profile_path) {
+#if defined(OS_WIN)
+  // Only do prefs file verification on Windows.
+  const int kVerifyPrefsFileDelaySeconds = 60;
+  BrowserThread::GetBlockingPool()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&VerifyPreferencesFile,
+                   GetPrefFilePathFromProfilePath(profile_path)),
+        base::TimeDelta::FromSeconds(kVerifyPrefsFileDelaySeconds));
+#endif
+}
+
+void InitializePrefHashStoreIfRequired(
+    const base::FilePath& profile_path) {
+  scoped_ptr<PrefHashStoreImpl> pref_hash_store(
+      GetPrefHashStoreImpl(profile_path));
+  if (pref_hash_store && !pref_hash_store->IsInitialized()) {
+    const base::FilePath pref_file(
+        GetPrefFilePathFromProfilePath(profile_path));
+    scoped_refptr<JsonPrefStore> pref_store(
+        new JsonPrefStore(pref_file,
+                          JsonPrefStore::GetTaskRunnerForFile(
+                              pref_file, BrowserThread::GetBlockingPool()),
+                          scoped_ptr<PrefFilter>()));
+    pref_store->AddObserver(
+        new InitializeHashStoreObserver(
+            pref_store, pref_hash_store.PassAs<PrefHashStore>()));
+    pref_store->ReadPrefsAsync(NULL);
+  }
+}
+
+void ResetPrefHashStore(const base::FilePath& profile_path) {
+  GetPrefHashStoreImpl(profile_path)->Reset();
 }
 
 }  // namespace chrome_prefs
