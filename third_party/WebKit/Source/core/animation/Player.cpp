@@ -129,7 +129,7 @@ void Player::setCurrentTime(double newCurrentTime)
     m_timeline.serviceAnimations();
 }
 
-void Player::setStartTime(double newStartTime)
+void Player::setStartTime(double newStartTime, bool serviceAnimations)
 {
     if (!std::isfinite(newStartTime))
         return;
@@ -137,7 +137,10 @@ void Player::setStartTime(double newStartTime)
     m_startTime = newStartTime;
     if (!m_held)
         updateCurrentTimingState();
-    m_timeline.serviceAnimations();
+    if (serviceAnimations)
+        m_timeline.serviceAnimations();
+    else
+        update();
 }
 
 void Player::setSource(TimedItem* newSource)

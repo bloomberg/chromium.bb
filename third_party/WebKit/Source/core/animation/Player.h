@@ -71,7 +71,7 @@ public:
 
     bool hasStartTime() const { return !isNull(m_startTime); }
     double startTime() const { return m_startTime; }
-    void setStartTime(double);
+    void setStartTime(double, bool serviceAnimations = true);
 
     TimedItem* source() { return m_content.get(); }
     TimedItem* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
