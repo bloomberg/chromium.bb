@@ -55,7 +55,7 @@ ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializ
     , m_fileName(initializer.filename)
     , m_lineNumber(initializer.lineno)
     , m_columnNumber(initializer.colno)
-    , m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent()))
+    , m_world(DOMWrapperWorld::current(mainThreadIsolate()))
 {
     ScriptWrappable::init(this);
 }

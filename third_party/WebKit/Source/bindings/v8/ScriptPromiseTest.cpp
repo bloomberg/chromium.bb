@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/ScriptPromise.h"
 
-#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8PromiseCustom.h"
@@ -56,7 +55,7 @@ public:
     void SetUp()
     {
         v8::Handle<v8::Context> context(m_context.newLocal(m_isolate));
-        V8PerContextDataHolder::install(context, DOMWrapperWorld::current(m_isolate));
+        V8PerContextDataHolder::install(context);
         m_perContextData = V8PerContextData::create(context);
         m_perContextData->init();
     }

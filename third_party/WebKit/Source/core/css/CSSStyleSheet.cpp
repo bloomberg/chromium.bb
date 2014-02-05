@@ -24,7 +24,7 @@
 #include "HTMLNames.h"
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/V8PerIsolateData.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/css/CSSCharsetRule.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/parser/BisonCSSParser.h"
@@ -296,7 +296,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
 
 unsigned CSSStyleSheet::insertRule(const String& rule, ExceptionState& exceptionState)
 {
-    UseCounter::countDeprecation(activeExecutionContext(V8PerIsolateData::mainThreadIsolate()), UseCounter::CSSStyleSheetInsertRuleOptionalArg);
+    UseCounter::countDeprecation(activeExecutionContext(mainThreadIsolate()), UseCounter::CSSStyleSheetInsertRuleOptionalArg);
     return insertRule(rule, 0, exceptionState);
 }
 

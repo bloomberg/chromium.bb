@@ -67,18 +67,12 @@ public:
     static bool isIsolatedWorldId(int worldId) { return worldId != MainWorldId && worldId != WorkerWorldId; }
     static void getAllWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
-    // FIXME: Replace all call sites of isolatedWorld() with world().
+    void setIsolatedWorldField(v8::Handle<v8::Context>);
+
     static DOMWrapperWorld* isolatedWorld(v8::Handle<v8::Context> context)
     {
         ASSERT(contextHasCorrectPrototype(context));
-        DOMWrapperWorld* world = V8PerContextDataHolder::from(context)->world();
-        return world->isIsolatedWorld() ? world : 0;
-    }
-
-    static DOMWrapperWorld* world(v8::Handle<v8::Context> context)
-    {
-        ASSERT(contextHasCorrectPrototype(context));
-        return V8PerContextDataHolder::from(context)->world();
+        return V8PerContextDataHolder::from(context)->isolatedWorld();
     }
 
     // Will return null if there is no DOMWrapperWorld for the current v8::Context
@@ -115,9 +109,15 @@ public:
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
+    DOMDataStore& isolatedWorldDOMDataStore() const
+    {
+        ASSERT(isIsolatedWorld());
+        return *m_domDataStore;
+    }
     v8::Handle<v8::Context> context(ScriptController&);
 
-    DOMDataStore& domDataStore() { return *m_domDataStore; }
+    // FIXME: Remove this once we remove V8PerIsolateData::m_workerDataStore.
+    DOMDataStore* domDataStore() { return m_domDataStore.get(); }
 
 private:
     static unsigned isolatedWorldCount;

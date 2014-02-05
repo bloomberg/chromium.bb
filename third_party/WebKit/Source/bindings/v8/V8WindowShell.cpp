@@ -207,7 +207,10 @@ bool V8WindowShell::initialize()
 
     v8::Handle<v8::Context> context = m_contextHolder->context();
 
-    V8PerContextDataHolder::install(context, m_world.get());
+    V8PerContextDataHolder::install(context);
+
+    m_world->setIsolatedWorldField(context);
+
     bool isMainWorld = m_world->isMainWorld();
 
     v8::Context::Scope contextScope(context);
@@ -514,8 +517,7 @@ void V8WindowShell::updateSecurityOrigin(SecurityOrigin* origin)
 
 bool V8WindowShell::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
 {
-    if (!isMainThread())
-        return true;
+    ASSERT(isMainThread());
     // We're initializing the context, so it is not yet in a status where we can
     // validate the context.
     if (contextBeingInitialized)

@@ -109,6 +109,7 @@ void initialize(Platform* platform)
     v8::V8::SetEntropySource(&generateEntropy);
     v8::V8::SetArrayBufferAllocator(WebCore::v8ArrayBufferAllocator());
     v8::V8::Initialize();
+    WebCore::setMainThreadIsolate(isolate);
     WebCore::V8PerIsolateData::ensureInitialized(isolate);
 
     s_isolateInterruptor = new WebCore::V8IsolateInterruptor(v8::Isolate::GetCurrent());
@@ -127,7 +128,7 @@ void initialize(Platform* platform)
 
 v8::Isolate* mainThreadIsolate()
 {
-    return WebCore::V8PerIsolateData::mainThreadIsolate();
+    return WebCore::mainThreadIsolate();
 }
 
 static double currentTimeFunction()
@@ -204,7 +205,8 @@ void shutdown()
     ASSERT(s_isolateInterruptor);
     WebCore::ThreadState::current()->removeInterruptor(s_isolateInterruptor);
 
-    WebCore::V8PerIsolateData::dispose(WebCore::V8PerIsolateData::mainThreadIsolate());
+    WebCore::V8PerIsolateData::dispose(WebCore::mainThreadIsolate());
+    WebCore::setMainThreadIsolate(0);
     v8::V8::Dispose();
 
     shutdownWithoutV8();

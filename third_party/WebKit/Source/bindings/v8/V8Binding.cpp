@@ -54,6 +54,7 @@
 #include "core/frame/Settings.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
+#include "gin/public/isolate_holder.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
@@ -620,7 +621,7 @@ void crashIfV8IsDead()
 WrapperWorldType worldType(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (data->isMainThread())
+    if (!data->workerDOMDataStore())
         return worldTypeInMainThread(isolate);
     return WorkerWorld;
 }
@@ -639,7 +640,7 @@ WrapperWorldType worldTypeInMainThread(v8::Isolate* isolate)
 DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (!data->isMainThread())
+    if (data->workerDOMDataStore())
         return 0;
     if (!DOMWrapperWorld::isolatedWorldsExist())
         return 0;
@@ -736,10 +737,31 @@ void moveEventListenerToNewWrapper(v8::Handle<v8::Object> object, EventListener*
         addHiddenValueToArray(object, newValue, arrayIndex, isolate);
 }
 
+static gin::IsolateHolder* mainIsolateHolder = 0;
+
+v8::Isolate* mainThreadIsolate()
+{
+    ASSERT(mainIsolateHolder);
+    ASSERT(isMainThread());
+    return mainIsolateHolder->isolate();
+}
+
+void setMainThreadIsolate(v8::Isolate* isolate)
+{
+    ASSERT(!mainIsolateHolder || !isolate);
+    ASSERT(isMainThread());
+    if (isolate) {
+        mainIsolateHolder = new gin::IsolateHolder(isolate);
+    } else {
+        delete mainIsolateHolder;
+        mainIsolateHolder = 0;
+    }
+}
+
 v8::Isolate* toIsolate(ExecutionContext* context)
 {
     if (context && context->isDocument())
-        return V8PerIsolateData::mainThreadIsolate();
+        return mainThreadIsolate();
     return v8::Isolate::GetCurrent();
 }
 

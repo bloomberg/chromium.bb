@@ -57,12 +57,8 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
     : m_worldId(worldId)
     , m_extensionGroup(extensionGroup)
 {
-    if (isMainWorld())
-        m_domDataStore = adoptPtr(new DOMDataStore(MainWorld));
-    else if (isIsolatedWorld())
+    if (!isMainWorld())
         m_domDataStore = adoptPtr(new DOMDataStore(IsolatedWorld));
-    else
-        m_domDataStore = adoptPtr(new DOMDataStore(WorkerWorld));
 }
 
 DOMWrapperWorld* DOMWrapperWorld::current(v8::Isolate* isolate)
@@ -81,6 +77,11 @@ DOMWrapperWorld* DOMWrapperWorld::mainWorld()
 {
     DEFINE_STATIC_REF(DOMWrapperWorld, mainWorld, (DOMWrapperWorld::create(MainWorldId, mainWorldExtensionGroup)));
     return mainWorld;
+}
+
+void DOMWrapperWorld::setIsolatedWorldField(v8::Handle<v8::Context> context)
+{
+    V8PerContextDataHolder::from(context)->setIsolatedWorld(isMainWorld() ? 0 : this);
 }
 
 typedef HashMap<int, DOMWrapperWorld*> WorldMap;

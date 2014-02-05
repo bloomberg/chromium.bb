@@ -68,8 +68,9 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
     V8Initializer::initializeWorker(isolate);
     v8::V8::Initialize();
     m_isolateHolder = adoptPtr(new gin::IsolateHolder(isolate));
-    V8PerIsolateData::ensureInitialized(isolate);
+    V8PerIsolateData* data = V8PerIsolateData::create(isolate);
     m_world = DOMWrapperWorld::create(WorkerWorldId, 0);
+    data->setWorkerDOMDataStore(m_world->domDataStore());
     m_interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
     ThreadState::current()->addInterruptor(m_interruptor.get());
 }
@@ -114,7 +115,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
     v8::Context::Scope scope(context);
 
-    V8PerContextDataHolder::install(context, m_world.get());
+    V8PerContextDataHolder::install(context);
 
     m_perContextData = V8PerContextData::create(context);
     if (!m_perContextData->init()) {
