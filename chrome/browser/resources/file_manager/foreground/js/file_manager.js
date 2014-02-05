@@ -579,7 +579,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (window.appState) {
       this.params_ = window.appState.params || {};
       this.initCurrentDirectoryURL_ = window.appState.currentDirectoryURL;
-      this.initSelectionPath_ = window.appState.selectionURL;
+      this.initSelectionURL_ = window.appState.selectionURL;
       this.initTargetName_ = window.appState.targetName;
     } else {
       // Used by the select dialog only.
