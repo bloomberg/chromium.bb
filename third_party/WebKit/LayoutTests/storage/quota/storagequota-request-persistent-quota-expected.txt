@@ -8,6 +8,9 @@ PASS usage is >= 0
 PASS grantedQuota is non-zero.
 * Requesting persistent quota with missing argument.
 PASS navigator.storageQuota.requestPersistentQuota() threw exception TypeError: Failed to execute 'requestPersistentQuota' on 'StorageQuota': 1 argument required, but only 0 present..
+* Requesting persistent quota with negative value.
+PASS usage is >= 0
+PASS grantedQuota is 0
 Finished running tests.
 PASS successfullyParsed is true
 

@@ -36,11 +36,26 @@ function runRequestQuotaWithMisingArgumentTest() {
     runNextTest();
 }
 
+function runRequestQuotaWithNegativeValueTest() {
+    debug("* Requesting persistent quota with negative value.");
+    navigator.storageQuota.requestPersistentQuota(-1024).then(function(storageInfo) {
+        usage = storageInfo.usage;
+        grantedQuota = storageInfo.quota;
+
+        // Quota value would vary depending on the test environment.
+        shouldBeGreaterThanOrEqual("usage", "0");
+        shouldBeZero("grantedQuota");
+
+        runNextTest();
+    }, onrejected);
+}
+
 // End of test body functions ---------------------------------------------
 
 var testsList = [
     runRequestQuotaTest,
     runRequestQuotaWithMisingArgumentTest,
+    runRequestQuotaWithNegativeValueTest,
 ];
 var testCounter = 0;
 
