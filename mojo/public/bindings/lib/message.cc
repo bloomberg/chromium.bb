@@ -29,4 +29,8 @@ void Message::Swap(Message* other) {
   std::swap(handles, other->handles);
 }
 
+bool NoSuchInterfaceStub::Accept(Message* message) {
+  return false;
+}
+
 }  // namespace mojo

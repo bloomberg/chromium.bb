@@ -1,12 +1,18 @@
 class {{interface.name}}Proxy;
 class {{interface.name}}Stub;
+{% if interface.peer %}
 class {{interface.peer}};
+{% endif %}
 
 class {{interface.name}} {
  public:
   typedef {{interface.name}}Proxy _Proxy;
   typedef {{interface.name}}Stub _Stub;
+{% if interface.peer %}
   typedef {{interface.peer}} _Peer;
+{% else %}
+  typedef mojo::NoSuchInterface _Peer;
+{% endif %}
 
 {#--- Enums #}
 {%- for enum in interface.enums %}

@@ -59,4 +59,8 @@ interface ServiceClient {
   void DidFrobinate(int32 result @0) @0;
 };
 
+interface Port {
+  void PostMessage(string message_text @0) @0;
+};
+
 }

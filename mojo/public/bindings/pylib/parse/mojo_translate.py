@@ -42,9 +42,10 @@ def MapOrdinal(ordinal):
 
 def GetAttribute(attributes, name):
   out = None
-  for attribute in attributes:
-    if attribute[0] == 'ATTRIBUTE' and attribute[1] == name:
-      out = attribute[2]
+  if attributes:
+    for attribute in attributes:
+      if attribute[0] == 'ATTRIBUTE' and attribute[1] == name:
+        out = attribute[2]
   return out
 
 

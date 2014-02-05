@@ -54,6 +54,23 @@ class MessageReceiver {
   virtual bool Accept(Message* message) = 0;
 };
 
+// NoSuchInterface is for use with RemotePtr<> in cases when a non-existent
+// interface is needed (e.g., when the Mojom "Peer" attribute is not present).
+
+class NoSuchInterface;
+
+class NoSuchInterfaceStub : public MessageReceiver {
+ public:
+  NoSuchInterfaceStub(NoSuchInterface* unused) {}
+  virtual bool Accept(Message* message) MOJO_OVERRIDE;
+};
+
+class NoSuchInterface {
+ public:
+  typedef NoSuchInterfaceStub _Stub;
+  typedef NoSuchInterface _Peer;
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_BINDINGS_LIB_MESSAGE_H_

@@ -7,6 +7,7 @@
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/utility/run_loop.h"
 #include "mojom/math_calculator.h"
+#include "mojom/sample_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -222,6 +223,12 @@ TEST_F(RemotePtrTest, EncounteredErrorCallback) {
   // We should have also been able to observe the error through the
   // ErrorHandler interface.
   EXPECT_TRUE(error_observer.encountered_error());
+}
+
+TEST_F(RemotePtrTest, NoPeerAttribute) {
+  // This is a test to ensure the following compiles. The sample::Port interface
+  // does not have an explicit Peer attribute.
+  RemotePtr<sample::Port> port(pipe0_.Pass());
 }
 
 }  // namespace test
