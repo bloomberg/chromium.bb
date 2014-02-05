@@ -36,6 +36,7 @@ class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class OneShotEvent;
 class ProcessManager;
+class QuotaService;
 class RuntimeData;
 class StateStore;
 class UserScriptMaster;
@@ -102,6 +103,10 @@ class ExtensionSystem : public BrowserContextKeyedService {
 
   // The InstallVerifier is created at startup.
   virtual InstallVerifier* install_verifier() = 0;
+
+  // Returns the QuotaService that limits calls to certain extension functions.
+  // Lives on the UI thread. Created at startup.
+  virtual QuotaService* quota_service() = 0;
 
   // Called by the ExtensionService that lives in this system. Gives the
   // info map a chance to react to the load event before the EXTENSION_LOADED

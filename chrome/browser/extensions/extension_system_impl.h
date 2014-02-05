@@ -47,6 +47,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual Blacklist* blacklist() OVERRIDE;  // shared
   virtual ErrorConsole* error_console() OVERRIDE;
   virtual InstallVerifier* install_verifier() OVERRIDE;
+  virtual QuotaService* quota_service() OVERRIDE;  // shared
 
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension) OVERRIDE;
@@ -89,6 +90,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ExtensionWarningService* warning_service();
     ErrorConsole* error_console();
     InstallVerifier* install_verifier();
+    QuotaService* quota_service();
     const OneShotEvent& ready() const { return ready_; }
 
    private:
@@ -118,6 +120,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
     scoped_ptr<ErrorConsole> error_console_;
     scoped_ptr<InstallVerifier> install_verifier_;
+    scoped_ptr<QuotaService> quota_service_;
 
 #if defined(OS_CHROMEOS)
     scoped_ptr<chromeos::DeviceLocalAccountManagementPolicyProvider>

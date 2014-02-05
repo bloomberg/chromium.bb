@@ -10,12 +10,12 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/test.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/quota_service.h"
 
 namespace {
@@ -83,8 +83,7 @@ bool TestLogFunction::RunImpl() {
 TestResetQuotaFunction::~TestResetQuotaFunction() {}
 
 bool TestResetQuotaFunction::RunImpl() {
-  ExtensionService* service = GetProfile()->GetExtensionService();
-  QuotaService* quota = service->quota_service();
+  QuotaService* quota = ExtensionSystem::Get(GetProfile())->quota_service();
   quota->Purge();
   quota->violation_errors_.clear();
   return true;

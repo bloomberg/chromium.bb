@@ -37,9 +37,10 @@ typedef std::list<QuotaLimitHeuristic*> QuotaLimitHeuristics;
 // The QuotaService takes care that calls to certain extension
 // functions do not exceed predefined quotas.
 //
-// The QuotaService needs to live entirely on one thread, i.e.
-// be created, called and destroyed on the same thread, due to its use
-// of a RepeatingTimer.
+// The QuotaService needs to live entirely on one thread, i.e. be created,
+// called and destroyed on the same thread, due to its use of a RepeatingTimer.
+// It is not a BrowserContextKeyedService because instances exist on both the UI
+// and IO threads.
 class QuotaService : public base::NonThreadSafe {
  public:
   // Some concrete heuristics (declared below) that ExtensionFunctions can

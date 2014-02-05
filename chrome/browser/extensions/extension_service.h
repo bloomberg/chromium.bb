@@ -30,7 +30,6 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pending_extension_manager.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/browser/quota_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
@@ -444,8 +443,6 @@ class ExtensionService
   // Note that this may return NULL if autoupdate is not turned on.
   extensions::ExtensionUpdater* updater();
 
-  extensions::QuotaService* quota_service() { return &quota_service_; }
-
   // Sets the name, id and icon resource path of the given extension into the
   // returned dictionary. Returns an empty dictionary if the given extension id
   // is not found.
@@ -749,9 +746,6 @@ class ExtensionService
   // Whether to delay installing of extension updates until the extension is
   // idle.
   bool install_updates_when_idle_;
-
-  // Used by dispatchers to limit API quota for individual extensions.
-  extensions::QuotaService quota_service_;
 
   // Signaled when all extensions are loaded.
   extensions::OneShotEvent* const ready_;

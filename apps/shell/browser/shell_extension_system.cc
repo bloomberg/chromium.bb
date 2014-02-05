@@ -23,6 +23,7 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 
 using content::BrowserContext;
@@ -96,6 +97,7 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
   event_router_.reset(
       new EventRouter(browser_context_, ExtensionPrefs::Get(browser_context_)));
   process_manager_.reset(ProcessManager::Create(browser_context_));
+  quota_service_.reset(new QuotaService);
 }
 
 ExtensionService* ShellExtensionSystem::extension_service() {
@@ -154,6 +156,10 @@ ErrorConsole* ShellExtensionSystem::error_console() {
 
 InstallVerifier* ShellExtensionSystem::install_verifier() {
   return NULL;
+}
+
+QuotaService* ShellExtensionSystem::quota_service() {
+  return quota_service_.get();
 }
 
 void ShellExtensionSystem::RegisterExtensionWithRequestContexts(

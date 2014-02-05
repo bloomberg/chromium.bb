@@ -72,9 +72,10 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual EventRouter* event_router() OVERRIDE;
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;
-  virtual const OneShotEvent& ready() const OVERRIDE;
   virtual ErrorConsole* error_console() OVERRIDE;
   virtual InstallVerifier* install_verifier() OVERRIDE;
+  virtual QuotaService* quota_service() OVERRIDE;
+  virtual const OneShotEvent& ready() const OVERRIDE;
 
   void SetReady() {
     LOG(INFO) << "SetReady()";
@@ -101,6 +102,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_refptr<InfoMap> info_map_;
   scoped_ptr<ErrorConsole> error_console_;
   scoped_ptr<InstallVerifier> install_verifier_;
+  scoped_ptr<QuotaService> quota_service_;
   OneShotEvent ready_;
 };
 

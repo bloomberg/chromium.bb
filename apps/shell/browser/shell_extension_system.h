@@ -63,6 +63,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   virtual Blacklist* blacklist() OVERRIDE;
   virtual ErrorConsole* error_console() OVERRIDE;
   virtual InstallVerifier* install_verifier() OVERRIDE;
+  virtual QuotaService* quota_service() OVERRIDE;
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension) OVERRIDE;
   virtual void UnregisterExtensionWithRequestContexts(
@@ -80,6 +81,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
   scoped_ptr<EventRouter> event_router_;
   scoped_ptr<ProcessManager> process_manager_;
+  scoped_ptr<QuotaService> quota_service_;
 
   // Signaled when the extension system has completed its startup tasks.
   OneShotEvent ready_;

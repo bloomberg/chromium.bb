@@ -28,6 +28,7 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 
 using content::BrowserThread;
@@ -38,7 +39,8 @@ TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       value_store_(NULL),
       info_map_(new InfoMap()),
-      error_console_(new ErrorConsole(profile, NULL)) {}
+      error_console_(new ErrorConsole(profile, NULL)),
+      quota_service_(new QuotaService()) {}
 
 TestExtensionSystem::~TestExtensionSystem() {
 }
@@ -162,16 +164,20 @@ Blacklist* TestExtensionSystem::blacklist() {
   return blacklist_.get();
 }
 
-const OneShotEvent& TestExtensionSystem::ready() const {
-  return ready_;
-}
-
 ErrorConsole* TestExtensionSystem::error_console() {
   return error_console_.get();
 }
 
 InstallVerifier* TestExtensionSystem::install_verifier() {
   return install_verifier_.get();
+}
+
+QuotaService* TestExtensionSystem::quota_service() {
+  return quota_service_.get();
+}
+
+const OneShotEvent& TestExtensionSystem::ready() const {
+  return ready_;
 }
 
 // static

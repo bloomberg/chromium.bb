@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/dom_action_types.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "extensions/browser/event_router.h"

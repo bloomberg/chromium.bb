@@ -90,6 +90,7 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
                                       extensions::APIPermission::ID permission)
       const;
 
+  // Returns the IO thread QuotaService. Creates the instance on first call.
   QuotaService* GetQuotaService();
 
   // Keep track of the signin process, so we can restrict extension access to
@@ -99,9 +100,8 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
 
   // Notifications can be enabled/disabled in real time by the user.
   void SetNotificationsDisabled(const std::string& extension_id,
-                               bool notifications_disabled);
-  bool AreNotificationsDisabled(const std::string& extension_id)
-      const;
+                                bool notifications_disabled);
+  bool AreNotificationsDisabled(const std::string& extension_id) const;
 
  private:
   friend class base::RefCountedThreadSafe<InfoMap>;

@@ -44,6 +44,7 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -219,6 +220,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   extension_warning_service_->AddObserver(
       extension_warning_badge_service_.get());
   error_console_.reset(new ErrorConsole(profile_, extension_service_.get()));
+  quota_service_.reset(new QuotaService);
 
   if (extensions_enabled) {
     // Load any extensions specified with --load-extension.
@@ -301,6 +303,10 @@ ErrorConsole* ExtensionSystemImpl::Shared::error_console() {
 
 InstallVerifier* ExtensionSystemImpl::Shared::install_verifier() {
   return install_verifier_.get();
+}
+
+QuotaService* ExtensionSystemImpl::Shared::quota_service() {
+  return quota_service_.get();
 }
 
 //
@@ -394,6 +400,10 @@ ErrorConsole* ExtensionSystemImpl::error_console() {
 
 InstallVerifier* ExtensionSystemImpl::install_verifier() {
   return shared_->install_verifier();
+}
+
+QuotaService* ExtensionSystemImpl::quota_service() {
+  return shared_->quota_service();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

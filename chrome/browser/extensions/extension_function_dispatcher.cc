@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -31,7 +30,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/extension_api.h"
@@ -331,17 +332,19 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   DCHECK(render_view_host || render_frame_host);
   // TODO(yzshen): There is some shared logic between this method and
   // DispatchOnIOThread(). It is nice to deduplicate.
-  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
-  ExtensionService* service = extension_system->extension_service();
   extensions::ProcessMap* process_map =
       extensions::ProcessMap::Get(browser_context_);
   if (!process_map)
     return;
 
-  const Extension* extension = service->extensions()->GetByID(
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser_context_);
+  const Extension* extension = registry->enabled_extensions().GetByID(
       params.extension_id);
-  if (!extension)
-    extension = service->extensions()->GetHostedAppByURL(params.source_url);
+  if (!extension) {
+    extension =
+        registry->enabled_extensions().GetHostedAppByURL(params.source_url);
+  }
 
   int process_id = render_view_host ? render_view_host->GetProcess()->GetID() :
                                       render_frame_host->GetProcess()->GetID();
@@ -375,7 +378,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (!CheckPermissions(function.get(), extension, params, callback))
     return;
 
-  extensions::QuotaService* quota = service->quota_service();
+  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
+  extensions::QuotaService* quota = extension_system->quota_service();
   std::string violation_error = quota->Assess(extension->id(),
                                               function.get(),
                                               &params.arguments,
@@ -395,7 +399,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   // if function->Run() ended up closing the tab that owns us.
 
   // Check if extension was uninstalled by management.uninstall.
-  if (!service->extensions()->GetByID(params.extension_id))
+  if (!registry->enabled_extensions().GetByID(params.extension_id))
     return;
 
   // We only adjust the keepalive count for UIThreadExtensionFunction for
