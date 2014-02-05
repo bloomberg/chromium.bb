@@ -130,12 +130,12 @@ class SelectionCapability {
   }
 
   void AddDefaultOption(const Option& option, bool is_default) {
-    options_.push_back(option);
     if (is_default) {
       DCHECK_EQ(default_idx_, -1);
       // Point to the last element.
-      default_idx_ = size() - 1;
+      default_idx_ = static_cast<int>(size());
     }
+    options_.push_back(option);
   }
 
  private:

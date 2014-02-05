@@ -484,7 +484,7 @@ TEST(PrinterDescriptionTest, CjtInvalid) {
   EXPECT_FALSE(ticket.InitFromString(NormalizeJson(kBadVersionCjt)));
 }
 
-TEST(PrinterDescriptionTest, GjtSetAll) {
+TEST(PrinterDescriptionTest, CjtSetAll) {
   CloudDeviceDescription description;
 
   ColorTicketItem color;

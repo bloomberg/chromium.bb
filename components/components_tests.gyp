@@ -24,6 +24,7 @@
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
             'browser_context_keyed_service/dependency_graph_unittest.cc',
+            'cloud_devices/printer_description_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
             'dom_distiller/core/distiller_unittest.cc',
             'dom_distiller/core/distiller_url_fetcher_unittest.cc',
@@ -89,6 +90,9 @@
             'components.gyp:autofill_core_browser',
             'components.gyp:autofill_core_common',
             'components.gyp:autofill_core_test_support',
+
+            # Dependencies of cloud_devices
+            'components.gyp:cloud_devices',
 
             # Dependencies of dom_distiller
             'components.gyp:distilled_page_proto',
