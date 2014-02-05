@@ -326,7 +326,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   title_view_ = NULL;
   if (!notification.title().empty()) {
     const gfx::FontList& font_list =
-        default_label_font_list.DeriveFontListWithSizeDelta(2);
+        default_label_font_list.DeriveWithSizeDelta(2);
     int padding = kTitleLineHeight - font_list.GetHeight();
     title_view_ = new BoundedLabel(
         gfx::TruncateString(notification.title(), kTitleCharacterLimit),
