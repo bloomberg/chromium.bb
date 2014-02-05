@@ -32,7 +32,6 @@
     // Retrieves the current state of hotword search.
     // The result is put into a StatusDetails object.
     static void getStatus(StatusDetailsCallback callback);
-
   };
 
   interface Events {

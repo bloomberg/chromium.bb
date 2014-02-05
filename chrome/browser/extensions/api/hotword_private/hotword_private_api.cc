@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
@@ -87,7 +86,7 @@ bool HotwordPrivateGetStatusFunction::RunImpl() {
 
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled =
-      prefs->GetBoolean(prefs::kHotwordSearchEnabled) && result.available;
+      prefs->GetBoolean(prefs::kHotwordSearchEnabled);
 
   SetResult(result.ToValue().release());
   return true;
