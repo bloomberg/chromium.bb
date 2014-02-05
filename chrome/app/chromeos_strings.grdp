@@ -1152,10 +1152,10 @@ Press any key to continue exploring.
   <message name="IDS_UPDATE_SCREEN_TITLE" desc="Title of the OOBE update screen">
     Update
   </message>
-  <message name="IDS_SIGNIN_SCREEN_TITLE" desc="Title of OOBE/Add User sign in screen">
+  <message name="IDS_SIGNIN_SCREEN_TITLE" desc="Title of OOBE/Add User sign-in screen">
     Sign in
   </message>
-  <message name="IDS_SIGNIN_SCREEN_PASSWORD_CHANGED" desc="Title of OOBE/Add User sign in screen when password was changed">
+  <message name="IDS_SIGNIN_SCREEN_PASSWORD_CHANGED" desc="Title of OOBE/Add User sign-in screen when password was changed">
     You have recently changed the password. Please sign in with the new one.
   </message>
   <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
@@ -1221,7 +1221,7 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_OTHER_LANGUAGES" desc="Option group name dividing vendor-configured languages from other available languages in out-of-box 'Select language' select control.">
     Other languages
   </message>
-  <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
+  <message name="IDS_LOGIN_TITLE" desc="Title of sign-in box">
     Sign in
   </message>
   <message name="IDS_LOGIN_TITLE_HINT" desc="Hint under title 'Sign in to Chrome OS'">
@@ -1330,8 +1330,8 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_OFFLINE_PASSWORD" desc="Password field text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
     Password
   </message>
-  <message name="IDS_LOGIN_OFFLINE_SIGNIN" desc="Sign in text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
-    Sign In
+  <message name="IDS_LOGIN_OFFLINE_SIGNIN" desc="Sign-in text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
+    Sign in
   </message>
   <message name="IDS_LOGIN_OFFLINE_EMPTY_EMAIL" desc="Alert message about empty email on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
     Enter your email address.
@@ -1473,7 +1473,7 @@ Press any key to continue exploring.
     Oops, something went wrong
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE" desc="Supervised user dialog, error page, manager account is in inconsistent state, text">
-    To recover from this error, you will need to sign into your Google Account
+    To recover from this error, you will need to sign in to your Google Account
     from the sign-in screen. You can then sign out of your Google Account and
     try creating a supervised user again.
   </message>
@@ -2417,7 +2417,7 @@ Press any key to continue exploring.
     Please install a user certificate.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when not logged in and  user certificates are required.">
-    Login required for user certificate.
+    Sign-in required for user certificate.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_REQUIRE_HARDWARE_BACKED" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a non hardware-backed user certificate is selected.">
     User certificate must be hardware-backed.
@@ -4573,10 +4573,10 @@ Battery full
     Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
   </message>
   <message name="IDS_LOGIN_ERROR_OWNER_REQUIRED" desc="Couldn't sign in because the machine is in policy safe mode and needs owner login">
-    Login has been resticted to the owner account only. Please reboot and sign in with the owner account. The machine will auto reboot in 30 seconds.
+    Sign-in has been restricted to the owner account only. Please reboot and sign in with the owner account. The machine will auto reboot in 30 seconds.
   </message>
   <message name="IDS_LOGIN_ERROR_OWNER_KEY_LOST" desc="Couldn't sign in because the owner key has been lost, device settings corruption or incorrect local time.">
-    Login failed, please connect to the internet and try again.
+    Sign-in failed, please connect to the internet and try again.
   </message>
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE_TITLE" desc="Title of the screen notifying user about TPM error.">
     Something went wrong with signing in

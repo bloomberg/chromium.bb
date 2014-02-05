@@ -347,9 +347,8 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
     // This is not the first machine so ask user to enter passphrase.
     *menu_label = l10n_util::GetStringUTF16(
         IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM);
-    base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-    *bubble_message = l10n_util::GetStringFUTF16(
-        IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE, product_name);
+    *bubble_message = l10n_util::GetStringUTF16(
+        IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE);
     *bubble_accept_label = l10n_util::GetStringUTF16(
         IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT);
     return;

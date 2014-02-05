@@ -753,7 +753,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
         </message>
       </if>
 
-      <!-- Chrome sign in page -->
+      <!-- Chrome sign-in page -->
       <message name="IDS_CHROME_SIGNIN_TITLE" desc="Title on the about:chrome-signin page">
         Chrome
       </message>
@@ -763,25 +763,25 @@ For Google Chrome, processes used to display diagnostics information (such as th
         Now that you're signed in, you can get your tabs, bookmarks and other Chrome stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.
       </message>
 
-      <!-- One click sign in infobar -->
+      <!-- One click sign-in infobar -->
       <if expr="not pp_ifdef('chromeos')">
-        <!-- New one-click signin dialog contents for SAML support -->
-        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW" desc="The title of the modal dialog window that opens when the user chooses to use one click sign in.">
+        <!-- New one-click sign-in dialog contents for SAML support -->
+        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW" desc="The title of the modal dialog window that opens when the user chooses to use one click sign-in.">
           You're signed in to Chrome!
         </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW" desc="The message of the one click sign in dialog.">
+        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW" desc="The message of the one click sign-in dialog.">
           You're signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Now you can access your bookmarks, history, and other settings on all your signed in devices.
         </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE_FULL" desc="The entire message of the one click sign in bubble.">
+        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE_FULL" desc="The entire message of the one click sign-in bubble.">
           You're now signed in to Chrome! Your bookmarks, history, and other settings will be synced to your Google Account.
         </message>
         <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE_NEW" desc="The body of the sync promo NTP bubble.">
           Now that you're signed in, you can get your tabs, bookmarks and other Chrome stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.
         </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE" desc="The body of the signin bubble, when sync has been disabled.">
+        <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE" desc="The body of the sign-in bubble, when sync has been disabled.">
           You're now signed in to Chrome! Sync is disabled by your administrator.
         </message>
-        <message name="IDS_SYNC_WRONG_EMAIL" desc="Message shown when sync setup failed due to the user entering the wrong email address for sign in.">
+        <message name="IDS_SYNC_WRONG_EMAIL" desc="Message shown when sync setup failed due to the user entering the wrong email address for sign-in.">
           You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Please use the same account to sign in again.
         </message>
         <message name="IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE" desc="Error message to display when setting up sync for a second time and the user name is different from the previous user name.">
@@ -798,7 +798,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_MESSAGE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
         You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.
       </message>
-      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_PROMPT" desc="The text of the prompt to create a new profile after signing into an enterprise account">
+      <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_PROMPT" desc="The text of the prompt to create a new profile after signing in to an enterprise account">
         If you prefer to keep your existing Chrome data separate, you can create a new Chrome user for <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>.
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NO" desc="Text of the button to link the current profile with the signed-in enterprise account">
@@ -815,6 +815,20 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION_NEW_STYLE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. Additionally notifies the user that they can create a new profile instead. This message is followed by a 'Learn more' link.">
         You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
+      </message>
+
+      <!-- Sync sign-in global error message-->
+      <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">
+        Google Chrome could not sync your data. Please update your Sync passphrase.
+      </message>
+      <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user's sign-in credentials are out of date.">
+        Google Chrome could not sync your data because your account sign-in details are out of date.
+      </message>
+      <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when sync is not available for their domain.">
+        Google Chrome could not sync your data because Sync is not available for your domain.
+      </message>
+      <message name="IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when there's an error signing in.">
+        Google Chrome could not sync your data due to an error signing in.
       </message>
 
       <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
@@ -908,7 +922,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         Sign in to Chrome
       </message>
       <message name="IDS_APP_LIST_SIGNIN_TEXT" desc="Text for when the launcher needs to sign in.">
-        You need to be signed into Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.
+        You need to be signed in to Chrome to use apps. This allows Chrome to sync your apps, bookmarks, history, passwords and other settings across devices.
       </message>
 
       <!-- App shortcuts -->

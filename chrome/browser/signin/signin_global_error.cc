@@ -169,23 +169,20 @@ std::vector<base::string16> SigninGlobalError::GetBubbleViewMessages() {
     case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      messages.push_back(l10n_util::GetStringFUTF16(
-          IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      messages.push_back(l10n_util::GetStringUTF16(
+          IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE));
       break;
 
     // Sync service is not available for this account's domain.
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      messages.push_back(l10n_util::GetStringFUTF16(
-          IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      messages.push_back(l10n_util::GetStringUTF16(
+          IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE));
       break;
 
     // Generic message for "other" errors.
     default:
-      messages.push_back(l10n_util::GetStringFUTF16(
-          IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      messages.push_back(l10n_util::GetStringUTF16(
+          IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE));
   }
   return messages;
 }

@@ -124,8 +124,8 @@
       <message desc="Sync error string for generic error. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GENERIC">
         Sync error
       </message>
-      <message desc="Sync error string for when the needs to update the sign in details [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GA">
-        Please update your sign in details.
+      <message desc="Sync error string for when the needs to update the sign-in details [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GA">
+        Please update your sign-in details.
       </message>
       <message desc="Sync error string for network connection. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_CONNECTION">
         Could not connect to the sync server.
@@ -137,7 +137,7 @@
         The service is not available; try again later.
       </message>
       <message desc="Title to show on a dialog during sign-in, indicating that the account used has policy management enabled." name="IDS_POLICY_DIALOG_TITLE">
-        Confirm sign in
+        Confirm sign-in
       </message>
       <message desc="Message to show on a dialog during sign-in, indicating that the account used has policy management enabled." name="IDS_POLICY_DIALOG_MESSAGE">
         This account is managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
