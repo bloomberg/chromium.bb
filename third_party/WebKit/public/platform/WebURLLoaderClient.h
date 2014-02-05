@@ -63,11 +63,22 @@ public:
     // Called when a chunk of renderer-generated metadata is received from the cache.
     virtual void didReceiveCachedMetadata(WebURLLoader*, const char* data, int dataLength) { }
 
-    // Called when the load completes successfully.
+    // FIXME: remove this method when embedder implement new API.
     virtual void didFinishLoading(WebURLLoader*, double finishTime) { }
+
+    // Called when the load completes successfully.
+    // |totalEncodedDataLength| may be equal to kUnknownEncodedDataLength.
+    // FIXME: remove default implementation when embedder implement new API.
+    virtual void didFinishLoading(WebURLLoader* loader, double finishTime, int64_t totalEncodedDataLength)
+    {
+        didFinishLoading(loader, finishTime);
+    }
 
     // Called when the load completes with an error.
     virtual void didFail(WebURLLoader*, const WebURLError&) { }
+
+    // Value passed to didFinishLoading when total encoded data length isn't known.
+    static const int64_t kUnknownEncodedDataLength = -1;
 
 protected:
     virtual ~WebURLLoaderClient() { }

@@ -248,7 +248,7 @@ void AssociatedURLLoader::ClientAdapter::didFinishLoading(unsigned long identifi
     if (!m_client)
         return;
 
-    m_client->didFinishLoading(m_loader, finishTime);
+    m_client->didFinishLoading(m_loader, finishTime, WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void AssociatedURLLoader::ClientAdapter::didFail(const ResourceError& error)
