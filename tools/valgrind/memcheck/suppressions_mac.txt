@@ -100,26 +100,13 @@
    fun:_ZN3gfx8internal24Get1xPNGBytesFromNSImageEP7NSImage
 }
 # Intentional leaks in AppKit, for an OS-level cache. Only appear on the first
-# run of each reboot.
+# run of each reboot.  See also issues 105525, 257276, 340847.
 {
    bug_257276
    Memcheck:Leak
-   fun:malloc_zone_calloc
-   fun:ripr_Path
+   ...
    fun:ripc_DrawPath
    fun:CGContextDrawPath
-   fun:CGContextStrokePath
-   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:inContext:from:to:at:thickness:lineOrigin:breakForDescenders:flipped:]
-   fun:-[NSLayoutManager(NSTextViewSupport) _drawLineForGlyphRange:type:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
-   fun:-[NSLayoutManager(NSTextViewSupport) drawUnderlineForGlyphRange:underlineType:baselineOffset:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
-   fun:-[NSLayoutManager(NSTextViewSupport) _lineGlyphRange:type:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:isStrikethrough:]
-   fun:-[NSLayoutManager(NSTextViewSupport) underlineGlyphRange:underlineType:lineFragmentRect:lineFragmentGlyphRange:containerOrigin:]
-   fun:-[NSLayoutManager(NSPrivate) _drawGlyphsForGlyphRange:atPoint:parameters:]
-   fun:-[NSLayoutManager(NSTextViewSupport) drawGlyphsForGlyphRange:atPoint:]
-   fun:-[NSStringDrawingTextStorage drawTextContainer:withRect:graphicsContext:baselineMode:scrollable:padding:]
-   fun:_NSStringDrawingCore
-   fun:-[NSString(NSExtendedStringDrawing) drawWithRect:options:attributes:]
-   fun:-[HyperlinkButtonCell drawTitle:withFrame:inView:]
 }
 {
    bug_257276_b
@@ -1632,15 +1619,6 @@
    fun:_ZN5blink12WebFrameImpl16paintWithContextERN7WebCore15GraphicsContextERKNS_7WebRectE
    fun:_ZN5blink12WebFrameImpl5paintEP9CGContextRKNS_7WebRectE
    fun:_ZN5blink11WebViewImpl5paintEP9CGContextRKNS_7WebRectE
-}
-{
-   bug_105525
-   Memcheck:Leak
-   ...
-   fun:CGContextDrawPath
-   fun:CGContextFillPath
-   fun:_NSDrawWindowBackgroundRegion
-   fun:-[NSThemeFrame drawWindowBackgroundRegion:]
 }
 {
    bug_105526_read_a
