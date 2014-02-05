@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_native_library.h"
 #include "base/sequenced_task_runner.h"
@@ -35,6 +36,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -44,6 +46,7 @@
 #include "components/policy/core/common/preg_parser_win.h"
 #include "components/policy/core/common/registry_dict_win.h"
 #include "components/policy/core/common/schema.h"
+#include "policy/policy_constants.h"
 
 namespace schema = json_schema_constants;
 
@@ -62,6 +65,12 @@ const char kKeyThirdParty[] = "3rdparty";
 // TODO(joaodasilva): remove this for M35. http://crbug.com/325349
 const char kLegacyBrowserSupportExtensionId[] =
     "heildphpnddilhkemkielfhnkaagiabh";
+
+// The web store url that is the only trusted source for extensions.
+const char kExpectedWebStoreUrl[] =
+    ";https://clients2.google.com/service/update2/crx";
+// String to be prepended to each blocked entry.
+const char kBlockedExtensionPrefix[] = "[BLOCKED]";
 
 // The GUID of the registry settings group policy extension.
 GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
@@ -105,6 +114,41 @@ std::string PatchSchema(const std::string& schema) {
   std::string serialized;
   base::JSONWriter::Write(json.get(), &serialized);
   return serialized;
+}
+
+// Verifies that untrusted policies contain only safe values. Modifies the
+// |policy| in place.
+void FilterUntrustedPolicy(PolicyMap* policy) {
+  if (base::win::IsEnrolledToDomain())
+    return;
+
+  const PolicyMap::Entry* map_entry =
+      policy->Get(policy::key::kExtensionInstallForcelist);
+  if (map_entry && map_entry->value) {
+    const base::ListValue* policy_list_value = NULL;
+    if (!map_entry->value->GetAsList(&policy_list_value))
+      return;
+
+    scoped_ptr<base::ListValue> filtered_values(new base::ListValue);
+    for (base::ListValue::const_iterator list_entry(policy_list_value->begin());
+         list_entry != policy_list_value->end(); ++list_entry) {
+      std::string entry;
+      if (!(*list_entry)->GetAsString(&entry))
+        continue;
+      size_t pos = entry.find(';');
+      if (pos == std::string::npos)
+        continue;
+      // Only allow custom update urls in enterprise environments.
+      if (!LowerCaseEqualsASCII(entry.substr(pos), kExpectedWebStoreUrl))
+        entry = kBlockedExtensionPrefix + entry;
+
+      filtered_values->AppendString(entry);
+    }
+    policy->Set(policy::key::kExtensionInstallForcelist,
+                map_entry->level, map_entry->scope,
+                filtered_values.release(),
+                map_entry->external_data_fetcher);
+  }
 }
 
 // A helper class encapsulating run-time-linked function calls to Wow64 APIs.
@@ -500,6 +544,7 @@ void PolicyLoaderWin::LoadChromePolicy(const RegistryDict* gpo_dict,
   const Schema* chrome_schema =
       schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
   ParsePolicy(gpo_dict, level, scope, *chrome_schema, &policy);
+  FilterUntrustedPolicy(&policy);
   chrome_policy_map->MergeFrom(policy);
 }
 
