@@ -456,6 +456,7 @@ FileTransferController.prototype = {
    */
   onDragEnterVolumesList_: function(list, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
+
     this.lastEnteredTarget_ = event.target;
     var item = list.getListItemAncestor(event.target);
     item = item && list.isItem(item) ? item : null;
@@ -463,14 +464,17 @@ FileTransferController.prototype = {
       return;
 
     var modelItem = item && list.dataModel.item(item.listIndex);
-    if (modelItem.isShortcut) {
+    if (modelItem && modelItem.isShortcut) {
       this.setDropTarget_(item, event.dataTransfer, modelItem.entry);
-    } else if (modelItem.isVolume && modelItem.volumeInfo.displayRoot) {
+      return;
+    }
+    if (modelItem && modelItem.isVolume && modelItem.volumeInfo.displayRoot) {
       this.setDropTarget_(
           item, event.dataTransfer, modelItem.volumeInfo.displayRoot);
-    } else {
-      this.clearDropTarget_();
+      return;
     }
+
+    this.clearDropTarget_();
   },
 
   /**
