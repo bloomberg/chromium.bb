@@ -511,7 +511,7 @@ class ChromiumOSDevice(RemoteDevice):
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
-    logging.debug("Temporarily remount '/' with rw")
+    logging.info("Remounting '/' with rw...")
     self.RunCommand(self.MOUNT_ROOTFS_RW_CMD, error_code_ok=True)
 
   def _RootfsIsReadOnly(self):
@@ -529,12 +529,12 @@ class ChromiumOSDevice(RemoteDevice):
 
   def _DisableRootfsVerification(self):
     """Disables device rootfs verification."""
-    logging.debug('Disable rootfs verification on device.')
+    logging.info('Disabling rootfs verification on device...')
     self.RunCommand(
         [self.MAKE_DEV_SSD_BIN, '--remove_rootfs_verification', '--force'],
         error_code_ok=True)
-    # Need to reboot in order for the action to take effect.
     # TODO(yjhong): Make sure an update is not pending.
+    logging.info('Need to reboot to actually disable the verification.')
     self.Reboot()
 
   def MountRootfsReadWrite(self):
@@ -553,6 +553,7 @@ class ChromiumOSDevice(RemoteDevice):
     if not self._RootfsIsReadOnly():
       return True
 
+    logging.info('Unable to remount rootfs as rw (normal w/verified rootfs).')
     # If the image is built with rootfs verification, turn off the
     # rootfs verification. After reboot, the rootfs will be mounted as
     # read-write (there is no need to remount).
