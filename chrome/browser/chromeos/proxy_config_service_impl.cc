@@ -133,8 +133,8 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
   const NetworkProfile* profile = NetworkHandler::Get()
       ->network_profile_handler()->GetProfileForPath(network_profile_path);
   if (!profile) {
-    LOG(WARNING) << "Unknown profile_path '" << network_profile_path
-                 << "'. Ignoring proxy.";
+    VLOG(1) << "Unknown profile_path '" << network_profile_path
+            << "'. Ignoring proxy.";
     return true;
   }
   if (profile->type() == NetworkProfile::TYPE_USER) {

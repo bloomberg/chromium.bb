@@ -68,7 +68,7 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForFavoriteNetwork(
   const NetworkProfile* profile = NetworkHandler::Get()
       ->network_profile_handler()->GetProfileForPath(network.profile_path());
   if (!profile) {
-    LOG(WARNING) << "Unknown profile_path '" << network.profile_path() << "'.";
+    VLOG(1) << "Unknown profile_path '" << network.profile_path() << "'.";
     return scoped_ptr<ProxyConfigDictionary>();
   }
   if (!profile_prefs && profile->type() == NetworkProfile::TYPE_USER) {
