@@ -36,6 +36,8 @@
     'ext/bitmap_platform_device_win.h',
     'ext/convolver.cc',
     'ext/convolver.h',
+    'ext/event_tracer_impl.cc',
+    'ext/event_tracer_impl.h',
     'ext/google_logging.cc',
     'ext/image_operations.cc',
     'ext/image_operations.h',
