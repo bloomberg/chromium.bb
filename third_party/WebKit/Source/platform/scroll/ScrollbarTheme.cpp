@@ -31,12 +31,6 @@
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
 
-#if !OS(MACOSX)
-#include "public/platform/Platform.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/default/WebThemeEngine.h"
-#endif
-
 namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::theme()
@@ -298,11 +292,7 @@ int ScrollbarTheme::trackLength(ScrollbarThemeClient* scrollbar)
 
 void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
-#if OS(MACOSX)
     context->fillRect(cornerRect, Color::white);
-#else
-    blink::Platform::current()->themeEngine()->paint(context->canvas(), blink::WebThemeEngine::PartScrollbarCorner, blink::WebThemeEngine::StateNormal, blink::WebRect(cornerRect), 0);
-#endif
 }
 
 IntRect ScrollbarTheme::thumbRect(ScrollbarThemeClient* scrollbar)
