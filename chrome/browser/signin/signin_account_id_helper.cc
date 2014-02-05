@@ -62,9 +62,10 @@ void SigninAccountIdHelper::GaiaIdFetcher::Start() {
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(
           signin_manager_->profile());
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert("https://www.googleapis.com/auth/userinfo.profile");
   login_token_request_ = service->StartRequest(
-      signin_manager_->GetAuthenticatedAccountId(),
-      OAuth2TokenService::ScopeSet(), this);
+      signin_manager_->GetAuthenticatedAccountId(), scopes, this);
 }
 
 void SigninAccountIdHelper::GaiaIdFetcher::OnGetTokenSuccess(

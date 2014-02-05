@@ -94,6 +94,9 @@ class AccountReconcilor::UserIdFetcher
                 const std::string& access_token,
                 const std::string& account_id);
 
+  // Returns the scopes needed by the UserIdFetcher.
+  static OAuth2TokenService::ScopeSet GetScopes();
+
  private:
   // Overriden from gaia::GaiaOAuthClient::Delegate.
   virtual void OnGetUserIdResponse(const std::string& user_id) OVERRIDE;
@@ -122,6 +125,13 @@ AccountReconcilor::UserIdFetcher::UserIdFetcher(AccountReconcilor* reconcilor,
   gaia_auth_client_.GetUserId(access_token_, kMaxRetries, this);
 }
 
+// static
+OAuth2TokenService::ScopeSet AccountReconcilor::UserIdFetcher::GetScopes() {
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert("https://www.googleapis.com/auth/userinfo.profile");
+  return scopes;
+}
+
 void AccountReconcilor::UserIdFetcher::OnGetUserIdResponse(
     const std::string& user_id) {
   DVLOG(1) << "AccountReconcilor::OnGetUserIdResponse: " << account_id_;
@@ -135,8 +145,7 @@ void AccountReconcilor::UserIdFetcher::OnOAuthError() {
   // Invalidate the access token to force a refetch next time.
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(reconcilor_->profile());
-  token_service->InvalidateToken(account_id_, OAuth2TokenService::ScopeSet(),
-                                 access_token_);
+  token_service->InvalidateToken(account_id_, GetScopes(), access_token_);
 }
 
 void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
@@ -482,9 +491,11 @@ void AccountReconcilor::ValidateAccountsFromTokenService() {
   DCHECK(!requests_);
   requests_ =
       new scoped_ptr<OAuth2TokenService::Request>[chrome_accounts_.size()];
+  const OAuth2TokenService::ScopeSet scopes =
+      AccountReconcilor::UserIdFetcher::GetScopes();
   for (size_t i = 0; i < chrome_accounts_.size(); ++i) {
     requests_[i] = token_service->StartRequest(chrome_accounts_[i],
-                                               OAuth2TokenService::ScopeSet(),
+                                               scopes,
                                                this);
   }
 
