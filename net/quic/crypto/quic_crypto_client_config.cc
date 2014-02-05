@@ -29,13 +29,7 @@ using std::vector;
 
 namespace net {
 
-QuicCryptoClientConfig::QuicCryptoClientConfig()
-    : quic_server_info_factory_(NULL) {
-}
-
-QuicCryptoClientConfig::QuicCryptoClientConfig(
-    QuicServerInfoFactory* quic_server_info_factory)
-    : quic_server_info_factory_(quic_server_info_factory) {
+QuicCryptoClientConfig::QuicCryptoClientConfig() {
 }
 
 QuicCryptoClientConfig::~QuicCryptoClientConfig() {
@@ -46,17 +40,13 @@ QuicCryptoClientConfig::CachedState::CachedState()
     : server_config_valid_(false),
       generation_counter_(0) {}
 
+QuicCryptoClientConfig::CachedState::CachedState(
+    scoped_ptr<QuicServerInfo> quic_server_info)
+    : server_config_valid_(false),
+      generation_counter_(0),
+      quic_server_info_(quic_server_info.Pass()) {}
+
 QuicCryptoClientConfig::CachedState::~CachedState() {}
-
-void QuicCryptoClientConfig::CachedState::LoadFromDiskCache(
-    QuicServerInfoFactory* quic_server_info_factory,
-    const string& server_hostname) {
-  DCHECK(quic_server_info_factory);
-  quic_server_info_.reset(
-      quic_server_info_factory->GetForHost(server_hostname));
-
-  // TODO(rtenneti): Need to flesh out reading data from disk cache.
-}
 
 bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
   if (server_config_.empty() || !server_config_valid_) {
@@ -239,6 +229,22 @@ void QuicCryptoClientConfig::SetDefaults() {
   aead[0] = kAESG;
 }
 
+QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::Create(
+    const string& server_hostname,
+    QuicServerInfoFactory* quic_server_info_factory) {
+  DCHECK(cached_states_.find(server_hostname) == cached_states_.end());
+  scoped_ptr<QuicServerInfo> quic_server_info;
+  if (quic_server_info_factory) {
+    quic_server_info.reset(
+        quic_server_info_factory->GetForHost(server_hostname));
+    quic_server_info->Start();
+  }
+
+  CachedState* cached = new CachedState(quic_server_info.Pass());
+  cached_states_.insert(make_pair(server_hostname, cached));
+  return cached;
+}
+
 QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
     const string& server_hostname) {
   map<string, CachedState*>::const_iterator it =
@@ -246,13 +252,7 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   if (it != cached_states_.end()) {
     return it->second;
   }
-
-  CachedState* cached = new CachedState;
-  if (quic_server_info_factory_) {
-    cached->LoadFromDiskCache(quic_server_info_factory_, server_hostname);
-  }
-  cached_states_.insert(make_pair(server_hostname, cached));
-  return cached;
+  return Create(server_hostname, NULL);
 }
 
 void QuicCryptoClientConfig::FillInchoateClientHello(

@@ -327,6 +327,12 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
     return ERR_IO_PENDING;
   }
 
+  // Create crypto config and start the process of loading QUIC server
+  // information from disk cache.
+  QuicCryptoClientConfig* crypto_config =
+      GetOrCreateCryptoConfig(host_port_proxy_pair);
+  DCHECK(crypto_config);
+
   scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_proxy_pair,
                               is_https, cert_verifier, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
@@ -627,7 +633,13 @@ QuicCryptoClientConfig* QuicStreamFactory::GetOrCreateCryptoConfig(
   } else {
     // TODO(rtenneti): if two quic_sessions for the same host_port_proxy_pair
     // share the same crypto_config, will it cause issues?
-    crypto_config = new QuicCryptoClientConfig(quic_server_info_factory_);
+    crypto_config = new QuicCryptoClientConfig();
+    if (quic_server_info_factory_) {
+      QuicCryptoClientConfig::CachedState* cached =
+          crypto_config->Create(host_port_proxy_pair.first.host(),
+                                quic_server_info_factory_);
+      DCHECK(cached);
+    }
     crypto_config->SetDefaults();
     all_crypto_configs_[host_port_proxy_pair] = crypto_config;
     PopulateFromCanonicalConfig(host_port_proxy_pair, crypto_config);
