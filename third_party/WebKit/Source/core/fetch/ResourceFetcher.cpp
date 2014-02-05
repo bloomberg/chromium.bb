@@ -1046,7 +1046,6 @@ void ResourceFetcher::didLoadResource(Resource* resource)
 
     if (frame())
         frame()->loader().loadDone();
-    performPostLoadActions();
     scheduleDocumentResourcesGC();
 }
 
@@ -1080,11 +1079,6 @@ void ResourceFetcher::garbageCollectDocumentResources()
 
     for (StringVector::const_iterator it = resourcesToDelete.begin(); it != resourcesToDelete.end(); ++it)
         m_documentResources.remove(*it);
-}
-
-void ResourceFetcher::performPostLoadActions()
-{
-    checkForPendingPreloads();
 }
 
 void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
@@ -1121,20 +1115,6 @@ void ResourceFetcher::decrementRequestCount(const Resource* res)
 void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const String& charset)
 {
     requestPreload(type, request, charset);
-}
-
-void ResourceFetcher::checkForPendingPreloads()
-{
-    // FIXME: It seems wrong to poke body()->renderer() here.
-    if (m_pendingPreloads.isEmpty() || !m_document->body() || !m_document->body()->renderer())
-        return;
-    while (!m_pendingPreloads.isEmpty()) {
-        PendingPreload preload = m_pendingPreloads.takeFirst();
-        // Don't request preload if the resource already loaded normally (this will result in double load if the page is being reloaded with cached results ignored).
-        if (!cachedResource(preload.m_request.resourceRequest().url()))
-            requestPreload(preload.m_type, preload.m_request, preload.m_charset);
-    }
-    m_pendingPreloads.clear();
 }
 
 void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request, const String& charset)
@@ -1174,12 +1154,6 @@ bool ResourceFetcher::isPreloaded(const String& urlString) const
         }
     }
 
-    Deque<PendingPreload>::const_iterator dequeEnd = m_pendingPreloads.end();
-    for (Deque<PendingPreload>::const_iterator it = m_pendingPreloads.begin(); it != dequeEnd; ++it) {
-        PendingPreload pendingPreload = *it;
-        if (pendingPreload.m_request.resourceRequest().url() == url)
-            return true;
-    }
     return false;
 }
 
@@ -1200,11 +1174,6 @@ void ResourceFetcher::clearPreloads()
             memoryCache()->remove(res);
     }
     m_preloads.clear();
-}
-
-void ResourceFetcher::clearPendingPreloads()
-{
-    m_pendingPreloads.clear();
 }
 
 void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTime)

@@ -124,9 +124,7 @@ public:
 
     bool isPreloaded(const String& urlString) const;
     void clearPreloads();
-    void clearPendingPreloads();
     void preload(Resource::Type, FetchRequest&, const String& charset);
-    void checkForPendingPreloads();
     void printPreloadStats();
 
     void setDefersLoading(bool);
@@ -191,8 +189,6 @@ private:
 
     void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);
 
-    void performPostLoadActions();
-
     bool clientDefersImage(const KURL&) const;
     void reloadImagesIfNotDeferred();
 
@@ -204,12 +200,6 @@ private:
     int m_requestCount;
 
     OwnPtr<ListHashSet<Resource*> > m_preloads;
-    struct PendingPreload {
-        Resource::Type m_type;
-        FetchRequest m_request;
-        String m_charset;
-    };
-    Deque<PendingPreload> m_pendingPreloads;
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
