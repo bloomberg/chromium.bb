@@ -12,7 +12,6 @@
 
 const CGFloat kCornerRadius = 2;
 
-const CGFloat kButtonFontSizeDelta = -1;
 const CGFloat kTopBottomTextPadding = 7;
 const CGFloat kLeftRightTextPadding = 15;
 const SkColor kTextShadowColor = SkColorSetRGB(0x53, 0x8c, 0xea);
@@ -54,8 +53,8 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
 
 + (NSAttributedString*)generateAttributedString:(NSString*)buttonText {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  NSFont* buttonFont = rb.GetFont(ui::ResourceBundle::BaseFont).
-      DeriveFont(kButtonFontSizeDelta).GetNativeFont();
+  NSFont* buttonFont = rb.GetFontList(ui::ResourceBundle::SmallFont).
+      GetPrimaryFont().GetNativeFont();
   base::scoped_nsobject<NSMutableParagraphStyle> buttonTextParagraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
   [buttonTextParagraphStyle setAlignment:NSCenterTextAlignment];
