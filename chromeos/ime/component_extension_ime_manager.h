@@ -25,7 +25,6 @@ struct CHROMEOS_EXPORT ComponentExtensionEngine {
 };
 
 // Represents a component extension IME.
-// TODO(nona): Use GURL for |option_page_url| instead of string.
 struct CHROMEOS_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
   ~ComponentExtensionIME();
