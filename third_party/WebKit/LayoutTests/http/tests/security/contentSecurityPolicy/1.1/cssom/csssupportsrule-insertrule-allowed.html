@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/js-test-resources/js-test.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="style-src 'unsafe-inline' 'self' 'unsafe-eval'">
+    <style>
+        @supports (animation-name: test) {
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var rule = document.styleSheets[1].cssRules[0];
+        description("CSSSupportsRule::insertRule allowed if 'unsafe-eval' is an allowed source of style.");
+        shouldNotThrow("rule.insertRule('x { display: none; }', 0);");
+    </script>
+</body>
+</html>

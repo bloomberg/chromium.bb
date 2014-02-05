@@ -245,7 +245,7 @@ bool V8WindowShell::initialize()
         if (m_frame->document()) {
             setSecurityToken(m_frame->document()->securityOrigin());
             ContentSecurityPolicy* csp = m_frame->document()->contentSecurityPolicy();
-            context->AllowCodeGenerationFromStrings(csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
+            context->AllowCodeGenerationFromStrings(csp->allowScriptEval(0, ContentSecurityPolicy::SuppressReport));
             context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
         }
     } else {

@@ -1,0 +1,13 @@
+CONSOLE ERROR: Refused to evaluate a string as CSS because 'unsafe-eval' is not an allowed source of style in the following Content Security Policy directive: "style-src 'unsafe-inline' 'self'".
+
+CSSSupportsRule::insertRule blocked if 'unsafe-eval' is not an allowed source of style.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS rule.insertRule('x { display: none; }', 0); threw exception SecurityError: Failed to execute 'insertRule' on 'CSSSupportsRule': Refused to evaluate a string as CSS because 'unsafe-eval' is not an allowed source of style in the following Content Security Policy directive: "style-src 'unsafe-inline' 'self'".
+.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -269,6 +270,13 @@ PassRefPtr<CSSRuleList> CSSStyleSheet::rules()
 unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, ExceptionState& exceptionState)
 {
     ASSERT(m_childRuleCSSOMWrappers.isEmpty() || m_childRuleCSSOMWrappers.size() == m_contents->ruleCount());
+
+    if (Document* document = ownerDocument()) {
+        if (!document->contentSecurityPolicy()->allowStyleEval()) {
+            exceptionState.throwSecurityError(document->contentSecurityPolicy()->styleEvalDisabledErrorMessage());
+            return 0;
+        }
+    }
 
     if (index > length()) {
         exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is larger than the maximum index (" + String::number(length()) + ").");

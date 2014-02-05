@@ -65,7 +65,7 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     v8::Handle<v8::Context> v8Context = script->context();
     if (function->IsString()) {
         if (ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy()) {
-            if (!policy->allowEval()) {
+            if (!policy->allowScriptEval()) {
                 v8SetReturnValue(info, 0);
                 return;
             }

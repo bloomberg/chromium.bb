@@ -1,0 +1,10 @@
+CSSSupportsRule::insertRule allowed if 'unsafe-eval' is an allowed source of style.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS rule.insertRule('x { display: none; }', 0); did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

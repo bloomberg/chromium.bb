@@ -1,0 +1,10 @@
+CSSKeyframesRule::insertRule allowed if 'unsafe-eval' is an allowed source of style.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS rule.insertRule('0% { top: 0; left: 0; }', 0); did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/js-test-resources/js-test.js"></script>
+    <meta http-equiv="Content-Security-Policy" content="style-src 'unsafe-inline' 'self'">
+    <style></style>
+</head>
+<body>
+    <script>
+        description("CSSStyleSheet::insertRule blocked if 'unsafe-eval' is not an allowed source of style.");
+        shouldThrow("document.styleSheets[0].insertRule('x { display: none; }', 0);");
+    </script>
+</body>
+</html>
