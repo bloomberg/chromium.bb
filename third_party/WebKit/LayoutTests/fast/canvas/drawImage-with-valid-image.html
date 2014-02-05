@@ -109,14 +109,14 @@
         // bitmap argument plus 8 numbers, zero size
         shouldNotThrow("ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 0, 0)");
 
-        // bitmap argument plus 8 numbers, negative size of source, zero size, got exception as expected
-        shouldThrow("ctx.drawImage(bitmap, 20, 20, -20, 0, 0, 0, 20, 20)");
+        // bitmap argument plus 8 numbers, negative size of source, zero size
+        shouldNotThrow("ctx.drawImage(bitmap, 20, 20, -20, 0, 0, 0, 20, 20)");
 
-        // bitmap argument plus 8 numbers, negative size of destination, zero size, got exception as expected
-        shouldThrow("ctx.drawImage(bitmap, 0, 0, 20, 0, 20, 20, -20, -20)");
+        // bitmap argument plus 8 numbers, negative size of destination, zero size
+        shouldNotThrow("ctx.drawImage(bitmap, 0, 0, 20, 0, 20, 20, -20, -20)");
 
-        // bitmap argument plus 8 numbers, negative size of source and destination, zero size, got exception as expected
-        shouldThrow("ctx.drawImage(bitmap, 20, 20, -20, 0, 20, 20, -20, -20)");
+        // bitmap argument plus 8 numbers, negative size of source and destination, zero size
+        shouldNotThrow("ctx.drawImage(bitmap, 20, 20, -20, 0, 20, 20, -20, -20)");
 
         // imageRect does not contain sourceRect on the left side
         shouldNotThrow("ctx.drawImage(bitmap, -10, 0, 52, 64, 0, 0, 20, 20)");

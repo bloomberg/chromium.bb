@@ -32,9 +32,9 @@ PASS ctx.drawImage(bitmap, 0, 0, 20, 20) did not throw exception.
 PASS ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 20, 20) did not throw exception.
 PASS ctx.drawImage(bitmap, 0, 0, 0, 0) did not throw exception.
 PASS ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 0, 0) did not throw exception.
-PASS ctx.drawImage(bitmap, 20, 20, -20, 0, 0, 0, 20, 20) threw exception IndexSizeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The source height is 0..
-PASS ctx.drawImage(bitmap, 0, 0, 20, 0, 20, 20, -20, -20) threw exception IndexSizeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The source height is 0..
-PASS ctx.drawImage(bitmap, 20, 20, -20, 0, 20, 20, -20, -20) threw exception IndexSizeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The source height is 0..
+PASS ctx.drawImage(bitmap, 20, 20, -20, 0, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 0, 20, 0, 20, 20, -20, -20) did not throw exception.
+PASS ctx.drawImage(bitmap, 20, 20, -20, 0, 20, 20, -20, -20) did not throw exception.
 PASS ctx.drawImage(bitmap, -10, 0, 52, 64, 0, 0, 20, 20) did not throw exception.
 PASS ctx.drawImage(bitmap, 10, 0, 52, 64, 0, 0, 20, 20) did not throw exception.
 PASS ctx.drawImage(bitmap, 0, -10, 52, 64, 0, 0, 20, 20) did not throw exception.

@@ -1334,12 +1334,8 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
         || !std::isfinite(srcRect.x()) || !std::isfinite(srcRect.y()) || !std::isfinite(srcRect.width()) || !std::isfinite(srcRect.height()))
         return;
 
-    if (!dstRect.width() || !dstRect.height())
+    if (!dstRect.width() || !dstRect.height() || !srcRect.width() || !srcRect.height())
         return;
-    if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
-        return;
-    }
 
     ASSERT(bitmap->height() && bitmap->width());
     FloatRect normalizedSrcRect = normalizeRect(srcRect);
@@ -1419,22 +1415,13 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
         return;
 
     LayoutSize size = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
-    if (!size.width() || !size.height()) {
-        exceptionState.throwDOMException(InvalidStateError, String::format("The source %s is 0.", size.width() ? "height" : "width"));
-        return;
-    }
-
-    if (!dstRect.width() || !dstRect.height())
+    if (!size.width() || !size.height() || !dstRect.width() || !dstRect.height() || !srcRect.width() || !srcRect.height())
         return;
 
     FloatRect normalizedSrcRect = normalizeRect(srcRect);
     FloatRect normalizedDstRect = normalizeRect(dstRect);
 
     FloatRect imageRect = FloatRect(FloatPoint(), size);
-    if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
-        return;
-    }
     if (!imageRect.intersects(normalizedSrcRect))
         return;
 
@@ -1481,15 +1468,8 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
 
     FloatRect srcCanvasRect = FloatRect(FloatPoint(), sourceCanvas->size());
 
-    if (!srcCanvasRect.width() || !srcCanvasRect.height()) {
-        exceptionState.throwDOMException(InvalidStateError, String::format("The source canvas %s is 0.", srcCanvasRect.width() ? "height" : "width"));
+    if (!srcCanvasRect.width() || !srcCanvasRect.height() || !srcRect.width() || !srcRect.height())
         return;
-    }
-
-    if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
-        return;
-    }
 
     FloatRect normalizedSrcRect = normalizeRect(srcRect);
     FloatRect normalizedDstRect = normalizeRect(dstRect);
@@ -1583,12 +1563,10 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
 
     if (video->readyState() == HTMLMediaElement::HAVE_NOTHING || video->readyState() == HTMLMediaElement::HAVE_METADATA)
         return;
+    if (!srcRect.width() || !srcRect.height())
+        return;
 
     FloatRect videoRect = FloatRect(FloatPoint(), sizeFor(video));
-    if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
-        return;
-    }
 
     FloatRect normalizedSrcRect = normalizeRect(srcRect);
     FloatRect normalizedDstRect = normalizeRect(dstRect);

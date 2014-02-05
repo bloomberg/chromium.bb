@@ -22,14 +22,12 @@
         shouldThrow("ctx.drawImage(null, 0, 0, 20, 20)");
         shouldThrow("ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20)");
 
-        // broken images should throw InvalidStateError
-        shouldThrow("ctx.drawImage(invalidImage, 0, 0)");
-        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20)");
-        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20)");
-
-        // InvalidStateError takes precedence over IndexSizeError
-        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20)", "InvalidStateError");
-        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20)", "InvalidStateError");
+        // broken images should not throw
+        shouldBe("ctx.drawImage(invalidImage, 0, 0)", "undefined");
+        shouldBe("ctx.drawImage(invalidImage, 0, 0, 20, 20)", "undefined");
+        shouldBe("ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20)", "undefined");
+        shouldBe("ctx.drawImage(invalidImage, 0, 0, 0, 20)", "undefined");
+        shouldBe("ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20)", "undefined");
 
         finishJSTest();
     }
