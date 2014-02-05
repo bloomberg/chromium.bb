@@ -157,6 +157,42 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     CreateTestTrial("AutocompleteDynamicTrial_3", "EnableZeroSuggest_URLs");
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
   }
+
+  {
+    SCOPED_TRACE("Bundled field trial parameters.");
+    ResetFieldTrialList();
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
+
+    ResetFieldTrialList();
+    params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
+        "MostVisited";
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
+
+    ResetFieldTrialList();
+    params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
+        "AfterTyping";
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
+    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial());
+  }
 }
 
 TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {

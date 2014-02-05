@@ -270,17 +270,25 @@ bool OmniboxFieldTrial::HasDynamicFieldTrialGroupPrefix(
 }
 
 bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
-  return HasDynamicFieldTrialGroupPrefix(kEnableZeroSuggestGroupPrefix);
+  return HasDynamicFieldTrialGroupPrefix(kEnableZeroSuggestGroupPrefix) ||
+      chrome_variations::GetVariationParamValue(
+          kBundledExperimentFieldTrialName, kZeroSuggestRule) == "true";
 }
 
 bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
   return HasDynamicFieldTrialGroupPrefix(
-      kEnableZeroSuggestMostVisitedGroupPrefix);
+      kEnableZeroSuggestMostVisitedGroupPrefix) ||
+      chrome_variations::GetVariationParamValue(
+          kBundledExperimentFieldTrialName,
+          kZeroSuggestVariantRule) == "MostVisited";
 }
 
 bool OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial() {
   return HasDynamicFieldTrialGroupPrefix(
-      kEnableZeroSuggestAfterTypingGroupPrefix);
+      kEnableZeroSuggestAfterTypingGroupPrefix) ||
+      chrome_variations::GetVariationParamValue(
+          kBundledExperimentFieldTrialName,
+          kZeroSuggestVariantRule) == "AfterTyping";
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
@@ -446,6 +454,8 @@ const char OmniboxFieldTrial::kHQPDiscountFrecencyWhenFewVisitsRule[] =
 const char OmniboxFieldTrial::kHQPAllowMatchInTLDRule[] = "HQPAllowMatchInTLD";
 const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
+const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
+const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
 const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled[] =
     "ReorderForLegalDefaultMatch";
 

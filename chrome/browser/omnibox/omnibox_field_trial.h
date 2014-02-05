@@ -298,6 +298,8 @@ class OmniboxFieldTrial {
   static const char kHQPDiscountFrecencyWhenFewVisitsRule[];
   static const char kHQPAllowMatchInTLDRule[];
   static const char kHQPAllowMatchInSchemeRule[];
+  static const char kZeroSuggestRule[];
+  static const char kZeroSuggestVariantRule[];
   // Rule values.
   static const char kReorderForLegalDefaultMatchRuleEnabled[];
 
