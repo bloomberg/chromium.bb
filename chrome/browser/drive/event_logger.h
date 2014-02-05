@@ -40,7 +40,12 @@ class EventLogger {
 
   // Logs a message and its severity.
   // Can be called from any thread as long as the object is alive.
-  void Log(logging::LogSeverity severity, const std::string& what);
+  void LogRawString(logging::LogSeverity severity, const std::string& what);
+
+  // Logs a message with formatting.
+  // Can be called from any thread as long as the object is alive.
+  void Log(logging::LogSeverity severity, const char* format, ...)
+      PRINTF_FORMAT(3, 4);
 
   // Sets the history size. The existing history is cleared.
   // Can be called from any thread as long as the object is alive.

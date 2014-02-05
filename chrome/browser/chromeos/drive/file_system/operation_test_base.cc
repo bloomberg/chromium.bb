@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/test_util.h"
@@ -62,6 +63,8 @@ void OperationTestBase::SetUp() {
 
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
+  logger_.reset(new EventLogger);
+
   fake_drive_service_.reset(new FakeDriveService);
   fake_drive_service_->LoadResourceListForWapi(
       "gdata/root_feed.json");
@@ -70,6 +73,7 @@ void OperationTestBase::SetUp() {
 
   scheduler_.reset(new JobScheduler(
       pref_service_.get(),
+      logger_.get(),
       fake_drive_service_.get(),
       blocking_task_runner_.get()));
 
@@ -116,6 +120,7 @@ void OperationTestBase::SetUp() {
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
   loader_controller_.reset(new internal::LoaderController);
   change_list_loader_.reset(new internal::ChangeListLoader(
+      logger_.get(),
       blocking_task_runner_.get(),
       metadata_.get(),
       scheduler_.get(),

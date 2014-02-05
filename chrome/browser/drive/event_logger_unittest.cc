@@ -14,7 +14,7 @@ TEST(EventLoggerTest, BasicLogging) {
   EXPECT_EQ(0U, logger.GetHistory().size());
 
   logger.Log(logging::LOG_INFO, "first");
-  logger.Log(logging::LOG_INFO, "2nd");
+  logger.Log(logging::LOG_INFO, "%dnd", 2);
   logger.Log(logging::LOG_INFO, "third");
 
   // Events are recorded in the chronological order with sequential IDs.

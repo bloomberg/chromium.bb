@@ -11,11 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -129,7 +129,9 @@ bool FileBrowserPrivateGetPreferencesFunction::RunImpl() {
 
   SetResult(result.ToValue().release());
 
-  drive::util::Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
+  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  if (logger)
+    logger->Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
   return true;
 }
 
@@ -148,7 +150,9 @@ bool FileBrowserPrivateSetPreferencesFunction::RunImpl() {
     service->SetBoolean(prefs::kDisableDriveHostedFiles,
                         *params->change_info.hosted_files_disabled);
 
-  drive::util::Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
+  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  if (logger)
+    logger->Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
   return true;
 }
 
@@ -275,15 +279,20 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunImpl() {
 void FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete(
     bool success,
     const std::string& error) {
+  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (success) {
-    drive::util::Log(logging::LOG_INFO,
-                     "App install succeeded. (item id: %s)",
-                     webstore_item_id_.c_str());
+    if (logger) {
+      logger->Log(logging::LOG_INFO,
+                  "App install succeeded. (item id: %s)",
+                  webstore_item_id_.c_str());
+    }
   } else {
-    drive::util::Log(logging::LOG_ERROR,
-                     "App install failed. (item id: %s, reason: %s)",
-                     webstore_item_id_.c_str(),
-                     error.c_str());
+    if (logger) {
+      logger->Log(logging::LOG_ERROR,
+                  "App install failed. (item id: %s, reason: %s)",
+                  webstore_item_id_.c_str(),
+                  error.c_str());
+    }
     SetError(error);
   }
 
@@ -308,9 +317,12 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
       g_browser_process->system_request_context();
 
   if (!oauth_service) {
-    drive::util::Log(logging::LOG_ERROR,
-                     "CWS OAuth token fetch failed. OAuth2TokenService can't "
-                     "be retrived.");
+    drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+    if (logger) {
+      logger->Log(logging::LOG_ERROR,
+                  "CWS OAuth token fetch failed. OAuth2TokenService can't "
+                  "be retrived.");
+    }
     SetResult(base::Value::CreateNullValue());
     return false;
   }
@@ -333,17 +345,21 @@ bool FileBrowserPrivateRequestWebStoreAccessTokenFunction::RunImpl() {
 void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     google_apis::GDataErrorCode code,
     const std::string& access_token) {
+  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+
   if (code == google_apis::HTTP_SUCCESS) {
     DCHECK(auth_service_->HasAccessToken());
     DCHECK(access_token == auth_service_->access_token());
-    drive::util::Log(logging::LOG_INFO,
-                     "CWS OAuth token fetch succeeded.");
+    if (logger)
+      logger->Log(logging::LOG_INFO, "CWS OAuth token fetch succeeded.");
     SetResult(new base::StringValue(access_token));
     SendResponse(true);
   } else {
-    drive::util::Log(logging::LOG_ERROR,
-                     "CWS OAuth token fetch failed. (GDataErrorCode: %s)",
-                     google_apis::GDataErrorCodeToString(code).c_str());
+    if (logger) {
+      logger->Log(logging::LOG_ERROR,
+                  "CWS OAuth token fetch failed. (GDataErrorCode: %s)",
+                  google_apis::GDataErrorCodeToString(code).c_str());
+    }
     SetResult(base::Value::CreateNullValue());
     SendResponse(false);
   }

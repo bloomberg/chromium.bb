@@ -23,6 +23,7 @@ class SequencedTaskRunner;
 
 namespace drive {
 
+class EventLogger;
 class FakeDriveService;
 class FakeFreeDiskSpaceGetter;
 class JobScheduler;
@@ -108,6 +109,7 @@ class OperationTestBase : public testing::Test {
   FakeDriveService* fake_service() {
     return fake_drive_service_.get();
   }
+  EventLogger* logger() { return logger_.get(); }
   LoggingObserver* observer() { return &observer_; }
   JobScheduler* scheduler() { return scheduler_.get(); }
   base::SequencedTaskRunner* blocking_task_runner() {
@@ -132,6 +134,7 @@ class OperationTestBase : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
   LoggingObserver observer_;
+  scoped_ptr<EventLogger> logger_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<internal::ResourceMetadataStorage,

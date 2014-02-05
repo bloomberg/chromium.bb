@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/drive/drive_app_registry.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -218,6 +218,7 @@ DriveIntegrationService::DriveIntegrationService(
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  logger_.reset(new EventLogger);
   base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
@@ -247,6 +248,7 @@ DriveIntegrationService::DriveIntegrationService(
   }
   scheduler_.reset(new JobScheduler(
       profile_->GetPrefs(),
+      logger_.get(),
       drive_service_.get(),
       blocking_task_runner_.get()));
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
@@ -265,6 +267,7 @@ DriveIntegrationService::DriveIntegrationService(
   file_system_.reset(
       test_file_system ? test_file_system : new FileSystem(
           profile_->GetPrefs(),
+          logger_.get(),
           cache_.get(),
           drive_service_.get(),
           scheduler_.get(),
@@ -379,7 +382,7 @@ void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
     drive_app_registry_->Update();
 
   const char* status = (enabled ? "enabled" : "disabled");
-  util::Log(logging::LOG_INFO, "Push notification is %s", status);
+  logger_->Log(logging::LOG_INFO, "Push notification is %s", status);
 }
 
 void DriveIntegrationService::ClearCacheAndRemountFileSystem(
@@ -442,7 +445,7 @@ void DriveIntegrationService::AddDriveMountPoint() {
       drive_mount_point);
 
   if (success) {
-    util::Log(logging::LOG_INFO, "Drive mount point is added");
+    logger_->Log(logging::LOG_INFO, "Drive mount point is added");
     FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
                       OnFileSystemMounted());
   }
@@ -462,7 +465,7 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
     DCHECK(mount_points);
 
     mount_points->RevokeFileSystem(mount_point_name_);
-    util::Log(logging::LOG_INFO, "Drive mount point is removed");
+    logger_->Log(logging::LOG_INFO, "Drive mount point is removed");
   }
 }
 
@@ -523,7 +526,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     const bool registered =
         drive_notification_manager->push_notification_registered();
     const char* status = (registered ? "registered" : "not registered");
-    util::Log(logging::LOG_INFO, "Push notification is %s", status);
+    logger_->Log(logging::LOG_INFO, "Push notification is %s", status);
 
     if (drive_notification_manager->push_notification_enabled())
       drive_app_registry_->Update();

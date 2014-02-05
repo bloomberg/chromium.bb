@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
@@ -206,6 +205,7 @@ FileError ResetOnBlockingPool(internal::ResourceMetadata* resource_metadata,
 
 FileSystem::FileSystem(
     PrefService* pref_service,
+    EventLogger* logger,
     internal::FileCache* cache,
     DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
@@ -213,6 +213,7 @@ FileSystem::FileSystem(
     base::SequencedTaskRunner* blocking_task_runner,
     const base::FilePath& temporary_file_directory)
     : pref_service_(pref_service),
+      logger_(logger),
       cache_(cache),
       drive_service_(drive_service),
       scheduler_(scheduler),
@@ -252,6 +253,7 @@ void FileSystem::ResetComponents() {
 
   loader_controller_.reset(new internal::LoaderController);
   change_list_loader_.reset(new internal::ChangeListLoader(
+      logger_,
       blocking_task_runner_.get(),
       resource_metadata_,
       scheduler_,
@@ -317,7 +319,8 @@ void FileSystem::ResetComponents() {
       blocking_task_runner_.get(), scheduler_, resource_metadata_,
       loader_controller_.get()));
   get_file_for_saving_operation_.reset(
-      new file_system::GetFileForSavingOperation(blocking_task_runner_.get(),
+      new file_system::GetFileForSavingOperation(logger_,
+                                                 blocking_task_runner_.get(),
                                                  observer,
                                                  scheduler_,
                                                  resource_metadata_,

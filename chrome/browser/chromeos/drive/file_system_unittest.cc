@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -80,6 +81,7 @@ class FileSystemTest : public testing::Test {
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
+    logger_.reset(new EventLogger);
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
@@ -89,6 +91,7 @@ class FileSystemTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scheduler_.reset(new JobScheduler(pref_service_.get(),
+                                      logger_.get(),
                                       fake_drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
 
@@ -121,6 +124,7 @@ class FileSystemTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(temp_file_dir));
     file_system_.reset(new FileSystem(
         pref_service_.get(),
+        logger_.get(),
         cache_.get(),
         fake_drive_service_.get(),
         scheduler_.get(),
@@ -273,6 +277,7 @@ class FileSystemTest : public testing::Test {
   // dependencies to Profile in general.
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
 
+  scoped_ptr<EventLogger> logger_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<JobScheduler> scheduler_;

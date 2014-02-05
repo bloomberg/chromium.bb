@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -77,6 +78,8 @@ class ChangeListLoaderTest : public testing::Test {
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
+    logger_.reset(new EventLogger);
+
     drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json"));
@@ -84,6 +87,7 @@ class ChangeListLoaderTest : public testing::Test {
         "gdata/account_metadata.json"));
 
     scheduler_.reset(new JobScheduler(pref_service_.get(),
+                                      logger_.get(),
                                       drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
     metadata_storage_.reset(new ResourceMetadataStorage(
@@ -102,7 +106,8 @@ class ChangeListLoaderTest : public testing::Test {
 
     loader_controller_.reset(new LoaderController);
     change_list_loader_.reset(
-        new ChangeListLoader(base::MessageLoopProxy::current().get(),
+        new ChangeListLoader(logger_.get(),
+                             base::MessageLoopProxy::current().get(),
                              metadata_.get(),
                              scheduler_.get(),
                              drive_service_.get(),
@@ -128,6 +133,7 @@ class ChangeListLoaderTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
+  scoped_ptr<EventLogger> logger_;
   scoped_ptr<FakeDriveService> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<ResourceMetadataStorage,
@@ -193,7 +199,8 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
 
   // Reset loader.
   change_list_loader_.reset(
-      new ChangeListLoader(base::MessageLoopProxy::current().get(),
+      new ChangeListLoader(logger_.get(),
+                           base::MessageLoopProxy::current().get(),
                            metadata_.get(),
                            scheduler_.get(),
                            drive_service_.get(),

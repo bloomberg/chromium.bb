@@ -30,6 +30,7 @@ class ResourceEntry;
 namespace drive {
 
 class DriveServiceInterface;
+class EventLogger;
 class FileCacheEntry;
 class FileSystemObserver;
 class JobScheduler;
@@ -63,6 +64,7 @@ class FileSystem : public FileSystemInterface,
                    public file_system::OperationObserver {
  public:
   FileSystem(PrefService* pref_service,
+             EventLogger* logger,
              internal::FileCache* cache,
              DriveServiceInterface* drive_service,
              JobScheduler* scheduler,
@@ -245,6 +247,7 @@ class FileSystem : public FileSystemInterface,
   PrefService* pref_service_;
 
   // Sub components owned by DriveIntegrationService.
+  EventLogger* logger_;
   internal::FileCache* cache_;
   DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;

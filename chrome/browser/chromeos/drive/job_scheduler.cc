@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/logging.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -161,11 +161,13 @@ struct JobScheduler::ResumeUploadParams {
 
 JobScheduler::JobScheduler(
     PrefService* pref_service,
+    EventLogger* logger,
     DriveServiceInterface* drive_service,
     base::SequencedTaskRunner* blocking_task_runner)
     : throttle_count_(0),
       wait_until_(base::Time::Now()),
       disable_throttling_(false),
+      logger_(logger),
       drive_service_(drive_service),
       uploader_(new DriveUploader(drive_service, blocking_task_runner)),
       pref_service_(pref_service),
@@ -791,11 +793,11 @@ void JobScheduler::QueueJob(JobID job_id) {
 
   const std::string retry_prefix = job_entry->retry_count > 0 ?
       base::StringPrintf(" (retry %d)", job_entry->retry_count) : "";
-  util::Log(logging::LOG_INFO,
-            "Job queued%s: %s - %s",
-            retry_prefix.c_str(),
-            job_info.ToString().c_str(),
-            GetQueueInfo(queue_type).c_str());
+  logger_->Log(logging::LOG_INFO,
+               "Job queued%s: %s - %s",
+               retry_prefix.c_str(),
+               job_info.ToString().c_str(),
+               GetQueueInfo(queue_type).c_str());
 }
 
 void JobScheduler::DoJobLoop(QueueType queue_type) {
@@ -843,10 +845,10 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
 
   UpdateWait();
 
-  util::Log(logging::LOG_INFO,
-            "Job started: %s - %s",
-            job_info->ToString().c_str(),
-            GetQueueInfo(queue_type).c_str());
+  logger_->Log(logging::LOG_INFO,
+               "Job started: %s - %s",
+               job_info->ToString().c_str(),
+               GetQueueInfo(queue_type).c_str());
 }
 
 int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
@@ -900,12 +902,12 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
 
   const base::TimeDelta elapsed = base::Time::Now() - job_info->start_time;
   bool success = (GDataToFileError(error) == FILE_ERROR_OK);
-  util::Log(success ? logging::LOG_INFO : logging::LOG_WARNING,
-            "Job done: %s => %s (elapsed time: %sms) - %s",
-            job_info->ToString().c_str(),
-            GDataErrorCodeToString(error).c_str(),
-            base::Int64ToString(elapsed.InMilliseconds()).c_str(),
-            GetQueueInfo(queue_type).c_str());
+  logger_->Log(success ? logging::LOG_INFO : logging::LOG_WARNING,
+               "Job done: %s => %s (elapsed time: %sms) - %s",
+               job_info->ToString().c_str(),
+               GDataErrorCodeToString(error).c_str(),
+               base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+               GetQueueInfo(queue_type).c_str());
 
   // Retry, depending on the error.
   const bool is_server_error =
@@ -1149,12 +1151,12 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
 
   const base::TimeDelta elapsed = base::Time::Now() - job->job_info.start_time;
   const QueueType queue_type = GetJobQueueType(job->job_info.job_type);
-  util::Log(logging::LOG_INFO,
-            "Job aborted: %s => %s (elapsed time: %sms) - %s",
-            job->job_info.ToString().c_str(),
-            GDataErrorCodeToString(error).c_str(),
-            base::Int64ToString(elapsed.InMilliseconds()).c_str(),
-            GetQueueInfo(queue_type).c_str());
+  logger_->Log(logging::LOG_INFO,
+               "Job aborted: %s => %s (elapsed time: %sms) - %s",
+               job->job_info.ToString().c_str(),
+               GDataErrorCodeToString(error).c_str(),
+               base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+               GetQueueInfo(queue_type).c_str());
 
   base::Callback<void(google_apis::GDataErrorCode)> callback =
       job->abort_callback;

@@ -25,6 +25,7 @@ class FileWriteWatcher;
 class ResourceMetadata;
 }  // namespace internal
 
+class EventLogger;
 class JobScheduler;
 class ResourceEntry;
 
@@ -41,7 +42,8 @@ class OperationObserver;
 // to the cache directory, not just the one immediately after the save dialog.
 class GetFileForSavingOperation {
  public:
-  GetFileForSavingOperation(base::SequencedTaskRunner* blocking_task_runner,
+  GetFileForSavingOperation(EventLogger* logger,
+                            base::SequencedTaskRunner* blocking_task_runner,
                             OperationObserver* observer,
                             JobScheduler* scheduler,
                             internal::ResourceMetadata* metadata,
@@ -82,6 +84,7 @@ class GetFileForSavingOperation {
   void OnWriteEvent(const std::string& local_id,
                     scoped_ptr<base::ScopedClosureRunner> file_closer);
 
+  EventLogger* logger_;
   scoped_ptr<CreateFileOperation> create_file_operation_;
   scoped_ptr<DownloadOperation> download_operation_;
   scoped_ptr<internal::FileWriteWatcher> file_write_watcher_;

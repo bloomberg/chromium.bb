@@ -54,9 +54,9 @@ void Log(logging::LogSeverity severity,
   // On thread-safety: LazyInstance guarantees thread-safety for the object
   // creation. EventLogger::Log() internally maintains the lock.
   drive::EventLogger* ptr = g_logger.Pointer();
-  ptr->Log(severity, base::StringPrintf("[%s] %s",
-                                        LogSeverityToString(severity),
-                                        what.c_str()));
+  ptr->LogRawString(severity, base::StringPrintf("[%s] %s",
+                                                 LogSeverityToString(severity),
+                                                 what.c_str()));
 
   // Log to console if the severity is at or above the min level.
   // LOG_VERBOSE logs are also output if the verbosity of this module

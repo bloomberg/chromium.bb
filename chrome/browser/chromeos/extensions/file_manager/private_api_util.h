@@ -22,6 +22,10 @@ namespace content {
 class RenderViewHost;
 }
 
+namespace drive {
+class EventLogger;
+}
+
 namespace extensions {
 namespace api {
 namespace file_browser_private {
@@ -83,6 +87,9 @@ void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
                          const std::vector<GURL>& file_urls,
                          GetSelectedFileInfoLocalPathOption local_path_option,
                          GetSelectedFileInfoCallback callback);
+
+// Get event logger to chrome://drive-internals page for the |profile|.
+drive::EventLogger* GetLogger(Profile* profile);
 
 }  // namespace util
 }  // namespace file_manager

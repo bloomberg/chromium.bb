@@ -15,10 +15,10 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "url/gurl.h"
@@ -343,12 +343,14 @@ void LoaderController::Unlock() {
 }
 
 ChangeListLoader::ChangeListLoader(
+    EventLogger* logger,
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
     DriveServiceInterface* drive_service,
     LoaderController* loader_controller)
-    : blocking_task_runner_(blocking_task_runner),
+    : logger_(logger),
+      blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       drive_service_(drive_service),
@@ -392,7 +394,7 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
     // We only start to check for updates iff the load is done.
     // I.e., we ignore checking updates if not loaded to avoid starting the
     // load without user's explicit interaction (such as opening Drive).
-    util::Log(logging::LOG_INFO, "Checking for updates");
+    logger_->Log(logging::LOG_INFO, "Checking for updates");
     Load(DirectoryFetchInfo(), callback);
   }
 }
@@ -655,10 +657,10 @@ void ChangeListLoader::LoadAfterGetAboutResource(
     // enough, but we log this message here, so "Fast-fetch start" and
     // "Fast-fetch complete" always match.
     // TODO(satorux): Distinguish the "not fetching at all" case.
-    util::Log(logging::LOG_INFO,
-              "Fast-fetch start: %s; Server changestamp: %s",
-              directory_fetch_info.ToString().c_str(),
-              base::Int64ToString(remote_changestamp).c_str());
+    logger_->Log(logging::LOG_INFO,
+                 "Fast-fetch start: %s; Server changestamp: %s",
+                 directory_fetch_info.ToString().c_str(),
+                 base::Int64ToString(remote_changestamp).c_str());
 
     // If the directory's changestamp is up-to-date, just schedule to run the
     // callback, as there is no need to fetch the directory.
@@ -731,10 +733,10 @@ void ChangeListLoader::OnDirectoryLoadComplete(
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  util::Log(logging::LOG_INFO,
-            "Fast-fetch complete: %s => %s",
-            directory_fetch_info.ToString().c_str(),
-            FileErrorToString(error).c_str());
+  logger_->Log(logging::LOG_INFO,
+               "Fast-fetch complete: %s => %s",
+               directory_fetch_info.ToString().c_str(),
+               FileErrorToString(error).c_str());
   const std::string& local_id = directory_fetch_info.local_id();
   LoadCallbackMap::iterator it = pending_load_callback_.find(local_id);
   if (it != pending_load_callback_.end()) {
@@ -796,9 +798,9 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
   // the initial content retrieval.
   const bool should_notify_changed_directories = is_delta_update;
 
-  util::Log(logging::LOG_INFO,
-            "Apply change lists (is delta: %d)",
-            is_delta_update);
+  logger_->Log(logging::LOG_INFO,
+               "Apply change lists (is delta: %d)",
+               is_delta_update);
   loader_controller_->ScheduleRun(base::Bind(
       base::IgnoreResult(
           &base::PostTaskAndReplyWithResult<FileError, FileError>),
@@ -824,9 +826,9 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const base::TimeDelta elapsed = base::Time::Now() - start_time;
-  util::Log(logging::LOG_INFO,
-            "Change lists applied (elapsed time: %sms)",
-            base::Int64ToString(elapsed.InMilliseconds()).c_str());
+  logger_->Log(logging::LOG_INFO,
+               "Change lists applied (elapsed time: %sms)",
+               base::Int64ToString(elapsed.InMilliseconds()).c_str());
 
   if (should_notify_changed_directories) {
     for (std::set<base::FilePath>::iterator dir_iter =

@@ -35,6 +35,7 @@ class ResourceList;
 namespace drive {
 
 class DriveServiceInterface;
+class EventLogger;
 class JobScheduler;
 class ResourceEntry;
 
@@ -90,7 +91,8 @@ class ChangeListLoader {
   // Resource feed fetcher from the server.
   class FeedFetcher;
 
-  ChangeListLoader(base::SequencedTaskRunner* blocking_task_runner,
+  ChangeListLoader(EventLogger* logger,
+                   base::SequencedTaskRunner* blocking_task_runner,
                    ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
                    DriveServiceInterface* drive_service,
@@ -238,6 +240,7 @@ class ChangeListLoader {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
+  EventLogger* logger_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.

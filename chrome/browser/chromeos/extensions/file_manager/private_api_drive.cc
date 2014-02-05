@@ -5,13 +5,13 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/drive/drive_app_registry.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "content/public/browser/browser_thread.h"
@@ -420,13 +420,16 @@ bool FileBrowserPrivateSearchDriveMetadataFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  drive::util::Log(logging::LOG_INFO,
-                   "%s[%d] called. (types: '%s', maxResults: '%d')",
-                   name().c_str(),
-                   request_id(),
-                   api::file_browser_private::ToString(
-                       params->search_params.types).c_str(),
-                   params->search_params.max_results);
+  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  if (logger) {
+    logger->Log(logging::LOG_INFO,
+                "%s[%d] called. (types: '%s', maxResults: '%d')",
+                name().c_str(),
+                request_id(),
+                api::file_browser_private::ToString(
+                    params->search_params.types).c_str(),
+                params->search_params.max_results);
+  }
   set_log_on_completion(true);
 
   drive::FileSystemInterface* const file_system =
@@ -533,7 +536,9 @@ bool FileBrowserPrivateGetDriveConnectionStateFunction::RunImpl() {
   results_ = api::file_browser_private::GetDriveConnectionState::Results::
       Create(result);
 
-  drive::util::Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
+  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  if (logger)
+    logger->Log(logging::LOG_INFO, "%s succeeded.", name().c_str());
   return true;
 }
 

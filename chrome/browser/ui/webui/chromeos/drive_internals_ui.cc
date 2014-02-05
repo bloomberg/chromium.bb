@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
-#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
@@ -755,8 +754,13 @@ void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
 void DriveInternalsWebUIHandler::UpdateEventLogSection() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  drive::DriveIntegrationService* integration_service =
+      GetIntegrationService();
+  if (!integration_service)
+    return;
+
   const std::vector<drive::EventLogger::Event> log =
-      drive::util::GetLogHistory();
+      integration_service->event_logger()->GetHistory();
 
   base::ListValue list;
   for (size_t i = 0; i < log.size(); ++i) {

@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -135,6 +136,8 @@ class JobSchedulerTest : public testing::Test {
     fake_network_change_notifier_.reset(
         new test_util::FakeNetworkChangeNotifier);
 
+    logger_.reset(new EventLogger);
+
     fake_drive_service_.reset(new CancelTestableFakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "gdata/root_feed.json");
@@ -144,6 +147,7 @@ class JobSchedulerTest : public testing::Test {
         "drive/applist.json");
 
     scheduler_.reset(new JobScheduler(pref_service_.get(),
+                                      logger_.get(),
                                       fake_drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
     scheduler_->SetDisableThrottling(true);
@@ -184,6 +188,7 @@ class JobSchedulerTest : public testing::Test {
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
+  scoped_ptr<EventLogger> logger_;
   scoped_ptr<CancelTestableFakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
 };

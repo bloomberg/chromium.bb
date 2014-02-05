@@ -62,8 +62,8 @@ class GetFileForSavingOperationTest : public OperationTestBase {
     OperationTestBase::SetUp();
 
     operation_.reset(new GetFileForSavingOperation(
-        blocking_task_runner(), &observer_, scheduler(), metadata(), cache(),
-        temp_dir()));
+        logger(), blocking_task_runner(), &observer_, scheduler(), metadata(),
+        cache(), temp_dir()));
     operation_->file_write_watcher_for_testing()->DisableDelayForTesting();
   }
 

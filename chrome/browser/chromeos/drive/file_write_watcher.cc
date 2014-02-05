@@ -12,7 +12,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/drive/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
 
@@ -127,8 +126,6 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatchOnFileThread(
     const StartWatchCallback& on_start_callback,
     const base::Closure& on_write_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  util::Log(logging::LOG_INFO, "Started watching modification to %s.",
-            path.AsUTF8Unsafe().c_str());
 
   std::map<base::FilePath, PathWatchInfo*>::iterator it = watchers_.find(path);
   if (it != watchers_.end()) {
@@ -153,8 +150,6 @@ void FileWriteWatcher::FileWriteWatcherImpl::OnWriteEvent(
     const base::FilePath& path,
     bool error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  util::Log(logging::LOG_INFO, "Detected modification to %s.",
-            path.AsUTF8Unsafe().c_str());
 
   if (error)
     return;
@@ -176,8 +171,6 @@ void FileWriteWatcher::FileWriteWatcherImpl::OnWriteEvent(
 void FileWriteWatcher::FileWriteWatcherImpl::InvokeCallback(
     const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  util::Log(logging::LOG_INFO, "Finished watching modification to %s.",
-            path.AsUTF8Unsafe().c_str());
 
   std::map<base::FilePath, PathWatchInfo*>::iterator it = watchers_.find(path);
   DCHECK(it != watchers_.end());

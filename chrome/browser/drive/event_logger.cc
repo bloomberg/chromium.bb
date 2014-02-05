@@ -25,12 +25,25 @@ EventLogger::EventLogger()
 EventLogger::~EventLogger() {
 }
 
-void EventLogger::Log(logging::LogSeverity severity, const std::string& what) {
+void EventLogger::LogRawString(logging::LogSeverity severity,
+                               const std::string& what) {
   base::AutoLock auto_lock(lock_);
   history_.push_back(Event(next_event_id_, severity, what));
   ++next_event_id_;
   if (history_.size() > history_size_)
     history_.pop_front();
+}
+
+void EventLogger::Log(logging::LogSeverity severity, const char* format, ...) {
+  std::string what;
+
+  va_list args;
+  va_start(args, format);
+  base::StringAppendV(&what, format, args);
+  va_end(args);
+
+  DVLOG(1) << what;
+  LogRawString(severity, what);
 }
 
 void EventLogger::SetHistorySize(size_t history_size) {

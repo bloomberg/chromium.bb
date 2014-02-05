@@ -25,6 +25,8 @@ class SeqencedTaskRunner;
 
 namespace drive {
 
+class EventLogger;
+
 // The JobScheduler is responsible for queuing and scheduling drive jobs.
 // Because jobs are executed concurrently by priority and retried for network
 // failures, there is no guarantee of orderings.
@@ -49,6 +51,7 @@ class JobScheduler
       public JobListInterface {
  public:
   JobScheduler(PrefService* pref_service,
+               EventLogger* logger,
                DriveServiceInterface* drive_service,
                base::SequencedTaskRunner* blocking_task_runner);
   virtual ~JobScheduler();
@@ -385,6 +388,7 @@ class JobScheduler
   // The list of observers for the scheduler.
   ObserverList<JobListObserver> observer_list_;
 
+  EventLogger* logger_;
   DriveServiceInterface* drive_service_;
   scoped_ptr<DriveUploaderInterface> uploader_;
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -20,13 +21,15 @@ namespace drive {
 namespace file_system {
 
 GetFileForSavingOperation::GetFileForSavingOperation(
+    EventLogger* logger,
     base::SequencedTaskRunner* blocking_task_runner,
     OperationObserver* observer,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const base::FilePath& temporary_file_directory)
-    : create_file_operation_(new CreateFileOperation(blocking_task_runner,
+    : logger_(logger),
+      create_file_operation_(new CreateFileOperation(blocking_task_runner,
                                                      observer,
                                                      metadata)),
       download_operation_(new DownloadOperation(blocking_task_runner,
@@ -151,6 +154,10 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  logger_->Log(logging::LOG_INFO, "Started watching modification to %s [%s].",
+               entry->local_id().c_str(),
+               success ? "ok" : "fail");
+
   if (!success) {
     callback.Run(FILE_ERROR_FAILED,
                  base::FilePath(), scoped_ptr<ResourceEntry>());
@@ -163,6 +170,9 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
 void GetFileForSavingOperation::OnWriteEvent(
     const std::string& local_id,
     scoped_ptr<base::ScopedClosureRunner> file_closer) {
+  logger_->Log(logging::LOG_INFO, "Detected modification to %s.",
+               local_id.c_str());
+
   observer_->OnEntryUpdatedByOperation(local_id);
 
   // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),

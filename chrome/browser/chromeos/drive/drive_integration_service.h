@@ -28,6 +28,7 @@ class DebugInfoCollector;
 class DownloadHandler;
 class DriveAppRegistry;
 class DriveServiceInterface;
+class EventLogger;
 class FileSystemInterface;
 class JobListInterface;
 
@@ -98,10 +99,8 @@ class DriveIntegrationService
   virtual void OnNotificationReceived() OVERRIDE;
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 
-  DriveServiceInterface* drive_service() {
-    return drive_service_.get();
-  }
-
+  EventLogger* event_logger() { return logger_.get(); }
+  DriveServiceInterface* drive_service() { return drive_service_.get(); }
   DebugInfoCollector* debug_info_collector() {
     return debug_info_collector_.get();
   }
@@ -160,6 +159,7 @@ class DriveIntegrationService
   std::string mount_point_name_;
 
   base::FilePath cache_root_directory_;
+  scoped_ptr<EventLogger> logger_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<internal::ResourceMetadataStorage,
              util::DestroyHelper> metadata_storage_;

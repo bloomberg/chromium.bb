@@ -281,8 +281,6 @@
         'browser/chromeos/drive/job_scheduler.h',
         'browser/chromeos/drive/local_file_reader.cc',
         'browser/chromeos/drive/local_file_reader.h',
-        'browser/chromeos/drive/logging.cc',
-        'browser/chromeos/drive/logging.h',
         'browser/chromeos/drive/remove_stale_cache_files.cc',
         'browser/chromeos/drive/remove_stale_cache_files.h',
         'browser/chromeos/drive/resource_entry_conversion.cc',

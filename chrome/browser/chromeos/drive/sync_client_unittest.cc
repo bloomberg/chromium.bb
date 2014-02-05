@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
+#include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/test_util.h"
@@ -112,12 +113,15 @@ class SyncClientTest : public testing::Test {
     fake_network_change_notifier_.reset(
         new test_util::FakeNetworkChangeNotifier);
 
+    logger_.reset(new EventLogger);
+
     drive_service_.reset(new SyncClientTestDriveService);
     drive_service_->LoadResourceListForWapi("gdata/empty_feed.json");
     drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
 
     scheduler_.reset(new JobScheduler(pref_service_.get(),
+                                      logger_.get(),
                                       drive_service_.get(),
                                       base::MessageLoopProxy::current().get()));
 
@@ -137,6 +141,7 @@ class SyncClientTest : public testing::Test {
 
     loader_controller_.reset(new LoaderController);
     change_list_loader_.reset(new ChangeListLoader(
+        logger_.get(),
         base::MessageLoopProxy::current().get(),
         metadata_.get(),
         scheduler_.get(),
@@ -252,6 +257,7 @@ class SyncClientTest : public testing::Test {
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
+  scoped_ptr<EventLogger> logger_;
   scoped_ptr<SyncClientTestDriveService> drive_service_;
   DummyOperationObserver observer_;
   scoped_ptr<JobScheduler> scheduler_;

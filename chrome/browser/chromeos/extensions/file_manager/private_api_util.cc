@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -260,6 +261,13 @@ void GetSelectedFileInfo(content::RenderViewHost* render_view_host,
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GetSelectedFileInfoInternal, profile, base::Passed(&params)));
+}
+
+drive::EventLogger* GetLogger(Profile* profile) {
+  drive::DriveIntegrationService* service =
+      drive::DriveIntegrationServiceFactory::FindForProfileRegardlessOfStates(
+          profile);
+  return service ? service->event_logger() : NULL;
 }
 
 }  // namespace util
