@@ -693,7 +693,7 @@ void Layer::SetScrollOffset(gfx::Vector2d scroll_offset) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollOffsetFromImplSide(gfx::Vector2d scroll_offset) {
+void Layer::SetScrollOffsetFromImplSide(const gfx::Vector2d& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
   // This function only gets called during a BeginMainFrame, so there
   // is no need to call SetNeedsUpdate here.
@@ -1204,5 +1204,4 @@ void Layer::RemoveFromClipTree() {
 void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
   benchmark->RunOnLayer(this);
 }
-
 }  // namespace cc

@@ -144,7 +144,7 @@ void PixelTest::ForceExpandedViewport(const gfx::Size& surface_expansion) {
   }
 }
 
-void PixelTest::ForceViewportOffset(gfx::Vector2d viewport_offset) {
+void PixelTest::ForceViewportOffset(const gfx::Vector2d& viewport_offset) {
   external_device_viewport_offset_ = viewport_offset;
 }
 

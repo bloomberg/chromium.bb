@@ -568,8 +568,9 @@ void RenderWidgetCompositor::Layout() {
   widget_->webwidget()->layout();
 }
 
-void RenderWidgetCompositor::ApplyScrollAndScale(gfx::Vector2d scroll_delta,
-                                                 float page_scale) {
+void RenderWidgetCompositor::ApplyScrollAndScale(
+    const gfx::Vector2d& scroll_delta,
+    float page_scale) {
   widget_->webwidget()->applyScrollAndScale(scroll_delta, page_scale);
 }
 

@@ -81,7 +81,7 @@ class CC_EXPORT PrioritizedResource {
                  const uint8_t* image,
                  const gfx::Rect& image_rect,
                  const gfx::Rect& source_rect,
-                 gfx::Vector2d dest_offset);
+                 const gfx::Vector2d& dest_offset);
 
   ResourceProvider::ResourceId resource_id() const {
     return backing_ ? backing_->id() : 0;

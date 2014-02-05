@@ -427,10 +427,11 @@ void LayerTreeHostImpl::ManageTiles() {
   client_->DidManageTiles();
 }
 
-void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
-                                                bool anchor_point,
-                                                float page_scale,
-                                                base::TimeDelta duration) {
+void LayerTreeHostImpl::StartPageScaleAnimation(
+    const gfx::Vector2d& target_offset,
+    bool anchor_point,
+    float page_scale,
+    base::TimeDelta duration) {
   if (!InnerViewportScrollLayer())
     return;
 

@@ -130,7 +130,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void PinchGestureUpdate(float magnify_delta,
                                   gfx::Point anchor) OVERRIDE;
   virtual void PinchGestureEnd() OVERRIDE;
-  virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
+  virtual void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                        bool anchor_point,
                                        float page_scale,
                                        base::TimeDelta duration) OVERRIDE;

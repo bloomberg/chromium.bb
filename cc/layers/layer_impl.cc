@@ -367,7 +367,7 @@ ResourceProvider::ResourceId LayerImpl::ContentsResourceId() const {
   return 0;
 }
 
-void LayerImpl::SetSentScrollDelta(gfx::Vector2d sent_scroll_delta) {
+void LayerImpl::SetSentScrollDelta(const gfx::Vector2d& sent_scroll_delta) {
   // Pending tree never has sent scroll deltas
   DCHECK(layer_tree_impl()->IsActiveTree());
 
@@ -1054,11 +1054,11 @@ bool LayerImpl::IsExternalFlingActive() const {
          scroll_offset_delegate_->IsExternalFlingActive();
 }
 
-void LayerImpl::SetScrollOffset(gfx::Vector2d scroll_offset) {
+void LayerImpl::SetScrollOffset(const gfx::Vector2d& scroll_offset) {
   SetScrollOffsetAndDelta(scroll_offset, ScrollDelta());
 }
 
-void LayerImpl::SetScrollOffsetAndDelta(gfx::Vector2d scroll_offset,
+void LayerImpl::SetScrollOffsetAndDelta(const gfx::Vector2d& scroll_offset,
                                         const gfx::Vector2dF& scroll_delta) {
   bool changed = false;
 
@@ -1478,5 +1478,4 @@ scoped_ptr<base::Value> LayerImpl::AsValue() const {
 void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
   benchmark->RunOnLayer(this);
 }
-
 }  // namespace cc

@@ -362,8 +362,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
       LayerScrollOffsetDelegate* scroll_offset_delegate);
   bool IsExternalFlingActive() const;
 
-  void SetScrollOffset(gfx::Vector2d scroll_offset);
-  void SetScrollOffsetAndDelta(gfx::Vector2d scroll_offset,
+  void SetScrollOffset(const gfx::Vector2d& scroll_offset);
+  void SetScrollOffsetAndDelta(const gfx::Vector2d& scroll_offset,
                                const gfx::Vector2dF& scroll_delta);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
 
@@ -371,13 +371,12 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF ClampScrollToMaxScrollOffset();
   void SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
                             LayerImpl* scrollbar_clip_layer) const;
-
   void SetScrollDelta(const gfx::Vector2dF& scroll_delta);
   gfx::Vector2dF ScrollDelta() const;
 
   gfx::Vector2dF TotalScrollOffset() const;
 
-  void SetSentScrollDelta(gfx::Vector2d sent_scroll_delta);
+  void SetSentScrollDelta(const gfx::Vector2d& sent_scroll_delta);
   gfx::Vector2d sent_scroll_delta() const { return sent_scroll_delta_; }
 
   // Returns the delta of the scroll that was outside of the bounds of the

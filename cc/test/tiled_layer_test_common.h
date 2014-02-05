@@ -29,7 +29,7 @@ class FakeLayerUpdater : public LayerUpdater {
 
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
-                        gfx::Vector2d dest_offset,
+                        const gfx::Vector2d& dest_offset,
                         bool partial_update) OVERRIDE;
 
    private:

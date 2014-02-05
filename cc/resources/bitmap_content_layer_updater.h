@@ -31,7 +31,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
 
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
-                        gfx::Vector2d dest_offset,
+                        const gfx::Vector2d& dest_offset,
                         bool partial_update) OVERRIDE;
 
    private:
@@ -55,7 +55,7 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* resource,
                      const gfx::Rect& source_rect,
-                     gfx::Vector2d dest_offset,
+                     const gfx::Vector2d& dest_offset,
                      bool partial_update);
   virtual void SetOpaque(bool opaque) OVERRIDE;
   virtual void ReduceMemoryUsage() OVERRIDE;

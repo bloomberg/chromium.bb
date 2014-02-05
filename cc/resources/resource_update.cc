@@ -12,7 +12,7 @@ ResourceUpdate ResourceUpdate::Create(PrioritizedResource* resource,
                                       const SkBitmap* bitmap,
                                       const gfx::Rect& content_rect,
                                       const gfx::Rect& source_rect,
-                                      gfx::Vector2d dest_offset) {
+                                      const gfx::Vector2d& dest_offset) {
   CHECK(content_rect.Contains(source_rect));
   ResourceUpdate update;
   update.texture = resource;

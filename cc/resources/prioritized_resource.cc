@@ -79,7 +79,7 @@ void PrioritizedResource::SetPixels(ResourceProvider* resource_provider,
                                     const uint8_t* image,
                                     const gfx::Rect& image_rect,
                                     const gfx::Rect& source_rect,
-                                    gfx::Vector2d dest_offset) {
+                                    const gfx::Vector2d& dest_offset) {
   DCHECK(is_above_priority_cutoff_);
   if (is_above_priority_cutoff_)
     AcquireBackingTexture(resource_provider);

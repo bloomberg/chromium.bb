@@ -17,7 +17,7 @@ FakeLayerUpdater::Resource::~Resource() {}
 
 void FakeLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
                                         const gfx::Rect& source_rect,
-                                        gfx::Vector2d dest_offset,
+                                        const gfx::Vector2d& dest_offset,
                                         bool partial_update) {
   const gfx::Rect kRect(0, 0, 10, 10);
   ResourceUpdate upload = ResourceUpdate::Create(

@@ -105,7 +105,7 @@ void CompositorHost::Animate(double frame_begin_time) {
 }
 
 void CompositorHost::Layout() {}
-void CompositorHost::ApplyScrollAndScale(gfx::Vector2d scroll_delta,
+void CompositorHost::ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                          float page_scale) {}
 
 scoped_ptr<cc::OutputSurface> CompositorHost::CreateOutputSurface(

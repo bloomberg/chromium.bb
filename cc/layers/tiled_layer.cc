@@ -686,7 +686,7 @@ void TiledLayer::ResetUpdateState() {
 }
 
 namespace {
-gfx::Rect ExpandRectByDelta(const gfx::Rect& rect, gfx::Vector2d delta) {
+gfx::Rect ExpandRectByDelta(const gfx::Rect& rect, const gfx::Vector2d& delta) {
   int width = rect.width() + std::abs(delta.x());
   int height = rect.height() + std::abs(delta.y());
   int x = rect.x() + ((delta.x() < 0) ? delta.x() : 0);

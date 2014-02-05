@@ -55,8 +55,7 @@ class CC_EXPORT SoftwareOutputDevice {
 
   // Blit the pixel content of the SoftwareOutputDevice by |delta| with the
   // write clipped to |clip_rect|.
-  virtual void Scroll(gfx::Vector2d delta,
-                      const gfx::Rect& clip_rect);
+  virtual void Scroll(const gfx::Vector2d& delta, const gfx::Rect& clip_rect);
 
   // Discard the backing buffer in the surface provided by this instance.
   virtual void DiscardBackbuffer() {}

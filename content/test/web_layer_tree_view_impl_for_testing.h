@@ -66,8 +66,8 @@ class WebLayerTreeViewImplForTesting
   virtual void DidBeginMainFrame() OVERRIDE {}
   virtual void Animate(double frame_begin_time) OVERRIDE {}
   virtual void Layout() OVERRIDE;
-  virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta, float page_scale)
-      OVERRIDE;
+  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
+                                   float page_scale) OVERRIDE;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE;
   virtual void DidInitializeOutputSurface(bool success) OVERRIDE {}

@@ -23,7 +23,7 @@ class CC_EXPORT ImageLayerUpdater : public LayerUpdater {
 
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
-                        gfx::Vector2d dest_offset,
+                        const gfx::Vector2d& dest_offset,
                         bool partial_update) OVERRIDE;
 
    private:
@@ -40,7 +40,7 @@ class CC_EXPORT ImageLayerUpdater : public LayerUpdater {
   void UpdateTexture(ResourceUpdateQueue* queue,
                      PrioritizedResource* texture,
                      const gfx::Rect& source_rect,
-                     gfx::Vector2d dest_offset,
+                     const gfx::Vector2d& dest_offset,
                      bool partial_update);
 
   void SetBitmap(const SkBitmap& bitmap);

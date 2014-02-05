@@ -48,8 +48,8 @@ void SoftwareOutputDevice::CopyToBitmap(
   bitmap.extractSubset(output, gfx::RectToSkIRect(rect));
 }
 
-void SoftwareOutputDevice::Scroll(
-    gfx::Vector2d delta, const gfx::Rect& clip_rect) {
+void SoftwareOutputDevice::Scroll(const gfx::Vector2d& delta,
+                                  const gfx::Rect& clip_rect) {
   NOTIMPLEMENTED();
 }
 

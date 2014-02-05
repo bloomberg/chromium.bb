@@ -179,7 +179,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
   static void ExpectContains(const ScrollAndScaleSet& scroll_info,
                              int id,
-                             gfx::Vector2d scroll_delta) {
+                             const gfx::Vector2d& scroll_delta) {
     int times_encountered = 0;
 
     for (size_t i = 0; i < scroll_info.scrolls.size(); ++i) {

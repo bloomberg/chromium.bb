@@ -137,7 +137,7 @@ class CC_EXPORT ResourceProvider {
                  const uint8_t* image,
                  const gfx::Rect& image_rect,
                  const gfx::Rect& source_rect,
-                 gfx::Vector2d dest_offset);
+                 const gfx::Vector2d& dest_offset);
 
   // Check upload status.
   size_t NumBlockingUploads();

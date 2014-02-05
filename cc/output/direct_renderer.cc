@@ -139,7 +139,7 @@ DirectRenderer::~DirectRenderer() {}
 bool DirectRenderer::CanReadPixels() const { return true; }
 
 void DirectRenderer::SetEnlargePassTextureAmountForTesting(
-    gfx::Vector2d amount) {
+    const gfx::Vector2d& amount) {
   enlarge_pass_texture_amount_ = amount;
 }
 

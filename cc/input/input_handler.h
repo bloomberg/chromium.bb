@@ -117,7 +117,7 @@ class CC_EXPORT InputHandler {
   virtual void PinchGestureUpdate(float magnify_delta, gfx::Point anchor) = 0;
   virtual void PinchGestureEnd() = 0;
 
-  virtual void StartPageScaleAnimation(gfx::Vector2d target_offset,
+  virtual void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                        bool anchor_point,
                                        float page_scale,
                                        base::TimeDelta duration) = 0;

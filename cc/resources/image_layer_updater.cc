@@ -16,7 +16,7 @@ ImageLayerUpdater::Resource::~Resource() {}
 
 void ImageLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
                                          const gfx::Rect& source_rect,
-                                         gfx::Vector2d dest_offset,
+                                         const gfx::Vector2d& dest_offset,
                                          bool partial_update) {
   updater_->UpdateTexture(
       queue, texture(), source_rect, dest_offset, partial_update);
@@ -36,7 +36,7 @@ scoped_ptr<LayerUpdater::Resource> ImageLayerUpdater::CreateResource(
 void ImageLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                                       PrioritizedResource* texture,
                                       const gfx::Rect& source_rect,
-                                      gfx::Vector2d dest_offset,
+                                      const gfx::Vector2d& dest_offset,
                                       bool partial_update) {
   // Source rect should never go outside the image pixels, even if this
   // is requested because the texture extends outside the image.

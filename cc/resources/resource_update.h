@@ -20,7 +20,7 @@ struct CC_EXPORT ResourceUpdate {
                                const SkBitmap* bitmap,
                                const gfx::Rect& content_rect,
                                const gfx::Rect& source_rect,
-                               gfx::Vector2d dest_offset);
+                               const gfx::Vector2d& dest_offset);
 
   ResourceUpdate();
   virtual ~ResourceUpdate();

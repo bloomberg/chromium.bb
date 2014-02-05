@@ -30,8 +30,9 @@ class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
     // instead of an argument passed to Update().
     virtual void Update(ResourceUpdateQueue* queue,
                         const gfx::Rect& source_rect,
-                        gfx::Vector2d dest_offset,
+                        const gfx::Vector2d& dest_offset,
                         bool partial_update) = 0;
+
    protected:
     explicit Resource(scoped_ptr<PrioritizedResource> texture);
 

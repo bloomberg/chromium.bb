@@ -352,8 +352,7 @@ class PageScaleImplSidePaintingPerfTest
     layer_tree_host()->RegisterViewportLayers(
         root, inner_viewport_scroll_layer, 0);
   }
-
-  virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
+  virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                    float scale_delta) OVERRIDE {
     float page_scale_factor = layer_tree_host()->page_scale_factor();
     page_scale_factor *= scale_delta;

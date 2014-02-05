@@ -21,10 +21,11 @@ BitmapContentLayerUpdater::Resource::Resource(
 
 BitmapContentLayerUpdater::Resource::~Resource() {}
 
-void BitmapContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
-                                                 const gfx::Rect& source_rect,
-                                                 gfx::Vector2d dest_offset,
-                                                 bool partial_update) {
+void BitmapContentLayerUpdater::Resource::Update(
+    ResourceUpdateQueue* queue,
+    const gfx::Rect& source_rect,
+    const gfx::Vector2d& dest_offset,
+    bool partial_update) {
   updater_->UpdateTexture(
       queue, texture(), source_rect, dest_offset, partial_update);
 }
@@ -88,7 +89,7 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
 void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                                               PrioritizedResource* texture,
                                               const gfx::Rect& source_rect,
-                                              gfx::Vector2d dest_offset,
+                                              const gfx::Vector2d& dest_offset,
                                               bool partial_update) {
   CHECK(canvas_);
   ResourceUpdate upload = ResourceUpdate::Create(texture,

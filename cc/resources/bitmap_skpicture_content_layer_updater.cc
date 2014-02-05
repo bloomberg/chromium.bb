@@ -22,7 +22,7 @@ BitmapSkPictureContentLayerUpdater::Resource::Resource(
 void BitmapSkPictureContentLayerUpdater::Resource::Update(
     ResourceUpdateQueue* queue,
     const gfx::Rect& source_rect,
-    gfx::Vector2d dest_offset,
+    const gfx::Vector2d& dest_offset,
     bool partial_update) {
   bitmap_.setConfig(
       SkBitmap::kARGB_8888_Config, source_rect.width(), source_rect.height(), 0,

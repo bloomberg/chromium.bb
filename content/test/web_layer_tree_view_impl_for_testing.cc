@@ -144,7 +144,7 @@ void WebLayerTreeViewImplForTesting::Layout() {
 }
 
 void WebLayerTreeViewImplForTesting::ApplyScrollAndScale(
-    gfx::Vector2d scroll_delta,
+    const gfx::Vector2d& scroll_delta,
     float page_scale) {}
 
 scoped_ptr<cc::OutputSurface>

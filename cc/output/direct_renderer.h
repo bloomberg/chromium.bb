@@ -59,7 +59,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
     bool disable_picture_quad_image_filtering;
   };
 
-  void SetEnlargePassTextureAmountForTesting(gfx::Vector2d amount);
+  void SetEnlargePassTextureAmountForTesting(const gfx::Vector2d& amount);
 
  protected:
   DirectRenderer(RendererClient* client,
