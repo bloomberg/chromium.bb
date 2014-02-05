@@ -1002,53 +1002,100 @@ class SignerResultsStageTest(AbstractStageTest):
   RELEASE_TAG = '0.0.1'
 
   def setUp(self):
-    self.archive_stage = ArchiveStageMock()
-    self.archive_stage.WaitForPushImage = mock.Mock(return_value=True)
-    self.archive_stage.debug = False
-
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(self.archive_stage)
 
     self._Prepare()
 
+    self.fails_remaining = {}
+
   def ConstructStage(self):
-    return stages.SignerResultsStage(
-        self.run, self._current_board, self.archive_stage)
+    archive_stage = stages.ArchiveStage(self.run, self._current_board)
+    stage = stages.SignerResultsStage(
+        self.run, self._current_board, archive_stage)
+
+    # Adjust our timeout related values to be short.
+    stage.SIGNING_PERIOD = 1
+    stage.SIGNING_TIMEOUT = 30
+
+    return stage
 
   def testPerformStageSuccess(self):
     """Test that SignerResultsStage works when signing works."""
-    insns = {
-        'chan1': ['chan1_uri1', 'chan1_uri2'],
-        'chan2': ['chan2_uri1']
-    }
     results = ['chan1_uri1.json', 'chan1_uri2.json', 'chan2_uri1.json']
 
-    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
-      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
-        mock_gs_ctx = mock_gs_ctx_init.return_value
-        mock_gs_ctx.Cat.return_value.output = """
-            { "status": { "status": "passed" }, "board": "link",
-              "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
-            """
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value.output = """
+          { "status": { "status": "passed" }, "board": "link",
+            "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
+          """
 
-        stage = self.ConstructStage()
-        stage.PerformStage()
-        for result in results:
-          mock_gs_ctx.Cat.assert_any_call(result)
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({
+            'chan1': ['chan1_uri1', 'chan1_uri2'],
+            'chan2': ['chan2_uri1'],
+          })
+
+      stage.PerformStage()
+      for result in results:
+        mock_gs_ctx.Cat.assert_any_call(result)
+
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan1')
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan2')
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), None)
+
+  def catCallFailUntilCount(self, url):
+    if self.fails_remaining[url]:
+      self.fails_remaining[url] -= 1
+      raise stages.gs.GSNoSuchKey()
+    else:
+      result = mock.Mock()
+      result.output = """
+        { "status": { "status": "passed" }, "board": "link",
+          "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
+        """
+      return result
+
+  def testPerformStageDelayedSuccess(self):
+    """Test that SignerResultsStage works when signing works."""
+    # By making a single chan1 url take longer to appear, we see if
+    # chan2 finishes before chan1 as we would expect.
+    self.fails_remaining = {
+          'chan1_uri1.json': 2,
+          'chan1_uri2.json': 1,
+          'chan2_uri1.json': 1,
+        }
+
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.side_effect = self.catCallFailUntilCount
+
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({
+            'chan1': ['chan1_uri1', 'chan1_uri2'],
+            'chan2': ['chan2_uri1'],
+          })
+
+      stage.PerformStage()
+
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan2')
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), 'chan1')
+      self.assertEqual(stage.archive_stage.WaitForChannelSigning(), None)
 
   def testPerformStageFailure(self):
     """Test that SignerResultsStage errors when the signers report an error."""
-    insns = { 'chan1': ['chan1_uri1'] }
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value.output = """
+          { "status": { "status": "failed" }, "board": "link",
+            "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
+          """
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({
+            'chan1': ['chan1_uri1'],
+          })
 
-    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
-      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
-        mock_gs_ctx = mock_gs_ctx_init.return_value
-        mock_gs_ctx.Cat.return_value.output = """
-            { "status": { "status": "failed" }, "board": "link",
-              "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
-            """
-        stage = self.ConstructStage()
-        self.assertRaises(stages.SignerFailure, stage.PerformStage)
+      self.assertRaises(stages.SignerFailure, stage.PerformStage)
 
   def testPerformStageFilesMissing(self):
     """Test that SignerResultsStage waits when unexpecte Json is received.."""
@@ -1057,69 +1104,65 @@ class SignerResultsStageTest(AbstractStageTest):
     # In this case, we shorten the timeout to 1 second. Unexpected results
     # should not qualify as pass or failure, and so we should run until
     # timeout is reached.
-    with patch(stages.SignerResultsStage, 'SIGNING_TIMEOUT', return_value=1):
-      with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
-        with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
-          mock_gs_ctx = mock_gs_ctx_init.return_value
-          mock_gs_ctx.Cat.return_value.output = "{}"
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value.output = "{}"
 
-          stage = self.ConstructStage()
-          self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+      stage = self.ConstructStage()
+      stage._CheckForResults(mock_gs_ctx, insns)
 
   def testPerformStageUnexpectedJson(self):
     """Test that SignerResultsStage waits when unexpecte Json is received.."""
-    insns = { 'chan1': ['chan1_uri1'] }
-
     # In this case, we shorten the timeout to 1 second. Unexpected results
     # should not qualify as pass or failure, and so we should run until
     # timeout is reached.
-    with patch(stages.SignerResultsStage, 'SIGNING_TIMEOUT', return_value=1):
-      with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
-        with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
-          mock_gs_ctx = mock_gs_ctx_init.return_value
-          mock_gs_ctx.Cat.return_value.output = "{}"
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value.output = "{}"
 
-          stage = self.ConstructStage()
-          self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({
+            'chan1': ['chan1_uri1'],
+          })
+      self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
   def testPerformStageMissingResults(self):
     """Test that SignerResultsStage waits when unexpecte Json is received.."""
-    insns = { 'chan1': ['chan1_uri1'] }
-
     # In this case, we shorten the timeout to 1 second. Unexpected results
     # should not qualify as pass or failure, and so we should run until
     # timeout is reached.
-    with patch(stages.SignerResultsStage, 'SIGNING_TIMEOUT', return_value=1):
-      with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
-        with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
-          mock_gs_ctx = mock_gs_ctx_init.return_value
-          mock_gs_ctx.Cat.side_effect = stages.gs.GSNoSuchKey
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.side_effect = stages.gs.GSNoSuchKey
 
-          stage = self.ConstructStage()
-          self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({
+            'chan1': ['chan1_uri1'],
+          })
+      self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
   def testPerformStageMalformedJson(self):
     """Test that SignerResultsStage errors when invalid Json is received.."""
-    insns = { 'chan1': ['chan1_uri1'] }
+    with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value.output = "{"
 
-    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
-      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
-        mock_gs_ctx = mock_gs_ctx_init.return_value
-        mock_gs_ctx.Cat.return_value.output = "{"
-
-        stage = self.ConstructStage()
-        self.assertRaises(stages.MalformedResultsException, stage.PerformStage)
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({
+            'chan1': ['chan1_uri1'],
+          })
+      self.assertRaises(stages.MalformedResultsException, stage.PerformStage)
 
   def testPerformStageTimeout(self):
     """Test that SignerResultsStage reports timeouts correctly."""
-    insns = { 'chan1': ['chan1_uri1'] }
+    with patch(stages.timeout_util, 'WaitForSuccess') as mock_wait:
+      mock_wait.side_effect = timeout_util.TimeoutError
 
-    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
-      with patch(stages.timeout_util, 'WaitForSuccess') as mock_wait:
-        mock_wait.side_effect = timeout_util.TimeoutError
-
-        stage = self.ConstructStage()
-        self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+      stage = self.ConstructStage()
+      stage.archive_stage._push_image_status_queue.put({
+            'chan1': ['chan1_uri1'],
+          })
+      self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
 
 class AUTestStageTest(AbstractStageTest,
                       cros_build_lib_unittest.RunCommandTestCase):

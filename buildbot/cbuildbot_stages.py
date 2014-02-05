@@ -2824,21 +2824,26 @@ class SignerResultsStage(ArchivingStage):
   option_name = 'signer_results'
   config_name = 'signer_results'
 
-  # If the signing takes longer than 30 minutes, abort.
+  # Poll for new results every 30 seconds.
+  SIGNING_PERIOD = 30
+
+  # If the signing takes longer than 30 minutes (30 * 60 seconds), abort.
   SIGNING_TIMEOUT = 1800
 
   def __init__(self, *args, **kwargs):
     super(SignerResultsStage, self).__init__(*args, **kwargs)
-    self.final_results = {}
+    self.signing_results = {}
 
   def _HandleStageException(self, exception):
-    """Override and don't set status to FAIL but FORGIVEN instead."""
+    """Convert SignerResultsException exceptions to WARNING (for now)."""
+    # If we raise an exception, make sure nobody keeps waiting on our results.
+    self.archive_stage.AnnounceChannelSigned(None)
+
     # This stage is experimental, don't trust it yet.
     if isinstance(exception, SignerResultsException):
       return self._HandleExceptionAsWarning(exception)
 
     return super(SignerResultsStage, self)._HandleStageException(exception)
-
 
   def _JsonFromUrl(self, gs_ctx, url):
     """Fetch a GS Url, and parse it as Json.
@@ -2877,42 +2882,50 @@ class SignerResultsStage(ArchivingStage):
     """
     return (signer_json or {}).get('status', {}).get('status', '')
 
-  def _CheckForResults(self, gs_ctx, result_urls):
+  def _CheckForResults(self, gs_ctx, instruction_urls_per_channel):
     """timeout_util.WaitForSuccess func to check a list of signer results.
 
     Args:
       gs_ctx: Google Storage Context.
-      result_urls: Urls of the signer result files we're expecting.
+      instruction_urls_per_channel: Urls of the signer result files
+                                    we're expecting.
 
     Returns:
       Number of results not yet collected.
     """
     COMPLETED_STATUS = ('passed', 'failed')
 
-    for url in result_urls:
-      # We already have a result for this URL.
-      if url in self.final_results:
+    # Assume we are done, then try to prove otherwise.
+    results_completed = True
+
+    for channel in instruction_urls_per_channel:
+      self.signing_results.setdefault(channel, {})
+
+      if (len(self.signing_results[channel]) ==
+          len(instruction_urls_per_channel[channel])):
         continue
 
-      signer_json = self._JsonFromUrl(gs_ctx, url)
-      if self._SigningStatusFromJson(signer_json) in COMPLETED_STATUS:
-        # If we find a completed result, remember it.
-        self.final_results[url] = signer_json
+      for url in instruction_urls_per_channel[channel]:
+        # Convert from instructions URL to instructions result URL.
+        url += '.json'
 
-    # How many results are we still waiting on?
-    remaining = len(result_urls) - len(self.final_results)
-    return remaining
+        # We already have a result for this URL.
+        if url in self.signing_results[channel]:
+          continue
 
-  def _Retry(self, remaining):
-    """Should timeout_util.WaitForSuccess, try again?
+        signer_json = self._JsonFromUrl(gs_ctx, url)
+        if self._SigningStatusFromJson(signer_json) in COMPLETED_STATUS:
+          # If we find a completed result, remember it.
+          self.signing_results[channel][url] = signer_json
 
-    Args:
-      remaining: number of incomplete signing operations.
+      if (len(self.signing_results[channel]) ==
+          len(instruction_urls_per_channel[channel])):
+        # If we just completed the channel, inform paygen.
+        self.archive_stage.AnnounceChannelSigned(channel)
+      else:
+        results_completed = False
 
-    Returns:
-      True to keep trying, False if we have all results.
-    """
-    return remaining > 0
+    return results_completed
 
   def PerformStage(self):
     """Do the work of waiting for signer results and logging them.
@@ -2927,37 +2940,36 @@ class SignerResultsStage(ArchivingStage):
     if not instruction_urls_per_channel:
       raise MissingInstructionException('No signer requests to validate.')
 
-    # We will want seperate parallel handling for each channel in time, but for
-    # now, just lump all of the channels together.
-    result_urls = [
-        '%s.json' % url for url in
-        cros_build_lib.iflatten_instance(instruction_urls_per_channel.values())]
-
     gs_ctx = gs.GSContext(dry_run=self.debug)
 
     try:
       cros_build_lib.Info('Waiting for signer results.')
-      timeout_util.WaitForSuccess(self._Retry, self._CheckForResults,
-                                  func_args=(gs_ctx, result_urls),
-                                  timeout=self.SIGNING_TIMEOUT, period=30)
+      timeout_util.WaitForReturnTrue(
+          self._CheckForResults,
+          func_args=(gs_ctx, instruction_urls_per_channel),
+          timeout=self.SIGNING_TIMEOUT, period=self.SIGNING_PERIOD)
     except timeout_util.TimeoutError:
       msg = 'Image signing timed out.'
       cros_build_lib.Error(msg)
       cros_build_lib.PrintBuildbotStepText(msg)
       raise SignerResultsTimeout(msg)
 
+    # If we completed successfully, announce all channels compeleted.
+    self.archive_stage.AnnounceChannelSigned(None)
+
     # Log all signer results, then handle any signing failures.
     failures = []
-    for url, signer_result in self.final_results.iteritems():
-      result_description = os.path.basename(url)
-      cros_build_lib.PrintBuildbotStepText(result_description)
-      cros_build_lib.Info('Received results for: %s', result_description)
-      cros_build_lib.Info(json.dumps(signer_result, indent=4))
+    for url_results in self.signing_results.values():
+      for url, signer_result in url_results.iteritems():
+        result_description = os.path.basename(url)
+        cros_build_lib.PrintBuildbotStepText(result_description)
+        cros_build_lib.Info('Received results for: %s', result_description)
+        cros_build_lib.Info(json.dumps(signer_result, indent=4))
 
-      status = self._SigningStatusFromJson(signer_result)
-      if status != 'passed':
-        failures.append(result_description)
-        cros_build_lib.Error('Signing failed for: %s', result_description)
+        status = self._SigningStatusFromJson(signer_result)
+        if status != 'passed':
+          failures.append(result_description)
+          cros_build_lib.Error('Signing failed for: %s', result_description)
 
     if failures:
       cros_build_lib.Error('Failure summary:')
@@ -3125,6 +3137,7 @@ class ArchiveStage(ArchivingStage):
     self._release_upload_queue = multiprocessing.Queue()
     self._upload_queue = multiprocessing.Queue()
     self._push_image_status_queue = multiprocessing.Queue()
+    self._wait_for_channel_signing = multiprocessing.Queue()
 
     # Setup the archive path. This is used by other stages.
     self._SetupArchivePath()
@@ -3154,6 +3167,31 @@ class ArchiveStage(ArchivingStage):
     # Put the status back so other processes don't starve.
     self._push_image_status_queue.put(urls)
     return urls
+
+  def AnnounceChannelSigned(self, channel):
+    """Announce that image signing has compeleted for a given channel.
+
+    Args:
+      channel: Either a channel name ('stable', 'dev', etc), for which all
+               images are signed, or None when no more channels will be coming.
+               The lack of further channels could be because of an error, or
+               because all of them have been signed.
+    """
+    self._wait_for_channel_signing.put(channel)
+
+  def WaitForChannelSigning(self):
+    """Wait until ChannelSigning completes for a given channel.
+
+    This method is expected to return once for each channel, and return
+    the name of the channel that was signed. When all channels are signed,
+    it should return again with None.
+
+    Returns:
+      The name of the channel for which images have been signed.
+      None when all channels are signed, or on error.
+    """
+    cros_build_lib.Info('Waiting for channel images to be signed...')
+    return self._wait_for_channel_signing.get()
 
   def BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
@@ -3460,6 +3498,7 @@ class ArchiveStage(ArchivingStage):
     # in case ArchiveStage throws an exception.
     self._recovery_image_status_queue.put(False)
     self._push_image_status_queue.put(None)
+    self._wait_for_channel_signing.put(None)
     return super(ArchiveStage, self)._HandleStageException(exception)
 
 
