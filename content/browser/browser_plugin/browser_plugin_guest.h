@@ -334,11 +334,9 @@ class CONTENT_EXPORT BrowserPluginGuest
   // has been attached to a BrowserPlugin. Once the first navigation commits, we
   // no longer track this information.
   struct NewWindowInfo {
-    bool changed;
     GURL url;
     std::string name;
     NewWindowInfo(const GURL& url, const std::string& name) :
-        changed(false),
         url(url),
         name(name) {}
   };
