@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/geolocation/GeolocationInspectorAgent.h"
 
+#include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/geolocation/GeolocationController.h"
 
 namespace WebCore {

@@ -76,7 +76,6 @@ public:
     void initializeDeferredAgents();
     void inspectedPageDestroyed();
 
-    bool hasAgent(const String& name);
     void registerModuleAgent(PassOwnPtr<InspectorAgent>);
 
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);

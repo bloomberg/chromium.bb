@@ -69,7 +69,6 @@ private:
 class InspectorAgentRegistry {
 public:
     InspectorAgentRegistry(InstrumentingAgents*, InspectorCompositeState*);
-    bool hasAgent(const String& name);
     void append(PassOwnPtr<InspectorAgent>);
 
     void setFrontend(InspectorFrontend*);

@@ -54,6 +54,7 @@
 namespace WebCore {
 
 struct CSSParserString;
+class DeviceOrientationData;
 class Document;
 class Element;
 class EventTarget;

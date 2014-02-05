@@ -108,6 +108,8 @@ public:
     virtual void setShowScrollBottleneckRects(ErrorString*, bool show) OVERRIDE;
     virtual void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*) OVERRIDE;
     virtual void setScriptExecutionDisabled(ErrorString*, bool) OVERRIDE;
+    virtual void setDeviceOrientationOverride(ErrorString*, double, double, double) OVERRIDE;
+    virtual void clearDeviceOrientationOverride(ErrorString*) OVERRIDE;
     virtual void setTouchEmulationEnabled(ErrorString*, bool) OVERRIDE;
     virtual void setEmulatedMedia(ErrorString*, const String&) OVERRIDE;
     virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>& out_metadata) OVERRIDE;

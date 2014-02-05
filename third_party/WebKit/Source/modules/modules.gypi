@@ -250,8 +250,6 @@
       'device_orientation/DeviceOrientationData.h',
       'device_orientation/DeviceOrientationEvent.cpp',
       'device_orientation/DeviceOrientationEvent.h',
-      'device_orientation/DeviceOrientationInspectorAgent.cpp',
-      'device_orientation/DeviceOrientationInspectorAgent.h',
       'device_orientation/DeviceRotationRate.cpp',
       'device_orientation/DeviceRotationRate.h',
       'device_orientation/DeviceSensorEventController.cpp',
