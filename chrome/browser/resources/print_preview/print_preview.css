@@ -268,7 +268,7 @@ span.jumping-dots > span:nth-child(3) {
 
 /* TODO(estade): unfork this code. */
 #print-header .button-strip {
-<if expr="not pp_ifdef('toolkit_views')">
+<if expr="not pp_ifdef('chromeos') and not is_win">
   -webkit-box-direction: reverse;
 </if>
   -webkit-box-orient: horizontal;
