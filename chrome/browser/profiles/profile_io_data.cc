@@ -411,10 +411,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
     signin_allowed_.MoveToThread(io_message_loop_proxy);
-
-    network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled,
-                                     pref_service);
-    network_prediction_enabled_.MoveToThread(io_message_loop_proxy);
   }
 
   quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
@@ -423,6 +419,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   media_device_id_salt_.reset(new MediaDeviceIDSalt(pref_service,
                                                     is_incognito()));
+
+  network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled,
+                                   pref_service);
+  network_prediction_enabled_.MoveToThread(io_message_loop_proxy);
 
 #if defined(OS_CHROMEOS)
   cert_verifier_ = policy::PolicyCertServiceFactory::CreateForProfile(profile);

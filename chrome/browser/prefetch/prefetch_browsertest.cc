@@ -42,7 +42,7 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
         prefs::kNetworkPredictionEnabled, do_predictive_networking_);
   }
 
-  bool RunPrefetchExperiment(bool expect_success) {
+  bool RunPrefetchExperiment(bool expect_success, Browser* browser) {
     CHECK(test_server()->Start());
     GURL url = test_server()->GetURL(kPrefetchPage);
 
@@ -50,9 +50,8 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
         expect_success ? base::ASCIIToUTF16("link onload")
                        : base::ASCIIToUTF16("link onerror");
     content::TitleWatcher title_watcher(
-        browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
-    ui_test_utils::NavigateToURL(browser(), url);
-
+        browser->tab_strip_model()->GetActiveWebContents(), expected_title);
+    ui_test_utils::NavigateToURL(browser, url);
     return expected_title == title_watcher.WaitAndGetTitle();
   }
 
@@ -87,22 +86,36 @@ class PrefetchBrowserTestPredictionOffExpOff : public PrefetchBrowserTestBase {
 
 // Privacy option is on, experiment is on.  Prefetch should succeed.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOn, PredOnExpOn) {
-  EXPECT_TRUE(RunPrefetchExperiment(true));
+  EXPECT_TRUE(RunPrefetchExperiment(true, browser()));
 }
 
 // Privacy option is on, experiment is off.  Prefetch should be dropped.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOff, PredOnExpOff) {
-  EXPECT_TRUE(RunPrefetchExperiment(false));
+  EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
 }
 
 // Privacy option is off, experiment is on.  Prefetch should be dropped.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOffExpOn, PredOffExpOn) {
-  EXPECT_TRUE(RunPrefetchExperiment(false));
+  EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
 }
 
 // Privacy option is off, experiment is off.  Prefetch should be dropped.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOffExpOff, PredOffExpOff) {
-  EXPECT_TRUE(RunPrefetchExperiment(false));
+  EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
+}
+
+// Bug 339909: When in incognito mode the browser crashed due to an
+// uninitialized preference member. Verify that it no longer does.
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionOnExpOn, IncognitoTest) {
+  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
+  Browser* incognito_browser = new Browser(
+      Browser::CreateParams(incognito_profile, browser()->host_desktop_type()));
+
+  // Navigate just to have a tab in this window, otherwise there is no
+  // WebContents for the incognito browser.
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+
+  EXPECT_TRUE(RunPrefetchExperiment(true, incognito_browser));
 }
 
 }  // namespace
