@@ -87,7 +87,7 @@ def GetScmName(url):
     url, _ = gclient_utils.SplitUrlRevision(url)
     if (url.startswith('git://') or url.startswith('ssh://') or
         url.startswith('git+http://') or url.startswith('git+https://') or
-        url.endswith('.git')):
+        url.endswith('.git') or url.startswith('sso://')):
       return 'git'
     elif (url.startswith('http://') or url.startswith('https://') or
           url.startswith('svn://') or url.startswith('svn+ssh://')):
