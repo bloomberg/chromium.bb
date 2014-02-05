@@ -58,8 +58,14 @@ ChromeDownloaderImpl::~ChromeDownloaderImpl() {
 void ChromeDownloaderImpl::Download(
     const std::string& url,
     scoped_ptr<Callback> downloaded) {
+  GURL resource(url);
+  if (!resource.SchemeIsSecure()) {
+    (*downloaded)(false, url, make_scoped_ptr(new std::string()));
+    return;
+  }
+
   scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this));
+      net::URLFetcher::Create(resource, net::URLFetcher::GET, this));
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetRequestContext(getter_);
