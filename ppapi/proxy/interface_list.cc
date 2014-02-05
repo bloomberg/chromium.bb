@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/interface_list.h"
 
+#include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "ppapi/c/dev/ppb_alarms_dev.h"
@@ -104,6 +105,8 @@
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
@@ -315,15 +318,22 @@ InterfaceProxy::Factory InterfaceList::GetFactoryForID(ApiID id) const {
   return id_to_factory_[index];
 }
 
-const void* InterfaceList::GetInterfaceForPPB(const std::string& name) const {
-  NameToInterfaceInfoMap::const_iterator found =
+const void* InterfaceList::GetInterfaceForPPB(const std::string& name) {
+  NameToInterfaceInfoMap::iterator found =
       name_to_browser_info_.find(name);
   if (found == name_to_browser_info_.end())
     return NULL;
 
   if (g_process_global_permissions.Get().HasPermission(
-          found->second.required_permission))
+          found->second.required_permission)) {
+    // Only log interface use once per plugin.
+    if (!found->second.interface_logged) {
+      PluginGlobals::Get()->GetBrowserSender()->Send(
+          new PpapiHostMsg_LogInterfaceUsage(HashInterfaceName(name)));
+      found->second.interface_logged = true;
+    }
     return found->second.iface;
+  }
   return NULL;
 }
 
@@ -362,6 +372,14 @@ void InterfaceList::AddPPP(const char* name,
                            const void* iface) {
   DCHECK(name_to_plugin_info_.find(name) == name_to_plugin_info_.end());
   name_to_plugin_info_[name] = InterfaceInfo(iface, PERMISSION_NONE);
+}
+
+// static
+int InterfaceList::HashInterfaceName(const std::string& name) {
+  uint32 data = base::Hash(name.c_str(), name.size());
+  // Strip off the signed bit because UMA doesn't support negative values,
+  // but takes a signed int as input.
+  return static_cast<int>(data & 0x7fffffff);
 }
 
 }  // namespace proxy

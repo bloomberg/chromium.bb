@@ -41,7 +41,7 @@ class PPAPI_PROXY_EXPORT InterfaceList {
 
   // Returns the interface pointer for the given browser or plugin interface,
   // or NULL if it's not supported.
-  const void* GetInterfaceForPPB(const std::string& name) const;
+  const void* GetInterfaceForPPB(const std::string& name);
   const void* GetInterfaceForPPP(const std::string& name) const;
 
  private:
@@ -50,11 +50,13 @@ class PPAPI_PROXY_EXPORT InterfaceList {
   struct InterfaceInfo {
     InterfaceInfo()
         : iface(NULL),
-          required_permission(PERMISSION_NONE) {
+          required_permission(PERMISSION_NONE),
+          interface_logged(false) {
     }
     InterfaceInfo(const void* in_interface, Permission in_perm)
         : iface(in_interface),
-          required_permission(in_perm) {
+          required_permission(in_perm),
+          interface_logged(false) {
     }
 
     const void* iface;
@@ -63,6 +65,9 @@ class PPAPI_PROXY_EXPORT InterfaceList {
     // be checked with the value set via SetProcessGlobalPermissionBits when
     // an interface is requested.
     Permission required_permission;
+
+    // Interface usage is logged just once per-interface-per-plugin-process.
+    bool interface_logged;
   };
 
   typedef std::map<std::string, InterfaceInfo> NameToInterfaceInfoMap;
@@ -74,6 +79,9 @@ class PPAPI_PROXY_EXPORT InterfaceList {
   // a bitfield).
   void AddPPB(const char* name, const void* iface, Permission permission);
   void AddPPP(const char* name, const void* iface);
+
+  // Hash the interface name for UMA logging.
+  static int HashInterfaceName(const std::string& name);
 
   PpapiPermissions permissions_;
 

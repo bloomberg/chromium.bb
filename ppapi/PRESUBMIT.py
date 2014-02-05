@@ -146,6 +146,38 @@ def CheckUpdatedNaClSDK(input_api, output_api):
                         'PPAPI Interface modified without updating NaCl SDK.',
                         output_api)
 
+# Verify that changes to ppapi/thunk/interfaces_* files have a corresponding
+# change to tools/metrics/histograms/histograms.xml for UMA tracking.
+def CheckHistogramXml(input_api, output_api):
+  # We can't use input_api.LocalPaths() here because we need to know about
+  # changes outside of ppapi/. See tools/depot_tools/presubmit_support.py for
+  # details on input_api.
+  files = input_api.change.AffectedFiles()
+
+  INTERFACE_FILES = ('ppapi/thunk/interfaces_legacy.h',
+                     'ppapi/thunk/interfaces_ppb_private_flash.h',
+                     'ppapi/thunk/interfaces_ppb_private.h',
+                     'ppapi/thunk/interfaces_ppb_private_no_permissions.h',
+                     'ppapi/thunk/interfaces_ppb_public_dev_channel.h',
+                     'ppapi/thunk/interfaces_ppb_public_dev.h',
+                     'ppapi/thunk/interfaces_ppb_public_stable.h')
+  HISTOGRAM_XML_FILE = 'tools/metrics/histograms/histograms.xml'
+  interface_changes = []
+  has_histogram_xml_change = False
+  for filename in files:
+    path = filename.LocalPath()
+    if path in INTERFACE_FILES:
+      interface_changes.append(path)
+    if path == HISTOGRAM_XML_FILE:
+      has_histogram_xml_change = True
+
+  if interface_changes and not has_histogram_xml_change:
+    return [output_api.PresubmitPromptWarning(
+        'Missing change to tools/metrics/histograms/histograms.xml.\n' +
+        'Run pepper_hash_for_uma to make get values for new interfaces.\n' +
+        'Interface changes:\n' + '\n'.join(interface_changes))]
+  return []
+
 def CheckChange(input_api, output_api):
   results = []
 
@@ -156,6 +188,8 @@ def CheckChange(input_api, output_api):
   results.extend(CheckUnversionedPPB(input_api, output_api))
 
   results.extend(CheckUpdatedNaClSDK(input_api, output_api))
+
+  results.extend(CheckHistogramXml(input_api, output_api))
 
   # Verify all modified *.idl have a matching *.h
   files = input_api.LocalPaths()

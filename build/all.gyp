@@ -82,6 +82,7 @@
             '../mojo/mojo.gyp:*',
             '../ppapi/ppapi.gyp:*',
             '../ppapi/ppapi_internal.gyp:*',
+            '../ppapi/tools/ppapi_tools.gyp:*',
             '../printing/printing.gyp:*',
             '../skia/skia.gyp:*',
             '../third_party/WebKit/public/all.gyp:*',

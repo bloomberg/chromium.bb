@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
+#include "base/metrics/sparse_histogram.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/pepper_renderer_instance_data.h"
@@ -164,6 +165,8 @@ bool BrowserPpapiHostImpl::HostMessageFilter::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(BrowserPpapiHostImpl::HostMessageFilter, msg)
     // Add necessary message handlers here.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_Keepalive, OnKeepalive)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_LogInterfaceUsage,
+                        OnHostMsgLogInterfaceUsage)
     IPC_MESSAGE_UNHANDLED(handled = ppapi_host_->OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP();
   return handled;
@@ -181,6 +184,11 @@ BrowserPpapiHostImpl::HostMessageFilter::~HostMessageFilter() {
 void BrowserPpapiHostImpl::HostMessageFilter::OnKeepalive() {
   if (browser_ppapi_host_impl_)
     browser_ppapi_host_impl_->OnKeepalive();
+}
+
+void BrowserPpapiHostImpl::HostMessageFilter::OnHostMsgLogInterfaceUsage(
+    int hash) const {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Pepper.InterfaceUsed", hash);
 }
 
 void BrowserPpapiHostImpl::OnKeepalive() {

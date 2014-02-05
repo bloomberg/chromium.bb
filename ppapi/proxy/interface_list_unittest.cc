@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/hash.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
@@ -15,6 +16,12 @@ class InterfaceListTest : public PluginProxyTest {
   void AddPPB(InterfaceList* list,
               const char* iface_name, void* iface_addr, Permission perm) {
     list->AddPPB(iface_name, iface_addr, perm);
+  }
+
+  // Wrapper function so we can use the private
+  // InterfaceList::HashInterfaceName.
+  int HashInterfaceName(const std::string& name) {
+    return InterfaceList::HashInterfaceName(name);
   }
 };
 
@@ -60,6 +67,13 @@ TEST_F(InterfaceListTest, DevChannel) {
   ASSERT_TRUE(list.GetInterfaceForPPB(dev_channel_iface_name) ==
               dev_channel_iface_addr);
   ASSERT_TRUE(list.GetInterfaceForPPB(dev_iface_name) == dev_iface_addr);
+}
+
+// Test that the hash function provided by base::Hash is unchanged. This is so
+// that we will generate correct values when logging interface use to UMA.
+TEST_F(InterfaceListTest, InterfaceHash) {
+  EXPECT_EQ(612625164, HashInterfaceName("PPB_InputEvent;1.0"));
+  EXPECT_EQ(79708274, HashInterfaceName("PPB_TCPSocket;1.1"));
 }
 
 }  // namespace proxy

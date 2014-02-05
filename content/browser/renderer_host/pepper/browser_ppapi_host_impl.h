@@ -98,6 +98,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     virtual ~HostMessageFilter();
 
     void OnKeepalive();
+    void OnHostMsgLogInterfaceUsage(int hash) const;
 
     // Non owning pointers cleared in OnHostDestroyed()
     ppapi::host::PpapiHost* ppapi_host_;

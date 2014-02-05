@@ -7,7 +7,13 @@
 // This file contains lists of interfaces. It's intended to be included by
 // another file which defines implementations of the macros. This allows files
 // to do specific registration tasks for each supported interface.
-
+//
+// When adding an interface, you must also add the hash value for the
+// interface's name to tools/metrics/histograms/histograms.xml. This is so we
+// get human-readable UMA tracking for interface usage.
+//
+// Use the 'pepper_hash_for_uma' tool in ppapi/tools to determine the hash for
+// a given interface string.
 
 // Api categories
 // --------------
