@@ -136,7 +136,8 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.is_reflect and attribute.idl_type == 'DOMString' and
           is_node %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
-    {# FIXME: Perl skips most of function, but this seems unnecessary #}
+    {# FIXME: Perl skips most of function, but this seems unnecessary;
+       we only need to skip the CallbackDeliveryScope #}
     {% endif %}
     {% if attribute.has_setter_exception_state %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
@@ -173,8 +174,10 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     if (!({{attribute.enum_validation_expression}}))
         return;
     {% endif %}
-    {% if attribute.is_reflect and
-          not(attribute.idl_type == 'DOMString' and is_node) %}
+    {% if attribute.is_custom_element_callbacks or
+          (attribute.is_reflect and
+           not(attribute.idl_type == 'DOMString' and is_node)) %}
+    {# Skip on compact node DOMString getters #}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
@@ -219,7 +222,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 1, &loggerArg[0], "Setter");
     }
     {% endif %}
-    {% if attribute.is_reflect %}
+    {% if attribute.is_custom_element_callbacks or attribute.is_reflect %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.has_custom_setter %}

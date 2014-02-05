@@ -67,9 +67,10 @@ def generate_attribute(interface, attribute):
         'RaisesException' in extended_attributes and
         extended_attributes['RaisesException'] in [None, 'Setter'])
 
-    # [Reflect]
+    # [CustomElementCallbacks], [Reflect]
+    is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     is_reflect = 'Reflect' in extended_attributes
-    if is_reflect:
+    if is_custom_element_callbacks or is_reflect:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
     if (idl_type == 'EventHandler' and
@@ -96,6 +97,7 @@ def generate_attribute(interface, attribute):
         'idl_type': idl_type,
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_check_security_for_node': is_check_security_for_node,
+        'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_expose_js_accessors': 'ExposeJSAccessors' in extended_attributes,
         'is_getter_raises_exception': (  # [RaisesException]
             'RaisesException' in extended_attributes and
