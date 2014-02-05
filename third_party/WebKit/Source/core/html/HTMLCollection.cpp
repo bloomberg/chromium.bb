@@ -424,21 +424,6 @@ static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
         || element.hasLocalName(selectTag);
 }
 
-bool HTMLCollection::checkForNameMatch(const Element& element, bool checkName, const AtomicString& name) const
-{
-    if (!element.isHTMLElement())
-        return false;
-
-    const HTMLElement& e = toHTMLElement(element);
-    if (!checkName)
-        return e.getIdAttribute() == name;
-
-    if (type() == DocAll && !nameShouldBeVisibleInDocumentAll(e))
-        return false;
-
-    return e.getNameAttribute() == name && e.getIdAttribute() != name;
-}
-
 inline Element* firstMatchingChildElement(const HTMLCollection& nodeList, const ContainerNode& root)
 {
     Element* element = ElementTraversal::firstWithin(root);
@@ -517,25 +502,15 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const
     // attribute. If a match is not found, the method then searches for an
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
+    updateNameCache();
 
-    ContainerNode& root = rootNode();
-    unsigned i = 0;
-    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
-        if (checkForNameMatch(*element, /* checkName */ false, name)) {
-            m_collectionIndexCache.setCachedNode(element, i);
-            return element;
-        }
-        i++;
-    }
+    Vector<Element*>* idResults = idCache(name);
+    if (idResults && !idResults->isEmpty())
+        return idResults->first();
 
-    i = 0;
-    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
-        if (checkForNameMatch(*element, /* checkName */ true, name)) {
-            m_collectionIndexCache.setCachedNode(element, i);
-            return element;
-        }
-        i++;
-    }
+    Vector<Element*>* nameResults = nameCache(name);
+    if (nameResults && !nameResults->isEmpty())
+        return nameResults->first();
 
     return 0;
 }

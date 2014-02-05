@@ -75,7 +75,6 @@ protected:
     void appendNameCache(const AtomicString& name, Element* element) const { append(m_nameCache, name, element); }
 
 private:
-    bool checkForNameMatch(const Element&, bool checkName, const AtomicString& name) const;
     Element* traverseNextElement(Element& previous, const ContainerNode& root) const;
 
     static void append(NodeCacheMap&, const AtomicString&, Element*);
