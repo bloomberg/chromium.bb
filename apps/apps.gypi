@@ -97,7 +97,7 @@
     },
   ],  # targets
   'conditions': [
-    ['chromeos==1 or (OS=="linux" and use_aura==1)', {
+    ['chromeos==1 or (OS=="linux" and use_aura==1) or (OS=="win" and use_aura==1)', {
       'targets': [
         {
           'target_name': 'app_shell',
@@ -147,6 +147,18 @@
             'shell/common/shell_extensions_client.h',
             'shell/renderer/shell_content_renderer_client.cc',
             'shell/renderer/shell_content_renderer_client.h',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+                },
+              },
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox',
+              ],
+            }],
           ],
         },
       ],  # targets
