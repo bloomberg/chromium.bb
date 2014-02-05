@@ -12,9 +12,12 @@ extern "C" {
 
 /* #ifndef __STRICT_ANSI__*/
 
+/* Cygwin defines it's own sigset_t in include/cygwin/signal.h */
+#ifndef __CYGWIN__
 typedef unsigned long sigset_t;
+#endif
 
-#if defined(__rtems__) || defined(__native_client__)
+#if defined(__rtems__) || defined (__native_client__)
 
 #if defined(_POSIX_REALTIME_SIGNALS)
 
@@ -114,7 +117,7 @@ struct sigaction
 	sigset_t sa_mask;
 	int sa_flags;
 };
-#endif /* defined(__rtems__) */
+#endif /* defined(__rtems__) || defined(__native_client__) */
 
 #define SIG_SETMASK 0	/* set mask with sigprocmask() */
 #define SIG_BLOCK 1	/* set of signals to block */
@@ -136,13 +139,16 @@ int _EXFUN(pthread_sigmask, (int how, const sigset_t *set, sigset_t *oset));
 #endif
 
 /* protos for functions found in winsup sources for CYGWIN */
-#if defined(__CYGWIN__) || defined(__rtems__) || defined (__native_client__)
+#if defined(__CYGWIN__) || defined(__rtems__) || defined(__native_client__)
 #undef sigaddset
 #undef sigdelset
 #undef sigemptyset
 #undef sigfillset
 #undef sigismember
 
+#ifdef _COMPILING_NEWLIB
+int _EXFUN(_kill, (pid_t, int));
+#endif
 int _EXFUN(kill, (pid_t, int));
 int _EXFUN(killpg, (pid_t, int));
 int _EXFUN(sigaction, (int, const struct sigaction *, struct sigaction *));
@@ -155,7 +161,7 @@ int _EXFUN(sigpending, (sigset_t *));
 int _EXFUN(sigsuspend, (const sigset_t *));
 int _EXFUN(sigpause, (int));
 
-#if defined(_POSIX_THREADS)
+#if defined(_POSIX_THREADS) && !defined(__native_client__)
 #ifdef __CYGWIN__
 #  ifndef _CYGWIN_TYPES_H
 #    error You need the winsup sources or a cygwin installation to compile the cygwin version of newlib.
