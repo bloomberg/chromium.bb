@@ -264,6 +264,42 @@ static void perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld(c
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
+    if (UNLIKELY(info.Length() <= 0)) {
+        v8SetReturnValueFast(info, imp->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(), imp);
+        return;
+    }
+    V8TRYCATCH_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
+    v8SetReturnValueFast(info, imp->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument), imp);
+}
+
+static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
+    if (UNLIKELY(info.Length() <= 0)) {
+        v8SetReturnValueForMainWorld(info, imp->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg());
+        return;
+    }
+    V8TRYCATCH_VOID(bool, optionalBooleanArgument, info[0]->BooleanValue());
+    v8SetReturnValueForMainWorld(info, imp->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument));
+}
+
+static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 } // namespace TestInterfaceNodeV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNodeAttributes[] = {
@@ -278,6 +314,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNodeAttri
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceNodeMethods[] = {
     {"testInterfaceEmptyMethod", TestInterfaceNodeV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
     {"perWorldBindingsTestInterfaceEmptyMethod", TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodMethodCallback, TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld, 0},
+    {"perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg", TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallback, TestInterfaceNodeV8Internal::perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallbackForMainWorld, 0},
 };
 
 static void configureV8TestInterfaceNodeTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)

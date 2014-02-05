@@ -38,4 +38,5 @@ interface TestInterfaceNode : Node {
 
     TestInterfaceEmpty testInterfaceEmptyMethod();
     [PerWorldBindings] TestInterfaceEmpty perWorldBindingsTestInterfaceEmptyMethod();
+    [PerWorldBindings] TestInterfaceEmpty perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optional boolean optionalBooleanArgument);
 };

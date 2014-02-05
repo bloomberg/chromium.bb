@@ -37,7 +37,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
     {% endif %}
     {% for argument in method.arguments %}
-    {{generate_argument(method, argument) | indent}}
+    {{generate_argument(method, argument, world_suffix) | indent}}
     {% endfor %}
     {% if world_suffix %}
     {{cpp_method_call(method, method.v8_set_return_value_for_main_world, method.cpp_value) | indent}}
@@ -78,7 +78,7 @@ if (listener) {
 
 
 {######################################}
-{% macro generate_argument(method, argument) %}
+{% macro generate_argument(method, argument, world_suffix) %}
 {% if argument.is_optional and not argument.has_default and
       argument.idl_type != 'Dictionary' and
       not argument.is_callback_interface %}
@@ -86,7 +86,11 @@ if (listener) {
    fewer arguments if they are omitted.
    Optional Dictionary arguments default to empty dictionary. #}
 if (UNLIKELY(info.Length() <= {{argument.index}})) {
+    {% if world_suffix %}
+    {{cpp_method_call(method, argument.v8_set_return_value_for_main_world, argument.cpp_value) | indent}}
+    {% else %}
     {{cpp_method_call(method, argument.v8_set_return_value, argument.cpp_value) | indent}}
+    {% endif %}
     return;
 }
 {% endif %}

@@ -411,9 +411,9 @@ interface TestObjectPython {
     [NotEnumerable] void notEnumerableVoidMethod();
     [PerContextEnabled=FeatureName] void perContextEnabledVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethod();
+    [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [ActivityLogging=ForAllWorlds, PerWorldBindings] void activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
     [ActivityLogging=ForIsolatedWorlds, PerWorldBindings] void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
-    [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [RaisesException] void raisesExceptionVoidMethod();
     [RaisesException] DOMString raisesExceptionStringMethod();
     [RaisesException] void raisesExceptionVoidMethodOptionalLongArg(optional long optionalLongArg);

@@ -152,6 +152,7 @@ def generate_argument(interface, method, argument, index):
         'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
         'is_wrapper_type': v8_types.is_wrapper_type(idl_type),
         'name': argument.name,
+        'v8_set_return_value_for_main_world': v8_set_return_value(interface.name, method, this_cpp_value, for_main_world=True),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
     }
